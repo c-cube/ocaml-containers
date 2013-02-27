@@ -14,4 +14,6 @@ Then:
 
 ## License
 
-This code is free, under the BSD license.
+This code is free, under the BSD license. The module `leftistheap` is due
+to [Jean-Christophe Filliâtre](https://www.lri.fr/~filliatr/), under
+the GPL license.
