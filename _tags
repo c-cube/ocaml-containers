@@ -1,0 +1,3 @@
+<src>: include
+<**/*.ml*>: package(sequence)
+<**/*.cm*>: package(sequence)
