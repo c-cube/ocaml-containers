@@ -3,14 +3,14 @@
 
 let phashtbl_add n =
   let h = PHashtbl.create 50 in
-  for i = 0 to n do
+  for i = n downto 0 do
     PHashtbl.add h i i;
   done;
   h
 
 let hashtbl_add n =
   let h = Hashtbl.create 50 in
-  for i = 0 to n do
+  for i = n downto 0 do
     Hashtbl.add h i i;
   done;
   h

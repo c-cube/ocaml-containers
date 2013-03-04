@@ -23,18 +23,21 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Open addressing hashtable, with linear probing} *)
+(** {1 Open addressing hashtable (robin hood hashing)} *)
 
-type ('a, 'b) t = private {
-  mutable buckets : ('a * 'b * state) array;
+type ('a, 'b) t = {
+  mutable buckets : ('a, 'b) bucket array;
   mutable size : int;
   eq : 'a -> 'a -> bool;
   hash : 'a -> int;
   max_load : float;
 } (** A hashtable is an array of (key, value) buckets that have a state,
       plus the size of the table and equality/hash functions *)
-and state = Used | Empty | Deleted
-  (** state of a bucket *)
+and ('a, 'b) bucket =
+  | Empty
+  | Deleted
+  | Used of 'a * 'b * int  (* int: the distance from home of the key *)
+  (** a bucket *)
 
 val create : ?max_load:float -> ?eq:('a -> 'a -> bool) ->
               ?hash:('a -> int) -> int -> ('a, 'b) t

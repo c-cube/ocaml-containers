@@ -23,29 +23,27 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Open addressing hashtable, with linear probing} *)
+(** {1 Open addressing hashtable (robin hood hashing)} *)
 
 type ('a, 'b) t = {
-  mutable buckets : ('a * 'b * state) array;
+  mutable buckets : ('a, 'b) bucket array;
   mutable size : int;
   eq : 'a -> 'a -> bool;
   hash : 'a -> int;
   max_load : float;
 } (** A hashtable is an array of (key, value) buckets that have a state,
       plus the size of the table and equality/hash functions *)
-and state = Used | Empty | Deleted
-  (** state of a bucket *)
-
-let my_null () = (Obj.magic None, Obj.magic None, Empty)
-
-let my_deleted key = (key, Obj.magic None, Deleted)
+and ('a, 'b) bucket =
+  | Empty
+  | Deleted
+  | Used of 'a * 'b * int  (* int: the distance from home of the key *)
+  (** a bucket *)
 
 (** Create a table. Size will be >= 2 *)
 let create ?(max_load=0.8) ?(eq=fun x y -> x = y)
            ?(hash=fun x -> Hashtbl.hash x) size =
   let size = max 2 size in
-  let null = my_null () in
-  { buckets = Array.make size null;
+  { buckets = Array.make size Empty;
     size = 0;
     max_load;
     eq;
@@ -73,79 +71,81 @@ let copy t = {
 
 (** clear the table, by resetting all states to Empty *)
 let clear t =
-  let null = my_null () in
-  Array.fill t.buckets 0 (Array.length t.buckets) null;
+  Array.fill t.buckets 0 (Array.length t.buckets) Empty;
   t.size <- 0
 
 (** Index of slot, for i-th probing starting from hash [h] in
     a table of length [n] *)
 let addr h n i = (h + i) mod n
   
-(** Insert (key -> value) in buckets, starting with the hash. *)
-let insert ~eq buckets h key value =
-  let n = Array.length buckets in
+(** Insert (key -> value) in table, starting with the hash. *)
+let insert t key value =
+  let n = Array.length t.buckets in
+  let h = t.hash key in
   (* lookup an empty slot to insert the key->value in. *)
-  let rec lookup h n i =
+  let rec lookup h i key value dist =
     let j = addr h n i in
-    match buckets.(j) with
-    | (_, _, Empty) -> buckets.(j) <- (key, value, Used)
-    | (key', _, _) when eq key key' -> ()
-    | _ -> lookup h n (i+1)
+    match t.buckets.(j) with
+    | Empty | Deleted ->
+      (* insert here *)
+      t.size <- t.size + 1;
+      t.buckets.(j) <- Used (key, value, dist)
+    | Used (key', _, _) when t.eq key key' ->
+      (* insert here (erase old value) *)
+      t.size <- t.size + 1;
+      t.buckets.(j) <- Used (key, value, dist)
+    | Used (key', value', dist') when dist > dist' ->
+      (* displace this key/value *)
+      t.buckets.(j) <- Used (key, value, dist);
+      (* insert the other value again *)
+      lookup h (i+1) key' value' (dist+1)
+    | Used _ ->
+      (* search further for insertion *)
+      lookup h (i+1) key value (dist+1)
   in
-  lookup h n 0
+  lookup h 0 key value 1
 
 (** Resize the array, by inserting its content into twice as large an array *)
-let resize ~eq ~hash buckets =
-  let new_size = min (Array.length buckets * 2 + 1) Sys.max_array_length in
-  let buckets' = Array.make new_size (my_null ()) in
-  for i = 0 to Array.length buckets - 1 do
-    match buckets.(i) with
-    | (key, value, Used) ->
-      insert ~eq buckets' (hash key) key value  (* insert key -> value into new array *)
-    | _ -> ()
-  done;
-  buckets'
+let resize t =
+  let new_size = min (Array.length t.buckets * 2 + 1) Sys.max_array_length in
+  assert (new_size > Array.length t.buckets);
+  let old_buckets = t.buckets in
+  t.buckets <- Array.make new_size Empty;
+  t.size <- 0;  (* will be updated again *)
+  for i = 0 to Array.length old_buckets - 1 do
+    match old_buckets.(i) with
+    | Used (key, value, _) ->
+      (* insert key -> value into new array *)
+      insert t key value
+    | Empty | Deleted -> ()
+  done
 
 (** Lookup [key] in the table *)
 let find t key =
   let n = Array.length t.buckets in
   let h = t.hash key in
   let buckets = t.buckets in
-  let rec probe h n i num =
-    if num = n then raise Not_found
-    else
+  let rec probe h n i =
+    if i = n then raise Not_found else
     let j = addr h n i in
     match buckets.(j) with
-    | (key', value, Used) when t.eq key key' ->
+    | Used (key', value, _) when t.eq key key' ->
       value  (* found value for this key *)
-    | (_, _, Deleted) | (_, _, Used) ->
-      probe h n (i+1) (num + 1) (* try next bucket *)
-    | (_, _, Empty) -> raise Not_found
+    | Deleted | Used _ ->
+      probe h n (i+1) (* try next bucket *)
+    | Empty -> raise Not_found
   in
-  probe h n 0 0
+  probe h n 0
 
 (** put [key] -> [value] in the hashtable *)
 let replace t key value =
   let load = float_of_int t.size /. float_of_int (Array.length t.buckets) in
-  (if load > t.max_load then t.buckets <- resize ~eq:t.eq ~hash:t.hash t.buckets);
-  let n = Array.length t.buckets in
-  let h = t.hash key in
-  let buckets = t.buckets in
-  let rec probe h n i =
-    let j = addr h n i in
-    match buckets.(j) with
-    | (key', _, Used) when t.eq key key' ->
-      buckets.(j) <- (key, value, Used)  (* replace value *)
-    | (_, _, Deleted) | (_, _, Empty) ->
-      buckets.(j) <- (key, value, Used);
-      t.size <- t.size + 1 (* insert and increment size *)
-    | (_, _, Used) ->
-      probe h n (i+1) (* go further *)
-  in
-  probe h n 0
+  (if load > t.max_load then resize t);
+  insert t key value
 
 (** alias for replace *)
-let add t key value = replace t key value
+let add t key value =
+  replace t key value
 
 (** Remove the key from the table *)
 let remove t key =
@@ -155,11 +155,12 @@ let remove t key =
   let rec probe h n i =
     let j = addr h n i in
     match buckets.(j) with
-    | (key', _, Used) when t.eq key key' ->
-      buckets.(j) <- (my_deleted key'); t.size <- t.size - 1  (* remove slot *)
-    | (_, _, Deleted) | (_, _, Used) ->
+    | Used (key', _, _) when t.eq key key' ->
+      buckets.(j) <- Deleted;
+      t.size <- t.size - 1  (* remove slot *)
+    | Deleted | Used _ ->
       probe h n (i+1) (* search further *)
-    | (_, _, Empty) -> ()  (* not present *)
+    | Empty -> ()  (* not present *)
   in
   probe h n 0
 
@@ -176,8 +177,8 @@ let iter k t =
   let buckets = t.buckets in
   for i = 0 to Array.length buckets - 1 do
     match buckets.(i) with
-    | (key, value, Used) -> k key value
-    | _ -> ()
+    | Used (key, value, _) -> k key value
+    | Empty | Deleted -> ()
   done
 
 (** Fold on key -> value pairs *)
@@ -186,8 +187,9 @@ let fold f acc t =
   let buckets = t.buckets in
   for i = 0 to Array.length buckets - 1 do
     match buckets.(i) with
-    | (key, value, Used) -> acc := f !acc key value
-    | _ -> ()
+    | Used (key, value, _) ->
+      acc := f !acc key value
+    | Empty | Deleted -> ()
   done;
   !acc
 
@@ -196,9 +198,10 @@ let map f t =
   let t' = create ~eq:t.eq ~hash:t.hash (Array.length t.buckets) in
   for i = 0 to Array.length t.buckets - 1 do
     match t.buckets.(i) with
-    | (_, _, Empty) -> ()
-    | (k, _, Deleted) -> t'.buckets.(i) <- my_deleted k
-    | (k, v, Used) -> t'.buckets.(i) <- (k, f k v, Used)
+    | Empty -> ()
+    | Deleted -> t'.buckets.(i) <- Deleted
+    | Used (k, v, dist) ->
+      t'.buckets.(i) <- Used (k, f k v, dist)
   done;
   t'
 
@@ -206,10 +209,10 @@ let map f t =
 let filter pred t =
   for i = 0 to Array.length t.buckets - 1 do
     match t.buckets.(i) with
-    | (_, _, (Empty | Deleted)) -> ()
-    | (k, v, Used) when pred k v -> ()
-    | (k, v, Used) -> (* remove this element *)
-      t.buckets.(i) <- my_deleted k;
+    | Empty | Deleted -> ()
+    | Used (k, v, _) when pred k v -> ()
+    | Used (k, v, _) -> (* remove this element *)
+      t.buckets.(i) <- Deleted;
       t.size <- t.size - 1
   done
 
