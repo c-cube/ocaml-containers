@@ -179,6 +179,17 @@ let fold f acc t =
   done;
   !acc
 
+(** Destructive filter (remove bindings that do not satisfiy predicate) *)
+let filter pred t =
+  for i = 0 to Array.length t.buckets - 1 do
+    match t.buckets.(i) with
+    | (_, _, (Empty | Deleted)) -> ()
+    | (k, v, Used) when pred k v -> ()
+    | (k, v, Used) -> (* remove this element *)
+      t.buckets.(i) <- my_deleted k;
+      t.size <- t.size - 1
+  done
+
 (** Add the given pairs to the hashtable *)
 let of_seq t seq =
   Sequence.iter (fun (k,v) -> add t k v) seq

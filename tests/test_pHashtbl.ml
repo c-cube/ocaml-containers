@@ -74,6 +74,15 @@ let test_remove () =
   (* test that 2 has been removed *)
   OUnit.assert_raises Not_found (fun () -> PHashtbl.find h 2)
 
+let test_filter () =
+  let h = PHashtbl.create 5 in
+  PHashtbl.of_seq h my_seq;
+  OUnit.assert_equal (PHashtbl.length h) 4;
+  PHashtbl.filter (fun k _ -> (k mod 2) = 0) h;
+  OUnit.assert_equal (PHashtbl.length h) 2;
+  OUnit.assert_bool "mem" (PHashtbl.mem h 4);
+  OUnit.assert_bool "mem" (PHashtbl.mem h 2)
+
 let suite =
   "test_pHashtbl" >:::
     [ "test_add" >:: test_add;
@@ -83,4 +92,5 @@ let suite =
       "test_eq" >:: test_eq;
       "test_copy" >:: test_copy;
       "test_remove" >:: test_remove;
+      "test_filter" >:: test_filter;
     ]

@@ -61,6 +61,9 @@ val mem : ('a,_) t -> 'a -> bool
 val iter : ('a -> 'b -> unit) -> ('a, 'b) t -> unit
   (** Iterate on bindings *)
 
+val filter : ('a -> 'b -> bool) -> ('a, 'b) t -> unit
+  (** Destructive filter (remove bindings that do not satisfiy predicate) *)
+
 val fold : ('c -> 'a -> 'b -> 'c) -> 'c -> ('a, 'b) t -> 'c
   (** Fold on bindings *)
 
