@@ -19,6 +19,11 @@ Then:
 
     $ make
 
+To build and run tests (requires `oUnit`):
+
+    $ make tests
+    $ ./tests.native
+
 ## License
 
 This code is free, under the BSD license. The module `leftistheap` is due

@@ -3,14 +3,16 @@ INTERFACE_FILES = $(shell find -name '*.mli')
 IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
 TARGETS_LIB = containers.cmxa containers.cma
-OPTIONS = -use-ocamlfind -lib sequence
+OPTIONS = -use-ocamlfind -package sequence
 
 all:
-	ocamlbuild -use-ocamlfind $(TARGETS_LIB)
+	ocamlbuild $(OPTIONS) $(TARGETS_LIB)
+
+tests:
+	ocamlbuild $(OPTIONS) -package oUnit -I . tests/tests.native
 
 clean:
 	ocamlbuild -clean
 
-.PHONY: all clean
-
+.PHONY: all clean tests
 
