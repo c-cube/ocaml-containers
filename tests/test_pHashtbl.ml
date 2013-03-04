@@ -83,6 +83,16 @@ let test_filter () =
   OUnit.assert_bool "mem" (PHashtbl.mem h 4);
   OUnit.assert_bool "mem" (PHashtbl.mem h 2)
 
+let test_map () =
+  let h = PHashtbl.create 5 in
+  PHashtbl.of_seq h my_seq;
+  let h' = PHashtbl.map (fun k v -> String.uppercase v) h in
+  OUnit.assert_equal (PHashtbl.length h') 4;
+  OUnit.assert_equal (PHashtbl.find h' 1) "A";
+  OUnit.assert_equal (PHashtbl.find h' 2) "B";
+  OUnit.assert_equal (PHashtbl.find h' 3) "C";
+  OUnit.assert_equal (PHashtbl.find h' 4) "D"
+
 let suite =
   "test_pHashtbl" >:::
     [ "test_add" >:: test_add;

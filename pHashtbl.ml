@@ -51,6 +51,17 @@ let create ?(max_load=0.8) ?(eq=fun x y -> x = y)
     eq;
     hash; }
 
+module type Hashable = sig
+  type t
+  val equal : t -> t -> bool
+  val hash : t -> int
+end
+
+(** Create a hashtable from the given 'typeclass' *)
+let create_tc (type key) (h : (module Hashable with type t = key)) size =
+  let module H = (val h) in
+  create ~eq:H.equal ~hash:H.hash size
+
 (** Copy of the hashtable *)
 let copy t = {
   eq = t.eq;
@@ -179,6 +190,17 @@ let fold f acc t =
   done;
   !acc
 
+(** Map, replaces values by other values *)
+let map f t =
+  let t' = create ~eq:t.eq ~hash:t.hash (Array.length t.buckets) in
+  for i = 0 to Array.length t.buckets - 1 do
+    match t.buckets.(i) with
+    | (_, _, Empty) -> ()
+    | (k, _, Deleted) -> t'.buckets.(i) <- my_deleted k
+    | (k, v, Used) -> t'.buckets.(i) <- (k, f k v, Used)
+  done;
+  t'
+
 (** Destructive filter (remove bindings that do not satisfiy predicate) *)
 let filter pred t =
   for i = 0 to Array.length t.buckets - 1 do
@@ -201,3 +223,7 @@ let to_seq t =
 
 (** Statistics on the table *)
 let stats t = (Array.length t.buckets, t.size, t.size, 0, 0, 1)
+
+let get_eq t = t.eq
+
+let get_hash t = t.hash

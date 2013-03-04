@@ -25,14 +25,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Open addressing hashtable, with linear probing} *)
 
-type ('a, 'b) t
-  (** Polymorphic hashtable *)
+type ('a, 'b) t = private {
+  mutable buckets : ('a * 'b * state) array;
+  mutable size : int;
+  eq : 'a -> 'a -> bool;
+  hash : 'a -> int;
+  max_load : float;
+} (** A hashtable is an array of (key, value) buckets that have a state,
+      plus the size of the table and equality/hash functions *)
+and state = Used | Empty | Deleted
+  (** state of a bucket *)
 
 val create : ?max_load:float -> ?eq:('a -> 'a -> bool) ->
               ?hash:('a -> int) -> int -> ('a, 'b) t
   (** Create a hashtable.  [max_load] is (number of items / size of table),
       and must be in ]0, 1[. Functions for equality check and hashing
       can also be provided. *)
+
+module type Hashable = sig
+  type t
+  val equal : t -> t -> bool
+  val hash : t -> int
+end
+
+val create_tc : (module Hashable with type t = 'a) -> int -> ('a, 'b) t
+  (** Create a hashtable from the given 'typeclass' *)
 
 val copy : ('a, 'b) t -> ('a, 'b) t
   (** Copy of the hashtable *)
@@ -61,6 +78,9 @@ val mem : ('a,_) t -> 'a -> bool
 val iter : ('a -> 'b -> unit) -> ('a, 'b) t -> unit
   (** Iterate on bindings *)
 
+val map : ('a -> 'b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
+  (** Map, replaces values by other values *)
+
 val filter : ('a -> 'b -> bool) -> ('a, 'b) t -> unit
   (** Destructive filter (remove bindings that do not satisfiy predicate) *)
 
@@ -75,3 +95,7 @@ val to_seq : ('a, 'b) t -> ('a * 'b) Sequence.t
 
 val stats : (_, _) t -> int * int * int * int * int * int
   (** Cf Weak.S *)
+
+val get_eq : ('v, _) t -> ('v -> 'v -> bool)
+
+val get_hash : ('v, _) t -> ('v -> int)
