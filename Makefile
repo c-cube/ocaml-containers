@@ -11,6 +11,9 @@ all:
 tests:
 	ocamlbuild $(OPTIONS) -package oUnit -I . tests/tests.native
 
+bench:
+	ocamlbuild $(OPTIONS) -package bench -package unix -I . tests/benchs.native
+
 clean:
 	ocamlbuild -clean
 
