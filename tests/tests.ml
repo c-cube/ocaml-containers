@@ -5,6 +5,7 @@ open OUnit
 let suite =
   "all_tests" >:::
     [ Test_pHashtbl.suite;
+      Test_heap.suite;
     ]
 
 let _ =
