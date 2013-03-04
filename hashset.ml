@@ -55,10 +55,17 @@ let to_seq set =
 let of_seq set seq =
   Sequence.iter (fun x -> add set x) seq
 
-let union s1 s2 =
-  of_seq s1 (to_seq s2)
+let union ?into (s1 : 'a t) (s2 : 'a t) =
+  let into = match into with
+  | Some s -> of_seq s (to_seq s1); s
+  | None -> copy s1 in
+  of_seq into (to_seq s2);
+  into
 
-let inter s1 s2 =
-  let set = copy s1 in
-  filter (fun x -> mem s2 x) set;
-  set
+let inter ?into (s1 : 'a t) (s2 : 'a t) =
+  let into = match into with
+  | Some s -> s
+  | None -> empty ~eq:s1.PHashtbl.eq ~hash:s1.PHashtbl.hash (cardinal s1) in
+  (* add to [into] elements of [s1] that also belong to [s2] *)
+  of_seq into (Sequence.filter (fun x -> mem s2 x) (to_seq s1));
+  into

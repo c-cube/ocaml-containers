@@ -34,7 +34,7 @@ val empty : ?max_load:float -> ?eq:('a -> 'a -> bool) ->
 
 val copy : 'a t -> 'a t
 
-val clear : 'a t -> 'a t
+val clear : 'a t -> unit
 
 val cardinal : 'a t -> int
 
@@ -55,6 +55,8 @@ val to_seq : 'a t -> 'a Sequence.t
 
 val of_seq : 'a t -> 'a Sequence.t -> unit
 
-val union : 'a t -> 'a t -> 'a t
+val union : ?into:'a t -> 'a t -> 'a t -> 'a t
+  (** Set union. The result is stored in [into] *)
 
-val inter : 'a t -> 'a t -> 'a t
+val inter : ?into:'a t -> 'a t -> 'a t -> 'a t
+  (** Set intersection. The result is stored in [into] *)
