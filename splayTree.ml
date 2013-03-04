@@ -23,56 +23,43 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Imperative priority queue} *)
+(** {1 Splay trees} *)
 
-type 'a t = {
-  tree: 'a tree;
-  lt: 'a -> 'a -> bool;
-} (** A heap containing values of type 'a *)
-and 'a tree =
+(** See http://en.wikipedia.org/wiki/Splay_tree and
+    Okasaki's "purely functional data structures" p46 *)
+
+type ('a, 'b) t = (('a, 'b) tree * ('a -> 'a -> int))
+  (** A splay tree with the given comparison function *)
+and ('a, 'b) tree =
   | Empty
-  | Node of int * 'a tree * 'a * 'a tree
-  (** The complete binary tree (int is max depth) *)
+  | Node of (('a,'b) tree * 'a * 'b * ('a,'b) tree)
+  (** A splay tree containing values of type 'a *)
 
-(** Create an empty heap *)
-let empty ~lt =
-  { tree = Empty;
-    lt;
-  }
+let empty ~cmp =
+  (Empty, cmp)
 
-(** Insert a value in the heap *)
-let insert heap x =
-  let rec insert tree x =
-    match tree with
-    | Empty -> Node (1, Empty, x, Empty)
-    | Node (d, l, y, r) -> failwith "TODO"
-  in
-  { heap with tree = insert heap.tree x }
-
-(** Check whether the heap is empty *)
-let is_empty heap =
-  match heap.tree with
+let is_empty (tree, _) =
+  match tree with
   | Empty -> true
-  | _ -> false
+  | Node _ -> false
 
-(** Access the minimal value of the heap, or raises Empty *)
-let min heap =
-  match heap.tree with
-  | Node (_, _, x, _) -> x
-  | Empty -> raise (Invalid_argument "Heap.min on empty heap")
+let rec bigger ~cmp pivot tree =
+  match tree with
+  | Empty -> Empty
+  | Node (a, x, x_val, b) ->
+    if cmp x pivot <= 0
+      then bigger ~cmp pivot b
+      else match a with
+        | Empty -> Node (Empty, x, x_val, b)
+        | Node (a1, y, y_val, a2) ->
+          if cmp y pivot <= 0
+            then Node (bigger ~cmp pivot a2, x, x_val, b)
+            else Node (bigger ~cmp pivot a1, y, y_val, Node (a2, x, x_val, b))
 
-(** Discard the minimal element *)
-let junk heap = failwith "TODO: Heap.junk"
+let rec smaller ~cmp pivot tree =
 
-(** Remove and return the mininal value (or raise Invalid_argument) *)
-let pop heap =
+(** Insert the pair (key -> value) in the tree *)
+let insert (tree, cmp) k v =
+  let tree' = Node (smaller ~cmp k tree, k, v, bigger ~cmp k tree) in
+  tree', cmp
 
-(** Iterate on the elements, in an unspecified order *)
-let iter heap k =
-  let rec iter tree = match tree with
-  | Empty -> ()
-  | Node (_, l, x, r) ->
-    iter l;
-    k x;
-    iter r
-  in iter heap.tree

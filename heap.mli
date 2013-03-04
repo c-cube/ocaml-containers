@@ -23,15 +23,15 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Binary heaps} *)
+(** {1 Imperative priority queue} *)
 
 type 'a t
   (** A heap containing values of type 'a *)
 
-val empty : lt:('a -> 'a -> bool) -> 'a t
+val empty : cmp:('a -> 'a -> int) -> 'a t
   (** Create an empty heap *)
 
-val insert : 'a t -> 'a -> 'a t
+val insert : 'a t -> 'a -> unit
   (** Insert a value in the heap *)
 
 val is_empty : 'a t -> bool
@@ -40,8 +40,11 @@ val is_empty : 'a t -> bool
 val min : 'a t -> 'a
   (** Access the minimal value of the heap, or raises Invalid_argument *)
 
-val junk : 'a t -> 'a t
+val junk : 'a t -> unit
   (** Discard the minimal element *)
+
+val pop : 'a t -> 'a
+  (** Remove and return the mininal value (or raise Invalid_argument) *)
 
 val iter : 'a t -> ('a -> unit) -> unit
   (** Iterate on the elements, in an unspecified order *)

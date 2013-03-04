@@ -23,56 +23,43 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Imperative priority queue} *)
+(** {1 Splay trees} *)
 
-type 'a t = {
-  tree: 'a tree;
-  lt: 'a -> 'a -> bool;
-} (** A heap containing values of type 'a *)
-and 'a tree =
-  | Empty
-  | Node of int * 'a tree * 'a * 'a tree
-  (** The complete binary tree (int is max depth) *)
+(** See http://en.wikipedia.org/wiki/Splay_tree and
+    Okasaki's "purely functional data structures" p46 *)
 
-(** Create an empty heap *)
-let empty ~lt =
-  { tree = Empty;
-    lt;
-  }
+type ('a, 'b) t
+  (** A functional splay tree *)
 
-(** Insert a value in the heap *)
-let insert heap x =
-  let rec insert tree x =
-    match tree with
-    | Empty -> Node (1, Empty, x, Empty)
-    | Node (d, l, y, r) -> failwith "TODO"
-  in
-  { heap with tree = insert heap.tree x }
+val empty : cmp:('a -> 'a -> bool) -> ('a, 'b) t
+  (** Empty splay tree using the given comparison function *)
 
-(** Check whether the heap is empty *)
-let is_empty heap =
-  match heap.tree with
-  | Empty -> true
-  | _ -> false
+val is_empty : (_, _) t -> bool
+  (** Check whether the tree is empty *)
 
-(** Access the minimal value of the heap, or raises Empty *)
-let min heap =
-  match heap.tree with
-  | Node (_, _, x, _) -> x
-  | Empty -> raise (Invalid_argument "Heap.min on empty heap")
+val insert : ('a, 'b) t -> 'a -> 'b -> ('a, 'b) t
+  (** Insert the pair (key -> value) in the tree *)
 
-(** Discard the minimal element *)
-let junk heap = failwith "TODO: Heap.junk"
+val replace : ('a, 'b) t -> 'a -> 'b -> ('a, 'b) t
+  (** Insert the pair (key -> value) into the tree, replacing
+      the previous binding (if any). It replaces at most one
+      binding. *)
 
-(** Remove and return the mininal value (or raise Invalid_argument) *)
-let pop heap =
+val remove : ('a, 'b) t -> 'a -> ('a, 'b) t
+  (** Remove an element by its key, returns the splayed tree *)
 
-(** Iterate on the elements, in an unspecified order *)
-let iter heap k =
-  let rec iter tree = match tree with
-  | Empty -> ()
-  | Node (_, l, x, r) ->
-    iter l;
-    k x;
-    iter r
-  in iter heap.tree
+val top : ('a, b') t -> 'a * 'b
+  (** Returns the top value, or raise Not_found is empty *)
+
+val min : ('a, 'b) t -> 'a * 'b * ('a, b') t
+  (** Access minimum value *)
+
+val find : ('a, 'b) t -> 'a -> 'b * ('a, 'b) t
+  (** Find the value for the given key (or raise Not_found).
+      It also returns the splayed tree *)
+
+val size : (_, _) t -> int
+  (** Number of elements (linear) *)
+
+val iter : ('a -> 'b -> unit) -> ('a, 'b) t -> unit
+  (** Iterate on elements *)
