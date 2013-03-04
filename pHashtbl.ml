@@ -38,7 +38,7 @@ and state = Used | Empty | Deleted
 
 let my_null () = (Obj.magic None, Obj.magic None, Empty)
 
-let my_deleted () = (Obj.magic None, Obj.magic None, Deleted)
+let my_deleted key = (key, Obj.magic None, Deleted)
 
 (** Create a table. Size will be >= 2 *)
 let create ?(max_load=0.8) ?(eq=fun x y -> x = y)
@@ -124,7 +124,7 @@ let replace t key value =
     match buckets.(j) with
     | (key', _, Used) when t.eq key key' ->
       buckets.(j) <- (key, value, Used)  (* replace value *)
-    | (_, _, Deleted) |(_, _, Empty) ->
+    | (_, _, Deleted) | (_, _, Empty) ->
       buckets.(j) <- (key, value, Used);
       t.size <- t.size + 1 (* insert and increment size *)
     | (_, _, Used) ->
@@ -144,7 +144,7 @@ let remove t key =
     let j = addr h n i in
     match buckets.(j) with
     | (key', _, Used) when t.eq key key' ->
-      buckets.(i) <- (my_deleted ()); t.size <- t.size - 1  (* remove slot *)
+      buckets.(j) <- (my_deleted key'); t.size <- t.size - 1  (* remove slot *)
     | (_, _, Deleted) | (_, _, Used) ->
       probe h n (i+1) (* search further *)
     | (_, _, Empty) -> ()  (* not present *)
