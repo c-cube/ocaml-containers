@@ -25,141 +25,135 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 A simple persistent directed graph.} *)
 
-module type S = sig
-  (** {2 Basics} *)
+(** {2 Basics} *)
 
-  type vertex
+type ('v, 'e) t
+  (** Graph parametrized by a type for vertices, and a type for edges *)
 
-  module M : Map.S with type key = vertex
-  module S : Set.S with type elt = vertex
+val empty : ?hash:('v -> int) -> ?eq:('v -> 'v -> bool) -> int -> ('v, 'e) t
+  (** Create an empty graph. The int argument specifies the initial size *)
 
-  type 'e t
-    (** Graph parametrized by a type for edges *)
+val mk_v_set : ?size:int -> ('v, _) t -> 'v Hashset.t
+  (** Create an empty set of vertices *)
 
-  val empty : 'e t
-    (** Create an empty graph. *)
+val mk_v_table : ?size:int -> ('v, _) t -> ('v, 'a) PHashtbl.t
+  (** Create an empty hashtable of vertices *)
 
-  val is_empty : 'e t -> bool
-    (** Is the graph empty? *)
+val copy : ('v, 'e) t -> ('v, 'e) t
+  (** Copy the graph *)
 
-  val length : 'e t -> int
-    (** Number of vertices *)
+val is_empty : (_, _) t -> bool
+  (** Is the graph empty? *)
 
-  val add : 'e t -> vertex -> 'e -> vertex -> 'e t
-    (** Add an edge between two vertices *)
+val length : (_, _) t -> int
+  (** Number of vertices *)
 
-  val add_seq : 'e t -> (vertex * 'e * vertex) Sequence.t -> 'e t
-    (** Add the vertices to the graph *)
+val add : ('v,'e) t -> 'v -> 'e -> 'v -> unit
+  (** Add an edge between two vertices *)
 
-  val next : 'e t -> vertex -> ('e * vertex) Sequence.t
-    (** Outgoing edges *)
+val add_seq : ('v,'e) t -> ('v * 'e * 'v) Sequence.t -> unit
+  (** Add the vertices to the graph *)
 
-  val prev : 'e t -> vertex -> ('e * vertex) Sequence.t
-    (** Incoming edges *)
+val next : ('v, 'e) t -> 'v -> ('e * 'v) Sequence.t
+  (** Outgoing edges *)
 
-  val between : 'e t -> vertex -> vertex -> 'e Sequence.t
+val prev : ('v, 'e) t -> 'v -> ('e * 'v) Sequence.t
+  (** Incoming edges *)
 
-  val iter_vertices : 'e t -> (vertex -> unit) -> unit
-  val vertices : 'e t -> vertex Sequence.t
-      (** Iterate on vertices *)
+val between : ('v, 'e) t -> 'v -> 'v -> 'e Sequence.t
 
-  val iter : 'e t -> (vertex * 'e * vertex -> unit) -> unit 
-  val to_seq : 'e t -> (vertex * 'e * vertex) Sequence.t
-    (** Dump the graph as a sequence of vertices *)
+val iter_vertices : ('v, 'e) t -> ('v -> unit) -> unit
+val vertices : ('v, 'e) t -> 'v Sequence.t
+    (** Iterate on vertices *)
 
-  (** {2 Global operations} *)
+val iter : ('v, 'e) t -> ('v * 'e * 'v -> unit) -> unit 
+val to_seq : ('v, 'e) t -> ('v * 'e * 'v) Sequence.t
+  (** Dump the graph as a sequence of vertices *)
 
-  val roots : 'e t -> vertex Sequence.t
-    (** Roots, ie vertices with no incoming edges *)
+(** {2 Global operations} *)
 
-  val leaves : 'e t -> vertex Sequence.t
-    (** Leaves, ie vertices with no outgoing edges *)
+val roots : ('v, 'e) t -> 'v Sequence.t
+  (** Roots, ie vertices with no incoming edges *)
 
-  val choose : 'e t -> vertex
-    (** Pick a vertex, or raise Not_found *)
+val leaves : ('v, 'e) t -> 'v Sequence.t
+  (** Leaves, ie vertices with no outgoing edges *)
 
-  val rev_edge : (vertex * 'e * vertex) -> (vertex * 'e * vertex)
-  val rev : 'e t -> 'e t
-    (** Reverse all edges *)
+val choose : ('v, 'e) t -> 'v
+  (** Pick a 'v, or raise Not_found *)
 
-  (** {2 Traversals} *)
+val rev_edge : ('v * 'e * 'v) -> ('v * 'e * 'v)
+  (** Reverse one edge *)
 
-  val bfs : 'e t -> vertex -> (vertex -> unit) -> unit
-  val bfs_seq : 'e t -> vertex -> vertex Sequence.t
-    (** Breadth-first search, from given vertex *)
+val rev : ('v, 'e) t -> unit
+  (** Reverse all edges in the graph, in place *)
 
-  val dfs_full : 'e t ->
-                 ?labels:int M.t ref ->
-                 ?enter:((vertex * int) list -> unit) ->
-                 ?exit:((vertex * int) list -> unit) ->
-                 ?tree_edge:((vertex * 'e * vertex) -> unit) ->
-                 ?fwd_edge:((vertex * 'e * vertex) -> unit) ->
-                 ?back_edge:((vertex * 'e * vertex) -> unit) ->
-                 vertex -> 
-                 unit
-    (** DFS, with callbacks called on each encountered node and edge *)
+(** {2 Traversals} *)
 
-  val dfs : 'e t -> vertex -> ((vertex * int) -> unit) -> unit
-    (** Depth-first search, from given vertex. Each vertex is labelled
-        with its index in the traversal order. *)
+val bfs : ('v, 'e) t -> 'v -> ('v -> unit) -> unit
+  (** Breadth-first search, from given 'v *)
 
-  val is_dag : 'e t -> bool
-    (** Is the graph acyclic? *)
+val bfs_seq : ('v, 'e) t -> 'v -> 'v Sequence.t
+  (** Sequence of vertices traversed during breadth-first search *)
 
-  (** {2 Path operations} *)
+val dfs_full : ('v, 'e) t ->
+               ?labels:('v, int) PHashtbl.t ->
+               ?enter:(('v * int) list -> unit) ->
+               ?exit:(('v * int) list -> unit) ->
+               ?tree_edge:(('v * 'e * 'v) -> unit) ->
+               ?fwd_edge:(('v * 'e * 'v) -> unit) ->
+               ?back_edge:(('v * 'e * 'v) -> unit) ->
+               'v -> 
+               unit
+  (** DFS, with callbacks called on each encountered node and edge *)
 
-  type 'e path = (vertex * 'e * vertex) list
+val dfs : ('v, 'e) t -> 'v -> (('v * int) -> unit) -> unit
+  (** Depth-first search, from given 'v. Each 'v is labelled
+      with its index in the traversal order. *)
 
-  val rev_path : 'e path -> 'e path
-    (** Reverse the path *)
+val is_dag : ('v, 'e) t -> bool
+  (** Is the graph acyclic? *)
 
-  val min_path_full : 'e t ->
-                 ?cost:(vertex -> 'e -> vertex -> int) ->
-                 ?ignore:(vertex -> bool) ->
-                 goal:(vertex -> 'e path -> bool) ->
-                 vertex ->
-                 vertex * int * 'e path
-    (** Find the minimal path, from the given [vertex], that does not contain
-        any vertex satisfying [ignore], and that reaches a vertex
-        that satisfies [goal]. It raises Not_found if no reachable node
-        satisfies [goal]. *)
+(** {2 Path operations} *)
 
-  val min_path : 'e t -> cost:('e -> int) -> vertex -> vertex -> 'e path
-    (** Minimal path from first vertex to second, given the cost function,
-        or raises Not_found *)
+type ('v, 'e) path = ('v * 'e * 'v) list
+  (** A path is a list of edges connected by vertices. *)
 
-  val diameter : 'e t -> vertex -> int
-    (** Maximal distance between the given vertex, and any other vertex
-        in the graph that is reachable from it. *)
+val rev_path : ('v, 'e) path -> ('v, 'e) path
+  (** Reverse the path *)
 
-  (** {2 Print to DOT} *)
+val min_path_full : ('v, 'e) t ->
+               ?cost:('v -> 'e -> 'v -> int) ->
+               ?ignore:('v -> bool) ->
+               goal:('v -> ('v, 'e) path -> bool) ->
+               'v ->
+               'v * int * ('v, 'e) path
+  (** Find the minimal path, from the given ['v], that does not contain
+      any 'v satisfying [ignore], and that reaches a 'v
+      that satisfies [goal]. It raises Not_found if no reachable node
+      satisfies [goal]. *)
 
-  type attribute = [
-  | `Color of string
-  | `Shape of string
-  | `Weight of int
-  | `Style of string
-  | `Label of string
-  | `Other of string * string
-  ] (** Dot attribute *)
+val min_path : ('v, 'e) t -> cost:('e -> int) -> 'v -> 'v -> ('v,'e) path
+  (** Minimal path from first 'v to second, given the cost function,
+      or raises Not_found *)
 
-  type 'e dot_printer
-    (** Helper to print a graph to DOT *)
+val diameter : ('v, 'e) t -> 'v -> int
+  (** Maximal distance between the given 'v, and any other 'v
+      in the graph that is reachable from it. *)
 
-  val mk_dot_printer : 
-     print_edge:(vertex -> 'e -> vertex -> attribute list) ->
-     print_vertex:(vertex -> attribute list) ->
-     'e dot_printer
-    (** Create a Dot graph printer. Functions to convert edges and vertices
-        to Dot attributes must be provided. *)
+(** {2 Print to DOT} *)
 
-  val pp : 'e dot_printer -> ?vertices:S.t -> name:string ->
-            Format.formatter ->
-            (vertex * 'e * vertex) Sequence.t -> unit
-    (** Pretty print the graph in DOT, on given formatter. Using a sequence
-        allows to easily select which edges are important,
-        or to combine several graphs with [Sequence.append].
-        An optional set of additional vertices to print can be given. *)
-end
+type attribute = [
+| `Color of string
+| `Shape of string
+| `Weight of int
+| `Style of string
+| `Label of string
+| `Other of string * string
+] (** Dot attribute *)
 
-module Make(V : Map.OrderedType) : S with type vertex = V.t
+val pp : name:string -> ?vertices:('v,int) PHashtbl.t ->
+         print_edge:('v -> 'e -> 'v -> attribute list) ->
+         print_vertex:('v -> attribute list) ->
+          Format.formatter ->
+          ('v, 'e) t -> unit
+  (** Pretty print the graph in DOT, on given formatter. *)
