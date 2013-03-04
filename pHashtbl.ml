@@ -96,7 +96,8 @@ let insert ~eq buckets h key value =
 
 (** Resize the array, by inserting its content into twice as large an array *)
 let resize ~eq ~hash buckets =
-  let buckets' = Array.make (Array.length buckets * 2) (my_null ()) in
+  let new_size = min (Array.length buckets * 2 + 1) Sys.max_array_length in
+  let buckets' = Array.make new_size (my_null ()) in
   for i = 0 to Array.length buckets - 1 do
     match buckets.(i) with
     | (key, value, Used) ->
