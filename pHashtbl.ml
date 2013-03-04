@@ -92,7 +92,6 @@ let insert t key value =
       t.buckets.(j) <- Used (key, value, dist)
     | Used (key', _, _) when t.eq key key' ->
       (* insert here (erase old value) *)
-      t.size <- t.size + 1;
       t.buckets.(j) <- Used (key, value, dist)
     | Used (key', value', dist') when dist > dist' ->
       (* displace this key/value *)
@@ -108,7 +107,7 @@ let insert t key value =
 (** Resize the array, by inserting its content into twice as large an array *)
 let resize t =
   let new_size = min (Array.length t.buckets * 2 + 1) Sys.max_array_length in
-  assert (new_size > Array.length t.buckets);
+  if not (new_size > Array.length t.buckets) then failwith "hashtbl is full";
   let old_buckets = t.buckets in
   t.buckets <- Array.make new_size Empty;
   t.size <- 0;  (* will be updated again *)

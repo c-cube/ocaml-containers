@@ -16,11 +16,9 @@ let hashtbl_add n =
   h
 
 let _ =
-  let n = 50000 in
-  let res = Bench.bench_funs
+  let res = Bench.bench_n
     ["phashtbl_add", (fun n -> ignore (phashtbl_add n));
      "hashtbl_add", (fun n -> ignore (hashtbl_add n));]
-    n
   in
   Bench.summarize 1. res
 
@@ -29,7 +27,7 @@ let phashtbl_replace n =
   for i = 0 to n do
     PHashtbl.replace h i i;
   done;
-  for i = 0 to n do
+  for i = n downto 0 do
     PHashtbl.replace h i i;
   done;
   h
@@ -39,17 +37,15 @@ let hashtbl_replace n =
   for i = 0 to n do
     Hashtbl.replace h i i;
   done;
-  for i = 0 to n do
+  for i = n downto 0 do
     Hashtbl.replace h i i;
   done;
   h
 
 let _ =
-  let n = 50000 in
-  let res = Bench.bench_funs
+  let res = Bench.bench_n
     ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n));
      "hashtbl_replace", (fun n -> ignore (hashtbl_replace n));]
-    n
   in
   Bench.summarize 1. res
 
