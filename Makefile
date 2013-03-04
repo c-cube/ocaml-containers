@@ -1,8 +1,8 @@
 
-INTERFACE_FILES = $(shell find src -name '*.mli')
-IMPLEMENTATION_FILES = $(shell find src -name '*.ml')
+INTERFACE_FILES = $(shell find -name '*.mli')
+IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
-TARGETS_LIB = src/containers.cmxa src/containers.cma
+TARGETS_LIB = containers.cmxa containers.cma
 OPTIONS = -use-ocamlfind -lib sequence
 
 all:
