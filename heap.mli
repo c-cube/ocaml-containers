@@ -48,3 +48,7 @@ val pop : 'a t -> 'a
 
 val iter : 'a t -> ('a -> unit) -> unit
   (** Iterate on the elements, in an unspecified order *)
+
+val to_seq : 'a t -> 'a Sequence.t
+
+val of_seq : 'a t -> 'a Sequence.t -> unit

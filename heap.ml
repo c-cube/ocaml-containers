@@ -25,54 +25,43 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Imperative priority queue} *)
 
-type 'a t = {
-  tree: 'a tree;
-  lt: 'a -> 'a -> bool;
-} (** A heap containing values of type 'a *)
-and 'a tree =
-  | Empty
-  | Node of int * 'a tree * 'a * 'a tree
-  (** The complete binary tree (int is max depth) *)
+type 'a t = ('a, unit) SplayTree.t ref
+  (** The heap is a reference to a splay tree *)
 
 (** Create an empty heap *)
-let empty ~lt =
-  { tree = Empty;
-    lt;
-  }
+let empty ~cmp =
+  ref (SplayTree.empty ~cmp)
 
 (** Insert a value in the heap *)
 let insert heap x =
-  let rec insert tree x =
-    match tree with
-    | Empty -> Node (1, Empty, x, Empty)
-    | Node (d, l, y, r) -> failwith "TODO"
-  in
-  { heap with tree = insert heap.tree x }
+  heap := SplayTree.insert !heap x ()
 
 (** Check whether the heap is empty *)
 let is_empty heap =
-  match heap.tree with
-  | Empty -> true
-  | _ -> false
+  SplayTree.is_empty !heap
 
 (** Access the minimal value of the heap, or raises Empty *)
-let min heap =
-  match heap.tree with
-  | Node (_, _, x, _) -> x
-  | Empty -> raise (Invalid_argument "Heap.min on empty heap")
+let min (heap : 'a t) : 'a =
+  let elt, _ = SplayTree.min !heap in
+  elt
 
 (** Discard the minimal element *)
-let junk heap = failwith "TODO: Heap.junk"
+let junk heap =
+  let _, (), tree' = SplayTree.delete_min !heap in
+  heap := tree'
 
 (** Remove and return the mininal value (or raise Invalid_argument) *)
 let pop heap =
+  let elt, (), tree' = SplayTree.delete_min !heap in
+  heap := tree';
+  elt
 
 (** Iterate on the elements, in an unspecified order *)
 let iter heap k =
-  let rec iter tree = match tree with
-  | Empty -> ()
-  | Node (_, l, x, r) ->
-    iter l;
-    k x;
-    iter r
-  in iter heap.tree
+  SplayTree.iter !heap (fun elt _ -> k elt)
+
+let to_seq heap =
+  Sequence.from_iter (fun k -> iter heap k)
+
+let of_seq heap seq =
+  Sequence.iter (fun elt -> insert heap elt) seq
