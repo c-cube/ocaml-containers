@@ -77,28 +77,36 @@ let _ =
   Bench.summarize 1. res
 
 let my_len = 250
-let round_n n = abs (n mod my_len)
+let round_n n = abs ((abs n) mod my_len)
 
 let phashtbl_find h =
   fun n ->
-    ignore (PHashtbl.find h (round_n n))
+    for i = 0 to n do
+      ignore (PHashtbl.find h (round_n i));
+    done
      
 let hashtbl_find h =
   fun n ->
-    ignore (Hashtbl.find h (round_n n))
+    for i = 0 to n do
+      ignore (Hashtbl.find h (round_n i));
+    done
      
 let ihashtbl_find h =
   fun n ->
-    ignore (IHashtbl.find h (round_n n))
+    for i = 0 to n do
+      ignore (IHashtbl.find h (round_n i));
+    done
 
 let _ =
-  Format.printf "----------------------------------------@.";
   let h = phashtbl_add my_len in
   let h' = hashtbl_add my_len in
   let h'' = ihashtbl_add my_len in
-  let res = Bench.bench_n
-    ["phashtbl_mem", phashtbl_find h;
-     "hashtbl_mem", hashtbl_find h';
-     "ihashtbl_mem", ihashtbl_find h'';]
-  in
-  Bench.summarize 1. res
+  List.iter (fun n ->
+    Format.printf "----------------------------------------@.";
+    Format.printf "try on size %d@.@.@." n;
+    Bench.bench [
+      "phashtbl_find", (fun () -> phashtbl_find h n);
+      "hashtbl_find", (fun () -> hashtbl_find h' n);
+      "ihashtbl_find", (fun () -> ihashtbl_find h'' n);
+    ])
+    [10;20;100;1000;10000;100000]
