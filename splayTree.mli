@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type ('a, 'b) t
   (** A functional splay tree *)
 
-val empty : cmp:('a -> 'a -> bool) -> ('a, 'b) t
+val empty : cmp:('a -> 'a -> int) -> ('a, 'b) t
   (** Empty splay tree using the given comparison function *)
 
 val is_empty : (_, _) t -> bool
@@ -40,26 +40,34 @@ val is_empty : (_, _) t -> bool
 val insert : ('a, 'b) t -> 'a -> 'b -> ('a, 'b) t
   (** Insert the pair (key -> value) in the tree *)
 
+val remove : ('a, 'b) t -> 'a -> ('a, 'b) t
+  (** Remove an element by its key, returns the splayed tree *)
+
 val replace : ('a, 'b) t -> 'a -> 'b -> ('a, 'b) t
   (** Insert the pair (key -> value) into the tree, replacing
       the previous binding (if any). It replaces at most one
       binding. *)
 
-val remove : ('a, 'b) t -> 'a -> ('a, 'b) t
-  (** Remove an element by its key, returns the splayed tree *)
-
-val top : ('a, b') t -> 'a * 'b
+val top : ('a, 'b) t -> 'a * 'b
   (** Returns the top value, or raise Not_found is empty *)
 
-val min : ('a, 'b) t -> 'a * 'b * ('a, b') t
+val min : ('a, 'b) t -> 'a * 'b
   (** Access minimum value *)
+
+val delete_min : ('a, 'b) t -> 'a * 'b * ('a, 'b) t
+  (** Get minimum value and remove it from the tree *)
 
 val find : ('a, 'b) t -> 'a -> 'b * ('a, 'b) t
   (** Find the value for the given key (or raise Not_found).
       It also returns the splayed tree *)
 
+val find_fold : ('a, 'b) t -> 'a -> ('c -> 'b -> 'c) -> 'c -> 'c
+  (** Fold on all values associated with the given key *)
+
+val iter : ('a, 'b) t -> ('a -> 'b -> unit) -> unit
+  (** Iterate on elements *)
+
 val size : (_, _) t -> int
   (** Number of elements (linear) *)
 
-val iter : ('a -> 'b -> unit) -> ('a, 'b) t -> unit
-  (** Iterate on elements *)
+val get_cmp : ('a, _) t -> ('a -> 'a -> int)
