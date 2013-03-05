@@ -3,3 +3,6 @@ Deque
 Graph
 Cache
 FlatHashtbl
+SplayTree
+PHashtbl
+Heap
