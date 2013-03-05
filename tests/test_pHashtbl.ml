@@ -80,8 +80,11 @@ let test_filter () =
   OUnit.assert_equal (PHashtbl.length h) 4;
   PHashtbl.filter (fun k _ -> (k mod 2) = 0) h;
   OUnit.assert_equal (PHashtbl.length h) 2;
-  OUnit.assert_bool "mem" (PHashtbl.mem h 4);
-  OUnit.assert_bool "mem" (PHashtbl.mem h 2)
+  OUnit.assert_bool "4 mem" (PHashtbl.mem h 4);
+  OUnit.assert_bool "2 mem" (PHashtbl.mem h 2);
+  OUnit.assert_bool "1 not mem" (not (PHashtbl.mem h 1));
+  OUnit.assert_bool "3 not mem" (not (PHashtbl.mem h 3));
+  ()
 
 let test_map () =
   let h = PHashtbl.create 5 in
