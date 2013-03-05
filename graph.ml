@@ -244,18 +244,15 @@ exception ExitBfs
     satisfies [goal]. *)
 let min_path_full (type v) (type e) graph
 ?(cost=fun _ _ _ -> 1) ?(ignore=fun _ -> false) ~goal v =
-  let module HQ = Leftistheap.Make(struct
-    type t = v * int * (v, e) path
-    let le (_,i,_) (_,j,_) = i <= j
-  end) in
-  let q = ref HQ.empty in
+  (* priority queue *)
+  let cmp (_,i,_) (_,j,_) = i - j in
+  let q = Heap.empty ~cmp in
   let explored = mk_v_set graph in
-  q := HQ.insert (v, 0, []) !q;
+  Heap.insert q (v, 0, []);
   let best_path = ref (v,0,[]) in
   try
-    while not (HQ.is_empty !q) do
-      let (v, cost_v, path), q' = HQ.extract_min !q in
-      q := q';
+    while not (Heap.is_empty q) do
+      let (v, cost_v, path) = Heap.pop q in
       if Hashset.mem explored v then ()  (* a shorter path is known *)
       else if ignore v then ()      (* ignore the node. *)
       else if goal v path           (* shortest path to goal node! *)
@@ -269,7 +266,7 @@ let min_path_full (type v) (type e) graph
             else
               let cost_v' = (cost v e v') + cost_v in
               let path' = (v',e,v) :: path in
-              q := HQ.insert (v', cost_v', path') !q)
+              Heap.insert q (v', cost_v', path'))
           (next graph v)
       end
     done;
