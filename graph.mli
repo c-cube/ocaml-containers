@@ -130,11 +130,11 @@ val min_path_full : ('v, 'e) t ->
   (** Find the minimal path, from the given ['v], that does not contain
       any 'v satisfying [ignore], and that reaches a 'v
       that satisfies [goal]. It raises Not_found if no reachable node
-      satisfies [goal]. *)
+      satisfies [goal]. The path is reversed. *)
 
 val min_path : ('v, 'e) t -> cost:('e -> int) -> 'v -> 'v -> ('v,'e) path
   (** Minimal path from first 'v to second, given the cost function,
-      or raises Not_found *)
+      or raises Not_found. The path is reversed. *)
 
 val diameter : ('v, 'e) t -> 'v -> int
   (** Maximal distance between the given 'v, and any other 'v
