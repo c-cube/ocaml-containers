@@ -318,14 +318,13 @@ let pp ~name ?vertices
   | None -> mk_v_table graph in
   (* map from vertices to integers *)
   let get_id =
-    let count_map = mk_v_table graph
-    and count = ref 0 in
+    let count = ref 0 in
     fun vertex ->
-      try PHashtbl.find count_map vertex
+      try PHashtbl.find vertices vertex
       with Not_found ->
         let n = !count in
         incr count;
-        PHashtbl.replace count_map vertex n;
+        PHashtbl.replace vertices vertex n;
         n
   (* print an attribute *)
   and print_attribute formatter attr =
