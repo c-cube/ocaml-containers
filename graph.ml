@@ -92,7 +92,7 @@ let prev t v =
   Sequence.of_list (PHashtbl.find t v).n_prev
 
 let between t v1 v2 =
-  let edges = Sequence.of_list (PHashtbl.find t v1).n_prev in
+  let edges = Sequence.of_list (PHashtbl.find t v1).n_next in
   let edges = Sequence.filter (fun (e, v2') -> (PHashtbl.get_eq t) v2 v2') edges in
   Sequence.map fst edges
 
