@@ -23,66 +23,184 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** an imperative cache for memoization of pairs *)
+(** {1 Memoization caches} *)
 
-module type S =
-  sig 
-    type key
+module type EQ = sig
+  type t
+  val equal : t -> t -> bool
+end
 
-    type 'a t
+module type HASH = sig
+  include EQ
+  val hash : t -> int
+end
 
-    (** create a cache with given size *)
-    val create : int -> (key -> key -> 'a) -> 'a t
+(** Signature of a cache for values *)
+module type S = sig
+  type 'a t
+  type key
 
-    (** find a value in the cache *)
-    val lookup : 'a t -> key -> key -> 'a
+  val create : int -> 'a t
+    (** Create a new cache of the given size. *)
 
-    (** clear the cache from its content *)
-    val clear : 'a t -> unit
-  end
+  val clear : 'a t -> unit
+    (** Clear content of the cache *)
 
-module type CachedType =
-  sig
-    type t
-    val hash : t -> int
-    val equal : t -> t -> bool
-  end
+  val with_cache : 'a t -> (key -> 'a) -> key -> 'a
+    (** Wrap the function with the cache *)
+end
+
+(** Signature of a cache for pairs of values *)
+module type S2 = sig
+  type 'a t
+  type key
+
+  val create : int -> 'a t
+    (** Create a new cache of the given size. *)
+
+  val clear : 'a t -> unit
+    (** Clear content of the cache *)
+
+  val with_cache : 'a t -> (key -> key -> 'a) -> key -> key -> 'a
+    (** Wrap the function with the cache *)
+end
 
 
-module Make(HType : CachedType) =
-  struct
-    type key = HType.t
+(** {2 Small linear cache} *)
 
-    (** A slot of the array contains a (key, value, true)
-        if key->value is stored there (at index hash(key) % length),
-        (null, null, false) otherwise.
-        
-        The first slot in the array contains the function
-        used to produce the value upon a cache miss. *)
-    type 'a t = (key * key * 'a * bool) array
+(** This cache stores (key,value) pairs in an array, that is traversed
+    linearily. It is therefore only reasonable for small sizes (like 5). *)
 
-    let my_null = (Obj.magic None, Obj.magic None, Obj.magic None, false)
+module Linear(X : EQ) = struct
+  type 'a t = 'a bucket array
+  and 'a bucket = Empty | Pair of key * 'a
+  and key = X.t
 
-    let set_fun c f = c.(0) <- Obj.magic f
+  let create size =
+    assert (size >= 1);
+    Array.create size Empty
 
-    let create size f =
-      let c = Array.create (size+1) my_null in
-      c.(0) <- Obj.magic f;
-      c
+  let clear cache =
+    Array.fill cache 0 (Array.length cache) Empty
 
-    let lookup c k1 k2 =
-      let i = (((HType.hash k1 + 17) lxor HType.hash k2) mod (Array.length c -1)) + 1 in
-      match c.(i) with
-      | (_, _, _, false) ->
-        let v = ((Obj.magic c.(0)) : key -> key -> 'a) k1 k2 in
-        c.(i) <- (k1, k2, v, true); v
-      | (k1', k2', _, true) when not (HType.equal k1 k1') || not (HType.equal k2 k2')->
-        let v = ((Obj.magic c.(0)) : key -> key -> 'a) k1 k2 in
-        c.(i) <- (k1, k2, v, true); v
-      | (_, _, v, true) -> v
+  (** Insert the binding (x -> y) into the cache *)
+  let insert cache x y =
+    let n = Array.length cache in
+    (* shift other values toward the end *)
+    Array.blit cache 0 cache 1 (n-1);
+    cache.(0) <- Pair(x,y)
 
-    let clear c =
-      let f = c.(0) in
-      Array.iteri (fun i _ -> c.(i) <- my_null) c;
-      c.(0) <- f
-  end
+  (** Try to find [f x] in the cache, otherwise compute it
+      and cache the result *)
+  let with_cache cache f x =
+    let n = Array.length cache in
+    let rec search i =
+      (* function that performs the lookup *)
+      if i = n then begin
+          (* cache miss *)
+          let y = f x in
+          insert cache x y;
+          y
+      end else match cache.(i) with
+      | Pair (x',y) when X.equal x x' -> y
+      | Empty | Pair _ -> search (i+1)
+    in
+    search 0
+end
+
+module Linear2(X : EQ) = struct
+  type 'a t = 'a bucket array
+  and 'a bucket = Empty | Assoc of key * key * 'a
+  and key = X.t
+
+  let create size =
+    assert (size >= 1);
+    Array.create size Empty
+
+  let clear cache =
+    Array.fill cache 0 (Array.length cache) Empty
+
+  (** Insert the binding (x -> y) into the cache *)
+  let insert cache x1 x2 y =
+    let n = Array.length cache in
+    (* shift other values toward the end *)
+    Array.blit cache 0 cache 1 (n-1);
+    cache.(0) <- Assoc(x1,x2,y)
+
+  (** Try to find [f x] in the cache, otherwise compute it
+      and cache the result *)
+  let with_cache cache f x1 x2 =
+    let n = Array.length cache in
+    let rec search i =
+      (* function that performs the lookup *)
+      if i = n then begin
+          (* cache miss *)
+          let y = f x1 x2 in
+          insert cache x1 x2 y;
+          y
+      end else match cache.(i) with
+      | Assoc (x1',x2',y) when X.equal x1 x1' && X.equal x2 x2' -> y
+      | Empty | Assoc _ -> search (i+1)
+    in
+    search 0
+end
+
+(** {2 An imperative cache of fixed size for memoization of pairs} *)
+
+module Replacing(X : HASH) = struct
+  type key = X.t
+
+  (** A slot of the array contains a (key, value, true)
+      if key->value is stored there (at index hash(key) % length),
+      (null, null, false) otherwise.
+      
+      The first slot in the array contains the function
+      used to produce the value upon a cache miss. *)
+  type 'a t = 'a bucket array
+  and 'a bucket = Empty | Assoc of key * 'a
+
+  let create size =
+    Array.create size Empty
+
+  let clear c =
+    Array.fill c 0 (Array.length c) Empty
+
+  let with_cache c f x =
+    let i = (X.hash x) mod (Array.length c) in
+    match c.(i) with
+    | Assoc (x', y) when X.equal x x' ->
+      y (* cache hit *)
+    | Assoc _ | Empty -> (* cache miss *)
+      let y = f x in
+      c.(i) <- Assoc (x, y);
+      y
+end
+
+module Replacing2(X : HASH) = struct
+  type key = X.t
+
+  (** A slot of the array contains a (key, value, true)
+      if key->value is stored there (at index hash(key) % length),
+      (null, null, false) otherwise.
+      
+      The first slot in the array contains the function
+      used to produce the value upon a cache miss. *)
+  type 'a t = 'a bucket array
+  and 'a bucket = Empty | Assoc of key * key * 'a
+
+  let create size =
+    Array.create size Empty
+
+  let clear c =
+    Array.fill c 0 (Array.length c) Empty
+
+  let with_cache c f x1 x2 =
+    let i = (((X.hash x1 + 17) lxor X.hash x2) mod Array.length c) in
+    match c.(i) with
+    | Assoc (x1', x2', y) when X.equal x1 x1' && X.equal x2 x2' ->
+      y (* cache hit *)
+    | Assoc _ | Empty -> (* cache miss *)
+      let y = f x1 x2 in
+      c.(i) <- Assoc (x1, x2, y);
+      y
+end

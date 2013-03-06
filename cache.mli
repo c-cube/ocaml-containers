@@ -23,30 +23,64 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** An imperative cache of fixed size for memoization of pairs *)
+(** {1 Memoization caches} *)
 
-module type S =
-  sig 
-    type key
+(** {2 Signatures} *)
 
-    type 'a t
+module type EQ = sig
+  type t
+  val equal : t -> t -> bool
+end
 
-    (** create a cache with given size *)
-    val create : int -> (key -> key -> 'a) -> 'a t
+module type HASH = sig
+  include EQ
+  val hash : t -> int
+end
 
-    (** find a value in the cache *)
-    val lookup : 'a t -> key -> key -> 'a
+(** Signature of a cache for values *)
+module type S = sig
+  type 'a t
+  type key
 
-    (** clear the cache from its content *)
-    val clear : 'a t -> unit
-  end
+  val create : int -> 'a t
+    (** Create a new cache of the given size. *)
 
-module type CachedType =
-  sig
-    type t
-    val hash : t -> int
-    val equal : t -> t -> bool
-  end
+  val clear : 'a t -> unit
+    (** Clear content of the cache *)
 
-(** functorial implementation *)
-module Make(CType : CachedType) : S with type key = CType.t
+  val with_cache : 'a t -> (key -> 'a) -> key -> 'a
+    (** Wrap the function with the cache *)
+end
+
+(** Signature of a cache for pairs of values *)
+module type S2 = sig
+  type 'a t
+  type key
+
+  val create : int -> 'a t
+    (** Create a new cache of the given size. *)
+
+  val clear : 'a t -> unit
+    (** Clear content of the cache *)
+
+  val with_cache : 'a t -> (key -> key -> 'a) -> key -> key -> 'a
+    (** Wrap the function with the cache *)
+end
+
+(** {2 Small linear cache} *)
+
+(** This cache stores (key,value) pairs in an array, that is traversed
+    linearily. It is therefore only reasonable for small sizes (like 5). *)
+
+module Linear(X : EQ) : S with type key = X.t
+
+module Linear2(X : EQ) : S2 with type key = X.t
+
+(** {2 Hashtables that resolve collisions by replacing} *)
+
+module Replacing(X : HASH) : S with type key = X.t
+
+module Replacing2(X : HASH) : S2 with type key = X.t
+
+(* TODO LRU cache *)
+
