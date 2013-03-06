@@ -48,12 +48,18 @@ module type S = sig
 
   val with_cache : 'a t -> (key -> 'a) -> key -> 'a
     (** Wrap the function with the cache *)
+
+  val with_cache_rec : int -> ((key -> 'a) -> key -> 'a) -> ('a t * (key -> 'a))
+    (** Partially apply the given function with a cached version of itself.
+        The cache has as size the first (int) argument.
+        It returns both the cache, and the specialized function *)
 end
 
 (** Signature of a cache for pairs of values *)
 module type S2 = sig
   type 'a t
-  type key
+  type key1
+  type key2
 
   val create : int -> 'a t
     (** Create a new cache of the given size. *)
@@ -61,10 +67,38 @@ module type S2 = sig
   val clear : 'a t -> unit
     (** Clear content of the cache *)
 
-  val with_cache : 'a t -> (key -> key -> 'a) -> key -> key -> 'a
+  val with_cache : 'a t -> (key1 -> key2 -> 'a) -> key1 -> key2 -> 'a
     (** Wrap the function with the cache *)
 end
 
+(** {2 Dummy cache (no caching) *)
+
+module Dummy(X : sig type t end) = struct
+  type 'a t = unit
+  and key = X.t
+
+  let create size = ()
+
+  let clear () = ()
+
+  let with_cache () f x = f x
+
+  let with_cache_rec size f =
+    let rec f' x = f f' x in
+    (), f'
+end
+
+module Dummy2(X : sig type t end)(Y : sig type t end) = struct
+  type 'a t = unit
+  and key1 = X.t
+  and key2 = Y.t
+
+  let create size = ()
+
+  let clear () = ()
+
+  let with_cache () f x1 x2 = f x1 x2
+end
 
 (** {2 Small linear cache} *)
 
@@ -97,21 +131,30 @@ module Linear(X : EQ) = struct
     let rec search i =
       (* function that performs the lookup *)
       if i = n then begin
-          (* cache miss *)
-          let y = f x in
-          insert cache x y;
-          y
+        (* cache miss *)
+        let y = f x in
+        insert cache x y;
+        y
       end else match cache.(i) with
       | Pair (x',y) when X.equal x x' -> y
       | Empty | Pair _ -> search (i+1)
     in
     search 0
+
+  (** Partially apply the given function with a new cache of the
+      given size. It returns both the cache, and the specialized function *)
+  let with_cache_rec size f =
+    let cache = create size in
+    (* make a recursive version of [f] that uses the cache *)
+    let rec f' x = with_cache cache (fun x -> f f' x) x in
+    cache, f'
 end
 
-module Linear2(X : EQ) = struct
+module Linear2(X : EQ)(Y : EQ) = struct
   type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key * key * 'a
-  and key = X.t
+  and 'a bucket = Empty | Assoc of key1 * key2 * 'a
+  and key1 = X.t
+  and key2 = Y.t
 
   let create size =
     assert (size >= 1);
@@ -139,7 +182,7 @@ module Linear2(X : EQ) = struct
           insert cache x1 x2 y;
           y
       end else match cache.(i) with
-      | Assoc (x1',x2',y) when X.equal x1 x1' && X.equal x2 x2' -> y
+      | Assoc (x1',x2',y) when X.equal x1 x1' && Y.equal x2 x2' -> y
       | Empty | Assoc _ -> search (i+1)
     in
     search 0
@@ -174,11 +217,17 @@ module Replacing(X : HASH) = struct
       let y = f x in
       c.(i) <- Assoc (x, y);
       y
+
+  (** Partially apply the given function with a new cache of the
+      given size. It returns both the cache, and the specialized function *)
+  let with_cache_rec size f =
+    let cache = create size in
+    (* make a recursive version of [f] that uses the cache *)
+    let rec f' x = with_cache cache (fun x -> f f' x) x in
+    cache, f'
 end
 
-module Replacing2(X : HASH) = struct
-  type key = X.t
-
+module Replacing2(X : HASH)(Y : HASH) = struct
   (** A slot of the array contains a (key, value, true)
       if key->value is stored there (at index hash(key) % length),
       (null, null, false) otherwise.
@@ -186,7 +235,10 @@ module Replacing2(X : HASH) = struct
       The first slot in the array contains the function
       used to produce the value upon a cache miss. *)
   type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key * key * 'a
+  and 'a bucket = Empty | Assoc of key1 * key2 * 'a
+  and key1 = X.t
+  and key2 = Y.t
+
 
   let create size =
     Array.create size Empty
@@ -195,9 +247,9 @@ module Replacing2(X : HASH) = struct
     Array.fill c 0 (Array.length c) Empty
 
   let with_cache c f x1 x2 =
-    let i = (((X.hash x1 + 17) lxor X.hash x2) mod Array.length c) in
+    let i = (((X.hash x1 + 17) lxor Y.hash x2) mod Array.length c) in
     match c.(i) with
-    | Assoc (x1', x2', y) when X.equal x1 x1' && X.equal x2 x2' ->
+    | Assoc (x1', x2', y) when X.equal x1 x1' && Y.equal x2 x2' ->
       y (* cache hit *)
     | Assoc _ | Empty -> (* cache miss *)
       let y = f x1 x2 in

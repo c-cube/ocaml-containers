@@ -50,12 +50,18 @@ module type S = sig
 
   val with_cache : 'a t -> (key -> 'a) -> key -> 'a
     (** Wrap the function with the cache *)
+
+  val with_cache_rec : int -> ((key -> 'a) -> key -> 'a) -> ('a t * (key -> 'a))
+    (** Partially apply the given function with a cached version of itself.
+        The cache has as size the first (int) argument.
+        It returns both the cache, and the specialized function *)
 end
 
 (** Signature of a cache for pairs of values *)
 module type S2 = sig
   type 'a t
-  type key
+  type key1
+  type key2
 
   val create : int -> 'a t
     (** Create a new cache of the given size. *)
@@ -63,9 +69,15 @@ module type S2 = sig
   val clear : 'a t -> unit
     (** Clear content of the cache *)
 
-  val with_cache : 'a t -> (key -> key -> 'a) -> key -> key -> 'a
+  val with_cache : 'a t -> (key1 -> key2 -> 'a) -> key1 -> key2 -> 'a
     (** Wrap the function with the cache *)
 end
+
+(** {2 Dummy cache (no caching) *)
+
+module Dummy(X : sig type t end) : S with type key = X.t
+
+module Dummy2(X : sig type t end)(Y : sig type t end) : S2 with type key1 = X.t and type key2 = Y.t
 
 (** {2 Small linear cache} *)
 
@@ -74,13 +86,13 @@ end
 
 module Linear(X : EQ) : S with type key = X.t
 
-module Linear2(X : EQ) : S2 with type key = X.t
+module Linear2(X : EQ)(Y : EQ) : S2 with type key1 = X.t and type key2 = Y.t
 
 (** {2 Hashtables that resolve collisions by replacing} *)
 
 module Replacing(X : HASH) : S with type key = X.t
 
-module Replacing2(X : HASH) : S2 with type key = X.t
+module Replacing2(X : HASH)(Y : HASH) : S2 with type key1 = X.t and type key2 = Y.t
 
 (* TODO LRU cache *)
 

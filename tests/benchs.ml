@@ -1,6 +1,49 @@
 
 (** Benchmarking *)
 
+(** {2 Cache} *)
+
+(** Cached fibonacci function *)
+module Fibo(C : Cache.S with type key = int) = struct
+  let fib ~size =
+    let rec fib fib' n =
+      match n with
+      | 0 -> 1
+      | 1 -> 1
+      | n ->
+        fib' (n-1) + fib' (n-2)
+    in
+    let _cache, cached_fib = C.with_cache_rec size fib in
+    cached_fib
+end
+
+let _ =
+  let module LinearIntCache = Cache.Linear(struct
+    type t = int
+    let equal i j = i = j
+  end) in
+  let module ReplacingIntCache = Cache.Replacing(struct
+    type t = int
+    let equal i j = i = j
+    let hash i = i
+  end) in
+  let module DummyIntCache = Cache.Dummy(struct type t = int end) in
+  (* Fibonacci for those caching implementations *)
+  let module LinearFibo = Fibo(LinearIntCache) in
+  let module ReplacingFibo = Fibo(ReplacingIntCache) in
+  let module DummyFibo = Fibo(DummyIntCache) in
+  (* benchmark caches with fibo function *)
+  let bench_fib fib () = 
+    ignore (List.map fib [5;10;20;30;35])
+  in
+  Bench.bench
+    [ "linear_fib", bench_fib (LinearFibo.fib ~size:5);
+      "replacing_fib", bench_fib (ReplacingFibo.fib ~size:128);
+      "dummy_fib", bench_fib (DummyFibo.fib ~size:5);
+    ]
+
+(** {2 PHashtbl} *)
+
 module IHashtbl = Hashtbl.Make(struct
   type t = int
   let equal i j = i - j = 0
