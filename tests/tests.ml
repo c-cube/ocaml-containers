@@ -7,6 +7,7 @@ let suite =
     [ Test_pHashtbl.suite;
       Test_heap.suite;
       Test_graph.suite;
+      Test_univ.suite;
     ]
 
 let _ =
