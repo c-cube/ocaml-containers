@@ -208,6 +208,8 @@ module Replacing(X : HASH) = struct
   let clear c =
     Array.fill c 0 (Array.length c) Empty
 
+  (** Try to find [f x] in the cache, otherwise compute it
+      and cache the result *)
   let with_cache c f x =
     let i = (X.hash x) mod (Array.length c) in
     match c.(i) with
@@ -255,4 +257,106 @@ module Replacing2(X : HASH)(Y : HASH) = struct
       let y = f x1 x2 in
       c.(i) <- Assoc (x1, x2, y);
       y
+end
+
+(** {2 Hashtables with Least Recently Used eviction policy *)
+
+module LRU(X : HASH) = struct
+  type key = X.t
+
+  module H = Hashtbl.Make(X)
+
+  type 'a t = {
+    table : 'a node H.t;  (* hashtable key -> node *)
+    first : 'a node;      (* dummy node for the entry of the list *)
+    mutable len : int;    (* number of entries *)
+    size : int;           (* max size *)
+  }
+  and 'a node = {
+    mutable key : key;
+    mutable value : 'a;
+    mutable next : 'a node;
+    mutable prev : 'a node;
+  } (** Meta data for the value *)
+
+  let create size =
+    let rec first = 
+      { key = Obj.magic 0; value = Obj.magic 0; next=first; prev=first; }
+    in
+    { table = H.create size;
+      len = 0;
+      size;
+      first;
+    }
+
+  (** Clear the content of the cache *)
+  let clear c =
+    c.len <- 0;
+    H.clear c.table;
+    c.first.next <- c.first;
+    c.first.prev <- c.first;
+    ()
+
+  (** Find an element, or raise Not_found *)
+  let find c x =
+    let n = H.find c.table x in
+    assert (X.equal n.key x);
+    n.value
+
+  (** Replace least recently used element of [c] by x->y *)
+  let replace c x y =
+    let n = c.first.next in
+    (* remove old element *)
+    H.remove c.table n.key;
+    (* insertion in hashtable *)
+    H.add c.table x n;
+    (* re-use the node for x,y *)
+    n.key <- x;
+    n.value <- y;
+    (* remove from front of queue *)
+    n.next.prev <- c.first;
+    c.first.next <- n.next;
+    (* insert at back of queue *)
+    let last = c.first.prev in
+    last.next <- n;
+    c.first.prev <- n;
+    n.next <- c.first;
+    n.prev <- last;
+    ()
+
+  (** Insert x->y in the cache, increasing its entry count *)
+  let insert c x y =
+    c.len <- c.len + 1;
+    let n = {
+      key = x;
+      value = y;
+      next = c.first;
+      prev = c.first.prev;
+    } in
+    (* insertion in hashtable *)
+    H.add c.table x n;
+    (* insertion at back of queue *)
+    c.first.prev.next <- n;
+    c.first.prev <- n;
+    ()
+
+  (** Try to find [f x] in the cache, otherwise compute it
+      and cache the result *)
+  let with_cache c f x =
+    try
+      find c x
+    with Not_found ->
+      let y = f x in
+      (if c.len = c.size
+        then replace c x y
+        else insert c x y);
+      y
+
+  (** Partially apply the given function with a new cache of the
+      given size. It returns both the cache, and the specialized function *)
+  let with_cache_rec size f =
+    let cache = create size in
+    (* make a recursive version of [f] that uses the cache *)
+    let rec f' x = with_cache cache (fun x -> f f' x) x in
+    cache, f'
 end

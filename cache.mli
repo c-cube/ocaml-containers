@@ -94,5 +94,9 @@ module Replacing(X : HASH) : S with type key = X.t
 
 module Replacing2(X : HASH)(Y : HASH) : S2 with type key1 = X.t and type key2 = Y.t
 
-(* TODO LRU cache *)
+(** {2 Hashtables with Least Recently Used eviction policy *)
+
+module LRU(X : HASH) : S with type key = X.t
+
+(* TODO LRU2 *)
 
