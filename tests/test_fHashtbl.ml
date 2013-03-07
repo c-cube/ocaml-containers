@@ -23,8 +23,8 @@ let my_seq = Sequence.of_list my_list
 
 let test_of_seq () =
   let h = IFHashtbl.of_seq my_seq in
-  OUnit.assert_equal (IFHashtbl.find h 2) "b";
-  OUnit.assert_equal (IFHashtbl.find h 1) "a";
+  OUnit.assert_equal "b" (IFHashtbl.find h 2);
+  OUnit.assert_equal "a" (IFHashtbl.find h 1);
   OUnit.assert_raises Not_found (fun () -> IFHashtbl.find h 42);
   ()
 
@@ -42,13 +42,33 @@ let test_resize () =
 
 let test_persistent () =
   let h = IFHashtbl.of_seq my_seq in
-  OUnit.assert_equal (IFHashtbl.find h 1) "a";
+  OUnit.assert_equal "a" (IFHashtbl.find h 1);
   OUnit.assert_raises Not_found (fun () -> IFHashtbl.find h 5);
   let h' = IFHashtbl.replace h 5 "e" in
-  OUnit.assert_equal (IFHashtbl.find h' 1) "a";
-  OUnit.assert_equal (IFHashtbl.find h' 5) "e";
-  OUnit.assert_equal (IFHashtbl.find h 1) "a";
+  OUnit.assert_equal "a" (IFHashtbl.find h' 1);
+  OUnit.assert_equal "e" (IFHashtbl.find h' 5);
+  OUnit.assert_equal "a" (IFHashtbl.find h 1);
   OUnit.assert_raises Not_found (fun () -> IFHashtbl.find h 5);
+  ()
+
+let test_big () =
+  let n = 10000 in
+  let seq = Sequence.map (fun i -> i, string_of_int i)
+    (Sequence.int_range ~start:0 ~stop:n) in
+  let h = IFHashtbl.of_seq seq in
+  (*
+  Format.printf "@[<v2>table:%a@]@." (Sequence.pp_seq
+    (fun formatter (k,v) -> Format.fprintf formatter "%d -> \"%s\"" k v))
+    (IFHashtbl.to_seq h);
+  *)
+  Sequence.iter
+    (fun (k,v) ->
+      (*
+      Format.printf "lookup %d@." k;
+      *)
+      OUnit.assert_equal ~printer:(fun x -> x) v (IFHashtbl.find h k))
+    seq;
+  OUnit.assert_raises Not_found (fun () -> IFHashtbl.find h (n+1));
   ()
 
 (*
@@ -73,6 +93,7 @@ let suite =
       "test_to_seq" >:: test_to_seq;
       "test_resize" >:: test_resize;
       "test_persistent" >:: test_persistent;
+      "test_big" >:: test_big;
       (*
       "test_remove" >:: test_remove;
       *)
