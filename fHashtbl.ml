@@ -268,9 +268,43 @@ module Tree(X : HASH) = struct
     let h = X.hash key in
     insert t ~depth:0 h key value
 
+  (** Recursive removal function *)
+  let rec rec_remove t h key =
+    match t with
+    | Split (l, r) ->
+      if h land 0x1 = 0
+        then  (* bit=0, goto left *)
+          let l' = rec_remove l (h lsr 1) key in
+          if l == l' then t else Split (l', r)
+        else  (* bit=1, goto right *)
+          let r' = rec_remove r (h lsr 1) key in
+          if r == r' then t else Split (l, r')
+    | Table buckets ->
+      (* remove from the flat hashtable *)
+      probe_remove t buckets h key
+  (* remove key from the buckets *)
+  and probe_remove old_table buckets h key =
+    let n = PArray.length buckets in
+    let rec probe i =
+      if i = n
+        then old_table (* not present *)
+        else
+          let j = addr n h i in
+          match PArray.get buckets j with
+          | Empty -> old_table (* not present *)
+          | Deleted -> probe (i+1)
+          | Used (key', _) ->
+            if X.equal key key'
+              then Table (PArray.set buckets j Deleted)
+              else probe (i+1)
+    in
+    probe 0
+    
+
   (** Remove the bindings for the given key *)
   let remove t key =
-    failwith "not implemented" (* TODO *)
+    let h = X.hash key in
+    rec_remove t h key
 
   (** Fold on bindings *)
   let rec fold f acc t =

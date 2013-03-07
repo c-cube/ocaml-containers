@@ -67,20 +67,17 @@ module Test(SomeHashtbl : FHashtbl.S with type key = int) = struct
     OUnit.assert_raises Not_found (fun () -> SomeHashtbl.find h (n+1));
     ()
 
-  (*
   let test_remove () =
-    let h = IHashtbl.create 3 in
-    IHashtbl.of_seq h my_seq;
-    OUnit.assert_equal (IHashtbl.find h 2) "b";
-    OUnit.assert_equal (IHashtbl.find h 3) "c";
-    OUnit.assert_equal (IHashtbl.find h 4) "d";
-    OUnit.assert_equal (IHashtbl.length h) 4;
-    IHashtbl.remove h 2;
-    OUnit.assert_equal (IHashtbl.find h 3) "c";
-    OUnit.assert_equal (IHashtbl.length h) 3;
+    let h = SomeHashtbl.of_seq my_seq in
+    OUnit.assert_equal (SomeHashtbl.find h 2) "b";
+    OUnit.assert_equal (SomeHashtbl.find h 3) "c";
+    OUnit.assert_equal (SomeHashtbl.find h 4) "d";
+    OUnit.assert_equal (SomeHashtbl.size h) 4;
+    let h = SomeHashtbl.remove h 2 in
+    OUnit.assert_equal (SomeHashtbl.find h 3) "c";
+    OUnit.assert_equal (SomeHashtbl.size h) 3;
     (* test that 2 has been removed *)
-    OUnit.assert_raises Not_found (fun () -> IHashtbl.find h 2)
-  *)
+    OUnit.assert_raises Not_found (fun () -> SomeHashtbl.find h 2)
 
   let suite =
     "test_FHashtbl" >:::
@@ -90,9 +87,7 @@ module Test(SomeHashtbl : FHashtbl.S with type key = int) = struct
         "test_resize" >:: test_resize;
         "test_persistent" >:: test_persistent;
         "test_big" >:: test_big;
-        (*
         "test_remove" >:: test_remove;
-        *)
       ]
 end
 
