@@ -62,9 +62,6 @@ module type S = sig
   val size : 'a t -> int
     (** Number of bindings *)
 
-  val depth : 'a t -> int
-    (** Depth of the tree *)
-
   val to_seq : 'a t -> (key * 'a) Sequence.t
 
   val of_seq : ?size:int -> (key * 'a) Sequence.t -> 'a t
@@ -131,9 +128,9 @@ module PArray = struct
     | Diff (_, _, t') -> length t'
 end
 
-(** {2 Constructor} *)
+(** {2 Tree-like hashtable} *)
 
-module Make(X : HASH) = struct
+module Tree(X : HASH) = struct
   (** The hashtable is a binary tree, with persistent arrays as leaves.
       Nodes at depth n of the tree are split on the n-th digit of the hash
       (starting with the least significant bit as 0).
@@ -294,11 +291,6 @@ module Make(X : HASH) = struct
   let size t =
     fold (fun n _ _ -> n + 1) 0 t
 
-  let rec depth t =
-    match t with
-    | Table _ -> 0
-    | Split (l, r) -> (max (depth l) (depth r)) + 1
-
   let to_seq t =
     Sequence.from_iter (fun k -> iter (fun key value -> k (key, value)) t)
 
@@ -306,4 +298,151 @@ module Make(X : HASH) = struct
     Sequence.fold
       (fun t (k,v) -> replace t k v)
       (empty size) seq
+end
+
+(** {2 Flat hashtable} *)
+
+module Flat(X : HASH) = struct
+  type key = X.t
+
+  (** A hashtable is a persistent array of (key, value) buckets *)
+  type 'a t = {
+    buckets : 'a bucket PArray.t;
+    size : int;
+  }
+  and 'a bucket =
+  | Deleted
+  | Empty
+  | Used of key * 'a
+
+  let max_load = 0.8
+
+  (** Empty table. Size will be >= 2 *)
+  let empty size =
+    let size = max 2 size in
+    { buckets = PArray.make size Empty;
+      size = 0;
+    }
+
+  (** Index of slot, for i-th probing starting from hash [h] in
+      a table of length [n] *)
+  let addr h n i = ((h land max_int) + i) mod n
+    
+  (** Insert (key -> value) in buckets, starting with the hash. *)
+  let insert buckets h key value =
+    let n = PArray.length buckets in
+    (* lookup an empty slot to insert the key->value in. *)
+    let rec lookup h n i =
+      let j = addr h n i in
+      match PArray.get buckets j with
+      | Empty ->
+        PArray.set buckets j (Used (key, value))
+      | Used (key', _) when X.equal key key' ->
+        PArray.set buckets j (Used (key, value))
+      | _ -> lookup h n (i+1)
+    in
+    lookup h n 0
+
+  (** Resize the array, by inserting its content into twice as large an array *)
+  let resize buckets =
+    let new_size = min (PArray.length buckets * 2) Sys.max_array_length in
+    let buckets' = PArray.make new_size Empty in
+    (* loop to transfer values from buckets to buckets' *)
+    let rec tranfer buckets' i =
+      if i = PArray.length buckets then buckets'
+        else match PArray.get buckets i with
+        | Used (key, value) ->
+          (* insert key -> value into new array *)
+          insert buckets' (X.hash key) key value
+        | _ -> buckets'
+    in tranfer buckets' 0
+
+  (** Lookup [key] in the table *)
+  let find t key =
+    let buckets = t.buckets in
+    let n = PArray.length buckets in
+    let h = X.hash key in
+    let rec probe h n i num =
+      if num = n then raise Not_found
+      else let j = addr h n i in
+      match PArray.get buckets j with
+      | Used (key', value) when X.equal key key' ->
+        value  (* found value for this key *)
+      | Deleted | Used _ ->
+        probe h n (i+1) (num + 1) (* try next bucket *)
+      | Empty -> raise Not_found
+    in
+    probe h n 0 0
+
+  (** put [key] -> [value] in the hashtable *)
+  let replace t key value =
+    let load = float_of_int t.size /. float_of_int (PArray.length t.buckets) in
+    let t =
+      if load > max_load then { t with buckets = resize t.buckets } else t in
+    let n = PArray.length t.buckets in
+    let h = X.hash key in
+    let buckets = t.buckets in
+    let rec probe h n i =
+      let j = addr h n i in
+      match PArray.get buckets j with
+      | Used (key', _) when X.equal key key' ->
+        let buckets' = PArray.set buckets j (Used (key, value)) in
+        { t with buckets = buckets' } (* replace binding *)
+      | Deleted | Empty ->
+        let buckets' = PArray.set buckets j (Used (key, value)) in
+        { buckets = buckets'; size = t.size + 1; } (* add binding *)
+      | Used _ ->
+        probe h n (i+1) (* go further *)
+    in
+    probe h n 0
+
+  (** Remove the key from the table *)
+  let remove t key =
+    let n = PArray.length t.buckets in
+    let h = X.hash key in
+    let buckets = t.buckets in
+    let rec probe h n i =
+      let j = addr h n i in
+      match PArray.get buckets j with
+      | Used (key', _) when X.equal key key' ->
+        (* remove slot *)
+        let buckets' = PArray.set buckets j Deleted in
+        { buckets = buckets'; size = t.size - 1; }
+      | Deleted | Used _ ->
+        probe h n (i+1) (* search further *)
+      | Empty -> t  (* not present *)
+    in
+    probe h n 0
+
+  (** size of the table *)
+  let size t = t.size
+
+  (** Is the key member of the table? *)
+  let mem t key =
+    try ignore (find t key); true
+    with Not_found -> false
+
+  (** Iterate on key -> value pairs *)
+  let iter k t =
+    let buckets = t.buckets in
+    for i = 0 to PArray.length buckets - 1 do
+      match PArray.get buckets i with
+      | Used (key, value) -> k key value
+      | _ -> ()
+    done
+
+  (** Fold on key -> value pairs *)
+  let fold f acc t =
+    PArray.fold_left
+      (fun acc bucket -> match bucket with
+        | Used (key, value) -> f acc key value
+        | _ -> acc)
+      acc t.buckets
+
+  let to_seq t =
+    Sequence.from_iter
+      (fun k -> iter (fun key value -> k (key, value)) t)
+
+  let of_seq ?(size=32) seq =
+    Sequence.fold (fun t (k,v) -> replace t k v) (empty size) seq
 end

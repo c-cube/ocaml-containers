@@ -62,9 +62,6 @@ module type S = sig
   val size : 'a t -> int
     (** Number of bindings *)
 
-  val depth : 'a t -> int
-    (** Depth of the tree *)
-
   val to_seq : 'a t -> (key * 'a) Sequence.t
 
   val of_seq : ?size:int -> (key * 'a) Sequence.t -> 'a t
@@ -86,6 +83,10 @@ module PArray : sig
   val length : 'a t -> int
 end
 
-(** {2 Constructor} *)
+(** {2 Tree-like hashtable} *)
 
-module Make(X : HASH) : S with type key = X.t
+module Tree(X : HASH) : S with type key = X.t
+
+(** {2 Flat hashtable} *)
+
+module Flat(X : HASH) : S with type key = X.t
