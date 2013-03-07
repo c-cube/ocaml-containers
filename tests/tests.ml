@@ -5,10 +5,10 @@ open OUnit
 let suite =
   "all_tests" >:::
     [ Test_pHashtbl.suite;
+      Test_flatHashtbl.suite;
       Test_heap.suite;
       Test_graph.suite;
       Test_univ.suite;
-      Test_cache.suite;
     ]
 
 let _ =
