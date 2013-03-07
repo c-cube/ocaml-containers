@@ -353,8 +353,10 @@ module Flat(X : HASH) = struct
         else match PArray.get buckets i with
         | Used (key, value) ->
           (* insert key -> value into new array *)
-          insert buckets' (X.hash key) key value
-        | _ -> buckets'
+          let buckets' = insert buckets' (X.hash key) key value in
+          tranfer buckets' (i+1)
+        | _ ->
+          tranfer buckets' (i+1)
     in tranfer buckets' 0
 
   (** Lookup [key] in the table *)
