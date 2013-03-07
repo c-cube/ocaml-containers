@@ -3,7 +3,7 @@ INTERFACE_FILES = $(shell find -name '*.mli')
 IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
 TARGETS_LIB = containers.cmxa containers.cma
-OPTIONS = -use-ocamlfind -package sequence
+OPTIONS = -use-ocamlfind
 
 all:
 	ocamlbuild $(OPTIONS) $(TARGETS_LIB)
