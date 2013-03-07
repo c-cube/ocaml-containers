@@ -49,10 +49,9 @@ module type S = sig
   val with_cache : 'a t -> (key -> 'a) -> key -> 'a
     (** Wrap the function with the cache *)
 
-  val with_cache_rec : int -> ((key -> 'a) -> key -> 'a) -> ('a t * (key -> 'a))
+  val with_cache_rec : 'a t -> ((key -> 'a) -> key -> 'a) -> key -> 'a
     (** Partially apply the given function with a cached version of itself.
-        The cache has as size the first (int) argument.
-        It returns both the cache, and the specialized function *)
+        It returns the specialized function. *)
 end
 
 (** Signature of a cache for pairs of values *)
@@ -83,9 +82,9 @@ module Dummy(X : sig type t end) = struct
 
   let with_cache () f x = f x
 
-  let with_cache_rec size f =
+  let with_cache_rec () f x =
     let rec f' x = f f' x in
-    (), f'
+    f' x
 end
 
 module Dummy2(X : sig type t end)(Y : sig type t end) = struct
@@ -141,13 +140,10 @@ module Linear(X : EQ) = struct
     in
     search 0
 
-  (** Partially apply the given function with a new cache of the
-      given size. It returns both the cache, and the specialized function *)
-  let with_cache_rec size f =
-    let cache = create size in
+  let with_cache_rec cache f x =
     (* make a recursive version of [f] that uses the cache *)
     let rec f' x = with_cache cache (fun x -> f f' x) x in
-    cache, f'
+    f' x
 end
 
 module Linear2(X : EQ)(Y : EQ) = struct
@@ -220,13 +216,10 @@ module Replacing(X : HASH) = struct
       c.(i) <- Assoc (x, y);
       y
 
-  (** Partially apply the given function with a new cache of the
-      given size. It returns both the cache, and the specialized function *)
-  let with_cache_rec size f =
-    let cache = create size in
+  let with_cache_rec cache f x =
     (* make a recursive version of [f] that uses the cache *)
     let rec f' x = with_cache cache (fun x -> f f' x) x in
-    cache, f'
+    f' x
 end
 
 module Replacing2(X : HASH)(Y : HASH) = struct
@@ -352,11 +345,8 @@ module LRU(X : HASH) = struct
         else insert c x y);
       y
 
-  (** Partially apply the given function with a new cache of the
-      given size. It returns both the cache, and the specialized function *)
-  let with_cache_rec size f =
-    let cache = create size in
+  let with_cache_rec cache f x =
     (* make a recursive version of [f] that uses the cache *)
     let rec f' x = with_cache cache (fun x -> f f' x) x in
-    cache, f'
+    f' x
 end

@@ -14,7 +14,8 @@ module Fibo(C : Cache.S with type key = int) = struct
       | n ->
         fib' (n-1) + fib' (n-2)
     in
-    let _cache, cached_fib = C.with_cache_rec size fib in
+    let cache = C.create size in
+    let cached_fib x = C.with_cache_rec cache fib x in
     cached_fib
 end
 

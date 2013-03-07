@@ -51,10 +51,9 @@ module type S = sig
   val with_cache : 'a t -> (key -> 'a) -> key -> 'a
     (** Wrap the function with the cache *)
 
-  val with_cache_rec : int -> ((key -> 'a) -> key -> 'a) -> ('a t * (key -> 'a))
+  val with_cache_rec : 'a t -> ((key -> 'a) -> key -> 'a) -> key -> 'a
     (** Partially apply the given function with a cached version of itself.
-        The cache has as size the first (int) argument.
-        It returns both the cache, and the specialized function *)
+        It returns the specialized function. *)
 end
 
 (** Signature of a cache for pairs of values *)
