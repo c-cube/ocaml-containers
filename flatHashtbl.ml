@@ -182,7 +182,7 @@ module Make(H : Hashtbl.HashedType) =
         let j = addr h n i in
         match buckets.(j) with
         | Used (key', _) when H.equal key key' ->
-          buckets.(i) <- Deleted;
+          buckets.(j) <- Deleted;
           t.size <- t.size - 1  (* remove slot *)
         | Deleted | Used _ ->
           probe h n (i+1) (* search further *)
