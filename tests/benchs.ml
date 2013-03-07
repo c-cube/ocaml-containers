@@ -69,6 +69,12 @@ module IFlatHashtbl = FlatHashtbl.Make(struct
   let hash i = i
 end)
 
+module IFHashtbl = FHashtbl.Make(struct
+  type t = int
+  let equal i j = i = j
+  let hash i = i
+end)
+
 let phashtbl_add n =
   let h = PHashtbl.create 50 in
   for i = n downto 0 do
@@ -90,12 +96,19 @@ let ihashtbl_add n =
   done;
   h
 
-let ifhashtbl_add n =
+let iflathashtbl_add n =
   let h = IFlatHashtbl.create 50 in
   for i = n downto 0 do
     IFlatHashtbl.replace h i i;
   done;
   h
+
+let ifhashtbl_add n =
+  let h = ref (IFHashtbl.empty 32) in
+  for i = n downto 0 do
+    h := IFHashtbl.replace !h i i;
+  done;
+  !h
 
 let _ =
   Format.printf "----------------------------------------@.";
@@ -103,6 +116,7 @@ let _ =
     ["phashtbl_add", (fun n -> ignore (phashtbl_add n));
      "hashtbl_add", (fun n -> ignore (hashtbl_add n));
      "ihashtbl_add", (fun n -> ignore (ihashtbl_add n));
+     "iflathashtbl_add", (fun n -> ignore (iflathashtbl_add n));
      "ifhashtbl_add", (fun n -> ignore (ifhashtbl_add n));
     ]
   in
@@ -138,7 +152,7 @@ let ihashtbl_replace n =
   done;
   h
 
-let ifhashtbl_replace n =
+let iflathashtbl_replace n =
   let h = IFlatHashtbl.create 50 in
   for i = 0 to n do
     IFlatHashtbl.replace h i i;
@@ -148,12 +162,23 @@ let ifhashtbl_replace n =
   done;
   h
 
+let ifhashtbl_replace n =
+  let h = ref (IFHashtbl.empty 32) in
+  for i = 0 to n do
+    h := IFHashtbl.replace !h i i;
+  done;
+  for i = n downto 0 do
+    h := IFHashtbl.replace !h i i;
+  done;
+  !h
+
 let _ =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
     ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n));
      "hashtbl_replace", (fun n -> ignore (hashtbl_replace n));
      "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n));
+     "iflathashtbl_replace", (fun n -> ignore (iflathashtbl_replace n));
      "ifhashtbl_replace", (fun n -> ignore (ifhashtbl_replace n));
     ]
   in
@@ -180,17 +205,24 @@ let ihashtbl_find h =
       ignore (IHashtbl.find h (round_n i));
     done
      
-let ifhashtbl_find h =
+let iflathashtbl_find h =
   fun n ->
     for i = 0 to n do
       ignore (IFlatHashtbl.find h (round_n i));
+    done
+     
+let ifhashtbl_find h =
+  fun n ->
+    for i = 0 to n do
+      ignore (IFHashtbl.find h (round_n i));
     done
 
 let _ =
   let h = phashtbl_add my_len in
   let h' = hashtbl_add my_len in
   let h'' = ihashtbl_add my_len in
-  let h''' = ifhashtbl_add my_len in
+  let h''' = iflathashtbl_add my_len in
+  let h'''' = ifhashtbl_add my_len in
   List.iter (fun n ->
     Format.printf "----------------------------------------@.";
     Format.printf "try on size %d@.@.@." n;
@@ -198,6 +230,7 @@ let _ =
       "phashtbl_find", (fun () -> phashtbl_find h n);
       "hashtbl_find", (fun () -> hashtbl_find h' n);
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n);
-      "ifhashtbl_find", (fun () -> ifhashtbl_find h''' n);
+      "iflathashtbl_find", (fun () -> iflathashtbl_find h''' n);
+      "ifhashtbl_find", (fun () -> ifhashtbl_find h'''' n);
     ])
     [10;20;100;1000;10000;100000]
