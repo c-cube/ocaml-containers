@@ -213,14 +213,13 @@ let dfs graph first k =
 (** Is the graph acyclic? *)
 let is_dag g =
   if is_empty g then true
-  else if Sequence.is_empty (roots g) then false  (* DAGs have roots *)
   else try
     let labels = mk_v_table g in
     (* do a DFS from each root; any back edge indicates a cycle *)
     Sequence.iter
       (fun v ->
         dfs_full g ~labels ~back_edge:(fun _ -> raise Exit) v)
-      (roots g);
+      (vertices g);
     true   (* complete traversal without back edge *)
   with Exit ->
     false  (* back edge detected! *)
