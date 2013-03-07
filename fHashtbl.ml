@@ -59,6 +59,9 @@ module type S = sig
   val size : 'a t -> int
     (** Number of bindings *)
 
+  val depth : 'a t -> int
+    (** Depth of the tree *)
+
   val to_seq : 'a t -> (key * 'a) Sequence.t
 
   val of_seq : ?size:int -> (key * 'a) Sequence.t -> 'a t
@@ -264,6 +267,11 @@ module Make(X : HASH) = struct
 
   let size t =
     fold (fun n _ _ -> n + 1) 0 t
+
+  let rec depth t =
+    match t with
+    | Table _ -> 0
+    | Split (l, r) -> (max (depth l) (depth r)) + 1
 
   let to_seq t =
     Sequence.from_iter (fun k -> iter (fun key value -> k (key, value)) t)

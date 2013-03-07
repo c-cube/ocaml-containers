@@ -59,6 +59,9 @@ module type S = sig
   val size : 'a t -> int
     (** Number of bindings *)
 
+  val depth : 'a t -> int
+    (** Depth of the tree *)
+
   val to_seq : 'a t -> (key * 'a) Sequence.t
 
   val of_seq : ?size:int -> (key * 'a) Sequence.t -> 'a t

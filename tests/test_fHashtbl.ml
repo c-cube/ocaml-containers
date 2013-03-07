@@ -12,7 +12,6 @@ let test_add () =
   let h = IFHashtbl.replace h 42 "foo" in
   OUnit.assert_equal (IFHashtbl.find h 42) "foo"
 
-(*
 let my_list = 
   [ 1, "a";
     2, "b";
@@ -23,48 +22,36 @@ let my_list =
 let my_seq = Sequence.of_list my_list
 
 let test_of_seq () =
-  let h = IHashtbl.create 5 in
-  IHashtbl.of_seq h my_seq;
-  OUnit.assert_equal (IHashtbl.find h 2) "b";
-  OUnit.assert_equal (IHashtbl.find h 1) "a";
-  OUnit.assert_raises Not_found (fun () -> IHashtbl.find h 42);
+  let h = IFHashtbl.of_seq my_seq in
+  OUnit.assert_equal (IFHashtbl.find h 2) "b";
+  OUnit.assert_equal (IFHashtbl.find h 1) "a";
+  OUnit.assert_raises Not_found (fun () -> IFHashtbl.find h 42);
   ()
 
 let test_to_seq () =
-  let h = IHashtbl.create 5 in
-  IHashtbl.of_seq h my_seq;
-  let l = Sequence.to_list (IHashtbl.to_seq h) in
+  let h = IFHashtbl.of_seq my_seq in
+  let l = Sequence.to_list (IFHashtbl.to_seq h) in
   OUnit.assert_equal my_list (List.sort compare l)
 
 let test_resize () =
-  let h = IHashtbl.create 5 in
-  for i = 0 to 10 do
-    IHashtbl.replace h i (string_of_int i);
-  done;
-  OUnit.assert_bool "must have been resized" (IHashtbl.length h > 5);
+  let h = IFHashtbl.of_seq
+    (Sequence.map (fun i -> i, string_of_int i)
+      (Sequence.int_range ~start:0 ~stop:200)) in
+  OUnit.assert_bool "must have been resized" (IFHashtbl.depth h > 0);
   ()
 
-let test_eq () =
-  let h = IHashtbl.create 3 in
-  IHashtbl.replace h 1 "odd";
-  IHashtbl.replace h 2 "even";
-  OUnit.assert_equal (IHashtbl.find h 1) "odd";
-  OUnit.assert_equal (IHashtbl.find h 2) "even";
+let test_persistent () =
+  let h = IFHashtbl.of_seq my_seq in
+  OUnit.assert_equal (IFHashtbl.find h 1) "a";
+  OUnit.assert_raises Not_found (fun () -> IFHashtbl.find h 5);
+  let h' = IFHashtbl.replace h 5 "e" in
+  OUnit.assert_equal (IFHashtbl.find h' 1) "a";
+  OUnit.assert_equal (IFHashtbl.find h' 5) "e";
+  OUnit.assert_equal (IFHashtbl.find h 1) "a";
+  OUnit.assert_raises Not_found (fun () -> IFHashtbl.find h 5);
   ()
 
-let test_copy () =
-  let h = IHashtbl.create 2 in
-  IHashtbl.replace h 1 "one";
-  OUnit.assert_equal (IHashtbl.find h 1) "one";
-  OUnit.assert_raises Not_found (fun () -> IHashtbl.find h 2);
-  let h' = IHashtbl.copy h in
-  IHashtbl.replace h' 2 "two";
-  OUnit.assert_equal (IHashtbl.find h' 1) "one";
-  OUnit.assert_equal (IHashtbl.find h' 2) "two";
-  OUnit.assert_equal (IHashtbl.find h 1) "one";
-  OUnit.assert_raises Not_found (fun () -> IHashtbl.find h 2);
-  ()
-
+(*
 let test_remove () =
   let h = IHashtbl.create 3 in
   IHashtbl.of_seq h my_seq;
@@ -82,12 +69,11 @@ let test_remove () =
 let suite =
   "test_pHashtbl" >:::
     [ "test_add" >:: test_add;
-      (*
       "test_of_seq" >:: test_of_seq;
       "test_to_seq" >:: test_to_seq;
       "test_resize" >:: test_resize;
-      "test_eq" >:: test_eq;
-      "test_copy" >:: test_copy;
+      "test_persistent" >:: test_persistent;
+      (*
       "test_remove" >:: test_remove;
       *)
     ]
