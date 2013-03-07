@@ -44,6 +44,9 @@ module type S = sig
   val find : 'a t -> key -> 'a
     (** Find the binding for this key, or raise Not_found *)
 
+  val mem : 'a t -> key -> bool
+    (** Check whether the key is bound in this hashtable *)
+
   val replace : 'a t -> key -> 'a -> 'a t
     (** [replace t key val] returns a copy of [t] where [key] binds to [val] *)
 

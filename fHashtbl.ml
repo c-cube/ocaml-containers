@@ -44,6 +44,9 @@ module type S = sig
   val find : 'a t -> key -> 'a
     (** Find the binding for this key, or raise Not_found *)
 
+  val mem : 'a t -> key -> bool
+    (** Check whether the key is bound in this hashtable *)
+
   val replace : 'a t -> key -> 'a -> 'a t
     (** [replace t key val] returns a copy of [t] where [key] binds to [val] *)
 
@@ -156,6 +159,7 @@ module Make(X : HASH) = struct
 
   (** Empty hashtable *)
   let empty size =
+    let size = max size 16 in  (* size >= 16 *)
     Table (empty_buckets size)
 
   (** The address in a bucket array, after probing [i] times *)
@@ -190,27 +194,49 @@ module Make(X : HASH) = struct
     in
     find h t
 
+  (** Check whether the key is bound in this hashtable *)
+  let mem t key =
+    try ignore (find t key); true
+    with Not_found -> false
+
+  (** Maximal depth of the tree (number of bits of the hash) *)
+  let max_depth = Sys.word_size - 1
+
+  (** [i] is the length of the current probe. [n] is the size of
+      the buckets array. This decides whether the probe, looking
+      for a free bucket to insert a binding in, is too long. *)
+  let probe_too_long n i =
+    i / 5 > n / 8  (* i/n > 5/8 *)
+
   (** Insert [key] -> [value] in the buckets. *)
   let rec probe_insert buckets ~depth h key value =
     let n = PArray.length buckets in
     let rec probe i =
-      if i = n
-        then (* table seems full, split in two sub-hashtables *)
+      if n = i then (assert (depth = max_depth); failwith "FHashtbl is full")
+      else if (depth < max_depth && probe_too_long n i)
+        (* We are not too deep, and the table starts being full, we
+           split it into two sub-tables *)
+        then
           let depth' = depth + 1 in
+          (* increase size of sub-arrays by 1.5 *)
+          let sub_size = min (n + (n lsr 1)) Sys.max_array_length in
           let l, r = PArray.fold_left
             (fun (l,r) bucket -> match bucket with
               | Empty | Deleted -> (l,r)
               | Used (key',value') ->
-                let h' = (X.hash key') lsr depth' in
+                let h' = (X.hash key') lsr depth in
                 if h' land 0x1 = 0
                   then 
-                    let l' = insert l ~depth:depth' h' key' value' in
+                    let l' = insert l ~depth:depth' (h' lsr 1) key' value' in
                     l', r
                   else
-                    let r' = insert r ~depth:depth' h' key' value' in
+                    let r' = insert r ~depth:depth' (h' lsr 1) key' value' in
                     l, r')
-            (empty n, empty n) buckets in
-          Split (l, r)
+            (empty sub_size, empty sub_size) buckets in
+          (* the split of those two sub-hashtables *)
+          let new_table = Split (l, r) in
+          (* insert in this new hashtable *)
+          insert new_table ~depth h key value
         else (* look for an empty slot to insert the bucket *)
           let j = addr n h i in
           match PArray.get buckets j with
