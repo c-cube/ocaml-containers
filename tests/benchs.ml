@@ -69,7 +69,7 @@ module IFlatHashtbl = FlatHashtbl.Make(struct
   let hash i = i
 end)
 
-module IFHashtbl = FHashtbl.Make(struct
+module IFHashtbl = FHashtbl.Tree(struct
   type t = int
   let equal i j = i = j
   let hash i = i
