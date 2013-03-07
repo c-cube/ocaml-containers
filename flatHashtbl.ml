@@ -35,6 +35,8 @@ module type S =
       (** Create a hashtable.  [max_load] is (number of items / size of table).
           Must be in ]0, 1[ *)
 
+    val copy : 'a t -> 'a t
+
     val clear : 'a t -> unit
       (** Clear the content of the hashtable *)
 
@@ -59,6 +61,10 @@ module type S =
     val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
       (** Fold on bindings *)
 
+    val to_seq : 'a t -> (key * 'a) Sequence.t
+
+    val of_seq : 'a t -> (key * 'a) Sequence.t -> unit
+
     val stats : 'a t -> int * int * int * int * int * int
       (** Cf Weak.S *)
   end
@@ -70,26 +76,31 @@ module Make(H : Hashtbl.HashedType) =
     (** A hashtable is an array of (key, value) buckets that have a state, plus the
         size of the table *)
     type 'a t = {
-      mutable buckets : (key * 'a * state) array;
+      mutable buckets : 'a bucket array;
       mutable size : int;
       max_load : float;
     }
-    (* state of a bucket *)
-    and state = Used | Empty | Deleted
-
-    let my_null = (Obj.magic None, Obj.magic None, Empty)
-    let my_deleted = (Obj.magic None, Obj.magic None, Deleted)
+    and 'a bucket =
+    | Deleted
+    | Empty
+    | Used of key * 'a
 
     (** Create a table. Size will be >= 2 *)
     let create ?(max_load=0.8) size =
       let size = max 2 size in
-      { buckets = Array.make size my_null;
+      { buckets = Array.make size Empty;
         size = 0;
         max_load; }
 
+    let copy t =
+      { buckets = Array.copy t.buckets;
+        size = t.size;
+        max_load = t.max_load;
+      }
+
     (** clear the table, by resetting all states to Empty *)
     let clear t =
-      Array.fill t.buckets 0 (Array.length t.buckets) my_null;
+      Array.fill t.buckets 0 (Array.length t.buckets) Empty;
       t.size <- 0
 
     (** Index of slot, for i-th probing starting from hash [h] in
@@ -103,19 +114,23 @@ module Make(H : Hashtbl.HashedType) =
       let rec lookup h n i =
         let j = addr h n i in
         match buckets.(j) with
-        | (_, _, Empty) -> buckets.(j) <- (key, value, Used)
-        | (key', _, _) when H.equal key key' -> ()
+        | Empty ->
+          buckets.(j) <- Used (key, value)
+        | Used (key', _) when H.equal key key' ->
+          buckets.(j) <- Used (key, value)
         | _ -> lookup h n (i+1)
       in
       lookup h n 0
 
     (** Resize the array, by inserting its content into twice as large an array *)
     let resize buckets =
-      let buckets' = Array.make (Array.length buckets * 2) my_null in
+      let new_size = min (Array.length buckets * 2) Sys.max_array_length in
+      let buckets' = Array.make new_size Empty in
       for i = 0 to Array.length buckets - 1 do
         match buckets.(i) with
-        | (key, value, Used) ->
-          insert buckets' (H.hash key) key value  (* insert key -> value into new array *)
+        | Used (key, value) ->
+          (* insert key -> value into new array *)
+          insert buckets' (H.hash key) key value
         | _ -> ()
       done;
       buckets'
@@ -130,11 +145,11 @@ module Make(H : Hashtbl.HashedType) =
         else
         let j = addr h n i in
         match buckets.(j) with
-        | (key', value, Used) when H.equal key key' ->
+        | Used (key', value) when H.equal key key' ->
           value  (* found value for this key *)
-        | (_, _, Deleted) | (_, _, Used) ->
+        | Deleted | Used _ ->
           probe h n (i+1) (num + 1) (* try next bucket *)
-        | (_, _, Empty) -> raise Not_found
+        | Empty -> raise Not_found
       in
       probe h n 0 0
 
@@ -148,18 +163,15 @@ module Make(H : Hashtbl.HashedType) =
       let rec probe h n i =
         let j = addr h n i in
         match buckets.(j) with
-        | (key', _, Used) when H.equal key key' ->
-          buckets.(j) <- (key, value, Used)  (* replace value *)
-        | (_, _, Deleted) |(_, _, Empty) ->
-          buckets.(j) <- (key, value, Used);
+        | Used (key', _) when H.equal key key' ->
+          buckets.(j) <- Used (key, value)  (* replace value *)
+        | Deleted | Empty ->
+          buckets.(j) <- Used (key, value);
           t.size <- t.size + 1 (* insert and increment size *)
-        | (_, _, Used) ->
+        | Used _ ->
           probe h n (i+1) (* go further *)
       in
       probe h n 0
-
-    (** alias for replace *)
-    let add t key value = replace t key value
 
     (** Remove the key from the table *)
     let remove t key =
@@ -169,11 +181,12 @@ module Make(H : Hashtbl.HashedType) =
       let rec probe h n i =
         let j = addr h n i in
         match buckets.(j) with
-        | (key', _, Used) when H.equal key key' ->
-          buckets.(i) <- my_deleted; t.size <- t.size - 1  (* remove slot *)
-        | (_, _, Deleted) | (_, _, Used) ->
+        | Used (key', _) when H.equal key key' ->
+          buckets.(i) <- Deleted;
+          t.size <- t.size - 1  (* remove slot *)
+        | Deleted | Used _ ->
           probe h n (i+1) (* search further *)
-        | (_, _, Empty) -> ()  (* not present *)
+        | Empty -> ()  (* not present *)
       in
       probe h n 0
 
@@ -190,20 +203,27 @@ module Make(H : Hashtbl.HashedType) =
       let buckets = t.buckets in
       for i = 0 to Array.length buckets - 1 do
         match buckets.(i) with
-        | (key, value, Used) -> k key value
+        | Used (key, value) -> k key value
         | _ -> ()
       done
 
     (** Fold on key -> value pairs *)
     let fold f t acc =
-      let acc = ref acc in
       let buckets = t.buckets in
-      for i = 0 to Array.length buckets - 1 do
-        match buckets.(i) with
-        | (key, value, Used) -> acc := f key value !acc
-        | _ -> ()
-      done;
-      !acc
+      let rec fold acc i =
+        if i = Array.length buckets
+          then acc
+          else match buckets.(i) with
+          | Used (key, value) -> fold (f key value acc) (i+1)
+          | _ -> fold acc (i+1)
+      in fold acc 0
+
+    let to_seq t =
+      Sequence.from_iter
+        (fun k -> iter (fun key value -> k (key, value)) t)
+
+    let of_seq t seq =
+      Sequence.iter (fun (k,v) -> replace t k v) seq
 
     (** Statistics on the table *)
     let stats t = (Array.length t.buckets, t.size, t.size, 0, 0, 1)

@@ -35,6 +35,8 @@ module type S =
       (** Create a hashtable.  [max_load] is (number of items / size of table).
           Must be in ]0, 1[ *)
 
+    val copy : 'a t -> 'a t
+
     val clear : 'a t -> unit
       (** Clear the content of the hashtable *)
 
@@ -59,12 +61,19 @@ module type S =
     val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
       (** Fold on bindings *)
 
+    val to_seq : 'a t -> (key * 'a) Sequence.t
+
+    val of_seq : 'a t -> (key * 'a) Sequence.t -> unit
+
     val stats : 'a t -> int * int * int * int * int * int
       (** Cf Weak.S *)
   end
 
 (** Create a hashtable *)
 module Make(H : Hashtbl.HashedType) : S with type key = H.t
+
+(** The hashconsing part has the very bad property that it may introduce
+    memory leak, because the hashtable is not weak. Be warned. *)
 
 (** Hashconsed type *)
 module type HashconsedType =
