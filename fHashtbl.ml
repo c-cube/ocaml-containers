@@ -156,7 +156,7 @@ module Tree(X : HASH) = struct
 
   (** Empty hashtable *)
   let empty size =
-    let size = max size 16 in  (* size >= 16 *)
+    let size = max size 4 in  (* size >= 4 *)
     Table (empty_buckets size)
 
   (** The address in a bucket array, after probing [i] times *)
