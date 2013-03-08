@@ -197,7 +197,7 @@ module MList = struct
 
   (** Build a MList of elements of the Seq. The optional argument indicates
       the size of the blocks *)
-  let of_seq ?(size=64) seq =
+  let of_seq ?(size=8) seq =
     (* read sequence into a MList.t *)
     let start = make size in
     let l = ref start in
@@ -255,7 +255,7 @@ let sort_uniq ?(cmp=Pervasives.compare) seq =
 
 (** Cartesian product of the sequences. *)
 let product outer inner =
-  let outer = persistent outer in
+  let inner = persistent inner in
   from_iter
     (fun k ->
       outer (fun x ->
