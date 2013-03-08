@@ -27,9 +27,12 @@ for any direct, indirect, incidental, special, exemplary, or consequential
     are designed to allow easy transfer (mappings) between data structures,
     without defining n^2 conversions between the n types. *)
 
-type +'a t
+type +'a t = ('a -> unit) -> unit
   (** Sequence abstract iterator type, representing a finite sequence of
       values of type ['a]. *)
+
+type (+'a, +'b) t2 = ('a -> 'b -> unit) -> unit
+  (** Sequence of pairs of values of type ['a] and ['b]. *)
 
 (** {2 Build a sequence} *)
 
@@ -109,6 +112,19 @@ val persistent : 'a t -> 'a t
   (** Iterate on the sequence, storing elements in a data structure.
       The resulting sequence can be iterated on as many times as needed. *)
 
+val sort : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
+  (** Sort the sequence. Eager, O(n) ram and O(n ln(n)) time. *)
+
+val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
+  (** Sort the sequence and remove duplicates. Eager, same as [sort] *)
+
+val group : ?eq:('a -> 'a -> bool) -> 'a t -> 'a list t
+  (** Group equal consecutive elements. *)
+
+val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
+  (** Remove consecutive duplicate elements. Basically this is
+      like [fun seq -> map List.hd (group seq)]. *)
+
 val product : 'a t -> 'b t -> ('a * 'b) t
   (** Cartesian product of the sequences. The first one is transformed
       by calling [persistent] on it, so that it can be traversed
@@ -118,6 +134,9 @@ val unfoldr : ('b -> ('a * 'b) option) -> 'b -> 'a t
   (** [unfoldr f b] will apply [f] to [b]. If it
       yields [Some (x,b')] then [x] is returned
       and unfoldr recurses with [b']. *)
+
+val scan : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
+  (** Sequence of intermediate results *)
 
 val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a -> 'a
   (** Max element of the sequence, using the given comparison
@@ -134,6 +153,30 @@ val drop : int -> 'a t -> 'a t
 
 val rev : 'a t -> 'a t
   (** Reverse the sequence. O(n) memory and time. *)
+
+(** {2 Binary sequences} *)
+
+val empty2 : ('a, 'b) t2
+
+val is_empty2 : (_, _) t2 -> bool
+
+val length2 : (_, _) t2 -> int
+
+val zip : ('a, 'b) t2 -> ('a * 'b) t
+
+val unzip : ('a * 'b) t -> ('a, 'b) t2
+
+val zip_i : 'a t -> (int, 'a) t2
+  (** Zip elements of the sequence with their index in the sequence *)
+
+val fold2 : ('c -> 'a -> 'b -> 'c) -> 'c -> ('a, 'b) t2 -> 'c
+
+val iter2 : ('a -> 'b -> unit) -> ('a, 'b) t2 -> unit
+
+val map2 : ('a -> 'b -> 'c) -> ('a, 'b) t2 -> 'c t
+
+val map2_2 : ('a -> 'b -> 'c) -> ('a -> 'b -> 'd) -> ('a, 'b) t2 -> ('c, 'd) t2
+  (** [map2_2 f g seq2] maps each [x, y] of seq2 into [f x y, g x y] *)
 
 (** {2 Basic data structures converters} *)
 
@@ -152,6 +195,8 @@ val of_array : 'a array -> 'a t
 
 val of_array_i : 'a array -> (int * 'a) t
   (** Elements of the array, with their index *)
+
+val of_array2 : 'a array -> (int, 'a) t2
 
 val array_slice : 'a array -> int -> int -> 'a t
   (** [array_slice a i j] Sequence of elements whose indexes range
@@ -183,10 +228,16 @@ val hashtbl_replace : ('a, 'b) Hashtbl.t -> ('a * 'b) t -> unit
   (** Add elements of the sequence to the hashtable, with
       Hashtbl.replace (erases conflicting bindings) *)
 
-val to_hashtbl :('a * 'b) t -> ('a, 'b) Hashtbl.t
+val to_hashtbl : ('a * 'b) t -> ('a, 'b) Hashtbl.t
+  (** Build a hashtable from a sequence of key/value pairs *)
+
+val to_hashtbl2 : ('a, 'b) t2 -> ('a, 'b) Hashtbl.t
   (** Build a hashtable from a sequence of key/value pairs *)
 
 val of_hashtbl : ('a, 'b) Hashtbl.t -> ('a * 'b) t
+  (** Sequence of key/value pairs from the hashtable *)
+
+val of_hashtbl2 : ('a, 'b) Hashtbl.t -> ('a, 'b) t2
   (** Sequence of key/value pairs from the hashtable *)
 
 val hashtbl_keys : ('a, 'b) Hashtbl.t -> 'a t
@@ -287,6 +338,16 @@ module TypeClass : sig
 
   val of_iterable : ('a,'b) iterable -> 'b -> 'a t
   val to_addable : ('a,'b) addable -> 'a t -> 'b
+end
+
+(** {2 Infix functions} *)
+
+module Infix : sig
+  val (--) : int -> int -> int t
+
+  val (|>) : 'a -> ('a -> 'b) -> 'b
+
+  val (@@) : 'a t -> 'a t -> 'a t
 end
 
 (** {2 Pretty printing of sequences} *)

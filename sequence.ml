@@ -28,6 +28,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** Sequence abstract iterator type *)
 type 'a t = ('a -> unit) -> unit
 
+type (+'a, +'b) t2 = ('a -> 'b -> unit) -> unit
+  (** Sequence of pairs of values of type ['a] and ['b]. *)
+
 (** Build a sequence from a iter function *)
 let from_iter f = f
 
@@ -208,6 +211,48 @@ let persistent (seq : 'a t) : 'a t =
   let l = MList.of_seq seq in
   from_iter (fun k -> MList.iter k l)
 
+(** Sort the sequence. Eager, O(n) ram and O(n ln(n)) time. *)
+let sort ?(cmp=Pervasives.compare) seq =
+  (* use an intermediate list, then sort the list *)
+  let l = fold (fun l x -> x::l) [] seq in
+  let l = List.fast_sort cmp l in
+  fun k -> List.iter k l
+
+(** Group equal consecutive elements. *)
+let group ?(eq=fun x y -> x = y) seq =
+  fun k ->
+    let cur = ref [] in
+    seq (fun x ->
+      match !cur with
+      | [] -> cur := [x]
+      | (y::_) as l when eq x y ->
+        cur := x::l  (* [x] belongs to the group *)
+      | (_::_) as l ->
+        k l; (* yield group, and start another one *)
+        cur := [x]);
+    (* last list *)
+    if !cur <> [] then k !cur
+  
+(** Remove consecutive duplicate elements. Basically this is
+    like [fun seq -> map List.hd (group seq)]. *)
+let uniq ?(eq=fun x y -> x = y) seq =
+  fun k ->
+    let has_prev = ref false
+    and prev = ref (Obj.magic 0) in  (* avoid option type, costly *)
+    seq (fun x ->
+      if !has_prev && eq !prev x
+        then ()  (* duplicate *)
+        else begin
+          has_prev := true;
+          prev := x;
+          k x
+        end)
+
+(** Sort the sequence and remove duplicates. Eager, same as [sort] *)
+let sort_uniq ?(cmp=Pervasives.compare) seq =
+  let seq' = sort ~cmp seq in
+  uniq ~eq:(fun x y -> cmp x y = 0) seq'
+
 (** Cartesian product of the sequences. *)
 let product outer inner =
   let outer = persistent outer in
@@ -225,6 +270,14 @@ let unfoldr f b =
     | Some (x, b') -> k x; unfold k b'
   in
   from_iter (fun k -> unfold k b)
+
+(** Sequence of intermediate results *)
+let scan f acc seq =
+  from_iter
+    (fun k ->
+      k acc;
+      let acc = ref acc in
+      seq (fun elt -> let acc' = f !acc elt in k acc'; acc := acc'))
 
 (** Max element of the sequence, using the given comparison
     function. A default element has to be provided. *)
@@ -283,6 +336,49 @@ let is_empty seq =
   try seq (fun _ -> raise ExitSequence); true
   with ExitSequence -> false
 
+(** {2 Transform a sequence} *)
+
+let empty2 =
+  fun k -> ()
+
+let is_empty2 seq2 =
+  try ignore (seq2 (fun _ _ -> raise ExitSequence)); true
+  with ExitSequence -> false
+
+let length2 seq2 =
+  let r = ref 0 in
+  seq2 (fun _ _ -> incr r);
+  !r
+
+let zip seq2 =
+  fun k -> seq2 (fun x y -> k (x,y))
+
+let unzip seq =
+  fun k -> seq (fun (x,y) -> k x y)
+
+(** Zip elements of the sequence with their index in the sequence *)
+let zip_i seq =
+  fun k ->
+    let r = ref 0 in
+    seq (fun x -> let n = !r in incr r; k n x)
+
+let fold2 f acc seq2 =
+  let acc = ref acc in
+  seq2 (fun x y -> acc := f !acc x y);
+  !acc
+
+let iter2 f seq2 =
+  seq2 f
+
+let map2 f seq2 =
+  fun k -> seq2 (fun x y -> k (f x y))
+
+(** [map2_2 f g seq2] maps each [x, y] of seq2 into [f x y, g x y] *)
+let map2_2 f g seq2 =
+  fun k -> seq2 (fun x y -> k (f x y) (g x y))
+
+(** {2 Basic data structures converters} *)
+
 let to_list seq = List.rev (fold (fun y x -> x::y) [] seq)
 
 let to_rev_list seq = fold (fun y x -> x :: y) [] seq
@@ -307,6 +403,10 @@ let of_array_i a =
   let seq k =
     for i = 0 to Array.length a - 1 do k (i, a.(i)) done
   in from_iter seq
+
+let of_array2 a =
+  fun k ->
+    for i = 0 to Array.length a - 1 do k i a.(i) done
 
 (** [array_slice a i j] Sequence of elements whose indexes range
     from [i] to [j] *)
@@ -356,8 +456,16 @@ let to_hashtbl seq =
   hashtbl_replace h seq;
   h
 
+let to_hashtbl2 seq2 =
+  let h = Hashtbl.create 3 in
+  seq2 (fun k v -> Hashtbl.replace h k v);
+  h
+
 let of_hashtbl h =
   from_iter (fun k -> Hashtbl.iter (fun a b -> k (a, b)) h)
+
+let of_hashtbl2 h =
+  fun k -> Hashtbl.iter k h
 
 let hashtbl_keys h =
   from_iter (fun k -> Hashtbl.iter (fun a b -> k a) h)
@@ -528,6 +636,17 @@ module TypeClass = struct
     fold addable.add addable.empty seq
 end
 
+(** {2 Infix functions} *)
+
+module Infix = struct
+  let (--) i j = int_range ~start:i ~stop:j
+
+  let (|>) x f = f x
+
+  let (@@) a b = append a b
+
+  let (>>=) x f = flatMap f x
+end
 
 (** {2 Pretty printing of sequences} *)
 
