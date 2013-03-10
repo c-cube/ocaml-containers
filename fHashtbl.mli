@@ -41,6 +41,8 @@ module type S = sig
   val empty : int -> 'a t
     (** The empty hashtable (with sub-hashtables of given size) *)
 
+  val is_empty : _ t -> bool
+
   val find : 'a t -> key -> 'a
     (** Find the binding for this key, or raise Not_found *)
 

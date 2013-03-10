@@ -41,6 +41,8 @@ module type S = sig
   val empty : int -> 'a t
     (** The empty hashtable (with sub-hashtables of given size) *)
 
+  val is_empty : _ t -> bool
+
   val find : 'a t -> key -> 'a
     (** Find the binding for this key, or raise Not_found *)
 
@@ -158,6 +160,15 @@ module Tree(X : HASH) = struct
   let empty size =
     let size = max size 4 in  (* size >= 4 *)
     Table (empty_buckets size)
+
+  let rec is_empty_array a i =
+    if i = Array.length a then true
+    else (a.(i) = Empty || a.(i) = Deleted) && is_empty_array a (i+1)
+
+  let rec is_empty t =
+    match t with
+    | Split (l, r) -> is_empty l && is_empty r
+    | Table a -> is_empty_array (PArray.reroot a) 0
 
   (** The address in a bucket array, after probing [i] times *)
   let addr n h i = ((h land max_int) + i) mod n
@@ -357,6 +368,12 @@ module Flat(X : HASH) = struct
     { buckets = PArray.make size Empty;
       size = 0;
     }
+
+  let rec is_empty_array a i =
+    if i = Array.length a then true
+    else (a.(i) = Empty || a.(i) = Deleted) && is_empty_array a (i+1)
+
+  let is_empty t = is_empty_array (PArray.reroot t.buckets) 0
 
   (** Index of slot, for i-th probing starting from hash [h] in
       a table of length [n] *)

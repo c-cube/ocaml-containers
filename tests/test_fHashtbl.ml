@@ -2,7 +2,6 @@
 open OUnit
 
 module Test(SomeHashtbl : FHashtbl.S with type key = int) = struct
-
   let test_add () =
     let h = SomeHashtbl.empty 32 in
     let h = SomeHashtbl.replace h 42 "foo" in
@@ -79,6 +78,17 @@ module Test(SomeHashtbl : FHashtbl.S with type key = int) = struct
     (* test that 2 has been removed *)
     OUnit.assert_raises Not_found (fun () -> SomeHashtbl.find h 2)
 
+  let test_size () =
+    let open Sequence.Infix in
+    let n = 10000 in
+    let seq = Sequence.map (fun i -> i, string_of_int i) (0 -- n) in
+    let h = SomeHashtbl.of_seq seq in
+    OUnit.assert_equal (n+1) (SomeHashtbl.size h);
+    let h = Sequence.fold (fun h i -> SomeHashtbl.remove h i) h (0 -- 500) in
+    OUnit.assert_equal (n-500) (SomeHashtbl.size h);
+    OUnit.assert_bool "is_empty" (SomeHashtbl.is_empty (SomeHashtbl.empty 16));
+    ()
+
   let suite =
     "test_FHashtbl" >:::
       [ "test_add" >:: test_add;
@@ -88,6 +98,7 @@ module Test(SomeHashtbl : FHashtbl.S with type key = int) = struct
         "test_persistent" >:: test_persistent;
         "test_big" >:: test_big;
         "test_remove" >:: test_remove;
+        "test_size" >:: test_size;
       ]
 end
 
