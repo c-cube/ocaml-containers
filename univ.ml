@@ -65,3 +65,11 @@ let embed () =
     id == t.id
   in
   { pack; unpack; compatible; set; }
+
+let pack emb x = emb.pack x
+
+let unpack emb t = emb.unpack t
+
+let compatible emb t = emb.compatible t
+
+let set emb t x = emb.set t x

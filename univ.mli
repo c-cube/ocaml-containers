@@ -40,3 +40,11 @@ type 'a embedding = {
 val embed : unit -> 'a embedding
   (** Create a new embedding. Values packed by a given embedding can
       only be unpacked by the same embedding. *)
+
+val pack : 'a embedding -> 'a -> t
+
+val unpack : 'a embedding -> t -> 'a option
+
+val compatible : 'a embedding -> t -> bool
+
+val set : 'a embedding -> t -> 'a -> unit
