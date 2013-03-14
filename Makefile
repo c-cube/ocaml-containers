@@ -17,5 +17,8 @@ bench:
 clean:
 	ocamlbuild -clean
 
-.PHONY: all clean tests
+tags:
+	otags *.ml *.mli
+
+.PHONY: all clean tests tags
 
