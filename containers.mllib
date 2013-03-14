@@ -5,6 +5,7 @@ Cache
 FlatHashtbl
 FHashtbl
 FQueue
+Hashset
 SplayTree
 PHashtbl
 Heap
