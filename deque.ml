@@ -23,78 +23,111 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** Imperative deque *)
+(** {1 Imperative deque} *)
 
 type 'a elt = {
   content : 'a;
   mutable prev : 'a elt;
   mutable next : 'a elt;
-}
-
-type 'a t = {
-  mutable first : 'a elt;
-  mutable length : int;
-}
+} (** A cell holding a single element *)
+and 'a t = 'a elt option ref
+  (** The deque, a double linked list of cells *)
 
 exception Empty
 
-let create () = {
-  first = Obj.magic None;
-  length = 0;
-}
+let create () = ref None
 
-let is_empty d = d.length = 0
-
-let length d = d.length
-
-let mk_elt x =
-  let rec elt = {
-    content = x;
-    prev = elt;
-    next = elt;
-  } in elt
+let is_empty d =
+  match !d with
+  | None -> true
+  | Some _ -> false
 
 let push_front d x =
-  let elt = mk_elt x in
-  (if d.length > 0
-    then begin 
-      d.first.prev <- elt;
-      let last = d.first.prev in
-      last.next <- elt;
-      elt.next <- d.first;
-      elt.prev <- last;
-    end);
-  d.first <- elt;
-  d.length <- d.length + 1
+  match !d with
+  | None ->
+    let rec elt = {
+      content = x; prev = elt; next = elt;
+    } in
+    d := Some elt
+  | Some first ->
+    let elt = { content = x; prev = first.prev; next=first; } in
+    first.prev.next <- elt;
+    first.prev <- elt;
+    d := Some elt
 
 let push_back d x =
-  let elt = mk_elt x in
-  (if d.length > 0
-    then begin 
-      let last = d.first.prev in
-      last.next <- elt;
-      d.first.prev <- elt;
-      elt.prev <- last;
-      elt.next <- d.first;
-    end else d.first <- elt);
-  d.length <- d.length + 1
+  match !d with
+  | None ->
+    let rec elt = {
+      content = x; prev = elt; next = elt; } in
+    d := Some elt
+  | Some first ->
+    let elt = { content = x; next=first; prev=first.prev; } in
+    first.prev.next <- elt;
+    first.prev <- elt
+
+let peek_front d =
+  match !d with
+  | None -> raise Empty
+  | Some first -> first.content
+
+let peek_back d =
+  match !d with
+  | None -> raise Empty
+  | Some first -> first.prev.content
 
 let take_back d =
-  (if d.length = 0 then raise Empty);
-  let elt = d.first.prev in
-  let new_last = elt.prev in
-  d.length <- d.length - 1;
-  new_last.next <- d.first;
-  d.first.next <- new_last;
-  elt.content
+  match !d with
+  | None -> raise Empty
+  | Some first when first == first.prev ->
+    (* only one element *)
+    d := None;
+    first.content
+  | Some first ->
+    let elt = first.prev in
+    elt.prev.next <- first;
+    first.prev <- elt.prev;  (* remove [first.prev] from list *)
+    elt.content
 
 let take_front d =
-  (if d.length = 0 then raise Empty);
-  let elt = d.first in
-  let new_first = elt.next in
-  d.length <- d.length - 1;
-  let last = d.first.prev in
-  new_first.prev <- last;
-  last.next <- new_first;
-  elt.content
+  match !d with
+  | None -> raise Empty
+  | Some first when first == first.prev ->
+    (* only one element *)
+    d := None;
+    first.content
+  | Some first ->
+    first.prev.next <- first.next; (* remove [first] from list *)
+    first.next.prev <- first.prev;
+    d := Some first.next;
+    first.content
 
+let iter f d =
+  match !d with
+  | None -> ()
+  | Some first ->
+    let rec iter elt =
+      f elt.content;
+      if elt.next != first then iter elt.next
+    in
+    iter first
+
+let length (d : _ t) =
+  match !d with
+  | None -> 0
+  | Some _ ->
+    let r = ref 0 in
+    iter (fun _ -> incr r) d;
+    !r
+
+let of_seq ?(deque=create ()) seq =
+  Sequence.iter (fun x -> push_back deque x) seq;
+  deque
+
+let to_seq d = Sequence.from_iter (fun k -> iter k d)
+
+(* naive implem of copy, for now *)
+let copy d =
+  let d' = create () in
+  iter (fun x -> push_back d' x) d;
+  d'

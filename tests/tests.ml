@@ -5,6 +5,7 @@ open OUnit
 let suite =
   "all_tests" >:::
     [ Test_pHashtbl.suite;
+      Test_deque.suite;
       Test_fHashtbl.suite;
       Test_fQueue.suite;
       Test_flatHashtbl.suite;
