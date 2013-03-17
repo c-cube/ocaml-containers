@@ -32,9 +32,9 @@ type 'a t = {
 }
 
 let create i =
-  assert (i >= 0);
+  let i = max i 3 in
   { size = 0;
-    vec = if i = 0 then [||] else Array.create i (Obj.magic None);
+    vec = Array.create i (Obj.magic None);
   }
 
 (** resize the underlying array so that it can contains the
