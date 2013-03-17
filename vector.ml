@@ -28,41 +28,38 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** a vector of 'a. *)
 type 'a t = {
   mutable size : int;
-  mutable capacity : int;
   mutable vec : 'a array;
 }
 
 let create i =
   assert (i >= 0);
   { size = 0;
-    capacity = i;
     vec = if i = 0 then [||] else Array.create i (Obj.magic None);
   }
 
 (** resize the underlying array so that it can contains the
     given number of elements *)
 let resize v newcapacity =
-  if newcapacity <= v.capacity
+  let newcapacity = min newcapacity Sys.max_array_length in
+  if newcapacity <= Array.length v.vec
     then ()  (* already big enough *)
     else begin
       assert (newcapacity >= v.size);
       let new_vec = Array.create newcapacity (Obj.magic None) in
       Array.blit v.vec 0 new_vec 0 v.size;
       v.vec <- new_vec;
-      v.capacity <- newcapacity
     end
 
 let clear v =
   v.size <- 0;
-  if v.capacity > 1000  (* shrink if too large *)
-    then (v.capacity <- 10;
-          v.vec <- Array.create 10 (Obj.magic None))
+  if Array.length v.vec > 1024  (* shrink if too large *)
+    then (v.vec <- Array.create 10 (Obj.magic None))
 
 let is_empty v = v.size = 0
 
 let push v x =
-  (if v.capacity = v.size
-    then resize v (2 * v.capacity));
+  (if Array.length v.vec = v.size
+    then resize v (2 * v.size));
   v.vec.(v.size) <- x;
   v.size <- v.size + 1
 
@@ -92,11 +89,11 @@ let copy v =
 let shrink v n =
   if n > v.size then failwith "cannot shrink to bigger size" else v.size <- n
 
-let member ?(cmp=(=)) v x =
+let member ?(eq=(=)) v x =
   let n = v.size in
   let rec check i =
     if i = n then false
-    else if cmp x v.vec.(i) then true
+    else if eq x v.vec.(i) then true
     else check (i+1)
   in check 0
 
@@ -177,11 +174,11 @@ let find v p =
   in check 0
 
 let get v i =
-  (if i < 0 || i >= v.size then failwith "wrong index for vector");
+  (if i < 0 || i >= v.size then failwith "Vector.get");
   v.vec.(i)
 
 let set v i x =
-  (if i < 0 || i >= v.size then failwith "wrong index for vector");
+  (if i < 0 || i >= v.size then failwith "Vector.set");
   v.vec.(i) <- x
 
 let size v = v.size

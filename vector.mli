@@ -55,7 +55,7 @@ val copy : 'a t -> 'a t
 val shrink : 'a t -> int -> unit
   (** shrink to the given size (remove elements above this size) *)
 
-val member : ?cmp:('a -> 'a -> bool) -> 'a t -> 'a -> bool
+val member : ?eq:('a -> 'a -> bool) -> 'a t -> 'a -> bool
   (** is the element a member of the vector? *)
 
 val sort : ?cmp:('a -> 'a -> int) -> 'a t -> unit
@@ -98,7 +98,9 @@ val size : 'a t -> int
   (** number of elements in vector *)
 
 val unsafe_get_array : 'a t -> 'a array
-  (** Access the underlying *shared* array (do not modify!) *)
+  (** Access the underlying *shared* array (do not modify!).
+      [unsafe_get_array v] is longer than [size v], but elements at higher
+      index than [size v] are undefined (do not access!). *)
 
 val of_seq : ?init:'a t -> 'a Sequence.t -> 'a t
 val to_seq : 'a t -> 'a Sequence.t
