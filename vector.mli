@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** Growable, mutable vector *)
+(** {1 Growable, mutable vector} *)
 
 type 'a t
   (** the type of a vector of 'a *)
@@ -97,9 +97,14 @@ val set : 'a t -> int -> 'a -> unit
 val size : 'a t -> int
   (** number of elements in vector *)
 
+val unsafe_get_array : 'a t -> 'a array
+  (** Access the underlying *shared* array (do not modify!) *)
+
+val of_seq : ?init:'a t -> 'a Sequence.t -> 'a t
+val to_seq : 'a t -> 'a Sequence.t
+
 val from_array : 'a array -> 'a t
 val from_list : 'a list -> 'a t
 val to_array : 'a t -> 'a array
-val get_array : 'a t -> 'a array  (*  get underlying *shared* array *)
 val to_list : 'a t -> 'a list
 

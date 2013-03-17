@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** Growable, mutable vector *)
+(** {1 Growable, mutable vector} *)
 
 (** a vector of 'a. *)
 type 'a t = {
@@ -186,6 +186,15 @@ let set v i x =
 
 let size v = v.size
 
+let unsafe_get_array v = v.vec
+
+let of_seq ?(init=create 10) seq =
+  Sequence.iter (fun x -> push init x) seq;
+  init
+
+let to_seq t =
+  Sequence.from_iter (fun k -> iter t k)
+
 let from_array a =
   let c = Array.length a in
   let v = create c in
@@ -200,8 +209,6 @@ let from_list l =
 
 let to_array v =
   Array.sub v.vec 0 v.size
-
-let get_array v = v.vec
 
 let to_list v =
   let l = ref [] in

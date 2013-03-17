@@ -9,7 +9,7 @@ all:
 	ocamlbuild $(OPTIONS) $(TARGETS_LIB)
 
 tests:
-	ocamlbuild $(OPTIONS) -package oUnit -I . tests/tests.native
+	ocamlbuild $(OPTIONS) -package oUnit -I . tests/run_tests.native
 
 bench:
 	ocamlbuild $(OPTIONS) -package bench -package unix -I . tests/benchs.native
