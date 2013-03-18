@@ -67,6 +67,15 @@ val length : _ t -> int
 val map : ('a -> 'b) -> 'a t -> 'b t
   (** Lazy map *)
 
+val append : 'a t -> 'a t -> 'a t
+  (** Append the two enums *)
+
+val flatten : 'a t t -> 'a t
+  (** Flatten the enum of enum *)
+
+val flatMap : ('a -> 'b t) -> 'a t -> 'b t
+  (** Monadic bind *)
+
 val of_list : 'a list -> 'a t
   (** Enumerate the list *)
 

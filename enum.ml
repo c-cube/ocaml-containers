@@ -83,6 +83,38 @@ let map f enum =
     fun () ->
       try f (gen ())
       with EOG -> raise EOG
+
+let append e1 e2 =
+  fun () ->
+    let gen = ref (e1 ()) in
+    let first = ref true in
+    (* get next element *)
+    let rec next () =
+      try !gen ()
+      with EOG ->
+        if !first then begin
+          first := false;
+          gen := e2 ();  (* switch to the second generator *)
+          next ()
+        end else raise EOG  (* done *)
+    in next
+
+let flatten enum =
+  fun () ->
+    let next_gen = enum () in
+    let gen = ref (fun () -> raise EOG) in
+    (* get next element *)
+    let rec next () =
+      try !gen ()
+      with EOG ->
+        (* jump to next sub-enum *)
+        let stop =
+          try gen := !next_gen (); false
+          with EOG -> true in
+        if stop then raise EOG else next ()
+    in next
+      
+let flatMap f enum = flatten (map f enum)
     
 let of_list l =
   fun () ->
