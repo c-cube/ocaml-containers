@@ -37,6 +37,12 @@ and 'a generator = unit -> 'a
   (** A generator may be called several times, yielding the next value
       each time. It raises EOG when it reaches the end. *)
 
+val empty : 'a t
+  (** Enmpty enum *)
+
+val singleton : 'a -> 'a t
+  (** One-element enum *)
+
 val start : 'a t -> 'a generator
   (** Create a new generator *)
 
@@ -45,6 +51,9 @@ val next : 'a generator -> 'a
 
 val junk : 'a generator -> unit
   (** Drop element *)
+
+val is_empty : _ t -> bool
+  (** Check whether the enum is empty *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** Fold on the generator *)

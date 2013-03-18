@@ -34,11 +34,25 @@ and 'a generator = unit -> 'a
   (** A generator may be called several times, yielding the next value
       each time. It raises EOG when it reaches the end. *)
 
+let empty () = fun () -> raise EOG
+
+let singleton x =
+  fun () ->
+    let stop = ref false in
+    fun () ->
+      if !stop
+        then raise EOG
+        else begin stop := true; x end
+
 let start enum = enum ()
 
 let next gen = gen ()
 
 let junk gen = ignore (gen ())
+
+let is_empty enum =
+  try ignore ((enum ()) ()); false
+  with EOG -> true
 
 let fold f acc enum =
   let rec fold acc gen =
