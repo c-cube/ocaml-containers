@@ -130,6 +130,26 @@ let flatMap f enum =
           with EOG -> true in
         if stop then raise EOG else next ()
     in next
+
+let take n enum =
+  assert (n >= 0);
+  fun () ->
+    let gen = enum () in
+    let count = ref 0 in  (* how many yielded elements *)
+    fun () ->
+      if !count = n then raise EOG
+      else begin incr count; gen () end
+
+let drop n enum =
+  assert (n >= 0);
+  fun () ->
+    let gen = enum () in
+    let count = ref 0 in  (* how many droped elements? *)
+    let rec next () =
+      if !count < n
+        then begin incr count; ignore (gen ()); next () end
+        else gen ()
+    in next
     
 let of_list l =
   fun () ->
@@ -141,7 +161,9 @@ let of_list l =
 
 let to_list enum =
   let rec fold gen =
-    try (gen ()) :: fold gen
+    try
+      let x = gen () in
+      x :: fold gen
     with EOG -> []
   in fold (enum ())
 
@@ -158,9 +180,9 @@ let int_range i j =
   fun () ->
     let r = ref i in
     fun () ->
-      if !r > j then raise EOG
+      let x = !r in
+      if x > j then raise EOG
         else begin
-          let x = !r in
           incr r;
           x
         end

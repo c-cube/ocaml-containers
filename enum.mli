@@ -76,6 +76,12 @@ val flatten : 'a t t -> 'a t
 val flatMap : ('a -> 'b t) -> 'a t -> 'b t
   (** Monadic bind *)
 
+val take : int -> 'a t -> 'a t
+  (** Take at most n elements *)
+
+val drop : int -> 'a t -> 'a t
+  (** Drop n elements *)
+
 val of_list : 'a list -> 'a t
   (** Enumerate the list *)
 
