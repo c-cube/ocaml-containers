@@ -97,4 +97,5 @@ module Infix : sig
   val (@@) : 'a t -> 'a t -> 'a t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   val (--) : int -> int -> int t
+  val (|>) : 'a -> ('a -> 'b) -> 'b
 end

@@ -193,4 +193,6 @@ module Infix = struct
   let (>>=) e f = flatMap f e
 
   let (--) = int_range
+
+  let (|>) x f = f x
 end
