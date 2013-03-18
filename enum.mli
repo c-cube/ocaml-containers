@@ -85,3 +85,10 @@ val to_list : 'a t -> 'a list
 val to_rev_list : 'a t -> 'a list
   (** Tail call conversion to list, in reverse order *)
 
+val int_range : int -> int -> int t
+
+module Infix : sig
+  val (@@) : 'a t -> 'a t -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (--) : int -> int -> int t
+end

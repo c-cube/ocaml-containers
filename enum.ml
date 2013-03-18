@@ -57,8 +57,8 @@ let is_empty enum =
 let fold f acc enum =
   let rec fold acc gen =
     let acc', stop =
-      try f acc (gen ()), true
-      with EOG -> acc, false in
+      try f acc (gen ()), false
+      with EOG -> acc, true in
     if stop then acc' else fold acc' gen
   in
   fold acc (enum ())
@@ -66,8 +66,8 @@ let fold f acc enum =
 let iter f enum =
   let rec iter gen =
     let stop =
-      try f (gen ()); true
-      with EOG -> false in
+      try f (gen ()); false
+      with EOG -> true in
     if stop then () else iter gen
   in
   iter (enum ())
@@ -109,12 +109,27 @@ let flatten enum =
       with EOG ->
         (* jump to next sub-enum *)
         let stop =
-          try gen := !next_gen (); false
+          try gen := (next_gen () ()); false
           with EOG -> true in
         if stop then raise EOG else next ()
     in next
       
-let flatMap f enum = flatten (map f enum)
+let flatMap f enum =
+  fun () ->
+    let next_elem = enum () in
+    let gen = ref (fun () -> raise EOG) in
+    (* get next element *)
+    let rec next () =
+      try !gen ()
+      with EOG ->
+        (* enumerate f (next element) *)
+        let stop =
+          try
+            let x = next_elem () in
+            gen := (f x) (); false
+          with EOG -> true in
+        if stop then raise EOG else next ()
+    in next
     
 let of_list l =
   fun () ->
@@ -138,3 +153,22 @@ let to_rev_list enum =
     in if stop then acc' else fold acc' gen
   in
   fold [] (enum ())
+
+let int_range i j =
+  fun () ->
+    let r = ref i in
+    fun () ->
+      if !r > j then raise EOG
+        else begin
+          let x = !r in
+          incr r;
+          x
+        end
+
+module Infix = struct
+  let (@@) = append
+
+  let (>>=) e f = flatMap f e
+
+  let (--) = int_range
+end
