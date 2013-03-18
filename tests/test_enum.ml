@@ -29,9 +29,22 @@ let test_map () =
   OUnit.assert_equal ~printer:pstrlist ["9"; "10"] (Enum.to_list (Enum.drop 8 e'));
   ()
 
+let test_append () =
+  let e = (1 -- 5) @@ (6 -- 10) in
+  OUnit.assert_equal [10;9;8;7;6;5;4;3;2;1] (Enum.to_rev_list e);
+  ()
+
+let test_flatMap () =
+  let e = 1 -- 3 in
+  let e' = e >>= (fun x -> x -- (x+1)) in
+  OUnit.assert_equal [1;2;2;3;3;4] (Enum.to_list e');
+  ()
+
 let suite =
   "test_enum" >:::
     [ "test_singleton" >:: test_singleton;
       "test_iter" >:: test_iter;
       "test_map" >:: test_map;
+      "test_append" >:: test_append;
+      "test_flatMap" >:: test_flatMap;
     ]

@@ -170,8 +170,8 @@ let to_list enum =
 let to_rev_list enum =
   let rec fold acc gen =
     let acc', stop =
-      try let x = gen () in x :: acc, true
-      with EOG -> acc, false
+      try let x = gen () in x :: acc, false
+      with EOG -> acc, true
     in if stop then acc' else fold acc' gen
   in
   fold [] (enum ())
