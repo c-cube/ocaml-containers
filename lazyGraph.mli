@@ -49,7 +49,10 @@ module type S = sig
 
   (** It is difficult to provide generic combinators to build graphs. The problem
       is that if one wants to "update" a node, it's still very hard to update
-      how other nodes re-generate the current node at the same time. *)
+      how other nodes re-generate the current node at the same time.
+      The best way to do it is to build one function that maps the
+      underlying structure of the type vertex to a graph (for instance,
+      a concrete data structure, or an URL...). *)
 
   val empty : ('v, 'e) t
     (** Empty graph *)
@@ -60,9 +63,9 @@ module type S = sig
   val from_enum : vertices:(vertex * 'v) Enum.t ->
                  edges:(vertex * 'e * vertex) Enum.t ->
                  ('v, 'e) t
-    (** Concrete (eager) representation of a Graph *)
+    (** Concrete (eager) representation of a Graph (XXX not implemented)*)
 
-  val from_fun : (vertex -> 'v * ('e * vertex) list) -> vertex -> ('v, 'e) t
+  val from_fun : (vertex -> ('v * ('e * vertex) list) option) -> ('v, 'e) t
     (** Convenient semi-lazy implementation of graphs *)
 
   (** {2 Traversals} *)
@@ -79,6 +82,7 @@ module type S = sig
       | EdgeTransverse  (* toward a totally explored part of the graph *)
 
     val bfs_full : ?id:int -> ('v, 'e) t -> vertex -> ('v, 'e) traverse_event Enum.t
+      (** Lazy traversal in breadth first *)
 
     val dfs_full : ?id:int -> ('v, 'e) t -> vertex -> ('v, 'e) traverse_event Enum.t
       (** Lazy traversal in depth first *)
@@ -92,10 +96,10 @@ module type S = sig
   val dfs : ?id:int -> ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
     (** Lazy traversal in depth first *)
 
-  val enum : ('v, 'e) t -> (vertex * 'v) Enum.t * (vertex * 'e * vertex) Enum.t
+  val enum : ('v, 'e) t -> vertex -> (vertex * 'v) Enum.t * (vertex * 'e * vertex) Enum.t
     (** Convert to an enumeration. The traversal order is undefined. *)
 
-  val depth : (_, 'e) t -> (int, 'e) t
+  val depth : (_, 'e) t -> vertex -> (int, 'e) t
     (** Map vertices to their depth, ie their distance from the initial point *)
 
   type 'e path = (vertex * 'e * vertex) list
@@ -113,7 +117,7 @@ module type S = sig
         [combine] is used to combine the labels. By default, the second
         label is dropped and only the first is kept *)
 
-  val map : ?vertices:('v -> 'v2) -> ?edges:('e -> 'e2) ->
+  val map : vertices:('v -> 'v2) -> edges:('e -> 'e2) ->
             ('v, 'e) t -> ('v2, 'e2) t
     (** Map vertice and edge labels *)
 
