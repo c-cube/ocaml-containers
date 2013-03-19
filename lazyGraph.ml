@@ -36,6 +36,8 @@ module type S = sig
     (** The concrete type of a vertex. Vertices are considered unique within
         the graph. *)
 
+  module H : Hashtbl.S with type key = vertex
+
   type ('v, 'e) t = vertex -> ('v, 'e) node
     (** Lazy graph structure. Vertices are annotated with values of type 'v,
         and edges are of type 'e. A graph is a function that maps vertices
@@ -187,6 +189,8 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
     (** The concrete type of a vertex. Vertices are considered unique within
         the graph. *)
 
+  module H = Hashtbl.Make(X)
+
   type ('v, 'e) t = vertex -> ('v, 'e) node
     (** Lazy graph structure. Vertices are annotated with values of type 'v,
         and edges are of type 'e. A graph is a function that maps vertices
@@ -226,7 +230,31 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
       | EdgeBackward    (* toward the current trail *)
       | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-    let bfs_full ?(id=0) graph v = Enum.empty  (* TODO *)
+    let bfs_full ?(id=0) graph v =
+      let enum () =
+        let q = Queue.create () in (* queue of nodes to explore *)
+        Queue.push (v,[]) q;
+        let explored = H.create 5 in (* explored nodes *)
+        let n = ref 0 in  (* index of vertices *)
+        let rec next () =
+          if Queue.is_empty q then raise Enum.EOG else
+            let v', path = Queue.pop q in
+            if H.mem explored v' then next ()
+              else match graph v' with
+              | Empty -> next ()
+              | Node (_, label, edges) ->
+                begin
+                  H.add explored v' ();
+                  (* explore neighbors *)
+                  let path' = v'::path in
+                  Enum.iter (fun (_,v'') -> Queue.push (v'',path') q) edges;
+                  (* return this vertex *)
+                  let i = !n in
+                  incr n;
+                  Enum.of_list [EnterVertex (v', label, i, path); ExitVertex v']
+                end
+        in next
+      in Enum.flatten enum
 
     let dfs_full ?(id=0) graph v = Enum.empty  (* TODO *)
   end

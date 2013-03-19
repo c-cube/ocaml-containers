@@ -36,6 +36,8 @@ module type S = sig
     (** The concrete type of a vertex. Vertices are considered unique within
         the graph. *)
 
+  module H : Hashtbl.S with type key = vertex
+
   type ('v, 'e) t = vertex -> ('v, 'e) node
     (** Lazy graph structure. Vertices are annotated with values of type 'v,
         and edges are of type 'e. A graph is a function that maps vertices
