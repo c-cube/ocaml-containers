@@ -144,6 +144,11 @@ val tee : ?n:int -> 'a t -> 'a generator t
       [index = k mod n] with go to the k-th enum. [n] defaults value
       is 2. *)
 
+val dup : ?n:int -> 'a t -> 'a generator t
+  (** Duplicate the enum into [n] generators (default 2). The generators
+      share the same underlying instance of the enum, so the optimal case is
+      when they are consumed evenly *)
+
 val interleave : 'a t -> 'a t -> 'a t
   (** [interleave a b] yields an element of [a], then an element of [b],
       and so on until the end of [a] or [b] is reached. *)

@@ -368,6 +368,40 @@ let tee ?(n=2) enum =
       let j = !i in
       if j = n then raise EOG else (incr i; fun () -> next j)
 
+(** Duplicate the enum into [n] generators (default 2). The generators
+    share the same underlying instance of the enum, so the optimal case is
+    when they are consumed evenly *)
+let dup ?(n=2) enum =
+  fun () ->
+    (* array of queues, together with their index *)
+    let qs = Array.init n (fun i -> Queue.create ()) in
+    let gen = enum () in  (* unique generator! *)
+    let finished = ref false in (* is [gen] exhausted? *)
+    (* get next element for the i-th queue *)
+    let rec next i =
+      if Queue.is_empty qs.(i)
+        then
+          if !finished then raise EOG
+          else get_next i  (* consume generator *)
+        else Queue.pop qs.(i)
+    (* consume one more element *)
+    and get_next i =
+      try
+        let x = gen () in
+        for j = 0 to n-1 do
+          if j <> i then Queue.push x qs.(j)
+        done;
+        x
+      with EOG ->
+        finished := true;
+        raise EOG
+    in
+    (* generator of generators *)
+    let i = ref 0 in
+    fun () ->
+      let j = !i in
+      if j = n then raise EOG else (incr i; fun () -> next j)
+
 (** Yield elements from a and b alternatively *)
 let interleave a b =
   fun () ->
