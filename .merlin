@@ -4,3 +4,5 @@ B _build
 B _build/tests
 PKG oUnit
 PKG bench
+PKG threads
+PKG threads.posix
