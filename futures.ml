@@ -155,6 +155,16 @@ let fail future e =
     Mutex.unlock future.mutex;
     raise SendTwice  (* already set! *)
 
+let is_done future =
+  Mutex.lock future.mutex;
+  match future.content with
+  | NotKnown ->
+    Mutex.unlock future.mutex;
+    false
+  | _ ->
+    Mutex.unlock future.mutex;
+    true
+
 (** {2 Combinators *)
 
 let flatMap ?(pool=default_pool) f future =

@@ -1,0 +1,7 @@
+(* vim:syntax=ocaml: *)
+#use "topfind";;
+#directory "_build/";;
+#directory "_build/tests/";;
+#load "containers.cma";;
+#require "threads";;
+#load "thread_containers.cma";;

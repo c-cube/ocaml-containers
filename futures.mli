@@ -65,6 +65,9 @@ val send : 'a t -> 'a -> unit
 val fail : 'a t -> exn -> unit
   (** Fail the future by raising an exception inside it *)
 
+val is_done : 'a t -> bool
+  (** Is the future evaluated (success/failure)? *)
+
 (** {2 Combinators *)
 
 val flatMap : ?pool:Pool.t -> ('a -> 'b t) -> 'a t -> 'b t
