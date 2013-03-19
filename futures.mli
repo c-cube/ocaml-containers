@@ -114,6 +114,9 @@ val on_finish : _ t -> (unit -> unit) -> unit
 val flatMap : ('a -> 'b t) -> 'a t -> 'b t
   (** Monadic combination of futures *)
 
+val andThen : 'a t -> (unit -> 'b t) -> 'b t
+  (** Wait for the first future to succeed, then launch the second *)
+
 val sequence : 'a t list -> 'a list t
   (** Future that waits for all previous sequences to terminate *)
 
@@ -136,6 +139,10 @@ val spawn_process : ?pool:Pool.t -> ?stdin:string -> cmd:string ->
   (** Spawn a sub-process with the given command [cmd] (and possibly input);
       returns a future containing (returncode, stdout, stderr) *)
 
+val sleep : ?pool:Pool.t -> int -> unit t
+  (** Future that returns with success in the given amount of seconds *)
+
 module Infix : sig
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (>>) : 'a t -> (unit -> 'b t) -> 'b t
 end
