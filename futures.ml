@@ -343,6 +343,7 @@ let spawn_process ?(pool=default_pool) ?(stdin="") ~cmd =
       output_string inp stdin;
       (* send stdin to command *)
       flush inp;
+      close_out inp;
       (* read output of process *)
       let out' = slurp out in
       let err' = slurp err in
