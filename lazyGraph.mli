@@ -46,6 +46,8 @@ module type S = sig
     | Empty
     | Node of vertex * 'v * ('e * vertex) Enum.t
     (** A single node of the graph, with outgoing edges *)
+  and 'e path = (vertex * 'e * vertex) list
+    (** A reverse path (from the last element of the path to the first). *)
 
   (** {2 Basic constructors} *)
 
@@ -75,7 +77,7 @@ module type S = sig
   (** {3 Full interface to traversals} *)
   module Full : sig
     type ('v, 'e) traverse_event =
-      | EnterVertex of vertex * 'v * int * vertex list (* unique ID, trail *)
+      | EnterVertex of vertex * 'v * int * 'e path (* unique ID, trail *)
       | ExitVertex of vertex (* trail *)
       | MeetEdge of vertex * 'e * vertex * edge_type (* edge *)
     and edge_type =
@@ -103,8 +105,6 @@ module type S = sig
 
   val depth : (_, 'e) t -> vertex -> (int, 'e) t
     (** Map vertices to their depth, ie their distance from the initial point *)
-
-  type 'e path = (vertex * 'e * vertex) list
 
   val min_path : ?distance:(vertex -> 'e -> vertex -> int) ->
                  ('v, 'e) t -> vertex -> vertex ->

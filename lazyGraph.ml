@@ -46,6 +46,7 @@ module type S = sig
     | Empty
     | Node of vertex * 'v * ('e * vertex) Enum.t
     (** A single node of the graph, with outgoing edges *)
+  and 'e path = (vertex * 'e * vertex) list
 
   (** {2 Basic constructors} *)
 
@@ -72,7 +73,7 @@ module type S = sig
   (** {3 Full interface to traversals} *)
   module Full : sig
     type ('v, 'e) traverse_event =
-      | EnterVertex of vertex * 'v * int * vertex list (* unique ID, trail *)
+      | EnterVertex of vertex * 'v * int * 'e path (* unique ID, trail *)
       | ExitVertex of vertex (* trail *)
       | MeetEdge of vertex * 'e * vertex * edge_type (* edge *)
     and edge_type =
@@ -99,8 +100,6 @@ module type S = sig
 
   val depth : (_, 'e) t -> vertex -> (int, 'e) t
     (** Map vertices to their depth, ie their distance from the initial point *)
-
-  type 'e path = (vertex * 'e * vertex) list
 
   val min_path : ?distance:(vertex -> 'e -> vertex -> int) ->
                  ('v, 'e) t -> vertex -> vertex ->
@@ -199,6 +198,8 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
     | Empty
     | Node of vertex * 'v * ('e * vertex) Enum.t
     (** A single node of the graph, with outgoing edges *)
+  and 'e path = (vertex * 'e * vertex) list
+
 
   (** {2 Basic constructors} *)
 
@@ -222,7 +223,7 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
   (** {3 Full interface to traversals} *)
   module Full = struct
     type ('v, 'e) traverse_event =
-      | EnterVertex of vertex * 'v * int * vertex list (* unique ID, trail *)
+      | EnterVertex of vertex * 'v * int * 'e path (* unique ID, trail *)
       | ExitVertex of vertex (* trail *)
       | MeetEdge of vertex * 'e * vertex * edge_type (* edge *)
     and edge_type =
@@ -246,8 +247,11 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
                 begin
                   H.add explored v' ();
                   (* explore neighbors *)
-                  let path' = v'::path in
-                  Enum.iter (fun (_,v'') -> Queue.push (v'',path') q) edges;
+                  Enum.iter
+                    (fun (e,v'') ->
+                      let path' = (v'',e,v') :: path in
+                      Queue.push (v'',path') q)
+                    edges;
                   (* return this vertex *)
                   let i = !n in
                   incr n;
@@ -256,7 +260,59 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
         in next
       in Enum.flatten enum
 
-    let dfs_full ?(id=0) graph v = Enum.empty  (* TODO *)
+    type 'e todo_item =
+      | DFSEnter of vertex * 'e path
+      | DFSExit of vertex
+      | DFSFollowEdge of 'e path
+
+    let rec mem_path path v =
+      match path with
+      | (v',_,v'')::path' ->
+        (X.equal v v') || (X.equal v v'') || (mem_path path' v)
+      | [] -> false
+
+    let dfs_full ?(id=0) graph v =
+      fun () ->
+        let s = Stack.create () in (* stack of nodes to explore *)
+        Stack.push (DFSEnter (v,[])) s;
+        let explored = H.create 5 in (* explored nodes *)
+        let n = ref id in  (* index of vertices *)
+        let rec next () =
+          if Stack.is_empty s then raise Enum.EOG else
+            match Stack.pop s with
+            | DFSExit v' -> ExitVertex v'
+            | DFSEnter (v', path) ->
+              if H.mem explored v' then next ()
+                (* explore the node now *)
+                else begin match graph v' with
+                | Empty -> next ()
+                | Node (_, label, edges) ->
+                  H.add explored v' ();
+                  (* prepare to exit later *)
+                  Stack.push (DFSExit v') s;
+                  (* explore neighbors *)
+                  Enum.iter
+                    (fun (e,v'') ->
+                      Stack.push (DFSFollowEdge ((v'', e, v') :: path)) s)
+                    edges;
+                  (* return this vertex *)
+                  let i = !n in
+                  incr n;
+                  EnterVertex (v', label, i, path)
+                end
+            | DFSFollowEdge [] -> assert false
+            | DFSFollowEdge (((v'', e, v') :: path) as path') ->
+              (* edge path .... v' --e--> v'' *)
+              if H.mem explored v''
+                then if mem_path path v''
+                  then MeetEdge (v'', e, v', EdgeBackward)
+                  else MeetEdge (v'', e, v', EdgeTransverse)
+                else begin
+                  (* explore this edge *)
+                  Stack.push (DFSEnter (v'', path')) s;
+                  MeetEdge (v'', e, v', EdgeForward)
+                end
+        in next
   end
 
   let bfs ?id graph v =
@@ -266,13 +322,16 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
         | _ -> None)
       (Full.bfs_full ?id graph v)
 
-  let dfs ?id graph v = Enum.empty (* TODO *)
+  let dfs ?id graph v =
+    Enum.filterMap
+      (function
+        | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
+        | _ -> None)
+      (Full.dfs_full ?id graph v)
 
   let enum graph v = (Enum.empty, Enum.empty)  (* TODO *)
 
   let depth graph v = failwith "not implemented"
-
-  type 'e path = (vertex * 'e * vertex) list
 
   (** Minimal path from the given Graph from the first vertex to
       the second. It returns both the distance and the path *)
