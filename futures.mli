@@ -36,8 +36,12 @@ module Pool : sig
   type t
     (** A pool of threads *)
 
-  val create : size:int -> t
-    (** Create a pool with the given number of threads. *)
+  val create : ?max_load:int -> size:int -> t
+    (** Create a pool with the given number of threads. If the load goes
+        above the given threshold (default max_int), a new thread is spawned. *)
+
+  val load : t -> int
+    (** Current number of waiting jobs *)
 
   val schedule : t -> (unit -> unit) -> unit
     (** Schedule a function to run in the pool *)
@@ -47,7 +51,35 @@ module Pool : sig
 end
 
 val default_pool : Pool.t
-  (** Pool of threads that is used by default *)
+  (** Pool of threads that is used by default. Growable if needed. *)
+
+(** {2 MVar: a zero-or-one element thread-safe box} *)
+
+module MVar : sig
+  type 'a t
+
+  val empty : unit -> 'a t
+    (** Create an empty box *)
+
+  val full : 'a -> 'a t
+    (** Create a full box *)
+
+  val is_empty : _ t -> bool
+    (** Is the box currently empty? *)
+
+  val take : 'a t -> 'a
+    (** Take value out of the box. Wait if necessary *)
+
+  val put : 'a t -> 'a -> unit
+    (** Put a value in the box. Waits if the box is already empty *)
+
+  val update : 'a t -> ('a -> 'a) -> 'a * 'a
+    (** Use given function to atomically update content, and return
+        the previous value and the new one *)
+
+  val peek : 'a t -> 'a
+    (** Look at the value, without removing it *)
+end
 
 (** {2 Basic low-level Future functions} *)
 
@@ -70,8 +102,26 @@ val is_done : 'a t -> bool
 
 (** {2 Combinators *)
 
-val flatMap : ?pool:Pool.t -> ('a -> 'b t) -> 'a t -> 'b t
+val on_success : 'a t -> ('a -> unit) -> unit
+  (** Attach a handler to be called upon success *)
+
+val on_failure : _ t -> (exn -> unit) -> unit
+  (** Attach a handler to be called upon failure *)
+
+val on_finish : _ t -> (unit -> unit) -> unit
+  (** Attach a handler to be called when the future is evaluated *)
+
+val flatMap : ('a -> 'b t) -> 'a t -> 'b t
   (** Monadic combination of futures *)
+
+val sequence : 'a t list -> 'a list t
+  (** Future that waits for all previous sequences to terminate *)
+
+val choose : 'a t list -> 'a t
+  (** Choose among those futures (the first to terminate) *)
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+  (** Maps the value inside the future *)
 
 (** {2 Future constructors} *)
 
