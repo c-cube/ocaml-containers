@@ -49,12 +49,10 @@ end
 val default_pool : Pool.t
   (** Pool of threads that is used by default *)
 
-(** {2 Basic Future functions} *)
+(** {2 Basic low-level Future functions} *)
 
-val make : ?pool:Pool.t -> unit -> 'a t
-  (** Create a future, representing a value that is not known yet.
-      A thread pool to run the future in can be provided, otherwise
-      a thread is spawned. *)
+val make : unit -> 'a t
+  (** Create a future, representing a value that is not known yet. *)
 
 val get : 'a t -> 'a
   (** Blocking get: wait for the future to be evaluated, and get the value,
@@ -72,7 +70,7 @@ val fail : 'a t -> exn -> unit
 val flatMap : ?pool:Pool.t -> ('a -> 'b t) -> 'a t -> 'b t
   (** Monadic combination of futures *)
 
-(** {2 Useful futures} *)
+(** {2 Future constructors} *)
 
 val return : 'a -> 'a t
   (** Future that is already computed *)
