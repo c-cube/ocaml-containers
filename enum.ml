@@ -424,6 +424,9 @@ let combinations n enum =
   assert (n >= 0);
   failwith "not implemented" (* TODO *)
 
+let powerSet enum =
+  failwith "not implemented"
+
 (** {2 Basic conversion functions} *)
 
 let to_list enum =

@@ -155,10 +155,14 @@ val product : 'a t -> 'b t -> ('a * 'b) t
   (** Cartesian product *)
 
 val permutations : 'a t -> 'a t t
-  (** Permutations of the enum *)
+  (** Permutations of the enum. Each permutation becomes unavailable once
+      the next one is produced. *)
 
 val combinations : int -> 'a t -> 'a t t
-  (** Combinations of given length *)
+  (** Combinations of given length. *)
+
+val powerSet : 'a t -> 'a t t
+  (** All subsets of the enum (in no particular order) *)
 
 (** {2 Basic conversion functions} *)
 
