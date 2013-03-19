@@ -37,11 +37,7 @@ and 'a generator = unit -> 'a
   (** A generator may be called several times, yielding the next value
       each time. It raises EOG when it reaches the end. *)
 
-val empty : 'a t
-  (** Enmpty enum *)
-
-val singleton : 'a -> 'a t
-  (** One-element enum *)
+(** {2 Generator functions} *)
 
 val start : 'a t -> 'a generator
   (** Create a new generator *)
@@ -51,6 +47,22 @@ val next : 'a generator -> 'a
 
 val junk : 'a generator -> unit
   (** Drop element *)
+
+(** {2 Basic constructors} *)
+
+val empty : 'a t
+  (** Enmpty enum *)
+
+val singleton : 'a -> 'a t
+  (** One-element enum *)
+
+val repeat : 'a -> 'a t
+  (** Repeat same element endlessly *)
+
+val iterate : 'a -> ('a -> 'a) -> 'a t
+  (** [iterate x f] is [[x; f x; f (f x); f (f (f x)); ...]] *)
+
+(** {2 Basic combinators} *)
 
 val is_empty : _ t -> bool
   (** Check whether the enum is empty *)
@@ -70,6 +82,9 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 val append : 'a t -> 'a t -> 'a t
   (** Append the two enums *)
 
+val cycle : 'a t -> 'a t
+  (** Cycle through the enum, endlessly. The enum must not be empty. *)
+
 val flatten : 'a t t -> 'a t
   (** Flatten the enum of enum *)
 
@@ -81,6 +96,60 @@ val take : int -> 'a t -> 'a t
 
 val drop : int -> 'a t -> 'a t
   (** Drop n elements *)
+
+val filter : ('a -> bool) -> 'a t -> 'a t
+  (** Filter out elements that do not satisfy the predicate. The outer
+      enum must be finite. *)
+
+val takeWhile : ('a -> bool) -> 'a t -> 'a t
+  (** Take elements while they satisfy the predicate *)
+
+val dropWhile : ('a -> bool) -> 'a t -> 'a t
+  (** Drop elements while they satisfy the predicate *)
+
+val filterMap : ('a -> 'b option) -> 'a t -> 'b t
+  (** Maps some elements to 'b, drop the other ones *)
+
+val zipWith : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+  (** Combine common part of the enums (stops when one is exhausted) *)
+
+val zip : 'a t -> 'b t -> ('a * 'b) t
+  (** Zip together the common part of the enums *)
+
+val zipIndex : 'a t -> (int * 'a) t
+  (** Zip elements with their index in the enum *)
+
+(** {2 Complex combinators} *)
+
+val round_robin : 'a t t -> 'a t
+  (** Pick elements fairly in each sub-enum *)
+
+val persistent : 'a generator -> 'a t
+  (** Store content of the generator in memory, to be able to iterate on it
+      several times later *)
+
+val tee : ?n:int -> 'a t -> 'a generator t
+  (** Split the enum into [n] generators in a fair way. Elements with
+      [index = k mod n] with go to the k-th enum. [n] defaults value
+      is 2. *)
+
+val interleave : 'a t -> 'a t -> 'a t
+  (** [interleave a b] yields an element of [a], then an element of [b],
+      and so on until the end of [a] or [b] is reached. *)
+
+val intersperse : 'a -> 'a t -> 'a t
+  (** Put the separator element between all elements of the given enum *)
+
+val product : 'a t -> 'b t -> ('a * 'b) t
+  (** Cartesian product *)
+
+val permutations : 'a t -> 'a t t
+  (** Permutations of the enum *)
+
+val combinations : int -> 'a t -> 'a t t
+  (** Combinations of given length *)
+
+(** {2 Basic conversion functions} *)
 
 val of_list : 'a list -> 'a t
   (** Enumerate the list *)
