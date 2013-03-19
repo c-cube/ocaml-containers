@@ -81,18 +81,23 @@ module type S = sig
       | EdgeBackward    (* toward the current trail *)
       | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-    val bfs_full : ?id:int -> ('v, 'e) t -> vertex -> ('v, 'e) traverse_event Enum.t
+    val bfs_full : ?id:int ref -> ?explored:unit H.t ->
+                    ('v, 'e) t -> vertex Enum.t -> ('v, 'e) traverse_event Enum.t
+      (** Lazy traversal in breadth first from a finite set of vertices *)
 
-    val dfs_full : ?id:int -> ('v, 'e) t -> vertex -> ('v, 'e) traverse_event Enum.t
-      (** Lazy traversal in depth first *)
+    val dfs_full : ?id:int ref -> ?explored:unit H.t ->
+                   ('v, 'e) t -> vertex Enum.t -> ('v, 'e) traverse_event Enum.t
+      (** Lazy traversal in depth first from a finite set of vertices *)
   end
 
   (** The traversal functions assign a unique ID to every traversed node *)
 
-  val bfs : ?id:int -> ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
+  val bfs : ?id:int ref -> ?explored:unit H.t ->
+            ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
     (** Lazy traversal in breadth first *)
 
-  val dfs : ?id:int -> ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
+  val dfs : ?id:int ref -> ?explored:unit H.t ->
+            ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
     (** Lazy traversal in depth first *)
 
   val enum : ('v, 'e) t -> vertex -> (vertex * 'v) Enum.t * (vertex * 'e * vertex) Enum.t
@@ -135,12 +140,6 @@ module type S = sig
 
   (** {2 Pretty printing in the DOT (graphviz) format *)
   module Dot : sig
-    type graph
-      (** A DOT graph *)
-
-    val empty : string -> graph
-      (** Create an empty graph with the given name *)
-
     type attribute = [
     | `Color of string
     | `Shape of string
@@ -150,18 +149,11 @@ module type S = sig
     | `Other of string * string
     ] (** Dot attribute *)
 
-    val add : print_edge:(vertex -> 'e -> vertex -> attribute list) ->
-              print_vertex:(vertex -> 'v -> attribute list) ->
-              graph ->
-              ('v,'e) t -> vertex Enum.t ->
-              graph
-      (** Add the given vertices of the graph to the DOT graph *)
-
-    val pp : Format.formatter -> graph -> unit
-      (** Pretty print the graph in DOT, on the given formatter. *)
-
-    val to_string : graph -> string
-      (** Pretty print the graph in a string *)
+    val pp : name:string -> (attribute list, attribute list) t ->
+             Format.formatter ->
+             vertex Enum.t -> unit
+      (** Pretty print the given graph (starting from the given set of vertices)
+          to the channel in DOT format *)
   end
 end
 
@@ -231,12 +223,10 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
       | EdgeBackward    (* toward the current trail *)
       | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-    let bfs_full ?(id=0) graph v =
+    let bfs_full ?(id=ref 0) ?(explored=H.create 5) graph vertices =
       let enum () =
         let q = Queue.create () in (* queue of nodes to explore *)
-        Queue.push (v,[]) q;
-        let explored = H.create 5 in (* explored nodes *)
-        let n = ref id in  (* index of vertices *)
+        Enum.iter (fun v -> Queue.push (v,[]) q) vertices;
         let rec next () =
           if Queue.is_empty q then raise Enum.EOG else
             let v', path = Queue.pop q in
@@ -253,8 +243,8 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
                       Queue.push (v'',path') q)
                     edges;
                   (* return this vertex *)
-                  let i = !n in
-                  incr n;
+                  let i = !id in
+                  incr id;
                   Enum.of_list [EnterVertex (v', label, i, path); ExitVertex v']
                 end
         in next
@@ -271,12 +261,10 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
         (X.equal v v') || (X.equal v v'') || (mem_path path' v)
       | [] -> false
 
-    let dfs_full ?(id=0) graph v =
+    let dfs_full ?(id=ref 0) ?(explored=H.create 5) graph vertices =
       fun () ->
         let s = Stack.create () in (* stack of nodes to explore *)
-        Stack.push (DFSEnter (v,[])) s;
-        let explored = H.create 5 in (* explored nodes *)
-        let n = ref id in  (* index of vertices *)
+        Enum.iter (fun v -> Stack.push (DFSEnter (v,[])) s) vertices;
         let rec next () =
           if Stack.is_empty s then raise Enum.EOG else
             match Stack.pop s with
@@ -296,8 +284,8 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
                       Stack.push (DFSFollowEdge ((v'', e, v') :: path)) s)
                     edges;
                   (* return this vertex *)
-                  let i = !n in
-                  incr n;
+                  let i = !id in
+                  incr id;
                   EnterVertex (v', label, i, path)
                 end
             | DFSFollowEdge [] -> assert false
@@ -315,19 +303,19 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
         in next
   end
 
-  let bfs ?id graph v =
+  let bfs ?id ?explored graph v =
     Enum.filterMap
       (function
         | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
         | _ -> None)
-      (Full.bfs_full ?id graph v)
+      (Full.bfs_full ?id ?explored graph (Enum.singleton v))
 
-  let dfs ?id graph v =
+  let dfs ?id ?explored graph v =
     Enum.filterMap
       (function
         | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
         | _ -> None)
-      (Full.dfs_full ?id graph v)
+      (Full.dfs_full ?id ?explored graph (Enum.singleton v))
 
   let enum graph v = (Enum.empty, Enum.empty)  (* TODO *)
 
@@ -360,10 +348,6 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
   end
 
   module Dot = struct
-    type graph = Graph of string (* TODO *)
-
-    let empty name = Graph name
-
     type attribute = [
     | `Color of string
     | `Shape of string
@@ -373,14 +357,8 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
     | `Other of string * string
     ] (** Dot attribute *)
 
-    let add ~print_edge ~print_vertex graph g vertices = graph (* TODO *)
-
-    let pp formatter graph = failwith "not implemented"
-
-    let to_string graph =
-      let b = Buffer.create 64 in
-      Format.bprintf b "%a@?" pp graph;
-      Buffer.contents b
+    let pp ~name graph formatter vertices =
+      failwith "not implemented"
   end
 end
 

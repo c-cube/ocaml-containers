@@ -85,19 +85,23 @@ module type S = sig
       | EdgeBackward    (* toward the current trail *)
       | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-    val bfs_full : ?id:int -> ('v, 'e) t -> vertex -> ('v, 'e) traverse_event Enum.t
-      (** Lazy traversal in breadth first *)
+    val bfs_full : ?id:int ref -> ?explored:unit H.t ->
+                    ('v, 'e) t -> vertex Enum.t -> ('v, 'e) traverse_event Enum.t
+      (** Lazy traversal in breadth first from a finite set of vertices *)
 
-    val dfs_full : ?id:int -> ('v, 'e) t -> vertex -> ('v, 'e) traverse_event Enum.t
-      (** Lazy traversal in depth first *)
+    val dfs_full : ?id:int ref -> ?explored:unit H.t ->
+                   ('v, 'e) t -> vertex Enum.t -> ('v, 'e) traverse_event Enum.t
+      (** Lazy traversal in depth first from a finite set of vertices *)
   end
 
   (** The traversal functions assign a unique ID to every traversed node *)
 
-  val bfs : ?id:int -> ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
+  val bfs : ?id:int ref -> ?explored:unit H.t ->
+            ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
     (** Lazy traversal in breadth first *)
 
-  val dfs : ?id:int -> ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
+  val dfs : ?id:int ref -> ?explored:unit H.t ->
+            ('v, 'e) t -> vertex -> (vertex * 'v * int) Enum.t
     (** Lazy traversal in depth first *)
 
   val enum : ('v, 'e) t -> vertex -> (vertex * 'v) Enum.t * (vertex * 'e * vertex) Enum.t
@@ -140,12 +144,6 @@ module type S = sig
 
   (** {2 Pretty printing in the DOT (graphviz) format *)
   module Dot : sig
-    type graph
-      (** A DOT graph *)
-
-    val empty : string -> graph
-      (** Create an empty graph with the given name *)
-
     type attribute = [
     | `Color of string
     | `Shape of string
@@ -155,18 +153,11 @@ module type S = sig
     | `Other of string * string
     ] (** Dot attribute *)
 
-    val add : print_edge:(vertex -> 'e -> vertex -> attribute list) ->
-              print_vertex:(vertex -> 'v -> attribute list) ->
-              graph ->
-              ('v,'e) t -> vertex Enum.t ->
-              graph
-      (** Add the given vertices of the graph to the DOT graph *)
-
-    val pp : Format.formatter -> graph -> unit
-      (** Pretty print the graph in DOT, on the given formatter. *)
-
-    val to_string : graph -> string
-      (** Pretty print the graph in a string *)
+    val pp : name:string -> (attribute list, attribute list) t ->
+             Format.formatter ->
+             vertex Enum.t -> unit
+      (** Pretty print the given graph (starting from the given set of vertices)
+          to the channel in DOT format *)
   end
 end
 
