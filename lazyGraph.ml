@@ -235,7 +235,7 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
         let q = Queue.create () in (* queue of nodes to explore *)
         Queue.push (v,[]) q;
         let explored = H.create 5 in (* explored nodes *)
-        let n = ref 0 in  (* index of vertices *)
+        let n = ref id in  (* index of vertices *)
         let rec next () =
           if Queue.is_empty q then raise Enum.EOG else
             let v', path = Queue.pop q in
@@ -259,7 +259,12 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
     let dfs_full ?(id=0) graph v = Enum.empty  (* TODO *)
   end
 
-  let bfs ?id graph v = Enum.empty (* TODO *)
+  let bfs ?id graph v =
+    Enum.filterMap
+      (function
+        | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
+        | _ -> None)
+      (Full.bfs_full ?id graph v)
 
   let dfs ?id graph v = Enum.empty (* TODO *)
 
@@ -323,3 +328,9 @@ end
 (** {2 Build a graph based on physical equality} *)
 module PhysicalMake(X : sig type t end) : S with type vertex = X.t
   = Make(PhysicalHash(X))
+
+module IntGraph = Make(struct
+  type t = int
+  let equal i j = i = j
+  let hash i = i
+end)

@@ -185,3 +185,5 @@ module Make(X : HASHABLE) : S with type vertex = X.t
 
 (** {2 Build a graph based on physical equality} *)
 module PhysicalMake(X : sig type t end) : S with type vertex = X.t
+
+module IntGraph : S with type vertex = int
