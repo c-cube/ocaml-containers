@@ -109,8 +109,7 @@ val drop : int -> 'a t -> 'a t
   (** Drop n elements *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
-  (** Filter out elements that do not satisfy the predicate. The outer
-      enum must be finite. *)
+  (** Filter out elements that do not satisfy the predicate.  *)
 
 val takeWhile : ('a -> bool) -> 'a t -> 'a t
   (** Take elements while they satisfy the predicate *)
@@ -133,7 +132,8 @@ val zipIndex : 'a t -> (int * 'a) t
 (** {2 Complex combinators} *)
 
 val round_robin : 'a t t -> 'a t
-  (** Pick elements fairly in each sub-enum *)
+  (** Pick elements fairly in each sub-enum. The given enum
+      must be finite (not its elements, though). *)
 
 val persistent : 'a generator -> 'a t
   (** Store content of the generator in memory, to be able to iterate on it

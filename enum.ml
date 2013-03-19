@@ -399,9 +399,10 @@ let intersperse x enum =
 (** Cartesian product *)
 let product a b =
   fun () ->
-    (* [a] is the outer relation *)
-    let gen_a = a () in
-    try
+    if is_empty a || is_empty b then fun () -> raise EOG
+    else
+      (* [a] is the outer relation *)
+      let gen_a = a () in
       (* current element of [a] *)
       let cur_a = ref (gen_a ()) in
       let gen_b = ref (b ()) in
@@ -414,8 +415,6 @@ let product a b =
           next ()
       in
       next
-    with EOG ->
-      raise EOG  (* [a] is empty *)
 
 let permutations enum =
   failwith "not implemented" (* TODO *)
