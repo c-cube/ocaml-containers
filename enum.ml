@@ -34,6 +34,33 @@ and 'a generator = unit -> 'a
   (** A generator may be called several times, yielding the next value
       each time. It raises EOG when it reaches the end. *)
 
+(** {2 Generator functions} *)
+
+let start enum = enum ()
+
+module Gen = struct
+  let next gen = gen ()
+
+  let junk gen = ignore (gen ())
+
+  let rec fold f acc gen =
+    let acc', stop =
+      try f acc (gen ()), false
+      with EOG -> acc, true in
+    if stop then acc' else fold f acc' gen
+
+  let rec iter f gen =
+    let stop =
+      try f (gen ()); false
+      with EOG -> true in
+    if stop then () else iter f gen
+
+  let length gen =
+    fold (fun acc _ -> acc + 1) 0 gen
+end
+
+(** {2 Basic constructors} *)
+
 let empty () = fun () -> raise EOG
 
 let singleton x =
@@ -57,36 +84,20 @@ let iterate x f =
       acc := f cur;
       cur
 
-let start enum = enum ()
-
-let next gen = gen ()
-
-let junk gen = ignore (gen ())
+(** {2 Basic combinators} *)
 
 let is_empty enum =
   try ignore ((enum ()) ()); false
   with EOG -> true
 
 let fold f acc enum =
-  let rec fold acc gen =
-    let acc', stop =
-      try f acc (gen ()), false
-      with EOG -> acc, true in
-    if stop then acc' else fold acc' gen
-  in
-  fold acc (enum ())
+  Gen.fold f acc (enum ())
 
 let iter f enum =
-  let rec iter gen =
-    let stop =
-      try f (gen ()); false
-      with EOG -> true in
-    if stop then () else iter gen
-  in
-  iter (enum ())
+  Gen.iter f (enum ())
 
 let length enum =
-  fold (fun acc _ -> acc + 1) 0 enum
+  Gen.length (enum ())
               
 let map f enum =
   (* another enum *)

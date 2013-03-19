@@ -11,8 +11,8 @@ let pstrlist l = Utils.sprintf "%a"
 let test_singleton () =
   let e = Enum.singleton 42 in
   let gen = Enum.start e in
-  OUnit.assert_equal 42 (Enum.next gen);
-  OUnit.assert_raises Enum.EOG (fun () -> Enum.next gen);
+  OUnit.assert_equal 42 (Enum.Gen.next gen);
+  OUnit.assert_raises Enum.EOG (fun () -> Enum.Gen.next gen);
   OUnit.assert_equal 1 (Enum.length e);
   ()
 
@@ -79,6 +79,13 @@ let test_tee () =
     OUnit.assert_equal [2;4;6;8;10] (Enum.to_list b)
   | _ -> OUnit.assert_failure "wrong list lenght"
 
+let test_strong_tee () =
+  let e = Enum.tee ~n:3 (1 -- 999) in
+  let l = Enum.to_list e in
+  let l' = List.map Enum.Gen.length l in
+  OUnit.assert_equal [333;333;333] l';
+  ()
+
 let test_interleave () =
   let e1 = Enum.of_list [1;3;5;7;9] in
   let e2 = Enum.of_list [2;4;6;8;10] in
@@ -109,6 +116,7 @@ let suite =
       "test_round_robin" >:: test_round_robin;
       "test_persistent" >:: test_persistent;
       "test_tee" >:: test_tee;
+      "test_strong_tee" >:: test_strong_tee;
       "test_interleave" >:: test_interleave;
       "test_intersperse" >:: test_intersperse;
       "test_product" >:: test_product;

@@ -42,11 +42,22 @@ and 'a generator = unit -> 'a
 val start : 'a t -> 'a generator
   (** Create a new generator *)
 
-val next : 'a generator -> 'a
-  (** Get next element, or raise EOG *)
+module Gen : sig
+  val next : 'a generator -> 'a
+    (** Get next element, or raise EOG *)
 
-val junk : 'a generator -> unit
-  (** Drop element *)
+  val junk : 'a generator -> unit
+    (** Drop element *)
+
+  val fold : ('b -> 'a -> 'b) -> 'b -> 'a generator -> 'b
+    (** Fold over the generator *)
+
+  val iter : ('a -> unit) -> 'a generator -> unit
+    (** Iterate on the generator *)
+
+  val length : 'a generator -> int
+    (** Consume generator to compute its length *)
+end
 
 (** {2 Basic constructors} *)
 
