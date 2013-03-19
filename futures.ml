@@ -389,7 +389,25 @@ let sequence futures =
   future'
 
 let choose futures =
-  failwith "not implemented"
+  let future' = make () in
+  let one_finished = MVar.full false in
+  (* handlers. The first handler to be called will update [one_finished]
+     to true, see that it was false (hence know it is the first)
+     and propagate its result to [future'] *)
+  let one_succeeded x =
+    let one_finished, _ = MVar.update one_finished (fun _ -> true) in
+    if not one_finished then send future' x
+  and one_failed e =
+    let one_finished, _ = MVar.update one_finished (fun _ -> true) in
+    if not one_finished then fail future' e
+  in
+  (* add handlers to all futures *)
+  List.iter
+    (fun future ->
+      on_success future one_succeeded;
+      on_failure future one_failed; )
+    futures;
+  future'
 
 let map f future =
   let future' = make () in
