@@ -57,6 +57,14 @@ module Gen : sig
 
   val length : 'a generator -> int
     (** Consume generator to compute its length *)
+
+  val of_list : 'a list -> 'a generator
+
+  val to_list : 'a generator -> 'a list  (* not tailrec *)
+
+  val to_rev_list : 'a generator -> 'a list
+
+  val int_range : int -> int -> int generator
 end
 
 (** {2 Basic constructors} *)

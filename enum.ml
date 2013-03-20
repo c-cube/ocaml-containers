@@ -57,6 +57,34 @@ module Gen = struct
 
   let length gen =
     fold (fun acc _ -> acc + 1) 0 gen
+
+  let of_list l =
+    let l = ref l in
+    fun () ->
+      match !l with
+      | [] -> raise EOG
+      | x::l' -> l := l'; x
+
+  let to_list gen =
+    let rec fold () =
+      try
+        let x = gen () in
+        x :: fold ()
+      with EOG -> []
+    in fold ()
+
+  let to_rev_list gen =
+    fold (fun acc x -> x :: acc) [] gen
+
+  let int_range i j =
+    let r = ref i in
+    fun () ->
+      let x = !r in
+      if x > j then raise EOG
+        else begin
+          incr r;
+          x
+        end
 end
 
 (** {2 Basic constructors} *)
@@ -463,34 +491,17 @@ let powerSet enum =
 (** {2 Basic conversion functions} *)
 
 let to_list enum =
-  let rec fold gen =
-    try
-      let x = gen () in
-      x :: fold gen
-    with EOG -> []
-  in fold (enum ())
+  Gen.to_list (enum ())
     
 let of_list l =
   fun () ->
-    let l = ref l in
-    fun () ->
-      match !l with
-      | [] -> raise EOG
-      | x::l' -> l := l'; x
+    Gen.of_list l
 
 let to_rev_list enum =
-  fold (fun acc x -> x :: acc) [] enum
+  Gen.to_rev_list (enum ())
 
 let int_range i j =
-  fun () ->
-    let r = ref i in
-    fun () ->
-      let x = !r in
-      if x > j then raise EOG
-        else begin
-          incr r;
-          x
-        end
+  fun () -> Gen.int_range i j
 
 let pp ?(start="") ?(stop="") ?(sep=",") ?(horizontal=false) pp_elem formatter enum =
   (if horizontal
