@@ -30,7 +30,7 @@ let compute_size x =
 let print_val fmt x =
   let o = Obj.repr x in
   let graph' = G.map ~edges:(fun i -> [`Label (string_of_int i)])
-                 ~vertices:(fun v -> [`Label (string_of_int v)]) graph in
+                 ~vertices:(fun v -> [`Label (string_of_int v); `Shape "box"]) graph in
   G.Dot.pp ~name:"value" graph' fmt (Enum.singleton o)
 
 let print_val_file filename x =
