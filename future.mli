@@ -139,7 +139,7 @@ val spawn_process : ?pool:Pool.t -> ?stdin:string -> cmd:string ->
   (** Spawn a sub-process with the given command [cmd] (and possibly input);
       returns a future containing (returncode, stdout, stderr) *)
 
-val sleep : ?pool:Pool.t -> int -> unit t
+val sleep : ?pool:Pool.t -> float -> unit t
   (** Future that returns with success in the given amount of seconds *)
 
 module Infix : sig

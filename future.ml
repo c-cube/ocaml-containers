@@ -510,7 +510,7 @@ let spawn_process ?(pool=default_pool) ?(stdin="") ~cmd =
 
 let sleep ?(pool=default_pool) time =
   spawn ~pool
-    (fun () -> Unix.sleep time; ())
+    (fun () -> Thread.delay time; ())
 
 module Infix = struct
   let (>>=) x f = flatMap f x
