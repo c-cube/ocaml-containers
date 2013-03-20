@@ -17,6 +17,9 @@ lib:
 lib_thread:
 	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_THREAD_LIB)
 
+examples:
+	ocamlbuild $(OPTIONS) -I . examples/mem_size.native
+
 tests:
 	ocamlbuild $(OPTIONS) -package oUnit -I . tests/run_tests.native
 
@@ -29,5 +32,5 @@ clean:
 tags:
 	otags *.ml *.mli
 
-.PHONY: all all_thread clean tests tags
+.PHONY: all all_thread clean tests tags examples
 
