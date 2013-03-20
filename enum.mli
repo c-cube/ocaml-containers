@@ -139,20 +139,24 @@ val zipIndex : 'a t -> (int * 'a) t
 
 (** {2 Complex combinators} *)
 
-val round_robin : 'a t t -> 'a t
+val merge : 'a t t -> 'a t
   (** Pick elements fairly in each sub-enum. The given enum
       must be finite (not its elements, though). *)
+
+val merge_sorted : ?cmp:('a -> 'a -> int) -> 'a t t -> 'a t
+  (** Assuming subsequences are sorted in increasing order, merge them
+      into an increasing sequence *)
 
 val persistent : 'a generator -> 'a t
   (** Store content of the generator in memory, to be able to iterate on it
       several times later *)
 
-val tee : ?n:int -> 'a t -> 'a generator t
+val round_robin : ?n:int -> 'a t -> 'a generator t
   (** Split the enum into [n] generators in a fair way. Elements with
       [index = k mod n] with go to the k-th enum. [n] defaults value
       is 2. *)
 
-val dup : ?n:int -> 'a t -> 'a generator t
+val tee : ?n:int -> 'a t -> 'a generator t
   (** Duplicate the enum into [n] generators (default 2). The generators
       share the same underlying instance of the enum, so the optimal case is
       when they are consumed evenly *)

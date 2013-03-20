@@ -51,9 +51,9 @@ let test_filterMap () =
   OUnit.assert_equal ["2"; "4"; "6"; "8"; "10"] (Enum.to_list e);
   ()
 
-let test_round_robin () =
+let test_merge () =
   let e = Enum.of_list [1--3; 4--6; 7--9] in
-  let e' = Enum.round_robin e in
+  let e' = Enum.merge e in
   OUnit.assert_equal [1;4;7;2;5;8;3;6;9] (Enum.to_list e');
   ()
 
@@ -69,8 +69,8 @@ let test_persistent () =
   OUnit.assert_equal [0;1;2;3;4;5] (Enum.to_list e);
   ()
 
-let test_tee () =
-  let e = Enum.tee ~n:2 (1--10) in
+let test_round_robin () =
+  let e = Enum.round_robin ~n:2 (1--10) in
   let e = Enum.map Enum.persistent e in
   let l = Enum.to_list e in
   match l with
@@ -79,8 +79,8 @@ let test_tee () =
     OUnit.assert_equal [2;4;6;8;10] (Enum.to_list b)
   | _ -> OUnit.assert_failure "wrong list lenght"
 
-let test_strong_tee () =
-  let e = Enum.tee ~n:3 (1 -- 999) in
+let test_big_rr () =
+  let e = Enum.round_robin ~n:3 (1 -- 999) in
   let l = Enum.to_list e in
   let l' = List.map Enum.Gen.length l in
   OUnit.assert_equal [333;333;333] l';
@@ -113,10 +113,10 @@ let suite =
       "test_flatMap" >:: test_flatMap;
       "test_zip" >:: test_zip;
       "test_filterMap" >:: test_filterMap;
-      "test_round_robin" >:: test_round_robin;
+      "test_merge" >:: test_merge;
       "test_persistent" >:: test_persistent;
-      "test_tee" >:: test_tee;
-      "test_strong_tee" >:: test_strong_tee;
+      "test_round_robin" >:: test_round_robin;
+      "test_big_rr" >:: test_big_rr;
       "test_interleave" >:: test_interleave;
       "test_intersperse" >:: test_intersperse;
       "test_product" >:: test_product;

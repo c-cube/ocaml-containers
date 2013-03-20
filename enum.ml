@@ -289,7 +289,7 @@ let zipIndex enum =
 (** {2 Complex combinators} *)
 
 (** Pick elements fairly in each sub-enum *)
-let round_robin enum =
+let merge enum =
   (* list of sub-enums *)
   let l = fold (fun acc x -> x::acc) [] enum in
   let l = List.rev l in
@@ -308,6 +308,11 @@ let round_robin enum =
             Queue.push gen q; (* put generator at the end, return x *)
             x
     in next
+
+(** Assuming subsequences are sorted in increasing order, merge them
+    into an increasing sequence *)
+let merge_sorted ?(cmp=compare) enum =
+  failwith "not implemented"
 
 (** {3 Mutable double-linked list, similar to {! Deque.t} *)
 module MList = struct
@@ -362,7 +367,7 @@ let persistent gen =
   (* done recursing through the generator *)
   MList.to_enum l
 
-let tee ?(n=2) enum =
+let round_robin ?(n=2) enum =
   fun () ->
     (* array of queues, together with their index *)
     let qs = Array.init n (fun i -> Queue.create ()) in
@@ -399,7 +404,7 @@ let tee ?(n=2) enum =
 (** Duplicate the enum into [n] generators (default 2). The generators
     share the same underlying instance of the enum, so the optimal case is
     when they are consumed evenly *)
-let dup ?(n=2) enum =
+let tee ?(n=2) enum =
   fun () ->
     (* array of queues, together with their index *)
     let qs = Array.init n (fun i -> Queue.create ()) in
