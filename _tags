@@ -1,1 +1,2 @@
-<future.*>: thread
+<**/*future.*>: thread
+<tests/*.native>: thread

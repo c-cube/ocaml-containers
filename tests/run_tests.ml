@@ -14,6 +14,7 @@ let suite =
       Test_heap.suite;
       Test_graph.suite;
       Test_univ.suite;
+      Test_future.suite;
     ]
 
 let _ =

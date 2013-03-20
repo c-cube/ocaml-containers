@@ -6,10 +6,7 @@ TARGETS_LIB = containers.cmxa containers.cma
 TARGET_THREAD_LIB = thread_containers.cmxa thread_containers.cma
 OPTIONS = -use-ocamlfind
 
-all: lib
-
-# like lib, but with thread-specific modules
-all_thread: lib lib_thread
+all: lib lib_thread
 
 lib:
 	ocamlbuild $(OPTIONS) $(TARGETS_LIB)
