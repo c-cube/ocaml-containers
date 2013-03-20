@@ -18,7 +18,7 @@ lib_thread:
 	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_THREAD_LIB)
 
 tests:
-	ocamlbuild $(OPTIONS) -thread -package oUnit -I . tests/run_tests.native
+	ocamlbuild $(OPTIONS) -package oUnit -I . tests/run_tests.native
 
 bench:
 	ocamlbuild $(OPTIONS) -package bench -package unix -I . tests/benchs.native
