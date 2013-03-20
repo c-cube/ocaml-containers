@@ -143,6 +143,15 @@ val merge : 'a t t -> 'a t
   (** Pick elements fairly in each sub-enum. The given enum
       must be finite (not its elements, though). *)
 
+(** {3 Mutable heap (taken from heap.ml to avoid dependencies)} *)
+module Heap : sig
+  type 'a t (** A heap containing values of type 'a *)
+  val empty : cmp:('a -> 'a -> int) -> 'a t
+  val insert : 'a t -> 'a -> unit
+  val is_empty : 'a t -> bool
+  val pop : 'a t -> 'a
+end
+
 val merge_sorted : ?cmp:('a -> 'a -> int) -> 'a t t -> 'a t
   (** Assuming subsequences are sorted in increasing order, merge them
       into an increasing sequence *)

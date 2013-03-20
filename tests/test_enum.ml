@@ -86,6 +86,12 @@ let test_big_rr () =
   OUnit.assert_equal [333;333;333] l';
   ()
 
+let test_merge_sorted () =
+  Enum.of_list [Enum.of_list [1;3;5]; Enum.of_list [0;1;1;3;4;6;10]; Enum.of_list [2;2;11]]
+    |> Enum.merge_sorted ?cmp:None
+    |> Enum.to_list
+    |> OUnit.assert_equal ~printer:Helpers.print_int_list [0;1;1;1;2;2;3;3;4;5;6;10;11]
+
 let test_interleave () =
   let e1 = Enum.of_list [1;3;5;7;9] in
   let e2 = Enum.of_list [2;4;6;8;10] in
@@ -117,6 +123,7 @@ let suite =
       "test_persistent" >:: test_persistent;
       "test_round_robin" >:: test_round_robin;
       "test_big_rr" >:: test_big_rr;
+      "test_merge_sorted" >:: test_merge_sorted;
       "test_interleave" >:: test_interleave;
       "test_intersperse" >:: test_intersperse;
       "test_product" >:: test_product;
