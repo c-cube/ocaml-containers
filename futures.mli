@@ -36,9 +36,10 @@ module Pool : sig
   type t
     (** A pool of threads *)
 
-  val create : ?max_load:int -> size:int -> t
+  val create : ?max_load:int -> ?transient_lifetime:int -> size:int -> t
     (** Create a pool with the given number of threads. If the load goes
-        above the given threshold (default max_int), a new thread is spawned. *)
+        above the given threshold (default max_int), a new thread is spawned
+        only to die after having processed [transient_lifetime] jobs. *)
 
   val load : t -> int
     (** Current number of waiting jobs *)
