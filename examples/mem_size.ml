@@ -46,10 +46,23 @@ let process_val ~name x =
 
 module ISet = Set.Make(struct type t = int let compare = compare end)
 
+let mk_circ n =
+  let start = Enum.to_list (1--n) in
+  (* make the end of the list point to its beginning *)
+  let rec cycle l = match l with
+  | [] -> assert false
+  | [_] -> Obj.set_field (Obj.repr l) 1 (Obj.repr start)
+  | _::l' -> cycle l'
+  in
+  cycle start;
+  start
+
 let _ =
   let s = Enum.fold (fun s x -> ISet.add x s) ISet.empty (1--100) in
   process_val ~name:"foo" s;
   let l = Enum.to_list (Enum.map (fun i -> Enum.to_list (i--(i+42)))
     (Enum.of_list [0;100;1000])) in
   process_val ~name:"bar" l;
+  let l' = mk_circ 100 in
+  process_val ~name:"baaz" l';
   ()
