@@ -153,6 +153,10 @@ module type S = sig
     | `Other of string * string
     ] (** Dot attribute *)
 
+    val pp_enum : name:string -> Format.formatter ->
+                  (attribute list,attribute list) Full.traverse_event Enum.t ->
+                  unit
+
     val pp : name:string -> (attribute list, attribute list) t ->
              Format.formatter ->
              vertex Enum.t -> unit

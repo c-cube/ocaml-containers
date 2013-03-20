@@ -149,6 +149,10 @@ module type S = sig
     | `Other of string * string
     ] (** Dot attribute *)
 
+    val pp_enum : name:string -> Format.formatter ->
+                  (attribute list,attribute list) Full.traverse_event Enum.t ->
+                  unit
+
     val pp : name:string -> (attribute list, attribute list) t ->
              Format.formatter ->
              vertex Enum.t -> unit
@@ -192,7 +196,6 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
     (** A single node of the graph, with outgoing edges *)
   and 'e path = (vertex * 'e * vertex) list
 
-
   (** {2 Basic constructors} *)
 
   let empty =
@@ -223,73 +226,48 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
       | EdgeBackward    (* toward the current trail *)
       | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-    let bfs_full ?(id=ref 0) ?(explored=H.create 5) graph vertices =
-      let enum () =
-        let q = Queue.create () in (* queue of nodes to explore *)
-        Enum.iter (fun v -> Queue.push (v,[]) q) vertices;
-        let rec next () =
-          if Queue.is_empty q then raise Enum.EOG else
-            let v', path = Queue.pop q in
-            if H.mem explored v' then next ()
-              else match graph v' with
-              | Empty -> next ()
-              | Node (_, label, edges) ->
-                begin
-                  H.add explored v' ();
-                  (* explore neighbors *)
-                  Enum.iter
-                    (fun (e,v'') ->
-                      let path' = (v'',e,v') :: path in
-                      Queue.push (v'',path') q)
-                    edges;
-                  (* return this vertex *)
-                  let i = !id in
-                  incr id;
-                  Enum.of_list [EnterVertex (v', label, i, path); ExitVertex v']
-                end
-        in next
-      in Enum.flatten enum
-
+    (* helper type *)
     type 'e todo_item =
-      | DFSEnter of vertex * 'e path
-      | DFSExit of vertex
-      | DFSFollowEdge of 'e path
+      | FullEnter of vertex * 'e path
+      | FullExit of vertex
+      | FullFollowEdge of 'e path
 
+    (** Is [v] part of the [path]? *)
     let rec mem_path path v =
       match path with
       | (v',_,v'')::path' ->
         (X.equal v v') || (X.equal v v'') || (mem_path path' v)
       | [] -> false
 
-    let dfs_full ?(id=ref 0) ?(explored=H.create 5) graph vertices =
+    let bfs_full ?(id=ref 0) ?(explored=H.create 5) graph vertices =
       fun () ->
-        let s = Stack.create () in (* stack of nodes to explore *)
-        Enum.iter (fun v -> Stack.push (DFSEnter (v,[])) s) vertices;
+        let q = Queue.create () in (* queue of nodes to explore *)
+        Enum.iter (fun v -> Queue.push (FullEnter (v,[])) q) vertices;
         let rec next () =
-          if Stack.is_empty s then raise Enum.EOG else
-            match Stack.pop s with
-            | DFSExit v' -> ExitVertex v'
-            | DFSEnter (v', path) ->
+          if Queue.is_empty q then raise Enum.EOG else
+            match Queue.pop q with
+            | FullEnter (v', path) ->
               if H.mem explored v' then next ()
-                (* explore the node now *)
                 else begin match graph v' with
                 | Empty -> next ()
                 | Node (_, label, edges) ->
                   H.add explored v' ();
-                  (* prepare to exit later *)
-                  Stack.push (DFSExit v') s;
                   (* explore neighbors *)
                   Enum.iter
                     (fun (e,v'') ->
-                      Stack.push (DFSFollowEdge ((v'', e, v') :: path)) s)
+                      let path' = (v'',e,v') :: path in
+                      Queue.push (FullFollowEdge path') q)
                     edges;
+                  (* exit node afterward *)
+                  Queue.push (FullExit v') q;
                   (* return this vertex *)
                   let i = !id in
                   incr id;
                   EnterVertex (v', label, i, path)
                 end
-            | DFSFollowEdge [] -> assert false
-            | DFSFollowEdge (((v'', e, v') :: path) as path') ->
+            | FullExit v' -> ExitVertex v'
+            | FullFollowEdge [] -> assert false
+            | FullFollowEdge (((v'', e, v') :: path) as path') ->
               (* edge path .... v' --e--> v'' *)
               if H.mem explored v''
                 then if mem_path path v''
@@ -297,7 +275,48 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
                   else MeetEdge (v'', e, v', EdgeTransverse)
                 else begin
                   (* explore this edge *)
-                  Stack.push (DFSEnter (v'', path')) s;
+                  Queue.push (FullEnter (v'', path')) q;
+                  MeetEdge (v'', e, v', EdgeForward)
+                end
+        in next
+
+    let dfs_full ?(id=ref 0) ?(explored=H.create 5) graph vertices =
+      fun () ->
+        let s = Stack.create () in (* stack of nodes to explore *)
+        Enum.iter (fun v -> Stack.push (FullEnter (v,[])) s) vertices;
+        let rec next () =
+          if Stack.is_empty s then raise Enum.EOG else
+            match Stack.pop s with
+            | FullExit v' -> ExitVertex v'
+            | FullEnter (v', path) ->
+              if H.mem explored v' then next ()
+                (* explore the node now *)
+                else begin match graph v' with
+                | Empty -> next ()
+                | Node (_, label, edges) ->
+                  H.add explored v' ();
+                  (* prepare to exit later *)
+                  Stack.push (FullExit v') s;
+                  (* explore neighbors *)
+                  Enum.iter
+                    (fun (e,v'') ->
+                      Stack.push (FullFollowEdge ((v'', e, v') :: path)) s)
+                    edges;
+                  (* return this vertex *)
+                  let i = !id in
+                  incr id;
+                  EnterVertex (v', label, i, path)
+                end
+            | FullFollowEdge [] -> assert false
+            | FullFollowEdge (((v'', e, v') :: path) as path') ->
+              (* edge path .... v' --e--> v'' *)
+              if H.mem explored v''
+                then if mem_path path v''
+                  then MeetEdge (v'', e, v', EdgeBackward)
+                  else MeetEdge (v'', e, v', EdgeTransverse)
+                else begin
+                  (* explore this edge *)
+                  Stack.push (FullEnter (v'', path')) s;
                   MeetEdge (v'', e, v', EdgeForward)
                 end
         in next
@@ -319,11 +338,13 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
 
   let enum graph v = (Enum.empty, Enum.empty)  (* TODO *)
 
-  let depth graph v = failwith "not implemented"
+  let depth graph v =
+    failwith "not implemented" (* TODO *)
 
   (** Minimal path from the given Graph from the first vertex to
       the second. It returns both the distance and the path *)
-  let min_path ?(distance=fun v1 e v2 -> 1) graph v1 v2 = failwith "not implemented"
+  let min_path ?(distance=fun v1 e v2 -> 1) graph v1 v2 =
+    failwith "not implemented"
 
   (** {2 Lazy transformations} *)
 
@@ -336,12 +357,27 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
       | Node (_, l1, e1), Node (_, l2, e2) ->
         Node (v, combine l1 l2, Enum.append e1 e2)
 
-  let map ~vertices ~edges g = failwith "not implemented"
+  let map ~vertices ~edges g =
+    fun vertex ->
+      match g vertex with
+      | Empty -> Empty
+      | Node (_, l, edges_enum) ->
+        let edges_enum' = Enum.map (fun (e,v') -> (edges e), v') edges_enum in
+        Node (vertex, vertices l, edges_enum')
 
-  let filter ?(vertices=fun v l -> true) ?(edges=fun v1 e v2 -> true) g =
+  let filter ?(vertices=(fun v l -> true)) ?(edges=fun v1 e v2 -> true) g =
+    fun vertex ->
+      match g vertex with
+      | Empty -> Empty
+      | Node (_, l, edges_enum) when vertices vertex l ->
+        (* filter out edges *)
+        let edges_enum' = Enum.filter (fun (e,v') -> edges vertex e v') edges_enum in
+        Node (vertex, l, edges_enum')
+      | Node _ -> Empty  (* filter out this vertex *)
+
+  let limit_depth ~max g =
+    (* TODO; this should be eager (compute depth by BFS) *)
     failwith "not implemented"
-
-  let limit_depth ~max g = failwith "not implemented"
 
   module Infix = struct
     let (++) g1 g2 = union ?combine:None g1 g2
@@ -357,8 +393,54 @@ module Make(X : HASHABLE) : S with type vertex = X.t = struct
     | `Other of string * string
     ] (** Dot attribute *)
 
+    (** Print an enum of Full.traverse_event *)
+    let pp_enum ~name formatter events =
+      (* print an attribute *)
+      let print_attribute formatter attr =
+        match attr with
+        | `Color c -> Format.fprintf formatter "color=%s" c
+        | `Shape s -> Format.fprintf formatter "shape=%s" s
+        | `Weight w -> Format.fprintf formatter "weight=%d" w
+        | `Style s -> Format.fprintf formatter "style=%s" s
+        | `Label l -> Format.fprintf formatter "label=\"%s\"" l
+        | `Other (name, value) -> Format.fprintf formatter "%s=\"%s\"" name value
+      (* map from vertices to integers *)
+      and get_id =
+        let count = ref 0 in
+        let m = H.create 5 in
+        fun vertex ->
+          try H.find m vertex
+          with Not_found ->
+            let n = !count in
+            incr count;
+            H.replace m vertex n;
+            n
+      in
+      (* the unique name of a vertex *)
+      let pp_vertex formatter v =
+        Format.fprintf formatter "vertex_%d" (get_id v) in
+      (* print preamble *)
+      Format.fprintf formatter "@[<v2>digraph %s {@;" name;
+      (* traverse *)
+      Enum.iter
+        (function
+          | Full.EnterVertex (v, attrs, _, _) ->
+            Format.fprintf formatter "  @[<h>%a [%a];@]@." pp_vertex v
+              (Enum.pp ~sep:"," print_attribute) (Enum.of_list attrs)
+          | Full.ExitVertex _ -> ()
+          | Full.MeetEdge (v2, attrs, v1, _) ->
+            Format.fprintf formatter "  @[<h>%a -> %a [%a];@]@."
+              pp_vertex v1 pp_vertex v2
+              (Enum.pp ~sep:"," print_attribute)
+              (Enum.of_list attrs))
+        events;
+      (* close *)
+      Format.fprintf formatter "}@]@;@?";
+      ()
+
     let pp ~name graph formatter vertices =
-      failwith "not implemented"
+      let enum = Full.bfs_full graph vertices in
+      pp_enum ~name formatter enum
   end
 end
 
