@@ -182,6 +182,10 @@ val to_rev_list : 'a t -> 'a list
 
 val int_range : int -> int -> int t
 
+val pp : ?start:string -> ?stop:string -> ?sep:string -> ?horizontal:bool ->
+         (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit
+  (** Pretty print an enum *)
+
 module Infix : sig
   val (@@) : 'a t -> 'a t -> 'a t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t

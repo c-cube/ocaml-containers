@@ -492,6 +492,25 @@ let int_range i j =
           x
         end
 
+let pp ?(start="") ?(stop="") ?(sep=",") ?(horizontal=false) pp_elem formatter enum =
+  (if horizontal
+    then Format.fprintf formatter "@[<h>%s" start
+    else Format.fprintf formatter "@[%s" start);
+  let gen = enum () in
+  let rec next is_first =
+    let continue_ =
+      try
+        let x = gen () in
+        (if not is_first
+          then Format.fprintf formatter "%s@,%a" sep pp_elem x
+          else pp_elem formatter x);
+        true
+      with EOG -> false in
+    if continue_ then next false
+  in
+  next true;
+  Format.fprintf formatter "%s@]" stop
+
 module Infix = struct
   let (@@) = append
 
