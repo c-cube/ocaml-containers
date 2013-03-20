@@ -31,29 +31,6 @@ type 'a t
 exception SendTwice
   (** Exception raised when a future is evaluated several time *)
 
-(** {2 Thread pool} *)
-module Pool : sig
-  type t
-    (** A pool of threads *)
-
-  val create : ?max_load:int -> ?transient_lifetime:int -> size:int -> t
-    (** Create a pool with the given number of threads. If the load goes
-        above the given threshold (default max_int), a new thread is spawned
-        only to die after having processed [transient_lifetime] jobs. *)
-
-  val load : t -> int
-    (** Current number of waiting jobs *)
-
-  val schedule : t -> (unit -> unit) -> unit
-    (** Schedule a function to run in the pool *)
-
-  val finish : t -> unit
-    (** Kill threads in the pool *)
-end
-
-val default_pool : Pool.t
-  (** Pool of threads that is used by default. Growable if needed. *)
-
 (** {2 MVar: a zero-or-one element thread-safe box} *)
 
 module MVar : sig
@@ -81,6 +58,28 @@ module MVar : sig
   val peek : 'a t -> 'a
     (** Look at the value, without removing it *)
 end
+
+(** {2 Thread pool} *)
+module Pool : sig
+  type t
+    (** A pool of threads *)
+
+  val create : ?timeout:float -> size:int -> t
+    (** Create a pool with at most the given number of threads. [timeout]
+        is the time after which idle threads are killed. *)
+
+  val size : t -> int
+    (** Current size of the pool *)
+
+  val run : t -> (unit -> unit) -> unit
+    (** Run the function in the pool *)
+
+  val finish : t -> unit
+    (** Kill threads in the pool *)
+end
+
+val default_pool : Pool.t
+  (** Pool of threads that is used by default. Growable if needed. *)
 
 (** {2 Basic low-level Future functions} *)
 
