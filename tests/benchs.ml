@@ -1,6 +1,34 @@
 
 (** Benchmarking *)
 
+(** {2 Sequence/Enum} *)
+
+let _ =
+  let n = 1_000_000 in
+  let seq () = Sequence.fold (+) 0 (Sequence.int_range ~start:0 ~stop:n) in
+  let enum () = Enum.fold (+) 0 (Enum.int_range 0 n) in
+  Bench.bench
+    [ "sequence.fold", seq;
+      "enum.fold", enum;
+    ]
+
+let _ =
+  let n = 100_000 in
+  let seq () =
+    let open Sequence in
+    let seq = int_range ~start:0 ~stop:n in
+    let seq = flatMap (fun x -> int_range ~start:x ~stop:(x+10)) seq in
+    fold (+) 0 seq in
+  let enum () =
+    let open Enum in
+    let seq = int_range 0 n in
+    let seq = flatMap (fun x -> int_range x (x+10)) seq in
+    fold (+) 0 seq in
+  Bench.bench
+    [ "sequence.flatMap", seq;
+      "enum.flatMap", enum;
+    ]
+
 (** {2 Cache} *)
 
 (** Cached fibonacci function *)
