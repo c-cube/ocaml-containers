@@ -390,3 +390,29 @@ module Dot = struct
     let enum = Full.bfs_full graph vertices in
     pp_enum ~eq:graph.eq ~hash:graph.hash ~name formatter enum
 end
+
+(** {2 Example of graphs} *)
+
+let divisors_graph =
+  let rec divisors acc j i =
+    if j = i then acc
+    else
+      let acc' = if (i mod j = 0) then j :: acc else acc in
+      divisors acc' (j+1) i
+  in
+  let force i =
+    if i > 2
+      then
+        let l = divisors [] 2 i in
+        let edges = Enum.map (fun i -> (), i) (Enum.of_list l) in
+        Node (i, i, edges)
+      else
+        Node (i, i, Enum.empty)
+  in make force
+
+let collatz_graph =
+  let force i =
+    if i mod 2 = 0
+      then Node (i, i, Enum.singleton ((), i / 2))
+      else Node (i, i, Enum.singleton ((), i * 3 + 1))
+  in make force

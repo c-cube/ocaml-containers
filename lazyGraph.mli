@@ -207,3 +207,9 @@ module Dot : sig
     (** Pretty print the given graph (starting from the given set of vertices)
         to the channel in DOT format *)
 end
+
+(** {2 Example of graphs} *)
+
+val divisors_graph : (int, int, unit) t
+
+val collatz_graph : (int, int, unit) t
