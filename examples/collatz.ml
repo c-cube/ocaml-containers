@@ -10,7 +10,7 @@ let collatz n filename =
   Format.printf "print graph to %s@." filename;
   let out = open_out filename in
   let fmt = Format.formatter_of_out_channel out in
-  LazyGraph.Dot.pp ~name:"collatz" g fmt (Enum.singleton n);
+  LazyGraph.Dot.pp ~name:"collatz" g fmt (Gen.singleton n);
   Format.pp_print_flush fmt ();
   close_out out
 

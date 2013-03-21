@@ -6,4 +6,4 @@
 #load "containers.cma";;
 #require "threads";;
 #load "thread_containers.cma";;
-open Enum.Infix;;
+open Gen.Infix;;

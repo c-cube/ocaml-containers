@@ -1,17 +1,17 @@
 (** Compute the memory footprint of a value (and its subvalues). Reference is
     http://rwmj.wordpress.com/2009/08/05/ocaml-internals-part-2-strings-and-other-types/ *)
 
-open Enum.Infix
+open Gen.Infix
 
 (** A graph vertex is an Obj.t value *)
 let graph =
   let force x =
     if Obj.is_block x
       then
-        let children = Enum.map (fun i -> i, Obj.field x i) (0--(Obj.size x - 1)) in
+        let children = Gen.map (fun i -> i, Obj.field x i) (0--(Obj.size x - 1)) in
         LazyGraph.Node (x, Obj.tag x, children)
       else
-        LazyGraph.Node (x, Obj.obj x, Enum.empty)
+        LazyGraph.Node (x, Obj.obj x, Gen.empty)
   in LazyGraph.make ~eq:(==) force
 
 let word_size = Sys.word_size / 8
@@ -24,13 +24,13 @@ let size x =
 let compute_size x =
   let o = Obj.repr x in
   let vertices = LazyGraph.bfs graph o in
-  Enum.fold (fun sum (o',_,_) -> size o' + sum) 0 vertices
+  Gen.fold (fun sum (o',_,_) -> size o' + sum) 0 vertices
 
 let print_val fmt x =
   let o = Obj.repr x in
   let graph' = LazyGraph.map ~edges:(fun i -> [`Label (string_of_int i)])
                  ~vertices:(fun v -> [`Label (string_of_int v); `Shape "box"]) graph in
-  LazyGraph.Dot.pp ~name:"value" graph' fmt (Enum.singleton o)
+  LazyGraph.Dot.pp ~name:"value" graph' fmt (Gen.singleton o)
 
 let print_val_file filename x =
   let out = open_out filename in
@@ -46,7 +46,7 @@ let process_val ~name x =
 module ISet = Set.Make(struct type t = int let compare = compare end)
 
 let mk_circ n =
-  let start = Enum.to_list (1--n) in
+  let start = Gen.to_list (1--n) in
   (* make the end of the list point to its beginning *)
   let rec cycle l = match l with
   | [] -> assert false
@@ -57,10 +57,10 @@ let mk_circ n =
   start
 
 let _ =
-  let s = Enum.fold (fun s x -> ISet.add x s) ISet.empty (1--100) in
+  let s = Gen.fold (fun s x -> ISet.add x s) ISet.empty (1--100) in
   process_val ~name:"foo" s;
-  let l = Enum.to_list (Enum.map (fun i -> Enum.to_list (i--(i+42)))
-    (Enum.of_list [0;100;1000])) in
+  let l = Gen.to_list (Gen.map (fun i -> Gen.to_list (i--(i+42)))
+    (Gen.of_list [0;100;1000])) in
   process_val ~name:"bar" l;
   let l' = mk_circ 100 in
   process_val ~name:"baaz" l';
