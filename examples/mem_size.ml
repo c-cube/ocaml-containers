@@ -1,19 +1,18 @@
 (** Compute the memory footprint of a value (and its subvalues). Reference is
     http://rwmj.wordpress.com/2009/08/05/ocaml-internals-part-2-strings-and-other-types/ *)
 
-module G = LazyGraph.PhysicalMake(struct type t = Obj.t end)
-  (** Graph on memory values *)
-
 open Enum.Infix
 
 (** A graph vertex is an Obj.t value *)
-let graph x =
-  if Obj.is_block x
-    then
-      let children = Enum.map (fun i -> i, Obj.field x i) (0--(Obj.size x - 1)) in
-      G.Node (x, Obj.tag x, children)
-    else
-      G.Node (x, Obj.obj x, Enum.empty)
+let graph =
+  let force x =
+    if Obj.is_block x
+      then
+        let children = Enum.map (fun i -> i, Obj.field x i) (0--(Obj.size x - 1)) in
+        LazyGraph.Node (x, Obj.tag x, children)
+      else
+        LazyGraph.Node (x, Obj.obj x, Enum.empty)
+  in LazyGraph.make ~eq:(==) force
 
 let word_size = Sys.word_size / 8
 
@@ -24,14 +23,14 @@ let size x =
 
 let compute_size x =
   let o = Obj.repr x in
-  let vertices = G.bfs graph o in
+  let vertices = LazyGraph.bfs graph o in
   Enum.fold (fun sum (o',_,_) -> size o' + sum) 0 vertices
 
 let print_val fmt x =
   let o = Obj.repr x in
-  let graph' = G.map ~edges:(fun i -> [`Label (string_of_int i)])
+  let graph' = LazyGraph.map ~edges:(fun i -> [`Label (string_of_int i)])
                  ~vertices:(fun v -> [`Label (string_of_int v); `Shape "box"]) graph in
-  G.Dot.pp ~name:"value" graph' fmt (Enum.singleton o)
+  LazyGraph.Dot.pp ~name:"value" graph' fmt (Enum.singleton o)
 
 let print_val_file filename x =
   let out = open_out filename in
