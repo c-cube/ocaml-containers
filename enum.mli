@@ -184,7 +184,12 @@ val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
 
 val merge : 'a t t -> 'a t
   (** Pick elements fairly in each sub-enum. The given enum
-      must be finite (not its elements, though). *)
+      must be finite (not its elements, though). The merge of enums
+      [e1, e2, ... en] picks one element in [e1], then one element in [e2],
+      then in [e3], ..., then in [en], and then starts again at [e1]. Once
+      a generator is empty, it is skipped; when they are all empty,
+      their merge is also empty. 
+      For instance, [merge [1;3;5] [2;4;6]] will be [1;2;3;4;5;6]. *)
 
 (** {3 Mutable heap (taken from heap.ml to avoid dependencies)} *)
 module Heap : sig
