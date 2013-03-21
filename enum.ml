@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Consumable generators} *)
+(** {1 Restartable generators} *)
 
 exception EOG
   (** End of Generation *)
@@ -474,9 +474,31 @@ module Heap = struct
     m
 end
 
+(** Binary sorted merge of two sorted sequences *)
+let sorted_merge ?(cmp=compare) e1 e2 =
+  fun () ->
+    let gen1, gen2 = e1 (), e2 () in
+    let next1 () = try Some (gen1 ()) with EOG -> None in
+    let next2 () = try Some (gen2 ()) with EOG -> None in
+    let x1 = ref (next1 ()) in
+    let x2 = ref (next2 ()) in
+    fun () ->
+      match !x1, !x2 with
+      | None, None -> raise EOG
+      | Some y1, Some y2 ->
+        if cmp y1 y2 <= 0
+          then (x1 := next1 (); y1)
+          else (x2 := next2 (); y2)
+      | Some y1, None ->
+        x1 := next1 ();
+        y1
+      | None, Some y2 ->
+        x2 := next2 ();
+        y2
+
 (** Assuming subsequences are sorted in increasing order, merge them
     into an increasing sequence *)
-let merge_sorted ?(cmp=compare) enum =
+let sorted_merge_n ?(cmp=compare) enum =
   fun () ->
     (* make a heap of (value, generator) *)
     let cmp (v1,_) (v2,_) = cmp v1 v2 in

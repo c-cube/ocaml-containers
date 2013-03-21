@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Consumable generators} *)
+(** {1 Restartable generators} *)
 
 (** This structure is inspired from Ocaml Batteries' BatEnum.t. It features
     restartable generators. *)
@@ -195,9 +195,11 @@ module Heap : sig
   val pop : 'a t -> 'a
 end
 
-val merge_sorted : ?cmp:('a -> 'a -> int) -> 'a t t -> 'a t
-  (** Assuming subsequences are sorted in increasing order, merge them
-      into an increasing sequence *)
+val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t
+  (** Merge two sorted sequences into a sorted sequence *)
+
+val sorted_merge_n : ?cmp:('a -> 'a -> int) -> 'a t t -> 'a t
+  (** Sorted merge of multiple sorted sequences *)
 
 val persistent : 'a generator -> 'a t
   (** Store content of the generator in memory, to be able to iterate on it
