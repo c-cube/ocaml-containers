@@ -39,21 +39,24 @@ and 'a generator = unit -> 'a
 let start enum = enum ()
 
 module Gen = struct
+  let empty () = raise EOG
+
   let next gen = gen ()
 
   let junk gen = ignore (gen ())
 
-  let rec fold f acc gen =
-    let acc', stop =
-      try f acc (gen ()), false
-      with EOG -> acc, true in
-    if stop then acc' else fold f acc' gen
+  let fold f acc gen =
+    let acc = ref acc in
+    (try
+      while true do acc := f !acc (gen ()) done
+    with EOG -> ());
+    !acc
 
-  let rec iter f gen =
-    let stop =
-      try f (gen ()); false
-      with EOG -> true in
-    if stop then () else iter f gen
+  let iter f gen =
+    try
+      while true do f (gen ()) done
+    with EOG ->
+      ()
 
   let length gen =
     fold (fun acc _ -> acc + 1) 0 gen
@@ -65,6 +68,7 @@ module Gen = struct
       | [] -> raise EOG
       | x::l' -> l := l'; x
 
+  (* non-tailrec construction of (small) list *)
   let to_list gen =
     let rec fold () =
       try
@@ -133,8 +137,7 @@ let map f enum =
     let gen = enum () in
     (* the mapped generator *)
     fun () ->
-      try f (gen ())
-      with EOG -> raise EOG
+      f (gen ())
 
 let append e1 e2 =
   fun () ->
@@ -165,33 +168,28 @@ let cycle enum =
 let flatten enum =
   fun () ->
     let next_gen = enum () in
-    let gen = ref (fun () -> raise EOG) in
+    let gen = ref Gen.empty in
     (* get next element *)
     let rec next () =
       try !gen ()
       with EOG ->
         (* jump to next sub-enum *)
-        let stop =
-          try gen := (next_gen () ()); false
-          with EOG -> true in
-        if stop then raise EOG else next ()
+        gen := (next_gen ()) ();
+        next ()
     in next
       
 let flatMap f enum =
   fun () ->
     let next_elem = enum () in
-    let gen = ref (fun () -> raise EOG) in
+    let gen = ref Gen.empty in
     (* get next element *)
     let rec next () =
       try !gen ()
       with EOG ->
         (* enumerate f (next element) *)
-        let stop =
-          try
-            let x = next_elem () in
-            gen := (f x) (); false
-          with EOG -> true in
-        if stop then raise EOG else next ()
+        let x = next_elem () in
+        gen := (f x) ();
+        next ()  (* try again, with [gen = f x] *)
     in next
 
 let take n enum =
@@ -210,7 +208,7 @@ let drop n enum =
     let count = ref 0 in  (* how many droped elements? *)
     let rec next () =
       if !count < n
-        then begin incr count; ignore (gen ()); next () end
+        then begin incr count; Gen.junk gen; next () end
         else gen ()
     in next
 
@@ -218,6 +216,7 @@ let filter p enum =
   fun () ->
     let gen = enum () in
     let rec next () =
+      (* wrap exception into option, for next to be tailrec *)
       match (try Some (gen ()) with EOG -> None) with
       | None -> raise EOG
       | Some x ->
@@ -230,12 +229,8 @@ let takeWhile p enum =
   fun () ->
     let gen = enum () in
     let rec next () =
-      match (try Some (gen ()) with EOG -> None) with
-      | None -> raise EOG
-      | Some x ->
-        if p x
-          then x (* yield element *)
-          else raise EOG (* stop *)
+      let x = gen () in
+      if p x then x else raise EOG
     in next
 
 let dropWhile p enum =
@@ -243,13 +238,12 @@ let dropWhile p enum =
     let gen = enum () in
     let stop_drop = ref false in
     let rec next () =
-      match (try Some (gen ()) with EOG -> None) with
-      | None -> raise EOG
-      | Some x when !stop_drop -> x (* yield *)
-      | Some x ->
-        if p x
-          then next ()  (* drop *)
-          else (stop_drop := true; x) (* stop dropping, and yield *)
+      let x = gen () in
+      if !stop_drop
+        then x  (* yield *)
+      else if p x
+        then next ()  (* continue dropping *)
+        else (stop_drop := true; x)  (* stop dropping *)
     in next
 
 let filterMap f enum =
@@ -257,14 +251,10 @@ let filterMap f enum =
     let gen = enum () in
     (* tailrec *)
     let rec next () =
-      match (try Some (gen ()) with EOG -> None) with
-      | None -> raise EOG
-      | Some x ->
-        begin
-          match f x with
-          | None -> next ()  (* drop element *)
-          | Some y -> y  (* return [f x] *)
-        end
+      let x = gen () in
+      match f x with
+      | None -> next ()
+      | Some y -> y
     in next
 
 let zipWith f a b =
@@ -272,7 +262,7 @@ let zipWith f a b =
     let gen_a = a () in
     let gen_b = b () in
     fun () ->
-      f (gen_a ()) (gen_b ())
+      f (gen_a ()) (gen_b ())  (* combine elements *)
 
 let zip a b = zipWith (fun x y -> x,y) a b
 

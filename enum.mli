@@ -43,6 +43,8 @@ val start : 'a t -> 'a generator
   (** Create a new generator *)
 
 module Gen : sig
+  val empty : 'a generator
+
   val next : 'a generator -> 'a
     (** Get next element, or raise EOG *)
 
