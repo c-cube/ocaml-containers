@@ -144,6 +144,11 @@ let fold2 f acc e1 e2 =
   with EOG -> ());
   !acc
 
+let reduce f enum =
+  let gen = enum () in
+  let acc = try gen () with EOG -> raise (Invalid_argument "reduce") in 
+  Gen.fold f acc gen
+
 (** Successive values of the accumulator *)
 let scan f acc e =
   fun () ->

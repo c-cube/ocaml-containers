@@ -95,7 +95,11 @@ val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** Fold on the generator *)
 
 val fold2 : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
-  (** Fold on the two enums in parallel *)
+  (** Fold on the two enums in parallel. Stops once one of the enums
+      is exhausted. *)
+
+val reduce : ('a -> 'a -> 'a) -> 'a t -> 'a
+  (** Fold on non-empty sequences (otherwise raise Invalid_argument) *)
 
 val scan : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
   (** Successive values of the accumulator *)
@@ -104,7 +108,7 @@ val iter : ('a -> unit) -> 'a t -> unit
   (** Iterate on the enum *)
 
 val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
-  (** Iterate on the two sequences *)
+  (** Iterate on the two sequences. Stops once one of them is exhausted.*)
 
 val length : _ t -> int
   (** Length of an enum (linear time) *)
