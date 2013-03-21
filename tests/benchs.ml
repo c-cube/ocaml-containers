@@ -1,15 +1,15 @@
 
 (** Benchmarking *)
 
-(** {2 Sequence/Enum} *)
+(** {2 Sequence/Gen} *)
 
 let _ =
   let n = 1_000_000 in
   let seq () = Sequence.fold (+) 0 (Sequence.int_range ~start:0 ~stop:n) in
-  let enum () = Enum.fold (+) 0 (Enum.int_range 0 n) in
+  let enum () = Gen.fold (+) 0 (Gen.int_range 0 n) in
   Bench.bench
     [ "sequence.fold", seq;
-      "enum.fold", enum;
+      "gen.fold", enum;
     ]
 
 let _ =
@@ -20,13 +20,13 @@ let _ =
     let seq = flatMap (fun x -> int_range ~start:x ~stop:(x+10)) seq in
     fold (+) 0 seq in
   let enum () =
-    let open Enum in
+    let open Gen in
     let seq = int_range 0 n in
     let seq = flatMap (fun x -> int_range x (x+10)) seq in
     fold (+) 0 seq in
   Bench.bench
     [ "sequence.flatMap", seq;
-      "enum.flatMap", enum;
+      "gen.flatMap", enum;
     ]
 
 (** {2 Cache} *)
