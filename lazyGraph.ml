@@ -41,7 +41,7 @@ type ('id, 'v, 'e) t = {
       other vertices, or to Empty if the identifier is not part of the graph. *)
 and ('id, 'v, 'e) node =
   | Empty
-  | Node of 'id * 'v * ('e * 'id) Enum.t
+  | Node of 'id * 'v * ('e * 'id) Gen.t
   (** A single node of the graph, with outgoing edges *)
 and ('id, 'e) path = ('id * 'e * 'id) list
   (** A reverse path (from the last element of the path to the first). *)
@@ -56,7 +56,7 @@ let empty =
 
 let singleton ?(eq=(=)) ?(hash=Hashtbl.hash) v label =
   let force v' =
-    if eq v v' then Node (v, label, Enum.empty) else Empty in
+    if eq v v' then Node (v, label, Gen.empty) else Empty in
   { force; eq; hash; }
 
 let make ?(eq=(=)) ?(hash=Hashtbl.hash) force =
@@ -69,7 +69,7 @@ let from_fun ?(eq=(=)) ?(hash=Hashtbl.hash) f =
   let force v =
     match f v with
     | None -> Empty
-    | Some (l, edges) -> Node (v, l, Enum.of_list edges) in
+    | Some (l, edges) -> Node (v, l, Gen.of_list edges) in
   { eq; hash; force; }
 
 (** {2 Polymorphic utils} *)
@@ -157,7 +157,7 @@ module Mutable = struct
     let map = mk_hmap ~eq ~hash in
     let force v =
       try let node = map#get v in
-          Node (v, node.mut_v, Enum.of_list node.mut_outgoing)
+          Node (v, node.mut_v, Gen.of_list node.mut_outgoing)
       with Not_found -> Empty in
     let graph = { eq; hash; force; } in
     map, graph
@@ -208,9 +208,9 @@ module Full = struct
       let explored = explored () in
       let id = ref id in
       let q = Queue.create () in (* queue of nodes to explore *)
-      Enum.iter (fun v -> Queue.push (FullEnter (v,[])) q) vertices;
+      Gen.iter (fun v -> Queue.push (FullEnter (v,[])) q) vertices;
       let rec next () =
-        if Queue.is_empty q then raise Enum.EOG else
+        if Queue.is_empty q then raise Gen.EOG else
           match Queue.pop q with
           | FullEnter (v', path) ->
             if explored#mem v' then next ()
@@ -219,7 +219,7 @@ module Full = struct
               | Node (_, label, edges) ->
                 explored#add v';
                 (* explore neighbors *)
-                Enum.iter
+                Gen.iter
                   (fun (e,v'') ->
                     let path' = (v'',e,v') :: path in
                     Queue.push (FullFollowEdge path') q)
@@ -254,9 +254,9 @@ module Full = struct
       let explored = explored () in
       let id = ref id in
       let s = Stack.create () in (* stack of nodes to explore *)
-      Enum.iter (fun v -> Stack.push (FullEnter (v,[])) s) vertices;
+      Gen.iter (fun v -> Stack.push (FullEnter (v,[])) s) vertices;
       let rec next () =
-        if Stack.is_empty s then raise Enum.EOG else
+        if Stack.is_empty s then raise Gen.EOG else
           match Stack.pop s with
           | FullExit v' -> ExitVertex v'
           | FullEnter (v', path) ->
@@ -269,7 +269,7 @@ module Full = struct
                 (* prepare to exit later *)
                 Stack.push (FullExit v') s;
                 (* explore neighbors *)
-                Enum.iter
+                Gen.iter
                   (fun (e,v'') ->
                     Stack.push (FullFollowEdge ((v'', e, v') :: path)) s)
                   edges;
@@ -294,20 +294,20 @@ module Full = struct
 end
 
 let bfs ?id ?explored graph v =
-  Enum.filterMap
+  Gen.filterMap
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.bfs_full ?id ?explored graph (Enum.singleton v))
+    (Full.bfs_full ?id ?explored graph (Gen.singleton v))
 
 let dfs ?id ?explored graph v =
-  Enum.filterMap
+  Gen.filterMap
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.dfs_full ?id ?explored graph (Enum.singleton v))
+    (Full.dfs_full ?id ?explored graph (Gen.singleton v))
 
-let enum graph v = (Enum.empty, Enum.empty)  (* TODO *)
+let enum graph v = (Gen.empty, Gen.empty)  (* TODO *)
 
 let depth graph v =
   failwith "not implemented" (* TODO *)
@@ -326,7 +326,7 @@ let union ?(combine=fun x y -> x) g1 g2 =
     | ((Node _) as n), Empty -> n
     | Empty, ((Node _) as n) -> n
     | Node (_, l1, e1), Node (_, l2, e2) ->
-      Node (v, combine l1 l2, Enum.append e1 e2)
+      Node (v, combine l1 l2, Gen.append e1 e2)
   in { eq=g1.eq; hash=g1.hash; force; }
 
 let map ~vertices ~edges g =
@@ -334,7 +334,7 @@ let map ~vertices ~edges g =
     match g.force v with
     | Empty -> Empty
     | Node (_, l, edges_enum) ->
-      let edges_enum' = Enum.map (fun (e,v') -> (edges e), v') edges_enum in
+      let edges_enum' = Gen.map (fun (e,v') -> (edges e), v') edges_enum in
       Node (v, vertices l, edges_enum')
   in { eq=g.eq; hash=g.hash; force; }
 
@@ -344,7 +344,7 @@ let filter ?(vertices=(fun v l -> true)) ?(edges=fun v1 e v2 -> true) g =
     | Empty -> Empty
     | Node (_, l, edges_enum) when vertices v l ->
       (* filter out edges *)
-      let edges_enum' = Enum.filter (fun (e,v') -> edges v e v') edges_enum in
+      let edges_enum' = Gen.filter (fun (e,v') -> edges v e v') edges_enum in
       Node (v, l, edges_enum')
     | Node _ -> Empty  (* filter out this vertex *)
   in { eq=g.eq; hash=g.hash; force; }
@@ -356,8 +356,8 @@ let product g1 g2 =
     | _, Empty -> Empty
     | Node (_, l1, edges1), Node (_, l2, edges2) ->
       (* product of edges *)
-      let edges = Enum.product edges1 edges2 in
-      let edges = Enum.map (fun ((e1,v1'),(e2,v2')) -> ((e1,e2),(v1',v2'))) edges in
+      let edges = Gen.product edges1 edges2 in
+      let edges = Gen.map (fun ((e1,v1'),(e2,v2')) -> ((e1,e2),(v1',v2'))) edges in
       Node ((v1,v2), (l1,l2), edges)
   and eq (v1,v2) (v1',v2') =
     g1.eq v1 v1' && g2.eq v2 v2'
@@ -412,17 +412,17 @@ module Dot = struct
     (* print preamble *)
     Format.fprintf formatter "@[<v2>digraph %s {@;" name;
     (* traverse *)
-    Enum.iter
+    Gen.iter
       (function
         | Full.EnterVertex (v, attrs, _, _) ->
           Format.fprintf formatter "  @[<h>%a [%a];@]@." pp_vertex v
-            (Enum.pp ~sep:"," print_attribute) (Enum.of_list attrs)
+            (Gen.pp ~sep:"," print_attribute) (Gen.of_list attrs)
         | Full.ExitVertex _ -> ()
         | Full.MeetEdge (v2, attrs, v1, _) ->
           Format.fprintf formatter "  @[<h>%a -> %a [%a];@]@."
             pp_vertex v1 pp_vertex v2
-            (Enum.pp ~sep:"," print_attribute)
-            (Enum.of_list attrs))
+            (Gen.pp ~sep:"," print_attribute)
+            (Gen.of_list attrs))
       events;
     (* close *)
     Format.fprintf formatter "}@]@;@?";
@@ -446,15 +446,15 @@ let divisors_graph =
     if i > 2
       then
         let l = divisors [] 2 i in
-        let edges = Enum.map (fun i -> (), i) (Enum.of_list l) in
+        let edges = Gen.map (fun i -> (), i) (Gen.of_list l) in
         Node (i, i, edges)
       else
-        Node (i, i, Enum.empty)
+        Node (i, i, Gen.empty)
   in make force
 
 let collatz_graph =
   let force i =
     if i mod 2 = 0
-      then Node (i, i, Enum.singleton ((), i / 2))
-      else Node (i, i, Enum.singleton ((), i * 3 + 1))
+      then Node (i, i, Gen.singleton ((), i / 2))
+      else Node (i, i, Gen.singleton ((), i * 3 + 1))
   in make force

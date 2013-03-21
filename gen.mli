@@ -42,6 +42,8 @@ and 'a generator = unit -> 'a
 val start : 'a t -> 'a generator
   (** Create a new generator *)
 
+(** {2 Transient generators} *)
+
 module Gen : sig
   val empty : 'a generator
 

@@ -13,10 +13,10 @@ let test_mvar () =
   ()
 
 let test_parallel () =
-  let open Enum.Infix in
+  let open Gen.Infix in
   let l = 1 -- 300
-    |> Enum.map (fun _ -> Future.spawn (fun () -> Thread.delay 0.1; 1))
-    |> Enum.to_list in
+    |> Gen.map (fun _ -> Future.spawn (fun () -> Thread.delay 0.1; 1))
+    |> Gen.to_list in
   let l' = List.map Future.get l in
   OUnit.assert_equal 300 (List.fold_left (+) 0 l');
   ()

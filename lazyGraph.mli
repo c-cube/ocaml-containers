@@ -44,7 +44,7 @@ type ('id, 'v, 'e) t = {
       other vertices, or to Empty if the identifier is not part of the graph. *)
 and ('id, 'v, 'e) node =
   | Empty
-  | Node of 'id * 'v * ('e * 'id) Enum.t
+  | Node of 'id * 'v * ('e * 'id) Gen.t
   (** A single node of the graph, with outgoing edges *)
 and ('id, 'e) path = ('id * 'e * 'id) list
   (** A reverse path (from the last element of the path to the first). *)
@@ -70,8 +70,8 @@ val make : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
   (** Build a graph from the [force] function *)
 
 val from_enum : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
-                vertices:('id * 'v) Enum.t ->
-                edges:('id * 'e * 'id) Enum.t ->
+                vertices:('id * 'v) Gen.t ->
+                edges:('id * 'e * 'id) Gen.t ->
                 ('id, 'v, 'e) t
   (** Concrete (eager) representation of a Graph (XXX not implemented)*)
 
@@ -143,27 +143,27 @@ module Full : sig
     | EdgeTransverse  (* toward a totally explored part of the graph *)
 
   val bfs_full : ?id:int -> ?explored:(unit -> 'id set) ->
-                  ('id, 'v, 'e) t -> 'id Enum.t ->
-                  ('id, 'v, 'e) traverse_event Enum.t
+                  ('id, 'v, 'e) t -> 'id Gen.t ->
+                  ('id, 'v, 'e) traverse_event Gen.t
     (** Lazy traversal in breadth first from a finite set of vertices *)
 
   val dfs_full : ?id:int -> ?explored:(unit -> 'id set) ->
-                 ('id, 'v, 'e) t -> 'id Enum.t ->
-                 ('id, 'v, 'e) traverse_event Enum.t
+                 ('id, 'v, 'e) t -> 'id Gen.t ->
+                 ('id, 'v, 'e) traverse_event Gen.t
     (** Lazy traversal in depth first from a finite set of vertices *)
 end
 
 (** The traversal functions assign a unique ID to every traversed node *)
 
 val bfs : ?id:int -> ?explored:(unit -> 'id set) ->
-          ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Enum.t
+          ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
   (** Lazy traversal in breadth first *)
 
 val dfs : ?id:int -> ?explored:(unit -> 'id set) ->
-          ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Enum.t
+          ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
   (** Lazy traversal in depth first *)
 
-val enum : ('id, 'v, 'e) t -> 'id -> ('id * 'v) Enum.t * ('id * 'e * 'id) Enum.t
+val enum : ('id, 'v, 'e) t -> 'id -> ('id * 'v) Gen.t * ('id * 'e * 'id) Gen.t
   (** Convert to an enumeration. The traversal order is undefined. *)
 
 val depth : ('id, _, 'e) t -> 'id -> ('id, int, 'e) t
@@ -220,12 +220,12 @@ module Dot : sig
 
   val pp_enum : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
                 name:string -> Format.formatter ->
-                ('id,attribute list,attribute list) Full.traverse_event Enum.t ->
+                ('id,attribute list,attribute list) Full.traverse_event Gen.t ->
                 unit
 
   val pp : name:string -> ('id, attribute list, attribute list) t ->
            Format.formatter ->
-           'id Enum.t -> unit
+           'id Gen.t -> unit
     (** Pretty print the given graph (starting from the given set of vertices)
         to the channel in DOT format *)
 end

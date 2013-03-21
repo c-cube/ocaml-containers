@@ -38,6 +38,8 @@ and 'a generator = unit -> 'a
 
 let start enum = enum ()
 
+(** {2 Transient generators} *)
+
 module Gen = struct
   let empty () = raise EOG
 
