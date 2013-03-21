@@ -83,7 +83,7 @@ val default_pool : Pool.t
 
 (** {2 Basic low-level Future functions} *)
 
-val make : unit -> 'a t
+val make : Pool.t -> 'a t
   (** Create a future, representing a value that is not known yet. *)
 
 val get : 'a t -> 'a
@@ -111,19 +111,19 @@ val on_failure : _ t -> (exn -> unit) -> unit
 val on_finish : _ t -> (unit -> unit) -> unit
   (** Attach a handler to be called when the future is evaluated *)
 
-val flatMap : ('a -> 'b t) -> 'a t -> 'b t
+val flatMap : ?pool:Pool.t -> ('a -> 'b t) -> 'a t -> 'b t
   (** Monadic combination of futures *)
 
-val andThen : 'a t -> (unit -> 'b t) -> 'b t
+val andThen : ?pool:Pool.t -> 'a t -> (unit -> 'b t) -> 'b t
   (** Wait for the first future to succeed, then launch the second *)
 
-val sequence : 'a t list -> 'a list t
+val sequence : ?pool:Pool.t -> 'a t list -> 'a list t
   (** Future that waits for all previous sequences to terminate *)
 
-val choose : 'a t list -> 'a t
+val choose : ?pool:Pool.t -> 'a t list -> 'a t
   (** Choose among those futures (the first to terminate) *)
 
-val map : ('a -> 'b) -> 'a t -> 'b t
+val map : ?pool:Pool.t -> ('a -> 'b) -> 'a t -> 'b t
   (** Maps the value inside the future *)
 
 (** {2 Future constructors} *)
