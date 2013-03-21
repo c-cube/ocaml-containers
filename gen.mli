@@ -82,6 +82,10 @@ val singleton : 'a -> 'a t
 val repeat : 'a -> 'a t
   (** Repeat same element endlessly *)
 
+val repeatedly : (unit -> 'a) -> 'a t
+  (** Call the same function an infinite number of times (useful 
+      if the function is a random generator) *)
+
 val iterate : 'a -> ('a -> 'a) -> 'a t
   (** [iterate x f] is [[x; f x; f (f x); f (f (f x)); ...]] *)
 
@@ -108,6 +112,9 @@ val scan : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
 
 val iter : ('a -> unit) -> 'a t -> unit
   (** Iterate on the enum *)
+
+val iteri : (int -> 'a -> unit) -> 'a t -> unit
+  (** Iterate on elements with their index in the enum, from 0 *)
 
 val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
   (** Iterate on the two sequences. Stops once one of them is exhausted.*)
@@ -271,6 +278,12 @@ val to_list : 'a t -> 'a list
 
 val to_rev_list : 'a t -> 'a list
   (** Tail call conversion to list, in reverse order *)
+
+val to_array : 'a t -> 'a array
+
+val of_array : ?start:int -> ?len:int -> 'a array -> 'a t
+
+val rand_int : int -> int t
 
 val int_range : int -> int -> int t
 

@@ -109,6 +109,11 @@ let repeat x =
   let f () = x in
   fun () -> f
 
+let repeatedly f =
+  fun () ->
+    fun () ->
+      f ()
+
 (** [iterate x f] is [[x; f x; f (f x); f (f (f x)); ...]] *)
 let iterate x f =
   fun () ->
@@ -167,6 +172,14 @@ let scan f acc e =
 
 let iter f enum =
   Gen.iter f (enum ())
+
+(** Iterate on elements with their index in the enum, from 0 *)
+let iteri f enum =
+  let r = ref 0 in
+  let gen = enum () in
+  try
+    while true do f !r (gen ()); incr r; done
+  with EOG -> ()
 
 let iter2 f e1 e2 =
   let gen1 = e1 () and gen2 = e2 () in
@@ -775,6 +788,27 @@ let of_list l =
 
 let to_rev_list enum =
   Gen.to_rev_list (enum ())
+
+let to_array enum =
+  let n = length enum in
+  let a = Array.make n (Obj.magic 0) in
+  iteri (fun i x -> a.(i) <- x) enum;
+  a
+
+let of_array ?(start=0) ?len a =
+  let len = match len with
+  | None -> Array.length a
+  | Some n -> assert (n <= Array.length a); n in
+  fun () ->
+    let i = ref start in
+    fun () ->
+      if !i >= len
+        then raise EOG
+        else (let x = a.(!i) in incr i; x)
+
+
+let rand_int i =
+  repeatedly (fun () -> Random.int i)
 
 let int_range i j =
   fun () -> Gen.int_range i j
