@@ -79,26 +79,29 @@ type 'id set =
   <
     mem : 'id -> bool;
     add : 'id -> unit;
+    remove : 'id -> unit;
     iter : ('id -> unit) -> unit;
   >
 
 (** Make a set based on hashtables *)
-let mk_hset (type id) ?(eq=(=)) ~hash =
+let rec mk_hset (type id) ?(eq=(=)) ~hash =
   let module H = Hashtbl.Make(struct type t = id let equal = eq let hash = hash end) in
   let set = H.create 5 in
   object
     method mem x = H.mem set x
     method add x = H.replace set x ()
+    method remove x = H.remove set x
     method iter f = H.iter (fun x () -> f x) set
   end
 
 (** Make a set based on balanced trees *)
-let mk_tset (type id) ~cmp =
+let rec mk_tset (type id) ~cmp =
   let module S = Set.Make(struct type t = id let compare = cmp end) in
   let set = ref S.empty in
   object
     method mem x = S.mem x !set
     method add x = set := S.add x !set
+    method remove x = set := S.remove x !set
     method iter f = S.iter f !set
   end
 
@@ -107,30 +110,69 @@ type ('id,'a) map =
     mem : 'id -> bool;
     get : 'id -> 'a;   (* or Not_found *)
     add : 'id -> 'a -> unit;
+    remove : 'id -> unit;
     iter : ('id -> 'a -> unit) -> unit;
   >
 
 (** Make a map based on hashtables *)
-let mk_hmap (type id) ?(eq=(=)) ~hash =
+let rec mk_hmap (type id) ?(eq=(=)) ~hash =
   let module H = Hashtbl.Make(struct type t = id let equal = eq let hash = hash end) in
   let m = H.create 5 in
   object
     method mem k = H.mem m k
     method add k v = H.replace m k v
+    method remove k = H.remove m k
     method get k = H.find m k
     method iter f = H.iter f m
   end
 
 (** Make a map based on balanced trees *)
-let mk_tmap (type id) ~cmp =
+let rec mk_tmap (type id) ~cmp =
   let module M = Map.Make(struct type t = id let compare = cmp end) in
   let m = ref M.empty in
   object
     method mem k = M.mem k !m
     method add k v = m := M.add k v !m
+    method remove k = m := M.remove k !m
     method get k = M.find k !m
     method iter f = M.iter f !m
   end
+
+(** {2 Mutable concrete implementation} *)
+
+(** This is a general purpose eager implementation of graphs. It can be
+    modified in place *)
+
+type ('id, 'v, 'e) graph = ('id, 'v, 'e) t (* alias *)
+
+module Mutable = struct
+  type ('id, 'v, 'e) t = ('id, ('id, 'v, 'e) mut_node) map
+  and ('id, 'v, 'e) mut_node = {
+    mut_id : 'id;
+    mutable mut_v : 'v;
+    mutable mut_outgoing : ('e * 'id) list;
+  }
+
+  let create ?(eq=(=)) ~hash =
+    let map = mk_hmap ~eq ~hash in
+    let force v =
+      try let node = map#get v in
+          Node (v, node.mut_v, Enum.of_list node.mut_outgoing)
+      with Not_found -> Empty in
+    let graph = { eq; hash; force; } in
+    map, graph
+
+  let add_vertex map id v =
+    if not (map#mem id)
+      then
+        let node = { mut_id=id; mut_v=v; mut_outgoing=[]; } in
+        map#add id node
+
+  let add_edge map v1 e v2 =
+    let n1 = map#get v1 in
+    n1.mut_outgoing <- (e, v2) :: n1.mut_outgoing;
+    ()
+end
 
 (** {2 Traversals} *)
 

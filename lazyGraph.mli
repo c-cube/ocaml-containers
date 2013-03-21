@@ -86,6 +86,7 @@ type 'id set =
   <
     mem : 'id -> bool;
     add : 'id -> unit;
+    remove : 'id -> unit;
     iter : ('id -> unit) -> unit;
   >
 
@@ -100,12 +101,33 @@ type ('id,'a) map =
     mem : 'id -> bool;
     get : 'id -> 'a;   (* or Not_found *)
     add : 'id -> 'a -> unit;
+    remove : 'id -> unit;
     iter : ('id -> 'a -> unit) -> unit;
   >
 
 val mk_hmap : ?eq:('id -> 'id -> bool) -> hash:('id -> int) -> ('id,'a) map
 
 val mk_tmap : cmp:('id -> 'id -> int) -> ('id,'a) map
+
+(** {2 Mutable concrete implementation} *)
+
+type ('id, 'v, 'e) graph = ('id, 'v, 'e) t (* alias *)
+
+module Mutable : sig
+  type ('id, 'v, 'e) t
+    (** Mutable graph *)
+
+  val create : ?eq:('id -> 'id -> bool) -> hash:('id -> int) ->
+    ('id, 'v, 'e) t * ('id, 'v, 'e) graph
+    (** Create a new graph from the given equality and hash function, plus
+        a view of it as an abstract graph *)
+
+  val add_vertex : ('id, 'v, 'e) t -> 'id -> 'v -> unit
+    (** Add a vertex to the graph *)
+
+  val add_edge : ('id, 'v, 'e) t -> 'id -> 'e -> 'id -> unit
+    (** Add an edge; the two vertices must already exist *)
+end
 
 (** {2 Traversals} *)
 
