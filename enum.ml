@@ -116,6 +116,17 @@ let iterate x f =
       acc := f cur;
       cur
 
+(** Dual of {!fold}, with a deconstructing operation *)
+let unfold f acc =
+  fun () ->
+    let acc = ref acc in
+    fun () ->
+      match f !acc with
+      | None -> raise EOG
+      | Some (x, acc') ->
+        acc := acc';
+        x
+
 (** {2 Basic combinators} *)
 
 let is_empty enum =
@@ -125,8 +136,36 @@ let is_empty enum =
 let fold f acc enum =
   Gen.fold f acc (enum ())
 
+let fold2 f acc e1 e2 =
+  let acc = ref acc in
+  let gen1 = e1 () and gen2 = e2 () in
+  (try
+    while true do acc := f !acc (gen1 ()) (gen2 ()) done
+  with EOG -> ());
+  !acc
+
+(** Successive values of the accumulator *)
+let scan f acc e =
+  fun () ->
+    let acc = ref acc in
+    let first = ref true in
+    let gen = e () in
+    fun () ->
+      if !first
+        then (first := false; !acc)
+        else begin
+          acc := f !acc (gen ());
+          !acc
+        end
+
 let iter f enum =
   Gen.iter f (enum ())
+
+let iter2 f e1 e2 =
+  let gen1 = e1 () and gen2 = e2 () in
+  try
+    while true do f (gen1 ()) (gen2 ()) done;
+  with EOG -> ()
 
 let length enum =
   Gen.length (enum ())
@@ -192,6 +231,13 @@ let flatMap f enum =
         next ()  (* try again, with [gen = f x] *)
     in next
 
+let mem ?(eq=(=)) x enum =
+  try
+    iter (fun y -> if eq x y then raise Exit) enum;
+    false
+  with Exit -> 
+    true
+
 let take n enum =
   assert (n >= 0);
   fun () ->
@@ -211,6 +257,16 @@ let drop n enum =
         then begin incr count; Gen.junk gen; next () end
         else gen ()
     in next
+
+let nth n enum =
+  assert (n>=0);
+  let gen = enum () in
+  let rec iter i =
+    let x = gen () in
+    if n = i then x else iter (i+1)
+  in
+  try iter 0
+  with EOG -> raise Not_found
 
 let filter p enum =
   fun () ->
@@ -275,6 +331,52 @@ let zipIndex enum =
       let n = !r in
       incr r;
       n, x
+
+let unzip e =
+  map fst e, map snd e
+
+(** [partition p l] returns the elements that satisfy [p],
+    and the elements that do not satisfy [p] *)
+let partition p enum =
+  filter p enum, filter (fun x -> not (p x)) enum
+
+let for_all p enum =
+  try
+    iter (fun x -> if not (p x) then raise Exit) enum;
+    true
+  with Exit ->
+    false
+
+let exists p enum =
+  try
+    iter (fun x -> if p x then raise Exit) enum;
+    false
+  with Exit ->
+    true
+
+let for_all2 p e1 e2 =
+  try
+    iter2 (fun x y -> if not (p x y) then raise Exit) e1 e2;
+    true
+  with Exit ->
+    false
+
+let exists2 p e1 e2 =
+  try
+    iter2 (fun x y -> if p x y then raise Exit) e1 e2;
+    false
+  with Exit ->
+    true
+
+let min ?(lt=fun x y -> x < y) enum =
+  let gen = enum () in
+  let first = try gen () with EOG -> raise Not_found in
+  Gen.fold (fun min x -> if lt x min then x else min) first gen
+
+let max ?(lt=fun x y -> x < y) enum =
+  let gen = enum () in
+  let first = try gen () with EOG -> raise Not_found in
+  Gen.fold (fun max x -> if lt max x then x else max) first gen
 
 (** {2 Complex combinators} *)
 
@@ -569,6 +671,59 @@ let product a b =
       in
       next
 
+(** Group equal consecutive elements together. *)
+let group ?(eq=(=)) enum =
+  fun () ->
+    let gen = enum () in
+    try
+      let cur = ref [gen ()] in
+      let rec next () =
+        (* try to get an element *)
+        let next_x =
+          if !cur = []
+            then None
+            else try Some (gen ()) with EOG -> None in
+        match next_x, !cur with
+        | None, [] -> raise EOG
+        | None, l ->
+          cur := [];
+          l
+        | Some x, y::_ when eq x y ->
+          cur := x::!cur;
+          next ()  (* same group *)
+        | Some x, l ->
+          cur := [x];
+          l
+      in next
+    with EOG ->
+      fun () -> raise EOG
+
+let uniq ?(eq=(=)) enum =
+  fun () ->
+    let gen = enum () in
+    let prev = ref (Obj.magic 0) in
+    let first = ref true in
+    let rec next () =
+      let x = gen () in
+      if !first then (first := false; prev := x; x)
+      else if eq x !prev then next ()
+      else (prev := x; x)
+    in next
+
+let sort ?(cmp=compare) enum =
+  fun () ->
+    (* build heap *)
+    let h = Heap.empty ~cmp in
+    iter (Heap.insert h) enum;
+    fun () ->
+      if Heap.is_empty h
+        then raise EOG
+        else Heap.pop h
+
+let sort_uniq ?(cmp=compare) enum =
+  uniq ~eq:(fun x y -> cmp x y = 0) (sort ~cmp enum)
+
+(*
 let permutations enum =
   failwith "not implemented" (* TODO *)
 
@@ -578,6 +733,7 @@ let combinations n enum =
 
 let powerSet enum =
   failwith "not implemented"
+*)
 
 (** {2 Basic conversion functions} *)
 

@@ -83,6 +83,9 @@ val repeat : 'a -> 'a t
 val iterate : 'a -> ('a -> 'a) -> 'a t
   (** [iterate x f] is [[x; f x; f (f x); f (f (f x)); ...]] *)
 
+val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
+  (** Dual of {!fold}, with a deconstructing operation *)
+
 (** {2 Basic combinators} *)
 
 val is_empty : _ t -> bool
@@ -91,8 +94,17 @@ val is_empty : _ t -> bool
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** Fold on the generator *)
 
+val fold2 : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
+  (** Fold on the two enums in parallel *)
+
+val scan : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
+  (** Successive values of the accumulator *)
+
 val iter : ('a -> unit) -> 'a t -> unit
   (** Iterate on the enum *)
+
+val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+  (** Iterate on the two sequences *)
 
 val length : _ t -> int
   (** Length of an enum (linear time) *)
@@ -112,11 +124,17 @@ val flatten : 'a t t -> 'a t
 val flatMap : ('a -> 'b t) -> 'a t -> 'b t
   (** Monadic bind *)
 
+val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
+  (** Is the given element, member of the enum? *)
+
 val take : int -> 'a t -> 'a t
   (** Take at most n elements *)
 
 val drop : int -> 'a t -> 'a t
   (** Drop n elements *)
+
+val nth : int -> 'a t -> 'a
+  (** n-th element, or Not_found *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
   (** Filter out elements that do not satisfy the predicate.  *)
@@ -138,6 +156,29 @@ val zip : 'a t -> 'b t -> ('a * 'b) t
 
 val zipIndex : 'a t -> (int * 'a) t
   (** Zip elements with their index in the enum *)
+
+val unzip : ('a * 'b) t -> 'a t * 'b t
+  (** Unzip into two sequences *)
+
+val partition : ('a -> bool) -> 'a t -> 'a t * 'a t
+  (** [partition p l] returns the elements that satisfy [p],
+      and the elements that do not satisfy [p] *)
+
+val for_all : ('a -> bool) -> 'a t -> bool
+  (** Predicate true for all elements? *)
+
+val exists : ('a -> bool) -> 'a t -> bool
+  (** Predicate true for at least one element? *)
+
+val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+
+val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+
+val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
+  (** Minimum element *)
+
+val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
+  (** Maximum element *)
 
 (** {2 Complex combinators} *)
 
@@ -182,6 +223,20 @@ val intersperse : 'a -> 'a t -> 'a t
 val product : 'a t -> 'b t -> ('a * 'b) t
   (** Cartesian product *)
 
+val group : ?eq:('a -> 'a -> bool) -> 'a t -> 'a list t
+  (** Group equal consecutive elements together. *)
+
+val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
+  (** Remove consecutive duplicate elements. Basically this is
+      like [fun e -> map List.hd (group e)]. *)
+
+val sort : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
+  (** Sort according to the given comparison function *)
+
+val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
+  (** Sort and remove duplicates *)
+
+(* TODO later
 val permutations : 'a t -> 'a t t
   (** Permutations of the enum. Each permutation becomes unavailable once
       the next one is produced. *)
@@ -191,6 +246,7 @@ val combinations : int -> 'a t -> 'a t t
 
 val powerSet : 'a t -> 'a t t
   (** All subsets of the enum (in no particular order) *)
+*)
 
 (** {2 Basic conversion functions} *)
 
@@ -215,3 +271,4 @@ module Infix : sig
   val (--) : int -> int -> int t
   val (|>) : 'a -> ('a -> 'b) -> 'b
 end
+
