@@ -769,6 +769,14 @@ let pp ?(start="") ?(stop="") ?(sep=",") ?(horizontal=false) pp_elem formatter e
   next true;
   Format.fprintf formatter "%s@]" stop
 
+let (@@) = append
+
+let (>>=) e f = flatMap f e
+
+let (--) = int_range
+
+let (|>) x f = f x
+
 module Infix = struct
   let (@@) = append
 

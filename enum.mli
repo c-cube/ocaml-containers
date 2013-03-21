@@ -265,10 +265,22 @@ val pp : ?start:string -> ?stop:string -> ?sep:string -> ?horizontal:bool ->
          (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit
   (** Pretty print an enum *)
 
+
+val (@@) : 'a t -> 'a t -> 'a t
+
+val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+
+val (--) : int -> int -> int t
+
+val (|>) : 'a -> ('a -> 'b) -> 'b
+
 module Infix : sig
   val (@@) : 'a t -> 'a t -> 'a t
+
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  
   val (--) : int -> int -> int t
+  
   val (|>) : 'a -> ('a -> 'b) -> 'b
 end
 
