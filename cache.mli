@@ -72,7 +72,7 @@ module type S2 = sig
     (** Wrap the function with the cache *)
 end
 
-(** {2 Dummy cache (no caching) *)
+(** {2 Dummy cache (no caching)} *)
 
 module Dummy(X : sig type t end) : S with type key = X.t
 
@@ -93,7 +93,7 @@ module Replacing(X : HASH) : S with type key = X.t
 
 module Replacing2(X : HASH)(Y : HASH) : S2 with type key1 = X.t and type key2 = Y.t
 
-(** {2 Hashtables with Least Recently Used eviction policy *)
+(** {2 Hashtables with Least Recently Used eviction policy} *)
 
 module LRU(X : HASH) : S with type key = X.t
 

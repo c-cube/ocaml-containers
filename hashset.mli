@@ -30,7 +30,7 @@ type 'a t = ('a, unit) PHashtbl.t
 
 val empty : ?max_load:float -> ?eq:('a -> 'a -> bool) ->
             ?hash:('a -> int) -> int -> 'a t
-  (** See {@see PHashtbl.create} *)
+  (** See {!PHashtbl.create} *)
 
 val copy : 'a t -> 'a t
 

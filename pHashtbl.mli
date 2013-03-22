@@ -42,7 +42,7 @@ and ('a, 'b) bucket =
 val create : ?max_load:float -> ?eq:('a -> 'a -> bool) ->
               ?hash:('a -> int) -> int -> ('a, 'b) t
   (** Create a hashtable.  [max_load] is (number of items / size of table),
-      and must be in ]0, 1[. Functions for equality check and hashing
+      and must be in )0, 1(. Functions for equality check and hashing
       can also be provided. *)
 
 module type Hashable = sig
