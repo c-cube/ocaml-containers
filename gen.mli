@@ -213,6 +213,10 @@ module Heap : sig
   val pop : 'a t -> 'a
 end
 
+val intersection : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t
+  (** Intersection of two sorted sequences. Only elements that occur in both
+      inputs appear in the output *)
+
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t
   (** Merge two sorted sequences into a sorted sequence *)
 

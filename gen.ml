@@ -494,6 +494,30 @@ module Heap = struct
     m
 end
 
+(** Intersection of two sorted sequences. Only elements that occur in both
+    inputs appear in the output *)
+let intersection ?(cmp=compare) e1 e2 =
+  fun () ->
+    let gen1, gen2 = e1 (), e2 () in
+    let next1 () = try Some (gen1 ()) with EOG -> None in
+    let next2 () = try Some (gen2 ()) with EOG -> None in
+    let x1 = ref (next1 ()) in
+    let x2 = ref (next2 ()) in
+    let rec next () =
+      match !x1, !x2 with
+      | None, None -> raise EOG
+      | Some y1, Some y2 ->
+        let c = cmp y1 y2 in
+        if c = 0  (* equal elements, yield! *)
+          then (x1 := next1 (); x2 := next2 (); y1)
+        else if c < 0 (* drop y1 *)
+          then (x1 := next1 (); next ())
+        else (* drop y2 *)
+          (x2 := next2 (); next ())
+      | Some _, None
+      | None, Some _ -> raise EOG
+    in next
+
 (** Binary sorted merge of two sorted sequences *)
 let sorted_merge ?(cmp=compare) e1 e2 =
   fun () ->
