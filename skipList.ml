@@ -25,6 +25,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Imperative skip-list} *)
 
+(** Most functions are inspired from
+    "A skip list cookbook", William Pugh, 1989. *)
+
 type ('a, 'b) t = {
   mutable data : ('a, 'b) bucket;
   cmp : ('a -> 'a -> int);  (* comparison function *)
@@ -93,14 +96,24 @@ let next node n =
 (** Find given key in the list, or Not_found *)
 let find l k =
   let cmp = l.cmp in
-  let x = ref l.data in
-  for i = level l.data - 1 downto 0 do
-    while lower ~cmp (next !x i) k do x := next !x i done
-  done;
-  x := next !x 0;
-  match !x with
-  | Node (k', v, _) when cmp k k' = 0 -> !v
-  | _ -> raise Not_found
+  let rec search x n =
+    if n < 0 then peek_last x
+    else
+      let x' = next x n in
+      match x' with
+      | Nil -> search x (n-1)
+      | Node (k', v, _) ->
+        let c = cmp k' k in
+        if c = 0 then !v
+        else if c < 0 then search x' n
+        else search x (n-1)
+      | Init _ -> assert false
+  and peek_last x =
+    match next x 0 with
+    | Node (k', v, _) when cmp k k' = 0 -> !v
+    | _ -> raise Not_found
+  in
+  search l.data (level l.data - 1)
 
 let mem l k =
   try ignore (find l k); true
