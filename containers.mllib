@@ -10,6 +10,7 @@ Heap
 LazyGraph
 PHashtbl
 Sequence
+SkipList
 SplayTree
 Univ
 Vector
