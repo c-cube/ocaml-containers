@@ -31,9 +31,21 @@ let test_time () =
   OUnit.assert_bool "parallelism" (stop -. start < 0.75);
   ()
 
+let test_timer () =
+  let timer = Future.Timer.create () in
+  let mvar = Future.MVar.full 1 in
+  Future.Timer.schedule_in timer 0.5
+    (fun () -> ignore (Future.MVar.update mvar (fun x -> x + 2)));
+  Future.Timer.schedule_in timer 0.2
+    (fun () -> ignore (Future.MVar.update mvar (fun x -> x * 4)));
+  Thread.delay 0.7;
+  OUnit.assert_equal 6 (Future.MVar.peek mvar);
+  ()
+
 let suite =
   "test_future" >:::
     [ "test_mvar" >:: test_mvar;
       "test_parallel" >:: test_parallel;
       "test_time" >:: test_time;
+      "test_timer" >:: test_timer;
     ]

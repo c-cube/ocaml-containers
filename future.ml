@@ -619,11 +619,9 @@ module Timer = struct
   } (** A timer for events *)
 
   let cmp_tasks (f1,_) (f2,_) =
-    if f1 < f2 then -1
-    else if f1 > f2 then 1
-    else 0
+    compare f1 f2
 
-  let standby_wait = 300.   (* when no task is scheduled *)
+  let standby_wait = 30.    (* when no task is scheduled *)
   let epsilon = 0.0001      (* accepted time diff for actions *)
 
   (** Wait for next event, run it, and loop *)
