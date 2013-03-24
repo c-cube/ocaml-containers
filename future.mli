@@ -142,6 +142,24 @@ val spawn_process : ?pool:Pool.t -> ?stdin:string -> cmd:string ->
 val sleep : ?pool:Pool.t -> float -> unit t
   (** Future that returns with success in the given amount of seconds *)
 
+(** {2 Event timer} *)
+
+module Timer : sig
+  type t
+    (** A scheduler for events *)
+
+  val create : ?pool:Pool.t -> unit -> t
+    (** A timer that runs tasks in the given thread pool *)
+
+  val schedule_at : t -> float -> (unit -> unit) -> unit
+    (** [schedule_at s t act] will run [act] at the Unix echo [t] *)
+
+  val schedule_in : t -> float -> (unit -> unit) -> unit
+    (** [schedule_in s d act] will run [act] in [d] seconds *)
+
+  val stop : t -> unit
+    (** Stop the given timer, cancelling pending tasks *)
+end
 
 
 module Infix : sig
