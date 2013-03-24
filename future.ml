@@ -524,3 +524,5 @@ module Infix = struct
   let (>>=) x f = flatMap f x
   let (>>) a f = andThen a f
 end
+
+include Infix

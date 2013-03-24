@@ -142,7 +142,12 @@ val spawn_process : ?pool:Pool.t -> ?stdin:string -> cmd:string ->
 val sleep : ?pool:Pool.t -> float -> unit t
   (** Future that returns with success in the given amount of seconds *)
 
+
+
 module Infix : sig
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   val (>>) : 'a t -> (unit -> 'b t) -> 'b t
 end
+
+val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+val (>>) : 'a t -> (unit -> 'b t) -> 'b t
