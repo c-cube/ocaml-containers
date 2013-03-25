@@ -398,6 +398,21 @@ let max ?(lt=fun x y -> x < y) enum =
   let first = try gen () with EOG -> raise Not_found in
   Gen.fold (fun max x -> if lt max x then x else max) first gen
 
+let lexico ?(cmp=compare) e1 e2 =
+  let gen1 = e1() in
+  let gen2 = e2() in
+  let rec lexico () =
+    let x1 = try Some (gen1 ()) with EOG -> None in
+    let x2 = try Some (gen2 ()) with EOG -> None in
+    match x1, x2 with
+    | None, None -> 0
+    | Some x1, Some x2 ->
+      let c = cmp x1 x2 in
+      if c <> 0 then c else lexico ()
+    | Some _, None -> 1
+    | None, Some _ -> -1
+  in lexico ()
+
 (** {2 Complex combinators} *)
 
 (** Pick elements fairly in each sub-enum *)

@@ -193,6 +193,9 @@ val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
 val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
   (** Maximum element *)
 
+val lexico : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
+  (** Lexicographic comparison of generators *)
+
 (** {2 Complex combinators} *)
 
 val merge : 'a t t -> 'a t
