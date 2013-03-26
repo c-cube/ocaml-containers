@@ -8,6 +8,7 @@ Graph
 Hashset
 Heap
 LazyGraph
+PersistentHashtbl
 PHashtbl
 Sequence
 SkipList
