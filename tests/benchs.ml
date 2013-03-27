@@ -20,6 +20,12 @@ module IFHashtbl = FHashtbl.Tree(struct
   let hash i = i
 end)
 
+module IPersistentHashtbl = PersistentHashtbl.Make(struct
+  type t = int
+  let equal i j = i = j
+  let hash i = i
+end)
+
 let phashtbl_add n =
   let h = PHashtbl.create 50 in
   for i = n downto 0 do
@@ -62,6 +68,13 @@ let skiplist_add n =
   done;
   l
 
+let ipersistenthashtbl_add n =
+  let h = ref (IPersistentHashtbl.create 32) in
+  for i = n downto 0 do
+    h := IPersistentHashtbl.replace !h i i;
+  done;
+  !h
+
 let _ =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
@@ -70,6 +83,7 @@ let _ =
      "ihashtbl_add", (fun n -> ignore (ihashtbl_add n));
      "iflathashtbl_add", (fun n -> ignore (iflathashtbl_add n));
      "ifhashtbl_add", (fun n -> ignore (ifhashtbl_add n));
+     "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n));
      "skiplist_add", (fun n -> ignore (skiplist_add n));
     ]
   in
@@ -125,6 +139,16 @@ let ifhashtbl_replace n =
   done;
   !h
 
+let ipersistenthashtbl_replace n =
+  let h = ref (IPersistentHashtbl.create 32) in
+  for i = 0 to n do
+    h := IPersistentHashtbl.replace !h i i;
+  done;
+  for i = n downto 0 do
+    h := IPersistentHashtbl.replace !h i i;
+  done;
+  !h
+
 let skiplist_replace n =
   let l = SkipList.create compare in
   for i = 0 to n do
@@ -143,6 +167,7 @@ let _ =
      "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n));
      "iflathashtbl_replace", (fun n -> ignore (iflathashtbl_replace n));
      "ifhashtbl_replace", (fun n -> ignore (ifhashtbl_replace n));
+     "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n));
      "skiplist_replace", (fun n -> ignore (skiplist_replace n));
     ]
   in
@@ -180,6 +205,12 @@ let ifhashtbl_find h =
     for i = 0 to n do
       ignore (IFHashtbl.find h (round_n i));
     done
+     
+let ipersistenthashtbl_find h =
+  fun n ->
+    for i = 0 to n do
+      ignore (IPersistentHashtbl.find h (round_n i));
+    done
 
 let skiplist_find l =
   fun n ->
@@ -193,6 +224,7 @@ let _ =
   let h'' = ihashtbl_add my_len in
   let h''' = iflathashtbl_add my_len in
   let h'''' = ifhashtbl_add my_len in
+  let h''''' = ipersistenthashtbl_add my_len in
   let l = skiplist_add my_len in
   List.iter (fun n ->
     Format.printf "----------------------------------------@.";
@@ -203,6 +235,7 @@ let _ =
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n);
       "iflathashtbl_find", (fun () -> iflathashtbl_find h''' n);
       "ifhashtbl_find", (fun () -> ifhashtbl_find h'''' n);
+      "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n);
       "skiplist_find", (fun () -> skiplist_find l n);
     ])
     [10;20;100;1000;10000;100000]
