@@ -129,12 +129,6 @@ val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
 val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
   (** Lazy traversal in depth first *)
 
-val enum : ('id, 'v, 'e) t -> 'id -> ('id * 'v) Gen.t * ('id * 'e * 'id) Gen.t
-  (** Convert to an enumeration. The traversal order is undefined. *)
-
-val depth : ('id, _, 'e) t -> 'id -> ('id, int, 'e) t
-  (** Map vertices to their depth, ie their distance from the initial point *)
-
 val disjktra : ('id, 'v, 'e) t ->
                ?distance:('id -> 'e -> 'id -> int) ->
                'id -> 'id ->
@@ -164,10 +158,6 @@ val filter : ?vertices:('id -> 'v -> bool) ->
 val product : ('id1, 'v1, 'e1) t -> ('id2, 'v2, 'e2) t ->
               ('id1 * 'id2, 'v1 * 'v2, 'e1 * 'e2) t
   (** Cartesian product of the two graphs *)
-
-val limit_depth : max:int -> ('id, 'v, 'e) t -> ('id, 'v, 'e) t
-  (** Return the same graph, but with a bounded depth. Vertices whose
-      depth is too high will be replaced by Empty *)
 
 module Infix : sig
   val (++) : ('id, 'v, 'e) t -> ('id, 'v, 'e) t -> ('id, 'v, 'e) t

@@ -257,11 +257,6 @@ let dfs graph v =
       | _ -> None)
     (Full.dfs_full graph (Gen.singleton v))
 
-let enum graph v = (Gen.empty, Gen.empty)  (* TODO *)
-
-let depth graph v =
-  failwith "not implemented" (* TODO *)
-
 (** {3 Mutable heap (taken from heap.ml to avoid dependencies)} *)
 module Heap = struct
   type 'a t = {
@@ -388,10 +383,6 @@ let product g1 g2 =
   and hash (v1,v2) = ((g1.hash v1) * 65599) + g2.hash v2 
   in
   { eq; hash; force; }
-
-let limit_depth ~max g =
-  (* TODO; this should be eager (compute depth by BFS) *)
-  failwith "not implemented"
 
 module Infix = struct
   let (++) g1 g2 = union ?combine:None g1 g2
