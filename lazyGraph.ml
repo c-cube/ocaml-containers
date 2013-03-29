@@ -72,71 +72,27 @@ let from_fun ?(eq=(=)) ?(hash=Hashtbl.hash) f =
     | Some (l, edges) -> Node (v, l, Gen.of_list edges) in
   { eq; hash; force; }
 
-(** {2 Polymorphic utils} *)
+(** {2 Polymorphic map} *)
 
-(** A set of vertices *)
-type 'id set =
-  <
-    mem : 'id -> bool;
-    add : 'id -> unit;
-    remove : 'id -> unit;
-    iter : ('id -> unit) -> unit;
-  >
+type ('id, 'a) map = {
+  map_is_empty : unit -> bool;
+  map_mem : 'id -> bool;
+  map_add : 'id -> 'a -> unit;
+  map_get : 'id -> 'a;
+}
 
-(** Make a set based on hashtables *)
-let rec mk_hset (type id) ?(eq=(=)) ~hash =
-  let module H = Hashtbl.Make(struct type t = id let equal = eq let hash = hash end) in
-  let set = H.create 5 in
-  object
-    method mem x = H.mem set x
-    method add x = H.replace set x ()
-    method remove x = H.remove set x
-    method iter f = H.iter (fun x () -> f x) set
-  end
-
-(** Make a set based on balanced trees *)
-let rec mk_tset (type id) ~cmp =
-  let module S = Set.Make(struct type t = id let compare = cmp end) in
-  let set = ref S.empty in
-  object
-    method mem x = S.mem x !set
-    method add x = set := S.add x !set
-    method remove x = set := S.remove x !set
-    method iter f = S.iter f !set
-  end
-
-type ('id,'a) map =
-  <
-    mem : 'id -> bool;
-    get : 'id -> 'a;   (* or Not_found *)
-    add : 'id -> 'a -> unit;
-    remove : 'id -> unit;
-    iter : ('id -> 'a -> unit) -> unit;
-  >
-
-(** Make a map based on hashtables *)
-let rec mk_hmap (type id) ?(eq=(=)) ~hash =
-  let module H = Hashtbl.Make(struct type t = id let equal = eq let hash = hash end) in
-  let m = H.create 5 in
-  object
-    method mem k = H.mem m k
-    method add k v = H.replace m k v
-    method remove k = H.remove m k
-    method get k = H.find m k
-    method iter f = H.iter f m
-  end
-
-(** Make a map based on balanced trees *)
-let rec mk_tmap (type id) ~cmp =
-  let module M = Map.Make(struct type t = id let compare = cmp end) in
-  let m = ref M.empty in
-  object
-    method mem k = M.mem k !m
-    method add k v = m := M.add k v !m
-    method remove k = m := M.remove k !m
-    method get k = M.find k !m
-    method iter f = M.iter f !m
-  end
+let mk_map (type id) ~eq ~hash =
+  let module H = Hashtbl.Make(struct
+    type t = id
+    let equal = eq
+    let hash = hash
+  end) in
+  let h = H.create 3 in
+  { map_is_empty = (fun () -> H.length h = 0);
+    map_mem = (fun k -> H.mem h k);
+    map_add = (fun k v -> H.replace h k v);
+    map_get = (fun k -> H.find h k);
+  }
 
 (** {2 Mutable concrete implementation} *)
 
@@ -154,22 +110,22 @@ module Mutable = struct
   }
 
   let create ?(eq=(=)) ~hash =
-    let map = mk_hmap ~eq ~hash in
+    let map = mk_map ~eq ~hash in
     let force v =
-      try let node = map#get v in
+      try let node = map.map_get v in
           Node (v, node.mut_v, Gen.of_list node.mut_outgoing)
       with Not_found -> Empty in
     let graph = { eq; hash; force; } in
     map, graph
 
   let add_vertex map id v =
-    if not (map#mem id)
+    if not (map.map_mem id)
       then
         let node = { mut_id=id; mut_v=v; mut_outgoing=[]; } in
-        map#add id node
+        map.map_add id node
 
   let add_edge map v1 e v2 =
-    let n1 = map#get v1 in
+    let n1 = map.map_get v1 in
     n1.mut_outgoing <- (e, v2) :: n1.mut_outgoing;
     ()
 end
@@ -200,24 +156,21 @@ module Full = struct
       (eq v v') || (eq v v'') || (mem_path ~eq path' v)
     | [] -> false
 
-  let bfs_full ?(id=0) ?explored graph vertices =
-    let explored = match explored with
-      | Some e -> e 
-      | None -> fun () -> mk_hset ~eq:graph.eq ~hash:graph.hash in
+  let bfs_full graph vertices =
     fun () ->
-      let explored = explored () in
-      let id = ref id in
+      let explored = mk_map ~eq:graph.eq ~hash:graph.hash in
+      let id = ref 0 in
       let q = Queue.create () in (* queue of nodes to explore *)
       Gen.iter (fun v -> Queue.push (FullEnter (v,[])) q) vertices;
       let rec next () =
         if Queue.is_empty q then raise Gen.EOG else
           match Queue.pop q with
           | FullEnter (v', path) ->
-            if explored#mem v' then next ()
+            if explored.map_mem v' then next ()
               else begin match graph.force v' with
               | Empty -> next ()
               | Node (_, label, edges) ->
-                explored#add v';
+                explored.map_add v' ();
                 (* explore neighbors *)
                 Gen.iter
                   (fun (e,v'') ->
@@ -235,7 +188,7 @@ module Full = struct
           | FullFollowEdge [] -> assert false
           | FullFollowEdge (((v'', e, v') :: path) as path') ->
             (* edge path .... v' --e--> v'' *)
-            if explored#mem v''
+            if explored.map_mem v''
               then if mem_path ~eq:graph.eq path v''
                 then MeetEdge (v'', e, v', EdgeBackward)
                 else MeetEdge (v'', e, v', EdgeTransverse)
@@ -246,13 +199,10 @@ module Full = struct
               end
       in next
 
-  let dfs_full ?(id=0) ?explored graph vertices =
-    let explored = match explored with
-      | Some e -> e 
-      | None -> (fun () -> mk_hset ~eq:graph.eq ~hash:graph.hash) in
+  let dfs_full graph vertices =
     fun () -> 
-      let explored = explored () in
-      let id = ref id in
+      let explored = mk_map ~eq:graph.eq ~hash:graph.hash in
+      let id = ref 0 in
       let s = Stack.create () in (* stack of nodes to explore *)
       Gen.iter (fun v -> Stack.push (FullEnter (v,[])) s) vertices;
       let rec next () =
@@ -260,12 +210,12 @@ module Full = struct
           match Stack.pop s with
           | FullExit v' -> ExitVertex v'
           | FullEnter (v', path) ->
-            if explored#mem v' then next ()
+            if explored.map_mem v' then next ()
               (* explore the node now *)
               else begin match graph.force v' with
               | Empty -> next ()
               | Node (_, label, edges) ->
-                explored#add v';
+                explored.map_add v' ();
                 (* prepare to exit later *)
                 Stack.push (FullExit v') s;
                 (* explore neighbors *)
@@ -281,7 +231,7 @@ module Full = struct
           | FullFollowEdge [] -> assert false
           | FullFollowEdge (((v'', e, v') :: path) as path') ->
             (* edge path .... v' --e--> v'' *)
-            if explored#mem v''
+            if explored.map_mem v''
               then if mem_path ~eq:graph.eq path v''
                 then MeetEdge (v'', e, v', EdgeBackward)
                 else MeetEdge (v'', e, v', EdgeTransverse)
@@ -293,28 +243,102 @@ module Full = struct
       in next
 end
 
-let bfs ?id ?explored graph v =
+let bfs graph v =
   Gen.filterMap
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.bfs_full ?id ?explored graph (Gen.singleton v))
+    (Full.bfs_full graph (Gen.singleton v))
 
-let dfs ?id ?explored graph v =
+let dfs graph v =
   Gen.filterMap
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.dfs_full ?id ?explored graph (Gen.singleton v))
+    (Full.dfs_full graph (Gen.singleton v))
 
 let enum graph v = (Gen.empty, Gen.empty)  (* TODO *)
 
 let depth graph v =
   failwith "not implemented" (* TODO *)
 
-(** Minimal path from the given Graph from the first vertex to
-    the second. It returns both the distance and the path *)
-let min_path ?(distance=fun v1 e v2 -> 1) ?explored graph v1 v2 =
+(** {3 Mutable heap (taken from heap.ml to avoid dependencies)} *)
+module Heap = struct
+  type 'a t = {
+    mutable tree : 'a tree;
+    cmp : 'a -> 'a -> int;
+  } (** A splay tree heap with the given comparison function *)
+  and 'a tree =
+    | Empty
+    | Node of ('a tree * 'a * 'a tree)
+    (** A splay tree containing values of type 'a *)
+
+  let empty ~cmp = {
+    tree = Empty;
+    cmp;
+  }
+
+  let is_empty h =
+    match h.tree with
+    | Empty -> true
+    | Node _ -> false
+
+  (** Partition the tree into (elements <= pivot, elements > pivot) *)
+  let rec partition ~cmp pivot tree =
+    match tree with
+    | Empty -> Empty, Empty
+    | Node (a, x, b) ->
+      if cmp x pivot <= 0
+        then begin
+          match b with
+          | Empty -> (tree, Empty)
+          | Node (b1, y, b2) ->
+            if cmp y pivot <= 0
+              then
+                let small, big = partition ~cmp pivot b2 in
+                Node (Node (a, x, b1), y, small), big
+              else
+                let small, big = partition ~cmp pivot b1 in
+                Node (a, x, small), Node (big, y, b2)
+        end else begin
+          match a with
+          | Empty -> (Empty, tree)
+          | Node (a1, y, a2) ->
+            if cmp y pivot <= 0
+              then
+                let small, big = partition ~cmp pivot a2 in
+                Node (a1, y, small), Node (big, x, b)
+              else
+                let small, big = partition ~cmp pivot a1 in
+                small, Node (big, y, Node (a2, x, b))
+        end
+
+  (** Insert the element in the tree *)
+  let insert h x =
+    let small, big = partition ~cmp:h.cmp x h.tree in
+    let tree' = Node (small, x, big) in
+    h.tree <- tree'
+
+  (** Get minimum value and remove it from the tree *)
+  let pop h =
+    let rec delete_min tree = match tree with
+    | Empty -> raise Not_found
+    | Node (Empty, x, b) -> x, b
+    | Node (Node (Empty, x, b), y, c) ->
+      x, Node (b, y, c)  (* rebalance *)
+    | Node (Node (a, x, b), y, c) ->
+      let m, a' = delete_min a in
+      m, Node (a', x, Node (b, y, c))
+    in
+    let m, tree' = delete_min h.tree in
+    h.tree <- tree';
+    m
+end
+
+(** Shortest path from the first node to the second one, according
+    to the given (positive!) distance function. The path is reversed,
+    ie, from the destination to the source. The int is the distance. *)
+let disjktra graph ?(distance=fun v1 e v2 -> 1) v1 v2 =
   failwith "not implemented"
 
 (** {2 Lazy transformations} *)
@@ -397,13 +421,13 @@ module Dot = struct
     (* map from vertices to integers *)
     and get_id =
       let count = ref 0 in
-      let m = mk_hmap ~eq ~hash in
+      let m = mk_map ~eq ~hash in
       fun vertex ->
-        try m#get vertex
+        try m.map_get vertex
         with Not_found ->
           let n = !count in
           incr count;
-          m#add vertex n;
+          m.map_add vertex n;
           n
     in
     (* the unique name of a vertex *)

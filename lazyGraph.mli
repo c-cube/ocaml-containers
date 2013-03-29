@@ -79,36 +79,6 @@ val from_fun : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
                ('id -> ('v * ('e * 'id) list) option) -> ('id, 'v, 'e) t
   (** Convenient semi-lazy implementation of graphs *)
 
-(** {2 Polymorphic utils} *)
-
-(** A set of vertices *)
-type 'id set =
-  <
-    mem : 'id -> bool;
-    add : 'id -> unit;
-    remove : 'id -> unit;
-    iter : ('id -> unit) -> unit;
-  >
-
-val mk_hset : ?eq:('id -> 'id -> bool) -> hash:('id -> int) -> 'id set
-  (** Make a set based on hashtables *)
-
-val mk_tset : cmp:('id -> 'id -> int) -> 'id set
-  (** Make a set based on balanced trees *)
-
-type ('id,'a) map =
-  <
-    mem : 'id -> bool;
-    get : 'id -> 'a;   (* or Not_found *)
-    add : 'id -> 'a -> unit;
-    remove : 'id -> unit;
-    iter : ('id -> 'a -> unit) -> unit;
-  >
-
-val mk_hmap : ?eq:('id -> 'id -> bool) -> hash:('id -> int) -> ('id,'a) map
-
-val mk_tmap : cmp:('id -> 'id -> int) -> ('id,'a) map
-
 (** {2 Mutable concrete implementation} *)
 
 type ('id, 'v, 'e) graph = ('id, 'v, 'e) t (* alias *)
@@ -142,25 +112,21 @@ module Full : sig
     | EdgeBackward    (* toward the current trail *)
     | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-  val bfs_full : ?id:int -> ?explored:(unit -> 'id set) ->
-                  ('id, 'v, 'e) t -> 'id Gen.t ->
+  val bfs_full : ('id, 'v, 'e) t -> 'id Gen.t ->
                   ('id, 'v, 'e) traverse_event Gen.t
     (** Lazy traversal in breadth first from a finite set of vertices *)
 
-  val dfs_full : ?id:int -> ?explored:(unit -> 'id set) ->
-                 ('id, 'v, 'e) t -> 'id Gen.t ->
+  val dfs_full : ('id, 'v, 'e) t -> 'id Gen.t ->
                  ('id, 'v, 'e) traverse_event Gen.t
     (** Lazy traversal in depth first from a finite set of vertices *)
 end
 
 (** The traversal functions assign a unique ID to every traversed node *)
 
-val bfs : ?id:int -> ?explored:(unit -> 'id set) ->
-          ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
+val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
   (** Lazy traversal in breadth first *)
 
-val dfs : ?id:int -> ?explored:(unit -> 'id set) ->
-          ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
+val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
   (** Lazy traversal in depth first *)
 
 val enum : ('id, 'v, 'e) t -> 'id -> ('id * 'v) Gen.t * ('id * 'e * 'id) Gen.t
@@ -169,12 +135,13 @@ val enum : ('id, 'v, 'e) t -> 'id -> ('id * 'v) Gen.t * ('id * 'e * 'id) Gen.t
 val depth : ('id, _, 'e) t -> 'id -> ('id, int, 'e) t
   (** Map vertices to their depth, ie their distance from the initial point *)
 
-val min_path : ?distance:('id -> 'e -> 'id -> int) ->
-               ?explored:(unit -> ('id, int * ('id,'e) path) map) ->
-               ('id, 'v, 'e) t -> 'id -> 'id ->
+val disjktra : ('id, 'v, 'e) t ->
+               ?distance:('id -> 'e -> 'id -> int) ->
+               'id -> 'id ->
                int * ('id, 'e) path
-  (** Minimal path from the given Graph from the first vertex to
-      the second. It returns both the distance and the path *)
+  (** Shortest path from the first node to the second one, according
+      to the given (positive!) distance function. The path is reversed,
+      ie, from the destination to the source. The int is the distance. *)
 
 (** {2 Lazy transformations} *)
 

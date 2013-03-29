@@ -713,7 +713,6 @@ module Timer = struct
     Mutex.unlock timer.mutex
 end
 
-
 module Infix = struct
   let (>>=) x f = flatMap f x
   let (>>) a f = andThen a f
