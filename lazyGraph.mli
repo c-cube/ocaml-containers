@@ -129,13 +129,38 @@ val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
 val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
   (** Lazy traversal in depth first *)
 
-val disjktra : ('id, 'v, 'e) t ->
-               ?distance:('id -> 'e -> 'id -> int) ->
+val a_star : ('id, 'v, 'e) t ->
+             ?ignore:('id -> bool) ->
+             ?heuristic:('id -> float) ->
+             ?distance:('id -> 'e -> 'id -> float) ->
+             goal:('id -> bool) ->
+             start:'id ->
+             (float * ('id, 'e) path) Gen.t
+  (** Shortest path from the first node to nodes that satisfy [goal], according
+      to the given (positive!) distance function. The distance is also returned.
+      [ignore] allows one to ignore some vertices during exploration.
+      [heuristic] indicates the estimated distance to some goal, and must be
+      - admissible (ie, it never overestimates the actual distance);
+      - consistent (ie, h(X) <= dist(X,Y) + h(Y)).
+      Both the distance and the heuristic must always
+      be positive or null. *)
+
+val dijkstra : ('id, 'v, 'e) t ->
+               ?ignore:('id -> bool) ->
+               ?distance:('id -> 'e -> 'id -> float) ->
                'id -> 'id ->
-               int * ('id, 'e) path
+               float * ('id, 'e) path
   (** Shortest path from the first node to the second one, according
-      to the given (positive!) distance function. The path is reversed,
-      ie, from the destination to the source. The int is the distance. *)
+      to the given (positive!) distance function. 
+      [ignore] allows one to ignore some vertices during exploration. 
+      This raises Not_found if no path could be found. *)
+
+val is_dag : ('id, _, _) t -> 'id -> bool
+  (** Is the subgraph explorable from the given vertex, a Directed
+      Acyclic Graph? *)
+
+val rev_path : ('id, 'e) path -> ('id, 'e) path
+  (** Reverse the path *)
 
 (** {2 Lazy transformations} *)
 
@@ -192,3 +217,6 @@ end
 val divisors_graph : (int, int, unit) t
 
 val collatz_graph : (int, int, unit) t
+
+val heap_graph : (int, int, unit) t
+  (** maps an integer i to 2*i and 2*i+1 *)

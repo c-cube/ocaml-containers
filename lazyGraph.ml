@@ -330,11 +330,121 @@ module Heap = struct
     m
 end
 
+(** Node used to rebuild a path in A* algorithm *)
+type ('id,'e) came_from = {
+  mutable cf_explored : bool;     (* vertex explored? *)
+  cf_node : 'id;                  (* ID of the vertex *)
+  mutable cf_cost : float;        (* cost from start *)
+  mutable cf_prev : ('id, 'e) came_from_edge;  (* path to origin *)
+}
+and ('id, 'e) came_from_edge =
+  | CFStart
+  | CFEdge of 'e * ('id, 'e) came_from
+
+(** Shortest path from the first node to nodes that satisfy [goal], according
+    to the given (positive!) distance function. The path is reversed,
+    ie, from the destination to the source. The distance is also returned.
+    [ignore] allows one to ignore some vertices during exploration.
+    [heuristic] indicates the estimated distance to some goal, and must be
+    - admissible (ie, it never overestimates the actual distance);
+    - consistent (ie, h(X) <= dist(X,Y) + h(Y)).
+    Both the distance and the heuristic must always
+    be positive or null. *)
+let a_star graph ?(ignore=fun v -> false)
+  ?(heuristic=(fun v -> 0.))
+  ?(distance=(fun v1 e v2 -> 1.))
+  ~goal
+  ~start =
+  fun () ->
+    (* map node -> 'came_from' cell *)
+    let nodes = mk_map ~eq:graph.eq ~hash:graph.hash in
+    (* priority queue for nodes to explore *)
+    let h = Heap.empty ~cmp:(fun (i,_) (j, _) -> compare i j) in
+    (* initial node *)
+    Heap.insert h (0., start);
+    let start_cell =
+      {cf_explored=false; cf_cost=0.; cf_node=start; cf_prev=CFStart; } in
+    nodes.map_add start start_cell;
+    (* generator *)
+    let rec next () =
+      if Heap.is_empty h then raise Gen.EOG else
+        (* next vertex *)
+        let dist, v' = Heap.pop h in
+        (* data for this vertex *)
+        let cell = nodes.map_get v' in
+        if (not cell.cf_explored) || ignore v' then begin
+          cell.cf_explored <- true;
+          match graph.force v' with
+          | Empty -> next ()
+          | Node (_, label, edges) ->
+            (* explore neighbors *)
+            Gen.iter
+              (fun (e,v'') ->
+                let cost = dist +. distance v' e v'' +. heuristic v'' in
+                let cell' =
+                  try nodes.map_get v''
+                  with Not_found ->
+                    (* first time we meet this node *)
+                    let cell' = {cf_cost=cost; cf_explored=false;
+                                 cf_node=v''; cf_prev=CFEdge (e, cell); } in
+                    nodes.map_add v'' cell';
+                    cell'
+                in
+                if not cell'.cf_explored
+                  then Heap.insert h (cost, v'')  (* new node *)
+                else if cost < cell'.cf_cost
+                  then begin  (* put the node in [h] with a better cost *)
+                    Heap.insert h (cost, v'');
+                    cell'.cf_cost <- cost; (* update best cost/path *)
+                    cell'.cf_prev <- CFEdge (e, cell);
+                  end)
+              edges;
+            (* check whether the node we just explored is a goal node *)
+            if goal v'
+              then (* found a goal node! yield it *)
+                dist, mk_path nodes [] v'
+              else next ()  (* continue exploring *)
+          end
+        else next ()  (* node already explored *)
+    (* re_build the path from [v] to [start] *)
+    and mk_path nodes path v =
+      let node = nodes.map_get v in
+      match node.cf_prev with
+      | CFStart -> path
+      | CFEdge (e, node') ->
+        let v' = node'.cf_node in
+        let path' = (v', e, v) :: path in
+        mk_path nodes path' v'
+    in next
+    
 (** Shortest path from the first node to the second one, according
     to the given (positive!) distance function. The path is reversed,
     ie, from the destination to the source. The int is the distance. *)
-let disjktra graph ?(distance=fun v1 e v2 -> 1) v1 v2 =
-  failwith "not implemented"
+let dijkstra graph ?(ignore=fun v -> false) ?(distance=fun v1 e v2 -> 1.) v1 v2 =
+  let paths =
+    a_star graph ~ignore ~distance ~heuristic:(fun _ -> 0.)
+       ~goal:(fun v -> graph.eq v v2) ~start:v1 in
+  let paths = Gen.start paths in
+  try
+    Gen.Gen.next paths
+  with Gen.EOG ->
+    raise Not_found
+
+(** Is the subgraph explorable from the given vertex, a Directed
+    Acyclic Graph? *)
+let is_dag graph v =
+  Gen.for_all
+    (function
+      | Full.MeetEdge (_, _, _, Full.EdgeBackward) -> false
+      | _ -> true)
+    (Full.dfs_full graph (Gen.singleton v))
+
+(** Reverse the path *)
+let rev_path p =
+  let rec rev acc p = match p with
+  | [] -> acc
+  | (v,e,v')::p' -> rev ((v',e,v)::acc) p'
+  in rev [] p
 
 (** {2 Lazy transformations} *)
 
@@ -472,4 +582,9 @@ let collatz_graph =
     if i mod 2 = 0
       then Node (i, i, Gen.singleton ((), i / 2))
       else Node (i, i, Gen.singleton ((), i * 3 + 1))
+  in make force
+
+let heap_graph =
+  let force i =
+    Node (i, i, Gen.of_list [(), 2*i; (), 2*i+1])
   in make force
