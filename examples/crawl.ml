@@ -8,7 +8,7 @@ let pool = Future.Pool.create ~timeout:15. ~size:15
 let split_lines s = String.nsplit s ~by:"\n"
 
 let get_and_parse url =
-  let cmd = Format.sprintf "wget -q '%s' -O - | grep -o 'http://[^ \"]*.html'" url in
+  let cmd = Format.sprintf "wget -q '%s' -O - | grep -o 'http\\(s\\)\\?://[^ \"]\\+'" url in
   let content = Future.spawn_process ?stdin:None ~pool ~cmd in
   content
     |> Future.map (fun (_, stdout, _) -> stdout)
@@ -22,8 +22,9 @@ type page = string * (string list Future.t)
 let g : (page, unit, unit) LazyGraph.t =
   let force (url, future) =
     Format.printf "force %s@." url;
-    let urls = Future.get future
-      |> List.map (fun url -> (), (url, get_and_parse url)) in
+    let urls =
+      try Future.get future |> List.map (fun url -> (), (url, get_and_parse url))
+      with e -> [] in
     let edges = Gen.of_list urls in
     (* need to parse the page to get the urls *)
     LazyGraph.Node ((url, future), (), edges)
