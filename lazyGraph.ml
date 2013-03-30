@@ -350,7 +350,9 @@ and ('id, 'e) came_from_edge =
     - consistent (ie, h(X) <= dist(X,Y) + h(Y)).
     Both the distance and the heuristic must always
     be positive or null. *)
-let a_star graph ?(ignore=fun v -> false)
+let a_star graph
+  ?(on_explore=fun v -> ())
+  ?(ignore=fun v -> false)
   ?(heuristic=(fun v -> 0.))
   ?(distance=(fun v1 e v2 -> 1.))
   ~goal
@@ -373,6 +375,8 @@ let a_star graph ?(ignore=fun v -> false)
         (* data for this vertex *)
         let cell = nodes.map_get v' in
         if (not cell.cf_explored) || ignore v' then begin
+          (* 'explore' the node *)
+          on_explore v';
           cell.cf_explored <- true;
           match graph.force v' with
           | Empty -> next ()
@@ -420,9 +424,10 @@ let a_star graph ?(ignore=fun v -> false)
 (** Shortest path from the first node to the second one, according
     to the given (positive!) distance function. The path is reversed,
     ie, from the destination to the source. The int is the distance. *)
-let dijkstra graph ?(ignore=fun v -> false) ?(distance=fun v1 e v2 -> 1.) v1 v2 =
+let dijkstra graph ?on_explore ?(ignore=fun v -> false)
+  ?(distance=fun v1 e v2 -> 1.) v1 v2 =
   let paths =
-    a_star graph ~ignore ~distance ~heuristic:(fun _ -> 0.)
+    a_star graph ?on_explore ~ignore ~distance ~heuristic:(fun _ -> 0.)
        ~goal:(fun v -> graph.eq v v2) ~start:v1 in
   let paths = Gen.start paths in
   try

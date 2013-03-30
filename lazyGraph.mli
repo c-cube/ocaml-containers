@@ -130,6 +130,7 @@ val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
   (** Lazy traversal in depth first *)
 
 val a_star : ('id, 'v, 'e) t ->
+             ?on_explore:('id -> unit) ->
              ?ignore:('id -> bool) ->
              ?heuristic:('id -> float) ->
              ?distance:('id -> 'e -> 'id -> float) ->
@@ -146,6 +147,7 @@ val a_star : ('id, 'v, 'e) t ->
       be positive or null. *)
 
 val dijkstra : ('id, 'v, 'e) t ->
+               ?on_explore:('id -> unit) ->
                ?ignore:('id -> bool) ->
                ?distance:('id -> 'e -> 'id -> float) ->
                'id -> 'id ->
