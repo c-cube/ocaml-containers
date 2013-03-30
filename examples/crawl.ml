@@ -3,7 +3,7 @@
 
 open Batteries
 
-let pool = Future.Pool.create ~timeout:15. ~size:15
+let pool = Future.Pool.create ~timeout:15. ~size:50
 
 let split_lines s = String.nsplit s ~by:"\n"
 
@@ -49,6 +49,13 @@ let main from into =
     Printf.printf "found path (cost %f):\n%a\n" cost pp_path path
   with Not_found ->
     Format.printf "no path could be found@."
+
+let _ =
+  let timer = Future.Timer.create () in
+  let rec ping () =
+    Format.printf "*** ping! (size of pool: %d)@." (Future.Pool.size pool);
+    Future.Timer.schedule_in timer 10. ping
+  in ping ()
 
 let _ =
   if Array.length Sys.argv < 3
