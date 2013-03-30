@@ -4,7 +4,7 @@ IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
 TARGETS_LIB = containers.cmxa containers.cma
 TARGET_THREAD_LIB = thread_containers.cmxa thread_containers.cma
-EXAMPLES = examples/mem_size.native examples/collatz.native
+EXAMPLES = examples/mem_size.native examples/collatz.native examples/crawl.native
 OPTIONS = -use-ocamlfind
 
 all: lib lib_thread
