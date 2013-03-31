@@ -458,6 +458,28 @@ let rev_path p =
   | (v,e,v')::p' -> rev ((v',e,v)::acc) p'
   in rev [] p
 
+(** [limit_depth g depth start] returns the same graph as [graph], but
+    keeping only nodes that are at distance at most [depth] from
+    some vertex in [start] (which must be finite). *)
+let limit_depth g depth start =
+  assert (depth >= 0);
+  (* compute set of vertices which are within the required distance *)
+  let set = mk_map ~eq:g.eq ~hash:g.hash in
+  let open Gen.Infix in
+  Full.bfs_full g start
+    |> Gen.takeWhile
+      (function
+        | Full.EnterVertex (id, _, _, path) -> List.length path <= depth
+        | _ -> true)
+    |> Gen.iter
+      (function
+        | Full.EnterVertex (id, _, _, _) -> set.map_add id ()
+        | _ -> ());
+  let force v =
+    if not (set.map_mem v) then Empty
+    else g.force v
+  in {g with force=force; }
+
 (** {2 Lazy transformations} *)
 
 let union ?(combine=fun x y -> x) g1 g2 =

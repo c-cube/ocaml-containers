@@ -167,6 +167,11 @@ val is_dag_full : ('id, _, _) t -> 'id Gen.t -> bool
 val rev_path : ('id, 'e) path -> ('id, 'e) path
   (** Reverse the path *)
 
+val limit_depth : ('id, 'v, 'e) t -> int -> 'id Gen.t -> ('id, 'v, 'e) t
+  (** [limit_depth g depth start] returns the same graph as [graph], but
+      keeping only nodes that are at distance at most [depth] from
+      some vertex in [start] (which must be finite). *)
+
 (** {2 Lazy transformations} *)
 
 val union : ?combine:('v -> 'v -> 'v) ->
