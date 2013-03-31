@@ -19,7 +19,7 @@ let get_and_parse url =
 type page = string * (string list Future.t)
 
 (** The web graph; its vertices are annotated by futures of the content *)
-let g : (page, unit, unit) LazyGraph.t =
+let g : (page, string, unit) LazyGraph.t =
   let force (url, future) =
     Format.printf "force %s@." url;
     let urls =
@@ -27,7 +27,7 @@ let g : (page, unit, unit) LazyGraph.t =
       with e -> [] in
     let edges = Gen.of_list urls in
     (* need to parse the page to get the urls *)
-    LazyGraph.Node ((url, future), (), edges)
+    LazyGraph.Node ((url, future), url, edges)
   in LazyGraph.make
     ~eq:(fun (url1,_) (url2,_) -> url1 = url2)
     ~hash:(fun (url,_) -> Hashtbl.hash url)
@@ -40,7 +40,7 @@ let pp_path fmt path =
     fmt path
 
 (* seek a path from the first url to the second *)
-let main from into =
+let path_between from into =
   Format.printf "seek path from %s to %s@." from into;
   let on_explore (url,_) = Format.printf "  explore %s...@." url in
   try
@@ -50,6 +50,17 @@ let main from into =
   with Not_found ->
     Format.printf "no path could be found@."
 
+let print_limit file start depth =
+  Format.printf "print into %s webgraph starting from %s, up to depth %d@."
+    file start depth;
+  let start = start, get_and_parse start in
+  let g' = LazyGraph.limit_depth g depth (Gen.singleton start) in
+  let g'' = LazyGraph.map ~vertices:(fun v -> [`Label v]) ~edges:(fun _ -> []) g' in
+  let out = Format.formatter_of_out_channel (open_out file) in
+  LazyGraph.Dot.pp ~name:"web" g'' out (Gen.singleton start);
+  Format.pp_print_flush out ();
+  ()
+
 let _ =
   let timer = Future.Timer.create () in
   let rec ping () =
@@ -57,7 +68,16 @@ let _ =
     Future.Timer.schedule_in timer 10. ping
   in ping ()
 
+let print_usage () =
+  Format.printf "usage: crawl path url1 url2@.";
+  Format.printf "usage: crawl print file url depth@.";
+  ()
+
 let _ =
-  if Array.length Sys.argv < 3
-    then Format.printf "usage: crawl url1 url2"
-    else main Sys.argv.(1) Sys.argv.(2)
+  match Sys.argv with
+  | [|_; "print"; file; url; depth|] ->
+    print_limit file url (int_of_string depth)
+  | [|_; "path"; from; into|] ->
+    path_between from into
+  | _ ->
+    print_usage ()
