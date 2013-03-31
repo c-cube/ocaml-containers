@@ -356,7 +356,7 @@ let a_star graph
   ?(heuristic=(fun v -> 0.))
   ?(distance=(fun v1 e v2 -> 1.))
   ~goal
-  ~start =
+  start =
   fun () ->
     (* map node -> 'came_from' cell *)
     let nodes = mk_map ~eq:graph.eq ~hash:graph.hash in
@@ -428,7 +428,7 @@ let dijkstra graph ?on_explore ?(ignore=fun v -> false)
   ?(distance=fun v1 e v2 -> 1.) v1 v2 =
   let paths =
     a_star graph ?on_explore ~ignore ~distance ~heuristic:(fun _ -> 0.)
-       ~goal:(fun v -> graph.eq v v2) ~start:v1 in
+       ~goal:(fun v -> graph.eq v v2) v1 in
   let paths = Gen.start paths in
   try
     Gen.Gen.next paths
@@ -470,6 +470,20 @@ let map ~vertices ~edges g =
     | Node (_, l, edges_enum) ->
       let edges_enum' = Gen.map (fun (e,v') -> (edges e), v') edges_enum in
       Node (v, vertices l, edges_enum')
+  in { eq=g.eq; hash=g.hash; force; }
+
+(** Replace each vertex by some vertices. By mapping [v'] to [f v'=v1,...,vn],
+    whenever [v] ---e---> [v'], then [v --e--> vi] for i=1,...,n. *)
+let flatMap f g =
+  let force v =
+    match g.force v with
+    | Empty -> Empty
+    | Node (_, l, edges_enum) ->
+      let edges_enum' = Gen.flatMap
+        (fun (e, v') ->
+          Gen.map (fun v'' -> e, v'') (f v'))
+        edges_enum in
+      Node (v, l, edges_enum')
   in { eq=g.eq; hash=g.hash; force; }
 
 let filter ?(vertices=(fun v l -> true)) ?(edges=fun v1 e v2 -> true) g =

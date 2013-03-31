@@ -135,7 +135,7 @@ val a_star : ('id, 'v, 'e) t ->
              ?heuristic:('id -> float) ->
              ?distance:('id -> 'e -> 'id -> float) ->
              goal:('id -> bool) ->
-             start:'id ->
+             'id ->
              (float * ('id, 'e) path) Gen.t
   (** Shortest path from the first node to nodes that satisfy [goal], according
       to the given (positive!) distance function. The distance is also returned.
@@ -175,6 +175,13 @@ val union : ?combine:('v -> 'v -> 'v) ->
 val map : vertices:('v -> 'v2) -> edges:('e -> 'e2) ->
           ('id, 'v, 'e) t -> ('id, 'v2, 'e2) t
   (** Map vertice and edge labels *)
+
+val flatMap : ('id -> 'id Gen.t) ->
+              ('id, 'v, 'e) t ->
+              ('id, 'v, 'e) t
+  (** Replace each vertex by some vertices. By mapping [v'] to [f v'=v1,...,vn],
+      whenever [v] ---e---> [v'], then [v --e--> vi] for i=1,...,n. Optional
+      functions can be used to transform labels for edges and vertices. *)
 
 val filter : ?vertices:('id -> 'v -> bool) ->
              ?edges:('id -> 'e -> 'id -> bool) ->
