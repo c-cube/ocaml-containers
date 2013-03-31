@@ -444,6 +444,13 @@ let is_dag graph v =
       | _ -> true)
     (Full.dfs_full graph (Gen.singleton v))
 
+let is_dag_full graph vs =
+  Gen.for_all
+    (function
+      | Full.MeetEdge (_, _, _, Full.EdgeBackward) -> false
+      | _ -> true)
+    (Full.dfs_full graph vs)
+
 (** Reverse the path *)
 let rev_path p =
   let rec rev acc p = match p with

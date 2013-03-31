@@ -161,6 +161,9 @@ val is_dag : ('id, _, _) t -> 'id -> bool
   (** Is the subgraph explorable from the given vertex, a Directed
       Acyclic Graph? *)
 
+val is_dag_full : ('id, _, _) t -> 'id Gen.t -> bool
+  (** Is the Graph reachable from the given vertices, a DAG? See {! is_dag} *)
+
 val rev_path : ('id, 'e) path -> ('id, 'e) path
   (** Reverse the path *)
 
