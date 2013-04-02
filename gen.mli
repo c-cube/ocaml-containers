@@ -193,8 +193,14 @@ val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
 val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
   (** Maximum element *)
 
+val eq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  (** Equality of generators. *)
+
 val lexico : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
   (** Lexicographic comparison of generators *)
+
+val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
+  (** Synonym for {! lexico} *)
 
 (** {2 Complex combinators} *)
 

@@ -398,7 +398,20 @@ let max ?(lt=fun x y -> x < y) enum =
   let first = try gen () with EOG -> raise Not_found in
   Gen.fold (fun max x -> if lt max x then x else max) first gen
 
-let lexico ?(cmp=compare) e1 e2 =
+let eq ?(eq=(=)) e1 e2 =
+  let gen1 = e1 ()
+  and gen2 = e2 () in
+  let rec check () =
+    let x1 = try Some (gen1 ()) with EOG -> None in
+    let x2 = try Some (gen2 ()) with EOG -> None in
+    match x1, x2 with
+    | None, None -> true
+    | Some x1, Some x2 when eq x1 x2 -> check ()
+    | _ -> false
+  in
+  check ()
+
+let lexico ?(cmp=Pervasives.compare) e1 e2 =
   let gen1 = e1() in
   let gen2 = e2() in
   let rec lexico () =
@@ -412,6 +425,8 @@ let lexico ?(cmp=compare) e1 e2 =
     | Some _, None -> 1
     | None, Some _ -> -1
   in lexico ()
+
+let compare ?cmp e1 e2 = lexico ?cmp e1 e2
 
 (** {2 Complex combinators} *)
 
@@ -511,7 +526,7 @@ end
 
 (** Intersection of two sorted sequences. Only elements that occur in both
     inputs appear in the output *)
-let intersection ?(cmp=compare) e1 e2 =
+let intersection ?(cmp=Pervasives.compare) e1 e2 =
   fun () ->
     let gen1, gen2 = e1 (), e2 () in
     let next1 () = try Some (gen1 ()) with EOG -> None in
@@ -534,7 +549,7 @@ let intersection ?(cmp=compare) e1 e2 =
     in next
 
 (** Binary sorted merge of two sorted sequences *)
-let sorted_merge ?(cmp=compare) e1 e2 =
+let sorted_merge ?(cmp=Pervasives.compare) e1 e2 =
   fun () ->
     let gen1, gen2 = e1 (), e2 () in
     let next1 () = try Some (gen1 ()) with EOG -> None in
@@ -557,7 +572,7 @@ let sorted_merge ?(cmp=compare) e1 e2 =
 
 (** Assuming subsequences are sorted in increasing order, merge them
     into an increasing sequence *)
-let sorted_merge_n ?(cmp=compare) enum =
+let sorted_merge_n ?(cmp=Pervasives.compare) enum =
   fun () ->
     (* make a heap of (value, generator) *)
     let cmp (v1,_) (v2,_) = cmp v1 v2 in
@@ -791,7 +806,7 @@ let uniq ?(eq=(=)) enum =
       else (prev := x; x)
     in next
 
-let sort ?(cmp=compare) enum =
+let sort ?(cmp=Pervasives.compare) enum =
   fun () ->
     (* build heap *)
     let h = Heap.empty ~cmp in
@@ -801,7 +816,7 @@ let sort ?(cmp=compare) enum =
         then raise EOG
         else Heap.pop h
 
-let sort_uniq ?(cmp=compare) enum =
+let sort_uniq ?(cmp=Pervasives.compare) enum =
   uniq ~eq:(fun x y -> cmp x y = 0) (sort ~cmp enum)
 
 (*
