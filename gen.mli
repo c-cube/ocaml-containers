@@ -323,12 +323,16 @@ val pp : ?start:string -> ?stop:string -> ?sep:string -> ?horizontal:bool ->
 
 module Infix : sig
   val (@@) : 'a t -> 'a t -> 'a t
+    (** Synonym for {! append} *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+    (** Synonym for {! flatMap}, with arguments reversed *)
   
   val (--) : int -> int -> int t
+    (** Synonym for {! int_range} *)
   
   val (|>) : 'a -> ('a -> 'b) -> 'b
+    (** Function application, reversed *)
 end
 
 val (@@) : 'a t -> 'a t -> 'a t
