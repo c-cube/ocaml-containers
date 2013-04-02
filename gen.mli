@@ -26,7 +26,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Restartable generators} *)
 
 (** This structure is inspired from Ocaml Batteries' BatEnum.t. It features
-    restartable generators. *)
+    restartable generators. A value of type ['a Gen.t] represents a finite or
+    infinite lazy enumeration of values of type ['a]. It can be instantiated
+    as many times as needed into a ['a generator], which is a consumable
+    enumeration. The next element of a ['a generator] is obtained by
+    invoking it as a function; an exception, [EOG], is raised when no
+    more elements are available. *)
 
 exception EOG
   (** End of Generation *)
@@ -40,7 +45,7 @@ and 'a generator = unit -> 'a
 (** {2 Generator functions} *)
 
 val start : 'a t -> 'a generator
-  (** Create a new generator *)
+  (** Create a new generator on the given restartable generator. *)
 
 (** {2 Transient generators} *)
 
@@ -74,7 +79,7 @@ end
 (** {2 Basic constructors} *)
 
 val empty : 'a t
-  (** Enmpty enum *)
+  (** Empty enum, with no elements *)
 
 val singleton : 'a -> 'a t
   (** One-element enum *)
@@ -83,22 +88,24 @@ val repeat : 'a -> 'a t
   (** Repeat same element endlessly *)
 
 val repeatedly : (unit -> 'a) -> 'a t
-  (** Call the same function an infinite number of times (useful 
-      if the function is a random generator) *)
+  (** Call the same function an infinite number of times (useful for instance
+      if the function is a random generator). *)
 
 val iterate : 'a -> ('a -> 'a) -> 'a t
   (** [iterate x f] is [[x; f x; f (f x); f (f (f x)); ...]] *)
 
 val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
-  (** Dual of {!fold}, with a deconstructing operation *)
+  (** Dual of {!fold}, with a deconstructing operation. It keeps on
+      unfolding the ['b] value into a new ['b], and a ['a] which is yielded,
+      until [None] is returned. *)
 
 (** {2 Basic combinators} *)
 
 val is_empty : _ t -> bool
-  (** Check whether the enum is empty *)
+  (** Check whether the enum is empty. *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** Fold on the generator *)
+  (** Fold on the generator, tail-recursively *)
 
 val fold2 : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
   (** Fold on the two enums in parallel. Stops once one of the enums
@@ -108,7 +115,7 @@ val reduce : ('a -> 'a -> 'a) -> 'a t -> 'a
   (** Fold on non-empty sequences (otherwise raise Invalid_argument) *)
 
 val scan : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
-  (** Successive values of the accumulator *)
+  (** Like {!fold}, but keeping successive values of the accumulator *)
 
 val iter : ('a -> unit) -> 'a t -> unit
   (** Iterate on the enum *)
@@ -123,19 +130,23 @@ val length : _ t -> int
   (** Length of an enum (linear time) *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-  (** Lazy map *)
+  (** Lazy map. No iteration is performed now, the function will be called
+      when the result is traversed. *)
 
 val append : 'a t -> 'a t -> 'a t
-  (** Append the two enums *)
+  (** Append the two enums; the result contains the elements of the first,
+      then the elements of the second enum. *)
 
 val cycle : 'a t -> 'a t
   (** Cycle through the enum, endlessly. The enum must not be empty. *)
 
 val flatten : 'a t t -> 'a t
-  (** Flatten the enum of enum *)
+  (** Flatten the enum of enum. *)
 
 val flatMap : ('a -> 'b t) -> 'a t -> 'b t
-  (** Monadic bind *)
+  (** Monadic bind; each element is transformed to a sub-enum
+      which is then iterated on, before the next element is processed,
+      and so on. *)
 
 val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
   (** Is the given element, member of the enum? *)
@@ -171,33 +182,34 @@ val zipIndex : 'a t -> (int * 'a) t
   (** Zip elements with their index in the enum *)
 
 val unzip : ('a * 'b) t -> 'a t * 'b t
-  (** Unzip into two sequences *)
+  (** Unzip into two sequences, splitting each pair *)
 
 val partition : ('a -> bool) -> 'a t -> 'a t * 'a t
   (** [partition p l] returns the elements that satisfy [p],
       and the elements that do not satisfy [p] *)
 
 val for_all : ('a -> bool) -> 'a t -> bool
-  (** Predicate true for all elements? *)
+  (** Is the predicate true for all elements? *)
 
 val exists : ('a -> bool) -> 'a t -> bool
-  (** Predicate true for at least one element? *)
+  (** Is the predicate true for at least one element? *)
 
 val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 
 val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 
 val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
-  (** Minimum element *)
+  (** Minimum element, according to the given comparison function *)
 
 val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
-  (** Maximum element *)
+  (** Maximum element, see {!min} *)
 
 val eq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   (** Equality of generators. *)
 
 val lexico : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
-  (** Lexicographic comparison of generators *)
+  (** Lexicographic comparison of generators. If the common prefix is
+      the same, the shortest one is considered as smaller than the other. *)
 
 val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
   (** Synonym for {! lexico} *)
@@ -238,7 +250,7 @@ val persistent : 'a generator -> 'a t
 
 val round_robin : ?n:int -> 'a t -> 'a generator t
   (** Split the enum into [n] generators in a fair way. Elements with
-      [index = k mod n] with go to the k-th enum. [n] defaults value
+      [index = k mod n] with go to the k-th enum. [n] default value
       is 2. *)
 
 val tee : ?n:int -> 'a t -> 'a generator t
@@ -254,7 +266,7 @@ val intersperse : 'a -> 'a t -> 'a t
   (** Put the separator element between all elements of the given enum *)
 
 val product : 'a t -> 'b t -> ('a * 'b) t
-  (** Cartesian product *)
+  (** Cartesian product. *)
 
 val group : ?eq:('a -> 'a -> bool) -> 'a t -> 'a list t
   (** Group equal consecutive elements together. *)
@@ -264,10 +276,10 @@ val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
       like [fun e -> map List.hd (group e)]. *)
 
 val sort : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
-  (** Sort according to the given comparison function *)
+  (** Sort according to the given comparison function. The enum must be finite. *)
 
 val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
-  (** Sort and remove duplicates *)
+  (** Sort and remove duplicates. The enum must be finite. *)
 
 (* TODO later
 val permutations : 'a t -> 'a t t
@@ -284,25 +296,30 @@ val powerSet : 'a t -> 'a t t
 (** {2 Basic conversion functions} *)
 
 val of_list : 'a list -> 'a t
-  (** Enumerate the list *)
+  (** Enumerate elements of the list *)
 
 val to_list : 'a t -> 'a list
-  (** non tail-call trasnformation to list *)
+  (** non tail-call trasnformation to list, in the same order *)
 
 val to_rev_list : 'a t -> 'a list
-  (** Tail call conversion to list, in reverse order *)
+  (** Tail call conversion to list, in reverse order (more efficient) *)
 
 val to_array : 'a t -> 'a array
+  (** Convert the enum to an array (not very efficient) *)
 
 val of_array : ?start:int -> ?len:int -> 'a array -> 'a t
+  (** Iterate on (a slice of) the given array *)
 
 val rand_int : int -> int t
+  (** Random ints in the given range. *)
 
 val int_range : int -> int -> int t
+  (** [int_range a b] enumerates integers between [a] and [b], included. [a]
+      is assumed to be smaller than [b]. *)
 
 val pp : ?start:string -> ?stop:string -> ?sep:string -> ?horizontal:bool ->
          (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit
-  (** Pretty print an enum *)
+  (** Pretty print an enum on a formatter. *)
 
 module Infix : sig
   val (@@) : 'a t -> 'a t -> 'a t
