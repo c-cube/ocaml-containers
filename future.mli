@@ -100,7 +100,7 @@ val fail : 'a t -> exn -> unit
 val is_done : 'a t -> bool
   (** Is the future evaluated (success/failure)? *)
 
-(** {2 Combinators *)
+(** {2 Combinators} *)
 
 val on_success : 'a t -> ('a -> unit) -> unit
   (** Attach a handler to be called upon success *)

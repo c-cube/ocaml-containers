@@ -206,7 +206,7 @@ module Infix : sig
     (** Union of graphs (alias for {! union}) *)
 end
 
-(** {2 Pretty printing in the DOT (graphviz) format *)
+(** {2 Pretty printing in the DOT (graphviz) format} *)
 module Dot : sig
   type attribute = [
   | `Color of string

@@ -4,16 +4,17 @@ IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
 TARGETS_LIB = containers.cmxa containers.cma
 TARGET_THREAD_LIB = thread_containers.cmxa thread_containers.cma
+TARGET_DOC = containers.docdir/index.html
 EXAMPLES = examples/mem_size.native examples/collatz.native examples/crawl.native
 OPTIONS = -use-ocamlfind
 
 all: lib lib_thread
 
 lib:
-	ocamlbuild $(OPTIONS) $(TARGETS_LIB)
+	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_DOC)
 
 lib_thread:
-	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_THREAD_LIB)
+	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_THREAD_LIB) $(TARGET_DOC)
 
 examples: all
 	ocamlbuild $(OPTIONS) -I . $(EXAMPLES)
