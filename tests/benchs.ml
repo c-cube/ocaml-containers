@@ -174,70 +174,70 @@ let _ =
   Bench.summarize 1. res
 
 let my_len = 250
-let round_n n = abs ((abs n) mod my_len)
 
 let phashtbl_find h =
   fun n ->
-    for i = 0 to n do
-      ignore (PHashtbl.find h (round_n i));
+    for i = 0 to n-1 do
+      ignore (PHashtbl.find h i);
     done
      
 let hashtbl_find h =
   fun n ->
-    for i = 0 to n do
-      ignore (Hashtbl.find h (round_n i));
+    for i = 0 to n-1 do
+      ignore (Hashtbl.find h i);
     done
      
 let ihashtbl_find h =
   fun n ->
-    for i = 0 to n do
-      ignore (IHashtbl.find h (round_n i));
+    for i = 0 to n-1 do
+      ignore (IHashtbl.find h i);
     done
      
 let iflathashtbl_find h =
   fun n ->
-    for i = 0 to n do
-      ignore (IFlatHashtbl.find h (round_n i));
+    for i = 0 to n-1 do
+      ignore (IFlatHashtbl.find h i);
     done
      
 let ifhashtbl_find h =
   fun n ->
-    for i = 0 to n do
-      ignore (IFHashtbl.find h (round_n i));
+    for i = 0 to n-1 do
+      ignore (IFHashtbl.find h i);
     done
      
 let ipersistenthashtbl_find h =
   fun n ->
-    for i = 0 to n do
-      ignore (IPersistentHashtbl.find h (round_n i));
+    for i = 0 to n-1 do
+      ignore (IPersistentHashtbl.find h i);
     done
 
 let skiplist_find l =
   fun n ->
-    for i = 0 to n do
-      ignore (SkipList.find l (round_n i));
+    for i = 0 to n-1 do
+      ignore (SkipList.find l i);
     done
 
 let _ =
-  let h = phashtbl_add my_len in
-  let h' = hashtbl_add my_len in
-  let h'' = ihashtbl_add my_len in
-  let h''' = iflathashtbl_add my_len in
-  let h'''' = ifhashtbl_add my_len in
-  let h''''' = ipersistenthashtbl_add my_len in
-  let l = skiplist_add my_len in
-  List.iter (fun n ->
-    Format.printf "----------------------------------------@.";
-    Format.printf "try on size %d@.@.@." n;
-    Bench.bench [
-      "phashtbl_find", (fun () -> phashtbl_find h n);
-      "hashtbl_find", (fun () -> hashtbl_find h' n);
-      "ihashtbl_find", (fun () -> ihashtbl_find h'' n);
-      "iflathashtbl_find", (fun () -> iflathashtbl_find h''' n);
-      "ifhashtbl_find", (fun () -> ifhashtbl_find h'''' n);
-      "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n);
-      "skiplist_find", (fun () -> skiplist_find l n);
-    ])
+  List.iter
+    (fun len ->
+      let h = phashtbl_add len in
+      let h' = hashtbl_add len in
+      let h'' = ihashtbl_add len in
+      let h''' = iflathashtbl_add len in
+      let h'''' = ifhashtbl_add len in
+      let h''''' = ipersistenthashtbl_add len in
+      let l = skiplist_add len in
+      Format.printf "----------------------------------------@.";
+      Format.printf "try on size %d@.@.@." len;
+      Bench.bench [
+        "phashtbl_find", (fun () -> phashtbl_find h len);
+        "hashtbl_find", (fun () -> hashtbl_find h' len);
+        "ihashtbl_find", (fun () -> ihashtbl_find h'' len);
+        "iflathashtbl_find", (fun () -> iflathashtbl_find h''' len);
+        "ifhashtbl_find", (fun () -> ifhashtbl_find h'''' len);
+        "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' len);
+        "skiplist_find", (fun () -> skiplist_find l len);
+      ])
     [10;20;100;1000;10000;100000]
 
 (** {2 Sequence/Gen} *)
