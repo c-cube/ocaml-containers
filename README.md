@@ -13,6 +13,8 @@ structures comprise:
 - `Heap`, an imperative heap based on `SplayTree`
 - `Graph`, a polymorphic imperative directed graph (on top of `PHashtbl`)
 - `Hashset`, a polymorphic imperative set on top of `PHashtbl`
+- `LazyGraph`, a lazy graph structure on arbitrary (hashable+eq) types, with
+basic graph functions that work even on infinite graphs, and printing to DOT.
 - `FQueue`, a purely functional queue structure
 - `Heap`, a purely functional polymorphic heap
 
@@ -20,7 +22,11 @@ Other structures are:
 
 - `Univ`, a universal type encoding with affectation
 - `Cache`, a low level memoization cache for unary and binary functions
+- `PersistentHashtbl`, a semi-persistent hashtable (similar to
+[persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
 - `Deque`, an imperative double ended FIFO (double-linked list)
+- `Future`, a set of tools for preemptive threading, including a thread pool,
+monadic futures, and MVars (concurrent boxes)
 - `Vector`, a growable array (pure OCaml, no C; not tested)
 - `FlatHashtbl`, a (deprecated) open addressing hashtable with
     a functorial interface (replaced by PHashtbl)

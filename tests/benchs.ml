@@ -217,6 +217,12 @@ let skiplist_find l =
       ignore (SkipList.find l i);
     done
 
+let array_find a =
+  fun n ->
+    for i = 0 to n-1 do
+      ignore (Array.get a i);
+    done
+
 let _ =
   List.iter
     (fun len ->
@@ -227,6 +233,7 @@ let _ =
       let h'''' = ifhashtbl_add len in
       let h''''' = ipersistenthashtbl_add len in
       let l = skiplist_add len in
+      let a = Array.init len (fun i -> string_of_int i) in
       Format.printf "----------------------------------------@.";
       Format.printf "try on size %d@.@.@." len;
       Bench.bench [
@@ -237,8 +244,9 @@ let _ =
         "ifhashtbl_find", (fun () -> ifhashtbl_find h'''' len);
         "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' len);
         "skiplist_find", (fun () -> skiplist_find l len);
+        "array_find", (fun () -> array_find a len);
       ])
-    [10;20;100;1000;10000;100000]
+    [10;20;100;1000;10000]
 
 (** {2 Sequence/Gen} *)
 
