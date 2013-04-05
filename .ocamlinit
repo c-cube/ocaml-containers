@@ -1,4 +1,3 @@
-(* vim:syntax=ocaml: *)
 #use "topfind";;
 #thread
 #directory "_build/";;
@@ -7,3 +6,5 @@
 #require "threads";;
 #load "thread_containers.cma";;
 open Gen.Infix;;
+(* vim:syntax=ocaml:
+*)

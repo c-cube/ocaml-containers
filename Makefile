@@ -8,13 +8,16 @@ TARGET_DOC = containers.docdir/index.html
 EXAMPLES = examples/mem_size.native examples/collatz.native examples/crawl.native
 OPTIONS = -use-ocamlfind
 
-all: lib lib_thread
+all: lib lib_thread doc
 
 lib:
 	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_DOC)
 
 lib_thread:
 	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_THREAD_LIB) $(TARGET_DOC)
+
+doc:
+	ocamlbuild $(OPTIONS) $(TARGET_DOC)
 
 examples: all
 	ocamlbuild $(OPTIONS) -I . $(EXAMPLES)
