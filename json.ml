@@ -66,6 +66,7 @@ let parse chars =
     | Some (Genlex.Kwd "true") -> junk tokens; Bool true
     | Some (Genlex.Kwd "false") -> junk tokens; Bool false
     | Some (Genlex.Kwd "null") -> junk tokens; Null
+    | Some (Genlex.String s) -> junk tokens; String s
     | _ -> raise (Stream.Error "expected JSON value")
   and read_list acc =
     match peek tokens with
