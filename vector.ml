@@ -40,39 +40,44 @@ let create i =
 (** resize the underlying array so that it can contains the
     given number of elements *)
 let resize v newcapacity =
-  let newcapacity = min newcapacity Sys.max_array_length in
-  if newcapacity <= Array.length v.vec
-    then ()  (* already big enough *)
-    else begin
-      assert (newcapacity >= v.size);
-      let new_vec = Array.create newcapacity (Obj.magic None) in
-      Array.blit v.vec 0 new_vec 0 v.size;
-      v.vec <- new_vec;
-    end
+  assert (newcapacity >= v.size);
+  let new_vec = Array.create newcapacity (Obj.magic None) in
+  Array.blit v.vec 0 new_vec 0 v.size;
+  v.vec <- new_vec;
+  ()
+
+(** Be sure that [v] can contain [size] elements, resize it if needed. *)
+let ensure v size =
+  if v.size < size
+    then
+      let size' = min (2 * v.size) Sys.max_array_length in
+      resize v size'
 
 let clear v =
-  v.size <- 0;
-  if Array.length v.vec > 1024  (* shrink if too large *)
-    then (v.vec <- Array.create 10 (Obj.magic None))
+  v.size <- 0
 
 let is_empty v = v.size = 0
 
 let push v x =
-  (if Array.length v.vec = v.size
-    then resize v (2 * v.size));
-  v.vec.(v.size) <- x;
+  (if v.size = Array.length v.vec then resize v (2 * v.size));
+  Array.unsafe_set v.vec v.size x;
   v.size <- v.size + 1
 
 (** add all elements of b to a *)
 let append a b =
-  resize a (a.size + b.size);
+  (if Array.length a.vec < a.size + b.size
+    then resize a (2 * (a.size + b.size)));
   Array.blit b.vec 0 a.vec a.size b.size;
   a.size <- a.size + b.size
 
 let append_array a b =
-  resize a (a.size + Array.length b);
+  (if Array.length a.vec < a.size + Array.length b
+    then resize a (2 * (a.size + Array.length b)));
   Array.blit b 0 a.vec a.size (Array.length b);
   a.size <- a.size + Array.length b
+
+let append_seq a seq =
+  Sequence.iter (fun x -> push a x) seq
 
 let pop v =
   (if v.size = 0 then failwith "Vector.pop on empty vector");
@@ -87,7 +92,9 @@ let copy v =
   v'
 
 let shrink v n =
-  if n > v.size then failwith "cannot shrink to bigger size" else v.size <- n
+  if n > v.size
+    then failwith "cannot shrink to bigger size"
+    else v.size <- n
 
 let member ?(eq=(=)) v x =
   let n = v.size in
@@ -120,32 +127,36 @@ let uniq_sort ?(cmp=compare) v =
 
 let iter v k =
   for i = 0 to v.size -1 do
-    k v.vec.(i)
+    k (Array.unsafe_get v.vec i)
   done
 
 let iteri v k =
   for i = 0 to v.size -1 do
-    k i v.vec.(i)
+    k i (Array.unsafe_get v.vec i)
   done
 
 let map v f =
   let v' = create v.size in
   for i = 0 to v.size - 1 do
-    push v' (f v.vec.(i));
+    let x = f (Array.unsafe_get v.vec i) in
+    Array.unsafe_set v'.vec i x
   done;
+  v'.size <- v.size;
   v'
 
 let filter v f =
   let v' = create v.size in
   for i = 0 to v.size - 1 do
-    if f v.vec.(i) then push v' v.vec.(i);
+    let x = Array.unsafe_get v.vec i in
+    if f x then push v' x;
   done;
   v'
 
 let fold v acc f =
   let acc = ref acc in
   for i = 0 to v.size - 1 do
-    acc := f !acc v.vec.(i);
+    let x = Array.unsafe_get v.vec i in
+    acc := f !acc x;
   done;
   !acc
 
@@ -175,22 +186,44 @@ let find v p =
 
 let get v i =
   (if i < 0 || i >= v.size then failwith "Vector.get");
-  v.vec.(i)
+  Array.unsafe_get v.vec i
 
 let set v i x =
   (if i < 0 || i >= v.size then failwith "Vector.set");
-  v.vec.(i) <- x
+  Array.unsafe_set v.vec i x
+
+let rev v =
+  let n = v.size in
+  let vec = v.vec in
+  for i = 0 to (n-1)/2 do
+    let x = Array.unsafe_get vec i in
+    let y = Array.unsafe_get vec (n-i-1) in
+    Array.unsafe_set vec i y;
+    Array.unsafe_set vec (n-i-1) x;
+  done
 
 let size v = v.size
+
+let length v = v.size
 
 let unsafe_get_array v = v.vec
 
 let of_seq ?(init=create 10) seq =
-  Sequence.iter (fun x -> push init x) seq;
+  append_seq init seq;
   init
 
 let to_seq t =
   Sequence.from_iter (fun k -> iter t k)
+
+let slice v start len =
+  assert (start >= 0 && len >= 0);
+  Sequence.from_iter
+    (fun k ->
+      assert (start+len < v.size);
+      for i = start to start+len do
+        let x = Array.unsafe_get v.vec i in
+        k x
+      done)
 
 let from_array a =
   let c = Array.length a in

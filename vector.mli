@@ -46,6 +46,9 @@ val append : 'a t -> 'a t -> unit
 val append_array : 'a t -> 'a array -> unit
   (** same as append, with an array *)
 
+val append_seq : 'a t -> 'a Sequence.t -> unit
+  (** Append content of sequence *)
+
 val pop : 'a t -> 'a
   (** remove last element, or raise a Failure if empty *)
 
@@ -94,8 +97,14 @@ val get : 'a t -> int -> 'a
 val set : 'a t -> int -> 'a -> unit
   (** access element, or Failure if bad index *)
 
+val rev : 'a t -> unit
+  (** Reverse array in place *)
+
 val size : 'a t -> int
   (** number of elements in vector *)
+
+val length : _ t -> int
+  (** Synonym for {! size} *)
 
 val unsafe_get_array : 'a t -> 'a array
   (** Access the underlying *shared* array (do not modify!).
@@ -103,7 +112,12 @@ val unsafe_get_array : 'a t -> 'a array
       index than [size v] are undefined (do not access!). *)
 
 val of_seq : ?init:'a t -> 'a Sequence.t -> 'a t
+
 val to_seq : 'a t -> 'a Sequence.t
+
+val slice : 'a t -> int -> int -> 'a Sequence.t
+  (** [slice v start len] is the sequence of elements from [v.(start)]
+      to [v.(start+len)] included. *)
 
 val from_array : 'a array -> 'a t
 val from_list : 'a list -> 'a t
