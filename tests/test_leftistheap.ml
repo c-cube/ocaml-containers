@@ -3,7 +3,7 @@
 
 open OUnit
 
-let empty = Leftistheap.empty ~leq:(fun i j -> i <= j)
+let empty = Leftistheap.empty
 
 let test1 () =
   let h = Leftistheap.of_seq empty (Sequence.of_list [5;3;4;1;42;0]) in
@@ -27,6 +27,7 @@ let rec is_sorted l = match l with
   | [] -> true
   | x::((y::_) as l') -> x <= y && is_sorted l'
 
+(* extract the content of the heap into a list *)
 let extract_list heap =
   let rec recurse acc h =
     if Leftistheap.is_empty h
@@ -43,6 +44,7 @@ let test_sort () =
   let l = Sequence.to_rev_list (Sequence.take n (Sequence.random_int n)) in
   (* put elements into a heap *)
   let h = Leftistheap.of_seq empty (Sequence.of_list l) in
+  OUnit.assert_equal n (Leftistheap.size h);
   let l' = extract_list h in
   OUnit.assert_bool "sorted" (is_sorted l');
   ()

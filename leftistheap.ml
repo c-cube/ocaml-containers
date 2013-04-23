@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Leftist Heaps *)
+(** {1 Leftist Heaps} *)
 
 (** Polymorphic implementation, following Okasaki *)
 
@@ -36,9 +36,14 @@ and 'a tree =
   | Empty
   | Node of int * 'a * 'a tree * 'a tree
 
-let empty ~leq =
+let empty_with ~leq =
   { tree = Empty;
     leq;
+  }
+
+let empty =
+  { tree = Empty;
+    leq = (fun x y -> x <= y);
   }
 
 let is_empty heap =

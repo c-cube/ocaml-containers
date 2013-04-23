@@ -23,16 +23,19 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Leftist Heaps *)
+(** {1 Leftist Heaps} *)
 
 (** Polymorphic implementation, following Okasaki *)
 
 type 'a t
   (** Heap containing values of type 'a *)
 
-val empty : leq:('a -> 'a -> bool) -> 'a t
-  (** Empty heap. The function is used to check whether
-      the first element is smaller than the second. *)
+val empty_with : leq:('a -> 'a -> bool) -> 'a t
+  (** Empty heap. The function is used to check whether the first element is
+      smaller than the second. *)
+
+val empty : 'a t
+  (** Empty heap using Pervasives.compare *)
 
 val is_empty : _ t -> bool
   (** Is the heap empty? *)
