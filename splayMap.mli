@@ -25,6 +25,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Functional Maps} *)
 
+(* TODO: map-wide operations: merge, compare, equal, for_all, exists,
+        batch (sorted) add, partition, split, max_elt, min_elt, map... *)
+
 type ('a, 'b) t
   (** Tree with keys of type 'a, and values of type 'b *)
 

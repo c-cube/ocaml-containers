@@ -9,7 +9,8 @@ The design is centerred around polymorphism rather than functors. Such
 structures comprise:
 
 - `PHashtbl`, a polymorphic hashtable (with open addressing)
-- `SplayTree`, a polymorphic splay heap implementation
+- `SplayTree`, a polymorphic splay heap implementation (not quite finished)
+- `SplayMap`, a polymorphic functional map based on splay trees
 - `Heap`, an imperative heap based on `SplayTree`
 - `Graph`, a polymorphic imperative directed graph (on top of `PHashtbl`)
 - `Hashset`, a polymorphic imperative set on top of `PHashtbl`

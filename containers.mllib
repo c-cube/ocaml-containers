@@ -13,5 +13,6 @@ PHashtbl
 Sequence
 SkipList
 SplayTree
+SplayMap
 Univ
 Vector

@@ -168,8 +168,8 @@ let iter t f =
   let rec iter t = match t with
   | Empty -> ()
   | Node (k, v, l, r) ->
-    f k v;
     iter l;
+    f k v;
     iter r
   in iter t.tree
 
@@ -177,8 +177,8 @@ let fold t acc f =
   let rec fold acc t = match t with
   | Empty -> acc
   | Node (k, v, l, r) ->
-    let acc = f acc k v in
     let acc = fold acc l in
+    let acc = f acc k v in
     fold acc r
   in
   fold acc t.tree
