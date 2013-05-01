@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (* TODO: map-wide operations: merge, compare, equal, for_all, exists,
         batch (sorted) add, partition, split, max_elt, min_elt, map... *)
 
+(** {2 Polymorphic Maps} *)
+
 type ('a, 'b) t
   (** Tree with keys of type 'a, and values of type 'b *)
 
@@ -70,3 +72,55 @@ val choose : ('a, 'b) t -> ('a * 'b)
 val to_seq : ('a, 'b) t -> ('a * 'b) Sequence.t
 
 val of_seq : ('a, 'b) t -> ('a * 'b) Sequence.t -> ('a, 'b) t
+
+(** {2 Functorial interface} *)
+
+module type S = sig
+  type key
+  type 'a t
+    (** Tree with keys of type [key] and values of type 'a *)
+
+  val empty : unit -> 'a t
+    (** Empty tree *)
+
+  val is_empty : _ t -> bool
+    (** Is the tree empty? *)
+
+  val find : 'a t -> key -> 'a
+    (** Find the element for this key, or raises Not_found *)
+
+  val mem : _ t -> key -> bool
+    (** Is the key member of the tree? *)
+
+  val add : 'a t -> key -> 'a -> 'a t
+    (** Add the binding to the tree *)
+
+  val singleton : key -> 'a -> 'a t
+    (** Singleton map *)
+
+  val remove : 'a t -> key -> 'a t
+    (** Remove the binding for this key *)
+
+  val iter : 'a t -> (key -> 'a -> unit) -> unit
+    (** Iterate on bindings *)
+
+  val fold : 'a t -> 'c -> ('c -> key -> 'a -> 'c) -> 'c
+    (** Fold on bindings *)
+
+  val size : _ t -> int
+    (** Number of bindings (linear) *)
+
+  val choose : 'a t -> (key * 'a)
+    (** Some binding, or raises Not_found *)
+
+  val to_seq : 'a t -> (key * 'a) Sequence.t
+
+  val of_seq : 'a t -> (key * 'a) Sequence.t -> 'a t
+end
+
+module type ORDERED = sig
+  type t
+  val compare : t -> t -> int
+end
+
+module Make(X : ORDERED) : S with type key = X.t
