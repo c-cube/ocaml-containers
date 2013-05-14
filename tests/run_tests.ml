@@ -7,6 +7,7 @@ let suite =
     [ Test_pHashtbl.suite;
       Test_PersistentHashtbl.suite;
       Test_splayMap.suite;
+      Test_bij.suite;
       Test_leftistheap.suite;
       Test_cc.suite;
       Test_puf.suite;
