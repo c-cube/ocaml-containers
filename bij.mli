@@ -94,9 +94,9 @@ module type SINK = sig
   val write_float : t -> float -> unit
 end
 
-module SinkBuf : SINK with type t := Buffer.t
+module SinkBuf : SINK with type t = Buffer.t
 
-module SinkChan : SINK with type t := out_channel
+module SinkChan : SINK with type t = out_channel
 
 (** {2 Encoding/decoding} *)
 
@@ -115,6 +115,12 @@ module SexpDecode(Source : SOURCE) : DECODE with type source = Source.t
 
 (** Specific instance for encoding to/from strings *)
 module SexpStr : sig
-  val to_string : bij:'a t -> 'a -> string
+  val to_string : ?bufsize:int -> bij:'a t -> 'a -> string
   val of_string : bij:'a t -> string -> 'a
 end 
+
+(** Specific instance for encoding to/from channels *)
+module SexpChan : sig
+  include ENCODE with type sink = SinkChan.t
+  include DECODE with type source = SourceChan.t
+end

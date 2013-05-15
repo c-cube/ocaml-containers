@@ -395,11 +395,19 @@ module SexpStr = struct
   module SexpEncodeBuf = SexpEncode(SinkBuf)
   module SexpDecodeString = SexpDecode(SourceStr)
 
-  let to_string ~bij x =
-    let b = Buffer.create 15 in
+  let to_string ?(bufsize=64) ~bij x =
+    let b = Buffer.create bufsize in
     SexpEncodeBuf.encode ~bij b x;
     Buffer.contents b
 
   let of_string ~bij s =
     SexpDecodeString.decode ~bij (SourceStr.create s)
+end
+
+module SexpChan = struct
+  module SexpEncodeChan = SexpEncode(SinkChan)
+  module SexpDecodeChan = SexpDecode(SourceChan)
+
+  include SexpEncodeChan
+  include SexpDecodeChan
 end
