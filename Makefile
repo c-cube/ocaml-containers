@@ -22,7 +22,7 @@ doc:
 examples: all
 	ocamlbuild $(OPTIONS) -I . $(EXAMPLES)
 
-tests:
+tests: lib
 	ocamlbuild $(OPTIONS) -package oUnit -I . tests/run_tests.native
 
 bench:
