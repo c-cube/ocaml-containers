@@ -39,7 +39,7 @@ type _ t =
   | Map : ('a -> 'b) * ('b -> 'a) * 'b t -> 'a t
   | Switch : ('a -> char * 'a inject_branch) * (char -> 'a extract_branch) -> 'a t
 and _ inject_branch =
-  | BranchTo : 'b t * 'b * 'a -> 'a inject_branch
+  | BranchTo : 'b t * 'b -> 'a inject_branch
 and _ extract_branch =
   | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
 
@@ -275,7 +275,7 @@ module SexpEncode(Sink : SINK) = struct
         let y = inject x in
         encode bij' y
       | Switch (inject, _), x ->
-        let c, BranchTo (bij', y, _) = inject x in
+        let c, BranchTo (bij', y) = inject x in
         Sink.write_char sink c;
         encode bij' y
     in encode bij x

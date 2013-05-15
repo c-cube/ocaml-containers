@@ -44,16 +44,16 @@ val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 val map : inject:('a -> 'b) -> extract:('b -> 'a) -> 'b t -> 'a t
 
 type _ inject_branch =
-  | BranchTo : 'b t * 'b * 'a -> 'a inject_branch
+  | BranchTo : 'b t * 'b -> 'a inject_branch
 type _ extract_branch =
   | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
 
 val switch : inject:('a -> char * 'a inject_branch) ->
              extract:(char -> 'a extract_branch) -> 'a t
-  (** discriminates based on the next character. 
-      The selection function, with type ['a -> char], is used to select a
-      bijection depending on the value.
-      ' ' means "default" *)
+  (** Discriminates unions based on the next character.
+      [inject] is used to select a character, as well as mapping to another
+      type (the argument of the algebraic constructor);
+      [extract] retrieves which type to parse based on the character. *)
 
 exception EOF
 

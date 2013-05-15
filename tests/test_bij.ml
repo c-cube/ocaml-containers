@@ -34,10 +34,10 @@ type term =
 let bij_term =
   let rec mk_bij () =
     switch
-    ~inject:(fun t -> match t with
-      | Const s -> 'c', BranchTo (string_, s, t)
-      | Int i -> 'i', BranchTo (int_, i, t)
-      | App l -> 'a', BranchTo (list_ (mk_bij ()), l, t))
+    ~inject:(function
+      | Const s -> 'c', BranchTo (string_, s)
+      | Int i -> 'i', BranchTo (int_, i)
+      | App l -> 'a', BranchTo (list_ (mk_bij ()), l))
     ~extract:(function
       | 'c' -> BranchFrom (string_, fun x -> Const x)
       | 'i' -> BranchFrom (int_, fun x -> Int x)
