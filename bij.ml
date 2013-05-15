@@ -452,7 +452,10 @@ module SexpDecode(Source : SOURCE) = struct
         let x = decode bij in
         decode_list bij (x :: l)
     in
-    decode bij
+    try
+      decode bij
+    with EOF ->
+      raise (DecodingError "unexpected EOF")
 end
 
 module SexpStr = struct
