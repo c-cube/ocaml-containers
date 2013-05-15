@@ -67,17 +67,6 @@ let guard f t = Guard (f, t)
 let map ~inject ~extract b = Map (inject, extract, b)
 let switch ~inject ~extract = Switch (inject, extract)
 
-(** {2 Helpers} *)
-
-let fix f =
-  let rec bij = lazy (f (fun () -> Lazy.force bij)) in
-  Lazy.force bij
-
-type 'a versioned = string * 'a
-
-let with_version v t =
-  pair (guard (fun v' -> v = v') string_) t
-
 (** {2 Exceptions} *)
 
 exception EOF
@@ -87,6 +76,21 @@ exception EncodingError of string
 
 exception DecodingError of string
   (** Raised when decoding is impossible *)
+
+(** {2 Helpers} *)
+
+let fix f =
+  let rec bij = lazy (f (fun () -> Lazy.force bij)) in
+  Lazy.force bij
+
+let with_version v t =
+  map
+    ~inject:(fun x -> v, x)
+    ~extract:(fun (v', x) ->
+      if v = v'
+        then x
+        else raise (DecodingError ("expected version " ^ v)))
+    (pair string_ t)
 
 (** {2 Source of parsing} *)
 

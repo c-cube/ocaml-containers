@@ -64,10 +64,9 @@ val switch : inject:('a -> char * 'a inject_branch) ->
 val fix : ((unit -> 'a t) -> 'a t) -> 'a t
   (** Helper for recursive encodings *)
 
-type 'a versioned = string * 'a
-
-val with_version : string -> 'a t -> 'a versioned t
-  (** Guards the values with a given version *)
+val with_version : string -> 'a t -> 'a t
+  (** Guards the values with a given version. Only values encoded with
+      the same version will fit. *)
 
 (** {2 Exceptions} *)
 
