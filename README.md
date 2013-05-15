@@ -5,7 +5,7 @@ A bunch of containers,written in different occasions. Not all
 containers are properly tested (see `tests/` and `make tests`
 if you have installed `OUnit`).
 
-The design is centerred around polymorphism rather than functors. Such
+The design is mostly centered around polymorphism rather than functors. Such
 structures comprise:
 
 - `PHashtbl`, a polymorphic hashtable (with open addressing)
@@ -18,6 +18,8 @@ structures comprise:
 basic graph functions that work even on infinite graphs, and printing to DOT.
 - `FQueue`, a purely functional queue structure
 - `Heap`, a purely functional polymorphic heap
+- `Bij`, a GADT-based bijection language used to serialize/deserialize your
+data structures
 
 Other structures are:
 
@@ -43,7 +45,9 @@ If you have comments, requests, or bugfixes, please share them! :-)
 
 ## Build
 
-There are no dependencies (`Sequence` is included). Type:
+There are no dependencies (`Sequence` is included).
+The `Bij` module requires OCaml `>= 4.00`. Type:
+
 
     $ make
 

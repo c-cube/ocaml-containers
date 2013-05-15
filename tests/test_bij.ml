@@ -48,7 +48,7 @@ let bij_term =
 let test_rec () =
   let t = App [Const "foo"; App [Const "bar"; Int 1; Int 2]; Int 3; Const "hello"] in
   let s = SexpStr.to_string ~bij:bij_term t in
-  Printf.printf "to: %s\n" s;
+  (* Printf.printf "to: %s\n" s; *)
   let t' = SexpStr.of_string ~bij:bij_term s in
   OUnit.assert_equal t t'
 
