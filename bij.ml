@@ -36,6 +36,8 @@ type _ t =
   | Opt : 'a t -> 'a option t
   | Pair : 'a t * 'b t -> ('a * 'b) t
   | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
+  | Quad : 'a t * 'b t * 'c t * 'd t -> ('a * 'b * 'c * 'd) t
+  | Quint : 'a t * 'b t * 'c t * 'd t * 'e t -> ('a * 'b * 'c * 'd * 'e) t
   | Guard : ('a -> bool) * 'a t -> 'a t
   | Map : ('a -> 'b) * ('b -> 'a) * 'b t -> 'a t
   | Switch : ('a -> char * 'a inject_branch) * (char -> 'a extract_branch) -> 'a t
@@ -58,6 +60,8 @@ let many l = Many l
 let opt t = Opt t
 let pair a b = Pair(a,b)
 let triple a b c = Triple (a,b,c)
+let quad a b c d = Quad (a, b, c, d)
+let quint a b c d e = Quint (a, b, c, d, e)
 let guard f t = Guard (f, t)
 
 let map ~inject ~extract b = Map (inject, extract, b)
@@ -289,6 +293,28 @@ module SexpEncode(Sink : SINK) = struct
         Sink.write_char sink ' ';
         encode bij_c c;
         Sink.write_char sink ')'
+      | Quad (bij_a, bij_b, bij_c, bij_d), (a, b, c, d) ->
+        Sink.write_char sink '(';
+        encode bij_a a;
+        Sink.write_char sink ' ';
+        encode bij_b b;
+        Sink.write_char sink ' ';
+        encode bij_c c;
+        Sink.write_char sink ' ';
+        encode bij_d d;
+        Sink.write_char sink ')'
+      | Quint (bij_a, bij_b, bij_c, bij_d, bij_e), (a, b, c, d, e) ->
+        Sink.write_char sink '(';
+        encode bij_a a;
+        Sink.write_char sink ' ';
+        encode bij_b b;
+        Sink.write_char sink ' ';
+        encode bij_c c;
+        Sink.write_char sink ' ';
+        encode bij_d d;
+        Sink.write_char sink ' ';
+        encode bij_e e;
+        Sink.write_char sink ')'
       | Map (inject, _, bij'), x ->
         let y = inject x in
         encode bij' y
@@ -362,6 +388,23 @@ module SexpDecode(Source : SOURCE) = struct
         let c = decode bijc in
         decode_close ();
         a, b, c
+      | Quad (bija, bijb, bijc, bijd) ->
+        decode_open ();
+        let a = decode bija in
+        let b = decode bijb in
+        let c = decode bijc in
+        let d = decode bijd in
+        decode_close ();
+        a, b, c, d
+      | Quint (bija, bijb, bijc, bijd, bije) ->
+        decode_open ();
+        let a = decode bija in
+        let b = decode bijb in
+        let c = decode bijc in
+        let d = decode bijd in
+        let e = decode bije in
+        decode_close ();
+        a, b, c, d, e 
       | Guard (check, bij') ->
         let x = decode bij' in
         (if not (check x) then raise (DecodingError "check failed"));

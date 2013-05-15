@@ -40,6 +40,8 @@ val many : 'a t -> 'a list t  (* non empty *)
 val opt : 'a t -> 'a option t
 val pair : 'a t -> 'b t -> ('a * 'b) t
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
+val quint : 'a t -> 'b t -> 'c t -> 'd t -> 'e t -> ('a * 'b * 'c * 'd * 'e) t
 val guard : ('a -> bool) -> 'a t -> 'a t
   (** Validate values at encoding and decoding *)
 
