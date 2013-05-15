@@ -219,24 +219,24 @@ module Sexp = struct
     let len = ref 0 in
     (* current token *)
     let rec cur () =
-      if !len = 0
-        then raise (DecodingError "unexpected EOF")
-      else if !pos = !len
-        then (refill (); cur ())
-      else
-        str.[!pos]
+      if eof ()
+        then raise (EncodingError "unexpected EOF")
+        else str.[!pos]
+    and eof () = !len = 0
     and refill () =
       len := source str;
       pos := 0
     and junk () =
-      if !pos = !len then refill () else incr pos
+      incr pos;
+      if !pos >= !len then refill ()
     (* eat whitespace *)
     and whitespace () =
-      match cur () with
-      | ' ' | '\t' | '\n' -> junk (); whitespace ()
-      | _ -> ()
+      if not (eof ()) then match cur () with
+        | ' ' | '\t' | '\n' -> junk (); whitespace ()
+        | _ -> ()
+    in
     (* decode using the [bij] *)
-    and decode : type a. a bij -> int -> int -> a = fun bij i n ->
+    let rec decode : type a. a bij -> a = fun bij ->
       whitespace ();
       match bij with
       | Unit -> ()
@@ -274,16 +274,13 @@ module Sexp = struct
       | Pair (bija, bijb) ->
         decode_open ();
         let a = decode bija in
-        whitespace ();
         let b = decode bijb in
         decode_close ();
         a, b
       | Triple (bija, bijb, bijc) ->
         decode_open ();
         let a = decode bija in
-        whitespace ();
         let b = decode bijb in
-        whitespace ();
         let c = decode bijc in
         decode_close ();
         a, b, c
@@ -291,25 +288,47 @@ module Sexp = struct
         let x = decode bij' in
         extract x
       | Switch (_, choices) -> decode_switch choices
-    and decode_open () = match cur () with
-      | '(' -> junk (); whitespace ()
+    and decode_open : unit -> unit = fun () -> match cur () with
+      | '(' -> junk ()  (* done *)
       | _ -> raise (DecodingError "expected '('")
-    and decode_close () =
+    and decode_close : unit -> unit = fun () ->
       whitespace ();  (* on close, first eat whitespace *)
       match cur () with
-      | ')' -> junk (); whitespace ()
+      | ')' -> junk ()  (* done *)
       | _ -> raise (DecodingError "expected ')'")
-    and decode_int i = match cur () with
-      | '-' when i = 0 -> ~- (decode_int 0)  (* negative *)
+    and decode_int : int -> int = fun i ->
+      if eof () then i
+      else match cur () with
+      | '-' when i = 0 -> junk (); ~- (decode_int 0)  (* negative *)
       | c when Char.code c >= Char.code '0' && Char.code c <= Char.code '9' ->
         junk ();
         decode_int (i * 10 + (Char.code c - Char.code '0'))
       | _ -> i
-    and decode_string buf = match cur() with
+    and decode_string : Buffer.t -> string = fun buf ->
+      if eof () then Buffer.contents buf
+      else match cur() with
       | ' ' | '\t' | '\n' | ')' -> Buffer.contents buf
       | '\\' -> junk (); Buffer.add_char buf (cur ()); junk (); decode_string buf
       | c -> Buffer.add_char buf c; junk (); decode_string buf
+    and decode_list : type a. a t -> a list -> a list = fun bij l ->
+      whitespace ();
+      match cur() with
+      | ')' -> List.rev l  (* done *)
+      | _ ->
+        let x = decode bij in
+        decode_list bij (x :: l)
+    and decode_switch : type a. (char * a t) list -> a = fun choices ->
+      let c = cur () in
+      junk ();
+      let bij =
+        try List.assq c choices 
+        with Not_found -> 
+          try List.assq ' ' choices
+          with Not_found -> raise (DecodingError "no choice")
+      in
+      decode bij
     in
+    refill ();   (* first input *)
     decode bij
 
   let of_string ~bij s = decode ~bij (Source.of_str s)
