@@ -78,6 +78,14 @@ let test_term_random ?(depth=5) n () =
     OUnit.assert_equal t t'
   done
 
+let test_complicated () =
+  let bij = triple int_ (pair bool_ (many float_))
+    (map ~inject:(fun (a,b) -> (b,a)) ~extract:(fun (b,a) -> a,b) (pair int_ bool_)) in
+  let x = (1, (true, [1.; 2.; 3.]), (false, 42)) in
+  let s = SexpStr.to_string ~bij x in
+  let x' = SexpStr.of_string ~bij s in
+  OUnit.assert_equal x x'
+
 let suite =
   "test_bij" >:::
     [ "test_int2" >:: test_int2;
@@ -88,4 +96,5 @@ let suite =
       "test_rec" >:: test_rec;
       "test_term_random100" >:: test_term_random 100;
       "test_term_random100_depth10" >:: test_term_random ~depth:10 100;
+      "test_complicated" >:: test_complicated;
     ]
