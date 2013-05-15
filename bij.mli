@@ -42,7 +42,14 @@ val pair : 'a t -> 'b t -> ('a * 'b) t
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 
 val map : inject:('a -> 'b) -> extract:('b -> 'a) -> 'b t -> 'a t
-val switch : ('a -> char) -> (char * 'a t) list -> 'a t
+
+type _ inject_branch =
+  | BranchTo : 'b t * 'b * 'a -> 'a inject_branch
+type _ extract_branch =
+  | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
+
+val switch : inject:('a -> char * 'a inject_branch) ->
+             extract:(char -> 'a extract_branch) -> 'a t
   (** discriminates based on the next character. 
       The selection function, with type ['a -> char], is used to select a
       bijection depending on the value.

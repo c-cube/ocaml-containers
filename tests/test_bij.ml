@@ -26,6 +26,32 @@ let test_intlist n () =
   let l' = SexpStr.of_string ~bij s in
   OUnit.assert_equal ~printer:pp_int_list l l'
 
+type term =
+  | Const of string
+  | Int of int
+  | App of term list
+
+let bij_term =
+  let rec mk_bij () =
+    switch
+    ~inject:(fun t -> match t with
+      | Const s -> 'c', BranchTo (string_, s, t)
+      | Int i -> 'i', BranchTo (int_, i, t)
+      | App l -> 'a', BranchTo (list_ (mk_bij ()), l, t))
+    ~extract:(function
+      | 'c' -> BranchFrom (string_, fun x -> Const x)
+      | 'i' -> BranchFrom (int_, fun x -> Int x)
+      | 'a' -> BranchFrom (list_ (mk_bij ()), fun l -> App l)
+      | _ -> raise (DecodingError "unexpected case switch"))
+  in mk_bij ()
+
+let test_rec () =
+  let t = App [Const "foo"; App [Const "bar"; Int 1; Int 2]; Int 3; Const "hello"] in
+  let s = SexpStr.to_string ~bij:bij_term t in
+  Printf.printf "to: %s\n" s;
+  let t' = SexpStr.of_string ~bij:bij_term s in
+  OUnit.assert_equal t t'
+
 let suite =
   "test_bij" >:::
     [ "test_int2" >:: test_int2;
@@ -33,4 +59,5 @@ let suite =
       "test_intlist10" >:: test_intlist 10;
       "test_intlist100" >:: test_intlist 100;
       "test_intlist10_000" >:: test_intlist 10_000;
+      "test_rec" >:: test_rec;
     ]
