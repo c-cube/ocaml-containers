@@ -57,6 +57,8 @@ let triple a b c = Triple (a,b,c)
 let map ~inject ~extract b = Map (inject, extract, b)
 let switch select l = Switch (select, l)
 
+exception EOF
+
 exception EncodingError of string
   (** Raised when decoding is impossible *)
 
@@ -65,93 +67,162 @@ exception DecodingError of string
 
 (** {2 Source of parsing} *)
 
-module Source = struct
-  type t = string -> int  (* fills the buffer *)
+module type SOURCE = sig
+  type t
 
-  let of_str s =
-    let i = ref 0 in
-    fun buf ->
-      let len = min (String.length s - !i) (String.length buf) in
-      if len = 0
-        then 0  (* done *)
-        else begin
-          String.blit s !i buf 0 len;
-          i := !i + len;
-          len
-        end
+  val eof : t -> bool
+    (** End of input reached? *)
 
-  let of_stream str =
-    fun buf ->
-      let rec fill i =
-        if i = String.length buf
-          then i
-          else match Stream.peek str with
-          | None -> i  (* done *)
-          | Some c ->
-            buf.[i] <- c;
-            Stream.junk str;
-            fill (i+1)
-      in
-      fill 0
+  val cur : t -> char
+    (** Current char *)
 
-  let of_chan ic =
-    fun buf ->
-      input ic buf 0 (String.length buf)
+  val junk : t -> unit
+    (** Discard current char *)
+end
+
+module SourceStr = struct
+  type t = {
+    str : string;
+    mutable idx : int;
+  }
+
+  let create str =
+    { str;
+      idx = 0;
+    }
+
+  let eof t = t.idx = String.length t.str
+
+  let cur t =
+    if eof t then raise EOF else t.str.[t.idx]
+
+  let junk t =
+    if t.idx >= String.length t.str
+      then raise EOF
+      else t.idx <- t.idx + 1
+end
+
+module SourceStream = struct
+  type t = char Stream.t
+
+  let eof t = match Stream.peek t with
+    | None -> true
+    | Some _ -> false
+
+  let cur t = match Stream.peek t with
+    | None -> raise EOF
+    | Some c -> c
+
+  let junk t = Stream.junk t
+end
+
+module SourceChan = struct
+  type t = {
+    chan : in_channel;
+    buf : string;
+    mutable len : int;
+    mutable idx : int;
+  }
+
+  let create ?(bufsize=256) ic =
+    let t = { chan = ic;
+      buf = String.make bufsize ' ';
+      len = 0;
+      idx = 0;
+    } in
+    (* fill the buffer *)
+    t.len <- input t.chan t.buf 0 bufsize;
+    t
+  
+  let eof t = t.len = 0
+
+  let cur t =
+    if eof t
+      then raise EOF
+      else t.buf.[t.idx]
+
+  let junk t =
+    (if t.len = 0 then raise EOF);
+    t.idx <- t.idx + 1;
+    if t.idx = t.len
+      then begin  (* refill *)
+        t.idx <- 0;
+        t.len <- input t.chan t.buf 0 (String.length t.buf)
+      end
 end
 
 (** {2 Sink: Where to print} *)
 
-module Sink = struct
-  type t = {
-    mutable write : string -> unit;
-    mutable write_int : int -> unit;
-    mutable write_bool : bool -> unit;
-    mutable write_float : float -> unit;
-  }
+module type SINK = sig
+  type t
+  val write : t -> string -> int -> int -> unit  (* write substring [i..i+len] *)
+  val write_char : t -> char -> unit
+  val write_int : t -> int -> unit
+  val write_bool : t -> bool -> unit
+  val write_float : t -> float -> unit
+end
 
-  let of_buf buf =
-    { write = (fun s -> Buffer.add_string buf s);
-      write_int = (fun i -> Printf.bprintf buf "%d" i);
-      write_bool = (fun b -> Printf.bprintf buf "%B" b);
-      write_float = (fun f -> Printf.bprintf buf "%f" f);
-    }
+module SinkBuf = struct
+  type t = Buffer.t
 
-  let of_chan oc =
-    { write = (fun s -> output_string oc s);
-      write_int = (fun i -> Printf.fprintf oc "%d" i);
-      write_bool = (fun b -> Printf.fprintf oc "%B" b);
-      write_float = (fun f -> Printf.fprintf oc "%f" f);
-    }
+  let write t str i len = Buffer.add_substring t str i len
+  let write_char t c = Buffer.add_char t c
+  let write_int t i = Printf.bprintf t "%d" i
+  let write_bool t b = Printf.bprintf t "%B" b
+  let write_float t f = Printf.bprintf t "%f" f
+end
+
+module SinkChan = struct
+  type t = out_channel
+
+  let write t str i len = output t str i len
+  let write_char t c = output_char t c
+  let write_int t i = Printf.fprintf t "%d" i
+  let write_bool t b = Printf.fprintf t "%B" b
+  let write_float t f = Printf.fprintf t "%f" f
 end
 
 (** {2 Encoding/decoding} *)
 
-module Sexp = struct
-  (* escape string *)
-  let escape s =
-    (* function that escapes into the given buffer *)
-    let rec really_escape buf s i =
+module type ENCODE = sig
+  type sink
+  val encode : bij:'a t -> sink -> 'a -> unit
+end
+
+module type DECODE = sig
+  type source
+  val decode : bij:'a t -> source -> 'a
+end
+
+module SexpEncode(Sink : SINK) = struct
+  type sink = Sink.t
+
+  (* print escaped string to [sink] *)
+  let escape sink s =
+    (* function that escapes into the given sink *)
+    let rec really_escape sink s i =
       if i = String.length s
-        then Buffer.contents buf
+        then ()  (* done *)
         else begin
           (match s.[i] with
-          | '\n' -> Buffer.add_string buf "\\n"
-          | '\t' -> Buffer.add_string buf "\\t"
+          | '\n' -> Sink.write sink "\\n" 0 2
+          | '\t' -> Sink.write sink "\\t" 0 2
           | ' ' | ')' ->
-            Buffer.add_char buf '\\';
-            Buffer.add_char buf s.[i]
-          | c -> Buffer.add_char buf c);
-          really_escape buf s (i+1)
+            Sink.write_char sink '\\';
+            Sink.write_char sink s.[i];
+          | c ->
+            Sink.write_char sink c);
+          really_escape sink s (i+1)
         end
     in
     (* search for a char to escape, if any *)
     let rec search s i =
-      if i = String.length s then s (* no escaping needed *)
-      else match s.[i] with
+      if i = String.length s
+        then Sink.write sink s 0 i (* no escaping needed *)
+        else match s.[i] with
         | ' ' | '\t' | '\n' | ')' ->  (* must escape *)
-          let buf = Buffer.create (String.length s + 1) in
-          Buffer.add_substring buf s 0 i;
-          really_escape buf s i (* escape starting at i *)
+          Sink.write sink s 0 i;
+          really_escape sink s i (* escape starting at i *)
         | _ -> search s (i+1)
     in
     search s 0
@@ -161,41 +232,41 @@ module Sexp = struct
     let rec encode : type a. a bij -> a -> unit = fun bij x ->
       match bij, x with
       | Unit, () -> ()
-      | String, s -> sink.write (escape s)
-      | Int, i -> sink.write_int i
-      | Bool, b -> sink.write_bool b
-      | Float, f -> sink.write_float f
+      | String, s -> escape sink s
+      | Int, i -> Sink.write_int sink i
+      | Bool, b -> Sink.write_bool sink b
+      | Float, f -> Sink.write_float sink f
       | List bij', l ->
-        sink.write "(";
+        Sink.write_char sink '(';
         List.iter
-          (fun x -> sink.write " "; encode bij' x)
+          (fun x -> Sink.write_char sink ' '; encode bij' x)
           l;
-        sink.write ")"
+        Sink.write_char sink ')'
       | Many _, [] -> failwith "Bij.encode: expected non-empty list"
       | Many bij', l ->
-        sink.write "(";
-        List.iter
-          (fun x -> sink.write " "; encode bij' x)
+        Sink.write_char sink '(';
+        List.iteri
+          (fun i x -> (if i > 0 then Sink.write_char sink ' '); encode bij' x)
           l;
-        sink.write ")"
+        Sink.write_char sink ')'
       | Opt bij, None ->
         encode (List bij) []
       | Opt bij, Some x ->
         encode (List bij) [x]
       | Pair (bij_a, bij_b), (a, b) ->
-        sink.write "(";
+        Sink.write_char sink '(';
         encode bij_a a;
-        sink.write " ";
+        Sink.write_char sink ' ';
         encode bij_b b;
-        sink.write ")"
+        Sink.write_char sink ')'
       | Triple (bij_a, bij_b, bij_c), (a, b, c) ->
-        sink.write "(";
+        Sink.write_char sink '(';
         encode bij_a a;
-        sink.write " ";
+        Sink.write_char sink ' ';
         encode bij_b b;
-        sink.write " ";
+        Sink.write_char sink ' ';
         encode bij_c c;
-        sink.write ")"
+        Sink.write_char sink ')'
       | Map (inject, _, bij'), x ->
         let y = inject x in
         encode bij' y
@@ -208,29 +279,18 @@ module Sexp = struct
           raise (EncodingError "no encoding in switch")
     in encode bij x
 
-  let to_string ~bij x =
-    let b = Buffer.create 15 in
-    encode ~bij (Sink.of_buf b) x;
-    Buffer.contents b
+end
+
+module SexpDecode(Source : SOURCE) = struct
+  type source = Source.t
 
   let decode ~bij source =
-    let str = String.make 64 '_' in
-    let pos = ref 0 in
-    let len = ref 0 in
-    (* current token *)
-    let rec cur () =
-      if eof ()
-        then raise (EncodingError "unexpected EOF")
-        else str.[!pos]
-    and eof () = !len = 0
-    and refill () =
-      len := source str;
-      pos := 0
-    and junk () =
-      incr pos;
-      if !pos >= !len then refill ()
+    let rec cur () = Source.cur source
+    and junk () = Source.junk source
+    and eof () = Source.eof source
+    in
     (* eat whitespace *)
-    and whitespace () =
+    let rec whitespace () =
       if not (eof ()) then match cur () with
         | ' ' | '\t' | '\n' -> junk (); whitespace ()
         | _ -> ()
@@ -328,8 +388,18 @@ module Sexp = struct
       in
       decode bij
     in
-    refill ();   (* first input *)
     decode bij
+end
 
-  let of_string ~bij s = decode ~bij (Source.of_str s)
+module SexpStr = struct
+  module SexpEncodeBuf = SexpEncode(SinkBuf)
+  module SexpDecodeString = SexpDecode(SourceStr)
+
+  let to_string ~bij x =
+    let b = Buffer.create 15 in
+    SexpEncodeBuf.encode ~bij b x;
+    Buffer.contents b
+
+  let of_string ~bij s =
+    SexpDecodeString.decode ~bij (SourceStr.create s)
 end

@@ -48,6 +48,8 @@ val switch : ('a -> char) -> (char * 'a t) list -> 'a t
       bijection depending on the value.
       ' ' means "default" *)
 
+exception EOF
+
 exception EncodingError of string
   (** Raised when decoding is impossible *)
 
@@ -56,33 +58,63 @@ exception DecodingError of string
 
 (** {2 Source of parsing} *)
 
-module Source : sig
-  type t = string -> int  (* fills the buffer *)
+module type SOURCE = sig
+  type t
 
-  val of_str : string -> t
-  val of_stream : char Stream.t -> t
-  val of_chan : in_channel -> t
+  val eof : t -> bool
+    (** End of input reached? *)
+
+  val cur : t -> char
+    (** Current char *)
+
+  val junk : t -> unit
+    (** Discard current char *)
+end
+
+module SourceStr : sig
+  include SOURCE
+  val create : string -> t
+end
+
+module SourceStream : SOURCE with type t = char Stream.t
+
+module SourceChan : sig
+  include SOURCE 
+  val create : ?bufsize:int -> in_channel -> t
 end
 
 (** {2 Sink: Where to print} *)
 
-module Sink : sig
-  type t = {
-    mutable write : string -> unit;
-    mutable write_int : int -> unit;
-    mutable write_bool : bool -> unit;
-    mutable write_float : float -> unit;
-  }
-
-  val of_buf : Buffer.t -> t
-  val of_chan : out_channel -> t
+module type SINK = sig
+  type t
+  val write : t -> string -> int -> int -> unit  (* write substring [i..i+len] *)
+  val write_char : t -> char -> unit
+  val write_int : t -> int -> unit
+  val write_bool : t -> bool -> unit
+  val write_float : t -> float -> unit
 end
+
+module SinkBuf : SINK with type t := Buffer.t
+
+module SinkChan : SINK with type t := out_channel
 
 (** {2 Encoding/decoding} *)
 
-module Sexp : sig
-  val encode : bij:'a t -> Sink.t -> 'a -> unit
-  val to_string : bij:'a t -> 'a -> string
-  val decode : bij:'a t -> Source.t -> 'a
-  val of_string : bij:'a t -> string -> 'a
+module type ENCODE = sig
+  type sink
+  val encode : bij:'a t -> sink -> 'a -> unit
 end
+
+module type DECODE = sig
+  type source
+  val decode : bij:'a t -> source -> 'a
+end
+
+module SexpEncode(Sink : SINK) : ENCODE with type sink = Sink.t
+module SexpDecode(Source : SOURCE) : DECODE with type source = Source.t
+
+(** Specific instance for encoding to/from strings *)
+module SexpStr : sig
+  val to_string : bij:'a t -> 'a -> string
+  val of_string : bij:'a t -> string -> 'a
+end 

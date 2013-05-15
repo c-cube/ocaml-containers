@@ -5,12 +5,12 @@ open Bij
 
 let test_int2 () =
   let bij = pair int_ int_ in
-  let s = Sexp.to_string bij (1,2) in
+  let s = SexpStr.to_string bij (1,2) in
   OUnit.assert_equal ~printer:(fun x -> x) "(1 2)" s
 
 let test_escape () =
   let bij = pair int_ (pair string_ string_) in
-  let s = Sexp.to_string bij (1,("foo()","bar\n hello")) in
+  let s = SexpStr.to_string bij (1,("foo()","bar\n hello")) in
   OUnit.assert_equal ~printer:(fun x -> x) "(1 (foo(\\) bar\\n\\ hello))" s
 
 let pp_int_list l =
@@ -22,8 +22,8 @@ let pp_int_list l =
 let test_intlist n () =
   let bij = list_ int_ in
   let l = Sequence.to_list (Sequence.int_range ~start:0 ~stop:n) in
-  let s = Sexp.to_string ~bij l in
-  let l' = Sexp.of_string ~bij s in
+  let s = SexpStr.to_string ~bij l in
+  let l' = SexpStr.of_string ~bij s in
   OUnit.assert_equal ~printer:pp_int_list l l'
 
 let suite =
