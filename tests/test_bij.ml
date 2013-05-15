@@ -52,6 +52,32 @@ let test_rec () =
   let t' = SexpStr.of_string ~bij:bij_term s in
   OUnit.assert_equal t t'
 
+let random_str len =
+  let s = String.make len ' ' in
+  for i = 0 to len - 1 do
+    s.[i] <- "abcdefghijklmnopqrstuvwxyz".[Random.int 26]
+  done;
+  s
+
+let rec random_term depth =
+  if depth = 0
+    then if Random.bool ()
+      then Const (random_str (1 + Random.int 5))
+      else Int (Random.int 20)
+    else
+      let len = Random.int (1 + Random.int 10) in
+      let seq = Sequence.map (fun _ -> random_term (depth-1))
+        (Sequence.int_range ~start:1 ~stop:len) in
+      App (Sequence.to_list seq)
+
+let test_term_random ?(depth=5) n () =
+  for i = 0 to n - 1 do
+    let t = random_term depth in
+    let s = SexpStr.to_string ~bij:bij_term t in
+    let t' = SexpStr.of_string ~bij:bij_term s in
+    OUnit.assert_equal t t'
+  done
+
 let suite =
   "test_bij" >:::
     [ "test_int2" >:: test_int2;
@@ -60,4 +86,6 @@ let suite =
       "test_intlist100" >:: test_intlist 100;
       "test_intlist10_000" >:: test_intlist 10_000;
       "test_rec" >:: test_rec;
+      "test_term_random100" >:: test_term_random 100;
+      "test_term_random100_depth10" >:: test_term_random ~depth:10 100;
     ]
