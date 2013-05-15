@@ -36,6 +36,7 @@ type _ t =
   | Opt : 'a t -> 'a option t
   | Pair : 'a t * 'b t -> ('a * 'b) t
   | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
+  | Guard : ('a -> bool) * 'a t -> 'a t
   | Map : ('a -> 'b) * ('b -> 'a) * 'b t -> 'a t
   | Switch : ('a -> char * 'a inject_branch) * (char -> 'a extract_branch) -> 'a t
 and _ inject_branch =
@@ -57,9 +58,23 @@ let many l = Many l
 let opt t = Opt t
 let pair a b = Pair(a,b)
 let triple a b c = Triple (a,b,c)
+let guard f t = Guard (f, t)
 
 let map ~inject ~extract b = Map (inject, extract, b)
 let switch ~inject ~extract = Switch (inject, extract)
+
+(** {2 Helpers} *)
+
+let fix f =
+  let rec bij = lazy (f (fun () -> Lazy.force bij)) in
+  Lazy.force bij
+
+type 'a versioned = string * 'a
+
+let with_version v t =
+  pair (guard (fun v' -> v = v') string_) t
+
+(** {2 Exceptions} *)
 
 exception EOF
 
@@ -263,6 +278,9 @@ module SexpEncode(Sink : SINK) = struct
         Sink.write_char sink ' ';
         encode bij_b b;
         Sink.write_char sink ')'
+      | Guard (check, bij'), _ ->
+        (if not (check x) then raise (EncodingError ("check failed")));
+        encode bij' x
       | Triple (bij_a, bij_b, bij_c), (a, b, c) ->
         Sink.write_char sink '(';
         encode bij_a a;
@@ -344,6 +362,10 @@ module SexpDecode(Source : SOURCE) = struct
         let c = decode bijc in
         decode_close ();
         a, b, c
+      | Guard (check, bij') ->
+        let x = decode bij' in
+        (if not (check x) then raise (DecodingError "check failed"));
+        x
       | Map (_, extract, bij') ->
         let x = decode bij' in
         extract x

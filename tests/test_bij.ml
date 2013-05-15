@@ -32,18 +32,20 @@ type term =
   | App of term list
 
 let bij_term =
-  let rec mk_bij () =
+  let bij = fix
+    (fun bij ->
     switch
     ~inject:(function
       | Const s -> 'c', BranchTo (string_, s)
       | Int i -> 'i', BranchTo (int_, i)
-      | App l -> 'a', BranchTo (list_ (mk_bij ()), l))
+      | App l -> 'a', BranchTo (list_ (bij ()), l))
     ~extract:(function
       | 'c' -> BranchFrom (string_, fun x -> Const x)
       | 'i' -> BranchFrom (int_, fun x -> Int x)
-      | 'a' -> BranchFrom (list_ (mk_bij ()), fun l -> App l)
-      | _ -> raise (DecodingError "unexpected case switch"))
-  in mk_bij ()
+      | 'a' -> BranchFrom (list_ (bij ()), fun l -> App l)
+      | _ -> raise (DecodingError "unexpected case switch")))
+  in
+  bij
 
 let test_rec () =
   let t = App [Const "foo"; App [Const "bar"; Int 1; Int 2]; Int 3; Const "hello"] in

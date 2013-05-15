@@ -40,6 +40,8 @@ val many : 'a t -> 'a list t  (* non empty *)
 val opt : 'a t -> 'a option t
 val pair : 'a t -> 'b t -> ('a * 'b) t
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+val guard : ('a -> bool) -> 'a t -> 'a t
+  (** Validate values at encoding and decoding *)
 
 val map : inject:('a -> 'b) -> extract:('b -> 'a) -> 'b t -> 'a t
 
@@ -54,6 +56,18 @@ val switch : inject:('a -> char * 'a inject_branch) ->
       [inject] is used to select a character, as well as mapping to another
       type (the argument of the algebraic constructor);
       [extract] retrieves which type to parse based on the character. *)
+
+(** {2 Helpers} *)
+
+val fix : ((unit -> 'a t) -> 'a t) -> 'a t
+  (** Helper for recursive encodings *)
+
+type 'a versioned = string * 'a
+
+val with_version : string -> 'a t -> 'a versioned t
+  (** Guards the values with a given version *)
+
+(** {2 Exceptions} *)
 
 exception EOF
 
