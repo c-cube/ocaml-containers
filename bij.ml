@@ -92,6 +92,21 @@ let with_version v t =
         else raise (DecodingError ("expected version " ^ v)))
     (pair string_ t)
 
+let array_ m =
+  map
+    ~inject:(fun a -> Array.to_list a)
+    ~extract:(fun l -> Array.of_list l)
+    (list_ m)
+
+let hashtbl ma mb =
+  map
+    ~inject:(fun h -> Hashtbl.fold (fun k v l -> (k,v)::l) h [])
+    ~extract:(fun l ->
+      let h = Hashtbl.create 5 in
+      List.iter (fun (k,v) -> Hashtbl.add h k v) l;
+      h)
+    (list_ (pair ma mb))
+
 (** {2 Source of parsing} *)
 
 module type SOURCE = sig
