@@ -25,7 +25,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Bijective Serializer/Deserializer} *)
 
-type 'a t
+type 'a t = private
+  | Unit : unit t
+  | String : string t
+  | Int : int t
+  | Bool : bool t
+  | Float : float t
+  | List : 'a t -> 'a list t
+  | Many : 'a t -> 'a list t
+  | Opt : 'a t -> 'a option t
+  | Pair : 'a t * 'b t -> ('a * 'b) t
+  | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
+  | Quad : 'a t * 'b t * 'c t * 'd t -> ('a * 'b * 'c * 'd) t
+  | Quint : 'a t * 'b t * 'c t * 'd t * 'e t -> ('a * 'b * 'c * 'd * 'e) t
+  | Guard : ('a -> bool) * 'a t -> 'a t
+  | Map : ('a -> 'b) * ('b -> 'a) * 'b t -> 'a t
+  | Switch : ('a -> char * 'a inject_branch) * (char -> 'a extract_branch) -> 'a t
+and _ inject_branch =
+  | BranchTo : 'b t * 'b -> 'a inject_branch
+and _ extract_branch =
+  | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
 
 (** {2 Bijection description} *)
 
@@ -46,11 +65,6 @@ val guard : ('a -> bool) -> 'a t -> 'a t
   (** Validate values at encoding and decoding *)
 
 val map : inject:('a -> 'b) -> extract:('b -> 'a) -> 'b t -> 'a t
-
-type _ inject_branch =
-  | BranchTo : 'b t * 'b -> 'a inject_branch
-type _ extract_branch =
-  | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
 
 val switch : inject:('a -> char * 'a inject_branch) ->
              extract:(char -> 'a extract_branch) -> 'a t
