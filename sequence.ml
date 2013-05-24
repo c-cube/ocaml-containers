@@ -656,7 +656,10 @@ let pp_seq ?(sep=", ") pp_elt formatter seq =
   let first = ref true in
   iter
     (fun x -> 
-      (if !first then first := false else Format.pp_print_string formatter sep);
-      pp_elt formatter x;
-      Format.pp_print_cut formatter ())
+      (if !first then first := false
+        else begin
+          Format.pp_print_string formatter sep;
+          Format.pp_print_cut formatter ();
+        end);
+      pp_elt formatter x)
     seq
