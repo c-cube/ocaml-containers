@@ -49,12 +49,10 @@ let embed () =
     { id = id; store = (fun () -> r := o); }
   in
   let unpack t =      (* try to extract the content of a univ cell *)
-    if id == t.id then begin
-      t.store ();
-      let a = !r in
-      r := None;
-      a
-    end else None
+    r := None;
+    t.store ();
+    let a = !r in
+    a
   in
   let set t a =       (* change, in place, the embedding and content of the cell *)
     t.id <- id;
