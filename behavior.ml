@@ -108,39 +108,34 @@ let closure f =
 (** {2 Lightweight futures} *)
 
 module Fut = struct
-  type 'a t = {
-    mutable value : 'a option;
-    mutable handlers : ('a -> unit) list;
-  }
+  type 'a t = 'a fut_cell ref
+  and 'a fut_cell =
+    | Waiting of ('a -> unit) list
+    | Done of 'a
 
   let create () =
-    let fut = {
-      value = None;
-      handlers = [];
-    } in
-    let send x = match fut.value with
-      | Some _ -> raise (Invalid_argument "Behavior.Fut.create: future already set")
-      | None ->
-        fut.value <- Some x;
-        List.iter (fun f -> f x) fut.handlers
+    let fut = ref (Waiting []) in
+    let send x = match !fut with
+      | Done _ -> raise (Invalid_argument "Behavior.Fut.create: future already set")
+      | Waiting handlers ->
+        List.iter (fun f -> f x) handlers;
+        fut := Done x
     in
     fut, send
 
   (* add [h] as a handler that waits for [fut] to complete. May call [h]
       immediately *)
   let subscribe fut h =
-    match fut.value with
-    | None -> fut.handlers <- h :: fut.handlers
-    | Some x -> h x
+    match !fut with
+    | Done x -> h x
+    | Waiting l -> fut := Waiting (h :: l)
 
-  let is_set fut = match fut.value with
-    | None -> false
-    | Some _ -> true
+  let is_set fut = match !fut with
+    | Done _ -> true
+    | Waiting _ -> false
 
-  let return x = {
-    value = Some x;
-    handlers = [];
-  }
+  let return x =
+    ref (Done x)
 
   let bind fut f =
     (* result *)
@@ -155,7 +150,7 @@ module Fut = struct
   let next e =
     let res, send = create () in
     let ev = React.E.map send (React.E.once e) in
-    res.handlers <- [fun _ -> ignore ev];  (* keep reference *)
+    subscribe res (fun _ -> ignore ev);  (* keep reference *)
     res
 
   let wait fut =
@@ -175,9 +170,9 @@ module Fut = struct
     let any_set = ref false in
     (try
       List.iter
-        (fun fut -> match fut.value with
-          | None -> ()
-          | Some x -> any_set := true; send x; raise Exit)
+        (fun fut -> match !fut with
+          | Waiting _ -> ()
+          | Done x -> any_set := true; send x; raise Exit)
       l
     with Exit -> ());
     (* if no element of [l] is already set, add handlers *)
@@ -216,9 +211,9 @@ module Fut = struct
     res
 
   (** Get value, which must be present *)
-  let unsafe_get fut = match fut.value with
-    | None -> assert false
-    | Some x -> x
+  let unsafe_get fut = match !fut with
+    | Waiting _-> assert false
+    | Done x -> x
 
   let l2 f a b =
     let res, send = create () in
