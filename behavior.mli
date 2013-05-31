@@ -109,8 +109,17 @@ val do_succeed : (unit -> unit) -> tree
 val if_ : bool React.signal -> tree -> tree -> tree
   (** Conditional choice, based on the current value of the signal *)
 
+val when_ : bool React.signal -> tree -> tree
+  (** Run the given tree if the signal is true, else succeed *)
+
+val while_ : bool React.signal -> tree list -> tree
+  (** While the signal is true, run the subtrees *)
+
 val sequence : ?loop:bool -> tree list -> tree
   (** Sequence of sub-trees to run *)
+
+val repeat : tree -> tree
+  (** Repeat the same tree indefinitely *)
 
 val select : ?strat:select_strategy -> tree list -> tree
   (** Choice among the subtrees. The strategy defines in which order subtrees

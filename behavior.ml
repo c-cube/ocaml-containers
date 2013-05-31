@@ -77,9 +77,9 @@ let test_signal s = TestFun (fun () -> React.S.value s)
 
 let wait e = Wait e
 
-let timeout f = Sequence (false, [Timeout f; Fail])
+let timeout f = Sequence (false, [Timeout f; fail])
 
-let delay f = Sequence (false, [Timeout f; Succeed])
+let delay f = Sequence (false, [Timeout f; succeed])
 
 let do_ act = Do act
 
@@ -87,9 +87,15 @@ let do_succeed act = Do (fun () -> act (); true)
 
 let if_ s then_ else_ = If (s, then_, else_)
 
+let when_ s t = if_ s t succeed
+
+let while_ s l = Sequence (true, (test_signal s) :: l)
+
 let sequence ?(loop=false) l =
   assert (l <> []);
   Sequence (loop, l)
+
+let repeat t = sequence ~loop:true [t]
 
 let select ?(strat=strategy_inorder) l =
   assert (l <> []);
