@@ -65,42 +65,44 @@ let strategy_random ?(proba_fail=0.05) l =
         let t = a.(Random.int (Array.length a)) in
         Some t
 
-let mk_succeed = Succeed
+let succeed = Succeed
 
-let mk_fail = Fail
+let fail = Fail
 
-let mk_test e = Test e
+let test e = Test e
 
-let mk_test_s s = TestFun (fun () -> React.S.value s)
+let test_fun f = TestFun f
 
-let mk_test_fun f = TestFun f
+let test_signal s = TestFun (fun () -> React.S.value s)
 
-let mk_wait e = Wait e
+let wait e = Wait e
 
-let mk_timeout f = Timeout f
+let timeout f = Sequence (false, [Timeout f; Fail])
 
-let mk_do act = Do act
+let delay f = Sequence (false, [Timeout f; Succeed])
 
-let mk_do_ok act = Do (fun () -> act (); true)
+let do_ act = Do act
 
-let mk_if s then_ else_ = If (s, then_, else_)
+let do_succeed act = Do (fun () -> act (); true)
 
-let mk_sequence ?(loop=false) l =
+let if_ s then_ else_ = If (s, then_, else_)
+
+let sequence ?(loop=false) l =
   assert (l <> []);
   Sequence (loop, l)
 
-let mk_select ?(strat=strategy_inorder) l =
+let select ?(strat=strategy_inorder) l =
   assert (l <> []);
   Select (strat, l)
 
-let mk_or_else t1 t2 =
-  mk_select ~strat:strategy_inorder [t1; t2]
+let or_else t1 t2 =
+  select ~strat:strategy_inorder [t1; t2]
 
-let mk_parallel ?(strat=PSForall) l =
+let parallel ?(strat=PSForall) l =
   assert (l <> []);
   Parallel (strat, l)
 
-let mk_closure f =
+let closure f =
   Closure f
 
 (** {2 Lightweight futures} *)
@@ -247,7 +249,7 @@ let run ?delay tree =
       | None -> failwith "Behavior.run: not delay function provided"
       | Some delay ->
         let timeout = delay howlong in
-        Fut.next (E.stamp timeout false)
+        Fut.next (E.stamp timeout true)
       end
     | Do act ->
       let b = act () in

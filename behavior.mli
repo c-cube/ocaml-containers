@@ -76,50 +76,53 @@ val strategy_random : ?proba_fail:float -> select_strategy
   (** Randomly chooses a subtree. May fail at each point with
       a probability of [proba_fail]. *)
 
-val mk_succeed : tree
+val succeed : tree
   (** Behavior that always succeeds *)
 
-val mk_fail : tree
+val fail : tree
   (** Behavior that always fails *)
 
-val mk_test : bool React.event -> tree
+val test : bool React.event -> tree
   (** Fails or succeeds based on the next occurrence of the event *)
 
-val mk_test_s : bool React.signal -> tree
-  (** Fails or succeeds based on the current signal value *)
-
-val mk_test_fun : (unit -> bool) -> tree
+val test_fun : (unit -> bool) -> tree
   (** Tests that the result of calling this function is true *)
 
-val mk_wait : unit React.event -> tree
+val test_signal : bool React.signal -> tree
+  (** Fails or succeeds based on the current signal value *)
+
+val wait : unit React.event -> tree
   (** Wait for the event to trigger, then succeed *)
 
-val mk_timeout : float -> tree
+val timeout : float -> tree
   (** Fails after the given amount of seconds *)
 
-val mk_do : (unit -> bool) -> tree
+val delay : float -> tree
+  (** Wait for the given amount of seconds, then succeed *)
+
+val do_ : (unit -> bool) -> tree
   (** Perform an action, then succeed iff it returned true *)
 
-val mk_do_ok : (unit -> unit) -> tree
+val do_succeed : (unit -> unit) -> tree
   (** Perform an action and succeed (unless it raises an exception) *)
 
-val mk_if : bool React.signal -> tree -> tree -> tree
+val if_ : bool React.signal -> tree -> tree -> tree
   (** Conditional choice, based on the current value of the signal *)
 
-val mk_sequence : ?loop:bool -> tree list -> tree
+val sequence : ?loop:bool -> tree list -> tree
   (** Sequence of sub-trees to run *)
 
-val mk_select : ?strat:select_strategy -> tree list -> tree
+val select : ?strat:select_strategy -> tree list -> tree
   (** Choice among the subtrees. The strategy defines in which order subtrees
       are tried. *)
 
-val mk_or_else : tree -> tree -> tree
+val or_else : tree -> tree -> tree
   (** Binary choice, favoring the left one *)
 
-val mk_parallel : ?strat:parallel_strategy -> tree list -> tree
-  (** Run subtrees in parallel *)
+val parallel : ?strat:parallel_strategy -> tree list -> tree
+  (** Run subtrees in parallel (default strat: PSForall) *)
 
-val mk_closure : (unit -> tree) -> tree
+val closure : (unit -> tree) -> tree
   (** Produce a tree dynamically, at each call. *)
 
 (** {2 Lightweight futures} *)
