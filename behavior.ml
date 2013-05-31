@@ -168,6 +168,7 @@ module Fut = struct
   let map f fut =
     let res, send = create () in
     subscribe fut (fun x -> send (f x));
+    subscribe res (fun _ -> ignore fut);  (* keep ref *)
     res
 
   let first l =

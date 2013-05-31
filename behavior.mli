@@ -48,6 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {2 Behavior tree} *)
 
+(** A behavior tree *)
 type tree = private
   | Test of bool React.event                (* test the next occurrence *)
   | TestFun of (unit -> bool)               (* call and test value *)
@@ -59,12 +60,13 @@ type tree = private
   | Select of select_strategy * tree list   (* select one subtree *)
   | Parallel of parallel_strategy * tree list   (* run all subtrees in parallel *)
   | Closure of (unit -> tree)               (* build a tree dynamically *)
-  | Succeed
-  | Fail
-  (** A behavior tree *)
+  | Succeed                                 (* always succeed *)
+  | Fail                                    (* always fail *)
+
 and select_strategy = tree list -> (unit -> tree option)
   (** How to select a subtree to run. It may yield a different result each
       time it is called. *)
+
 and parallel_strategy =
   | PSForall  (** succeeds when all subtrees succeed *)
   | PSExists  (** succeeds when some subtree succeeds (kill the others) *)
