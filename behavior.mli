@@ -50,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type tree = private
   | Test of bool React.event                (* test the next occurrence *)
-  | TestS of bool React.signal              (* test the current value *)
+  | TestFun of (unit -> bool)               (* call and test value *)
   | Wait of unit React.event                (* wait for the event to trigger *)
   | Timeout of float                        (* fails after the given timeout *)
   | Do of (unit -> bool)                    (* perform an action *)
@@ -87,6 +87,9 @@ val mk_test : bool React.event -> tree
 
 val mk_test_s : bool React.signal -> tree
   (** Fails or succeeds based on the current signal value *)
+
+val mk_test_fun : (unit -> bool) -> tree
+  (** Tests that the result of calling this function is true *)
 
 val mk_wait : unit React.event -> tree
   (** Wait for the event to trigger, then succeed *)

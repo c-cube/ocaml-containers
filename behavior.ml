@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type tree =
   | Test of bool React.event                (* test the next occurrence *)
-  | TestS of bool React.signal              (* test the current value *)
+  | TestFun of (unit -> bool)               (* call and test value *)
   | Wait of unit React.event                (* wait for the event to trigger *)
   | Timeout of float                        (* fails after the given timeout *)
   | Do of (unit -> bool)                    (* perform an action *)
@@ -71,7 +71,9 @@ let mk_fail = Fail
 
 let mk_test e = Test e
 
-let mk_test_s s = TestS s
+let mk_test_s s = TestFun (fun () -> React.S.value s)
+
+let mk_test_fun f = TestFun f
 
 let mk_wait e = Wait e
 
@@ -238,7 +240,7 @@ let run ?delay tree =
   let rec run tree = 
     match tree with
     | Test e -> Fut.next e
-    | TestS s -> Fut.return (S.value s)
+    | TestFun f -> Fut.return (f ())
     | Wait e -> Fut.next (E.stamp e true)
     | Timeout howlong ->
       begin match delay with
