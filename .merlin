@@ -8,3 +8,4 @@ PKG oUnit
 PKG bench
 PKG threads
 PKG threads.posix
+PKG react

@@ -3,21 +3,32 @@ INTERFACE_FILES = $(shell find -name '*.mli')
 IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
 TARGETS_LIB = containers.cmxa containers.cma
-TARGET_THREAD_LIB = thread_containers.cmxa thread_containers.cma
-TARGET_DOC = containers.docdir/index.html
+TARGETS_DOC = containers.docdir/index.html
 EXAMPLES = examples/mem_size.native examples/collatz.native examples/crawl.native
+
 OPTIONS = -use-ocamlfind
 
-all: lib lib_thread doc
+ENABLE_THREAD ?= yes
+ENABLE_REACT ?= yes
+
+ifeq ($(ENABLE_THREAD), yes)
+	OPTIONS += -tag thread
+	TARGETS_LIB += thread_containers.cmxa thread_containers.cma
+	TARGETS_DOC += thread_containers.docdir/index.html
+endif
+ifeq ($(ENABLE_REACT), yes)
+	OPTIONS += -package react
+	TARGETS_LIB += react_containers.cmxa react_containers.cma
+	TARGETS_DOC += react_containers.docdir/index.html
+endif
+
+all: lib
 
 lib:
-	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_DOC)
-
-lib_thread:
-	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGET_THREAD_LIB) $(TARGET_DOC)
+	ocamlbuild $(OPTIONS) $(TARGETS_LIB) $(TARGETS_DOC)
 
 doc:
-	ocamlbuild $(OPTIONS) $(TARGET_DOC)
+	ocamlbuild $(OPTIONS) $(TARGETS_DOC)
 
 examples: all
 	ocamlbuild $(OPTIONS) -I . $(EXAMPLES)
@@ -34,5 +45,5 @@ clean:
 tags:
 	otags *.ml *.mli
 
-.PHONY: all all_thread clean tests tags examples
+.PHONY: all clean tests tags examples
 
