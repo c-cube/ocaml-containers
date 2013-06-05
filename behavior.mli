@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Behavior Trees for React} *)
+(** {1 Behavior Trees for Lwt} *)
 
 (** Behavior trees are a modular alternative to state machines for controlling
     dynamic behavior in time. They are primarily used in video games to
@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     sequence will fail.
     
     Here, we build them on top of
-    {{: http://erratique.ch/software/react/doc/React.html} React}.
+    {{: http://ocsigen.org/lwt/} Lwt}.
 
     Documentation source:
     {{: http://aigamedev.com/open/article/bt-overview/} aigamedev (and links)}
@@ -50,12 +50,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** A behavior tree *)
 type tree = private
-  | Test of bool React.event                (* test the next occurrence *)
-  | TestFun of (unit -> bool)               (* call and test value *)
-  | Wait of unit React.event                (* wait for the event to trigger *)
-  | Timeout of float                        (* fails after the given timeout *)
+  | Test of (unit -> bool)                  (* call and test value *)
+  | Wait of (unit -> bool Lwt.t)            (* wait for the future to complete *)
   | Do of (unit -> bool)                    (* perform an action *)
-  | If of bool React.signal * tree * tree   (* switch *)
+  | If of (unit -> bool) * tree * tree      (* switch *)
   | Sequence of bool * tree list            (* yield to subtrees sequentially. bool: loop? *)
   | Select of select_strategy * tree list   (* select one subtree *)
   | Parallel of parallel_strategy * tree list   (* run all subtrees in parallel *)
@@ -84,17 +82,16 @@ val succeed : tree
 val fail : tree
   (** Behavior that always fails *)
 
-val test : bool React.event -> tree
+val test : (unit -> bool) -> tree
   (** Fails or succeeds based on the next occurrence of the event *)
 
-val test_fun : (unit -> bool) -> tree
-  (** Tests that the result of calling this function is true *)
+val wait : bool Lwt.t -> tree
+  (** Returns the same result as the future *)
 
-val test_signal : bool React.signal -> tree
-  (** Fails or succeeds based on the current signal value *)
+val wait_ : unit Lwt.t -> tree
+  (** Wait for the future to complete, then succeed *)
 
-val wait : unit React.event -> tree
-  (** Wait for the event to trigger, then succeed *)
+val wait_closure : (unit -> bool Lwt.t) -> tree
 
 val timeout : float -> tree
   (** Fails after the given amount of seconds *)
@@ -108,13 +105,13 @@ val do_ : (unit -> bool) -> tree
 val do_succeed : (unit -> unit) -> tree
   (** Perform an action and succeed (unless it raises an exception) *)
 
-val if_ : bool React.signal -> tree -> tree -> tree
+val if_ : (unit -> bool) -> tree -> tree -> tree
   (** Conditional choice, based on the current value of the signal *)
 
-val when_ : bool React.signal -> tree -> tree
+val when_ : (unit -> bool) -> tree -> tree
   (** Run the given tree if the signal is true, else succeed *)
 
-val while_ : bool React.signal -> tree list -> tree
+val while_ : (unit -> bool) -> tree list -> tree
   (** While the signal is true, run the subtrees *)
 
 val sequence : ?loop:bool -> tree list -> tree
@@ -136,61 +133,10 @@ val parallel : ?strat:parallel_strategy -> tree list -> tree
 val closure : (unit -> tree) -> tree
   (** Produce a tree dynamically, at each call. *)
 
-(** {2 Lightweight futures} *)
-
-module Fut : sig
-  type 'a t
-    (** Future value of type 'a *)
-
-  val create : unit -> 'a t * ('a -> unit)
-    (** Create a future, and a function that sets its value (if already set,
-        will raise Invalid_argument) *)
-
-  val subscribe : 'a t -> ('a -> unit) -> unit
-    (** Get notified exactly once with the value (maybe right now) *)
-
-  val is_set : 'a t -> bool
-    (** Value already known? *)
-
-  val return : 'a -> 'a t
-    (** Monadic return (returns immediately) *)
-
-  val bind : 'a t -> ('a -> 'b t) -> 'b t
-    (** Monadic bind *)
-
-  val next : 'a React.event -> 'a t
-    (** Next occurrence of the event *)
-
-  val wait : 'a t -> 'a option React.signal
-    (** The value of the future (None while it's not set) *)
-
-  val map : ('a -> 'b) -> 'a t -> 'b t
-    (** Simple map *)
-
-  val first : 'a t list -> 'a t
-    (** First future of the list to be set (or any that is already
-        set if at least one is set) *)
-
-  val last : 'a t list -> 'a t
-    (** Last future to be set (or any if they are all already set) *)
-
-  val filter : ('a -> bool) -> 'a t list -> 'a option t
-    (** Filters out results that do not satisfy the predicate; returns the
-        first result that satisfy it, or None *)
-
-  val l2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-    (** Binary lift *)
-end
-
 (** {2 Run a tree} *)
 
-type result = bool Fut.t
+type result = bool Lwt.t
 
-val run : ?delay:(float -> unit React.event) ->
-          tree ->
-          result
+val run : tree -> result
   (** Run the tree. It returns a {! result}, which wraps
-      either true (success) or false (failure).
-      
-      [delay] is the function to call to get notified after the given amount of 
-      seconds elapsed. *)
+      either true (success) or false (failure). *)

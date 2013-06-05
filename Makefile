@@ -9,17 +9,17 @@ EXAMPLES = examples/mem_size.native examples/collatz.native examples/crawl.nativ
 OPTIONS = -use-ocamlfind
 
 ENABLE_THREAD ?= yes
-ENABLE_REACT ?= yes
+ENABLE_LWT ?= yes
 
 ifeq ($(ENABLE_THREAD), yes)
 	OPTIONS += -tag thread
 	TARGETS_LIB += thread_containers.cmxa thread_containers.cma
 	TARGETS_DOC += thread_containers.docdir/index.html
 endif
-ifeq ($(ENABLE_REACT), yes)
-	OPTIONS += -package react
-	TARGETS_LIB += react_containers.cmxa react_containers.cma
-	TARGETS_DOC += react_containers.docdir/index.html
+ifeq ($(ENABLE_LWT), yes)
+	OPTIONS += -package lwt -package lwt.unix
+	TARGETS_LIB += lwt_containers.cmxa lwt_containers.cma
+	TARGETS_DOC += lwt_containers.docdir/index.html
 endif
 
 all: lib

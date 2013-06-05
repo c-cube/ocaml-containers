@@ -1,3 +1,4 @@
 <**/*future.*>: thread
 <examples/crawl.*>: package(batteries), thread, package(unix)
+<behavior.*>: package(lwt), package(unix)
 <tests/*.native>: thread
