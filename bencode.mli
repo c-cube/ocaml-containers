@@ -49,6 +49,9 @@ val to_string : t -> string
 val to_chan : out_channel -> t -> unit
 val fmt : Format.formatter -> t -> unit
 
+val pretty : Format.formatter -> t -> unit
+  (** Print the tree itself, not its encoding *)
+
 (** {2 Deserialization (decoding)} *)
 
 (** Deserialization is based on the {! decoder} type. Parsing can be

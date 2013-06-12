@@ -83,6 +83,20 @@ let fmt formatter t =
   to_buf b t;
   Format.pp_print_string formatter (Buffer.contents b)
 
+let rec pretty fmt t = match t with
+  | I i -> Format.fprintf fmt "%d" i
+  | S s -> Format.fprintf fmt "@[<h>\"%s\"@]" s
+  | L l ->
+    Format.fprintf fmt "@[<hov 2>[@,";
+    List.iter (fun t' -> Format.fprintf fmt "%a@ " pretty t') l;
+    Format.fprintf fmt "]@]";
+  | D d ->
+    Format.fprintf fmt "@[<hov 2>{@,";
+    SMap.iter
+      (fun k t' -> Format.fprintf fmt "%a -> %a@ " pretty (S k) pretty t')
+      d;
+    Format.fprintf fmt "}@]";
+
 (** {2 Deserialization (decoding)} *)
 
 (** Deserialization is based on the {! decoder} type. Parsing can be
