@@ -33,7 +33,7 @@ module type S =
 
     val create : ?max_load:float -> int -> 'a t
       (** Create a hashtable.  [max_load] is (number of items / size of table).
-          Must be in ]0, 1[ *)
+          Must be in {v ]0, 1[ v} *)
 
     val copy : 'a t -> 'a t
 

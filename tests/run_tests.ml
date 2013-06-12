@@ -6,6 +6,7 @@ let suite =
   "all_tests" >:::
     [ Test_pHashtbl.suite;
       Test_PersistentHashtbl.suite;
+      Test_bencode.suite;
       Test_Behavior.suite;
       Test_PiCalculus.suite;
       Test_splayMap.suite;
