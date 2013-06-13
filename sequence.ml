@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** Sequence abstract iterator type *)
 type 'a t = ('a -> unit) -> unit
 
+type 'a sequence = 'a t
+
 type (+'a, +'b) t2 = ('a -> 'b -> unit) -> unit
   (** Sequence of pairs of values of type ['a] and ['b]. *)
 
@@ -512,16 +514,13 @@ let to_set (type s) (type v) m seq =
 
 module Set = struct
   module type S = sig
-    type set
-    include Set.S with type t := set
-    val of_seq : elt t -> set
-    val to_seq : set -> elt t
+    include Set.S
+    val of_seq : elt sequence -> t
+    val to_seq : t -> elt sequence
   end
 
   (** Create an enriched Set module from the given one *)
-  module Adapt(X : Set.S) : S with type elt = X.elt and type set = X.t = struct
-    type set = X.t
-
+  module Adapt(X : Set.S) = struct
     let to_seq set = from_iter (fun k -> X.iter k set)
 
     let of_seq seq = fold (fun set x -> X.add x set) X.empty seq
@@ -530,7 +529,7 @@ module Set = struct
   end
     
   (** Functor to build an extended Set module from an ordered type *)
-  module Make(X : Set.OrderedType) : S with type elt = X.t = struct
+  module Make(X : Set.OrderedType) = struct
     module MySet = Set.Make(X)
     include Adapt(MySet)
   end
@@ -540,18 +539,15 @@ end
 
 module Map = struct
   module type S = sig
-    type +'a map
-    include Map.S with type 'a t := 'a map
-    val to_seq : 'a map -> (key * 'a) t
-    val of_seq : (key * 'a) t -> 'a map
-    val keys : 'a map -> key t
-    val values : 'a map -> 'a t
+    include Map.S
+    val to_seq : 'a t -> (key * 'a) sequence
+    val of_seq : (key * 'a) sequence -> 'a t
+    val keys : 'a t -> key sequence
+    val values : 'a t -> 'a sequence
   end
 
   (** Adapt a pre-existing Map module to make it sequence-aware *)
-  module Adapt(M : Map.S) : S with type key = M.key and type 'a map = 'a M.t = struct
-    type 'a map = 'a M.t
-
+  module Adapt(M : Map.S) = struct
     let to_seq m = from_iter (fun k -> M.iter (fun x y -> k (x,y)) m)
 
     let of_seq seq = fold (fun m (k,v) -> M.add k v m) M.empty seq
