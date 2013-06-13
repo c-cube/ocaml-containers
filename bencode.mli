@@ -79,6 +79,11 @@ val parse : decoder -> string -> int -> int -> parse_result
       It can return an error, a value or just [ParsePartial] if
       more input is needed *)
 
+val reset : decoder -> unit
+  (** Reset the decoder to its pristine state, ready to parse something
+      different. Before that, {! rest} and {! rest_size} can be used
+      to recover the part of the input that has not been consumed yet. *)
+
 val state : decoder -> parse_result
   (** Current state of the decoder *)
 

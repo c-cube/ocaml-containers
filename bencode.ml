@@ -264,6 +264,15 @@ let parse dec s i len =
   (* state machine *)
   parse_rec dec
 
+let reset dec =
+  dec.l <- 0;
+  dec.c <- 0;
+  dec.i <- 0;
+  dec.len <- 0;
+  dec.state <- ParsePartial;
+  dec.stack <- [];
+  ()
+
 let state dec = dec.state
 
 let rest dec =
