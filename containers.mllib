@@ -4,10 +4,10 @@ Gen
 FHashtbl
 FQueue
 FlatHashtbl
-Graph
 Hashset
 Heap
 LazyGraph
+PersistentGraph
 PersistentHashtbl
 PHashtbl
 Sequence
