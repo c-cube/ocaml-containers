@@ -52,6 +52,9 @@ val fmt : Format.formatter -> t -> unit
 val pretty : Format.formatter -> t -> unit
   (** Print the tree itself, not its encoding *)
 
+val pretty_to_str : t -> string
+  (** Print the tree into a string *)
+
 (** {2 Deserialization (decoding)} *)
 
 (** Deserialization is based on the {! decoder} type. Parsing can be
