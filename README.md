@@ -20,6 +20,9 @@ basic graph functions that work even on infinite graphs, and printing to DOT.
 - `Heap`, a purely functional polymorphic heap
 - `Bij`, a GADT-based bijection language used to serialize/deserialize your
 data structures
+- `RAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
+access to elements by their index.
+- `Leftistheap`, a polymorphic heap structure.
 
 Other structures are:
 
@@ -33,6 +36,14 @@ monadic futures, and MVars (concurrent boxes)
 - `Vector`, a growable array (pure OCaml, no C; not tested)
 - `FlatHashtbl`, a (deprecated) open addressing hashtable with
     a functorial interface (replaced by PHashtbl)
+- `Gen` and `Sequence`, generic iterators structures.
+
+Some serialisation formats are also implemented, with a streaming, non-blocking
+interface that allows the user to feed the input in chunk by chunk (useful
+in combination with Lwt/Async). Currently, the modules are:
+
+- `Bencode`, for the [B-encode format](http://en.wikipedia.org/wiki/Bencode),
+- `Sexp`, for S-expressions.
 
 ## Use
 
