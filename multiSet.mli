@@ -51,6 +51,8 @@ module type S = sig
 
   val diff : t -> t -> t
 
+  val contains : t -> t -> bool
+
   val compare : t -> t -> int
 
   val equal : t -> t -> bool

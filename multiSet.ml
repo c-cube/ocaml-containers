@@ -51,6 +51,8 @@ module type S = sig
 
   val diff : t -> t -> t
 
+  val contains : t -> t -> bool
+
   val compare : t -> t -> int
 
   val equal : t -> t -> bool
@@ -131,6 +133,11 @@ module Make(O : Set.OrderedType) = struct
             else None)
       m1 m2
 
+  let contains m1 m2 =
+    try 
+      M.for_all (fun x c -> M.find x m1 >= c) m2
+    with Not_found -> false
+    
   let compare m1 m2 =
     M.compare (fun x y -> x - y) m1 m2
 
