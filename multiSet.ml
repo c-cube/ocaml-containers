@@ -55,9 +55,16 @@ module type S = sig
 
   val equal : t -> t -> bool
 
+  val cardinal : t -> int
+    (** Number of distinct elements *)
+
   val iter : t -> (int -> elt -> unit) -> unit
 
   val fold : t -> 'b -> ('b -> int -> elt -> 'b) -> 'b
+
+  val of_list : elt list -> t
+
+  val to_list : t -> elt list
 end
 
 module Make(O : Set.OrderedType) = struct
@@ -130,9 +137,28 @@ module Make(O : Set.OrderedType) = struct
   let equal m1 m2 =
     M.equal (fun x y -> x = y) m1 m2
 
+  let cardinal m = M.cardinal m
+
   let iter m f =
     M.iter (fun x n -> f n x) m
 
   let fold m acc f =
     M.fold (fun x n acc -> f acc n x) m acc
+
+  let of_list l =
+    let rec build acc l = match l with
+    | [] -> acc
+    | x::l' -> build (add acc x) l'
+    in
+    build empty l
+
+  let to_list m =
+    (* [n_cons n x l] is the result of applying [fun l -> x :: l]  [n] times
+        to [l] *)
+    let rec n_cons n x l = match n with
+    | 0 -> l
+    | 1 -> x::l
+    | _ -> n_cons (n-1) x (x::l)
+    in
+    fold m [] (fun acc n x -> n_cons n x acc)
 end

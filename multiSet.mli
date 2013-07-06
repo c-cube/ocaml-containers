@@ -55,9 +55,16 @@ module type S = sig
 
   val equal : t -> t -> bool
 
+  val cardinal : t -> int
+    (** Number of distinct elements *)
+
   val iter : t -> (int -> elt -> unit) -> unit
 
   val fold : t -> 'b -> ('b -> int -> elt -> 'b) -> 'b
+
+  val of_list : elt list -> t
+
+  val to_list : t -> elt list
 end
 
 module Make(O : Set.OrderedType) : S with type elt = O.t
