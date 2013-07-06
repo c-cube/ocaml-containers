@@ -31,6 +31,8 @@ module type S = sig
 
   val empty : t
 
+  val is_empty : t -> bool
+
   val mem : t -> elt -> bool
 
   val count : t -> elt -> int
@@ -77,6 +79,8 @@ module Make(O : Set.OrderedType) = struct
   type elt = O.t
 
   let empty = M.empty
+
+  let is_empty = M.is_empty
 
   let mem ms x = M.mem x ms
 

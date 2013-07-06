@@ -31,6 +31,8 @@ module type S = sig
 
   val empty : t
 
+  val is_empty : t -> bool
+
   val mem : t -> elt -> bool
 
   val count : t -> elt -> int
