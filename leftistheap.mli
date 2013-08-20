@@ -46,6 +46,9 @@ val merge : 'a t -> 'a t -> 'a t
 val insert : 'a t -> 'a -> 'a t
   (** Insert a value in the heap *)
 
+val filter : 'a t -> ('a -> bool) -> 'a t
+  (** Filter values, only retaining the ones that satisfy the predicate *)
+
 val find_min : 'a t -> 'a
   (** Find minimal element, or raise Not_found *)
 

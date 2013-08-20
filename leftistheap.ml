@@ -79,6 +79,16 @@ let insert heap x =
   let tree = merge_tree heap.leq (Node (1, x, Empty, Empty)) heap.tree in
   { heap with tree; }
 
+let filter heap p =
+  let rec filter tree p = match tree with
+  | Empty -> Empty
+  | Node (_, x, l, r) when p x ->
+    merge_tree heap.leq (Node (1, x, Empty, Empty))
+      (merge_tree heap.leq (filter l p) (filter r p))
+  | Node (_, _, l, r) -> merge_tree heap.leq (filter l p) (filter r p)
+  in
+  { heap with tree = filter heap.tree p; }
+
 let find_min heap =
   match heap.tree with
   | Empty -> raise Not_found
