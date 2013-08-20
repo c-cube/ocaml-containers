@@ -22,3 +22,5 @@ Bencode
 Sexp
 RAL
 MultiSet
+UnionFind
+SmallSet

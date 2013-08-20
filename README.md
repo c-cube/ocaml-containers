@@ -23,6 +23,7 @@ data structures
 - `RAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
 access to elements by their index.
 - `Leftistheap`, a polymorphic heap structure.
+- `SmallSet`, a sorted list implementation behaving like a set.
 
 Other structures are:
 
@@ -37,6 +38,7 @@ monadic futures, and MVars (concurrent boxes)
 - `FlatHashtbl`, a (deprecated) open addressing hashtable with
     a functorial interface (replaced by PHashtbl)
 - `Gen` and `Sequence`, generic iterators structures.
+- `UnionFind`, a functorial imperative Union-Find structure.
 
 Some serialisation formats are also implemented, with a streaming, non-blocking
 interface that allows the user to feed the input in chunk by chunk (useful
