@@ -24,6 +24,7 @@ data structures
 access to elements by their index.
 - `Leftistheap`, a polymorphic heap structure.
 - `SmallSet`, a sorted list implementation behaving like a set.
+- `AbsSet`, an abstract Set data structure, a bit like `LazyGraph`.
 
 Other structures are:
 
