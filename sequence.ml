@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Transient iterators, that abstract on a finite sequence of elements. *)
+(** {1 Transient iterators, that abstract on a finite sequence of elements.} *)
 
 (** Sequence abstract iterator type *)
 type 'a t = ('a -> unit) -> unit
@@ -35,6 +35,16 @@ type (+'a, +'b) t2 = ('a -> 'b -> unit) -> unit
 
 (** Build a sequence from a iter function *)
 let from_iter f = f
+
+(** Call the function repeatedly until it returns None. This
+    sequence is transient, use {!persistent} if needed! *)
+let from_fun f =
+  fun k ->
+    let rec next () =
+      match f () with
+      | None -> ()
+      | Some x -> (k x; next ())
+    in next ()
 
 let empty = fun k -> ()
 
@@ -111,16 +121,26 @@ let concat s =
     let k_seq seq = iter k seq in
     s k_seq)
 
+let flatten s = concat s
+
 (** Monadic bind. It applies the function to every element of the
     initial sequence, and calls [concat]. *)
 let flatMap f seq =
   from_iter
     (fun k -> seq (fun x -> (f x) k))
 
-(** Insert the second element between every element of the sequence *)
-let intersperse seq elem =
+let fmap f seq =
   from_iter
-    (fun k -> seq (fun x -> k x; k elem))
+    (fun k ->
+      seq (fun x -> match f x with
+          | None -> ()
+          | Some y -> k y))
+
+(** Insert the given element between every element of the sequence *)
+let intersperse elem seq =
+  fun k ->
+    let first = ref true in
+    seq (fun x -> (if !first then first := false else k elem); k x)
 
 (** Mutable unrolled list to serve as intermediate storage *)
 module MList = struct
@@ -173,7 +193,9 @@ module MList = struct
   let rec push x l =
     if l.len = Array.length l.content
       then begin (* insert in the next block *)
-        (if l.tl == _empty () then l.tl <- make (Array.length l.content));
+        (if l.tl == _empty () then
+          let n = Array.length l.content in
+          l.tl <- make (n + n lsr 1));
         push x l.tl
       end else begin  (* insert in l *)
         l.content.(l.len) <- x;
@@ -262,6 +284,18 @@ let product outer inner =
     (fun k ->
       outer (fun x ->
         inner (fun y -> k (x,y))))
+
+(** [join ~join_row a b] combines every element of [a] with every
+    element of [b] using [join_row]. If [join_row] returns None, then
+    the two elements do not combine. Assume that [b] allows for multiple
+    iterations. *)
+let join ~join_row s1 s2 =
+  fun k ->
+    s1 (fun a ->
+      s2 (fun b ->
+        match join_row a b with
+        | None -> ()
+        | Some c -> k c))  (* yield the combination of [a] and [b] *)
 
 (** [unfoldr f b] will apply [f] to [b]. If it
     yields [Some (x,b')] then [x] is returned

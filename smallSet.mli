@@ -35,7 +35,7 @@ type 'a t
 val empty : cmp:('a -> 'a -> int) -> 'a t
   (** Create an empty set *)
 
-val is_empty : 'a t -> bool
+val is_empty : _ t -> bool
   (** Is the set empty? *)
 
 val mem : 'a t -> 'a -> bool
