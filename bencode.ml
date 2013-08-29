@@ -54,24 +54,59 @@ let dict_of_list l =
 
 (** {2 Serialization (encoding)} *)
 
-let rec to_buf buf t = match t with
-  | I i -> Printf.bprintf buf "i%de" i
-  | S s ->
-    Printf.bprintf buf "%d:" (String.length s);
-    Buffer.add_string buf s
+(* length of an encoded int, in bytes *)
+let _len_int i =
+  match i with
+  | 0 -> 1
+  | _ when i < 0 -> 2 + int_of_float (log10 (float_of_int ~-i))
+  | _ -> 1 + int_of_float (log10 (float_of_int i))
+
+(* length of an encoded string, in bytes *)
+let _len_str s =
+  _len_int (String.length s) + 1 + String.length s
+
+let rec size t = match t with
+  | I i -> 2 + _len_int i
+  | S s -> _len_str s
+  | L l -> List.fold_left (fun acc i -> acc + size i) 2 l
+  | D map -> SMap.fold (fun k v acc -> acc + _len_str k + size v) map 2
+
+let write_in_string t buf o =
+  let pos = ref o in
+  let rec append t = match t with
+  | I i -> write_char 'i'; write_int i; write_char 'e'
+  | S s -> write_str s
   | L l ->
-    Buffer.add_char buf 'l';
-    List.iter (fun t' -> to_buf buf t') l;
-    Buffer.add_char buf 'e'
+    write_char 'l';
+    List.iter append l;
+    write_char 'e';
   | D m ->
-    Buffer.add_char buf 'd';
-    SMap.iter (fun key t' -> to_buf buf (S key); to_buf buf t') m;
-    Buffer.add_char buf 'e'
+    write_char 'd';
+    SMap.iter (fun key t' -> write_str key; append t') m;
+    write_char 'e'
+  and write_int i =
+    let s = string_of_int i in
+    String.blit s 0 buf !pos (String.length s);
+    pos := !pos + String.length s
+  and write_str s =
+    write_int (String.length s);
+    write_char ':';
+    String.blit s 0 buf !pos (String.length s);
+    pos := !pos + String.length s
+  and write_char c =
+    buf.[!pos] <- c;
+    incr pos
+  in
+  append t
 
 let to_string t =
-  let b = Buffer.create 25 in
-  to_buf b t;
-  Buffer.contents b
+  let len = size t in
+  let s = String.create len in
+  write_in_string t s 0;
+  s
+
+let to_buf buf t =
+  Buffer.add_string buf (to_string t)
 
 let to_chan ch t =
   let b = Buffer.create 25 in

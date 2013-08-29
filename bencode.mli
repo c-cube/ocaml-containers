@@ -44,6 +44,14 @@ val dict_of_list : (string * t) list -> t
 
 (** {2 Serialization (encoding)} *)
 
+val size : t -> int
+  (** Size needed for serialization *)
+
+val write_in_string : t -> string -> int -> unit
+  (** [write_in_string v buf o] writes the value [v] in  the string,
+      starting at offset [o]. The portion of the string starting from [o]
+      must be big enough (ie >= [size v]) *)
+
 val to_buf : Buffer.t -> t -> unit
 val to_string : t -> string
 val to_chan : out_channel -> t -> unit
