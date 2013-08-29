@@ -39,6 +39,9 @@ tests: lib
 bench:
 	ocamlbuild $(OPTIONS) -package bench -package unix -I . tests/benchs.native
 
+push_doc: doc
+	scp -r containers.docdir/* cedeela.fr:~/simon/root/software/containers/
+
 clean:
 	ocamlbuild -clean
 

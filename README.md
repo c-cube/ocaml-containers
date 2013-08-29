@@ -5,6 +5,8 @@ A bunch of containers,written in different occasions. Not all
 containers are properly tested (see `tests/` and `make tests`
 if you have installed `OUnit`).
 
+The documentation can be found [here](http://cedeela.fr/~simon/software/containers).
+
 The design is mostly centered around polymorphism rather than functors. Such
 structures comprise:
 
