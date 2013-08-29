@@ -290,17 +290,17 @@ let parse dec s i len =
   (* add the input to [dec] *)
   if dec.len = 0
     then begin
-      dec.buf <- s;
+      dec.buf <- String.copy s;
       dec.i <- i;
       dec.len <- len;
     end else begin
       (* use a buffer to merge the stored input and the new input *)
-      let b = Buffer.create (dec.len + len) in
-      Buffer.add_substring b dec.buf dec.i dec.len;
-      Buffer.add_substring b s i len;
-      dec.buf <- Buffer.contents b;
+      let buf' = String.create (dec.len + len - dec.i) in
+      String.blit dec.buf dec.i buf' 0 dec.len;
+      String.blit s i buf' dec.len len;
+      dec.buf <- buf';
       dec.i <- 0;
-      dec.len <- dec.len + len;
+      dec.len <- dec.len + len - dec.i;
     end;
   (* state machine *)
   parse_rec dec
