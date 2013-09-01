@@ -36,9 +36,6 @@ type 'state t
   (** State machine, whose states are of the type 'state,
       and that changes state upon events of the type 'event. *)
 
-type 'event sink
-  (** Something that reacts to events of type 'events *)
-
 type 'a transition =
   | TransitionTo of 'a
   | TransitionStay
@@ -48,7 +45,7 @@ type 'a transition =
 val create : ?root:bool ->
              init:'state ->
              trans:('state -> 'event -> 'state transition) ->
-            'state t * 'event sink
+            'state t * ('event -> unit)
   (** Creation of a state machine with an initial state and a
       given transition function. [root] specifies whether the FSM should
       be a GC root and stay alive (default false).
@@ -77,14 +74,9 @@ val register_while : 'state t -> ('state -> 'state -> bool) -> unit
 val register : 'state t -> ('state -> 'state -> unit) -> unit
   (** Register the given callback forever. *)
 
-val connect : 'a t -> 'a sink -> unit
+val connect : 'a t -> ('a -> unit) -> unit
   (** [connect st sink] connects state changes of [st] to the sink. The
       sink is given only the new state of [st]. *)
-
-val send : 'event sink -> 'event -> unit
-  (** Trigger an event. This function will not return until no transitions
-  remain for processing, which means it can take an arbitrary amount of time to
-  run. *)
 
 (** {2 Combinators} *)
 

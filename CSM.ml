@@ -37,8 +37,6 @@ type 'state t = {
 
 and 'a sm = 'a t
 
-and 'event sink = 'event -> unit
-
 and 'a transition =
   | TransitionTo of 'a
   | TransitionStay
@@ -166,7 +164,7 @@ let filter st p =
   Weak.set a 0 (Some st');
   register_while st
     (fun _ new_state ->
-      if p
+      if p new_state
         then begin match Weak.get a 0 with
         | None -> false
         | Some st' ->
