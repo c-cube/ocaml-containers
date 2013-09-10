@@ -73,6 +73,19 @@ module type S = sig
   val inter : t -> t -> t
     (** Intersection of multimaps *)
 
+  val diff : t -> t -> t
+    (** Difference of maps, ie bindings of the first that are not
+        in the second *)
+
+  val equal : t -> t -> bool
+    (** Same multimap *)
+
+  val compare : t -> t -> int
+    (** Total order on multimaps *)
+
+  val submap : t -> t -> bool
+    (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2] *)
+
   val to_seq : t -> (key * value) Sequence.t
 
   val of_seq : ?init:t -> (key * value) Sequence.t -> t
@@ -170,6 +183,34 @@ module Make(K : OrderedType)(V : OrderedType) = struct
             then None
             else Some set)
       m1 m2
+
+  let diff m1 m2 =
+    M.merge
+      (fun k v1 v2 -> match v1, v2 with
+        | None, _ -> None
+        | Some set, None -> Some set
+        | Some set1, Some set2 ->
+          let set' = S.diff set1 set2 in
+          if S.is_empty set'
+            then None
+            else Some set')
+      m1 m2
+
+  let equal m1 m2 =
+    M.equal S.equal m1 m2
+
+  let compare m1 m2 =
+    M.compare S.compare m1 m2
+
+  let submap m1 m2 =
+    M.for_all
+      (fun k set1 ->
+        try
+          let set2 = M.find k m2 in
+          S.subset set1 set2
+        with Not_found ->
+          false)
+      m1
 
   let to_seq m =
     Sequence.from_iter (fun k -> iter m (fun x y -> k (x,y)))
