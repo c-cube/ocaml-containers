@@ -37,10 +37,14 @@ let rec __shift bv n =
 (* only ones *)
 let __all_ones = __shift 0 __width
 
-type t = int array
+type t = {
+  mutable a : int array;
+}
+
+let empty () = { a = [| |] }
 
 let create ~size default =
-  if size = 0 then [| 0 |]
+  if size = 0 then { a = [| |] }
     else begin
       let n = if size mod __width = 0 then size / __width else (size / __width) + 1 in
       let arr = if default
@@ -50,15 +54,20 @@ let create ~size default =
       (* adjust last bits *)
       if default && (size mod __width) <> 0
         then arr.(n-1) <- __shift 0 (size - (n-1) * __width);
-      arr
+      { a = arr }
     end
 
-let copy = Array.copy
+let copy bv = { a=Array.copy bv.a; }
 
-let length bv = Array.length bv
+let length bv = Array.length bv.a
 
-let resize bv ~size default =
-  failwith "not implemented"
+let resize bv len =
+  if len > Array.length bv.a
+    then begin
+      let a' = Array.make len 0 in
+      Array.blit bv.a 0 a' 0 (Array.length bv.a);
+      bv.a <- a'
+    end
 
 (* count the 1 bits in [n]. See https://en.wikipedia.org/wiki/Hamming_weight *)
 let __count_bits n =
@@ -71,15 +80,15 @@ let __count_bits n =
 
 let cardinal bv =
   let n = ref 0 in
-  for i = 0 to Array.length bv - 1 do
-    n := !n + __count_bits bv.(i)
+  for i = 0 to length bv - 1 do
+    n := !n + __count_bits bv.a.(i)
   done;
   !n
 
 let is_empty bv =
   try
-    for i = 0 to Array.length bv - 1 do
-      if bv.(i) <> 0 then raise Exit
+    for i = 0 to Array.length bv.a - 1 do
+      if bv.a.(i) <> 0 then raise Exit
     done;
     true
   with Exit ->
@@ -87,40 +96,51 @@ let is_empty bv =
 
 let get bv i =
   let n = i / __width in
-  let i = i - n * __width in
-  bv.(n) land (1 lsl i) <> 0
+  if n < Array.length bv.a
+    then
+      let i = i - n * __width in
+      bv.a.(n) land (1 lsl i) <> 0
+    else false
 
 let set bv i =
   let n = i / __width in
+  if n >= Array.length bv.a
+    then resize bv n;
   let i = i - n * __width in
-  bv.(n) <- bv.(n) lor (1 lsl i)
+  bv.a.(n) <- bv.a.(n) lor (1 lsl i)
 
 let reset bv i =
   let n = i / __width in
+  if n >= Array.length bv.a
+    then resize bv n;
   let i = i - n * __width in
-  bv.(n) <- bv.(n) land (lnot (1 lsl i))
+  bv.a.(n) <- bv.a.(n) land (lnot (1 lsl i))
 
 let flip bv i =
   let n = i / __width in
+  if n >= Array.length bv.a
+    then resize bv n;
   let i = i - n * __width in
-  bv.(n) <- bv.(n) lxor (1 lsl i)
+  bv.a.(n) <- bv.a.(n) lxor (1 lsl i)
 
 let clear bv =
-  Array.iteri (fun i _ -> bv.(i) <- 0) bv
+  Array.iteri (fun i _ -> bv.a.(i) <- 0) bv.a
 
 let iter bv f =
-  for n = 0 to Array.length bv - 1 do
+  let len = Array.length bv.a in
+  for n = 0 to len - 1 do
     let j = __width * n in
     for i = 0 to __width - 1 do
-      f (j+i) (bv.(n) land (1 lsl i) <> 0)
+      f (j+i) (bv.a.(n) land (1 lsl i) <> 0)
     done
   done
 
 let iter_true bv f =
-  for n = 0 to Array.length bv - 1 do
+  let len = Array.length bv.a in
+  for n = 0 to len - 1 do
     let j = __width * n in
     for i = 0 to __width - 1 do
-      if bv.(n) land (1 lsl i) <> 0
+      if bv.a.(n) land (1 lsl i) <> 0
         then f (j+i)
     done
   done
@@ -136,23 +156,36 @@ let of_list l =
   List.iter (fun i -> set bv i) l;
   bv
 
+exception FoundFirst of int
+
+let first bv =
+  try
+    iter_true bv (fun i -> raise (FoundFirst i));
+    raise Not_found
+  with FoundFirst i ->
+    i
+
+let filter bv p =
+  iter_true bv
+    (fun i -> if not (p i) then reset bv i) 
+
 let union_into ~into bv =
-  assert (length into >= length bv);
-  for i = 0 to Array.length bv - 1 do
-    into.(i) <- into.(i) lor bv.(i)
+  if length into < length bv
+    then resize into (length bv);
+  let len = Array.length bv.a in
+  for i = 0 to len - 1 do
+    into.a.(i) <- into.a.(i) lor bv.a.(i)
   done
 
 let union bv1 bv2 =
-  let size = __width * (max (Array.length bv1) (Array.length bv2)) in
-  let bv = create ~size false in
-  union_into ~into:bv bv1;
+  let bv = copy bv1 in
   union_into ~into:bv bv2;
   bv
 
 let inter_into ~into bv =
   let n = min (length into) (length bv) in
   for i = 0 to n - 1 do
-    into.(i) <- into.(i) land bv.(i)
+    into.a.(i) <- into.a.(i) land bv.a.(i)
   done
 
 let inter bv1 bv2 =

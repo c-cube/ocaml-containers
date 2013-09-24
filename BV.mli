@@ -28,15 +28,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type t
 
+val empty : unit -> t
+  (** Empty bitvector *)
+
 val create : size:int -> bool -> t
   (** Create a bitvector of given size, with given default value *)
 
 val copy : t -> t
   (** Copy of bitvector *)
-
-val resize : t -> size:int -> bool -> t
-  (** [resize bv ~size default] resizes [bv] to the given size. If the
-      new size is bigger than the old one, new values are set to [default]. *)
 
 val cardinal : t -> int
   (** Number of bits set *)
@@ -44,14 +43,17 @@ val cardinal : t -> int
 val length : t -> int
   (** Length of underlying array *)
 
+val resize : t -> int -> unit
+  (** Resize the BV so that it has at least the given physical length *)
+
 val is_empty : t -> bool
   (** Any bit set? *)
 
 val set : t -> int -> unit
-  (** Set i-th bit *)
+  (** Set i-th bit. *)
 
 val get : t -> int -> bool
-  (** Is the i-th bit true? *)
+  (** Is the i-th bit true? Returns false if the index is too high*)
 
 val reset : t -> int -> unit
   (** Set i-th bit to 0 *)
@@ -74,9 +76,17 @@ val to_list : t -> int list
 val of_list : int list -> t
   (** From a list of true bits *)
 
+val first : t -> int
+  (** First set bit, or
+      @raise Not_found if all bits are 0 *)
+
+val filter : t -> (int -> bool) -> unit
+  (** [filter bv p] only keeps the true bits of [bv] whose [index]
+      satisfies [p index] *)
+
 val union_into : into:t -> t -> unit
-  (** [union ~into bv] sets [into] to the union of itself and [bv].
-      [into] must have at least as long as [bv]. *)
+  (** [union ~into bv] sets [into] to the union of itself and [bv]. *)
+      
 
 val inter_into : into:t -> t -> unit
   (** [union ~into bv] sets [into] to the intersection of itself and [bv] *)
@@ -85,6 +95,7 @@ val union : t -> t -> t
   (** [union bv1 bv2] returns the union of the two sets *)
 
 val inter : t -> t -> t
+  (** Intersection of bitvectors *)
 
 val select : t -> 'a array -> ('a * int) list
   (** [select arr bv] selects the elements of [arr] whose index
