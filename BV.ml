@@ -105,21 +105,21 @@ let get bv i =
 let set bv i =
   let n = i / __width in
   if n >= Array.length bv.a
-    then resize bv n;
+    then resize bv (n+1);
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) lor (1 lsl i)
 
 let reset bv i =
   let n = i / __width in
   if n >= Array.length bv.a
-    then resize bv n;
+    then resize bv (n+1);
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) land (lnot (1 lsl i))
 
 let flip bv i =
   let n = i / __width in
   if n >= Array.length bv.a
-    then resize bv n;
+    then resize bv (n+1);
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) lxor (1 lsl i)
 
