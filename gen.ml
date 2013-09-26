@@ -851,12 +851,12 @@ let to_array enum =
 
 let of_array ?(start=0) ?len a =
   let len = match len with
-  | None -> Array.length a
-  | Some n -> assert (n <= Array.length a); n in
+  | None -> Array.length a - start
+  | Some n -> assert (n + start < Array.length a); n in
   fun () ->
     let i = ref start in
     fun () ->
-      if !i >= len
+      if !i >= start + len
         then raise EOG
         else (let x = a.(!i) in incr i; x)
 
