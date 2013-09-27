@@ -5,7 +5,7 @@
 #load "containers.cma";;
 #require "threads";;
 #load "thread_containers.cma";;
-open Gen.Infix;;
+open Sequence.Infix;;
 #install_printer Bencode.pretty;;
 (* vim:syntax=ocaml:
 *)

@@ -25,26 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Bijective Serializer/Deserializer} *)
 
-type 'a t = private
-  | Unit : unit t
-  | String : string t
-  | Int : int t
-  | Bool : bool t
-  | Float : float t
-  | List : 'a t -> 'a list t
-  | Many : 'a t -> 'a list t
-  | Opt : 'a t -> 'a option t
-  | Pair : 'a t * 'b t -> ('a * 'b) t
-  | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
-  | Quad : 'a t * 'b t * 'c t * 'd t -> ('a * 'b * 'c * 'd) t
-  | Quint : 'a t * 'b t * 'c t * 'd t * 'e t -> ('a * 'b * 'c * 'd * 'e) t
-  | Guard : ('a -> bool) * 'a t -> 'a t
-  | Map : ('a -> 'b) * ('b -> 'a) * 'b t -> 'a t
-  | Switch : ('a -> char * 'a inject_branch) * (char -> 'a extract_branch) -> 'a t
-and _ inject_branch =
-  | BranchTo : 'b t * 'b -> 'a inject_branch
-and _ extract_branch =
-  | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
+type 'a t
 
 (** {2 Bijection description} *)
 
@@ -66,100 +47,49 @@ val guard : ('a -> bool) -> 'a t -> 'a t
 
 val map : inject:('a -> 'b) -> extract:('b -> 'a) -> 'b t -> 'a t
 
-val switch : inject:('a -> char * 'a inject_branch) ->
-             extract:(char -> 'a extract_branch) -> 'a t
+type _ inject_branch =
+  | BranchTo : 'b t * 'b -> 'a inject_branch
+type _ extract_branch =
+  | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
+
+val switch : inject:('a -> string * 'a inject_branch) ->
+             extract:(string -> 'a extract_branch) -> 'a t
   (** Discriminates unions based on the next character.
-      [inject] is used to select a character, as well as mapping to another
+      [inject] must give a unique key for each branch, as well as mapping to another
       type (the argument of the algebraic constructor);
-      [extract] retrieves which type to parse based on the character. *)
+      [extract] retrieves which type to parse based on the key. *)
 
 (** {2 Helpers} *)
 
-val fix : ((unit -> 'a t) -> 'a t) -> 'a t
-  (** Helper for recursive encodings *)
+val fix : ('a t lazy_t -> 'a t) -> 'a t
+  (** Helper for recursive encodings. The parameter is the recursive bijection
+      itself. It must be lazy. *)
 
 val with_version : string -> 'a t -> 'a t
   (** Guards the values with a given version. Only values encoded with
       the same version will fit. *)
 
-val array_ : 'a t -> 'a array t
-val hashtbl : 'a t -> 'b t -> ('a, 'b) Hashtbl.t t
-
 (** {2 Exceptions} *)
 
-exception EOF
-
 exception EncodingError of string
-  (** Raised when decoding is impossible *)
+  (** Raised when encoding is impossible *)
 
 exception DecodingError of string
   (** Raised when decoding is impossible *)
 
-(** {2 Source of parsing} *)
+(** {2 Translations} *)
 
-module type SOURCE = sig
-  type t
+module TrBencode : sig
+  val encode : bij:'a t -> 'a -> Bencode.t
 
-  val eof : t -> bool
-    (** End of input reached? *)
+  val decode : bij:'a t -> Bencode.t -> 'a
 
-  val cur : t -> char
-    (** Current char *)
+  val to_string : bij:'a t -> 'a -> string
 
-  val junk : t -> unit
-    (** Discard current char *)
-end
-
-module SourceStr : sig
-  include SOURCE
-  val create : string -> t
-end
-
-module SourceStream : SOURCE with type t = char Stream.t
-
-module SourceChan : sig
-  include SOURCE 
-  val create : ?bufsize:int -> in_channel -> t
-end
-
-(** {2 Sink: Where to print} *)
-
-module type SINK = sig
-  type t
-  val write : t -> string -> int -> int -> unit  (* write substring [i..i+len] *)
-  val write_char : t -> char -> unit
-  val write_int : t -> int -> unit
-  val write_bool : t -> bool -> unit
-  val write_float : t -> float -> unit
-end
-
-module SinkBuf : SINK with type t = Buffer.t
-
-module SinkChan : SINK with type t = out_channel
-
-(** {2 Encoding/decoding} *)
-
-module type ENCODE = sig
-  type sink
-  val encode : bij:'a t -> sink -> 'a -> unit
-end
-
-module type DECODE = sig
-  type source
-  val decode : bij:'a t -> source -> 'a
-end
-
-module SexpEncode(Sink : SINK) : ENCODE with type sink = Sink.t
-module SexpDecode(Source : SOURCE) : DECODE with type source = Source.t
-
-(** Specific instance for encoding to/from strings *)
-module SexpStr : sig
-  val to_string : ?bufsize:int -> bij:'a t -> 'a -> string
   val of_string : bij:'a t -> string -> 'a
-end 
 
-(** Specific instance for encoding to/from channels *)
-module SexpChan : sig
-  include ENCODE with type sink = SinkChan.t
-  include DECODE with type source = SourceChan.t
+  val read : bij:'a t -> in_channel -> 'a
+
+  val write : bij:'a t -> 'a t -> out_channel -> unit
 end
+
