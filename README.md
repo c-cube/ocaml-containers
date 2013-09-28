@@ -50,6 +50,8 @@ in combination with Lwt/Async). Currently, the modules are:
 - `Bencode`, for the [B-encode format](http://en.wikipedia.org/wiki/Bencode),
 - `Sexp`, for S-expressions.
 
+There is a QuickCheck-like library called `QCheck`.
+
 ## Use
 
 You can either build and install the library (see `Build`), or just copy

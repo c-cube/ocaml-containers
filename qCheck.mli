@@ -26,6 +26,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {6 Quickcheck inspired property-based testing} *)
 
+(** Examples:
+
+    - Not all lists are sorted:
+    [QCheck.run ~n:10 ~pp:QCheck.PP.(list int) QCheck.Arbitrary.(list small_int) (fun l -> l = List.sort compare l);;]
+
+    - List.rev is involutive:
+    [QCheck.run ~n:1000 QCheck.Arbitrary.(list alpha) (fun l -> List.rev (List.rev l) = l)]
+*)
+
 (** {2 Description of how to generate arbitrary values for some type} *)
 
 module Arbitrary : sig
