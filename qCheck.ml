@@ -29,13 +29,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 module Arbitrary = struct
   type 'a t = Random.State.t -> 'a
 
-  let int st = Random.State.int st max_int
+  let int n st = Random.State.int st n
 
-  let int_range ?(start=0) ~stop st =
+  let int_range ~start ~stop st =
     let n = stop - start in
     if n <= 0
       then 0
       else start + Random.State.int st n
+
+  let small_int = int 100
 
   let bool = Random.State.bool
 
@@ -46,7 +48,7 @@ module Arbitrary = struct
   let alpha st =
     Char.chr (Char.code 'a' + Random.State.int st (Char.code 'z' - Char.code 'a'))
 
-  let string ~len st =
+  let string_len len st =
     let n = len st in
     assert (n>=0);
     let s = String.create n in
@@ -55,6 +57,8 @@ module Arbitrary = struct
     done;
     s
 
+  let string st = string_len (int 10) st
+
   let map ar f st = f (ar st)
 
   let rec _make_list ar st acc n =
@@ -62,7 +66,7 @@ module Arbitrary = struct
       let x = ar st in
       _make_list ar st (x::acc) (n-1)
 
-  let list ~len ar st =
+  let list ?(len=int 10) ar st =
     let n = len st in
     _make_list ar st [] n
 
@@ -74,7 +78,7 @@ module Arbitrary = struct
   let list_repeat len ar st =
     _make_list ar st [] len
 
-  let array ~len ar st =
+  let array ?(len=int 10) ar st =
     let n = len st in
     Array.init n (fun _ -> ar st)
 
@@ -118,41 +122,57 @@ module Arbitrary = struct
     fix ~max ~base f st
 end
 
+(** {2 Pretty printing} *)
+
+module PP = struct
+  type 'a t = 'a -> string
+
+  let int = string_of_int
+  let bool = string_of_bool
+  let float = string_of_float
+  let string s = s
+  let char c =
+    let s = "_" in
+    s.[0] <- c;
+    s
+
+  let list pp l =
+    let b = Buffer.create 25 in
+    Buffer.add_char b '(';
+    List.iteri (fun i x ->
+      if i > 0 then Buffer.add_string b ", ";
+      Buffer.add_string b (pp x))
+      l;
+    Buffer.add_char b ')';
+    Buffer.contents b
+
+  let array pp a = 
+    let b = Buffer.create 25 in
+    Buffer.add_char b '[';
+    Array.iteri (fun i x ->
+      if i > 0 then Buffer.add_string b ", ";
+      Buffer.add_string b (pp x))
+      a;
+    Buffer.add_char b ']';
+    Buffer.contents b
+end
+
 (** {2 Testing} *)
 
 module Prop = struct
-  type 'a t = {
-    name : string;
-    precond : 'a -> bool;
-    test: 'a -> bool;
-  } (** A simple property on elements of type 'a *)
+  type 'a t = 'a -> bool
+
+  exception PrecondFail
   
-  let __true _ = true
-
-  let make_prop ?(precond=__true) name test = {
-    precond;
-    name;
-    test;
-  }
-
-  let (>::) name test = make_prop name test
-
   let (==>) a b =
-    { b with precond = (fun x -> a x && b.precond x); }
+    fun x ->
+      if not (a x) then raise PrecondFail else b x
 
-  let (&&&) a b =
-    { precond = (fun x -> a.precond x && b.precond x);
-      name = Printf.sprintf "%s and %s" a.name b.name;
-      test = (fun x -> a.test x && b.test x);
-    }
+  let (&&&) a b x = a x && b x
 
-  let (|||) a b =
-    { precond = (fun x -> a.precond x && b.precond x);
-      name = Printf.sprintf "%s or %s" a.name b.name;
-      test = (fun x -> a.test x || b.test x);
-    }
+  let (|||) a b x = a x || b x
 
-  let (!!!) a = { a with name = "not " ^ a.name; test = (fun x -> not (a.test x)); }
+  let (!!!) a x = not (a x)
 end
 
 type 'a result =
@@ -160,16 +180,17 @@ type 'a result =
   | Failed of 'a list
   | Error of exn
 
-let check ?(rand=Random.State.make_self_init ()) ?(n=100) ~gen ~prop =
+let check ?(rand=Random.State.make_self_init ()) ?(n=100) gen prop =
   let precond_failed = ref 0 in
   let failures = ref [] in
   try
     for i = 0 to n - 1 do
       let x = gen rand in
-      if not (prop.Prop.precond x)
-        then incr precond_failed
-      else if not (prop.Prop.test x)
-        then failures := x :: !failures
+      try
+        if not (prop x)
+          then failures := x :: !failures
+      with Prop.PrecondFail ->
+        incr precond_failed
     done;
     match !failures with
     | [] -> Ok (n, !precond_failed)
@@ -179,9 +200,9 @@ let check ?(rand=Random.State.make_self_init ()) ?(n=100) ~gen ~prop =
 
 (** {2 Main} *)
 
-let run ?pp ?n ~rand ~gen ~prop =
-  Printf.printf "testing property %s...\n" prop.Prop.name;
-  match check ~rand ?n ~gen ~prop with
+let run ?pp ?n ?(rand=Random.State.make_self_init()) ?(name="<no name>") gen prop =
+  Printf.printf "testing property %s...\n" name;
+  match check ~rand ?n gen prop with
   | Ok (n, prefail) ->
     Printf.printf "passed %d tests (%d preconditions failed)\n" n prefail;
     true
