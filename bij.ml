@@ -201,8 +201,43 @@ module TrBencode = struct
     let b = B.of_string s in
     decode ~bij b
 
-  (* TODO *)
-  let read ~bij ic = failwith "read: not implemented"
+  let read ~bij ic =
+    let d = B.mk_decoder () in
+    let buf = String.create 256 in
+    let rec read_chunk() =
+      let n = input ic buf 0 (String.length buf) in
+      if n = 0
+        then raise (DecodingError "unexpected EOF")
+        else match B.parse d buf 0 n with
+          | B.ParsePartial -> read_chunk()
+          | B.ParseError s -> raise (DecodingError s)
+          | B.ParseOk b -> decode ~bij b
+    in
+    read_chunk()
 
-  let write ~bij x oc = failwith "write: not implemented"
+  let read_stream ~bij ic =
+    let d = B.mk_decoder () in
+    let buf = String.create 256 in
+    let rec try_parse n = match B.parse d buf 0 n with
+      | B.ParsePartial -> read_chunk()
+      | B.ParseError s -> raise (DecodingError s)
+      | B.ParseOk b -> Some (decode ~bij b)
+    and read_chunk() =
+      let n = input ic buf 0 (String.length buf) in
+      if n = 0
+        then match B.parse_resume d with
+        | B.ParsePartial -> None
+        | B.ParseError s -> raise (DecodingError s)
+        | B.ParseOk b -> Some (decode ~bij b)
+        else try_parse n
+    in
+    Stream.from (fun _ -> read_chunk())
+
+  let write ~bij oc x =
+    let b = encode ~bij x in
+    B.to_chan oc b;
+    flush oc
+
+  let write_stream ~bij oc str =
+    Stream.iter (fun x -> write ~bij oc x) str
 end

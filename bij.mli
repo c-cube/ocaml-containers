@@ -89,7 +89,12 @@ module TrBencode : sig
   val of_string : bij:'a t -> string -> 'a
 
   val read : bij:'a t -> in_channel -> 'a
+    (** Read a single value from the channel *)
 
-  val write : bij:'a t -> 'a t -> out_channel -> unit
+  val read_stream : bij:'a t -> in_channel -> 'a Stream.t
+
+  val write : bij:'a t -> out_channel -> 'a -> unit
+
+  val write_stream : bij:'a t -> out_channel -> 'a Stream.t -> unit
 end
 

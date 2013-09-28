@@ -305,6 +305,8 @@ let parse dec s i len =
   (* state machine *)
   parse_rec dec
 
+let parse_resume d = parse_rec d
+
 let reset dec =
   dec.l <- 0;
   dec.c <- 0;
