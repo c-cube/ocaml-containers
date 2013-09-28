@@ -109,11 +109,11 @@ module Arbitrary = struct
   let fix ?(max=max_int) ~base f =
     let rec ar = lazy
       (fun depth st ->
-        if depth >= max || Random.State.bool st
-          then base st (* base case *)
+        if depth >= max || Random.State.int st max < depth
+          then base st (* base case. THe deeper, the more likely. *)
         else  (* recurse *)
-          let x = (Lazy.force ar) (depth+1) st in
-          f x st)
+          let ar' = Lazy.force ar (depth+1) in
+          f ar' st)
     in
     Lazy.force ar 0
 

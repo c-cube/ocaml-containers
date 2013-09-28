@@ -29,14 +29,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** Examples:
 
     - Not all lists are sorted:
-    [QCheck.run ~n:10 ~pp:QCheck.PP.(list int) QCheck.Arbitrary.(list small_int) (fun l -> l = List.sort compare l);;]
+
+{[QCheck.run ~n:10 ~pp:QCheck.PP.(list int)
+  QCheck.Arbitrary.(list small_int) (fun l -> l = List.sort compare l);;
+]}
 
     - List.rev is involutive:
-    [QCheck.run ~n:1000 QCheck.Arbitrary.(list alpha) (fun l -> List.rev (List.rev l) = l)]
+
+{[QCheck.run ~n:1000 QCheck.Arbitrary.(list alpha)
+  (fun l -> List.rev (List.rev l) = l)
+]}
+
+    - generate a tree using {! Arbitrary.fix} :
+
+{[type tree = Int of int | Node of tree list;;
+ 
+ let ar = QCheck.Arbitrary.(fix ~max:10
+  ~base:(map small_int (fun i -> Int i))
+  (fun t st -> Node (list t st)));;
+
+ ar (Random.State.make_self_init ());;
+ ]}
 *)
 
 (** {2 Description of how to generate arbitrary values for some type} *)
-
+ 
 module Arbitrary : sig
   type 'a t = Random.State.t -> 'a
     (** A generator of arbitrary values of type 'a *)
@@ -98,11 +115,11 @@ module Arbitrary : sig
   val choose : 'a t list -> 'a t
     (** Choice among combinations *)
 
-  val fix : ?max:int -> base:'a t -> ('a -> 'a t) -> 'a t
+  val fix : ?max:int -> base:'a t -> ('a t -> 'a t) -> 'a t
     (** Recursive arbitrary values. The optional value [max] defines
         the maximal depth, if needed. [base] is the base case. *)
 
-  val fix_depth : depth:int t -> base:'a t -> ('a -> 'a t) -> 'a t
+  val fix_depth : depth:int t -> base:'a t -> ('a t -> 'a t) -> 'a t
     (** Recursive values of at most given random depth *)
 end
 
