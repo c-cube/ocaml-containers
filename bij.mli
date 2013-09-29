@@ -69,6 +69,10 @@ val with_version : string -> 'a t -> 'a t
   (** Guards the values with a given version. Only values encoded with
       the same version will fit. *)
 
+val array_ : 'a t -> 'a array t
+
+val hashtbl : 'a t -> 'b t -> ('a, 'b) Hashtbl.t t
+
 (** {2 Exceptions} *)
 
 exception EncodingError of string
