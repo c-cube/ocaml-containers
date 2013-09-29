@@ -91,9 +91,6 @@ module Arbitrary = struct
 
   let among l = among_array (Array.of_list l)
 
-  let among_tbl k =
-    failwith "among_tbl: not implemented yet"
-
   let choose l =
     assert (l <> []);
     let a = Array.of_list l in

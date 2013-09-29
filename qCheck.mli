@@ -59,10 +59,10 @@ module Arbitrary : sig
     (** A generator of arbitrary values of type 'a *)
 
   val int : int -> int t
-    (** Any integer *)
+    (** Any integer between 0 (inclusive) and the given higher bound (exclusive) *)
 
   val int_range : start:int -> stop:int -> int t
-    (* Integer range *)
+    (* Integer range start .. stop-1 *)
 
   val small_int : int t
     (** Ints lower than 100 *)
@@ -108,9 +108,6 @@ module Arbitrary : sig
 
   val among_array : 'a array -> 'a t
     (** Choose in the array *)
-
-  val among_tbl : ('k, 'v) Hashtbl.t -> 'v t
-    (** Choose in the table *)
 
   val choose : 'a t list -> 'a t
     (** Choice among combinations *)
