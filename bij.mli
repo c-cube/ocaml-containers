@@ -26,36 +26,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Bijective Serializer/Deserializer} *)
 
 (** This module helps writing serialization/deserialization code in
-    a type-safe way. It uses GADTs, and as such requires OCaml >= 4.00.1. *)
+    a type-safe way. It uses GADTs, and as such requires OCaml >= 4.00.1.
 
-type 'a t = private
-  | Unit : unit t
-  | String : string t
-  | Int : int t
-  | Bool : bool t
-  | Float : float t
-  | List : 'a t -> 'a list t
-  | Many : 'a t -> 'a list t
-  | Opt : 'a t -> 'a option t
-  | Pair : 'a t * 'b t -> ('a * 'b) t
-  | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
-  | Quad : 'a t * 'b t * 'c t * 'd t -> ('a * 'b * 'c * 'd) t
-  | Quint : 'a t * 'b t * 'c t * 'd t * 'e t -> ('a * 'b * 'c * 'd * 'e) t
-  | Guard : ('a -> bool) * 'a t -> 'a t
-  | Map : ('a -> 'b) * ('b -> 'a) * 'b t -> 'a t
-  | Switch :  ('a -> string * 'a inject_branch) *
-              (string-> 'a extract_branch) -> 'a t
-and _ inject_branch =
-  | BranchTo : 'b t * 'b -> 'a inject_branch
-and _ extract_branch =
-  | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
-
-(** Conceptually, a value of type ['a t] describes the (persistent) structure
+    Conceptually, a value of type ['a] {! t} describes the (persistent) structure
     of the type ['a]. Combinators, listed in the next section (e.g., {!list_}
     or {!pair}), are used to describe complicated structures from simpler
     ones.
     
-    For instance, to serialize a [(int * string) list]:
+    For instance, to serialize a value of type [(int * string) list]:
 
 {[let bij = Bij.(list_ (pair int_ string_));;
 
@@ -68,14 +46,14 @@ Bij.TrBencode.to_string ~bij l;;
   Some types may not be directly describable, for instance records or
   algebraic types. For those, more subtle combinators exist:
 
-  - [map] is a bijection between two types, and should be typically used to
+  - {!map} is a bijection between two types, and should be typically used to
     map records to tuples (for which combinators exist)
 
-  - [switch] is a case disjunction. Each case can map to a different type,
+  - {!switch} is a case disjunction. Each case can map to a different type,
     thank to the power of GADT, and a {b key} needs to be provided for
     each case, so that de-serialization can know which type to read.
 
-  - [fix] allows to describe recursive encodings. The user provides a function
+  - {!fix} allows to describe recursive encodings. The user provides a function
     which, given a ['a t lazy_t], builds a ['a t], and return its fixpoint.
 
   For instance, let's take a simple symbolic expressions structure (can
@@ -114,6 +92,28 @@ let bij_term =
   is provided. The code is quite straightforward and could be extended
   to XML or Json without hassle.
 *)
+
+type _ t = private
+  | Unit : unit t
+  | String : string t
+  | Int : int t
+  | Bool : bool t
+  | Float : float t
+  | List : 'a t -> 'a list t
+  | Many : 'a t -> 'a list t
+  | Opt : 'a t -> 'a option t
+  | Pair : 'a t * 'b t -> ('a * 'b) t
+  | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
+  | Quad : 'a t * 'b t * 'c t * 'd t -> ('a * 'b * 'c * 'd) t
+  | Quint : 'a t * 'b t * 'c t * 'd t * 'e t -> ('a * 'b * 'c * 'd * 'e) t
+  | Guard : ('a -> bool) * 'a t -> 'a t
+  | Map : ('a -> 'b) * ('b -> 'a) * 'b t -> 'a t
+  | Switch :  ('a -> string * 'a inject_branch) *
+              (string-> 'a extract_branch) -> 'a t
+and _ inject_branch =
+  | BranchTo : 'b t * 'b -> 'a inject_branch
+and _ extract_branch =
+  | BranchFrom : 'b t * ('b -> 'a) -> 'a extract_branch
 
 (** {2 Bijection description} *)
 
