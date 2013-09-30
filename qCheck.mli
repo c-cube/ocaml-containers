@@ -24,9 +24,30 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {6 Quickcheck inspired property-based testing} *)
+(** {1 Quickcheck inspired property-based testing} *)
 
-(** Examples:
+(** The library takes inspiration from Haskell's QuickCheck library. The
+rough idea is that the programer describes invariants that values of
+a certain type need to satisfy ("properties"), as functions from this type
+to bool. She also needs to desribe how to generate random values of the type,
+so that the property is tried and checked on a number of random instances.
+
+This explains the organization of this module:
+
+- {! Arbitrary} is used to describe how to generate random values. An
+  ['a Arbitrary.t] is a random generator of values of type 'a.
+- {! Prop} is used to describe and combine properties. Especially interesting
+  is [Prop.(==>)], that is such that [a ==> b] only checks the property [b]
+  on a value [x] if [a x] holds (precondition).
+- {! PP} describes a few combinators to print values. This is used when a
+  property fails on some instances, to print the failing instances.
+
+Then, a few functions are provided to test properties. Optional parameters
+allow to specify the random generator, the printer for failing cases, the
+number of instances to generate and test...
+
+
+Examples:
 
     - Not all lists are sorted:
 
