@@ -329,11 +329,13 @@ exception ExitSequence
 (** Take at most [n] elements from the sequence *)
 let take n seq =
   let count = ref 0 in
-  fun k ->
-    try
-      seq
-        (fun x -> if !count < n then begin incr count; k x end
-                                else raise ExitSequence)
+  if n = 0 then empty
+    else fun k ->
+      try
+        seq (fun x ->
+          incr count;
+          k x;
+          if !count = n then raise ExitSequence)
     with ExitSequence -> ()
 
 (** Drop the [n] first elements of the sequence *)
