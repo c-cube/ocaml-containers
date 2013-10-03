@@ -41,7 +41,7 @@ type ('id, 'v, 'e) t = {
       other vertices, or to Empty if the identifier is not part of the graph. *)
 and ('id, 'v, 'e) node =
   | Empty
-  | Node of 'id * 'v * ('e * 'id) Gen.t
+  | Node of 'id * 'v * ('e * 'id) Sequence.t
   (** A single node of the graph, with outgoing edges *)
 and ('id, 'e) path = ('id * 'e * 'id) list
   (** A reverse path (from the last element of the path to the first). *)
@@ -56,7 +56,7 @@ let empty =
 
 let singleton ?(eq=(=)) ?(hash=Hashtbl.hash) v label =
   let force v' =
-    if eq v v' then Node (v, label, Gen.empty) else Empty in
+    if eq v v' then Node (v, label, Sequence.empty) else Empty in
   { force; eq; hash; }
 
 let make ?(eq=(=)) ?(hash=Hashtbl.hash) force =
@@ -69,7 +69,7 @@ let from_fun ?(eq=(=)) ?(hash=Hashtbl.hash) f =
   let force v =
     match f v with
     | None -> Empty
-    | Some (l, edges) -> Node (v, l, Gen.of_list edges) in
+    | Some (l, edges) -> Node (v, l, Sequence.of_list edges) in
   { eq; hash; force; }
 
 (** {2 Polymorphic map} *)
@@ -113,7 +113,7 @@ module Mutable = struct
     let map = mk_map ~eq ~hash in
     let force v =
       try let node = map.map_get v in
-          Node (v, node.mut_v, Gen.of_list node.mut_outgoing)
+          Node (v, node.mut_v, Sequence.of_list node.mut_outgoing)
       with Not_found -> Empty in
     let graph = { eq; hash; force; } in
     map, graph
@@ -157,116 +157,115 @@ module Full = struct
     | [] -> false
 
   let bfs_full graph vertices =
-    fun () ->
+    Sequence.from_iter (fun k ->
       let explored = mk_map ~eq:graph.eq ~hash:graph.hash in
       let id = ref 0 in
       let q = Queue.create () in (* queue of nodes to explore *)
-      Gen.iter (fun v -> Queue.push (FullEnter (v,[])) q) vertices;
-      let rec next () =
-        if Queue.is_empty q then raise Gen.EOG else
-          match Queue.pop q with
-          | FullEnter (v', path) ->
-            if explored.map_mem v' then next ()
-              else begin match graph.force v' with
-              | Empty -> next ()
-              | Node (_, label, edges) ->
-                explored.map_add v' ();
-                (* explore neighbors *)
-                Gen.iter
-                  (fun (e,v'') ->
-                    let path' = (v'',e,v') :: path in
-                    Queue.push (FullFollowEdge path') q)
-                  edges;
-                (* exit node afterward *)
-                Queue.push (FullExit v') q;
-                (* return this vertex *)
-                let i = !id in
-                incr id;
-                EnterVertex (v', label, i, path)
-              end
-          | FullExit v' -> ExitVertex v'
-          | FullFollowEdge [] -> assert false
-          | FullFollowEdge (((v'', e, v') :: path) as path') ->
-            (* edge path .... v' --e--> v'' *)
-            if explored.map_mem v''
-              then if mem_path ~eq:graph.eq path v''
-                then MeetEdge (v'', e, v', EdgeBackward)
-                else MeetEdge (v'', e, v', EdgeTransverse)
-              else begin
-                (* explore this edge *)
-                Queue.push (FullEnter (v'', path')) q;
-                MeetEdge (v'', e, v', EdgeForward)
-              end
-      in next
+      Sequence.iter (fun v -> Queue.push (FullEnter (v,[])) q) vertices;
+      while not (Queue.is_empty q) do
+        match Queue.pop q with
+        | FullEnter (v', path) ->
+          if not (explored.map_mem v')
+            then begin match graph.force v' with
+            | Empty -> ()
+            | Node (_, label, edges) ->
+              explored.map_add v' ();
+              (* explore neighbors *)
+              Sequence.iter
+                (fun (e,v'') ->
+                  let path' = (v'',e,v') :: path in
+                  Queue.push (FullFollowEdge path') q)
+                edges;
+              (* exit node afterward *)
+              Queue.push (FullExit v') q;
+              (* return this vertex *)
+              let i = !id in
+              incr id;
+              k (EnterVertex (v', label, i, path))
+            end
+        | FullExit v' -> k (ExitVertex v')
+        | FullFollowEdge [] -> assert false
+        | FullFollowEdge (((v'', e, v') :: path) as path') ->
+          (* edge path .... v' --e--> v'' *)
+          if explored.map_mem v''
+            then if mem_path ~eq:graph.eq path v''
+              then k (MeetEdge (v'', e, v', EdgeBackward))
+              else k (MeetEdge (v'', e, v', EdgeTransverse))
+            else begin
+              (* explore this edge *)
+              Queue.push (FullEnter (v'', path')) q;
+              k (MeetEdge (v'', e, v', EdgeForward))
+            end
+      done)
 
   let dfs_full graph vertices =
-    fun () -> 
+    Sequence.from_iter (fun k ->
       let explored = mk_map ~eq:graph.eq ~hash:graph.hash in
       let id = ref 0 in
       let s = Stack.create () in (* stack of nodes to explore *)
-      Gen.iter (fun v -> Stack.push (FullEnter (v,[])) s) vertices;
-      let rec next () =
-        if Stack.is_empty s then raise Gen.EOG else
-          match Stack.pop s with
-          | FullExit v' -> ExitVertex v'
-          | FullEnter (v', path) ->
-            if explored.map_mem v' then next ()
-              (* explore the node now *)
-              else begin match graph.force v' with
-              | Empty -> next ()
-              | Node (_, label, edges) ->
-                explored.map_add v' ();
-                (* prepare to exit later *)
-                Stack.push (FullExit v') s;
-                (* explore neighbors *)
-                Gen.iter
-                  (fun (e,v'') ->
-                    Stack.push (FullFollowEdge ((v'', e, v') :: path)) s)
-                  edges;
-                (* return this vertex *)
-                let i = !id in
-                incr id;
-                EnterVertex (v', label, i, path)
-              end
-          | FullFollowEdge [] -> assert false
-          | FullFollowEdge (((v'', e, v') :: path) as path') ->
-            (* edge path .... v' --e--> v'' *)
-            if explored.map_mem v''
-              then if mem_path ~eq:graph.eq path v''
-                then MeetEdge (v'', e, v', EdgeBackward)
-                else MeetEdge (v'', e, v', EdgeTransverse)
-              else begin
-                (* explore this edge *)
-                Stack.push (FullEnter (v'', path')) s;
-                MeetEdge (v'', e, v', EdgeForward)
-              end
-      in next
+      Sequence.iter (fun v -> Stack.push (FullEnter (v,[])) s) vertices;
+      while not (Stack.is_empty s) do
+        match Stack.pop s with
+        | FullExit v' -> k (ExitVertex v')
+        | FullEnter (v', path) ->
+          if not (explored.map_mem v')
+            (* explore the node now *)
+            then begin match graph.force v' with
+            | Empty ->()
+            | Node (_, label, edges) ->
+              explored.map_add v' ();
+              (* prepare to exit later *)
+              Stack.push (FullExit v') s;
+              (* explore neighbors *)
+              Sequence.iter
+                (fun (e,v'') ->
+                  Stack.push (FullFollowEdge ((v'', e, v') :: path)) s)
+                edges;
+              (* return this vertex *)
+              let i = !id in
+              incr id;
+              k (EnterVertex (v', label, i, path))
+            end
+        | FullFollowEdge [] -> assert false
+        | FullFollowEdge (((v'', e, v') :: path) as path') ->
+          (* edge path .... v' --e--> v'' *)
+          if explored.map_mem v''
+            then if mem_path ~eq:graph.eq path v''
+              then k (MeetEdge (v'', e, v', EdgeBackward))
+              else k (MeetEdge (v'', e, v', EdgeTransverse))
+            else begin
+              (* explore this edge *)
+              Stack.push (FullEnter (v'', path')) s;
+              k (MeetEdge (v'', e, v', EdgeForward))
+            end
+      done)
 end
 
 let bfs graph v =
-  Gen.filterMap
+  Sequence.fmap
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.bfs_full graph (Gen.singleton v))
+    (Full.bfs_full graph (Sequence.singleton v))
 
 let dfs graph v =
-  Gen.filterMap
+  Sequence.fmap
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.dfs_full graph (Gen.singleton v))
+    (Full.dfs_full graph (Sequence.singleton v))
 
-(** {3 Mutable heap (taken from heap.ml to avoid dependencies)} *)
+(** {3 Mutable heap} *)
 module Heap = struct
+  (** Implementation from http://en.wikipedia.org/wiki/Skew_heap *)
+
   type 'a t = {
     mutable tree : 'a tree;
     cmp : 'a -> 'a -> int;
-  } (** A splay tree heap with the given comparison function *)
+  } (** A pairing tree heap with the given comparison function *)
   and 'a tree =
     | Empty
-    | Node of ('a tree * 'a * 'a tree)
-    (** A splay tree containing values of type 'a *)
+    | Node of 'a * 'a tree * 'a tree
 
   let empty ~cmp = {
     tree = Empty;
@@ -278,56 +277,22 @@ module Heap = struct
     | Empty -> true
     | Node _ -> false
 
-  (** Partition the tree into (elements <= pivot, elements > pivot) *)
-  let rec partition ~cmp pivot tree =
-    match tree with
-    | Empty -> Empty, Empty
-    | Node (a, x, b) ->
-      if cmp x pivot <= 0
-        then begin
-          match b with
-          | Empty -> (tree, Empty)
-          | Node (b1, y, b2) ->
-            if cmp y pivot <= 0
-              then
-                let small, big = partition ~cmp pivot b2 in
-                Node (Node (a, x, b1), y, small), big
-              else
-                let small, big = partition ~cmp pivot b1 in
-                Node (a, x, small), Node (big, y, b2)
-        end else begin
-          match a with
-          | Empty -> (Empty, tree)
-          | Node (a1, y, a2) ->
-            if cmp y pivot <= 0
-              then
-                let small, big = partition ~cmp pivot a2 in
-                Node (a1, y, small), Node (big, x, b)
-              else
-                let small, big = partition ~cmp pivot a1 in
-                small, Node (big, y, Node (a2, x, b))
-        end
+  let rec union ~cmp t1 t2 = match t1, t2 with
+  | Empty, _ -> t2
+  | _, Empty -> t1
+  | Node (x1, l1, r1), Node (x2, l2, r2) ->
+    if cmp x1 x2 <= 0
+      then Node (x1, union ~cmp t2 r1, l1)
+      else Node (x2, union ~cmp t1 r2, l2)
 
-  (** Insert the element in the tree *)
   let insert h x =
-    let small, big = partition ~cmp:h.cmp x h.tree in
-    let tree' = Node (small, x, big) in
-    h.tree <- tree'
+    h.tree <- union ~cmp:h.cmp (Node (x, Empty, Empty)) h.tree
 
-  (** Get minimum value and remove it from the tree *)
-  let pop h =
-    let rec delete_min tree = match tree with
+  let pop h = match h.tree with
     | Empty -> raise Not_found
-    | Node (Empty, x, b) -> x, b
-    | Node (Node (Empty, x, b), y, c) ->
-      x, Node (b, y, c)  (* rebalance *)
-    | Node (Node (a, x, b), y, c) ->
-      let m, a' = delete_min a in
-      m, Node (a', x, Node (b, y, c))
-    in
-    let m, tree' = delete_min h.tree in
-    h.tree <- tree';
-    m
+    | Node (x, l, r) ->
+      h.tree <- union ~cmp:h.cmp l r;
+      x
 end
 
 (** Node used to rebuild a path in A* algorithm *)
@@ -357,7 +322,7 @@ let a_star graph
   ?(distance=(fun v1 e v2 -> 1.))
   ~goal
   start =
-  fun () ->
+  Sequence.from_iter (fun k ->
     (* map node -> 'came_from' cell *)
     let nodes = mk_map ~eq:graph.eq ~hash:graph.hash in
     (* priority queue for nodes to explore *)
@@ -367,51 +332,8 @@ let a_star graph
     let start_cell =
       {cf_explored=false; cf_cost=0.; cf_node=start; cf_prev=CFStart; } in
     nodes.map_add start start_cell;
-    (* generator *)
-    let rec next () =
-      if Heap.is_empty h then raise Gen.EOG else
-        (* next vertex *)
-        let dist, v' = Heap.pop h in
-        (* data for this vertex *)
-        let cell = nodes.map_get v' in
-        if (not cell.cf_explored) || ignore v' then begin
-          (* 'explore' the node *)
-          on_explore v';
-          cell.cf_explored <- true;
-          match graph.force v' with
-          | Empty -> next ()
-          | Node (_, label, edges) ->
-            (* explore neighbors *)
-            Gen.iter
-              (fun (e,v'') ->
-                let cost = dist +. distance v' e v'' +. heuristic v'' in
-                let cell' =
-                  try nodes.map_get v''
-                  with Not_found ->
-                    (* first time we meet this node *)
-                    let cell' = {cf_cost=cost; cf_explored=false;
-                                 cf_node=v''; cf_prev=CFEdge (e, cell); } in
-                    nodes.map_add v'' cell';
-                    cell'
-                in
-                if not cell'.cf_explored
-                  then Heap.insert h (cost, v'')  (* new node *)
-                else if cost < cell'.cf_cost
-                  then begin  (* put the node in [h] with a better cost *)
-                    Heap.insert h (cost, v'');
-                    cell'.cf_cost <- cost; (* update best cost/path *)
-                    cell'.cf_prev <- CFEdge (e, cell);
-                  end)
-              edges;
-            (* check whether the node we just explored is a goal node *)
-            if goal v'
-              then (* found a goal node! yield it *)
-                dist, mk_path nodes [] v'
-              else next ()  (* continue exploring *)
-          end
-        else next ()  (* node already explored *)
     (* re_build the path from [v] to [start] *)
-    and mk_path nodes path v =
+    let rec mk_path nodes path v =
       let node = nodes.map_get v in
       match node.cf_prev with
       | CFStart -> path
@@ -419,7 +341,48 @@ let a_star graph
         let v' = node'.cf_node in
         let path' = (v', e, v) :: path in
         mk_path nodes path' v'
-    in next
+    in
+    (* explore nodes in the heap order *)
+    while not (Heap.is_empty h) do
+      (* next vertex *)
+      let dist, v' = Heap.pop h in
+      (* data for this vertex *)
+      let cell = nodes.map_get v' in
+      if (not cell.cf_explored) || ignore v' then begin
+        (* 'explore' the node *)
+        on_explore v';
+        cell.cf_explored <- true;
+        match graph.force v' with
+        | Empty -> ()
+        | Node (_, label, edges) ->
+          (* explore neighbors *)
+          Sequence.iter
+            (fun (e,v'') ->
+              let cost = dist +. distance v' e v'' +. heuristic v'' in
+              let cell' =
+                try nodes.map_get v''
+                with Not_found ->
+                  (* first time we meet this node *)
+                  let cell' = {cf_cost=cost; cf_explored=false;
+                               cf_node=v''; cf_prev=CFEdge (e, cell); } in
+                  nodes.map_add v'' cell';
+                  cell'
+              in
+              if not cell'.cf_explored
+                then Heap.insert h (cost, v'')  (* new node *)
+              else if cost < cell'.cf_cost
+                then begin  (* put the node in [h] with a better cost *)
+                  Heap.insert h (cost, v'');
+                  cell'.cf_cost <- cost; (* update best cost/path *)
+                  cell'.cf_prev <- CFEdge (e, cell);
+                end)
+            edges;
+          (* check whether the node we just explored is a goal node *)
+          if goal v'
+            (* found a goal node! yield it *)
+            then k (dist, mk_path nodes [] v')
+        end
+    done)
     
 (** Shortest path from the first node to the second one, according
     to the given (positive!) distance function. The path is reversed,
@@ -428,24 +391,24 @@ let dijkstra graph ?on_explore ?(ignore=fun v -> false)
   ?(distance=fun v1 e v2 -> 1.) v1 v2 =
   let paths =
     a_star graph ?on_explore ~ignore ~distance ~heuristic:(fun _ -> 0.)
-       ~goal:(fun v -> graph.eq v v2) v1 in
-  let paths = Gen.start paths in
-  try
-    Gen.Gen.next paths
-  with Gen.EOG ->
-    raise Not_found
+       ~goal:(fun v -> graph.eq v v2) v1
+  in
+  match Sequence.to_list (Sequence.take 1 paths) with
+  | [] -> raise Not_found
+  | [x] -> x
+  | _ -> assert false
 
 (** Is the subgraph explorable from the given vertex, a Directed
     Acyclic Graph? *)
 let is_dag graph v =
-  Gen.for_all
+  Sequence.for_all
     (function
       | Full.MeetEdge (_, _, _, Full.EdgeBackward) -> false
       | _ -> true)
-    (Full.dfs_full graph (Gen.singleton v))
+    (Full.dfs_full graph (Sequence.singleton v))
 
 let is_dag_full graph vs =
-  Gen.for_all
+  Sequence.for_all
     (function
       | Full.MeetEdge (_, _, _, Full.EdgeBackward) -> false
       | _ -> true)
@@ -458,28 +421,6 @@ let rev_path p =
   | (v,e,v')::p' -> rev ((v',e,v)::acc) p'
   in rev [] p
 
-(** [limit_depth g depth start] returns the same graph as [graph], but
-    keeping only nodes that are at distance at most [depth] from
-    some vertex in [start] (which must be finite). *)
-let limit_depth g depth start =
-  assert (depth >= 0);
-  (* compute set of vertices which are within the required distance *)
-  let set = mk_map ~eq:g.eq ~hash:g.hash in
-  let open Gen.Infix in
-  Full.bfs_full g start
-    |> Gen.takeWhile
-      (function
-        | Full.EnterVertex (id, _, _, path) -> List.length path <= depth
-        | _ -> true)
-    |> Gen.iter
-      (function
-        | Full.EnterVertex (id, _, _, _) -> set.map_add id ()
-        | _ -> ());
-  let force v =
-    if not (set.map_mem v) then Empty
-    else g.force v
-  in {g with force=force; }
-
 (** {2 Lazy transformations} *)
 
 let union ?(combine=fun x y -> x) g1 g2 =
@@ -489,7 +430,7 @@ let union ?(combine=fun x y -> x) g1 g2 =
     | ((Node _) as n), Empty -> n
     | Empty, ((Node _) as n) -> n
     | Node (_, l1, e1), Node (_, l2, e2) ->
-      Node (v, combine l1 l2, Gen.append e1 e2)
+      Node (v, combine l1 l2, Sequence.append e1 e2)
   in { eq=g1.eq; hash=g1.hash; force; }
 
 let map ~vertices ~edges g =
@@ -497,7 +438,7 @@ let map ~vertices ~edges g =
     match g.force v with
     | Empty -> Empty
     | Node (_, l, edges_enum) ->
-      let edges_enum' = Gen.map (fun (e,v') -> (edges e), v') edges_enum in
+      let edges_enum' = Sequence.map (fun (e,v') -> (edges e), v') edges_enum in
       Node (v, vertices l, edges_enum')
   in { eq=g.eq; hash=g.hash; force; }
 
@@ -508,9 +449,9 @@ let flatMap f g =
     match g.force v with
     | Empty -> Empty
     | Node (_, l, edges_enum) ->
-      let edges_enum' = Gen.flatMap
+      let edges_enum' = Sequence.flatMap
         (fun (e, v') ->
-          Gen.map (fun v'' -> e, v'') (f v'))
+          Sequence.map (fun v'' -> e, v'') (f v'))
         edges_enum in
       Node (v, l, edges_enum')
   in { eq=g.eq; hash=g.hash; force; }
@@ -521,7 +462,7 @@ let filter ?(vertices=(fun v l -> true)) ?(edges=fun v1 e v2 -> true) g =
     | Empty -> Empty
     | Node (_, l, edges_enum) when vertices v l ->
       (* filter out edges *)
-      let edges_enum' = Gen.filter (fun (e,v') -> edges v e v') edges_enum in
+      let edges_enum' = Sequence.filter (fun (e,v') -> edges v e v') edges_enum in
       Node (v, l, edges_enum')
     | Node _ -> Empty  (* filter out this vertex *)
   in { eq=g.eq; hash=g.hash; force; }
@@ -533,8 +474,8 @@ let product g1 g2 =
     | _, Empty -> Empty
     | Node (_, l1, edges1), Node (_, l2, edges2) ->
       (* product of edges *)
-      let edges = Gen.product edges1 edges2 in
-      let edges = Gen.map (fun ((e1,v1'),(e2,v2')) -> ((e1,e2),(v1',v2'))) edges in
+      let edges = Sequence.product edges1 edges2 in
+      let edges = Sequence.map (fun ((e1,v1'),(e2,v2')) -> ((e1,e2),(v1',v2'))) edges in
       Node ((v1,v2), (l1,l2), edges)
   and eq (v1,v2) (v1',v2') =
     g1.eq v1 v1' && g2.eq v2 v2'
@@ -585,17 +526,17 @@ module Dot = struct
     (* print preamble *)
     Format.fprintf formatter "@[<v2>digraph %s {@;" name;
     (* traverse *)
-    Gen.iter
+    Sequence.iter
       (function
         | Full.EnterVertex (v, attrs, _, _) ->
           Format.fprintf formatter "  @[<h>%a [%a];@]@." pp_vertex v
-            (Gen.pp ~sep:"," print_attribute) (Gen.of_list attrs)
+            (Sequence.pp_seq ~sep:"," print_attribute) (Sequence.of_list attrs)
         | Full.ExitVertex _ -> ()
         | Full.MeetEdge (v2, attrs, v1, _) ->
           Format.fprintf formatter "  @[<h>%a -> %a [%a];@]@."
             pp_vertex v1 pp_vertex v2
-            (Gen.pp ~sep:"," print_attribute)
-            (Gen.of_list attrs))
+            (Sequence.pp_seq ~sep:"," print_attribute)
+            (Sequence.of_list attrs))
       events;
     (* close *)
     Format.fprintf formatter "}@]@;@?";
@@ -619,20 +560,20 @@ let divisors_graph =
     if i > 2
       then
         let l = divisors [] 2 i in
-        let edges = Gen.map (fun i -> (), i) (Gen.of_list l) in
+        let edges = Sequence.map (fun i -> (), i) (Sequence.of_list l) in
         Node (i, i, edges)
       else
-        Node (i, i, Gen.empty)
+        Node (i, i, Sequence.empty)
   in make force
 
 let collatz_graph =
   let force i =
     if i mod 2 = 0
-      then Node (i, i, Gen.singleton ((), i / 2))
-      else Node (i, i, Gen.singleton ((), i * 3 + 1))
+      then Node (i, i, Sequence.singleton ((), i / 2))
+      else Node (i, i, Sequence.singleton ((), i * 3 + 1))
   in make force
 
 let heap_graph =
   let force i =
-    Node (i, i, Gen.of_list [(), 2*i; (), 2*i+1])
+    Node (i, i, Sequence.of_list [(), 2*i; (), 2*i+1])
   in make force

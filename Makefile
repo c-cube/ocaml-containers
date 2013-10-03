@@ -4,7 +4,7 @@ IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
 TARGETS_LIB = containers.cmxa containers.cma
 TARGETS_DOC = containers.docdir/index.html
-EXAMPLES = examples/mem_size.native examples/collatz.native examples/crawl.native
+EXAMPLES = examples/mem_size.native examples/collatz.native # examples/crawl.native
 
 OPTIONS = -use-ocamlfind
 

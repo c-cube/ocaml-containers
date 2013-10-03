@@ -44,7 +44,7 @@ type ('id, 'v, 'e) t = {
       other vertices, or to Empty if the identifier is not part of the graph. *)
 and ('id, 'v, 'e) node =
   | Empty
-  | Node of 'id * 'v * ('e * 'id) Gen.t
+  | Node of 'id * 'v * ('e * 'id) Sequence.t
   (** A single node of the graph, with outgoing edges *)
 and ('id, 'e) path = ('id * 'e * 'id) list
   (** A reverse path (from the last element of the path to the first). *)
@@ -70,8 +70,8 @@ val make : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
   (** Build a graph from the [force] function *)
 
 val from_enum : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
-                vertices:('id * 'v) Gen.t ->
-                edges:('id * 'e * 'id) Gen.t ->
+                vertices:('id * 'v) Sequence.t ->
+                edges:('id * 'e * 'id) Sequence.t ->
                 ('id, 'v, 'e) t
   (** Concrete (eager) representation of a Graph (XXX not implemented)*)
 
@@ -112,21 +112,21 @@ module Full : sig
     | EdgeBackward    (* toward the current trail *)
     | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-  val bfs_full : ('id, 'v, 'e) t -> 'id Gen.t ->
-                  ('id, 'v, 'e) traverse_event Gen.t
+  val bfs_full : ('id, 'v, 'e) t -> 'id Sequence.t ->
+                  ('id, 'v, 'e) traverse_event Sequence.t
     (** Lazy traversal in breadth first from a finite set of vertices *)
 
-  val dfs_full : ('id, 'v, 'e) t -> 'id Gen.t ->
-                 ('id, 'v, 'e) traverse_event Gen.t
+  val dfs_full : ('id, 'v, 'e) t -> 'id Sequence.t ->
+                 ('id, 'v, 'e) traverse_event Sequence.t
     (** Lazy traversal in depth first from a finite set of vertices *)
 end
 
 (** The traversal functions assign a unique ID to every traversed node *)
 
-val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
+val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Sequence.t
   (** Lazy traversal in breadth first *)
 
-val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Gen.t
+val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Sequence.t
   (** Lazy traversal in depth first *)
 
 val a_star : ('id, 'v, 'e) t ->
@@ -136,7 +136,7 @@ val a_star : ('id, 'v, 'e) t ->
              ?distance:('id -> 'e -> 'id -> float) ->
              goal:('id -> bool) ->
              'id ->
-             (float * ('id, 'e) path) Gen.t
+             (float * ('id, 'e) path) Sequence.t
   (** Shortest path from the first node to nodes that satisfy [goal], according
       to the given (positive!) distance function. The distance is also returned.
       [ignore] allows one to ignore some vertices during exploration.
@@ -161,16 +161,11 @@ val is_dag : ('id, _, _) t -> 'id -> bool
   (** Is the subgraph explorable from the given vertex, a Directed
       Acyclic Graph? *)
 
-val is_dag_full : ('id, _, _) t -> 'id Gen.t -> bool
+val is_dag_full : ('id, _, _) t -> 'id Sequence.t -> bool
   (** Is the Graph reachable from the given vertices, a DAG? See {! is_dag} *)
 
 val rev_path : ('id, 'e) path -> ('id, 'e) path
   (** Reverse the path *)
-
-val limit_depth : ('id, 'v, 'e) t -> int -> 'id Gen.t -> ('id, 'v, 'e) t
-  (** [limit_depth g depth start] returns the same graph as [graph], but
-      keeping only nodes that are at distance at most [depth] from
-      some vertex in [start] (which must be finite). *)
 
 (** {2 Lazy transformations} *)
 
@@ -184,7 +179,7 @@ val map : vertices:('v -> 'v2) -> edges:('e -> 'e2) ->
           ('id, 'v, 'e) t -> ('id, 'v2, 'e2) t
   (** Map vertice and edge labels *)
 
-val flatMap : ('id -> 'id Gen.t) ->
+val flatMap : ('id -> 'id Sequence.t) ->
               ('id, 'v, 'e) t ->
               ('id, 'v, 'e) t
   (** Replace each vertex by some vertices. By mapping [v'] to [f v'=v1,...,vn],
@@ -219,12 +214,12 @@ module Dot : sig
 
   val pp_enum : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
                 name:string -> Format.formatter ->
-                ('id,attribute list,attribute list) Full.traverse_event Gen.t ->
+                ('id,attribute list,attribute list) Full.traverse_event Sequence.t ->
                 unit
 
   val pp : name:string -> ('id, attribute list, attribute list) t ->
            Format.formatter ->
-           'id Gen.t -> unit
+           'id Sequence.t -> unit
     (** Pretty print the given graph (starting from the given set of vertices)
         to the channel in DOT format *)
 end
