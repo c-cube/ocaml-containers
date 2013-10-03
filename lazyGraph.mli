@@ -129,6 +129,14 @@ val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Sequence.t
 val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) Sequence.t
   (** Lazy traversal in depth first *)
 
+module Heap : sig
+  type 'a t
+  val empty : cmp:('a -> 'a -> int) -> 'a t
+  val is_empty : _ t -> bool
+  val insert : 'a t -> 'a -> unit
+  val pop : 'a t -> 'a
+end
+
 val a_star : ('id, 'v, 'e) t ->
              ?on_explore:('id -> unit) ->
              ?ignore:('id -> bool) ->
@@ -229,6 +237,12 @@ end
 val divisors_graph : (int, int, unit) t
 
 val collatz_graph : (int, int, unit) t
+  (** If [n] is even, [n] points to [n/2], otherwise to [3n+1] *)
+
+val collatz_graph_bis : (int, int, bool) t
+  (** Same as {! collatz_graph}, but also with reverse edges (n -> n*2,
+      and n -> (n-1)/3 if n mod 3 = 1. Direct edges annotated with [true],
+      reverse edges with [false] *)
 
 val heap_graph : (int, int, unit) t
   (** maps an integer i to 2*i and 2*i+1 *)

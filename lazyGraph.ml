@@ -348,7 +348,7 @@ let a_star graph
       let dist, v' = Heap.pop h in
       (* data for this vertex *)
       let cell = nodes.map_get v' in
-      if (not cell.cf_explored) || ignore v' then begin
+      if not (cell.cf_explored || ignore v') then begin
         (* 'explore' the node *)
         on_explore v';
         cell.cf_explored <- true;
@@ -571,6 +571,16 @@ let collatz_graph =
     if i mod 2 = 0
       then Node (i, i, Sequence.singleton ((), i / 2))
       else Node (i, i, Sequence.singleton ((), i * 3 + 1))
+  in make force
+
+let collatz_graph_bis =
+  let force i =
+    let l =
+      [ true, if i mod 2 = 0 then i/2 else i*3+1
+      ; false, i * 2 ] @
+      if i mod 3 = 1 then [false, (i-1)/3] else []
+    in
+    Node (i, i, Sequence.of_list l)
   in make force
 
 let heap_graph =
