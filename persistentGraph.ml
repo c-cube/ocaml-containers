@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 A simple mutable directed graph.} *)
+(** {1 A simple polymorphic directed graph.} *)
 
 type ('v, 'e) t = ('v, ('v, 'e) node) PHashtbl.t
   (** Graph parametrized by a type for vertices, and one for edges *)
