@@ -29,6 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 module Arbitrary = struct
   type 'a t = Random.State.t -> 'a
 
+  let return x st = x
+
   let int n st = Random.State.int st n
 
   let int_range ~start ~stop st =
@@ -117,6 +119,27 @@ module Arbitrary = struct
   let fix_depth ~depth ~base f st =
     let max = depth st in
     fix ~max ~base f st
+
+  let lift f a st = f (a st)
+
+  let lift2 f a b st = f (a st) (b st)
+
+  let lift3 f a b c st = f (a st) (b st) (c st)
+
+  let lift4 f a b c d st = f (a st) (b st) (c st) (d st)
+
+  let pair a b = lift2 (fun x y -> x,y) a b
+
+  let triple a b c = lift3 (fun x y z -> x,y,z) a b c
+
+  let quad a b c d = lift4 (fun x y z w -> x,y,z,w) a b c d
+
+  let generate ?(n=100) ?(rand=Random.State.make_self_init()) gen =
+    let l = ref [] in
+    for i = 0 to n-1 do
+      l := (gen rand) :: !l
+    done;
+    !l
 end
 
 (** {2 Pretty printing} *)
@@ -132,6 +155,11 @@ module PP = struct
     let s = "_" in
     s.[0] <- c;
     s
+
+  let pair a b (x,y) = Printf.sprintf "(%s, %s)" (a x) (b y)
+  let triple a b c (x,y,z) = Printf.sprintf "(%s, %s, %s)" (a x) (b y) (c z)
+  let quad a b c d (x,y,z,w) =
+    Printf.sprintf "(%s, %s, %s, %s)" (a x) (b y) (c z) (d w)
 
   let list pp l =
     let b = Buffer.create 25 in
@@ -161,9 +189,16 @@ module Prop = struct
 
   exception PrecondFail
   
+  let assume p =
+    if not p then raise PrecondFail
+
+  let assume_lazy (lazy p) =
+    if not p then raise PrecondFail
+
   let (==>) a b =
     fun x ->
-      if not (a x) then raise PrecondFail else b x
+      assume (a x);
+      b x
 
   let (&&&) a b x = a x && b x
 
@@ -197,31 +232,49 @@ let check ?(rand=Random.State.make_self_init ()) ?(n=100) gen prop =
 
 (** {2 Main} *)
 
-let run ?pp ?n ?(rand=Random.State.make_self_init()) ?(name="<no name>") gen prop =
-  Printf.printf "testing property %s...\n" name;
-  match check ~rand ?n gen prop with
+type 'a test_cell = {
+  n : int;
+  pp : 'a PP.t option;
+  prop : 'a Prop.t;
+  gen : 'a Arbitrary.t;
+  name : string;
+}
+type test =
+  | Test : 'a test_cell -> test
+  (** GADT needed for the existential type *)
+
+let mk_test ?(n=100) ?pp ?(name="<anon prop>") gen prop =
+  Test { prop; gen; name; n; pp; }
+
+let run ?(out=stdout) ?(rand=Random.State.make_self_init()) (Test test) =
+  Printf.fprintf out "testing property %s...\n" test.name;
+  match check ~rand ~n:test.n test.gen test.prop with
   | Ok (n, prefail) ->
-    Printf.printf "passed %d tests (%d preconditions failed)\n" n prefail;
+    Printf.fprintf out "passed %d tests (%d preconditions failed)\n" n prefail;
     true
   | Failed l ->
-    begin match pp with
-    | None -> Printf.printf "%d failures\n" (List.length l)
+    begin match test.pp with
+    | None -> Printf.fprintf out "%d failures\n" (List.length l)
     | Some pp ->
-      Printf.printf "%d failures:\n" (List.length l);
+      Printf.fprintf out "%d failures:\n" (List.length l);
       List.iter
-        (fun x -> Printf.printf "  %s\n" (pp x))
+        (fun x -> Printf.fprintf out "  %s\n" (pp x))
         l
     end;
     false
   | Error e ->
-    Printf.printf "error: %s\n" (Printexc.to_string e);
+    Printf.fprintf out "error: %s\n" (Printexc.to_string e);
     false
 
-let run_tests l =
-  let rand = Random.State.make_self_init () in
+type suite = test list
+
+let flatten = List.flatten
+
+let run_tests ?(out=stdout) ?(rand=Random.State.make_self_init()) l =
   let res = ref true in
-  List.iter (fun test -> if not (test ~rand) then res := false) l;
+  Printf.fprintf out "check %d properties...\n" (List.length l);
+  List.iter (fun test -> if not (run ~out ~rand test) then res := false) l;
   if !res
-    then Printf.printf "Success!\n"
-    else Printf.printf "Failure.\n";
+    then Printf.fprintf out "Success!\n"
+    else Printf.fprintf out "Failure.\n";
   !res

@@ -79,6 +79,9 @@ module Arbitrary : sig
   type 'a t = Random.State.t -> 'a
     (** A generator of arbitrary values of type 'a *)
 
+  val return : 'a -> 'a t
+    (** Return always the same value (e.g. [4]) *)
+
   val int : int -> int t
     (** Any integer between 0 (inclusive) and the given higher bound (exclusive) *)
 
@@ -115,6 +118,12 @@ module Arbitrary : sig
   val opt : 'a t -> 'a option t
     (** May return a value, or None *)
 
+  val pair : 'a t -> 'b t -> ('a * 'b) t
+
+  val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+
+  val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
+
   val list_repeat : int -> 'a t -> 'a list t
     (** Lists of given length exactly *)
 
@@ -139,6 +148,14 @@ module Arbitrary : sig
 
   val fix_depth : depth:int t -> base:'a t -> ('a t -> 'a t) -> 'a t
     (** Recursive values of at most given random depth *)
+
+  val lift : ('a -> 'b) -> 'a t -> 'b t
+  val lift2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+  val lift3 : ('a -> 'b -> 'c -> 'd) -> 'a t -> 'b t -> 'c t -> 'd t
+  val lift4 : ('a -> 'b -> 'c -> 'd -> 'e) -> 'a t -> 'b t -> 'c t -> 'd t -> 'e t
+
+  val generate : ?n:int -> ?rand:Random.State.t -> 'a t -> 'a list
+    (** Generate [n] random values of the given type *)
 end
 
 (** {2 Pretty printing} *)
@@ -152,6 +169,10 @@ module PP : sig
   val char : char t
   val string : string t
 
+  val pair : 'a t -> 'b t -> ('a*'b) t
+  val triple : 'a t -> 'b t -> 'c t -> ('a*'b*'c) t
+  val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a*'b*'c*'d) t
+
   val list : 'a t -> 'a list t
   val array : 'a t -> 'a array t
 end
@@ -163,6 +184,12 @@ module Prop : sig
 
   val (==>) : ('a -> bool) -> 'a t -> 'a t
     (** Precondition for a test *)
+
+  val assume : bool -> unit
+    (** Assume the given precondition holds *)
+
+  val assume_lazy : bool lazy_t -> unit
+    (** Assume the given (lazy) precondition holds *)
 
   val (&&&) : 'a t -> 'a t -> 'a t
     (** Logical 'and' on tests *)
@@ -186,10 +213,24 @@ val check : ?rand:Random.State.t -> ?n:int ->
 
 (** {2 Main} *)
 
-val run : ?pp:('a -> string) -> ?n:int ->
-          ?rand:Random.State.t -> ?name:string ->
-          'a Arbitrary.t -> 'a Prop.t -> bool
-  (** Run and print result *)
+type test
+  (** A single property test *)
 
-val run_tests : (rand:Random.State.t -> bool) list -> bool
-  (** Run a list of tests, and print their results *)
+val mk_test : ?n:int -> ?pp:'a PP.t -> ?name:string ->
+              'a Arbitrary.t -> 'a Prop.t -> test
+  (** Construct a test. Optional parameters are the same as for {!run}.
+      @param name is the name of the property that is checked
+      @param pp is a pretty printer for failing instances
+      @out is the channel to print results onto
+      @rand is the random generator to use *)
+
+val run : ?out:out_channel -> ?rand:Random.State.t -> test -> bool
+  (** Run a test and print results *)
+
+type suite = test list
+  (** A test suite is a list of tests *)
+
+val flatten : suite list -> suite
+
+val run_tests : ?out:out_channel -> ?rand:Random.State.t -> suite -> bool
+  (** Run a suite of tests, and print its results *)
