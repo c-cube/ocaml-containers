@@ -134,6 +134,10 @@ module Arbitrary = struct
 
   let quad a b c d = lift4 (fun x y z w -> x,y,z,w) a b c d
 
+  let (>>=) a f st =
+    let x = a st in
+    f x st
+
   let generate ?(n=100) ?(rand=Random.State.make_self_init()) gen =
     let l = ref [] in
     for i = 0 to n-1 do
