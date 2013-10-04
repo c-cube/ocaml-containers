@@ -51,14 +51,18 @@ Examples:
 
     - Not all lists are sorted:
 
-{[QCheck.run ~n:10 ~pp:QCheck.PP.(list int)
-  QCheck.Arbitrary.(list small_int) (fun l -> l = List.sort compare l);;
+{[
+let test = QCheck.(mk_test ~n:10 ~pp:QCheck.PP.(list int)
+  QCheck.Arbitrary.(list small_int) (fun l -> l = List.sort compare l));;
+QCheck.run test;;
 ]}
 
     - List.rev is involutive:
 
-{[QCheck.run ~n:1000 QCheck.Arbitrary.(list alpha)
-  (fun l -> List.rev (List.rev l) = l)
+{[
+let test = QCheck.mk_test ~n:1000 QCheck.Arbitrary.(list alpha)
+  (fun l -> List.rev (List.rev l) = l);;
+QCheck.run test;;
 ]}
 
     - generate a tree using {! Arbitrary.fix} :
