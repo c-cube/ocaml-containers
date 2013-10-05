@@ -20,18 +20,18 @@ type term =
   | App of term list
 
 let bij_term =
-  let bij = Bij.(fix
+  let bij = Bij.fix
     (fun bij ->
-    switch
+    Bij.switch
     ~inject:(function
-      | Const s -> "const", BranchTo (string_, s)
-      | Int i -> "int", BranchTo (int_, i)
-      | App l -> "app", BranchTo (list_ (Lazy.force bij), l))
+      | Const s -> "const", Bij.(BranchTo (string_, s))
+      | Int i -> "int", Bij.(BranchTo (int_, i))
+      | App l -> "app", Bij.(BranchTo (list_ (Lazy.force bij), l)))
     ~extract:(function
-      | "const" -> BranchFrom (string_, fun x -> Const x)
-      | "int" -> BranchFrom (int_, fun x -> Int x)
-      | "app" -> BranchFrom (list_ (Lazy.force bij), fun l -> App l)
-      | _ -> raise (DecodingError "unexpected case switch")))
+      | "const" -> Bij.(BranchFrom (string_, fun x -> Const x))
+      | "int" -> Bij.(BranchFrom (int_, fun x -> Int x))
+      | "app" -> Bij.(BranchFrom (list_ (Lazy.force bij), fun l -> App l))
+      | _ -> raise Bij.(DecodingError "unexpected case switch"))
     )
   in
   bij
