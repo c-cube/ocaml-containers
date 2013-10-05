@@ -218,7 +218,10 @@ type 'a result =
   | Failed of 'a list
   | Error of exn
 
-let check ?(rand=Random.State.make_self_init ()) ?(n=100) gen prop =
+(* random seed, for repeatability of tests *)
+let __seed = [| 89809344; 994326685; 290180182 |]
+
+let check ?(rand=Random.State.make __seed) ?(n=100) gen prop =
   let precond_failed = ref 0 in
   let failures = ref [] in
   try
@@ -252,7 +255,7 @@ type test =
 let mk_test ?(n=100) ?pp ?(name="<anon prop>") gen prop =
   Test { prop; gen; name; n; pp; }
 
-let run ?(out=stdout) ?(rand=Random.State.make_self_init()) (Test test) =
+let run ?(out=stdout) ?(rand=Random.State.make __seed) (Test test) =
   Printf.fprintf out "testing property %s...\n" test.name;
   match check ~rand ~n:test.n test.gen test.prop with
   | Ok (n, prefail) ->
@@ -276,7 +279,7 @@ type suite = test list
 
 let flatten = List.flatten
 
-let run_tests ?(out=stdout) ?(rand=Random.State.make_self_init()) l =
+let run_tests ?(out=stdout) ?(rand=Random.State.make __seed) l =
   let start = Unix.gettimeofday () in
   let failed = ref 0 in
   Printf.fprintf out "check %d properties...\n" (List.length l);

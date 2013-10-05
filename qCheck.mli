@@ -193,10 +193,13 @@ module Prop : sig
     (** Precondition for a test *)
 
   val assume : bool -> unit
-    (** Assume the given precondition holds *)
+    (** Assume the given precondition holds. A test won't fail if the
+        precondition (the boolean argument) is false, but it will be
+        discarded. Running tests counts how many instances were
+        discarded for not satisfying preconditions. *)
 
   val assume_lazy : bool lazy_t -> unit
-    (** Assume the given (lazy) precondition holds *)
+    (** Assume the given (lazy) precondition holds. See {!assume}. *)
 
   val (&&&) : 'a t -> 'a t -> 'a t
     (** Logical 'and' on tests *)
