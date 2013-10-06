@@ -29,7 +29,7 @@ let bij_term =
       | App l -> "app", Bij.(BranchTo (list_ (Lazy.force bij), l)))
     ~extract:(function
       | "const" -> Bij.(BranchFrom (string_, fun x -> Const x))
-      | "int" -> Bij.(BranchFrom (int_, fun x -> Int x))
+      | "int" -> Bij.BranchFrom (Bij.int_, fun x -> Int x)
       | "app" -> Bij.(BranchFrom (list_ (Lazy.force bij), fun l -> App l))
       | _ -> raise Bij.(DecodingError "unexpected case switch"))
     )
