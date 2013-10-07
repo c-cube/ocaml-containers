@@ -73,7 +73,12 @@ val from_enum : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
                 vertices:('id * 'v) Sequence.t ->
                 edges:('id * 'e * 'id) Sequence.t ->
                 ('id, 'v, 'e) t
-  (** Concrete (eager) representation of a Graph (XXX not implemented)*)
+  (** Concrete (eager) representation of a Graph *)
+
+val from_list : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
+                ('id * 'e * 'id) list ->
+                ('id, 'id, 'e) t
+  (** Simple way to generate a graph, from a list of edges *)
 
 val from_fun : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
                ('id -> ('v * ('e * 'id) list) option) -> ('id, 'v, 'e) t
@@ -87,7 +92,7 @@ module Mutable : sig
   type ('id, 'v, 'e) t
     (** Mutable graph *)
 
-  val create : ?eq:('id -> 'id -> bool) -> hash:('id -> int) ->
+  val create : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) -> unit ->
     ('id, 'v, 'e) t * ('id, 'v, 'e) graph
     (** Create a new graph from the given equality and hash function, plus
         a view of it as an abstract graph *)
@@ -171,6 +176,10 @@ val is_dag : ('id, _, _) t -> 'id -> bool
 
 val is_dag_full : ('id, _, _) t -> 'id Sequence.t -> bool
   (** Is the Graph reachable from the given vertices, a DAG? See {! is_dag} *)
+
+val find_cycle : ('id, _, 'e) t -> 'id -> ('id, 'e) path
+  (** Find a cycle in the given graph.
+      @raise Not_found if the graph is acyclic *)
 
 val rev_path : ('id, 'e) path -> ('id, 'e) path
   (** Reverse the path *)

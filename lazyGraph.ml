@@ -62,9 +62,6 @@ let singleton ?(eq=(=)) ?(hash=Hashtbl.hash) v label =
 let make ?(eq=(=)) ?(hash=Hashtbl.hash) force =
   { eq; hash; force; }
 
-let from_enum ?(eq=(=)) ?(hash=Hashtbl.hash) ~vertices ~edges =
-  failwith "from_enum: not implemented"
-
 let from_fun ?(eq=(=)) ?(hash=Hashtbl.hash) f =
   let force v =
     match f v with
@@ -109,7 +106,7 @@ module Mutable = struct
     mutable mut_outgoing : ('e * 'id) list;
   }
 
-  let create ?(eq=(=)) ~hash =
+  let create ?(eq=(=)) ?(hash=Hashtbl.hash) () =
     let map = mk_map ~eq ~hash in
     let force v =
       try let node = map.map_get v in
@@ -129,6 +126,26 @@ module Mutable = struct
     n1.mut_outgoing <- (e, v2) :: n1.mut_outgoing;
     ()
 end
+
+let from_enum ?(eq=(=)) ?(hash=Hashtbl.hash) ~vertices ~edges =
+  let g, lazy_g = Mutable.create ~eq ~hash () in
+  Sequence.iter
+    (fun (v,label_v) -> Mutable.add_vertex g v label_v;)
+    vertices;
+  Sequence.iter
+    (fun (v1, e, v2) -> Mutable.add_edge g v1 e v2)
+    edges;
+  lazy_g
+
+let from_list ?(eq=(=)) ?(hash=Hashtbl.hash) l =
+  let g, lazy_g = Mutable.create ~eq ~hash () in
+  List.iter
+    (fun (v1, e, v2) ->
+      Mutable.add_vertex g v1 v1;
+      Mutable.add_vertex g v2 v2;
+      Mutable.add_edge g v1 e v2)
+    l;
+  lazy_g
 
 (** {2 Traversals} *)
 
@@ -197,6 +214,9 @@ module Full = struct
               k (MeetEdge (v'', e, v', EdgeForward))
             end
       done)
+
+  (* TODO: use a set of nodes currently being explored, rather than
+    checking whether the node is in the path (should be faster) *)
 
   let dfs_full graph vertices =
     Sequence.from_iter (fun k ->
@@ -413,6 +433,34 @@ let is_dag_full graph vs =
       | Full.MeetEdge (_, _, _, Full.EdgeBackward) -> false
       | _ -> true)
     (Full.dfs_full graph vs)
+
+let rec _cut_path ~eq v path = match path with
+  | [] -> []
+  | (v'', e, v') :: _ when eq v v' -> [v'', e, v']  (* cut *)
+  | (v'', e, v') :: path' -> (v'', e, v') :: _cut_path ~eq v path'
+
+let find_cycle graph v =
+  let cycle = ref [] in
+  try
+    let path_stack = Stack.create () in
+    let seq = Full.dfs_full graph (Sequence.singleton v) in
+    Sequence.iter
+      (function
+      | Full.EnterVertex (_, _, _, path) ->
+        Stack.push path path_stack
+      | Full.ExitVertex _ ->
+        ignore (Stack.pop path_stack)
+      | Full.MeetEdge(v1, e, v2, Full.EdgeBackward) ->
+        (* found a cycle! cut the non-cyclic part and add v1->v2 at the beginning *)
+        let path = _cut_path ~eq:graph.eq v1 (Stack.top path_stack) in
+        let path = (v1, e, v2) :: path in
+        cycle := path;
+        raise Exit
+      | Full.MeetEdge _ -> ())
+      seq;
+    raise Not_found
+  with Exit ->
+    !cycle
 
 (** Reverse the path *)
 let rev_path p =
