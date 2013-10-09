@@ -333,3 +333,31 @@ let of_string s =
   | ParseOk t -> t
   | ParsePartial -> invalid_arg "Bencode: partial parse"
   | ParseError msg -> invalid_arg msg
+
+(** {2 Iterator} *)
+
+type 'a sequence = ('a -> unit) -> unit
+
+let of_seq seq =
+  fun k ->
+    let decoder = mk_decoder () in
+    (* read a string *)
+    let rec read_chunk str =
+      match parse decoder str 0 (String.length str) with
+      | ParseOk v ->
+        k v;  (* yield, and parse the rest of the string *)
+        resume ()
+      | ParseError e -> raise (Invalid_argument e)
+      | ParsePartial -> ()  (* wait for next chunk *)
+    and resume () = match parse_resume decoder with
+      | ParseOk v ->
+        k v;
+        resume ()
+      | ParseError e -> raise (Invalid_argument e)
+      | ParsePartial -> ()  (* wait for next chunk *)
+    in
+    seq read_chunk
+
+let to_seq seq =
+  fun k -> seq (fun b -> k (to_string b))
+

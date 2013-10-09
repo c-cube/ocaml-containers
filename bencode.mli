@@ -113,3 +113,18 @@ val parse_string : string -> parse_result
 
 val of_string : string -> t
   (** Parse the string. @raise Invalid_argument if it fails to parse. *)
+
+(** {2 Iterator} *)
+
+type 'a sequence = ('a -> unit) -> unit
+
+val of_seq : string sequence -> t sequence
+  (** Given a sequence of strings into Bencode values. Strings can be
+      the result of {!Unix.read}, for instance, they don't need to be
+      valid bencode individually; Only their concatenation should
+      be a valid stream of Bencode values.
+      
+      @raise Invalid_argument if a parsing error occurs. *)
+
+val to_seq : t sequence -> string sequence
+  (** Serialize each value in the sequence of Bencode values *)

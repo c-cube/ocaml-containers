@@ -47,6 +47,9 @@ val close_out : t -> unit
 val write : t -> Bencode.t -> unit
   (** Write "atomically" a value to the end of the file *)
 
+val write_batch : t -> Bencode.t list -> unit
+  (** Write several values at once, at the end of the file *)
+
 type 'a result =
   | Ok of 'a
   | Error of string

@@ -57,12 +57,11 @@ let open_out ?lock filename =
 let close_out out =
   Unix.close out.file
 
-let write out b =
+let write_string out s =
   Unix.lockf out.lock_file Unix.F_LOCK 0;
   try
     (* go to the end of the file *)
     ignore (Unix.lseek out.file 0 Unix.SEEK_END);
-    let s = Bencode.to_string b in
     (* call write() until everything is written *)
     let rec write_all n =
       if n >= String.length s
@@ -77,6 +76,16 @@ let write out b =
     (* unlock in any case *)
     Unix.lockf out.lock_file Unix.F_ULOCK 0;
     raise e
+
+let write out b =
+  let s = Bencode.to_string b in
+  write_string out s
+
+let write_batch out l =
+  let buf = Buffer.create 255 in
+  List.iter (fun b -> Bencode.to_buf buf b) l;
+  let s = Buffer.contents buf in
+  write_string out s
 
 type 'a result =
   | Ok of 'a
