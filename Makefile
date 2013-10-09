@@ -4,7 +4,8 @@ IMPLEMENTATION_FILES = $(shell find -name '*.ml')
 
 TARGETS_LIB = containers.cmxa containers.cma
 TARGETS_DOC = containers.docdir/index.html
-EXAMPLES = examples/mem_size.native examples/collatz.native # examples/crawl.native
+EXAMPLES = examples/mem_size.native examples/collatz.native \
+	examples/bencode_write.native # examples/crawl.native
 
 OPTIONS = -use-ocamlfind
 
@@ -31,7 +32,7 @@ doc:
 	ocamlbuild $(OPTIONS) $(TARGETS_DOC)
 
 examples: all
-	ocamlbuild $(OPTIONS) -I . $(EXAMPLES)
+	ocamlbuild $(OPTIONS) -package unix -I . $(EXAMPLES)
 
 tests: lib
 	ocamlbuild $(OPTIONS) -package oUnit -I . tests/run_tests.native
