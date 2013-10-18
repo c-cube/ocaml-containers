@@ -41,10 +41,10 @@ module HTML : sig
   val str : string -> t
     (** Simple string *)
 
-  val bprintf : ('a, Buffer.t, unit, string) format4 -> t
+  val bprintf : ('a, Buffer.t, unit, unit) format4 -> t
     (** Use a buffer printer to render a string. Shortcut for {!str} *)
 
-  val sprintf : ('a, unit, string) format -> t
+  val sprintf : ('a, unit, string, unit) format4 -> t
     (** Use a string printer to render into a string. Shortcut for {!str} *)
 
   val list : t list -> t
@@ -70,6 +70,15 @@ module HTML : sig
 
   val h : int -> t -> t
     (** Title of level parametrized by the integer *)
+
+  val p : t -> t
+    (** Paragraph *)
+
+  val div : ?id:string -> ?class_:string -> t -> t
+    (** Div tag, to specify a block *)
+
+  val span : ?id:string -> ?class_:string -> t -> t
+    (** Non semantic tag, mostly useful for CSS *)
 
   val link : rel:string -> url:string -> t
     (** Link (for head) *)

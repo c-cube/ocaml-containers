@@ -4,8 +4,13 @@
 #directory "_build/tests/";;
 #load "containers.cma";;
 #require "threads";;
-#load "thread_containers.cma";;
+#load "containers_thread.cma";;
+open Containers;;
 open Sequence.Infix;;
 #install_printer Bencode.pretty;;
+#require "CamlGI";;
+#load "containers_cgi.cma";;
+let pp_html fmt h = Format.pp_print_string fmt (ToWeb.HTML.render h);;
+#install_printer pp_html;;
 (* vim:syntax=ocaml:
 *)

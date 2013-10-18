@@ -44,6 +44,7 @@ module HTML = struct
     | H of int * t
     | Link of link
     | Tag of string * t
+    | TagWith of string * (string * string) list * t
   and url = {
     url_alt : string option;
     url_url : string;
@@ -62,16 +63,19 @@ module HTML = struct
 
   let bprintf format =
     let buffer = Buffer.create 64 in
+    let r = ref (str "") in
     Printf.kbprintf
-      (fun fmt -> str (Buffer.contents buffer))
+      (fun x -> r := str (Buffer.contents buffer))
       buffer
-      format
+      format;
+    !r
 
-  let bprintf format =
-    let buffer = Buffer.create 64 in
+  let sprintf format =
+    let r = ref (str "") in
     Printf.ksprintf
-      str
-      format
+      (fun s -> r := str s)
+      format;
+    !r
 
   let list l = List l
 
@@ -97,6 +101,22 @@ module HTML = struct
   let h3 x = H (3, x)
 
   let h n x = H (n, x)
+  
+  let p x = Tag ("p", x)
+
+  let div ?id ?class_ x =
+    match id, class_ with
+    | None, None -> Tag ("div", x)
+    | Some i, None -> TagWith ("div", ["id", i], x)
+    | None, Some c -> TagWith ("div", ["class", c], x)
+    | Some i, Some c -> TagWith ("div", ["id", i; "class", c], x)
+
+  let span ?id ?class_ x =
+    match id, class_ with
+    | None, None -> Tag ("span", x)
+    | Some i, None -> TagWith ("span", ["id", i], x)
+    | None, Some c -> TagWith ("span", ["class", c], x)
+    | Some i, Some c -> TagWith ("span", ["id", i; "class", c], x)
 
   let link ~rel ~url = Link {
     link_rel = rel;
@@ -109,69 +129,39 @@ module HTML = struct
 
   let html x = Tag ("html", x)
 
-  (* XXX UGLY: I copied code from CamlGI because it doesn't provide a way
-     to encode strings with HTML conventions. Bad bad bad. *)
-  module Encode = struct
-    (* Use a table lookup for speed. *)
-    let char_of_hex =
-      let hex = [| '0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9';
-                   'A'; 'B'; 'C'; 'D'; 'E'; 'F' |] in
-      fun i -> Array.unsafe_get hex i
+  let _to_hex n = match n with
+    | _ when n >= 0 && n < 10 -> Char.chr (Char.code '0' + n)
+    | 10 -> 'A'
+    | 11 -> 'B'
+    | 12 -> 'C'
+    | 13 -> 'D'
+    | 14 -> 'E'
+    | 15 -> 'F'
+    | _ -> failwith "not an hexadecimal digit"
 
+  let _encode_char buf c =
+    Buffer.add_string buf "&#x";
+    let h, l = Char.code c / 16, Char.code c mod 16 in
+    Buffer.add_char buf (_to_hex h);
+    Buffer.add_char buf (_to_hex l)
 
-    let encode_wrt is_special s0 =
-      let len = String.length s0 in
-      let encoded_length = ref len in
-      for i = 0 to len - 1 do
-        if is_special(String.unsafe_get s0 i) then
-          encoded_length := !encoded_length + 2
-      done;
-      let s = String.create !encoded_length in
-      let rec do_enc i0 i = (* copy the encoded string in s *)
-        if i0 < len then begin
-          let s0i0 = String.unsafe_get s0 i0 in
-          if is_special s0i0 then begin
-            let c = Char.code s0i0 in
-            let i1 = succ i in
-            let i2 = succ i1 in
-            String.unsafe_set s i '%';
-            String.unsafe_set s i1 (char_of_hex (c lsr 4));
-            String.unsafe_set s i2 (char_of_hex (c land 0x0F));
-            do_enc (succ i0) (succ i2)
-          end
-          else if s0i0 = ' ' then begin
-            String.unsafe_set s i '+';
-            do_enc (succ i0) (succ i)
-          end
-          else begin
-            String.unsafe_set s i s0i0;
-            do_enc (succ i0) (succ i)
-          end
-        end in
-      do_enc 0 0;
-      s
-
-
-    (* Unreserved characters consist of all alphanumeric chars and the
-       following limited set of punctuation marks and symbols: '-' | '_' |
-       '.' | '!' | '~' | '*' | '\'' | '(' | ')'.  According to RFC 2396,
-       they should not be escaped unless the context requires it. *)
-    let special_rfc2396 = function
-      | ';' | '/' | '?' | ':' | '@' | '&' | '=' | '+' | '$' | ',' (* Reserved *)
-      | '\000' .. '\031' | '\127' .. '\255' (* Control chars and non-ASCII *)
-      | '<' | '>' | '#' | '%' | '"'         (* delimiters *)
-      | '{' | '}' | '|' | '\\' | '^' | '[' | ']' | '`' (* unwise *)
-          -> true
-      | _ -> false
-    (* ' ' must also be encoded but its encoding '+' takes a single char. *)
-
-    let encode = encode_wrt special_rfc2396
-  end
+  let encode str =
+    let b = Buffer.create (String.length str + 10) in
+    for i = 0 to String.length str - 1 do
+      match str.[i] with
+      | ';' | '/' | '?' | ':' | '@' | '&' | '=' | '+' | '$' | ',' | '<'
+      | '>' | '#' | '%' | '"' | '{' | '}' | '|' | '\\' | '^' | '[' | ']'
+      | '`' -> _encode_char b str.[i]
+      | c when Char.code c < 32 -> _encode_char b str.[i]
+      | c when Char.code c > 127 -> _encode_char b str.[i]
+      | _ -> Buffer.add_char b str.[i]
+    done;
+    Buffer.contents b
 
   (* real rendering is always into a buffer (for now) *)
   let rec to_buf buf x =
     match x with
-    | Str s -> Buffer.add_string buf (Encode.encode s)
+    | Str s -> Buffer.add_string buf (encode s)
     | List l ->
       Buffer.add_string buf "<ul>";
       List.iter
@@ -182,17 +172,26 @@ module HTML = struct
       begin match url.url_alt with
       | None ->
         Printf.bprintf buf "<a href=\"%s\">%s</a>" url.url_url
-          (Encode.encode url.url_descr)
+          (encode url.url_descr)
       | Some alt ->
         Printf.bprintf buf "<a href=\"%s\" alt=\"%s\">%s</a>"
-          url.url_url (Encode.encode alt) (Encode.encode url.url_descr)
+          url.url_url (encode alt) (encode url.url_descr)
       end
     | Img i -> failwith "img: not implemented"
-    | Concat l -> List.iter (to_buf buf) l
+    | Concat l ->
+      List.iteri
+        (fun i y ->
+          if i > 0 then Buffer.add_char buf ' ';
+          to_buf buf y)
+        l
     | H (n, y) ->
       Printf.bprintf buf "<h%i> %a </h%i>" n to_buf y n
     | Link _ -> failwith "link: not implemented"
     | Tag (str, y) -> Printf.bprintf buf "<%s> %a </%s>" str to_buf y str
+    | TagWith (str, attrs, y) ->
+      Printf.bprintf buf "<%s " str;
+      List.iter (fun (name,attr) -> Printf.bprintf buf "%s=\"%s\"" name attr) attrs;
+      Printf.bprintf buf "> %a </%s>" to_buf y str
 
   let render x = 
     let buf = Buffer.create 256 in
@@ -339,3 +338,11 @@ module Router = struct
     match st with
     | State.Wrap st -> State.handle_request st req
 end
+
+(** {2 Main Interface} *)
+
+let serve_state ?sockaddr st =
+  CamlGI.Cgi.register_script ?sockaddr (State.handle_request st)
+
+let serve_router ?sockaddr router =
+  CamlGI.Cgi.register_script ?sockaddr (Router.handle_request router)
