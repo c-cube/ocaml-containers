@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2ccc5fef0936d36155ec2a8d19a2c516)
+# DO NOT EDIT (digest: 79585995b18632ac90365c888b75c5ba)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -75,4 +75,11 @@
 <tests/*.ml{,i}>: pkg_oUnit
 <tests/*.ml{,i}>: pkg_lwt
 <tests/*.ml{,i}>: pkg_unix
+# Executable web_pwd
+"examples/web_pwd.byte": pkg_containers_cgi
+"examples/web_pwd.byte": pkg_threads
+"examples/web_pwd.byte": pkg_CamlGI
+<examples/*.ml{,i}>: pkg_containers_cgi
+<examples/*.ml{,i}>: pkg_threads
+<examples/*.ml{,i}>: pkg_CamlGI
 # OASIS_STOP

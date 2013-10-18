@@ -193,9 +193,13 @@ end
 
 (** {2 Main interface} *)
 
-val serve_state : ?sockaddr:Unix.sockaddr -> 'a State.t -> unit
-  (** Serve incoming requests using a single object. *)
+val serve_state : ?sockfile:string -> ?sockaddr:Unix.sockaddr ->
+                  'a State.t -> unit
+  (** Serve incoming requests using a single object.
+      @param sockfile the unix file to use as a socket *)
 
-val serve_router : ?sockaddr:Unix.sockaddr -> Router.t -> unit
+val serve_router : ?sockfile:string -> ?sockaddr:Unix.sockaddr ->
+                   Router.t -> unit
   (** Shortcut. It calls {!CamlGI.Cgi.register_script} with a callback
-      that forwards requests to the given Router. *)
+      that forwards requests to the given Router.
+      @param sockfile the unix file to use as a socket *)

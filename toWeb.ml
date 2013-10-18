@@ -341,8 +341,18 @@ end
 
 (** {2 Main Interface} *)
 
-let serve_state ?sockaddr st =
-  CamlGI.Cgi.register_script ?sockaddr (State.handle_request st)
+let serve_state ?sockfile ?sockaddr st =
+  match sockfile with
+  | None ->
+    CamlGI.Cgi.register_script ?sockaddr (State.handle_request st)
+  | Some f ->
+    let sockaddr = Unix.ADDR_UNIX f in
+    CamlGI.Cgi.register_script ~sockaddr (State.handle_request st)
 
-let serve_router ?sockaddr router =
-  CamlGI.Cgi.register_script ?sockaddr (Router.handle_request router)
+let serve_router ?sockfile ?sockaddr router =
+  match sockfile with
+  | None ->
+    CamlGI.Cgi.register_script ?sockaddr (Router.handle_request router)
+  | Some f ->
+    let sockaddr = Unix.ADDR_UNIX f in
+    CamlGI.Cgi.register_script ~sockaddr (Router.handle_request router)
