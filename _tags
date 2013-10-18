@@ -1,4 +1,78 @@
-<**/*future.*>: thread
-<examples/crawl.*>: package(batteries), thread, package(unix)
-<behavior.*>: package(lwt), package(unix)
-<tests/*.native>: thread
+# OASIS_START
+# DO NOT EDIT (digest: 2ccc5fef0936d36155ec2a8d19a2c516)
+# Ignore VCS directories, you can use the same kind of rule outside 
+# OASIS_START/STOP if you want to exclude directories that contains 
+# useless stuff for the build process
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library containers
+"containers.cmxs": use_containers
+"cache.cmx": for-pack(Containers)
+"deque.cmx": for-pack(Containers)
+"gen.cmx": for-pack(Containers)
+"fHashtbl.cmx": for-pack(Containers)
+"fQueue.cmx": for-pack(Containers)
+"flatHashtbl.cmx": for-pack(Containers)
+"hashset.cmx": for-pack(Containers)
+"heap.cmx": for-pack(Containers)
+"lazyGraph.cmx": for-pack(Containers)
+"persistentGraph.cmx": for-pack(Containers)
+"persistentHashtbl.cmx": for-pack(Containers)
+"pHashtbl.cmx": for-pack(Containers)
+"sequence.cmx": for-pack(Containers)
+"skipList.cmx": for-pack(Containers)
+"splayTree.cmx": for-pack(Containers)
+"splayMap.cmx": for-pack(Containers)
+"univ.cmx": for-pack(Containers)
+"vector.cmx": for-pack(Containers)
+"bij.cmx": for-pack(Containers)
+"piCalculus.cmx": for-pack(Containers)
+"bencode.cmx": for-pack(Containers)
+"sexp.cmx": for-pack(Containers)
+"RAL.cmx": for-pack(Containers)
+"multiSet.cmx": for-pack(Containers)
+"unionFind.cmx": for-pack(Containers)
+"smallSet.cmx": for-pack(Containers)
+"leftistheap.cmx": for-pack(Containers)
+"absSet.cmx": for-pack(Containers)
+"CSM.cmx": for-pack(Containers)
+"multiMap.cmx": for-pack(Containers)
+"actionMan.cmx": for-pack(Containers)
+"BV.cmx": for-pack(Containers)
+"qCheck.cmx": for-pack(Containers)
+"bencodeOnDisk.cmx": for-pack(Containers)
+"show.cmx": for-pack(Containers)
+# Library containers_thread
+"containers_thread.cmxs": use_containers_thread
+<*.ml{,i}>: pkg_threads
+# Library containers_lwt
+"containers_lwt.cmxs": use_containers_lwt
+<*.ml{,i}>: pkg_lwt
+# Library containers_cgi
+"containers_cgi.cmxs": use_containers_cgi
+<*.ml{,i}>: use_containers
+<*.ml{,i}>: pkg_CamlGI
+<*.ml{,i}>: pkg_unix
+# Executable benchs
+"tests/benchs.native": use_containers
+"tests/benchs.native": pkg_bench
+"tests/benchs.native": pkg_unix
+<tests/*.ml{,i}>: pkg_bench
+# Executable run_tests
+"tests/run_tests.native": use_containers
+"tests/run_tests.native": pkg_oUnit
+"tests/run_tests.native": pkg_lwt
+"tests/run_tests.native": pkg_unix
+<tests/*.ml{,i}>: use_containers
+<tests/*.ml{,i}>: pkg_oUnit
+<tests/*.ml{,i}>: pkg_lwt
+<tests/*.ml{,i}>: pkg_unix
+# OASIS_STOP

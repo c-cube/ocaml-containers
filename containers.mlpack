@@ -1,3 +1,5 @@
+# OASIS_START
+# DO NOT EDIT (digest: c71ccfdbd010237adfeae06ed09c46ad)
 Cache
 Deque
 Gen
@@ -33,3 +35,4 @@ BV
 QCheck
 BencodeOnDisk
 Show
+# OASIS_STOP
