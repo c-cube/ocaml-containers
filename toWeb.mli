@@ -193,6 +193,9 @@ end
 
 (** {2 Main interface} *)
 
+(* TODO: interface with {! LazyGraph}. A (string, html.t, string) graph
+   maps naturally to URLs and simplifies routing. *)
+
 val serve_state : ?sockfile:string -> ?sockaddr:Unix.sockaddr ->
                   'a State.t -> unit
   (** Serve incoming requests using a single object.

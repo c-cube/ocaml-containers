@@ -90,7 +90,7 @@ Executable benchs
 Test all
   Command: $run_tests
   TestTools: run_tests
-  Run$: flag(tests)
+  Run$: flag(tests) && flag(lwt)
 
 Executable run_tests
   Path: tests/
@@ -98,14 +98,14 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(lwt)
-  BuildDepends: containers, oUnit, lwt
+  BuildDepends: containers, oUnit, lwt, threads, lwt.unix
 
 Executable web_pwd
   Path: examples
   Install: false
   MainIs: web_pwd.ml
   Build$: flag(cgi)
-  BuildDepends: containers_cgi, threads, CamlGI
+  BuildDepends: containers.cgi, threads, CamlGI
 
 SourceRepository head
   Type: git

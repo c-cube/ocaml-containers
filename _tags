@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 79585995b18632ac90365c888b75c5ba)
+# DO NOT EDIT (digest: d71835b977f65228c00aa3a47e880688)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -68,18 +68,26 @@
 <tests/*.ml{,i}>: pkg_bench
 # Executable run_tests
 "tests/run_tests.native": use_containers
+"tests/run_tests.native": pkg_threads
 "tests/run_tests.native": pkg_oUnit
 "tests/run_tests.native": pkg_lwt
+"tests/run_tests.native": pkg_lwt.unix
 "tests/run_tests.native": pkg_unix
 <tests/*.ml{,i}>: use_containers
+<tests/*.ml{,i}>: pkg_threads
 <tests/*.ml{,i}>: pkg_oUnit
 <tests/*.ml{,i}>: pkg_lwt
+<tests/*.ml{,i}>: pkg_lwt.unix
 <tests/*.ml{,i}>: pkg_unix
 # Executable web_pwd
-"examples/web_pwd.byte": pkg_containers_cgi
+"examples/web_pwd.byte": use_containers_cgi
+"examples/web_pwd.byte": use_containers
 "examples/web_pwd.byte": pkg_threads
 "examples/web_pwd.byte": pkg_CamlGI
-<examples/*.ml{,i}>: pkg_containers_cgi
+"examples/web_pwd.byte": pkg_unix
+<examples/*.ml{,i}>: use_containers_cgi
+<examples/*.ml{,i}>: use_containers
 <examples/*.ml{,i}>: pkg_threads
 <examples/*.ml{,i}>: pkg_CamlGI
+<examples/*.ml{,i}>: pkg_unix
 # OASIS_STOP

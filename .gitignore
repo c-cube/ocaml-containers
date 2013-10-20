@@ -2,6 +2,7 @@
 .*.swo
 _build
 *.native
+*.byte
 .session
 TAGS
 *.docdir
