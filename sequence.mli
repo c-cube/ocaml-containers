@@ -31,12 +31,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     on as many times as needed; this choice allows for high performance
     of many combinators. However, for transient iterators, the {!persistent}
     function is provided, storing elements of a transient iterator
-    in memory; the iterator can then be used several times.
+    in memory; the iterator can then be used several times (See further).
     
     Note that some combinators also return sequences (e.g. {!group}). The
     transformation is computed on the fly every time one iterates over
     the resulting sequence. If a transformation performs heavy computation,
-    {!persistent} can also be used as intermediate storage. *)
+    {!persistent} can also be used as intermediate storage.
+
+    Most functions are {b lazy}, i.e. they do not actually use their arguments
+    until their result is iterated on. For instance, if one calls {!map}
+    on a sequence, one gets a new sequence, but nothing else happens until
+    this new sequence is used (by folding or iterating on it).
+    
+    If a sequence is built from an iteration function that is {b repeatable}
+    (i.e. calling it several times always iterates on the same set of
+    elements, for instance List.iter or Map.iter), then
+    the resulting {!t} object is also repeatable. For {b one-time iter functions}
+    such as iteration on a file descriptor or a {!Stream},
+    the {!persistent} function can be used to iterate and store elements in
+    a memory structure; the result is a sequence that iterates on the elements
+    of this memory structure, cheaply and repeatably. *)
 
 type +'a t = ('a -> unit) -> unit
   (** Sequence abstract iterator type, representing a finite sequence of
@@ -57,23 +71,28 @@ val from_fun : (unit -> 'a option) -> 'a t
       sequence is transient, use {!persistent} if needed! *)
 
 val empty : 'a t
-  (** Empty sequence *)
+  (** Empty sequence. It contains no element. *)
 
 val singleton : 'a -> 'a t
-  (** Singleton sequence *)
+  (** Singleton sequence, with exactly one element. *)
 
 val repeat : 'a -> 'a t
-  (** Infinite sequence of the same element *)
+  (** Infinite sequence of the same element. You may want to look
+      at {!take} if you iterate on it. *)
 
 val iterate : ('a -> 'a) -> 'a -> 'a t
   (** [iterate f x] is the infinite sequence (x, f(x), f(f(x)), ...) *)
 
 val forever : (unit -> 'b) -> 'b t
-  (** Sequence that calls the given function to produce elements *)
+  (** Sequence that calls the given function to produce elements.
+      The sequence may be transient (depending on the function), and definitely
+      is infinite. You may want to use {!take} and {!persistent}. *)
 
 val cycle : 'a t -> 'a t
-  (** Cycle forever through the given sequence. Assume the
-      given sequence can be traversed any amount of times (not transient). *)
+  (** Cycle forever through the given sequence. Assume the given sequence can
+      be traversed any amount of times (not transient).  This yields an
+      infinite sequence, you should use something like {!take} not to loop
+      forever. *)
 
 (** {2 Consume a sequence} *)
 
@@ -102,10 +121,10 @@ val exists : ('a -> bool) -> 'a t -> bool
   (** Exists there some element satisfying the predicate? *)
 
 val length : 'a t -> int
-  (** How long is the sequence? *)
+  (** How long is the sequence? Forces the sequence. *)
 
 val is_empty : 'a t -> bool
-  (** Is the sequence empty? *)
+  (** Is the sequence empty? Forces the sequence. *)
 
 (** {2 Transform a sequence} *)
 
@@ -113,30 +132,39 @@ val filter : ('a -> bool) -> 'a t -> 'a t
   (** Filter on elements of the sequence *)
 
 val append : 'a t -> 'a t -> 'a t
-  (** Append two sequences *)
+  (** Append two sequences. Iterating on the result is like iterating
+      on the first, then on the second. *)
 
 val concat : 'a t t -> 'a t
-  (** Concatenate a sequence of sequences into one sequence *)
+  (** Concatenate a sequence of sequences into one sequence. *)
 
 val flatten : 'a t t -> 'a t
   (** Alias for {!concat} *)
 
 val flatMap : ('a -> 'b t) -> 'a t -> 'b t
-  (** Monadic bind. It applies the function to every element of the
-      initial sequence, and calls [concat]. *)
+  (** Monadic bind. Intuitively, it applies the function to every element of the
+      initial sequence, and calls {!concat}. *)
 
 val fmap : ('a -> 'b option) -> 'a t -> 'b t
   (** Specialized version of {!flatMap} for options.  *)
 
 val intersperse : 'a -> 'a t -> 'a t
-  (** Insert the second element between every element of the sequence *)
+  (** Insert the single element between every element of the sequence *)
 
-val persistent : 'a t -> 'a t
+val persistent : ?blocksize:int -> 'a t -> 'a t
   (** Iterate on the sequence, storing elements in a data structure.
-      The resulting sequence can be iterated on as many times as needed. *)
+      The resulting sequence can be iterated on as many times as needed.
+      {b Note}: calling persistent on an already persistent sequence
+      will still make a new copy of the sequence!
+      
+      @param blocksize the size of chunks in the unrolled list
+        used to store elements. Use bigger values for bigger sequences.
+        Default: 64 *)
 
 val sort : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
-  (** Sort the sequence. Eager, O(n) ram and O(n ln(n)) time. *)
+  (** Sort the sequence. Eager, O(n) ram and O(n ln(n)) time.
+      It iterates on elements of the argument sequence immediately,
+      before it sorts them. *)
 
 val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
   (** Sort the sequence and remove duplicates. Eager, same as [sort] *)
@@ -175,13 +203,16 @@ val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a -> 'a
   (** Min element of the sequence, using the given comparison function *)
 
 val take : int -> 'a t -> 'a t
-  (** Take at most [n] elements from the sequence *)
+  (** Take at most [n] elements from the sequence. Works on infinite
+      sequences. *)
 
 val drop : int -> 'a t -> 'a t
-  (** Drop the [n] first elements of the sequence *)
+  (** Drop the [n] first elements of the sequence. Lazy. *)
 
 val rev : 'a t -> 'a t
-  (** Reverse the sequence. O(n) memory and time. *)
+  (** Reverse the sequence. O(n) memory and time, needs the
+      sequence to be finite. The result is persistent and does
+      not depend on the input being repeatable. *)
 
 (** {2 Binary sequences} *)
 
@@ -274,7 +305,11 @@ val hashtbl_values : ('a, 'b) Hashtbl.t -> 'b t
 
 val of_str : string -> char t
 val to_str :  char t -> string
+
 val of_in_channel : in_channel -> char t
+  (** Iterates on characters of the input (can block when one
+      iterates over the sequence). If you need to iterate
+      several times on this sequence, use {!persistent}. *)
 
 val to_buffer : char t -> Buffer.t -> unit
   (** Copy content of the sequence into the buffer *)
@@ -325,8 +360,11 @@ end
 (** {2 Infinite sequences of random values} *)
 
 val random_int : int -> int t
+  (** Infinite sequence of random integers between 0 and
+      the given higher bound (see Random.int) *)
 
 val random_bool : bool t
+  (** Infinite sequence of random bool values *)
 
 val random_float : float -> float t
 
@@ -334,6 +372,8 @@ val random_array : 'a array -> 'a t
   (** Sequence of choices of an element in the array *)
 
 val random_list : 'a list -> 'a t
+  (** Infinite sequence of random elements of the list. Basically the
+      same as {!random_array}. *)
 
 (** {2 Type-classes} *)
 
