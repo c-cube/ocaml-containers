@@ -69,11 +69,15 @@ module type S = sig
   val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
     (** Fold over bindings *)
 
-  val of_gen : ?init:'a t -> (key * 'a) Gen.t -> 'a t
-    (** Add (replace) bindings from the generator to the table *)
+  val of_seq : ?init:'a t -> (key * 'a) Sequence.t -> 'a t
+    (** Add (replace) bindings from the sequence to the table *)
 
-  val to_gen : 'a t -> (key * 'a) Gen.t
-    (** Generator on the bindings of the table *)
+  val of_list : ?init:'a t -> (key * 'a) list -> 'a t
+
+  val to_seq : 'a t -> (key * 'a) Sequence.t
+    (** Sequence of the bindings of the table *)
+
+  val to_list : 'a t -> (key * 'a) list
 end
 
 (** {2 Implementation} *)

@@ -69,11 +69,15 @@ module type S = sig
   val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
     (** Fold over bindings *)
 
-  val of_gen : ?init:'a t -> (key * 'a) Gen.t -> 'a t
-    (** Add (replace) bindings from the generator to the table *)
+  val of_seq : ?init:'a t -> (key * 'a) Sequence.t -> 'a t
+    (** Add (replace) bindings from the sequence to the table *)
 
-  val to_gen : 'a t -> (key * 'a) Gen.t
-    (** Generator on the bindings of the table *)
+  val of_list : ?init:'a t -> (key * 'a) list -> 'a t
+
+  val to_seq : 'a t -> (key * 'a) Sequence.t
+    (** Sequence of the bindings of the table *)
+
+  val to_list : 'a t -> (key * 'a) list
 end
 
 (** {2 Implementation} *)
@@ -123,7 +127,9 @@ module Make(H : HashedType) : S with type key = H.t = struct
           Table.remove tbl key;
           k tbl)
     in
-    reroot t (fun x -> x)
+    match !t with
+    | Table tbl -> tbl
+    | _ -> reroot t (fun x -> x)
 
   let is_empty t =
     match !t with
@@ -196,17 +202,27 @@ module Make(H : HashedType) : S with type key = H.t = struct
     | _ -> reroot t in
     Table.fold (fun k v acc -> f acc k v) tbl acc
 
-  let of_gen ?init gen =
+  let of_seq ?init seq =
     let tbl = match init with
     | None -> Table.create 5
     | Some t -> Table.copy (reroot t) in
-    Gen.iter (fun (k,v) -> Table.replace tbl k v) gen;
+    Sequence.iter (fun (k,v) -> Table.replace tbl k v) seq;
     ref (Table tbl)
 
-  let to_gen t =
-    (* not efficient at the moment... *)
+  let of_list ?init l =
+    of_seq ?init (Sequence.of_list l)
+
+  let to_list t =
     let tbl = reroot t in
     let bindings = Table.fold (fun k v acc -> (k,v)::acc) tbl [] in
-    Gen.of_list bindings
+    bindings
+
+  let to_seq t =
+    fun k ->
+      let tbl = match !t with
+      | Table tbl -> tbl
+      | _ -> reroot t
+      in
+      Table.iter (fun x y -> k (x,y)) tbl
 end
 

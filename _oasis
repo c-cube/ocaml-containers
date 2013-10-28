@@ -84,6 +84,7 @@ Executable benchs
   Path: tests/
   Install: false
   CompiledObject: native
+  Build$: flag(bench)
   MainIs: benchs.ml
   BuildDepends: containers,bench
 
