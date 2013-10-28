@@ -49,14 +49,6 @@ number of instances to generate and test...
 
 Examples:
 
-    - Not all lists are sorted:
-
-{[
-let test = QCheck.(mk_test ~n:10 ~pp:QCheck.PP.(list int)
-  QCheck.Arbitrary.(list small_int) (fun l -> l = List.sort compare l));;
-QCheck.run test;;
-]}
-
     - List.rev is involutive:
 
 {[
@@ -64,8 +56,20 @@ let test = QCheck.mk_test ~n:1000 QCheck.Arbitrary.(list alpha)
   (fun l -> List.rev (List.rev l) = l);;
 QCheck.run test;;
 ]}
+    - Not all lists are sorted (false property that will fail. The 15 smallest
+      counter-example lists will be printed):
 
-    - generate a tree using {! Arbitrary.fix} :
+{[
+let test = QCheck.(
+  mk_test
+    ~n:10_000 ~size:List.length ~limit:15 ~pp:QCheck.PP.(list int)
+    QCheck.Arbitrary.(list small_int)
+    (fun l -> l = List.sort compare l));;
+QCheck.run test;;
+]}
+
+
+    - generate 20 random trees using {! Arbitrary.fix} :
 
 {[type tree = Int of int | Node of tree list;;
  
@@ -73,7 +77,7 @@ QCheck.run test;;
   ~base:(map small_int (fun i -> Int i))
   (fun t st -> Node (list t st)));;
 
- ar (Random.State.make_self_init ());;
+ Arbitrary.generate ~n:20 ar;;
  ]}
 *)
 
@@ -92,8 +96,15 @@ module Arbitrary : sig
   val int_range : start:int -> stop:int -> int t
     (* Integer range start .. stop-1 *)
 
+  val (--) : int -> int -> int t
+    (** Infix synonym for {!int_range} *)
+
   val small_int : int t
     (** Ints lower than 100 *)
+
+  val split_int : int t -> (int * int) t
+    (** [split_int gen] generates a number [n] from [gen], and
+        returns [i, j] where [i + j = n] *)
 
   val bool : bool t
     (** Arbitrary boolean *)
@@ -117,7 +128,7 @@ module Arbitrary : sig
     (** Transform an arbitrary into another *)
 
   val list : ?len:int t -> 'a t -> 'a list t
-    (** List of arbitrary length *)
+    (** List of arbitrary length. Default [len] is between 0 and 10. *)
 
   val opt : 'a t -> 'a option t
     (** May return a value, or None *)
@@ -148,7 +159,7 @@ module Arbitrary : sig
 
   val fix : ?max:int -> base:'a t -> ('a t -> 'a t) -> 'a t
     (** Recursive arbitrary values. The optional value [max] defines
-        the maximal depth, if needed. [base] is the base case. *)
+        the maximal depth, if needed (default 15). [base] is the base case. *)
 
   val fix_depth : depth:int t -> base:'a t -> ('a t -> 'a t) -> 'a t
     (** Recursive values of at most given random depth *)
@@ -160,6 +171,9 @@ module Arbitrary : sig
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
     (** Monadic bind *)
+
+  val retry : 'a option t -> 'a t
+    (** Generate until a Some value is returned *)
 
   val generate : ?n:int -> ?rand:Random.State.t -> 'a t -> 'a list
     (** Generate [n] random values of the given type *)
@@ -213,8 +227,8 @@ end
 
 type 'a result =
   | Ok of int * int  (** total number of tests / number of failed preconditions *)
-  | Failed of 'a list
-  | Error of exn
+  | Failed of 'a list (** Failed instances *)
+  | Error of 'a option * exn  (** Error, and possibly instance that triggered it *)
 
 val check : ?rand:Random.State.t -> ?n:int -> 
             'a Arbitrary.t -> 'a Prop.t -> 'a result
@@ -227,12 +241,19 @@ type test
   (** A single property test *)
 
 val mk_test : ?n:int -> ?pp:'a PP.t -> ?name:string ->
+              ?size:('a -> int) -> ?limit:int ->
               'a Arbitrary.t -> 'a Prop.t -> test
   (** Construct a test. Optional parameters are the same as for {!run}.
       @param name is the name of the property that is checked
       @param pp is a pretty printer for failing instances
       @out is the channel to print results onto
-      @rand is the random generator to use *)
+      @n is the number of tests (default 100)
+      @rand is the random generator to use
+      @size is a size function on values on which tests are performed. If
+        the test fails and a size function is given, the smallest 
+        counter-examples with respect to [size] will be printed in priority.
+      @limit maximal number of counter-examples that will get printed.
+        Default is [10]. *)
 
 val run : ?out:out_channel -> ?rand:Random.State.t -> test -> bool
   (** Run a test and print results *)

@@ -43,6 +43,12 @@ module Arbitrary = struct
 
   let small_int = int 100
 
+  let split_int gen st =
+    let n = gen st in
+    if n > 0
+      then let i = Random.State.int st (n+1) in i, n-i
+      else 0, 0
+
   let bool = Random.State.bool
 
   let float f st = Random.State.float st f
@@ -90,24 +96,26 @@ module Arbitrary = struct
     Array.init n (fun _ -> ar st)
 
   let among_array a st =
+    if Array.length a < 1
+      then failwith "Arbitrary.among: cannot choose in empty array ";
     let i = Random.State.int st (Array.length a) in
     a.(i)
 
-  let among l = among_array (Array.of_list l)
+  let among l =
+    if List.length l < 1
+      then failwith "Arbitrary.among: cannot choose in empty list";
+    among_array (Array.of_list l)
 
-  let choose l =
-    assert (l <> []);
-    let a = Array.of_list l in
-    fun st ->
-      let i = Random.State.int st (Array.length a) in
-      a.(i) st
+  let choose l = match l with
+    | [] -> failwith "cannot choose from empty list"
+    | [x] -> x
+    | _ ->
+      let a = Array.of_list l in
+      fun st ->
+        let i = Random.State.int st (Array.length a) in
+        a.(i) st
 
-  let _fix ~max ~depth recursive f =
-    let rec ar = lazy (fun st -> (Lazy.force ar_rec) st)
-    and ar_rec = lazy (f ar) in
-    Lazy.force ar
-
-  let fix ?(max=max_int) ~base f =
+  let fix ?(max=15) ~base f =
     let rec ar = lazy
       (fun depth st ->
         if depth >= max || Random.State.int st max < depth
@@ -121,6 +129,10 @@ module Arbitrary = struct
   let fix_depth ~depth ~base f st =
     let max = depth st in
     fix ~max ~base f st
+
+  let rec retry gen st = match gen st with
+    | None -> retry gen st
+    | Some x -> x
 
   let lift f a st = f (a st)
 
@@ -169,22 +181,22 @@ module PP = struct
 
   let list pp l =
     let b = Buffer.create 25 in
-    Buffer.add_char b '(';
+    Buffer.add_char b '[';
     List.iteri (fun i x ->
       if i > 0 then Buffer.add_string b ", ";
       Buffer.add_string b (pp x))
       l;
-    Buffer.add_char b ')';
+    Buffer.add_char b ']';
     Buffer.contents b
 
   let array pp a = 
     let b = Buffer.create 25 in
-    Buffer.add_char b '[';
+    Buffer.add_string b "[|";
     Array.iteri (fun i x ->
       if i > 0 then Buffer.add_string b ", ";
       Buffer.add_string b (pp x))
       a;
-    Buffer.add_char b ']';
+    Buffer.add_string b "|]";
     Buffer.contents b
 end
 
@@ -216,7 +228,7 @@ end
 type 'a result =
   | Ok of int * int  (* total number / precond failed *)
   | Failed of 'a list
-  | Error of exn
+  | Error of 'a option * exn
 
 (* random seed, for repeatability of tests *)
 let __seed = [| 89809344; 994326685; 290180182 |]
@@ -224,9 +236,11 @@ let __seed = [| 89809344; 994326685; 290180182 |]
 let check ?(rand=Random.State.make __seed) ?(n=100) gen prop =
   let precond_failed = ref 0 in
   let failures = ref [] in
+  let inst = ref None in
   try
     for i = 0 to n - 1 do
       let x = gen rand in
+      inst := Some x;
       try
         if not (prop x)
           then failures := x :: !failures
@@ -237,7 +251,7 @@ let check ?(rand=Random.State.make __seed) ?(n=100) gen prop =
     | [] -> Ok (n, !precond_failed)
     | _ -> Failed (!failures)
   with e ->
-    Error e
+    Error (!inst, e)
 
 (** {2 Main} *)
 
@@ -247,13 +261,23 @@ type 'a test_cell = {
   prop : 'a Prop.t;
   gen : 'a Arbitrary.t;
   name : string;
+  limit : int;
+  size : ('a -> int) option;
 }
 type test =
   | Test : 'a test_cell -> test
   (** GADT needed for the existential type *)
 
-let mk_test ?(n=100) ?pp ?(name="<anon prop>") gen prop =
-  Test { prop; gen; name; n; pp; }
+let mk_test ?(n=100) ?pp ?(name="<anon prop>") ?size ?(limit=10) gen prop =
+  if limit < 0 then failwith "QCheck: limit needs be >= 0";
+  if n <= 0 then failwith "QCheck: n needs be >= 0";
+  Test { prop; gen; name; n; pp; size; limit; }
+
+(* tail call version of take, that returns (at most) [n] elements of [l] *)
+let rec _list_take acc l n = match l, n with
+  | _, 0
+  | [], _ -> List.rev acc
+  | x::l', _ -> _list_take (x::acc) l' (n-1)
 
 let run ?(out=stdout) ?(rand=Random.State.make __seed) (Test test) =
   Printf.fprintf out "testing property %s...\n" test.name;
@@ -263,16 +287,35 @@ let run ?(out=stdout) ?(rand=Random.State.make __seed) (Test test) =
     true
   | Failed l ->
     begin match test.pp with
-    | None -> Printf.fprintf out "  [×] %d failures\n" (List.length l)
+    | None -> Printf.fprintf out "  [×] %d failures over %d\n" (List.length l) test.n
     | Some pp ->
-      Printf.fprintf out "  [×] %d failures:\n" (List.length l);
+      Printf.fprintf out "  [×] %d failures over %d (print at most %d):\n"
+        (List.length l) test.n test.limit;
+      let to_print = match test.size with
+      | None -> l
+      | Some size ->
+        (* sort by increasing size *)
+        let l = List.map (fun x -> x, size x) l in
+        let l = List.sort (fun (x,sx) (y,sy) -> sx - sy) l in
+        List.map fst l
+      in
+      (* only keep [limit] counter examples *)
+      let to_print = _list_take [] to_print test.limit in
+      (* print the counter examples *)
       List.iter
         (fun x -> Printf.fprintf out "  %s\n" (pp x))
-        l
+        to_print
     end;
     false
-  | Error e ->
-    Printf.fprintf out "  [×] error: %s\n" (Printexc.to_string e);
+  | Error (inst, e) ->
+    begin match inst, test.pp with
+    | _, None
+    | None, _ -> Printf.fprintf out "  [×] error: %s\n" (Printexc.to_string e);
+    | Some x, Some pp ->
+      (* print instance on which the error occurred *)
+      Printf.fprintf out "  [×] error on instance %s: %s\n"
+        (pp x) (Printexc.to_string e);
+    end;
     false
 
 type suite = test list
@@ -281,11 +324,12 @@ let flatten = List.flatten
 
 let run_tests ?(out=stdout) ?(rand=Random.State.make __seed) l =
   let start = Unix.gettimeofday () in
+  let n = List.length l in
   let failed = ref 0 in
   Printf.fprintf out "check %d properties...\n" (List.length l);
   List.iter (fun test -> if not (run ~out ~rand test) then incr failed) l;
   Printf.fprintf out "tests run in %.2fs\n" (Unix.gettimeofday() -. start);
   if !failed = 0
-    then Printf.fprintf out "[✔] Success!\n"
-    else Printf.fprintf out "[×] Failure (%d tests failed).\n" !failed;
+    then Printf.fprintf out "[✔] Success! (passed %d tests)\n" n
+    else Printf.fprintf out "[×] Failure. (%d tests failed over %d)\n" !failed n;
   !failed = 0
