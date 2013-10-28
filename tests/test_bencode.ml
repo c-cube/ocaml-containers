@@ -44,3 +44,27 @@ let suite =
       "test2" >:: test2;
       "test3" >:: test3;
     ]
+
+open QCheck
+
+let check_decode_encode =
+  let gen = Arbitrary.(
+    let base = choose
+      [ lift (fun i -> B.I i) small_int
+      ; lift (fun s -> B.S s) string
+      ]
+    in
+    fix ~max:3 ~base (fun sub ->
+      choose
+        [ lift B.dict_of_list (list (pair string sub))
+        ; lift (fun l -> B.L l) (list sub)
+        ; sub
+        ]))
+  in
+  let prop b = B.eq (B.of_string (B.to_string b)) b in
+  let name = "bencode_decode_encode_bij" in
+  mk_test ~name gen prop
+
+let props =
+  [ check_decode_encode
+  ]

@@ -30,6 +30,9 @@ let suite =
 let props =
   QCheck.flatten
     [ Test_PersistentHashtbl.props
+    ; Test_BV.props
+    ; Test_bencode.props
+    ; Test_vector.props
     ]
 
 let _ =
