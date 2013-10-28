@@ -27,5 +27,12 @@ let suite =
       Test_future.suite;
     ]
 
+let props =
+  QCheck.flatten
+    [ Test_PersistentHashtbl.props
+    ]
+
 let _ =
-  run_test_tt_main suite
+  ignore (QCheck.run_tests props);
+  ignore (run_test_tt_main suite);
+  ()

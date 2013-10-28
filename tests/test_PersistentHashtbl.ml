@@ -101,3 +101,71 @@ let suite =
       "test_remove" >:: test_remove;
       "test_size" >:: test_size;
     ]
+
+open QCheck
+
+let rec _list_uniq l = match l with
+  | [] -> []
+  | (x,_)::l' when List.mem_assoc x l' -> _list_uniq l'
+  | (x,y)::l' -> (x,y) :: _list_uniq l'
+
+let check_add_mem =
+  let gen = Arbitrary.(lift _list_uniq (list (pair small_int small_int))) in
+  let prop l =
+    let h = H.of_list l in
+    List.for_all
+      (fun (k,v) ->
+        try
+          H.find h k = v
+        with Not_found -> false)
+      l
+  in
+  let name = "persistent_hashtbl_add_mem" in
+  mk_test ~name ~pp:PP.(list (pair int int)) ~size:List.length gen prop
+
+let check_len =
+  let gen = Arbitrary.(lift _list_uniq (list (pair small_int small_int))) in
+  let prop l =
+    let h = H.of_list l in
+    H.length h = List.length l
+  in
+  let name = "persistent_hashtbl_len" in
+  mk_test ~name ~pp:PP.(list (pair int int)) ~size:List.length gen prop
+
+let check_old_new =
+  let gen = Arbitrary.(lift _list_uniq (list (pair small_int small_int))) in
+  let prop l =
+    let l1, l2 = List.partition (fun (x,_) -> x mod 2 = 0) l in
+    let h1 = H.of_list l1 in
+    let h2 = H.of_list ~init:h1 l2 in
+    List.for_all
+      (fun (k,v) -> H.find h2 k = v)
+      l
+    &&
+    List.for_all
+      (fun (k,v) -> H.find h1 k = v)
+      l1
+    &&
+    List.length l1 = H.length h1
+    &&
+    List.length l = H.length h2
+  in
+  let name = "persistent_hashtbl_old_new" in
+  mk_test ~name ~pp:PP.(list (pair int int)) ~size:List.length gen prop
+
+let check_add_remove_empty =
+  let gen = Arbitrary.(lift _list_uniq (list (pair small_int small_int))) in
+  let prop l =
+    let h = H.of_list l in
+    let h = List.fold_left (fun h (k,_) -> H.remove h k) h l in
+    H.is_empty h
+  in
+  let name = "persistent_hashtbl_add_remove_empty" in
+  mk_test ~name ~pp:PP.(list (pair int int)) ~size:List.length gen prop
+
+let props =
+  [ check_add_mem
+  ; check_len
+  ; check_old_new
+  ; check_add_remove_empty
+  ]
