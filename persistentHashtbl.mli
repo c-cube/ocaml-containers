@@ -37,6 +37,9 @@ module type S = sig
   type key
   type 'a t
 
+  val empty : unit -> 'a t
+    (** Empty table. The table will be allocated at the first binding *)
+
   val create : int -> 'a t
     (** Create a new hashtable *)
 
@@ -62,6 +65,9 @@ module type S = sig
   val copy : 'a t -> 'a t
     (** Fresh copy of the table; the underlying structure is not shared
         anymore, so using both tables alternatively will be efficient *)
+
+  val merge : (key -> 'a option -> 'a option -> 'a option) -> 'a t -> 'a t -> 'a t
+    (** Merge two tables together into a new table *)
 
   val iter : 'a t -> (key -> 'a -> unit) -> unit
     (** Iterate over bindings *)

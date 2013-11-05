@@ -37,6 +37,9 @@ module type S = sig
   type key
   type 'a t
 
+  val empty : unit -> 'a t
+    (** Empty table. The table will be allocated at the first binding *)
+
   val create : int -> 'a t
     (** Create a new hashtable *)
 
@@ -62,6 +65,9 @@ module type S = sig
   val copy : 'a t -> 'a t
     (** Fresh copy of the table; the underlying structure is not shared
         anymore, so using both tables alternatively will be efficient *)
+
+  val merge : (key -> 'a option -> 'a option -> 'a option) -> 'a t -> 'a t -> 'a t
+    (** Merge two tables together into a new table *)
 
   val iter : 'a t -> (key -> 'a -> unit) -> unit
     (** Iterate over bindings *)
@@ -96,6 +102,8 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   let create i =
     ref (Table (Table.create i))
+
+  let empty () = create 11
 
   (** Reroot: modify the zipper so that the current node is a proper
       hashtable, and return the hashtable *)
@@ -201,6 +209,21 @@ module Make(H : HashedType) : S with type key = H.t = struct
     | Table tbl -> tbl
     | _ -> reroot t in
     Table.fold (fun k v acc -> f acc k v) tbl acc
+
+  let merge f t1 t2 =
+    let tbl = Table.create (max (length t1) (length t2)) in
+    iter t1
+      (fun k v1 ->
+        let v2 = try Some (find t2 k) with Not_found -> None in
+        match f k (Some v1) v2 with
+        | None -> ()
+        | Some v' -> Table.replace tbl k v');
+    iter t2
+      (fun k v2 ->
+        if not (mem t1 k) then match f k None (Some v2) with
+          | None -> ()
+          | Some v' -> Table.replace tbl k v2);
+    ref (Table tbl)
 
   let of_seq ?init seq =
     let tbl = match init with

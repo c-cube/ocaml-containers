@@ -90,6 +90,22 @@ let test_size () =
   OUnit.assert_bool "is_empty" (H.is_empty (H.create 16));
   ()
 
+let test_merge () =
+  let t1 = H.of_list [1, "a"; 2, "b1"] in
+  let t2 = H.of_list [2, "b2"; 3, "c"] in
+  let t = H.merge
+    (fun _ v1 v2 -> match v1, v2 with
+      | None, _ -> v2
+      | _ , None -> v1
+      | Some s1, Some s2 -> if s1 < s2 then Some s1 else Some s2)
+    t1 t2
+  in
+  OUnit.assert_equal ~printer:string_of_int 3 (H.length t);
+  OUnit.assert_equal "a" (H.find t 1);
+  OUnit.assert_equal "b1" (H.find t 2);
+  OUnit.assert_equal "c" (H.find t 3);
+  ()
+
 let suite =
   "test_H" >:::
     [ "test_add" >:: test_add;
@@ -100,6 +116,7 @@ let suite =
       "test_big" >:: test_big;
       "test_remove" >:: test_remove;
       "test_size" >:: test_size;
+      "test_merge" >:: test_merge;
     ]
 
 open QCheck
