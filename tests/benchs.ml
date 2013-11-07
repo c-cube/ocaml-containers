@@ -26,6 +26,11 @@ module IPersistentHashtbl = PersistentHashtbl.Make(struct
   let hash i = i
 end)
 
+module IMap = Map.Make(struct
+  type t = int
+  let compare i j = i - j
+end)
+
 let phashtbl_add n =
   let h = PHashtbl.create 50 in
   for i = n downto 0 do
@@ -75,6 +80,13 @@ let ipersistenthashtbl_add n =
   done;
   !h
 
+let imap_add n =
+  let h = ref IMap.empty in
+  for i = n downto 0 do
+    h := IMap.add i i !h;
+  done;
+  !h
+
 let _ =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
@@ -85,6 +97,7 @@ let _ =
      "ifhashtbl_add", (fun n -> ignore (ifhashtbl_add n));
      "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n));
      "skiplist_add", (fun n -> ignore (skiplist_add n));
+     "imap_add", (fun n -> ignore (imap_add n));
     ]
   in
   Bench.summarize 1. res
@@ -159,6 +172,16 @@ let skiplist_replace n =
   done;
   l
 
+let imap_replace n =
+  let h = ref IMap.empty in
+  for i = 0 to n do
+    h := IMap.add i i !h;
+  done;
+  for i = n downto 0 do
+    h := IMap.add i i !h;
+  done;
+  !h
+
 let _ =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
@@ -169,6 +192,7 @@ let _ =
      "ifhashtbl_replace", (fun n -> ignore (ifhashtbl_replace n));
      "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n));
      "skiplist_replace", (fun n -> ignore (skiplist_replace n));
+     "imap_replace", (fun n -> ignore (imap_replace n));
     ]
   in
   Bench.summarize 1. res
@@ -223,6 +247,12 @@ let array_find a =
       ignore (Array.get a i);
     done
 
+let imap_find m =
+  fun n ->
+    for i = 0 to n-1 do
+      ignore (IMap.find i m);
+    done
+
 let _ =
   List.iter
     (fun len ->
@@ -234,6 +264,7 @@ let _ =
       let h''''' = ipersistenthashtbl_add len in
       let l = skiplist_add len in
       let a = Array.init len (fun i -> string_of_int i) in
+      let m = imap_add len in
       Format.printf "----------------------------------------@.";
       Format.printf "try on size %d@.@.@." len;
       Bench.bench [
@@ -245,6 +276,7 @@ let _ =
         "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' len);
         "skiplist_find", (fun () -> skiplist_find l len);
         "array_find", (fun () -> array_find a len);
+        "imap_find", (fun () -> imap_find m len);
       ])
     [10;20;100;1000;10000]
 
