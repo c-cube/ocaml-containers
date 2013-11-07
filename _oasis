@@ -39,7 +39,7 @@ Library "containers"
                     PHashtbl, Sequence, SkipList, SplayTree, SplayMap, Univ,
                     Vector, Bij, PiCalculus, Bencode, Sexp, RAL, MultiSet,
                     UnionFind, SmallSet, Leftistheap, AbsSet, CSM, MultiMap,
-                    ActionMan, BV, QCheck, BencodeOnDisk, Show
+                    ActionMan, BV, QCheck, BencodeOnDisk, Show, TTree
   BuildDepends:     unix
 
 Library "containers_thread"
