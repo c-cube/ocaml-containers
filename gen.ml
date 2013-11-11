@@ -456,11 +456,10 @@ module Heap = struct
   type 'a t = {
     mutable tree : 'a tree;
     cmp : 'a -> 'a -> int;
-  } (** A splay tree heap with the given comparison function *)
+  } (** A pairing tree heap with the given comparison function *)
   and 'a tree =
     | Empty
-    | Node of ('a tree * 'a * 'a tree)
-    (** A splay tree containing values of type 'a *)
+    | Node of 'a * 'a tree * 'a tree
 
   let empty ~cmp = {
     tree = Empty;
@@ -472,56 +471,22 @@ module Heap = struct
     | Empty -> true
     | Node _ -> false
 
-  (** Partition the tree into (elements <= pivot, elements > pivot) *)
-  let rec partition ~cmp pivot tree =
-    match tree with
-    | Empty -> Empty, Empty
-    | Node (a, x, b) ->
-      if cmp x pivot <= 0
-        then begin
-          match b with
-          | Empty -> (tree, Empty)
-          | Node (b1, y, b2) ->
-            if cmp y pivot <= 0
-              then
-                let small, big = partition ~cmp pivot b2 in
-                Node (Node (a, x, b1), y, small), big
-              else
-                let small, big = partition ~cmp pivot b1 in
-                Node (a, x, small), Node (big, y, b2)
-        end else begin
-          match a with
-          | Empty -> (Empty, tree)
-          | Node (a1, y, a2) ->
-            if cmp y pivot <= 0
-              then
-                let small, big = partition ~cmp pivot a2 in
-                Node (a1, y, small), Node (big, x, b)
-              else
-                let small, big = partition ~cmp pivot a1 in
-                small, Node (big, y, Node (a2, x, b))
-        end
+  let rec union ~cmp t1 t2 = match t1, t2 with
+  | Empty, _ -> t2
+  | _, Empty -> t1
+  | Node (x1, l1, r1), Node (x2, l2, r2) ->
+    if cmp x1 x2 <= 0
+      then Node (x1, union ~cmp t2 r1, l1)
+      else Node (x2, union ~cmp t1 r2, l2)
 
-  (** Insert the element in the tree *)
   let insert h x =
-    let small, big = partition ~cmp:h.cmp x h.tree in
-    let tree' = Node (small, x, big) in
-    h.tree <- tree'
+    h.tree <- union ~cmp:h.cmp (Node (x, Empty, Empty)) h.tree
 
-  (** Get minimum value and remove it from the tree *)
-  let pop h =
-    let rec delete_min tree = match tree with
+  let pop h = match h.tree with
     | Empty -> raise Not_found
-    | Node (Empty, x, b) -> x, b
-    | Node (Node (Empty, x, b), y, c) ->
-      x, Node (b, y, c)  (* rebalance *)
-    | Node (Node (a, x, b), y, c) ->
-      let m, a' = delete_min a in
-      m, Node (a', x, Node (b, y, c))
-    in
-    let m, tree' = delete_min h.tree in
-    h.tree <- tree';
-    m
+    | Node (x, l, r) ->
+      h.tree <- union ~cmp:h.cmp l r;
+      x
 end
 
 (** Intersection of two sorted sequences. Only elements that occur in both
