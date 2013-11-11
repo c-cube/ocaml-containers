@@ -860,6 +860,10 @@ let intersperse x gen =
 let product gena genb =
   let all_a = ref [] in
   let all_b = ref [] in
+  (* cur: current state, i.e., what we have to do next. Can be stop,
+    getLeft/getRight (to obtain next element from first/second generator),
+    or prodLeft/prodRIght to compute the product of an element with a list
+    of already met elements *)
   let cur = ref `GetLeft in
   let rec next () =
     match !cur with
@@ -937,7 +941,8 @@ let sort ?(cmp=Pervasives.compare) gen =
       then raise EOG
       else Heap.pop h
 
-(* FIXME: use a set *)
+(* NOTE: using a set is not really possible, because once we have built the
+  set there is no simple way to iterate on it *)
 let sort_uniq ?(cmp=Pervasives.compare) gen =
   uniq ~eq:(fun x y -> cmp x y = 0) (sort ~cmp gen)
 

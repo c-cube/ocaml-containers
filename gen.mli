@@ -46,7 +46,11 @@ type 'a t = unit -> 'a
 
 type 'a gen = 'a t
 
-(** {2 Common signature for transient and restartable generators} *)
+(** {2 Common signature for transient and restartable generators}
+
+The signature {!S} abstracts on a type ['a t], where the [t] can be
+the type of transient or restartable generators. Some functions specify
+explicitely that they use ['a gen] (transient generators). *)
 
 module type S = sig
   type 'a t
@@ -312,6 +316,7 @@ val repeatedly : (unit -> 'a) -> 'a t
       if the function is a random generator). *)
 
 include S with type 'a t := 'a gen
+  (** Operations on {b transient} generators *)
 
 (** {2 Restartable generators} *)
 
@@ -333,8 +338,10 @@ end
 (** {2 Utils} *)
 
 val persistent : 'a t -> 'a Restart.t
-  (** Store content of the generator in memory, to be able to iterate on it
-      several times later *)
+  (** Store content of the transient generator in memory, to be able to iterate
+      on it several times later. If possible, consider using combinators
+      from {!Restart} directly instead. *)
 
 val start : 'a Restart.t -> 'a t
-  (** Create a new transient generator *)
+  (** Create a new transient generator.
+      [start gen] is the same as [gen ()] but is included for readability. *)
