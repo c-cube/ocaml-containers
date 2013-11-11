@@ -178,15 +178,14 @@ let length l = l.size
 
 (** Iterator on the skip list *)
 let gen l =
+  let x = ref (next l.data 0) in
   fun () ->
-    let x = ref (next l.data 0) in
-    fun () ->
-      match !x with
-      | Nil -> raise Gen.EOG
-      | Init _ -> assert false
-      | Node (k, v, a) ->
-        x := a.(0);
-        k, !v
+    match !x with
+    | Nil -> raise Gen.EOG
+    | Init _ -> assert false
+    | Node (k, v, a) ->
+      x := a.(0);
+      k, !v
 
 (** Add content of the iterator to the list *)
 let of_gen l gen =

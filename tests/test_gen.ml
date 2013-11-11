@@ -2,6 +2,8 @@
 open OUnit
 open Gen.Infix
 
+module GR = Gen.Restart
+
 let pint i = string_of_int i
 let plist l = Utils.sprintf "%a"
   (Sequence.pp_seq Format.pp_print_int) (Sequence.of_list l)
@@ -9,18 +11,18 @@ let pstrlist l = Utils.sprintf "%a"
   (Sequence.pp_seq Format.pp_print_string) (Sequence.of_list l)
 
 let test_singleton () =
-  let e = Gen.singleton 42 in
-  let gen = Gen.start e in
-  OUnit.assert_equal 42 (Gen.Gen.next gen);
-  OUnit.assert_raises Gen.EOG (fun () -> Gen.Gen.next gen);
-  OUnit.assert_equal 1 (Gen.length e);
+  let gen = Gen.singleton 42 in
+  OUnit.assert_equal 42 (Gen.get gen);
+  OUnit.assert_raises Gen.EOG (fun () -> Gen.get gen);
+  let gen = Gen.singleton 42 in
+  OUnit.assert_equal 1 (Gen.length gen);
   ()
 
 let test_iter () =
-  let e = 1 -- 10 in
-  OUnit.assert_equal ~printer:pint 10 (Gen.length e);
-  OUnit.assert_equal [1;2] (Gen.to_list (1 -- 2));
-  OUnit.assert_equal [1;2;3;4;5] (Gen.to_list (Gen.take 5 e));
+  let e = GR.(1 -- 10) in
+  OUnit.assert_equal ~printer:pint 10 (GR.length e);
+  OUnit.assert_equal [1;2] GR.(to_list (1 -- 2));
+  OUnit.assert_equal [1;2;3;4;5] (GR.to_list (GR.take 5 e));
   ()
 
 let test_map () =
@@ -30,7 +32,7 @@ let test_map () =
   ()
 
 let test_append () =
-  let e = (1 -- 5) @@ (6 -- 10) in
+  let e = Gen.append (1 -- 5) (6 -- 10) in
   OUnit.assert_equal [10;9;8;7;6;5;4;3;2;1] (Gen.to_rev_list e);
   ()
 
@@ -64,26 +66,23 @@ let test_persistent () =
     if j > 5 then raise Gen.EOG else (incr i; j)
   in
   let e = Gen.persistent gen in
-  OUnit.assert_equal [0;1;2;3;4;5] (Gen.to_list e);
-  OUnit.assert_equal [0;1;2;3;4;5] (Gen.to_list e);
-  OUnit.assert_equal [0;1;2;3;4;5] (Gen.to_list e);
+  OUnit.assert_equal [0;1;2;3;4;5] (GR.to_list e);
+  OUnit.assert_equal [0;1;2;3;4;5] (GR.to_list e);
+  OUnit.assert_equal [0;1;2;3;4;5] (GR.to_list e);
   ()
 
 let test_round_robin () =
-  let e = Gen.round_robin ~n:2 (1--10) in
-  let e = Gen.map Gen.persistent e in
-  let l = Gen.to_list e in
-  match l with
+  let e = GR.round_robin ~n:2 GR.(1--10) in
+  match e with
   | [a;b] ->
     OUnit.assert_equal [1;3;5;7;9] (Gen.to_list a);
     OUnit.assert_equal [2;4;6;8;10] (Gen.to_list b)
   | _ -> OUnit.assert_failure "wrong list lenght"
 
 let test_big_rr () =
-  let e = Gen.round_robin ~n:3 (1 -- 999) in
-  let l = Gen.to_list e in
-  let l' = List.map Gen.Gen.length l in
-  OUnit.assert_equal [333;333;333] l';
+  let e = GR.round_robin ~n:3 GR.(1 -- 999) in
+  let l = List.map Gen.length e in
+  OUnit.assert_equal [333;333;333] l;
   ()
 
 let test_merge_sorted () =
@@ -106,13 +105,9 @@ let test_intersperse () =
   ()
 
 let test_product () =
+  let printer = Helpers.print_int_int_list in
   let e = Gen.product (1--3) (4--5) in
-  OUnit.assert_equal [1,4; 1,5; 2,4; 2,5; 3,4; 3,5] (Gen.to_list e);
-  ()
-
-let test_fair_product () =
-  let e = Gen.fair_product (Gen.repeat ()) (1--3) in
-  let _ = Gen.take 10 e in  (* succeeds -> ok *)
+  OUnit.assert_equal ~printer [1,4; 1,5; 2,4; 2,5; 3,4; 3,5] (List.sort compare (Gen.to_list e));
   ()
 
 let suite =
@@ -132,5 +127,4 @@ let suite =
       "test_interleave" >:: test_interleave;
       "test_intersperse" >:: test_intersperse;
       "test_product" >:: test_product;
-      "test_fair_product" >:: test_fair_product;
     ]
