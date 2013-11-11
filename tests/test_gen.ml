@@ -110,6 +110,11 @@ let test_product () =
   OUnit.assert_equal [1,4; 1,5; 2,4; 2,5; 3,4; 3,5] (Gen.to_list e);
   ()
 
+let test_fair_product () =
+  let e = Gen.fair_product (Gen.repeat ()) (1--3) in
+  let _ = Gen.take 10 e in  (* succeeds -> ok *)
+  ()
+
 let suite =
   "test_gen" >:::
     [ "test_singleton" >:: test_singleton;
@@ -127,4 +132,5 @@ let suite =
       "test_interleave" >:: test_interleave;
       "test_intersperse" >:: test_intersperse;
       "test_product" >:: test_product;
+      "test_fair_product" >:: test_fair_product;
     ]

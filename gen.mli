@@ -266,7 +266,12 @@ val intersperse : 'a -> 'a t -> 'a t
   (** Put the separator element between all elements of the given enum *)
 
 val product : 'a t -> 'b t -> ('a * 'b) t
-  (** Cartesian product. *)
+  (** Cartesian product. If the first sequence is infinite, some pairs
+      will never be generated. *)
+
+val fair_product : 'a t -> 'b t -> ('a * 'b) t
+  (** Cartesian product, in no predictable order. Contrary to {!product} this
+      function does eventually yield every pair *)
 
 val group : ?eq:('a -> 'a -> bool) -> 'a t -> 'a list t
   (** Group equal consecutive elements together. *)

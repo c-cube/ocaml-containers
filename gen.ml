@@ -767,6 +767,45 @@ let product a b =
       in
       next
 
+let fair_product a b =
+  fun () ->
+    let gena = a () in
+    let genb = b () in
+    let all_a = ref [] in
+    let all_b = ref [] in
+    let cur = ref `GetLeft in
+    let rec next () =
+      match !cur with
+      | `Stop -> raise EOG
+      | `GetLeft ->
+        let xa = try Some (gena()) with EOG -> None in
+        begin match xa with
+          | None -> cur := `GetRight
+          | Some a -> all_a := a :: !all_a; cur := `ProdLeft (a, !all_b)
+        end;
+        next ()
+      | `GetRight ->
+        let xb = try Some (genb()) with EOG -> None in
+        begin match xb with
+          | None -> cur := `Stop; raise EOG
+          | Some b -> all_b := b::!all_b; cur := `ProdRight (b, !all_a)
+        end;
+        next ()
+      | `ProdLeft (_, []) ->
+        cur := `GetRight;
+        next()
+      | `ProdLeft (x, y::l) ->
+        cur := `ProdLeft (x, l);
+        x, y
+      | `ProdRight (_, []) ->
+        cur := `GetLeft;
+        next()
+      | `ProdRight (y, x::l) ->
+        cur := `ProdRight (y, l);
+        x, y
+    in
+    next
+
 (** Group equal consecutive elements together. *)
 let group ?(eq=(=)) enum =
   fun () ->
