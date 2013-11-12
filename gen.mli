@@ -179,8 +179,8 @@ module type S = sig
     (** Equality of generators. *)
 
   val lexico : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
-    (** Lexicographic comparison of generators. If the common prefix is
-        the same, the shortest one is considered as smaller than the other. *)
+    (** Lexicographic comparison of generators. If a generator is a prefix
+        of the other one, it is considered smaller. *)
 
   val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
     (** Synonym for {! lexico} *)
