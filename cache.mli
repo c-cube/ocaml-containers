@@ -49,11 +49,16 @@ module type S = sig
     (** Clear content of the cache *)
 
   val with_cache : 'a t -> (key -> 'a) -> key -> 'a
-    (** Wrap the function with the cache *)
+    (** Wrap the function with the cache. This means that
+        [with_cache cache f x] always returns the same value as
+        [f x], if [f x] returns, or raise the same exception.
+        However, [f] may not be called if [x] is in the cache. *)
 
   val with_cache_rec : 'a t -> ((key -> 'a) -> key -> 'a) -> key -> 'a
     (** Partially apply the given function with a cached version of itself.
-        It returns the specialized function. *)
+        It returns the specialized function.
+        [with_cache_rec cache f] applies [f] to a cached version of [f],
+        called [f'], so that [f' x = f f' x]. *)
 end
 
 (** Signature of a cache for pairs of values *)
@@ -97,5 +102,6 @@ module Replacing2(X : HASH)(Y : HASH) : S2 with type key1 = X.t and type key2 = 
 
 module LRU(X : HASH) : S with type key = X.t
 
+(* TODO exception handling in LRU *)
 (* TODO LRU2 *)
 

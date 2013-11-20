@@ -47,11 +47,16 @@ module type S = sig
     (** Clear content of the cache *)
 
   val with_cache : 'a t -> (key -> 'a) -> key -> 'a
-    (** Wrap the function with the cache *)
+    (** Wrap the function with the cache. This means that
+        [with_cache cache f x] always returns the same value as
+        [f x], if [f x] returns, or raise the same exception.
+        However, [f] may not be called if [x] is in the cache. *)
 
   val with_cache_rec : 'a t -> ((key -> 'a) -> key -> 'a) -> key -> 'a
     (** Partially apply the given function with a cached version of itself.
-        It returns the specialized function. *)
+        It returns the specialized function.
+        [with_cache_rec cache f] applies [f] to a cached version of [f],
+        called [f'], so that [f' x = f f' x]. *)
 end
 
 (** Signature of a cache for pairs of values *)
@@ -106,7 +111,7 @@ end
 
 module Linear(X : EQ) = struct
   type 'a t = 'a bucket array
-  and 'a bucket = Empty | Pair of key * 'a
+  and 'a bucket = Empty | Pair of key * 'a | PairRaise of key * exn
   and key = X.t
 
   let create size =
@@ -116,12 +121,12 @@ module Linear(X : EQ) = struct
   let clear cache =
     Array.fill cache 0 (Array.length cache) Empty
 
-  (** Insert the binding (x -> y) into the cache *)
-  let insert cache x y =
+  (** Insert the bucket [b] into the cache *)
+  let insert cache b =
     let n = Array.length cache in
     (* shift other values toward the end *)
     Array.blit cache 0 cache 1 (n-1);
-    cache.(0) <- Pair(x,y)
+    cache.(0) <- b
 
   (** Try to find [f x] in the cache, otherwise compute it
       and cache the result *)
@@ -131,12 +136,17 @@ module Linear(X : EQ) = struct
       (* function that performs the lookup *)
       if i = n then begin
         (* cache miss *)
-        let y = f x in
-        insert cache x y;
-        y
+        try
+          let y = f x in
+          insert cache (Pair (x, y));
+          y
+        with e ->
+          insert cache (PairRaise (x, e));
+          raise e
       end else match cache.(i) with
       | Pair (x',y) when X.equal x x' -> y
-      | Empty | Pair _ -> search (i+1)
+      | PairRaise (x', e) when X.equal x x' -> raise e
+      | _ -> search (i+1)
     in
     search 0
 
@@ -148,7 +158,7 @@ end
 
 module Linear2(X : EQ)(Y : EQ) = struct
   type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key1 * key2 * 'a
+  and 'a bucket = Empty | Assoc of key1 * key2 * 'a | AssocRaise of key1 * key2 * exn
   and key1 = X.t
   and key2 = Y.t
 
@@ -159,12 +169,12 @@ module Linear2(X : EQ)(Y : EQ) = struct
   let clear cache =
     Array.fill cache 0 (Array.length cache) Empty
 
-  (** Insert the binding (x -> y) into the cache *)
-  let insert cache x1 x2 y =
+  (** Insert the binding [b] into the cache *)
+  let insert cache b =
     let n = Array.length cache in
     (* shift other values toward the end *)
     Array.blit cache 0 cache 1 (n-1);
-    cache.(0) <- Assoc(x1,x2,y)
+    cache.(0) <- b
 
   (** Try to find [f x] in the cache, otherwise compute it
       and cache the result *)
@@ -174,12 +184,17 @@ module Linear2(X : EQ)(Y : EQ) = struct
       (* function that performs the lookup *)
       if i = n then begin
           (* cache miss *)
-          let y = f x1 x2 in
-          insert cache x1 x2 y;
-          y
+          try
+            let y = f x1 x2 in
+            insert cache (Assoc (x1, x2, y));
+            y
+          with e ->
+            insert cache (AssocRaise (x1, x2, e));
+            raise e
       end else match cache.(i) with
       | Assoc (x1',x2',y) when X.equal x1 x1' && Y.equal x2 x2' -> y
-      | Empty | Assoc _ -> search (i+1)
+      | AssocRaise (x1',x2',e) when X.equal x1 x1' && Y.equal x2 x2' -> raise e
+      | _ -> search (i+1)
     in
     search 0
 end
@@ -196,7 +211,7 @@ module Replacing(X : HASH) = struct
       The first slot in the array contains the function
       used to produce the value upon a cache miss. *)
   type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key * 'a
+  and 'a bucket = Empty | Assoc of key * 'a | AssocRaise of key * exn
 
   let create size =
     Array.create size Empty
@@ -211,10 +226,16 @@ module Replacing(X : HASH) = struct
     match c.(i) with
     | Assoc (x', y) when X.equal x x' ->
       y (* cache hit *)
-    | Assoc _ | Empty -> (* cache miss *)
-      let y = f x in
-      c.(i) <- Assoc (x, y);
-      y
+    | AssocRaise (x', e) when X.equal x x' ->
+      raise e  (* cache hit *)
+    | _ -> (* cache miss *)
+      try
+        let y = f x in
+        c.(i) <- Assoc (x, y);
+        y
+      with e ->
+        c.(i) <- AssocRaise (x, e);
+        raise e
 
   let with_cache_rec cache f x =
     (* make a recursive version of [f] that uses the cache *)
@@ -230,10 +251,9 @@ module Replacing2(X : HASH)(Y : HASH) = struct
       The first slot in the array contains the function
       used to produce the value upon a cache miss. *)
   type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key1 * key2 * 'a
+  and 'a bucket = Empty | Assoc of key1 * key2 * 'a | AssocRaise of key1 * key2 * exn
   and key1 = X.t
   and key2 = Y.t
-
 
   let create size =
     Array.create size Empty
@@ -246,13 +266,21 @@ module Replacing2(X : HASH)(Y : HASH) = struct
     match c.(i) with
     | Assoc (x1', x2', y) when X.equal x1 x1' && Y.equal x2 x2' ->
       y (* cache hit *)
-    | Assoc _ | Empty -> (* cache miss *)
-      let y = f x1 x2 in
-      c.(i) <- Assoc (x1, x2, y);
-      y
+    | AssocRaise (x1', x2', e) when X.equal x1 x1' && Y.equal x2 x2' ->
+      raise e (* cache hit *)
+    | _ -> (* cache miss *)
+      try
+        let y = f x1 x2 in
+        c.(i) <- Assoc (x1, x2, y);
+        y
+      with e ->
+        c.(i) <- AssocRaise (x1, x2, e);
+        raise e
 end
 
 (** {2 Hashtables with Least Recently Used eviction policy *)
+
+(* TODO: handle exceptions *)
 
 module LRU(X : HASH) = struct
   type key = X.t
