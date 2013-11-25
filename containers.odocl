@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: ca2e7fd09ab7b0d8b4525454fa277f3c)
+# DO NOT EDIT (digest: b68696a2df00165022fe21a389026f4f)
 Cache
 Deque
 Gen
@@ -36,5 +36,6 @@ QCheck
 BencodeOnDisk
 Show
 TTree
+HGraph
 Behavior
 # OASIS_STOP

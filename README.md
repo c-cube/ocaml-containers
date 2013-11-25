@@ -42,6 +42,7 @@ monadic futures, and MVars (concurrent boxes)
     a functorial interface (replaced by PHashtbl)
 - `Gen` and `Sequence`, generic iterators structures.
 - `UnionFind`, a functorial imperative Union-Find structure.
+- `HGraph`, a structure of generalized hypergraphs
 
 Some serialisation formats are also implemented, with a streaming, non-blocking
 interface that allows the user to feed the input in chunk by chunk (useful
