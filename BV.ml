@@ -206,6 +206,18 @@ let select bv arr =
       (fun i ->
         if i >= Array.length arr
           then raise Exit
+          else l := arr.(i) :: !l)
+  with Exit -> ()
+  end;
+  !l
+
+let selecti bv arr =
+  let l = ref [] in
+  begin try
+    iter_true bv
+      (fun i ->
+        if i >= Array.length arr
+          then raise Exit
           else l := (arr.(i), i) :: !l)
   with Exit -> ()
   end;

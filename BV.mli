@@ -86,7 +86,6 @@ val filter : t -> (int -> bool) -> unit
 
 val union_into : into:t -> t -> unit
   (** [union ~into bv] sets [into] to the union of itself and [bv]. *)
-      
 
 val inter_into : into:t -> t -> unit
   (** [union ~into bv] sets [into] to the intersection of itself and [bv] *)
@@ -97,8 +96,11 @@ val union : t -> t -> t
 val inter : t -> t -> t
   (** Intersection of bitvectors *)
 
-val select : t -> 'a array -> ('a * int) list
+val select : t -> 'a array -> 'a list
   (** [select arr bv] selects the elements of [arr] whose index
-      correspond to a true bit in [bv]. The elements are paired to their
-      index in [arr]. If [bv] is too short, elements of [arr] with too high
-      an index cannot be returned. *)
+      correspond to a true bit in [bv]. If [bv] is too short, elements of [arr]
+      with too high an index cannot be selected and are therefore not
+      selected. *)
+
+val selecti : t -> 'a array -> ('a * int) list
+  (** Same as {!select}, but selected elements are paired with their index *)
