@@ -36,68 +36,52 @@ module type S = sig
     (** Constants. Those are what can annotate hyperedges or make single,
         leaf, nodes. *)
 
-  type data
-    (** Additional data carried by the hypergraph elements *)
-
   type t
-    (** An element of the hypergraph. It can be parametrized by a ['a option]
-        additional data (use 'a = unit if you don't care). *)
+    (** An hypergraph. It stores a set of edges, and possibly inherits from
+        another graph. *)
 
-  val eq : t -> t -> bool
-    (** Structural equality of the two edges *)
+  type edge
+    (** A single edge of the hypergraph. *)
 
-  val hash : t -> int
-    (** Hash, used for hashtables *)
+  val self : t -> edge
+    (** The edge that represents (reifies) the hypergraph itself *)
 
-  val id : t -> int
-    (** Same as {!hash}, but guarantees that the int is actually unique. *)
+  val eq : edge -> edge -> bool
+    (** Equality of the two edges. *)
 
-  val cmp : t -> t -> int
-    (** Arbitrary total order *)
+  val arity : edge -> int
+    (** Number of sub-elements of the edge (how many other edges it connects
+        together) *)
 
-  val data : t -> data option
-    (** Data contained in this edge, if any *)
-
-  val const : t -> const
-    (** Constant that annotates this hyperedge. *)
-
-  val arity : t -> int
-    (** Number of sub-elements *)
-
-  val nth : t -> int -> t
+  val nth : edge -> int -> edge
     (** [nth x i] accesses the [i]-th sub-node of [x].
         @raise Invalid_argument if [i >= arity x]. *)
 
-  val sub : t -> t array
-    (** Access the sub-nodes as an array. This array {b MUST NOT} be modified
-        by the caller. *)
+  val make_graph : ?parent:t -> unit -> t
+    (** New graph, possibly inheriting from another graph. *)
 
-  val make : ?data:data -> const -> t array -> t
-    (** Create a new hyperedge from a constant that annotates it, and
-        an ordered tuple of sub-edges.
-        @param data optional data to decorate the edge. *)
+  val make_edge : t -> edge array -> edge
+    (** Create a new hyperedge from an ordered tuple of sub-edges.
+        The edge belongs to the given graph.
+        The array must not be used afterwards and must not be empty.
+        @raise Invalid_argument if the array is empty *)
 
-  val make_l : ?data:data -> const -> t list -> t
-    (** From a list, same as {!make} otherwise *)
+  val make_const : t -> const -> edge
+    (** Constant edge, without sub-edges *)
 
-  val const : ?data:data -> const -> t
-    (** Constant node *)
+  val fresh : t -> edge
+    (** Fresh edge, without constant. It is equal to no other edge. *)
 
-  val update : ?data:data -> t -> t array -> t
-    (** [update e sub] creates an hyperedge equivalent to [e] in all ways,
-        but with the given sub-nodes as sub-edges. The array's ownership
-        is lost by the caller.
+  module EdgeTbl : Hashtbl.S with type key = edge
 
-        @param data optional data that annotates the new edge.
-    *)
-
-  val pp : Buffer.t -> t -> unit
-    (** Print itself (non-recursively) on the buffer *)
+  val pp : ?printed:unit EdgeTbl.t ->
+           Buffer.t -> edge -> unit
+    (** Print the edge on the buffer. @param printed: sub-edges already
+        printed. *)
 end
 
 module type PARAM = sig
   type const
-  type data
 
   val eq : const -> const -> bool
   val hash : const -> int
@@ -106,124 +90,129 @@ end
 
 module Make(P : PARAM) = struct
   type const = P.const
-  type data = P.data
 
-  type t = {
-    head : const;
-    data : data option;
-    sub : t array;
-    mutable id : int;
-    mutable backref : t Weak.t;
-  }
+  type edge =
+    | Fresh of int
+    | Const of const
+    | Edge of edge array
 
-  type edge = t
+  let rec eq e1 e2 = match e1, e2 with
+    | Fresh _, Fresh _ -> e1 == e2
+    | Const c1, Const c2 -> P.eq c1 c2
+    | Edge a1, Edge a2 ->
+      Array.length a1 = Array.length a2 &&
+      begin try
+        for i = 0 to Array.length a1 - 1 do
+          if not (eq (Array.unsafe_get a1 i) (Array.unsafe_get a2 i))
+            then raise Exit;
+        done; true
+      with Exit -> false
+      end
+    | _ -> false
 
-  let eq t1 t2 = t1.id = t2.id
-
-  let hash t = t.id
-
-  let id t = t.id
-
-  let cmp t1 t2 = t1.id - t2.id
-
-  let data t = t.data
-
-  let const t = t.head
-
-  let arity t = Array.length t.sub
-
-  let nth t i = t.sub.(i)
-
-  let sub t = t.sub
-
-  (* add a backref from [a] to [b]. *)
-  let _add_backref a b =
-    let n = Weak.length a.backref in
-    let arr = a.backref in
-    try
-      for i = 0 to n-1 do
-        if not (Weak.check arr i)
-          then begin  (* insert here *)
-            Weak.set arr i (Some b);
-            raise Exit;
-          end
+  let rec hash e = match e with
+    | Fresh i -> i
+    | Const c -> P.hash c
+    | Edge a ->
+      let h = ref 0 in
+      for i = 0 to Array.length a - 1 do
+        h := max_int land (!h * 65599 + (hash (Array.unsafe_get a i)))
       done;
-      (* no insertion possible: resize *)
-      a.backref <- Weak.create (2 * n);
-      Weak.blit arr 0 a.backref 0 n;
-      Weak.set a.backref n (Some b)
-    with Exit -> ()
+      !h
 
-  (* structural equality on top-level *)
-  let _eq_top t1 t2 =
-    Array.length t1.sub = Array.length t2.sub &&
-    P.eq t1.head t2.head &&
-    try
-      for i = 0 to Array.length t1.sub - 1 do
-        if not (eq (Array.unsafe_get t1.sub i) (Array.unsafe_get t2.sub i)) then raise Exit;
-      done; true
-    with Exit -> false
-
-  (* top-level hashing *)
-  let _hash_top t =
-    let h = ref (P.hash t.head) in
-    for i = 0 to Array.length t.sub - 1 do
-      h := max_int land (!h * 65599 + (hash (Array.unsafe_get t.sub i)))
-    done;
-    !h
-
-  (* hashconsing weak table *)
-  module H = Weak.Make(struct
+  (* hashtable on edges *)
+  module EdgeTbl = Hashtbl.Make(struct
     type t = edge
-    let equal = _eq_top
-    let hash = _hash_top
+    let equal = eq
+    let hash = hash
   end)
 
-  let __count = ref 0
-  let __table = H.create 2045
+  (* hashtable on edges * int *)
+  module BackTbl = Hashtbl.Make(struct
+    type t = edge * int
+    let equal (e1, i1) (e2, i2) = i1 = i2 && eq e1 e2
+    let hash (e, i) = i * 65599 + hash e
+  end)
 
-  let make ?data head sub =
-    let my_t = {
-      head;
-      data;
-      sub;
-      id = ~-1;
-      backref = Weak.create 0;
+  (** Hypergraph: set of edges. We map each edge to other edges that point
+      to it (knowing which ones it points to is trivial) *)
+  type t = {
+    edges : unit EdgeTbl.t;
+    backref : edge BackTbl.t; 
+    parent : t option;
+    mutable count : int;  (* used for Fresh nodes *)
+    self : edge;
+  }
+
+  let arity e = match e with
+    | Fresh _
+    | Const _ -> 0
+    | Edge a -> Array.length a
+
+  let nth e i = match e with
+    | Fresh _
+    | Const _ -> raise (Invalid_argument"HGraph.nth")
+    | Edge a -> a.(i)
+
+  let self g = g.self
+
+  let make_graph ?parent () =
+    let g = { 
+      parent;
+      edges = EdgeTbl.create 15;
+      backref = BackTbl.create 15;
+      count = 1;
+      self = Fresh 0;
     } in
-    let t = H.merge __table my_t in
-    if t == my_t then begin
-      (* hashconsing tag *)
-      assert (t.id = ~-1);
-      t.id <- !__count;
-      incr __count;
-      (* make a proper backref array *)
-      t.backref <- Weak.create 5;
-      (* add oneself to sub-nodes' backref arrays *)
-      Array.iter (fun t' -> _add_backref t' t) sub
-      end;
-    t
+    g
 
-  let make_l ?data head sub = make ?data head (Array.of_list sub)
+  (* add a backref from [e]'s sub-edges to [e] *)
+  let _add_backrefs g e = match e with
+    | Fresh _
+    | Const _ -> assert false
+    | Edge a ->
+      for i = 0 to Array.length a - 1 do
+        BackTbl.add g.backref (Array.unsafe_get a i, i) e
+      done
 
-  let const ?data head = make ?data head [| |]
+  let make_edge g sub =
+    if Array.length sub = 0 then raise (Invalid_argument "HGraph.make_edge");
+    let e = Edge sub in
+    (* add edge if not already present *)
+    if not (EdgeTbl.mem g.edges e) then begin
+      EdgeTbl.add g.edges e ();
+      _add_backrefs g e
+    end;
+    e
 
-  let update ?data t sub' = make ?data t.head sub'
+  let make_const g c =
+    let e = Const c in
+    if not (EdgeTbl.mem g.edges e) then
+      EdgeTbl.add g.edges e ();
+    e
 
-  let pp buf e =
-    Buffer.add_string buf (string_of_int e.id);
-    Buffer.add_char buf ':';
-    if arity e = 0
-      then Buffer.add_string buf (P.to_string e.head)
-      else begin
-        Buffer.add_char buf '(';
-        Buffer.add_string buf (P.to_string e.head);
-        Array.iteri
-          (fun i sub ->
-            if i > 0 then Buffer.add_char buf ' ';
-            Buffer.add_string buf (string_of_int sub.id))
-          e.sub;
-        Buffer.add_char buf ')'
+  let fresh g =
+    let e = Fresh g.count in
+    g.count <- g.count + 1;
+    (* always new! *)
+    EdgeTbl.add g.edges e ();
+    e
+
+  let pp ?(printed=EdgeTbl.create 7) buf e =
+    let rec pp buf e = match e with
+    | Fresh i -> Printf.bprintf buf "_e%d" i
+    | Const c -> Buffer.add_string buf (P.to_string c)
+    | Edge a ->
+      if not (EdgeTbl.mem printed e) then begin
+        EdgeTbl.add printed e ();
+        Buffer.add_char buf '[';
+        for i = 0 to Array.length a - 1 do
+          if i > 0 then Buffer.add_char buf ' ';
+          pp buf a.(i)
+        done
       end
+    in
+    pp buf e
 end
 
 (** {2 Useful default} *)
