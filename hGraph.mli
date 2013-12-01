@@ -80,6 +80,9 @@ module type S = sig
            Buffer.t -> edge -> unit
     (** Print the edge on the buffer. @param printed: sub-edges already
         printed. *)
+
+  val fmt : Format.formatter -> edge -> unit
+  val to_string : edge -> string
 end
 
 module type PARAM = sig
@@ -105,4 +108,20 @@ module DefaultParam : sig
   val s : string -> const
 end
 
-module Default : S with type const = DefaultParam.const
+module Default : sig
+  include S with type const = DefaultParam.const
+
+  module Lexbuf : sig
+    type t
+
+    val of_string : string -> t
+
+    val of_fun : (unit -> string option) -> t
+
+    val of_chan : in_channel -> t
+  end
+
+  val parse_edge : t -> Lexbuf.t -> [ `Ok of edge | `Error of string ]
+
+  val edge_of_string : t -> string -> [ `Ok of edge | `Error of string ]
+end

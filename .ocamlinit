@@ -8,6 +8,7 @@
 open Containers;;
 open Sequence.Infix;;
 #install_printer Bencode.pretty;;
+#install_printer HGraph.Default.fmt;;
 #require "CamlGI";;
 #load "containers_cgi.cma";;
 let pp_html fmt h = Format.pp_print_string fmt (ToWeb.HTML.render h);;

@@ -78,6 +78,9 @@ module type S = sig
            Buffer.t -> edge -> unit
     (** Print the edge on the buffer. @param printed: sub-edges already
         printed. *)
+
+  val fmt : Format.formatter -> edge -> unit
+  val to_string : edge -> string
 end
 
 module type PARAM = sig
@@ -209,10 +212,19 @@ module Make(P : PARAM) = struct
         for i = 0 to Array.length a - 1 do
           if i > 0 then Buffer.add_char buf ' ';
           pp buf a.(i)
-        done
+        done;
+        Buffer.add_char buf ']'
       end
     in
     pp buf e
+
+  let to_string e =
+    let buf = Buffer.create 15 in
+    pp buf e;
+    Buffer.contents buf
+
+  let fmt fmt e =
+    Format.pp_print_string fmt (to_string e)
 end
 
 (** {2 Useful default} *)
@@ -241,4 +253,122 @@ module DefaultParam = struct
   let s s = S s
 end
 
-module Default = Make(DefaultParam)
+module Default = struct
+  include Make(DefaultParam)
+
+  exception EOI
+  exception Error of string
+
+  module Lexbuf = struct
+    type t = {
+      mutable s : string;
+      mutable i : int;
+      get : (unit -> string option);
+    }
+
+    let of_string s = { s; i=0; get = (fun () -> None); }
+
+    let of_fun get = { s=""; i = 0; get; }
+
+    let of_chan c =
+      let s = String.make 64 ' ' in
+      let get () =
+        try
+          let n = input c s 0 64 in
+          Some (String.sub s 0 n)
+        with End_of_file -> None
+      in
+      { s = ""; i = 0; get; }
+  end
+
+  let rec _get_rec lb =
+    if lb.Lexbuf.i >= String.length lb.Lexbuf.s
+      then match lb.Lexbuf.get () with
+      | None -> raise EOI
+      | Some s' ->
+        lb.Lexbuf.s <- s';
+        lb.Lexbuf.i <- 0;
+        _get_rec lb
+      else lb.Lexbuf.s.[lb.Lexbuf.i]
+
+  let _get lb =
+    if lb.Lexbuf.i >= String.length lb.Lexbuf.s
+      then _get_rec lb
+      else lb.Lexbuf.s.[lb.Lexbuf.i]
+
+  let _skip lb = lb.Lexbuf.i <- lb.Lexbuf.i + 1
+
+  (* skip whitespace *)
+  let rec _white lb =
+    match _get lb with
+    | ' ' | '\t' | '\n' -> _skip lb; _white lb
+    | _ -> ()
+
+  (* read lb, expecting the given char *)
+  let _expect lb c =
+    if _get lb = c
+      then _skip lb
+      else raise (Error (Printf.sprintf "expected %c" c))
+
+  let rec __parse_edge g lb =
+    _white lb;
+    match _get lb with
+    | '[' ->
+      _skip lb;
+      let sub = __parse_edges g [] lb in
+      let sub = match sub with
+        | [] -> raise (Error "parsed an empty list of sub-edges")
+        | _ -> Array.of_list sub
+      in
+      _white lb;
+      _expect lb ']';
+      make_edge g sub
+    | '0' .. '9' ->
+      let i = _parse_int 0 lb in
+      make_const g (DefaultParam.I i)
+    | '_' ->
+      _skip lb;
+      fresh g
+    | _ ->
+      let s = _parse_str (Buffer.create 15) lb in
+      make_const g (DefaultParam.S s)
+
+  and __parse_edges g acc lb =
+    _white lb;
+    match _get lb with
+    | ']' -> List.rev acc  (* done *)
+    | _ ->
+      let e = __parse_edge g lb in
+      __parse_edges g (e::acc) lb
+
+  and _parse_int i lb =
+    match _get lb with
+    | ('0' .. '9') as c ->
+      let n = Char.code c - Char.code '0' in
+      _skip lb;
+      _parse_int ((i * 10) + n) lb
+    | _ -> i
+
+  and _parse_str buf lb =
+    match _get lb with
+    | ' ' | '\t' | '\n' | ']' -> Buffer.contents buf  (* done *)
+    | '\\' ->
+      (* must read next char *)
+      _skip lb;
+      Buffer.add_char buf (_get lb);
+      _skip lb;
+      _parse_str buf lb
+    | c ->
+      Buffer.add_char buf c;
+      _skip lb;
+      _parse_str buf lb
+
+  (* parse one edge *)
+  let parse_edge g lb =
+    try `Ok (__parse_edge g lb)
+    with
+    | EOI -> `Error "unexpected end of input"
+    | Error e -> `Error e
+
+  let edge_of_string g s = parse_edge g (Lexbuf.of_string s)
+end
