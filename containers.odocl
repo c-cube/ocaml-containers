@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b68696a2df00165022fe21a389026f4f)
+# DO NOT EDIT (digest: 8a4d45e8f3b44572f3dfbac03926e207)
 Cache
 Deque
 Gen
@@ -37,5 +37,6 @@ BencodeOnDisk
 Show
 TTree
 HGraph
+VPTree
 Behavior
 # OASIS_STOP
