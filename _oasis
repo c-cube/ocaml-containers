@@ -64,7 +64,7 @@ Library "containers_lwt"
   XMETARequires:    containers,lwt
 
 Library "containers_cgi"
-  Path:             .
+  Path:             cgi
   Modules:          ToWeb
   FindlibName:      cgi
   FindlibParent:    containers
@@ -78,6 +78,7 @@ Document containers
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
   Install:              true
+  Build$:               flag(lwt)
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: containers,containers.lwt
 
@@ -103,11 +104,11 @@ Executable run_tests
   BuildDepends: containers, oUnit, lwt, threads, lwt.unix
 
 Executable web_pwd
-  Path: examples
+  Path: examples/cgi/
   Install: false
   MainIs: web_pwd.ml
   Build$: flag(cgi)
-  BuildDepends: containers.cgi, threads, CamlGI
+  BuildDepends: containers, containers.cgi, threads, CamlGI
 
 SourceRepository head
   Type: git
