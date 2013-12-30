@@ -24,65 +24,14 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Distributed Algorithms} *)
+(** {1 Automaton} *)
 
 type ('s, -'i, +'o) t = 's -> 'i -> 's * 'o list
 (** Transition function of an event automaton *)
 
-type ('s, 'i, 'o) instance
-(** Instance of an automaton, with a concrete state, and connections to other
-    automaton instances. *)
+type ('s, 'i, 'o) automaton = ('s, 'i, 'o) t
 
-type queue
-(** Stateful value used to store the event (pending transitions) that remain
-  * to process, using an in-memory queue and processing pending tasks until
-  * none remains. A default global queue is provided, see {!default_queue}. *)
-
-val default_queue : queue
-(** Default event queue *)
-
-val create_queue : unit -> queue
-
-val instantiate :
-  ?queue:queue ->
-  f:('s, 'i, 'o) t ->
-  's ->
-  ('s, 'i, 'o) instance
-(** [instantiate ~f init] creates an instance of [f] with initial state
-    [init]. 
-    
-    @param queue event queue used to process transitions of the automaton
-    upon calls to {!send}. Default value is {!default_queue}. *)
-
-val transition : ('s, 'i, 'o) instance -> ('s, 'i, 'o) t
-(** Transition function of this instance *)
-
-val state : ('s, _, _) instance -> 's
-(** Current state of the automaton instance *)
-
-val on_transition : ('s, 'i, 'o) instance -> ('s -> 'i -> 's * 'o list -> bool) -> unit
-(** [on_state_change a k] calls [k] with the previous state, input,
-    new state and ouputs of [a] every time [a] changes state.
-    The callback [k] returns a boolean to signal whether it wants to continue
-    being called ([true]) or stop being called ([false]). *)
-
-val connect : (_, _, 'a) instance -> (_, 'a, _) instance -> unit
-(** [connect left right] connects the ouput of [left] to the input of [right].
-    Outputs of [left] will be fed to [right]. *)
-
-val connect_map : ('a -> 'b) -> (_, _, 'a) instance -> (_, 'b, _) instance -> unit
-(** [connect_map f left right] is a generalization of {!connect}, that
-    applies [f] to outputs of [left] before they are sent to [right] *)
-
-val send : (_, 'i, _) instance -> 'i -> unit
-(** [send a i] uses [a]'s transition function to update [a] with the input
-    event [i]. The output of the transition function (a list of outputs) is
-    recursively processed.
-
-    This may not terminate, if the automata keep on creating new outputs that
-    trigger other outputs forever. *)
-
-(** {2 Helpers} *)
+(** {2 Combinators} *)
 
 val map_i : ('a -> 'b) -> ('s, 'b, 'o) t -> ('s, 'a, 'o) t
 (** map inputs *)
@@ -90,11 +39,83 @@ val map_i : ('a -> 'b) -> ('s, 'b, 'o) t -> ('s, 'a, 'o) t
 val map_o : ('a -> 'b) -> ('s, 'i, 'a) t -> ('s, 'i, 'b) t
 (** map outputs *)
 
-val iter : ('s -> 'i -> ('s * 'o list) -> unit) -> ('s,'i,'o) instance -> unit
-(** Iterate on every transition (wrapper around {!on_transition}) *)
+val fmap_o : ('a -> 'b list) -> ('s, 'i, 'a) t -> ('s, 'i, 'b) t
+(** flat-map outputs *)
 
-val iter_state : ('s -> unit) -> ('s, _, _) instance -> unit
+val filter_i : ('a -> bool) -> ('s, 'a, 'o) t -> ('s, 'a, 'o) t
+(** Filter inputs *)
 
-val iter_input : ('i -> unit) -> (_, 'i, _) instance -> unit
+val filter_o : ('a -> bool) -> ('s, 'i, 'a) t -> ('s, 'i, 'a) t
+(** Filter outputs *)
 
-val iter_output : ('o -> unit) -> (_, _, 'o) instance -> unit
+val fold : ('a -> 'b -> 'a) -> ('a, 'b, 'a) t
+(** Automaton that folds over its input using the given function *)
+
+val product : ('s1, 'i, 'o) t -> ('s2, 'i, 'o) t -> ('s1 * 's2, 'i, 'o) t
+(** Product of transition functions and states. *)
+
+(** {2 Input}
+
+Input sink, that accepts values of a given type. Cofunctor. *)
+
+module I : sig
+  type -'a t
+
+  val comap : ('a -> 'b) -> 'b t -> 'a t
+
+  val filter : ('a -> bool) -> 'a t -> 'a t
+
+  val send : 'a -> 'a t -> unit
+  (** [send a i] uses [a]'s transition function to update [a] with the input
+      event [i]. The output of the transition function (a list of outputs) is
+      recursively processed.
+
+      This may not terminate, if the automata keep on creating new outputs that
+      trigger other outputs forever. *)
+end
+
+(** {2 Output}
+
+Stream of output values. Functor. *)
+
+module O : sig
+  type 'a t
+
+  val map : ('a -> 'b) -> 'a t -> 'b t
+
+  val filter : ('a -> bool) -> 'a t -> 'a t
+
+  val on : 'a t -> ('a -> bool) -> unit
+
+  val once : 'a t -> ('a -> unit) -> unit
+
+  val propagate : 'a t -> 'a t -> unit
+  (** [propagate a b] forwards all elements of [a] into [b]. As long as [a]
+      exists, [b] will not be GC'ed. *)
+end
+
+val connect : 'a O.t -> 'a I.t -> unit
+  (** Pipe an output into an input *)
+
+(** {2 Instance} *)
+
+module Instance : sig
+  type ('s, 'i, 'o) t
+  (** Instance of an automaton, with a concrete state, and connections to other
+      automaton instances. *)
+
+  val transition_function : ('s, 'i, 'o) t -> ('s, 'i, 'o) automaton
+  (** Transition function of this instance *)
+
+  val i : (_, 'a, _) t -> 'a I.t
+
+  val o : (_, _, 'a) t -> 'a O.t
+
+  val state : ('a, _, _) t -> 'a
+
+  val transitions : ('s, 'i, 'o) t -> ('s * 'i * 's * 'o list) O.t
+
+  val create : f:('s, 'i, 'o) automaton -> 's -> ('s, 'i, 'o) t
+  (** [create ~f init] creates an instance of [f] with initial state
+      [init]. *)
+end
