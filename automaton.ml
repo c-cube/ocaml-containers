@@ -67,7 +67,9 @@ let product f1 f2 (s1, s2) i =
 module I = struct
   type 'a t = 'a -> unit
 
-  let send x i = i x
+  let create f = f
+
+  let send x i = x i
 
   let comap f i x = i (f x)
 
@@ -153,7 +155,7 @@ module O = struct
 end
 
 let connect o i =
-  O.on o (fun x -> I.send x i; true)
+  O.on o (fun x -> I.send i x; true)
 
 module Instance = struct
   type ('s, 'i, 'o) t = {
@@ -173,6 +175,8 @@ module Instance = struct
   let state a = a.state
 
   let transitions a = a.transitions
+
+  let send a i = I.send a.i i
 
   let _q = Queue.create ()
 

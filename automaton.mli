@@ -61,17 +61,14 @@ Input sink, that accepts values of a given type. Cofunctor. *)
 module I : sig
   type -'a t
 
+  val create : ('a -> unit) -> 'a t
+
   val comap : ('a -> 'b) -> 'b t -> 'a t
 
   val filter : ('a -> bool) -> 'a t -> 'a t
 
-  val send : 'a -> 'a t -> unit
-  (** [send a i] uses [a]'s transition function to update [a] with the input
-      event [i]. The output of the transition function (a list of outputs) is
-      recursively processed.
-
-      This may not terminate, if the automata keep on creating new outputs that
-      trigger other outputs forever. *)
+  val send : 'a t -> 'a -> unit
+  (** [send a i] inputs [i] on the channel [a]. *)
 end
 
 (** {2 Output}
@@ -81,6 +78,8 @@ Stream of output values. Functor. *)
 module O : sig
   type 'a t
 
+  val create : unit -> 'a t
+
   val map : ('a -> 'b) -> 'a t -> 'b t
 
   val filter : ('a -> bool) -> 'a t -> 'a t
@@ -88,6 +87,8 @@ module O : sig
   val on : 'a t -> ('a -> bool) -> unit
 
   val once : 'a t -> ('a -> unit) -> unit
+
+  val send : 'a t -> 'a -> unit
 
   val propagate : 'a t -> 'a t -> unit
   (** [propagate a b] forwards all elements of [a] into [b]. As long as [a]
@@ -115,7 +116,13 @@ module Instance : sig
 
   val transitions : ('s, 'i, 'o) t -> ('s * 'i * 's * 'o list) O.t
 
+  val send : (_, 'i, _) t -> 'i -> unit
+  (** Shortcut to send an input *)
+
   val create : f:('s, 'i, 'o) automaton -> 's -> ('s, 'i, 'o) t
   (** [create ~f init] creates an instance of [f] with initial state
-      [init]. *)
+      [init].
+      
+      @param f the transition function
+      @param init the initial state *)
 end
