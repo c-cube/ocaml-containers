@@ -43,3 +43,16 @@ end
 val next_transition :
   ('s,'i,'o) Automaton.Instance.t ->
   ('s * 'i * 's * 'o list) Lwt.t
+
+(** {2 Interface with Unix} *)
+module Unix : sig
+  val read_write : Lwt_unix.file_descr ->
+    ( [  `Active | `Stopped | `Error of exn ]
+    , [ `Stop | `Write of string | `JustRead of string | `Failwith of exn ]
+    , [> `Read of string | `Closed | `Error of exn ]
+    ) Automaton.Instance.t
+  (** Read and write on the given filedescriptor *)
+
+  val timeout : float -> [`Timeout] Automaton.O.t
+  (** Wait the given amount of time, then trigger [`Timeout] *)
+end

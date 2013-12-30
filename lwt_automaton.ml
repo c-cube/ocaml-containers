@@ -28,10 +28,10 @@ of this software, even if advised of the possibility of such damage.
 
 module I = struct
   let send f i =
-    Lwt.on_success f (fun x -> Automaton.I.send x i)
+    Lwt.on_success f (Automaton.I.send i)
 
   let iter_stream str i =
-    Lwt_stream.iter (fun x -> Automaton.I.send x i) str
+    Lwt_stream.iter (Automaton.I.send i) str
 end
 
 module O = struct
@@ -42,3 +42,53 @@ module O = struct
 end
 
 let next_transition a = O.next (Automaton.Instance.transitions a)
+
+let (>>=) = Lwt.bind
+
+module Unix = struct
+  let read_write fd =
+    let err_fut, err_send = Lwt.wait () in
+    let transition st i = match st, i with
+      | `Error _, _
+      | `Stopped, _ -> st, []
+      | `Active, `Failwith e ->
+          Lwt.ignore_result (Lwt_unix.close fd);
+          `Error e, [ `Error e ]
+      | `Active, `Stop ->
+          Lwt.ignore_result (Lwt_unix.close fd);
+          `Stopped, [`Closed]
+      | `Active, `Write s ->
+          let fut = Lwt_unix.write fd s 0 (String.length s) in
+          (* propagate error *)
+          Lwt.on_failure fut (fun e -> Lwt.wakeup err_send e);
+          st, []
+      | `Active, `JustRead s ->
+          st, [`Read s]
+    in
+    let a = Automaton.Instance.create ~f:transition `Active in
+    let buf = String.make 128 ' ' in
+    (* read a string from buffer *)
+    let rec _read () =
+      if Automaton.Instance.state a = `Active
+        then Lwt_unix.read fd buf 0 (String.length buf) >>= fun n ->
+        begin if n = 0
+          then Automaton.Instance.send a `Stop
+          else
+            let s = String.sub buf 0 n in
+            Automaton.Instance.send a (`JustRead s)
+        end;
+        _read ()
+      else Lwt.return_unit
+    in
+    Lwt.ignore_result (_read ());
+    Lwt.on_success err_fut
+      (fun e -> Automaton.Instance.send a (`Failwith e));
+    a
+
+  let timeout f =
+    let o = Automaton.O.create () in
+    let fut = Lwt_unix.sleep f in
+    Lwt.on_success fut
+      (fun () -> Automaton.O.send o `Timeout);
+    o
+end

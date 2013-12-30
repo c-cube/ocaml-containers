@@ -61,8 +61,8 @@ Library "containers_lwt"
   FindlibParent:    containers
   Build$:           flag(lwt)
   Install$:         flag(lwt)
-  BuildDepends:     containers,lwt
-  XMETARequires:    containers,lwt
+  BuildDepends:     containers,lwt,lwt.unix
+  XMETARequires:    containers,lwt,lwt.unix
 
 Library "containers_cgi"
   Path:             cgi

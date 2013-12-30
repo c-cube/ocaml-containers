@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 228a31c6369b1dd4a6ea763cff7e020e)
+# DO NOT EDIT (digest: 6c4b4efc4408717882c37d4e5ee32d91)
 version = "0.1"
 description = "A bunch of modules, including polymorphic containers."
 requires = "unix"
@@ -22,7 +22,7 @@ package "thread" (
 package "lwt" (
  version = "0.1"
  description = "A bunch of modules, including polymorphic containers."
- requires = "containers lwt"
+ requires = "containers lwt lwt.unix"
  archive(byte) = "containers_lwt.cma"
  archive(byte, plugin) = "containers_lwt.cma"
  archive(native) = "containers_lwt.cmxa"
