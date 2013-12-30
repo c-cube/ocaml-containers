@@ -33,28 +33,29 @@ type ('s, 'i, 'o) instance
 (** Instance of an automaton, with a concrete state, and connections to other
     automaton instances. *)
 
-module EventQueue : sig
-  type t
-  (** Stateful value used to store the event (pending transitions) that remain
-    * to process, using an in-memory queue and processing pending tasks until
-    * none remains. A default global queue is provided, see {!default}. *)
+type queue
+(** Stateful value used to store the event (pending transitions) that remain
+  * to process, using an in-memory queue and processing pending tasks until
+  * none remains. A default global queue is provided, see {!default_queue}. *)
 
-  val default : t
-  (** Default event queue *)
+val default_queue : queue
+(** Default event queue *)
 
-  val create : unit -> t
-end
+val create_queue : unit -> queue
 
-val instantiate : ?queue:EventQueue.t ->
-                  f:('s, 'i, 'o) t -> 's -> ('s, 'i, 'o) instance
+val instantiate :
+  ?queue:queue ->
+  f:('s, 'i, 'o) t ->
+  's ->
+  ('s, 'i, 'o) instance
 (** [instantiate ~f init] creates an instance of [f] with initial state
-    [init]. The [queue] is used to process transitions of this automaton.
+    [init]. 
     
     @param queue event queue used to process transitions of the automaton
-    upon calls to {!send}. Default value is {!EventQueue.default}. *)
+    upon calls to {!send}. Default value is {!default_queue}. *)
 
-val transition : ('s, 'i, 'o) instance -> 'i -> ('s * 'o list)
-(** Compute the transition function for the given input *)
+val transition : ('s, 'i, 'o) instance -> ('s, 'i, 'o) t
+(** Transition function of this instance *)
 
 val state : ('s, _, _) instance -> 's
 (** Current state of the automaton instance *)
@@ -65,9 +66,13 @@ val on_transition : ('s, 'i, 'o) instance -> ('s -> 'i -> 's * 'o list -> bool) 
     The callback [k] returns a boolean to signal whether it wants to continue
     being called ([true]) or stop being called ([false]). *)
 
-val connect : left:(_, _, 'a) instance -> right:(_, 'a, _) instance -> unit
-(** [connect ~left ~right] connects the ouput of [left] to the input of [right].
+val connect : (_, _, 'a) instance -> (_, 'a, _) instance -> unit
+(** [connect left right] connects the ouput of [left] to the input of [right].
     Outputs of [left] will be fed to [right]. *)
+
+val connect_map : ('a -> 'b) -> (_, _, 'a) instance -> (_, 'b, _) instance -> unit
+(** [connect_map f left right] is a generalization of {!connect}, that
+    applies [f] to outputs of [left] before they are sent to [right] *)
 
 val send : (_, 'i, _) instance -> 'i -> unit
 (** [send a i] uses [a]'s transition function to update [a] with the input
@@ -76,3 +81,20 @@ val send : (_, 'i, _) instance -> 'i -> unit
 
     This may not terminate, if the automata keep on creating new outputs that
     trigger other outputs forever. *)
+
+(** {2 Helpers} *)
+
+val map_i : ('a -> 'b) -> ('s, 'b, 'o) t -> ('s, 'a, 'o) t
+(** map inputs *)
+
+val map_o : ('a -> 'b) -> ('s, 'i, 'a) t -> ('s, 'i, 'b) t
+(** map outputs *)
+
+val iter : ('s -> 'i -> ('s * 'o list) -> unit) -> ('s,'i,'o) instance -> unit
+(** Iterate on every transition (wrapper around {!on_transition}) *)
+
+val iter_state : ('s -> unit) -> ('s, _, _) instance -> unit
+
+val iter_input : ('i -> unit) -> (_, 'i, _) instance -> unit
+
+val iter_output : ('o -> unit) -> (_, _, 'o) instance -> unit

@@ -29,28 +29,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type ('s, -'i, +'o) t = 's -> 'i -> 's * 'o list
 (** Transition function of an event automaton *)
 
-module EventQueue = struct
-  type t = (unit -> unit) Queue.t
+  type queue = (unit -> unit) Queue.t
 
-  let create () = Queue.create ()
+  let create_queue () = Queue.create ()
 
-  let default = create ()
+  let default_queue = create_queue ()
 
-  let _process q =
-    while not (Queue.is_empty q) do
-      let task = Queue.pop q in
-      task ()
-    done
+let _process q =
+  while not (Queue.is_empty q) do
+    let task = Queue.pop q in
+    task ()
+  done
 
-  let _schedule q task = Queue.push task q
-end
+let _schedule q task = Queue.push task q
 
 (* empty callback *)
 let __noop s i os = true
 
 type ('s, 'i, 'o) instance = {
   transition : ('s, 'i, 'o) t;
-  queue : EventQueue.t;
+  queue : queue;
   mutable state : 's;
   mutable connections : 'o connection list;
   mutable n_callback : int;
@@ -58,9 +56,11 @@ type ('s, 'i, 'o) instance = {
 }
 
 (* connection to another automaton *)
-and 'a connection = Conn : (_, 'a, _) instance -> 'a connection
+and 'a connection =
+  | Conn : (_, 'a, _) instance -> 'a connection
+  | ConnMap : ('a -> 'b) * (_, 'b, _) instance -> 'a connection
 
-let instantiate ?(queue=EventQueue.default) ~f init = {
+let instantiate ?(queue=default_queue) ~f init = {
   transition = f;
   queue;
   state = init;
@@ -69,7 +69,7 @@ let instantiate ?(queue=EventQueue.default) ~f init = {
   callback = Array.make 3 __noop;
 }
 
-let transition a i = a.transition a.state i
+let transition a = a.transition
 
 let state a = a.state
 
@@ -84,8 +84,11 @@ let on_transition a k =
   a.callback.(a.n_callback) <- k;
   a.n_callback <- a.n_callback + 1
 
-let connect ~left ~right =
+let connect left right =
   left.connections <- (Conn right) :: left.connections
+
+let connect_map f left right =
+  left.connections <- (ConnMap (f, right)) :: left.connections
 
 (* remove i-th callback of [a] *)
 let _remove_callback a i =
@@ -123,11 +126,29 @@ let rec send : type s i o. (s, i, o) instance -> i -> unit
     (fun o -> _forward_connections a.connections o)
     os;
   (* if no enclosing call to [send], we need to process events *)
-  if first then EventQueue._process a.queue
+  if first then _process a.queue
 
 and _forward_connections : type a. a connection list -> a -> unit 
 = fun l o -> match l with
   | [] -> ()
   | (Conn a') :: l' ->
-      EventQueue._schedule a'.queue (fun () -> send a' o);
+      _schedule a'.queue (fun () -> send a' o);
       _forward_connections l' o
+  | (ConnMap (f, a')) :: l' ->
+      _schedule a'.queue (fun () -> send a' (f o));
+      _forward_connections l' o
+
+(** {2 Helpers} *)
+
+let map_i f a s i = a s (f i)
+
+let map_o f a s i =
+  let s', os = a s i in
+  s', List.map f os
+
+let iter k a =
+  on_transition a (fun s i os -> k s i os; true)
+
+let iter_state k = iter (fun s i (s',os) -> k s')
+let iter_input k = iter (fun s i os -> k i)
+let iter_output k = iter (fun s i (_,os) -> List.iter k os)
