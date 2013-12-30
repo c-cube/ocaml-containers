@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1f5b1920aa5191df724ab0786999e476)
+# DO NOT EDIT (digest: cb8d0069d6571765cb2126aec9384e1e)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -58,6 +58,8 @@
 <*.ml{,i}>: package(threads)
 # Library containers_lwt
 "containers_lwt.cmxs": use_containers_lwt
+"behavior.cmx": for-pack(Containers_lwt)
+"lwt_automaton.cmx": for-pack(Containers_lwt)
 <*.ml{,i}>: use_containers
 <*.ml{,i}>: package(lwt)
 <*.ml{,i}>: package(unix)

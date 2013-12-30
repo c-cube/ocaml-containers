@@ -55,7 +55,8 @@ Library "containers_thread"
 
 Library "containers_lwt"
   Path:             .
-  Modules:          Behavior
+  Modules:          Behavior, Lwt_automaton
+  Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
   Build$:           flag(lwt)

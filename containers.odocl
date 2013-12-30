@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1374a4df6a056c922bd254bb51737f89)
+# DO NOT EDIT (digest: 509efa2d48f1db17047d029d9c883d07)
 Cache
 Deque
 Gen
@@ -39,4 +39,5 @@ TTree
 HGraph
 Automaton
 Behavior
+Lwt_automaton
 # OASIS_STOP
