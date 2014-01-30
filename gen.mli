@@ -192,11 +192,11 @@ module type S = sig
 
   val merge : 'a gen t -> 'a t
     (** Pick elements fairly in each sub-generator. The merge of enums
-        [e1, e2, ... en] picks one element in [e1], then one element in [e2],
-        then in [e3], ..., then in [en], and then starts again at [e1]. Once
-        a generator is empty, it is skipped; when they are all empty,
+        [e1, e2, ... ] picks elements in [e1], [e2],
+        in [e3], [e1], [e2] .... Once a generator is empty, it is skipped;
+        when they are all empty, and none remains in the input,
         their merge is also empty. 
-        For instance, [merge [1;3;5] [2;4;6]] will be [1;2;3;4;5;6]. *)
+        For instance, [merge [1;3;5] [2;4;6]] will be, in disorder, [1;2;3;4;5;6]. *)
 
   val intersection : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t
     (** Intersection of two sorted sequences. Only elements that occur in both

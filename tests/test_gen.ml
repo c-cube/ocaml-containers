@@ -56,7 +56,7 @@ let test_filterMap () =
 let test_merge () =
   let e = Gen.of_list [1--3; 4--6; 7--9] in
   let e' = Gen.merge e in
-  OUnit.assert_equal [1;4;7;2;5;8;3;6;9] (Gen.to_list e');
+  OUnit.assert_equal [1;2;3;4;5;6;7;8;9] (Gen.to_list e' |> List.sort compare);
   ()
 
 let test_persistent () =

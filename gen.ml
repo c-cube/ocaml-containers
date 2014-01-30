@@ -955,7 +955,7 @@ let product gena genb =
     | `Stop -> None
     | `GetLeft ->
       begin match gena() with
-        | None -> cur := `GetRight
+        | None -> cur := `GetRightOrStop
         | Some a -> all_a := a :: !all_a; cur := `ProdLeft (a, !all_b)
       end;
       next ()
