@@ -27,8 +27,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Values of type ['a Gen.t] represent a possibly infinite sequence of values
 of type 'a. One can only iterate once on the sequence, as it is consumed
-by iteration/deconstruction/access. The exception {!EOG} (end of generator)
-is raised when the generator is empty.
+by iteration/deconstruction/access. [None] is returned when the generator
+is exhausted.
 
 The submodule {!Restart} provides utilities to work with
 {b restartable generators}, that is, functions [unit -> 'a Gen.t] that
@@ -37,12 +37,9 @@ allow to build as many generators from the same source as needed.
 
 (** {2 Global type declarations} *)
 
-exception EOG
-  (** End of Generation *)
-
-type 'a t = unit -> 'a
+type 'a t = unit -> 'a option
   (** A generator may be called several times, yielding the next value
-      each time. It raises EOG when it reaches the end. *)
+      each time. It returns [None] when no elements remain *)
 
 type 'a gen = 'a t
 
@@ -166,14 +163,20 @@ module type S = sig
     (** Is the predicate true for at least one element? *)
 
   val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+    (** Succeeds if all pairs of elements satisfy the predicate.
+        Ignores elements of an iterator if the other runs dry. *)
 
   val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+    (** Succeeds if some pair of elements satisfy the predicate.
+        Ignores elements of an iterator if the other runs dry. *)
 
   val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
-    (** Minimum element, according to the given comparison function *)
+    (** Minimum element, according to the given comparison function.
+        @raise Invalid_argument if the generator is empty *)
 
   val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
-    (** Maximum element, see {!min} *)
+    (** Maximum element, see {!min}
+        @raise Invalid_argument if the generator is empty *)
 
   val eq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
     (** Equality of generators. *)
@@ -188,8 +191,7 @@ module type S = sig
   (** {2 Complex combinators} *)
 
   val merge : 'a gen t -> 'a t
-    (** Pick elements fairly in each sub-generator. The given enum
-        must be finite (not its elements, though). The merge of enums
+    (** Pick elements fairly in each sub-generator. The merge of enums
         [e1, e2, ... en] picks one element in [e1], then one element in [e2],
         then in [e3], ..., then in [en], and then starts again at [e1]. Once
         a generator is empty, it is skipped; when they are all empty,
@@ -203,7 +205,7 @@ module type S = sig
   val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t
     (** Merge two sorted sequences into a sorted sequence *)
 
-  val sorted_merge_n : ?cmp:('a -> 'a -> int) -> 'a gen t -> 'a t
+  val sorted_merge_n : ?cmp:('a -> 'a -> int) -> 'a t list -> 'a t
     (** Sorted merge of multiple sorted sequences *)
 
   val tee : ?n:int -> 'a t -> 'a gen list
@@ -218,7 +220,8 @@ module type S = sig
 
   val interleave : 'a t -> 'a t -> 'a t
     (** [interleave a b] yields an element of [a], then an element of [b],
-        and so on until the end of [a] or [b] is reached. *)
+        and so on. When a generator is exhausted, this behaves like the
+        other generator. *)
 
   val intersperse : 'a -> 'a t -> 'a t
     (** Put the separator element between all elements of the given enum *)
@@ -297,19 +300,18 @@ end
 
 (** {2 Transient generators} *)
 
-val get : 'a t -> 'a
-  (** Get the next value
-      @raise EOG if there is no next value *)
+val get : 'a t -> 'a option
+  (** Get the next value *)
 
-val next : 'a t -> 'a
+val next : 'a t -> 'a option
   (** Synonym for {!get} *)
 
-val get_safe : 'a t -> 'a option
-  (** Get the next value, or return None *)
+val get_exn : 'a t -> 'a
+  (** Get the next value, or fails
+      @raise Invalid_argument if no element remains *)
 
 val junk : 'a t -> unit
-  (** Drop the next value, discarding it.
-      @raise EOG if there is no next value *)
+  (** Drop the next value, discarding it. *)
 
 val repeatedly : (unit -> 'a) -> 'a t
   (** Call the same function an infinite number of times (useful for instance

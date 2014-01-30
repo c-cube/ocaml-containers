@@ -27,12 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {2 Global type declarations} *)
 
-exception EOG
-  (** End of Generation *)
-
-type 'a t = unit -> 'a
-  (** A generator may be called several times, yielding the next value
-      each time. It raises EOG when it reaches the end. *)
+type 'a t = unit -> 'a option
 
 type 'a gen = 'a t
 
@@ -152,21 +147,27 @@ module type S = sig
     (** Is the predicate true for at least one element? *)
 
   val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+    (** Succeeds if all pairs of elements satisfy the predicate.
+        Ignores elements of an iterator if the other runs dry. *)
 
   val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+    (** Succeeds if some pair of elements satisfy the predicate.
+        Ignores elements of an iterator if the other runs dry. *)
 
   val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
-    (** Minimum element, according to the given comparison function *)
+    (** Minimum element, according to the given comparison function.
+        @raise Invalid_argument if the generator is empty *)
 
   val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
-    (** Maximum element, see {!min} *)
+    (** Maximum element, see {!min}
+        @raise Invalid_argument if the generator is empty *)
 
   val eq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
     (** Equality of generators. *)
 
   val lexico : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
-    (** Lexicographic comparison of generators. If the common prefix is
-        the same, the shortest one is considered as smaller than the other. *)
+    (** Lexicographic comparison of generators. If a generator is a prefix
+        of the other one, it is considered smaller. *)
 
   val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
     (** Synonym for {! lexico} *)
@@ -174,8 +175,7 @@ module type S = sig
   (** {2 Complex combinators} *)
 
   val merge : 'a gen t -> 'a t
-    (** Pick elements fairly in each sub-generator. The given enum
-        must be finite (not its elements, though). The merge of enums
+    (** Pick elements fairly in each sub-generator. The merge of enums
         [e1, e2, ... en] picks one element in [e1], then one element in [e2],
         then in [e3], ..., then in [en], and then starts again at [e1]. Once
         a generator is empty, it is skipped; when they are all empty,
@@ -189,7 +189,7 @@ module type S = sig
   val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t
     (** Merge two sorted sequences into a sorted sequence *)
 
-  val sorted_merge_n : ?cmp:('a -> 'a -> int) -> 'a gen t -> 'a t
+  val sorted_merge_n : ?cmp:('a -> 'a -> int) -> 'a t list -> 'a t
     (** Sorted merge of multiple sorted sequences *)
 
   val tee : ?n:int -> 'a t -> 'a gen list
@@ -204,7 +204,8 @@ module type S = sig
 
   val interleave : 'a t -> 'a t -> 'a t
     (** [interleave a b] yields an element of [a], then an element of [b],
-        and so on until the end of [a] or [b] is reached. *)
+        and so on. When a generator is exhausted, this behaves like the
+        other generator. *)
 
   val intersperse : 'a -> 'a t -> 'a t
     (** Put the separator element between all elements of the given enum *)
@@ -283,50 +284,50 @@ end
 
 (** {2 Transient generators} *)
 
-let empty () = raise EOG
+let empty () = None
 
 let singleton x =
   let first = ref true in
   fun () ->
-    if !first then (first := false; x) else raise EOG
+    if !first then (first := false; Some x) else None
 
-let rec repeat x () = x
+let rec repeat x () = Some x
 
-let repeatedly f () = f ()
+let repeatedly f () = Some (f ())
 
 let iterate x f =
   let cur = ref x in
   fun () ->
     let x = !cur in
     cur := f !cur;
-    x
+    Some x
 
 let next gen = gen ()
 
 let get gen = gen ()
 
-let get_safe gen =
-  try Some (gen ())
-  with EOG -> None
+let get_exn gen =
+  match gen () with
+  | Some x -> x
+  | None -> raise (Invalid_argument "Gen.get_exn")
 
 let junk gen = ignore (gen ())
 
 let rec fold f acc gen =
-  let acc, stop =
-    try f acc (gen ()), false
-    with EOG -> acc, true
-  in
-  if stop then acc else fold f acc gen
+  match gen () with
+  | None -> acc
+  | Some x -> fold f (f acc x) gen
 
 let rec fold2 f acc e1 e2 =
-  let acc, stop =
-    try f acc (e1()) (e2()), false
-    with EOG -> acc, true
-  in
-  if stop then acc else fold2 f acc e1 e2
+  match e1(), e2() with
+  | Some x, Some y -> fold2 f (f acc x y) e1 e2
+  | _ -> acc
 
 let reduce f g =
-  let acc = try g () with EOG -> raise (Invalid_argument "reduce") in 
+  let acc = match g () with
+    | None -> raise (Invalid_argument "reduce")
+    | Some x -> x
+  in 
   fold f acc g
 
 (* Dual of {!fold}, with a deconstructing operation *)
@@ -334,102 +335,137 @@ let unfold f acc =
   let acc = ref acc in
   fun () ->
     match f !acc with
-    | None -> raise EOG
+    | None -> None
     | Some (x, acc') ->
       acc := acc';
-      x
+      Some x
 
-let iter f gen =
-  try
-    while true do f (gen ()) done
-  with EOG ->
-    ()
+let rec iter f gen =
+  match gen() with
+  | None -> ()
+  | Some x -> f x; iter f gen
 
 let iteri f gen =
-  let n = ref 0 in
-  try
-    while true do f !n (gen ()); incr n done
-  with EOG ->
-    ()
+  let rec iteri i = match gen() with
+  | None -> ()
+  | Some x -> f i x; iteri (i+1)
+  in
+  iteri 0
 
-let is_empty enum =
-  try ignore (enum ()); false
-  with EOG -> true
+let is_empty gen = match gen () with
+  | None -> true
+  | Some _ -> false
 
 let length gen =
   fold (fun acc _ -> acc + 1) 0 gen
 
-let scan f acc g =
-  let acc = ref acc in
-  let first = ref true in
-  fun () ->
-    if !first
-      then (first := false; !acc)
-      else begin
-        acc := f !acc (g ());
-        !acc
-      end
+(* useful state *)
+type 'a run_state =
+  | Init
+  | Run of 'a
+  | Stop
 
-let iter2 f gen1 gen2 =
-  try
-    while true do f (gen1 ()) (gen2 ()) done;
-  with EOG -> ()
+let scan f acc g =
+  let state = ref Init in
+  fun () ->
+    match !state with
+    | Init ->
+        state := Run acc;
+        Some acc
+    | Stop -> None
+    | Run acc ->
+        match g() with
+        | None -> state := Stop; None
+        | Some x ->
+            let acc' = f acc x in
+            state := Run acc';
+            Some acc'
+
+let rec iter2 f gen1 gen2 =
+  match gen1(), gen2() with
+  | Some x, Some y -> f x y; iter2 f gen1 gen2
+  | _ -> ()
 
 (** {3 Lazy} *)
 
-let map f gen () =
-  f (gen ())
+let map f gen =
+  let stop = ref false in
+  fun () ->
+    if !stop then None
+    else match gen() with
+    | None -> stop:= true; None
+    | Some x -> Some (f x)
 
 let append gen1 gen2 =
-  let gen = ref gen1 in
   let first = ref true in
-  (* get next element *)
-  let rec next () =
-    try !gen ()
-    with EOG ->
-      if !first then begin
-        first := false;
-        gen := gen2; (* switch to the second generator *)
-        next ()
-      end else raise EOG  (* done *)
+  let rec next() =
+    if !first
+    then match gen1() with
+    | (Some _) as x -> x
+    | None -> first:=false; next()
+    else gen2()
   in next
 
 let flatten next_gen =
-  let gen = ref empty in
+  let state = ref Init in
   (* get next element *)
   let rec next () =
-    try !gen ()
-    with EOG ->
-      (* jump to next sub-enum *)
-      gen := next_gen (); 
-      next ()
-  in next
+    match !state with
+    | Init -> get_next_gen()
+    | Run gen ->
+      begin match gen () with
+      | None -> get_next_gen ()
+      | (Some _) as x -> x
+      end
+    | Stop -> None
+  and get_next_gen() = match next_gen() with
+    | None -> state := Stop; None
+    | Some gen -> state := Run gen; next()
+  in
+  next
 
 let flatMap f next_elem =
-  let gen = ref empty in
-  (* get next element *)
-  let rec next () =
-    try !gen ()
-    with EOG ->
-      (* enumerate f (next element) *)
-      let x = next_elem () in
-      gen := f x;
-      next ()  (* try again, with [gen = f x] *)
-  in next
+  let state = ref Init in
+  let rec next() =
+    match !state with
+    | Init -> get_next_gen()
+    | Run gen ->
+      begin match gen () with
+      | None -> get_next_gen ()
+      | (Some _) as x -> x
+      end
+    | Stop -> None
+  and get_next_gen() = match next_elem() with
+    | None -> state:=Stop; None
+    | Some x ->
+        try state := Run (f x); next()
+        with e -> state := Stop; raise e
+  in
+  next
 
 let mem ?(eq=(=)) x gen =
-  try
-    iter (fun y -> if eq x y then raise Exit) gen;
-    false
-  with Exit -> 
-    true
+  let rec mem eq x gen =
+    match gen() with
+    | Some y -> eq x y || mem eq x gen
+    | None -> false
+  in mem eq x gen
 
 let take n gen =
   assert (n >= 0);
   let count = ref 0 in  (* how many yielded elements *)
   fun () ->
-    if !count = n then raise EOG
-    else begin incr count; gen () end
+    if !count = n || !count = ~-1
+    then None
+    else match gen() with
+      | None -> count := ~-1; None   (* indicate stop *)
+      | (Some _) as x -> incr count; x
+
+(* call [gen] at most [n] times, and stop *)
+let rec __drop n gen =
+  if n = 0 then ()
+  else match gen() with
+    | Some _ -> __drop (n-1) gen
+    | None -> ()
 
 let drop n gen =
   assert (n >= 0);
@@ -440,69 +476,94 @@ let drop n gen =
       else begin
         (* drop [n] elements and yield the next element *)
         dropped := true;
-        for i = 0 to n-1 do ignore (gen()) done;
+        __drop n gen;
         gen()
       end
 
 let nth n gen =
   assert (n>=0);
-  let rec iter i =
-    let x = gen () in
-    if n = i then x else iter (i+1)
-  in
-  try iter 0
-  with EOG -> raise Not_found
+  __drop n gen;
+  match gen () with
+  | None -> raise Not_found
+  | Some x -> x
 
 let filter p gen =
   let rec next () =
     (* wrap exception into option, for next to be tailrec *)
-    match (try Some (gen ()) with EOG -> None) with
-    | None -> raise EOG
-    | Some x ->
+    match gen() with
+    | None -> None
+    | (Some x) as res ->
       if p x
-        then x (* yield element *)
+        then res (* yield element *)
         else next ()  (* discard element *)
   in next
 
 let takeWhile p gen =
+  let stop = ref false in
   let rec next () =
-    let x = gen () in
-    if p x then x else raise EOG
+    if !stop
+    then None
+    else match gen() with
+    | (Some x) as res ->
+        if p x then res else (stop := true; None)
+    | None -> stop:=true; None
   in next
 
+module DropWhileState = struct
+  type t =
+    | Stop
+    | Drop
+    | Yield
+end
+
 let dropWhile p gen =
-  let stop_drop = ref false in
+  let open DropWhileState in
+  let state = ref Stop in
   let rec next () =
-    let x = gen () in
-    if !stop_drop
-      then x  (* yield *)
-    else if p x
-      then next ()  (* continue dropping *)
-      else (stop_drop := true; x)  (* stop dropping *)
+    match !state with
+    | Stop -> None
+    | Drop ->
+        begin match gen () with
+        | None -> state := Stop; None
+        | (Some x) as res ->
+            if p x then next() else (state:=Yield; res)
+        end
+    | Yield ->
+        begin match gen () with
+        | None -> state := Stop; None
+        | (Some x) as res -> res
+        end
   in next
 
 let filterMap f gen =
   (* tailrec *)
   let rec next () =
-    let x = gen () in
-    match f x with
-    | None -> next ()
-    | Some y -> y
+    match gen() with
+    | None -> None
+    | Some x ->
+        match f x with
+        | None -> next()
+        | (Some _) as res -> res
   in next
 
 let zipWith f a b =
-  fun () -> f (a()) (b())
+  let stop = ref false in
+  fun () ->
+    if !stop then None
+    else match a(), b() with
+    | Some xa, Some xb -> Some (f xa xb)
+    | _ -> stop:=true; None
 
-let zip a b =
-  fun () -> a(), b()
+let zip a b = zipWith (fun x y -> x,y) a b
 
 let zipIndex gen =
-  let r = ref 0 in
+  let r = ref ~-1 in
   fun () ->
-    let x = gen () in
-    let n = !r in
-    incr r;
-    n, x
+    match gen() with
+    | None -> None
+    | Some x ->
+        incr r;
+        Some (!r, x)
 
 let unzip gen =
   let stop = ref false in
@@ -510,23 +571,23 @@ let unzip gen =
   let q2 = Queue.create () in
   let next_left () =
     if Queue.is_empty q1
-      then if !stop then raise EOG
-      else try
-        let x, y = gen() in
+      then if !stop then None
+      else match gen() with
+      | Some (x,y) ->
         Queue.push y q2;
-        x
-      with EOG -> stop := true; raise EOG
-    else Queue.pop q1
+        Some x
+      | None -> stop := true; None
+    else Some (Queue.pop q1)
   in
   let next_right () =
     if Queue.is_empty q2
-      then if !stop then raise EOG
-      else try
-        let x, y = gen() in
+      then if !stop then None
+      else match gen() with
+      | Some (x,y) ->
         Queue.push x q1;
-        y
-      with EOG -> stop := true; raise EOG
-    else Queue.pop q2
+        Some y
+      | None -> stop := true; None
+    else Some (Queue.pop q2)
   in
   next_left, next_right
 
@@ -538,66 +599,60 @@ let partition p gen =
   let stop = ref false in
   let rec nexttrue () =
     if Queue.is_empty qtrue
-      then if !stop then raise EOG
-      else try
-        let x = gen() in
-        if p x then x else (Queue.push x qfalse; nexttrue())
-      with EOG -> stop:=true; raise EOG
-    else Queue.pop qtrue
+      then if !stop then None
+      else match gen() with
+      | (Some x) as res ->
+        if p x then res else (Queue.push x qfalse; nexttrue())
+      | None -> stop:=true; None
+    else Some (Queue.pop qtrue)
   and nextfalse() =
     if Queue.is_empty qfalse
-      then if !stop then raise EOG
-      else try
-        let x = gen() in
-        if p x then (Queue.push x qtrue; nextfalse()) else x
-      with EOG -> stop:= true; raise EOG
-    else Queue.pop qfalse
+      then if !stop then None
+      else match gen() with
+      | (Some x) as res ->
+        if p x then (Queue.push x qtrue; nextfalse()) else res
+      | None -> stop:= true; None
+    else Some (Queue.pop qfalse)
   in
   nexttrue, nextfalse
 
-exception GenExit
+let rec for_all p gen =
+  match gen() with
+  | None -> true
+  | Some x -> p x && for_all p gen
 
-let for_all p gen =
-  try
-    iter (fun x -> if not (p x) then raise GenExit) gen;
-    true
-  with GenExit ->
-    false
+let rec exists p gen =
+  match gen() with
+  | None -> false
+  | Some x -> p x || exists p gen
 
-let exists p gen =
-  try
-    iter (fun x -> if p x then raise GenExit) gen;
-    false
-  with GenExit ->
-    true
+let rec for_all2 p e1 e2 =
+  match e1(), e2() with
+  | Some x, Some y -> p x y && for_all2 p e1 e2
+  | _ -> true
 
-let for_all2 p e1 e2 =
-  try
-    iter2 (fun x y -> if not (p x y) then raise Exit) e1 e2;
-    true
-  with Exit ->
-    false
-
-let exists2 p e1 e2 =
-  try
-    iter2 (fun x y -> if p x y then raise Exit) e1 e2;
-    false
-  with Exit ->
-    true
+let rec exists2 p e1 e2 =
+  match e1(), e2() with
+  | Some x, Some y -> p x y || exists2 p e1 e2
+  | _ -> false
 
 let min ?(lt=fun x y -> x < y) gen =
-  let first = try gen () with EOG -> raise Not_found in
+  let first = match gen () with
+    | Some x -> x
+    | None -> raise (Invalid_argument "min")
+  in
   fold (fun min x -> if lt x min then x else min) first gen
 
 let max ?(lt=fun x y -> x < y) gen =
-  let first = try gen () with EOG -> raise Not_found in
+  let first = match gen () with
+    | Some x -> x
+    | None -> raise (Invalid_argument "max")
+  in
   fold (fun max x -> if lt max x then x else max) first gen
 
 let eq ?(eq=(=)) gen1 gen2 =
   let rec check () =
-    let x1 = try Some (gen1 ()) with EOG -> None in
-    let x2 = try Some (gen2 ()) with EOG -> None in
-    match x1, x2 with
+    match gen1(), gen2() with
     | None, None -> true
     | Some x1, Some x2 when eq x1 x2 -> check ()
     | _ -> false
@@ -606,9 +661,7 @@ let eq ?(eq=(=)) gen1 gen2 =
 
 let lexico ?(cmp=Pervasives.compare) gen1 gen2 =
   let rec lexico () =
-    let x1 = try Some (gen1 ()) with EOG -> None in
-    let x2 = try Some (gen2 ()) with EOG -> None in
-    match x1, x2 with
+    match gen1(), gen2() with
     | None, None -> 0
     | Some x1, Some x2 ->
       let c = cmp x1 x2 in
@@ -621,63 +674,97 @@ let compare ?cmp gen1 gen2 = lexico ?cmp gen1 gen2
 
 (** {3 Complex combinators} *)
 
-let merge gen =
-  (* list of sub-enums *)
-  let l = fold (fun acc x -> x::acc) [] gen in
-  let l = List.rev l in
-  let q = Queue.create () in
-  List.iter (fun gen' -> Queue.push gen' q) l;
+module MergeState = struct
+  type 'a t = {
+    gens : 'a gen Queue.t;
+    mutable state : my_state;
+  }
+
+  and my_state =
+    | NewGen
+    | YieldAndNew
+    | Yield
+    | Stop
+end
+
+(* TODO tests *)
+(* state machine:
+    (NewGen -> YieldAndNew)* // then no more generators in next_gen, so
+    -> Yield* -> Stop *)
+let merge next_gen =
+  let open MergeState in
+  let state = {gens = Queue.create(); state=NewGen;}in
   (* recursive function to get next element *)
   let rec next () =
-    if Queue.is_empty q
-      then raise EOG
-      else
-        let gen = Queue.pop q in
-        match (try Some (gen ()) with EOG -> None) with
-        | None -> next ()  (* exhausted generator, drop it *)
-        | Some x ->
-          Queue.push gen q; (* put generator at the end, return x *)
-          x
+    match state.state with
+    | Stop -> None
+    | Yield ->  (* only yield from generators in state.gens *)
+        if Queue.is_empty state.gens
+        then (state.state <- Stop; None)
+        else
+          let gen = Queue.pop state.gens in
+          begin match gen () with
+          | None -> next()
+          | (Some _) as res ->
+              Queue.push gen state.gens;  (* put gen back in queue *)
+              res
+        end
+    | NewGen ->
+        begin match next_gen() with
+        | None ->
+            state.state <- Yield;  (* exhausted *)
+            next()
+        | Some gen ->
+            Queue.push gen state.gens;
+            state.state <- YieldAndNew;
+            next()
+        end
+    | YieldAndNew -> (* yield element from queue, then get a new generator *)
+        if Queue.is_empty state.gens
+        then (state.state <- NewGen; next())
+        else
+          let gen = Queue.pop state.gens in
+          begin match gen () with
+          | None -> state.state <- NewGen; next()
+          | (Some _) as res ->
+              Queue.push gen state.gens;
+              state.state <- NewGen;
+              res
+          end
   in next
 
 let intersection ?(cmp=Pervasives.compare) gen1 gen2 =
-  let next1 () = try Some (gen1 ()) with EOG -> None in
-  let next2 () = try Some (gen2 ()) with EOG -> None in
-  let x1 = ref (next1 ()) in
-  let x2 = ref (next2 ()) in
+  let x1 = ref (gen1 ()) in
+  let x2 = ref (gen2 ()) in
   let rec next () =
     match !x1, !x2 with
-    | None, None -> raise EOG
     | Some y1, Some y2 ->
       let c = cmp y1 y2 in
       if c = 0  (* equal elements, yield! *)
-        then (x1 := next1 (); x2 := next2 (); y1)
+        then (x1 := gen1(); x2 := gen2(); Some y1)
       else if c < 0 (* drop y1 *)
-        then (x1 := next1 (); next ())
+        then (x1 := gen1 (); next ())
       else (* drop y2 *)
-        (x2 := next2 (); next ())
-    | Some _, None
-    | None, Some _ -> raise EOG
+        (x2 := gen2(); next ())
+    | _ -> None
   in next
 
 let sorted_merge ?(cmp=Pervasives.compare) gen1 gen2 =
-  let next1 () = try Some (gen1 ()) with EOG -> None in
-  let next2 () = try Some (gen2 ()) with EOG -> None in
-  let x1 = ref (next1 ()) in
-  let x2 = ref (next2 ()) in
+  let x1 = ref (gen1 ()) in
+  let x2 = ref (gen2 ()) in
   fun () ->
     match !x1, !x2 with
-    | None, None -> raise EOG
-    | Some y1, Some y2 ->
+    | None, None -> None
+    | (Some y1)as r1, ((Some y2) as r2) ->
       if cmp y1 y2 <= 0
-        then (x1 := next1 (); y1)
-        else (x2 := next2 (); y2)
-    | Some y1, None ->
-      x1 := next1 ();
-      y1
-    | None, Some y2 ->
-      x2 := next2 ();
-      y2
+        then (x1 := gen1 (); r1)
+        else (x2 := gen2 (); r2)
+    | (Some _)as r, None ->
+      x1 := gen1 ();
+      r
+    | None, ((Some _)as r) ->
+      x2 := gen2 ();
+      r
 
 (** {4 Mutable heap (taken from heap.ml to avoid dependencies)} *)
 module Heap = struct
@@ -717,28 +804,25 @@ module Heap = struct
       x
 end
 
-let sorted_merge_n ?(cmp=Pervasives.compare) gen =
+let sorted_merge_n ?(cmp=Pervasives.compare) l =
   (* make a heap of (value, generator) *)
   let cmp (v1,_) (v2,_) = cmp v1 v2 in
   let heap = Heap.empty ~cmp in
   (* add initial values *)
-  iter
-    (fun gen' ->
-      try
-        let x = gen' () in
-        Heap.insert heap (x, gen')
-      with EOG -> ())
-    gen;
+  List.iter
+    (fun gen' -> match gen'() with
+    | Some x -> Heap.insert heap (x, gen')
+    | None -> ())
+    l;
   fun () ->
-    if Heap.is_empty heap then raise EOG
+    if Heap.is_empty heap then None
     else begin
       let x, gen = Heap.pop heap in
-      try
-        let y = gen () in
+      match gen() with
+      | Some y ->
         Heap.insert heap (y, gen);  (* insert next value *)
-        x
-      with EOG ->
-        x  (* gen is empty *)
+        Some x
+      | None -> Some x (* gen empty, drop it *)
     end
 
 let round_robin ?(n=2) gen =
@@ -750,22 +834,24 @@ let round_robin ?(n=2) gen =
     let q = qs.(i) in
     if Queue.is_empty q
       then update_to_i i  (* consume generator *)
-      else Queue.pop q
+      else Some(Queue.pop q)
   (* consume [gen] until some element for [i]-th generator is
-     available. It raises EOG if [gen] is exhausted before *)
+     available. *)
   and update_to_i i =
-    let x = gen () in
-    let j = !cur in
-    cur := (j+1) mod n;  (* move cursor to next generator *)
-    let q = qs.(j) in
-    if j = i
-      then begin
-        assert (Queue.is_empty q);
-        x  (* return the element *)
-      end else begin
-        Queue.push x q;
-        update_to_i i  (* continue consuming [gen] *)
-      end
+    match gen() with
+    | None -> None
+    | Some x ->
+      let j = !cur in
+      cur := (j+1) mod n;  (* move cursor to next generator *)
+      let q = qs.(j) in
+      if j = i
+        then begin
+          assert (Queue.is_empty q);
+          Some x  (* return the element *)
+        end else begin
+          Queue.push x q;
+          update_to_i i  (* continue consuming [gen] *)
+        end
   in
   (* generators *)
   let l = Array.mapi (fun i _ -> (fun () -> next i)) qs in
@@ -775,86 +861,85 @@ let round_robin ?(n=2) gen =
    share the same underlying instance of the enum, so the optimal case is
    when they are consumed evenly *)
 let tee ?(n=2) gen =
-    (* array of queues, together with their index *)
-    let qs = Array.init n (fun i -> Queue.create ()) in
-    let finished = ref false in (* is [gen] exhausted? *)
-    (* get next element for the i-th queue *)
-    let rec next i =
-      if Queue.is_empty qs.(i)
-        then
-          if !finished then raise EOG
-          else get_next i  (* consume generator *)
-        else Queue.pop qs.(i)
-    (* consume one more element *)
-    and get_next i =
-      try
-        let x = gen () in
-        for j = 0 to n-1 do
-          if j <> i then Queue.push x qs.(j)
-        done;
-        x
-      with EOG ->
-        finished := true;
-        raise EOG
-    in
+  (* array of queues, together with their index *)
+  let qs = Array.init n (fun i -> Queue.create ()) in
+  let finished = ref false in (* is [gen] exhausted? *)
+  (* get next element for the i-th queue *)
+  let rec next i =
+    if Queue.is_empty qs.(i)
+      then
+        if !finished then None
+        else get_next i  (* consume generator *)
+      else Queue.pop qs.(i)
+  (* consume one more element *)
+  and get_next i = match gen() with
+    | (Some x) as res ->
+      for j = 0 to n-1 do
+        if j <> i then Queue.push res qs.(j)
+      done;
+      res
+    | None -> finished := true; None
+  in
   (* generators *)
   let l = Array.mapi (fun i _ -> (fun () -> next i)) qs in
   Array.to_list l
 
-let round_robin ?(n=2) gen =
-  (* array of queues, together with their index *)
-  let qs = Array.init n (fun i -> Queue.create ()) in
-  let cur = ref 0 in
-  let stop = ref false in
-  (* get next element for the i-th queue *)
-  let rec next i =
-    let q = qs.(i) in
-    if Queue.is_empty q
-      then update_to_i i  (* consume generator *)
-      else Queue.pop q
-  (* consume [gen] until some element for [i]-th generator is
-     available. It raises EOG if [gen] is exhausted before *)
-  and update_to_i i =
-    (if !stop then raise EOG);
-    let x = try gen () with EOG -> stop := true; raise EOG in
-    let j = !cur in
-    cur := (j+1) mod n;  (* move cursor to next generator *)
-    let q = qs.(j) in
-    if j = i
-      then begin
-        assert (Queue.is_empty q);
-        x  (* return the element *)
-      end else begin
-        Queue.push x q;
-        update_to_i i  (* continue consuming [gen] *)
-      end
-  in
-  (* generators *)
-  let l = Array.mapi (fun i _ -> fun () -> next i) qs in
-  Array.to_list l
+module InterleaveState = struct
+  type 'a t =
+    | Only of 'a gen 
+    | Both of 'a gen * 'a gen * bool ref
+    | Stop
+end
 
 (* Yield elements from a and b alternatively *)
 let interleave gen_a gen_b =
-  let left = ref true in  (* left or right? *)
-  fun () ->
-    if !left
-      then (left := false; gen_a ())
-      else (left := true; gen_b ())
+  let open InterleaveState in
+  let state = ref (Both (gen_a, gen_b, ref true)) in
+  let rec next() = match !state with
+  | Stop -> None
+  | Only g ->
+      begin match g() with
+        | None -> state := Stop; None
+        | (Some _) as res -> res
+      end
+  | Both (g1, g2, r) ->
+      match (if !r then g1() else g2()) with
+      | None ->
+          state := if !r then Only g2 else Only g1;
+          next()
+      | (Some _) as res ->
+          r := not !r; (* swap *)
+          res
+  in next
+
+module IntersperseState = struct
+  type 'a t =
+    | Start
+    | YieldElem of 'a option
+    | YieldSep of 'a option  (* next val *)
+    | Stop
+end
 
 (* Put [x] between elements of [enum] *)
 let intersperse x gen =
-  let next_elem = ref None in
-  (* must see whether the gen is empty (first element must be from enum) *)
-  try
-    next_elem := Some (gen ());
-    (* get next element *)
-    let rec next () =
-      match !next_elem with
-      | None -> next_elem := Some (gen ()); x  (* yield x, gen is not exhausted *)
-      | Some y -> next_elem := None; y (* yield element of gen *)
-    in next
-  with EOG ->
-    fun () -> raise EOG
+  let open IntersperseState in
+  let state = ref Start in
+  let rec next() = match !state with
+    | Stop -> None
+    | YieldElem res ->
+        begin match gen() with
+        | None -> state := Stop
+        | Some _ as res' -> state := YieldSep res'
+        end;
+        res
+    | YieldSep res ->
+        state := YieldElem res;
+        Some x
+    | Start ->
+        match gen() with
+        | None -> state := Stop; None
+        | Some _ as res -> state := YieldElem res; next()
+  in next
 
 (* Cartesian product *)
 let product gena genb =
@@ -867,18 +952,17 @@ let product gena genb =
   let cur = ref `GetLeft in
   let rec next () =
     match !cur with
-    | `Stop -> raise EOG
+    | `Stop -> None
     | `GetLeft ->
-      let xa = try Some (gena()) with EOG -> None in
-      begin match xa with
+      begin match gena() with
         | None -> cur := `GetRight
         | Some a -> all_a := a :: !all_a; cur := `ProdLeft (a, !all_b)
       end;
       next ()
-    | `GetRight ->
-      let xb = try Some (genb()) with EOG -> None in
-      begin match xb with
-        | None -> cur := `Stop; raise EOG
+    | `GetRight | `GetRightOrStop ->  (* TODO: test *)
+      begin match genb() with
+        | None when !cur = `GetRightOrStop -> cur := `Stop
+        | None -> cur := `GetLeft
         | Some b -> all_b := b::!all_b; cur := `ProdRight (b, !all_a)
       end;
       next ()
@@ -887,49 +971,55 @@ let product gena genb =
       next()
     | `ProdLeft (x, y::l) ->
       cur := `ProdLeft (x, l);
-      x, y
+      Some (x, y)
     | `ProdRight (_, []) ->
       cur := `GetLeft;
       next()
     | `ProdRight (y, x::l) ->
       cur := `ProdRight (y, l);
-      x, y
+      Some (x, y)
   in
   next
 
 (* Group equal consecutive elements together. *)
 let group ?(eq=(=)) gen =
-  try
-    let cur = ref [gen ()] in
+  match gen() with
+  | None -> fun () -> None
+  | Some x ->
+    let cur = ref [x] in
     let rec next () =
       (* try to get an element *)
-      let next_x =
-        if !cur = []
-          then None
-          else try Some (gen ()) with EOG -> None in
+      let next_x = if !cur = [] then None else gen() in
       match next_x, !cur with
-      | None, [] -> raise EOG
+      | None, [] -> None
       | None, l ->
-        cur := [];
-        l
+        cur := [];  (* stop *)
+        Some l
       | Some x, y::_ when eq x y ->
         cur := x::!cur;
         next ()  (* same group *)
       | Some x, l ->
         cur := [x];
-        l
+        Some l
     in next
-  with EOG ->
-    fun () -> raise EOG
 
 let uniq ?(eq=(=)) gen =
-  let prev = ref (Obj.magic 0) in
-  let first = ref true in
-  let rec next () =
-    let x = gen () in
-    if !first then (first := false; prev := x; x)
-    else if eq x !prev then next ()
-    else (prev := x; x)
+  let state = ref Init in
+  let rec next() = match !state with
+    | Stop -> None
+    | Init ->
+        begin match gen() with
+        | None -> state:= Stop; None
+        | (Some x) as res -> state := Run x; res
+        end
+    | Run x ->
+        begin match gen() with
+        | None -> state:= Stop; None
+        | (Some y) as res ->
+            if eq x y
+            then next()   (* ignore duplicate *)
+            else (state := Run y; res)
+        end
   in next
 
 let sort ?(cmp=Pervasives.compare) gen =
@@ -938,8 +1028,8 @@ let sort ?(cmp=Pervasives.compare) gen =
   iter (Heap.insert h) gen;
   fun () ->
     if Heap.is_empty h
-      then raise EOG
-      else Heap.pop h
+      then None
+      else Some (Heap.pop h)
 
 (* NOTE: using a set is not really possible, because once we have built the
   set there is no simple way to iterate on it *)
@@ -964,8 +1054,8 @@ let of_list l =
   let l = ref l in
   fun () ->
     match !l with
-    | [] -> raise EOG
-    | x::l' -> l := l'; x
+    | [] -> None
+    | x::l' -> l := l'; Some x
 
 let to_rev_list gen =
   fold (fun acc x -> x :: acc) [] gen
@@ -976,6 +1066,7 @@ let to_array gen =
   let l = to_rev_list gen in
   let a = Array.of_list l in
   let n = Array.length a in
+  (* reverse array *)
   for i = 0 to (n-1) / 2 do
     let tmp = a.(i) in
     a.(i) <- a.(n-i-1);
@@ -990,8 +1081,8 @@ let of_array ?(start=0) ?len a =
   let i = ref start in
   fun () ->
     if !i >= start + len
-      then raise EOG
-      else (let x = a.(!i) in incr i; x)
+      then None
+      else (let x = a.(!i) in incr i; Some x)
 
 let rand_int i =
   repeatedly (fun () -> Random.int i)
@@ -1000,10 +1091,10 @@ let int_range i j =
   let r = ref i in
   fun () ->
     let x = !r in
-    if x > j then raise EOG
+    if x > j then None
       else begin
         incr r;
-        x
+        Some x
       end
 
 let pp ?(start="") ?(stop="") ?(sep=",") ?(horizontal=false) pp_elem formatter gen =
@@ -1012,18 +1103,16 @@ let pp ?(start="") ?(stop="") ?(sep=",") ?(horizontal=false) pp_elem formatter g
     else Format.pp_open_hvbox formatter 0);
   Format.pp_print_string formatter start;
   let rec next is_first =
-    let continue_ =
-      try
-        let x = gen () in
-        (if not is_first
-          then begin
-            Format.pp_print_string formatter sep;
-            Format.pp_print_space formatter ();
-            pp_elem formatter x
-          end else pp_elem formatter x);
-        true
-      with EOG -> false in
-    if continue_ then next false
+    match gen() with
+    | Some x ->
+      if not is_first
+        then begin
+          Format.pp_print_string formatter sep;
+          Format.pp_print_space formatter ();
+          pp_elem formatter x
+        end else pp_elem formatter x;
+        next false
+    | None -> ()
   in
   next true;
   Format.pp_print_string formatter stop;
@@ -1058,14 +1147,13 @@ module Restart = struct
   let unfold f acc () = unfold f acc 
 
   let cycle enum =
-    assert (not (is_empty enum));
+    assert (not (is_empty (enum ())));
     fun () ->
-      let gen = ref (enum ()) in
+      let gen = ref (enum ()) in  (* start cycle *)
       let rec next () =
-        try !gen ()
-        with EOG ->
-          gen := enum ();
-          next ()
+        match (!gen) () with
+        | (Some _) as res -> res
+        | None -> gen := enum(); next()
       in next
 
   let is_empty e = is_empty (e ())
@@ -1152,8 +1240,8 @@ module Restart = struct
   let sorted_merge ?cmp e1 e2 () =
     sorted_merge ?cmp (e1 ()) (e2 ())
 
-  let sorted_merge_n ?cmp e () =
-    sorted_merge_n ?cmp (e ())
+  let sorted_merge_n ?cmp l () =
+    sorted_merge_n ?cmp (List.map (fun g -> g()) l)
 
   let tee ?n e = tee ?n (e ())
 
@@ -1170,14 +1258,7 @@ module Restart = struct
   let uniq ?eq e () = uniq ?eq (e ())
 
   let sort ?(cmp=Pervasives.compare) enum =
-    fun () ->
-      (* build heap *)
-      let h = Heap.empty ~cmp in
-      iter (Heap.insert h) enum;
-      fun () ->
-        if Heap.is_empty h
-          then raise EOG
-          else Heap.pop h
+    fun () -> sort ~cmp (enum ())
 
   let sort_uniq ?(cmp=Pervasives.compare) e =
     let e' = sort ~cmp e in
@@ -1244,24 +1325,22 @@ module MList = struct
   let to_enum d =
     fun () ->
       match !d with
-      | None -> (fun () -> raise EOG)
+      | None -> (fun () -> None)
       | Some first ->
-        let cur = ref first in (* current elemnt of the list *)
+        let cur = ref first in (* current element of the list *)
         let stop = ref false in (* are we done yet? *)
-        (fun () ->
-          (if !stop then raise EOG);
-          let x = (!cur).content in
-          cur := (!cur).next;
-          (if !cur == first then stop := true); (* EOG, we made a full cycle *)
-          x)
+        fun () ->
+          if !stop then None
+          else begin
+            let x = (!cur).content in
+            cur := (!cur).next;
+            (if !cur == first then stop := true); (* EOG, we made a full cycle *)
+            Some x
+          end
 end
 
 (** Store content of the generator in an enum *)
 let persistent gen =
   let l = MList.create () in
-  (try
-    while true do MList.push_back l (gen ()); done
-  with EOG ->
-    ());
-  (* done recursing through the generator *)
+  iter (MList.push_back l) gen;
   MList.to_enum l

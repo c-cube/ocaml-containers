@@ -12,8 +12,8 @@ let pstrlist l = Utils.sprintf "%a"
 
 let test_singleton () =
   let gen = Gen.singleton 42 in
-  OUnit.assert_equal 42 (Gen.get gen);
-  OUnit.assert_raises Gen.EOG (fun () -> Gen.get gen);
+  OUnit.assert_equal (Some 42) (Gen.get gen);
+  OUnit.assert_equal None (Gen.get gen);
   let gen = Gen.singleton 42 in
   OUnit.assert_equal 1 (Gen.length gen);
   ()
@@ -63,7 +63,7 @@ let test_persistent () =
   let i = ref 0 in
   let gen () =
     let j = !i in
-    if j > 5 then raise Gen.EOG else (incr i; j)
+    if j > 5 then None else (incr i; Some j)
   in
   let e = Gen.persistent gen in
   OUnit.assert_equal [0;1;2;3;4;5] (GR.to_list e);
@@ -86,7 +86,7 @@ let test_big_rr () =
   ()
 
 let test_merge_sorted () =
-  Gen.of_list [Gen.of_list [1;3;5]; Gen.of_list [0;1;1;3;4;6;10]; Gen.of_list [2;2;11]]
+  [Gen.of_list [1;3;5]; Gen.of_list [0;1;1;3;4;6;10]; Gen.of_list [2;2;11]]
     |> Gen.sorted_merge_n ?cmp:None
     |> Gen.to_list
     |> OUnit.assert_equal ~printer:Helpers.print_int_list [0;1;1;1;2;2;3;3;4;5;6;10;11]
