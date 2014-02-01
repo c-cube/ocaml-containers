@@ -87,7 +87,7 @@ let imap_add n =
   done;
   !h
 
-let _ =
+let bench_maps1 () =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
     ["phashtbl_add", (fun n -> ignore (phashtbl_add n));
@@ -182,7 +182,7 @@ let imap_replace n =
   done;
   !h
 
-let _ =
+let bench_maps2 () =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
     ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n));
@@ -253,7 +253,7 @@ let imap_find m =
       ignore (IMap.find i m);
     done
 
-let _ =
+let bench_maps3 () =
   List.iter
     (fun len ->
       let h = phashtbl_add len in
@@ -280,18 +280,23 @@ let _ =
       ])
     [10;20;100;1000;10000]
 
+let bench_maps() =
+  bench_maps1 ();
+  bench_maps2 ();
+  bench_maps3 ();
+  ()
+
 (** {2 Sequence/Gen} *)
 
-let _ =
+let bench_enum () =
   let n = 1_000_000 in
   let seq () = Sequence.fold (+) 0 (Sequence.int_range ~start:0 ~stop:n) in
   let enum () = Gen.fold (+) 0 (Gen.int_range 0 n) in
   Bench.bench
     [ "sequence.fold", seq;
       "gen.fold", enum;
-    ]
+    ];
 
-let _ =
   let n = 100_000 in
   let seq () =
     let open Sequence in
@@ -345,7 +350,7 @@ end)
 
 module DummyIntCache = Cache.Dummy(struct type t = int end)
 
-let _ =
+let bench_cache () =
   (* Fibonacci for those caching implementations *)
   let module LinearFibo = Fibo(LinearIntCache) in
   let module ReplacingFibo = Fibo(ReplacingIntCache) in
@@ -367,3 +372,15 @@ let _ =
   conf.Bench.samples <- 1000;
   ()
 
+let _ =
+  match Sys.argv with
+  | [| _; "maps" |] -> bench_maps ()
+  | [| _; "enum" |] -> bench_enum ()
+  | [| _; "cache" |] -> bench_cache ()
+  | [| _; ("-help" | "--help") |] -> print_endline "./benchs [maps|enum|cache]"
+  | [| _ |] ->
+      bench_enum ();
+      bench_maps ();
+      bench_cache ();
+      ()
+  | _ -> failwith "unknown argument (-help)"
