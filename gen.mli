@@ -69,6 +69,12 @@ module type S = sig
         unfolding the ['b] value into a new ['b], and a ['a] which is yielded,
         until [None] is returned. *)
 
+  val init : ?limit:int -> (int -> 'a) -> 'a t
+    (** Calls the function, starting from 0, on increasing indices.
+        If [limit] is provided and is a positive int, iteration will
+        stop at the limit (excluded).
+        For instance [init ~limit:4 id] will yield 0, 1, 2, and 3. *)
+
   (** {2 Basic combinators} *)
 
   val is_empty : _ t -> bool
@@ -76,10 +82,6 @@ module type S = sig
 
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
     (** Fold on the generator, tail-recursively *)
-
-  val fold2 : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
-    (** Fold on the two enums in parallel. Stops once one of the enums
-        is exhausted. *)
 
   val reduce : ('a -> 'a -> 'a) -> 'a t -> 'a
     (** Fold on non-empty sequences (otherwise raise Invalid_argument) *)
@@ -92,9 +94,6 @@ module type S = sig
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
     (** Iterate on elements with their index in the enum, from 0 *)
-
-  val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
-    (** Iterate on the two sequences. Stops once one of them is exhausted.*)
 
   val length : _ t -> int
     (** Length of an enum (linear time) *)
@@ -140,12 +139,6 @@ module type S = sig
   val filterMap : ('a -> 'b option) -> 'a t -> 'b t
     (** Maps some elements to 'b, drop the other ones *)
 
-  val zipWith : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-    (** Combine common part of the enums (stops when one is exhausted) *)
-
-  val zip : 'a t -> 'b t -> ('a * 'b) t
-    (** Zip together the common part of the enums *)
-
   val zipIndex : 'a t -> (int * 'a) t
     (** Zip elements with their index in the enum *)
 
@@ -161,14 +154,6 @@ module type S = sig
 
   val exists : ('a -> bool) -> 'a t -> bool
     (** Is the predicate true for at least one element? *)
-
-  val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
-    (** Succeeds if all pairs of elements satisfy the predicate.
-        Ignores elements of an iterator if the other runs dry. *)
-
-  val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
-    (** Succeeds if some pair of elements satisfy the predicate.
-        Ignores elements of an iterator if the other runs dry. *)
 
   val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a
     (** Minimum element, according to the given comparison function.
@@ -187,6 +172,38 @@ module type S = sig
 
   val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
     (** Synonym for {! lexico} *)
+
+  val find : ('a -> bool) -> 'a t -> 'a option
+    (** [find p e] returns the first element of [e] to satisfy [p],
+        or None. *)
+
+  val sum : int t -> int
+    (** Sum of all elements *)
+
+  (** {2 Multiple iterators} *)
+
+  val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+    (** Map on the two sequences. Stops once one of them is exhausted.*)
+
+  val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+    (** Iterate on the two sequences. Stops once one of them is exhausted.*)
+
+  val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+    (** Fold the common prefix of the two iterators *)
+
+  val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+    (** Succeeds if all pairs of elements satisfy the predicate.
+        Ignores elements of an iterator if the other runs dry. *)
+
+  val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+    (** Succeeds if some pair of elements satisfy the predicate.
+        Ignores elements of an iterator if the other runs dry. *)
+
+  val zipWith : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+    (** Combine common part of the enums (stops when one is exhausted) *)
+
+  val zip : 'a t -> 'b t -> ('a * 'b) t
+    (** Zip together the common part of the enums *)
 
   (** {2 Complex combinators} *)
 
@@ -242,6 +259,11 @@ module type S = sig
 
   val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
     (** Sort and remove duplicates. The enum must be finite. *)
+
+  val chunks : int -> 'a t -> 'a array t
+    (** [chunks n e] returns a generator of arrays of length [n], composed
+        of successive elements of [e]. The last array may be smaller
+        than [n] *)
 
   (* TODO later
   val permutations : 'a t -> 'a gen t
