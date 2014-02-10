@@ -79,9 +79,8 @@ Document containers
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
   Install:              true
-  Build$:               flag(lwt)
   XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers,containers.lwt
+  XOCamlbuildLibraries: containers
 
 Executable benchs
   Path: tests/
