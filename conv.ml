@@ -351,6 +351,46 @@ let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
 
 let from (src:'a Source.universal) (sink:'b Sink.t) (x:'a) : 'b = src#visit sink x
 
+(** {6 Exemples} *)
+
+module Json = struct
+  type t = [
+    | `Int of int
+    | `Float of float
+    | `Bool of bool
+    | `Null
+    | `String of string
+    | `List of t list
+    | `Assoc of (string * t) list
+  ]
+
+  let source = object(self)
+    inherit [t] Source.universal
+    method visit sink (x:t) = match x with
+    | `Int i -> self#int_ sink i
+    | `Float f -> self#float_ sink f
+    | `Bool b -> self#bool_ sink b
+    | `Null -> self#unit_ sink
+    | `String s -> self#string_ sink s
+    | `List l -> self#list_ sink l
+    | `Assoc l -> self#record sink l
+  end
+
+  let sink : t Sink.universal = object
+    method unit_ = `Null
+    method bool_ b = `Bool b
+    method float_ f = `Float f
+    method int_ i = `Int i
+    method string_ s = `String s
+    method list_ l = `List l
+    method record l = `Assoc l
+    method tuple l = `List l
+    method sum name l = match l with
+      | [] -> `String name
+      | _::_ -> `List (`String name :: l)
+  end
+end
+
 (* test for records *)
 
 type point = {
@@ -378,4 +418,5 @@ let point_source : point Source.t =
 
 let p = {x=1; y=42; color="yellow"; }
 
+let p2 = into point_source Json.sink p
 (* TODO tests *)

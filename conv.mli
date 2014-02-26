@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 exception ConversionFailure of string
 
+(** {6 Sinks}
+A sink is used to traverse values of some type 'a *)
 module Sink : sig
   (** A specific sink that requires a given shape to produce
    * a value of type 'a *)
@@ -94,6 +96,8 @@ module Sink : sig
   end
 end
 
+(** {6 Sources}
+A source is used to build values of some type 'a *)
 module Source : sig
   (** A specific source that follows the shape of the type 'a *)
   type 'a t =
@@ -166,8 +170,27 @@ module Source : sig
   end
 end
 
+(** {6 Conversion Functions} *)
+
 val into : 'a Source.t -> 'b Sink.universal -> 'a -> 'b
   (** Conversion to universal sink *)
 
 val from : 'a Source.universal -> 'b Sink.t -> 'a -> 'b
   (** Conversion from universal source *)
+
+(** {6 Exemples} *)
+
+module Json : sig
+  type t = [
+    | `Int of int
+    | `Float of float
+    | `Bool of bool
+    | `Null
+    | `String of string
+    | `List of t list
+    | `Assoc of (string * t) list
+  ]
+
+  val source : t Source.universal
+  val sink : t Sink.universal
+end
