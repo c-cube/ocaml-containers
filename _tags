@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9646ccb2c67bd5510c1a73553e55f6ff)
+# DO NOT EDIT (digest: 546f589c3cee93fdadf97d55440d02f8)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -53,6 +53,7 @@
 "tTree.cmx": for-pack(Containers)
 "hGraph.cmx": for-pack(Containers)
 "automaton.cmx": for-pack(Containers)
+"conv.cmx": for-pack(Containers)
 # Library containers_thread
 "containers_thread.cmxs": use_containers_thread
 <*.ml{,i}>: package(threads)
@@ -60,42 +61,42 @@
 "containers_lwt.cmxs": use_containers_lwt
 "behavior.cmx": for-pack(Containers_lwt)
 "lwt_automaton.cmx": for-pack(Containers_lwt)
-<*.ml{,i}>: use_containers
 <*.ml{,i}>: package(lwt)
 <*.ml{,i}>: package(lwt.unix)
 <*.ml{,i}>: package(unix)
+<*.ml{,i}>: use_containers
 # Library containers_cgi
 "cgi/containers_cgi.cmxs": use_containers_cgi
-<cgi/*.ml{,i}>: use_containers
 <cgi/*.ml{,i}>: package(CamlGI)
 <cgi/*.ml{,i}>: package(unix)
+<cgi/*.ml{,i}>: use_containers
 # Executable benchs
-"tests/benchs.native": use_containers
 "tests/benchs.native": package(bench)
 "tests/benchs.native": package(unix)
+"tests/benchs.native": use_containers
 <tests/*.ml{,i}>: package(bench)
 # Executable run_tests
-"tests/run_tests.native": use_containers
-"tests/run_tests.native": package(threads)
-"tests/run_tests.native": package(oUnit)
 "tests/run_tests.native": package(lwt)
 "tests/run_tests.native": package(lwt.unix)
+"tests/run_tests.native": package(oUnit)
+"tests/run_tests.native": package(threads)
 "tests/run_tests.native": package(unix)
-<tests/*.ml{,i}>: use_containers
-<tests/*.ml{,i}>: package(threads)
-<tests/*.ml{,i}>: package(oUnit)
+"tests/run_tests.native": use_containers
 <tests/*.ml{,i}>: package(lwt)
 <tests/*.ml{,i}>: package(lwt.unix)
+<tests/*.ml{,i}>: package(oUnit)
+<tests/*.ml{,i}>: package(threads)
 <tests/*.ml{,i}>: package(unix)
+<tests/*.ml{,i}>: use_containers
 # Executable web_pwd
-"examples/cgi/web_pwd.byte": use_containers_cgi
-"examples/cgi/web_pwd.byte": use_containers
-"examples/cgi/web_pwd.byte": package(threads)
 "examples/cgi/web_pwd.byte": package(CamlGI)
+"examples/cgi/web_pwd.byte": package(threads)
 "examples/cgi/web_pwd.byte": package(unix)
-<examples/cgi/*.ml{,i}>: use_containers_cgi
-<examples/cgi/*.ml{,i}>: use_containers
-<examples/cgi/*.ml{,i}>: package(threads)
+"examples/cgi/web_pwd.byte": use_containers
+"examples/cgi/web_pwd.byte": use_containers_cgi
 <examples/cgi/*.ml{,i}>: package(CamlGI)
+<examples/cgi/*.ml{,i}>: package(threads)
 <examples/cgi/*.ml{,i}>: package(unix)
+<examples/cgi/*.ml{,i}>: use_containers
+<examples/cgi/*.ml{,i}>: use_containers_cgi
 # OASIS_STOP

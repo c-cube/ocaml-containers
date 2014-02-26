@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9b329c33930d547bbc92d89a6a2cec77)
+# DO NOT EDIT (digest: ff5363e0f2b41f49070889cafc95f37b)
 Cache
 Deque
 Gen
@@ -38,4 +38,5 @@ Show
 TTree
 HGraph
 Automaton
+Conv
 # OASIS_STOP

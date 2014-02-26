@@ -1,9 +1,9 @@
-OASISFormat: 0.3
+OASISFormat: 0.4
 Name:        containers
 Version:     0.1
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
-License:     BSD3
+License:     BSD-2-clause
 LicenseFile: LICENSE
 Plugins:     META (0.3), DevFiles (0.3)
 OCamlVersion: >= 4.00.1
@@ -40,7 +40,7 @@ Library "containers"
                     Vector, Bij, PiCalculus, Bencode, Sexp, RAL, MultiSet,
                     UnionFind, SmallSet, Leftistheap, AbsSet, CSM, MultiMap,
                     ActionMan, BV, QCheck, BencodeOnDisk, Show, TTree,
-                    HGraph, Automaton
+                    HGraph, Automaton, Conv
   BuildDepends:     unix
 
 Library "containers_thread"
