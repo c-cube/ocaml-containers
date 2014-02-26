@@ -40,6 +40,9 @@ module Sink = struct
   (** A specific sink that requires a given shape to produce
    * a value of type 'a *)
   type 'a t =
+    | Unit : 'a -> 'a t
+    | Bool : (bool -> 'a) -> 'a t
+    | Float : (float -> 'a) -> 'a t
     | Int : (int -> 'a) -> 'a t
     | String : (string -> 'a) -> 'a t
     | List : (('b t -> 'b list) -> 'a) -> 'a t
@@ -60,6 +63,9 @@ module Sink = struct
     | SumSink : (string -> ('b t -> 'b) -> 's) -> 's sum_sink
 
   let rec __expected : type a. a t -> string = function
+    | Unit _ -> "unit"
+    | Bool _ -> "bool"
+    | Float _ -> "float"
     | Int _ -> "int"
     | String _ -> "string"
     | List _ -> "list"
@@ -68,8 +74,13 @@ module Sink = struct
     | Sum _ -> "sum"
     | Map (sink', _) -> __expected sink'
 
-  let int_ = Int (fun i -> i)
-  let string_ = String (fun s -> s)
+  let __id x = x
+
+  let unit_ = Unit ()
+  let bool_ = Bool __id
+  let float_ = Float __id
+  let int_ = Int __id
+  let string_ = String __id
   let list_ e =
     List (fun k -> let l = k e in l)
 
@@ -111,27 +122,38 @@ module Sink = struct
     )
 
   let sum f = Sum f
+  let opt sink = sum (fun name cont ->
+      match name with
+      | "some" -> Some (cont sink)
+      | "none" -> None
+      | _ -> __error "unexpected variant %s" name)
 
   (** Universal sink, such as a serialization format *)
   class type ['a] universal = object
+    method unit_ : 'a
+    method bool_ : bool -> 'a
+    method float_ : float -> 'a
     method int_ : int -> 'a
     method string_ : string -> 'a
     method list_ : 'a list -> 'a
     method record : (string*'a) list -> 'a
     method tuple : 'a list -> 'a
-    method sum : string -> 'a -> 'a
+    method sum : string -> 'a list -> 'a
   end
 end
 
 module Source = struct
   (** A specific source that follows the shape of the type 'a *)
   type 'a t =
+    | Unit : unit t
+    | Bool : bool t
+    | Float : float t
     | Int : int t
     | String : string t
     | List : 'a t -> 'a list t
     | Record : 'a record_src -> 'a t
     | Tuple : 'a tuple_src -> 'a t
-    | Sum : ('a -> string * 'b t * 'b) -> 'a t
+    | Sum : ('a -> string * sum_src) -> 'a t
     | Map : 'a t * ('b -> 'a) -> 'b t
 
   and 'r record_src =
@@ -142,6 +164,13 @@ module Source = struct
     | TupleField : 'a t * ('t -> 'a) * 't tuple_src -> 't tuple_src
     | TupleStop : 't tuple_src
 
+  and sum_src =
+    | SumCons : 'a t * 'a * sum_src -> sum_src
+    | SumNil : sum_src
+
+  let unit_ = Unit
+  let bool_ = Bool
+  let float_ = Float
   let int_ = Int
   let string_ = String
   let list_ e = List e
@@ -177,7 +206,13 @@ module Source = struct
           (tuple_field d (fun (a,b,c,d) -> d)
             tuple_stop))))
 
+  let sum_nil = SumNil
+  let sum_cons src' x tl = SumCons (src', x, tl)
   let sum f = Sum f
+
+  let opt src = sum (function
+      | Some x -> "some", sum_cons src x sum_nil
+      | None -> "none", sum_nil)
 
   (* function to look up the given name in an association list *)
   let _get_field l name =
@@ -186,6 +221,27 @@ module Source = struct
       __error "record field %s not found in source" name
 
   class virtual ['a] universal = object(self)
+    method private unit_ : 'b. 'b Sink.t -> 'b
+      = fun sink -> match sink with
+      | Sink.Unit u -> u
+      | Sink.Int f -> f 0
+      | Sink.Map (sink', f) -> f (self#unit_ sink')
+      | _ -> __error "get Unit, but expected %s" (Sink.__expected sink)
+
+    method private bool_ : 'b. 'b Sink.t -> bool -> 'b
+      = fun sink b -> match sink with
+      | Sink.Bool f -> f b
+      | Sink.Int f -> f (if b then 1 else 0)
+      | Sink.String f -> f (string_of_bool b)
+      | Sink.Map (sink', f) -> f (self#bool_ sink' b)
+      | _ -> __error "get Bool, but expected %s" (Sink.__expected sink)
+
+    method private float_ : 'b. 'b Sink.t -> float -> 'b
+      = fun sink x -> match sink with
+      | Sink.Float f -> f x
+      | Sink.String f -> f (string_of_float x)
+      | Sink.Map (sink', f) -> f (self#float_ sink' x)
+      | _ -> __error "get Float, but expected %s" (Sink.__expected sink)
 
     method private int_ : 'b. 'b Sink.t -> int -> 'b
       = fun sink i -> match sink with
@@ -257,6 +313,9 @@ end
 
 let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
   fun src sink x -> match src with
+  | Source.Unit -> sink#unit_
+  | Source.Bool -> sink#bool_ x
+  | Source.Float -> sink#float_ x
   | Source.Int -> sink#int_ x
   | Source.String -> sink#string_ x
   | Source.List src' ->
@@ -273,15 +332,21 @@ let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
   | Source.Tuple t ->
       let rec conv_tuple : b list -> a Source.tuple_src -> b
       = fun acc t -> match t with
-      | Source.TupleStop -> sink#tuple acc
+      | Source.TupleStop -> sink#tuple (List.rev acc)
       | Source.TupleField (src',get,t') ->
           let acc = into src' sink (get x) :: acc in
           conv_tuple acc t'
       in conv_tuple [] t
   | Source.Sum f ->
-      let name, src', y = f x in
-      let z = into src' sink y in
-      sink#sum name z
+      let rec conv_sum : string -> b list -> Source.sum_src -> b
+      = fun name acc sum -> match sum with
+      | Source.SumNil -> sink#sum name (List.rev acc)
+      | Source.SumCons (src',x,sum') ->
+          let acc = into src' sink x :: acc in
+          conv_sum name acc sum'
+      in
+      let name, sum = f x in
+      conv_sum name [] sum
   | Source.Map (src', f) -> into src' sink (f x)
 
 let from (src:'a Source.universal) (sink:'b Sink.t) (x:'a) : 'b = src#visit sink x

@@ -32,6 +32,9 @@ module Sink : sig
   (** A specific sink that requires a given shape to produce
    * a value of type 'a *)
   type 'a t =
+    | Unit : 'a -> 'a t
+    | Bool : (bool -> 'a) -> 'a t
+    | Float : (float -> 'a) -> 'a t
     | Int : (int -> 'a) -> 'a t
     | String : (string -> 'a) -> 'a t
     | List : (('b t -> 'b list) -> 'a) -> 'a t
@@ -51,6 +54,9 @@ module Sink : sig
   and 's sum_sink =
     | SumSink : (string -> ('b t -> 'b) -> 's) -> 's sum_sink
 
+  val unit_ : unit t
+  val bool_ : bool t
+  val float_ : float t
   val int_ : int t
   val string_ : string t
   val list_ : 'a t -> 'a list t
@@ -72,27 +78,34 @@ module Sink : sig
   val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
 
   val sum : (string -> ('b t -> 'b) -> 'a) -> 'a t
+  val opt : 'a t -> 'a option t
 
   (** Universal sink, such as a serialization format *)
   class type ['a] universal = object
+    method unit_ : 'a
+    method bool_ : bool -> 'a
+    method float_ : float -> 'a
     method int_ : int -> 'a
     method string_ : string -> 'a
     method list_ : 'a list -> 'a
     method record : (string*'a) list -> 'a
     method tuple : 'a list -> 'a
-    method sum : string -> 'a -> 'a
+    method sum : string -> 'a list -> 'a
   end
 end
 
 module Source : sig
   (** A specific source that follows the shape of the type 'a *)
   type 'a t =
+    | Unit : unit t
+    | Bool : bool t
+    | Float : float t
     | Int : int t
     | String : string t
     | List : 'a t -> 'a list t
     | Record : 'a record_src -> 'a t
     | Tuple : 'a tuple_src -> 'a t
-    | Sum : ('a -> string * 'b t * 'b) -> 'a t
+    | Sum : ('a -> string * sum_src) -> 'a t
     | Map : 'a t * ('b -> 'a) -> 'b t
 
   and 'r record_src =
@@ -103,9 +116,18 @@ module Source : sig
     | TupleField : 'a t * ('t -> 'a) * 't tuple_src -> 't tuple_src
     | TupleStop : 't tuple_src
 
+  and sum_src =
+    | SumCons : 'a t * 'a * sum_src -> sum_src
+    | SumNil : sum_src
+
+  val unit_ : unit t
+  val bool_ : bool t
+  val float_ : float t
   val int_ : int t
   val string_ : string t
   val list_ : 'a t -> 'a list t
+
+  val (@@@) : ('a -> 'b) -> 'a -> 'b
 
   val map : ('b -> 'a) -> 'a t -> 'b t
   val array_ : 'a t -> 'a array t
@@ -117,17 +139,23 @@ module Source : sig
   val tuple_field : 'a t -> ('t -> 'a) -> 't tuple_src -> 't tuple_src
   val tuple_stop : 't tuple_src
   val tuple : 't tuple_src -> 't t
-  val (@@@) : ('a -> 'b) -> 'a -> 'b
 
   val pair : 'a t -> 'b t -> ('a * 'b) t
   val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
 
-  val sum : ('a -> string * 'b t * 'b) -> 'a t
+  val sum_nil : sum_src
+  val sum_cons : 'a t -> 'a -> sum_src -> sum_src
+  val sum : ('a -> string * sum_src) -> 'a t
+
+  val opt : 'a t -> 'a option t
 
   (** Universal source from type 'a. A universal type should inherit from it
       and implement the visit method by calling self-methods. *)
   class virtual ['a] universal : object
+    method private unit_ : 'b. 'b Sink.t -> 'b
+    method private bool_ : 'b. 'b Sink.t -> bool -> 'b
+    method private float_ : 'b. 'b Sink.t -> float -> 'b
     method private int_ : 'b. 'b Sink.t -> int -> 'b
     method private string_ : 'b. 'b Sink.t -> string -> 'b
     method private list_ : 'b. 'b Sink.t -> 'a list -> 'b
