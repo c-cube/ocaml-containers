@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 exception ConversionFailure of string
 
+let (@@@) a b = a b
+
 (* error-raising function *)
 let __error msg =
   let b = Buffer.create 15 in
@@ -50,6 +52,7 @@ module Sink = struct
     | Tuple : 'a tuple_sink -> 'a t
     | Sum : (string -> ('b t -> 'b) -> 'a) -> 'a t
     | Map : 'a t * ('a -> 'b) -> 'b t
+    | Fix : ('a t -> 'a t) -> 'a t
 
   and 'r record_sink =
     | RecordField : string * 'a t * ('a -> 'r record_sink) -> 'r record_sink
@@ -73,6 +76,7 @@ module Sink = struct
     | Tuple _ -> "tuple"
     | Sum _ -> "sum"
     | Map (sink', _) -> __expected sink'
+    | (Fix f) as sink -> __expected (f sink)
 
   let __id x = x
 
@@ -92,6 +96,8 @@ module Sink = struct
   let (|:|) (name,sink) cont = RecordField (name,sink,cont)
   let yield_record r = RecordStop r
   let record r = Record r
+  let record_fix f =
+    Fix (fun r -> Record (f r))
 
   let (|+|) sink cont = TupleField (sink, cont)
   let yield_tuple t = TupleStop t
@@ -122,6 +128,9 @@ module Sink = struct
     )
 
   let sum f = Sum f
+  let sum_fix f =
+    Fix (fun s -> Sum (f s))
+
   let opt sink = sum (fun name cont ->
       match name with
       | "some" -> Some (cont sink)
@@ -155,6 +164,7 @@ module Source = struct
     | Tuple : 'a tuple_src -> 'a t
     | Sum : ('a -> string * sum_src) -> 'a t
     | Map : 'a t * ('b -> 'a) -> 'b t
+    | Fix : ('a t -> 'a t) -> 'a t
 
   and 'r record_src =
     | RecordField : string * ('r -> 'a) * 'a t * 'r record_src -> 'r record_src
@@ -182,7 +192,8 @@ module Source = struct
     RecordField (name,get,src',cont)
   let record_stop = RecordStop
   let record r = Record r
-  let (@@@) a b = a b
+  let record_fix f =
+    Fix (fun r -> Record (f r))
 
   let tuple_field src get cont = TupleField (src,get,cont)
   let tuple_stop = TupleStop
@@ -209,6 +220,8 @@ module Source = struct
   let sum_nil = SumNil
   let sum_cons src' x tl = SumCons (src', x, tl)
   let sum f = Sum f
+  let sum_fix f =
+    Fix (fun s -> Sum (f s))
 
   let opt src = sum (function
       | Some x -> "some", sum_cons src x sum_nil
@@ -226,6 +239,7 @@ module Source = struct
       | Sink.Unit u -> u
       | Sink.Int f -> f 0
       | Sink.Map (sink', f) -> f (self#unit_ sink')
+      | Sink.Fix f -> self#unit_ (f sink)
       | _ -> __error "get Unit, but expected %s" (Sink.__expected sink)
 
     method private bool_ : 'b. 'b Sink.t -> bool -> 'b
@@ -234,6 +248,7 @@ module Source = struct
       | Sink.Int f -> f (if b then 1 else 0)
       | Sink.String f -> f (string_of_bool b)
       | Sink.Map (sink', f) -> f (self#bool_ sink' b)
+      | Sink.Fix f -> self#bool_ (f sink) b
       | _ -> __error "get Bool, but expected %s" (Sink.__expected sink)
 
     method private float_ : 'b. 'b Sink.t -> float -> 'b
@@ -241,6 +256,7 @@ module Source = struct
       | Sink.Float f -> f x
       | Sink.String f -> f (string_of_float x)
       | Sink.Map (sink', f) -> f (self#float_ sink' x)
+      | Sink.Fix f -> self#float_ (f sink) x
       | _ -> __error "get Float, but expected %s" (Sink.__expected sink)
 
     method private int_ : 'b. 'b Sink.t -> int -> 'b
@@ -248,6 +264,7 @@ module Source = struct
       | Sink.Int f -> f i
       | Sink.String f -> f (string_of_int i)
       | Sink.Map (sink', f) -> f (self#int_ sink' i)
+      | Sink.Fix f -> self#int_ (f sink) i
       | _ -> __error "get Int, but expected %s" (Sink.__expected sink)
 
     method private string_ : 'b. 'b Sink.t -> string -> 'b
@@ -258,6 +275,7 @@ module Source = struct
         with Invalid_argument _ -> __error "get String, but expected Int"
         end
       | Sink.Map (sink', f) -> f (self#string_ sink' s)
+      | Sink.Fix f -> self#string_ (f sink) s
       | _ -> __error "get String, but expected %s" (Sink.__expected sink)
 
     method private list_ : 'b. 'b Sink.t -> 'a list -> 'b
@@ -265,6 +283,7 @@ module Source = struct
       | Sink.List f ->
         f (fun sink' -> List.map (self#visit sink') l)
       | Sink.Map (sink', f) -> f (self#list_ sink' l)
+      | Sink.Fix f -> self#list_ (f sink) l
       | _ -> __error "get List, but expected %s" (Sink.__expected sink)
 
     method private record : 'b. 'b Sink.t -> (string*'a) list -> 'b
@@ -280,6 +299,7 @@ module Source = struct
               build_record (cont sink_field)
         in build_record r
       | Sink.Map (sink', f) -> f (self#record sink' l)
+      | Sink.Fix f -> self#record (f sink) l
       | _ -> __error "get Record, but expected %s" (Sink.__expected sink)
 
     method private tuple : 'b. 'b Sink.t -> 'a list -> 'b
@@ -298,6 +318,7 @@ module Source = struct
               build_tuple l' (cont y)
         in build_tuple l t_sink
       | Sink.Map (sink', f) -> f (self#tuple sink' l)
+      | Sink.Fix f -> self#tuple (f sink) l
       | _ -> __error "get Tuple, but expected %s" (Sink.__expected sink)
 
     method private sum : 'b. 'b Sink.t -> string -> 'a -> 'b
@@ -305,6 +326,7 @@ module Source = struct
       | Sink.Sum f ->
           f name (fun sink' -> self#visit sink' s)
       | Sink.Map (sink', f) -> f (self#sum sink' name s)
+      | Sink.Fix f -> self#sum (f sink) name s
       | _ -> __error "get Sum(%s), but expected %s" name (Sink.__expected sink)
 
     method virtual visit : 'b. 'b Sink.t -> 'a -> 'b
@@ -348,6 +370,9 @@ let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
       let name, sum = f x in
       conv_sum name [] sum
   | Source.Map (src', f) -> into src' sink (f x)
+  | Source.Fix f ->
+      let src' = f src in
+      into src' sink x
 
 let from (src:'a Source.universal) (sink:'b Sink.t) (x:'a) : 'b = src#visit sink x
 
@@ -397,26 +422,32 @@ type point = {
   x:int;
   y:int;
   color:string;
+  prev : point option; (* previous position, say *)
 }
 
-let point_sink =
-  Sink.(record (
+let rec point_sink =
+  Sink.(record_fix
+    (fun self ->
       "x" --> int_ |:| fun x ->
       "y" --> int_ |:| fun y ->
       "color" --> string_ |:| fun color ->
-      yield_record {x;y;color}
-  ))
+      "prev" --> (opt self) |:| fun prev ->
+      yield_record {x;y;color;prev}
+    ))
 
 
 let point_source : point Source.t =
-  Source.(record (
-    record_field "x" (fun p -> p.x) int_ @@@
-    record_field "y" (fun p -> p.y) int_ @@@
-    record_field "color" (fun p -> p.color) string_ @@@
-    record_stop
-  ))
+  Source.(record_fix
+    (fun self ->
+      record_field "x" (fun p -> p.x) int_ @@@
+      record_field "y" (fun p -> p.y) int_ @@@
+      record_field "color" (fun p -> p.color) string_ @@@
+      record_field "prev" (fun p -> p.prev) (opt self) @@@
+      record_stop
+    ))
 
-let p = {x=1; y=42; color="yellow"; }
+let p = {x=1; y=42; color="yellow";
+         prev = Some {x=1; y=41; color="red"; prev=None};}
 
 let p2 = into point_source Json.sink p
 (* TODO tests *)

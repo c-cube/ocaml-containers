@@ -28,12 +28,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 exception ConversionFailure of string
 
+val (@@@) : ('a -> 'b) -> 'a -> 'b
+
 (** {6 Sinks}
 A sink is used to traverse values of some type 'a *)
 module Sink : sig
   (** A specific sink that requires a given shape to produce
-   * a value of type 'a *)
-  type 'a t =
+     a value of type 'a *)
+  type 'a t = private
     | Unit : 'a -> 'a t
     | Bool : (bool -> 'a) -> 'a t
     | Float : (float -> 'a) -> 'a t
@@ -44,6 +46,7 @@ module Sink : sig
     | Tuple : 'a tuple_sink -> 'a t
     | Sum : (string -> ('b t -> 'b) -> 'a) -> 'a t
     | Map : 'a t * ('a -> 'b) -> 'b t
+    | Fix : ('a t -> 'a t) -> 'a t
 
   and 'r record_sink =
     | RecordField : string * 'a t * ('a -> 'r record_sink) -> 'r record_sink
@@ -70,6 +73,7 @@ module Sink : sig
   val (|:|) : (string * 'a t) -> ('a -> 'r record_sink) -> 'r record_sink
   val yield_record : 'r -> 'r record_sink
   val record : 'r record_sink -> 'r t
+  val record_fix : ('r t -> 'r record_sink) -> 'r t
 
   val (|+|) : 'a t -> ('a -> 't tuple_sink) -> 't tuple_sink
   val yield_tuple : 't -> 't tuple_sink
@@ -80,6 +84,8 @@ module Sink : sig
   val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
 
   val sum : (string -> ('b t -> 'b) -> 'a) -> 'a t
+  val sum_fix : ('a t -> string -> ('b t -> 'b) -> 'a) -> 'a t
+
   val opt : 'a t -> 'a option t
 
   (** Universal sink, such as a serialization format *)
@@ -100,7 +106,7 @@ end
 A source is used to build values of some type 'a *)
 module Source : sig
   (** A specific source that follows the shape of the type 'a *)
-  type 'a t =
+  type 'a t = private
     | Unit : unit t
     | Bool : bool t
     | Float : float t
@@ -111,6 +117,7 @@ module Source : sig
     | Tuple : 'a tuple_src -> 'a t
     | Sum : ('a -> string * sum_src) -> 'a t
     | Map : 'a t * ('b -> 'a) -> 'b t
+    | Fix : ('a t -> 'a t) -> 'a t
 
   and 'r record_src =
     | RecordField : string * ('r -> 'a) * 'a t * 'r record_src -> 'r record_src
@@ -131,14 +138,13 @@ module Source : sig
   val string_ : string t
   val list_ : 'a t -> 'a list t
 
-  val (@@@) : ('a -> 'b) -> 'a -> 'b
-
   val map : ('b -> 'a) -> 'a t -> 'b t
   val array_ : 'a t -> 'a array t
 
   val record_field : string -> ('r -> 'a) -> 'a t -> 'r record_src -> 'r record_src
   val record_stop : 'r record_src
   val record : 'r record_src -> 'r t
+  val record_fix : ('r t -> 'r record_src) -> 'r t
 
   val tuple_field : 'a t -> ('t -> 'a) -> 't tuple_src -> 't tuple_src
   val tuple_stop : 't tuple_src
@@ -151,6 +157,7 @@ module Source : sig
   val sum_nil : sum_src
   val sum_cons : 'a t -> 'a -> sum_src -> sum_src
   val sum : ('a -> string * sum_src) -> 'a t
+  val sum_fix : ('a t -> 'a -> string * sum_src) -> 'a t
 
   val opt : 'a t -> 'a option t
 
@@ -194,3 +201,5 @@ module Json : sig
   val source : t Source.universal
   val sink : t Sink.universal
 end
+
+val p2 : Json.t
