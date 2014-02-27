@@ -49,8 +49,8 @@ module Sink = struct
     | String : (string -> 'a) -> 'a t
     | List : (('b t -> 'b list) -> 'a) -> 'a t
     | Record : 'a record_sink -> 'a t
-    | Tuple : 'a tuple_sink -> 'a t
-    | Sum : (string -> ('b t -> 'b) -> 'a) -> 'a t
+    | Tuple : 'a hlist -> 'a t
+    | Sum : (string -> 'a hlist) -> 'a t
     | Map : 'a t * ('a -> 'b) -> 'b t
     | Fix : ('a t -> 'a t) -> 'a t
 
@@ -58,12 +58,9 @@ module Sink = struct
     | RecordField : string * 'a t * ('a -> 'r record_sink) -> 'r record_sink
     | RecordStop : 'r -> 'r record_sink
 
-  and 't tuple_sink =
-    | TupleField : 'a t * ('a -> 't tuple_sink) -> 't tuple_sink
-    | TupleStop : 't -> 't tuple_sink
-
-  and 's sum_sink =
-    | SumSink : (string -> ('b t -> 'b) -> 's) -> 's sum_sink
+  and 't hlist =
+    | HCons : 'a t * ('a -> 't hlist) -> 't hlist
+    | HNil : 't -> 't hlist
 
   let rec __expected : type a. a t -> string = function
     | Unit _ -> "unit"
@@ -97,17 +94,19 @@ module Sink = struct
   let yield_record r = RecordStop r
   let record r = Record r
   let record_fix f =
-    Fix (fun r -> Record (f r))
+    let rec r = lazy (Fix (fun _ -> Record (f (Lazy.force r)))) in
+    Lazy.force r
 
-  let (|+|) sink cont = TupleField (sink, cont)
-  let yield_tuple t = TupleStop t
+  let (|+|) sink cont = HCons (sink, cont)
+  let yield t = HNil t
+
   let tuple t = Tuple t
 
   let pair a b =
     tuple (
       a |+| fun x ->
       b |+| fun y ->
-      yield_tuple (x,y)
+      yield (x,y)
     )
 
   let triple a b c =
@@ -115,7 +114,7 @@ module Sink = struct
       a |+| fun x ->
       b |+| fun y ->
       c |+| fun z ->
-      yield_tuple (x,y,z)
+      yield (x,y,z)
     )
 
   let quad a b c d =
@@ -124,17 +123,17 @@ module Sink = struct
       b |+| fun y ->
       c |+| fun z ->
       d |+| fun w ->
-      yield_tuple (x,y,z,w)
+      yield (x,y,z,w)
     )
 
   let sum f = Sum f
   let sum_fix f =
     Fix (fun s -> Sum (f s))
 
-  let opt sink = sum (fun name cont ->
+  let opt sink = sum (fun name ->
       match name with
-      | "some" -> Some (cont sink)
-      | "none" -> None
+      | "some" -> sink |+| fun x -> yield (Some x)
+      | "none" -> yield None
       | _ -> __error "unexpected variant %s" name)
 
   (** Universal sink, such as a serialization format *)
@@ -276,6 +275,7 @@ module Source = struct
         end
       | Sink.Map (sink', f) -> f (self#string_ sink' s)
       | Sink.Fix f -> self#string_ (f sink) s
+      | Sink.Sum _ -> self#sum sink s []
       | _ -> __error "get String, but expected %s" (Sink.__expected sink)
 
     method private list_ : 'b. 'b Sink.t -> 'a list -> 'b
@@ -302,29 +302,32 @@ module Source = struct
       | Sink.Fix f -> self#record (f sink) l
       | _ -> __error "get Record, but expected %s" (Sink.__expected sink)
 
+    method private build_hlist : 't. 'a list -> 't Sink.hlist -> 't
+        = fun l t_sink -> match l, t_sink with
+          | [], Sink.HNil t -> t
+          | [], _ ->
+              __error "not enough tuple components"
+          | _::_, Sink.HNil _ ->
+              __error "too many tuple components (%d too many)" (List.length l)
+          | x::l', Sink.HCons (sink', cont) ->
+              let y = self#visit sink' x in
+              self#build_hlist l' (cont y)
+
     method private tuple : 'b. 'b Sink.t -> 'a list -> 'b
       = fun sink l -> match sink with
       | Sink.Tuple t_sink ->
         (* fold over the expected tuple component *)
-        let rec build_tuple : 't. 'a list -> 't Sink.tuple_sink -> 't
-        = fun l t_sink -> match l, t_sink with
-          | [], Sink.TupleStop t -> t
-          | [], _ ->
-              __error "not enough tuple components"
-          | _::_, Sink.TupleStop _ ->
-              __error "too many tuple components (%d too many)" (List.length l)
-          | x::l', Sink.TupleField (sink', cont) ->
-              let y = self#visit sink' x in
-              build_tuple l' (cont y)
-        in build_tuple l t_sink
+        self#build_hlist l t_sink
+      | Sink.List _ -> self#list_ sink l  (* adapt *)
       | Sink.Map (sink', f) -> f (self#tuple sink' l)
       | Sink.Fix f -> self#tuple (f sink) l
       | _ -> __error "get Tuple, but expected %s" (Sink.__expected sink)
 
-    method private sum : 'b. 'b Sink.t -> string -> 'a -> 'b
+    method private sum : 'b. 'b Sink.t -> string -> 'a list -> 'b
       = fun sink name s -> match sink with
       | Sink.Sum f ->
-          f name (fun sink' -> self#visit sink' s)
+          let l_sink = f name in
+          self#build_hlist s l_sink
       | Sink.Map (sink', f) -> f (self#sum sink' name s)
       | Sink.Fix f -> self#sum (f sink) name s
       | _ -> __error "get Sum(%s), but expected %s" name (Sink.__expected sink)
@@ -346,7 +349,7 @@ let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
   | Source.Record r ->
       let rec conv_fields : (string*b)list -> a Source.record_src -> b
       = fun acc r -> match r with
-      | Source.RecordStop -> sink#record acc
+      | Source.RecordStop -> sink#record (List.rev acc)
       | Source.RecordField (name,get,src',r') ->
           let acc = (name, into src' sink (get x)) :: acc in
           conv_fields acc r'
@@ -390,15 +393,22 @@ module Json = struct
   ]
 
   let source = object(self)
-    inherit [t] Source.universal
+    inherit [t] Source.universal as super
     method visit sink (x:t) = match x with
-    | `Int i -> self#int_ sink i
-    | `Float f -> self#float_ sink f
-    | `Bool b -> self#bool_ sink b
-    | `Null -> self#unit_ sink
-    | `String s -> self#string_ sink s
-    | `List l -> self#list_ sink l
-    | `Assoc l -> self#record sink l
+      | `Int i -> self#int_ sink i
+      | `Float f -> self#float_ sink f
+      | `Bool b -> self#bool_ sink b
+      | `Null -> self#unit_ sink
+      | `String s -> self#string_ sink s
+      | `List l -> self#list_ sink l
+      | `Assoc ([name, `List l] as fields) ->
+          begin match sink with
+          | Sink.Fix f -> self#visit (f sink) x
+          | Sink.Map (sink',f) -> f (self#visit sink' x)
+          | Sink.Sum _ -> self#sum sink name l
+          | _ -> self#record sink fields
+          end
+      | `Assoc l -> self#record sink l
   end
 
   let sink : t Sink.universal = object
@@ -412,7 +422,7 @@ module Json = struct
     method tuple l = `List l
     method sum name l = match l with
       | [] -> `String name
-      | _::_ -> `List (`String name :: l)
+      | _::_ -> `Assoc [name, `List l]
   end
 end
 
@@ -450,4 +460,7 @@ let p = {x=1; y=42; color="yellow";
          prev = Some {x=1; y=41; color="red"; prev=None};}
 
 let p2 = into point_source Json.sink p
-(* TODO tests *)
+
+let p3 = from Json.source point_sink p2
+
+let p4 = into point_source Json.sink p3

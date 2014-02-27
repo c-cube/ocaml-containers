@@ -43,8 +43,8 @@ module Sink : sig
     | String : (string -> 'a) -> 'a t
     | List : (('b t -> 'b list) -> 'a) -> 'a t
     | Record : 'a record_sink -> 'a t
-    | Tuple : 'a tuple_sink -> 'a t
-    | Sum : (string -> ('b t -> 'b) -> 'a) -> 'a t
+    | Tuple : 'a hlist -> 'a t
+    | Sum : (string -> 'a hlist) -> 'a t
     | Map : 'a t * ('a -> 'b) -> 'b t
     | Fix : ('a t -> 'a t) -> 'a t
 
@@ -52,12 +52,9 @@ module Sink : sig
     | RecordField : string * 'a t * ('a -> 'r record_sink) -> 'r record_sink
     | RecordStop : 'r -> 'r record_sink
 
-  and 't tuple_sink =
-    | TupleField : 'a t * ('a -> 't tuple_sink) -> 't tuple_sink
-    | TupleStop : 't -> 't tuple_sink
-
-  and 's sum_sink =
-    | SumSink : (string -> ('b t -> 'b) -> 's) -> 's sum_sink
+  and 't hlist =
+    | HCons : 'a t * ('a -> 't hlist) -> 't hlist
+    | HNil : 't -> 't hlist
 
   val unit_ : unit t
   val bool_ : bool t
@@ -75,16 +72,17 @@ module Sink : sig
   val record : 'r record_sink -> 'r t
   val record_fix : ('r t -> 'r record_sink) -> 'r t
 
-  val (|+|) : 'a t -> ('a -> 't tuple_sink) -> 't tuple_sink
-  val yield_tuple : 't -> 't tuple_sink
-  val tuple : 't tuple_sink -> 't t
+  val (|+|) : 'a t -> ('a -> 't hlist) -> 't hlist
+  val yield : 'a -> 'a hlist
+
+  val tuple : 't hlist -> 't t
 
   val pair : 'a t -> 'b t -> ('a * 'b) t
   val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
 
-  val sum : (string -> ('b t -> 'b) -> 'a) -> 'a t
-  val sum_fix : ('a t -> string -> ('b t -> 'b) -> 'a) -> 'a t
+  val sum : (string -> 'a hlist) -> 'a t
+  val sum_fix : ('a t -> string -> 'a hlist) -> 'a t
 
   val opt : 'a t -> 'a option t
 
@@ -172,7 +170,7 @@ module Source : sig
     method private list_ : 'b. 'b Sink.t -> 'a list -> 'b
     method private record : 'b. 'b Sink.t -> (string*'a) list -> 'b
     method private tuple : 'b. 'b Sink.t -> 'a list -> 'b
-    method private sum : 'b. 'b Sink.t -> string -> 'a -> 'b
+    method private sum : 'b. 'b Sink.t -> string -> 'a list -> 'b
     method virtual visit : 'b. 'b Sink.t -> 'a -> 'b
   end
 end
@@ -184,6 +182,10 @@ val into : 'a Source.t -> 'b Sink.universal -> 'a -> 'b
 
 val from : 'a Source.universal -> 'b Sink.t -> 'a -> 'b
   (** Conversion from universal source *)
+
+(* TODO for format conversion
+val between : 'a Source.universal -> 'b Sink.universal -> 'a -> 'b
+*)
 
 (** {6 Exemples} *)
 
@@ -203,3 +205,4 @@ module Json : sig
 end
 
 val p2 : Json.t
+val p4 : Json.t
