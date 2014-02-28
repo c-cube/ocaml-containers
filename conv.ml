@@ -536,47 +536,76 @@ module Bencode = struct
   end
 end
 
-(* test for records *)
+(* tests *)
 
-type point = {
-  x:int;
-  y:int;
-  color:string;
-  prev : point option; (* previous position, say *)
-}
+module Point = struct
+  type t = {
+    x : int;
+    y : int;
+    color : string;
+    prev : t option; (* previous position, say *)
+  }
 
-let rec point_sink =
-  Sink.(record_fix
-    (fun self ->
-      field "x" int_ @@ fun x ->
-      field "y" int_ @@ fun y ->
-      field "color" string_ @@ fun color ->
-      field "prev" (opt self) @@ fun prev ->
-      yield_record {x;y;color;prev}
+  let sink =
+    Sink.(record_fix
+      (fun self ->
+        field "x" int_ @@ fun x ->
+        field "y" int_ @@ fun y ->
+        field "color" string_ @@ fun color ->
+        field "prev" (opt self) @@ fun prev ->
+        yield_record {x;y;color;prev}
+      ))
+
+  let source =
+    Source.(record_fix
+      (fun self ->
+        field "x" (fun p -> p.x) int_ @@
+        field "y" (fun p -> p.y) int_ @@
+        field "color" (fun p -> p.color) string_ @@
+        field "prev" (fun p -> p.prev) (opt self) @@
+        record_stop
+      ))
+
+  let p = {x=1; y=42; color="yellow";
+           prev = Some {x=1; y=41; color="red"; prev=None};}
+
+  let p2 = into source Json.sink p
+
+  let p3 = from Json.source sink p2
+
+  let p4 = into source Json.sink p3
+
+  let p2_sexp = into source Sexp.sink p
+
+  let p3_sexp = from Sexp.source sink p2_sexp
+
+  let p4_sexp = into source Sexp.sink p3_sexp
+end
+
+module Lambda = struct
+  type t =
+    | Var of string
+    | App of t * t
+    | Lambda of string * t
+
+  let source = Source.(sum_fix
+    (fun self t -> match t with
+        | Var s -> "var", sum_cons string_ s @@ sum_nil
+        | App (t1, t2) -> "app", sum_cons self t1 @@ sum_cons self t2 @@ sum_nil
+        | Lambda (s, t) -> "lam", sum_cons string_ s @@ sum_cons self t @@ sum_nil
+      ))
+
+  let sink = Sink.(sum_fix
+    (fun self str -> match str with
+      | "var" -> string_ |+| fun s -> yield (Var s)
+      | "app" -> self |+| fun t1 -> self |+| fun t2 -> yield (App (t1, t2))
+      | "lam" -> string_ |+| fun s -> self |+| fun t -> yield (Lambda (s, t))
+      | _ -> __error "expected lambda term"
     ))
 
+  let t1 = Lambda ("x", App (Lambda ("y", App (Var "y", Var "x")), Var "x"))
 
-let point_source : point Source.t =
-  Source.(record_fix
-    (fun self ->
-      field "x" (fun p -> p.x) int_ @@
-      field "y" (fun p -> p.y) int_ @@
-      field "color" (fun p -> p.color) string_ @@
-      field "prev" (fun p -> p.prev) (opt self) @@
-      record_stop
-    ))
-
-let p = {x=1; y=42; color="yellow";
-         prev = Some {x=1; y=41; color="red"; prev=None};}
-
-let p2 = into point_source Json.sink p
-
-let p3 = from Json.source point_sink p2
-
-let p4 = into point_source Json.sink p3
-
-let p2_sexp = into point_source Sexp.sink p
-
-let p3_sexp = from Sexp.source point_sink p2_sexp
-
-let p4_sexp = into point_source Sexp.sink p3_sexp
+  let t1_json = into source Json.sink t1
+  let t1_bencode = into source Bencode.sink t1
+  let t1_sexp = into source Sexp.sink t1
+end

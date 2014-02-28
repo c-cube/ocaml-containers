@@ -238,19 +238,39 @@ module Bencode : sig
   val sink : t Sink.universal
 end
 
-type point = {
-  x:int;
-  y:int;
-  color:string;
-  prev : point option; (* previous position, say *)
-}
+(** Tests *)
 
-val point_source : point Source.t
-val point_sink : point Sink.t
+module Point : sig
+    type t = {
+      x : int;
+      y : int;
+      color : string;
+      prev : t option; (* previous position, say *)
+    }
 
-val p : point
-val p2 : Json.t
-val p4 : Json.t
+  val source : t Source.t
+  val sink : t Sink.t
 
-val p2_sexp : Sexp.t
-val p4_sexp : Sexp.t
+  val p : t
+  val p2 : Json.t
+  val p4 : Json.t
+
+  val p2_sexp : Sexp.t
+  val p4_sexp : Sexp.t
+end
+
+module Lambda : sig
+  type t =
+    | Var of string
+    | App of t * t
+    | Lambda of string * t
+
+  val source : t Source.t
+  val sink : t Sink.t
+
+  val t1 : t
+
+  val t1_json : Json.t
+  val t1_bencode : Bencode.t
+  val t1_sexp : Sexp.t
+end
