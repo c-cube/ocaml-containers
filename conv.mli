@@ -28,8 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 exception ConversionFailure of string
 
-val (@@@) : ('a -> 'b) -> 'a -> 'b
-
 (** {6 Sinks}
 A sink is used to traverse values of some type 'a *)
 module Sink : sig
@@ -66,8 +64,7 @@ module Sink : sig
   val map : ('a -> 'b) -> 'a t -> 'b t
   val array_ : 'a t -> 'a array t
 
-  val (-->) : 'a -> 'b -> 'a * 'b
-  val (|:|) : (string * 'a t) -> ('a -> 'r record_sink) -> 'r record_sink
+  val field : string -> 'a t -> ('a -> 'r record_sink) -> 'r record_sink
   val yield_record : 'r -> 'r record_sink
   val record : 'r record_sink -> 'r t
   val record_fix : ('r t -> 'r record_sink) -> 'r t
@@ -85,6 +82,22 @@ module Sink : sig
   val sum_fix : ('a t -> string -> 'a hlist) -> 'a t
 
   val opt : 'a t -> 'a option t
+
+  (** What is expected by the sink? *)
+  type expected =
+    | ExpectInt
+    | ExpectBool
+    | ExpectUnit
+    | ExpectFloat
+    | ExpectString
+    | ExpectRecord
+    | ExpectTuple
+    | ExpectList
+    | ExpectSum
+
+  val expected : _ t -> expected
+    (** To be used by sources that have ambiguities to know what is expected.
+        maps and fixpoints are unrolled. *)
 
   (** Universal sink, such as a serialization format *)
   class type ['a] universal = object
@@ -139,7 +152,7 @@ module Source : sig
   val map : ('b -> 'a) -> 'a t -> 'b t
   val array_ : 'a t -> 'a array t
 
-  val record_field : string -> ('r -> 'a) -> 'a t -> 'r record_src -> 'r record_src
+  val field : string -> ('r -> 'a) -> 'a t -> 'r record_src -> 'r record_src
   val record_stop : 'r record_src
   val record : 'r record_src -> 'r t
   val record_fix : ('r t -> 'r record_src) -> 'r t
@@ -204,5 +217,26 @@ module Json : sig
   val sink : t Sink.universal
 end
 
+module Sexp : sig
+  type t =
+    | Atom of string
+    | List of t list
+
+  val source : t Source.universal
+  val sink : t Sink.universal
+  val fmt : Format.formatter -> t -> unit (* for debug *)
+end
+
+type point = {
+  x:int;
+  y:int;
+  color:string;
+  prev : point option; (* previous position, say *)
+}
+
+val p : point
 val p2 : Json.t
 val p4 : Json.t
+
+val p2_sexp : Sexp.t
+val p4_sexp : Sexp.t

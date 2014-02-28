@@ -28,8 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 exception ConversionFailure of string
 
-let (@@@) a b = a b
-
 (* error-raising function *)
 let __error msg =
   let b = Buffer.create 15 in
@@ -89,8 +87,7 @@ module Sink = struct
   let array_ sink =
     map Array.of_list (list_ sink)
 
-  let (-->) a b = a, b
-  let (|:|) (name,sink) cont = RecordField (name,sink,cont)
+  let field name sink cont = RecordField (name, sink, cont)
   let yield_record r = RecordStop r
   let record r = Record r
   let record_fix f =
@@ -135,6 +132,31 @@ module Sink = struct
       | "some" -> sink |+| fun x -> yield (Some x)
       | "none" -> yield None
       | _ -> __error "unexpected variant %s" name)
+
+  (** What is expected by the sink? *)
+  type expected =
+    | ExpectInt
+    | ExpectBool
+    | ExpectUnit
+    | ExpectFloat
+    | ExpectString
+    | ExpectRecord
+    | ExpectTuple
+    | ExpectList
+    | ExpectSum
+
+  let rec expected : 'a. 'a t -> expected = function
+    | Unit _ -> ExpectUnit
+    | Bool _ -> ExpectBool
+    | Int _ -> ExpectInt
+    | Float _ -> ExpectFloat
+    | String _ -> ExpectString
+    | Record _ -> ExpectRecord
+    | Tuple _ -> ExpectTuple
+    | Sum _ -> ExpectSum
+    | List _ -> ExpectList
+    | (Fix f) as sink -> expected (f sink)
+    | Map (sink', _) -> expected sink'
 
   (** Universal sink, such as a serialization format *)
   class type ['a] universal = object
@@ -187,7 +209,7 @@ module Source = struct
   let map f src = Map (src, f)
   let array_ src = map Array.to_list (list_ src)
 
-  let record_field name get src' cont =
+  let field name get src' cont =
     RecordField (name,get,src',cont)
   let record_stop = RecordStop
   let record r = Record r
@@ -273,6 +295,14 @@ module Source = struct
         begin try f (int_of_string s)
         with Invalid_argument _ -> __error "get String, but expected Int"
         end
+      | Sink.Bool f ->
+        begin try f (bool_of_string s)
+        with Invalid_argument _ -> __error "get String, but expected Bool"
+        end
+      | Sink.Float f ->
+        begin try f (float_of_string s)
+        with Invalid_argument _ -> __error "get String, but expected Float"
+        end
       | Sink.Map (sink', f) -> f (self#string_ sink' s)
       | Sink.Fix f -> self#string_ (f sink) s
       | Sink.Sum _ -> self#sum sink s []
@@ -282,6 +312,7 @@ module Source = struct
       = fun sink l -> match sink with
       | Sink.List f ->
         f (fun sink' -> List.map (self#visit sink') l)
+      | Sink.Tuple _ -> self#tuple sink l
       | Sink.Map (sink', f) -> f (self#list_ sink' l)
       | Sink.Fix f -> self#list_ (f sink) l
       | _ -> __error "get List, but expected %s" (Sink.__expected sink)
@@ -393,7 +424,7 @@ module Json = struct
   ]
 
   let source = object(self)
-    inherit [t] Source.universal as super
+    inherit [t] Source.universal
     method visit sink (x:t) = match x with
       | `Int i -> self#int_ sink i
       | `Float f -> self#float_ sink f
@@ -402,10 +433,8 @@ module Json = struct
       | `String s -> self#string_ sink s
       | `List l -> self#list_ sink l
       | `Assoc ([name, `List l] as fields) ->
-          begin match sink with
-          | Sink.Fix f -> self#visit (f sink) x
-          | Sink.Map (sink',f) -> f (self#visit sink' x)
-          | Sink.Sum _ -> self#sum sink name l
+          begin match Sink.expected sink with
+          | Sink.ExpectSum -> self#sum sink name l
           | _ -> self#record sink fields
           end
       | `Assoc l -> self#record sink l
@@ -426,6 +455,51 @@ module Json = struct
   end
 end
 
+module Sexp = struct
+  type t =
+    | Atom of string
+    | List of t list
+
+  let source = object(self)
+    inherit [t] Source.universal
+    method visit: 'a. 'a Sink.t -> t -> 'a = fun sink x ->
+      match x, Sink.expected sink with
+      | Atom s, Sink.ExpectSum -> self#sum sink s []
+      | List (Atom name :: l), Sink.ExpectSum -> self#sum sink name l
+      | List l, Sink.ExpectRecord ->
+          let l' = List.map (function
+            | List [Atom name; x] -> name, x
+            | _ -> __error "get List, but expected Record") l
+          in self#record sink l'
+      | Atom s, _ -> self#string_ sink s
+      | List [], Sink.ExpectUnit -> self#unit_ sink
+      | List l, _ -> self#list_ sink l
+  end
+
+  let sink = object
+    method unit_ = List []
+    method bool_ b = Atom (string_of_bool b)
+    method int_ i = Atom (string_of_int i)
+    method float_ f = Atom (string_of_float f)
+    method string_ s = Atom (String.escaped s)
+    method list_ l = List l
+    method tuple l = List l
+    method record l = List (List.map (fun (a,b) -> List [Atom a; b]) l)
+    method sum name l = match l with
+      | [] -> Atom name
+      | _::_ -> List (Atom name::l)
+  end
+
+  let rec fmt out = function
+    | Atom s -> Format.pp_print_string out s
+    | List l ->
+        Format.pp_print_char out '(';
+        List.iteri (fun i s ->
+          if i > 0 then Format.pp_print_char out ' ';
+          fmt out s) l;
+        Format.pp_print_char out ')'
+end
+
 (* test for records *)
 
 type point = {
@@ -438,10 +512,10 @@ type point = {
 let rec point_sink =
   Sink.(record_fix
     (fun self ->
-      "x" --> int_ |:| fun x ->
-      "y" --> int_ |:| fun y ->
-      "color" --> string_ |:| fun color ->
-      "prev" --> (opt self) |:| fun prev ->
+      field "x" int_ @@ fun x ->
+      field "y" int_ @@ fun y ->
+      field "color" string_ @@ fun color ->
+      field "prev" (opt self) @@ fun prev ->
       yield_record {x;y;color;prev}
     ))
 
@@ -449,10 +523,10 @@ let rec point_sink =
 let point_source : point Source.t =
   Source.(record_fix
     (fun self ->
-      record_field "x" (fun p -> p.x) int_ @@@
-      record_field "y" (fun p -> p.y) int_ @@@
-      record_field "color" (fun p -> p.color) string_ @@@
-      record_field "prev" (fun p -> p.prev) (opt self) @@@
+      field "x" (fun p -> p.x) int_ @@
+      field "y" (fun p -> p.y) int_ @@
+      field "color" (fun p -> p.color) string_ @@
+      field "prev" (fun p -> p.prev) (opt self) @@
       record_stop
     ))
 
@@ -464,3 +538,9 @@ let p2 = into point_source Json.sink p
 let p3 = from Json.source point_sink p2
 
 let p4 = into point_source Json.sink p3
+
+let p2_sexp = into point_source Sexp.sink p
+
+let p3_sexp = from Sexp.source point_sink p2_sexp
+
+let p4_sexp = into point_source Sexp.sink p3_sexp
