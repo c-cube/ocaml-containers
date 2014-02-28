@@ -227,12 +227,26 @@ module Sexp : sig
   val fmt : Format.formatter -> t -> unit (* for debug *)
 end
 
+module Bencode : sig
+  type t =
+    | Int of int
+    | String of string
+    | List of t list
+    | Assoc of (string * t) list
+
+  val source : t Source.universal
+  val sink : t Sink.universal
+end
+
 type point = {
   x:int;
   y:int;
   color:string;
   prev : point option; (* previous position, say *)
 }
+
+val point_source : point Source.t
+val point_sink : point Sink.t
 
 val p : point
 val p2 : Json.t

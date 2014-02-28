@@ -283,6 +283,7 @@ module Source = struct
     method private int_ : 'b. 'b Sink.t -> int -> 'b
       = fun sink i -> match sink with
       | Sink.Int f -> f i
+      | Sink.Bool f -> f (i <> 0)
       | Sink.String f -> f (string_of_int i)
       | Sink.Map (sink', f) -> f (self#int_ sink' i)
       | Sink.Fix f -> self#int_ (f sink) i
@@ -498,6 +499,41 @@ module Sexp = struct
           if i > 0 then Format.pp_print_char out ' ';
           fmt out s) l;
         Format.pp_print_char out ')'
+end
+
+module Bencode = struct
+  type t =
+    | Int of int
+    | String of string
+    | List of t list
+    | Assoc of (string * t) list
+
+  let source = object(self)
+    inherit [t] Source.universal
+    method visit: 'a. 'a Sink.t -> t -> 'a = fun sink x ->
+      match x, Sink.expected sink with
+      | String s, Sink.ExpectSum -> self#sum sink s []
+      | Assoc [name, List l] , Sink.ExpectSum -> self#sum sink name l
+      | Assoc l, _ -> self#record sink l
+      | String s, _ -> self#string_ sink s
+      | Int 0, Sink.ExpectUnit -> self#unit_ sink
+      | Int i, _ -> self#int_ sink i
+      | List l, _ -> self#list_ sink l
+  end
+
+  let sink = object
+    method unit_ = Int 0
+    method bool_ b = Int (if b then 1 else 0)
+    method int_ i = Int i
+    method float_ f = String (string_of_float f)
+    method string_ s = String s
+    method list_ l = List l
+    method tuple l = List l
+    method record l = Assoc l
+    method sum name l = match l with
+      | [] -> String name
+      | _::_ -> Assoc [name, List l]
+  end
 end
 
 (* test for records *)
