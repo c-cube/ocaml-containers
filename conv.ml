@@ -430,12 +430,12 @@ module Json = struct
       | `Bool b -> self#bool_ sink b
       | `Null -> self#unit_ sink
       | `String s -> self#string_ sink s
-      | `List l -> self#list_ sink l
-      | `Assoc ([name, `List l] as fields) ->
+      | `List ((`String name :: l) as l') ->
           begin match Sink.expected sink with
           | Sink.ExpectSum -> self#sum sink name l
-          | _ -> self#record sink fields
+          | _ -> self#list_ sink l'
           end
+      | `List l -> self#list_ sink l
       | `Assoc l -> self#record sink l
   end
 
@@ -450,7 +450,7 @@ module Json = struct
     method tuple l = `List l
     method sum name l = match l with
       | [] -> `String name
-      | _::_ -> `Assoc [name, `List l]
+      | _::_ -> `List (`String name :: l)
   end
 end
 
@@ -511,7 +511,7 @@ module Bencode = struct
     method visit: 'a. 'a Sink.t -> t -> 'a = fun sink x ->
       match x, Sink.expected sink with
       | String s, Sink.ExpectSum -> self#sum sink s []
-      | Assoc [name, List l] , Sink.ExpectSum -> self#sum sink name l
+      | List (String name :: l), Sink.ExpectSum -> self#sum sink name l
       | Assoc l, _ -> self#record sink l
       | String s, _ -> self#string_ sink s
       | Int 0, Sink.ExpectUnit -> self#unit_ sink
@@ -530,7 +530,7 @@ module Bencode = struct
     method record l = Assoc l
     method sum name l = match l with
       | [] -> String name
-      | _::_ -> Assoc [name, List l]
+      | _::_ -> List (String name :: l)
   end
 end
 
