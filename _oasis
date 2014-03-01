@@ -44,14 +44,14 @@ Library "containers"
   BuildDepends:     unix
 
 Library "containers_thread"
-  Path:             .
+  Path:             threads/
   Modules:          Future
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)
   Install$:         flag(thread)
   BuildDepends:     containers,threads
-  XMETARequires:    containers,lwt
+  XMETARequires:    containers,threads,lwt
 
 Library "containers_lwt"
   Path:             .
@@ -89,6 +89,14 @@ Executable benchs
   Build$: flag(bench)
   MainIs: benchs.ml
   BuildDepends: containers,bench
+
+Executable bench_conv
+  Path: tests/
+  Install: false
+  CompiledObject: native
+  Build$: flag(bench)
+  MainIs: bench_conv.ml
+  BuildDepends: containers,benchmark
 
 Test all
   Command: $run_tests

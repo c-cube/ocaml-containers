@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: c8b764a938cf7287206f86816566b0b5) *)
+(* DO NOT EDIT (digest: e5b7778fcec1af4e8956e90e19fccd18) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -204,27 +204,26 @@ module BaseEnvLight = struct
       end
 
 
-  let rec var_expand str env =
-    let buff =
-      Buffer.create ((String.length str) * 2)
-    in
-      Buffer.add_substitute
-        buff
-        (fun var ->
-           try
-             var_expand (MapString.find var env) env
-           with Not_found ->
-             failwith
-               (Printf.sprintf
-                  "No variable %s defined when trying to expand %S."
-                  var
-                  str))
-        str;
-      Buffer.contents buff
-
-
   let var_get name env =
-    var_expand (MapString.find name env) env
+    let rec var_expand str =
+      let buff =
+        Buffer.create ((String.length str) * 2)
+      in
+        Buffer.add_substitute
+          buff
+          (fun var ->
+             try
+               var_expand (MapString.find var env)
+             with Not_found ->
+               failwith
+                 (Printf.sprintf
+                    "No variable %s defined when trying to expand %S."
+                    var
+                    str))
+          str;
+        Buffer.contents buff
+    in
+      var_expand (MapString.find name env)
 
 
   let var_choose lst env =
@@ -234,7 +233,7 @@ module BaseEnvLight = struct
 end
 
 
-# 237 "myocamlbuild.ml"
+# 236 "myocamlbuild.ml"
 module MyOCamlbuildFindlib = struct
 (* # 22 "src/plugins/ocamlbuild/MyOCamlbuildFindlib.ml" *)
 
@@ -307,22 +306,6 @@ module MyOCamlbuildFindlib = struct
   let find_syntaxes () = ["camlp4o"; "camlp4r"]
 
 
-  let well_known_syntax = [
-    "camlp4.quotations.o";
-    "camlp4.quotations.r";
-    "camlp4.exceptiontracer";
-    "camlp4.extend";
-    "camlp4.foldgenerator";
-    "camlp4.listcomprehension";
-    "camlp4.locationstripper";
-    "camlp4.macro";
-    "camlp4.mapgenerator";
-    "camlp4.metagenerator";
-    "camlp4.profiler";
-    "camlp4.tracer"
-  ]
-
-
   let dispatch =
     function
       | Before_options ->
@@ -348,17 +331,13 @@ module MyOCamlbuildFindlib = struct
           List.iter
             begin fun pkg ->
               let base_args = [A"-package"; A pkg] in
-              (* TODO: consider how to really choose camlp4o or camlp4r. *)
               let syn_args = [A"-syntax"; A "camlp4o"] in
               let args =
-              (* Heuristic to identify syntax extensions: whether they end in
-                 ".syntax"; some might not.
-               *)
-                if Filename.check_suffix pkg "syntax" ||
-                   List.mem pkg well_known_syntax then
-                  syn_args @ base_args
-                else
-                  base_args
+          (* Heuristic to identify syntax extensions: whether they end in
+           * ".syntax"; some might not *)
+                if Filename.check_suffix pkg "syntax"
+                then syn_args @ base_args
+                else base_args
               in
               flag ["ocaml"; "compile";  "pkg_"^pkg] & S args;
               flag ["ocaml"; "ocamldep"; "pkg_"^pkg] & S args;
@@ -389,11 +368,7 @@ module MyOCamlbuildFindlib = struct
           flag ["ocaml"; "pkg_threads"; "compile"] (S[A "-thread"]);
           flag ["ocaml"; "pkg_threads"; "doc"] (S[A "-I"; A "+threads"]);
           flag ["ocaml"; "pkg_threads"; "link"] (S[A "-thread"]);
-          flag ["ocaml"; "pkg_threads"; "infer_interface"] (S[A "-thread"]);
-          flag ["ocaml"; "package(threads)"; "compile"] (S[A "-thread"]);
-          flag ["ocaml"; "package(threads)"; "doc"] (S[A "-I"; A "+threads"]);
-          flag ["ocaml"; "package(threads)"; "link"] (S[A "-thread"]);
-          flag ["ocaml"; "package(threads)"; "infer_interface"] (S[A "-thread"]);
+          flag ["ocaml"; "pkg_threads"; "infer_interface"] (S[A "-thread"])
 
       | _ ->
           ()
@@ -552,14 +527,10 @@ module MyOCamlbuildBase = struct
               (* Add flags *)
               List.iter
               (fun (tags, cond_specs) ->
-                 let spec = BaseEnvLight.var_choose cond_specs env in
-                 let rec eval_specs =
-                   function
-                     | S lst -> S (List.map eval_specs lst)
-                     | A str -> A (BaseEnvLight.var_expand str env)
-                     | spec -> spec
+                 let spec =
+                   BaseEnvLight.var_choose cond_specs env
                  in
-                   flag tags & (eval_specs spec))
+                   flag tags & spec)
               t.flags
         | _ ->
             ()
@@ -576,14 +547,14 @@ module MyOCamlbuildBase = struct
 end
 
 
-# 579 "myocamlbuild.ml"
+# 550 "myocamlbuild.ml"
 open Ocamlbuild_plugin;;
 let package_default =
   {
      MyOCamlbuildBase.lib_ocaml =
        [
           ("containers", [], []);
-          ("containers_thread", [], []);
+          ("containers_thread", ["threads"], []);
           ("containers_lwt", [], []);
           ("containers_cgi", ["cgi"], [])
        ];
@@ -595,6 +566,6 @@ let package_default =
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 599 "myocamlbuild.ml"
+# 570 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;

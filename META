@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 6c4b4efc4408717882c37d4e5ee32d91)
+# DO NOT EDIT (digest: 9f5c18246e625c62ccb7bf59b1670289)
 version = "0.1"
 description = "A bunch of modules, including polymorphic containers."
 requires = "unix"
@@ -11,7 +11,7 @@ exists_if = "containers.cma"
 package "thread" (
  version = "0.1"
  description = "A bunch of modules, including polymorphic containers."
- requires = "containers lwt"
+ requires = "containers threads lwt"
  archive(byte) = "containers_thread.cma"
  archive(byte, plugin) = "containers_thread.cma"
  archive(native) = "containers_thread.cmxa"
