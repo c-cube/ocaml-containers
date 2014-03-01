@@ -89,16 +89,18 @@ module Sink : sig
         maps and fixpoints are unrolled. *)
 
   (** Universal sink, such as a serialization format *)
-  class type ['a] universal = object
-    method unit_ : 'a
-    method bool_ : bool -> 'a
-    method float_ : float -> 'a
-    method int_ : int -> 'a
-    method string_ : string -> 'a
-    method list_ : 'a list -> 'a
-    method record : (string*'a) list -> 'a
-    method tuple : 'a list -> 'a
-    method sum : string -> 'a list -> 'a
+  module Universal : sig
+    type 'a t = {
+      unit_ : 'a;
+      bool_ : bool -> 'a;
+      float_ : float -> 'a;
+      int_ : int -> 'a;
+      string_ : string -> 'a;
+      list_ : 'a list -> 'a;
+      record : (string*'a) list -> 'a;
+      tuple : 'a list -> 'a;
+      sum : string -> 'a list -> 'a;
+    }
   end
 end
 
@@ -150,28 +152,31 @@ module Source : sig
 
   val opt : 'a t -> 'a option t
 
-  (** Universal source from type 'a. A universal type should inherit from it
-      and implement the visit method by calling self-methods. *)
-  class virtual ['a] universal : object
-    method private unit_ : 'b. 'b Sink.t -> 'b
-    method private bool_ : 'b. 'b Sink.t -> bool -> 'b
-    method private float_ : 'b. 'b Sink.t -> float -> 'b
-    method private int_ : 'b. 'b Sink.t -> int -> 'b
-    method private string_ : 'b. 'b Sink.t -> string -> 'b
-    method private list_ : 'b. 'b Sink.t -> 'a list -> 'b
-    method private record : 'b. 'b Sink.t -> (string*'a) list -> 'b
-    method private tuple : 'b. 'b Sink.t -> 'a list -> 'b
-    method private sum : 'b. 'b Sink.t -> string -> 'a list -> 'b
-    method virtual visit : 'b. 'b Sink.t -> 'a -> 'b
+  (** Universal source from type 'a. A universal type should use
+      combinators to implement the visitor pattern. *)
+  module Universal : sig
+    type 'a t = {
+      visit : 'b. 'b Sink.t -> 'a -> 'b;
+    }
+
+    val unit_ : 'b Sink.t -> 'b
+    val bool_ : 'b Sink.t -> bool -> 'b
+    val float_ : 'b Sink.t -> float -> 'b
+    val int_ : 'b Sink.t -> int -> 'b
+    val string_ : 'b Sink.t -> string -> 'b
+    val list_ : src:'a t -> 'b Sink.t -> 'a list -> 'b
+    val record : src:'a t -> 'b Sink.t -> (string*'a) list -> 'b
+    val tuple : src:'a t -> 'b Sink.t -> 'a list -> 'b
+    val sum : src:'a t -> 'b Sink.t -> string -> 'a list -> 'b
   end
 end
 
 (** {6 Conversion Functions} *)
 
-val into : 'a Source.t -> 'b Sink.universal -> 'a -> 'b
+val into : 'a Source.t -> 'b Sink.Universal.t -> 'a -> 'b
   (** Conversion to universal sink *)
 
-val from : 'a Source.universal -> 'b Sink.t -> 'a -> 'b
+val from : 'a Source.Universal.t -> 'b Sink.t -> 'a -> 'b
   (** Conversion from universal source *)
 
 (* TODO for format conversion
@@ -191,8 +196,8 @@ module Json : sig
     | `Assoc of (string * t) list
   ]
 
-  val source : t Source.universal
-  val sink : t Sink.universal
+  val source : t Source.Universal.t
+  val sink : t Sink.Universal.t
 end
 
 module Sexp : sig
@@ -200,8 +205,8 @@ module Sexp : sig
     | Atom of string
     | List of t list
 
-  val source : t Source.universal
-  val sink : t Sink.universal
+  val source : t Source.Universal.t
+  val sink : t Sink.Universal.t
   val fmt : Format.formatter -> t -> unit (* for debug *)
 end
 
@@ -212,8 +217,8 @@ module Bencode : sig
     | List of t list
     | Assoc of (string * t) list
 
-  val source : t Source.universal
-  val sink : t Sink.universal
+  val source : t Source.Universal.t
+  val sink : t Sink.Universal.t
 end
 
 (** Tests *)

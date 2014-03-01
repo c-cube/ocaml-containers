@@ -157,16 +157,18 @@ module Sink = struct
     | Map (sink', _) -> expected sink'
 
   (** Universal sink, such as a serialization format *)
-  class type ['a] universal = object
-    method unit_ : 'a
-    method bool_ : bool -> 'a
-    method float_ : float -> 'a
-    method int_ : int -> 'a
-    method string_ : string -> 'a
-    method list_ : 'a list -> 'a
-    method record : (string*'a) list -> 'a
-    method tuple : 'a list -> 'a
-    method sum : string -> 'a list -> 'a
+  module Universal = struct
+    type 'a t = {
+      unit_ : 'a;
+      bool_ : bool -> 'a;
+      float_ : float -> 'a;
+      int_ : int -> 'a;
+      string_ : string -> 'a;
+      list_ : 'a list -> 'a;
+      record : (string*'a) list -> 'a;
+      tuple : 'a list -> 'a;
+      sum : string -> 'a list -> 'a;
+    }
   end
 end
 
@@ -252,43 +254,47 @@ module Source = struct
     with Not_found ->
       __error "record field %s not found in source" name
 
-  class virtual ['a] universal = object(self)
-    method private unit_ : type b. b Sink.t -> b
-      = fun sink -> match sink with
+  module Universal = struct
+    type 'a t = {
+      visit : 'b. 'b Sink.t -> 'a -> 'b;
+    }
+
+    let rec unit_ : type b. b Sink.t -> b
+    = fun sink -> match sink with
       | Sink.Unit -> ()
       | Sink.Int -> 0
-      | Sink.Map (sink', f) -> f (self#unit_ sink')
-      | Sink.Fix f -> self#unit_ (f sink)
+      | Sink.Map (sink', f) -> f (unit_ sink')
+      | Sink.Fix f -> unit_ (f sink)
       | _ -> __error "get Unit, but expected %s" (Sink.__expected sink)
 
-    method private bool_ : type b. b Sink.t -> bool -> b
-      = fun sink b -> match sink with
+    let rec bool_ : type b. b Sink.t -> bool -> b
+    = fun sink b -> match sink with
       | Sink.Bool -> b
       | Sink.Int -> if b then 1 else 0
       | Sink.String -> string_of_bool b
-      | Sink.Map (sink', f) -> f (self#bool_ sink' b)
-      | Sink.Fix f -> self#bool_ (f sink) b
+      | Sink.Map (sink', f) -> f (bool_ sink' b)
+      | Sink.Fix f -> bool_ (f sink) b
       | _ -> __error "get Bool, but expected %s" (Sink.__expected sink)
 
-    method private float_ : type b. b Sink.t -> float -> b
-      = fun sink x -> match sink with
+    let rec float_ : type b. b Sink.t -> float -> b
+    = fun sink x -> match sink with
       | Sink.Float -> x
       | Sink.String -> string_of_float x
-      | Sink.Map (sink', f) -> f (self#float_ sink' x)
-      | Sink.Fix f -> self#float_ (f sink) x
+      | Sink.Map (sink', f) -> f (float_ sink' x)
+      | Sink.Fix f -> float_ (f sink) x
       | _ -> __error "get Float, but expected %s" (Sink.__expected sink)
 
-    method private int_ : type b. b Sink.t -> int -> b
-      = fun sink i -> match sink with
+    let rec int_ : type b. b Sink.t -> int -> b
+    = fun sink i -> match sink with
       | Sink.Int -> i
       | Sink.Bool -> i <> 0
       | Sink.String -> string_of_int i
-      | Sink.Map (sink', f) -> f (self#int_ sink' i)
-      | Sink.Fix f -> self#int_ (f sink) i
+      | Sink.Map (sink', f) -> f (int_ sink' i)
+      | Sink.Fix f -> int_ (f sink) i
       | _ -> __error "get Int, but expected %s" (Sink.__expected sink)
 
-    method private string_ : type b. b Sink.t -> string -> b
-      = fun sink s -> match sink with
+    let rec string_ : type b. b Sink.t -> string -> b
+    = fun sink s -> match sink with
       | Sink.String -> s
       | Sink.Int ->
         begin try int_of_string s
@@ -302,84 +308,82 @@ module Source = struct
         begin try float_of_string s
         with Invalid_argument _ -> __error "get String, but expected Float"
         end
-      | Sink.Map (sink', f) -> f (self#string_ sink' s)
-      | Sink.Fix f -> self#string_ (f sink) s
-      | Sink.Sum _ -> self#sum sink s []
+      | Sink.Map (sink', f) -> f (string_ sink' s)
+      | Sink.Fix f -> string_ (f sink) s
       | _ -> __error "get String, but expected %s" (Sink.__expected sink)
 
-    method private list_ : 'b. 'b Sink.t -> 'a list -> 'b
-      = fun sink l -> match sink with
+    let rec list_ : type b. src:'a t -> b Sink.t -> 'a list -> b
+    = fun ~src sink l -> match sink with
       | Sink.List f ->
-        f (fun sink' -> List.map (self#visit sink') l)
-      | Sink.Tuple _ -> self#tuple sink l
-      | Sink.Map (sink', f) -> f (self#list_ sink' l)
-      | Sink.Fix f -> self#list_ (f sink) l
+        f (fun sink' -> List.map (src.visit sink') l)
+      | Sink.Tuple _ -> tuple ~src sink l
+      | Sink.Map (sink', f) -> f (list_ ~src sink' l)
+      | Sink.Fix f -> list_ ~src (f sink) l
       | _ -> __error "get List, but expected %s" (Sink.__expected sink)
 
-    method private record : 'b. 'b Sink.t -> (string*'a) list -> 'b
-      = fun sink l -> match sink with
+    and record : type b. src:'a t -> b Sink.t -> (string*'a) list -> b
+    = fun ~src sink l -> match sink with
       | Sink.Record r ->
         (* fold over the expected record fields *)
-        let rec build_record : 'r. 'r Sink.record_sink -> 'r
+        let rec build_record 
         = function
           | Sink.RecordStop x -> x
           | Sink.RecordField (name, sink', cont) ->
               let src_field = _get_field l name in
-              let sink_field = self#visit sink' src_field in
+              let sink_field = src.visit sink' src_field in
               build_record (cont sink_field)
         in build_record r
-      | Sink.Map (sink', f) -> f (self#record sink' l)
-      | Sink.Fix f -> self#record (f sink) l
+      | Sink.Map (sink', f) -> f (record ~src sink' l)
+      | Sink.Fix f -> record ~src (f sink) l
       | _ -> __error "get Record, but expected %s" (Sink.__expected sink)
 
-    method private build_hlist : 't. 'a list -> 't Sink.hlist -> 't
-        = fun l t_sink -> match l, t_sink with
+    and build_hlist : 't. src:'a t -> 'a list -> 't Sink.hlist -> 't
+        = fun ~src l t_sink -> match l, t_sink with
           | [], Sink.HNil t -> t
           | [], _ ->
               __error "not enough tuple components"
           | _::_, Sink.HNil _ ->
               __error "too many tuple components (%d too many)" (List.length l)
           | x::l', Sink.HCons (sink', cont) ->
-              let y = self#visit sink' x in
-              self#build_hlist l' (cont y)
+              let y = src.visit sink' x in
+              build_hlist ~src l' (cont y)
 
-    method private tuple : 'b. 'b Sink.t -> 'a list -> 'b
-      = fun sink l -> match sink with
+    and tuple : type b. src:'a t -> b Sink.t -> 'a list -> b
+    = fun ~src sink l -> match sink with
       | Sink.Tuple t_sink ->
         (* fold over the expected tuple component *)
-        self#build_hlist l t_sink
-      | Sink.List _ -> self#list_ sink l  (* adapt *)
-      | Sink.Map (sink', f) -> f (self#tuple sink' l)
-      | Sink.Fix f -> self#tuple (f sink) l
+        build_hlist ~src l t_sink
+      | Sink.List _ -> list_ ~src sink l  (* adapt *)
+      | Sink.Map (sink', f) -> f (tuple ~src sink' l)
+      | Sink.Fix f -> tuple ~src (f sink) l
       | _ -> __error "get Tuple, but expected %s" (Sink.__expected sink)
 
-    method private sum : 'b. 'b Sink.t -> string -> 'a list -> 'b
-      = fun sink name s -> match sink with
+    and sum : type b. src:'a t -> b Sink.t -> string -> 'a list -> b
+    = fun ~src sink name s -> match sink with
       | Sink.Sum f ->
           let l_sink = f name in
-          self#build_hlist s l_sink
-      | Sink.Map (sink', f) -> f (self#sum sink' name s)
-      | Sink.Fix f -> self#sum (f sink) name s
+          build_hlist ~src s l_sink
+      | Sink.Map (sink', f) -> f (sum ~src sink' name s)
+      | Sink.Fix f -> sum ~src (f sink) name s
       | _ -> __error "get Sum(%s), but expected %s" name (Sink.__expected sink)
-
-    method virtual visit : 'b. 'b Sink.t -> 'a -> 'b
   end
 end
 
-let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
+let rec into : type a b. a Source.t -> b Sink.Universal.t -> a -> b =
+  let open Sink.Universal in
   fun src sink x -> match src with
-  | Source.Unit -> sink#unit_
-  | Source.Bool -> sink#bool_ x
-  | Source.Float -> sink#float_ x
-  | Source.Int -> sink#int_ x
-  | Source.String -> sink#string_ x
+  | Source.Unit -> sink.unit_
+  | Source.Bool -> sink.bool_ x
+  | Source.Float -> sink.float_ x
+  | Source.Int -> sink.int_ x
+  | Source.String -> sink.string_ x
   | Source.List src' ->
       let l = List.map (into src' sink) x in
-      sink#list_ l
+      sink.list_ l
   | Source.Record r ->
       let rec conv_fields : (string*b)list -> a Source.record_src -> b
       = fun acc r -> match r with
-      | Source.RecordStop -> sink#record (List.rev acc)
+      | Source.RecordStop -> sink.record (List.rev acc)
       | Source.RecordField (name,get,src',r') ->
           let acc = (name, into src' sink (get x)) :: acc in
           conv_fields acc r'
@@ -387,7 +391,7 @@ let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
   | Source.Tuple t ->
       let rec conv_tuple : b list -> a Source.tuple_src -> b
       = fun acc t -> match t with
-      | Source.TupleStop -> sink#tuple (List.rev acc)
+      | Source.TupleStop -> sink.tuple (List.rev acc)
       | Source.TupleField (src',get,t') ->
           let acc = into src' sink (get x) :: acc in
           conv_tuple acc t'
@@ -395,7 +399,7 @@ let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
   | Source.Sum f ->
       let rec conv_sum : string -> b list -> Source.sum_src -> b
       = fun name acc sum -> match sum with
-      | Source.SumNil -> sink#sum name (List.rev acc)
+      | Source.SumNil -> sink.sum name (List.rev acc)
       | Source.SumCons (src',x,sum') ->
           let acc = into src' sink x :: acc in
           conv_sum name acc sum'
@@ -407,7 +411,8 @@ let rec into : type a b. a Source.t -> b Sink.universal -> a -> b =
       let src' = f src in
       into src' sink x
 
-let from (src:'a Source.universal) (sink:'b Sink.t) (x:'a) : 'b = src#visit sink x
+let from (src:'a Source.Universal.t) (sink:'b Sink.t) (x:'a) : 'b =
+  src.Source.Universal.visit sink x
 
 (** {6 Exemples} *)
 
@@ -422,36 +427,43 @@ module Json = struct
     | `Assoc of (string * t) list
   ]
 
-  let source = object(self)
-    inherit [t] Source.universal
-    method visit sink (x:t) = match x with
-      | `Int i -> self#int_ sink i
-      | `Float f -> self#float_ sink f
-      | `Bool b -> self#bool_ sink b
-      | `Null -> self#unit_ sink
-      | `String s -> self#string_ sink s
+  let source =
+    let module U = Source.Universal in
+    let rec visit : type b. b Sink.t -> t -> b =
+    fun sink x -> match x with
+      | `Int i -> U.int_ sink i
+      | `Float f -> U.float_ sink f
+      | `Bool b -> U.bool_ sink b
+      | `Null -> U.unit_ sink
+      | `String s ->
+          begin match Sink.expected sink with
+          | Sink.ExpectSum -> U.sum ~src sink s []
+          | _ -> U.string_ sink s
+          end
       | `List ((`String name :: l) as l') ->
           begin match Sink.expected sink with
-          | Sink.ExpectSum -> self#sum sink name l
-          | _ -> self#list_ sink l'
+          | Sink.ExpectSum -> U.sum ~src sink name l
+          | _ -> U.list_ ~src sink l'
           end
-      | `List l -> self#list_ sink l
-      | `Assoc l -> self#record sink l
-  end
+      | `List l -> U.list_ ~src sink l
+      | `Assoc l -> U.record ~src sink l
+    and src = { U.visit=visit; } in
+    src
 
-  let sink : t Sink.universal = object
-    method unit_ = `Null
-    method bool_ b = `Bool b
-    method float_ f = `Float f
-    method int_ i = `Int i
-    method string_ s = `String s
-    method list_ l = `List l
-    method record l = `Assoc l
-    method tuple l = `List l
-    method sum name l = match l with
-      | [] -> `String name
-      | _::_ -> `List (`String name :: l)
-  end
+  let sink : t Sink.Universal.t =
+    let open Sink.Universal in
+    { unit_ = `Null;
+      bool_ = (fun b -> `Bool b);
+      float_ = (fun f -> `Float f);
+      int_ = (fun i -> `Int i);
+      string_ = (fun s -> `String s);
+      list_ = (fun l -> `List l);
+      record = (fun l -> `Assoc l);
+      tuple = (fun l -> `List l);
+      sum = (fun name l -> match l with
+        | [] -> `String name
+        | _::_ -> `List (`String name :: l));
+    }
 end
 
 module Sexp = struct
@@ -459,35 +471,37 @@ module Sexp = struct
     | Atom of string
     | List of t list
 
-  let source = object(self)
-    inherit [t] Source.universal
-    method visit: 'a. 'a Sink.t -> t -> 'a = fun sink x ->
-      match x, Sink.expected sink with
-      | Atom s, Sink.ExpectSum -> self#sum sink s []
-      | List (Atom name :: l), Sink.ExpectSum -> self#sum sink name l
+  let source =
+    let module U = Source.Universal in
+    let rec visit : type b. b Sink.t -> t -> b =
+    fun sink x -> match x, Sink.expected sink with
+      | Atom s, Sink.ExpectSum -> U.sum ~src sink s []
+      | List (Atom name :: l), Sink.ExpectSum -> U.sum ~src sink name l
       | List l, Sink.ExpectRecord ->
           let l' = List.map (function
             | List [Atom name; x] -> name, x
             | _ -> __error "get List, but expected Record") l
-          in self#record sink l'
-      | Atom s, _ -> self#string_ sink s
-      | List [], Sink.ExpectUnit -> self#unit_ sink
-      | List l, _ -> self#list_ sink l
-  end
+          in U.record ~src sink l'
+      | Atom s, _ -> U.string_ sink s
+      | List [], Sink.ExpectUnit -> U.unit_ sink
+      | List l, _ -> U.list_ ~src sink l
+    and src = { U.visit=visit; } in
+    src
 
-  let sink = object
-    method unit_ = List []
-    method bool_ b = Atom (string_of_bool b)
-    method int_ i = Atom (string_of_int i)
-    method float_ f = Atom (string_of_float f)
-    method string_ s = Atom (String.escaped s)
-    method list_ l = List l
-    method tuple l = List l
-    method record l = List (List.map (fun (a,b) -> List [Atom a; b]) l)
-    method sum name l = match l with
-      | [] -> Atom name
-      | _::_ -> List (Atom name::l)
-  end
+  let sink =
+    let open Sink.Universal in
+    { unit_ = List [];
+      bool_ = (fun b -> Atom (string_of_bool b));
+      float_ = (fun f -> Atom (string_of_float f));
+      int_ = (fun i -> Atom (string_of_int i));
+      string_ = (fun s -> Atom (String.escaped s));
+      list_ = (fun l -> List l);
+      record = (fun l -> List (List.map (fun (a,b) -> List [Atom a; b]) l));
+      tuple = (fun l -> List l);
+      sum = (fun name l -> match l with
+        | [] -> Atom name
+        | _::_ -> List (Atom name :: l));
+    }
 
   let rec fmt out = function
     | Atom s -> Format.pp_print_string out s
@@ -506,32 +520,35 @@ module Bencode = struct
     | List of t list
     | Assoc of (string * t) list
 
-  let source = object(self)
-    inherit [t] Source.universal
-    method visit: 'a. 'a Sink.t -> t -> 'a = fun sink x ->
-      match x, Sink.expected sink with
-      | String s, Sink.ExpectSum -> self#sum sink s []
-      | List (String name :: l), Sink.ExpectSum -> self#sum sink name l
-      | Assoc l, _ -> self#record sink l
-      | String s, _ -> self#string_ sink s
-      | Int 0, Sink.ExpectUnit -> self#unit_ sink
-      | Int i, _ -> self#int_ sink i
-      | List l, _ -> self#list_ sink l
-  end
+  let source =
+    let module U = Source.Universal in
+    let rec visit : type b. b Sink.t -> t -> b =
+    fun sink x -> match x, Sink.expected sink with
+      | String s, Sink.ExpectSum -> U.sum ~src sink s []
+      | List (String name :: l), Sink.ExpectSum -> U.sum ~src sink name l
+      | Assoc l, _ -> U.record ~src sink l
+      | String s, _ -> U.string_ sink s
+      | List [], Sink.ExpectUnit -> U.unit_ sink
+      | List l, _ -> U.list_ ~src sink l
+      | Int 0, Sink.ExpectUnit -> U.unit_ sink
+      | Int i, _ -> U.int_ sink i
+    and src = { U.visit=visit; } in
+    src
 
-  let sink = object
-    method unit_ = Int 0
-    method bool_ b = Int (if b then 1 else 0)
-    method int_ i = Int i
-    method float_ f = String (string_of_float f)
-    method string_ s = String s
-    method list_ l = List l
-    method tuple l = List l
-    method record l = Assoc l
-    method sum name l = match l with
-      | [] -> String name
-      | _::_ -> List (String name :: l)
-  end
+  let sink =
+    let open Sink.Universal in
+    { unit_ = Int 0;
+      bool_ = (fun b -> Int (if b then 1 else 0));
+      float_ = (fun f -> String (string_of_float f));
+      int_ = (fun i -> Int i);
+      string_ = (fun s -> String s);
+      list_ = (fun l -> List l);
+      record = (fun l -> Assoc l);
+      tuple = (fun l -> List l);
+      sum = (fun name l -> match l with
+        | [] -> String name
+        | _::_ -> List (String name :: l));
+    }
 end
 
 (* tests *)
