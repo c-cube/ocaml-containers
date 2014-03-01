@@ -33,18 +33,7 @@ A sink is used to traverse values of some type 'a *)
 module Sink : sig
   (** A specific sink that requires a given shape to produce
      a value of type 'a *)
-  type 'a t = private
-    | Unit : 'a -> 'a t
-    | Bool : (bool -> 'a) -> 'a t
-    | Float : (float -> 'a) -> 'a t
-    | Int : (int -> 'a) -> 'a t
-    | String : (string -> 'a) -> 'a t
-    | List : (('b t -> 'b list) -> 'a) -> 'a t
-    | Record : 'a record_sink -> 'a t
-    | Tuple : 'a hlist -> 'a t
-    | Sum : (string -> 'a hlist) -> 'a t
-    | Map : 'a t * ('a -> 'b) -> 'b t
-    | Fix : ('a t -> 'a t) -> 'a t
+  type 'a t
 
   and 'r record_sink =
     | RecordField : string * 'a t * ('a -> 'r record_sink) -> 'r record_sink
@@ -117,18 +106,7 @@ end
 A source is used to build values of some type 'a *)
 module Source : sig
   (** A specific source that follows the shape of the type 'a *)
-  type 'a t = private
-    | Unit : unit t
-    | Bool : bool t
-    | Float : float t
-    | Int : int t
-    | String : string t
-    | List : 'a t -> 'a list t
-    | Record : 'a record_src -> 'a t
-    | Tuple : 'a tuple_src -> 'a t
-    | Sum : ('a -> string * sum_src) -> 'a t
-    | Map : 'a t * ('b -> 'a) -> 'b t
-    | Fix : ('a t -> 'a t) -> 'a t
+  type 'a t
 
   and 'r record_src =
     | RecordField : string * ('r -> 'a) * 'a t * 'r record_src -> 'r record_src

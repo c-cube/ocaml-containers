@@ -38,13 +38,13 @@ let __error msg =
 
 module Sink = struct
   (** A specific sink that requires a given shape to produce
-   * a value of type 'a *)
+      a value of type 'a *)
   type 'a t =
-    | Unit : 'a -> 'a t
-    | Bool : (bool -> 'a) -> 'a t
-    | Float : (float -> 'a) -> 'a t
-    | Int : (int -> 'a) -> 'a t
-    | String : (string -> 'a) -> 'a t
+    | Unit : unit t
+    | Bool : bool t
+    | Float : float t
+    | Int : int t
+    | String : string t
     | List : (('b t -> 'b list) -> 'a) -> 'a t
     | Record : 'a record_sink -> 'a t
     | Tuple : 'a hlist -> 'a t
@@ -61,11 +61,11 @@ module Sink = struct
     | HNil : 't -> 't hlist
 
   let rec __expected : type a. a t -> string = function
-    | Unit _ -> "unit"
-    | Bool _ -> "bool"
-    | Float _ -> "float"
-    | Int _ -> "int"
-    | String _ -> "string"
+    | Unit -> "unit"
+    | Bool -> "bool"
+    | Float -> "float"
+    | Int -> "int"
+    | String -> "string"
     | List _ -> "list"
     | Record _ -> "record"
     | Tuple _ -> "tuple"
@@ -73,13 +73,11 @@ module Sink = struct
     | Map (sink', _) -> __expected sink'
     | (Fix f) as sink -> __expected (f sink)
 
-  let __id x = x
-
-  let unit_ = Unit ()
-  let bool_ = Bool __id
-  let float_ = Float __id
-  let int_ = Int __id
-  let string_ = String __id
+  let unit_ = Unit
+  let bool_ = Bool
+  let float_ = Float
+  let int_ = Int
+  let string_ = String
   let list_ e =
     List (fun k -> let l = k e in l)
 
@@ -145,12 +143,12 @@ module Sink = struct
     | ExpectList
     | ExpectSum
 
-  let rec expected : 'a. 'a t -> expected = function
-    | Unit _ -> ExpectUnit
-    | Bool _ -> ExpectBool
-    | Int _ -> ExpectInt
-    | Float _ -> ExpectFloat
-    | String _ -> ExpectString
+  let rec expected : type a. a t -> expected = function
+    | Unit -> ExpectUnit
+    | Bool -> ExpectBool
+    | Int -> ExpectInt
+    | Float -> ExpectFloat
+    | String -> ExpectString
     | Record _ -> ExpectRecord
     | Tuple _ -> ExpectTuple
     | Sum _ -> ExpectSum
@@ -255,53 +253,53 @@ module Source = struct
       __error "record field %s not found in source" name
 
   class virtual ['a] universal = object(self)
-    method private unit_ : 'b. 'b Sink.t -> 'b
+    method private unit_ : type b. b Sink.t -> b
       = fun sink -> match sink with
-      | Sink.Unit u -> u
-      | Sink.Int f -> f 0
+      | Sink.Unit -> ()
+      | Sink.Int -> 0
       | Sink.Map (sink', f) -> f (self#unit_ sink')
       | Sink.Fix f -> self#unit_ (f sink)
       | _ -> __error "get Unit, but expected %s" (Sink.__expected sink)
 
-    method private bool_ : 'b. 'b Sink.t -> bool -> 'b
+    method private bool_ : type b. b Sink.t -> bool -> b
       = fun sink b -> match sink with
-      | Sink.Bool f -> f b
-      | Sink.Int f -> f (if b then 1 else 0)
-      | Sink.String f -> f (string_of_bool b)
+      | Sink.Bool -> b
+      | Sink.Int -> if b then 1 else 0
+      | Sink.String -> string_of_bool b
       | Sink.Map (sink', f) -> f (self#bool_ sink' b)
       | Sink.Fix f -> self#bool_ (f sink) b
       | _ -> __error "get Bool, but expected %s" (Sink.__expected sink)
 
-    method private float_ : 'b. 'b Sink.t -> float -> 'b
+    method private float_ : type b. b Sink.t -> float -> b
       = fun sink x -> match sink with
-      | Sink.Float f -> f x
-      | Sink.String f -> f (string_of_float x)
+      | Sink.Float -> x
+      | Sink.String -> string_of_float x
       | Sink.Map (sink', f) -> f (self#float_ sink' x)
       | Sink.Fix f -> self#float_ (f sink) x
       | _ -> __error "get Float, but expected %s" (Sink.__expected sink)
 
-    method private int_ : 'b. 'b Sink.t -> int -> 'b
+    method private int_ : type b. b Sink.t -> int -> b
       = fun sink i -> match sink with
-      | Sink.Int f -> f i
-      | Sink.Bool f -> f (i <> 0)
-      | Sink.String f -> f (string_of_int i)
+      | Sink.Int -> i
+      | Sink.Bool -> i <> 0
+      | Sink.String -> string_of_int i
       | Sink.Map (sink', f) -> f (self#int_ sink' i)
       | Sink.Fix f -> self#int_ (f sink) i
       | _ -> __error "get Int, but expected %s" (Sink.__expected sink)
 
-    method private string_ : 'b. 'b Sink.t -> string -> 'b
+    method private string_ : type b. b Sink.t -> string -> b
       = fun sink s -> match sink with
-      | Sink.String f -> f s
-      | Sink.Int f ->
-        begin try f (int_of_string s)
+      | Sink.String -> s
+      | Sink.Int ->
+        begin try int_of_string s
         with Invalid_argument _ -> __error "get String, but expected Int"
         end
-      | Sink.Bool f ->
-        begin try f (bool_of_string s)
+      | Sink.Bool ->
+        begin try bool_of_string s
         with Invalid_argument _ -> __error "get String, but expected Bool"
         end
-      | Sink.Float f ->
-        begin try f (float_of_string s)
+      | Sink.Float ->
+        begin try float_of_string s
         with Invalid_argument _ -> __error "get String, but expected Float"
         end
       | Sink.Map (sink', f) -> f (self#string_ sink' s)
