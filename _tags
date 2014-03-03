@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: dcba3d944e29e7f7be0fecd41665b91e)
+# DO NOT EDIT (digest: 47b2b524d1884245470e1a1a6acb3e85)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -54,6 +54,7 @@
 "hGraph.cmx": for-pack(Containers)
 "automaton.cmx": for-pack(Containers)
 "conv.cmx": for-pack(Containers)
+"levenshtein.cmx": for-pack(Containers)
 # Library containers_thread
 "threads/containers_thread.cmxs": use_containers_thread
 <threads/*.ml{,i}>: use_containers
