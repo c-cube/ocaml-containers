@@ -371,6 +371,18 @@ let rec __find_char ~compare c l = match l with
       then next
       else __find_char ~compare c l'
 
+(* transition for [c] in state [i] of [dfa];
+  @raise Not_found if no transition matches *)
+let __transition dfa i c =
+  let transitions = DFA.get dfa i in
+  try
+    __find_char ~compare:dfa.DFA.compare c transitions
+  with Not_found ->
+    let o = DFA.otherwise dfa i in
+    if o >= 0
+      then o
+      else raise Not_found
+
 (* real matching function *)
 let __match ~len ~get dfa =
   let rec search i state =
@@ -378,17 +390,12 @@ let __match ~len ~get dfa =
     if i = len
     then DFA.is_final dfa state
     else begin
-      let transitions = DFA.get dfa state in
       (* current char *)
       let c = get i in
       try
-        let next = __find_char ~compare:dfa.DFA.compare c transitions in
+        let next = __transition dfa state c in
         search (i+1) next
-      with Not_found ->
-        let o = DFA.otherwise dfa state in
-        if o >= 0
-          then search (i+1) o
-          else false
+      with Not_found -> false
     end
   in
   search 0 0
@@ -408,31 +415,143 @@ type 'a klist =
   | `Cons of 'a * (unit -> 'a klist)
   ]
 
-module Index = struct
-  type ('a, 'b) node =
-    | Empty
-    | Node of 'b option * ('a, 'b) assoc_list
-  and ('a, 'b) assoc_list = ('a * ('a, 'b) node) list
+let rec klist_to_list = function
+  | `Nil -> []
+  | `Cons (x,k) -> x :: klist_to_list (k ())
 
-  type ('a, 'b) t = {
-    tree : ('a, 'b) node;
-    compare : 'a -> 'a -> int;
-  }
+module Index(X : Map.OrderedType) = struct
+  type key = X.t
 
-  let empty ?(compare=Pervasives.compare) () = {
-    tree = Empty;
-    compare;
-  }
+  module M = Map.Make(X)
+
+  type 'b t =
+    | Node of 'b option * 'b t M.t
+
+  let empty = Node (None, M.empty)
+
+  let is_empty = function
+    | Node (None, m) -> M.is_empty m
+    | _ -> false
+
+  let () = assert (is_empty empty)
+
+  (** get/add/remove the leaf for the given array.
+      the continuation k takes the leaf, and returns a leaf option
+      that replaces the old leaf. 
+      This function returns the new trie. *)
+  let goto_leaf ~len ~get node k =
+    (* insert the value in given [node], assuming the current index
+      in [arr] is [i]. [k] is given the resulting tree. *)
+    let rec goto node i rebuild = match node with
+      | _ when i = len ->
+          let node' = k node in
+          rebuild node'
+      | Node (opt, m) ->
+          let c = get i in
+          let t' =
+            try M.find c m
+            with Not_found -> empty
+          in
+          goto t' (i+1)
+            (fun t'' ->
+              if is_empty t''
+                then rebuild (Node (opt, M.remove c m))
+                else rebuild (Node (opt, M.add c t'' m)))
+    in
+    goto node 0 (fun t -> t)
+
+  let __add ~len ~get trie value =
+    goto_leaf ~len ~get trie
+      (function
+        | Node (_, m) -> Node (Some value, m))
+
+  let __remove ~len ~get trie value =
+    goto_leaf ~len ~get trie
+      (function
+        | Node (_, m) -> Node (None, m))
+
+  (* traverse the automaton and the idx, yielding a klist of values *)
+  let __retrieve dfa idx =
+    (* traverse at index i in automaton, with
+        [fk] the failure continuation *)
+    let rec traverse node i ~(fk:unit->'a klist) =
+      match node with
+      | Node (opt, m) ->
+          (* all alternatives: continue exploring [m], or call [fk] *)
+          let fk =
+            M.fold
+              (fun c node' fk ->
+                try
+                  let next = __transition dfa i c in
+                  (fun () -> traverse node' next ~fk)
+                with Not_found -> fk)
+              m fk
+          in
+          match opt with
+          | Some v when DFA.is_final dfa i ->
+              (* yield one solution now *)
+              `Cons (v, fk)
+          | _ -> fk ()   (* fail... or explore subtrees *)
+    in
+    traverse idx 0 ~fk:(fun () -> `Nil)
 
   let add idx arr value =
-    assert false (* TODO *)
+    __add ~len:(Array.length arr) ~get:(Array.get arr) idx value
 
-  let add_string idx arr str =
-    assert false (* TODO *)
+  let remove idx arr value =
+    __remove ~len:(Array.length arr) ~get:(Array.get arr) idx value
 
   let retrieve ~limit idx arr =
-    assert false (* TODO *)
+    let automaton = of_array ~compare:X.compare ~limit arr in
+    __retrieve automaton idx
+
+  let of_list l =
+    List.fold_left
+      (fun acc (arr,v) -> add acc arr v)
+      empty l
+
+  let __to_list ~of_list idx =
+    let rec explore acc trail node = match node with
+      | Node (opt, m) ->
+          (* first, yield current value, if any *)
+          let acc = match opt with
+            | None -> acc
+            | Some v -> (of_list (List.rev trail), v) :: acc
+          in
+          M.fold
+            (fun c node' acc -> explore acc (c::trail) node')
+            m acc
+    in
+    explore [] [] idx
+
+  let to_list idx =
+    __to_list ~of_list:Array.of_list idx
+end
+
+module StrIndex = struct
+  include Index(Char)
+
+  let add_string idx str value =
+    __add ~len:(String.length str) ~get:(String.get str) idx value
+
+  let remove_string idx str value =
+    __remove ~len:(String.length str) ~get:(String.get str) idx value
 
   let retrieve_string ~limit idx str =
-    assert false (* TODO *)
+    let automaton = of_string ~limit str in
+    __retrieve automaton idx
+
+  let of_str_list l =
+    List.fold_left
+      (fun acc (str,v) -> add_string acc str v)
+      empty l
+
+  let to_str_list idx =
+    (* clumsy conversion [char list -> string] *)
+    let of_list l =
+      let s = String.make (List.length l) ' ' in
+      List.iteri (fun i c -> s.[i] <- c) l;
+      s
+    in
+    __to_list ~of_list idx
 end

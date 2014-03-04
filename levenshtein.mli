@@ -65,24 +65,52 @@ type 'a klist =
   | `Cons of 'a * (unit -> 'a klist)
   ]
 
-module Index : sig
-  type ('a, 'b) t
-    (** Index that maps 'a strings to values of type 'b. Internally it is
+val klist_to_list : 'a klist -> 'a list
+  (** Helper. *)
+
+module Index(X : Map.OrderedType) : sig
+  type key = X.t
+
+  type 'b t
+    (** Index that maps [key] strings to values of type 'b. Internally it is
        based on a trie. *)
 
-  val empty : ?compare:('a -> 'a -> int) -> unit -> ('a, 'b) t
-    (** Empty index, possibly with a specific comparison function *)
+  val empty : 'b t
+    (** Empty index *)
 
-  val add : ('a, 'b) t -> 'a array -> 'b -> ('a, 'b) t
+  val is_empty : _ t -> bool
+
+  val add : 'b t -> key array -> 'b -> 'b t
     (** Add a char array to the index. If a value was already present
-       for this char it is replaced. *)
+       for this array it is replaced. *)
 
-  val add_string : (char, 'b) t -> string -> 'b -> (char, 'b) t
-    (** Add a string to a char index *)
+  val remove : 'b t -> key array -> 'b -> 'b t
+    (** Remove a char array from the index. *)
 
-  val retrieve : limit:int -> ('a, 'b) t -> 'a array -> 'b klist
+  val retrieve : limit:int -> 'b t -> key array -> 'b klist
     (** Lazy list of objects associated to strings close to
         the query string *)
 
-  val retrieve_string : limit:int -> (char,'b) t -> string -> 'b klist
+  val of_list : (key array * 'b) list -> 'b t
+
+  val to_list : 'b t -> (key array * 'b) list
+
+  (* TODO sequence/iteration functions *)
+end
+
+(** Specific case for strings *)
+module StrIndex : sig
+  include module type of Index(Char)
+
+  val add_string : 'b t -> string -> 'b -> 'b t
+    (** Add a string to a char index *)
+
+  val remove_string : 'b t -> string -> 'b -> 'b t
+    (** Remove a string from a char index *)
+
+  val retrieve_string : limit:int -> 'b t -> string -> 'b klist
+
+  val of_str_list : (string * 'b) list -> 'b t
+
+  val to_str_list : 'b t -> (string * 'b) list
 end
