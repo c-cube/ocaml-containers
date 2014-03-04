@@ -89,6 +89,11 @@ module NDA = struct
 
   let get nda (i,j) =
     nda.matrix.(i).(j)
+
+  let is_final nda (i,j) =
+    List.exists
+      (function Success -> true | _ -> false)
+      (get nda (i,j))
 end
 
 (** deterministic automaton *)
@@ -109,8 +114,8 @@ module DFA = struct
     otherwise = Array.make size ~-1;
   }
 
-  let _double_array a =
-    let a' = Array.make (2 * Array.length a) a.(0) in
+  let _double_array ~init a =
+    let a' = Array.make (2 * Array.length a) init in
     Array.blit a 0 a' 0 (Array.length a);
     a'
 
@@ -119,9 +124,9 @@ module DFA = struct
     let n = dfa.len in
     (* resize *)
     if n = Array.length dfa.transitions then begin
-      dfa.transitions <- _double_array dfa.transitions;
-      dfa.is_final <- _double_array dfa.is_final;
-      dfa.otherwise <- _double_array dfa.otherwise;
+      dfa.transitions <- _double_array ~init:[] dfa.transitions;
+      dfa.is_final <- _double_array ~init:false dfa.is_final;
+      dfa.otherwise <- _double_array ~init:~-1 dfa.otherwise;
     end;
     dfa.len <- n + 1;
     n
@@ -149,7 +154,6 @@ module DFA = struct
     let compare = Pervasives.compare
   end)
 
-  (*
   let set_to_string s =
     let b = Buffer.create 15 in
     Buffer.add_char b '{';
@@ -158,7 +162,6 @@ module DFA = struct
       s;
     Buffer.add_char b '}';
     Buffer.contents b
-  *)
 
   (* list of characters that can specifically be followed from the given set *)
   let chars_from_set nda set =
@@ -194,27 +197,25 @@ module DFA = struct
     done;
     !set
 
-  exception LeadToSuccess
-
-  (* find the transition that matches the given char (if any);
+  (* find the transition that matches the given char (if any), or "*";
      may raise exceptions Not_found or LeadToSuccess. *)
-  let rec get_transition_for_char nda c transitions =
+  let rec get_transition_for_char nda c acc transitions =
     match transitions with
-    | NDA.Success::_ -> raise LeadToSuccess
-    | NDA.Upon (NDA.Char c', i, j) :: transitions' ->
-        if nda.NDA.compare c c' = 0
-          then i, j
-          else get_transition_for_char nda c transitions'
+    | NDA.Upon (NDA.Char c', i, j) :: transitions' when nda.NDA.compare c c' = 0 ->
+        (* follow same char *)
+        let acc = NDAStateSet.add (i, j) acc in
+        get_transition_for_char nda c acc transitions'
     | NDA.Upon (NDA.Any, i, j) :: transitions' ->
-        begin try get_transition_for_char nda c transitions'
-        with Not_found -> i, j (* only if no other transition works *)
-        end
-    | _::transitions' -> get_transition_for_char nda c transitions'
-    | [] -> raise Not_found
+        (* follow '*' *)
+        let acc = NDAStateSet.add (i,j) acc in
+        get_transition_for_char nda c acc transitions'
+    | _ :: transitions' -> get_transition_for_char nda c acc transitions'
+    | [] ->  acc
 
   let rec get_transitions_for_any nda acc transitions =
     match transitions with
-    | NDA.Success::_ -> raise LeadToSuccess
+    | NDA.Upon (NDA.Char _, i, j) :: transitions' ->
+        get_transitions_for_any nda acc transitions'
     | NDA.Upon (NDA.Any, i, j) :: transitions' ->
         let acc = NDAStateSet.add (i,j) acc in
         get_transitions_for_any nda acc transitions'
@@ -224,41 +225,34 @@ module DFA = struct
   (* follow transition for given NDA.char, returns a new state
      and a boolean indicating whether it's final *)
   let follow_transition nda set c =
-    let is_final = ref false in
     let set' = NDAStateSet.fold
       (fun state acc ->
         let transitions = NDA.get nda state in
         (* among possible transitions, follow the one that matches c
            the most closely *)
-        try
-          let state' = get_transition_for_char nda c transitions in
-          NDAStateSet.add state' acc
-        with
-        | LeadToSuccess -> is_final := true; acc
-        | Not_found -> acc (* state dies *)
+        get_transition_for_char nda c acc transitions
       ) set NDAStateSet.empty
     in
     let set' = saturate_epsilon nda set' in
-    set', !is_final
+    let is_final = NDAStateSet.exists (NDA.is_final nda) set' in
+    set', is_final
 
   let follow_transition_any nda set =
-    let is_final = ref false in
     let set' = NDAStateSet.fold
       (fun state acc ->
         let transitions = NDA.get nda state in
         (* among possible transitions, follow the ones that are labelled with "*" *)
-        try
-          get_transitions_for_any nda acc transitions
-        with
-        | LeadToSuccess -> is_final := true; acc
+        get_transitions_for_any nda acc transitions
       ) set NDAStateSet.empty
     in
     let set' = saturate_epsilon nda set' in
-    set', !is_final
+    let is_final = NDAStateSet.exists (NDA.is_final nda) set' in
+    set', is_final
 
   (* call [k] with every [transition'] that can be reached from [set], with
      a bool that states whether it's final *)
   let iterate_transition_set nda set k =
+    (*Printf.printf "iterate_transition at set %s\n" (set_to_string set);*)
     (* all possible "fixed char" transitions *)
     let chars = chars_from_set nda set in
     List.iter
@@ -291,13 +285,15 @@ module DFA = struct
     let set_i = get_state dfa states set in
     iterate_transition_set nda set
       (fun ~is_final c set' ->
+        (*Printf.printf "traverse %s --%c--> %s\n" (set_to_string set)
+          (match c with NDA.Char c' -> Obj.magic c' | NDA.Any -> '*')
+          (set_to_string set');*)
         let set_i' = get_state dfa states set' in
         (* did we reach success? *)
         if is_final
-        then set_final dfa set_i'
-
+          then set_final dfa set_i';
         (* link set -> set' *)
-        else match c with
+        match c with
         | NDA.Char c' ->
             add_transition dfa set_i (c', set_i');
             traverse nda dfa states set'
@@ -318,7 +314,7 @@ module DFA = struct
     (*StateSetMap.iter
       (fun set i ->
         Printf.printf "set %s --> state %d\n" (set_to_string set) i
-      ) !states; *)
+      ) !states;*)
     dfa
 
   let get dfa i =
@@ -338,10 +334,10 @@ let debug_print oc dfa =
     if DFA.is_final dfa i
       then Printf.fprintf oc "  success %d\n" i;
     List.iter
-      (fun (c, j) -> Printf.fprintf oc "  (%c) %d -> %d\n" c i j ) transitions;
+      (fun (c, j) -> Printf.fprintf oc "  %d --%c--> %d\n" i c j ) transitions;
     let o = DFA.otherwise dfa i in
     if o >= 0
-      then Printf.fprintf oc "  (*) %d -> %d\n" i o
+      then Printf.fprintf oc "  %d --*--> %d\n" i o
   done
 
 type 'a automaton = 'a DFA.t
