@@ -564,7 +564,7 @@ module Point = struct
         yield_record {x;y;color;prev}
       ))
 
-  let rec source =
+  let source =
     Source.(record_fix
       (fun self ->
         field "x" (fun p -> p.x) int_ @@
