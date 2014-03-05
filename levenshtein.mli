@@ -31,34 +31,19 @@ We take inspiration from
 http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata
 for the main algorithm and ideas. However some parts are adapted *)
 
-(** {2 Automaton} *)
+(** {2 Abstraction over Strings} *)
 
-type 'a automaton
-  (** Levenshtein automaton for characters of type 'a *)
+module type STRING = sig
+  type char_
+  type t
 
-val of_array : ?compare:('a -> 'a -> int) -> limit:int -> 'a array -> 'a automaton
-  (** Build an automaton from an array, with a maximal distance [limit] *)
+  val of_list : char_ list -> t
+  val get : t -> int -> char_
+  val length : t -> int
+  val compare_char : char_ -> char_ -> int
+end
 
-val of_list : ?compare:('a -> 'a -> int) -> limit:int -> 'a list -> 'a automaton
-  (** Build an automaton from a list, with a maximal distance [limit] *)
-
-val of_string : limit:int -> string -> char automaton
-  (** Automaton for the special case of strings *)
-
-val debug_print : out_channel -> char automaton -> unit
-  (** Output the automaton on the given channel. Only for string automata. *)
-
-val match_with : 'a automaton -> 'a array -> bool
-  (** [match_with a s] matches the string [s] against [a], and returns
-      [true] if the distance from [s] to the word represented by [a] is smaller
-      than the limit used to build [a] *)
-
-val match_with_string : char automaton -> string -> bool
-  (** Specialized version of {!match_with} for strings *)
-
-(** {6 Index for one-to-many matching} *)
-
-(** Continuation list *)
+(** {2 Continuation list} *)
 type 'a klist =
   [
   | `Nil
@@ -68,49 +53,66 @@ type 'a klist =
 val klist_to_list : 'a klist -> 'a list
   (** Helper. *)
 
-module Index(X : Map.OrderedType) : sig
-  type key = X.t
+(** {2 Signature} *)
 
-  type 'b t
-    (** Index that maps [key] strings to values of type 'b. Internally it is
-       based on a trie. *)
+module type S = sig
+  type char_
+  type string_
 
-  val empty : 'b t
-    (** Empty index *)
+  (** {6 Automaton} *)
 
-  val is_empty : _ t -> bool
+  type automaton
+    (** Levenshtein automaton *)
 
-  val add : 'b t -> key array -> 'b -> 'b t
-    (** Add a char array to the index. If a value was already present
-       for this array it is replaced. *)
+  val of_string : limit:int -> string_ -> automaton
+    (** Build an automaton from an array, with a maximal distance [limit] *)
 
-  val remove : 'b t -> key array -> 'b -> 'b t
-    (** Remove a char array from the index. *)
+  val of_list : limit:int -> char_ list -> automaton
+    (** Build an automaton from a list, with a maximal distance [limit] *)
 
-  val retrieve : limit:int -> 'b t -> key array -> 'b klist
-    (** Lazy list of objects associated to strings close to
-        the query string *)
+  val debug_print : (out_channel -> char_ -> unit) ->
+                    out_channel -> automaton -> unit
+    (** Output the automaton on the given channel. *)
 
-  val of_list : (key array * 'b) list -> 'b t
+  val match_with : automaton -> string_ -> bool
+    (** [match_with a s] matches the string [s] against [a], and returns
+        [true] if the distance from [s] to the word represented by [a] is smaller
+        than the limit used to build [a] *)
 
-  val to_list : 'b t -> (key array * 'b) list
+  (** {6 Index for one-to-many matching} *)
 
-  (* TODO sequence/iteration functions *)
+  module Index : sig
+    type 'b t
+      (** Index that maps strings to values of type 'b. Internally it is
+         based on a trie. *)
+
+    val empty : 'b t
+      (** Empty index *)
+
+    val is_empty : _ t -> bool
+
+    val add : 'b t -> string_ -> 'b -> 'b t
+      (** Add a char array to the index. If a value was already present
+         for this array it is replaced. *)
+
+    val remove : 'b t -> string_ -> 'b -> 'b t
+      (** Remove a string from the index. *)
+
+    val retrieve : limit:int -> 'b t -> string_ -> 'b klist
+      (** Lazy list of objects associated to strings close to the query string *)
+
+    val of_list : (string_ * 'b) list -> 'b t
+
+    val to_list : 'b t -> (string_ * 'b) list
+
+    (* TODO sequence/iteration functions *)
+  end
 end
 
-(** Specific case for strings *)
-module StrIndex : sig
-  include module type of Index(Char)
+module Make(Str : STRING) : S
+  with type string_ = Str.t
+  and type char_ = Str.char_
 
-  val add_string : 'b t -> string -> 'b -> 'b t
-    (** Add a string to a char index *)
+include S with type char_ = char and type string_ = string
 
-  val remove_string : 'b t -> string -> 'b -> 'b t
-    (** Remove a string from a char index *)
-
-  val retrieve_string : limit:int -> 'b t -> string -> 'b klist
-
-  val of_str_list : (string * 'b) list -> 'b t
-
-  val to_str_list : 'b t -> (string * 'b) list
-end
+val debug_print : out_channel -> automaton -> unit
