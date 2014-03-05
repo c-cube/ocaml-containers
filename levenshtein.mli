@@ -53,13 +53,24 @@ type 'a klist =
 val klist_to_list : 'a klist -> 'a list
   (** Helper. *)
 
-(** {2 Signature} *)
+(** {2 Signature}
+We abstract over the type of characters and strings, so that we
+can deal with several encodings, string representations, etc. *)
 
 module type S = sig
   type char_
   type string_
 
-  (** {6 Automaton} *)
+  (** {6 Edit Distance} *)
+
+  val edit_distance : string_ -> string_ -> int
+    (** Edition distance between two strings. This satisfies the classical
+       distance axioms: it is always positive, symmetric, and satisfies
+       the formula [distance a b + distance b c >= distance a c] *)
+
+  (** {6 Automaton}
+  An automaton, built from a string [s] and a limit [n], that accepts
+  every string that is at distance at most [n] from [s]. *)
 
   type automaton
     (** Levenshtein automaton *)

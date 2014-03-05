@@ -51,7 +51,16 @@ module type S = sig
   type char_
   type string_
 
-  (** {6 Automaton} *)
+  (** {6 Edit Distance} *)
+
+  val edit_distance : string_ -> string_ -> int
+    (** Edition distance between two strings. This satisfies the classical
+       distance axioms: it is always positive, symmetric, and satisfies
+       the formula [distance a b + distance b c >= distance a c] *)
+
+  (** {6 Automaton}
+  An automaton, built from a string [s] and a limit [n], that accepts
+  every string that is at distance at most [n] from [s]. *)
 
   type automaton
     (** Levenshtein automaton *)
@@ -104,6 +113,38 @@ end
 module Make(Str : STRING) = struct
   type string_ = Str.t
   type char_ = Str.char_
+
+  let edit_distance s1 s2 =
+    if Str.length s1 = 0
+      then Str.length s2
+    else if Str.length s2 = 0
+      then Str.length s1
+    else if s1 = s2
+      then 0
+    else begin
+      (* distance vectors (v0=previous, v1=current) *)
+      let v0 = Array.make (Str.length s2 + 1) 0 in
+      let v1 = Array.make (Str.length s2 + 1) 0 in
+      (* initialize v0: v0(i) = A(0)(i) = delete i chars from t *)
+      for i = 0 to Str.length s2 do
+        v0.(i) <- i
+      done;
+      (* main loop for the bottom up dynamic algorithm *)
+      for i = 0 to Str.length s1 - 1 do
+        (* first edit distance is the deletion of i+1 elements from s *)
+        v1.(0) <- i+1;
+
+        (* try add/delete/replace operations *)
+        for j = 0 to Str.length s2 - 1 do
+          let cost = if Str.compare_char (Str.get s1 i) (Str.get s2 j) = 0 then 0 else 1 in
+          v1.(j+1) <- min (v1.(j) + 1) (min (v0.(j+1) + 1) (v0.(j) + cost));
+        done;
+
+        (* copy v1 into v0 for next iteration *)
+        Array.blit v1 0 v0 0 (Str.length s2 + 1);
+      done;
+      v1.(Str.length s2)
+    end
 
   module NDA = struct
     type char =
@@ -305,9 +346,7 @@ module Make(Str : STRING) = struct
           get_transition_for_char nda c acc transitions
         ) set NDAStateSet.empty
       in
-      let set' = saturate_epsilon nda set' in
-      let is_final = NDAStateSet.exists (NDA.is_final nda) set' in
-      set', is_final
+      saturate_epsilon nda set'
 
     let follow_transition_any nda set =
       let set' = NDAStateSet.fold
@@ -317,9 +356,7 @@ module Make(Str : STRING) = struct
           get_transitions_for_any nda acc transitions
         ) set NDAStateSet.empty
       in
-      let set' = saturate_epsilon nda set' in
-      let is_final = NDAStateSet.exists (NDA.is_final nda) set' in
-      set', is_final
+      saturate_epsilon nda set'
 
     (* call [k] with every [transition'] that can be reached from [set], with
        a bool that states whether it's final *)
@@ -331,15 +368,15 @@ module Make(Str : STRING) = struct
         (fun c ->
           (*Printf.printf "iterate_transition follows %c (at %s)\n"
             (Obj.magic c) (set_to_string set);*)
-          let set', is_final = follow_transition nda set c in
+          let set' = follow_transition nda set c in
           if not (NDAStateSet.is_empty set')
-            then k ~is_final (NDA.Char c) set';
+            then k (NDA.Char c) set';
         ) chars;
       (* remaining transitions, with only "Any" *)
       (*Printf.printf "iterate transition follows * (at %s)\n" (set_to_string set);*)
-      let set', is_final = follow_transition_any nda set in
+      let set' = follow_transition_any nda set in
       if not (NDAStateSet.is_empty set')
-        then k ~is_final NDA.Any set'
+        then k NDA.Any set'
 
     module StateSetMap = Map.Make(NDAStateSet)
 
@@ -355,15 +392,16 @@ module Make(Str : STRING) = struct
     (* traverse the NDA. Currently we're at [set] *)
     let rec traverse nda dfa states set =
       let set_i = get_state dfa states set in
+      (* does this set lead to success? *)
+      let is_final = NDAStateSet.exists (NDA.is_final nda) set in
+      if is_final
+        then set_final dfa set_i;
       iterate_transition_set nda set
-        (fun ~is_final c set' ->
+        (fun c set' ->
           (*Printf.printf "traverse %s --%c--> %s\n" (set_to_string set)
             (match c with NDA.Char c' -> Obj.magic c' | NDA.Any -> '*')
             (set_to_string set');*)
           let set_i' = get_state dfa states set' in
-          (* did we reach success? *)
-          if is_final
-            then set_final dfa set_i';
           (* link set -> set' *)
           match c with
           | NDA.Char c' ->
