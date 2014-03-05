@@ -66,14 +66,16 @@ module type S = sig
     (** Levenshtein automaton *)
 
   val of_string : limit:int -> string_ -> automaton
-    (** Build an automaton from an array, with a maximal distance [limit] *)
+    (** Build an automaton from a string, with a maximal distance [limit].
+        The automaton will accept strings whose {!edit_distance} to the
+        parameter is at most [limit]. *)
 
   val of_list : limit:int -> char_ list -> automaton
     (** Build an automaton from a list, with a maximal distance [limit] *)
 
   val debug_print : (out_channel -> char_ -> unit) ->
                     out_channel -> automaton -> unit
-    (** Output the automaton on the given channel. *)
+    (** Output the automaton's structure on the given channel. *)
 
   val match_with : automaton -> string_ -> bool
     (** [match_with a s] matches the string [s] against [a], and returns
@@ -85,7 +87,7 @@ module type S = sig
   module Index : sig
     type 'b t
       (** Index that maps strings to values of type 'b. Internally it is
-         based on a trie. *)
+         based on a trie. A string can only map to one value. *)
 
     val empty : 'b t
       (** Empty index *)
@@ -93,20 +95,29 @@ module type S = sig
     val is_empty : _ t -> bool
 
     val add : 'b t -> string_ -> 'b -> 'b t
-      (** Add a char array to the index. If a value was already present
-         for this array it is replaced. *)
+      (** Add a pair string/value to the index. If a value was already present
+         for this string it is replaced. *)
 
     val remove : 'b t -> string_ -> 'b -> 'b t
-      (** Remove a string from the index. *)
+      (** Remove a string (and its associated value, if any) from the index. *)
 
     val retrieve : limit:int -> 'b t -> string_ -> 'b klist
       (** Lazy list of objects associated to strings close to the query string *)
 
     val of_list : (string_ * 'b) list -> 'b t
+      (** Build an index from a list of pairs of strings and values *)
 
     val to_list : 'b t -> (string_ * 'b) list
+      (** Extract a list of pairs from an index *)
 
-    (* TODO sequence/iteration functions *)
+    val fold : ('a -> string_ -> 'b -> 'a) -> 'a -> 'b t -> 'a
+      (** Fold over the stored pairs string/value *)
+
+    val iter : (string_ -> 'b -> unit) -> 'b t -> unit
+      (** Iterate on the pairs *)
+
+    val to_klist : 'b t -> (string_ * 'b) klist
+      (** Conversion to an iterator *)
   end
 end
 
@@ -589,19 +600,45 @@ module Make(Str : STRING) = struct
         (fun acc (arr,v) -> add acc arr v)
         empty l
 
-    let to_list idx =
+    let fold f acc idx =
       let rec explore acc trail node = match node with
         | Node (opt, m) ->
             (* first, yield current value, if any *)
             let acc = match opt with
               | None -> acc
-              | Some v -> (Str.of_list (List.rev trail), v) :: acc
+              | Some v ->
+                  let str = Str.of_list (List.rev trail) in
+                  f acc str v
             in
             M.fold
               (fun c node' acc -> explore acc (c::trail) node')
               m acc
       in
-      explore [] [] idx
+      explore acc [] idx
+
+    let iter f idx =
+      fold (fun () str v -> f str v) () idx
+
+    let to_list idx =
+      fold (fun acc str v -> (str,v) :: acc) [] idx
+
+    let to_klist idx =
+      let rec traverse node trail ~(fk:unit->(string_*'a) klist) =
+        match node with
+        | Node (opt, m) ->
+            (* all alternatives: continue exploring [m], or call [fk] *)
+            let fk =
+              M.fold
+                (fun c node' fk () -> traverse node' (c::trail) ~fk)
+                m fk
+            in
+            match opt with
+            | Some v ->
+                let str = Str.of_list (List.rev trail) in
+                `Cons ((str,v), fk)
+            | _ -> fk ()   (* fail... or explore subtrees *)
+      in
+      traverse idx [] ~fk:(fun () -> `Nil)
   end
 end
 
