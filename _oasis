@@ -40,7 +40,7 @@ Library "containers"
                     Vector, Bij, PiCalculus, Bencode, Sexp, RAL, MultiSet,
                     UnionFind, SmallSet, Leftistheap, AbsSet, CSM, MultiMap,
                     ActionMan, BV, QCheck, BencodeOnDisk, Show, TTree,
-                    HGraph, Automaton, Conv, Levenshtein
+                    HGraph, Automaton, Conv, Levenshtein, Bidir
   BuildDepends:     unix
 
 Library "containers_thread"

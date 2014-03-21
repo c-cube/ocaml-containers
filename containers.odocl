@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 38e5fd431c40c173ee89b060fc69bed7)
+# DO NOT EDIT (digest: ad1a5d1dbb926223a57d547d5e717146)
 Cache
 Deque
 Gen
@@ -40,4 +40,5 @@ HGraph
 Automaton
 Conv
 Levenshtein
+Bidir
 # OASIS_STOP
