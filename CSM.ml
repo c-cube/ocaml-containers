@@ -122,12 +122,20 @@ let _flatmap_opt f o = match o with
   | None -> None
   | Some x -> f x
 
-let append a1 a2 state x =
+type ('s1,'s2) append_state =
+  | Left of 's1 * 's2
+  | Right of 's2
+
+let rec append a1 a2 state x =
   match state with
-  | `Left s1 ->
-      _flatmap_opt (fun (y,s1) -> Some (y,`Left s1)) (a1 s1 x)
-  | `Right s2 ->
-      _flatmap_opt (fun (y,s2) -> Some (y,`Right s2)) (a2 s2 x)
+  | Left (s1,s2) ->
+      begin match a1 s1 x with
+      | None -> append a1 a2 (Right s2) x
+      | Some (y, s1') ->
+          Some (y, Left (s1', s2))
+      end
+  | Right s2 ->
+      _flatmap_opt (fun (y,s2) -> Some (y,Right s2)) (a2 s2 x)
 
 let rec flatten (automata,state) x = match automata with
   | [] -> None
@@ -162,6 +170,25 @@ let rec flat_map f a state x =
           Some (z, state')
       end
 
+(** {2 Instances} *)
+
+module Int = struct
+  let range j state () =
+    if state > j then None
+    else Some (state, state+1)
+end
+
+let list_map = List.map
+let list_split = List.split
+
+module List = struct
+  let iter state () = match state with
+    | [] -> None
+    | x::l -> Some (x, l)
+
+  let build state x = Some (x::state, x::state)
+end
+
 (** {2 Mutable Interface} *)
 
 module Mut = struct
@@ -181,12 +208,44 @@ module Mut = struct
         Some y
 
   let copy a = { a with state=a.state; }
-end
 
-(** {2 Instances} *)
+  let cur_state a = a.state
 
-module Int = struct
-  let range j state () =
-    if state > j then None
-    else Some (state, state+1)
+  let get_state a = {
+    next=get_state a.next;
+    state=a.state;
+  }
+
+  let scan a = {
+    next = scan a.next;
+    state = a.state, [];
+  }
+
+  let nest l =
+    let nexts, states =
+      list_split (list_map (fun a -> a.next, a.state) l)
+    in
+    { next=nest nexts; state=states; }
+
+  let append a1 a2 = {
+    next = append a1.next a2.next;
+    state = Left (a1.state, a2.state);
+  }
+
+  let rec iter f a = match next a () with
+    | None -> ()
+    | Some y -> f y; iter f a
+
+  module Int = struct
+    let range i j = {
+      next=Int.range j;
+      state=i;
+    }
+  end
+
+  module List = struct
+    let iter l = create List.iter ~init:l
+
+    let build l = create List.build ~init:l
+  end
 end

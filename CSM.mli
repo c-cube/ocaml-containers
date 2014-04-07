@@ -88,8 +88,12 @@ val (>>>) : ('a, 's1, 'b) t -> ('b, 's2, 'c) t ->
 (** composition (outputs of the first automaton are fed to
     the second one's input) *)
 
+type ('s1,'s2) append_state =
+  | Left of 's1 * 's2
+  | Right of 's2
+
 val append : ('a, 's1, 'b) t -> ('a, 's2, 'b) t ->
-             ('a, [`Left of 's1 | `Right of 's2], 'b) t
+             ('a, ('s1, 's2) append_state, 'b) t
 (** [append a b] first behaves like [a], then behaves like [a2]
     once [a1] is exhausted. *)
 
@@ -109,6 +113,21 @@ val flat_map : ('b -> ('a, 's2, 'c) t * 's2) -> ('a, 's1, 'b) t ->
     to produce outputs until they are exhausted, at which point the
     first one is used again, and so on *)
 
+(** {2 Instances} *)
+
+module Int : sig
+  val range : int -> (unit, int, int) t
+  (** yields all integers smaller than the argument, then stops *)
+end
+
+module List : sig
+  val iter : (unit, 'a list, 'a) t
+  (** iterate on the list *)
+
+  val build : ('a, 'a list, 'a list) t
+  (** build a list from its inputs *)
+end
+
 (** {2 Mutable Interface} *)
 
 module Mut : sig
@@ -120,17 +139,39 @@ module Mut : sig
   val create : ('a, 's, 'b) automaton -> init:'s -> ('a, 's, 'b) t
   (** create a new mutable automaton *)
 
+  val get_state : ('a, 's, _) t -> ('a, 's, 's) t
+  (** Erases the outputs with the states *)
+
+  val cur_state : (_, 's, _) t -> 's
+  (** current state *)
+
   val next : ('a, 's, 'b) t -> 'a -> 'b option
   (** feed an input into the automaton, obtainin and output (unless
       the automaton has stopped) and updating the automaton's state *)
 
   val copy : ('a, 's, 'b) t -> ('a, 's, 'b) t
   (** copy the automaton into a new one, that can evolve independently *)
-end
 
-(** {2 Instances} *)
+  val scan : ('a, 's, 'b) t -> ('a, 's * 'b list, 'b list) t
 
-module Int : sig
-  val range : int -> (unit, int, int) t
-  (** yields all integers smaller than the argument, then stops *)
+  val nest : ('a, 's, 'b) t list -> ('a, 's list, 'b list) t
+
+  val append : ('a, 's1, 'b) t -> ('a, 's2, 'b) t ->
+               ('a, ('s1,'s2) append_state, 'b) t
+
+  val iter : ('a -> unit) -> (unit, _, 'a) t -> unit
+  (** iterate on the given left-unit automaton *)
+
+  module Int : sig
+    val range : int -> int -> (unit, int, int) t
+  end
+
+  module List : sig
+    val iter : 'a list -> (unit, 'a list, 'a) t
+    (** Iterate on the given list *)
+
+    val build : 'a list -> ('a, 'a list, 'a list) t
+    (** build a list from its inputs and the initial list (prepending
+        inputs to it) *)
+  end
 end
