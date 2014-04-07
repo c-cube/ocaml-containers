@@ -23,192 +23,170 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Composable State Machines} *)
+(** {1 Composable State Machines}
 
-(** {2 Basic interface} *)
+This module defines state machines that should help design applications
+with a more explicit control of state (e.g. for networking applications. *)
 
-type 'state t = {
-  id : int;
-  mutable state : 'state;
-  mutable callbacks : 'state callback array;
-  mutable callbacks_num : int; 
-} (** State machine, whose states are of the type 'state,
-      and that changes state upon events of the type 'event. *)
+type ('a, 's, 'b) t = 's -> 'a -> ('b * 's) option
+(** transition function that fully describes an automaton *)
 
-and 'a sm = 'a t
+type ('a, 's, 'b) automaton = ('a, 's, 'b) t
 
-and 'a transition =
-  | TransitionTo of 'a
-  | TransitionStay
-  (** A transition of a state machine whose states are
-      of type 'a *)
+(** {2 Basic Interface} *)
 
-and 'a callback = 'a -> 'a -> bool
-  (** A callback that is called during a transition between two 'a states *)
+let empty _st _x = None
 
-and task_queue = (unit -> unit) Queue.t
-  (** Queue of tasks to process *)
+let id () x = Some (x,())
 
-type poly_ref =
-  | PolyRef : 'a t -> poly_ref
-  (** Polymorphic reference to a state machine *)
+let repeat x () () = Some (x, ())
 
-module SMSet = Set.Make(struct
-  type t = poly_ref
-  let compare st1_ref st2_ref =
-    match st1_ref, st2_ref with
-    | PolyRef s1, PolyRef s2 -> s1.id - s2.id
-end)
+let get_state a state x = match a state x with
+  | None -> None
+  | Some (_, state') -> Some (state', state')
 
-let __id = ref 0
-let __roots = ref SMSet.empty
-let __default_callback _ _ = true
-let __queue = Queue.create ()   (* queue to use to process events *)
-let __fresh_id () =
-  let n = !__id in
-  incr __id;
-  n
+let next a s x = a s x
 
-let make_root st =
-  __roots := SMSet.add (PolyRef st) !__roots
+let scan a (st, prev) x =
+  match a st x with
+  | None -> None
+  | Some (y,state') ->
+      Some (y::prev, (state', y::prev))
 
-let remove_root st =
-  __roots := SMSet.remove (PolyRef st) !__roots
+let map_in f a state x = a state (f x)
+let map_out f a state x = match a state x with
+  | None -> None
+  | Some (y, state') ->
+      Some (f y, state')
 
-(* make a transition *)
-let _do_transition st new_state =
-  Queue.push
-    (fun () ->
-      let old_state = st.state in
-      st.state <- new_state;
-      for i = 0 to st.callbacks_num - 1 do
-        try
-          let keep = st.callbacks.(i) old_state new_state in
-          if not keep then begin
-            (* remove this callback *)
-            (if i < st.callbacks_num - 1 then
-              st.callbacks.(i) <- st.callbacks.(st.callbacks_num - 1));
-            st.callbacks_num <- st.callbacks_num - 1;
-          end;
-        with e ->
-          ()  (* TODO: some global error handler? *)
-      done)
-    __queue
+exception ExitNest
 
-(* create a SM *)
-let mk_sm ~init =
-  let st = {
-    id = __fresh_id ();
-    state = init;
-    callbacks = Array.make 4 __default_callback;
-    callbacks_num = 0;
-  } in
-  st
-
-(* create a SM with a transition function *)
-let create ?(root=false) ~init ~trans =
-  let st = mk_sm ~init in
-  let sink e = match trans st.state e with
-    | TransitionStay -> ()
-    | TransitionTo new_state ->
-      _do_transition st new_state
+let nest l =
+  let rec eval (answers, res_states) l state x =
+    match l, state with
+    | [], [] ->
+      Some (List.rev answers, List.rev res_states)
+    | a::l', state::states' ->
+        begin match a state x with
+        | None -> raise ExitNest
+        | Some (ans,state') ->
+          eval (ans::answers, state'::res_states) l' states' x
+        end
+    | [], _
+    | _, [] ->
+      raise (Invalid_argument "CSM.next: list length mismatch")
   in
-  (if root then make_root st);
-  st, sink
+  fun state x ->
+    try eval ([],[]) l state x
+    with ExitNest -> None
 
-let id st = st.id
+let split a state x = match a state x with
+  | None -> None
+  | Some (y, state') -> Some ((y,y), state')
 
-let state st = st.state
+let unsplit merge a state x = match a state x with
+  | None -> None
+  | Some ((y,z), state') ->
+      Some (merge y z, state')
 
-let eq st1 st2 = st1.id = st2.id
+let pair a1 a2 (s1,s2) (x1,x2) =
+  match a1 s1 x1, a2 s2 x2 with
+  | Some (y1,s1'), Some (y2, s2') ->
+      Some ((y1,y2), (s1',s2'))
+  | Some _, None
+  | None, Some _
+  | None, None -> None
 
-let hash st = st.id
+let ( *** ) = pair
 
-let compare st1 st2 = st1.id - st2.id
+let first a state (x,keep) = match a state x with
+  | None -> None
+  | Some (y,state') ->
+      Some ((y,keep), state')
 
-let register_while st callback =
-  (if st.callbacks_num = Array.length st.callbacks
-    then begin
-      let a = Array.make (2*st.callbacks_num) __default_callback in
-      Array.blit st.callbacks 0 a 0 st.callbacks_num;
-      st.callbacks <- a
-    end);
-  st.callbacks.(st.callbacks_num) <- callback;
-  st.callbacks_num <- st.callbacks_num + 1;
-  ()
+let second a state (keep,x) = match a state x with
+  | None -> None
+  | Some (y,state') ->
+      Some ((keep,y), state')
 
-let register st callback =
-  register_while st (fun a b -> callback a b; true)
+let (>>>) a1 a2 (s1, s2) x =
+  match a1 s1 x with
+  | None -> None
+  | Some (y, s1') ->
+      match a2 s2 y with
+      | None -> None
+      | Some (z, s2') ->
+          Some (z, (s1', s2'))
 
-let connect st sink =
-  register_while st (fun _ new_state -> sink new_state; true)
+let _flatmap_opt f o = match o with
+  | None -> None
+  | Some x -> f x
 
-(** {2 Combinators} *)
+let append a1 a2 state x =
+  match state with
+  | `Left s1 ->
+      _flatmap_opt (fun (y,s1) -> Some (y,`Left s1)) (a1 s1 x)
+  | `Right s2 ->
+      _flatmap_opt (fun (y,s2) -> Some (y,`Right s2)) (a2 s2 x)
 
-let map st f =
-  let st' = mk_sm ~init:(f st.state) in
-  let a = Weak.create 1 in
-  Weak.set a 0 (Some st');
-  register_while st
-    (fun _ new_state ->
-      match Weak.get a 0 with
-      | None -> false
-      | Some st' ->
-        _do_transition st' (f new_state);
-        true);
-  st'
+let rec flatten (automata,state) x = match automata with
+  | [] -> None
+  | a::automata' ->
+      match a state x with
+      | None -> flatten (automata', state) x
+      | Some (y, state') ->
+          Some (y, (automata,state'))
 
-let filter st p =
-  let st' = mk_sm ~init:st.state in
-  let a = Weak.create 1 in
-  Weak.set a 0 (Some st');
-  register_while st
-    (fun _ new_state ->
-      if p new_state
-        then begin match Weak.get a 0 with
-        | None -> false
-        | Some st' ->
-          _do_transition st' new_state;
-          true
-        end else true);
-  st'
+let filter p a state x = match a state x with
+  | None -> None
+  | Some (y, state') ->
+      if p y then Some (Some y, state') else Some (None, state')
 
-let seq_list l =
-  let init = List.map state l in
-  let _array = Array.of_list init in
-  let st' = mk_sm ~init in
-  let a = Weak.create 1 in
-  Weak.set a 0 (Some st');
-  List.iteri
-    (fun i st ->
-      register_while st
-        (fun _ new_state ->
-          match Weak.get a 0 with
-          | None -> false
-          | Some st' ->
-            _array.(i) <- new_state;
-            _do_transition st' (Array.to_list _array);
-            true))
-    l;
-  st'
+type ('a, 'c, 's1, 's2) flat_map_state =
+  ('s1 * (('a, 's2, 'c) t * 's2) option)
 
-(** {2 Unix wrappers} *)
+let rec flat_map f a state x =
+  match state with
+  | s1, None ->
+      begin match a s1 x with
+      | None -> None
+      | Some (y, s1') ->
+          let a2, s2 = f y in
+          flat_map f a (s1', Some (a2,s2)) x
+      end
+  | s1, Some(a2,s2) ->
+      begin match a2 s2 x with
+      | None -> flat_map f a (s1, None) x
+      | Some (z, s2') ->
+          let state' = s1, Some (a2, s2') in
+          Some (z, state')
+      end
 
-module Unix = struct
-  type fd_state =
-    | FD_wait of Unix.file_descr
-    | FD_ready_read of Unix.file_descr
-    | FD_ready_write of Unix.file_descr
-    | FD_exc_condition of Unix.file_descr
+(** {2 Mutable Interface} *)
 
-  let select read write exc =
-    assert false
+module Mut = struct
+  type ('a, 's, 'b) t = {
+    next : ('a, 's, 'b) automaton;
+    mutable state : 's;
+  } (** mutable automaton, with in-place modification *)
 
-  let run () =
-    while not (Queue.is_empty __queue) do
-      let task = Queue.pop __queue in
-      task ()
-    done;
-    ()
+  let create a ~init =
+    { next=a; state=init; }
+
+  let next a x =
+    match a.next a.state x with
+    | None -> None
+    | Some (y,state) ->
+        a.state <- state;
+        Some y
+
+  let copy a = { a with state=a.state; }
 end
 
+(** {2 Instances} *)
+
+module Int = struct
+  let range j state () =
+    if state > j then None
+    else Some (state, state+1)
+end

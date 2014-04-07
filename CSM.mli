@@ -23,100 +23,114 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Composable State Machines} *)
+(** {1 Composable State Machines}
 
-(** This module defines state machines that should help design applications
-    with a more explicit control of state (e.g. for networking applications.
-    It is {b not} thread-safe.
-*)
+This module defines state machines that should help design applications
+with a more explicit control of state (e.g. for networking applications. *)
 
-(** {2 Basic interface} *)
+type ('a, 's, 'b) t = 's -> 'a -> ('b * 's) option
+(** transition function that fully describes an automaton *)
 
-type 'state t
-  (** State machine, whose states are of the type 'state,
-      and that changes state upon events of the type 'event. *)
+type ('a, 's, 'b) automaton = ('a, 's, 'b) t
 
-type 'a transition =
-  | TransitionTo of 'a
-  | TransitionStay
-  (** A transition of a state machine whose states are
-      of type 'a *)
+(** {2 Basic Interface} *)
 
-val create : ?root:bool ->
-             init:'state ->
-             trans:('state -> 'event -> 'state transition) ->
-            'state t * ('event -> unit)
-  (** Creation of a state machine with an initial state and a
-      given transition function. [root] specifies whether the FSM should
-      be a GC root and stay alive (default false).
-      This creates both a state machine and a way to send
-      events to it. *)
+val empty : ('a, 's, 'b) t
+(** empty automaton, ignores state and input, stops *)
 
-val state : 'state t -> 'state
-  (** Current state of a machine *)
+val id : ('a, unit, 'a) t
+(** automaton that simply returns its inputs, forever *)
 
-val id : _ t -> int
-  (** Unique ID of a state machine *)
+val repeat : 'a -> (unit, unit, 'a) t
+(** repeat the same output forever, disregarding its inputs *)
 
-val eq : _ t -> _ t -> bool
+val get_state : ('a, 's, _) t -> ('a, 's, 's) t
+(** Ignore output and output state instead *)
 
-val hash : _ t -> int
+val next : ('a, 's, 'b) t -> 's -> 'a -> ('b * 's) option
+(** feed an input into the automaton, obtaining an output and
+    a new state (unless the automaton has stopped) *)
 
-val compare : _ t -> _ t -> int
+val scan : ('a, 's, 'b) t -> ('a, 's * 'b list, 'b list) t
+(** [scan a] accumulates all the successive outputs of [a]
+    as its output *)
 
-val register_while : 'state t -> ('state -> 'state -> bool) -> unit
-  (** The given callback will be called upon every state change of
-      the given state machine with both the old and the new states,
-      while it returns [true]. When it returns [false], the
-       callback will no longer be referenced nor called.
-  *)
+val map_in : ('a2 -> 'a) -> ('a, 's, 'b) t -> ('a2, 's, 'b) t
 
-val register : 'state t -> ('state -> 'state -> unit) -> unit
-  (** Register the given callback forever. *)
+val map_out : ('b -> 'b2) -> ('a, 's, 'b) t -> ('a, 's, 'b2) t
 
-val connect : 'a t -> ('a -> unit) -> unit
-  (** [connect st sink] connects state changes of [st] to the sink. The
-      sink is given only the new state of [st]. *)
+val nest : ('a, 's, 'b) t list -> ('a, 's list, 'b list) t
+(** runs all automata in parallel on the input.
+    The state must be a list of the same length as the list of automata. 
+    @raise Invalid_argument otherwise *)
 
-(** {2 Combinators} *)
+val split : ('a, 's, 'b) t -> ('a, 's, ('b * 'b)) t
+(** duplicates outputs *)
 
-val map : 'a t -> ('a -> 'b) -> 'b t
-  (** Map the states from the given state machine to new states. *)
+val unsplit : ('b -> 'c -> 'd) -> ('a, 's, 'b * 'c) t ->
+              ('a, 's, 'd) t
+(** combines the two outputs into one using the function *)
 
-val filter : 'a t -> ('a -> bool) -> 'a t
-  (** [filter st p] behaves like [st], but only keeps transitions
-      {b to} states that satisfy the given predicate. *)
+val pair : ('a1, 's1, 'b1) t -> ('a2, 's2, 'b2) t ->
+           ('a1 * 'a2, 's1 * 's2, 'b1 * 'b2) t
+(** pairs two automata together *)
 
-val seq_list : 'state t list -> 'state list t
-  (** Aggregate of the states of several machines *)
+val ( *** ) : ('a1, 's1, 'b1) t -> ('a2, 's2, 'b2) t ->
+              ('a1 * 'a2, 's1 * 's2, 'b1 * 'b2) t
+(** alias for {!pair} *)
 
-(** {2 GC behavior} *)
+val first : ('a1, 's1, 'b1) t -> (('a1 * 'keep), 's1, ('b1 * 'keep)) t
 
-val make_root : _ t -> unit
-  (** Make the given state machine alive w.r.t. the GC. It will not be
-      collected *)
+val second : ('a1, 's1, 'b1) t -> (('keep * 'a1), 's1, ('keep * 'b1)) t
 
-val remove_root : _ t -> unit
-  (** The given state machine is no longer a GC root. *)
+val (>>>) : ('a, 's1, 'b) t -> ('b, 's2, 'c) t ->
+            ('a, 's1 * 's2, 'c) t
+(** composition (outputs of the first automaton are fed to
+    the second one's input) *)
 
-(** {2 Unix wrappers} *)
+val append : ('a, 's1, 'b) t -> ('a, 's2, 'b) t ->
+             ('a, [`Left of 's1 | `Right of 's2], 'b) t
+(** [append a b] first behaves like [a], then behaves like [a2]
+    once [a1] is exhausted. *)
 
-module Unix : sig
-  type fd_state =
-    | FD_wait of Unix.file_descr
-    | FD_ready_read of Unix.file_descr
-    | FD_ready_write of Unix.file_descr
-    | FD_exc_condition of Unix.file_descr
+val flatten : ('a, ('a, 's, 'b) t list * 's, 'b) t
+(** runs all automata on the input stream, one by one, until they
+    stop. *)
 
-  val select : Unix.file_descr list ->
-               Unix.file_descr list ->
-               Unix.file_descr list ->
-               float ->
-               (fd_state list * fd_state list * fd_state list) t
-    (** Wrapper for {! Unix.select} as a state machine. *)
+val filter : ('b -> bool) -> ('a, 's, 'b) t -> ('a, 's, 'b option) t
+(** [filter f a] yields only the outputs of [a] that satisfy [a] *)
 
-  val run : unit -> unit
-    (** Main function, doesn't return. It waits for unix events,
-        runs state machines until everything has been processed, and
-        waits for unix events again. *)
+type ('a, 'c, 's1, 's2) flat_map_state =
+  ('s1 * (('a, 's2, 'c) t * 's2) option)
+
+val flat_map : ('b -> ('a, 's2, 'c) t * 's2) -> ('a, 's1, 'b) t ->
+               ('a, ('a, 'c, 's1, 's2) flat_map_state, 'c) t
+(** maps outputs of the first automaton to sub-automata, that are used
+    to produce outputs until they are exhausted, at which point the
+    first one is used again, and so on *)
+
+(** {2 Mutable Interface} *)
+
+module Mut : sig
+  type ('a, 's, 'b) t = {
+    next : ('a, 's, 'b) automaton;
+    mutable state : 's;
+  } (** mutable automaton, with in-place modification *)
+
+  val create : ('a, 's, 'b) automaton -> init:'s -> ('a, 's, 'b) t
+  (** create a new mutable automaton *)
+
+  val next : ('a, 's, 'b) t -> 'a -> 'b option
+  (** feed an input into the automaton, obtainin and output (unless
+      the automaton has stopped) and updating the automaton's state *)
+
+  val copy : ('a, 's, 'b) t -> ('a, 's, 'b) t
+  (** copy the automaton into a new one, that can evolve independently *)
+end
+
+(** {2 Instances} *)
+
+module Int : sig
+  val range : int -> (unit, int, int) t
+  (** yields all integers smaller than the argument, then stops *)
 end
