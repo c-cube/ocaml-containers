@@ -55,6 +55,15 @@ val scan : ('a, 's, 'b) t -> ('a, 's * 'b list, 'b list) t
 (** [scan a] accumulates all the successive outputs of [a]
     as its output *)
 
+val lift : ('b -> 'a -> 'b) -> ('a, 'b, 'b) t
+(** Lift a function into an automaton *)
+
+val ignore_state : ('a -> 'b) -> ('a, 's, 'b) t
+(** Lift a function that ignores the state into an automaton *)
+
+val ignore_arg : ('s -> 's) -> ('a, 's, 's) t
+(** Lift a function that ignores the input into an automaton *)
+
 val map_in : ('a2 -> 'a) -> ('a, 's, 'b) t -> ('a2, 's, 'b) t
 
 val map_out : ('b -> 'b2) -> ('a, 's, 'b) t -> ('a, 's, 'b2) t
@@ -113,6 +122,9 @@ val flat_map : ('b -> ('a, 's2, 'c) t * 's2) -> ('a, 's1, 'b) t ->
     to produce outputs until they are exhausted, at which point the
     first one is used again, and so on *)
 
+val run_list : ('a, 's, 'b) t -> init:'s -> 'a list -> 'b list
+(** Run the automaton on a list of inputs *)
+
 (** {2 Instances} *)
 
 module Int : sig
@@ -126,6 +138,18 @@ module List : sig
 
   val build : ('a, 'a list, 'a list) t
   (** build a list from its inputs *)
+end
+
+module Gen : sig
+  type 'a gen = unit -> 'a option
+
+  val map : ('a, 's, 'b) t -> 's -> 'a gen -> 'b gen
+end
+
+module Sequence : sig
+  type 'a sequence = ('a -> unit) -> unit
+
+  val map : ('a, 's, 'b) t -> 's -> 'a sequence -> 'b sequence
 end
 
 (** {2 Mutable Interface} *)

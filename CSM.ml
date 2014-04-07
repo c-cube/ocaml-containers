@@ -53,6 +53,16 @@ let scan a (st, prev) x =
   | Some (y,state') ->
       Some (y::prev, (state', y::prev))
 
+let lift f state x =
+  let state' = f state x in
+  Some (state', state')
+
+let ignore_state f state x = Some (f x, state)
+
+let ignore_arg f state _x =
+  let state' = f state in
+  Some (state', state')
+
 let map_in f a state x = a state (f x)
 let map_out f a state x = match a state x with
   | None -> None
@@ -170,6 +180,17 @@ let rec flat_map f a state x =
           Some (z, state')
       end
 
+let run_list a ~init l =
+  let rec aux acc state l = match l with
+  | [] -> List.rev acc
+  | x::l' ->
+      match next a state x with
+      | None -> List.rev acc
+      | Some (y, state') ->
+          aux (y::acc) state' l'
+  in
+  aux [] init l
+
 (** {2 Instances} *)
 
 module Int = struct
@@ -187,6 +208,40 @@ module List = struct
     | x::l -> Some (x, l)
 
   let build state x = Some (x::state, x::state)
+end
+
+module Gen = struct
+  type 'a gen = unit -> 'a option
+
+  let map a state gen =
+    let st = ref state in
+    fun () ->
+      match gen() with
+      | None -> None
+      | Some x ->
+          begin match a !st x with
+          | None -> None
+          | Some (y, state') ->
+              st := state';
+              Some y
+          end
+end
+
+module Sequence = struct
+  type 'a sequence = ('a -> unit) -> unit
+
+  exception ExitSeq
+
+  let map a state seq =
+    fun k ->
+      let st = ref state in
+      try
+        seq (fun x -> match a !st x with
+          | None -> raise ExitSeq
+          | Some (y, state') ->
+              st := state';
+              k y)
+      with ExitSeq -> ()
 end
 
 (** {2 Mutable Interface} *)
