@@ -164,9 +164,13 @@ module type S = sig
   end
 end
 
+(** {2 Functor} *)
+
 module Make(Str : STRING) : S
   with type string_ = Str.t
   and type char_ = Str.char_
+
+(** {2 Default instance: string} *)
 
 include S with type char_ = char and type string_ = string
 
