@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a57e9337d5ca2ca5de2c29c113a55d57)
+# DO NOT EDIT (digest: 4f32d3f650d22abadbd792d7ed9a300a)
 Cache
 Deque
 Gen
@@ -43,4 +43,5 @@ Levenshtein
 Bidir
 Iteratee
 Ty
+Tell
 # OASIS_STOP
