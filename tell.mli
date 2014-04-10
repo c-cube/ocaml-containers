@@ -36,8 +36,6 @@ val to_chan : ?cleanup:bool -> out_channel -> t
     @param cleanup if true, will close the channel on exit;
     if false or not explicited, won't do anything. *)
 
-exception Error of string
-
 (** {2 Raw functions} *)
 
 val step : t -> string -> unit
@@ -53,8 +51,8 @@ val enter : t -> unit
 val exit : t -> unit
 (** Exit the current subsection *)
 
-val within : ?descr:string -> log:t -> (unit -> 'a) -> 'a
-(** Enter a subsection named [descr], evaluate the given function,
+val within : log:t -> (unit -> 'a) -> 'a
+(** Enter a new subsection, evaluate the given function,
     exit the subsection and return the function's result.
     Also protects against exceptions. *)
 

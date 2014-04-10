@@ -26,9 +26,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Hierarchic logging} *)
 
+module BS = BencodeStream
+
 type t = {
   name : string;
   out : out_channel;
+  encoder : BS.Encode.t;
   cleanup : bool;
   mutable context : string list;
 }
@@ -43,6 +46,7 @@ let __new_name =
 let to_chan ?(cleanup=false) o = {
   name = __new_name ();
   out = o;
+  encoder = BS.Encode.create (`Out o);
   cleanup;
   context = [];
 }
@@ -51,4 +55,57 @@ let to_file filename =
   let o = open_out filename in
   to_chan ~cleanup:true o
 
-let step
+let close log =
+  if log.cleanup
+    then close_out log.out
+
+let step log msg =
+  BS.Encode.push log.encoder BS.BeginDict;
+  BS.Encode.push log.encoder (BS.String "step");
+  BS.Encode.push log.encoder (BS.String msg);
+  BS.Encode.push log.encoder BS.End
+  
+let enter log =
+  BS.Encode.push log.encoder BS.BeginList
+
+let exit log =
+  BS.Encode.push log.encoder BS.End
+
+let within ~log f =
+  BS.Encode.push log.encoder BS.BeginDict;
+  BS.Encode.push log.encoder (BS.String "section");
+  try
+    let x = f () in
+    BS.Encode.push log.encoder BS.End;
+    x
+  with e ->
+    BS.Encode.push log.encoder BS.End;
+    raise e
+
+module B = struct
+  let step ~log format =
+    exit log;
+    let b = Buffer.create 24 in
+    Printf.kbprintf
+      (fun b ->
+        BS.Encode.push log.encoder (BS.String (Buffer.contents b)))
+      b format
+
+  let enter ~log format =
+    let b = Buffer.create 24 in
+    let x = Printf.kbprintf
+      (fun b ->
+        BS.Encode.push log.encoder (BS.String (Buffer.contents b)))
+      b format
+    in
+    enter log;
+    x
+
+  let exit ~log format =
+    exit log;
+    let b = Buffer.create 24 in
+    Printf.kbprintf
+      (fun b ->
+        BS.Encode.push log.encoder (BS.String (Buffer.contents b)))
+      b format
+end

@@ -30,9 +30,8 @@ type token =
   | Int of int
   | String of string
   | BeginDict
-  | EndDict
   | BeginList
-  | EndList
+  | End
 
 module Encode : sig
   type t
@@ -51,14 +50,7 @@ end
 module Decode : sig
   type t
 
-  type source =
-    [ `File of string
-    | `In of in_channel
-    | `String of string
-    | `Manual
-    ]
-
-  val create : source -> t
+  val create : unit -> t
   (** Create a new decoder with the given source. *)
 
   val feed : t -> string -> unit
@@ -66,8 +58,7 @@ module Decode : sig
 
   type result =
     | Yield of token
-    | Error of string
-    | End
+    | Error of string (** Invalid B-encode *)
     | Await  (** The user needs to call {!feed} with some input *)
 
   val next : t -> result
