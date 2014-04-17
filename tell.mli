@@ -31,7 +31,7 @@ type t
 val to_file : string -> t
 (** Create a logger that outputs to the given file *)
 
-val to_chan : ?cleanup:bool out_channel -> t
+val to_chan : ?cleanup:bool -> out_channel -> t
 (** Obtain a logger that outputs to the given channel.
     @param cleanup if true, will close the channel on exit;
     if false or not explicited, won't do anything. *)
