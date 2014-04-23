@@ -41,7 +41,7 @@ Library "containers"
                     UnionFind, SmallSet, Leftistheap, AbsSet, CSM, MultiMap,
                     ActionMan, BV, QCheck, BencodeOnDisk, Show, TTree,
                     HGraph, Automaton, Conv, Levenshtein, Bidir, Iteratee,
-                    Ty, Tell, BencodeStreaming, RatTerm
+                    Ty, Tell, BencodeStream, RatTerm, Cause
   BuildDepends:     unix
 
 Library "containers_thread"
