@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9824af535a520376fdb1b1ac58c878c9)
+# DO NOT EDIT (digest: 404fe51c40218ed7bf430446cec5efde)
 Cache
 Deque
 Gen
@@ -47,4 +47,5 @@ Tell
 BencodeStream
 RatTerm
 Cause
+KMP
 # OASIS_STOP
