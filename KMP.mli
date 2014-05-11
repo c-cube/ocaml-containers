@@ -36,6 +36,7 @@ module type STRING = sig
 end
 
 type 'a gen = unit -> 'a option
+type 'a sequence = ('a -> unit) -> unit
 
 module type S = sig
   type string
@@ -56,12 +57,17 @@ module type S = sig
 
   val find_all : pattern:pattern -> string -> int -> int gen
   (** Generator on all occurrences of the pattern *)
+  
+  val seq : pattern:pattern -> string -> int -> int sequence
+  (** iterate on matching positions *)
 
   (** {6 One-shot functions that compile the pattern on-the-fly} *)
 
   val search' : pattern:string -> string -> int option
 
   val find_all' : pattern:string -> string -> int gen
+
+  val seq' : pattern:string -> string -> int sequence
 end
 
 module Make(Str : STRING) : S with type string = Str.t
