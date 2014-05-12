@@ -37,7 +37,8 @@ val singleton : 'a -> 'a t
 
 val of_list : 'a list -> 'a t
 (** build a circular list from a list. Linear in the length
-    of the list *)
+    of the list.
+    @raise Invalid_argument if the list is empty *)
 
 val length : 'a t -> int
 (** length of the cycle. *)

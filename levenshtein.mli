@@ -78,7 +78,7 @@ The signature for a given string representation provides 3 main things:
   maximal distance).
 
 A possible use of the index could be:
-[
+{[
 open Batteries;;
 
 let words = File.with_file_in "/usr/share/dict/english" 
@@ -88,6 +88,7 @@ let words = List.map (fun s->s,s) words;;
 let idx = Levenshtein.Index.of_list words;;
 
 Levenshtein.Index.retrieve ~limit:1 idx "hell" |> Levenshtein.klist_to_list;;
+]}
 *)
 
 module type S = sig

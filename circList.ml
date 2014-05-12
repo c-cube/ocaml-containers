@@ -45,7 +45,9 @@ let make f f_len r r_len = match f with
 
 let singleton x = make [x] 1 [] 0
 
-let of_list l = make l (List.length l) [] 0
+let of_list l =
+  if l = [] then raise (Invalid_argument "empty list");
+  make l (List.length l) [] 0
 
 let length l = l.f_len + l.r_len
 
