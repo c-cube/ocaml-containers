@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: e6a4388a1190cdbd6a00960fb2e08d7f)
+# DO NOT EDIT (digest: 1907902d29ff8cd23331587c97b0f346)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -64,19 +64,20 @@
 "cause.cmx": for-pack(Containers)
 "KMP.cmx": for-pack(Containers)
 "circList.cmx": for-pack(Containers)
+<*.ml{,i}>: package(unix)
 # Library containers_thread
 "threads/containers_thread.cmxs": use_containers_thread
 <threads/*.ml{,i}>: package(threads)
 <threads/*.ml{,i}>: package(unix)
 <threads/*.ml{,i}>: use_containers
 # Library containers_lwt
-"containers_lwt.cmxs": use_containers_lwt
-"behavior.cmx": for-pack(Containers_lwt)
-"lwt_automaton.cmx": for-pack(Containers_lwt)
-<*.ml{,i}>: package(lwt)
-<*.ml{,i}>: package(lwt.unix)
-<*.ml{,i}>: package(unix)
-<*.ml{,i}>: use_containers
+"lwt/containers_lwt.cmxs": use_containers_lwt
+"lwt/behavior.cmx": for-pack(Containers_lwt)
+"lwt/lwt_automaton.cmx": for-pack(Containers_lwt)
+<lwt/*.ml{,i}>: package(lwt)
+<lwt/*.ml{,i}>: package(lwt.unix)
+<lwt/*.ml{,i}>: package(unix)
+<lwt/*.ml{,i}>: use_containers
 # Library containers_cgi
 "cgi/containers_cgi.cmxs": use_containers_cgi
 <cgi/*.ml{,i}>: package(CamlGI)

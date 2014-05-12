@@ -42,6 +42,7 @@ configure:
 
 EXAMPLES = examples/mem_size.native examples/collatz.native \
 	examples/bencode_write.native # examples/crawl.native
+OPTIONS = -use-ocamlfind
 
 examples: all
 	ocamlbuild $(OPTIONS) -package unix -I . $(EXAMPLES)
@@ -49,7 +50,19 @@ examples: all
 push_doc: doc
 	scp -r containers.docdir/* cedeela.fr:~/simon/root/software/containers/
 
+DONTTEST=myocamlbuild.ml setup.ml
+QTESTABLE=$(filter-out $(DONTTEST), $(wildcard *.ml) $(wildcard *.mli))
+
+qtest-clean:
+	rm -rf qtest/
+
+qtest: qtest-clean build
+	mkdir -p qtest
+	qtest extract -o qtest/qtest_all.ml $(QTESTABLE)
+	ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib -I . qtest/qtest_all.native
+	./qtest_all.native
+
 tags:
 	otags *.ml *.mli
 
-.PHONY: examples push_doc tags
+.PHONY: examples push_doc tags qtest
