@@ -54,13 +54,16 @@ DONTTEST=myocamlbuild.ml setup.ml
 QTESTABLE=$(filter-out $(DONTTEST), $(wildcard *.ml) $(wildcard *.mli))
 
 qtest-clean:
-	rm -rf qtest/
+	@rm -rf qtest/
 
 qtest: qtest-clean build
-	mkdir -p qtest
-	qtest extract -o qtest/qtest_all.ml $(QTESTABLE)
-	ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib -I . qtest/qtest_all.native
+	@mkdir -p qtest
+	@qtest extract -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
+	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib -I . qtest/qtest_all.native
+	@echo
 	./qtest_all.native
+
+test-all: test qtest
 
 tags:
 	otags *.ml *.mli
