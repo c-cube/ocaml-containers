@@ -51,6 +51,14 @@ let of_list l =
 
 let length l = l.f_len + l.r_len
 
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    l = [] || \
+    let q = of_list l in \
+    let _, q = next q in \
+    length q = List.length l)
+*)
+
 let cons x l = make (x::l.front) (l.f_len+1) l.rear l.r_len
 
 let snoc l x = make l.front l.f_len (x::l.rear) (l.r_len+1)
@@ -112,6 +120,12 @@ let gen l =
     let x, l' = next !l in
     l := l';
     Some x
+
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    l = [] || let q = of_list l in \
+    gen q |> Gen.take (List.length l) |> Gen.to_list = l)
+  *)
 
 let seq l k =
   let r' = lazy (List.rev l.rear) in
