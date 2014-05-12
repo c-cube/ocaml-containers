@@ -58,7 +58,7 @@ let snoc l x = make l.front l.f_len (x::l.rear) (l.r_len+1)
 let next l = match l.front with
   | [] -> assert false
   | x::l' ->
-      x, make l' (l.f_len-1) l.rear l.r_len
+      x, make l' (l.f_len-1) (x::l.rear) (l.r_len+1)
 
 let rev l = make l.rear l.r_len l.front l.f_len
 
@@ -79,6 +79,11 @@ let mem ?(eq=fun x y -> x=y) x l =
 let exists p l = match find p l with
   | None -> false
   | Some _ -> true
+
+(*$T
+ exists (fun x-> x mod 2 = 0) (of_list [1;3;5;7;8])
+ not (exists (fun x-> x mod 2 = 0) (of_list [1;3;5;7;9]))
+ *)
 
 let for_all p l =
   let rec _check i l =
