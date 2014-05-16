@@ -46,7 +46,7 @@ Library "containers"
 Library "containers_string"
   Path:             string
   Pack:             true
-  Modules:          KMP
+  Modules:          KMP, CCString, Levenshtein
   FindlibName:      string
   FindlibParent:    containers
 
@@ -59,7 +59,7 @@ Library "containers_misc"
                     Bij, PiCalculus, Bencode, Sexp, RAL,
                     UnionFind, SmallSet, AbsSet, CSM,
                     ActionMan, QCheck, BencodeOnDisk, TTree,
-                    HGraph, Automaton, Conv, Levenshtein, Bidir, Iteratee,
+                    HGraph, Automaton, Conv, Bidir, Iteratee,
                     Ty, Tell, BencodeStream, RatTerm, Cause
   BuildDepends:     unix,containers
   FindlibName:      misc
@@ -102,7 +102,15 @@ Document containers
   BuildTools+:          ocamldoc
   Install:              true
   XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers
+  XOCamlbuildLibraries: containers,containers.string
+
+Document containers_misc
+  Title:                Containers_misc docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: containers.misc
 
 Executable benchs
   Path:             tests/
@@ -110,7 +118,7 @@ Executable benchs
   CompiledObject:   native
   Build$:           flag(bench)
   MainIs:           benchs.ml
-  BuildDepends:     containers,containers.misc,bench
+  BuildDepends:     containers,containers.string,containers.misc,bench
 
 Executable bench_conv
   Path: tests/

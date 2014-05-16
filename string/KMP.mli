@@ -72,4 +72,4 @@ end
 
 module Make(Str : STRING) : S with type string = Str.t
 
-module Default : S with type string = string
+include S with type string = string

@@ -2,8 +2,10 @@
 #thread
 #directory "_build/core";;
 #directory "_build/misc";;
+#directory "_build/string";;
 #directory "_build/tests/";;
 #load "containers.cma";;
+#load "containers_string.cma";;
 #load "containers_misc.cma";;
 #require "threads";;
 #load "containers_thread.cma";;

@@ -24,25 +24,41 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Basic Functions} *)
+(** {1 Basic String Utils}
+Consider using KMP instead. *)
 
-let (|>) x f = f x
+type t = string
 
-let compose f g x = g (f x)
+type 'a gen = unit -> 'a option
+type 'a sequence = ('a -> unit) -> unit
 
-let (%>) = compose
+val is_sub : sub:t -> int -> t -> int -> bool
+(** [is_sub ~sub i s j] returns [true] iff [sub] is a substring of [s] starting
+    at position [j] *)
 
-let (%) f g x = f (g x)
+val split : by:t -> t -> t list
+(** split the given string along the given separator [by]. Should only
+    be used with very small separators, otherwise use {!KMP}.
+    @raise Failure if [by = ""] *)
 
-let lexicographic f1 f2 x y =
-  let c = f1 x y in
-  if c <> 0 then c else f2 x y
+val split_gen : by:t -> t -> t gen
 
-let finally ~h ~f =
-  try
-    let x = f () in
-    h ();
-    x
-  with e ->
-    h ();
-    raise e
+val split_seq : by:t -> t -> t sequence
+
+val find : ?start:int -> sub:t -> t -> int
+(** Find [sub] in the string, returns its first index or -1.
+    Should only be used with very small [sub] *)
+
+val repeat : t -> int -> t
+(** The same string, repeated n times *)
+
+val prefix : pre:t -> t -> bool
+(** [str_prefix ~pre s] returns [true] iff [pre] is a prefix of [s] *)
+
+val to_gen : t -> char gen
+val of_gen : char gen -> t
+
+val to_seq : t -> char sequence
+val of_seq : char sequence -> t
+
+val pp : Buffer.t -> t -> unit

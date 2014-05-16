@@ -167,7 +167,7 @@ module Make(Str : STRING) = struct
     seq ~pattern:(compile pattern) s 0
 end
 
-module Default = Make(struct
+include  Make(struct
   type char_ = char
   type char = char_
   type t = string

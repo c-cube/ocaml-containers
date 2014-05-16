@@ -40,3 +40,8 @@ val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
 
 val lexicographic : ('a -> 'a -> int) -> ('a -> 'a -> int) -> 'a -> 'a -> int
 (** Lexicographic combination of comparison functions *)
+
+val finally : h:(unit -> unit) -> f:(unit -> 'a) -> 'a
+  (** [finally h f] calls [f ()] and returns its result. If it raises, the
+      same exception is raised; in {b any} case, [h ()] is called after
+      [f ()] terminates. *)
