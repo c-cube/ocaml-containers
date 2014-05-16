@@ -49,6 +49,13 @@ val flatten : 'a t t -> 'a t
 val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** cartesian product of the two lists, with the given combinator *)
 
+val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
+(** Fold on the cartesian product *)
+
+val diagonal : 'a t -> ('a * 'a) t
+(** All pairs of distinct positions of the list. [list_diagonal l] will
+    return the list of [List.nth i l, List.nth j l] if [i < j]. *)
+
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val (<$>) : ('a -> 'b) -> 'a t -> 'b t
@@ -56,13 +63,6 @@ val (<$>) : ('a -> 'b) -> 'a t -> 'b t
 val return : 'a -> 'a t
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-
-val range : int -> int -> int t
-(** [range i j] iterates on integers from [i] to [j] included. It works
-    both for decreasing and increasing ranges *)
-
-val (--) : int -> int -> int t
-(** Infix alias for [range] *)
 
 val take : int -> 'a t -> 'a t
 (** take the [n] first elements, drop the rest *)
@@ -77,6 +77,95 @@ val split : int -> 'a t -> 'a t * 'a t
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)
+
+val find : ('a -> bool) -> 'a t -> (int * 'a) option
+(** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
+    and [p x] holds. Otherwise returns [None] *)
+
+val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+(** Map and remove elements at the same time *)
+
+val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
+(** merges elements from both sorted list, removing duplicates *)
+
+(** {2 Indices} *)
+
+module Idx : sig
+  val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+
+  val iteri : (int -> 'a -> unit) -> 'a t -> unit
+
+  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  (** fold on list, with index *)
+
+  val get : 'a t -> int -> 'a option
+
+  val get_exn : 'a t -> int -> 'a
+  (** get the i-th element, or
+      @raise Not_found if the index is invalid *)
+
+  val set : 'a t -> int -> 'a -> 'a t
+  (** set i-th element (removes the old one), or does nothing if
+      index too high *)
+  
+  val insert : 'a t -> int -> 'a -> 'a t
+  (** insert at i-th position, between the two existing elements. If the
+      index is too high, append at the end of the list *)
+
+  val remove : 'a t -> int -> 'a t
+  (** Remove element at given index. Does nothing if the index is
+      too high. *)
+end
+
+(** {2 Set Operators} *)
+
+module Set : sig
+  val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
+  (** membership to the list *)
+
+  val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  (** test for inclusion *)
+
+  val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
+  (** list uniq: remove duplicates w.r.t the equality predicate *)
+
+  val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+  (** list union *)
+
+  val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+  (** list intersection *)
+end
+
+(** {2 Other Constructors} *)
+
+val range : int -> int -> int t
+(** [range i j] iterates on integers from [i] to [j] included. It works
+    both for decreasing and increasing ranges *)
+
+val (--) : int -> int -> int t
+(** Infix alias for [range] *)
+
+val replicate : int -> 'a -> 'a t
+(** replicate the given element [n] times *)
+
+val repeat : int -> 'a t -> 'a t
+(** concatenate the list with itself [n] times *)
+
+(** {2 Association Lists} *)
+
+module Assoc : sig
+  type ('a, 'b) t = ('a*'b) list
+
+  val get : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b option
+  (** Find the element *)
+
+  val get_exn : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b
+  (** Same as [get]
+      @raise Not_found if the element is not present *)
+
+  val set : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b -> ('a,'b) t
+  (** Add the binding into the list (erase it if already present) *)
+end
 
 (** {2 Conversions} *)
 
