@@ -15,6 +15,11 @@ Description:
     abstractions, serialization systems, testing systems and various
     experiments.
 
+Flag "misc"
+  Description:  Build the misc library, containing everything from
+                the rotating kitchen sink to automatic banana distributors
+  Default:      false
+
 Flag "cgi"
   Description:  Build modules related to FastCGI, depending on CamlGI
   Default:      false
@@ -25,24 +30,33 @@ Flag "lwt"
 
 Flag "thread"
   Description:  Build modules that depend on threads
-  Default:      true
+  Default:      false
 
 Flag "bench"
   Description:  Build and run benchmarks
   Default:      false
 
 Library "containers"
-  Path:             .
+  Path:             core
+  Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
+                    CCMultiSet, CCBV, CCKMP, CCPrint, CCPersistentHashtbl,
+                    CCLeftistheap
+  FindlibName:      containers
+
+Library "containers_misc"
+  Path:             misc
   Pack:             true
-  Modules:          Cache, Deque, Gen, FHashtbl, FQueue, FlatHashtbl, Hashset,
-                    Heap, LazyGraph, PersistentGraph, PersistentHashtbl,
-                    PHashtbl, Sequence, SkipList, SplayTree, SplayMap, Univ,
-                    Vector, Bij, PiCalculus, Bencode, Sexp, RAL, MultiSet,
-                    UnionFind, SmallSet, Leftistheap, AbsSet, CSM, MultiMap,
-                    ActionMan, BV, QCheck, BencodeOnDisk, Show, TTree,
+  Modules:          Cache, FHashtbl, FlatHashtbl, Hashset,
+                    Heap, LazyGraph, PersistentGraph,
+                    PHashtbl, SkipList, SplayTree, SplayMap, Univ,
+                    Bij, PiCalculus, Bencode, Sexp, RAL,
+                    UnionFind, SmallSet, AbsSet, CSM,
+                    ActionMan, QCheck, BencodeOnDisk, TTree,
                     HGraph, Automaton, Conv, Levenshtein, Bidir, Iteratee,
-                    Ty, Tell, BencodeStream, RatTerm, Cause, KMP, CircList
-  BuildDepends:     unix
+                    Ty, Tell, BencodeStream, RatTerm, Cause
+  BuildDepends:     unix,containers
+  FindlibName:      misc
+  FindlibParent:    containers
 
 Library "containers_thread"
   Path:             threads/
@@ -55,7 +69,7 @@ Library "containers_thread"
   XMETARequires:    containers,threads,lwt
 
 Library "containers_lwt"
-  Path:             lwt/
+  Path:             .
   Modules:          Behavior, Lwt_automaton
   Pack:             true
   FindlibName:      lwt
@@ -84,12 +98,12 @@ Document containers
   XOCamlbuildLibraries: containers
 
 Executable benchs
-  Path: tests/
-  Install: false
-  CompiledObject: native
-  Build$: flag(bench)
-  MainIs: benchs.ml
-  BuildDepends: containers,bench
+  Path:             tests/
+  Install:          false
+  CompiledObject:   native
+  Build$:           flag(bench)
+  MainIs:           benchs.ml
+  BuildDepends:     containers,containers.misc,bench
 
 Executable bench_conv
   Path: tests/

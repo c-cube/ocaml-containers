@@ -20,7 +20,7 @@ module IFHashtbl = FHashtbl.Tree(struct
   let hash i = i
 end)
 
-module IPersistentHashtbl = PersistentHashtbl.Make(struct
+module IPersistentHashtbl = CCPersistentHashtbl.Make(struct
   type t = int
   let equal i j = i = j
   let hash i = i
@@ -290,8 +290,8 @@ let bench_maps() =
 
 let bench_enum () =
   let n = 1_000_000 in
-  let seq () = Sequence.fold (+) 0 (Sequence.int_range ~start:0 ~stop:n) in
-  let enum () = Gen.fold (+) 0 (Gen.int_range 0 n) in
+  let seq () = CCSequence.fold (+) 0 (CCSequence.int_range ~start:0 ~stop:n) in
+  let enum () = CCGen.fold (+) 0 (CCGen.int_range 0 n) in
   Bench.bench
     [ "sequence.fold", seq;
       "gen.fold", enum;
@@ -299,12 +299,12 @@ let bench_enum () =
 
   let n = 100_000 in
   let seq () =
-    let open Sequence in
+    let open CCSequence in
     let seq = int_range ~start:0 ~stop:n in
     let seq = flatMap (fun x -> int_range ~start:x ~stop:(x+10)) seq in
     fold (+) 0 seq in
   let enum () =
-    let open Gen in
+    let open CCGen in
     let seq = int_range 0 n in
     let seq = flatMap (fun x -> int_range x (x+10)) seq in
     fold (+) 0 seq in

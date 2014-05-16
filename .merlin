@@ -1,7 +1,9 @@
-S .
+S core
+S misc
 S tests
 S examples
-B _build
+B _build/core
+B _build/misc
 B _build/tests
 B _build/examples
 PKG oUnit

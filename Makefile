@@ -51,7 +51,10 @@ push_doc: doc
 	scp -r containers.docdir/* cedeela.fr:~/simon/root/software/containers/
 
 DONTTEST=myocamlbuild.ml setup.ml
-QTESTABLE=$(filter-out $(DONTTEST), $(wildcard *.ml) $(wildcard *.mli))
+QTESTABLE=$(filter-out $(DONTTEST), \
+	$(wildcard core/*.ml) $(wildcard core/*.mli) \
+	$(wildcard misc/*.ml) $(wildcard misc/*.mli) \
+	)
 
 qtest-clean:
 	@rm -rf qtest/
@@ -59,7 +62,7 @@ qtest-clean:
 qtest: qtest-clean build
 	@mkdir -p qtest
 	@qtest extract -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
-	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib -I . qtest/qtest_all.native
+	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib -I core -I misc qtest/qtest_all.native
 	@echo
 	./qtest_all.native
 
