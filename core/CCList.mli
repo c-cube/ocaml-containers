@@ -172,6 +172,7 @@ end
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
 val to_seq : 'a t -> 'a sequence
 val of_seq : 'a sequence -> 'a t
@@ -183,3 +184,6 @@ val of_gen : 'a gen -> 'a t
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
          'a printer -> 'a t printer
+
+val print : ?start:string -> ?stop:string -> ?sep:string ->
+            'a formatter -> 'a t formatter

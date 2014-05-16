@@ -67,10 +67,6 @@ module type S = sig
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
     (** Fold on the generator, tail-recursively *)
 
-  val fold2 : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
-    (** Fold on the two enums in parallel. Stops once one of the enums
-        is exhausted. *)
-
   val reduce : ('a -> 'a -> 'a) -> 'a t -> 'a
     (** Fold on non-empty sequences (otherwise raise Invalid_argument) *)
 
@@ -82,9 +78,6 @@ module type S = sig
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
     (** Iterate on elements with their index in the enum, from 0 *)
-
-  val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
-    (** Iterate on the two sequences. Stops once one of them is exhausted.*)
 
   val length : _ t -> int
     (** Length of an enum (linear time) *)
@@ -100,7 +93,7 @@ module type S = sig
   val flatten : 'a gen t -> 'a t
     (** Flatten the enumeration of generators *)
 
-  val flatMap : ('a -> 'b gen) -> 'a t -> 'b t
+  val flat_map : ('a -> 'b gen) -> 'a t -> 'b t
     (** Monadic bind; each element is transformed to a sub-enum
         which is then iterated on, before the next element is processed,
         and so on. *)
@@ -118,19 +111,24 @@ module type S = sig
     (** n-th element, or Not_found
         @raise Not_found if the generator contains less than [n] arguments *)
 
+  val take_nth : int -> 'a t -> 'a t
+    (** [take_nth n g] returns every element of [g] whose index
+        is a multiple of [n]. For instance [take_nth 2 (1--10) |> to_list]
+        will return [1;3;5;7;9] *)
+
   val filter : ('a -> bool) -> 'a t -> 'a t
     (** Filter out elements that do not satisfy the predicate.  *)
 
-  val takeWhile : ('a -> bool) -> 'a t -> 'a t
+  val take_while : ('a -> bool) -> 'a t -> 'a t
     (** Take elements while they satisfy the predicate *)
 
-  val dropWhile : ('a -> bool) -> 'a t -> 'a t
+  val drop_while : ('a -> bool) -> 'a t -> 'a t
     (** Drop elements while they satisfy the predicate *)
 
-  val filterMap : ('a -> 'b option) -> 'a t -> 'b t
-    (** Maps some elements to 'b, drop the other ones *)
+  val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+    (** _maps some elements to 'b, drop the other ones *)
 
-  val zipIndex : 'a t -> (int * 'a) t
+  val zip_index : 'a t -> (int * 'a) t
     (** Zip elements with their index in the enum *)
 
   val unzip : ('a * 'b) t -> 'a t * 'b t
@@ -174,10 +172,13 @@ module type S = sig
   (** {2 Multiple iterators} *)
 
   val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+    (** map on the two sequences. Stops once one of them is exhausted.*)
 
   val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+    (** Iterate on the two sequences. Stops once one of them is exhausted.*)
 
   val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+    (** Fold the common prefix of the two iterators *)
 
   val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
     (** Succeeds if all pairs of elements satisfy the predicate.
@@ -187,7 +188,7 @@ module type S = sig
     (** Succeeds if some pair of elements satisfy the predicate.
         Ignores elements of an iterator if the other runs dry. *)
 
-  val zipWith : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+  val zip_with : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
     (** Combine common part of the enums (stops when one is exhausted) *)
 
   val zip : 'a t -> 'b t -> ('a * 'b) t
@@ -312,14 +313,32 @@ end
 
 let empty () = None
 
+(*$T empty
+  empty |> to_list = []
+*)
+
 let singleton x =
   let first = ref true in
   fun () ->
     if !first then (first := false; Some x) else None
 
-let rec repeat x () = Some x
+(*T singleton
+  singleton 1 |> to_list = [1]
+  singleton "foo" |> to_list = ["foo"]
+*)
+
+let repeat x () = Some x
+
+(*$T repeat
+  repeat 42 |> take 3 |> to_list = [42; 42; 42]
+*)
 
 let repeatedly f () = Some (f ())
+
+(*$T repeatedly
+  repeatedly (let r = ref 0 in fun () -> incr r; !r) \
+    |> take 5 |> to_list = [1;2;3;4;5]
+*)
 
 let iterate x f =
   let cur = ref x in
@@ -327,6 +346,10 @@ let iterate x f =
     let x = !cur in
     cur := f !cur;
     Some x
+
+(*$T iterate
+  iterate 0 ((+)1) |> take 5 |> to_list = [0;1;2;3;4]
+*)
 
 let next gen = gen ()
 
@@ -337,12 +360,25 @@ let get_exn gen =
   | Some x -> x
   | None -> raise (Invalid_argument "Gen.get_exn")
 
+(*$R get_exn
+  let g = of_list [1;2;3] in
+  assert_equal 1 (get_exn g);
+  assert_equal 2 (get_exn g);
+  assert_equal 3 (get_exn g);
+  assert_raises (Invalid_argument "Gen.get_exn") (fun () -> get_exn g)
+*)
+
 let junk gen = ignore (gen ())
 
 let rec fold f acc gen =
   match gen () with
   | None -> acc
   | Some x -> fold f (f acc x) gen
+
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    of_list l |> fold (fun l x->x::l) [] = List.rev l)
+*)
 
 let reduce f g =
   let acc = match g () with
@@ -361,6 +397,11 @@ let unfold f acc =
       acc := acc';
       Some x
 
+(*$T unfold
+  unfold (fun (prev,cur) -> Some (prev, (cur,prev+cur))) (0,1) \
+    |> take 7 |> to_list = [0; 1; 1; 2; 3; 5; 8]
+*)
+
 let init ?(limit=max_int) f =
   let r = ref 0 in
   fun () ->
@@ -370,6 +411,10 @@ let init ?(limit=max_int) f =
       let x = f !r in
       let _ = incr r in
       Some x
+
+(*$T init
+  init ~limit:5 (fun i->i) |> to_list = [0;1;2;3;4]
+*)
 
 let rec iter f gen =
   match gen() with
@@ -387,8 +432,18 @@ let is_empty gen = match gen () with
   | None -> true
   | Some _ -> false
 
+(*$T
+  is_empty empty
+  not (is_empty (singleton 2))
+*)
+
 let length gen =
   fold (fun acc _ -> acc + 1) 0 gen
+
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    of_list l |> length = List.length l)
+*)
 
 (* useful state *)
 type 'a run_state =
@@ -412,10 +467,10 @@ let scan f acc g =
             state := Run acc';
             Some acc'
 
-let rec iter2 f gen1 gen2 =
-  match gen1(), gen2() with
-  | Some x, Some y -> f x y; iter2 f gen1 gen2
-  | _ -> ()
+(*$T scan
+  scan (fun acc x -> x+1::acc) [] (1--5) |> to_list \
+    = [[]; [2]; [3;2]; [4;3;2]; [5;4;3;2]; [6;5;4;3;2]]
+*)
 
 (** {3 Lazy} *)
 
@@ -427,6 +482,12 @@ let map f gen =
     | None -> stop:= true; None
     | Some x -> Some (f x)
 
+(*$Q map
+  (Q.list Q.small_int) (fun l -> \
+    let f x = x*2 in \
+    of_list l |> map f |> to_list = List.map f l)
+*)
+
 let append gen1 gen2 =
   let first = ref true in
   let rec next() =
@@ -436,6 +497,11 @@ let append gen1 gen2 =
     | None -> first:=false; next()
     else gen2()
   in next
+
+(*$Q
+  (Q.pair (Q.list Q.small_int)(Q.list Q.small_int)) (fun (l1,l2) -> \
+    append (of_list l1) (of_list l2) |> to_list = l1 @ l2)
+*)
 
 let flatten next_gen =
   let state = ref Init in
@@ -455,7 +521,7 @@ let flatten next_gen =
   in
   next
 
-let flatMap f next_elem =
+let flat_map f next_elem =
   let state = ref Init in
   let rec next() =
     match !state with
@@ -474,6 +540,12 @@ let flatMap f next_elem =
   in
   next
 
+(*$Q flat_map
+  (Q.list Q.small_int) (fun l -> \
+    let f x = of_list [x;x*2] in \
+    eq (map f (of_list l) |> flatten) (flat_map f (of_list l)))
+*)
+
 let mem ?(eq=(=)) x gen =
   let rec mem eq x gen =
     match gen() with
@@ -490,6 +562,11 @@ let take n gen =
     else match gen() with
       | None -> count := ~-1; None   (* indicate stop *)
       | (Some _) as x -> incr count; x
+
+(*$Q
+  (Q.pair Q.small_int (Q.list Q.small_int)) (fun (n,l) -> \
+    of_list l |> take n |> length = Pervasives.min n (List.length l))
+*)
 
 (* call [gen] at most [n] times, and stop *)
 let rec __drop n gen =
@@ -511,12 +588,37 @@ let drop n gen =
         gen()
       end
 
+(*$Q
+  (Q.pair Q.small_int (Q.list Q.small_int)) (fun (n,l) -> \
+    let g1,g2 = take n (of_list l), drop n (of_list l) in \
+    append g1 g2 |> to_list = l)
+*)
+
 let nth n gen =
   assert (n>=0);
   __drop n gen;
   match gen () with
   | None -> raise Not_found
   | Some x -> x
+
+(*$= nth & ~printer:string_of_int
+  4 (nth 4 (0--10))
+  8 (nth 8 (0--10))
+*)
+
+(*$T
+  (try ignore (nth 11 (1--10)); false with Not_found -> true)
+*)
+
+let take_nth n gen =
+  assert (n>=1);
+  let i = ref n in
+  let rec next() =
+    match gen() with
+    | None -> None
+    | (Some _) as res when !i = n -> i:=1; res
+    | Some _ -> incr i; next()
+  in next
 
 let filter p gen =
   let rec next () =
@@ -529,16 +631,23 @@ let filter p gen =
         else next ()  (* discard element *)
   in next
 
-let takeWhile p gen =
+(*$T
+  filter (fun x ->x mod 2 = 0) (1--10) |> to_list = [2;4;6;8;10]
+*)
+
+let take_while p gen =
   let stop = ref false in
-  let rec next () =
+  fun () ->
     if !stop
     then None
     else match gen() with
     | (Some x) as res ->
         if p x then res else (stop := true; None)
     | None -> stop:=true; None
-  in next
+
+(*$T
+  take_while (fun x ->x<10) (1--1000) |> eq (1--9)
+*)
 
 module DropWhileState = struct
   type t =
@@ -547,9 +656,9 @@ module DropWhileState = struct
     | Yield
 end
 
-let dropWhile p gen =
+let drop_while p gen =
   let open DropWhileState in
-  let state = ref Stop in
+  let state = ref Drop in
   let rec next () =
     match !state with
     | Stop -> None
@@ -566,7 +675,11 @@ let dropWhile p gen =
         end
   in next
 
-let filterMap f gen =
+(*$T
+  drop_while (fun x-> x<10) (1--20) |> eq (10--20)
+*)
+
+let filter_map f gen =
   (* tailrec *)
   let rec next () =
     match gen() with
@@ -577,7 +690,12 @@ let filterMap f gen =
         | (Some _) as res -> res
   in next
 
-let zipIndex gen =
+(*$T
+  filter_map (fun x-> if x mod 2 = 0 then Some (string_of_int x) else None) (1--10) \
+    |> to_list = List.map string_of_int [2;4;6;8;10]
+*)
+
+let zip_index gen =
   let r = ref ~-1 in
   fun () ->
     match gen() with
@@ -585,6 +703,10 @@ let zipIndex gen =
     | Some x ->
         incr r;
         Some (!r, x)
+
+(*$T
+  zip_index (1--5) |> to_list = [0,1; 1,2; 2,3; 3,4; 4,5]
+*)
 
 let unzip gen =
   let stop = ref false in
@@ -612,6 +734,17 @@ let unzip gen =
   in
   next_left, next_right
 
+(*$T
+  unzip (of_list [1,2;3,4]) |> (fun (x,y)-> to_list x, to_list y) \
+    = ([1;3], [2;4])
+*)
+
+(*$Q
+  (Q.list (Q.pair Q.small_int Q.small_int)) (fun l -> \
+    of_list l |> unzip |> (fun (x,y) -> to_list x,to_list y) = \
+    List.split l)
+*)
+
 (* [partition p l] returns the elements that satisfy [p],
    and the elements that do not satisfy [p] *)
 let partition p gen =
@@ -637,6 +770,11 @@ let partition p gen =
   in
   nexttrue, nextfalse
 
+(*$T
+  partition (fun x -> x mod 2 = 0) (1--10) |> \
+    (fun (x,y)->to_list x, to_list y) = ([2;4;6;8;10], [1;3;5;7;9])
+*)
+
 let rec for_all p gen =
   match gen() with
   | None -> true
@@ -654,12 +792,22 @@ let min ?(lt=fun x y -> x < y) gen =
   in
   fold (fun min x -> if lt x min then x else min) first gen
 
+(*$T
+  min (of_list [1;4;6;0;11; -2]) = ~-2
+  (try ignore (min empty); false with Invalid_argument _ -> true)
+*)
+
 let max ?(lt=fun x y -> x < y) gen =
   let first = match gen () with
     | Some x -> x
     | None -> raise (Invalid_argument "max")
   in
   fold (fun max x -> if lt max x then x else max) first gen
+
+(*$T
+  max (of_list [1;4;6;0;11; -2]) = 11
+  (try ignore (max empty); false with Invalid_argument _ -> true)
+*)
 
 let eq ?(eq=(=)) gen1 gen2 =
   let rec check () =
@@ -669,6 +817,11 @@ let eq ?(eq=(=)) gen1 gen2 =
     | _ -> false
   in
   check ()
+
+(*$Q
+  (Q.pair (Q.list Q.small_int)(Q.list Q.small_int)) (fun (l1,l2) -> \
+    eq (of_list l1)(of_list l2) = (l1 = l2))
+*)
 
 let lexico ?(cmp=Pervasives.compare) gen1 gen2 =
   let rec lexico () =
@@ -683,16 +836,31 @@ let lexico ?(cmp=Pervasives.compare) gen1 gen2 =
 
 let compare ?cmp gen1 gen2 = lexico ?cmp gen1 gen2
 
+(*$Q
+  (Q.pair (Q.list Q.small_int)(Q.list Q.small_int)) (fun (l1,l2) -> \
+    let sign x = if x < 0 then -1 else if x=0 then 0 else 1 in \
+    sign (compare (of_list l1)(of_list l2)) = sign (Pervasives.compare l1 l2))
+*)
+
 let rec find p e = match e () with
   | None -> None
   | Some x when p x -> Some x
   | Some _ -> find p e
+
+(*$T
+   find (fun x -> x>=5) (1--10) = Some 5
+   find (fun x -> x>5) (1--4) = None
+*)
 
 let sum e =
   let rec sum acc = match e() with
   | None -> acc
   | Some x -> sum (x+acc)
   in sum 0
+
+(*$T
+  sum (1--10) = 55
+*)
 
 (** {2 Multiple Iterators} *)
 
@@ -701,10 +869,19 @@ let map2 f e1 e2 =
   | Some x, Some y -> Some (f x y)
   | _ -> None
 
+(*$T
+  map2 (+) (1--5) (1--4) |> eq (of_list [2;4;6;8])
+  map2 (+) (1--5) (repeat 0) |> eq (1--5)
+*)
+
 let rec iter2 f e1 e2 =
   match e1(), e2() with
   | Some x, Some y -> f x y; iter2 f e1 e2
   | _ -> ()
+
+(*$T iter2
+  let r = ref 0 in iter2 (fun _ _ -> incr r) (1--10) (4--6); !r = 3
+*)
 
 let rec fold2 f acc e1 e2 =
   match e1(), e2() with
@@ -721,7 +898,7 @@ let rec exists2 p e1 e2 =
   | Some x, Some y -> p x y || exists2 p e1 e2
   | _ -> false
 
-let zipWith f a b =
+let zip_with f a b =
   let stop = ref false in
   fun () ->
     if !stop then None
@@ -729,7 +906,13 @@ let zipWith f a b =
     | Some xa, Some xb -> Some (f xa xb)
     | _ -> stop:=true; None
 
-let zip a b = zipWith (fun x y -> x,y) a b
+let zip a b = zip_with (fun x y -> x,y) a b
+
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    zip_with (fun x y->x,y) (of_list l) (of_list l) \
+      |> unzip |> fst |> to_list = l)
+*)
 
 (** {3 Complex combinators} *)
 
@@ -746,7 +929,6 @@ module MergeState = struct
     | Stop
 end
 
-(* TODO tests *)
 (* state machine:
     (NewGen -> YieldAndNew)* // then no more generators in next_gen, so
     -> Yield* -> Stop *)
@@ -792,6 +974,11 @@ let merge next_gen =
           end
   in next
 
+(*$T
+  merge (of_list [of_list [1;3;5]; of_list [2;4;6]; of_list [7;8;9]]) \
+    |> to_list |> List.sort Pervasives.compare = [1;2;3;4;5;6;7;8;9]
+*)
+
 let intersection ?(cmp=Pervasives.compare) gen1 gen2 =
   let x1 = ref (gen1 ()) in
   let x2 = ref (gen2 ()) in
@@ -807,6 +994,11 @@ let intersection ?(cmp=Pervasives.compare) gen1 gen2 =
         (x2 := gen2(); next ())
     | _ -> None
   in next
+
+(*$T
+  intersection (of_list [1;1;2;3;4;8]) (of_list [1;2;4;5;6;7;8;9]) \
+    |> to_list = [1;2;4;8]
+*)
 
 let sorted_merge ?(cmp=Pervasives.compare) gen1 gen2 =
   let x1 = ref (gen1 ()) in
@@ -824,6 +1016,11 @@ let sorted_merge ?(cmp=Pervasives.compare) gen1 gen2 =
     | None, ((Some _)as r) ->
       x2 := gen2 ();
       r
+
+(*$T
+  sorted_merge (of_list [1;2;2;3;5;10;100]) (of_list [2;4;5;6;11]) \
+    |> to_list = [1;2;2;2;3;4;5;5;6;10;11;100]
+*)
 
 (** {4 Mutable heap (taken from heap.ml to avoid dependencies)} *)
 module Heap = struct
@@ -884,6 +1081,11 @@ let sorted_merge_n ?(cmp=Pervasives.compare) l =
       | None -> Some x (* gen empty, drop it *)
     end
 
+(*$T
+  sorted_merge_n [of_list [1;2;2;3;5;10;100]; of_list [2;4;5;6;11]; (6--10)] \
+    |> to_list = [1;2;2;2;3;4;5;5;6;6;7;8;9;10;10;11;100]
+*)
+
 let round_robin ?(n=2) gen =
   (* array of queues, together with their index *)
   let qs = Array.init n (fun i -> Queue.create ()) in
@@ -916,6 +1118,11 @@ let round_robin ?(n=2) gen =
   let l = Array.mapi (fun i _ -> (fun () -> next i)) qs in
   Array.to_list l
 
+(*$T
+  round_robin ~n:3 (1--12) |> List.map to_list = \
+    [[1;4;7;10]; [2;5;8;11]; [3;6;9;12]]
+*)
+
 (* Duplicate the enum into [n] generators (default 2). The generators
    share the same underlying instance of the enum, so the optimal case is
    when they are consumed evenly *)
@@ -942,6 +1149,12 @@ let tee ?(n=2) gen =
   (* generators *)
   let l = Array.mapi (fun i _ -> (fun () -> next i)) qs in
   Array.to_list l
+
+(*$T
+  tee ~n:3 (1--12) |> List.map to_list = \
+    [to_list (1--12); to_list (1--12); to_list (1--12)]
+*)
+
 
 module InterleaveState = struct
   type 'a t =
@@ -971,6 +1184,11 @@ let interleave gen_a gen_b =
           res
   in next
 
+(*$T
+  interleave (repeat 0) (1--5) |> take 10 |> to_list = \
+    [0;1;0;2;0;3;0;4;0;5]
+*)
+
 module IntersperseState = struct
   type 'a t =
     | Start
@@ -999,6 +1217,10 @@ let intersperse x gen =
         | None -> state := Stop; None
         | Some _ as res -> state := YieldElem res; next()
   in next
+
+(*$T
+  intersperse 0 (1--5) |> to_list = [1;0;2;0;3;0;4;0;5]
+*)
 
 (* Cartesian product *)
 let product gena genb =
@@ -1040,6 +1262,12 @@ let product gena genb =
   in
   next
 
+(*$T
+  product (1--3) (of_list ["a"; "b"]) |> to_list \
+    |> List.sort Pervasives.compare = \
+      [1, "a"; 1, "b"; 2, "a"; 2, "b"; 3, "a"; 3, "b"]
+*)
+
 (* Group equal consecutive elements together. *)
 let group ?(eq=(=)) gen =
   match gen() with
@@ -1062,6 +1290,11 @@ let group ?(eq=(=)) gen =
         Some l
     in next
 
+(*$T
+  group (of_list [0;0;0;1;0;2;2;3;4;5;5;5;5;10]) |> to_list = \
+    [[0;0;0];[1];[0];[2;2];[3];[4];[5;5;5;5];[10]]
+*)
+
 let uniq ?(eq=(=)) gen =
   let state = ref Init in
   let rec next() = match !state with
@@ -1081,6 +1314,11 @@ let uniq ?(eq=(=)) gen =
         end
   in next
 
+(*$T
+  uniq (of_list [0;0;0;1;0;2;2;3;4;5;5;5;5;10]) |> to_list = \
+    [0;1;0;2;3;4;5;10]
+*)
+
 let sort ?(cmp=Pervasives.compare) gen =
   (* build heap *)
   let h = Heap.empty ~cmp in
@@ -1089,11 +1327,21 @@ let sort ?(cmp=Pervasives.compare) gen =
     if Heap.is_empty h
       then None
       else Some (Heap.pop h)
+(*$T
+  sort (of_list [0;0;0;1;0;2;2;3;4;5;5;5;-42;5;10]) |> to_list = \
+    [-42;0;0;0;0;1;2;2;3;4;5;5;5;5;10]
+*)
+
 
 (* NOTE: using a set is not really possible, because once we have built the
   set there is no simple way to iterate on it *)
 let sort_uniq ?(cmp=Pervasives.compare) gen =
   uniq ~eq:(fun x y -> cmp x y = 0) (sort ~cmp gen)
+
+(*$T
+  sort_uniq (of_list [0;0;0;1;0;2;2;3;4;5;42;5;5;42;5;10]) |> to_list = \
+    [0;1;2;3;4;5;10;42]
+*)
 
 let chunks n e =
   let rec next () =
@@ -1101,10 +1349,10 @@ let chunks n e =
     | None -> None
     | Some x ->
         let a = Array.make n x in
-        fill a (n-1)
+        fill a 1
 
   and fill a i =
-    (* fill the array. [i] elements remain to fill *)
+    (* fill the array. [i]: current index to fill *)
     if i = n
     then Some a
     else match e() with
@@ -1114,6 +1362,11 @@ let chunks n e =
         fill a (i+1)
   in
   next
+
+(*$T
+  chunks 25 (0--100) |> map Array.to_list |> to_list = \
+    List.map to_list [(0--24); (25--49);(50--74);(75--99);(100--100)]
+*)
 
 (*
 let permutations enum =
@@ -1139,19 +1392,27 @@ let of_list l =
 let to_rev_list gen =
   fold (fun acc x -> x :: acc) [] gen
 
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    to_rev_list (of_list l) = List.rev l)
+*)
+
 let to_list gen = List.rev (to_rev_list gen)
 
 let to_array gen =
   let l = to_rev_list gen in
-  let a = Array.of_list l in
-  let n = Array.length a in
-  (* reverse array *)
-  for i = 0 to (n-1) / 2 do
-    let tmp = a.(i) in
-    a.(i) <- a.(n-i-1);
-    a.(n-i-1) <- tmp
-  done;
-  a
+  match l with
+  | [] -> [| |]
+  | _ ->
+    let a = Array.of_list l in
+    let n = Array.length a in
+    (* reverse array *)
+    for i = 0 to (n-1) / 2 do
+      let tmp = a.(i) in
+      a.(i) <- a.(n-i-1);
+      a.(n-i-1) <- tmp
+    done;
+    a
 
 let of_array ?(start=0) ?len a =
   let len = match len with
@@ -1162,6 +1423,11 @@ let of_array ?(start=0) ?len a =
     if !i >= start + len
       then None
       else (let x = a.(!i) in incr i; Some x)
+
+(*$Q
+  (Q.array Q.small_int) (fun a -> \
+    of_array a |> to_array = a)
+*)
 
 let rand_int i =
   repeatedly (fun () -> Random.int i)
@@ -1200,7 +1466,7 @@ let pp ?(start="") ?(stop="") ?(sep=",") ?(horizontal=false) pp_elem formatter g
 module Infix = struct
   let (--) = int_range
 
-  let (>>=) x f = flatMap f x
+  let (>>=) x f = flat_map f x
 end
 
 include Infix
@@ -1220,8 +1486,6 @@ module Restart = struct
   let iterate x f () = iterate x f
 
   let repeat x () = repeat x
-
-  let repeatedly f () = repeatedly f
 
   let unfold f acc () = unfold f acc 
 
@@ -1257,7 +1521,7 @@ module Restart = struct
 
   let flatten e () = flatten (e ())
 
-  let flatMap f e () = flatMap f (e ())
+  let flat_map f e () = flat_map f (e ())
 
   let mem ?eq x e = mem ?eq x (e ())
 
@@ -1267,19 +1531,21 @@ module Restart = struct
 
   let nth n e = nth n (e ())
 
+  let take_nth n e () = take_nth n (e ())
+
   let filter p e () = filter p (e ())
 
-  let takeWhile p e () = takeWhile p (e ())
+  let take_while p e () = take_while p (e ())
 
-  let dropWhile p e () = dropWhile p (e ())
+  let drop_while p e () = drop_while p (e ())
 
-  let filterMap f e () = filterMap f (e ())
+  let filter_map f e () = filter_map f (e ())
 
-  let zipWith f e1 e2 () = zipWith f (e1 ()) (e2 ())
+  let zip_with f e1 e2 () = zip_with f (e1 ()) (e2 ())
 
   let zip e1 e2 () = zip (e1 ()) (e2 ())
 
-  let zipIndex e () = zipIndex (e ())
+  let zip_index e () = zip_index (e ())
 
   let unzip e = map fst e, map snd e
 
@@ -1373,7 +1639,7 @@ module Restart = struct
   module Infix = struct
     let (--) = int_range
 
-    let (>>=) x f = flatMap f x
+    let (>>=) x f = flat_map f x
   end
 
   include Infix
@@ -1386,53 +1652,65 @@ end
 
 let start g = g ()
 
-(** {4 Mutable double-linked list, similar to {! Deque.t} *)
+(** {6 Unrolled mutable list} *)
 module MList = struct
-  type 'a t = 'a node option ref
-  and 'a node = {
-    content : 'a;
-    mutable prev : 'a node;
-    mutable next : 'a node;
-  }
+  type 'a node =
+    | Nil
+    | Cons of 'a array * int ref * 'a node ref
 
-  let create () = ref None
+  let of_gen gen =
+    let start = ref Nil in
+    let chunk_size = ref 8 in
+    (* fill the list. prev: tail-reference from previous node,
+     * cur: current list node *)
+    let rec fill prev cur =
+      match cur, gen() with
+      | _, None -> prev := cur; ()  (* done *)
+      | Nil, Some x ->
+          let n = !chunk_size in
+          if n < 4096 then chunk_size := 2 * !chunk_size;
+          fill prev (Cons (Array.make n x, ref 1, ref Nil))
+      | Cons (a, n, next), Some x ->
+          assert (!n < Array.length a);
+          a.(!n) <- x;
+          incr n;
+          if !n = Array.length a
+          then begin
+            prev := cur;
+            fill next Nil
+          end else fill prev cur 
+    in
+    fill start !start ;
+    !start
 
-  let is_empty d =
-    match !d with
-    | None -> true
-    | Some _ -> false
-
-  let push_back d x =
-    match !d with
-    | None ->
-      let rec elt = {
-        content = x; prev = elt; next = elt; } in
-      d := Some elt
-    | Some first ->
-      let elt = { content = x; next=first; prev=first.prev; } in
-      first.prev.next <- elt;
-      first.prev <- elt
-
-  (* conversion to enum *)
-  let to_enum d =
-    fun () ->
-      match !d with
-      | None -> (fun () -> None)
-      | Some first ->
-        let cur = ref first in (* current element of the list *)
-        let stop = ref false in (* are we done yet? *)
-        fun () ->
-          if !stop then None
-          else begin
-            let x = (!cur).content in
-            cur := (!cur).next;
-            (if !cur == first then stop := true); (* EOG, we made a full cycle *)
-            Some x
-          end
+  let to_gen l () =
+    let cur = ref l in
+    let i = ref 0 in
+    let rec next() = match !cur with
+    | Nil -> None
+    | Cons (a,n,l') ->
+        if !i = !n
+        then begin
+          cur := !l';
+          i := 0;
+          next()
+        end else begin
+          let y = a.(!i) in
+          incr i;
+          Some y
+        end
+    in
+    next
 end
 
 (** Store content of the generator in an enum *)
 let persistent gen =
-  let l = MList.create () in
-  iter (MList.push_back l) gen;
-  MList.to_enum l
+  let l = MList.of_gen gen in
+  MList.to_gen l
+
+(*$T
+  let g = 1--10 in let g' = persistent g in \
+    Restart.to_list g' = Restart.to_list g'
+  let g = 1--10 in let g' = persistent g in \
+    Restart.to_list g' = [1;2;3;4;5;6;7;8;9;10]
+*)

@@ -91,7 +91,7 @@ let foldi f init seq =
     r := f !r !i elt;
     incr i);
   !r
-    
+
 (** Map objects of the sequence into other elements, lazily *)
 let map f seq =
   let seq_fun' k = seq (fun x -> k (f x)) in
@@ -144,97 +144,94 @@ let intersperse elem seq =
 
 (** Mutable unrolled list to serve as intermediate storage *)
 module MList = struct
-  type 'a t = {
-    content : 'a array;   (* elements of the node *)
-    mutable len : int;    (* number of elements in content *)
-    mutable tl : 'a t;    (* tail *)
-  } (** A list that contains some elements, and may point to another list *)
+  type 'a node =
+    | Nil
+    | Cons of 'a array * int ref * 'a node ref
 
-  let _empty () : 'a t = Obj.magic 0
-    (** Empty list, for the tl field *)
+  let of_seq seq =
+    let start = ref Nil in
+    let chunk_size = ref 8 in
+    (* fill the list. prev: tail-reference from previous node *)
+    let prev, cur = ref start, ref Nil in
+    seq
+      (fun x -> match !cur with
+        | Nil ->
+          let n = !chunk_size in
+          if n < 4096 then chunk_size := 2 * !chunk_size;
+          cur := Cons (Array.make n x, ref 1, ref Nil)
+        | Cons (a,n,next) ->
+          assert (!n < Array.length a);
+          a.(!n) <- x;
+          incr n;
+          if !n = Array.length a then begin
+            !prev := !cur;
+            prev := next;
+            cur := Nil
+          end
+      );
+    !prev := !cur;
+    !start
 
-  let make n =
-    assert (n > 0);
-    { content = Array.make n (Obj.magic 0);
-      len = 0;
-      tl = _empty ();
-    }
-
-  let rec is_empty l =
-    l.len = 0 && (l.tl == _empty () || is_empty l.tl)
-
-  let rec iter f l =
-    for i = 0 to l.len - 1 do f l.content.(i); done;
-    if l.tl != _empty () then iter f l.tl
+  let rec iter f l = match l with
+    | Nil -> ()
+    | Cons (a, n, tl) ->
+        for i=0 to !n - 1 do f a.(i) done;
+        iter f !tl
 
   let iteri f l =
-    let rec iteri i f l =
-      for j = 0 to l.len - 1 do f (i+j) l.content.(j); done;
-      if l.tl != _empty () then iteri (i+l.len) f l.tl
+    let rec iteri i f l = match l with
+    | Nil -> ()
+    | Cons (a, n, tl) ->
+        for j=0 to !n - 1 do f (i+j) a.(j) done;
+        iteri (i+ !n) f !tl
     in iteri 0 f l
 
-  let rec iter_rev f l =
-    (if l.tl != _empty () then iter_rev f l.tl);
-    for i = l.len - 1 downto 0 do f l.content.(i); done
+  let rec iter_rev f l = match l with
+    | Nil -> ()
+    | Cons (a, n, tl) ->
+        iter_rev f !tl;
+        for i = !n-1 downto 0 do f a.(i) done
 
   let length l =
-    let rec len acc l =
-      if l.tl == _empty () then acc+l.len else len (acc+l.len) l.tl
+    let rec len acc l = match l with
+      | Nil -> acc
+      | Cons (_, n, tl) -> len (acc+ !n) !tl
     in len 0 l
 
   (** Get element by index *)
-  let rec get l i =
-    if i < l.len then l.content.(i)
-    else if i >= l.len && l.tl == _empty () then raise (Invalid_argument "MList.get")
-    else get l.tl (i - l.len)
+  let rec get l i = match l with
+    | Nil -> raise (Invalid_argument "MList.get")
+    | Cons (a, n, _) when i < !n -> a.(i)
+    | Cons (_, n, tl) -> get !tl (i- !n)
 
-  (** Push [x] at the end of the list. It returns the block in which the
-      element is inserted. *)
-  let rec push x l =
-    if l.len = Array.length l.content
-      then begin (* insert in the next block *)
-        (if l.tl == _empty () then
-          let n = Array.length l.content in
-          l.tl <- make (n + n lsr 1));
-        push x l.tl
-      end else begin  (* insert in l *)
-        l.content.(l.len) <- x;
-        l.len <- l.len + 1;
-        l
-      end
+  let to_seq l k = iter k l
 
-  (** Reverse list (in place), and returns the new head *)
-  let rev l =
-    let rec rev prev l =
-      (* reverse array *)
-      for i = 0 to (l.len-1) / 2 do
-        let x = l.content.(i) in
-        l.content.(i) <- l.content.(l.len - i - 1);
-        l.content.(l.len - i - 1) <- x;
-      done;
-      (* reverse next block *)
-      let l' = l.tl in
-      l.tl <- prev;
-      if l' == _empty () then l else rev l l'
-    in
-    rev (_empty ()) l
+  let _to_next arg l =
+    let cur = ref l in
+    let i = ref 0 in (* offset in cons *)
+    let rec get_next _ = match !cur with
+      | Nil -> None
+      | Cons (_, n, tl) when !i = !n ->
+          cur := !tl;
+          i := 0;
+          get_next arg
+      | Cons (a, n, _) ->
+          let x = a.(!i) in
+          incr i;
+          Some x
+    in get_next
 
-  (** Build a MList of elements of the Seq. The optional argument indicates
-      the size of the blocks *)
-  let of_seq ?(size=8) seq =
-    (* read sequence into a MList.t *)
-    let start = make size in
-    let l = ref start in
-    seq (fun x -> l := push x !l);
-    start
+  let to_gen l = _to_next () l
+
+  let to_stream l =
+    Stream.from (_to_next 42 l)  (* 42=magic cookiiiiiie *)
 end
 
 (** Iterate on the sequence, storing elements in a data structure.
     The resulting sequence can be iterated on as many times as needed. *)
-let persistent ?(blocksize=64) seq =
-  if blocksize < 2 then failwith "Sequence.persistent: blocksize too small";
-  let l = MList.of_seq ~size:blocksize seq in
-  from_iter (fun k -> MList.iter k l)
+let persistent seq =
+  let l = MList.of_seq seq in
+  MList.to_seq l
 
 (** Sort the sequence. Eager, O(n) ram and O(n ln(n)) time. *)
 let sort ?(cmp=Pervasives.compare) seq =
@@ -316,14 +313,19 @@ let scan f acc seq =
       let acc = ref acc in
       seq (fun elt -> let acc' = f !acc elt in k acc'; acc := acc'))
 
-(** Max element of the sequence, using the given comparison
-    function. A default element has to be provided. *)
-let max ?(lt=fun x y -> x < y) seq m =
-  fold (fun m x -> if lt m x then x else m) m seq
+let max ?(lt=fun x y -> x < y) seq =
+  let ret = ref None in
+  seq (fun x -> match !ret with
+    | None -> ret := Some x
+    | Some y -> if lt y x then ret := Some x);
+  !ret
 
-(** Min element of the sequence, using the given comparison function *)
-let min ?(lt=fun x y -> x < y) seq m =
-  fold (fun m x -> if lt x m then x else m) m seq
+let min ?(lt=fun x y -> x < y) seq =
+  let ret = ref None in
+  seq (fun x -> match !ret with
+    | None -> ret := Some x
+    | Some y -> if lt x y then ret := Some x);
+  !ret
 
 exception ExitSequence
 
@@ -337,7 +339,7 @@ let take n seq =
           incr count;
           k x;
           if !count = n then raise ExitSequence)
-    with ExitSequence -> ()
+      with ExitSequence -> ()
 
 (** Drop the [n] first elements of the sequence *)
 let drop n seq =
@@ -470,14 +472,8 @@ let of_stream s =
 
 (** Convert to a stream. The sequence is made persistent. *)
 let to_stream seq =
-  let l = ref (MList.of_seq seq) in
-  let i = ref 0 in
-  let rec get_next () =
-    if !l == MList._empty () then None
-    else if (!l).MList.len = !i then (l := (!l).MList.tl; i := 0; get_next ())
-    else let x = (!l).MList.content.(!i) in (incr i; Some x)
-  in
-  Stream.from (fun _ -> get_next ())
+  let l = MList.of_seq seq in
+  MList.to_stream l
 
 (** Push elements of the sequence on the stack *)
 let to_stack s seq = iter (fun x -> Stack.push x s) seq
@@ -520,7 +516,7 @@ let hashtbl_values h =
   from_iter (fun k -> Hashtbl.iter (fun a b -> k b) h)
 
 let of_str s = from_iter (fun k -> String.iter k s)
-    
+
 let to_str seq =
   let b = Buffer.create 64 in
   iter (fun c -> Buffer.add_char b c) seq;
@@ -541,6 +537,10 @@ let int_range ~start ~stop =
   fun k ->
     for i = start to stop do k i done
 
+let int_range_dec ~start ~stop =
+  fun k ->
+    for i = start downto stop do k i done
+
 (** Convert the given set to a sequence. The set module must be provided. *)
 let of_set (type s) (type v) m set =
   let module S = (val m : Set.S with type t = s and type elt = v) in
@@ -553,6 +553,21 @@ let to_set (type s) (type v) m seq =
   fold
     (fun set x -> S.add x set)
     S.empty seq
+
+type 'a gen = unit -> 'a option
+
+let of_gen g =
+  (* consume the generator to build a MList *)
+  let rec iter1 k = match g () with
+    | None -> ()
+    | Some x -> k x; iter1 k
+  in
+  let l = MList.of_seq iter1 in
+  MList.to_seq l
+
+let to_gen seq =
+  let l = MList.of_seq seq in
+  MList.to_gen l
 
 (** {2 Functorial conversions between sets and sequences} *)
 
@@ -571,7 +586,7 @@ module Set = struct
 
     include X
   end
-    
+
   (** Functor to build an extended Set module from an ordered type *)
   module Make(X : Set.OrderedType) = struct
     module MySet = Set.Make(X)
@@ -630,70 +645,23 @@ let random_array a =
 
 let random_list l = random_array (Array.of_list l)
 
-(** {2 Type-classes} *)
-
-module TypeClass = struct
-  (** {3 Classes} *)
-  type ('a,'b) sequenceable = {
-    to_seq : 'b -> 'a t;
-    of_seq : 'a t -> 'b;
-  }
-
-  type ('a,'b) addable = {
-    empty : 'b;
-    add : 'b -> 'a -> 'b;
-  }
-
-  type 'a monoid = ('a,'a) addable
-
-  type ('a,'b) iterable = {
-    iter : ('a -> unit) -> 'b -> unit;
-  }
-
-  (** {3 Instances} *)
-
-  let (sequenceable : ('a,'a t) sequenceable) = {
-    to_seq = (fun seq -> seq);
-    of_seq = (fun seq -> seq);
-  }
-
-  let (iterable : ('a, 'a t) iterable) = {
-    iter = (fun f seq -> iter f seq);
-  }
-
-  let (monoid : 'a t monoid) = {
-    empty = empty;
-    add = (fun s1 s2 -> append s1 s2);
-  }
-
-  (** {3 Conversions} *)
-
-  let of_iterable iterable x =
-    from_iter (fun k -> iterable.iter k x)
-
-
-  let to_addable addable seq =
-    fold addable.add addable.empty seq
-end
-
 (** {2 Infix functions} *)
 
 module Infix = struct
   let (--) i j = int_range ~start:i ~stop:j
 
-  let (|>) x f = f x
-
-  let (@@) a b = append a b
-
-  let (>>=) x f = flatMap f x
+  let (--^) i j = int_range_dec ~start:i ~stop:j
 end
+
+include Infix
 
 (** {2 Pretty printing of sequences} *)
 
 (** Pretty print a sequence of ['a], using the given pretty printer
     to print each elements. An optional separator string can be provided. *)
-let pp_seq ?(sep=", ") pp_elt formatter seq =
+let print ?(start="") ?(stop="") ?(sep=", ") pp_elt formatter seq =
   let first = ref true in
+  Format.pp_print_string formatter start;
   iter
     (fun x -> 
       (if !first then first := false
@@ -702,4 +670,22 @@ let pp_seq ?(sep=", ") pp_elt formatter seq =
           Format.pp_print_cut formatter ();
         end);
       pp_elt formatter x)
-    seq
+    seq;
+  Format.pp_print_string formatter stop;
+  ()
+
+let pp ?(start="") ?(stop="") ?(sep=", ") pp_elt buf seq =
+  let first = ref true in
+  Buffer.add_string buf start;
+  iter
+    (fun x -> 
+      if !first then first := false else Buffer.add_string buf sep;
+      pp_elt buf x)
+    seq;
+  Buffer.add_string buf stop;
+  ()
+
+let to_string ?start ?stop ?sep pp_elt seq =
+  let buf = Buffer.create 25 in
+  pp ?start ?stop ?sep pp_elt buf seq;
+  Buffer.contents buf

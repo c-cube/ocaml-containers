@@ -306,7 +306,7 @@ let bench_enum () =
   let enum () =
     let open CCGen in
     let seq = int_range 0 n in
-    let seq = flatMap (fun x -> int_range x (x+10)) seq in
+    let seq = flat_map (fun x -> int_range x (x+10)) seq in
     fold (+) 0 seq in
   Bench.bench
     [ "sequence.flatMap", seq;

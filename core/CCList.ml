@@ -74,9 +74,6 @@ let rec equal f l1 l2 = match l1, l2 with
   | [], _ | _, [] -> false
   | x1::l1', x2::l2' -> f x1 x2 && equal f l1' l2'
 
-(* difference list *)
-type 'a dlist = 'a list -> 'a list
-
 (* append difference lists *)
 let _d_append f1 f2 =
   fun l -> f1 (f2 l)
@@ -290,7 +287,7 @@ module Idx = struct
     Idx.insert [1;2;3] 1 10 = [1;10;2;3]
    *)
 
-  let rec remove l0 i =
+  let remove l0 i =
     let rec aux l acc i = match l with
       | [] -> l0
       | _::l' when i=0 -> List.rev_append acc l'
@@ -383,6 +380,7 @@ end
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
 let to_seq l k = List.iter k l
 let of_seq seq =
@@ -425,3 +423,14 @@ let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf l =
 (*$T
   CCPrint.to_string (pp CCPrint.int) [1;2;3] = "[1, 2, 3]"
   *)
+
+let print ?(start="[") ?(stop="]") ?(sep=", ") pp_item fmt l =
+  let rec print fmt l = match l with
+    | x::((y::xs) as l) ->
+      pp_item fmt x;
+      Format.pp_print_string fmt sep;
+      print fmt l
+    | x::[] -> pp_item fmt x
+    | [] -> ()
+  in
+  Format.fprintf fmt "@[%s%a%s@]" start print l stop

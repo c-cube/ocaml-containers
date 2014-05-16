@@ -151,15 +151,11 @@ val fmap : ('a -> 'b option) -> 'a t -> 'b t
 val intersperse : 'a -> 'a t -> 'a t
   (** Insert the single element between every element of the sequence *)
 
-val persistent : ?blocksize:int -> 'a t -> 'a t
+val persistent : 'a t -> 'a t
   (** Iterate on the sequence, storing elements in a data structure.
       The resulting sequence can be iterated on as many times as needed.
       {b Note}: calling persistent on an already persistent sequence
-      will still make a new copy of the sequence!
-      
-      @param blocksize the size of chunks in the unrolled list
-        used to store elements. Use bigger values for bigger sequences.
-        Default: 64 *)
+      will still make a new copy of the sequence! *)
 
 val sort : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t
   (** Sort the sequence. Eager, O(n) ram and O(n ln(n)) time.
@@ -195,12 +191,14 @@ val unfoldr : ('b -> ('a * 'b) option) -> 'b -> 'a t
 val scan : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
   (** Sequence of intermediate results *)
 
-val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a -> 'a
-  (** Max element of the sequence, using the given comparison
-      function. A default element has to be provided. *)
+val max : ?lt:('a -> 'a -> bool) -> 'a t -> 'a option
+  (** Max element of the sequence, using the given comparison function.
+      @return None if the sequence is empty, Some [m] where [m] is the maximal
+      element otherwise *)
 
-val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a -> 'a
-  (** Min element of the sequence, using the given comparison function *)
+val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a option
+  (** Min element of the sequence, using the given comparison function.
+      see {!max} for more details. *)
 
 val take : int -> 'a t -> 'a t
   (** Take at most [n] elements from the sequence. Works on infinite
@@ -243,7 +241,7 @@ val map2_2 : ('a -> 'b -> 'c) -> ('a -> 'b -> 'd) -> ('a, 'b) t2 -> ('c, 'd) t2
 val to_list : 'a t -> 'a list
 
 val to_rev_list : 'a t -> 'a list
-  (** Get the list of the reversed sequence (more efficient) *)
+  (** Get the list of the reversed sequence (more efficient than {!to_list}) *)
 
 val of_list : 'a list -> 'a t
 
@@ -315,13 +313,26 @@ val to_buffer : char t -> Buffer.t -> unit
   (** Copy content of the sequence into the buffer *)
 
 val int_range : start:int -> stop:int -> int t
-  (** Iterator on integers in [start...stop] by steps 1 *)
+  (** Iterator on integers in [start...stop] by steps 1. Also see
+      {!(--)} for an infix version. *)
+
+val int_range_dec : start:int -> stop:int -> int t
+  (** Iterator on decreasing integers in [stop...start] by steps -1.
+      See {!(--^)} for an infix version *)
 
 val of_set : (module Set.S with type elt = 'a and type t = 'b) -> 'b -> 'a t
   (** Convert the given set to a sequence. The set module must be provided. *)
 
 val to_set : (module Set.S with type elt = 'a and type t = 'b) -> 'a t -> 'b
   (** Convert the sequence to a set, given the proper set module *)
+
+type 'a gen = unit -> 'a option
+
+val of_gen : 'a gen -> 'a t
+  (** Traverse eagerly the generator and build a sequence from it *)
+
+val to_gen : 'a t -> 'a gen
+  (** Make the sequence persistent (O(n)) and then iterate on it. Eager. *)
 
 (** {2 Functorial conversions between sets and sequences} *)
 
@@ -375,51 +386,30 @@ val random_list : 'a list -> 'a t
   (** Infinite sequence of random elements of the list. Basically the
       same as {!random_array}. *)
 
-(** {2 Type-classes} *)
-
-module TypeClass : sig
-  (** {3 Classes} *)
-  type ('a,'b) sequenceable = {
-    to_seq : 'b -> 'a t;
-    of_seq : 'a t -> 'b;
-  }
-
-  type ('a,'b) addable = {
-    empty : 'b;
-    add : 'b -> 'a -> 'b;
-  }
-
-  type 'a monoid = ('a,'a) addable
-
-  type ('a,'b) iterable = {
-    iter : ('a -> unit) -> 'b -> unit;
-  }
-
-  (** {3 Instances} *)
-
-  val sequenceable : ('a,'a t) sequenceable
-  val iterable : ('a,'a t) iterable
-  val monoid : 'a t monoid
-
-  (** {3 Conversions} *)
-
-  val of_iterable : ('a,'b) iterable -> 'b -> 'a t
-  val to_addable : ('a,'b) addable -> 'a t -> 'b
-end
-
 (** {2 Infix functions} *)
 
 module Infix : sig
   val (--) : int -> int -> int t
 
-  val (|>) : 'a -> ('a -> 'b) -> 'b
-
-  val (@@) : 'a t -> 'a t -> 'a t
+  val (--^) : int -> int -> int t
+    (** [a --^ b] is the range of integers from [b] to [a], both included,
+        in decreasing order (starts from [a]).
+        It will therefore be empty if [a < b]. *)
 end
+
+include module type of Infix
 
 (** {2 Pretty printing of sequences} *)
 
-val pp_seq : ?sep:string -> (Format.formatter -> 'a -> unit) ->
+val print : ?start:string -> ?stop:string -> ?sep:string ->
+            (Format.formatter -> 'a -> unit) ->
              Format.formatter -> 'a t -> unit
   (** Pretty print a sequence of ['a], using the given pretty printer
       to print each elements. An optional separator string can be provided. *)
+
+val pp : ?start:string -> ?stop:string -> ?sep:string ->
+         (Buffer.t -> 'a -> unit) ->
+          Buffer.t -> 'a t -> unit
+
+val to_string : ?start:string -> ?stop:string -> ?sep:string ->
+                (Buffer.t -> 'a -> unit) -> 'a t -> string

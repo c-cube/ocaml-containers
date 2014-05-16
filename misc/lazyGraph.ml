@@ -578,13 +578,13 @@ module Dot = struct
       (function
         | Full.EnterVertex (v, attrs, _, _) ->
           Format.fprintf formatter "  @[<h>%a [%a];@]@." pp_vertex v
-            (CCSequence.pp_seq ~sep:"," print_attribute) (CCSequence.of_list attrs)
+            (CCList.print ~sep:"," print_attribute) attrs
         | Full.ExitVertex _ -> ()
         | Full.MeetEdge (v2, attrs, v1, _) ->
           Format.fprintf formatter "  @[<h>%a -> %a [%a];@]@."
             pp_vertex v1 pp_vertex v2
-            (CCSequence.pp_seq ~sep:"," print_attribute)
-            (CCSequence.of_list attrs))
+            (CCList.print ~sep:"," print_attribute)
+            attrs)
       events;
     (* close *)
     Format.fprintf formatter "}@]@;@?";

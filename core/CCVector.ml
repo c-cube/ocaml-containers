@@ -37,8 +37,6 @@ let create i =
     vec = Array.create i (Obj.magic None);
   }
 
-(** resize the underlying array so that it can contains the
-    given number of elements *)
 let resize v newcapacity =
   assert (newcapacity >= v.size);
   let new_vec = Array.create newcapacity (Obj.magic None) in
@@ -46,7 +44,6 @@ let resize v newcapacity =
   v.vec <- new_vec;
   ()
 
-(** Be sure that [v] can contain [size] elements, resize it if needed. *)
 let ensure v size =
   if v.size < size
     then

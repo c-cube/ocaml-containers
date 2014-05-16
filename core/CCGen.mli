@@ -109,7 +109,7 @@ module type S = sig
   val flatten : 'a gen t -> 'a t
     (** Flatten the enumeration of generators *)
 
-  val flatMap : ('a -> 'b gen) -> 'a t -> 'b t
+  val flat_map : ('a -> 'b gen) -> 'a t -> 'b t
     (** Monadic bind; each element is transformed to a sub-enum
         which is then iterated on, before the next element is processed,
         and so on. *)
@@ -127,19 +127,24 @@ module type S = sig
     (** n-th element, or Not_found
         @raise Not_found if the generator contains less than [n] arguments *)
 
+  val take_nth : int -> 'a t -> 'a t
+    (** [take_nth n g] returns every element of [g] whose index
+        is a multiple of [n]. For instance [take_nth 2 (1--10) |> to_list]
+        will return [1;3;5;7;9] *)
+
   val filter : ('a -> bool) -> 'a t -> 'a t
     (** Filter out elements that do not satisfy the predicate.  *)
 
-  val takeWhile : ('a -> bool) -> 'a t -> 'a t
+  val take_while : ('a -> bool) -> 'a t -> 'a t
     (** Take elements while they satisfy the predicate *)
 
-  val dropWhile : ('a -> bool) -> 'a t -> 'a t
+  val drop_while : ('a -> bool) -> 'a t -> 'a t
     (** Drop elements while they satisfy the predicate *)
 
-  val filterMap : ('a -> 'b option) -> 'a t -> 'b t
+  val filter_map : ('a -> 'b option) -> 'a t -> 'b t
     (** Maps some elements to 'b, drop the other ones *)
 
-  val zipIndex : 'a t -> (int * 'a) t
+  val zip_index : 'a t -> (int * 'a) t
     (** Zip elements with their index in the enum *)
 
   val unzip : ('a * 'b) t -> 'a t * 'b t
@@ -199,7 +204,7 @@ module type S = sig
     (** Succeeds if some pair of elements satisfy the predicate.
         Ignores elements of an iterator if the other runs dry. *)
 
-  val zipWith : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+  val zip_with : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
     (** Combine common part of the enums (stops when one is exhausted) *)
 
   val zip : 'a t -> 'b t -> ('a * 'b) t

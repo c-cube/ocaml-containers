@@ -26,100 +26,104 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Growable, mutable vector} *)
 
 type 'a t
-  (** the type of a vector of 'a *)
+(** the type of a vector of 'a *)
 
 type 'a sequence = ('a -> unit) -> unit
 
 val create : int -> 'a t
-  (** create a vector of given initial capacity *)
+(** create a vector of given initial capacity *)
 
 val clear : 'a t -> unit
-  (** clear the content of the vector *)
+(** clear the content of the vector *)
+
+val ensure : 'a t -> int -> unit
+(** Ensure that the vector can contain that much elements, resizing it
+    if required *)
 
 val is_empty : 'a t -> bool
-  (** is the vector empty? *)
+(** is the vector empty? *)
 
 val push : 'a t -> 'a -> unit
-  (** add an element at the end of the vector *)
+(** add an element at the end of the vector *)
 
 val append : 'a t -> 'a t -> unit
-  (** [append a b] adds all elements of b to a *)
+(** [append a b] adds all elements of b to a *)
 
 val append_array : 'a t -> 'a array -> unit
-  (** same as append, with an array *)
+(** same as append, with an array *)
 
 val append_seq : 'a t -> 'a sequence -> unit
-  (** Append content of sequence *)
+(** Append content of sequence *)
 
 val pop : 'a t -> 'a
-  (** remove last element, or raise a Failure if empty *)
+(** remove last element, or raise a Failure if empty *)
 
 val copy : 'a t -> 'a t
-  (** shallow copy *)
+(** shallow copy *)
 
 val shrink : 'a t -> int -> unit
-  (** shrink to the given size (remove elements above this size) *)
+(** shrink to the given size (remove elements above this size) *)
 
 val member : ?eq:('a -> 'a -> bool) -> 'a t -> 'a -> bool
-  (** is the element a member of the vector? *)
+(** is the element a member of the vector? *)
 
 val sort : ?cmp:('a -> 'a -> int) -> 'a t -> unit
-  (** sort the array in place*)
+(** sort the array in place*)
 
 val uniq_sort : ?cmp:('a -> 'a -> int) -> 'a t -> unit
-  (** sort the array and remove duplicates in place*)
+(** sort the array and remove duplicates in place*)
 
 val iter : 'a t -> ('a -> unit) -> unit
-  (** iterate on the vector *)
+(** iterate on the vector *)
 
 val iteri : 'a t -> (int -> 'a -> unit) -> unit
-  (** iterate on the vector with indexes *)
+(** iterate on the vector with indexes *)
 
 val map : 'a t -> ('a -> 'b) -> 'b t
-  (** map elements of the vector *)
+(** map elements of the vector *)
 
 val filter : 'a t -> ('a -> bool) -> 'a t
-  (** filter elements from vector *)
+(** filter elements from vector *)
 
 val fold : 'a t -> 'b -> ('b -> 'a -> 'b) -> 'b
-  (** fold on elements of the vector *)
+(** fold on elements of the vector *)
 
 val exists : 'a t -> ('a -> bool) -> bool
-  (** existential test *)
+(** existential test *)
 
 val for_all : 'a t -> ('a -> bool) -> bool
-  (** universal test *)
+(** universal test *)
 
 val find : 'a t -> ('a -> bool) -> 'a
-  (** find an element that satisfies the predicate, or Not_found *)
+(** find an element that satisfies the predicate, or Not_found *)
 
 val get : 'a t -> int -> 'a
-  (** access element, or Failure if bad index *)
+(** access element, or Failure if bad index *)
 
 val set : 'a t -> int -> 'a -> unit
-  (** access element, or Failure if bad index *)
+(** access element, or Failure if bad index *)
 
 val rev : 'a t -> unit
-  (** Reverse array in place *)
+(** Reverse array in place *)
 
 val size : 'a t -> int
-  (** number of elements in vector *)
+(** number of elements in vector *)
 
 val length : _ t -> int
-  (** Synonym for {! size} *)
+(** Synonym for {! size} *)
 
 val unsafe_get_array : 'a t -> 'a array
-  (** Access the underlying *shared* array (do not modify!).
-      [unsafe_get_array v] is longer than [size v], but elements at higher
-      index than [size v] are undefined (do not access!). *)
+(** Access the underlying *shared* array (do not modify!).
+    [unsafe_get_array v] is longer than [size v], but elements at higher
+    index than [size v] are undefined (do not access!). *)
 
 val of_seq : ?init:'a t -> 'a sequence -> 'a t
 
 val to_seq : 'a t -> 'a sequence
 
 val slice : 'a t -> int -> int -> 'a sequence
-  (** [slice v start len] is the sequence of elements from [v.(start)]
-      to [v.(start+len)] included. *)
+(** [slice v start len] is the sequence of elements from [v.(start)]
+    to [v.(start+len)] included. *)
 
 val from_array : 'a array -> 'a t
 val from_list : 'a list -> 'a t

@@ -346,15 +346,15 @@ let pp ~name ?vertices
       let attributes = print_edge v1 e v2 in
       Format.fprintf formatter "  @[<h>%a -> %a [%a];@]@."
         pp_vertex v1 pp_vertex v2
-        (CCSequence.pp_seq ~sep:"," print_attribute)
-        (CCSequence.of_list attributes))
+        (CCList.print ~sep:"," print_attribute)
+        attributes)
     (to_seq graph);
   (* print vertices *)
   PHashtbl.iter
     (fun v _ ->
       let attributes = print_vertex v in
       Format.fprintf formatter "  @[<h>%a [%a];@]@." pp_vertex v
-        (CCSequence.pp_seq ~sep:"," print_attribute) (CCSequence.of_list attributes))
+        (CCList.print ~sep:"," print_attribute) attributes)
     vertices;
   (* close *)
   Format.fprintf formatter "}@]@;";
