@@ -34,7 +34,7 @@ but a simple way to print complicated values without writing a lot of code.
 type 'a sequence = ('a -> unit) -> unit
 
 type 'a t = Buffer.t -> 'a -> unit
-  (** A printer for the type ['a] *)
+(** A printer for the type ['a] *)
 
 (** {2 Combinators} *)
 

@@ -1,12 +1,13 @@
 #use "topfind";;
 #thread
-#directory "_build/";;
+#directory "_build/core";;
+#directory "_build/misc";;
 #directory "_build/tests/";;
 #load "containers.cma";;
+#load "containers_misc.cma";;
 #require "threads";;
 #load "containers_thread.cma";;
 open Containers;;
-open Sequence.Infix;;
 #install_printer Bencode.pretty;;
 #install_printer HGraph.Default.fmt;;
 #require "CamlGI";;

@@ -58,7 +58,6 @@ val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
 
 val map : ('a -> 'b) -> 'b t -> 'a t
 
-
 (** {2 IO} *)
 
 val output : out_channel -> 'a t -> 'a -> unit
