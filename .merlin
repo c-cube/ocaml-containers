@@ -1,9 +1,11 @@
 S core
 S misc
+S string
 S tests
 S examples
 B _build/core
 B _build/misc
+B _build/string
 B _build/tests
 B _build/examples
 PKG oUnit
@@ -11,3 +13,4 @@ PKG bench
 PKG threads
 PKG threads.posix
 PKG lwt
+FLG -w +K,+Y,+X
