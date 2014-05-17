@@ -167,7 +167,7 @@ module Make(Str : STRING) = struct
       | Epsilon of int * int
 
     (* non deterministic automaton *)
-    type t = transition list array array
+    type _t = transition list array array
 
     let length nda = Array.length nda
 
@@ -278,7 +278,7 @@ module Make(Str : STRING) = struct
       let compare = Pervasives.compare
     end)
 
-    let set_to_string s =
+    let _set_to_string s =
       let b = Buffer.create 15 in
       Buffer.add_char b '{';
       NDAStateSet.iter
@@ -469,12 +469,6 @@ module Make(Str : STRING) = struct
 
   let of_list ~limit l =
     of_string ~limit (Str.of_list l)
-
-  type match_result =
-    | TooFar
-    | Distance of int
-
-  exception FoundDistance of int
 
   let rec __find_char c l = match l with
     | [] -> raise Not_found
