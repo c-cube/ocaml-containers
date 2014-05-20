@@ -120,5 +120,9 @@ let rec append l1 l2 = match l1 with
 let rec flat_map f l = match l with
   | `Nil -> `Nil
   | `Cons (x, l') ->
-      append (f x) (flat_map f (l' ()))
+      _flat_map_app f (f x) (l' ()) ()
+and _flat_map_app f l l' () = match l with
+  | `Nil -> flat_map f l'
+  | `Cons (x, tl) ->
+      `Cons (x, _flat_map_app f (tl ()) l')
 
