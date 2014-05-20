@@ -35,6 +35,13 @@ val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Alias to [compose] *)
 
+val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
+(** flip arguments *)
+
+val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
+
+val uncurry : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
+
 val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
 (** Mathematical composition *)
 

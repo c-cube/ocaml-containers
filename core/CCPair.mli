@@ -37,12 +37,23 @@ val map : ('a -> 'c) -> ('b -> 'd) -> ('a * 'b) -> ('c * 'd)
 val map_same : ('a -> 'b) -> ('a*'a) -> ('b*'b)
 
 val swap : ('a * 'b) -> ('b * 'a)
+(** Swap the components of the tuple *)
 
 val (<<<) : ('a -> 'b) -> ('a * 'c) -> ('b * 'c)
+(** Map on the left side of the tuple *)
 
 val (>>>) : ('a -> 'b) -> ('c * 'a) -> ('c * 'b)
+(** Map on the right side of the tuple *)
 
 val ( *** ) : ('a -> 'c) -> ('b -> 'd) -> ('a * 'b) -> ('c * 'd)
+(** Map on both sides of a tuple *)
+
+val ( &&& ) : ('a -> 'b) -> ('a -> 'c) -> 'a -> ('b * 'c)
+(** [f &&& g] is [fun x -> f x, g x]. It splits the computations into
+    two parts *)
+
+val merge : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
+(** Uncurrying (merges the two components of a tuple) *)
 
 val equal : ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> ('a * 'b) -> ('a * 'b) -> bool
 

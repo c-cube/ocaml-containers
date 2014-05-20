@@ -30,6 +30,12 @@ let (|>) x f = f x
 
 let compose f g x = g (f x)
 
+let flip f x y = f y x
+
+let curry f x y = f (x,y)
+
+let uncurry f (x,y) = f x y
+
 let (%>) = compose
 
 let (%) f g x = f (g x)

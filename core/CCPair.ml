@@ -44,6 +44,10 @@ let (>>>) = map2
 
 let ( *** ) = map
 
+let ( &&& ) f g x = f x, g x
+
+let merge f (x,y) = f x y
+
 let equal f g (x1,y1) (x2,y2) = f x1 x2 && g y1 y2
 
 let compare f g (x1,y1) (x2,y2) =
