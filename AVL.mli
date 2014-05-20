@@ -66,9 +66,9 @@ val split : cmp:'a comparator -> ('a,'b) t -> 'a ->
     is smaller than [k], the possible binding of [k],
     and a part bigger than [k]. *)
 
-val merge : cmp:'a comparator -> 
-            ('a -> 'b option -> 'b option -> 'b option) ->
-            ('a,'b) t -> ('a,'b) t -> ('a,'b) t
+val merge : cmp:'a comparator ->
+            ('a -> 'b option -> 'c option -> 'd option) ->
+            ('a,'b) t -> ('a,'c) t -> ('a,'d) t
 (** Merge two trees together, with the given function *)
 
 val of_list : cmp:'a comparator -> ('a * 'b) list -> ('a,'b) t

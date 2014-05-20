@@ -228,13 +228,13 @@ let rec merge ~cmp f t1 t2 = match t1, t2 with
   | Empty, Empty -> empty
   | Node (l1, k1, v1, r1, h1), _ when h1 >= _height t2 ->
       let l2, result2, r2 = split ~cmp t2 k1 in
-      let result = f (Some k1) result2 in
+      let result = f k1 (Some v1) result2 in
       let l = merge ~cmp f l1 l2 in
       let r = merge ~cmp f r1 r2 in
       _concat_or_join l k1 result r
   | _, Node (l2, k2, v2, r2, _) ->
       let l1, result1, r1 = split ~cmp t1 k2 in
-      let result = f result1 (Some k2) in
+      let result = f k2 result1 (Some v2) in
       let l = merge ~cmp f l1 l2 in
       let r = merge ~cmp f r1 r2 in
       _concat_or_join l k2 result r
@@ -285,10 +285,16 @@ type ('a,'b) explore =
 
 exception EndOfIter
 
-(* push the tree [t] on the stack [l] *)
-let _push t l = match t with
-  | Empty -> l
-  | Node _ -> Explore t :: l
+(* push the tree [t] on the stack [s] *)
+let _push t s = match t with
+  | Empty -> s
+  | Node _ -> Explore t :: s
+
+(* push [t] on [s] with swapped children *)
+let _push_swap t s = match t with
+  | Empty -> s
+  | Node (l, k, v, r,h) ->
+      Explore (Node(r,k,v,l,h)) :: s
 
 let _yield k v l = Yield (k,v) :: l
 
@@ -304,42 +310,67 @@ let rec _pop l = match l with
   | (Explore Node(l, k, v, r, _)::l') ->
       _pop (_push l (_yield k v (_push r l')))
 
-(* return the intial stack of trees to explore, that
+(* return the initial stack of trees to explore, that
   are all "after" key (included) *)
-let rec _after ~cmp t key =
+let rec _after ~cmp stack t key = match t with
+  | Empty -> stack
+  | Node (l, k, v, r, _) ->
+      let c = cmp key k in
+      if c = 0 then _yield k v stack
+      else if c < 0 then _yield k v (_push r stack)
+      else _after ~cmp stack r key
+
+(* same as [_after] but for the range before *)
+let rec _before~cmp stack t key = match t with
+  | Empty -> stack
+  | Node (l, k, v, r, _) ->
+      let c = cmp key k in
+      if c = 0 then _yield k v stack
+      else if c < 0 then _before ~cmp stack l key
+      else _yield k v (_push_swap l stack)
 
 module KList = struct
   type 'a t = [ `Nil | `Cons of 'a * (unit -> 'a t) ]
 
-  let rec _next l () = match l with
+  let rec _next (l:('a,'b) explore list) () : ('a*'b) t = match l with
     | [] -> `Nil
     | _::_ ->
         let k, v, l' = _pop l in
         `Cons ((k,v), _next l')
 
-  let iter t = _next (_push t [])
+  let iter t = _next (_push t []) ()
 
   let rec add ~cmp t (l:'a t) = match l with
     | `Nil -> t
     | `Cons ((k,v), l') ->
         add ~cmp (insert ~cmp t k v) (l' ())
 
-  let after ~cmp t key =
-    (* auxiliary function. We carry a stack [l] of things to do *)
-    let rec aux stack t = match t with
-    | Empty -> `Nil
-    | Node (l, k, v, r, _) ->
-        let c = cmp key k in
-        if c < 0 then aux (_yield k v (_push r stack)) l
-        else if c > 0 then aux stack r
-        else _next (_yield k v stack) ()
-    in aux [] t
+  let after ~cmp t key = _next (_after ~cmp [] t key) ()
 
-  let rec 
+  let before ~cmp t key = _next (_before ~cmp [] t key) ()
 end
 
 module Gen = struct
   type 'a t = unit -> 'a option
 
-  include ITERATOR with type 'a iter := 'a t
+  let _gen stack =
+    let stack = ref stack in
+    let rec next () =
+      match !stack with
+      | [] -> None
+      | l ->
+          let k, v, stack' = _pop l in
+          stack := stack';
+          Some (k, v)
+    in next
+
+  let iter t = _gen (_push t [])
+
+  let rec add ~cmp t gen =
+    match gen() with
+    | None -> t
+    | Some (k,v) -> add ~cmp (insert ~cmp t k v) gen
+
+  let after ~cmp t key = _gen (_after ~cmp [] t key)
+  let before ~cmp t key = _gen (_before ~cmp [] t key)
 end
