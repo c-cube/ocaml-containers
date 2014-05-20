@@ -32,9 +32,13 @@ type + 'a t =
 
 val nil : 'a t
 
+val empty : 'a t
+
 val cons : 'a -> (unit -> 'a t) -> 'a t
 
 val singleton : 'a -> 'a t
+
+val is_empty : 'a t -> bool
 
 val of_list : 'a list -> 'a t
 

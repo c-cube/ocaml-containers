@@ -33,8 +33,13 @@ type + 'a t =
 
 let nil = `Nil
 let cons a b = `Cons (a,b)
+let empty = nil
 
 let singleton x = `Cons (x, fun () -> `Nil)
+
+let is_empty = function
+  | `Nil -> true
+  | `Cons _ -> false
 
 let to_list l =
   let rec direct i (l:'a t) = match l with
