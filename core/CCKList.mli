@@ -71,3 +71,7 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 val append : 'a t -> 'a t -> 'a t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+
+val flatten : 'a t t -> 'a t
+
+val range : int -> int -> int t

@@ -32,6 +32,7 @@ type + 'a t =
   ]
 
 let nil = `Nil
+let _nil () = nil
 let cons a b = `Cons (a,b)
 let empty = nil
 
@@ -126,3 +127,17 @@ and _flat_map_app f l l' () = match l with
   | `Cons (x, tl) ->
       `Cons (x, _flat_map_app f (tl ()) l')
 
+let flatten l = flat_map (fun x->x) l
+
+let range i j =
+  let rec aux i j () =
+    if i=j then cons i _nil
+    else if i<j then `Cons (i, aux (i+1) j)
+    else `Cons (i, aux (i-1) j)
+  in aux i j ()
+
+(*$T
+  range 0 5 |> to_list = [0;1;2;3;4;5]
+  range 0 0 |> to_list = [0]
+  range 5 2 |> to_list = [5;4;3;2]
+*)
