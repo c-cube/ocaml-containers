@@ -35,6 +35,12 @@ val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Alias to [compose] *)
 
+val id : 'a -> 'a
+(** Identity function *)
+
+val const : 'a -> 'b -> 'a
+(** [const x y = x] for any [y] *)
+
 val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
 (** flip arguments *)
 
