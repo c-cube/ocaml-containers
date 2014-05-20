@@ -144,13 +144,22 @@ let take n l =
   let rec direct i n l = match l with
     | [] -> []
     | _ when i=0 -> safe n [] l
-    | x::l' -> x :: direct (i-1) (n-1) l'
+    | x::l' ->
+        if n > 0
+        then x :: direct (i-1) (n-1) l'
+        else []
   and safe n acc l = match l with
     | [] -> List.rev acc
     | _ when n=0 -> List.rev acc
     | x::l' -> safe (n-1) (x::acc) l'
   in
   direct _direct_depth n l
+
+(*$T
+  take 2 [1;2;3;4;5] = [1;2]
+  take 10_000 (range 0 100_000) |> List.length = 10_000
+  take 10_000 (range 0 2_000) = range 0 2_000
+*)
 
 let rec drop n l = match l with
   | [] -> []
