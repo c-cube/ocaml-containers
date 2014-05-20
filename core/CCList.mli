@@ -171,6 +171,7 @@ end
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
+type 'a klist = [`Nil | `Cons of 'a * (unit -> 'a klist)]
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 
@@ -179,6 +180,9 @@ val of_seq : 'a sequence -> 'a t
 
 val to_gen : 'a t -> 'a gen
 val of_gen : 'a gen -> 'a t
+
+val to_klist : 'a t -> 'a klist
+val of_klist : 'a klist -> 'a t
 
 (** {2 IO} *)
 
