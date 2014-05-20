@@ -34,8 +34,12 @@ val nil : 'a t
 
 val cons : 'a -> (unit -> 'a t) -> 'a t
 
+val singleton : 'a -> 'a t
+
+val of_list : 'a list -> 'a t
+
 val to_list : 'a t -> 'a list
-  (** Gather all values into a list *)
+(** Gather all values into a list *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -44,7 +48,9 @@ val to_seq : 'a t -> 'a sequence
 val to_gen : 'a t -> 'a gen
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
-  (** Fold on values *)
+(** Fold on values *)
+
+val iter : ('a -> unit) -> 'a t -> unit
 
 val length : 'a t -> int
 

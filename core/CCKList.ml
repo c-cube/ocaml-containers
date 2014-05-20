@@ -34,6 +34,8 @@ type + 'a t =
 let nil = `Nil
 let cons a b = `Cons (a,b)
 
+let singleton x = `Cons (x, fun () -> `Nil)
+
 let to_list l =
   let rec direct i (l:'a t) = match l with
     | `Nil -> []
@@ -44,6 +46,12 @@ let to_list l =
     | `Cons (x,l') -> safe (x::acc) (l' ())
   in
   direct 200 l
+
+let of_list l =
+  let rec aux l () = match l with
+    | [] -> `Nil
+    | x::l' -> `Cons (x, aux l')
+  in aux l ()
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -64,6 +72,10 @@ let to_gen l =
 let rec fold f acc res = match res with
   | `Nil -> acc
   | `Cons (s, cont) -> fold f (f acc s) (cont ())
+
+let rec iter f l = match l with
+  | `Nil -> ()
+  | `Cons (x, l') -> f x; iter f (l' ())
 
 let length l = fold (fun acc _ -> acc+1) 0 l
 
