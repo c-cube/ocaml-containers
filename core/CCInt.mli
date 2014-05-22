@@ -32,6 +32,8 @@ val compare : t -> t -> int
 
 val equal : t -> t -> bool
 
+val hash : t -> int
+
 val sign : t -> int
 (** [sign i] is one of [-1, 0, 1] *)
 

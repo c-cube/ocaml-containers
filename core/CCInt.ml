@@ -30,6 +30,8 @@ let equal a b = a=b
 
 let compare a b = Pervasives.compare a b
 
+let hash i = i land max_int
+
 let sign i =
   if i < 0 then -1
   else if i>0 then 1
