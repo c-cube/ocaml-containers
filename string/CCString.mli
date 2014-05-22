@@ -29,6 +29,12 @@ Consider using KMP instead. *)
 
 type t = string
 
+val equal : t -> t -> bool
+
+val compare : t -> t -> int
+
+val hash : t -> int
+
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 

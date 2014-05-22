@@ -28,6 +28,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type t = string
 
+let equal a b = a=b
+
+let compare = String.compare
+
+let hash s = Hashtbl.hash s
+
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 
