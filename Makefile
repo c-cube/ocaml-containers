@@ -73,7 +73,7 @@ push-stable: all
 	git checkout stable
 	git merge master -m 'merge from master'
 	oasis setup
-	git commit -a 'oasis files'
+	git commit -a -m 'oasis files'
 	git push origin
 	git checkout master
 
