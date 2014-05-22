@@ -1,0 +1,23 @@
+# OASIS_START
+# DO NOT EDIT (digest: f49e5e2f09b6b12af7e6ae013126d35f)
+CCVector
+CCDeque
+CCGen
+CCSequence
+CCFQueue
+CCMultiMap
+CCMultiSet
+CCBV
+CCPrint
+CCPersistentHashtbl
+CCLeftistheap
+CCList
+CCOpt
+CCPair
+CCFun
+CCHash
+CCKList
+CCInt
+CCBool
+CCArray
+# OASIS_STOP
