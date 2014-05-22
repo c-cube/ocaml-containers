@@ -156,7 +156,7 @@ Executable test_threads
 Test all
   Command: $run_tests
   TestTools: run_tests
-  Run$: flag(tests) && flag(lwt)
+  Run$: flag(tests)
 
 Executable run_tests
   Path: tests/

@@ -70,8 +70,12 @@ qtest: qtest-clean build
 	./qtest_all.native
 
 push-stable: all
-	git checkout stable && git merge master && oasis setup && \
-	git commit -a 'oasis'
+	git checkout stable
+	git merge master -m 'merge from master'
+	oasis setup
+	git commit -a 'oasis files'
+	git push origin
+	git checkout master
 
 test-all: test qtest
 
