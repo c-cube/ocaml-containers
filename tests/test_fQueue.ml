@@ -1,6 +1,9 @@
 
 open OUnit
 
+module FQueue = CCFQueue
+module Sequence = CCSequence
+
 let test_empty () =
   let q = FQueue.empty in
   OUnit.assert_bool "is_empty" (FQueue.is_empty q)

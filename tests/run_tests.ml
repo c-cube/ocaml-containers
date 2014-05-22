@@ -8,7 +8,6 @@ let suite =
       Test_PersistentHashtbl.suite;
       Test_bencode.suite;
       Test_bv.suite;
-      Test_Behavior.suite;
       Test_PiCalculus.suite;
       Test_splayMap.suite;
       Test_bij.suite;
@@ -24,7 +23,6 @@ let suite =
       Test_heap.suite;
       Test_graph.suite;
       Test_univ.suite;
-      Test_future.suite;
     ]
 
 let props =

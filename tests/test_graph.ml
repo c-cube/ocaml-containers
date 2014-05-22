@@ -4,6 +4,7 @@
 open OUnit
 open Helpers
 
+module Sequence = CCSequence
 module G = PersistentGraph
 
 (* build a graph from a list of pairs of ints *)
@@ -65,11 +66,9 @@ let test_bfs () =
 
 let rec pp_path p =
   let buf = Buffer.create 10 in
-  Format.bprintf buf "%a" (Sequence.pp_seq ~sep:"; " pp_edge)
-    (Sequence.of_list p);
-  Buffer.contents buf
-and pp_edge formatter (v1,e,v2) =
-  Format.fprintf formatter "%d -> %d" v1 v2
+  CCPrint.to_string (CCList.pp ~sep:"; " pp_edge) p
+and pp_edge b (v1,e,v2) =
+  Printf.bprintf b "%d -> %d" v1 v2
 
 let test_dijkstra () =
   let g = mk_graph [0,1; 1,2; 2,3; 3,4; 3,0; 4,5; 1,5; 5,6; 4,6; 6,0] in

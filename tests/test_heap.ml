@@ -2,6 +2,7 @@
 
 open OUnit
 open Helpers
+module Sequence = CCSequence
 
 let test_empty () =
   let h = Heap.empty ~cmp:(fun x y -> x - y) in

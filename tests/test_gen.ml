@@ -1,14 +1,14 @@
 
 open OUnit
-open Gen.Infix
 
+module Gen = CCGen
 module GR = Gen.Restart
 
 let pint i = string_of_int i
-let plist l = Utils.sprintf "%a"
-  (Sequence.pp_seq Format.pp_print_int) (Sequence.of_list l)
-let pstrlist l = Utils.sprintf "%a"
-  (Sequence.pp_seq Format.pp_print_string) (Sequence.of_list l)
+let plist l =
+  CCPrint.to_string (CCList.pp CCInt.pp) l
+let pstrlist l =
+  CCPrint.to_string (CCList.pp Buffer.add_string) l
 
 let test_singleton () =
   let gen = Gen.singleton 42 in
@@ -26,35 +26,35 @@ let test_iter () =
   ()
 
 let test_map () =
-  let e = 1 -- 10 in
+  let e = Gen.(1 -- 10) in
   let e' = Gen.map string_of_int e in
   OUnit.assert_equal ~printer:pstrlist ["9"; "10"] (Gen.to_list (Gen.drop 8 e'));
   ()
 
 let test_append () =
-  let e = Gen.append (1 -- 5) (6 -- 10) in
+  let e = Gen.append Gen.(1 -- 5) Gen.(6 -- 10) in
   OUnit.assert_equal [10;9;8;7;6;5;4;3;2;1] (Gen.to_rev_list e);
   ()
 
 let test_flatMap () =
-  let e = 1 -- 3 in
-  let e' = e >>= (fun x -> x -- (x+1)) in
+  let e = Gen.(1 -- 3) in
+  let e' = Gen.(e >>= (fun x -> x -- (x+1))) in
   OUnit.assert_equal [1;2;2;3;3;4] (Gen.to_list e');
   ()
 
 let test_zip () =
-  let e = Gen.zipWith (+) (Gen.repeat 1) (4--7) in
+  let e = Gen.zip_with (+) (Gen.repeat 1) Gen.(4--7) in
   OUnit.assert_equal [5;6;7;8] (Gen.to_list e);
   ()
 
 let test_filterMap () =
   let f x = if x mod 2 = 0 then Some (string_of_int x) else None in
-  let e = Gen.filterMap f (1 -- 10) in
+  let e = Gen.filter_map f Gen.(1 -- 10) in
   OUnit.assert_equal ["2"; "4"; "6"; "8"; "10"] (Gen.to_list e);
   ()
 
 let test_merge () =
-  let e = Gen.of_list [1--3; 4--6; 7--9] in
+  let e = Gen.of_list [Gen.(1--3); Gen.(4--6); Gen.(7--9)] in
   let e' = Gen.merge e in
   OUnit.assert_equal [1;2;3;4;5;6;7;8;9] (Gen.to_list e' |> List.sort compare);
   ()
@@ -99,15 +99,16 @@ let test_interleave () =
   ()
 
 let test_intersperse () =
-  let e = 1 -- 5 in
+  let e = Gen.(1 -- 5) in
   let e' = Gen.intersperse 0 e in
   OUnit.assert_equal [1;0;2;0;3;0;4;0;5] (Gen.to_list e');
   ()
 
 let test_product () =
   let printer = Helpers.print_int_int_list in
-  let e = Gen.product (1--3) (4--5) in
-  OUnit.assert_equal ~printer [1,4; 1,5; 2,4; 2,5; 3,4; 3,5] (List.sort compare (Gen.to_list e));
+  let e = Gen.product Gen.(1--3) Gen.(4--5) in
+  OUnit.assert_equal ~printer [1,4; 1,5; 2,4; 2,5; 3,4; 3,5]
+    (List.sort compare (Gen.to_list e));
   ()
 
 let suite =

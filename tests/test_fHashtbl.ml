@@ -1,6 +1,8 @@
 
 open OUnit
 
+module Sequence = CCSequence
+
 module Test(SomeHashtbl : FHashtbl.S with type key = int) = struct
   let test_add () =
     let h = SomeHashtbl.empty 32 in

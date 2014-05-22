@@ -77,15 +77,15 @@ Library "containers_thread"
   XMETARequires:    containers,threads,lwt
 
 Library "containers_lwt"
-  Path:             .
+  Path:             lwt
   Modules:          Behavior, Lwt_automaton
   Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
-  Build$:           flag(lwt)
-  Install$:         flag(lwt)
-  BuildDepends:     containers,lwt,lwt.unix
-  XMETARequires:    containers,lwt,lwt.unix
+  Build$:           flag(lwt) && flag(misc)
+  Install$:         flag(lwt) && flag(misc)
+  BuildDepends:     containers,lwt,lwt.unix,containers.misc
+  XMETARequires:    containers,lwt,lwt.unix,containers.misc
 
 Library "containers_cgi"
   Path:             cgi
@@ -137,6 +137,22 @@ Executable test_levenshtein
   MainIs: test_levenshtein.ml
   BuildDepends: containers,qcheck
 
+Executable test_lwt
+  Path: tests/lwt/
+  Install: false
+  CompiledObject: best
+  Build$: flag(tests) && flag(lwt)
+  MainIs: test_Behavior.ml
+  BuildDepends: containers,lwt,lwt.unix,oUnit,containers.lwt
+
+Executable test_threads
+  Path: tests/lwt/
+  Install: false
+  CompiledObject: best
+  Build$: flag(tests) && flag(thread)
+  MainIs: test_Future.ml
+  BuildDepends: containers,threads,oUnit,containers.lwt
+
 Test all
   Command: $run_tests
   TestTools: run_tests
@@ -147,8 +163,8 @@ Executable run_tests
   Install: false
   CompiledObject: native
   MainIs: run_tests.ml
-  Build$: flag(tests) && flag(lwt)
-  BuildDepends: containers, oUnit, lwt, threads, lwt.unix
+  Build$: flag(tests)
+  BuildDepends: containers, oUnit
 
 Executable web_pwd
   Path: examples/cgi/

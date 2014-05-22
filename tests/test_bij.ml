@@ -1,10 +1,11 @@
 
 open OUnit
 
+module Sequence = CCSequence
+
 let pp_int_list l =
   let b = Buffer.create 4 in
-  Format.fprintf (Format.formatter_of_buffer b) "%a@?"
-    (Sequence.pp_seq Format.pp_print_int) (Sequence.of_list l);
+  CCList.pp CCInt.pp b l;
   Buffer.contents b
 
 let test_intlist n () =

@@ -1,6 +1,8 @@
 
 open OUnit
 
+module Sequence = CCSequence
+
 let test1 () =
   let empty = SplayMap.empty () in
   let m = SplayMap.of_seq empty (Sequence.of_list [1, "1"; 2, "2"; 3, "3"]) in

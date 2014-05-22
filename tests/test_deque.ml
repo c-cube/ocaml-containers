@@ -1,17 +1,18 @@
 
 open OUnit
 
-open Sequence.Infix
+module Deque = CCDeque
+module Sequence = CCSequence
 
-let plist l = Utils.sprintf "%a" (Sequence.pp_seq Format.pp_print_int) (Sequence.of_list l)
+let plist l = CCPrint.to_string (CCList.pp CCInt.pp) l 
 let pint i = string_of_int i
 
 let test_length () =
-  let d = Deque.of_seq (1 -- 10) in
+  let d = Deque.of_seq Sequence.(1 -- 10) in
   OUnit.assert_equal ~printer:pint 10 (Deque.length d)
 
 let test_front () =
-  let d = Deque.of_seq (1 -- 10) in
+  let d = Deque.of_seq Sequence.(1 -- 10) in
   let printer = pint in
   OUnit.assert_equal ~printer 1 (Deque.peek_front d); 
   Deque.push_front d 42;
@@ -24,7 +25,7 @@ let test_front () =
   ()
 
 let test_back () =
-  let d = Deque.of_seq (1 -- 10) in
+  let d = Deque.of_seq Sequence.(1 -- 10) in
   let printer = pint in
   OUnit.assert_equal ~printer 1 (Deque.peek_front d); 
   Deque.push_back d 42;
@@ -37,7 +38,7 @@ let test_back () =
   ()
 
 let test_iter () =
-  let d = Deque.of_seq (1 -- 5) in
+  let d = Deque.of_seq Sequence.(1 -- 5) in
   let s = Sequence.from_iter (fun k -> Deque.iter k d) in
   let l = Sequence.to_list s in
   OUnit.assert_equal ~printer:plist [1;2;3;4;5] l;

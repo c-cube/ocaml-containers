@@ -1,6 +1,8 @@
 
 open OUnit
 
+module Sequence = CCSequence
+
 module IHashtbl = FlatHashtbl.Make(struct
   type t = int
   let equal i j = i = j

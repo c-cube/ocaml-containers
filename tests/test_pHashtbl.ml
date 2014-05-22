@@ -1,6 +1,8 @@
 
 open OUnit
 
+module Sequence = CCSequence
+
 let test_add () =
   let h = PHashtbl.create 5 in
   PHashtbl.replace h 42 "foo";

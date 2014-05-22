@@ -3,6 +3,9 @@
 
 open OUnit
 
+module Leftistheap = CCLeftistheap
+module Sequence = CCSequence
+
 let empty = Leftistheap.empty
 
 let test1 () =

@@ -1,8 +1,8 @@
 
 open OUnit
 
-module H = PersistentHashtbl.Make(struct type t = int let equal = (=) let hash i = i end)
-open Sequence.Infix
+module H = CCPersistentHashtbl.Make(CCInt)
+module Sequence = CCSequence
 
 let test_add () =
   let h = H.create 32 in
@@ -50,7 +50,7 @@ let test_persistent () =
 
 let test_big () =
   let n = 10000 in
-  let seq = Sequence.map (fun i -> i, string_of_int i) (0--n) in
+  let seq = Sequence.map (fun i -> i, string_of_int i) Sequence.(0--n) in
   let h = H.of_seq seq in
   (*
   Format.printf "@[<v2>table:%a@]@." (Sequence.pp_seq
