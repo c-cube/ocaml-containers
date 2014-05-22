@@ -69,6 +69,10 @@ qtest: qtest-clean build
 	@echo
 	./qtest_all.native
 
+push-stable: all
+	git checkout stable && git merge master && oasis setup && \
+	git commit -a 'oasis'
+
 test-all: test qtest
 
 tags:
