@@ -355,7 +355,7 @@ module Gen = struct
 
   let _gen stack =
     let stack = ref stack in
-    let rec next () =
+    let next () =
       match !stack with
       | [] -> None
       | l ->
