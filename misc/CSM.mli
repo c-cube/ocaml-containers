@@ -26,10 +26,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Composable State Machines}
 
 This module defines state machines that should help design applications
-with a more explicit control of state (e.g. for networking applications. *)
+with a more explicit control of state (e.g. for networking applications). *)
 
 type ('a, 's, 'b) t = 's -> 'a -> ('b * 's) option
-(** transition function that fully describes an automaton *)
+(** transition function that fully describes an automaton. It returns
+    [None] to indicate that it stops. *)
 
 type ('a, 's, 'b) automaton = ('a, 's, 'b) t
 
@@ -140,16 +141,22 @@ module List : sig
   (** build a list from its inputs *)
 end
 
-module CCGen : sig
+module Gen : sig
   type 'a gen = unit -> 'a option
 
   val map : ('a, 's, 'b) t -> 's -> 'a gen -> 'b gen
 end
 
-module CCSequence : sig
+module Sequence : sig
   type 'a sequence = ('a -> unit) -> unit
 
   val map : ('a, 's, 'b) t -> 's -> 'a sequence -> 'b sequence
+end
+
+module KList : sig
+  type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+
+  val map : ('a, 's, 'b) t -> 's -> 'a klist -> 'b klist
 end
 
 (** {2 Mutable Interface} *)

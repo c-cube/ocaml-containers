@@ -58,7 +58,7 @@ let hash_triple h1 h2 h3 (x,y,z) = (h1 x) <<>> (h2 y) <<>> (h3 z)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = [`Nil | `Cons of 'a * (unit -> 'a klist)]
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 let hash_seq f h seq =
   let h = ref h in
@@ -70,7 +70,6 @@ let rec hash_gen f h g = match g () with
   | Some x ->
       hash_gen f (h <<>> f x) g
 
-let rec hash_klist f h l = match l with
+let rec hash_klist f h l = match l () with
   | `Nil -> h
-  | `Cons (x,l') -> hash_klist f (h <<>> f x) (l' ())
-
+  | `Cons (x,l') -> hash_klist f (h <<>> f x) l'

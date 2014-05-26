@@ -93,7 +93,7 @@ module type ITERATOR = sig
 end
 
 module KList : sig
-  type 'a t = [ `Nil | `Cons of 'a * (unit -> 'a t) ]
+  type 'a t = unit -> [ `Nil | `Cons of 'a * 'a t ]
 
   include ITERATOR with type 'a iter := 'a t
 end

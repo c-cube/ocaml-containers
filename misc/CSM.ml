@@ -210,7 +210,7 @@ module List = struct
   let build state x = Some (x::state, x::state)
 end
 
-module CCGen = struct
+module Gen = struct
   type 'a gen = unit -> 'a option
 
   let map a state gen =
@@ -227,7 +227,7 @@ module CCGen = struct
           end
 end
 
-module CCSequence = struct
+module Sequence = struct
   type 'a sequence = ('a -> unit) -> unit
 
   exception ExitSeq
@@ -242,6 +242,20 @@ module CCSequence = struct
               st := state';
               k y)
       with ExitSeq -> ()
+end
+
+module KList = struct
+  type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+
+  let rec map f state (l:'a klist) () =
+    match l () with
+    | `Nil -> `Nil
+    | `Cons (x, l') ->
+        begin match f state x with
+        | None -> `Nil
+        | Some (y, state') ->
+          `Cons (y, map f state' l')
+        end
 end
 
 (** {2 Mutable Interface} *)

@@ -356,26 +356,26 @@ let rec _before~cmp stack t key = match t with
       else _yield k v (_push_swap l stack)
 
 module KList = struct
-  type 'a t = [ `Nil | `Cons of 'a * (unit -> 'a t) ]
+  type 'a t = unit -> [ `Nil | `Cons of 'a * 'a t ]
 
-  let rec _next (l:('a,'b) explore list) () : ('a*'b) t = match l with
+  let rec _next (l:('a,'b) explore list) () = match l with
     | [] -> `Nil
     | _::_ ->
         let k, v, l' = _pop l in
         `Cons ((k,v), _next l')
 
-  let iter {t; _} = _next (_push t []) ()
+  let iter {t; _} = _next (_push t [])
 
-  let rec _add ~cmp t (l:'a t) = match l with
+  let rec _add ~cmp t (l:'a t) = match l () with
     | `Nil -> t
     | `Cons ((k,v), l') ->
-        _add ~cmp (_insert ~cmp t k v) (l' ())
+        _add ~cmp (_insert ~cmp t k v) l'
 
   let add {cmp; t} l = {cmp; t=_add ~cmp t l}
 
-  let after {cmp; t} key = _next (_after ~cmp [] t key) ()
+  let after {cmp; t} key = _next (_after ~cmp [] t key)
 
-  let before {cmp; t} key = _next (_before ~cmp [] t key) ()
+  let before {cmp; t} key = _next (_before ~cmp [] t key)
 end
 
 module Gen = struct

@@ -58,13 +58,13 @@ strings, we return a continuation list so that, even if there are many results,
 only those actually asked for are evaluated. *)
 
 type 'a klist =
-  [
+  unit -> [
   | `Nil
-  | `Cons of 'a * (unit -> 'a klist)
+  | `Cons of 'a * 'a klist
   ]
 
 val klist_to_list : 'a klist -> 'a list
-  (** Helper. *)
+  (** Helper for short lists. *)
 
 (** {2 Signature}
 

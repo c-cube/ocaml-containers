@@ -388,7 +388,7 @@ end
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = [`Nil | `Cons of 'a * (unit -> 'a klist)]
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 
@@ -422,17 +422,17 @@ let to_klist l =
   let rec make l () = match l with
     | [] -> `Nil
     | x::l' -> `Cons (x, make l')
-  in make l ()
+  in make l
 
 let of_klist l =
   let rec direct i g =
     if i = 0 then safe [] g
-    else match l with
+    else match l () with
       | `Nil -> []
-      | `Cons (x,l') -> x :: direct (i-1) (l' ())
-  and safe acc l = match l with
+      | `Cons (x,l') -> x :: direct (i-1) l'
+  and safe acc l = match l () with
     | `Nil -> List.rev acc
-    | `Cons (x,l') -> safe (x::acc) (l' ())
+    | `Cons (x,l') -> safe (x::acc) l'
   in
   direct _direct_depth l
 
