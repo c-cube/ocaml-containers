@@ -52,13 +52,15 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 - `CCLeftistheap`, a polymorphic heap structure.
 - `CCFQueue`, a purely functional queue structure
 - `CCBV`, mutable bitvectors
-- `CCPersistentHashtbl`, a semi-persistent hashtable (similar
-    to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
+- `CCPersistentHashtbl`, a semi-persistent hashtable (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
 - `CCVector`, a growable array (pure OCaml, no C)
-
-- `CCGen` and `CCSequence`, generic iterators structures (with structural types
-    so they can be defined in several places). Now also in their own
-    repository and opam packages (`gen` and `sequence`).
+- `CCGen` and `CCSequence`, generic iterators structures (with structural types so they can be defined in several places). Now also in their own repository and opam packages (`gen` and `sequence`).
+- `CCKlist`, another iterator structure
+- `CCList`, functions and lists including tail-recursive implementations of `map` and `append`
+- `CCArray`, utilities on arrays
+- `CCInt`, `CCPair`, `CCOpt`, `CCFun`, `CCBool`, utilities on basic types
+- `CCPrint`, printing combinators
+- `CCHash`, hashing combinators
 
 ### Misc
 
