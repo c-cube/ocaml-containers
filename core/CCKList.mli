@@ -25,16 +25,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Continuation List} *)
 
-type + 'a t =
+type + 'a t = unit -> 
   [ `Nil
-  | `Cons of 'a * (unit -> 'a t)
+  | `Cons of 'a * 'a t
   ]
 
 val nil : 'a t
 
 val empty : 'a t
 
-val cons : 'a -> (unit -> 'a t) -> 'a t
+val cons : 'a -> 'a t -> 'a t
 
 val singleton : 'a -> 'a t
 
@@ -75,3 +75,5 @@ val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 val flatten : 'a t t -> 'a t
 
 val range : int -> int -> int t
+
+val (--) : int -> int -> int t
