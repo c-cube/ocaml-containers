@@ -32,9 +32,10 @@ type ('a,'b) tree = private
   | Empty
   | Node of ('a,'b) tree * 'a * 'b * ('a,'b) tree * int
 
-type ('a,'b) t = private
-	{ cmp: 'a comparator;
-	    t: ('a,'b) tree }
+type ('a,'b) t = private {
+  cmp: 'a comparator;
+  t: ('a,'b) tree
+}
 
 val empty : cmp:'a comparator -> ('a,'b) t
 (** Empty tree *)

@@ -34,9 +34,10 @@ type ('a,'b) tree =
   | Empty
   | Node of ('a,'b) tree * 'a * 'b * ('a,'b) tree * int
 
-type ('a,'b) t =
-	{ cmp: 'a comparator;
-	    t: ('a,'b) tree }
+type ('a,'b) t = {
+  cmp: 'a comparator;
+  t: ('a,'b) tree
+}
 
 let empty ~cmp = { cmp; t=Empty }
 
