@@ -61,6 +61,26 @@ let append l1 l2 =
 
 let (@) = append
 
+let fold_right f l acc =
+  let rec direct i f l acc = match l with
+    | [] -> acc
+    | _ when i=0 -> safe f (List.rev l) acc
+    | x::l' ->
+        let acc = direct (i-1) f l' acc in
+        f x acc
+  and safe f l acc = match l with
+    | [] -> acc
+    | x::l' ->
+        let acc = f x acc in
+        safe f l' acc
+  in
+  direct _direct_depth f l acc
+
+(*$T
+  fold_right (+) (1 -- 1_000_000) 0 = \
+    List.fold_left (+) 0 (1 -- 1_000_000)
+*)
+
 let rec compare f l1 l2 = match l1, l2 with
   | [], [] -> 0
   | _, [] -> 1

@@ -36,6 +36,9 @@ val append : 'a t -> 'a t -> 'a t
 
 val (@) : 'a t -> 'a t -> 'a t
 
+val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+(** Safe version of [fold_right] *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
