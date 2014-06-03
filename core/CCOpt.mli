@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type 'a t = 'a option
 
 val map : ('a -> 'b) -> 'a t -> 'b t
+(** Transform the element inside, if any *)
 
 val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
 (** [maybe f x o] is [x] if [o] is [None], otherwise it's [f y] if [o = Some y] *)
@@ -45,15 +46,27 @@ val return : 'a -> 'a t
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** Monadic bind *)
 
+val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+(** Flip version of {!>>=} *)
+
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val (<$>) : ('a -> 'b) -> 'a t -> 'b t
 
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 
+val iter : ('a -> unit) -> 'a t -> unit
+(** Iterate on 0 or 1 elements *)
+
+val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
+(** Fold on 0 or 1 elements *)
+
 (** {2 Conversion and IO} *)
 
 val to_list : 'a t -> 'a list
+
+val of_list : 'a list -> 'a t
+(** Head of list, or [None] *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
