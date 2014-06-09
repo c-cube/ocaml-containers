@@ -81,6 +81,11 @@ let fold_right f l acc =
     List.fold_left (+) 0 (1 -- 1_000_000)
 *)
 
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    l = fold_right (fun x y->x::y) l [])
+*)
+
 let rec compare f l1 l2 = match l1, l2 with
   | [], [] -> 0
   | _, [] -> 1

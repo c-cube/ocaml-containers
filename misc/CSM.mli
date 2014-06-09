@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 This module defines state machines that should help design applications
 with a more explicit control of state (e.g. for networking applications). *)
 
-type ('a, 's, 'b) t = 's -> 'a -> ('b * 's) option
+type ('input, 'state, 'output) t = 'state -> 'input -> ('output * 'state) option
 (** transition function that fully describes an automaton. It returns
     [None] to indicate that it stops. *)
 
