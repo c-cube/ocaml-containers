@@ -61,7 +61,7 @@ Library "containers_misc"
                     UnionFind, SmallSet, AbsSet, CSM,
                     ActionMan, QCheck, BencodeOnDisk, TTree,
                     HGraph, Automaton, Conv, Bidir, Iteratee,
-                    Ty, Tell, BencodeStream, RatTerm, Cause, AVL
+                    Ty, Tell, BencodeStream, RatTerm, Cause, AVL, ParseReact
   BuildDepends:     unix,containers
   FindlibName:      misc
   FindlibParent:    containers
