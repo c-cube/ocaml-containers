@@ -61,6 +61,19 @@ let append l1 l2 =
 
 let (@) = append
 
+let filter p l =
+  let rec direct i p l = match l with
+    | [] -> []
+    | _ when i=0 -> safe p l []
+    | x::l' when not (p x) -> direct i p l'
+    | x::l' -> x :: direct (i-1) p l'
+  and safe p l acc = match l with
+    | [] -> List.rev acc
+    | x::l' when not (p x) -> safe p l' acc
+    | x::l' -> safe p l' (x::acc)
+  in
+  direct _direct_depth p l
+
 let fold_right f l acc =
   let rec direct i f l acc = match l with
     | [] -> acc

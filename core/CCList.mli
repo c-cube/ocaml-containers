@@ -36,6 +36,9 @@ val append : 'a t -> 'a t -> 'a t
 
 val (@) : 'a t -> 'a t -> 'a t
 
+val filter : ('a -> bool) -> 'a t -> 'a t
+(** Safe version of {!List.filter} *)
+
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Safe version of [fold_right] *)
 
