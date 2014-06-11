@@ -129,6 +129,14 @@ Executable bench_conv
   MainIs: bench_conv.ml
   BuildDepends: containers,benchmark
 
+Executable bench_batch
+  Path: tests/
+  Install: false
+  CompiledObject: native
+  Build$: flag(bench)
+  MainIs: bench_batch.ml
+  BuildDepends: containers,benchmark
+
 Executable test_levenshtein
   Path: tests/
   Install: false
