@@ -53,6 +53,8 @@ module type S = sig
 
   (** {6 Combinators} *)
 
+  val id : ('a, 'a) op
+
   val map : ('a -> 'b) -> ('a, 'b) op
 
   val filter : ('a -> bool) -> ('a,'a) op

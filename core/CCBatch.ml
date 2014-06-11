@@ -47,6 +47,8 @@ module type S = sig
 
   (** {6 Combinators} *)
 
+  val id : ('a, 'a) op
+
   val map : ('a -> 'b) -> ('a, 'b) op
 
   val filter : ('a -> bool) -> ('a,'a) op
@@ -62,22 +64,21 @@ end
 module Make(C : COLLECTION) = struct
   type 'a t = 'a C.t
   type (_,_) op =
-    | Map : ('a -> 'b) -> ('a, 'b) op
-    | Filter : ('a -> bool) -> ('a, 'a) op
-    | FilterMap : ('a -> 'b option) -> ('a,'b) op
-    | FlatMap : ('a -> 'b t) -> ('a,'b) op
-    | Compose : ('a,'b) op * ('b, 'c) op -> ('a, 'c) op
+    | Id : ('a,'a) op
+    | Compose : ('a,'b) base_op * ('b, 'c) op -> ('a, 'c) op
+  and (_,_) base_op =
+    | Map : ('a -> 'b) -> ('a, 'b) base_op
+    | Filter : ('a -> bool) -> ('a, 'a) base_op
+    | FilterMap : ('a -> 'b option) -> ('a,'b) base_op
+    | FlatMap : ('a -> 'b t) -> ('a,'b) base_op
 
-  (* right-associativity *)
-  let _compose f g = match f with
-    | Compose (f1, f2) -> Compose (f1, Compose (f2, g))
-    | _ -> Compose (f, g)
 
-  let compose f g = _compose g f
-  let (>>>) f g = _compose f g
-
-  (* function composition *)
-  let _compose_fun f g = fun x -> g (f x)
+  (* associativity: put parenthesis on the right *)
+  let rec _compose : type a b c. (a,b) op -> (b,c) op -> (a,c) op
+  = fun f g -> match f with
+    | Compose (f1, Id) -> Compose (f1, g)
+    | Compose (f1, f2) -> Compose (f1, _compose f2 g)
+    | Id -> g
 
   (* result of one step of optimization, indicates whether the object did
       change or not *)
@@ -91,10 +92,9 @@ module Make(C : COLLECTION) = struct
   let rec _optimize : type a b. (a,b) op -> (a,b) op
   = fun op -> match op with
     | Compose (a, b) ->
-        let a' = _optimize a
-        and b' = _optimize b in
-        _optimize_rec (Compose (a', b'))
-    | op -> op
+        let b' = _optimize b in
+        _optimize_rec (Compose (a, b'))
+    | Id -> Id
   (* repeat optimization until a fixpoint is reached *)
   and _optimize_rec : type a b. (a,b) op -> (a,b) op
   = fun op -> match _optimize_head op with
@@ -102,24 +102,67 @@ module Make(C : COLLECTION) = struct
     | New op' -> _optimize_rec op'
   and _optimize_head : type a b. (a,b) op -> (a,b) op optim_result
   = function
+    | Id -> Same Id
     | Compose (Map f, Compose (Map g, cont)) ->
         _new_compose (Map (fun x -> g (f x))) cont
+    | Compose (Map f, Compose (Filter p, cont)) ->
+        _new_compose
+          (FilterMap (fun x -> let y = f x in if p y then Some y else None)) cont
+    | Compose (Map f, Compose (FilterMap f', cont)) ->
+        _new_compose
+          (FilterMap (fun x -> f' (f x))) cont
+    | Compose (Map f, Compose (FlatMap f', cont)) ->
+        _new_compose
+          (FlatMap (fun x -> f' (f x))) cont
+    | Compose (Filter p, Compose (Filter p', cont)) ->
+        _new_compose (Filter (fun x -> p x && p' x)) cont
     | Compose (Filter p, Compose (Map g, cont)) ->
         _new_compose
           (FilterMap (fun x -> if p x then Some (g x) else None)) cont
-    | Compose (Filter p, Compose (Filter p', cont)) ->
-        _new_compose (Filter (fun x -> p x && p' x)) cont
-    | Compose (Filter p, Compose (FlatMap f, cont)) ->
-        _new_compose (FlatMap (fun x -> if p x then f x else C.empty)) cont
-    | op ->
+    | Compose (Filter p, Compose (FilterMap f', cont)) ->
+        _new_compose
+          (FilterMap (fun x -> if p x then f' x else None)) cont
+    | Compose (Filter p, Compose (FlatMap f', cont)) ->
+        _new_compose
+          (FlatMap (fun x -> if p x then f' x else C.empty)) cont
+    | Compose (FilterMap f, Compose (FilterMap f', cont)) ->
+        _new_compose
+          (FilterMap
+            (fun x -> match f x with None -> None | Some y -> f' y))
+          cont
+    | Compose (FilterMap f, Compose (Filter p, cont)) ->
+        _new_compose
+          (FilterMap
+            (fun x -> match f x with
+              | (Some y) as res when p y -> res
+              | _ -> None))
+          cont
+    | Compose (FilterMap f, Compose (Map f', cont)) ->
+        _new_compose
+          (FilterMap
+            (fun x -> match f x with
+              | None -> None
+              | Some y -> Some (f' y)))
+          cont
+    | Compose (FilterMap f, Compose (FlatMap f', cont)) ->
+        _new_compose
+          (FlatMap
+            (fun x -> match f x with
+              | None -> C.empty
+              | Some y -> f' y))
+          cont
+    | (Compose _) as op ->
         Same op  (* cannot optimize *)
 
   let apply op a =
     let rec _apply : type a b. (a,b) op -> a t -> b t
     = fun op a -> match op with
       | Compose (op1, op2) ->
-          let a' = _apply op1 a in
+          let a' = _apply_base op1 a in
           _apply op2 a'
+      | Id -> a
+    and _apply_base : type a b. (a,b) base_op -> a t -> b t
+    = fun op a -> match op with
       | Map f -> C.map f a
       | Filter p -> C.filter p a
       | FlatMap f -> C.flat_map f a
@@ -133,9 +176,13 @@ module Make(C : COLLECTION) = struct
 
   (** {6 Combinators} *)
 
-  let map f = Map f
-  let filter p = Filter p
-  let filter_map f = FilterMap f
-  let flat_map f = FlatMap f
+  let id = Id
+  let map f = Compose (Map f, Id)
+  let filter p = Compose (Filter p, Id)
+  let filter_map f = Compose (FilterMap f, Id)
+  let flat_map f = Compose (FlatMap f, Id)
+
+  let compose f g = _compose g f
+  let (>>>) f g = _compose f g
 end
 
