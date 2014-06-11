@@ -210,7 +210,7 @@ let run p seq =
   (* how to parse the input: step by step, starting with [p] as initial parser *)
   let step l x = CCList.flat_map (fun p -> consume_one p x) l in
   let initial_state = p >>> fun x -> [STBottom x] in
-  let res = _fold_seq step [initial_state] seq in
+  let res = _fold_seq step (reduce initial_state) seq in
   (* signal "end of input" *)
   let res = CCList.flat_map finish res in
   (* recover results *)
@@ -220,16 +220,18 @@ let run p seq =
       | _ -> None
     ) res
 
-(*$R
-  type sexp = Atom of string | List of sexp list \
-  let atom i = Atom i \
-  let list_ i = List i \
 
+(*$R
+  let module S = struct type t = Atom of string | List of t list end in
+  let open S in
+  let (%) f g x = f (g x) in
+  let atom i = Atom i  in
+  let list_ i = List i  in
   let rec p () =
-    (skip_spaces >> ident >>= atom)
-    <|> (skip_spaces >> exact '(' >> many1 ~sep:(exact ' ') (delay p) >>= fun l
-        >> skip_spaces >> exact ')' >> return (list_ l))
+    (skip_spaces >> ident >>= (return % atom))
+    <|> (skip_spaces >> exact '(' >> many1 ~sep:(exact ' ') (delay p) >>= fun l ->
+        skip_spaces >> exact ')' >> return (list_ l))
   in
-  run (p ()) (CCSequence.of_string "(a b (c d))") =
-    [list_ [atom "a"; atom "b"; list_ [atom "c"; atom "d"]]]
+  let res = run (p ()) (CCSequence.of_str "(a b (c d))") in
+  assert_equal res [list_ [atom "a"; atom "b"; list_ [atom "c"; atom "d"]]]
 *)
