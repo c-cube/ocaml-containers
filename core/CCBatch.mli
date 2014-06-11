@@ -48,14 +48,23 @@ module type S = sig
   type ('a,'b) op
   (** Operation that converts an ['a t] into a ['b t] *)
 
-  val apply : ('a,'b) op -> 'a t -> 'b t
-  val apply' : 'a t -> ('a,'b) op -> 'b t
-
   val length : (_,_) op -> int
   (** Number of intermediate structures needed to compute this operation *)
 
-  val optimize : ('a,'b) op -> ('a,'b) op
+  type optimization_level =
+    | OptimNone
+    | OptimBase
+    | OptimMergeFlatMap
+
+  val optimize : ?level:optimization_level -> ('a,'b) op -> ('a,'b) op
   (** Try to minimize the length of the operation *)
+
+  val apply : ?level:optimization_level -> ('a,'b) op -> 'a t -> 'b t
+  (** Apply the operation to the collection.
+      @param level the optimization level, default is [OptimBase] *)
+
+  val apply' : 'a t -> ('a,'b) op -> 'b t
+  (** Flip of {!apply} *)
 
   (** {6 Combinators} *)
 

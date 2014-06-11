@@ -45,6 +45,8 @@ val of_list : 'a list -> 'a t
 val to_list : 'a t -> 'a list
 (** Gather all values into a list *)
 
+val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
@@ -71,6 +73,8 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 val append : 'a t -> 'a t -> 'a t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+
+val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 
 val flatten : 'a t t -> 'a t
 

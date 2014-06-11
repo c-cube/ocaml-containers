@@ -42,14 +42,23 @@ module type S = sig
   type ('a,'b) op
   (** Operation that converts an ['a t] into a ['b t] *)
 
-  val apply : ('a,'b) op -> 'a t -> 'b t
-  val apply' : 'a t -> ('a,'b) op -> 'b t
-
   val length : (_,_) op -> int
   (** Number of intermediate structures needed to compute this operation *)
 
-  val optimize : ('a,'b) op -> ('a,'b) op
+  type optimization_level =
+    | OptimNone
+    | OptimBase
+    | OptimMergeFlatMap
+
+  val optimize : ?level:optimization_level -> ('a,'b) op -> ('a,'b) op
   (** Try to minimize the length of the operation *)
+
+  val apply : ?level:optimization_level -> ('a,'b) op -> 'a t -> 'b t
+  (** Apply the operation to the collection.
+      @param level the optimization level, default is [OptimBase] *)
+
+  val apply' : 'a t -> ('a,'b) op -> 'b t
+  (** Flip of {!apply} *)
 
   (** {6 Combinators} *)
 
@@ -92,22 +101,29 @@ module Make(C : COLLECTION) = struct
     | Same of 'a
     | New of 'a
 
+  type optimization_level =
+    | OptimNone
+    | OptimBase
+    | OptimMergeFlatMap
+
   let _new_compose a b = New (Compose (a,b))
 
   (* optimize a batch operation by fusion *)
-  let rec _optimize : type a b. (a,b) op -> (a,b) op
-  = fun op -> match op with
+  let rec _optimize : type a b. level:optimization_level -> (a,b) op -> (a,b) op
+  = fun ~level op -> match op with
+    | _ when level = OptimNone -> op
     | Compose (a, b) ->
-        let b' = _optimize b in
-        _optimize_rec (Compose (a, b'))
+        let b' = _optimize ~level b in
+        _optimize_rec ~level (Compose (a, b'))
     | Id -> Id
   (* repeat optimization until a fixpoint is reached *)
-  and _optimize_rec : type a b. (a,b) op -> (a,b) op
-  = fun op -> match _optimize_head op with
+  and _optimize_rec : type a b. level:optimization_level -> (a,b) op -> (a,b) op
+  = fun ~level op -> match _optimize_head ~level op with
     | Same _ -> op
-    | New op' -> _optimize_rec op'
-  and _optimize_head : type a b. (a,b) op -> (a,b) op optim_result
-  = function
+    | New op' -> _optimize_rec ~level op'
+  and _optimize_head
+  : type a b. level:optimization_level -> (a,b) op -> (a,b) op optim_result
+  = fun ~level op -> match op with
     | Id -> Same Id
     | Compose (Map f, Compose (Map g, cont)) ->
         _new_compose (Map (fun x -> g (f x))) cont
@@ -157,6 +173,13 @@ module Make(C : COLLECTION) = struct
               | None -> C.empty
               | Some y -> f' y))
           cont
+    | Compose (FlatMap f, Compose (FlatMap f', cont)) ->
+        _new_compose
+          (FlatMap 
+            (fun x ->
+              let a = f x in
+              C.flat_map f' a))
+          cont
     | (Compose _) as op ->
         Same op  (* cannot optimize *)
 
@@ -165,9 +188,9 @@ module Make(C : COLLECTION) = struct
     | Compose (_, Id) -> 0
     | Compose (_, cont) -> 1 + length cont
 
-  let optimize = _optimize
+  let optimize ?(level=OptimBase) = _optimize ~level
 
-  let apply op a =
+  let apply ?level op a =
     let rec _apply : type a b. (a,b) op -> a t -> b t
     = fun op a -> match op with
       | Compose (op1, op2) ->
@@ -182,7 +205,7 @@ module Make(C : COLLECTION) = struct
       | FilterMap f -> C.filter_map f a
     in
     (* optimize and run *)
-    let op' = _optimize op in
+    let op' = optimize ?level op in
     _apply op' a
 
   let apply' a op = apply op a

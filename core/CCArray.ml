@@ -125,6 +125,13 @@ let exists p a =
     i < Array.length a && (p a.(i) || check (i+1))
   in check 0
 
+let (--) i j =
+  if i<=j
+  then
+    Array.init (j-i+1) (fun k -> i+k)
+  else
+    Array.init (i-j+1) (fun k -> i-k)
+
 (** all the elements of a, but the i-th, into a list *)
 let except_idx a i =
   foldi

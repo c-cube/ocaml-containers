@@ -58,6 +58,9 @@ val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 val exists : ('a -> bool) -> 'a t -> bool
 
+val (--) : int -> int -> int t
+(** Range array *)
+
 val except_idx : 'a t -> int -> 'a list
 (** Remove given index *)
 

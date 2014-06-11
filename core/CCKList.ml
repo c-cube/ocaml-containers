@@ -57,6 +57,15 @@ let of_list l =
     | x::l' -> `Cons (x, aux l')
   in aux l
 
+let equal ?(eq=(=)) l1 l2 =
+  let rec aux l1 l2 = match l1(), l2() with
+    | `Nil, `Nil -> true
+    | `Nil, _
+    | _, `Nil -> false
+    | `Cons (x1,l1'), `Cons (x2,l2') ->
+        eq x1 x2 && aux l1' l2'
+  in aux l1 l2
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
@@ -139,6 +148,14 @@ and _flat_map_app f l l' () = match l () with
   | `Nil -> flat_map f l' ()
   | `Cons (x, tl) ->
       `Cons (x, _flat_map_app f tl l')
+
+let rec filter_map f l () = match l() with
+  | `Nil -> `Nil
+  | `Cons (x, l') ->
+      begin match f x with
+      | None -> filter_map f l' ()
+      | Some y -> `Cons (y, filter_map f l')
+      end
 
 let flatten l = flat_map (fun x->x) l
 
