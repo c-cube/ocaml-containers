@@ -32,6 +32,77 @@ let foldi f acc a =
     if i = Array.length a then acc else recurse (f acc i a.(i)) (i+1)
   in recurse acc 0
 
+let reverse_in_place a =
+  let n = Array.length a in
+  for i = 0 to (n-1)/2 do
+    let t = a.(i) in
+    a.(i) <- a.(n-i-1);
+    a.(n-i-1) <- t;
+  done
+
+(*$T
+  let a = [| 1; 2; 3; 4; 5 |] in \
+    reverse_in_place a; \
+    a = [| 5;4;3;2;1 |]
+*)
+
+(*$T
+  let a = [| 1; 2; 3; 4; 5; 6 |] in \
+    reverse_in_place a; \
+    a = [| 6;5;4;3;2;1 |]
+*)
+
+let filter_map f a =
+  let rec aux acc i =
+    if i = Array.length a
+    then (
+      let a' = Array.of_list acc in
+      reverse_in_place a';
+      a'
+    ) else match f a.(i) with
+      | None -> aux acc (i+1)
+      | Some x -> aux (x::acc) (i+1)
+  in aux [] 0
+
+(*$T
+  filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+    [| 1; 2; 3; 4 |] = [| "2"; "4" |]
+  filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+    [| 1; 2; 3; 4; 5; 6 |] \
+    = [| "2"; "4"; "6" |]
+*)
+
+let filter p a =
+  filter_map (fun x -> if p x then Some x else None) a
+
+(* append [rev a] in front of [acc] *)
+let rec __rev_append_list a acc i =
+  if i = Array.length a
+  then acc
+  else
+    __rev_append_list a (a.(i) :: acc) (i+1)
+
+let flat_map f a =
+  let rec aux acc i =
+    if i = Array.length a
+    then (
+      let a' = Array.of_list acc in
+      reverse_in_place a';
+      a'
+    )
+    else
+      let a' = f a.(i) in
+      aux (__rev_append_list a' acc 0) (i+1)
+  in aux [] 0
+
+(*$T
+  let a = [| 1; 3; 5 |] in \
+  let a' = flat_map (fun x -> [| x; x+1 |]) a in \
+  a' = [| 1; 2; 3; 4; 5; 6 |]
+*)
+
+let (>>=) a f = flat_map f a
+
 let for_all p a =
   let rec check i =
     i = Array.length a || (p a.(i) && check (i+1))
@@ -79,4 +150,3 @@ let pp_i ?(sep=", ") pp_item buf a =
     (if i > 0 then Buffer.add_string buf sep);
     pp_item buf i a.(i)
   done
-

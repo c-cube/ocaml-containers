@@ -30,6 +30,22 @@ type 'a t = 'a array
 val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** fold left on array, with index *)
 
+val filter : ('a -> bool) -> 'a t -> 'a t
+(** Filter elements out of the array. Only the elements satisfying
+    the given predicate will be kept. *)
+
+val reverse_in_place : 'a t -> unit
+(** Reverse the array in place *)
+
+val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+(** Map each element into another value, or discard it *)
+
+val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+(** transform each element into an array, then flatten *)
+
+val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+(** Infix version of {!flat_map} *)
+
 val for_all : ('a -> bool) -> 'a t -> bool
 
 val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
