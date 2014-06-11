@@ -28,6 +28,8 @@ of this software, even if advised of the possibility of such damage.
 
 type 'a t = 'a list
 
+val empty : 'a t
+
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Safe version of map *)
 

@@ -27,6 +27,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type 'a t = 'a array
 
+val empty : 'a t
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+
 val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** fold left on array, with index *)
 

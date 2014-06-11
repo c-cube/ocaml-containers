@@ -41,7 +41,7 @@ Library "containers"
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl,
                     CCLeftistheap, CCList, CCOpt, CCPair, CCFun, CCHash,
-                    CCKList, CCInt, CCBool, CCArray
+                    CCKList, CCInt, CCBool, CCArray, CCBatch
   FindlibName:      containers
 
 Library "containers_string"

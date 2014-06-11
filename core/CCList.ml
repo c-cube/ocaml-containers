@@ -28,6 +28,8 @@ of this software, even if advised of the possibility of such damage.
 
 type 'a t = 'a list
 
+let empty = []
+
 (* max depth for direct recursion *)
 let _direct_depth = 500
 

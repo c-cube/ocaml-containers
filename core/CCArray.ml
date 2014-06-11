@@ -27,6 +27,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type 'a t = 'a array
 
+let empty = [| |]
+
+let map = Array.map
+
 let foldi f acc a =
   let rec recurse acc i =
     if i = Array.length a then acc else recurse (f acc i a.(i)) (i+1)
