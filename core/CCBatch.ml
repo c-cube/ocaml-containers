@@ -45,6 +45,12 @@ module type S = sig
   val apply : ('a,'b) op -> 'a t -> 'b t
   val apply' : 'a t -> ('a,'b) op -> 'b t
 
+  val length : (_,_) op -> int
+  (** Number of intermediate structures needed to compute this operation *)
+
+  val optimize : ('a,'b) op -> ('a,'b) op
+  (** Try to minimize the length of the operation *)
+
   (** {6 Combinators} *)
 
   val id : ('a, 'a) op
@@ -153,6 +159,13 @@ module Make(C : COLLECTION) = struct
           cont
     | (Compose _) as op ->
         Same op  (* cannot optimize *)
+
+  let rec length : type a b. (a,b) op -> int = function
+    | Id -> 0
+    | Compose (_, Id) -> 0
+    | Compose (_, cont) -> 1 + length cont
+
+  let optimize = _optimize
 
   let apply op a =
     let rec _apply : type a b. (a,b) op -> a t -> b t

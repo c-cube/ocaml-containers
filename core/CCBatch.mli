@@ -51,6 +51,12 @@ module type S = sig
   val apply : ('a,'b) op -> 'a t -> 'b t
   val apply' : 'a t -> ('a,'b) op -> 'b t
 
+  val length : (_,_) op -> int
+  (** Number of intermediate structures needed to compute this operation *)
+
+  val optimize : ('a,'b) op -> ('a,'b) op
+  (** Try to minimize the length of the operation *)
+
   (** {6 Combinators} *)
 
   val id : ('a, 'a) op
