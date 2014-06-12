@@ -37,20 +37,21 @@ let foldi f acc a =
   in recurse acc 0
 
 let reverse_in_place a =
-  let n = Array.length a in
-  for i = 0 to (n-1)/2 do
-    let t = a.(i) in
-    a.(i) <- a.(n-i-1);
-    a.(n-i-1) <- t;
-  done
+  if a = [| |] then ()
+  else
+    let n = Array.length a in
+    for i = 0 to (n-1)/2 do
+      let t = a.(i) in
+      a.(i) <- a.(n-i-1);
+      a.(n-i-1) <- t;
+    done
 
 (*$T
+  reverse_in_place [| |]; true
+  reverse_in_place [| 1 |]; true
   let a = [| 1; 2; 3; 4; 5 |] in \
     reverse_in_place a; \
     a = [| 5;4;3;2;1 |]
-*)
-
-(*$T
   let a = [| 1; 2; 3; 4; 5; 6 |] in \
     reverse_in_place a; \
     a = [| 6;5;4;3;2;1 |]
