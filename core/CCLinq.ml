@@ -137,6 +137,7 @@ module Coll = struct
 
   let sort cmp c = match c with
     | List l -> List (List.sort cmp l)
+    | Seq s -> List (List.sort cmp (CCSequence.to_rev_list s))
     | _ ->
         to_seq c |> set_of_seq ~cmp
 
@@ -228,7 +229,7 @@ module Map = struct
         M.fold
           (fun key set acc -> f acc key set) !map acc
       );
-      to_seq = M.to_seq !map;
+      to_seq = (fun k -> M.to_seq !map k);
     } in
     {
       cur;
@@ -281,11 +282,10 @@ module Map = struct
 
   let count build seq =
     seq (fun x ->
-      let n = match build.cur.get x with
-        | None -> 1
-        | Some n -> n+1
-      in
-      build.add x n);
+      build.update x
+        (function
+            | None -> Some 1
+            | Some n -> Some (n+1)));
     build.cur
 
   let get m x = m.get x
@@ -298,6 +298,8 @@ module Map = struct
   let size m = m.size ()
 
   let to_seq m = m.to_seq
+
+  let to_list m = m.to_seq |> CCSequence.to_rev_list
 end
 
 (** {2 Query operators} *)
@@ -538,11 +540,15 @@ let flat_map_seq f q =
   let f' x = Coll.of_seq (f x) in
   Unary (FlatMap f', q)
 
+let flat_map_list f q =
+  let f' x = Coll.of_list (f x) in
+  Unary (FlatMap f', q)
+
 let take n q = Unary (Take n, q)
 
 let take_while p q = Unary (TakeWhile p, q)
 
-let sort ~cmp q = Unary (Sort cmp, q)
+let sort ?(cmp=Pervasives.compare) () q = Unary (Sort cmp, q)
 
 let distinct ?(cmp=Pervasives.compare) () q =
   Unary (Distinct cmp, q)
@@ -553,16 +559,19 @@ let get key q =
 let get_exn key q =
   Unary (Get (Unsafe, key), q)
 
-let map_to_seq q =
+let map_iter q =
   Unary (GeneralMap (fun m -> Coll.of_seq m.Map.to_seq), q)
 
-let map_to_seq_flatten q =
+let map_iter_flatten q =
   let f m = m.Map.to_seq
       |> CCSequence.flatMap
         (fun (k,v) -> Coll.to_seq v |> CCSequence.map (fun v' -> k,v'))
       |> Coll.of_seq
   in
   Unary (GeneralMap f, q)
+
+let map_to_list q =
+  Unary (GeneralMap Map.to_list, q)
 
 let group_by ?(cmp=Pervasives.compare) f q =
   Unary (GroupBy (cmp,f), q)
@@ -704,3 +713,7 @@ let to_queue q =
 
 let to_stack q =
   QueryMap ((fun c s -> CCSequence.to_stack s (Coll.to_seq c)), q)
+
+(** {6 Misc} *)
+
+let run_list q = run (q |> to_list)

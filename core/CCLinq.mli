@@ -24,7 +24,25 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 LINQ-like operations on collections} *)
+(** {1 LINQ-like operations on collections}
+
+The purpose it to provide powerful combinators to express iteration,
+transformation and combination of collections of items.
+
+{[
+
+CCLinq.(
+  start_list [1;2;3]
+  |> flat_map_list (fun x -> CCList.(x -- (x+10)))
+  |> sort ()
+  |> count ()
+  |> map_to_list |> run
+);;
+- : (int * int) list = [(13, 1); (12, 2); (11, 3); (10, 3); (9, 3);
+    (8, 3); (7, 3); (6, 3); (5, 3); (4, 3); (3, 3); (2, 2); (1, 1)]
+]}
+
+*)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
@@ -49,6 +67,8 @@ module Map : sig
   val size : (_,_) t -> int
   
   val to_seq : ('a, 'b) t -> ('a * 'b) sequence
+
+  val to_list : ('a, 'b) t -> ('a * 'b) list
 end
 
 (** {2 Query operators} *)
@@ -79,6 +99,9 @@ val run : 'a t -> 'a
 val run_no_opt : 'a t -> 'a
 (** Execute the query, without optimizing it at all *)
 
+val run_list : 'a collection t -> 'a list
+(** Shortcut to obtain a list *)
+
 (** {6 Basics on Collections} *)
 
 val map : ('a -> 'b) -> 'a collection t -> 'b collection t
@@ -104,13 +127,15 @@ val flat_map : ('a -> 'b collection) -> 'a collection t -> 'b collection t
 val flat_map_seq : ('a -> 'b sequence) -> 'a collection t -> 'b collection t
 (** Same as {!flat_map} but using sequences *)
 
+val flat_map_list : ('a -> 'b list) -> 'a collection t -> 'b collection t
+
 val take : int -> 'a collection t -> 'a collection t
 (** take at most [n] elements *)
 
 val take_while : ('a -> bool) -> 'a collection t -> 'a collection t
 (** take elements while they satisfy a predicate *)
 
-val sort : cmp:'a ord -> 'a collection t -> 'a collection t
+val sort : ?cmp:'a ord -> unit -> 'a collection t -> 'a collection t
 (** Sort items by the given comparison function *)
 
 val distinct : ?cmp:'a ord -> unit -> 'a collection t -> 'a collection t
@@ -126,11 +151,13 @@ val get_exn : 'a -> ('a, 'b) Map.t t -> 'b t
 (** Unsafe version of {!get}.
     @raise Not_found if the key is not present. *)
 
-val map_to_seq : ('a,'b) Map.t t -> ('a*'b) collection t
+val map_iter : ('a,'b) Map.t t -> ('a*'b) collection t
 (** View a multimap as a proper collection *)
 
-val map_to_seq_flatten : ('a,'b collection) Map.t t -> ('a*'b) collection t
+val map_iter_flatten : ('a,'b collection) Map.t t -> ('a*'b) collection t
 (** View a multimap as a collection of individual key/value pairs *)
+
+val map_to_list : ('a,'b) Map.t t -> ('a*'b) list t
 
 (** {6 Aggregation} *)
 
