@@ -260,25 +260,16 @@ module Map = struct
         end
     | {eq=Some eq; hash=Some hash; _} -> make_hash ~eq ~hash ()
 
-  let multiset build seq =
+  let multimap build seq =
     seq (fun (k,v) ->
       build.update k (function
         | None -> Some [v]
         | Some l -> Some (v::l)));
-    { is_empty = build.cur.is_empty;
-      size = build.cur.size;
-      get = (fun k -> match build.cur.get k with
-        | None -> None
-        | Some v -> Some (Coll.of_list v));
-      fold = (fun f acc ->
-        build.cur.fold (fun acc k v -> f acc k (Coll.of_list v)) acc);
-      to_seq = build.cur.to_seq
-        |> CCSequence.map (fun (k,v) -> k,Coll.of_list v);
-    }
+    build.cur
 
   let multimap_cmp ?cmp seq =
     let build = make_cmp ?cmp () in
-    multiset build seq
+    multimap build seq
 
   let count build seq =
     seq (fun x ->
@@ -330,7 +321,7 @@ type (_, _) unary =
   | Contains : 'a equal * 'a -> ('a collection, bool) unary
   | Get : ('b,'c) safety * 'a -> (('a,'b) Map.t, 'c) unary
   | GroupBy : 'b ord * ('a -> 'b)
-    -> ('a collection, ('b,'a collection) Map.t) unary
+    -> ('a collection, ('b,'a list) Map.t) unary
   | Count : 'a ord -> ('a collection, ('a, int) Map.t) unary
 
 type ('a,'b,'key,'c) join_descr = {
@@ -576,8 +567,14 @@ let map_to_list q =
 let group_by ?(cmp=Pervasives.compare) f q =
   Unary (GroupBy (cmp,f), q)
 
+let group_by' ?cmp f q =
+  map_iter (group_by ?cmp f q)
+
 let count ?(cmp=Pervasives.compare) () q =
   Unary (Count cmp, q)
+
+let count' ?cmp () q =
+  map_iter (count ?cmp () q)
 
 let fold f acc q =
   Unary (Fold (f, acc), q)
@@ -676,6 +673,9 @@ let diff ?(cmp=Pervasives.compare) () q1 q2 =
 
 let fst q = map fst q
 let snd q = map snd q
+
+let map1 f q = map (fun (x,y) -> f x, y) q
+let map2 f q = map (fun (x,y) -> x, f y) q
 
 let flatten_opt q = filter_map _id q
 

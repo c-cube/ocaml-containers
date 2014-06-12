@@ -162,15 +162,20 @@ val map_to_list : ('a,'b) Map.t t -> ('a*'b) list t
 (** {6 Aggregation} *)
 
 val group_by : ?cmp:'b ord ->
-               ('a -> 'b) -> 'a collection t -> ('b,'a collection) Map.t t
+               ('a -> 'b) -> 'a collection t -> ('b,'a list) Map.t t
 (** [group_by f] takes a collection [c] as input, and returns
     a multimap [m] such that for each [x] in [c],
     [x] occurs in [m] under the key [f x]. In other words, [f] is used
     to obtain a key from [x], and [x] is added to the multimap using this key. *)
 
+val group_by' : ?cmp:'b ord ->
+                ('a -> 'b) -> 'a collection t -> ('b * 'a list) collection t
+
 val count : ?cmp:'a ord -> unit -> 'a collection t -> ('a, int) Map.t t
 (** [count c] returns a map from elements of [c] to the number
     of time those elements occur. *)
+
+val count' : ?cmp:'a ord -> unit -> 'a collection t -> ('a * int) collection t
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a collection t -> 'b t
 (** Fold over the collection *)
@@ -253,7 +258,12 @@ val diff : ?cmp:'a ord -> unit ->
 (** Specialized projection operators *)
 
 val fst : ('a * 'b) collection t -> 'a collection t
+
 val snd : ('a * 'b) collection t -> 'b collection t
+
+val map1 : ('a -> 'b) -> ('a * 'c) collection t -> ('b * 'c) collection t
+
+val map2 : ('a -> 'b) -> ('c * 'a) collection t -> ('c * 'b) collection t
 
 val flatten_opt : 'a option collection t -> 'a collection t
 (** Flatten the collection by removing options *)
