@@ -30,6 +30,7 @@ module type COLLECTION = sig
   type 'a t
 
   val empty : 'a t
+  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
   val map : ('a -> 'b) -> 'a t -> 'b t
   val filter : ('a -> bool) -> 'a t -> 'a t
   val filter_map : ('a -> 'b option) -> 'a t -> 'b t
@@ -45,15 +46,7 @@ module type S = sig
   val length : (_,_) op -> int
   (** Number of intermediate structures needed to compute this operation *)
 
-  type optimization_level =
-    | OptimNone
-    | OptimBase
-    | OptimMergeFlatMap
-
-  val optimize : ?level:optimization_level -> ('a,'b) op -> ('a,'b) op
-  (** Try to minimize the length of the operation *)
-
-  val apply : ?level:optimization_level -> ('a,'b) op -> 'a t -> 'b t
+  val apply : ('a,'b) op -> 'a t -> 'b t
   (** Apply the operation to the collection.
       @param level the optimization level, default is [OptimBase] *)
 
@@ -79,9 +72,10 @@ end
 module Make(C : COLLECTION) = struct
   type 'a t = 'a C.t
   type (_,_) op =
-    | Id : ('a,'a) op
+    | Nil : ('a,'a) op
     | Compose : ('a,'b) base_op * ('b, 'c) op -> ('a, 'c) op
   and (_,_) base_op =
+    | Id : ('a, 'a) base_op
     | Map : ('a -> 'b) -> ('a, 'b) base_op
     | Filter : ('a -> bool) -> ('a, 'a) base_op
     | FilterMap : ('a -> 'b option) -> ('a,'b) base_op
@@ -91,134 +85,135 @@ module Make(C : COLLECTION) = struct
   (* associativity: put parenthesis on the right *)
   let rec _compose : type a b c. (a,b) op -> (b,c) op -> (a,c) op
   = fun f g -> match f with
-    | Compose (f1, Id) -> Compose (f1, g)
+    | Compose (f1, Nil) -> Compose (f1, g)
     | Compose (f1, f2) -> Compose (f1, _compose f2 g)
-    | Id -> g
+    | Nil -> g
 
-  (* result of one step of optimization, indicates whether the object did
-      change or not *)
-  type 'a optim_result =
-    | Same of 'a
-    | New of 'a
 
-  type optimization_level =
-    | OptimNone
-    | OptimBase
-    | OptimMergeFlatMap
+  (* After optimization, the op is a list of flatmaps, with maybe something else at the end *)
+  type (_,_) optimized_op =
+    | Base : ('a,'b) base_op -> ('a,'b) optimized_op
+    | FlatMapPlus : ('a -> 'b t) * ('b, 'c) optimized_op -> ('a, 'c) optimized_op
 
-  let _new_compose a b = New (Compose (a,b))
 
-  (* optimize a batch operation by fusion *)
-  let rec _optimize : type a b. level:optimization_level -> (a,b) op -> (a,b) op
-  = fun ~level op -> match op with
-    | _ when level = OptimNone -> op
-    | Compose (a, b) ->
-        let b' = _optimize ~level b in
-        _optimize_rec ~level (Compose (a, b'))
-    | Id -> Id
-  (* repeat optimization until a fixpoint is reached *)
-  and _optimize_rec : type a b. level:optimization_level -> (a,b) op -> (a,b) op
-  = fun ~level op -> match _optimize_head ~level op with
-    | Same _ -> op
-    | New op' -> _optimize_rec ~level op'
-  and _optimize_head
-  : type a b. level:optimization_level -> (a,b) op -> (a,b) op optim_result
-  = fun ~level op -> match op with
-    | Id -> Same Id
-    | Compose (Map f, Compose (Map g, cont)) ->
-        _new_compose (Map (fun x -> g (f x))) cont
-    | Compose (Map f, Compose (Filter p, cont)) ->
-        _new_compose
+  (* As compose, but optimize recursively on the way. *)
+  let rec optimize_compose
+  : type a b c. (a,b) base_op -> (b,c) op -> (a,c) optimized_op
+  = fun base_op op -> match base_op, op with
+    | f, Nil -> Base f
+    | Id, Compose (f, cont) -> optimize_compose f cont
+    | f, Compose (Id, cont) -> optimize_compose f cont
+    | Map f, Compose (Map g, cont) ->
+        optimize_compose (Map (fun x -> g (f x))) cont
+    | Map f, Compose (Filter p, cont) ->
+        optimize_compose
           (FilterMap (fun x -> let y = f x in if p y then Some y else None)) cont
-    | Compose (Map f, Compose (FilterMap f', cont)) ->
-        _new_compose
+    | Map f, Compose (FilterMap f', cont) ->
+        optimize_compose
           (FilterMap (fun x -> f' (f x))) cont
-    | Compose (Map f, Compose (FlatMap f', cont)) ->
-        _new_compose
+    | Map f, Compose (FlatMap f', cont) ->
+        optimize_compose
           (FlatMap (fun x -> f' (f x))) cont
-    | Compose (Filter p, Compose (Filter p', cont)) ->
-        _new_compose (Filter (fun x -> p x && p' x)) cont
-    | Compose (Filter p, Compose (Map g, cont)) ->
-        _new_compose
+    | Filter p, Compose (Filter p', cont) ->
+        optimize_compose (Filter (fun x -> p x && p' x)) cont
+    | Filter p, Compose (Map g, cont) ->
+        optimize_compose
           (FilterMap (fun x -> if p x then Some (g x) else None)) cont
-    | Compose (Filter p, Compose (FilterMap f', cont)) ->
-        _new_compose
+    | Filter p, Compose (FilterMap f', cont) ->
+        optimize_compose
           (FilterMap (fun x -> if p x then f' x else None)) cont
-    | Compose (Filter p, Compose (FlatMap f', cont)) ->
-        _new_compose
+    | Filter p, Compose (FlatMap f', cont) ->
+        optimize_compose
           (FlatMap (fun x -> if p x then f' x else C.empty)) cont
-    | Compose (FilterMap f, Compose (FilterMap f', cont)) ->
-        _new_compose
+    | FilterMap f, Compose (FilterMap f', cont) ->
+        optimize_compose
           (FilterMap
             (fun x -> match f x with None -> None | Some y -> f' y))
           cont
-    | Compose (FilterMap f, Compose (Filter p, cont)) ->
-        _new_compose
+    | FilterMap f, Compose (Filter p, cont) ->
+        optimize_compose
           (FilterMap
             (fun x -> match f x with
               | (Some y) as res when p y -> res
               | _ -> None))
           cont
-    | Compose (FilterMap f, Compose (Map f', cont)) ->
-        _new_compose
+    | FilterMap f, Compose (Map f', cont) ->
+        optimize_compose
           (FilterMap
             (fun x -> match f x with
               | None -> None
               | Some y -> Some (f' y)))
           cont
-    | Compose (FilterMap f, Compose (FlatMap f', cont)) ->
-        _new_compose
+    | FilterMap f, Compose (FlatMap f', cont) ->
+        optimize_compose
           (FlatMap
             (fun x -> match f x with
               | None -> C.empty
               | Some y -> f' y))
           cont
-    | Compose (FlatMap f, Compose (FlatMap f', cont)) ->
-        _new_compose
-          (FlatMap 
-            (fun x ->
-              let a = f x in
-              C.flat_map f' a))
-          cont
-    | (Compose _) as op ->
-        Same op  (* cannot optimize *)
+
+    (* flatmap doesn't compose with anything *)
+    | FlatMap f, Compose (f', cont) ->
+        FlatMapPlus (f, optimize_compose f' cont)
+
 
   let rec length : type a b. (a,b) op -> int = function
-    | Id -> 0
-    | Compose (_, Id) -> 0
+    | Nil -> 0
     | Compose (_, cont) -> 1 + length cont
 
-  let optimize ?(level=OptimBase) = _optimize ~level
 
-  let apply ?level op a =
-    let rec _apply : type a b. (a,b) op -> a t -> b t
-    = fun op a -> match op with
-      | Compose (op1, op2) ->
-          let a' = _apply_base op1 a in
-          _apply op2 a'
-      | Id -> a
-    and _apply_base : type a b. (a,b) base_op -> a t -> b t
-    = fun op a -> match op with
-      | Map f -> C.map f a
-      | Filter p -> C.filter p a
-      | FlatMap f -> C.flat_map f a
-      | FilterMap f -> C.filter_map f a
-    in
-    (* optimize and run *)
-    let op' = optimize ?level op in
-    _apply op' a
+  (* optimize a batch operation by fusion *)
+  let optimize : type a b. (a,b) op -> (a,b) optimized_op
+  = fun op -> match op with
+    | Compose (a, b) -> optimize_compose a b
+    | Nil -> Base Id
+
+  let rec apply_optimized : type a b. (a,b) optimized_op -> a t -> b t
+  = fun op a -> match op with
+    | Base f -> apply_base f a
+    | FlatMapPlus (f,c) -> apply_optimized c @@ C.flat_map f a
+  and apply_base : type a b. (a,b) base_op -> a t -> b t
+  = fun op a -> match op with
+    | Map f -> C.map f a
+    | Filter p -> C.filter p a
+    | FlatMap f -> C.flat_map f a
+    | FilterMap f -> C.filter_map f a
+    | Id -> a
+
+  let fusion_fold : type a b c. (a,b) base_op -> (c -> b -> c) -> c -> a -> c
+  = fun op f' -> match op with
+    | Map f -> (fun z x -> f' z (f x))
+    | Filter p -> (fun z x -> if p x then f' z x else z)
+    | FlatMap f -> (fun z x -> C.fold f' z (f x))
+    | FilterMap f -> (fun z x -> match f x with Some x' -> f' z x' | None -> z)
+    | Id -> f'
+
+  let rec apply_optimized_with_fold : type a b c. (a,b) optimized_op -> (c -> b -> c) -> c -> a t -> c
+  = fun op fold z a -> match op with
+    | Base f -> C.fold (fusion_fold f fold) z a
+    | FlatMapPlus (f,c) -> apply_optimized_with_fold c fold z @@ C.flat_map f a
+
+
+
+  (* optimize and run *)
+  let apply op a =
+    let op' = optimize op in
+    apply_optimized op' a
+
+  let apply_fold op fold z a =
+    let op' = optimize op in
+    apply_optimized_with_fold op' fold z a
 
   let apply' a op = apply op a
 
   (** {6 Combinators} *)
 
-  let id = Id
-  let map f = Compose (Map f, Id)
-  let filter p = Compose (Filter p, Id)
-  let filter_map f = Compose (FilterMap f, Id)
-  let flat_map f = Compose (FlatMap f, Id)
+  let id = Nil
+  let map f = Compose (Map f, Nil)
+  let filter p = Compose (Filter p, Nil)
+  let filter_map f = Compose (FilterMap f, Nil)
+  let flat_map f = Compose (FlatMap f, Nil)
 
   let compose f g = _compose g f
   let (>>>) f g = _compose f g
 end
-
