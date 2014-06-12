@@ -6,7 +6,6 @@ module type COLL = sig
   val doubleton : 'a -> 'a -> 'a t
   val (--) : int -> int -> int t
   val equal : int t -> int t -> bool
-  val fold : (int -> int -> int) -> int -> int t -> int
 end
 
 module Make(C : COLL) = struct
@@ -31,25 +30,13 @@ module Make(C : COLL) = struct
   let ops =
     BA.(filter f1 >>> flat_map f3 >>> filter f1 >>> map f2 >>> flat_map f3 >>> map f4)
 
-  let batch_simple a =
-    let a = BA.apply ~level:BA.OptimNone ops a in
-    ignore (collect a);
-    a
-
   let batch a =
-    let a = BA.apply ~level:BA.OptimBase ops a in
-    ignore (collect a);
-    a
-
-  let batch2 a =
-    let a = BA.apply ~level:BA.OptimMergeFlatMap ops a in
+    let a = BA.apply ops a in
     ignore (collect a);
     a
 
   let bench_for ~time n =
     Printf.printf "\n\nbenchmark for %s of len %d\n" C.name n;
-    Printf.printf "optimization: from %d to %d\n"
-      (BA.length ops) (BA.length (BA.optimize ops));
     flush stdout;
     let a = C.(0 -- n) in
     (* debug
@@ -57,21 +44,18 @@ module Make(C : COLL) = struct
     CCPrint.printf "simple: %a\n" (CCArray.pp CCInt.pp) (batch_simple a);
     CCPrint.printf "batch: %a\n" (CCArray.pp CCInt.pp) (batch a);
     *)
-    assert (C.equal (batch_simple a) (naive a));
-    assert (C.equal (batch_simple a) (batch a));
+    assert (C.equal (batch a) (naive a));
     let res = Benchmark.throughputN time
       [ C.name ^ "_naive", naive, a
-      ; C.name ^ "_batch_simple", batch_simple, a
       ; C.name ^ "_batch", batch, a
-      ; C.name ^ "_batch_merge", batch2, a
       ]
     in
     Benchmark.tabulate res
 
   let bench () =
     bench_for 1 100;
-    bench_for 2 100_000;
-    bench_for 2 1_000_000;
+    bench_for 4 100_000;
+    bench_for 4 1_000_000;
     ()
 end
 

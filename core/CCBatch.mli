@@ -35,6 +35,7 @@ module type COLLECTION = sig
   type 'a t
 
   val empty : 'a t
+  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
   val map : ('a -> 'b) -> 'a t -> 'b t
   val filter : ('a -> bool) -> 'a t -> 'a t
   val filter_map : ('a -> 'b option) -> 'a t -> 'b t
@@ -48,13 +49,10 @@ module type S = sig
   type ('a,'b) op
   (** Operation that converts an ['a t] into a ['b t] *)
 
-  val length : (_,_) op -> int
-  (** Number of intermediate structures needed to compute this operation *)
-
   val apply : ('a,'b) op -> 'a t -> 'b t
   (** Apply the operation to the collection. *)
 
-  val apply_width_fold : ('a, 'b) op -> ('c -> 'b -> 'c) -> 'c -> 'a t -> 'c
+  val apply_fold : ('a, 'b) op -> ('c -> 'b -> 'c) -> 'c -> 'a t -> 'c
   (** Apply the operation plus a fold to the collection. *)
 
   val apply' : 'a t -> ('a,'b) op -> 'b t
@@ -71,6 +69,9 @@ module type S = sig
   val filter_map : ('a -> 'b option) -> ('a,'b) op
 
   val flat_map : ('a -> 'b t) -> ('a,'b) op
+
+  val extern : ('a t -> 'b t) -> ('a,'b) op
+  (** Use a specific function that won't be optimized *)
 
   val compose : ('b,'c) op -> ('a,'b) op -> ('a,'c) op
   val (>>>) : ('a,'b) op -> ('b,'c) op -> ('a,'c) op
