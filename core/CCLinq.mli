@@ -113,8 +113,7 @@ val take_while : ('a -> bool) -> 'a collection t -> 'a collection t
 val sort : cmp:'a ord -> 'a collection t -> 'a collection t
 (** Sort items by the given comparison function *)
 
-val distinct : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash ->
-               unit -> 'a collection t -> 'a collection t
+val distinct : ?cmp:'a ord -> unit -> 'a collection t -> 'a collection t
 (** Remove duplicate elements from the input collection.
     All elements in the result are distinct. *)
 
@@ -135,7 +134,7 @@ val map_to_seq_flatten : ('a,'b collection) Map.t t -> ('a*'b) collection t
 
 (** {6 Aggregation} *)
 
-val group_by : ?cmp_key:'b ord -> ?cmp_val:'a ord ->
+val group_by : ?cmp:'b ord ->
                ('a -> 'b) -> 'a collection t -> ('b,'a collection) Map.t t
 (** [group_by f] takes a collection [c] as input, and returns
     a multimap [m] such that for each [x] in [c],
@@ -163,7 +162,11 @@ val reduce_exn : ('a -> 'b) -> ('a -> 'b -> 'b) -> ('b -> 'c) ->
 (** Same as {!reduce} but fails on empty collections.
     @raise Invalid_argument if the collection is empty *)
 
+val is_empty : 'a collection t -> bool t
+
 val sum : int collection t -> int t
+
+val contains : ?eq:'a equal -> 'a -> 'a collection t -> bool t
 
 val average : int collection t -> int option t
 val max : int collection t -> int option t
@@ -182,13 +185,14 @@ val find_map : ('a -> 'b option) -> 'a collection t -> 'b option t
 
 val join : ?cmp:'key ord -> ?eq:'key equal -> ?hash:'key hash ->
             ('a -> 'key) -> ('b -> 'key) ->
-            merge:('key -> 'a -> 'b -> 'c) ->
+            merge:('key -> 'a -> 'b -> 'c option) ->
             'a collection t -> 'b collection t -> 'c collection t
 (** [join key1 key2 ~merge] is a binary operation
     that takes two collections [a] and [b], projects their
     elements resp. with [key1] and [key2], and combine
     values [(x,y)] from [(a,b)] with the same [key]
-    using [merge]. *)
+    using [merge]. If [merge] returns [None], the combination
+    of values is discarded. *)
 
 val group_join : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash ->
                   ('b -> 'a) -> 'a collection t -> 'b collection t ->
