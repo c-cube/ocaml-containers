@@ -25,6 +25,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Growable, mutable vector} *)
 
+type rw = [`RW]
+type ro = [`RO]
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -34,9 +37,19 @@ type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 
 (** a vector of 'a. *)
-type 'a t = {
+type ('a,'mut) t = {
   mutable size : int;
   mutable vec : 'a array;
+}
+
+let freeze v = {
+  size=v.size;
+  vec=v.vec;
+}
+
+let freeze_copy v = {
+  size=v.size;
+  vec=Array.sub v.vec 0 v.size;
 }
 
 let create () = {
@@ -180,14 +193,25 @@ let copy v = {
 let shrink v n =
   if n < v.size then v.size <- n
 
-let sort cmp v =
-  (* copy array (to avoid junk in it), then sort the array *)
-  let a = Array.sub v.vec 0 v.size in
+let sort' cmp v =
+  (* possibly copy array (to avoid junk at its end), then sort the array *)
+  let a =
+    if Array.length v.vec = v.size then v.vec
+    else Array.sub v.vec 0 v.size
+  in
   Array.fast_sort cmp a;
   v.vec <- a
 
+let sort cmp v =
+  let v' = {
+    size=v.size;
+    vec=Array.sub v.vec 0 v.size;
+  } in
+  Array.sort cmp v'.vec;
+  v'
+
 let uniq_sort cmp v =
-  sort cmp v;
+  sort' cmp v;
   let n = v.size in
   (* traverse to remove duplicates. i= current index,
      j=current append index, j<=i. new_size is the size
