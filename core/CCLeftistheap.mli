@@ -28,6 +28,7 @@ Polymorphic implementation, following Okasaki *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a gen = unit -> 'a option
 
 type 'a t
   (** Heap containing values of type 'a *)
@@ -81,3 +82,6 @@ val to_seq : 'a t -> 'a sequence
 
 val of_klist : 'a t -> 'a klist -> 'a t
 val to_klist : 'a t -> 'a klist
+
+val of_gen : 'a t -> 'a gen -> 'a t
+val to_gen : 'a t -> 'a gen

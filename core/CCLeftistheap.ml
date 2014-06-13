@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a gen = unit -> 'a option
 
 type 'a t = {
   tree : 'a tree;
@@ -158,3 +159,22 @@ let to_klist h =
         `Cons (x, next (a :: b :: stack'))
   in
   next [h.tree]
+
+let rec of_gen h g = match g () with
+  | None -> h
+  | Some x ->
+      of_gen (add h x) g
+
+let to_gen h =
+  let stack = Stack.create () in
+  Stack.push h.tree stack;
+  let rec next () =
+    if Stack.is_empty stack
+    then None
+    else match Stack.pop stack with
+      | Empty -> next()
+      | Node (_, x, a, b) ->
+          Stack.push a stack;
+          Stack.push b stack;
+          Some x
+  in next
