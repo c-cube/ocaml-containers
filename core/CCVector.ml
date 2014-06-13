@@ -98,7 +98,8 @@ let _grow v x =
   if _empty_array v
     then v.vec <- Array.make 32 x
     else
-      let size = min (2 * Array.length v.vec + 10) Sys.max_array_length in
+      let n = Array.length v.vec in
+      let size = min (n + n/2 + 10) Sys.max_array_length in
       _resize v size
 
 let ensure v size =
