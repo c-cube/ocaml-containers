@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** Polymorphic implementation, following Okasaki *)
 
 type 'a sequence = ('a -> unit) -> unit
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 type 'a t = {
   tree : 'a tree;
@@ -81,6 +82,8 @@ let insert heap x =
   let tree = merge_tree heap.leq (Node (1, x, Empty, Empty)) heap.tree in
   { heap with tree; }
 
+let add = insert
+
 let filter heap p =
   let rec filter tree p = match tree with
   | Empty -> Empty
@@ -104,7 +107,14 @@ let extract_min heap =
     let heap' = { heap with tree; } in
     heap', x
 
-let iter heap f =
+let take heap = match heap.tree with
+  | Empty -> None
+  | Node (_, x, a, b) ->
+    let tree = merge_tree heap.leq a b in
+    let heap' = { heap with tree; } in
+    Some (x, heap')
+
+let iter f heap =
   let rec iter t = match t with
     | Empty -> ()
     | Node (_, x, a, b) ->
@@ -113,9 +123,18 @@ let iter heap f =
       iter b;
   in iter heap.tree
 
+let fold f acc h =
+  let rec fold acc h = match h with
+    | Empty -> acc
+    | Node (_, x, a, b) ->
+        let acc = f acc x in
+        let acc = fold acc a in
+        fold acc b
+  in fold acc h.tree
+
 let size heap =
   let r = ref 0 in
-  iter heap (fun _ -> incr r);
+  iter (fun _ -> incr r) heap;
   !r
 
 let of_seq heap seq =
@@ -123,4 +142,19 @@ let of_seq heap seq =
   seq (fun x -> h := insert !h x);
   !h
 
-let to_seq = iter
+let to_seq h k = iter k h
+
+let rec of_klist h l = match l() with
+  | `Nil -> h
+  | `Cons (x, l') ->
+      let h' = add h x in
+      of_klist h' l'
+
+let to_klist h =
+  let rec next stack () = match stack with
+    | [] -> `Nil
+    | Empty :: stack' -> next stack' ()
+    | Node (_, x, a, b) :: stack' ->
+        `Cons (x, next (a :: b :: stack'))
+  in
+  next [h.tree]
