@@ -25,6 +25,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Continuation List} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+type 'a equal = 'a -> 'a -> bool
+type 'a ord = 'a -> 'a -> int
+type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
+
 type + 'a t = unit -> 
   [ `Nil
   | `Cons of 'a * 'a t
@@ -40,47 +47,20 @@ let is_empty l = match l () with
   | `Nil -> true
   | `Cons _ -> false
 
-let to_list l =
-  let rec direct i (l:'a t) = match l () with
-    | `Nil -> []
-    | _ when i=0 -> safe [] l
-    | `Cons (x, f) -> x :: direct (i-1) f
-  and safe acc l = match l () with
-    | `Nil -> List.rev acc
-    | `Cons (x,l') -> safe (x::acc) l'
-  in
-  direct 200 l
+let rec equal eq l1 l2 = match l1(), l2() with
+  | `Nil, `Nil -> true
+  | `Nil, _
+  | _, `Nil -> false
+  | `Cons (x1,l1'), `Cons (x2,l2') ->
+      eq x1 x2 && equal eq l1' l2'
 
-let of_list l =
-  let rec aux l () = match l with
-    | [] -> `Nil
-    | x::l' -> `Cons (x, aux l')
-  in aux l
-
-let equal ?(eq=(=)) l1 l2 =
-  let rec aux l1 l2 = match l1(), l2() with
-    | `Nil, `Nil -> true
-    | `Nil, _
-    | _, `Nil -> false
-    | `Cons (x1,l1'), `Cons (x2,l2') ->
-        eq x1 x2 && aux l1' l2'
-  in aux l1 l2
-
-type 'a sequence = ('a -> unit) -> unit
-type 'a gen = unit -> 'a option
-
-let rec to_seq res k = match res () with
-  | `Nil -> ()
-  | `Cons (s, f) -> k s; to_seq f k
-
-let to_gen l =
-  let l = ref l in
-  fun () ->
-    match !l () with
-    | `Nil -> None
-    | `Cons (x,l') ->
-        l := l';
-        Some x
+let rec compare cmp l1 l2 = match l1(), l2() with
+  | `Nil, `Nil -> 0
+  | `Nil, _ -> -1
+  | _, `Nil -> 1
+  | `Cons (x1,l1'), `Cons (x2,l2') ->
+      let c = cmp x1 x2 in
+      if c = 0 then compare cmp l1' l2' else c
 
 let rec fold f acc res = match res () with
   | `Nil -> acc
@@ -97,10 +77,20 @@ let rec take n (l:'a t) () = match l () with
   | `Nil -> `Nil
   | `Cons (x,l') -> `Cons (x, take (n-1) l')
 
+let rec take_while p l () = match l () with
+  | `Nil -> `Nil
+  | `Cons (x,l') when p x -> `Cons (x, take_while p l')
+  | `Cons (_,l') -> take_while p l' ()
+
 let rec drop n (l:'a t) () = match l () with
   | l' when n=0 -> l'
   | `Nil -> `Nil
   | `Cons (_,l') -> drop (n-1) l' ()
+
+let rec drop_while p l () = match l() with
+  | `Nil -> `Nil
+  | `Cons (x,l') when p x -> drop_while p l' ()
+  | `Cons _ as res -> res
 
 (*$Q
   (Q.pair (Q.list Q.small_int) Q.small_int) (fun (l,n) -> \
@@ -173,3 +163,96 @@ let range i j =
 *)
 
 let (--) = range
+
+let rec fold2 f acc l1 l2 = match l1(), l2() with
+  | `Nil, _
+  | _, `Nil -> acc
+  | `Cons(x1,l1'), `Cons(x2,l2') ->
+      fold2 f (f acc x1 x2) l1' l2'
+
+let rec map2 f l1 l2 () = match l1(), l2() with
+  | `Nil, _
+  | _, `Nil -> `Nil
+  | `Cons(x1,l1'), `Cons(x2,l2') ->
+      `Cons (f x1 x2, map2 f l1' l2')
+
+let rec iter2 f l1 l2 = match l1(), l2() with
+  | `Nil, _
+  | _, `Nil -> ()
+  | `Cons(x1,l1'), `Cons(x2,l2') ->
+      f x1 x2; iter2 f l1' l2'
+
+let rec for_all2 f l1 l2 = match l1(), l2() with
+  | `Nil, _
+  | _, `Nil -> true
+  | `Cons(x1,l1'), `Cons(x2,l2') ->
+      f x1 x2 && for_all2 f l1' l2'
+
+let rec exists2 f l1 l2 = match l1(), l2() with
+  | `Nil, _
+  | _, `Nil -> false
+  | `Cons(x1,l1'), `Cons(x2,l2') ->
+      f x1 x2 || exists2 f l1' l2'
+
+let rec merge cmp l1 l2 () = match l1(), l2() with
+  | `Nil, tl2 -> tl2
+  | tl1, `Nil -> tl1
+  | `Cons(x1,l1'), `Cons(x2,l2') ->
+      if cmp x1 x2 < 0
+      then `Cons (x1, merge cmp l1' l2)
+      else `Cons (x2, merge cmp l1 l2')
+
+(** {2 Conversions} *)
+
+let rec _to_rev_list acc l = match l() with
+  | `Nil -> acc
+  | `Cons (x,l') -> _to_rev_list (x::acc) l'
+
+let to_rev_list l = _to_rev_list [] l
+
+let to_list l =
+  let rec direct i (l:'a t) = match l () with
+    | `Nil -> []
+    | _ when i=0 -> List.rev (_to_rev_list [] l)
+    | `Cons (x, f) -> x :: direct (i-1) f
+  in
+  direct 200 l
+
+let of_list l =
+  let rec aux l () = match l with
+    | [] -> `Nil
+    | x::l' -> `Cons (x, aux l')
+  in aux l
+
+let rec to_seq res k = match res () with
+  | `Nil -> ()
+  | `Cons (s, f) -> k s; to_seq f k
+
+let to_gen l =
+  let l = ref l in
+  fun () ->
+    match !l () with
+    | `Nil -> None
+    | `Cons (x,l') ->
+        l := l';
+        Some x
+
+(** {2 IO} *)
+
+let pp ?(sep=",") pp_item buf l =
+  let rec pp buf l = match l() with
+    | `Nil -> ()
+    | `Cons (x,l') -> Buffer.add_string buf sep; pp_item buf x; pp buf l'
+  in
+  match l() with
+    | `Nil -> ()
+    | `Cons (x,l') -> pp_item buf x; pp buf l'
+
+let print ?(sep=",") pp_item fmt l =
+  let rec pp fmt l = match l() with
+    | `Nil -> ()
+    | `Cons (x,l') -> Format.pp_print_string fmt sep; pp_item fmt x; pp fmt l'
+  in
+  match l() with
+    | `Nil -> ()
+    | `Cons (x,l') -> pp_item fmt x; pp fmt l'

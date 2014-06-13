@@ -25,6 +25,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Continuation List} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+type 'a equal = 'a -> 'a -> bool
+type 'a ord = 'a -> 'a -> int
+type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
+
+(** {2 Basics} *)
+
 type + 'a t = unit -> 
   [ `Nil
   | `Cons of 'a * 'a t
@@ -40,29 +49,26 @@ val singleton : 'a -> 'a t
 
 val is_empty : 'a t -> bool
 
-val of_list : 'a list -> 'a t
+val equal : 'a equal -> 'a t equal
+(** Equality step by step. Eager. *)
 
-val to_list : 'a t -> 'a list
-(** Gather all values into a list *)
-
-val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-
-type 'a sequence = ('a -> unit) -> unit
-type 'a gen = unit -> 'a option
-
-val to_seq : 'a t -> 'a sequence
-val to_gen : 'a t -> 'a gen
+val compare : 'a ord -> 'a t ord
+(** Lexicographic comparison. Eager. *)
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** Fold on values *)
 
 val iter : ('a -> unit) -> 'a t -> unit
 
-val length : 'a t -> int
+val length : _ t -> int
 
 val take : int -> 'a t -> 'a t
 
+val take_while : ('a -> bool) -> 'a t -> 'a t
+
 val drop : int -> 'a t -> 'a t
+
+val drop_while : ('a -> bool) -> 'a t -> 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 
@@ -81,3 +87,42 @@ val flatten : 'a t t -> 'a t
 val range : int -> int -> int t
 
 val (--) : int -> int -> int t
+
+(** {2 Operations on two Collections} *)
+
+val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+(** Fold on two collections at once. Stop at soon as one of them ends *)
+
+val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** Map on two collections at once. Stop as soon as one of the
+    arguments is exhausted *)
+
+val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+(** Iterate on two collections at once. Stop as soon as one of them ends *)
+
+val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+
+val merge : 'a ord -> 'a t -> 'a t -> 'a t
+(** Merge two sorted iterators into a sorted iterator *)
+
+(** {2 Conversions} *)
+
+val of_list : 'a list -> 'a t
+
+val to_list : 'a t -> 'a list
+(** Gather all values into a list *)
+
+val to_rev_list : 'a t -> 'a list
+(** Convert to a list, in reverse order. More efficient than {!to_list} *)
+
+val to_seq : 'a t -> 'a sequence
+
+val to_gen : 'a t -> 'a gen
+
+
+(** {2 IO} *)
+
+val pp : ?sep:string -> 'a printer -> 'a t printer
+
+val print : ?sep:string -> 'a formatter -> 'a t formatter

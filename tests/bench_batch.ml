@@ -78,7 +78,7 @@ end)
 module BenchKList = Make(struct
   include CCKList
   let name = "klist"
-  let equal a b = equal a b
+  let equal a b = equal (=) a b
   let doubleton x y = CCKList.of_list [ x; y ]
 end)
 
