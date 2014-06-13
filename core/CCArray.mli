@@ -67,6 +67,9 @@ val except_idx : 'a t -> int -> 'a list
 val shuffle : 'a t -> unit
 (** shuffle randomly the array, in place *)
 
+val shuffle_with : Random.State.t -> 'a t -> unit
+(** Like shuffle but using a specialized random state *)
+
 val pp: ?sep:string -> (Buffer.t -> 'a -> unit)
           -> Buffer.t -> 'a t -> unit
 (** print an array of items with printing function *)

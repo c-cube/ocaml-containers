@@ -25,8 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Growable, mutable vector} *)
 
-type ro
-type rw
+type ro = [`RO]
+type rw = [`RW]
 
 (** Mutability is [rw] (read-write) or [ro] (read-only) *)
 

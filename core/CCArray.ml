@@ -141,13 +141,17 @@ let except_idx a i =
 
 (* Randomly shuffle the array, in place.
    See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
-let shuffle a = 
+let _shuffle _rand_int a = 
   for i = 1 to Array.length a - 1 do
-    let j = Random.int i in
+    let j = _rand_int i in
     let tmp = a.(i) in
     a.(i) <- a.(j);
     a.(j) <- tmp;
   done
+
+let shuffle a = _shuffle Random.int a
+
+let shuffle_with st a = _shuffle (Random.State.int st) a
 
 (** print an array of items using the printing function *)
 let pp ?(sep=", ") pp_item buf a =
