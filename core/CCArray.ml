@@ -162,3 +162,10 @@ let pp_i ?(sep=", ") pp_item buf a =
     (if i > 0 then Buffer.add_string buf sep);
     pp_item buf i a.(i)
   done
+
+let print ?(sep=", ") pp_item fmt a =
+  Array.iteri
+    (fun i x ->
+      if i > 0 then Format.pp_print_string fmt sep;
+      pp_item fmt x
+    ) a

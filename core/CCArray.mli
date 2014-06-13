@@ -68,9 +68,13 @@ val shuffle : 'a t -> unit
 (** shuffle randomly the array, in place *)
 
 val pp: ?sep:string -> (Buffer.t -> 'a -> unit)
-          -> Buffer.t -> 'a array -> unit
+          -> Buffer.t -> 'a t -> unit
 (** print an array of items with printing function *)
 
 val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit)
-          -> Buffer.t -> 'a array -> unit
+          -> Buffer.t -> 'a t -> unit
 (** print an array, giving the printing function both index and item *)
+
+val print : ?sep:string -> (Format.formatter -> 'a -> unit)
+          -> Format.formatter -> 'a t -> unit
+(** print an array of items with printing function *)
