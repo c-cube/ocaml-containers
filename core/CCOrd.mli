@@ -50,5 +50,11 @@ val (<?>) : int -> ('a t * 'a * 'a) -> int
       <?> (CCBool.compare, true, false)]}
 *)
 
+val pair : 'a t -> 'b t -> ('a * 'b) t
+
+val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+
 val list_ : 'a t -> 'a list t
 (** Lexicographic combination on lists *)
+
+val array_ : 'a t -> 'a array t

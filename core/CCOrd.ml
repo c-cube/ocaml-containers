@@ -43,6 +43,22 @@ let (<?>) c (ord,x,y) =
     then ord x y
     else c
 
+let pair o_x o_y (x1,y1) (x2,y2) =
+  let c = o_x x1 x2 in
+  if c = 0
+    then o_y y1 y2
+    else c
+
+let triple o_x o_y o_z (x1,y1,z1) (x2,y2,z2) =
+  let c = o_x x1 x2 in
+  if c = 0
+    then
+      let c' = o_y y1 y2 in
+      if c' = 0
+        then o_z z1 z2
+        else c'
+    else c
+
 let rec list_ ord l1 l2 = match l1, l2 with
   | [], [] -> 0
   | [], _ -> -1
@@ -53,3 +69,16 @@ let rec list_ ord l1 l2 = match l1, l2 with
         then list_ ord l1' l2'
         else c
 
+let array_ ord a1 a2 =
+  let rec aux i =
+    if i = Array.length a1
+      then if Array.length a1 = Array.length a2 then 0
+      else -1
+    else if i = Array.length a2
+      then 1
+      else
+        let c = ord a1.(i) a2.(i) in
+        if c = 0
+          then aux (i+1) else c
+  in
+  aux 0
