@@ -59,7 +59,7 @@ Library "containers_misc"
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
                     Bij, PiCalculus, Bencode, Sexp, RAL,
                     UnionFind, SmallSet, AbsSet, CSM,
-                    ActionMan, QCheck, BencodeOnDisk, TTree,
+                    ActionMan, BencodeOnDisk, TTree,
                     HGraph, Automaton, Conv, Bidir, Iteratee,
                     Ty, Tell, BencodeStream, RatTerm, Cause, AVL, ParseReact
   BuildDepends:     unix,containers
