@@ -54,6 +54,8 @@ let equal f o1 o2 = match o1, o2 with
 
 let return x = Some x
 
+let (>|=) x f = map f x
+
 let (>>=) o f = match o with
   | None -> None
   | Some x -> f x

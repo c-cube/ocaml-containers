@@ -43,6 +43,9 @@ val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 val return : 'a -> 'a t
 (** Monadic return *)
 
+val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+(** Infix version of {!map} *)
+
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** Monadic bind *)
 
