@@ -424,6 +424,54 @@ module Assoc = struct
   *)
 end
 
+(** {2 Zipper} *)
+
+module Zipper = struct
+  type 'a t = 'a list * 'a list
+
+  let empty = [], []
+
+  let is_empty = function
+    | _, [] -> true
+    | _, _::_ -> false
+
+  let to_list (l,r) =
+    let rec append l acc = match l with
+      | [] -> acc
+      | x::l' -> append l' (x::acc)
+    in append l r
+
+  let make l = [], l
+
+  let left = function
+    | x::l, r -> l, x::r
+    | [], r -> [], r
+
+  let right = function
+    | l, x::r -> x::l, r
+    | l, [] -> l, []
+
+  let modify f z = match z with
+    | l, [] ->
+        begin match f None with
+        | None -> z
+        | Some x -> l, [x]
+        end
+    | l, x::r ->
+        begin match f (Some x) with
+        | None -> l,r
+        | Some x' -> l, x::r
+        end
+        
+  let focused = function
+    | _, x::_ -> Some x
+    | _, [] -> None
+
+  let focused_exn = function
+    | _, x::_ -> x
+    | _, [] -> raise Not_found
+end
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit

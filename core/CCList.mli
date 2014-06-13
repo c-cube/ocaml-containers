@@ -175,6 +175,42 @@ module Assoc : sig
   (** Add the binding into the list (erase it if already present) *)
 end
 
+(** {2 Zipper} *)
+
+module Zipper : sig
+  type 'a t = 'a list * 'a list
+
+  val empty : 'a t
+  (** Empty zipper *)
+
+  val is_empty : _ t -> bool
+  (** Empty zipper, or at the end of the zipper? *)
+
+  val to_list : 'a t -> 'a list
+  (** Convert the zipper back to a list *)
+
+  val make : 'a list -> 'a t
+  (** Create a zipper pointing at the first element of the list *)
+
+  val left : 'a t -> 'a t
+  (** Go to the left, or do nothing if the zipper is already at leftmost pos *)
+
+  val right : 'a t -> 'a t
+  (** Go to the right, or do nothing if the zipper is already at rightmost pos *)
+
+  val modify : ('a option -> 'a option) -> 'a t -> 'a t
+  (** Modify the current element, if any, by returning a new element, or
+      returning [None] if the element is to be deleted *)
+
+  val focused : 'a t -> 'a option
+  (** Returns the focused element, if any. [focused zip = Some _] iff
+      [empty zip = false] *)
+
+  val focused_exn : 'a t -> 'a
+  (** Returns the focused element, or
+      @raise Not_found if the zipper is at an end *)
+end
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
