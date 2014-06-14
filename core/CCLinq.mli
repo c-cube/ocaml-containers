@@ -27,7 +27,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 LINQ-like operations on collections}
 
 The purpose it to provide powerful combinators to express iteration,
-transformation and combination of collections of items.
+transformation and combination of collections of items. This module depends
+on several other modules, including {!CCList} and {!CCSequence}.
+
+Functions and operations are assumed to be referentially transparent, i.e.
+they should not rely on external side effects, they should not rely on
+the order of execution.
 
 {[
 
@@ -161,17 +166,18 @@ val map_to_list : ('a,'b) Map.t t -> ('a*'b) list t
 
 (** {6 Aggregation} *)
 
-val group_by : ?cmp:'b ord ->
+val group_by : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash ->
                ('a -> 'b) -> 'a collection t -> ('b,'a list) Map.t t
 (** [group_by f] takes a collection [c] as input, and returns
     a multimap [m] such that for each [x] in [c],
     [x] occurs in [m] under the key [f x]. In other words, [f] is used
     to obtain a key from [x], and [x] is added to the multimap using this key. *)
 
-val group_by' : ?cmp:'b ord ->
+val group_by' : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash ->
                 ('a -> 'b) -> 'a collection t -> ('b * 'a list) collection t
 
-val count : ?cmp:'a ord -> unit -> 'a collection t -> ('a, int) Map.t t
+val count : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash ->
+             unit -> 'a collection t -> ('a, int) Map.t t
 (** [count c] returns a map from elements of [c] to the number
     of time those elements occur. *)
 
@@ -228,7 +234,7 @@ val join : ?cmp:'key ord -> ?eq:'key equal -> ?hash:'key hash ->
 
 val group_join : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash ->
                   ('b -> 'a) -> 'a collection t -> 'b collection t ->
-                  ('a, 'b collection) Map.t t
+                  ('a, 'b list) Map.t t
 (** [group_join key2] associates to every element [x] of
     the first collection, all the elements [y] of the second
     collection such that [eq x (key y)] *)
@@ -239,17 +245,17 @@ val product : 'a collection t -> 'b collection t -> ('a * 'b) collection t
 val append : 'a collection t -> 'a collection t -> 'a collection t
 (** Append two collections together *)
 
-val inter : ?cmp:'a ord -> unit ->
+val inter : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash -> unit ->
             'a collection t -> 'a collection t -> 'a collection t
 (** Intersection of two collections. Each element will occur at most once
     in the result *)
 
-val union : ?cmp:'a ord -> unit ->
+val union : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash -> unit ->
             'a collection t -> 'a collection t -> 'a collection t
 (** Union of two collections. Each element will occur at most once
     in the result *)
 
-val diff : ?cmp:'a ord -> unit ->
+val diff : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash -> unit ->
             'a collection t -> 'a collection t -> 'a collection t
 (** Set difference *)
 
