@@ -41,6 +41,10 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 val reverse_in_place : 'a t -> unit
 (** Reverse the array in place *)
 
+val find : ('a -> 'b option) -> 'a t -> 'b option
+(** [find f a] returns [Some y] if there is an element [x] such
+    that [f x = Some y], else it returns [None] *)
+
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map each element into another value, or discard it *)
 

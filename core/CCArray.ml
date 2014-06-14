@@ -57,6 +57,14 @@ let reverse_in_place a =
     a = [| 6;5;4;3;2;1 |]
 *)
 
+let find f a =
+  let rec find i =
+    if i = Array.length a then None
+    else match f a.(i) with
+      | Some _ as res -> res
+      | None -> find (i+1)
+  in find 0
+
 let filter_map f a =
   let rec aux acc i =
     if i = Array.length a
