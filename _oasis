@@ -39,7 +39,7 @@ Flag "bench"
 Library "containers"
   Path:             core
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
-                    CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl,
+                    CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
                     CCLeftistheap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd, CCLinq
   FindlibName:      containers
