@@ -31,6 +31,13 @@ type 'a t = 'a -> 'a -> int
 
 let compare = Pervasives.compare
 
+let opp f x y = - (f x y)
+
+let equiv i j =
+  if i<0 then j<0
+  else if i>0 then j>0
+  else j=0
+
 let int_ (x:int) y = Pervasives.compare x y
 let string_ (x:string) y = Pervasives.compare x y
 let bool_ (x:bool) y = Pervasives.compare x y

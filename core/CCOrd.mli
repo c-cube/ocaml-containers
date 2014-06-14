@@ -32,6 +32,12 @@ type 'a t = 'a -> 'a -> int
 val compare : 'a t
 (** Polymorphic "magic" comparison *)
 
+val opp : 'a t -> 'a t
+(** Opposite order *)
+
+val equiv : int -> int -> bool
+(** Returns [true] iff the two comparison results are the same *)
+
 val int_ : int t
 val string_ : string t
 val bool_ : bool t
