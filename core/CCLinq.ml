@@ -30,10 +30,15 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a hash = 'a -> int
+type 'a with_err = [`Ok of 'a | `Error of string ]
 
 (* TODO: add CCVector as a collection *)
 
 let _id x = x
+
+exception ExitWithError of string
+let _exit_with_error s = raise (ExitWithError s)
+let _error_of_exn f = try `Ok (f ()) with ExitWithError s -> `Error
 
 type 'a collection =
   | Seq : 'a sequence -> 'a collection
@@ -57,6 +62,9 @@ module PMap = struct
   let to_seq m = m.to_seq
   let fold f acc m = m.fold f acc
   let size m = m.size ()
+  let get_err m x = match m.get x with
+    | Some y -> `Ok y
+    | None -> `Error "PMap.get: lookup error"
 
   type ('a, 'b) build = {
     mutable cur : ('a, 'b) t;
@@ -266,18 +274,24 @@ module Coll = struct
              with type elt = elt and type t = 'b) in
         S.cardinal set
 
-  let choose (type elt) = function
-    | List [] -> None
-    | List (x::_) -> Some x
+  let choose_exn (type elt) c =
+    let fail () = _exit_with_error "choose: empty collection" in 
+    match c with
+    | List [] -> fail ()
+    | List (x::_) -> x
     | Seq s ->
         begin match CCSequence.take 1 s |> CCSequence.to_list with
-        | [x] -> Some x
-        | _ -> None
+        | [x] -> x
+        | _ -> fail ()
         end
     | Set (m, set) ->
         let module S = (val m : CCSequence.Set.S
              with type elt = elt and type t = 'b) in
-        try Some (S.choose set) with Not_found -> None
+        try S.choose set with Not_found -> fail ()
+
+  let choose_err c =
+    try `Ok (choose_exn c)
+    with ExitWithError s -> `Error s
 
   let take n c =
     _fmap ~lst:(CCList.take n) ~seq:(CCSequence.take n) c
@@ -409,8 +423,8 @@ end
 (** {2 Query operators} *)
 
 type (_,_) safety =
-  | Safe : ('a, 'a option) safety
-  | Unsafe : ('a, 'a) safety
+  | Explicit : ('a, 'a with_err) safety
+  | Implicit : ('a, 'a) safety
 
 type (_, _) unary =
   | PMap : ('a -> 'b) -> ('a collection, 'b collection) unary
@@ -458,6 +472,7 @@ type (_, _, _) binary =
 (* type of queries that return a 'a *)
 and 'a t =
   | Start : 'a -> 'a t
+  | Catch : 'a with_err t -> 'a t
   | Unary : ('a, 'b) unary * 'a t -> 'b t
   | Binary : ('a, 'b, 'c) binary * 'a t * 'b t -> 'c t
   | QueryMap : ('a -> 'b) * 'a t -> 'b t
@@ -494,6 +509,7 @@ let of_string s =
 let rec _optimize : type a. a t -> a t
   = fun q -> match q with
     | Start _ -> q
+    | Catch q' -> Catch (_optimize q')
     | Unary (u, q) ->
         _optimize_unary u (_optimize q)
     | Binary (b, q1, q2) ->
@@ -554,18 +570,14 @@ let _do_unary : type a b. (a,b) unary -> a -> b
           ) None
       in
       begin match acc, safety with
-      | Some x, Safe -> Some (stop x)
-      | None, Safe -> None
-      | Some x, Unsafe -> stop x
-      | None, Unsafe -> invalid_arg "reduce: empty collection"
+      | Some x, Implicit -> stop x
+      | None, Implicit -> _exit_with_error "reduce: empty collection"
+      | Some x, Explicit -> `Ok (stop x)
+      | None, Explicit -> `Error "reduce: empty collection"
       end
   | Size -> Coll.size c
-  | Choose Safe -> Coll.choose c
-  | Choose Unsafe ->
-      begin match Coll.choose c with
-        | Some x -> x
-        | None -> invalid_arg "choose: empty collection"
-      end
+  | Choose Implicit -> Coll.choose_exn c
+  | Choose Explicit -> Coll.choose_err c
   | FilterMap f -> Coll.filter_map f c
   | FlatMap f -> Coll.flat_map f c
   | Take n -> Coll.take n c
@@ -573,8 +585,8 @@ let _do_unary : type a b. (a,b) unary -> a -> b
   | Sort cmp -> Coll.sort cmp c
   | Distinct cmp -> Coll.distinct ~cmp c
   | Search obj -> Coll.search obj c
-  | Get (Safe, k) -> PMap.get c k
-  | Get (Unsafe, k) -> PMap.get_exn c k
+  | Get (Implicit, k) -> PMap.get_exn c k
+  | Get (Explicit, k) -> PMap.get_err c k
   | GroupBy (build,f) ->
       Coll.to_seq c
       |> CCSequence.map (fun x -> f x, x)
@@ -597,8 +609,13 @@ let _do_binary : type a b c. (a, b, c) binary -> a -> b -> c
   | SetOp (Diff,build) -> Coll.do_diff ~build c1 c2
 
 let rec _run : type a. opt:bool -> a t -> a
-  = fun ~opt q -> match q with
+= fun ~opt q -> match q with
   | Start c -> c
+  | Catch q' ->
+      begin match _run ~opt q' with
+        | `Ok x -> x
+        | `Error s -> _exit_with_error s
+      end
   | Unary (u, q') -> _do_unary u (_run ~opt q')
   | Binary (b, q1, q2) -> _do_binary b (_run ~opt q1) (_run ~opt q2)
   | QueryMap (f, q') -> f (_run ~opt q')
@@ -608,8 +625,23 @@ let rec _run : type a. opt:bool -> a t -> a
       let q'' = if opt then _optimize q'' else q'' in
       _run ~opt q''
 
-let run q = _run ~opt:true (_optimize q)
-let run_no_opt q = _run ~opt:false q
+(* safe execution *)
+let run q =
+  try `Ok (_run ~opt:true (_optimize q))
+  with
+  | ExitWithError s -> `Error s
+  | e -> `Error (Printexc.to_string e)
+
+let run_exn q =
+  match run q with
+  | `Ok x -> x
+  | `Error s -> failwith s
+
+let run_no_optim q =
+  try `Ok (_run ~opt:false q)
+  with
+  | ExitWithError s -> `Error s
+  | e -> `Error (Printexc.to_string e)
 
 (** {6 Basics on Collections} *)
 
@@ -617,9 +649,9 @@ let map f q = Unary (PMap f, q)
 
 let filter p q = Unary (Filter p, q)
 
-let choose q = Unary (Choose Safe, q)
+let choose q = Unary (Choose Implicit, q)
 
-let choose_exn q = Unary (Choose Unsafe, q)
+let choose_err q = Unary (Choose Explicit, q)
 
 let filter_map f q = Unary (FilterMap f, q)
 
@@ -665,10 +697,10 @@ let _make_build ?cmp ?eq ?hash () =
 
 module M = struct
   let get key q =
-    Unary (Get (Safe, key), q)
+    Unary (Get (Implicit, key), q)
 
-  let get_exn key q =
-    Unary (Get (Unsafe, key), q)
+  let get_err key q =
+    Unary (Get (Explicit, key), q)
 
   let iter q =
     Unary (GeneralMap (fun m -> Coll.of_seq m.PMap.to_seq), q)
@@ -733,10 +765,10 @@ let size q = Unary (Size, q)
 let sum q = Unary (Fold ((+), 0), q)
 
 let reduce start mix stop q =
-  Unary (Reduce (Safe, start,mix,stop), q)
+  Unary (Reduce (Implicit, start,mix,stop), q)
 
-let reduce_exn start mix stop q =
-  Unary (Reduce (Unsafe, start,mix,stop), q)
+let reduce_err start mix stop q =
+  Unary (Reduce (Explicit, start,mix,stop), q)
 
 let _avg_start x = (x,1)
 let _avg_mix x (y,n) = (x+y,n+1)
@@ -746,13 +778,13 @@ let _lift_some f x y = match y with
   | None -> Some x
   | Some y -> Some (f x y)
 
-let max q = Unary (Reduce (Safe, _id, Pervasives.max, _id), q)
-let min q = Unary (Reduce (Safe, _id, Pervasives.min, _id), q)
-let average q = Unary (Reduce (Safe, _avg_start, _avg_mix, _avg_stop), q)
+let max q = Unary (Reduce (Implicit, _id, Pervasives.max, _id), q)
+let min q = Unary (Reduce (Implicit, _id, Pervasives.min, _id), q)
+let average q = Unary (Reduce (Implicit, _avg_start, _avg_mix, _avg_stop), q)
 
-let max_exn q = Unary (Reduce (Unsafe, _id, Pervasives.max, _id), q)
-let min_exn q = Unary (Reduce (Unsafe, _id, Pervasives.min, _id), q)
-let average_exn q = Unary (Reduce (Unsafe, _avg_start, _avg_mix, _avg_stop), q)
+let max_err q = Unary (Reduce (Explicit, _id, Pervasives.max, _id), q)
+let min_err q = Unary (Reduce (Explicit, _id, Pervasives.min, _id), q)
+let average_err q = Unary (Reduce (Explicit, _avg_start, _avg_mix, _avg_stop), q)
 
 let is_empty q =
   Unary (Search (object
@@ -833,10 +865,15 @@ let map2 f q = map (fun (x,y) -> x, f y) q
 
 let flatten_opt q = filter_map _id q
 
-let opt_get_exn q =
+let opt_unwrap q =
   QueryMap ((function
     | Some x -> x
-    | None -> invalid_arg "opt_get_exn"), q)
+    | None -> _exit_with_error "opt_unwrap"), q)
+
+let catch q =
+  QueryMap ((function
+    | `Ok x -> x
+    | `Error s -> _exit_with_error s), q)
 
 (** {6 Monadic stuff} *)
 
@@ -852,10 +889,7 @@ let query_map f q = QueryMap (f, q)
 
 let lazy_ q = Unary (Lazy, q)
 
-(** {6 Output containers} *)
-
-let to_list q =
-  QueryMap (Coll.to_list, q)
+(** {6 Adapters} *)
 
 let to_array q =
   QueryMap ((fun c -> Array.of_list (Coll.to_list c)), q)
@@ -872,11 +906,13 @@ let to_queue q =
 let to_stack q =
   QueryMap ((fun c s -> CCSequence.to_stack s (Coll.to_seq c)), q)
 
-(** {6 Misc} *)
-
-let run_list q = run (q |> to_list)
-
-(** {6 Adapters} *)
+module L = struct
+  let of_list l = Start (Coll.of_list l)
+  let to_list q =
+    QueryMap (Coll.to_list, q)
+  let run q = run (to_list q)
+  let run_exn q = run_exn (to_list q)
+end
 
 module AdaptSet(S : Set.S) = struct
   let of_set set =
@@ -888,7 +924,8 @@ module AdaptSet(S : Set.S) = struct
     in
     query_map f q
 
-  let run q = run (q |> to_set)
+  let run q = run (to_set q)
+  let run_exn q = run_exn (to_set q)
 end
 
 module AdaptMap(M : Map.S) = struct
@@ -913,22 +950,56 @@ module AdaptMap(M : Map.S) = struct
     query_map f q
 
   let run q = run (q |> to_map)
+  let run_exn q = run_exn (q |> to_map)
 end
 
 module IO = struct
-  let slurp ic =
+  let _slurp with_input =
     let l = lazy (
-      let buf_size = 256 in
-      let content = Buffer.create 120
-      and buf = String.make buf_size 'a' in
-      let rec next () =
-        let num = input ic buf 0 buf_size in
-        if num = 0
-          then Buffer.contents content (* EOF *)
-          else (Buffer.add_substring content buf 0 num; next ())
-      in next ()
+      with_input
+        (fun ic ->
+          let buf_size = 256 in
+          let content = Buffer.create 120
+          and buf = String.make buf_size 'a' in
+          let rec next () =
+            let num = input ic buf 0 buf_size in
+            if num = 0
+              then Buffer.contents content (* EOF *)
+              else (Buffer.add_substring content buf 0 num; next ())
+          in next ()
+        )
     ) in
     lazy_ (return l)
+
+  let slurp ic = _slurp (fun f -> f ic)
+
+  let _with_file_in filename f =
+    try
+      let ic = open_in filename in
+      try
+        let x = f ic in
+        close_in ic;
+        x
+      with e ->
+        close_in ic;
+        _exit_with_error (Printexc.to_string e)
+    with e ->
+      _exit_with_error (Printexc.to_string e)
+
+  let _with_file_out filename f =
+    try
+      let oc = open_out filename in
+      try
+        let x = f oc in
+        close_out oc;
+        x
+      with e ->
+        close_out oc;
+        _exit_with_error (Printexc.to_string e)
+    with e ->
+      _exit_with_error (Printexc.to_string e)
+
+  let slurp_file filename = _slurp (_with_file_in filename)
 
   (* find [c] in [s], starting at offset [i] *)
   let rec _find s c i =
@@ -952,11 +1023,43 @@ module IO = struct
     let f s = lazy (_lines s 0 |> CCSequence.to_list) in
     lazy_ (query_map f q)
 
+  let _join ~sep ?(stop="") l =
+    let buf = Buffer.create 128 in
+    Coll.to_seq l
+      |> CCSequence.iteri
+        (fun i x ->
+          if i>0 then Buffer.add_string buf sep;
+          Buffer.add_string buf x);
+    Buffer.add_string buf stop;
+    Buffer.contents buf
+
+  let unlines q =
+    let f l = lazy (_join ~sep:"\n" ~stop:"\n" l) in
+    lazy_ (query_map f q)
+
+  let join sep q =
+    let f l = lazy (_join ~sep l) in
+    lazy_ (query_map f q)
+
   let out oc q =
-    run q |> output_string oc
+    run_exn q |> output_string oc
 
   let out_lines oc q =
-    run q
+    run_exn q
     |> Coll.to_seq
     |> CCSequence.iter (fun l -> output_string oc l; output_char oc '\n')
+
+  let to_file_exn filename q =
+    _with_file_out filename (fun oc -> out oc q)
+
+  let to_file filename q =
+    try `Ok (_with_file_out filename (fun oc  -> out oc q))
+    with Failure s -> `Error s
+
+  let to_file_lines_exn filename q =
+    _with_file_out filename (fun oc -> out_lines oc q)
+
+  let to_file_lines filename q =
+    try `Ok (_with_file_out filename (fun oc  -> out_lines oc q))
+    with Failure s -> `Error s
 end

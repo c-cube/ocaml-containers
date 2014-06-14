@@ -37,14 +37,24 @@ the order of execution.
 {[
 
 CCLinq.(
-  start_list [1;2;3]
+  of_list [1;2;3]
   |> flat_map_l (fun x -> CCList.(x -- (x+10)))
   |> sort ()
   |> count ()
-  |> M.to_list |> run
+  |> M.to_list
+  |> run_exn
 );;
 - : (int * int) list = [(13, 1); (12, 2); (11, 3); (10, 3); (9, 3);
     (8, 3); (7, 3); (6, 3); (5, 3); (4, 3); (3, 3); (2, 2); (1, 1)]
+
+
+CCLinq.(
+  IO.slurp_file "/tmp/foo"
+  |> IO.lines
+  |> sort ()
+  |> IO.to_file_lines "/tmp/bar"
+);;
+- :  `Ok ()
 ]}
 
 *)
@@ -53,6 +63,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a hash = 'a -> int
+type 'a with_err = [`Ok of 'a | `Error of string ]
 
 type 'a collection
 (** Abstract type of collections of objects of type 'a. Those cannot
@@ -108,14 +119,16 @@ val of_string : string -> char collection t
 
 (** {6 Execution} *)
 
-val run : 'a t -> 'a
-(** Execute the actual query *)
+val run : 'a t -> 'a with_err
+(** Execute the query, possibly returning an error if things go wrong *)
 
-val run_no_opt : 'a t -> 'a
-(** Execute the query, without optimizing it at all *)
+val run_exn : 'a t -> 'a
+(** Execute the query, ignoring errors. Can raise an exception
+    if some execution step does.
+    @raise Failure if the query fails (or returns [`Error s]) *)
 
-val run_list : 'a collection t -> 'a list
-(** Shortcut to obtain a list *)
+val run_no_optim : 'a t -> 'a with_err
+(** Run without any optimization *)
 
 (** {6 Basics on Collections} *)
 
@@ -125,12 +138,12 @@ val filter : ('a -> bool) -> 'a collection t -> 'a collection t
 
 val size : _ collection t -> int t
 
-val choose : 'a collection t -> 'a option t
-(** Choose one element (if any) in the collection *)
+val choose : 'a collection t -> 'a t
+(** Choose one element (if any) in the collection. Fails
+    if the collections is empty *)
 
-val choose_exn : 'a collection t -> 'a t
-(** Choose one element or fail.
-    @raise Invalid_argument if the collection is empty *)
+val choose_err : 'a collection t -> 'a with_err t
+(** Choose one element or fail explicitely *)
 
 val filter_map : ('a -> 'b option) -> 'a collection t -> 'b collection t
 (** Filter and map elements at once *)
@@ -164,12 +177,11 @@ val distinct : ?cmp:'a ord -> unit -> 'a collection t -> 'a collection t
 (** {6 Queries on Maps} *)
 
 module M : sig
-  val get : 'a -> ('a, 'b) PMap.t t -> 'b option t
+  val get : 'a -> ('a, 'b) PMap.t t -> 'b t
   (** Select a key from a map *)
 
-  val get_exn : 'a -> ('a, 'b) PMap.t t -> 'b t
-  (** Unsafe version of {!get}.
-      @raise Not_found if the key is not present. *)
+  val get_err : 'a -> ('a, 'b) PMap.t t -> 'b with_err t
+  (** Explicit version of {!get}, with [`Error] if the key is not present *)
 
   val iter : ('a,'b) PMap.t t -> ('a*'b) collection t
   (** View a multimap as a proper collection *)
@@ -227,16 +239,14 @@ val size : _ collection t -> int t
 (** Count how many elements the collection contains *)
 
 val reduce : ('a -> 'b) -> ('a -> 'b -> 'b) -> ('b -> 'c) ->
-             'a collection t -> 'c option t
+             'a collection t -> 'c t
 (** [reduce start mix stop q] uses [start] on the first element of [q],
     and combine the result with following elements using [mix]. The final
-    value is transformed using [stop]. This returns [None] if the collection
-    is empty *)
+    value is transformed using [stop]. *)
 
-val reduce_exn : ('a -> 'b) -> ('a -> 'b -> 'b) -> ('b -> 'c) ->
-                 'a collection t -> 'c t
-(** Same as {!reduce} but fails on empty collections.
-    @raise Invalid_argument if the collection is empty *)
+val reduce_err : ('a -> 'b) -> ('a -> 'b -> 'b) -> ('b -> 'c) ->
+                 'a collection t -> 'c with_err t
+(** Same as {!reduce} but fails explicitely on empty collections. *)
 
 val is_empty : 'a collection t -> bool t
 
@@ -244,13 +254,13 @@ val sum : int collection t -> int t
 
 val contains : ?eq:'a equal -> 'a -> 'a collection t -> bool t
 
-val average : int collection t -> int option t
-val max : int collection t -> int option t
-val min : int collection t -> int option t
+val average : int collection t -> int t
+val max : int collection t -> int t
+val min : int collection t -> int t
 
-val average_exn : int collection t -> int t
-val max_exn : int collection t -> int t
-val min_exn : int collection t -> int t
+val average_err : int collection t -> int with_err t
+val max_err : int collection t -> int with_err t
+val min_err : int collection t -> int with_err t
 
 val for_all : ('a -> bool) -> 'a collection t -> bool t
 val exists : ('a -> bool) -> 'a collection t -> bool t
@@ -312,9 +322,8 @@ val map2 : ('a -> 'b) -> ('c * 'a) collection t -> ('c * 'b) collection t
 val flatten_opt : 'a option collection t -> 'a collection t
 (** Flatten the collection by removing options *)
 
-val opt_get_exn : 'a option t -> 'a t
-(** unwrap an option type.
-    @raise Invalid_argument if the option value is [None] *)
+val opt_unwrap : 'a option t -> 'a t
+(** unwrap an option type. Fails if the option value is [None] *)
 
 (** {6 Monad}
 
@@ -335,12 +344,14 @@ val query_map : ('a -> 'b) -> 'a t -> 'b t
 
 (** {6 Misc} *)
 
+val catch : 'a with_err t -> 'a t
+(** Catch errors within the execution itself. In other words, [run (catch q)]
+    with succeed with [x] if [q] succeeds with [`Ok x], and fail if [q]
+    succeeds with [`Error s] or if [q] fails *)
+
 val lazy_ : 'a lazy_t t -> 'a t
 
-(** {6 Output Containers} *)
-
-val to_list : 'a collection t -> 'a list t
-(** Build a list of results *)
+(** {6 Adapters} *)
 
 val to_array : 'a collection t -> 'a array t
 (** Build an array of results *)
@@ -356,24 +367,38 @@ val to_queue : 'a collection t -> ('a Queue.t -> unit) t
 
 val to_stack : 'a collection t -> ('a Stack.t -> unit) t
 
-(** {6 Adapters} *)
+module L : sig
+  val of_list : 'a list -> 'a collection t
+  val to_list : 'a collection t -> 'a list t
+  val run : 'a collection t -> 'a list with_err
+  val run_exn : 'a collection t -> 'a list
+end
 
 module AdaptSet(S : Set.S) : sig
   val of_set : S.t -> S.elt collection t
   val to_set : S.elt collection t -> S.t t
-  val run : S.elt collection t -> S.t
+  val run : S.elt collection t -> S.t with_err
+  val run_exn : S.elt collection t -> S.t
 end
 
 module AdaptMap(M : Map.S) : sig
   val of_map : 'a M.t -> (M.key * 'a) collection t
   val to_pmap : 'a M.t -> (M.key, 'a) PMap.t
   val to_map : (M.key * 'a) collection t -> 'a M.t t
-  val run : (M.key * 'a) collection t -> 'a M.t
+  val run : (M.key * 'a) collection t -> 'a M.t with_err
+  val run_exn : (M.key * 'a) collection t -> 'a M.t
 end
 
 module IO : sig
   val slurp : in_channel -> string t
-  (** Slurp the whole channel in (blocking), returning the corresponding string *)
+  (** Slurp the whole channel in (blocking), returning the
+      corresponding string. The channel will be read at most once
+      during execution, and its content cached; however the channel
+      might never get read because evaluation is lazy. *)
+
+  val slurp_file : string -> string t
+  (** Read a whole file (given by name) and return its content as
+      a string *)
 
   val lines : string t -> string collection t
   (** Convert a string into a collection of lines *)
@@ -381,7 +406,20 @@ module IO : sig
   val lines' : string t -> string list t
   (** Convert a string into a list of lines *)
 
+  val join : string -> string collection t -> string t
+
+  val unlines : string collection t -> string t
+  (** Join lines together *)
+
   val out : out_channel -> string t -> unit
   val out_lines : out_channel -> string collection t -> unit
   (** Evaluate the query and print it line by line on the output *)
+
+  (** {8 Run methods} *)
+
+  val to_file : string -> string t -> unit with_err
+  val to_file_exn : string -> string t -> unit
+
+  val to_file_lines : string -> string collection t -> unit with_err
+  val to_file_lines_exn : string -> string collection t -> unit
 end
