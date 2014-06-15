@@ -374,9 +374,15 @@ module Sub = struct
 
   let foldi f acc a = _foldi f acc a.arr a.i a.j
 
-  let get a i = a.arr.(a.i+i)
+  let get a i =
+    let j = a.i + i in
+    if i<0 || j>=a.j then invalid_arg "Array.Sub.get";
+    a.arr.(j)
 
-  let set a i x = a.arr.(a.i+i) <- x
+  let set a i x =
+    let j = a.i + i in
+    if i<0 || j>=a.j then invalid_arg "Array.Sub.get";
+    a.arr.(j) <- x
 
   let iter f a =
     for k=a.i to a.j-1 do f a.arr.(k) done
