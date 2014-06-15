@@ -172,7 +172,7 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests)
-  BuildDepends: containers, oUnit
+  BuildDepends: containers, oUnit, qcheck
 
 Executable web_pwd
   Path: examples/cgi/
