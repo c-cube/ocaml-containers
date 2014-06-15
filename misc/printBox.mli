@@ -24,7 +24,19 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Pretty-Printing of Boxes} *)
+(** {1 Pretty-Printing of nested Boxes}
+
+Allows to print nested boxes, lists, arrays, tables in a nice way
+on any monospaced support.
+
+{[
+let b = PrintBox.(
+
+
+
+]}
+
+*)
 
 type position = { x:int ; y: int }
 (** Positions are relative to the upper-left corner, that is,
@@ -62,36 +74,55 @@ module Box : sig
 
   val size : t -> position
   (** Size needed to print the box *)
-
-  val line : string -> t
-  (** Make a single-line box.
-      @raise Invalid_argument if the string contains ['\n'] *)
-
-  val text : string -> t
-  (** Any text, possibly with several lines *)
-
-  val lines : string list -> t
-  (** Shortcut for {!text}, with a list of lines *)
-
-  val frame : t -> t
-  (** Put a single frame around the box *)
-
-  val grid : ?framed:bool -> t array array -> t
-  (** Grid of boxes (no frame between boxes). The matrix is indexed
-      with lines first, then columns.
-      @param framed if [true], each item of the grid will be framed.
-        default value is [true] *)
-
-  val init_grid : ?framed:bool ->
-                  line:int -> col:int -> (line:int -> col:int -> t) -> t
-  (** Same as {!grid} but takes the matrix as a function *)
-
-  val vlist : ?framed:bool -> t list -> t
-  (** Vertical list of boxes *)
-
-  val hlist : ?framed:bool -> t list -> t
-  (** Horizontal list of boxes *)
 end
+
+val line : string -> Box.t
+(** Make a single-line box.
+    @raise Invalid_argument if the string contains ['\n'] *)
+
+val text : string -> Box.t
+(** Any text, possibly with several lines *)
+
+val lines : string list -> Box.t
+(** Shortcut for {!text}, with a list of lines *)
+
+val int_ : int -> Box.t
+
+val bool_ : bool -> Box.t
+
+val float_ : float -> Box.t
+
+val frame : Box.t -> Box.t
+(** Put a single frame around the box *)
+
+val grid : ?framed:bool -> Box.t array array -> Box.t
+(** Grid of boxes (no frame between boxes). The matrix is indexed
+    with lines first, then columns. The array must be a proper matrix,
+    that is, all lines must have the same number of columns!
+    @param framed if [true], each item of the grid will be framed.
+      default value is [true] *)
+
+val grid_text : ?framed:bool -> string array array -> Box.t
+(** Same as {!grid}, but wraps every cell into a {!text} box *)
+
+val transpose : 'a array array -> 'a array array
+(** Transpose a matrix *)
+
+val init_grid : ?framed:bool ->
+                line:int -> col:int -> (line:int -> col:int -> Box.t) -> Box.t
+(** Same as {!grid} but takes the matrix as a function *)
+
+val vlist : ?framed:bool -> Box.t list -> Box.t
+(** Vertical list of boxes *)
+
+val hlist : ?framed:bool -> Box.t list -> Box.t
+(** Horizontal list of boxes *)
+
+val grid_map : ?framed:bool -> ('a -> Box.t) -> 'a array array -> Box.t
+
+val vlist_map : ?framed:bool -> ('a -> Box.t) -> 'a list -> Box.t
+
+val hlist_map : ?framed:bool -> ('a -> Box.t) -> 'a list -> Box.t
 
 val render : Output.t -> Box.t -> unit
 

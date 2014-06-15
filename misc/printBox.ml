@@ -137,7 +137,8 @@ let rec _find s c i =
   else _find s c (i+1)
 
 let rec _lines s i k = match _find s '\n' i with
-  | None -> ()
+  | None ->
+      if i<String.length s then k (String.sub s i (String.length s-i))
   | Some j ->
       let s' = String.sub s i (j-i) in
       k s';
@@ -227,36 +228,52 @@ module Box = struct
 
   let _make shape =
     { shape; size=(lazy (_size shape)); }
-
-  let line s =
-    assert (_find s '\n' 0 = None);
-    _make (Line s)
-
-  let text s =
-    let acc = ref [] in
-    _lines s 0 (fun x -> acc := x :: !acc);
-    _make (Text (List.rev !acc))
-
-  let lines l =
-    assert (List.for_all (fun s -> _find s '\n' 0 = None) l);
-    _make (Text l)
-
-  let frame b = _make (Frame b)
-
-  let grid ?(framed=true) m =
-    _make (Grid ((if framed then GridFramed else GridBase), m))
-
-  let init_grid ?framed ~line ~col f =
-    let m = Array.init line (fun j-> Array.init col (fun i -> f ~line:j ~col:i)) in
-    grid ?framed m
-
-  let vlist ?framed l =
-    let a = Array.of_list l in
-    grid ?framed (Array.map (fun line -> [| line |]) a)
-
-  let hlist ?framed l =
-    grid ?framed [| Array.of_list l |]
 end
+
+let line s =
+  assert (_find s '\n' 0 = None);
+  Box._make (Box.Line s)
+
+let text s =
+  let acc = ref [] in
+  _lines s 0 (fun x -> acc := x :: !acc);
+  Box._make (Box.Text (List.rev !acc))
+
+let lines l =
+  assert (List.for_all (fun s -> _find s '\n' 0 = None) l);
+  Box._make (Box.Text l)
+
+let int_ x = line (string_of_int x)
+let float_ x = line (string_of_float x)
+let bool_ x = line (string_of_bool x)
+
+let frame b =
+  Box._make (Box.Frame b)
+
+let grid ?(framed=true) m =
+  Box._make (Box.Grid ((if framed then Box.GridFramed else Box.GridBase), m))
+
+let init_grid ?framed ~line ~col f =
+  let m = Array.init line (fun j-> Array.init col (fun i -> f ~line:j ~col:i)) in
+  grid ?framed m
+
+let vlist ?framed l =
+  let a = Array.of_list l in
+  grid ?framed (Array.map (fun line -> [| line |]) a)
+
+let hlist ?framed l =
+  grid ?framed [| Array.of_list l |]
+
+let hlist_map ?framed f l = hlist ?framed (List.map f l)
+let vlist_map ?framed f l = vlist ?framed (List.map f l)
+let grid_map ?framed f m = grid ?framed (Array.map (Array.map f) m)
+
+let grid_text ?framed m = grid_map ?framed text m
+
+let transpose m =
+  let dim = Box._dim_matrix m in
+  Array.init dim.x
+    (fun i -> Array.init dim.y (fun j -> m.(j).(i)))
 
 let _write_vline ~out pos n =
   for j=0 to n-1 do
@@ -269,8 +286,9 @@ let _write_hline ~out pos n =
   done
 
 (* render given box on the output, starting with upper left corner
-    at the given position. *)
-let rec _render ~out b pos =
+    at the given position. [expected_size] is the size of the
+    available surrounding space *)
+let rec _render ?expected_size ~out b pos =
   match Box.shape b with
     | Box.Line s -> Output.put_string out pos s
     | Box.Text l ->
@@ -296,22 +314,35 @@ let rec _render ~out b pos =
         (* write boxes *)
         for j = 0 to dim.y - 1 do
           for i = 0 to dim.x - 1 do
+            let expected_size = {
+              x=columns.(i+1)-columns.(i);
+              y=lines.(j+1)-lines.(j);
+            } in
             let pos' = _move pos (columns.(i)) (lines.(j)) in
-            _render ~out m.(j).(i) pos'
+            _render ~expected_size ~out m.(j).(i) pos'
           done;
         done;
+
+        let len_hlines, len_vlines = match expected_size with
+          | None -> columns.(dim.x), lines.(dim.y)
+          | Some {x;y} -> x,y
+        in
 
         (* write frame if needed *)
         begin match grid_shape with
         | Box.GridBase -> ()
         | Box.GridFramed ->
-          let size = Box.size b in
           for j=1 to dim.y - 1 do
-            _write_hline ~out {pos with y=lines.(j)} size.x
+            _write_hline ~out (_move_y pos (lines.(j)-1)) len_hlines
           done;
           for i=1 to dim.x - 1 do
-            _write_vline ~out {pos with x=columns.(i)} size.y
+            _write_vline ~out (_move_x pos (columns.(i)-1)) len_vlines
           done;
+          for j=1 to dim.y - 1 do
+            for i=1 to dim.x - 1 do
+              Output.put_char out (_move pos (columns.(i)-1) (lines.(j)-1)) '+'
+            done
+          done
         end
 
 let render out b =
