@@ -25,26 +25,197 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Array utils} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a gen = unit -> 'a option
+type 'a equal = 'a -> 'a -> bool
+type 'a ord = 'a -> 'a -> int
+
+module type S = sig
+  type 'a t
+  (** Array, or sub-array, containing elements of type ['a] *)
+
+  val empty : 'a t
+
+  val equal : 'a equal -> 'a t equal
+
+  val compare : 'a ord -> 'a t ord
+
+  val get : 'a t -> int -> 'a
+
+  val set : 'a t -> int -> 'a -> unit
+
+  val length : _ t -> int
+
+  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+
+  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  (** fold left on array, with index *)
+
+  val iter : ('a -> unit) -> 'a t -> unit
+
+  val iteri : (int -> 'a -> unit) -> 'a t -> unit
+
+  val reverse_in_place : 'a t -> unit
+  (** Reverse the array in place *)
+
+  val find : ('a -> 'b option) -> 'a t -> 'b option
+  (** [find f a] returns [Some y] if there is an element [x] such
+      that [f x = Some y], else it returns [None] *)
+
+  val for_all : ('a -> bool) -> 'a t -> bool
+
+  val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  (** Forall on pairs of arrays.
+      @raise Invalid_argument if they have distinct lengths *)
+
+  val exists : ('a -> bool) -> 'a t -> bool
+
+  val exists2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  (** Exists on pairs of arrays.
+      @raise Invalid_argument if they have distinct lengths *)
+
+  val shuffle : 'a t -> unit
+  (** shuffle randomly the array, in place *)
+
+  val shuffle_with : Random.State.t -> 'a t -> unit
+  (** Like shuffle but using a specialized random state *)
+
+  val to_seq : 'a t -> 'a sequence
+  val to_gen : 'a t -> 'a gen
+  val to_klist : 'a t -> 'a klist
+
+  (** {2 IO} *)
+
+  val pp: ?sep:string -> (Buffer.t -> 'a -> unit)
+            -> Buffer.t -> 'a t -> unit
+  (** print an array of items with printing function *)
+
+  val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit)
+            -> Buffer.t -> 'a t -> unit
+  (** print an array, giving the printing function both index and item *)
+
+  val print : ?sep:string -> (Format.formatter -> 'a -> unit)
+            -> Format.formatter -> 'a t -> unit
+  (** print an array of items with printing function *)
+end
+
+(** {2 General Implementation}
+Most of those functions that a range [(i,j)] with
+[i] included and [j] excluded *)
+
+let rec _foldi f acc a i j =
+  if i = j then acc else _foldi f (f acc i a.(i)) a (i+1) j
+
+let _reverse_in_place a i j =
+  if i=j then ()
+  else
+    for k = i to j/2 do
+      let t = a.(k) in
+      a.(k) <- a.(j-k);
+      a.(j-k) <- t;
+    done
+
+let rec _equal eq a1 i1 j1 a2 i2 j2 =
+  if i1 = j1 || i2 = j2
+  then (assert (i1=j1 && i2=j2); true)
+  else
+    eq a1.(i1) a2.(i2) && _equal eq a1 (i1+1) j1 a2 (i2+2) j2
+
+let rec _compare cmp a1 i1 j1 a2 i2 j2 =
+  if i1 = j1
+  then if i2=j2 then 0 else -1
+  else if i2=j2
+    then 1
+    else
+      let c = cmp a1.(i1) a2.(i2) in
+      if c = 0
+        then _compare cmp a1 (i1+1) j1 a2 (i2+2) j2
+        else c
+
+let rec _find f a i j =
+  if i = j then None
+  else match f a.(i) with
+    | Some _ as res -> res
+    | None -> _find f a (i+1) j
+
+let rec _for_all p a i j =
+  i = j || (p a.(i) && _for_all p a (i+1) j)
+
+let rec _exists p a i j =
+  i <> j && (p a.(i) || _exists p a (i+1) j)
+
+let rec _for_all2 p a1 a2 i1 i2 j1 =
+  i1 = j1 || (p a1.(i1) a2.(i2) && _for_all2 p a1 a2 (i1+1) (i2+1) j1)
+
+let rec _exists2 p a1 a2 i1 i2 j1 =
+  i1 <> j1 && (p a1.(i1) a2.(i2) || _exists2 p a1 a2 (i1+1) (i2+1) j1)
+
+(* shuffle a[i...j[ using the given int random generator
+   See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
+let _shuffle _rand_int a i j = 
+  for k = i to j do
+    let l = _rand_int k in
+    let tmp = a.(l) in
+    a.(l) <- a.(k);
+    a.(l) <- tmp;
+  done
+
+let _pp ~sep pp_item buf a i j =
+  for k = i to j - 1 do
+    if k > i then Buffer.add_string buf sep;
+    pp_item buf a.(k)
+  done
+
+let _pp_i ~sep pp_item buf a i j =
+  for k = i to j - 1 do
+    if k > i then Buffer.add_string buf sep;
+    pp_item buf k a.(k)
+  done
+
+let _print ~sep pp_item fmt a i j =
+  for k = i to j - 1 do
+    if k > i then Format.pp_print_string fmt sep;
+    pp_item fmt a.(k)
+  done
+
+let _to_gen a i j =
+  let k = ref i in
+  fun () ->
+    if !k < j
+    then (
+      let x = a.(!k) in
+      incr k;
+      Some x
+    ) else None
+
+let rec _to_klist a i j () =
+  if i=j then `Nil else `Cons (a.(i), _to_klist a (i+1) j)
+
+(** {2 Arrays} *)
+
 type 'a t = 'a array
 
 let empty = [| |]
 
 let map = Array.map
 
-let foldi f acc a =
-  let rec recurse acc i =
-    if i = Array.length a then acc else recurse (f acc i a.(i)) (i+1)
-  in recurse acc 0
+let length = Array.length
+
+let get = Array.get
+
+let set = Array.set
+
+let fold = Array.fold_left
+
+let foldi f acc a = _foldi f acc a 0 (Array.length a)
+
+let iter = Array.iter
+
+let iteri = Array.iteri
 
 let reverse_in_place a =
-  if a = [| |] then ()
-  else
-    let n = Array.length a in
-    for i = 0 to (n-1)/2 do
-      let t = a.(i) in
-      a.(i) <- a.(n-i-1);
-      a.(n-i-1) <- t;
-    done
+  _reverse_in_place a 0 (Array.length a)
 
 (*$T
   reverse_in_place [| |]; true
@@ -58,12 +229,7 @@ let reverse_in_place a =
 *)
 
 let find f a =
-  let rec find i =
-    if i = Array.length a then None
-    else match f a.(i) with
-      | Some _ as res -> res
-      | None -> find (i+1)
-  in find 0
+  _find f a 0 (Array.length a)
 
 let filter_map f a =
   let rec aux acc i =
@@ -116,23 +282,19 @@ let flat_map f a =
 
 let (>>=) a f = flat_map f a
 
-let for_all p a =
-  let rec check i =
-    i = Array.length a || (p a.(i) && check (i+1))
-  in check 0
+let for_all p a = _for_all p a 0 (Array.length a)
 
-let for_all2 p a1 a2 =
-  let rec check i =
-    i = Array.length a1 || (p a1.(i) a2.(i) && check (i+1))
-  in
-  if Array.length a1 <> Array.length a2
-    then raise (Invalid_argument "forall2")
-    else check 0
+let exists p a = _exists p a 0 (Array.length a)
 
-let exists p a =
-  let rec check i =
-    i < Array.length a && (p a.(i) || check (i+1))
-  in check 0
+let for_all2 p a b =
+  Array.length a = Array.length b
+  &&
+  _for_all2 p a b 0 0 (Array.length a)
+
+let exists2 p a b =
+  Array.length a = Array.length b
+  &&
+  _exists2 p a b 0 0 (Array.length a)
 
 let (--) i j =
   if i<=j
@@ -147,37 +309,110 @@ let except_idx a i =
     (fun acc j elt -> if i = j then acc else elt::acc)
     [] a
 
-(* Randomly shuffle the array, in place.
-   See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
-let _shuffle _rand_int a = 
-  for i = 1 to Array.length a - 1 do
-    let j = _rand_int i in
-    let tmp = a.(i) in
-    a.(i) <- a.(j);
-    a.(j) <- tmp;
-  done
+let equal eq a b =
+  Array.length a = Array.length b
+  &&
+  _equal eq a 0 (Array.length a) b 0 (Array.length b)
 
-let shuffle a = _shuffle Random.int a
+let compare cmp a b =
+  _compare cmp a 0 (Array.length a) b 0 (Array.length b)
 
-let shuffle_with st a = _shuffle (Random.State.int st) a
+let shuffle a = _shuffle Random.int a 0 (Array.length a)
 
-(** print an array of items using the printing function *)
-let pp ?(sep=", ") pp_item buf a =
-  for i = 0 to Array.length a - 1 do
-    (if i > 0 then Buffer.add_string buf sep);
-    pp_item buf a.(i)
-  done
+let shuffle_with st a = _shuffle (Random.State.int st) a 0 (Array.length a)
 
-(** print an array of items using the printing function *)
-let pp_i ?(sep=", ") pp_item buf a =
-  for i = 0 to Array.length a - 1 do
-    (if i > 0 then Buffer.add_string buf sep);
-    pp_item buf i a.(i)
-  done
+let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a 0 (Array.length a)
 
-let print ?(sep=", ") pp_item fmt a =
-  Array.iteri
-    (fun i x ->
-      if i > 0 then Format.pp_print_string fmt sep;
-      pp_item fmt x
-    ) a
+let pp_i ?(sep=", ") pp_item buf a = _pp_i ~sep pp_item buf a 0 (Array.length a)
+
+let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a 0 (Array.length a)
+
+let to_seq a k = iter k a
+
+let to_gen a = _to_gen a 0 (Array.length a)
+
+let to_klist a = _to_klist a 0 (Array.length a)
+
+module Sub = struct
+  type 'a t = {
+    arr : 'a array;
+    i : int; (** Start index (included) *)
+    j : int;  (** Stop index (excluded) *)
+  }
+
+  let empty = {
+    arr = [||];
+    i = 0;
+    j = 0;
+  }
+
+  let make arr i ~len =
+    if i+len > Array.length arr then invalid_arg "Array.Sub.make";
+    { arr; i; j=i+len; }
+
+  let full arr = { arr; i=0; j=Array.length arr; }
+
+  let underlying a = a.arr
+
+  let length a = a.j - a.i
+
+  let copy a = Array.sub a.arr a.i (length a)
+
+  let sub a i len = make a.arr (a.i + i) len
+
+  let equal eq a b =
+    length a = length b && _equal eq a.arr a.i a.j b.arr b.i b.j
+
+  let compare cmp a b =
+    _compare cmp a.arr a.i a.j b.arr b.i b.j
+
+  let fold f acc a =
+    let rec _fold acc i j =
+      if i=j then acc
+      else _fold (f acc a.arr.(i)) (i+1) j
+    in _fold acc a.i a.j
+
+  let foldi f acc a = _foldi f acc a.arr a.i a.j
+
+  let get a i = a.arr.(a.i+i)
+
+  let set a i x = a.arr.(a.i+i) <- x
+
+  let iter f a =
+    for k=a.i to a.j-1 do f a.arr.(k) done
+
+  let iteri f a =
+    for k=0 to length a-1 do f k a.arr.(a.i + k) done
+
+  let reverse_in_place a = _reverse_in_place a.arr a.i a.j
+
+  let find f a = _find f a.arr a.i a.j
+
+  let for_all p a = _for_all p a.arr a.i a.j
+
+  let exists p a = _exists p a.arr a.i a.j
+
+  let for_all2 p a b =
+    length a = length b && _for_all2 p a.arr b.arr a.i b.i b.j
+
+  let exists2 p a b =
+    length a = length b && _exists2 p a.arr b.arr a.i b.i a.j
+
+  let shuffle a =
+    _shuffle Random.int a.arr a.i a.j
+
+  let shuffle_with st a =
+    _shuffle (Random.State.int st) a.arr a.i a.j
+
+  let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a.arr a.i a.j
+
+  let pp_i ?(sep=", ") pp_item buf a = _pp_i ~sep pp_item buf a.arr a.i a.j
+
+  let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a.arr a.i a.j
+
+  let to_seq a k = iter k a
+
+  let to_gen a = _to_gen a.arr a.i a.j
+
+  let to_klist a = _to_klist a.arr a.i a.j
+end
