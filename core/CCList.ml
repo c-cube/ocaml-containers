@@ -28,6 +28,8 @@ of this software, even if advised of the possibility of such damage.
 
 type 'a t = 'a list
 
+let empty = []
+
 (* max depth for direct recursion *)
 let _direct_depth = 500
 
@@ -60,6 +62,44 @@ let append l1 l2 =
   direct _direct_depth l1 l2
 
 let (@) = append
+
+let filter p l =
+  let rec direct i p l = match l with
+    | [] -> []
+    | _ when i=0 -> safe p l []
+    | x::l' when not (p x) -> direct i p l'
+    | x::l' -> x :: direct (i-1) p l'
+  and safe p l acc = match l with
+    | [] -> List.rev acc
+    | x::l' when not (p x) -> safe p l' acc
+    | x::l' -> safe p l' (x::acc)
+  in
+  direct _direct_depth p l
+
+let fold_right f l acc =
+  let rec direct i f l acc = match l with
+    | [] -> acc
+    | _ when i=0 -> safe f (List.rev l) acc
+    | x::l' ->
+        let acc = direct (i-1) f l' acc in
+        f x acc
+  and safe f l acc = match l with
+    | [] -> acc
+    | x::l' ->
+        let acc = f x acc in
+        safe f l' acc
+  in
+  direct _direct_depth f l acc
+
+(*$T
+  fold_right (+) (1 -- 1_000_000) 0 = \
+    List.fold_left (+) 0 (1 -- 1_000_000)
+*)
+
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    l = fold_right (fun x y->x::y) l [])
+*)
 
 let rec compare f l1 l2 = match l1, l2 with
   | [], [] -> 0
@@ -384,11 +424,59 @@ module Assoc = struct
   *)
 end
 
+(** {2 Zipper} *)
+
+module Zipper = struct
+  type 'a t = 'a list * 'a list
+
+  let empty = [], []
+
+  let is_empty = function
+    | _, [] -> true
+    | _, _::_ -> false
+
+  let to_list (l,r) =
+    let rec append l acc = match l with
+      | [] -> acc
+      | x::l' -> append l' (x::acc)
+    in append l r
+
+  let make l = [], l
+
+  let left = function
+    | x::l, r -> l, x::r
+    | [], r -> [], r
+
+  let right = function
+    | l, x::r -> x::l, r
+    | l, [] -> l, []
+
+  let modify f z = match z with
+    | l, [] ->
+        begin match f None with
+        | None -> z
+        | Some x -> l, [x]
+        end
+    | l, x::r ->
+        begin match f (Some x) with
+        | None -> l,r
+        | Some x' -> l, x::r
+        end
+        
+  let focused = function
+    | _, x::_ -> Some x
+    | _, [] -> None
+
+  let focused_exn = function
+    | _, x::_ -> x
+    | _, [] -> raise Not_found
+end
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = [`Nil | `Cons of 'a * (unit -> 'a klist)]
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 
@@ -422,17 +510,17 @@ let to_klist l =
   let rec make l () = match l with
     | [] -> `Nil
     | x::l' -> `Cons (x, make l')
-  in make l ()
+  in make l
 
 let of_klist l =
   let rec direct i g =
     if i = 0 then safe [] g
-    else match l with
+    else match l () with
       | `Nil -> []
-      | `Cons (x,l') -> x :: direct (i-1) (l' ())
-  and safe acc l = match l with
+      | `Cons (x,l') -> x :: direct (i-1) l'
+  and safe acc l = match l () with
     | `Nil -> List.rev acc
-    | `Cons (x,l') -> safe (x::acc) (l' ())
+    | `Cons (x,l') -> safe (x::acc) l'
   in
   direct _direct_depth l
 

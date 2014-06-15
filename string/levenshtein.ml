@@ -37,15 +37,15 @@ module type STRING = sig
 end
 
 (** Continuation list *)
-type 'a klist =
+type 'a klist = unit ->
   [
   | `Nil
-  | `Cons of 'a * (unit -> 'a klist)
+  | `Cons of 'a * 'a klist
   ]
 
-let rec klist_to_list = function
+let rec klist_to_list l = match l () with
   | `Nil -> []
-  | `Cons (x,k) -> x :: klist_to_list (k ())
+  | `Cons (x,k) -> x :: klist_to_list k
 
 module type S = sig
   type char_
@@ -568,7 +568,7 @@ module Make(Str : STRING) = struct
       let dfa = of_string ~limit s in
       (* traverse at index i in automaton, with
           [fk] the failure continuation *)
-      let rec traverse node i ~(fk:unit->'a klist) =
+      let rec traverse node i ~(fk:'a klist) () =
         match node with
         | Node (opt, m) ->
             (* all alternatives: continue exploring [m], or call [fk] *)
@@ -577,7 +577,7 @@ module Make(Str : STRING) = struct
                 (fun c node' fk ->
                   try
                     let next = __transition dfa i c in
-                    (fun () -> traverse node' next ~fk)
+                    traverse node' next ~fk
                   with Not_found -> fk)
                 m fk
             in
@@ -617,13 +617,13 @@ module Make(Str : STRING) = struct
       fold (fun acc str v -> (str,v) :: acc) [] idx
 
     let to_klist idx =
-      let rec traverse node trail ~(fk:unit->(string_*'a) klist) =
+      let rec traverse node trail ~(fk:(string_*'a) klist) () =
         match node with
         | Node (opt, m) ->
             (* all alternatives: continue exploring [m], or call [fk] *)
             let fk =
               M.fold
-                (fun c node' fk () -> traverse node' (c::trail) ~fk)
+                (fun c node' fk -> traverse node' (c::trail) ~fk)
                 m fk
             in
             match opt with
@@ -649,6 +649,13 @@ include Make(struct
 end)
 
 let debug_print = debug_print output_char
+
+(*$T
+  edit_distance "foo" "fo0" = 1
+  edit_distance "foob" "foo" = 1
+  edit_distance "yolo" "yoyo" = 1
+  edit_distance "aaaaaaab" "aaaa" = 4
+*)
 
 (*
 open Batteries;;

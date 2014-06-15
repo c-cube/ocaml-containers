@@ -57,7 +57,7 @@ val hash_triple : 'a hash_fun -> 'b hash_fun -> 'c hash_fun -> ('a * 'b * 'c) ha
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = [`Nil | `Cons of 'a * (unit -> 'a klist)]
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 val hash_seq : 'a hash_fun -> t -> 'a sequence hash_fun
 val hash_gen : 'a hash_fun -> t -> 'a gen hash_fun

@@ -577,13 +577,13 @@ module Dot = struct
     CCSequence.iter
       (function
         | Full.EnterVertex (v, attrs, _, _) ->
-          Format.fprintf formatter "  @[<h>%a [%a];@]@." pp_vertex v
-            (CCList.print ~sep:"," print_attribute) attrs
+          Format.fprintf formatter "  @[<h>%a %a;@]@." pp_vertex v
+            (CCList.print ~start:"[" ~stop:"]" ~sep:"," print_attribute) attrs
         | Full.ExitVertex _ -> ()
         | Full.MeetEdge (v2, attrs, v1, _) ->
-          Format.fprintf formatter "  @[<h>%a -> %a [%a];@]@."
+          Format.fprintf formatter "  @[<h>%a -> %a %a;@]@."
             pp_vertex v1 pp_vertex v2
-            (CCList.print ~sep:"," print_attribute)
+            (CCList.print ~start:"[" ~stop:"]" ~sep:"," print_attribute)
             attrs)
       events;
     (* close *)

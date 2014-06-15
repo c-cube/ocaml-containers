@@ -39,9 +39,9 @@ Flag "bench"
 Library "containers"
   Path:             core
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
-                    CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl,
+                    CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
                     CCLeftistheap, CCList, CCOpt, CCPair, CCFun, CCHash,
-                    CCKList, CCInt, CCBool, CCArray
+                    CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd, CCLinq
   FindlibName:      containers
 
 Library "containers_string"
@@ -59,9 +59,9 @@ Library "containers_misc"
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
                     Bij, PiCalculus, Bencode, Sexp, RAL,
                     UnionFind, SmallSet, AbsSet, CSM,
-                    ActionMan, QCheck, BencodeOnDisk, TTree,
+                    ActionMan, BencodeOnDisk, TTree, PrintBox,
                     HGraph, Automaton, Conv, Bidir, Iteratee,
-                    Ty, Tell, BencodeStream, RatTerm, Cause, AVL
+                    Ty, Tell, BencodeStream, RatTerm, Cause, AVL, ParseReact
   BuildDepends:     unix,containers
   FindlibName:      misc
   FindlibParent:    containers
@@ -127,6 +127,14 @@ Executable bench_conv
   CompiledObject: native
   Build$: flag(bench)
   MainIs: bench_conv.ml
+  BuildDepends: containers,benchmark
+
+Executable bench_batch
+  Path: tests/
+  Install: false
+  CompiledObject: native
+  Build$: flag(bench)
+  MainIs: bench_batch.ml
   BuildDepends: containers,benchmark
 
 Executable test_levenshtein

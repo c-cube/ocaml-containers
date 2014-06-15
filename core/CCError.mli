@@ -24,59 +24,59 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Options} *)
-
-type 'a t = 'a option
-
-val map : ('a -> 'b) -> 'a t -> 'b t
-(** Transform the element inside, if any *)
-
-val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
-(** [maybe f x o] is [x] if [o] is [None], otherwise it's [f y] if [o = Some y] *)
-
-val is_some : _ t -> bool
-
-val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
-
-val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-
-val return : 'a -> 'a t
-(** Monadic return *)
-
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** Infix version of {!map} *)
-
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** Monadic bind *)
-
-val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** Flip version of {!>>=} *)
-
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-
-val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-
-val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-
-val iter : ('a -> unit) -> 'a t -> unit
-(** Iterate on 0 or 1 elements *)
-
-val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
-(** Fold on 0 or 1 elements *)
-
-(** {2 Conversion and IO} *)
-
-val to_list : 'a t -> 'a list
-
-val of_list : 'a list -> 'a t
-(** Head of list, or [None] *)
+(** {1 Error Monad} *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a gen = unit -> 'a option
+type 'a equal = 'a -> 'a -> bool
+type 'a ord = 'a -> 'a -> int
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
-val to_gen : 'a t -> 'a gen
+(** {2 Basics} *)
+
+type +'a t =
+  [ `Ok of 'a
+  | `Error of string
+  ]
+
+val return : 'a -> 'a t
+
+val fail : string -> 'a t
+
+val of_exn : exn -> 'a t
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+
+val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+
+val guard : (unit -> 'a) -> 'a t
+
+val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+
+val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+
+val equal : 'a equal -> 'a t equal
+
+val compare : 'a ord -> 'a t ord
+
+(** {2 Collections} *)
+
+val map_l : ('a -> 'b t) -> 'a list -> 'b list t
+
+val fold_l : ('acc -> 'a -> 'acc t) -> 'acc -> 'a list -> 'acc t
+
+val fold_seq : ('acc -> 'a -> 'acc t) -> 'acc -> 'a sequence -> 'acc t
+
+(** {2 Conversions} *)
+
+val to_opt : 'a t -> 'a option
+
+val of_opt : 'a option -> 'a t
+
 val to_seq : 'a t -> 'a sequence
+
+(** {2 IO} *)
 
 val pp : 'a printer -> 'a t printer
 
+val print : 'a formatter -> 'a t formatter

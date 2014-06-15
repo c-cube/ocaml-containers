@@ -48,6 +48,15 @@ val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
 
 val uncurry : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
 
+val tap : ('a -> 'b) -> 'a -> 'a
+(** [tap f x] evaluates [f x], discards it, then returns [x]. Useful
+    in a pipeline, for instance:
+    {[CCArray.(1 -- 10)
+      |> tap CCArray.shuffle
+      |> tap CCArray.sort Pervasives.compare
+    ]}
+*)
+
 val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
 (** Mathematical composition *)
 

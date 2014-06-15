@@ -9,7 +9,7 @@
 #load "containers_misc.cma";;
 #require "threads";;
 #load "containers_thread.cma";;
-open Containers;;
+open Containers_misc;;
 #install_printer Bencode.pretty;;
 #install_printer HGraph.Default.fmt;;
 #require "CamlGI";;

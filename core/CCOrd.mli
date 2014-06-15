@@ -24,59 +24,43 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Options} *)
+(** {1 Comparisons} *)
 
-type 'a t = 'a option
+type 'a t = 'a -> 'a -> int
+(** Comparison (total ordering) between two elements, that returns an int *)
 
-val map : ('a -> 'b) -> 'a t -> 'b t
-(** Transform the element inside, if any *)
+val compare : 'a t
+(** Polymorphic "magic" comparison *)
 
-val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
-(** [maybe f x o] is [x] if [o] is [None], otherwise it's [f y] if [o = Some y] *)
+val opp : 'a t -> 'a t
+(** Opposite order *)
 
-val is_some : _ t -> bool
+val equiv : int -> int -> bool
+(** Returns [true] iff the two comparison results are the same *)
 
-val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
+val int_ : int t
+val string_ : string t
+val bool_ : bool t
+val float_ : float t
 
-val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+(** {2 Lexicographic Combination} *)
 
-val return : 'a -> 'a t
-(** Monadic return *)
+val (<?>) : int -> ('a t * 'a * 'a) -> int
+(** [c1 @@? (ord, x, y)] returns the same as [c1] if [c1] is not [0];
+    otherwise it uses [ord] to compare the two values [x] and [y],
+    of type ['a].
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** Infix version of {!map} *)
+    Example:
+    {[CCInt.compare 1 3
+      <?> (String.compare, "a", "b")
+      <?> (CCBool.compare, true, false)]}
+*)
 
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** Monadic bind *)
+val pair : 'a t -> 'b t -> ('a * 'b) t
 
-val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** Flip version of {!>>=} *)
+val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+val list_ : 'a t -> 'a list t
+(** Lexicographic combination on lists *)
 
-val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-
-val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-
-val iter : ('a -> unit) -> 'a t -> unit
-(** Iterate on 0 or 1 elements *)
-
-val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
-(** Fold on 0 or 1 elements *)
-
-(** {2 Conversion and IO} *)
-
-val to_list : 'a t -> 'a list
-
-val of_list : 'a list -> 'a t
-(** Head of list, or [None] *)
-
-type 'a sequence = ('a -> unit) -> unit
-type 'a gen = unit -> 'a option
-type 'a printer = Buffer.t -> 'a -> unit
-
-val to_gen : 'a t -> 'a gen
-val to_seq : 'a t -> 'a sequence
-
-val pp : 'a printer -> 'a t printer
-
+val array_ : 'a t -> 'a array t

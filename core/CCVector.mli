@@ -25,108 +25,203 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Growable, mutable vector} *)
 
-type 'a t
-(** the type of a vector of 'a *)
+type ro = [`RO]
+type rw = [`RW]
+
+(** Mutability is [rw] (read-write) or [ro] (read-only) *)
+
+type ('a, 'mut) t
+(** the type of a vector of elements of type ['a], with
+    a mutability flat ['mut] *)
+
+type 'a vector = ('a, rw) t
+(** Type synonym: a ['a vector] is mutable. *)
 
 type 'a sequence = ('a -> unit) -> unit
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a gen = unit -> 'a option
+type 'a equal = 'a -> 'a -> bool
+type 'a ord = 'a -> 'a -> int
+type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
-val create : int -> 'a t
-(** create a vector of given initial capacity *)
+val freeze : ('a, _) t -> ('a, ro) t
+(** Make an immutable vector (no copy! Don't use the old version)*)
 
-val clear : 'a t -> unit
+val freeze_copy : ('a, _) t -> ('a, ro) t
+(** Copy the vector into an immutable version *)
+
+val create : unit -> ('a, rw) t
+(** Create a new, empty vector *)
+
+val create_with : ?capacity:int -> 'a -> ('a, rw) t
+(** Create a new vector, using the given value as a filler.
+    @param capacity the size of the underlying array
+    {b caution}: the value will likely not be GC'd before the vector is. *)
+
+val make : int -> 'a -> ('a, 'mut) t
+(** [make n x] makes a vector of size [n], filled with [x] *)
+
+val init : int -> (int -> 'a) -> ('a, 'mut) t
+(** Init the vector with the given function and size *)
+
+val clear : ('a, rw) t -> unit
 (** clear the content of the vector *)
 
-val ensure : 'a t -> int -> unit
-(** Ensure that the vector can contain that much elements, resizing it
-    if required *)
+val ensure : ('a, rw) t -> int -> unit
+(** Hint to the vector that it should have at least the given capacity.
+    Just a hint, will not be enforced if the vector is empty. *)
 
-val is_empty : 'a t -> bool
+val is_empty : ('a, _) t -> bool
 (** is the vector empty? *)
 
-val push : 'a t -> 'a -> unit
+val push : ('a, rw) t -> 'a -> unit
 (** add an element at the end of the vector *)
 
-val append : 'a t -> 'a t -> unit
+val append : ('a, rw) t -> ('a, _) t -> unit
 (** [append a b] adds all elements of b to a *)
 
-val append_array : 'a t -> 'a array -> unit
+val append_array : ('a, rw) t -> 'a array -> unit
 (** same as append, with an array *)
 
-val append_seq : 'a t -> 'a sequence -> unit
+val append_seq : ('a, rw) t -> 'a sequence -> unit
 (** Append content of sequence *)
 
-val pop : 'a t -> 'a
-(** remove last element, or raise a Failure if empty *)
+val equal : 'a equal -> ('a,_) t equal
 
-val copy : 'a t -> 'a t
-(** shallow copy *)
+val compare : 'a ord -> ('a,_) t ord
+(** Lexicographic comparison *)
 
-val shrink : 'a t -> int -> unit
-(** shrink to the given size (remove elements above this size) *)
+val pop : ('a, rw) t -> 'a option
+(** Remove last element, or [None] *)
 
-val member : ?eq:('a -> 'a -> bool) -> 'a t -> 'a -> bool
+val pop_exn : ('a, rw) t -> 'a
+(** remove last element, or raise a Failure if empty
+    @raise Failure on an empty vector *)
+
+val copy : ('a,_) t -> ('a,'mut) t
+(** Shallow copy (may give an immutable or mutable vector) *)
+
+val shrink : ('a, rw) t -> int -> unit
+(** shrink to the given size (remove elements above this size).
+    Does nothing if the parameter is bigger than the current size. *)
+
+val member : ?eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 (** is the element a member of the vector? *)
 
-val sort : ?cmp:('a -> 'a -> int) -> 'a t -> unit
-(** sort the array in place*)
+val sort : ('a -> 'a -> int) -> ('a, _) t -> ('a, 'mut) t
+(** Sort the vector *)
 
-val uniq_sort : ?cmp:('a -> 'a -> int) -> 'a t -> unit
-(** sort the array and remove duplicates in place*)
+val sort' : ('a -> 'a -> int) -> ('a, rw) t -> unit
+(** Sort the vector in place *)
 
-val iter : 'a t -> ('a -> unit) -> unit
+val uniq_sort : ('a -> 'a -> int) -> ('a, rw) t -> unit
+(** Sort the array and remove duplicates, in place*)
+
+val iter : ('a -> unit) -> ('a,_) t -> unit
 (** iterate on the vector *)
 
-val iteri : 'a t -> (int -> 'a -> unit) -> unit
+val iteri : (int -> 'a -> unit) -> ('a,_) t -> unit
 (** iterate on the vector with indexes *)
 
-val map : 'a t -> ('a -> 'b) -> 'b t
+val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
 (** map elements of the vector *)
 
-val filter : 'a t -> ('a -> bool) -> 'a t
+val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
 (** filter elements from vector *)
 
-val fold : 'a t -> 'b -> ('b -> 'a -> 'b) -> 'b
+val filter' : ('a -> bool) -> ('a, rw) t -> unit
+(** Filter elements in place. Does {b NOT} preserve the order
+    of the elements. *)
+
+val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
 (** fold on elements of the vector *)
 
-val exists : 'a t -> ('a -> bool) -> bool
+val exists : ('a -> bool) -> ('a,_) t -> bool
 (** existential test *)
 
-val for_all : 'a t -> ('a -> bool) -> bool
+val for_all : ('a -> bool) -> ('a,_) t -> bool
 (** universal test *)
 
-val find : 'a t -> ('a -> bool) -> 'a
-(** find an element that satisfies the predicate, or Not_found *)
+val find : ('a -> bool) -> ('a,_) t -> 'a option
+(** Find an element that satisfies the predicate *)
 
-val get : 'a t -> int -> 'a
-(** access element, or Failure if bad index *)
+val find_exn  : ('a -> bool) -> ('a,_) t -> 'a
+(** find an element that satisfies the predicate, or
+    @raise Not_found if no element does *)
 
-val set : 'a t -> int -> 'a -> unit
-(** access element, or Failure if bad index *)
+val filter_map : ('a -> 'b option) -> ('a,_) t -> ('b, 'mut) t
+(** Map elements with a function, possibly filtering some of them out *)
 
-val rev : 'a t -> unit
-(** Reverse array in place *)
+val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
+(** Map each element to a sub-vector *)
 
-val size : 'a t -> int
+val flat_map' : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
+(** Like {!flat_map}, but using {!sequence} for intermediate collections *)
+
+val (>>=) : ('a,_) t -> ('a -> ('b,_) t) -> ('b, 'mut) t
+
+val (>|=) : ('a,_) t -> ('a -> 'b) -> ('b, 'mut) t
+
+val get : ('a,_) t -> int -> 'a
+(** access element, or
+    @raise Failure if bad index *)
+
+val set : ('a, rw) t -> int -> 'a -> unit
+(** access element, or
+    @raise Failure if bad index *)
+
+val remove : ('a, rw) t -> int -> unit
+(** Remove the [n-th] element of the vector. Does {b NOT} preserve the order
+    of the elements (might swap with the last element) *)
+
+val rev : ('a,_) t -> ('a, 'mut) t
+(** Reverse the vector *)
+
+val rev' : ('a, rw) t -> unit
+(** Reverse the vector in place *)
+
+val size : ('a,_) t -> int
 (** number of elements in vector *)
 
-val length : _ t -> int
+val length : (_,_) t -> int
 (** Synonym for {! size} *)
 
-val unsafe_get_array : 'a t -> 'a array
-(** Access the underlying *shared* array (do not modify!).
+val capacity : (_,_) t -> int
+(** Number of elements the vector can contain without being resized *)
+
+val unsafe_get_array : ('a, rw) t -> 'a array
+(** Access the underlying {b shared} array (do not modify!).
     [unsafe_get_array v] is longer than [size v], but elements at higher
     index than [size v] are undefined (do not access!). *)
 
-val of_seq : ?init:'a t -> 'a sequence -> 'a t
+val (--) : int -> int -> (int, 'mut) t
+(** Range of integers (both included) *)
 
-val to_seq : 'a t -> 'a sequence
+val of_array : 'a array -> ('a, 'mut) t
+val of_list : 'a list -> ('a, 'mut) t
+val to_array : ('a,_) t -> 'a array
+val to_list : ('a,_) t -> 'a list
 
-val slice : 'a t -> int -> int -> 'a sequence
-(** [slice v start len] is the sequence of elements from [v.(start)]
-    to [v.(start+len)] included. *)
+val of_seq : ?init:('a,rw) t -> 'a sequence -> ('a, rw) t
 
-val from_array : 'a array -> 'a t
-val from_list : 'a list -> 'a t
-val to_array : 'a t -> 'a array
-val to_list : 'a t -> 'a list
+val to_seq : ('a,_) t -> 'a sequence
 
+val slice : ('a,rw) t -> ('a array * int * int)
+(** Vector as an array slice. By doing it we expose the internal array, so
+    be careful! *)
+
+val slice_seq : ('a,_) t -> int -> int -> 'a sequence
+(** [slice_seq v start len] is the sequence of elements from [v.(start)]
+    to [v.(start+len-1)]. *)
+
+val of_klist : ?init:('a, rw) t -> 'a klist -> ('a, rw) t
+val to_klist : ('a,_) t -> 'a klist
+val of_gen : ?init:('a, rw) t -> 'a gen -> ('a, rw) t
+val to_gen : ('a,_) t -> 'a gen
+
+val pp : ?start:string -> ?stop:string -> ?sep:string ->
+         'a printer -> ('a,_) t printer
+
+val print : ?start:string -> ?stop:string -> ?sep:string ->
+            'a formatter -> ('a,_) t formatter

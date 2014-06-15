@@ -54,7 +54,13 @@ let equal f o1 o2 = match o1, o2 with
 
 let return x = Some x
 
+let (>|=) x f = map f x
+
 let (>>=) o f = match o with
+  | None -> None
+  | Some x -> f x
+
+let flat_map f o = match o with
   | None -> None
   | Some x -> f x
 
@@ -70,9 +76,21 @@ let map2 f o1 o2 = match o1, o2 with
   | _, None -> None
   | Some x, Some y -> Some (f x y)
 
+let iter f o = match o with
+  | None -> ()
+  | Some x -> f x
+
+let fold f acc o = match o with
+  | None -> acc
+  | Some x -> f acc x
+
 let to_list o = match o with
   | None -> []
   | Some x -> [x]
+
+let of_list = function
+  | x::_ -> Some x
+  | [] -> None
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option

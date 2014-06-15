@@ -40,6 +40,8 @@ let const x _ = x
 
 let uncurry f (x,y) = f x y
 
+let tap f x = ignore (f x); x
+
 let (%>) = compose
 
 let (%) f g x = f (g x)

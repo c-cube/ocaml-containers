@@ -26,16 +26,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 AVL trees} *)
 
-type ('a,'b) t = private
-  | Empty
-  | Node of ('a,'b) t * 'a * 'b * ('a,'b) t * int
-
 type 'a comparator = 'a -> 'a -> int
 
-val empty : ('a,'b) t
+type ('a,'b) tree = private
+  | Empty
+  | Node of ('a,'b) tree * 'a * 'b * ('a,'b) tree * int
+
+type ('a,'b) t = private {
+  cmp: 'a comparator;
+  t: ('a,'b) tree
+}
+
+val empty : cmp:'a comparator -> ('a,'b) t
 (** Empty tree *)
 
-val singleton : 'a -> 'b -> ('a,'b) t
+val singleton : cmp:'a comparator -> 'a -> 'b -> ('a,'b) t
 (** Tree with a single node *)
 
 val fold : ('c -> 'a -> 'b -> 'c) -> 'c -> ('a,'b) t -> 'c
@@ -44,29 +49,29 @@ val fold : ('c -> 'a -> 'b -> 'c) -> 'c -> ('a,'b) t -> 'c
 val for_all : ('a -> 'b -> bool) -> ('a,'b) t -> bool
 val exists : ('a -> 'b -> bool) -> ('a,'b) t -> bool
 
-val find : cmp:'a comparator -> ('a,'b) t -> 'a -> 'b option
+val find : ('a,'b) t -> 'a -> 'b option
 (** Find the value associated to the key, if any *)
 
-val find_exn : cmp:'a comparator -> ('a,'b) t -> 'a -> 'b
+val find_exn : ('a,'b) t -> 'a -> 'b
 (** @raise Not_found if the key is not present *)
 
-val insert : cmp:'a comparator -> ('a,'b) t -> 'a -> 'b -> ('a,'b) t
+val insert : ('a,'b) t -> 'a -> 'b -> ('a,'b) t
 (** Insertion in the tree *)
 
-val remove : cmp:'a comparator -> ('a,'b) t -> 'a -> ('a,'b) t
+val remove : ('a,'b) t -> 'a -> ('a,'b) t
 (** Removal from the tree *)
 
-val update : cmp:'a comparator -> ('a,'b) t -> 'a ->
+val update : ('a,'b) t -> 'a ->
             ('b option -> ('a * 'b) option) -> ('a,'b) t
 (** Update of the given key binding (subsumes [insert] and [remove]) *)
 
-val split : cmp:'a comparator -> ('a,'b) t -> 'a ->
+val split : ('a,'b) t -> 'a ->
             ('a,'b) t * 'b option * ('a,'b) t
 (** [split ~cmp t k] splits [t] into a left part that
     is smaller than [k], the possible binding of [k],
     and a part bigger than [k]. *)
 
-val merge : cmp:'a comparator ->
+val merge :
             ('a -> 'b option -> 'c option -> 'd option) ->
             ('a,'b) t -> ('a,'c) t -> ('a,'d) t
 (** Merge two trees together, with the given function *)
@@ -82,14 +87,14 @@ val to_list : ('a,'b) t -> ('a * 'b) list
 module type ITERATOR = sig
   type 'a iter
 
-  val after : cmp:'a comparator -> ('a,'b) t -> 'a -> ('a * 'b) iter
-  val before : cmp:'a comparator -> ('a,'b) t -> 'a -> ('a * 'b) iter
+  val after : ('a,'b) t -> 'a -> ('a * 'b) iter
+  val before : ('a,'b) t -> 'a -> ('a * 'b) iter
   val iter : ('a,'b) t -> ('a * 'b) iter
-  val add : cmp:'a comparator -> ('a,'b) t -> ('a * 'b) iter -> ('a,'b) t
+  val add : ('a,'b) t -> ('a * 'b) iter -> ('a,'b) t
 end
 
 module KList : sig
-  type 'a t = [ `Nil | `Cons of 'a * (unit -> 'a t) ]
+  type 'a t = unit -> [ `Nil | `Cons of 'a * 'a t ]
 
   include ITERATOR with type 'a iter := 'a t
 end
