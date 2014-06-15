@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: df66284577d93287963c0c06e567cf78)
+# DO NOT EDIT (digest: 356c5881cb77df7fd532a71e15afb806)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -44,9 +44,9 @@
 "misc/absSet.cmx": for-pack(Containers_misc)
 "misc/CSM.cmx": for-pack(Containers_misc)
 "misc/actionMan.cmx": for-pack(Containers_misc)
-"misc/qCheck.cmx": for-pack(Containers_misc)
 "misc/bencodeOnDisk.cmx": for-pack(Containers_misc)
 "misc/tTree.cmx": for-pack(Containers_misc)
+"misc/printBox.cmx": for-pack(Containers_misc)
 "misc/hGraph.cmx": for-pack(Containers_misc)
 "misc/automaton.cmx": for-pack(Containers_misc)
 "misc/conv.cmx": for-pack(Containers_misc)
@@ -58,6 +58,7 @@
 "misc/ratTerm.cmx": for-pack(Containers_misc)
 "misc/cause.cmx": for-pack(Containers_misc)
 "misc/AVL.cmx": for-pack(Containers_misc)
+"misc/parseReact.cmx": for-pack(Containers_misc)
 <misc/*.ml{,i}>: package(unix)
 <misc/*.ml{,i}>: use_containers
 # Library containers_thread
@@ -90,6 +91,9 @@
 # Executable bench_conv
 "tests/bench_conv.native": package(benchmark)
 "tests/bench_conv.native": use_containers
+# Executable bench_batch
+"tests/bench_batch.native": package(benchmark)
+"tests/bench_batch.native": use_containers
 <tests/*.ml{,i}>: package(benchmark)
 # Executable test_levenshtein
 "tests/test_levenshtein.native": package(qcheck)

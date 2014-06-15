@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 74dad42b966e38504c0f3f573d675dbd)
+# DO NOT EDIT (digest: 1f89029bfd9400c761d71802552f321f)
 misc/Cache
 misc/FHashtbl
 misc/FlatHashtbl
@@ -22,9 +22,9 @@ misc/SmallSet
 misc/AbsSet
 misc/CSM
 misc/ActionMan
-misc/QCheck
 misc/BencodeOnDisk
 misc/TTree
+misc/PrintBox
 misc/HGraph
 misc/Automaton
 misc/Conv
@@ -36,4 +36,5 @@ misc/BencodeStream
 misc/RatTerm
 misc/Cause
 misc/AVL
+misc/ParseReact
 # OASIS_STOP
