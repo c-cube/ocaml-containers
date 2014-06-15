@@ -145,6 +145,11 @@ module Sub : sig
   (** Create a slice.
       @raise Invalid_argument if the slice isn't valid *)
 
+  val of_slice : ('a array * int * int) -> 'a t
+  (** Make a sub-array from a triple [(arr, i, len)] where [arr] is the array,
+      [i] the offset in [arr], and [len] the number of elements of the slice.
+      @raise Invalid_argument if the slice isn't valid (See {!make}) *)
+
   val full : 'a array -> 'a t
   (** Slice that covers the full array *)
 

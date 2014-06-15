@@ -110,10 +110,10 @@ let rec _foldi f acc a i j =
 let _reverse_in_place a i j =
   if i=j then ()
   else
-    for k = i to j/2 do
+    for k = i to (j-1)/2 do
       let t = a.(k) in
-      a.(k) <- a.(j-k);
-      a.(j-k) <- t;
+      a.(k) <- a.(j-1-k);
+      a.(j-1-k) <- t;
     done
 
 let rec _equal eq a1 i1 j1 a2 i2 j2 =
@@ -349,6 +349,8 @@ module Sub = struct
   let make arr i ~len =
     if i+len > Array.length arr then invalid_arg "Array.Sub.make";
     { arr; i; j=i+len; }
+
+  let of_slice (arr,i,len) = make arr i ~len
 
   let full arr = { arr; i=0; j=Array.length arr; }
 
