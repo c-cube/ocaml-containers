@@ -42,6 +42,8 @@ type ('a,'mut) t = {
   mutable vec : 'a array;
 }
 
+type 'a vector = ('a, rw) t
+
 let freeze v = {
   size=v.size;
   vec=v.vec;
@@ -144,6 +146,14 @@ let get v i =
 let set v i x =
   if i < 0 || i >= v.size then failwith "Vector.set";
   Array.unsafe_set v.vec i x
+
+let remove v i =
+  if i < 0 || i >= v.size then failwith "Vector.remove";
+  (* if v.(i) not the last element, then put last element at index i *)
+  if i < v.size - 1
+    then v.vec.(i) <- v.vec.(v.size - 1);
+  (* remove one element *)
+  v.size <- v.size - 1
 
 let append_seq a seq =
   seq (fun x -> push a x)
@@ -250,6 +260,20 @@ let map f v =
     size=v.size;
     vec=Array.map f v.vec
   }
+
+let filter' p v =
+  let i = ref (v.size - 1) in
+  while !i >= 0 do
+    if not (p v.vec.(! i))
+      (* remove i-th item! *)
+      then remove v !i;
+    decr i
+  done
+
+(*$T
+  let v = 1 -- 10 in filter' (fun x->x<4) v; \
+   to_list v |> List.sort Pervasives.compare = [1;2;3]
+*)
 
 let filter p v =
   if _empty_array v
@@ -377,7 +401,7 @@ let of_seq ?(init=create ()) seq =
 
 let to_seq v k = iter k v
 
-let slice v start len =
+let slice_seq v start len =
   assert (start >= 0 && len >= 0);
   fun k ->
     assert (start+len < v.size);
@@ -387,8 +411,10 @@ let slice v start len =
     done
 
 (*$T
-  slice (of_list [0;1;2;3;4]) 1 3 |> CCList.of_seq = [1;2;3]
+  slice_seq (of_list [0;1;2;3;4]) 1 3 |> CCList.of_seq = [1;2;3]
 *)
+
+let slice v = (v.vec, 0, v.size)
 
 let (--) i j =
   if i>j

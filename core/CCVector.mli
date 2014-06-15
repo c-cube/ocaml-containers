@@ -34,6 +34,9 @@ type ('a, 'mut) t
 (** the type of a vector of elements of type ['a], with
     a mutability flat ['mut] *)
 
+type 'a vector = ('a, rw) t
+(** Type synonym: a ['a vector] is mutable. *)
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -110,10 +113,10 @@ val sort : ('a -> 'a -> int) -> ('a, _) t -> ('a, 'mut) t
 (** Sort the vector *)
 
 val sort' : ('a -> 'a -> int) -> ('a, rw) t -> unit
-(** sort the vector in place*)
+(** Sort the vector in place *)
 
 val uniq_sort : ('a -> 'a -> int) -> ('a, rw) t -> unit
-(** sort the array and remove duplicates in place*)
+(** Sort the array and remove duplicates, in place*)
 
 val iter : ('a -> unit) -> ('a,_) t -> unit
 (** iterate on the vector *)
@@ -126,6 +129,10 @@ val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
 
 val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
 (** filter elements from vector *)
+
+val filter' : ('a -> bool) -> ('a, rw) t -> unit
+(** Filter elements in place. Does {b NOT} preserve the order
+    of the elements. *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
 (** fold on elements of the vector *)
@@ -164,6 +171,10 @@ val set : ('a, rw) t -> int -> 'a -> unit
 (** access element, or
     @raise Failure if bad index *)
 
+val remove : ('a, rw) t -> int -> unit
+(** Remove the [n-th] element of the vector. Does {b NOT} preserve the order
+    of the elements (might swap with the last element) *)
+
 val rev : ('a,_) t -> ('a, 'mut) t
 (** Reverse the vector *)
 
@@ -196,8 +207,12 @@ val of_seq : ?init:('a,rw) t -> 'a sequence -> ('a, rw) t
 
 val to_seq : ('a,_) t -> 'a sequence
 
-val slice : ('a,_) t -> int -> int -> 'a sequence
-(** [slice v start len] is the sequence of elements from [v.(start)]
+val slice : ('a,rw) t -> ('a array * int * int)
+(** Vector as an array slice. By doing it we expose the internal array, so
+    be careful! *)
+
+val slice_seq : ('a,_) t -> int -> int -> 'a sequence
+(** [slice_seq v start len] is the sequence of elements from [v.(start)]
     to [v.(start+len-1)]. *)
 
 val of_klist : ?init:('a, rw) t -> 'a klist -> ('a, rw) t
