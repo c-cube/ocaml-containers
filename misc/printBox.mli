@@ -30,9 +30,35 @@ Allows to print nested boxes, lists, arrays, tables in a nice way
 on any monospaced support.
 
 {[
-let b = PrintBox.(
+  # let b = PrintBox.(
+  frame
+    (vlist [ line "hello";
+             hlist [line "world"; line "yolo"]])
+  );;
+val b : Box.t = <abstr>
+# PrintBox.output ~indent:2 stdout b;;
+  +----------+
+  |hello     |
+  |----------|
+  |world|yolo|
+  +----------+
+- : unit = ()
+# let b2 = PrintBox.(
+  frame
+    (hlist [ text "I love\nto\npress\nenter";
+             grid_text [| [|"a"; "bbb"|];
+                          [|"c"; "hello world"|] |]])
+  );;
+val b2 : PrintBox.Box.t = <abstr>
+# PrintBox.output stdout b2;; 
++--------------------+
+|I love|a|bbb        |
+|to    |-+-----------|
+|press |c|hello world|
+|enter | |           |
++--------------------+
 
-
+- : unit = ()
 
 ]}
 
