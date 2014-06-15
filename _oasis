@@ -113,6 +113,14 @@ Document containers_misc
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: containers.misc
 
+Document containers_string
+  Title:                Containers_string docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: containers.string
+
 Executable benchs
   Path:             tests/
   Install:          false
