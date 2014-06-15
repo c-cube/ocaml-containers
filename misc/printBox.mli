@@ -121,34 +121,40 @@ val float_ : float -> Box.t
 val frame : Box.t -> Box.t
 (** Put a single frame around the box *)
 
-val grid : ?framed:bool -> Box.t array array -> Box.t
+val pad : Box.t -> Box.t
+(** Pad the given box with some free space *)
+
+val pad' : int -> Box.t -> Box.t
+(** Pad with the given number of free cells *)
+
+val grid : ?pad:bool -> ?framed:bool -> Box.t array array -> Box.t
 (** Grid of boxes (no frame between boxes). The matrix is indexed
     with lines first, then columns. The array must be a proper matrix,
     that is, all lines must have the same number of columns!
     @param framed if [true], each item of the grid will be framed.
       default value is [true] *)
 
-val grid_text : ?framed:bool -> string array array -> Box.t
+val grid_text : ?pad:bool -> ?framed:bool -> string array array -> Box.t
 (** Same as {!grid}, but wraps every cell into a {!text} box *)
 
 val transpose : 'a array array -> 'a array array
 (** Transpose a matrix *)
 
-val init_grid : ?framed:bool ->
+val init_grid : ?pad:bool -> ?framed:bool ->
                 line:int -> col:int -> (line:int -> col:int -> Box.t) -> Box.t
 (** Same as {!grid} but takes the matrix as a function *)
 
-val vlist : ?framed:bool -> Box.t list -> Box.t
+val vlist : ?pad:bool -> ?framed:bool -> Box.t list -> Box.t
 (** Vertical list of boxes *)
 
-val hlist : ?framed:bool -> Box.t list -> Box.t
+val hlist : ?pad:bool -> ?framed:bool -> Box.t list -> Box.t
 (** Horizontal list of boxes *)
 
-val grid_map : ?framed:bool -> ('a -> Box.t) -> 'a array array -> Box.t
+val grid_map : ?pad:bool -> ?framed:bool -> ('a -> Box.t) -> 'a array array -> Box.t
 
-val vlist_map : ?framed:bool -> ('a -> Box.t) -> 'a list -> Box.t
+val vlist_map : ?pad:bool -> ?framed:bool -> ('a -> Box.t) -> 'a list -> Box.t
 
-val hlist_map : ?framed:bool -> ('a -> Box.t) -> 'a list -> Box.t
+val hlist_map : ?pad:bool -> ?framed:bool -> ('a -> Box.t) -> 'a list -> Box.t
 
 val render : Output.t -> Box.t -> unit
 

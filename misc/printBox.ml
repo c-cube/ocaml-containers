@@ -153,6 +153,7 @@ module Box = struct
     | Line of string
     | Text of string list  (* in a box *)
     | Frame of 'a
+    | Pad of int * 'a
     | Grid of grid_shape * 'a array array
 
   type t = {
@@ -221,6 +222,10 @@ module Box = struct
     | Frame t ->
         let {x;y} = size t in
         { x=x+2; y=y+2; }
+    | Pad (n, b') -> 
+        assert (n>0);
+        let {x;y} = size b' in
+        { x=x+2*n; y=y+2*n; }
     | Grid (_,m) ->
         let dim = _dim_matrix m in
         let lines, columns = _size_matrix m in
@@ -250,25 +255,32 @@ let bool_ x = line (string_of_bool x)
 let frame b =
   Box._make (Box.Frame b)
 
-let grid ?(framed=true) m =
-  Box._make (Box.Grid ((if framed then Box.GridFramed else Box.GridBase), m))
+let pad' n b =
+  assert (n>=0);
+  if n=0 then b else Box._make (Box.Pad (n, b))
 
-let init_grid ?framed ~line ~col f =
+let pad b = pad' 1 b
+
+let grid ?(pad=false) ?(framed=true) m =
+  let b = Box._make (Box.Grid ((if framed then Box.GridFramed else Box.GridBase), m)) in
+  if pad then pad' 1 b else b
+
+let init_grid ?pad ?framed ~line ~col f =
   let m = Array.init line (fun j-> Array.init col (fun i -> f ~line:j ~col:i)) in
-  grid ?framed m
+  grid ?pad ?framed m
 
-let vlist ?framed l =
+let vlist ?pad ?framed l =
   let a = Array.of_list l in
-  grid ?framed (Array.map (fun line -> [| line |]) a)
+  grid ?pad ?framed (Array.map (fun line -> [| line |]) a)
 
-let hlist ?framed l =
-  grid ?framed [| Array.of_list l |]
+let hlist ?pad ?framed l =
+  grid ?pad ?framed [| Array.of_list l |]
 
-let hlist_map ?framed f l = hlist ?framed (List.map f l)
-let vlist_map ?framed f l = vlist ?framed (List.map f l)
-let grid_map ?framed f m = grid ?framed (Array.map (Array.map f) m)
+let hlist_map ?pad ?framed f l = hlist ?pad ?framed (List.map f l)
+let vlist_map ?pad ?framed f l = vlist ?pad ?framed (List.map f l)
+let grid_map ?pad ?framed f m = grid ?pad ?framed (Array.map (Array.map f) m)
 
-let grid_text ?framed m = grid_map ?framed text m
+let grid_text ?pad ?framed m = grid_map ?pad ?framed text m
 
 let transpose m =
   let dim = Box._dim_matrix m in
@@ -307,6 +319,9 @@ let rec _render ?expected_size ~out b pos =
         _write_vline out (_move_y pos 1) y;
         _write_vline out (_move pos (x+1) 1) y;
         _render ~out b' (_move pos 1 1)
+    | Box.Pad (n, b') ->
+        let expected_size = Box.size b in
+        _render ~expected_size ~out b' (_move pos n n)
     | Box.Grid (grid_shape,m) ->
         let dim = Box._dim_matrix m in
         let lines, columns = Box._size_matrix m in
