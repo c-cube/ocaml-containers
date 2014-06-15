@@ -1008,7 +1008,8 @@ module IO = struct
     else _find s c (i+1)
 
   let rec _lines s i k = match _find s '\n' i with
-    | None -> ()
+    | None ->
+      if i<String.length s then k (String.sub s i (String.length s-i))
     | Some j ->
         let s' = String.sub s i (j-i) in
         k s';
