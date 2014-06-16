@@ -36,6 +36,10 @@ let _minus pos1 pos2 = _move pos1 (- pos2.x) (- pos2.y)
 let _move_x pos x = _move pos x 0
 let _move_y pos y = _move pos 0 y
 
+let _string_len = ref String.length
+
+let set_string_len f = _string_len := f
+
 (** {2 Output: where to print to} *)
 
 module Output = struct
@@ -72,7 +76,7 @@ module Output = struct
     )
 
   let _ensure_line line i =
-    if i >= String.length line.bl_str
+    if i >= !_string_len line.bl_str
     then (
       let str' = String.make (2 * i + 5) ' ' in
       String.blit line.bl_str 0 str' 0 line.bl_len;
@@ -96,7 +100,7 @@ module Output = struct
     line.bl_len <- max line.bl_len (pos.x+s_len)
 
   let _buf_put_string buf pos s =
-    _buf_put_sub_string buf pos s 0 (String.length s)
+    _buf_put_sub_string buf pos s 0 (!_string_len s)
 
   (* create a new buffer *)
   let make_buffer () =
@@ -151,10 +155,12 @@ module Box = struct
     | GridBars
 
   type 'a shape =
+    | Empty
     | Text of string list  (* list of lines *)
     | Frame of 'a
     | Pad of position * 'a (* vertical and horizontal padding *)
     | Grid of grid_shape * 'a array array
+    | Tree of int * 'a * 'a array
 
   type t = {
     shape : t shape;
@@ -193,6 +199,17 @@ module Box = struct
     done;
     !acc
 
+  (* width and height of a column as an array *)
+  let _dim_vertical_array a =
+    let w = ref 0 and h = ref 0 in
+    Array.iter
+      (fun b ->
+        let s = size b in
+        w := max !w s.x;
+        h := !h + s.y
+      ) a;
+    {x= !w; y= !h;} 
+
   (* from a matrix [m] (line,column), return two arrays [lines] and [columns],
     with [col.(i)] being the start offset of column [i] and
     [lines.(j)] being the start offset of line [j].
@@ -218,9 +235,10 @@ module Box = struct
     lines, columns
 
   let _size = function
+    | Empty -> origin
     | Text l ->
         let width = List.fold_left
-          (fun acc line -> max acc (String.length line)) 0 l
+          (fun acc line -> max acc (!_string_len line)) 0 l
         in
         { x=width; y=List.length l; }
     | Frame t ->
@@ -237,10 +255,18 @@ module Box = struct
         let dim = _dim_matrix m in
         let lines, columns = _size_matrix ~bars m in
         { y=lines.(dim.y); x=columns.(dim.x)}
+    | Tree (indent, node, children) ->
+        let dim_children = _dim_vertical_array children in
+        let s = size node in
+        { x=max s.x (dim_children.x+2+indent)
+        ; y=s.y + dim_children.y + (Array.length children-1)
+        }
 
   let _make shape =
     { shape; size=(lazy (_size shape)); }
 end
+
+let empty = Box._make Box.Empty
 
 let line s =
   assert (_find s '\n' 0 = None);
@@ -300,6 +326,29 @@ let transpose m =
   Array.init dim.x
     (fun i -> Array.init dim.y (fun j -> m.(j).(i)))
 
+let tree ?(indent=1) node children =
+  let children =
+    List.filter
+    (function
+      | {Box.shape=Box.Empty} -> false
+      | _ -> true
+    ) children
+  in
+  match children with
+  | [] -> node
+  | _::_ ->
+    let children = Array.of_list children in
+    Box._make (Box.Tree (indent, node, children))
+
+let mk_tree ?indent f root =
+  let rec make x = match f x with
+    | b, [] -> b
+    | b, children -> tree ?indent b (List.map make children)
+  in
+  make root
+
+(** {2 Rendering} *)
+
 let _write_vline ~out pos n =
   for j=0 to n-1 do
     Output.put_char out (_move_y pos j) '|'
@@ -316,6 +365,7 @@ let _write_hline ~out pos n =
     w.r.t the surrounding box *)
 let rec _render ?(offset=origin) ?expected_size ~out b pos =
   match Box.shape b with
+    | Box.Empty -> ()
     | Box.Text l ->
         List.iteri
           (fun i line ->
@@ -376,6 +426,25 @@ let rec _render ?(offset=origin) ?expected_size ~out b pos =
             done
           done
         end
+    | Box.Tree (indent, n, a) ->
+        _render ~out n pos;
+        (* star position for the children *)
+        let pos' = _move pos indent (Box.size n).y in
+        Output.put_char out (_move_x pos' ~-1) '`';
+        assert (Array.length a > 0);
+        let _ = Box._array_foldi
+          (fun pos' i b ->
+            Output.put_string out pos' "+ ";
+            if i<Array.length a-1
+              then (
+                _write_vline ~out (_move_y pos' 1) (Box.size b).y
+              );
+            _render ~out b (_move_x pos' 2);
+            let interline = if i<Array.length a-1 then 1 else 0 in
+            _move_y pos' ((Box.size b).y + interline)
+          ) pos' a
+        in
+        ()
 
 let render out b =
   _render ~out b origin
