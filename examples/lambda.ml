@@ -84,13 +84,12 @@ let  _choose_var ~vars = match vars with
       List.nth vars i
 
 let rec _random_term fuel vars =
-  match Random.int 3 with
+  match Random.int 2 with
   | _ when fuel = 1 -> _choose_var ~vars
-  | 0 -> _choose_var ~vars
-  | 1 ->
+  | 0 ->
       let f1,f2 = _split_fuel fuel in
       App (_random_term f1 vars, _random_term f2 vars)
-  | 2 ->
+  | 1 ->
       let v = _random_var () in
       Lambda (v, _random_term (fuel-1) (Var v::vars))
   | _ -> assert false
@@ -110,5 +109,5 @@ let print_reduction t =
 
 let () =
   Random.self_init ();
-  let t = _random_term (15 + Random.int 30) [] in
+  let t = _random_term (5 + Random.int 20) [] in
   PrintBox.output ~indent:2 stdout (print_reduction t)

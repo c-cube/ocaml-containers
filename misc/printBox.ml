@@ -258,8 +258,8 @@ module Box = struct
     | Tree (indent, node, children) ->
         let dim_children = _dim_vertical_array children in
         let s = size node in
-        { x=max s.x (dim_children.x+2+indent)
-        ; y=s.y + dim_children.y + (Array.length children-1)
+        { x=max s.x (dim_children.x+3+indent)
+        ; y=s.y + dim_children.y
         }
 
   let _make shape =
@@ -434,14 +434,13 @@ let rec _render ?(offset=origin) ?expected_size ~out b pos =
         assert (Array.length a > 0);
         let _ = Box._array_foldi
           (fun pos' i b ->
-            Output.put_string out pos' "+ ";
+            Output.put_string out pos' "+- ";
             if i<Array.length a-1
               then (
-                _write_vline ~out (_move_y pos' 1) (Box.size b).y
+                _write_vline ~out (_move_y pos' 1) ((Box.size b).y-1)
               );
             _render ~out b (_move_x pos' 2);
-            let interline = if i<Array.length a-1 then 1 else 0 in
-            _move_y pos' ((Box.size b).y + interline)
+            _move_y pos' (Box.size b).y
           ) pos' a
         in
         ()
