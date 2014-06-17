@@ -32,8 +32,13 @@ let origin = {x=0; y=0;}
 
 let _move pos x y = {x=pos.x + x; y=pos.y + y}
 let _add pos1 pos2 = _move pos1 pos2.x pos2.y
+let _minus pos1 pos2 = _move pos1 (- pos2.x) (- pos2.y)
 let _move_x pos x = _move pos x 0
 let _move_y pos y = _move pos 0 y
+
+let _string_len = ref String.length
+
+let set_string_len f = _string_len := f
 
 (** {2 Output: where to print to} *)
 
@@ -71,7 +76,7 @@ module Output = struct
     )
 
   let _ensure_line line i =
-    if i >= String.length line.bl_str
+    if i >= !_string_len line.bl_str
     then (
       let str' = String.make (2 * i + 5) ' ' in
       String.blit line.bl_str 0 str' 0 line.bl_len;
@@ -95,7 +100,7 @@ module Output = struct
     line.bl_len <- max line.bl_len (pos.x+s_len)
 
   let _buf_put_string buf pos s =
-    _buf_put_sub_string buf pos s 0 (String.length s)
+    _buf_put_sub_string buf pos s 0 (!_string_len s)
 
   (* create a new buffer *)
   let make_buffer () =
@@ -146,14 +151,16 @@ let rec _lines s i k = match _find s '\n' i with
 
 module Box = struct
   type grid_shape =
-    | GridBase
-    | GridFramed
+    | GridNone
+    | GridBars
 
   type 'a shape =
-    | Line of string
-    | Text of string list  (* in a box *)
+    | Empty
+    | Text of string list  (* list of lines *)
     | Frame of 'a
+    | Pad of position * 'a (* vertical and horizontal padding *)
     | Grid of grid_shape * 'a array array
+    | Tree of int * 'a * 'a array
 
   type t = {
     shape : t shape;
@@ -173,6 +180,9 @@ module Box = struct
     if Array.length m = 0 then {x=0;y=0}
     else {y=Array.length m; x=Array.length m.(0); }
 
+  let _map_matrix f m =
+    Array.map (Array.map f) m
+
   (* height of a line composed of boxes *)
   let _height_line a =
     _array_foldi
@@ -189,50 +199,78 @@ module Box = struct
     done;
     !acc
 
+  (* width and height of a column as an array *)
+  let _dim_vertical_array a =
+    let w = ref 0 and h = ref 0 in
+    Array.iter
+      (fun b ->
+        let s = size b in
+        w := max !w s.x;
+        h := !h + s.y
+      ) a;
+    {x= !w; y= !h;} 
+
   (* from a matrix [m] (line,column), return two arrays [lines] and [columns],
     with [col.(i)] being the start offset of column [i] and
     [lines.(j)] being the start offset of line [j].
-    Those arrays have one more slot to indicate the end position. *)
-  let _size_matrix m =
+    Those arrays have one more slot to indicate the end position.
+    @param bars if true, leave space for bars between lines/columns *)
+  let _size_matrix ~bars m =
     let dim = _dim_matrix m in
+    (* +1 is for keeping room for the vertical/horizontal line/column *)
+    let additional_space = if bars then 1 else 0 in
     (* columns *)
     let columns = Array.make (dim.x + 1) 0 in
     for i = 0 to dim.x - 1 do
-      (* +1 is for keeping room for the vertical/horizontal line/column *)
-      columns.(i+1) <- columns.(i) + 1 + (_width_column m i)
+      columns.(i+1) <- columns.(i) + (_width_column m i) + additional_space
     done;
     (* lines *)
     let lines = Array.make (dim.y + 1) 0 in
     for j = 1 to dim.y do
-      lines.(j) <- lines.(j-1) + 1 + (_height_line m.(j-1))
+      lines.(j) <- lines.(j-1) + (_height_line m.(j-1)) + additional_space
     done;
     (* no trailing bars, adjust *)
-    columns.(dim.x) <- columns.(dim.x) - 1;
-    lines.(dim.y) <- lines.(dim.y) - 1;
+    columns.(dim.x) <- columns.(dim.x) - additional_space;
+    lines.(dim.y) <- lines.(dim.y) - additional_space;
     lines, columns
 
   let _size = function
-    | Line s -> { x=String.length s; y=1 }
+    | Empty -> origin
     | Text l ->
         let width = List.fold_left
-          (fun acc line -> max acc (String.length line)) 0 l
+          (fun acc line -> max acc (!_string_len line)) 0 l
         in
         { x=width; y=List.length l; }
     | Frame t ->
         let {x;y} = size t in
         { x=x+2; y=y+2; }
-    | Grid (_,m) ->
+    | Pad (dim, b') -> 
+        let {x;y} = size b' in
+        { x=x+2*dim.x; y=y+2*dim.y; }
+    | Grid (style,m) ->
+        let bars = match style with
+          | GridBars -> true
+          | GridNone -> false
+        in
         let dim = _dim_matrix m in
-        let lines, columns = _size_matrix m in
+        let lines, columns = _size_matrix ~bars m in
         { y=lines.(dim.y); x=columns.(dim.x)}
+    | Tree (indent, node, children) ->
+        let dim_children = _dim_vertical_array children in
+        let s = size node in
+        { x=max s.x (dim_children.x+3+indent)
+        ; y=s.y + dim_children.y
+        }
 
   let _make shape =
     { shape; size=(lazy (_size shape)); }
 end
 
+let empty = Box._make Box.Empty
+
 let line s =
   assert (_find s '\n' 0 = None);
-  Box._make (Box.Line s)
+  Box._make (Box.Text [s])
 
 let text s =
   let acc = ref [] in
@@ -250,30 +288,66 @@ let bool_ x = line (string_of_bool x)
 let frame b =
   Box._make (Box.Frame b)
 
-let grid ?(framed=true) m =
-  Box._make (Box.Grid ((if framed then Box.GridFramed else Box.GridBase), m))
+let pad' ~col ~lines b =
+  assert (col >=0 || lines >= 0);
+  if col=0 && lines=0
+    then b
+    else Box._make (Box.Pad ({x=col;y=lines}, b))
 
-let init_grid ?framed ~line ~col f =
+let pad b = pad' ~col:1 ~lines:1 b
+
+let hpad col b = pad' ~col ~lines:0 b
+let vpad lines b = pad' ~col:0 ~lines b
+
+let grid ?(pad=fun b->b) ?(bars=true) m =
+  let m = Box._map_matrix pad m in
+  Box._make (Box.Grid ((if bars then Box.GridBars else Box.GridNone), m))
+
+let init_grid ?bars ~line ~col f =
   let m = Array.init line (fun j-> Array.init col (fun i -> f ~line:j ~col:i)) in
-  grid ?framed m
+  grid ?bars m
 
-let vlist ?framed l =
+let vlist ?pad ?bars l =
   let a = Array.of_list l in
-  grid ?framed (Array.map (fun line -> [| line |]) a)
+  grid ?pad ?bars (Array.map (fun line -> [| line |]) a)
 
-let hlist ?framed l =
-  grid ?framed [| Array.of_list l |]
+let hlist ?pad ?bars l =
+  grid ?pad ?bars [| Array.of_list l |]
 
-let hlist_map ?framed f l = hlist ?framed (List.map f l)
-let vlist_map ?framed f l = vlist ?framed (List.map f l)
-let grid_map ?framed f m = grid ?framed (Array.map (Array.map f) m)
+let hlist_map ?bars f l = hlist ?bars (List.map f l)
+let vlist_map ?bars f l = vlist ?bars (List.map f l)
+let grid_map ?bars f m = grid ?bars (Array.map (Array.map f) m)
 
-let grid_text ?framed m = grid_map ?framed text m
+let grid_text ?(pad=fun x->x) ?bars m =
+  grid_map ?bars (fun x -> pad (text x)) m
 
 let transpose m =
   let dim = Box._dim_matrix m in
   Array.init dim.x
     (fun i -> Array.init dim.y (fun j -> m.(j).(i)))
+
+let tree ?(indent=1) node children =
+  let children =
+    List.filter
+    (function
+      | {Box.shape=Box.Empty} -> false
+      | _ -> true
+    ) children
+  in
+  match children with
+  | [] -> node
+  | _::_ ->
+    let children = Array.of_list children in
+    Box._make (Box.Tree (indent, node, children))
+
+let mk_tree ?indent f root =
+  let rec make x = match f x with
+    | b, [] -> b
+    | b, children -> tree ?indent b (List.map make children)
+  in
+  make root
+
+(** {2 Rendering} *)
 
 let _write_vline ~out pos n =
   for j=0 to n-1 do
@@ -287,10 +361,11 @@ let _write_hline ~out pos n =
 
 (* render given box on the output, starting with upper left corner
     at the given position. [expected_size] is the size of the
-    available surrounding space *)
-let rec _render ?expected_size ~out b pos =
+    available surrounding space. [offset] is the offset of the box
+    w.r.t the surrounding box *)
+let rec _render ?(offset=origin) ?expected_size ~out b pos =
   match Box.shape b with
-    | Box.Line s -> Output.put_string out pos s
+    | Box.Empty -> ()
     | Box.Text l ->
         List.iteri
           (fun i line ->
@@ -307,9 +382,16 @@ let rec _render ?expected_size ~out b pos =
         _write_vline out (_move_y pos 1) y;
         _write_vline out (_move pos (x+1) 1) y;
         _render ~out b' (_move pos 1 1)
-    | Box.Grid (grid_shape,m) ->
+    | Box.Pad (dim, b') ->
+        let expected_size = Box.size b in
+        _render ~offset:(_add dim offset) ~expected_size ~out b' (_add pos dim)
+    | Box.Grid (style,m) ->
         let dim = Box._dim_matrix m in
-        let lines, columns = Box._size_matrix m in
+        let bars = match style with
+          | Box.GridNone -> false
+          | Box.GridBars -> true
+        in
+        let lines, columns = Box._size_matrix ~bars m in
 
         (* write boxes *)
         for j = 0 to dim.y - 1 do
@@ -329,14 +411,14 @@ let rec _render ?expected_size ~out b pos =
         in
 
         (* write frame if needed *)
-        begin match grid_shape with
-        | Box.GridBase -> ()
-        | Box.GridFramed ->
+        begin match style with
+        | Box.GridNone -> ()
+        | Box.GridBars ->
           for j=1 to dim.y - 1 do
-            _write_hline ~out (_move_y pos (lines.(j)-1)) len_hlines
+            _write_hline ~out (_move pos (-offset.x) (lines.(j)-1)) len_hlines
           done;
           for i=1 to dim.x - 1 do
-            _write_vline ~out (_move_x pos (columns.(i)-1)) len_vlines
+            _write_vline ~out (_move pos (columns.(i)-1) (-offset.y)) len_vlines
           done;
           for j=1 to dim.y - 1 do
             for i=1 to dim.x - 1 do
@@ -344,6 +426,24 @@ let rec _render ?expected_size ~out b pos =
             done
           done
         end
+    | Box.Tree (indent, n, a) ->
+        _render ~out n pos;
+        (* star position for the children *)
+        let pos' = _move pos indent (Box.size n).y in
+        Output.put_char out (_move_x pos' ~-1) '`';
+        assert (Array.length a > 0);
+        let _ = Box._array_foldi
+          (fun pos' i b ->
+            Output.put_string out pos' "+- ";
+            if i<Array.length a-1
+              then (
+                _write_vline ~out (_move_y pos' 1) ((Box.size b).y-1)
+              );
+            _render ~out b (_move_x pos' 2);
+            _move_y pos' (Box.size b).y
+          ) pos' a
+        in
+        ()
 
 let render out b =
   _render ~out b origin

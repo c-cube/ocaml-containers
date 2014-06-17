@@ -48,7 +48,7 @@ let suite =
 open QCheck
 module V = Vector
 
-let gen sub = Arbitrary.(lift V.from_list (list sub))
+let gen sub = Arbitrary.(lift V.of_list (list sub))
 let pp v = PP.(list string) (List.map string_of_int (V.to_list v))
 
 let check_append =
@@ -66,7 +66,7 @@ let check_sort =
   let gen = Arbitrary.(gen small_int) in
   let prop v =
     let v' = V.copy v in
-    V.sort v';
+    V.sort' Pervasives.compare v';
     let l = V.to_list v' in
     List.sort compare l = l
   in

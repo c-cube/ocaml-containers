@@ -113,6 +113,14 @@ Document containers_misc
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: containers.misc
 
+Document containers_string
+  Title:                Containers_string docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: containers.string
+
 Executable benchs
   Path:             tests/
   Install:          false
@@ -172,7 +180,7 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests)
-  BuildDepends: containers, oUnit
+  BuildDepends: containers, oUnit, qcheck
 
 Executable web_pwd
   Path: examples/cgi/
@@ -180,6 +188,13 @@ Executable web_pwd
   MainIs: web_pwd.ml
   Build$: flag(cgi)
   BuildDepends: containers, containers.cgi, threads, CamlGI
+
+Executable lambda
+  Path: examples/
+  Install: false
+  MainIs: lambda.ml
+  Build$: flag(misc)
+  BuildDepends: containers,containers.misc
 
 SourceRepository head
   Type: git
