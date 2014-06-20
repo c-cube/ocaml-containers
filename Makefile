@@ -79,9 +79,12 @@ push-stable: all
 	git push origin
 	git checkout master
 
+clean-generated:
+	rm **/*.{mldylib,mlpack,mllib} myocamlbuild.ml -f
+
 test-all: test qtest
 
 tags:
 	otags *.ml *.mli
 
-.PHONY: examples push_doc tags qtest
+.PHONY: examples push_doc tags qtest push-stable clean-generated
