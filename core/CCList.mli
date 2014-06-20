@@ -86,9 +86,14 @@ val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)
 
-val find : ('a -> bool) -> 'a t -> (int * 'a) option
+val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None] *)
+
+val find : ('a -> 'b option) -> 'a t -> 'b option
+(** [find f l] traverses [l], applying [f] to each element. If for
+    some element [x], [f x = Some y], then [Some y] is returned. Otherwise
+    the call returns [None] *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
@@ -115,7 +120,7 @@ module Idx : sig
   val set : 'a t -> int -> 'a -> 'a t
   (** set i-th element (removes the old one), or does nothing if
       index too high *)
-  
+
   val insert : 'a t -> int -> 'a -> 'a t
   (** insert at i-th position, between the two existing elements. If the
       index is too high, append at the end of the list *)
