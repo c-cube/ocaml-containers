@@ -50,7 +50,7 @@ let finish s =
 
 let apply f x = finish (f x init)
 
-(** {2 Combinateurs} *)
+(** {2 Combinators} *)
 
 let int_ i s = _combine s (Int64.of_int i)
 let bool_ x s = _combine s (if x then 1L else 2L)
