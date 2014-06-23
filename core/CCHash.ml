@@ -69,8 +69,14 @@ let rec list_ f l s = match l with
 
 let array_ f a s = Array.fold_right f a s
 
+let opt f o h = match o with
+  | None -> h
+  | Some x -> f x h
 let pair h1 h2 (x,y) s = h2 y (h1 x s)
 let triple h1 h2 h3 (x,y,z) s = h3 z (h2 y (h1 x s))
+
+let if_ b then_ else_ h =
+  if b then then_ h else else_ h
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option

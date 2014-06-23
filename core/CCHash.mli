@@ -61,8 +61,12 @@ val list_ : 'a hash_fun -> 'a list hash_fun
 
 val array_ : 'a hash_fun -> 'a array hash_fun
 
+val opt : 'a hash_fun -> 'a option hash_fun
 val pair : 'a hash_fun -> 'b hash_fun -> ('a * 'b) hash_fun
 val triple : 'a hash_fun -> 'b hash_fun -> 'c hash_fun -> ('a * 'b * 'c) hash_fun
+
+val if_ : bool -> 'a hash_fun -> 'a hash_fun -> 'a hash_fun
+(** Decide which hash function to use depending on the boolean *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
