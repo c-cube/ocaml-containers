@@ -25,40 +25,49 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Hash combinators}
 
-Combination of hashes based on the
-SDBM simple hash (see for instance
-{{:http://www.cse.yorku.ca/~oz/hash.html} this page})
+Combination of hashes based on the Murmur Hash (64 bits). See
+{{:https://sites.google.com/site/murmurhash/MurmurHash2_64.cpp?attredirects=0} this page}
 *)
 
-type t = int
+(** {2 Definitions} *)
 
-type 'a hash_fun = 'a -> t
+type t = private int64
 
-val combine : t -> t -> t
-  (** Combine two hashes. Non-commutative. *)
+type 'a hash_fun = 'a -> t -> t
+(** Hash function for values of type ['a], merging a fingerprint of the
+    value into the state of type [t] *)
 
-val (<<>>) : t -> t -> t
-  (** Infix version of {!combine} *)
+val init : t
+(** Initial value *)
 
-val hash_int : int -> t
-val hash_int2 : int -> int -> t
-val hash_int3 : int -> int -> int -> t
-val hash_int4 : int -> int -> int -> int -> t
+val finish : t -> int
+(** Extract a usable hash value *)
 
-val hash_string : string -> t
+val apply : 'a hash_fun -> 'a -> int
+(** Apply a hash function to a value *)
 
-val hash_list : 'a hash_fun -> t -> 'a list hash_fun
+(** {2 Basic Combinators} *)
+
+val bool_ : bool hash_fun
+val char_ : char hash_fun
+val int_ : int hash_fun
+val string_ : string hash_fun
+val int32_ : int32 hash_fun
+val int64_ : int64 hash_fun
+val nativeint_ : nativeint hash_fun
+
+val list_ : 'a hash_fun -> 'a list hash_fun
 (** Hash a list. Each element is hashed using [f]. *)
 
-val hash_array : 'a hash_fun -> t -> 'a array hash_fun
+val array_ : 'a hash_fun -> 'a array hash_fun
 
-val hash_pair : 'a hash_fun -> 'b hash_fun -> ('a * 'b) hash_fun
-val hash_triple : 'a hash_fun -> 'b hash_fun -> 'c hash_fun -> ('a * 'b * 'c) hash_fun
+val pair : 'a hash_fun -> 'b hash_fun -> ('a * 'b) hash_fun
+val triple : 'a hash_fun -> 'b hash_fun -> 'c hash_fun -> ('a * 'b * 'c) hash_fun
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
-val hash_seq : 'a hash_fun -> t -> 'a sequence hash_fun
-val hash_gen : 'a hash_fun -> t -> 'a gen hash_fun
-val hash_klist : 'a hash_fun -> t -> 'a klist hash_fun
+val seq : 'a hash_fun -> 'a sequence hash_fun
+val gen : 'a hash_fun -> 'a gen hash_fun
+val klist : 'a hash_fun -> 'a klist hash_fun
