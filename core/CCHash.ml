@@ -25,8 +25,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Hash combinators} *)
 
-type t = int64
-type 'a hash_fun = 'a -> t -> t
+type t = int
+type state = int64
+type 'a hash_fun = 'a -> state -> state
 
 let _r = 47
 let _m = 0xc6a4a7935bd1e995L

@@ -31,16 +31,20 @@ Combination of hashes based on the Murmur Hash (64 bits). See
 
 (** {2 Definitions} *)
 
-type t = private int64
+type t = int
+(** A hash value is a positive integer *)
 
-type 'a hash_fun = 'a -> t -> t
+type state = int64
+(** State required by the hash function *)
+
+type 'a hash_fun = 'a -> state -> state
 (** Hash function for values of type ['a], merging a fingerprint of the
     value into the state of type [t] *)
 
-val init : t
+val init : state
 (** Initial value *)
 
-val finish : t -> int
+val finish : state -> int
 (** Extract a usable hash value *)
 
 val apply : 'a hash_fun -> 'a -> int
