@@ -25,156 +25,216 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Leftist Heaps} *)
 
-(** Polymorphic implementation, following Okasaki *)
-
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
+type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 
-type 'a t = {
-  tree : 'a tree;
-  leq : 'a -> 'a -> bool;
-} (** Empty heap. The function is used to check whether
-      the first element is smaller than the second. *)
-and 'a tree =
-  | Empty
-  | Node of int * 'a * 'a tree * 'a tree
+module type PARTIAL_ORD = sig
+  type t
+  val leq : t -> t -> bool
+  (** [leq x y] shall return [true] iff [x] is lower or equal to [y] *)
+end
 
-let empty_with ~leq =
-  { tree = Empty;
-    leq;
-  }
+module type S = sig
+  type elt
+  type t
 
-let empty =
-  { tree = Empty;
-    leq = (fun x y -> x <= y);
-  }
+  val empty : t
+  (** Empty heap *)
 
-let is_empty heap =
-  match heap.tree with
-  | Empty -> true
-  | _ -> false
+  val is_empty : t -> bool
+  (** Is the heap empty? *)
 
-(** Rank of the tree *)
-let rank_tree t = match t with
-  | Empty -> 0
-  | Node (r, _, _, _) -> r
+  exception Empty
 
-(** Make a balanced node labelled with [x], and subtrees [a] and [b] *)
-let make_node x a b =
-  if rank_tree a >= rank_tree b
-    then Node (rank_tree b + 1, x, a, b)
-    else Node (rank_tree a + 1, x, b, a)
+  val merge : t -> t -> t
+  (** Merge two heaps *)
 
-let rec merge_tree leq t1 t2 =
-  match t1, t2 with
-  | t, Empty -> t
-  | Empty, t -> t
-  | Node (_, x, a1, b1), Node (_, y, a2, b2) ->
-    if leq x y
-      then make_node x a1 (merge_tree leq b1 t2)
-      else make_node y a2 (merge_tree leq t1 b2)
+  val insert : elt -> t -> t
+  (** Insert a value in the heap *)
 
-let merge h1 h2 =
-  let tree = merge_tree h1.leq h1.tree h2.tree in
-  { tree; leq=h1.leq; }
+  val add : t -> elt -> t
+  (** Synonym to {!insert} *)
 
-let insert heap x =
-  let tree = merge_tree heap.leq (Node (1, x, Empty, Empty)) heap.tree in
-  { heap with tree; }
+  val filter :  (elt -> bool) -> t -> t
+  (** Filter values, only retaining the ones that satisfy the predicate.
+      Linear time at least. *)
 
-let add = insert
+  val find_min : t -> elt option
+  (** Find minimal element *)
 
-let filter heap p =
-  let rec filter tree p = match tree with
-  | Empty -> Empty
-  | Node (_, x, l, r) when p x ->
-    merge_tree heap.leq (Node (1, x, Empty, Empty))
-      (merge_tree heap.leq (filter l p) (filter r p))
-  | Node (_, _, l, r) -> merge_tree heap.leq (filter l p) (filter r p)
-  in
-  { heap with tree = filter heap.tree p; }
+  val find_min_exn : t -> elt
+  (** Same as {!find_min} but can fail
+      @raise Empty if the heap is empty *)
 
-let find_min heap =
-  match heap.tree with
-  | Empty -> raise Not_found
-  | Node (_, x, _, _) -> x
+  val take : t -> (t * elt) option
+  (** Extract and return the minimum element, and the new heap (without
+      this element), or [None] if the heap is empty *)
 
-let extract_min heap =
-  match heap.tree with
-  | Empty -> raise Not_found
-  | Node (_, x, a, b) ->
-    let tree = merge_tree heap.leq a b in
-    let heap' = { heap with tree; } in
-    heap', x
+  val take_exn : t -> t * elt
+  (** Same as {!take}, but can fail.
+      @raise Empty if the heap is empty *)
 
-let take heap = match heap.tree with
-  | Empty -> None
-  | Node (_, x, a, b) ->
-    let tree = merge_tree heap.leq a b in
-    let heap' = { heap with tree; } in
-    Some (x, heap')
+  val iter : (elt -> unit) -> t -> unit
+  (** Iterate on elements *)
 
-let iter f heap =
-  let rec iter t = match t with
-    | Empty -> ()
-    | Node (_, x, a, b) ->
-      f x;
-      iter a;
-      iter b;
-  in iter heap.tree
+  val fold : ('a -> elt -> 'a) -> 'a -> t -> 'a
+  (** Fold on all values *)
 
-let fold f acc h =
-  let rec fold acc h = match h with
-    | Empty -> acc
-    | Node (_, x, a, b) ->
+  val size : t -> int
+  (** Number of elements (linear complexity) *)
+
+  (** {2 Conversions} *)
+
+  val to_list : t -> elt list
+  val of_list : elt list -> t
+
+  val of_seq : t -> elt sequence -> t
+  val to_seq : t -> elt sequence
+
+  val of_klist : t -> elt klist -> t
+  val to_klist : t -> elt klist
+
+  val of_gen : t -> elt gen -> t
+  val to_gen : t -> elt gen
+
+  val to_tree : t -> elt tree
+end
+
+module Make(E : PARTIAL_ORD) = struct
+  type elt = E.t
+
+  type t =
+    | E
+    | N of int * elt * t * t
+
+  let empty = E
+
+  let is_empty = function
+    | E -> true
+    | N _ -> false
+
+  exception Empty
+
+  (* Rank of the tree *)
+  let _rank = function
+    | E -> 0
+    | N (r, _, _, _) -> r
+
+  (* Make a balanced node labelled with [x], and subtrees [a] and [b].
+    We ensure that the right child's rank is ≤ to the rank of the
+    left child (leftist property). The rank of the resulting node
+    is the length of the rightmost path. *)
+  let _make_node x a b =
+    if _rank a >= _rank b
+      then N (_rank b + 1, x, a, b)
+      else N (_rank a + 1, x, b, a)
+
+  let rec merge t1 t2 =
+    match t1, t2 with
+    | t, E -> t
+    | E, t -> t
+    | N (_, x, a1, b1), N (_, y, a2, b2) ->
+      if E.leq x y
+        then _make_node x a1 (merge b1 t2)
+        else _make_node y a2 (merge t1 b2)
+
+  let insert x h =
+    merge (N(1,x,E,E)) h
+
+  let add h x = insert x h
+
+  let rec filter p h = match h with
+    | E -> E
+    | N(_, x, l, r) when p x -> _make_node x (filter p l) (filter p r)
+    | N(_, _, l, r) ->
+        merge (filter p l) (filter p r)
+
+  let find_min_exn = function
+    | E -> raise Empty
+    | N (_, x, _, _) -> x
+
+  let find_min = function
+    | E -> None
+    | N (_, x, _, _) -> Some x
+
+  let take = function
+    | E -> None
+    | N (_, x, l, r) -> Some (merge l r, x)
+
+  let take_exn = function
+    | E -> raise Empty
+    | N (_, x, l, r) -> merge l r, x
+
+  let rec iter f h = match h with
+    | E -> ()
+    | N(_,x,l,r) -> f x; iter f l; iter f r
+
+  let rec fold f acc h = match h with
+    | E -> acc
+    | N (_, x, a, b) ->
         let acc = f acc x in
-        let acc = fold acc a in
-        fold acc b
-  in fold acc h.tree
+        let acc = fold f acc a in
+        fold f acc b
 
-let size heap =
-  let r = ref 0 in
-  iter (fun _ -> incr r) heap;
-  !r
+  let rec size = function
+    | E -> 0
+    | N (_,_,l,r) -> 1 + size l + size r
 
-let of_seq heap seq =
-  let h = ref heap in
-  seq (fun x -> h := insert !h x);
-  !h
+  (** {2 Conversions} *)
 
-let to_seq h k = iter k h
+  let to_list h =
+    let rec aux acc h = match h with
+      | E -> acc
+      | N(_,x,l,r) ->
+          x::aux (aux acc l) r
+    in aux [] h
 
-let rec of_klist h l = match l() with
-  | `Nil -> h
-  | `Cons (x, l') ->
-      let h' = add h x in
-      of_klist h' l'
+  let of_list l = List.fold_left add empty l
 
-let to_klist h =
-  let rec next stack () = match stack with
-    | [] -> `Nil
-    | Empty :: stack' -> next stack' ()
-    | Node (_, x, a, b) :: stack' ->
-        `Cons (x, next (a :: b :: stack'))
-  in
-  next [h.tree]
+  let of_seq h seq =
+    let h = ref h in
+    seq (fun x -> h := insert x !h);
+    !h
 
-let rec of_gen h g = match g () with
-  | None -> h
-  | Some x ->
-      of_gen (add h x) g
+  let to_seq h k = iter k h
 
-let to_gen h =
-  let stack = Stack.create () in
-  Stack.push h.tree stack;
-  let rec next () =
-    if Stack.is_empty stack
-    then None
-    else match Stack.pop stack with
-      | Empty -> next()
-      | Node (_, x, a, b) ->
-          Stack.push a stack;
-          Stack.push b stack;
-          Some x
-  in next
+  let rec of_klist h l = match l() with
+    | `Nil -> h
+    | `Cons (x, l') ->
+        let h' = add h x in
+        of_klist h' l'
+
+  let to_klist h =
+    let rec next stack () = match stack with
+      | [] -> `Nil
+      | E :: stack' -> next stack' ()
+      | N (_, x, a, b) :: stack' ->
+          `Cons (x, next (a :: b :: stack'))
+    in
+    next [h]
+
+  let rec of_gen h g = match g () with
+    | None -> h
+    | Some x ->
+        of_gen (add h x) g
+
+  let to_gen h =
+    let stack = Stack.create () in
+    Stack.push h stack;
+    let rec next () =
+      if Stack.is_empty stack
+      then None
+      else match Stack.pop stack with
+        | E -> next()
+        | N (_, x, a, b) ->
+            Stack.push a stack;
+            Stack.push b stack;
+            Some x
+    in next
+
+  let rec to_tree h () = match h with
+    | E -> `Nil
+    | N (_, x, l, r) -> `Node(x, [to_tree l; to_tree r])
+end
