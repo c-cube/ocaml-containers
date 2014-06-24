@@ -172,11 +172,11 @@ let last q =
 let last_exn q = snd (take_back_exn q)
 
 let init q =
-  try snd (take_front_exn q)
+  try fst (take_back_exn q)
   with Empty -> q
 
 let tail q =
-  try fst (take_back_exn q)
+  try snd (take_front_exn q)
   with Empty -> q
 
 let add_seq_front seq q =
