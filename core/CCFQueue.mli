@@ -25,28 +25,45 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Functional queues (fifo)} *)
 
-type 'a t
+type +'a t
   (** Queue containing elements of type 'a *)
 
 val empty : 'a t
 
 val is_empty : 'a t -> bool
 
-val push : 'a t -> 'a -> 'a t
-  (** Push element at the end of the queue *)
+val push : 'a -> 'a t -> 'a t
+(** Push element at the end of the queue *)
 
-val peek : 'a t -> 'a
-  (** Get first element, or raise Invalid_argument *)
+val snoc : 'a t -> 'a -> 'a t
+(** Flip version of {!push} *)
 
-val pop : 'a t -> 'a * 'a t
-  (** Get and remove the first element, or raise Invalid_argument *)
+val peek : 'a t -> 'a option
+(** First element of the queue *)
+
+val peek_exn : 'a t -> 'a
+(** Same as {!peek} but
+    @raise Invalid_argument if the queue is empty *)
+
+val pop : 'a t -> ('a * 'a t) option
+(** Get and remove the first element *)
+
+val pop_exn : 'a t -> ('a * 'a t)
+(** Same as {!pop}, but fails on empty queues.
+    @raise Invalid_argument if the queue is empty *)
 
 val junk : 'a t -> 'a t
-  (** Remove first element. If queue is empty, do nothing. *)
+  (** Remove first element. If the queue is empty, do nothing. *)
 
 val append : 'a t -> 'a t -> 'a t
   (** Append two queues. Elements from the second one come
-      after elements of the first one *)
+      after elements of the first one.
+      Linear in the size of the second queue. *)
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+(** Map values *)
+
+val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
 val size : 'a t -> int
   (** Number of elements in the queue (linear in time) *)
