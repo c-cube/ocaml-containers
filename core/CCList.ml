@@ -495,6 +495,34 @@ module Zipper = struct
     | _, [] -> raise Not_found
 end
 
+(** {2 Monadic Operations} *)
+module type MONAD = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module Traverse(M : MONAD) = struct
+  open M
+
+  let map_m f l =
+    let rec aux f acc l = match l with
+      | [] -> return (List.rev acc)
+      | x::tail ->
+          f x >>= fun x' ->
+          aux f (x' :: acc) tail
+    in aux f [] l
+
+  let sequence_m l = map_m (fun x->x) l
+
+  let rec fold_m f acc l = match l with
+    | [] -> return acc
+    | x :: l' ->
+        f acc x
+        >>= fun acc' ->
+        fold_m f acc' l'
+end
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -526,6 +554,8 @@ let random_choose l = match l with
       fun st ->
         let i = Random.State.int st len in
         List.nth l i
+
+let random_sequence l st = map (fun g -> g st) l
 
 let to_seq l k = List.iter k l
 let of_seq seq =

@@ -106,6 +106,21 @@ val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator *)
 
+(** {2 Monadic Operations} *)
+module type MONAD = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module Traverse(M : MONAD) : sig
+  val sequence_m : 'a M.t t -> 'a t M.t
+
+  val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
+
+  val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+end
+
 (** {2 Conversions} *)
 
 val of_list : 'a list -> 'a t
