@@ -26,50 +26,72 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Hash combinators} *)
 
 type t = int
-type 'a hash_fun = 'a -> t
+type state = int64
+type 'a hash_fun = 'a -> state -> state
 
-let combine hash i =
-  (hash * 65599 + i) land max_int
+let _r = 47
+let _m = 0xc6a4a7935bd1e995L
 
-let (<<>>) = combine
+let init = _m  (* TODO? *)
 
-let hash_int i = combine 0 i
+(* combine key [k] with the current state [s] *)
+let _combine s k =
+  let k = Int64.mul _m k in
+  let k = Int64.logxor k (Int64.shift_right k _r) in
+  let k = Int64.mul _m k in
+  let s = Int64.logxor s k in
+  let s = Int64.mul _m s in
+  s
 
-let hash_int2 i j = combine i j
+let finish s =
+  let s = Int64.logxor s (Int64.shift_right s _r) in
+  let s = Int64.mul s _m in
+  let s = Int64.logxor s (Int64.shift_right s _r) in
+  (Int64.to_int s) land max_int
 
-let hash_int3 i j k = combine (combine i j) k
+let apply f x = finish (f x init)
 
-let hash_int4 i j k l =
-  combine (combine (combine i j) k) l
+(** {2 Combinators} *)
 
-let rec hash_list f h l = match l with
-  | [] -> h
-  | x::l' -> hash_list f (combine h (f x)) l'
+let int_ i s = _combine s (Int64.of_int i)
+let bool_ x s = _combine s (if x then 1L else 2L)
+let char_ x s = _combine s (Int64.of_int (Char.code x))
+let int32_ x s = _combine s (Int64.of_int32 x)
+let int64_ x s = _combine s x
+let nativeint_ x s = _combine s (Int64.of_nativeint x)
+let string_ x s =
+  let s = ref s in
+  String.iter (fun c -> s := char_ c !s) x;
+  !s
 
-let hash_array f h a =
-  let h = ref h in
-  Array.iter (fun x -> h := combine !h (f x)) a;
-  !h
+let rec list_ f l s = match l with
+  | [] -> s
+  | x::l' -> list_ f l' (f x s)
 
-let hash_string s = Hashtbl.hash s
+let array_ f a s = Array.fold_right f a s
 
-let hash_pair h1 h2 (x,y) = combine (h1 x) (h2 y)
-let hash_triple h1 h2 h3 (x,y,z) = (h1 x) <<>> (h2 y) <<>> (h3 z)
+let opt f o h = match o with
+  | None -> h
+  | Some x -> f x h
+let pair h1 h2 (x,y) s = h2 y (h1 x s)
+let triple h1 h2 h3 (x,y,z) s = h3 z (h2 y (h1 x s))
+
+let if_ b then_ else_ h =
+  if b then then_ h else else_ h
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
-let hash_seq f h seq =
-  let h = ref h in
-  seq (fun x -> h := !h <<>> f x);
-  !h
+let seq f seq s =
+  let s = ref s in
+  seq (fun x -> s := f x !s);
+  !s
 
-let rec hash_gen f h g = match g () with
-  | None -> h
-  | Some x ->
-      hash_gen f (h <<>> f x) g
+let rec gen f g s = match g () with
+  | None -> s
+  | Some x -> gen f g (f x s)
 
-let rec hash_klist f h l = match l () with
-  | `Nil -> h
-  | `Cons (x,l') -> hash_klist f (h <<>> f x) l'
+let rec klist f l s = match l () with
+  | `Nil -> s
+  | `Cons (x,l') -> klist f l' (f x s)

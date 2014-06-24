@@ -237,6 +237,33 @@ let to_gen l =
         l := l';
         Some x
 
+(** {2 Monadic Operations} *)
+module type MONAD = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module Traverse(M : MONAD) = struct
+  open M
+
+  let map_m f l =
+    let rec aux acc l = match l () with
+      | `Nil -> return (of_list (List.rev acc))
+      | `Cons (x,l') ->
+          f x >>= fun x' ->
+          aux (x' :: acc) l'
+    in
+    aux [] l
+
+  let sequence_m l = map_m (fun x->x) l
+
+  let rec fold_m f acc l = match l() with
+    | `Nil -> return acc
+    | `Cons (x,l') ->
+        f acc x >>= fun acc' -> fold_m f acc' l'
+end
+
 (** {2 IO} *)
 
 let pp ?(sep=",") pp_item buf l =

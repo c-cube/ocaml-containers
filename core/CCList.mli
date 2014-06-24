@@ -152,8 +152,12 @@ end
 (** {2 Other Constructors} *)
 
 val range : int -> int -> int t
-(** [range i j] iterates on integers from [i] to [j] included. It works
+(** [range i j] iterates on integers from [i] to [j] included . It works
     both for decreasing and increasing ranges *)
+
+val range' : int -> int -> int t
+(** Same as {!range} but the second bound is excluded.
+    For instance [range' 0 5 = [0;1;2;3;4]] *)
 
 val (--) : int -> int -> int t
 (** Infix alias for [range] *)
@@ -216,6 +220,21 @@ module Zipper : sig
       @raise Not_found if the zipper is at an end *)
 end
 
+(** {2 Monadic Operations} *)
+module type MONAD = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module Traverse(M : MONAD) : sig
+  val sequence_m : 'a M.t t -> 'a t M.t
+
+  val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
+
+  val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+end
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -223,6 +242,17 @@ type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
+val random : 'a random_gen -> 'a t random_gen
+val random_non_empty : 'a random_gen -> 'a t random_gen
+val random_len : int -> 'a random_gen -> 'a t random_gen
+
+val random_choose : 'a t -> 'a random_gen
+(** Randomly choose an element in the list.
+    @raise Not_found if the list is empty *)
+
+val random_sequence : 'a random_gen t -> 'a t random_gen
 
 val to_seq : 'a t -> 'a sequence
 val of_seq : 'a sequence -> 'a t

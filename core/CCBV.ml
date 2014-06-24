@@ -57,7 +57,20 @@ let create ~size default =
       { a = arr }
     end
 
+(*$T
+  create ~size:17 true |> cardinal = 17
+  create ~size:32 true |> cardinal= 32
+  create ~size:132 true |> cardinal = 132
+  create ~size:200 false |> cardinal = 0
+  create ~size:29 true |> to_sorted_list = CCList.range 0 28
+*)
+
 let copy bv = { a=Array.copy bv.a; }
+
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    let bv = of_list l in to_list bv = to_list (copy bv))
+*)
 
 let length bv = Array.length bv.a
 
@@ -109,12 +122,21 @@ let set bv i =
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) lor (1 lsl i)
 
+(*$T
+  let bv = create ~size:3 false in set bv 0; get bv 0
+  let bv = create ~size:3 false in set bv 1; not (get bv 0)
+*)
+
 let reset bv i =
   let n = i / __width in
   if n >= Array.length bv.a
     then resize bv (n+1);
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) land (lnot (1 lsl i))
+
+(*$T
+  let bv = create ~size:3 false in set bv 0; reset bv 0; not (get bv 0)
+*)
 
 let flip bv i =
   let n = i / __width in
@@ -125,6 +147,10 @@ let flip bv i =
 
 let clear bv =
   Array.iteri (fun i _ -> bv.a.(i) <- 0) bv.a
+
+(*$T
+let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
+*)
 
 let iter bv f =
   let len = Array.length bv.a in
@@ -145,16 +171,29 @@ let iter_true bv f =
     done
   done
 
+(*$T
+  of_list [1;5;7] |> iter_true |> CCSequence.to_list |> List.sort CCOrd.compare = [1;5;7]
+*)
+
 let to_list bv =
   let l = ref [] in
   iter_true bv (fun i -> l := i :: !l);
   !l
+
+let to_sorted_list bv =
+  List.rev (to_list bv)
 
 let of_list l =
   let size = List.fold_left max 0 l in
   let bv = create ~size false in
   List.iter (fun i -> set bv i) l;
   bv
+
+(*$T
+  of_list [1;32;64] |> CCFun.flip get 64
+  of_list [1;32;64] |> CCFun.flip get 32
+  of_list [1;31;63] |> CCFun.flip get 63
+*)
 
 exception FoundFirst of int
 
@@ -165,9 +204,18 @@ let first bv =
   with FoundFirst i ->
     i
 
+(*$T
+  of_list [50; 10; 17; 22; 3; 12] |> first = 3
+*)
+
 let filter bv p =
   iter_true bv
-    (fun i -> if not (p i) then reset bv i) 
+    (fun i -> if not (p i) then reset bv i)
+
+(*$T
+  let bv = of_list [1;2;3;4;5;6;7] in filter bv (fun x->x mod 2=0); \
+    to_sorted_list bv = [2;4;6]
+*)
 
 let union_into ~into bv =
   if length into < length bv
@@ -181,6 +229,10 @@ let union bv1 bv2 =
   let bv = copy bv1 in
   union_into ~into:bv bv2;
   bv
+
+(*$T
+union (of_list [1;2;3;4;5]) (of_list [7;3;5;6]) |> to_sorted_list = CCList.range 1 7
+*)
 
 let inter_into ~into bv =
   let n = min (length into) (length bv) in
@@ -198,6 +250,10 @@ let inter bv1 bv2 =
       let bv = copy bv2 in
       let () = inter_into ~into:bv bv1 in
       bv
+
+(*$T
+  inter (of_list [1;2;3;4]) (of_list [2;4;6;1]) |> to_sorted_list = [1;2;4]
+*)
 
 let select bv arr =
   let l = ref [] in
@@ -222,3 +278,25 @@ let selecti bv arr =
   with Exit -> ()
   end;
   !l
+
+(*$T
+  selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
+    |> List.sort CCOrd.compare = [1, 1; 3,3; 4,4]
+*)
+
+type 'a sequence = ('a -> unit) -> unit
+
+let to_seq bv k = iter_true bv k
+
+let of_seq seq =
+  let l = ref [] and maxi = ref 0 in
+  seq (fun x -> l := x :: !l; maxi := max !maxi x);
+  let bv = create ~size:(!maxi+1) false in
+  List.iter (fun i -> set bv i) !l;
+  bv
+
+(*$T
+  CCList.range 0 10 |> CCList.to_seq |> of_seq |> to_seq \
+    |> CCList.of_seq |> List.sort CCOrd.compare = CCList.range 0 10
+*)
+

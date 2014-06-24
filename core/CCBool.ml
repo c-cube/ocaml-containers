@@ -30,6 +30,8 @@ let equal a b = a=b
 
 let compare a b = Pervasives.compare a b
 
+let negate x = not x
+
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 

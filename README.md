@@ -49,18 +49,28 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 
 ### Core Structures
 
-- `CCLeftistheap`, a polymorphic heap structure.
-- `CCFQueue`, a purely functional queue structure
+- `CCHeap`, a purely functional heap structure.
+- `CCFQueue`, a purely functional double-ended queue structure
 - `CCBV`, mutable bitvectors
 - `CCPersistentHashtbl`, a semi-persistent hashtable (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
-- `CCVector`, a growable array (pure OCaml, no C)
+- `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
 - `CCGen` and `CCSequence`, generic iterators structures (with structural types so they can be defined in several places). Now also in their own repository and opam packages (`gen` and `sequence`).
-- `CCKlist`, another iterator structure
-- `CCList`, functions and lists including tail-recursive implementations of `map` and `append`
-- `CCArray`, utilities on arrays
-- `CCInt`, `CCPair`, `CCOpt`, `CCFun`, `CCBool`, utilities on basic types
-- `CCPrint`, printing combinators
-- `CCHash`, hashing combinators
+- `CCKlist`, a persistent iterator structure (akin to a lazy list)
+- `CCList`, functions and lists including tail-recursive implementations of `map` and `append` and many other utilities
+- `CCArray`, utilities on arrays and slices
+- `CCLinq`, high-level query language over collections
+- `CCMultimap` and `CCMultiset`, functors defining persistent structures
+- small modules (basic types, utilities):
+  - `CCInt`
+  - `CCPair` (cartesian products)
+  - `CCOpt` (options)
+  - `CCFun` (function combinators)
+  - `CCBool`
+  - `CCOrd` (combinators for total orderings)
+  - `CCRandom` (combinators for random generators)
+  - `CCPrint` (printing combinators)
+  - `CCHash` (hashing combinators)
+  - `CCError` (monadic error handling)
 
 ### Misc
 

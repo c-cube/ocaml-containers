@@ -62,13 +62,15 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 qtest-clean:
 	@rm -rf qtest/
 
-qtest: qtest-clean build
+qtest-build: qtest-clean build
 	@mkdir -p qtest
 	@qtest extract -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
 	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib \
 		-I core -I misc -I string \
 		qtest/qtest_all.native
-	@echo
+
+qtest: qtest-build
+	@echo 
 	./qtest_all.native
 
 push-stable: all
@@ -82,7 +84,11 @@ push-stable: all
 clean-generated:
 	rm **/*.{mldylib,mlpack,mllib} myocamlbuild.ml -f
 
-test-all: test qtest
+run-test: build qtest-build
+	./qtest_all.native
+	./run_tests.native
+
+test-all: run-test qtest
 
 tags:
 	otags *.ml *.mli

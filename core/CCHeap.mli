@@ -23,65 +23,83 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Leftist Heaps}
-Polymorphic implementation, following Okasaki *)
+(** {1 Leftist Heaps} following Okasaki *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
-type 'a t
-  (** Heap containing values of type 'a *)
+module type PARTIAL_ORD = sig
+  type t
+  val leq : t -> t -> bool
+  (** [leq x y] shall return [true] iff [x] is lower or equal to [y] *)
+end
 
-val empty_with : leq:('a -> 'a -> bool) -> 'a t
-  (** Empty heap. The function is used to check whether the first element is
-      smaller than the second. *)
+module type S = sig
+  type elt
+  type t
 
-val empty : 'a t
-  (** Empty heap using [Pervasives.compare] *)
+  val empty : t
+  (** Empty heap *)
 
-val is_empty : _ t -> bool
+  val is_empty : t -> bool
   (** Is the heap empty? *)
 
-val merge : 'a t -> 'a t -> 'a t
-  (** Merge two heaps (assume they have the same comparison function) *)
+  exception Empty
 
-val insert : 'a t -> 'a -> 'a t
+  val merge : t -> t -> t
+  (** Merge two heaps *)
+
+  val insert : elt -> t -> t
   (** Insert a value in the heap *)
 
-val add : 'a t -> 'a -> 'a t
+  val add : t -> elt -> t
   (** Synonym to {!insert} *)
 
-val filter : 'a t -> ('a -> bool) -> 'a t
+  val filter :  (elt -> bool) -> t -> t
   (** Filter values, only retaining the ones that satisfy the predicate.
       Linear time at least. *)
 
-val find_min : 'a t -> 'a
-  (** Find minimal element, or fails
-      @raise Not_found if the heap is empty *)
+  val find_min : t -> elt option
+  (** Find minimal element *)
 
-val extract_min : 'a t -> 'a t * 'a
-  (** Extract and returns the minimal element, or
-      raise Not_found if the heap is empty *)
+  val find_min_exn : t -> elt
+  (** Same as {!find_min} but can fail
+      @raise Empty if the heap is empty *)
 
-val take : 'a t -> ('a * 'a t) option
+  val take : t -> (t * elt) option
   (** Extract and return the minimum element, and the new heap (without
       this element), or [None] if the heap is empty *)
 
-val iter : ('a -> unit) -> 'a t -> unit
+  val take_exn : t -> t * elt
+  (** Same as {!take}, but can fail.
+      @raise Empty if the heap is empty *)
+
+  val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements *)
 
-val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : ('a -> elt -> 'a) -> 'a -> t -> 'a
   (** Fold on all values *)
 
-val size : _ t -> int
+  val size : t -> int
   (** Number of elements (linear complexity) *)
 
-val of_seq : 'a t -> 'a sequence -> 'a t
-val to_seq : 'a t -> 'a sequence
+  (** {2 Conversions} *)
 
-val of_klist : 'a t -> 'a klist -> 'a t
-val to_klist : 'a t -> 'a klist
+  val to_list : t -> elt list
+  val of_list : elt list -> t
 
-val of_gen : 'a t -> 'a gen -> 'a t
-val to_gen : 'a t -> 'a gen
+  val of_seq : t -> elt sequence -> t
+  val to_seq : t -> elt sequence
+
+  val of_klist : t -> elt klist -> t
+  val to_klist : t -> elt klist
+
+  val of_gen : t -> elt gen -> t
+  val to_gen : t -> elt gen
+
+  val to_tree : t -> elt tree
+end
+
+module Make(E : PARTIAL_ORD) : S with type elt = E.t

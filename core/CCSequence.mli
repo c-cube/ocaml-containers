@@ -53,8 +53,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     of this memory structure, cheaply and repeatably. *)
 
 type +'a t = ('a -> unit) -> unit
-  (** Sequence abstract iterator type, representing a finite sequence of
-      values of type ['a]. *)
+  (** Sequence iterator type, representing a finite sequence of values
+      of type ['a] that one can iterate on. *)
 
 type +'a sequence = 'a t
 

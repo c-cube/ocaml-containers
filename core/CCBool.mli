@@ -32,6 +32,8 @@ val compare : t -> t -> int
 
 val equal : t -> t -> bool
 
+val negate : t -> t
+
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 

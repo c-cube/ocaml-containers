@@ -11,7 +11,7 @@ let suite =
       Test_PiCalculus.suite;
       Test_splayMap.suite;
       Test_bij.suite;
-      Test_leftistheap.suite;
+      Test_CCHeap.suite;
       Test_cc.suite;
       Test_puf.suite;
       Test_vector.suite;

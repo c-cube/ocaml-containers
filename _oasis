@@ -40,8 +40,9 @@ Library "containers"
   Path:             core
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
-                    CCLeftistheap, CCList, CCOpt, CCPair, CCFun, CCHash,
-                    CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd, CCLinq
+                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
+                    CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd,
+                    CCRandom, CCLinq
   FindlibName:      containers
 
 Library "containers_string"
@@ -145,6 +146,14 @@ Executable bench_batch
   MainIs: bench_batch.ml
   BuildDepends: containers,benchmark
 
+Executable bench_hash
+  Path: tests/
+  Install: false
+  CompiledObject: native
+  Build$: flag(bench) && flag(misc)
+  MainIs: bench_hash.ml
+  BuildDepends: containers,containers.misc
+
 Executable test_levenshtein
   Path: tests/
   Install: false
@@ -170,7 +179,7 @@ Executable test_threads
   BuildDepends: containers,threads,oUnit,containers.lwt
 
 Test all
-  Command: $run_tests
+  Command: make test-all
   TestTools: run_tests
   Run$: flag(tests)
 

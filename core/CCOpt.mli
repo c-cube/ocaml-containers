@@ -74,6 +74,9 @@ val of_list : 'a list -> 'a t
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
+val random : 'a random_gen -> 'a t random_gen
 
 val to_gen : 'a t -> 'a gen
 val to_seq : 'a t -> 'a sequence

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 38b5b440371d718e4e43cec96202bee7)
+# DO NOT EDIT (digest: 3e4b3ffbcf17509bedefd6d577653253)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -85,8 +85,6 @@
 "tests/benchs.native": use_containers_misc
 "tests/benchs.native": use_containers_string
 <tests/*.ml{,i}>: package(bench)
-<tests/*.ml{,i}>: package(unix)
-<tests/*.ml{,i}>: use_containers_misc
 <tests/*.ml{,i}>: use_containers_string
 # Executable bench_conv
 "tests/bench_conv.native": package(benchmark)
@@ -95,6 +93,12 @@
 "tests/bench_batch.native": package(benchmark)
 "tests/bench_batch.native": use_containers
 <tests/*.ml{,i}>: package(benchmark)
+# Executable bench_hash
+"tests/bench_hash.native": package(unix)
+"tests/bench_hash.native": use_containers
+"tests/bench_hash.native": use_containers_misc
+<tests/*.ml{,i}>: package(unix)
+<tests/*.ml{,i}>: use_containers_misc
 # Executable test_levenshtein
 "tests/test_levenshtein.native": package(qcheck)
 "tests/test_levenshtein.native": use_containers

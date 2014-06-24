@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: de6b01e36860e123951867ef27ec6b0b)
+# DO NOT EDIT (digest: 8d0afff73fae73db9a0364afaa57d4d2)
 CCVector
 CCDeque
 CCGen
@@ -11,7 +11,7 @@ CCBV
 CCPrint
 CCPersistentHashtbl
 CCError
-CCLeftistheap
+CCHeap
 CCList
 CCOpt
 CCPair
@@ -23,5 +23,6 @@ CCBool
 CCArray
 CCBatch
 CCOrd
+CCRandom
 CCLinq
 # OASIS_STOP
