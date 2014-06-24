@@ -41,112 +41,129 @@ let map f g st = f (g st)
 
 let (>|=) g f st = map f g st
 
-let choose_array a st =
+let _choose_array a st =
   if Array.length a = 0 then invalid_arg "CCRandom.choose_array";
-  a.(Random.State.int st (Array.length a)) st
+  a.(Random.State.int st (Array.length a))
 
-let choose l = choose_array (Array.of_list l)
+let choose_array a st =
+  try Some (_choose_array a st st) with Invalid_argument _ -> None
 
-let choose_return l = choose_array (Array.of_list (List.map return l))
+let choose l =
+  let a = Array.of_list l in
+  choose_array a
 
-(** {2 Fuel and Backtracking} *)
+let choose_exn l =
+  let a = Array.of_list l in
+  fun st -> _choose_array a st st
 
-module Fuel = struct
-  type fuel = int
+let choose_return l = _choose_array (Array.of_list l)
 
-  exception Backtrack
+let int i st = Random.State.int st i
 
-  (* consume [d] units of fuel and return [x] if it works *)
-  let _consume d fuel x =
-    if fuel >= d then Some (fuel-d,x) else None
+let small_int = int 100
 
-  let _split i st =
-    if i < 2 then raise Backtrack
+let int_range i j st = i + Random.State.int st (j-i+1)
+
+let replicate n g st =
+  let rec aux acc n =
+    if n = 0 then acc else aux (g st :: acc) (n-1)
+  in aux [] n
+
+exception SplitFail
+
+let _split i st =
+  if i < 2 then raise SplitFail
+  else
+    let j = 1 + Random.State.int st (i-1) in
+    (j, i-j)
+
+let split i st = try Some (_split i st) with SplitFail -> None
+
+(* partition of an int into [len] integers. We divide-and-conquer on
+  the expected length, until it reaches 1. *)
+let split_list i ~len st =
+  let rec aux i ~len acc =
+    if i < len then raise SplitFail
+    else if len = 1 then i::acc
     else
-      let j = 1 + Random.State.int st (i-1) in
-      (j, i-j)
-
-  let split i st = try Some (_split i st) with Backtrack -> None
-
-  (* partition of an int into [len] integers. We divide-and-conquer on
-    the expected length, until it reaches 1. *)
-  let split_list i ~len st =
-    let rec aux i ~len acc =
-      if i < len then raise Backtrack
-      else if len = 1 then i::acc
+      (* split somewhere in the middle *)
+      let len1, len2 = _split len st in
+      assert (len = len1+len2);
+      if i = len
+      then aux len1 ~len:len1 (aux len2 ~len:len2 acc)
       else
-        (* split somewhere in the middle *)
-        let len1, len2 = _split len st in
-        if i = len
-        then aux len1 ~len:len1 (aux len2 ~len:len2 acc)
-        else
-          let i1, i2 = _split (i-len1-len2) st in
-          aux i1 ~len:len1 (aux i2 ~len:len2 acc)
-    in
-    try Some (aux i ~len []) with Backtrack -> None
+        let i1, i2 = _split (i-len) st in
+        aux (i1+len1) ~len:len1 (aux (i2+len2) ~len:len2 acc)
+  in
+  try Some (aux i ~len []) with SplitFail -> None
 
-  (** {6 Fueled Generators} *)
-
-  type 'a t = fuel -> state -> (fuel * 'a) option
-
-  let return x fuel _st = _consume 1 fuel x
-
-  let return' fuel x fuel' _st = _consume fuel fuel' x
-
-  let flat_map f g fuel st =
-    match g fuel st with
-      | None -> None
-      | Some (fuel, x) -> f x fuel st
-
-  let (>>=) g f = flat_map f g
-
-  let map f g fuel st =
-    match g fuel st with
-    | None -> None
-    | Some (fuel, x) -> Some (fuel, f x)
-
-  let (>|=) g f = map f g
-
-  let consume fuel _st = _consume 1 fuel ()
-
-  let consume' fuel fuel' _st = _consume fuel fuel' ()
-
-  let fail _fuel _st = None
-
-  let retry ?(max=10) g fuel st =
-    let rec aux n =
-      match g fuel st with
+let retry ?(max=10) g st =
+  let rec aux n =
+    match g st with
       | None when n=0 -> None
       | None -> aux (n-1)  (* retry *)
       | Some _ as res -> res
-    in
-    aux max
+  in
+  aux max
 
-  let rec try_successively l fuel st = match l with
-    | [] -> None
-    | g :: l' ->
-        begin match g fuel st with
-        | None -> try_successively l' fuel st
-        | Some _ as res -> res
-        end
+let rec try_successively l st = match l with
+  | [] -> None
+  | g :: l' ->
+      begin match g st with
+      | None -> try_successively l' st
+      | Some _ as res -> res
+      end
 
-  let (<?>) a b = try_successively [a;b]
+let (<?>) a b = try_successively [a;b]
 
-  let rec fix f fuel st = f (fix f) fuel st
+exception Backtrack
 
-  let lift g fuel st = _consume 1 fuel (g st)
+let _choose_array_call a f st =
+  try
+    f (_choose_array a st)
+  with Invalid_argument _ -> raise Backtrack
 
-  let lift' d g fuel st = _consume d fuel (g st)
+let fix ?(sub1=[]) ?(sub2=[]) ?(subn=[]) ~base fuel st =
+  let sub1 = Array.of_list sub1
+  and sub2 = Array.of_list sub2
+  and subn = Array.of_list subn in
+  (* recursive function with fuel *)
+  let rec make fuel st =
+    if fuel=0 then raise Backtrack
+    else if fuel=1 then base st
+    else
+      _try_otherwise 0
+        [| _choose_array_call sub1 (fun f -> f (make (fuel-1)) st)
+        ;  _choose_array_call sub2
+          (fun f ->
+            match split fuel st with
+            | None -> raise Backtrack
+            | Some (i,j) -> f (make i) (make j) st
+          )
+        ; _choose_array_call subn
+          (fun (len,f) ->
+            let len = len st in
+            match split_list fuel ~len st with
+            | None -> raise Backtrack
+            | Some l' ->
+                f (fun st -> List.map (fun x -> make x st) l') st
+          )
+        ; base (* base case then *)
+        |]
+  and _try_otherwise i a =
+    if i=Array.length a then raise Backtrack
+    else try
+      a.(i) st
+    with Backtrack ->
+      _try_otherwise (i+1) a
+  in
+  make (fuel st) st
 
-  let run ?(fuel=fun st -> Random.State.int st 40) f st =
-    match f (fuel st) st with
-    | None -> None
-    | Some (_fuel, x) -> Some x
+let pure x _st = x
 
-  exception GenFailure
+let (<*>) f g st = f st (g st)
 
-  let run_exn ?fuel f st =
-    match run ?fuel f st with
-    | None -> raise GenFailure
-    | Some x -> x
-end
+let __default_state = Random.State.make_self_init ()
+
+let run ?(st=__default_state) g = g st
+

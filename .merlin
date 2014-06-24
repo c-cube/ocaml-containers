@@ -9,7 +9,7 @@ B _build/string
 B _build/tests
 B _build/examples
 PKG oUnit
-PKG bench
+PKG benchmark
 PKG threads
 PKG threads.posix
 PKG lwt
