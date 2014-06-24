@@ -179,7 +179,7 @@ Executable test_threads
   BuildDepends: containers,threads,oUnit,containers.lwt
 
 Test all
-  Command: $run_tests
+  Command: make test-all
   TestTools: run_tests
   Run$: flag(tests)
 
