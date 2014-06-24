@@ -73,6 +73,10 @@ val iter_true : t -> (int -> unit) -> unit
 val to_list : t -> int list
   (** List of indexes that are true *)
 
+val to_sorted_list : t -> int list
+  (** Same as {!to_list}, but also guarantees the list is sorted in
+      increasing order *)
+
 val of_list : int list -> t
   (** From a list of true bits *)
 
@@ -104,3 +108,8 @@ val select : t -> 'a array -> 'a list
 
 val selecti : t -> 'a array -> ('a * int) list
   (** Same as {!select}, but selected elements are paired with their index *)
+
+type 'a sequence = ('a -> unit) -> unit
+
+val to_seq : t -> int sequence
+val of_seq : int sequence -> t
