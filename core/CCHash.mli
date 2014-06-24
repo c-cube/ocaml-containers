@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Hash combinators}
 
 Combination of hashes based on the Murmur Hash (64 bits). See
-{{:https://sites.google.com/site/murmurhash/MurmurHash2_64.cpp?attredirects=0} this page}
+{{: https://sites.google.com/site/murmurhash/MurmurHash2_64.cpp?attredirects=0} this page}
 *)
 
 (** {2 Definitions} *)

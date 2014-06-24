@@ -39,6 +39,11 @@ val sign : t -> int
 
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
+val random : int -> t random_gen
+val random_small : t random_gen
+val random_range : int -> int -> t random_gen
 
 val pp : t printer
 val print : t formatter

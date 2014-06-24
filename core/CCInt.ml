@@ -39,6 +39,11 @@ let sign i =
 
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
+let random n st = Random.State.int st n
+let random_small = random 100
+let random_range i j st = i + random (j-i) st
 
 let pp buf = Printf.bprintf buf "%d"
 let print fmt = Format.fprintf fmt "%d"

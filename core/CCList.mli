@@ -152,8 +152,12 @@ end
 (** {2 Other Constructors} *)
 
 val range : int -> int -> int t
-(** [range i j] iterates on integers from [i] to [j] included. It works
+(** [range i j] iterates on integers from [i] to [j] included . It works
     both for decreasing and increasing ranges *)
+
+val range' : int -> int -> int t
+(** Same as {!range} but the second bound is excluded.
+    For instance [range' 0 5 = [0;1;2;3;4]] *)
 
 val (--) : int -> int -> int t
 (** Infix alias for [range] *)
@@ -223,6 +227,15 @@ type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
+val random : 'a random_gen -> 'a list random_gen
+val random_non_empty : 'a random_gen -> 'a list random_gen
+val random_len : int -> 'a random_gen -> 'a list random_gen
+
+val random_choose : 'a list -> 'a random_gen
+(** Randomly choose an element in the list.
+    @raise Not_found if the list is empty *)
 
 val to_seq : 'a t -> 'a sequence
 val of_seq : 'a sequence -> 'a t

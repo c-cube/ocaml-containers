@@ -30,6 +30,7 @@ type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
+type 'a random_gen = Random.State.t -> 'a
 
 module type S = sig
   type 'a t
@@ -80,6 +81,10 @@ module type S = sig
 
   val shuffle_with : Random.State.t -> 'a t -> unit
   (** Like shuffle but using a specialized random state *)
+
+  val random_choose : 'a t -> 'a random_gen
+  (** Choose an element randomly.
+      @raise Not_found if the array/slice is empty *)
 
   val to_seq : 'a t -> 'a sequence
   val to_gen : 'a t -> 'a gen
@@ -160,6 +165,10 @@ let _shuffle _rand_int a i j =
     a.(l) <- a.(k);
     a.(l) <- tmp;
   done
+
+let _choose a i j st =
+  if i>=j then raise Not_found;
+  a.(i+Random.int (j-i))
 
 let _pp ~sep pp_item buf a i j =
   for k = i to j - 1 do
@@ -321,6 +330,19 @@ let shuffle a = _shuffle Random.int a 0 (Array.length a)
 
 let shuffle_with st a = _shuffle (Random.State.int st) a 0 (Array.length a)
 
+let random_choose a st = _choose a 0 (Array.length a) st
+
+let random_len n g st =
+  Array.init n (fun _ -> g st)
+
+let random g st =
+  let n = Random.State.int st 1_000 in
+  random_len n g st
+
+let random_non_empty g st =
+  let n = 1 + Random.State.int st 1_000 in
+  random_len n g st
+
 let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a 0 (Array.length a)
 
 let pp_i ?(sep=", ") pp_item buf a = _pp_i ~sep pp_item buf a 0 (Array.length a)
@@ -411,6 +433,8 @@ module Sub = struct
 
   let shuffle_with st a =
     _shuffle (Random.State.int st) a.arr a.i a.j
+
+  let random_choose a st = _choose a.arr a.i a.j st
 
   let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a.arr a.i a.j
 

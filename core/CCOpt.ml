@@ -95,6 +95,10 @@ let of_list = function
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
+let random g st =
+  if Random.State.bool st then Some (g st) else None
 
 let to_gen o =
   match o with

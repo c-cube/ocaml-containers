@@ -30,6 +30,7 @@ type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
+type 'a random_gen = Random.State.t -> 'a
 
 (** {2 Abstract Signature} *)
 
@@ -83,6 +84,10 @@ module type S = sig
   val shuffle_with : Random.State.t -> 'a t -> unit
   (** Like shuffle but using a specialized random state *)
 
+  val random_choose : 'a t -> 'a random_gen
+  (** Choose an element randomly.
+      @raise Not_found if the array/slice is empty *)
+
   val to_seq : 'a t -> 'a sequence
   val to_gen : 'a t -> 'a gen
   val to_klist : 'a t -> 'a klist
@@ -129,6 +134,10 @@ val except_idx : 'a t -> int -> 'a list
 val (--) : int -> int -> int t
 (** Range array *)
 
+val random : 'a random_gen -> 'a t random_gen
+val random_non_empty : 'a random_gen -> 'a t random_gen
+val random_len : int -> 'a random_gen -> 'a t random_gen
+
 (** {2 Slices}
 A slice is a part of an array, that requires no copying and shares
 its storage with the original array.
@@ -155,7 +164,7 @@ module Sub : sig
 
   val underlying : 'a t -> 'a array
   (** Underlying array (shared). Modifying this array will modify the slice *)
-  
+
   val copy : 'a t -> 'a array
   (** Copy into a new array *)
 
