@@ -26,9 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Leftist Heaps} following Okasaki *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 type 'a gen = unit -> 'a option
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 module type PARTIAL_ORD = sig
   type t
@@ -99,7 +99,7 @@ module type S = sig
   val of_gen : t -> elt gen -> t
   val to_gen : t -> elt gen
 
-  val to_tree : t -> elt tree
+  val to_tree : t -> elt ktree
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t
