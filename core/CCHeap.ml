@@ -99,7 +99,7 @@ module type S = sig
   val of_gen : t -> elt gen -> t
   val to_gen : t -> elt gen
 
-  val to_tree : t -> elt tree
+  val to_tree : t -> elt ktree
 end
 
 module Make(E : PARTIAL_ORD) = struct
