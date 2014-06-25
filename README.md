@@ -60,6 +60,7 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 - `CCArray`, utilities on arrays and slices
 - `CCLinq`, high-level query language over collections
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
+- `CCKTree`, an abstract lazy tree structure (similar to what `CCKlist` is to lists)
 - small modules (basic types, utilities):
   - `CCInt`
   - `CCPair` (cartesian products)

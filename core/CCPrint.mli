@@ -69,5 +69,8 @@ val sprintf : ('a, Buffer.t, unit, string) format4 -> 'a
 val fprintf : out_channel -> ('a, Buffer.t, unit, unit) format4 -> 'a
   (** Print on a channel *)
 
+val to_file : string -> ('a, Buffer.t, unit, unit) format4 -> 'a
+  (** Print to the given file *)
+
 val printf : ('a, Buffer.t, unit, unit) format4 -> 'a
 val eprintf : ('a, Buffer.t, unit, unit) format4 -> 'a
