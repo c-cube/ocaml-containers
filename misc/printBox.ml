@@ -359,6 +359,25 @@ let _write_hline ~out pos n =
     Output.put_char out (_move_x pos i) '-'
   done
 
+type simple_box =
+  [ `Empty
+  | `Pad of simple_box
+  | `Text of string
+  | `Vlist of simple_box list
+  | `Hlist of simple_box list
+  | `Table of simple_box array array
+  | `Tree of simple_box * simple_box list
+  ]
+
+let rec of_simple = function
+  | `Empty -> empty
+  | `Pad b -> pad (of_simple b)
+  | `Text t -> pad (text t)
+  | `Vlist l -> vlist (List.map of_simple l)
+  | `Hlist l -> hlist (List.map of_simple l)
+  | `Table a -> grid (Box._map_matrix of_simple a)
+  | `Tree (b,l) -> tree (of_simple b) (List.map of_simple l)
+
 (* render given box on the output, starting with upper left corner
     at the given position. [expected_size] is the size of the
     available surrounding space. [offset] is the offset of the box

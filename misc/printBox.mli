@@ -182,6 +182,18 @@ val mk_tree : ?indent:int -> ('a -> Box.t * 'a list) -> 'a -> Box.t
 (** Definition of a tree with a local function that maps nodes to
     their content and children *)
 
+type simple_box =
+  [ `Empty
+  | `Pad of simple_box
+  | `Text of string
+  | `Vlist of simple_box list
+  | `Hlist of simple_box list
+  | `Table of simple_box array array
+  | `Tree of simple_box * simple_box list
+  ]
+
+val of_simple : simple_box -> Box.t
+
 (** {2 Rendering} *)
 
 val render : Output.t -> Box.t -> unit
