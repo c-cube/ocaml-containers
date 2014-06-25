@@ -38,7 +38,9 @@ type 'a t = Buffer.t -> 'a -> unit
 
 (** {2 Combinators} *)
 
-let unit buf () = ()
+let silent buf _ = ()
+
+let unit buf () = Buffer.add_string buf "()"
 let int buf i = Buffer.add_string buf (string_of_int i)
 let string buf s = Buffer.add_string buf s
 let bool buf b = Printf.bprintf buf "%B" b
