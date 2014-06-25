@@ -38,7 +38,9 @@ type 'a t = Buffer.t -> 'a -> unit
 
 (** {2 Combinators} *)
 
-val unit : unit t  (* prints nothing! *)
+val silent : 'a t (** prints nothing *)
+
+val unit : unit t
 val int : int t
 val string : string t
 val bool : bool t
