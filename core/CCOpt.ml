@@ -71,6 +71,12 @@ let (<*>) f x = match f, x with
 
 let (<$>) = map
 
+let (<+>) a b = match a with
+  | None -> b
+  | Some _ -> a
+
+let choice l = List.fold_left (<+>) None l
+
 let map2 f o1 o2 = match o1, o2 with
   | None, _
   | _, None -> None
@@ -83,6 +89,24 @@ let iter f o = match o with
 let fold f acc o = match o with
   | None -> acc
   | Some x -> f acc x
+
+let get_exn = function
+  | Some x -> x
+  | None -> invalid_arg "CCOpt.get_exn"
+
+let sequence_l l =
+  let rec aux acc l = match l with
+    | [] -> Some (List.rev acc)
+    | Some x :: l' -> aux (x::acc) l'
+    | None :: _ -> raise Exit
+  in
+  try aux [] l with Exit -> None
+
+(*$T
+  sequence_l [None; Some 1; Some 2] = None
+  sequence_l [Some 1; Some 2; Some 3] = Some [1;2;3]
+  sequence_l [] = Some []
+*)
 
 let to_list o = match o with
   | None -> []

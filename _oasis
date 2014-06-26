@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.3
+Version:     0.3.1-alpha
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -9,11 +9,16 @@ Plugins:     META (0.3), DevFiles (0.3)
 OCamlVersion: >= 4.00.1
 BuildTools:  ocamlbuild
 
-Synopsis:    A bunch of modules, including polymorphic containers.
-Description: 
-    A bunch of useful modules, including polymorphic containers, graph
-    abstractions, serialization systems, testing systems and various
-    experiments.
+Synopsis:    A modular standard library focused on data structures.
+Description:
+    Containers is a standard library (BSD license) focused on data structures,
+    combinators and iterators, without dependencies on unix. Every module is
+    independent and is prefixed with 'CC' in the global namespace. Some modules
+    extend the stdlib (e.g. CCList provides safe map/fold_right/append, and
+    additional functions on lists).
+
+    It also features an optional library for dealing with strings, and a `misc`
+    library full of experimental ideas (not stable, not necessarily usable).
 
 Flag "misc"
   Description:  Build the misc library, containing everything from

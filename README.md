@@ -1,9 +1,6 @@
 ocaml-containers
 ================
 
-A bunch of modules I wrote mostly for fun. It is currently divided into
-a few parts:
-
 1. A usable, reasonably well-designed library that extends OCaml's standard
     library (in `core/`, packaged under `containers` in ocamlfind. Modules
     are totally independent and are prefixed with `CC` (for "containers-core"
