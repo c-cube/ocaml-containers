@@ -159,11 +159,11 @@ let rec _exists2 p a1 a2 i1 i2 j1 =
 (* shuffle a[i...j[ using the given int random generator
    See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
 let _shuffle _rand_int a i j = 
-  for k = i to j do
-    let l = _rand_int k in
+  for k = j-1 downto i+1 do
+    let l = _rand_int (k+1) in
     let tmp = a.(l) in
     a.(l) <- a.(k);
-    a.(l) <- tmp;
+    a.(k) <- tmp;
   done
 
 let _choose a i j st =
