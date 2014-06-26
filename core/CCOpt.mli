@@ -60,6 +60,10 @@ val iter : ('a -> unit) -> 'a t -> unit
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** Fold on 0 or 1 elements *)
 
+val get_exn : 'a t -> 'a
+(** Open the option, possibly failing if it is [None]
+    @raise Invalid_argument if the option is [None] *)
+
 val sequence_l : 'a t list -> 'a list t
 
 (** {2 Applicative} *)

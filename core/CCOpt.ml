@@ -90,6 +90,10 @@ let fold f acc o = match o with
   | None -> acc
   | Some x -> f acc x
 
+let get_exn = function
+  | Some x -> x
+  | None -> invalid_arg "CCOpt.get_exn"
+
 let sequence_l l =
   let rec aux acc l = match l with
     | [] -> Some (List.rev acc)
