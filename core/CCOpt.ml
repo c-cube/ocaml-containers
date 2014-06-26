@@ -90,6 +90,20 @@ let fold f acc o = match o with
   | None -> acc
   | Some x -> f acc x
 
+let sequence_l l =
+  let rec aux acc l = match l with
+    | [] -> Some (List.rev acc)
+    | Some x :: l' -> aux (x::acc) l'
+    | None :: _ -> raise Exit
+  in
+  try aux [] l with Exit -> None
+
+(*$T
+  sequence_l [None; Some 1; Some 2] = None
+  sequence_l [Some 1; Some 2; Some 3] = Some [1;2;3]
+  sequence_l [] = Some []
+*)
+
 let to_list o = match o with
   | None -> []
   | Some x -> [x]

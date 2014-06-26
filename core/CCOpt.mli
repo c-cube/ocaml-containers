@@ -60,6 +60,8 @@ val iter : ('a -> unit) -> 'a t -> unit
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** Fold on 0 or 1 elements *)
 
+val sequence_l : 'a t list -> 'a list t
+
 (** {2 Applicative} *)
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
