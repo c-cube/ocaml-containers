@@ -58,3 +58,10 @@ let finally ~h ~f =
   with e ->
     h ();
     raise e
+
+module Monad(X : sig type t end) = struct
+  type 'a t = X.t -> 'a
+  let return x _ = x
+  let (>|=) f g x = g (f x)
+  let (>>=) f g x = g (f x) x
+end
