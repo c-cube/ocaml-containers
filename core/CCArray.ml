@@ -166,6 +166,11 @@ let _shuffle _rand_int a i j =
     a.(k) <- tmp;
   done
 
+(*$T
+  let st = Random.State.make [||] in let a = 0--10000 in \
+  let b = Array.copy a in shuffle_with st a; a <> b
+*)
+
 let _choose a i j st =
   if i>=j then raise Not_found;
   a.(i+Random.int (j-i))
