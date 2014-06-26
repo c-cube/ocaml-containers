@@ -71,6 +71,12 @@ let (<*>) f x = match f, x with
 
 let (<$>) = map
 
+let (<+>) a b = match a with
+  | None -> b
+  | Some _ -> a
+
+let choice l = List.fold_left (<+>) None l
+
 let map2 f o1 o2 = match o1, o2 with
   | None, _
   | _, None -> None

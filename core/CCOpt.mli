@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Options} *)
 
-type 'a t = 'a option
+type +'a t = 'a option
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Transform the element inside, if any *)
@@ -52,10 +52,6 @@ val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** Flip version of {!>>=} *)
 
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-
-val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 
 val iter : ('a -> unit) -> 'a t -> unit
@@ -63,6 +59,20 @@ val iter : ('a -> unit) -> 'a t -> unit
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** Fold on 0 or 1 elements *)
+
+(** {2 Applicative} *)
+
+val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
+val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+
+(** {2 Alternatives} *)
+
+val (<+>) : 'a t -> 'a t -> 'a t
+(** [a <+> b] is [a] if [a] is [Some _], [b] otherwise *)
+
+val choice : 'a t list -> 'a t
+(** [choice] returns the first non-[None] element of the list, or [None] *)
 
 (** {2 Conversion and IO} *)
 
