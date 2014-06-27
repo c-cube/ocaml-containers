@@ -53,8 +53,6 @@ val map2 : ('a -> 'b) -> (string -> string) -> 'a t -> 'b t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
-val guard : (unit -> 'a) -> 'a t
-
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
@@ -66,6 +64,22 @@ val compare : 'a ord -> 'a t ord
 val fold : success:('a -> 'b) -> failure:(string -> 'b) -> 'a t -> 'b
 (** [fold ~success ~failure e] opens [e] and, if [e = `Ok x], returns
     [success x], otherwise [e = `Error s] and it returns [failure s]. *)
+
+(** {2 Wrappers} *)
+
+val guard : (unit -> 'a) -> 'a t
+
+val wrap1 : ('a -> 'b) -> 'a -> 'b t
+
+val wrap2 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c t
+
+val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> 'd t
+
+(** {2 APplicative} *)
+
+val pure : 'a -> 'a t
+
+val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 (** {2 Collections} *)
 

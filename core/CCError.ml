@@ -57,11 +57,6 @@ let flat_map f e = match e with
   | `Ok x -> f x
   | `Error s -> `Error s
 
-let guard f =
-  try
-    return (f ())
-  with e -> of_exn e
-
 let (>|=) e f = map f e
 
 let (>>=) e f = flat_map f e
@@ -80,6 +75,33 @@ let compare cmp a b = match a, b with
 let fold ~success ~failure x = match x with
   | `Ok x -> success x
   | `Error s -> failure s
+
+(** {2 Wrappers} *)
+
+let guard f =
+  try
+    return (f ())
+  with e -> of_exn e
+
+let wrap1 f x =
+  try return (f x)
+  with e -> of_exn e
+
+let wrap2 f x y =
+  try return (f x y)
+  with e -> of_exn e
+
+let wrap3 f x y z =
+  try return (f x y z)
+  with e -> of_exn e
+
+(** {2 Applicative} *)
+
+let pure = return
+
+let (<*>) f x = match f with
+  | `Error s -> fail s
+  | `Ok f -> map f x
 
 (** {2 Collections} *)
 
