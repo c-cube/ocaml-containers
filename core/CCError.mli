@@ -47,6 +47,10 @@ val of_exn : exn -> 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 
+val map2 : ('a -> 'b) -> (string -> string) -> 'a t -> 'b t
+(** Same as {!map}, but also with a function that can transform
+    the error message in case of failure *)
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val guard : (unit -> 'a) -> 'a t

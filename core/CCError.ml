@@ -49,6 +49,10 @@ let map f e = match e with
   | `Ok x -> `Ok (f x)
   | `Error s -> `Error s
 
+let map2 f g e = match e with
+  | `Ok x -> `Ok (f x)
+  | `Error s -> `Error (g s)
+
 let flat_map f e = match e with
   | `Ok x -> f x
   | `Error s -> `Error s
