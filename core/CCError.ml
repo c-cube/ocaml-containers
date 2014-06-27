@@ -73,6 +73,10 @@ let compare cmp a b = match a, b with
   | _, `Ok _ -> -1
   | `Error s, `Error s' -> String.compare s s'
 
+let fold ~success ~failure x = match x with
+  | `Ok x -> success x
+  | `Error s -> failure s
+
 (** {2 Collections} *)
 
 let map_l f l =
@@ -98,6 +102,28 @@ let fold_seq f acc seq =
   with LocalExit s -> `Error s
 
 let fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
+
+(** {2 Monadic Operations} *)
+
+module type MONAD = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module Traverse(M : MONAD) = struct
+  let (>>=) = M.(>>=)
+
+  let map_m f e = match e with
+    | `Error s -> M.return (`Error s)
+    | `Ok x -> f x >>= fun y -> M.return (`Ok y)
+
+  let sequence_m m = map_m (fun x->x) m
+
+  let fold_m f acc e = match e with
+    | `Error s -> M.return acc
+    | `Ok x -> f acc x >>= fun y -> M.return y
+end
 
 (** {2 Conversions} *)
 
