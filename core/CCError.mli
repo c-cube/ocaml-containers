@@ -47,9 +47,11 @@ val of_exn : exn -> 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 
-val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+val map2 : ('a -> 'b) -> (string -> string) -> 'a t -> 'b t
+(** Same as {!map}, but also with a function that can transform
+    the error message in case of failure *)
 
-val guard : (unit -> 'a) -> 'a t
+val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
@@ -59,13 +61,48 @@ val equal : 'a equal -> 'a t equal
 
 val compare : 'a ord -> 'a t ord
 
+val fold : success:('a -> 'b) -> failure:(string -> 'b) -> 'a t -> 'b
+(** [fold ~success ~failure e] opens [e] and, if [e = `Ok x], returns
+    [success x], otherwise [e = `Error s] and it returns [failure s]. *)
+
+(** {2 Wrappers} *)
+
+val guard : (unit -> 'a) -> 'a t
+
+val wrap1 : ('a -> 'b) -> 'a -> 'b t
+
+val wrap2 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c t
+
+val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> 'd t
+
+(** {2 APplicative} *)
+
+val pure : 'a -> 'a t
+
+val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
 (** {2 Collections} *)
 
 val map_l : ('a -> 'b t) -> 'a list -> 'b list t
 
-val fold_l : ('acc -> 'a -> 'acc t) -> 'acc -> 'a list -> 'acc t
+val fold_l : ('b -> 'a -> 'b t) -> 'b -> 'a list -> 'b t
 
-val fold_seq : ('acc -> 'a -> 'acc t) -> 'acc -> 'a sequence -> 'acc t
+val fold_seq : ('b -> 'a -> 'b t) -> 'b -> 'a sequence -> 'b t
+
+(** {2 Monadic Operations} *)
+module type MONAD = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module Traverse(M : MONAD) : sig
+  val sequence_m : 'a M.t t -> 'a t M.t
+
+  val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
+
+  val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+end
 
 (** {2 Conversions} *)
 

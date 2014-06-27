@@ -49,14 +49,13 @@ let map f e = match e with
   | `Ok x -> `Ok (f x)
   | `Error s -> `Error s
 
+let map2 f g e = match e with
+  | `Ok x -> `Ok (f x)
+  | `Error s -> `Error (g s)
+
 let flat_map f e = match e with
   | `Ok x -> f x
   | `Error s -> `Error s
-
-let guard f =
-  try
-    return (f ())
-  with e -> of_exn e
 
 let (>|=) e f = map f e
 
@@ -72,6 +71,37 @@ let compare cmp a b = match a, b with
   | `Ok _, _  -> 1
   | _, `Ok _ -> -1
   | `Error s, `Error s' -> String.compare s s'
+
+let fold ~success ~failure x = match x with
+  | `Ok x -> success x
+  | `Error s -> failure s
+
+(** {2 Wrappers} *)
+
+let guard f =
+  try
+    return (f ())
+  with e -> of_exn e
+
+let wrap1 f x =
+  try return (f x)
+  with e -> of_exn e
+
+let wrap2 f x y =
+  try return (f x y)
+  with e -> of_exn e
+
+let wrap3 f x y z =
+  try return (f x y z)
+  with e -> of_exn e
+
+(** {2 Applicative} *)
+
+let pure = return
+
+let (<*>) f x = match f with
+  | `Error s -> fail s
+  | `Ok f -> map f x
 
 (** {2 Collections} *)
 
@@ -98,6 +128,28 @@ let fold_seq f acc seq =
   with LocalExit s -> `Error s
 
 let fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
+
+(** {2 Monadic Operations} *)
+
+module type MONAD = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module Traverse(M : MONAD) = struct
+  let (>>=) = M.(>>=)
+
+  let map_m f e = match e with
+    | `Error s -> M.return (`Error s)
+    | `Ok x -> f x >>= fun y -> M.return (`Ok y)
+
+  let sequence_m m = map_m (fun x->x) m
+
+  let fold_m f acc e = match e with
+    | `Error s -> M.return acc
+    | `Ok x -> f acc x >>= fun y -> M.return y
+end
 
 (** {2 Conversions} *)
 
