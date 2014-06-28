@@ -92,7 +92,7 @@ module Split = struct
   and _split_search ~by s prev i =
     if i >= String.length s
       then Some (SplitStop, prev, String.length s - prev)
-      else if _is_prefix ~by s i 0 && i>prev
+      else if _is_prefix ~by s i 0
         then Some (SplitAt (i+String.length by), prev, i-prev)
       else _split_search ~by s prev (i+1)
 
@@ -142,11 +142,6 @@ module Split = struct
 
   let seq ~by s = _mkseq ~by s _tuple3
   let seq_cpy ~by s = _mkseq ~by s String.sub
-
-  (*$T
-    Split.list_cpy ~by:"," "aa,bb,cc" = ["aa"; "bb"; "cc"]
-    Split.list_cpy ~by:"--" "a--b----c--" = ["a"; "b"; ""; "c"; ""]
-  *)
 end
 
 (* note: inefficient *)

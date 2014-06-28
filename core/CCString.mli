@@ -111,6 +111,12 @@ module Split : sig
 
   val list_cpy : by:t -> t -> t list
 
+  (*$T
+    Split.list_cpy ~by:"," "aa,bb,cc" = ["aa"; "bb"; "cc"]
+    Split.list_cpy ~by:"--" "a--b----c--" = ["a"; "b"; ""; "c"; ""]
+    Split.list_cpy ~by:" " "hello  world aie" = ["hello"; ""; "world"; "aie"]
+  *)
+
   val gen_cpy : by:t -> t -> t gen
 
   val seq_cpy : by:t -> t -> t sequence
