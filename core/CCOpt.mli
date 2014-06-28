@@ -68,6 +68,9 @@ val sequence_l : 'a t list -> 'a list t
 
 (** {2 Applicative} *)
 
+val pure : 'a -> 'a t
+(** Alias to {!return} *)
+
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val (<$>) : ('a -> 'b) -> 'a t -> 'b t
