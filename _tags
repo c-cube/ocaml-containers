@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3e4b3ffbcf17509bedefd6d577653253)
+# DO NOT EDIT (digest: 424d94004913edeb907a94dc6eb6cd33)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -18,7 +18,6 @@
 # Library containers_string
 "string/containers_string.cmxs": use_containers_string
 "string/KMP.cmx": for-pack(Containers_string)
-"string/CCString.cmx": for-pack(Containers_string)
 "string/levenshtein.cmx": for-pack(Containers_string)
 # Library containers_misc
 "misc/containers_misc.cmxs": use_containers_misc

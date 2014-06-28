@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f3d51df09b5bc3a18b6273252329401b)
+# DO NOT EDIT (digest: c857b890ad9203b3eac8934dba29f733)
 CCVector
 CCDeque
 CCGen
@@ -27,4 +27,5 @@ CCRandom
 CCLinq
 CCKTree
 CCTrie
+CCString
 # OASIS_STOP

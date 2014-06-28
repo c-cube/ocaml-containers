@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 38ca5655da37b1039f2aa919ef60de51)
-version = "0.3.1-alpha"
+# DO NOT EDIT (digest: c45a958aaa0c31769f4e67935c863279)
+version = "0.3.1"
 description = "A modular standard library focused on data structures."
 archive(byte) = "containers.cma"
 archive(byte, plugin) = "containers.cma"
@@ -8,7 +8,7 @@ archive(native) = "containers.cmxa"
 archive(native, plugin) = "containers.cmxs"
 exists_if = "containers.cma"
 package "thread" (
- version = "0.3.1-alpha"
+ version = "0.3.1"
  description = "A modular standard library focused on data structures."
  requires = "containers threads lwt"
  archive(byte) = "containers_thread.cma"
@@ -19,7 +19,7 @@ package "thread" (
 )
 
 package "string" (
- version = "0.3.1-alpha"
+ version = "0.3.1"
  description = "A modular standard library focused on data structures."
  archive(byte) = "containers_string.cma"
  archive(byte, plugin) = "containers_string.cma"
@@ -29,7 +29,7 @@ package "string" (
 )
 
 package "misc" (
- version = "0.3.1-alpha"
+ version = "0.3.1"
  description = "A modular standard library focused on data structures."
  requires = "unix containers"
  archive(byte) = "containers_misc.cma"
@@ -40,7 +40,7 @@ package "misc" (
 )
 
 package "lwt" (
- version = "0.3.1-alpha"
+ version = "0.3.1"
  description = "A modular standard library focused on data structures."
  requires = "containers lwt lwt.unix containers.misc"
  archive(byte) = "containers_lwt.cma"
@@ -51,7 +51,7 @@ package "lwt" (
 )
 
 package "cgi" (
- version = "0.3.1-alpha"
+ version = "0.3.1"
  description = "A modular standard library focused on data structures."
  requires = "containers CamlGI"
  archive(byte) = "containers_cgi.cma"
