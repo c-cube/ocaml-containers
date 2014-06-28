@@ -60,6 +60,7 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 - `CCKTree`, an abstract lazy tree structure (similar to what `CCKlist` is to lists)
 - small modules (basic types, utilities):
   - `CCInt`
+  - `CCString` (basic string operations)
   - `CCPair` (cartesian products)
   - `CCOpt` (options)
   - `CCFun` (function combinators)
@@ -69,6 +70,12 @@ structures comprise (some modules in `misc/`, some other in `core/`):
   - `CCPrint` (printing combinators)
   - `CCHash` (hashing combinators)
   - `CCError` (monadic error handling)
+
+### String
+
+In the module `Containers_string`:
+- `Levenshtein`: edition distance between two strings
+- `KMP`: Knuth-Morris-Pratt substring algorithm
 
 ### Misc
 
