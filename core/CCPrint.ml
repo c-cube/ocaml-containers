@@ -144,3 +144,34 @@ let _with_file_out filename f =
 
 let to_file filename format =
   _with_file_out filename (fun oc -> fprintf oc format)
+
+(** {2 Monadic IO} *)
+
+module type MONAD_IO = sig
+  type 'a t     (** the IO monad *)
+  type output   (** Output channels *)
+
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+
+  val write : output -> string -> unit t
+end
+
+module MakeIO(M : MONAD_IO) = struct
+  let output out pp x =
+    let buf = Buffer.create 128 in
+    pp buf x;
+    M.write out (Buffer.contents buf)
+
+  let printl out pp x =
+    let buf = Buffer.create 128 in
+    pp buf x;
+    Buffer.add_char buf '\n';
+    M.write out (Buffer.contents buf)
+
+  let fprintf out format =
+    let buf = Buffer.create 128 in
+    Printf.kbprintf
+      (fun buf -> M.write out (Buffer.contents buf))
+      buf
+      format
+end

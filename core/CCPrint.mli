@@ -76,3 +76,25 @@ val to_file : string -> ('a, Buffer.t, unit, unit) format4 -> 'a
 
 val printf : ('a, Buffer.t, unit, unit) format4 -> 'a
 val eprintf : ('a, Buffer.t, unit, unit) format4 -> 'a
+
+(** {2 Monadic IO} *)
+
+module type MONAD_IO = sig
+  type 'a t     (** the IO monad *)
+  type output   (** Output channels *)
+
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+
+  val write : output -> string -> unit t
+end
+
+module MakeIO(M : MONAD_IO) : sig
+  val output : M.output -> 'a t -> 'a -> unit M.t
+  (** Output a single value *)
+
+  val printl : M.output -> 'a t -> 'a -> unit M.t
+  (** Output a value and add a newline "\n" after. *)
+
+  val fprintf : M.output -> ('a, Buffer.t, unit, unit M.t) format4 -> 'a
+  (** Fprintf on a monadic output *)
+end
