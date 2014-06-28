@@ -47,13 +47,13 @@ Library "containers"
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd,
-                    CCRandom, CCLinq, CCKTree, CCTrie
+                    CCRandom, CCLinq, CCKTree, CCTrie, CCString
   FindlibName:      containers
 
 Library "containers_string"
   Path:             string
   Pack:             true
-  Modules:          KMP, CCString, Levenshtein
+  Modules:          KMP, Levenshtein
   FindlibName:      string
   FindlibParent:    containers
 

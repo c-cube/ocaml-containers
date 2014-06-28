@@ -57,6 +57,10 @@ module type S = sig
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
+  val blit : 'a t -> int -> 'a t -> int -> int -> unit
+  (** [blit from i into j len] copies [len] elements from the first array
+      to the second. See {!Array.blit}. *)
+
   val reverse_in_place : 'a t -> unit
   (** Reverse the array in place *)
 
@@ -92,16 +96,16 @@ module type S = sig
 
   (** {2 IO} *)
 
-  val pp: ?sep:string -> (Buffer.t -> 'a -> unit)
-            -> Buffer.t -> 'a t -> unit
+  val pp: ?sep:string -> (Buffer.t -> 'a -> unit) ->
+          Buffer.t -> 'a t -> unit
   (** print an array of items with printing function *)
 
-  val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit)
-            -> Buffer.t -> 'a t -> unit
+  val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit) ->
+            Buffer.t -> 'a t -> unit
   (** print an array, giving the printing function both index and item *)
 
-  val print : ?sep:string -> (Format.formatter -> 'a -> unit)
-            -> Format.formatter -> 'a t -> unit
+  val print : ?sep:string -> (Format.formatter -> 'a -> unit) ->
+              Format.formatter -> 'a t -> unit
   (** print an array of items with printing function *)
 end
 
@@ -112,13 +116,13 @@ Most of those functions that a range [(i,j)] with
 let rec _foldi f acc a i j =
   if i = j then acc else _foldi f (f acc i a.(i)) a (i+1) j
 
-let _reverse_in_place a i j =
-  if i=j then ()
+let _reverse_in_place a i ~len =
+  if len=0 then ()
   else
-    for k = i to (j-1)/2 do
-      let t = a.(k) in
-      a.(k) <- a.(j-1-k);
-      a.(j-1-k) <- t;
+    for k = 0 to (len-1)/2 do
+      let t = a.(i+k) in
+      a.(i+k) <- a.(i+len-1-k);
+      a.(i+len-1-k) <- t;
     done
 
 let rec _equal eq a1 i1 j1 a2 i2 j2 =
@@ -135,8 +139,15 @@ let rec _compare cmp a1 i1 j1 a2 i2 j2 =
     else
       let c = cmp a1.(i1) a2.(i2) in
       if c = 0
-        then _compare cmp a1 (i1+1) j1 a2 (i2+2) j2
+        then _compare cmp a1 (i1+1) j1 a2 (i2+1) j2
         else c
+
+(*$T
+  compare CCOrd.compare [| 1; 2; 3 |] [| 1; 2; 3 |] = 0
+  compare CCOrd.compare [| 1; 2; 3 |] [| 2; 2; 3 |] < 0
+  compare CCOrd.compare [| 1; 2; |] [| 1; 2; 3 |] < 0
+  compare CCOrd.compare [| 1; 2; 3 |] [| 1; 2; |] > 0
+*)
 
 let rec _find f a i j =
   if i = j then None
@@ -150,11 +161,11 @@ let rec _for_all p a i j =
 let rec _exists p a i j =
   i <> j && (p a.(i) || _exists p a (i+1) j)
 
-let rec _for_all2 p a1 a2 i1 i2 j1 =
-  i1 = j1 || (p a1.(i1) a2.(i2) && _for_all2 p a1 a2 (i1+1) (i2+1) j1)
+let rec _for_all2 p a1 a2 i1 i2 ~len =
+  len=0 || (p a1.(i1) a2.(i2) && _for_all2 p a1 a2 (i1+1) (i2+1) ~len:(len-1))
 
-let rec _exists2 p a1 a2 i1 i2 j1 =
-  i1 <> j1 && (p a1.(i1) a2.(i2) || _exists2 p a1 a2 (i1+1) (i2+1) j1)
+let rec _exists2 p a1 a2 i1 i2 ~len =
+  len>0 && (p a1.(i1) a2.(i2) || _exists2 p a1 a2 (i1+1) (i2+1) ~len:(len-1))
 
 (* shuffle a[i...j[ using the given int random generator
    See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
@@ -227,6 +238,8 @@ let foldi f acc a = _foldi f acc a 0 (Array.length a)
 let iter = Array.iter
 
 let iteri = Array.iteri
+
+let blit = Array.blit
 
 let reverse_in_place a =
   _reverse_in_place a 0 (Array.length a)
@@ -303,12 +316,10 @@ let exists p a = _exists p a 0 (Array.length a)
 let for_all2 p a b =
   Array.length a = Array.length b
   &&
-  _for_all2 p a b 0 0 (Array.length a)
+  _for_all2 p a b 0 0 ~len:(Array.length a)
 
 let exists2 p a b =
-  Array.length a = Array.length b
-  &&
-  _exists2 p a b 0 0 (Array.length a)
+  _exists2 p a b 0 0 ~len:(min (Array.length a) (Array.length b))
 
 let (--) i j =
   if i<=j
@@ -374,10 +385,12 @@ module Sub = struct
   }
 
   let make arr i ~len =
-    if i+len > Array.length arr then invalid_arg "Array.Sub.make";
+    if i<0||i+len > Array.length arr then invalid_arg "Array.Sub.make";
     { arr; i; j=i+len; }
 
   let of_slice (arr,i,len) = make arr i ~len
+
+  let to_slice a = a.arr, a.i, a.j-a.i
 
   let full arr = { arr; i=0; j=Array.length arr; }
 
@@ -419,7 +432,16 @@ module Sub = struct
   let iteri f a =
     for k=0 to length a-1 do f k a.arr.(a.i + k) done
 
-  let reverse_in_place a = _reverse_in_place a.arr a.i a.j
+  let blit a i b j len =
+    if i+len>length a || j+len>length b then invalid_arg "Array.Sub.blit";
+    Array.blit a.arr (a.i+i) b.arr (b.i+j) len
+
+  let reverse_in_place a = _reverse_in_place a.arr a.i ~len:(length a)
+
+  (*$T
+  let a = 1--6 in let s = Sub.make a 2 ~len:3 in \
+    Sub.reverse_in_place s; a = [| 1; 2; 5; 4; 3; 6 |]
+  *)
 
   let find f a = _find f a.arr a.i a.j
 
@@ -428,10 +450,14 @@ module Sub = struct
   let exists p a = _exists p a.arr a.i a.j
 
   let for_all2 p a b =
-    length a = length b && _for_all2 p a.arr b.arr a.i b.i b.j
+    length a = length b && _for_all2 p a.arr b.arr a.i b.i ~len:(length a)
 
   let exists2 p a b =
-    length a = length b && _exists2 p a.arr b.arr a.i b.i a.j
+    _exists2 p a.arr b.arr a.i b.i ~len:(min (length a) (length b))
+
+  (*$T
+  Sub.exists2 (=) (Sub.make [| 1;2;3;4 |] 1 ~len:2) (Sub.make [| 0;1;3;4 |] 1 ~len:3)
+  *)
 
   let shuffle a =
     _shuffle Random.int a.arr a.i a.j

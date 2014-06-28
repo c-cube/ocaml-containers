@@ -59,6 +59,10 @@ module type S = sig
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
+  val blit : 'a t -> int -> 'a t -> int -> int -> unit
+  (** [blit from i into j len] copies [len] elements from the first array
+      to the second. See {!Array.blit}. *)
+
   val reverse_in_place : 'a t -> unit
   (** Reverse the array in place *)
 
@@ -94,16 +98,16 @@ module type S = sig
 
   (** {2 IO} *)
 
-  val pp: ?sep:string -> (Buffer.t -> 'a -> unit)
-            -> Buffer.t -> 'a t -> unit
+  val pp: ?sep:string -> (Buffer.t -> 'a -> unit) ->
+          Buffer.t -> 'a t -> unit
   (** print an array of items with printing function *)
 
-  val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit)
-            -> Buffer.t -> 'a t -> unit
+  val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit) ->
+            Buffer.t -> 'a t -> unit
   (** print an array, giving the printing function both index and item *)
 
-  val print : ?sep:string -> (Format.formatter -> 'a -> unit)
-            -> Format.formatter -> 'a t -> unit
+  val print : ?sep:string -> (Format.formatter -> 'a -> unit) ->
+              Format.formatter -> 'a t -> unit
   (** print an array of items with printing function *)
 end
 
@@ -158,6 +162,10 @@ module Sub : sig
   (** Make a sub-array from a triple [(arr, i, len)] where [arr] is the array,
       [i] the offset in [arr], and [len] the number of elements of the slice.
       @raise Invalid_argument if the slice isn't valid (See {!make}) *)
+
+  val to_slice : 'a t -> ('a array * int * int)
+  (** Convert into a triple [(arr, i, len)] where [len] is the length of
+      the subarray of [arr] starting at offset [i] *)
 
   val full : 'a array -> 'a t
   (** Slice that covers the full array *)
