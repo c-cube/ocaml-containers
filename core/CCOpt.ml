@@ -64,6 +64,8 @@ let flat_map f o = match o with
   | None -> None
   | Some x -> f x
 
+let pure x = Some x
+
 let (<*>) f x = match f, x with
   | None, _
   | _, None -> None
