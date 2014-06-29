@@ -154,7 +154,7 @@ let check_old_new =
   let prop l =
     let l1, l2 = List.partition (fun (x,_) -> x mod 2 = 0) l in
     let h1 = H.of_list l1 in
-    let h2 = H.of_list ~init:h1 l2 in
+    let h2 = H.add_list h1 l2 in
     List.for_all
       (fun (k,v) -> H.find h2 k = v)
       l
