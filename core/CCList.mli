@@ -101,6 +101,9 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** merges elements from both sorted list, removing duplicates *)
 
+val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
+(** Sort the list and remove duplicate elements *)
+
 (** {2 Indices} *)
 
 module Idx : sig

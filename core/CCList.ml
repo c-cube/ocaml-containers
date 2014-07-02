@@ -179,6 +179,19 @@ let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
     = [11; 20; 101; 200]
 *)
 
+let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
+  let module S = Set.Make(struct
+    type t = elt
+    let compare = cmp
+  end) in
+  let set = fold_right S.add l S.empty in
+  S.elements set
+
+(*$T
+  sort_uniq [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
+  sort_uniq [] = []
+  sort_uniq [10;10;10;10;1;10] = [1;10]
+*)
 
 let take n l =
   let rec direct i n l = match l with
