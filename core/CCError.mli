@@ -89,6 +89,17 @@ val fold_l : ('b -> 'a -> 'b t) -> 'b -> 'a list -> 'b t
 
 val fold_seq : ('b -> 'a -> 'b t) -> 'b -> 'a sequence -> 'b t
 
+(** {2 Misc} *)
+
+val choose : 'a t list -> 'a t
+(** [choose l] selects a member of [l] that is a [`Ok _] value,
+    or returns [`Error msg] otherwise, where [msg] is obtained by
+    combining the error messages of all elements of [l] *)
+
+val retry : int -> (unit -> 'a t) -> 'a t
+(** [retry n f] calls [f] at most [n] times, returning the first result
+    of [f ()] that doesn't fail. If [f] fails [n] times, [retry n f] fails. *)
+
 (** {2 Monadic Operations} *)
 module type MONAD = sig
   type 'a t
@@ -102,6 +113,8 @@ module Traverse(M : MONAD) : sig
   val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
 
   val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+
+  val retry_m : int -> (unit -> 'a t M.t) -> 'a t M.t
 end
 
 (** {2 Conversions} *)
