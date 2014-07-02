@@ -98,3 +98,13 @@ module MakeIO(M : MONAD_IO) : sig
   val fprintf : M.output -> ('a, Buffer.t, unit, unit M.t) format4 -> 'a
   (** Fprintf on a monadic output *)
 end
+(** Example:
+{[ module PrintLwt = CCPrint.MakeIO(struct
+    include Lwt
+    type output = Lwt_io.output_channel
+    let write = Lwt_io.write
+  end);;
+
+  PrintLwt.printl Lwt_io.stdout (CCList.pp CCInt.pp) [1;2;3;4];;
+  - : unit Lwt.t
+]} *)
