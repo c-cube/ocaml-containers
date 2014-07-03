@@ -127,6 +127,13 @@ let fprintf oc format =
     buffer
     format
 
+let kfprintf k oc format =
+  let buffer = Buffer.create 64 in
+  Printf.kbprintf
+    (fun fmt -> Buffer.output_buffer oc buffer; k fmt)
+    buffer
+    format
+
 let printf format = fprintf stdout format
 let eprintf format = fprintf stderr format
 
@@ -134,8 +141,6 @@ let _with_file_out filename f =
   let oc = open_out filename in
   begin try
     let x = f oc in
-    flush oc;
-    close_out oc;
     x
   with e ->
     close_out_noerr oc;
@@ -143,7 +148,7 @@ let _with_file_out filename f =
   end
 
 let to_file filename format =
-  _with_file_out filename (fun oc -> fprintf oc format)
+  _with_file_out filename (fun oc -> kfprintf (fun _ -> close_out oc) oc format)
 
 (** {2 Monadic IO} *)
 
