@@ -66,7 +66,7 @@ Library "containers_misc"
                     Bij, PiCalculus, Bencode, Sexp, RAL,
                     UnionFind, SmallSet, AbsSet, CSM,
                     ActionMan, BencodeOnDisk, TTree, PrintBox,
-                    HGraph, Automaton, Conv, Bidir, Iteratee,
+                    HGraph, Automaton, Conv, Bidir, Iteratee, BTree,
                     Ty, Tell, BencodeStream, RatTerm, Cause, AVL, ParseReact
   BuildDepends:     unix,containers
   FindlibName:      misc
