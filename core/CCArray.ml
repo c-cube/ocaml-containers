@@ -68,6 +68,15 @@ module type S = sig
   (** [find f a] returns [Some y] if there is an element [x] such
       that [f x = Some y], else it returns [None] *)
 
+  val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
+  (** Lookup the index of some value in a sorted array.
+      @return [None] if the key is not present, or
+        [Some i] ([i] the index of the key) otherwise *)
+
+  val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
+  (** Same as {!lookup_exn}, but
+      @raise Not_found if the key is not present *)
+
   val for_all : ('a -> bool) -> 'a t -> bool
 
   val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
@@ -154,6 +163,31 @@ let rec _find f a i j =
   else match f a.(i) with
     | Some _ as res -> res
     | None -> _find f a (i+1) j
+
+let rec _lookup_rec ~cmp k a i j =
+  if i>j then raise Not_found
+  else if i=j
+    then if cmp k a.(i) = 0
+      then i
+      else raise Not_found
+  else
+    let middle = (j+i)/2 in
+    match cmp k a.(middle) with
+    | 0 -> middle
+    | n when n<0 -> _lookup_rec ~cmp k a i (middle-1)
+    | _ -> _lookup_rec ~cmp k a (middle+1) j
+
+let _lookup_exn ~cmp k a i j =
+  if i>j then raise Not_found;
+  match cmp k a.(i) with
+  | 0 -> i
+  | n when n<0 -> raise Not_found (* too low *)
+  | _ when i=j -> raise Not_found (* too high *)
+  | _ ->
+      match cmp k a.(j) with
+      | 0 -> j
+      | n when n<0 -> _lookup_rec ~cmp k a (i+1) (j-1)
+      | _ -> raise Not_found  (* too high *)
 
 let rec _for_all p a i j =
   i = j || (p a.(i) && _for_all p a (i+1) j)
@@ -307,6 +341,23 @@ let flat_map f a =
   a' = [| 1; 2; 3; 4; 5; 6 |]
 *)
 
+let lookup_exn ?(cmp=Pervasives.compare) k a =
+  _lookup_exn ~cmp k a 0 (Array.length a-1)
+
+let lookup ?(cmp=Pervasives.compare) k a =
+  try Some (_lookup_exn ~cmp k a 0 (Array.length a-1))
+  with Not_found -> None
+
+(*$T
+  lookup 2 [|0;1;2;3;4;5|] = Some 2
+  lookup 4 [|0;1;2;3;4;5|] = Some 4
+  lookup 0 [|1;2;3;4;5|] = None
+  lookup 6 [|1;2;3;4;5|] = None
+  lookup 3 [| |] = None
+  lookup 1 [| 1 |] = Some 0
+  lookup 2 [| 1 |] = None
+*)
+
 let (>>=) a f = flat_map f a
 
 let for_all p a = _for_all p a 0 (Array.length a)
@@ -444,6 +495,13 @@ module Sub = struct
   *)
 
   let find f a = _find f a.arr a.i a.j
+
+  let lookup_exn ?(cmp=Pervasives.compare) k a =
+    _lookup_exn ~cmp k a.arr a.i (a.j-1)
+
+  let lookup ?(cmp=Pervasives.compare) k a =
+    try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1))
+    with Not_found -> None
 
   let for_all p a = _for_all p a.arr a.i a.j
 
