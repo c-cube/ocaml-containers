@@ -114,9 +114,11 @@ module Make(X : ORDERED) = struct
     size = 1;
   }
 
-  (* slice of [l] starting at indices [i], of length [len] *)
+  (* slice of [l] starting at indices [i], of length [len]. Only
+    copies inner children (between two keys in the range). *)
   let _make_slice l i len =
     assert (len>0);
+    assert (i+len<=l.size);
     let k = l.keys.(i) and v = l.values.(i)  in
     let l' = {
       keys = Array.make _len_node k;
@@ -138,6 +140,7 @@ module Make(X : ORDERED) = struct
     | E -> ()
     | L n ->
         for i=0 to n.size-1 do
+          assert (n.children.(i) = E);
           acc := f !acc n.keys.(i) n.values.(i)
         done
     | N n ->
@@ -145,7 +148,7 @@ module Make(X : ORDERED) = struct
           _fold f acc n.children.(i);
           acc := f !acc n.keys.(i) n.values.(i);
         done;
-        acc := f !acc n.keys.(n.size) n.values.(n.size)
+        _fold f acc n.children.(n.size)
 
   let fold f acc t =
     let acc = ref acc in
@@ -190,8 +193,11 @@ module Make(X : ORDERED) = struct
 
   (* sorted insertion into a leaf that has room and doesn't contain the key *)
   let _insert_sorted l k v i =
+    assert (not (_full_node l));
     (* make room by shifting to the right *)
     let len = l.size - i in
+    assert (i+len<=l.size);
+    assert (len>=0);
     Array.blit l.keys i l.keys (i+1) len;
     Array.blit l.values i l.values (i+1) len;
     l.keys.(i) <- k;
@@ -215,27 +221,29 @@ module Make(X : ORDERED) = struct
         then (
           (* split. [k'] and [v']: separator for split *)
           let j = _len_node/2 in
-          let k' = l.keys.(j) in
-          let v' = l.values.(j) in
           let left = _make_slice l 0 j in
           let right = _make_slice l (j+1) (_len_node-j-1) in
           (* insert in proper sub-leaf *)
-          (if i<j
-            then _insert_sorted left k v i
+          (if i+1<j
+            then _insert_sorted left k v (i+1)
             else _insert_sorted right k v (i-j)
           );
+          let k' = l.keys.(j) in
+          let v' = l.values.(j) in
           Split (L left, k', v', L right)
         ) else (
           (* just insert at sorted position *)
-          _insert_sorted l k v i;
+          _insert_sorted l k v (i+1);
           Add
         )
 
   let _insert_node n i k v sub1 sub2 =
     assert (not(_full_node n));
-    Array.blit n.keys i n.keys (i+1) (n.size-i);
-    Array.blit n.values i n.values (i+1) (n.size-i);
-    Array.blit n.children (i+1) n.children (i+2) (n.size-i);
+    let len = n.size - i in
+    assert (len>=0);
+    Array.blit n.keys i n.keys (i+1) len;
+    Array.blit n.values i n.values (i+1) len;
+    Array.blit n.children (i+1) n.children (i+2) len;
     n.keys.(i) <- k;
     n.values.(i) <- v;
     (* erase subtree with sub1,sub2 *)
@@ -334,8 +342,8 @@ module Make(X : ORDERED) = struct
       let t = T.of_list (CCList.(1--1000) |> List.map (fun x->x, string_of_int x)) in \
       T.get 3 t = Some "3"
     let module T = Make(CCInt) in \
-      let t = T.of_list (CCList.(1--1000) |> List.map (fun x->x, string_of_int x)) in \
-      T.get 4 t = None
+      let t = T.of_list (CCList.(1--100) |> List.map (fun x->x, string_of_int x)) in \
+      T.get 400 t = None
   *)
 
   (* remove the key if present.  TODO
