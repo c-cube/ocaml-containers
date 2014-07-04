@@ -38,6 +38,10 @@ val empty : 'a t
 
 val is_empty : 'a t -> bool
 
+val singleton : 'a -> 'a t
+
+val doubleton : 'a -> 'a -> 'a t
+
 exception Empty
 
 val cons : 'a -> 'a t -> 'a t

@@ -56,6 +56,9 @@ let is_empty = function
   | Shallow Zero -> true
   | _ -> false
 
+let singleton x = _single x
+let doubleton x y = _double x y
+
 let _empty = Lazy.from_val empty
 
 let rec cons : 'a. 'a -> 'a t -> 'a t
