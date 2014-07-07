@@ -29,6 +29,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 This module provides combinators to build printers for user-defined types.
 It doesn't try to do {b pretty}-printing (see for instance Pprint for this),
 but a simple way to print complicated values without writing a lot of code.
+
+Those combinators work with "%a". For instance to print a
+[(int * bool) list list] and a [float array], one can write:
+{[
+  CCPrint.(printf "int: %d list: %a, array: %a\n"
+    42
+    (list (list (pair int bool))) [[1, true; 2, false]; [4, true]]
+    (array float) [| 1. ; 2. ; 3e18 |] ;;
+]}
+
+Remember that "%a" in this context requires two arguments:
+  - a value of type ['a t] (buffer printer)
+  - a value of type ['a] (value to print)
 *)
 
 type 'a sequence = ('a -> unit) -> unit
