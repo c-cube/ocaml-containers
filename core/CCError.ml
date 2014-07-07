@@ -43,7 +43,20 @@ let return x = `Ok x
 
 let fail s = `Error s
 
-let of_exn e = `Error (Printexc.to_string e)
+let _printers = ref []
+
+let register_printer p = _printers := p :: !_printers
+
+let of_exn e =
+  let buf = Buffer.create 15 in
+  let rec try_printers l = match l with
+    | [] -> Buffer.add_string buf (Printexc.to_string e)
+    | p :: l' ->
+        try p buf e
+        with _ -> try_printers l'
+  in
+  try_printers !_printers;
+  `Error (Buffer.contents buf)
 
 let map f e = match e with
   | `Ok x -> `Ok (f x)

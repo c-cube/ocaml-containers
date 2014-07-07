@@ -68,10 +68,15 @@ val fold : success:('a -> 'b) -> failure:(string -> 'b) -> 'a t -> 'b
 (** {2 Wrappers} *)
 
 val guard : (unit -> 'a) -> 'a t
+(** [guard f] runs [f ()] and returns its result wrapped in [`Ok]. If
+    [f ()] raises some exception [e], then it fails with [`Error msg]
+    where [msg] is some printing of [e] (see {!register_printer}). *)
 
 val wrap1 : ('a -> 'b) -> 'a -> 'b t
+(** Same as {!guard} but gives the function one argument. *)
 
 val wrap2 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c t
+(** Same as {!guard} but gives the function two arguments. *)
 
 val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> 'd t
 
@@ -130,3 +135,21 @@ val to_seq : 'a t -> 'a sequence
 val pp : 'a printer -> 'a t printer
 
 val print : 'a formatter -> 'a t formatter
+
+(** {2 Global Exception Printers}
+
+One can register exception printers here, so they will be used by {!guard},
+{!wrap1}, etc. The printers should succeed (print) on exceptions they
+can deal with, and re-raise the exception otherwise. For instance
+if I register a printer for [Not_found], it could look like:
+  
+{[CCError.register_printer
+    (fun buf exn -> match exn with
+      | Not_found -> Buffer.add_string buf "Not_found"
+      | _ -> raise exn
+    );;
+]}
+This way a printer that doesn't know how to deal with an exception will
+let other printers do it. *)
+
+val register_printer : exn printer -> unit

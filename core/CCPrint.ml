@@ -24,7 +24,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 GADT Description of Printers}
+(** {1 Printer Combinators}
 
 This module provides combinators to build printers for user-defined types.
 It doesn't try to do {b pretty}-printing (see for instance Pprint for this),
