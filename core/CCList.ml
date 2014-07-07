@@ -526,6 +526,15 @@ module Traverse(M : MONAD) = struct
           aux f (x' :: acc) tail
     in aux f [] l
 
+  let rec map_m_par f l = match l with
+    | [] -> M.return []
+    | x::tl ->
+        let x' = f x in
+        let tl' = map_m_par f tl in
+        x' >>= fun x' ->
+        tl' >>= fun tl' ->
+        M.return (x'::tl')
+
   let sequence_m l = map_m (fun x->x) l
 
   let rec fold_m f acc l = match l with
