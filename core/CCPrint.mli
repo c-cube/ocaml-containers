@@ -42,6 +42,16 @@ Those combinators work with "%a". For instance to print a
 Remember that "%a" in this context requires two arguments:
   - a value of type ['a t] (buffer printer)
   - a value of type ['a] (value to print)
+
+To define new printers, one can either use existing ones (e.g. [list int]),
+or use {!Printf.bprintf}. For instance a printer for colored points in 2D:
+
+{[ type point = {x:int; y:int; colors: string list};;
+
+let pp_point buf p =
+  Printf.bprintf buf "{x=%d, y=%d, colors=%a}"
+    p.x p.y CCPrint.(list string) p.colors;;
+]}
 *)
 
 type 'a sequence = ('a -> unit) -> unit
