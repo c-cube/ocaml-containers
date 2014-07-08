@@ -47,7 +47,7 @@ Library "containers"
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd,
-                    CCRandom, CCLinq, CCKTree, CCTrie, CCString
+                    CCRandom, CCLinq, CCKTree, CCTrie, CCString, CCHashtbl
   FindlibName:      containers
 
 Library "containers_string"

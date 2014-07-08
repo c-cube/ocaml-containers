@@ -31,6 +31,12 @@ module IMap = Map.Make(struct
   let compare i j = i - j
 end)
 
+module ICCHashtbl = CCHashtbl.Make(struct
+  type t = int
+  let equal i j = i = j
+  let hash i = i
+end)
+
 let phashtbl_add n =
   let h = PHashtbl.create 50 in
   for i = n downto 0 do
@@ -87,6 +93,13 @@ let imap_add n =
   done;
   !h
 
+let icchashtbl_add n =
+  let h = ICCHashtbl.create 50 in
+  for i = n downto 0 do
+    ICCHashtbl.add h i i;
+  done;
+  h
+
 let bench_maps1 () =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
@@ -98,6 +111,7 @@ let bench_maps1 () =
      "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n));
      "skiplist_add", (fun n -> ignore (skiplist_add n));
      "imap_add", (fun n -> ignore (imap_add n));
+     "cchashtbl_add", (fun n -> ignore (icchashtbl_add n))
     ]
   in
   Bench.summarize 1. res
@@ -182,6 +196,16 @@ let imap_replace n =
   done;
   !h
 
+let icchashtbl_replace n =
+  let h = ICCHashtbl.create 50 in
+  for i = 0 to n do
+    ICCHashtbl.add h i i;
+  done;
+  for i = n downto 0 do
+    ICCHashtbl.add h i i;
+  done;
+  h
+
 let bench_maps2 () =
   Format.printf "----------------------------------------@.";
   let res = Bench.bench_n
@@ -193,6 +217,7 @@ let bench_maps2 () =
      "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n));
      "skiplist_replace", (fun n -> ignore (skiplist_replace n));
      "imap_replace", (fun n -> ignore (imap_replace n));
+     "cchashtbl_replace", (fun n -> ignore (icchashtbl_replace n));
     ]
   in
   Bench.summarize 1. res
@@ -253,6 +278,12 @@ let imap_find m =
       ignore (IMap.find i m);
     done
 
+let icchashtbl_find m =
+  fun n ->
+    for i = 0 to n-1 do
+      ignore (ICCHashtbl.find_exn m i);
+    done
+
 let bench_maps3 () =
   List.iter
     (fun len ->
@@ -265,6 +296,7 @@ let bench_maps3 () =
       let l = skiplist_add len in
       let a = Array.init len (fun i -> string_of_int i) in
       let m = imap_add len in
+      let h'''''' = icchashtbl_add len in
       Format.printf "----------------------------------------@.";
       Format.printf "try on size %d@.@.@." len;
       Bench.bench [
@@ -277,6 +309,7 @@ let bench_maps3 () =
         "skiplist_find", (fun () -> skiplist_find l len);
         "array_find", (fun () -> array_find a len);
         "imap_find", (fun () -> imap_find m len);
+        "cchashtbl_find", (fun () -> icchashtbl_find h'''''' len);
       ])
     [10;20;100;1000;10000]
 
