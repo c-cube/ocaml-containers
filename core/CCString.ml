@@ -56,6 +56,11 @@ let compare = String.compare
 
 let hash s = Hashtbl.hash s
 
+let init n f =
+  let s = String.make n ' ' in
+  for i = 0 to n-1 do s.[i] <- f i done;
+  s
+
 let length = String.length
 
 let rec _to_list s acc i len =
