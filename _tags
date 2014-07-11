@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 424d94004913edeb907a94dc6eb6cd33)
+# DO NOT EDIT (digest: b056133745a2be24fb08a6580d55ff77)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -51,6 +51,7 @@
 "misc/conv.cmx": for-pack(Containers_misc)
 "misc/bidir.cmx": for-pack(Containers_misc)
 "misc/iteratee.cmx": for-pack(Containers_misc)
+"misc/bTree.cmx": for-pack(Containers_misc)
 "misc/ty.cmx": for-pack(Containers_misc)
 "misc/tell.cmx": for-pack(Containers_misc)
 "misc/bencodeStream.cmx": for-pack(Containers_misc)

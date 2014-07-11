@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1f89029bfd9400c761d71802552f321f)
+# DO NOT EDIT (digest: 1de551686e91870f31fc6db16438e2c0)
 misc/Cache
 misc/FHashtbl
 misc/FlatHashtbl
@@ -30,6 +30,7 @@ misc/Automaton
 misc/Conv
 misc/Bidir
 misc/Iteratee
+misc/BTree
 misc/Ty
 misc/Tell
 misc/BencodeStream

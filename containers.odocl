@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 8c7d21d48d2995a002238551f1ccbc8a)
+# DO NOT EDIT (digest: 003d658600739a79dc7efd8dee4190ce)
 core/CCVector
 core/CCDeque
 core/CCGen
@@ -28,6 +28,7 @@ core/CCLinq
 core/CCKTree
 core/CCTrie
 core/CCString
+core/CCHashtbl
 string/KMP
 string/Levenshtein
 # OASIS_STOP
