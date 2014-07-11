@@ -41,10 +41,9 @@ module type S = sig
   (** {2 Conversions} *)
 
   val to_gen : t -> char gen
-
   val to_seq : t -> char sequence
-
   val to_klist : t -> char klist
+  val to_list : t -> char list
 
   val pp : Buffer.t -> t -> unit
 end
@@ -58,6 +57,10 @@ let compare = String.compare
 let hash s = Hashtbl.hash s
 
 let length = String.length
+
+let rec _to_list s acc i len =
+  if len=0 then List.rev acc
+  else _to_list s (s.[i]::acc) (i+1) (len-1)
 
 let _is_sub ~sub i s j ~len =
   let rec check k =
@@ -220,6 +223,26 @@ let of_klist l =
 
 let to_klist s = _to_klist s 0 (String.length s)
 
+let to_list s = _to_list s [] 0 (String.length s)
+
+let of_list l =
+  let s = String.make (List.length l) ' ' in
+  List.iteri (fun i c -> s.[i] <- c) l;
+  s
+
+(*$T
+  of_list ['a'; 'b'; 'c'] = "abc"
+  of_list [] = ""
+*)
+
+let of_array a =
+  let s = String.make (Array.length a) ' ' in
+  Array.iteri (fun i c -> s.[i] <- c) a;
+  s
+
+let to_array s =
+  Array.init (String.length s) (fun i -> s.[i])
+
 let pp buf s =
   Buffer.add_char buf '"';
   Buffer.add_string buf s;
@@ -252,6 +275,7 @@ module Sub = struct
   let to_seq (s,i,len) k =
     for i=i to i+len-1 do k s.[i] done
   let to_klist (s,i,len) = _to_klist s i len
+  let to_list (s,i,len) = _to_list s [] i len
 
   let pp buf (s,i,len) =
     Buffer.add_char buf '"';
