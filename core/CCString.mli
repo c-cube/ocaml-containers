@@ -45,10 +45,9 @@ module type S = sig
   (** {2 Conversions} *)
 
   val to_gen : t -> char gen
-
   val to_seq : t -> char sequence
-
   val to_klist : t -> char klist
+  val to_list : t -> char list
 
   val pp : Buffer.t -> t -> unit
 end
@@ -64,10 +63,12 @@ val compare : t -> t -> int
 val hash : t -> int
 
 val of_gen : char gen -> t
-
 val of_seq : char sequence -> t
-
 val of_klist : char klist -> t
+val of_list : char list -> t
+val of_array : char array -> t
+
+val to_array : t -> char array
 
 val find : ?start:int -> sub:t -> t -> int
 (** Find [sub] in the string, returns its first index or -1.

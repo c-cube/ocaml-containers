@@ -70,6 +70,15 @@ module type S = sig
   (** [find f a] returns [Some y] if there is an element [x] such
       that [f x = Some y], else it returns [None] *)
 
+  val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
+  (** Lookup the index of some value in a sorted array.
+      @return [None] if the key is not present, or
+        [Some i] ([i] the index of the key) otherwise *)
+
+  val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
+  (** Same as {!lookup_exn}, but
+      @raise Not_found if the key is not present *)
+
   val for_all : ('a -> bool) -> 'a t -> bool
 
   val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool

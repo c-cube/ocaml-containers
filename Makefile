@@ -73,7 +73,7 @@ qtest: qtest-build
 	@echo 
 	./qtest_all.native
 
-push-stable: all
+push-stable:
 	git checkout stable
 	git merge master -m 'merge from master'
 	oasis setup

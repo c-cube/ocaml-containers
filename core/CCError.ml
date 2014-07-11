@@ -43,7 +43,20 @@ let return x = `Ok x
 
 let fail s = `Error s
 
-let of_exn e = `Error (Printexc.to_string e)
+let _printers = ref []
+
+let register_printer p = _printers := p :: !_printers
+
+let of_exn e =
+  let buf = Buffer.create 15 in
+  let rec try_printers l = match l with
+    | [] -> Buffer.add_string buf (Printexc.to_string e)
+    | p :: l' ->
+        try p buf e
+        with _ -> try_printers l'
+  in
+  try_printers !_printers;
+  `Error (Buffer.contents buf)
 
 let map f e = match e with
   | `Ok x -> `Ok (f x)
@@ -129,6 +142,37 @@ let fold_seq f acc seq =
 
 let fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
 
+(** {2 Misc} *)
+
+let choose l =
+  let rec _find = function
+    | [] -> raise Not_found
+    | ((`Ok _) as res) :: _ -> res
+    | (`Error _) :: l' -> _find l'
+  in
+  try _find l
+  with Not_found ->
+    let buf = Buffer.create 32 in
+    (* print errors on the buffer *)
+    let rec print buf l = match l with
+      | `Ok _ :: _ -> assert false
+      | (`Error x)::((y::xs) as l) ->
+        Buffer.add_string buf x;
+        Buffer.add_string buf ", ";
+        print buf l
+      | `Error x::[] -> Buffer.add_string buf x
+      | [] -> ()
+    in
+    Printf.bprintf buf "CCError.choice failed: [%a]" print l;
+    fail (Buffer.contents buf)
+
+let rec retry n f = match n with
+  | 0 -> fail "retry failed"
+  | _ ->
+      match f () with
+      | `Ok _ as res -> res
+      | `Error _ -> retry (n-1) f
+
 (** {2 Monadic Operations} *)
 
 module type MONAD = sig
@@ -149,6 +193,14 @@ module Traverse(M : MONAD) = struct
   let fold_m f acc e = match e with
     | `Error s -> M.return acc
     | `Ok x -> f acc x >>= fun y -> M.return y
+
+  let rec retry_m n f = match n with
+    | 0 -> M.return (fail "retry failed")
+    | _ ->
+        let x = f () in
+        x >>= function
+        | `Ok _ -> x
+        | `Error _ -> retry_m (n-1) f
 end
 
 (** {2 Conversions} *)

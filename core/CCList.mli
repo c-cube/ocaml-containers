@@ -101,6 +101,9 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** merges elements from both sorted list, removing duplicates *)
 
+val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
+(** Sort the list and remove duplicate elements *)
+
 (** {2 Indices} *)
 
 module Idx : sig
@@ -233,6 +236,11 @@ module Traverse(M : MONAD) : sig
   val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
 
   val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+
+  val map_m_par : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+  (** Same as {!map_m} but [map_m_par f (x::l)] evaluates [f x] and
+      [f l] "in parallel" before combining their result (for instance
+      in Lwt). *)
 end
 
 (** {2 Conversions} *)

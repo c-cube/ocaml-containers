@@ -277,6 +277,13 @@ let text s =
   _lines s 0 (fun x -> acc := x :: !acc);
   Box._make (Box.Text (List.rev !acc))
 
+let sprintf format =
+  let buffer = Buffer.create 64 in
+  Printf.kbprintf
+    (fun fmt -> text (Buffer.contents buffer))
+    buffer
+    format
+
 let lines l =
   assert (List.for_all (fun s -> _find s '\n' 0 = None) l);
   Box._make (Box.Text l)
@@ -358,25 +365,6 @@ let _write_hline ~out pos n =
   for i=0 to n-1 do
     Output.put_char out (_move_x pos i) '-'
   done
-
-type simple_box =
-  [ `Empty
-  | `Pad of simple_box
-  | `Text of string
-  | `Vlist of simple_box list
-  | `Hlist of simple_box list
-  | `Table of simple_box array array
-  | `Tree of simple_box * simple_box list
-  ]
-
-let rec of_simple = function
-  | `Empty -> empty
-  | `Pad b -> pad (of_simple b)
-  | `Text t -> pad (text t)
-  | `Vlist l -> vlist (List.map of_simple l)
-  | `Hlist l -> hlist (List.map of_simple l)
-  | `Table a -> grid (Box._map_matrix of_simple a)
-  | `Tree (b,l) -> tree (of_simple b) (List.map of_simple l)
 
 (* render given box on the output, starting with upper left corner
     at the given position. [expected_size] is the size of the
@@ -477,3 +465,47 @@ let output ?(indent=0) oc b =
   render out b;
   Output.buf_output ~indent oc buf;
   flush oc
+
+(** {2 Simple Structural Interface} *)
+
+type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+
+module Simple = struct
+  type t =
+    [ `Empty
+    | `Pad of t
+    | `Text of string
+    | `Vlist of t list
+    | `Hlist of t list
+    | `Table of t array array
+    | `Tree of t * t list
+    ]
+
+  let rec to_box = function
+    | `Empty -> empty
+    | `Pad b -> pad (to_box b)
+    | `Text t -> text t
+    | `Vlist l -> vlist (List.map to_box l)
+    | `Hlist l -> hlist (List.map to_box l)
+    | `Table a -> grid (Box._map_matrix to_box a)
+    | `Tree (b,l) -> tree (to_box b) (List.map to_box l)
+
+  let rec of_ktree t = match t () with
+    | `Nil -> `Empty
+    | `Node (x, l) -> `Tree (x, List.map of_ktree l)
+
+  let rec map_ktree f t = match t () with
+    | `Nil -> `Empty
+    | `Node (x, l) -> `Tree (f x, List.map (map_ktree f) l)
+
+  let sprintf format =
+    let buffer = Buffer.create 64 in
+    Printf.kbprintf
+      (fun fmt -> `Text (Buffer.contents buffer))
+      buffer
+      format
+
+  let render out x = render out (to_box x)
+  let to_string x = to_string (to_box x)
+  let output ?indent out x = output ?indent out (to_box x)
+end

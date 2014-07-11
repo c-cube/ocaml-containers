@@ -120,6 +120,9 @@ val line : string -> Box.t
 val text : string -> Box.t
 (** Any text, possibly with several lines *)
 
+val sprintf : ('a, Buffer.t, unit, Box.t) format4 -> 'a
+(** Formatting for {!text} *)
+
 val lines : string list -> Box.t
 (** Shortcut for {!text}, with a list of lines *)
 
@@ -182,18 +185,6 @@ val mk_tree : ?indent:int -> ('a -> Box.t * 'a list) -> 'a -> Box.t
 (** Definition of a tree with a local function that maps nodes to
     their content and children *)
 
-type simple_box =
-  [ `Empty
-  | `Pad of simple_box
-  | `Text of string
-  | `Vlist of simple_box list
-  | `Hlist of simple_box list
-  | `Table of simple_box array array
-  | `Tree of simple_box * simple_box list
-  ]
-
-val of_simple : simple_box -> Box.t
-
 (** {2 Rendering} *)
 
 val render : Output.t -> Box.t -> unit
@@ -201,3 +192,36 @@ val render : Output.t -> Box.t -> unit
 val to_string : Box.t -> string
 
 val output : ?indent:int -> out_channel -> Box.t -> unit
+
+(** {2 Simple Structural Interface} *)
+
+type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+
+module Simple : sig
+  type t =
+    [ `Empty
+    | `Pad of t
+    | `Text of string
+    | `Vlist of t list
+    | `Hlist of t list
+    | `Table of t array array
+    | `Tree of t * t list
+    ]
+
+  val of_ktree : t ktree -> t
+  (** Helper to convert trees *)
+
+  val map_ktree : ('a -> t) -> 'a ktree -> t
+  (** Helper to map trees into recursive boxes *)
+
+  val to_box : t -> Box.t
+
+  val sprintf : ('a, Buffer.t, unit, t) format4 -> 'a
+  (** Formatting for [`Text] *)
+
+  val render : Output.t -> t -> unit
+
+  val to_string : t -> string
+
+  val output : ?indent:int -> out_channel -> t -> unit
+end

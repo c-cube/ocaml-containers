@@ -38,6 +38,10 @@ val empty : 'a t
 
 val is_empty : 'a t -> bool
 
+val singleton : 'a -> 'a t
+
+val doubleton : 'a -> 'a -> 'a t
+
 exception Empty
 
 val cons : 'a -> 'a t -> 'a t
@@ -86,6 +90,13 @@ val first_exn : 'a t -> 'a
 
 val last_exn : 'a t -> 'a
 
+val nth : int -> 'a t -> 'a option
+(** Return the [i]-th element of the queue in logarithmic time *)
+
+val nth_exn : int -> 'a t -> 'a
+(** Unsafe version of {!nth}
+    @raise Not_found if the index is wrong *)
+
 val tail : 'a t -> 'a t
 (** Queue deprived of its first element. Does nothing on empty queues *)
 
@@ -105,7 +116,7 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
 val size : 'a t -> int
-(** Number of elements in the queue (linear in time) *)
+(** Number of elements in the queue (constant time) *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 

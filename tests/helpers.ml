@@ -7,7 +7,6 @@ let print_int_list l =
   Buffer.contents b
 
 let print_int_int_list l =
-  let printer fmt (i,j) = Format.fprintf fmt "%d, %d" i j in
   let b = Buffer.create 20 in
   CCList.pp (CCPair.pp CCInt.pp CCInt.pp) b l;
   Buffer.contents b
