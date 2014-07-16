@@ -45,7 +45,7 @@ Library "containers"
   Path:             core
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
-                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
+                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash, CCCat,
                     CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd,
                     CCRandom, CCLinq, CCKTree, CCTrie, CCString, CCHashtbl
   FindlibName:      containers
