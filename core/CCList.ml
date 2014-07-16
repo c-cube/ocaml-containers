@@ -160,6 +160,8 @@ let (>>=) l f = flat_map f l
 
 let (<$>) = map
 
+let pure f = [f]
+
 let (<*>) funs l = product (fun f x -> f x) funs l
 
 let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
