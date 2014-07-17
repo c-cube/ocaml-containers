@@ -48,11 +48,15 @@ module type APPLICATIVE = sig
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 end
 
-module type MONAD = sig
+module type MONAD_BARE = sig
   type +'a t
-  include APPLICATIVE with type 'a t := 'a t
   val return : 'a -> 'a t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module type MONAD = sig
+  include MONAD_BARE
+  include APPLICATIVE with type 'a t := 'a t
 end
 
 module type MONAD_TRANSFORMER = sig
@@ -79,8 +83,6 @@ module type TRAVERSE = functor(M : MONAD) -> sig
   val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
 end
 
-(** {2 Some Implementations} *)
-
 (** The free monad is built by nesting applications of a functor [F].
 
 For instance, Lisp-like nested lists can be built and dealt with like this:
@@ -99,6 +101,11 @@ module type FREE_MONAD = sig
   include MONAD with type 'a t := 'a t
   val inj : 'a F.t -> 'a t
 end
+
+(** {2 Some Implementations} *)
+
+(** Implement the applicative and functor modules from only return and bind *)
+module WrapMonad(M : MONAD_BARE) : MONAD with type 'a t = 'a M.t
 
 module MakeFree(F : FUNCTOR) : FREE_MONAD with module F = F
 

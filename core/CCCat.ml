@@ -46,11 +46,15 @@ module type APPLICATIVE = sig
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 end
 
-module type MONAD = sig
+module type MONAD_BARE = sig
   type +'a t
-  include APPLICATIVE with type 'a t := 'a t
   val return : 'a -> 'a t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module type MONAD = sig
+  include MONAD_BARE
+  include APPLICATIVE with type 'a t := 'a t
 end
 
 module type MONAD_TRANSFORMER = sig
@@ -76,8 +80,6 @@ module type TRAVERSE = functor(M : MONAD) -> sig
   val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
 end
 
-(** {2 Some Implementations} *)
-
 module type FREE_MONAD = sig
   module F : FUNCTOR
 
@@ -88,6 +90,19 @@ module type FREE_MONAD = sig
   include MONAD with type 'a t := 'a t
   val inj : 'a F.t -> 'a t
 end
+
+(** {2 Some Implementations} *)
+
+module WrapMonad(M : MONAD_BARE) = struct
+  include M
+
+  let map f x = x >>= (fun x -> return (f x))
+
+  let pure = return
+
+  let (<*>) f x = f >>= fun f -> x >>= fun x -> return (f x)
+end
+
 
 module MakeFree(F : FUNCTOR) = struct
   module F = F
