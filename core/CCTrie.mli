@@ -110,4 +110,13 @@ end
 
 module Make(W : WORD) : S with type key = W.t and type char_ = W.char_
 
+module type ORDERED = sig
+  type t
+  val compare : t -> t -> int
+end
+
+module MakeArray(X : ORDERED) : S with type key = X.t array and type char_ = X.t
+
+module MakeList(X : ORDERED) : S with type key = X.t list and type char_ = X.t
+
 module String : S with type key = string and type char_ = char

@@ -417,6 +417,27 @@ module Make(W : WORD) = struct
         `Node(x, List.map (fun (c,t') -> _tree_node (`Char c) [to_tree t']) l)
 end
 
+module type ORDERED = sig
+  type t
+  val compare : t -> t -> int
+end
+
+module MakeArray(X : ORDERED) = Make(struct
+  type t = X.t array
+  type char_ = X.t
+  let compare = X.compare
+  let to_seq a k = Array.iter k a
+  let of_list = Array.of_list
+end)
+
+module MakeList(X : ORDERED) = Make(struct
+  type t = X.t list
+  type char_ = X.t
+  let compare = X.compare
+  let to_seq a k = List.iter k a
+  let of_list l = l
+end)
+
 module String = Make(struct
   type t = string
   type char_ = char
