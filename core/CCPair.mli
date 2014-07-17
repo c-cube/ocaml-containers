@@ -36,6 +36,16 @@ val map : ('a -> 'c) -> ('b -> 'd) -> ('a * 'b) -> ('c * 'd)
 
 val map_same : ('a -> 'b) -> ('a*'a) -> ('b*'b)
 
+val map_fst : ('a -> 'b) -> ('a * _) -> 'b
+(** Compose the given function with [fst].
+    @since NEXT_RELEASE *)
+
+val map_snd : ('a -> 'b) -> (_ * 'a) -> 'b
+(** Compose the given function with [snd].
+    @since NEXT_RELEASE *)
+
+val iter : ('a -> 'b -> unit) -> ('a * 'b) -> unit
+
 val swap : ('a * 'b) -> ('b * 'a)
 (** Swap the components of the tuple *)
 
@@ -54,6 +64,19 @@ val ( &&& ) : ('a -> 'b) -> ('a -> 'c) -> 'a -> ('b * 'c)
 
 val merge : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
 (** Uncurrying (merges the two components of a tuple) *)
+
+val fold : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
+(** Synonym to {!merge}
+    @since NEXT_RELEASE *)
+
+val dup : 'a -> ('a * 'a)
+(** [dup x = (x,x)] (duplicate the value)
+    @since NEXT_RELEASE *)
+
+val dup_map : ('a -> 'b) -> 'a -> ('a * 'b)
+(** [dup_map f x = (x, f x)]. Duplicates the value and applies the function
+    to the second copy.
+    @since NEXT_RELEASE *)
 
 val equal : ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> ('a * 'b) -> ('a * 'b) -> bool
 
