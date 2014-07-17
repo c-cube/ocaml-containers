@@ -65,7 +65,6 @@ let test_bfs () =
   ()
 
 let rec pp_path p =
-  let buf = Buffer.create 10 in
   CCPrint.to_string (CCList.pp ~sep:"; " pp_edge) p
 and pp_edge b (v1,e,v2) =
   Printf.bprintf b "%d -> %d" v1 v2
