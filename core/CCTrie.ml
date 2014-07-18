@@ -104,6 +104,14 @@ module type S = sig
   val to_seq_values : 'a t -> 'a sequence
 
   val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
+
+  (** {6 Ranges} *)
+
+  val above : key -> 'a t -> (key * 'a) sequence
+  (** All bindings whose key is bigger than (or equal to) the given key *)
+
+  val below : key -> 'a t -> (key * 'a) sequence
+  (** All bindings whose key is smaller or equal to the given key *)
 end
 
 module Make(W : WORD) = struct
@@ -142,6 +150,19 @@ module Make(W : WORD) = struct
     let acc = ref acc in
     seq (fun x -> acc := f !acc x);
     finish !acc
+
+  let _filter_map_seq f seq k =
+    seq (fun x -> match f x with
+      | None -> ()
+      | Some y -> k y)
+
+  let _seq_append_list l seq =
+    let l = ref l in
+    seq (fun x -> l := x :: !l);
+    !l
+
+  let _seq_map map k =
+    M.iter (fun key v -> k (key,v)) map
 
   let _is_path = function
     | Path _ -> true
@@ -293,24 +314,39 @@ module Make(W : WORD) = struct
   let _difflist_append f l = fun l' -> f (l @ l')
   let _difflist_add f x = fun l' -> f (x :: l')
 
-  let fold f acc t =
-    (* also keep the path from the root, so as to provide the list
-        of chars that lead to a value. The path is a difference list, ie
-        a function that prepends a list to some suffix *)
-    let rec aux path t acc = match t with
-      | Empty -> acc
-      | Path (l, t') -> aux (_difflist_append path l) t' acc
-      | Node (v, map) ->
-          let acc = match v with
-            | None -> acc
-            | Some v -> f acc (W.of_list (path [])) v
-          in
-          M.fold
-            (fun c t' acc -> aux (_difflist_add path c) t' acc)
-            map acc
-    in aux _id t acc
+  (* fold that also keeps the path from the root, so as to provide the list
+      of chars that lead to a value. The path is a difference list, ie
+      a function that prepends a list to some suffix *)
+  let rec _fold f path t acc = match t with
+    | Empty -> acc
+    | Path (l, t') -> _fold f (_difflist_append path l) t' acc
+    | Node (v, map) ->
+        let acc = match v with
+          | None -> acc
+          | Some v -> f acc path v
+        in
+        M.fold
+          (fun c t' acc -> _fold f (_difflist_add path c) t' acc)
+          map acc
 
-  let iter f t = fold (fun _ x y -> f x y) () t
+  let fold f acc t =
+    _fold
+      (fun acc path v ->
+        let key = W.of_list (path []) in
+        f acc key v
+      ) _id t acc
+
+  let iter f t =
+    _fold
+      (fun () path y -> f (W.of_list (path [])) y)
+      _id t ()
+
+  let _iter_prefix ~prefix f t =
+    _fold
+      (fun () path y ->
+        let key = W.of_list (prefix (path [])) in
+        f key y)
+      _id t ()
 
   let rec fold_values f acc t = match t with
     | Empty -> acc
@@ -415,6 +451,60 @@ module Make(W : WORD) = struct
         in
         let l = M.bindings map in
         `Node(x, List.map (fun (c,t') -> _tree_node (`Char c) [to_tree t']) l)
+
+  (** {6 Ranges} *)
+
+  (* range above or below a threshold.
+    [p c c'] must return [true] if [c'], in the tree, meets some criterion
+    w.r.t [c] which is a part of the key. *)
+  let _half_range ~p key t k =
+    (* at subtree [cur = Some (t,trail)] or [None], alternatives above
+        [alternatives], and char [c] in [key]. *)
+    let on_char (cur, alternatives) c =
+      match cur with
+      | None -> (None, alternatives)
+      | Some (Empty,_) -> (None, alternatives)
+      | Some (Path ([], _),_) -> assert false
+      | Some (Path (c'::l, t'), trail) ->
+          if W.compare c c' = 0
+            then Some (_mk_path l t', _difflist_add trail c), alternatives
+            else None, alternatives
+      | Some (Node (_, map), trail) ->
+          let alternatives =
+            _seq_map map
+            |> _filter_map_seq
+              (fun (c', t') -> if p c c'
+                then Some (t', _difflist_add trail c')
+                else None
+              )
+            |> _seq_append_list alternatives
+          in
+          begin try
+            let t' = M.find c map in
+            Some (t', _difflist_add trail c), alternatives
+          with Not_found ->
+            None, alternatives
+          end
+
+    (* run through the current path (if any) and alternatives *)
+    and finish (cur,alternatives) =
+      begin match cur with
+      | Some (t, prefix) ->
+          _iter_prefix ~prefix (fun key' v -> k (key', v)) t
+      | None -> ()
+      end;
+      List.iter
+        (fun (t,prefix) -> _iter_prefix ~prefix (fun key' v -> k (key', v)) t)
+        alternatives
+    in
+    let word = W.to_seq key in
+    _fold_seq on_char ~finish (Some(t,_id), []) word
+
+  let above key t =
+    _half_range ~p:(fun c c' -> W.compare c c' < 0) key t
+
+  let below key t =
+    _half_range ~p:(fun c c' -> W.compare c c' > 0) key t
 end
 
 module type ORDERED = sig

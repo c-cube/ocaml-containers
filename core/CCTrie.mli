@@ -104,6 +104,14 @@ module type S = sig
   val to_seq_values : 'a t -> 'a sequence
 
   val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
+
+  (** {6 Ranges} *)
+
+  val above : key -> 'a t -> (key * 'a) sequence
+  (** All bindings whose key is bigger than (or equal to) the given key *)
+
+  val below : key -> 'a t -> (key * 'a) sequence
+  (** All bindings whose key is smaller or equal to the given key *)
 end
 
 (** {2 Implementation} *)
