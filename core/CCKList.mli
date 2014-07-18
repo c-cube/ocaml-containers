@@ -78,6 +78,15 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 
 val append : 'a t -> 'a t -> 'a t
 
+val product_with : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** Fair product of two (possibly infinite) lists into a new list. Lazy.
+    The first parameter is used to combine each pair of elements
+    @since NEXT_RELEASE *)
+
+val product : 'a t -> 'b t -> ('a * 'b) t
+(** Specialization of {!product_with} producing tuples
+    @since NEXT_RELEASE *)
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t

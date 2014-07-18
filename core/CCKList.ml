@@ -139,6 +139,34 @@ and _flat_map_app f l l' () = match l () with
   | `Cons (x, tl) ->
       `Cons (x, _flat_map_app f tl l')
 
+let product_with f l1 l2 =
+  let rec _next_left h1 tl1 h2 tl2 () =
+    match tl1() with
+    | `Nil -> _next_right ~die:true h1 tl1 h2 tl2 ()
+    | `Cons (x, tl1') ->
+        _map_list_left x h2
+          (_next_right ~die:false (x::h1) tl1' h2 tl2)
+          ()
+  and _next_right ~die h1 tl1 h2 tl2 () =
+    match tl2() with
+    | `Nil when die -> `Nil
+    | `Nil -> _next_left h1 tl1 h2 tl2 ()
+    | `Cons (y, tl2') ->
+        _map_list_right h1 y
+          (_next_left h1 tl1 (y::h2) tl2')
+          ()
+  and _map_list_left x l kont () = match l with
+    | [] -> kont()
+    | y::l' -> `Cons (f x y, _map_list_left x l' kont)
+  and _map_list_right l y kont () = match l with
+    | [] -> kont()
+    | x::l' -> `Cons (f x y, _map_list_right l' y kont)
+  in
+  _next_left [] l1 [] l2
+
+let product l1 l2 =
+  product_with (fun x y -> x,y) l1 l2
+
 let rec filter_map f l () = match l() with
   | `Nil -> `Nil
   | `Cons (x, l') ->
