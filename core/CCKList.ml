@@ -230,6 +230,15 @@ let rec merge cmp l1 l2 () = match l1(), l2() with
       then `Cons (x1, merge cmp l1' l2)
       else `Cons (x2, merge cmp l1 l2')
 
+(** {2 Implementations} *)
+
+let return x () = `Cons (x, nil)
+let pure = return
+let (>>=) xs f = flat_map f xs
+let (>|=) xs f = map f xs
+
+let (<*>) fs xs = product_with (fun f x -> f x) fs xs
+
 (** {2 Conversions} *)
 
 let rec _to_rev_list acc l = match l() with

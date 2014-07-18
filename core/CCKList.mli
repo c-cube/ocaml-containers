@@ -115,6 +115,15 @@ val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator *)
 
+(** {2 Implementations}
+    @since NEXT_RELEASE *)
+
+val return : 'a -> 'a t
+val pure : 'a -> 'a t
+val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
 (** {2 Monadic Operations} *)
 module type MONAD = sig
   type 'a t
