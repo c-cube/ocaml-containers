@@ -52,6 +52,12 @@ let repeat ?n x = match n with
   | None -> _forever x
   | Some n -> _repeat n x
 
+(*$T
+  repeat ~n:4 0 |> to_list = [0;0;0;0]
+  repeat ~n:0 1 |> to_list = []
+  repeat 1 |> take 20 |> to_list = (repeat ~n:20 1 |> to_list)
+*)
+
 let is_empty l = match l () with
   | `Nil -> true
   | `Cons _ -> false
@@ -140,6 +146,10 @@ let rec append l1 l2 () = match l1 () with
   | `Cons (x, l1') -> `Cons (x, append l1' l2)
 
 let rec cycle l () = append l (cycle l) ()
+
+(*$T
+  cycle (of_list [1;2]) |> take 5 |> to_list = [1;2;1;2;1]
+*)
 
 let rec flat_map f l () = match l () with
   | `Nil -> `Nil
