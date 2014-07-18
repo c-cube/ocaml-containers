@@ -47,6 +47,16 @@ val cons : 'a -> 'a t -> 'a t
 
 val singleton : 'a -> 'a t
 
+val repeat : ?n:int -> 'a -> 'a t
+(** [repeat ~n x] repeats [x] [n] times then stops. If [n] is omitted,
+    then [x] is repeated forever.
+    @since NEXT_RELEASE *)
+
+val cycle : 'a t -> 'a t
+(** Cycle through the iterator infinitely. The iterator shouldn't be empty.
+    @since NEXT_RELEASE *)
+
+
 val is_empty : 'a t -> bool
 
 val equal : 'a equal -> 'a t equal
@@ -87,6 +97,18 @@ val product : 'a t -> 'b t -> ('a * 'b) t
 (** Specialization of {!product_with} producing tuples
     @since NEXT_RELEASE *)
 
+val group : 'a equal -> 'a t -> 'a t t
+(** [group eq l] groups together consecutive elements that satisfy [eq]. Lazy.
+    For instance [group (=) [1;1;1;2;2;3;3;1]] yields
+      [[1;1;1]; [2;2]; [3;3]; [1]]
+    @since NEXT_RELEASE *)
+
+val uniq : 'a equal -> 'a t -> 'a t
+(** [uniq eq l] returns [l] but removes consecutive duplicates. Lazy.
+    In other words, if several values that are equal follow one another,
+    only the first of them is kept.
+    @since NEXT_RELEASE *)
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
@@ -114,6 +136,16 @@ val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 
 val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator *)
+
+val sort : ?cmp:'a ord -> 'a t -> 'a t
+(** Eager sort. Requires the iterator to be finite. O(n ln(n)) time
+    and space.
+    @since NEXT_RELEASE *)
+
+val sort_uniq : ?cmp:'a ord -> 'a t -> 'a t
+(** Eager sort that removes duplicate values. Requires the iterator to be
+    finite. O(n ln(n)) time and space.
+    @since NEXT_RELEASE *)
 
 (** {2 Implementations}
     @since NEXT_RELEASE *)

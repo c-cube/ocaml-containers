@@ -43,6 +43,15 @@ let empty = nil
 
 let singleton x () = `Cons (x, nil)
 
+let rec _forever x () = `Cons (x, _forever x)
+
+let rec _repeat n x () =
+  if n<=0 then `Nil else `Cons (x, _repeat (n-1) x)
+
+let repeat ?n x = match n with
+  | None -> _forever x
+  | Some n -> _repeat n x
+
 let is_empty l = match l () with
   | `Nil -> true
   | `Cons _ -> false
@@ -130,6 +139,8 @@ let rec append l1 l2 () = match l1 () with
   | `Nil -> l2 ()
   | `Cons (x, l1') -> `Cons (x, append l1' l2)
 
+let rec cycle l () = append l (cycle l) ()
+
 let rec flat_map f l () = match l () with
   | `Nil -> `Nil
   | `Cons (x, l') ->
@@ -166,6 +177,22 @@ let product_with f l1 l2 =
 
 let product l1 l2 =
   product_with (fun x y -> x,y) l1 l2
+
+let rec group eq l () = match l() with
+  | `Nil -> `Nil
+  | `Cons (x, l') ->
+      `Cons (cons x (take_while (eq x) l'), group eq (drop_while (eq x) l'))
+
+let rec _uniq eq prev l () = match prev, l() with
+  | _, `Nil -> `Nil
+  | None, `Cons (x, l') ->
+      `Cons (x, _uniq eq (Some x) l')
+  | Some y, `Cons (x, l') ->
+      if eq x y
+        then _uniq eq prev l' ()
+        else `Cons (x, _uniq eq (Some x) l')
+
+let uniq eq l = _uniq eq None l
 
 let rec filter_map f l () = match l() with
   | `Nil -> `Nil
@@ -273,6 +300,15 @@ let to_gen l =
     | `Cons (x,l') ->
         l := l';
         Some x
+
+let sort ?(cmp=Pervasives.compare) l =
+  let l = to_list l in
+  of_list (List.sort cmp l)
+
+let sort_uniq ?(cmp=Pervasives.compare) l =
+  let l = to_list l in
+  uniq (fun x y -> cmp x y = 0) (of_list (List.sort cmp l))
+
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig
