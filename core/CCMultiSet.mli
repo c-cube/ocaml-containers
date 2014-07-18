@@ -25,6 +25,8 @@ for any direct, indirect, incidental, special, exemplary, or consequential
 
 (** {1 Multiset} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 module type S = sig
   type elt
   type t
@@ -69,6 +71,10 @@ module type S = sig
   val of_list : elt list -> t
 
   val to_list : t -> elt list
+
+  val to_seq : t -> elt sequence
+
+  val of_seq : elt sequence -> t
 end
 
 module Make(O : Set.OrderedType) : S with type elt = O.t
