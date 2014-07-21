@@ -33,6 +33,9 @@ type +'a tree =
 and +'a t = (int * 'a tree) list
   (** Functional array of complete trees *)
 
+(* TODO: inline list's nodes
+  TODO: encode "complete binary tree" into types *)
+
 
 (** {2 Functions on trees} *)
 
@@ -61,6 +64,8 @@ let rec tree_update size t i v =match t, i with
 (** {2 Functions on lists of trees} *)
 
 let empty = []
+
+let return x = [1, Leaf x]
 
 let is_empty = function
   | [] -> true
@@ -95,24 +100,52 @@ let tl l = match l with
     let size' = size / 2 in
     (size', t1) :: (size', t2) :: l'
 
+let front l = match l with
+  | [] -> None
+  | (_, Leaf x) :: tl -> Some (x, tl)
+  | (size, Node (x, t1, t2)) :: l' ->
+    let size' = size / 2 in
+    Some (x, (size', t1) :: (size', t2) :: l')
+
+let front_exn l = match l with
+  | [] -> raise (Invalid_argument "RAL.front")
+  | (_, Leaf x) :: tl -> x, tl
+  | (size, Node (x, t1, t2)) :: l' ->
+    let size' = size / 2 in
+    x, (size', t1) :: (size', t2) :: l'
+
+let rec _remove prefix l i =
+  let x, l' = front_exn l in
+  if i=0
+    then List.fold_left (fun l x -> cons x l) l prefix
+    else _remove (x::prefix) l' (i-1)
+
+let remove l i = _remove [] l i
+
+let rec _map_tree f t = match t with
+  | Leaf x -> Leaf (f x)
+  | Node (x, l, r) -> Node (f x, _map_tree f l, _map_tree f r)
+
+let map f l = List.map (fun (i,t) -> i, _map_tree f t) l
+
 let rec length l = match l with
   | [] -> 0
   | (size,_) :: l' -> size + length l'
 
-let rec iter l f = match l with
+let rec iter f l = match l with
   | [] -> ()
-  | (_, Leaf x) :: l' -> f x; iter l' f
-  | (_, t) :: l' -> iter_tree t f; iter l' f
+  | (_, Leaf x) :: l' -> f x; iter f l'
+  | (_, t) :: l' -> iter_tree t f; iter f l'
 and iter_tree t f = match t with
   | Leaf x -> f x
   | Node (x, t1, t2) -> f x; iter_tree t1 f; iter_tree t2 f
 
-let rec fold l acc f = match l with
+let rec fold f acc l = match l with
   | [] -> acc
-  | (_, Leaf x) :: l' -> fold l' (f acc x) f
+  | (_, Leaf x) :: l' -> fold f (f acc x) l'
   | (_, t) :: l' ->
     let acc' = fold_tree t acc f in
-    fold l' acc' f
+    fold f acc' l'
 and fold_tree t acc f = match t with
   | Leaf x -> f acc x
   | Node (x, t1, t2) ->
@@ -120,6 +153,27 @@ and fold_tree t acc f = match t with
     let acc = fold_tree t1 acc f in
     fold_tree t2 acc f
 
+let rec fold_rev f acc l = match l with
+  | [] -> acc
+  | (_, Leaf x) :: l' -> f (fold f acc l') x
+  | (_, t) :: l' ->
+    let acc = fold_rev f acc l' in
+    fold_tree_rev t acc f
+and fold_tree_rev t acc f = match t with
+  | Leaf x -> f acc x
+  | Node (x, t1, t2) ->
+    let acc = fold_tree_rev t2 acc f in
+    let acc = fold_tree_rev t1 acc f in
+    f acc x
+
+let append l1 l2 = fold_rev (fun l2 x -> cons x l2) l2 l1
+
 let of_list l = List.fold_right cons l empty
 
-let to_list l = List.rev (fold l [] (fun l x -> x :: l))
+let rec of_list_map f l = match l with
+  | [] -> empty
+  | x::l' ->
+      let y = f x in
+      cons y (of_list_map f l')
+
+let to_list l = List.rev (fold (fun l x -> x :: l) [] l)

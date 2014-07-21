@@ -43,12 +43,25 @@ val is_empty : _ t -> bool
 val cons : 'a -> 'a t -> 'a t
   (** Add an element at the front of the list *)
 
+val return : 'a -> 'a t
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+  (** Map on elements *)
+
 val hd : 'a t -> 'a
-  (** First element of the list, or @raise Invalid_argument if the list is empty *)
+  (** First element of the list, or
+      @raise Invalid_argument if the list is empty *)
 
 val tl : 'a t -> 'a t
   (** Remove the first element from the list,
       or @raise Invalid_argument if the list is empty *)
+
+val front : 'a t -> ('a * 'a t) option
+  (** Remove and return the first element of the list *)
+
+val front_exn : 'a t -> 'a * 'a t
+  (** Unsafe version of {!front}.
+      @raise Invalid_argument if the list is empty *)
 
 val length : 'a t -> int
   (** Number of elements *)
@@ -61,13 +74,22 @@ val set : 'a t -> int -> 'a -> 'a t
   (** [set l i v] sets the [i]-th element of the list to [v]. O(log(n)).
       @raise Invalid_argument if the list has less than [i+1] elements. *)
 
-val iter : 'a t -> ('a -> unit) -> unit
+val remove : 'a t -> int -> 'a t
+  (** [remove l i] removes the [i]-th element of [v].
+      @raise Invalid_argument if the list has less than [i+1] elements. *)
+
+val append : 'a t -> 'a t -> 'a t
+
+val iter : ('a -> unit) -> 'a t -> unit
   (** Iterate on the list's elements *)
 
-val fold : 'a t -> 'b -> ('b -> 'a -> 'b) -> 'b
+val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** Fold on the list's elements *)
 
 val of_list : 'a list -> 'a t
   (** Convert a list to a RAL. {b Caution}: non tail-rec *)
+
+val of_list_map : ('a -> 'b) -> 'a list -> 'b t
+  (** Combination of {!of_list} and {!map} *)
 
 val to_list : 'a t -> 'a list
