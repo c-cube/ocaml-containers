@@ -93,9 +93,9 @@ val flush : out_channel -> unit t
 
 (** {2 Streams} *)
 
-(* XXX: WIP
 module Seq : sig
-  type +'a t
+  type 'a t
+  (** An IO stream of values of type 'a, consumable (iterable only once) *)
 
   val map : ('a -> 'b io) -> 'a t -> 'b t
   (** Map values with actions *)
@@ -105,10 +105,10 @@ module Seq : sig
 
   val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 
-  val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+  val flat_map : ('a -> 'b t io) -> 'a t -> 'b t
   (** Map each value to a sub sequence of values *)
 
-  val general_iter : ('b -> 'a -> [`Stop | `Continue of ('b * 'c option)]) ->
+  val general_iter : ('b -> 'a -> [`Stop | `Continue of ('b * 'c option)] io) ->
                       'b -> 'a t -> 'c t
   (** [general_iter f acc seq] performs a [filter_map] over [seq],
       using [f]. [f] is given a state and the current value, and
@@ -122,6 +122,16 @@ module Seq : sig
   val iter : ('a -> _ io) -> 'a t -> unit io
   (** Iterate on the stream, with an action for each element *)
 
+  val length : _ t -> int io
+  (** Length of the stream *)
+
+  val fold : ('b -> 'a -> 'b io) -> 'b -> 'a t -> 'b io
+  (** [fold f acc seq] folds over [seq], consuming it. Every call to [f]
+      has the right to return an IO value. *)
+
+  val fold_pure : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b io
+  (** [fold f acc seq] folds over [seq], consuming it. [f] is pure. *)
+
   (** {6 Standard Wrappers} *)
 
   type 'a step_result =
@@ -130,26 +140,16 @@ module Seq : sig
 
   type 'a gen = unit -> 'a step_result io
 
-  val of_fun : 'a gen io -> 'a t
+  val of_fun : 'a gen -> 'a t
   (** Create a stream from a function that yields an element or stops *)
 
-  val with_in : ?flags:open_flag list -> string -> 'a t
-
-  val lines : in_channel io -> string t
+  val lines : in_channel -> string t
   (** Lines of an input channel *)
 
   val output : ?sep:string -> out_channel -> string t -> unit io
   (** [output oc seq] outputs every value of [seq] into [oc], separated
       with the optional argument [sep] (default: ["\n"]) *)
-
-  val length : _ t -> int io
-  (** Length of the stream *)
-
-  val fold : ('b -> 'a -> 'b io) -> 'b -> 'a t -> 'b io
-  (** [fold f acc seq] folds over [seq], consuming it. Every call to [f]
-      has the right to return an IO value. *)
 end
-*)
 
 (** {2 Low level access} *)
 module Raw : sig

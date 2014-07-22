@@ -152,7 +152,6 @@ let flush oc = Wrap (fun () -> Pervasives.flush oc)
 
 (** {2 Seq} *)
 
-(* TODO: WIP
 module Seq = struct
   type 'a step_result =
     | Yield of 'a
@@ -160,23 +159,92 @@ module Seq = struct
 
   type 'a gen = unit -> 'a step_result io
 
-  type _ iter =
-    | Gen : 'a gen -> 'a iter
-    | Pure : ('a -> 'b step_result) * 'a iter -> 'b iter
-    | General :
-      ('b -> 'a -> [`Stop | `Continue of ('b * 'c option)])
-        * 'b * 'a iter -> 'c iter
+  type 'a t = 'a gen
 
-  type 'a t = 'a iter io
-  (** Gen = restartable iterator *)
+  let _stop () = return Stop
+  let _yield x = return (Yield x)
 
-  let _map f x = Yield (f x)
+  let map_pure f gen () =
+    gen() >>= function
+    | Stop -> _stop ()
+    | Yield x -> _yield (f x)
 
-  let map f seq = Pure (_map f, seq)
+  let map f g () =
+    g() >>= function
+    | Stop -> _stop ()
+    | Yield x -> f x >>= _yield
 
-  let rec _next : type a. a iter -> 'a step_result
+  let rec filter_map f g () =
+    g() >>= function
+    | Stop -> _stop()
+    | Yield x ->
+        match f x with
+        | None -> filter_map f g()
+        | Some y -> _yield y
+
+  let rec flat_map f g () =
+    g() >>= function
+    | Stop -> _stop ()
+    | Yield x ->
+        f x >>= fun g' -> _flat_map_aux f g g' ()
+  and _flat_map_aux f g g' () =
+    g'() >>= function
+    | Stop -> flat_map f g ()
+    | Yield x -> _yield x
+
+  let general_iter f acc g =
+    let acc = ref acc in
+    let rec _next () =
+      g() >>= function
+      | Stop -> _stop()
+      | Yield x ->
+          f !acc x >>= function
+          | `Stop -> _stop()
+          | `Continue (acc', ret) ->
+              acc := acc';
+              match ret with
+              | None -> _next()
+              | Some y -> _yield y
+    in
+    _next
+
+  (** {6 Consume} *)
+
+  let rec fold_pure f acc g =
+    g() >>= function
+    | Stop -> return acc
+    | Yield x -> fold_pure f (f acc x) g
+
+  let length g = fold_pure (fun acc _ -> acc+1) 0 g
+
+  let rec fold f acc g =
+    g() >>= function
+    | Stop -> return acc
+    | Yield x ->
+        f acc x >>= fun acc' -> fold f acc' g
+
+  let rec iter f g =
+    g() >>= function
+    | Stop -> return ()
+    | Yield x -> f x >>= fun _ -> iter f g
+
+  let of_fun g = g
+
+  let lines ic () =
+    try _yield (input_line ic)
+    with End_of_file -> _stop()
+
+  let output ?(sep="\n") oc seq =
+    let first = ref true in
+    iter
+      (fun s ->
+        ( if !first
+          then (first:=false; return ())
+          else write_str oc sep
+        ) >>= fun () ->
+        write_str oc s
+      ) seq
 end
-*)
 
 (** {2 Raw} *)
 
