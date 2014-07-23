@@ -24,7 +24,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 IO Monad} *)
+(** {1 IO Monad}
+
+A simple abstraction over blocking IO, with strict evaluation. This is in
+no way an alternative to Lwt/Async if you need concurrency.
+
+@since NEXT_RELEASE *)
 
 type 'a t
 type 'a io = 'a t
@@ -49,6 +54,13 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
+val bind : ?finalize:(unit t) -> ('a -> 'b t) -> 'a t -> 'b t
+(** [bind f a] runs the action [a] and applies [f] to its result
+    to obtain a new action. It then behaves exactly like this new
+    action.
+    @param finalize an optional action that is always run after evaluating
+      the whole action *)
+
 val pure : 'a -> 'a t
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
@@ -58,10 +70,26 @@ val lift : ('a -> 'b) -> 'a t -> 'b t
 val lift2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 val lift3 : ('a -> 'b -> 'c -> 'd) -> 'a t -> 'b t -> 'c t -> 'd t
 
+val sequence : 'a t list -> 'a list t
+(** Runs operations one by one and gather their results *)
+
+val sequence_map : ('a -> 'b t) -> 'a list -> 'b list t
+(** Generalization of {!sequence} *)
+
+val fail : string -> 'a t
+(** [fail msg] fails with the given message. Running the IO value will
+    return an [`Error] variant *)
+
 val run : 'a t -> 'a or_error
 (** Run an IO action.
     @return either [`Ok x] when [x] is the successful result of the
       computation, or some [`Error "message"] *)
+
+exception IO_error of string
+
+val run_exn : 'a t -> 'a
+(** Unsafe version of {!run}. It assumes non-failure.
+    @raise IO_error if the execution didn't go well *)
 
 val register_printer : (exn -> string option) -> unit
 (** [register_printer p] register [p] as a possible failure printer.
@@ -76,8 +104,16 @@ val register_printer : (exn -> string option) -> unit
 val with_in : ?flags:open_flag list -> string -> (in_channel -> 'a t) -> 'a t
 
 val read : in_channel -> string -> int -> int -> int t
+(** Read a chunk into the given string *)
 
-val read_line : in_channel -> string t
+val read_line : in_channel -> string option t
+(** Read a line from the channel. Returns [None] if the input is terminated. *)
+
+val read_lines : in_channel -> string list t
+(** Read all lines eagerly *)
+
+val read_all : in_channel -> string t
+(** Read the whole channel into a buffer, then converted into a string *)
 
 (** {6 Output} *)
 
@@ -89,7 +125,11 @@ val write_str : out_channel -> string -> unit t
 
 val write_buf : out_channel -> Buffer.t -> unit t
 
+val write_line : out_channel -> string -> unit t
+
 val flush : out_channel -> unit t
+
+(* TODO: printf/fprintf wrappers *)
 
 (** {2 Streams} *)
 
@@ -117,6 +157,11 @@ module Seq : sig
       [c] an optional output value.
       The result is the stream of values output by [f] *)
 
+  val tee : ('a -> unit io) list -> 'a t -> 'a t
+  (** [tee funs seq] behaves like [seq], but each element is given to
+      every function [f] in [funs]. This function [f] returns an action that
+      is eagerly executed. *)
+
   (** {6 Consume} *)
 
   val iter : ('a -> _ io) -> 'a t -> unit io
@@ -143,8 +188,14 @@ module Seq : sig
   val of_fun : 'a gen -> 'a t
   (** Create a stream from a function that yields an element or stops *)
 
+  val chunks : size:int -> in_channel -> string t
+  (** Read the channel's content into chunks of size [size] *)
+
   val lines : in_channel -> string t
   (** Lines of an input channel *)
+
+  val words : string t -> string t
+  (** Split strings into words at " " boundaries *)
 
   val output : ?sep:string -> out_channel -> string t -> unit io
   (** [output oc seq] outputs every value of [seq] into [oc], separated

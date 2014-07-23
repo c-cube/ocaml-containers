@@ -28,18 +28,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type _ t =
   | Return : 'a -> 'a t
+  | Fail : string -> 'a t
   | Map : ('a -> 'b) * 'a t -> 'b t
   | Bind : ('a -> 'b t) * 'a t -> 'b t
+  | BindWith : unit t * ('a -> 'b t) * 'a t -> 'b t
   | Star : ('a -> 'b) t * 'a t -> 'b t
   | Repeat : int * 'a t -> 'a list t
   | RepeatIgnore : int * 'a t -> unit t
   | Wrap : (unit -> 'a) -> 'a t
   | WrapJoin : (unit -> 'a t) -> 'a t
+  | SequenceMap : ('a -> 'b t) * 'a list -> 'b list t
 
 type 'a io = 'a t
 type 'a or_error = [ `Ok of 'a | `Error of string ]
 
 let (>>=) x f = Bind(f,x)
+
+let bind ?finalize f a = match finalize with
+  | None -> Bind(f,a)
+  | Some b -> BindWith (b,f,a)
 
 let map f x = Map(f, x)
 
@@ -47,6 +54,8 @@ let (>|=) x f = Map(f, x)
 
 let return x = Return x
 let pure = return
+
+let fail msg = Fail msg
 
 let (<*>) f a = Star (f, a)
 
@@ -59,37 +68,69 @@ let lift3 f a b c =
   a >>= fun x ->
   b >>= fun y -> map (f x y) c
 
+let sequence_map f l =
+  SequenceMap (f,l)
+
+let sequence l =
+  let _id x = x in
+  SequenceMap(_id, l)
+
 let repeat i a =
   if i <= 0 then Return [] else Repeat (i,a)
 
 let repeat' i a =
   if i <= 0 then Return () else RepeatIgnore (i,a)
 
+exception IOFailure of string
+
 let rec _run : type a. a t -> a = function
   | Return x -> x
+  | Fail msg -> raise (IOFailure msg)
   | Map (f, a) -> f (_run a)
   | Bind (f, a) -> _run (f (_run a))
+  | BindWith (finalize, f, a) ->
+      begin try
+        let res = _run (f (_run a)) in
+        _run finalize;
+        res
+      with e ->
+        _run finalize;
+        raise e
+      end
   | Star (f, a) -> _run f (_run a)
   | Repeat (i,a) -> _repeat [] i a
   | RepeatIgnore (i,a) -> _repeat_ignore i a
   | Wrap f -> f()
   | WrapJoin f -> _run (f())
-
+  | SequenceMap (f, l) -> _sequence_map f l []
 and _repeat : type a. a list -> int -> a t -> a list
   = fun acc i a -> match i with
   | 0 -> List.rev acc
   | _ ->
       let x = _run a in
       _repeat (x::acc) (i-1) a
-
 and _repeat_ignore : type a. int -> a t -> unit
   = fun i a -> match i with
   | 0 -> ()
   | _ ->
       let _ = _run a in
       _repeat_ignore (i-1) a
-
-let _printers = ref []
+and _sequence_map : type a b. (a -> b t) -> a list -> b list -> b list
+  = fun f l acc -> match l with
+  | [] -> List.rev acc
+  | a::tail ->
+      let x = _run (f a) in
+      _sequence_map f tail (x::acc)
+      
+let _printers =
+  ref [
+    (* default printer *)
+    ( function IOFailure msg
+    | Sys_error msg -> Some msg
+    | Exit -> Some "exit"
+    | _ -> None
+    )
+  ]
 
 exception PrinterResult of string
 
@@ -106,6 +147,12 @@ let _print_exn e =
 let run x =
   try `Ok (_run x)
   with e -> `Error (_print_exn e)
+
+exception IO_error of string
+
+let run_exn x =
+  try _run x
+  with e -> raise (IO_error (_print_exn e))
 
 let register_printer p = _printers := p :: !_printers
 
@@ -125,8 +172,29 @@ let with_in ?(flags=[]) filename f =
 let _read ic s i len () = input ic s i len
 let read ic s i len = Wrap (_read ic s i len)
 
-let _read_line ic () = Pervasives.input_line ic
+let _read_line ic () =
+  try Some (Pervasives.input_line ic)
+  with End_of_file -> None
 let read_line ic = Wrap(_read_line ic)
+
+let rec _read_lines ic acc =
+  read_line ic
+  >>= function
+  | None -> return (List.rev acc)
+  | Some l -> _read_lines ic (l::acc)
+
+let read_lines ic = _read_lines ic []
+
+let _read_all ic () =
+  let buf = Buffer.create 128 in
+  try
+    while true do
+      Buffer.add_channel buf ic 1024
+    done;
+    ""  (* never returned *)
+  with End_of_file -> Buffer.contents buf
+
+let read_all ic = Wrap(_read_all ic)
 
 let _with_out flags filename f () =
   let oc = open_out_gen flags 0x644 filename in
@@ -144,6 +212,11 @@ let write oc s i len = Wrap (_write oc s i len)
 
 let _write_str oc s () = output oc s 0 (String.length s)
 let write_str oc s = Wrap (_write_str oc s)
+
+let _write_line oc l () =
+  output_string oc l;
+  output_char oc '\n'
+let write_line oc l = Wrap (_write_line oc l)
 
 let _write_buf oc buf () = Buffer.output_buffer oc buf
 let write_buf oc buf = Wrap (_write_buf oc buf)
@@ -208,6 +281,22 @@ module Seq = struct
     in
     _next
 
+  (* apply all actions from [l] to [x] *)
+  let rec _apply_all_to x l = match l with
+    | [] -> return ()
+    | f::tail -> f x >>= fun () -> _apply_all_to x tail
+
+  let _tee funs g () =
+    g() >>= function
+    | Stop -> _stop()
+    | Yield x ->
+        _apply_all_to x funs >>= fun () ->
+        _yield x
+
+  let tee funs g = match funs with
+    | [] -> g
+    | _::_ -> _tee funs g
+
   (** {6 Consume} *)
 
   let rec fold_pure f acc g =
@@ -230,9 +319,41 @@ module Seq = struct
 
   let of_fun g = g
 
+  (* TODO: wrapper around with_in? using bind ~finalize:... ? *)
+
+  let chunks ~size ic =
+    let buf = Buffer.create size in
+    let next() =
+      try
+        Buffer.add_channel buf ic size;
+        let s = Buffer.contents buf in
+        Buffer.clear buf;
+        _yield s
+      with End_of_file -> _stop()
+    in
+    next
+
   let lines ic () =
     try _yield (input_line ic)
     with End_of_file -> _stop()
+
+  let words g =
+    failwith "words: not implemented yet"
+    (* TODO: state machine that goes:
+        - 0: read input chunk
+        - switch to "search for ' '", and yield word
+        - goto 0 if no ' ' found
+        - yield leftover when g returns Stop
+    let buf = Buffer.create 32 in
+    let next() =
+      g() >>= function
+      | Stop -> _stop
+      | Yield s ->
+          Buffer.add_string buf s;
+          search_
+    in
+    next
+    *)
 
   let output ?(sep="\n") oc seq =
     let first = ref true in
