@@ -31,22 +31,22 @@ type _ t =
   | Fail : string -> 'a t
   | Map : ('a -> 'b) * 'a t -> 'b t
   | Bind : ('a -> 'b t) * 'a t -> 'b t
-  | BindWith : unit t * ('a -> 'b t) * 'a t -> 'b t
+  | WithGuard: unit t * 'a t -> 'a t  (* run guard in any case *)
   | Star : ('a -> 'b) t * 'a t -> 'b t
   | Repeat : int * 'a t -> 'a list t
   | RepeatIgnore : int * 'a t -> unit t
   | Wrap : (unit -> 'a) -> 'a t
-  | WrapJoin : (unit -> 'a t) -> 'a t
   | SequenceMap : ('a -> 'b t) * 'a list -> 'b list t
 
 type 'a io = 'a t
+type 'a with_finalizer = ('a t * unit t) t
 type 'a or_error = [ `Ok of 'a | `Error of string ]
 
 let (>>=) x f = Bind(f,x)
 
 let bind ?finalize f a = match finalize with
   | None -> Bind(f,a)
-  | Some b -> BindWith (b,f,a)
+  | Some b -> WithGuard (b, Bind (f,a))
 
 let map f x = Map(f, x)
 
@@ -81,6 +81,14 @@ let repeat i a =
 let repeat' i a =
   if i <= 0 then Return () else RepeatIgnore (i,a)
 
+(** {2 Finalizers} *)
+
+let (>>>=) a f =
+  a >>= function
+  | x, finalizer -> WithGuard (finalizer, x >>= f)
+
+(** {2 Running} *)
+
 exception IOFailure of string
 
 let rec _run : type a. a t -> a = function
@@ -88,20 +96,19 @@ let rec _run : type a. a t -> a = function
   | Fail msg -> raise (IOFailure msg)
   | Map (f, a) -> f (_run a)
   | Bind (f, a) -> _run (f (_run a))
-  | BindWith (finalize, f, a) ->
+  | WithGuard (g, a) ->
       begin try
-        let res = _run (f (_run a)) in
-        _run finalize;
+        let res = _run a in
+        _run g;
         res
       with e ->
-        _run finalize;
+        _run g;
         raise e
       end
   | Star (f, a) -> _run f (_run a)
   | Repeat (i,a) -> _repeat [] i a
   | RepeatIgnore (i,a) -> _repeat_ignore i a
   | Wrap f -> f()
-  | WrapJoin f -> _run (f())
   | SequenceMap (f, l) -> _sequence_map f l []
 and _repeat : type a. a list -> int -> a t -> a list
   = fun acc i a -> match i with
@@ -158,16 +165,14 @@ let register_printer p = _printers := p :: !_printers
 
 (** {2 Standard Wrappers} *)
 
-let _with_in flags filename f () =
-  let ic = open_in_gen flags 0x644 filename in
-  try
-    f ic
-  with e ->
-    close_in ic;
-    raise e
+let _open_in mode flags filename () =
+  open_in_gen flags mode filename
+let _close_in ic () = close_in ic
 
-let with_in ?(flags=[]) filename f =
-  WrapJoin (_with_in flags filename f)
+let with_in ?(mode=0o644) ?(flags=[]) filename =
+  Wrap (_open_in mode flags filename)
+  >>= fun ic ->
+  Return (Return ic, Wrap (_close_in ic))
 
 let _read ic s i len () = input ic s i len
 let read ic s i len = Wrap (_read ic s i len)
@@ -196,16 +201,17 @@ let _read_all ic () =
 
 let read_all ic = Wrap(_read_all ic)
 
-let _with_out flags filename f () =
-  let oc = open_out_gen flags 0x644 filename in
-  try
-    f oc
-  with e ->
-    close_out oc;
-    raise e
+let _open_out mode flags filename () =
+  open_out_gen flags mode filename
+let _close_out oc () = close_out oc
 
-let with_out ?(flags=[]) filename f =
-  WrapJoin (_with_out flags filename f)
+let with_out ?(mode=0o644) ?(flags=[]) filename =
+  Wrap(_open_out mode (Open_wronly::flags) filename)
+  >>= fun oc ->
+  Return(Return oc, Wrap(_close_out oc))
+
+let with_out_a ?mode ?(flags=[]) filename =
+  with_out ?mode ~flags:(Open_creat::Open_append::flags) filename
 
 let _write oc s i len () = output oc s i len
 let write oc s i len = Wrap (_write oc s i len)
@@ -323,13 +329,18 @@ module Seq = struct
 
   let chunks ~size ic =
     let buf = Buffer.create size in
+    let eof = ref false in
     let next() =
-      try
+      if !eof then _stop()
+      else try
         Buffer.add_channel buf ic size;
         let s = Buffer.contents buf in
         Buffer.clear buf;
         _yield s
-      with End_of_file -> _stop()
+      with End_of_file ->
+        let s = Buffer.contents buf in
+        eof := true;
+        if s="" then _stop() else _yield s
     in
     next
 
@@ -355,16 +366,20 @@ module Seq = struct
     next
     *)
 
-  let output ?(sep="\n") oc seq =
+  let output ?sep oc seq =
     let first = ref true in
     iter
       (fun s ->
+        (* print separator *)
         ( if !first
           then (first:=false; return ())
-          else write_str oc sep
+          else match sep with
+            | None -> return ()
+            | Some sep -> write_str oc sep
         ) >>= fun () ->
         write_str oc s
       ) seq
+    >>= fun () -> flush oc
 end
 
 (** {2 Raw} *)

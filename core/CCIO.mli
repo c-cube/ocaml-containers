@@ -29,10 +29,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 A simple abstraction over blocking IO, with strict evaluation. This is in
 no way an alternative to Lwt/Async if you need concurrency.
 
-@since NEXT_RELEASE *)
+@since NEXT_RELEASE
+
+Examples:
+
+- obtain the list of lines of a file:
+{[
+let l = CCIO.((with_in "/tmp/some_file" >>>= read_lines) |> run_exn);;
+]}
+
+- transfer one file into another:
+{[
+# let a = CCIO.(
+  with_in "input" >>>= fun ic ->
+  with_out ~flags:[Open_creat] "output" >>>= fun oc ->
+  Seq.chunks 512 ic
+  |> Seq.output oc
+) ;;
+
+# run a;;
+]}
+
+*)
 
 type 'a t
 type 'a io = 'a t
+
+type 'a with_finalizer
+(** A value of type ['a with_finalizer] is similar to a value ['a t] but
+    also contains a finalizer that must be run to cleanup.
+    See {!(>>>=)} to get rid of it. *)
 
 type 'a or_error = [ `Ok of 'a | `Error of string ]
 
@@ -80,6 +106,15 @@ val fail : string -> 'a t
 (** [fail msg] fails with the given message. Running the IO value will
     return an [`Error] variant *)
 
+(** {2 Finalizers} *)
+
+val (>>>=) : 'a with_finalizer -> ('a -> 'b t) -> 'b t
+(** Alternative to {!(>>=)} that also takes a [unit t] value, that is a
+    finalizer. This action will run in any case (even failure).
+    Other than the finalizer, this behaves like {!(>>=)} *)
+
+(** {2 Running} *)
+
 val run : 'a t -> 'a or_error
 (** Run an IO action.
     @return either [`Ok x] when [x] is the successful result of the
@@ -101,7 +136,11 @@ val register_printer : (exn -> string option) -> unit
 
 (** {6 Input} *)
 
-val with_in : ?flags:open_flag list -> string -> (in_channel -> 'a t) -> 'a t
+val with_in : ?mode:int -> ?flags:open_flag list ->
+              string -> in_channel with_finalizer
+(** Open an input file with the given optional flag list.
+    It yields a [in_channel] with a finalizer attached. See {!(>>>=)} to
+    use it. *)
 
 val read : in_channel -> string -> int -> int -> int t
 (** Read a chunk into the given string *)
@@ -117,7 +156,14 @@ val read_all : in_channel -> string t
 
 (** {6 Output} *)
 
-val with_out : ?flags:open_flag list -> string -> (out_channel -> 'a t) -> 'a t
+val with_out : ?mode:int -> ?flags:open_flag list ->
+               string -> out_channel with_finalizer
+(** Same as {!with_in} but for an output channel *)
+
+val with_out_a : ?mode:int -> ?flags:open_flag list ->
+                  string -> out_channel with_finalizer
+(** Similar to {!with_out} but with the [Open_append] and [Open_creat]
+    flags activated *)
 
 val write : out_channel -> string -> int -> int -> unit t
 
