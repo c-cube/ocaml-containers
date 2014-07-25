@@ -20,6 +20,8 @@ ocaml-containers
 Some of the modules have been moved to their own repository (e.g. `sequence`,
 `gen`, `qcheck` and are on opam for great fun and profit (or not)).
 
+[![Build Status](http://ci.cedeela.fr/buildStatus/icon?job=containers)](http://ci.cedeela.fr/job/containers/)
+
 ## Use
 
 You can either build and install the library (see `Build`), or just copy
