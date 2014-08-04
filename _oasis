@@ -74,13 +74,13 @@ Library "containers_misc"
 
 Library "containers_thread"
   Path:             threads/
-  Modules:          Future
+  Modules:          CCFuture
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)
   Install$:         flag(thread)
   BuildDepends:     containers,threads
-  XMETARequires:    containers,threads,lwt
+  XMETARequires:    containers,threads
 
 Library "containers_lwt"
   Path:             lwt
