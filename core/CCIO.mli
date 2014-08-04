@@ -177,7 +177,11 @@ val flush : out_channel -> unit t
 
 (* TODO: printf/fprintf wrappers *)
 
-(** {2 Streams} *)
+(** {2 Streams}
+
+Iterators on chunks of bytes, or lines, or any other value using combinators.
+Those iterators are usable only once, because their source might
+be usable only once (think of a socket) *)
 
 module Seq : sig
   type 'a t
@@ -245,7 +249,8 @@ module Seq : sig
 
   val output : ?sep:string -> out_channel -> string t -> unit io
   (** [output oc seq] outputs every value of [seq] into [oc], separated
-      with the optional argument [sep] (default: ["\n"]) *)
+      with the optional argument [sep] (default: ["\n"]).
+      It blocks until all values of [seq] are produced and written to [oc]. *)
 end
 
 (** {2 Low level access} *)
