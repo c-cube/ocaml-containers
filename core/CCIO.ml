@@ -363,6 +363,35 @@ module Seq = struct
 
   let of_fun g = g
 
+  let empty () = _stop()
+
+  let singleton x =
+    let first = ref true in
+    fun () ->
+      if !first then (first := false; _yield x) else _stop()
+
+  let cons x g =
+    let first = ref true in
+    fun () ->
+      if !first then (first := false; _yield x) else g()
+
+  let of_list l =
+    let l = ref l in
+    fun () -> match !l with
+      | [] -> _stop()
+      | x::tail -> l:= tail; _yield x
+
+  let of_array a =
+    let i = ref 0 in
+    fun () ->
+      if !i = Array.length a
+      then _stop()
+      else (
+        let x = a.(!i) in
+        incr i;
+        _yield x
+      )
+
   (* TODO: wrapper around with_in? using bind ~finalize:... ? *)
 
   let chunks ~size ic =

@@ -248,6 +248,12 @@ module Seq : sig
   val of_fun : 'a gen -> 'a t
   (** Create a stream from a function that yields an element or stops *)
 
+  val empty : 'a t
+  val singleton : 'a -> 'a t
+  val cons : 'a -> 'a t -> 'a t
+  val of_list : 'a list -> 'a t
+  val of_array : 'a array -> 'a t
+
   val chunks : size:int -> in_channel -> string t
   (** Read the channel's content into chunks of size [size] *)
 
