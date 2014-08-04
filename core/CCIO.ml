@@ -261,6 +261,12 @@ module Seq = struct
         | None -> filter_map f g()
         | Some y -> _yield y
 
+  let rec filter f g () =
+    g() >>= function
+    | Stop -> _stop()
+    | Yield x ->
+        if f x then _yield x else filter f g()
+
   let rec flat_map f g () =
     g() >>= function
     | Stop -> _stop ()
@@ -286,6 +292,38 @@ module Seq = struct
               | Some y -> _yield y
     in
     _next
+
+  let take n seq =
+    general_iter
+      (fun n x -> if n<=0
+        then return `Stop
+        else return (`Continue (n-1, Some x))
+      ) n seq
+
+  let drop n seq =
+    general_iter
+      (fun n x -> if n<=0
+        then return (`Continue (n, Some x))
+        else return (`Continue (n-1, None))
+      ) n seq
+
+  let take_while p seq =
+    general_iter
+      (fun () x ->
+        p x >|= function
+          | true -> `Continue ((), Some x)
+          | false -> `Stop
+      ) () seq
+
+  let drop_while p seq =
+    general_iter
+      (fun dropping x ->
+        if dropping
+        then p x >|= function
+          | true -> `Continue (true, None)
+          | false -> `Continue (false, Some x)
+        else return (`Continue (false, Some x))
+      ) true seq
 
   (* apply all actions from [l] to [x] *)
   let rec _apply_all_to x l = match l with

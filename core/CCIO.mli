@@ -195,8 +195,18 @@ module Seq : sig
 
   val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 
+  val filter : ('a -> bool) -> 'a t -> 'a t
+
   val flat_map : ('a -> 'b t io) -> 'a t -> 'b t
   (** Map each value to a sub sequence of values *)
+
+  val take : int -> 'a t -> 'a t
+
+  val drop : int -> 'a t -> 'a t
+
+  val take_while : ('a -> bool io) -> 'a t -> 'a t
+
+  val drop_while : ('a -> bool io) -> 'a t -> 'a t
 
   val general_iter : ('b -> 'a -> [`Stop | `Continue of ('b * 'c option)] io) ->
                       'b -> 'a t -> 'c t
@@ -245,7 +255,8 @@ module Seq : sig
   (** Lines of an input channel *)
 
   val words : string t -> string t
-  (** Split strings into words at " " boundaries *)
+  (** Split strings into words at " " boundaries.
+      {b NOT IMPLEMENTED} *)
 
   val output : ?sep:string -> out_channel -> string t -> unit io
   (** [output oc seq] outputs every value of [seq] into [oc], separated
