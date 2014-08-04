@@ -270,6 +270,48 @@ module Seq : sig
       It blocks until all values of [seq] are produced and written to [oc]. *)
 end
 
+(** {6 File and file names}
+
+How to list recursively files in a directory:
+{[
+  CCIO.(
+    File.read_dir ~recurse:true (File.make "/tmp")
+    >>= Seq.output ~sep:"\n" stdout
+  ) |> CCIO.run_exn ;;
+  
+  ]}
+
+See {!File.walk} if you also need to list directories.
+*)
+
+module File : sig
+  type t = string
+  (** A file is always represented by its absolute path *)
+
+  val to_string : t -> string
+
+  val make : string -> t
+  (** Build a file representation from a path (absolute or relative) *)
+
+  val exists : t -> bool io
+
+  val is_directory : t -> bool io
+
+  val remove : t -> unit io
+
+  val read_dir : ?recurse:bool -> t -> t Seq.t io
+  (** [read_dir d] returns a sequence of files and directory contained
+      in the directory [d] (or an empty stream if [d] is not a directory)
+      @param recurse if true (default [false]), sub-directories are also
+        explored *)
+
+  val walk : t -> ([`File | `Dir] * t) Seq.t io
+  (** similar to {!read_dir} (with [recurse=true]), this function walks
+      a directory recursively and yields either files or directories.
+      Is a file anything that doesn't satisfy {!is_directory} (including
+      symlinks, etc.) *)
+end
+
 (** {2 Low level access} *)
 module Raw : sig
   val wrap : (unit -> 'a) -> 'a t

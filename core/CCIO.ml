@@ -449,6 +449,69 @@ module Seq = struct
     >>= fun () -> flush oc
 end
 
+(** {6 File and file names} *)
+
+module File = struct
+  type t = string
+
+  let to_string f = f
+
+  let make f =
+    if Filename.is_relative f
+      then Filename.concat (Sys.getcwd()) f
+      else f
+
+  let exists f = Wrap (fun () -> Sys.file_exists f)
+
+  let is_directory f = Wrap (fun () -> Sys.is_directory f)
+
+  let remove f = Wrap (fun () -> Sys.remove f)
+
+  let _read_dir d () =
+    if Sys.is_directory d
+    then
+      let arr = Sys.readdir d in
+      Seq.of_array arr
+      |> Seq.map_pure make
+    else Seq.empty
+
+  let rec _walk d () =
+    if Sys.is_directory d
+    then
+      let arr = Sys.readdir d in
+      let tail = Seq.of_array arr
+        |> Seq.flat_map
+          (fun s -> return (_walk (Filename.concat d s) ()))
+      in Seq.cons (`Dir,d) tail
+    else Seq.singleton (`File, d)
+
+  let walk t = Wrap (_walk t)
+
+  let read_dir ?(recurse=false) d =
+    if recurse
+    then walk d
+      >|= Seq.filter_map
+      (function
+        | `File, f -> Some f
+        | `Dir, _ -> None
+      )
+    else Wrap (_read_dir d)
+
+  let rec _read_dir_rec d () =
+    if Sys.is_directory d
+    then
+      let arr = Sys.readdir d in
+      Seq.of_array arr
+      |> Seq.map_pure (fun s -> Filename.concat d s)
+      |> Seq.flat_map
+        (fun s ->
+          if Sys.is_directory s
+            then return (_read_dir_rec s ())
+            else return (Seq.singleton s)
+        )
+    else Seq.empty
+end
+
 (** {2 Raw} *)
 
 module Raw = struct
