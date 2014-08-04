@@ -30,15 +30,19 @@ A simple abstraction over blocking IO, with strict evaluation. This is in
 no way an alternative to Lwt/Async if you need concurrency.
 
 @since NEXT_RELEASE
+*)
 
+(**
 Examples:
 
 - obtain the list of lines of a file:
+
 {[
 let l = CCIO.((with_in "/tmp/some_file" >>>= read_lines) |> run_exn);;
 ]}
 
 - transfer one file into another:
+
 {[
 # let a = CCIO.(
   with_in "input" >>>= fun ic ->
@@ -49,7 +53,6 @@ let l = CCIO.((with_in "/tmp/some_file" >>>= read_lines) |> run_exn);;
 
 # run a;;
 ]}
-
 *)
 
 type 'a t
@@ -266,7 +269,7 @@ module Seq : sig
 
   val output : ?sep:string -> out_channel -> string t -> unit io
   (** [output oc seq] outputs every value of [seq] into [oc], separated
-      with the optional argument [sep] (default: ["\n"]).
+      with the optional argument [sep] (default: None).
       It blocks until all values of [seq] are produced and written to [oc]. *)
 end
 
