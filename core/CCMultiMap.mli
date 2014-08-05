@@ -105,7 +105,11 @@ end
 
 module Make(K : OrderedType)(V : OrderedType) : S with type key = K.t and type value = V.t
 
-(** {2 Two-Way Multimap} *)
+(** {2 Two-Way Multimap}
+Represents n-to-n mappings between two types. Each element from the "left"
+is mapped to several right values, and conversely.
+
+@since NEXT_RELEASE *)
 
 module type BIDIR = sig
   type t
