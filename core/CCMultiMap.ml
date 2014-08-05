@@ -225,3 +225,136 @@ module Make(K : OrderedType)(V : OrderedType) = struct
 
   let values m k = iter m (fun _ v -> k v)
 end
+
+module type BIDIR = sig
+  type t
+  type left
+  type right
+
+  val empty : t
+
+  val is_empty : t -> bool
+
+  val add : t -> left -> right -> t
+  (** Add a binding (left,right) *)
+
+  val remove : t -> left -> right -> t
+  (** Remove a specific binding *)
+
+  val cardinal_left : t -> int
+  (** number of distinct left keys *)
+
+  val cardinal_right : t -> int
+  (** number of distinct right keys *)
+
+  val remove_left : t -> left -> t
+  (** Remove all bindings for the left key *)
+
+  val remove_right : t -> right -> t
+  (** Remove all bindings for the right key *)
+
+  val mem_left : t -> left -> bool
+  (** Is the left key present in at least one pair? *)
+
+  val mem_right : t -> right -> bool
+  (** Is the right key present in at least one pair? *)
+
+  val find_left : t -> left -> right sequence
+  (** Find all bindings for this given left-key *)
+
+  val find_right : t -> right -> left sequence
+  (** Find all bindings for this given right-key *)
+
+  val find1_left : t -> left -> right option
+  (** like {!find_left} but returns at most one value *)
+
+  val find1_right : t -> right -> left option
+  (** like {!find_right} but returns at most one value *)
+
+  val fold : ('a -> left -> right -> 'a) -> 'a -> t -> 'a
+  (** Fold on pairs *)
+
+  val pairs : t -> (left * right) sequence
+  (** Iterate on pairs *)
+
+  val add_pairs : t -> (left * right) sequence -> t
+  (** Add pairs *)
+
+  val seq_left : t -> left sequence
+  val seq_right : t -> right sequence
+end
+
+let _fold_seq f acc seq =
+  let acc = ref acc in
+  seq (fun x -> acc := f !acc x);
+  !acc
+
+let _head_seq seq =
+  let r = ref None in
+  begin try seq (fun x -> r := Some x; raise Exit)
+  with Exit -> ();
+  end;
+  !r
+
+module MakeBidir(L : OrderedType)(R : OrderedType) = struct
+  type left = L.t
+  type right = R.t
+
+  module MapL = Make(L)(R)
+  module MapR = Make(R)(L)
+
+  type t = {
+    left : MapL.t;
+    right : MapR.t;
+  }
+
+  let empty = {
+    left = MapL.empty;
+    right = MapR.empty;
+  }
+
+  let is_empty m = MapL.is_empty m.left
+
+  let add m a b = {
+    left = MapL.add m.left a b;
+    right = MapR.add m.right b a;
+  }
+
+  let remove m a b = {
+    left = MapL.remove m.left a b;
+    right = MapR.remove m.right b a;
+  }
+
+  let cardinal_left m = MapL.size m.left
+  let cardinal_right m = MapR.size m.right
+
+  let find_left m a = MapL.find_iter m.left a
+  let find_right m b = MapR.find_iter m.right b
+
+  let remove_left m a =
+    _fold_seq
+      (fun m b -> remove m a b)
+      m (find_left m a)
+
+  let remove_right m b =
+    _fold_seq
+      (fun m a -> remove m a b)
+      m (find_right m b)
+
+  let mem_left m a = MapL.mem m.left a
+  let mem_right m b = MapR.mem m.right b
+
+  let find1_left m a = _head_seq (find_left m a)
+  let find1_right m b = _head_seq (find_right m b)
+
+  let fold f acc m =
+    MapL.fold m.left acc f
+
+  let pairs m = MapL.to_seq m.left
+
+  let add_pairs m seq = _fold_seq (fun m (a,b) -> add m a b) m seq
+
+  let seq_left m = MapL.keys m.left
+
+  let seq_right m = MapR.keys m.right
+end
