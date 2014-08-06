@@ -104,3 +104,70 @@ module type OrderedType = sig
 end
 
 module Make(K : OrderedType)(V : OrderedType) : S with type key = K.t and type value = V.t
+
+(** {2 Two-Way Multimap}
+Represents n-to-n mappings between two types. Each element from the "left"
+is mapped to several right values, and conversely.
+
+@since 0.3.3 *)
+
+module type BIDIR = sig
+  type t
+  type left
+  type right
+
+  val empty : t
+
+  val is_empty : t -> bool
+
+  val add : t -> left -> right -> t
+  (** Add a binding (left,right) *)
+
+  val remove : t -> left -> right -> t
+  (** Remove a specific binding *)
+
+  val cardinal_left : t -> int
+  (** number of distinct left keys *)
+
+  val cardinal_right : t -> int
+  (** number of distinct right keys *)
+
+  val remove_left : t -> left -> t
+  (** Remove all bindings for the left key *)
+
+  val remove_right : t -> right -> t
+  (** Remove all bindings for the right key *)
+
+  val mem_left : t -> left -> bool
+  (** Is the left key present in at least one pair? *)
+
+  val mem_right : t -> right -> bool
+  (** Is the right key present in at least one pair? *)
+
+  val find_left : t -> left -> right sequence
+  (** Find all bindings for this given left-key *)
+
+  val find_right : t -> right -> left sequence
+  (** Find all bindings for this given right-key *)
+
+  val find1_left : t -> left -> right option
+  (** like {!find_left} but returns at most one value *)
+
+  val find1_right : t -> right -> left option
+  (** like {!find_right} but returns at most one value *)
+
+  val fold : ('a -> left -> right -> 'a) -> 'a -> t -> 'a
+  (** Fold on pairs *)
+
+  val pairs : t -> (left * right) sequence
+  (** Iterate on pairs *)
+
+  val add_pairs : t -> (left * right) sequence -> t
+  (** Add pairs *)
+
+  val seq_left : t -> left sequence
+  val seq_right : t -> right sequence
+end
+
+module MakeBidir(L : OrderedType)(R : OrderedType) : BIDIR
+  with type left = L.t and type right = R.t

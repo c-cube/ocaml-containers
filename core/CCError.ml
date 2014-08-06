@@ -43,6 +43,12 @@ let return x = `Ok x
 
 let fail s = `Error s
 
+let fail_printf format =
+  let buf = Buffer.create 16 in
+  Printf.kbprintf
+    (fun buf -> fail (Buffer.contents buf))
+    buf format
+
 let _printers = ref []
 
 let register_printer p = _printers := p :: !_printers

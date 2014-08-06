@@ -43,6 +43,21 @@ let empty = nil
 
 let singleton x () = `Cons (x, nil)
 
+let rec _forever x () = `Cons (x, _forever x)
+
+let rec _repeat n x () =
+  if n<=0 then `Nil else `Cons (x, _repeat (n-1) x)
+
+let repeat ?n x = match n with
+  | None -> _forever x
+  | Some n -> _repeat n x
+
+(*$T
+  repeat ~n:4 0 |> to_list = [0;0;0;0]
+  repeat ~n:0 1 |> to_list = []
+  repeat 1 |> take 20 |> to_list = (repeat ~n:20 1 |> to_list)
+*)
+
 let is_empty l = match l () with
   | `Nil -> true
   | `Cons _ -> false
@@ -130,6 +145,12 @@ let rec append l1 l2 () = match l1 () with
   | `Nil -> l2 ()
   | `Cons (x, l1') -> `Cons (x, append l1' l2)
 
+let rec cycle l () = append l (cycle l) ()
+
+(*$T
+  cycle (of_list [1;2]) |> take 5 |> to_list = [1;2;1;2;1]
+*)
+
 let rec flat_map f l () = match l () with
   | `Nil -> `Nil
   | `Cons (x, l') ->
@@ -138,6 +159,50 @@ and _flat_map_app f l l' () = match l () with
   | `Nil -> flat_map f l' ()
   | `Cons (x, tl) ->
       `Cons (x, _flat_map_app f tl l')
+
+let product_with f l1 l2 =
+  let rec _next_left h1 tl1 h2 tl2 () =
+    match tl1() with
+    | `Nil -> _next_right ~die:true h1 tl1 h2 tl2 ()
+    | `Cons (x, tl1') ->
+        _map_list_left x h2
+          (_next_right ~die:false (x::h1) tl1' h2 tl2)
+          ()
+  and _next_right ~die h1 tl1 h2 tl2 () =
+    match tl2() with
+    | `Nil when die -> `Nil
+    | `Nil -> _next_left h1 tl1 h2 tl2 ()
+    | `Cons (y, tl2') ->
+        _map_list_right h1 y
+          (_next_left h1 tl1 (y::h2) tl2')
+          ()
+  and _map_list_left x l kont () = match l with
+    | [] -> kont()
+    | y::l' -> `Cons (f x y, _map_list_left x l' kont)
+  and _map_list_right l y kont () = match l with
+    | [] -> kont()
+    | x::l' -> `Cons (f x y, _map_list_right l' y kont)
+  in
+  _next_left [] l1 [] l2
+
+let product l1 l2 =
+  product_with (fun x y -> x,y) l1 l2
+
+let rec group eq l () = match l() with
+  | `Nil -> `Nil
+  | `Cons (x, l') ->
+      `Cons (cons x (take_while (eq x) l'), group eq (drop_while (eq x) l'))
+
+let rec _uniq eq prev l () = match prev, l() with
+  | _, `Nil -> `Nil
+  | None, `Cons (x, l') ->
+      `Cons (x, _uniq eq (Some x) l')
+  | Some y, `Cons (x, l') ->
+      if eq x y
+        then _uniq eq prev l' ()
+        else `Cons (x, _uniq eq (Some x) l')
+
+let uniq eq l = _uniq eq None l
 
 let rec filter_map f l () = match l() with
   | `Nil -> `Nil
@@ -202,6 +267,15 @@ let rec merge cmp l1 l2 () = match l1(), l2() with
       then `Cons (x1, merge cmp l1' l2)
       else `Cons (x2, merge cmp l1 l2')
 
+(** {2 Implementations} *)
+
+let return x () = `Cons (x, nil)
+let pure = return
+let (>>=) xs f = flat_map f xs
+let (>|=) xs f = map f xs
+
+let (<*>) fs xs = product_with (fun f x -> f x) fs xs
+
 (** {2 Conversions} *)
 
 let rec _to_rev_list acc l = match l() with
@@ -236,6 +310,15 @@ let to_gen l =
     | `Cons (x,l') ->
         l := l';
         Some x
+
+let sort ?(cmp=Pervasives.compare) l =
+  let l = to_list l in
+  of_list (List.sort cmp l)
+
+let sort_uniq ?(cmp=Pervasives.compare) l =
+  let l = to_list l in
+  uniq (fun x y -> cmp x y = 0) (of_list (List.sort cmp l))
+
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig

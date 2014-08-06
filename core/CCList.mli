@@ -64,6 +64,8 @@ val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
+val pure : 'a -> 'a t
+
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val (<$>) : ('a -> 'b) -> 'a t -> 'b t
@@ -221,6 +223,34 @@ module Zipper : sig
   val focused_exn : 'a t -> 'a
   (** Returns the focused element, or
       @raise Not_found if the zipper is at an end *)
+end
+
+(** {2 References on Lists}
+@since 0.3.3 *)
+
+module Ref : sig
+  type 'a t = 'a list ref
+
+  val push : 'a t -> 'a -> unit
+
+  val pop : 'a t -> 'a option
+
+  val pop_exn : 'a t -> 'a
+  (** Unsafe version of {!pop}.
+      @raise Failure if the list is empty *)
+
+  val create : unit -> 'a t
+  (** Create a new list reference *)
+
+  val clear : _ t -> unit
+  (** Remove all elements *)
+
+  val lift : ('a list -> 'b) -> 'a t -> 'b
+  (** Apply a list function to the content *)
+
+  val push_list : 'a t -> 'a list -> unit
+  (** Add elements of the list at the beginning of the list ref. Elements
+      at the end of the list will be at the beginning of the list ref *)
 end
 
 (** {2 Monadic Operations} *)

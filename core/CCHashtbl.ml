@@ -107,7 +107,8 @@ module Make(X : HASHABLE) = struct
     h mod Array.length tbl.arr
 
   let _succ tbl i =
-    if i = Array.length tbl.arr-1 then 0 else i+1
+    let i' = i+1 in
+    if i' = Array.length tbl.arr then 0 else i'
 
   let _pred tbl i =
     if i = 0 then Array.length tbl.arr - 1 else i-1
@@ -198,7 +199,7 @@ module Make(X : HASHABLE) = struct
     | Empty -> raise Not_found
     | Key (k', v', _) when X.equal k k' -> v'
     | Key (_, _, h_k') ->
-        if (dib > 3 && _dib tbl h_k' i < dib)
+        if _dib tbl h_k' i < dib
           then raise Not_found  (* [k] would be here otherwise *)
           else _get_exn tbl k h_k (_succ tbl i) (dib+1)
 
@@ -206,9 +207,21 @@ module Make(X : HASHABLE) = struct
     let h_k = X.hash k in
     let i0 = _initial_idx tbl h_k in
     match tbl.arr.(i0) with
-      | Empty -> raise Not_found
-      | Key (k', v, _) when X.equal k k' -> v
-      | Key _ -> _get_exn tbl k h_k (_succ tbl i0) 1
+    | Empty -> raise Not_found
+    | Key (k', v, _) ->
+      if X.equal k k' then v
+      else let i1 = _succ tbl i0 in
+        match  tbl.arr.(i1) with
+        | Empty -> raise Not_found
+        | Key (k', v, _) ->
+          if X.equal k k' then v
+          else
+            let i2 = _succ tbl i1 in
+            match tbl.arr.(i2) with
+            | Empty -> raise Not_found
+            | Key (k', v, _) ->
+              if X.equal k k' then v
+              else _get_exn tbl k h_k (_succ tbl i2) 3
 
   let get k tbl =
     try Some (get_exn k tbl)

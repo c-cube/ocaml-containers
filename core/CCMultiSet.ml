@@ -25,6 +25,8 @@ for any direct, indirect, incidental, special, exemplary, or consequential
 
 (** {1 Multiset} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 module type S = sig
   type elt
   type t
@@ -69,6 +71,10 @@ module type S = sig
   val of_list : elt list -> t
 
   val to_list : t -> elt list
+
+  val to_seq : t -> elt sequence
+
+  val of_seq : elt sequence -> t
 end
 
 module Make(O : Set.OrderedType) = struct
@@ -172,4 +178,12 @@ module Make(O : Set.OrderedType) = struct
     | _ -> n_cons (n-1) x (x::l)
     in
     fold m [] (fun acc n x -> n_cons n x acc)
+
+  let to_seq m k =
+    M.iter (fun x n -> for _i = 1 to n do k x done) m
+
+  let of_seq seq =
+    let m = ref empty in
+    seq (fun x -> m := add !m x);
+    !m
 end

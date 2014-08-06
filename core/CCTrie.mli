@@ -104,10 +104,27 @@ module type S = sig
   val to_seq_values : 'a t -> 'a sequence
 
   val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
+
+  (** {6 Ranges} *)
+
+  val above : key -> 'a t -> (key * 'a) sequence
+  (** All bindings whose key is bigger than (or equal to) the given key *)
+
+  val below : key -> 'a t -> (key * 'a) sequence
+  (** All bindings whose key is smaller or equal to the given key *)
 end
 
 (** {2 Implementation} *)
 
 module Make(W : WORD) : S with type key = W.t and type char_ = W.char_
+
+module type ORDERED = sig
+  type t
+  val compare : t -> t -> int
+end
+
+module MakeArray(X : ORDERED) : S with type key = X.t array and type char_ = X.t
+
+module MakeList(X : ORDERED) : S with type key = X.t list and type char_ = X.t
 
 module String : S with type key = string and type char_ = char

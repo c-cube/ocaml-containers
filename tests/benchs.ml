@@ -281,7 +281,7 @@ let imap_find m =
 let icchashtbl_find m =
   fun n ->
     for i = 0 to n-1 do
-      ignore (ICCHashtbl.find_exn m i);
+      ignore (ICCHashtbl.get_exn i m);
     done
 
 let bench_maps3 () =

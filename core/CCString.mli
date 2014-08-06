@@ -62,6 +62,10 @@ val compare : t -> t -> int
 
 val hash : t -> int
 
+val init : int -> (int -> char) -> t
+(** Analog to [Array.init].
+    @since 0.3.3 *)
+
 val of_gen : char gen -> t
 val of_seq : char sequence -> t
 val of_klist : char klist -> t
