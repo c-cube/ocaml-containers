@@ -85,7 +85,7 @@ val wrap2 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c t
 
 val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> 'd t
 
-(** {2 APplicative} *)
+(** {2 Applicative} *)
 
 val pure : 'a -> 'a t
 
