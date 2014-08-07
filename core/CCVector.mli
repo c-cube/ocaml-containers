@@ -110,25 +110,28 @@ val member : ?eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 (** is the element a member of the vector? *)
 
 val sort : ('a -> 'a -> int) -> ('a, _) t -> ('a, 'mut) t
-(** Sort the vector *)
+(** Sort the vector, returning a copy of it that is sorted
+    w.r.t the given ordering. The vector itself is unchanged. *)
 
 val sort' : ('a -> 'a -> int) -> ('a, rw) t -> unit
-(** Sort the vector in place *)
+(** Sort the vector in place (modifying it). *)
 
 val uniq_sort : ('a -> 'a -> int) -> ('a, rw) t -> unit
-(** Sort the array and remove duplicates, in place*)
+(** Sort the array and remove duplicates, in place (e.e. modifying
+    the vector itself) *)
 
 val iter : ('a -> unit) -> ('a,_) t -> unit
-(** iterate on the vector *)
+(** iterate on the vector's content *)
 
 val iteri : (int -> 'a -> unit) -> ('a,_) t -> unit
-(** iterate on the vector with indexes *)
+(** iterate on the vector, with indexes *)
 
 val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
-(** map elements of the vector *)
+(** map elements of the vector, yielding a new vector *)
 
 val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
-(** filter elements from vector *)
+(** filter elements from the vector. [filter p v] leaves [v] unchanged but
+    returns a new vector that only contains elements of [v] satisfying [p]. *)
 
 val filter' : ('a -> bool) -> ('a, rw) t -> unit
 (** Filter elements in place. Does {b NOT} preserve the order
@@ -138,10 +141,10 @@ val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
 (** fold on elements of the vector *)
 
 val exists : ('a -> bool) -> ('a,_) t -> bool
-(** existential test *)
+(** existential test (is there an element that satisfies the predicate?) *)
 
 val for_all : ('a -> bool) -> ('a,_) t -> bool
-(** universal test *)
+(** universal test (do all the elements satisfy the predicate?) *)
 
 val find : ('a -> bool) -> ('a,_) t -> 'a option
 (** Find an element that satisfies the predicate *)
@@ -160,15 +163,17 @@ val flat_map' : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!sequence} for intermediate collections *)
 
 val (>>=) : ('a,_) t -> ('a -> ('b,_) t) -> ('b, 'mut) t
+(** Infix version of {!flat_map} *)
 
 val (>|=) : ('a,_) t -> ('a -> 'b) -> ('b, 'mut) t
+(** Infix version of {!map} *)
 
 val get : ('a,_) t -> int -> 'a
-(** access element, or
+(** access element by its index, or
     @raise Failure if bad index *)
 
 val set : ('a, rw) t -> int -> 'a -> unit
-(** access element, or
+(** modify element at given index, or
     @raise Failure if bad index *)
 
 val remove : ('a, rw) t -> int -> unit
@@ -196,7 +201,9 @@ val unsafe_get_array : ('a, rw) t -> 'a array
     index than [size v] are undefined (do not access!). *)
 
 val (--) : int -> int -> (int, 'mut) t
-(** Range of integers (both included) *)
+(** Range of integers, either ascending or descending (both included,
+    therefore the result is never empty).
+    Example: [1 -- 10] returns the vector [[1;2;3;4;5;6;7;8;9;10]] *)
 
 val of_array : 'a array -> ('a, 'mut) t
 val of_list : 'a list -> ('a, 'mut) t
