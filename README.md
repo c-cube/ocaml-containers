@@ -119,8 +119,15 @@ There is a QuickCheck-like library called `QCheck` (now in its own repo).
 
 ## Build
 
-There are no dependencies (`Sequence` is included).
-The `Bij` module requires OCaml `>= 4.00` because of GADTs. Type:
+You will need OCaml >= 4.01.0.
+
+### Via opam
+
+The prefered way to install is through [opam](http://opam.ocaml.org/).
+
+    $ opam install containers
+
+### From Sources
 
     $ make
 
