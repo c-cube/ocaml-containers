@@ -176,12 +176,12 @@ Executable test_lwt
   BuildDepends: containers,lwt,lwt.unix,oUnit,containers.lwt
 
 Executable test_threads
-  Path: tests/lwt/
+  Path: tests/threads/
   Install: false
   CompiledObject: best
   Build$: flag(tests) && flag(thread)
-  MainIs: test_Future.ml
-  BuildDepends: containers,threads,oUnit,containers.lwt
+  MainIs: test_future.ml
+  BuildDepends: containers,threads,oUnit,containers.thread
 
 Test all
   Command: make test-all
