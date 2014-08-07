@@ -36,4 +36,4 @@ type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 
 let pp buf = Printf.bprintf buf "%B"
-let print fmt = Format.fprintf fmt "%B"
+let print fmt = Format.pp_print_bool fmt

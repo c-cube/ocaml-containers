@@ -46,4 +46,4 @@ let random_small = random 100
 let random_range i j st = i + random (j-i) st
 
 let pp buf = Printf.bprintf buf "%d"
-let print fmt = Format.fprintf fmt "%d"
+let print fmt = Format.pp_print_int fmt

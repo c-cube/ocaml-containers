@@ -234,7 +234,7 @@ let _pp_i ~sep pp_item buf a i j =
 
 let _print ~sep pp_item fmt a i j =
   for k = i to j - 1 do
-    if k > i then Format.pp_print_string fmt sep;
+    if k > i then (Format.pp_print_string fmt sep; Format.pp_print_cut fmt ());
     pp_item fmt a.(k)
   done
 

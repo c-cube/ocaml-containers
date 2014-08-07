@@ -230,5 +230,5 @@ let pp pp_x buf e = match e with
   | `Error s -> Printf.bprintf buf "error(%s)" s
 
 let print pp_x fmt e = match e with
-  | `Ok x -> Format.fprintf fmt "ok(%a)" pp_x x
-  | `Error s -> Format.fprintf fmt "error(%s)" s
+  | `Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
+  | `Error s -> Format.fprintf fmt "@[error(@,%s)@]" s

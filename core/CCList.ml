@@ -679,8 +679,11 @@ let print ?(start="[") ?(stop="]") ?(sep=", ") pp_item fmt l =
     | x::((y::xs) as l) ->
       pp_item fmt x;
       Format.pp_print_string fmt sep;
+      Format.pp_print_cut fmt ();
       print fmt l
     | x::[] -> pp_item fmt x
     | [] -> ()
   in
-  Format.fprintf fmt "@[%s%a%s@]" start print l stop
+  Format.pp_print_string fmt start;
+  print fmt l;
+  Format.pp_print_string fmt stop
