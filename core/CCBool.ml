@@ -26,9 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type t = bool
 
-let equal a b = a=b
+let equal (a:bool) b = a=b
 
-let compare a b = Pervasives.compare a b
+let compare (a:bool) b = Pervasives.compare a b
 
 let negate x = not x
 

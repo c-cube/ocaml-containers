@@ -26,9 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type t = int
 
-let equal a b = a=b
+let equal (a:int) b = a=b
 
-let compare a b = Pervasives.compare a b
+let compare (a:int) b = Pervasives.compare a b
 
 let hash i = i land max_int
 
