@@ -64,7 +64,7 @@ val hash : t -> int
 
 val init : int -> (int -> char) -> t
 (** Analog to [Array.init].
-    @since NEXT_VERSION *)
+    @since 0.3.3 *)
 
 val of_gen : char gen -> t
 val of_seq : char sequence -> t

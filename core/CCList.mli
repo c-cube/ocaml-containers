@@ -226,7 +226,7 @@ module Zipper : sig
 end
 
 (** {2 References on Lists}
-@since NEXT_RELEASE *)
+@since 0.3.3 *)
 
 module Ref : sig
   type 'a t = 'a list ref

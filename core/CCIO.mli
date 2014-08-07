@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 A simple abstraction over blocking IO, with strict evaluation. This is in
 no way an alternative to Lwt/Async if you need concurrency.
 
-@since NEXT_RELEASE
+@since 0.3.3
 *)
 
 (**

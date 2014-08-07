@@ -38,11 +38,11 @@ val map_same : ('a -> 'b) -> ('a*'a) -> ('b*'b)
 
 val map_fst : ('a -> 'b) -> ('a * _) -> 'b
 (** Compose the given function with [fst].
-    @since NEXT_RELEASE *)
+    @since 0.3.3 *)
 
 val map_snd : ('a -> 'b) -> (_ * 'a) -> 'b
 (** Compose the given function with [snd].
-    @since NEXT_RELEASE *)
+    @since 0.3.3 *)
 
 val iter : ('a -> 'b -> unit) -> ('a * 'b) -> unit
 
@@ -67,16 +67,16 @@ val merge : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
 
 val fold : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
 (** Synonym to {!merge}
-    @since NEXT_RELEASE *)
+    @since 0.3.3 *)
 
 val dup : 'a -> ('a * 'a)
 (** [dup x = (x,x)] (duplicate the value)
-    @since NEXT_RELEASE *)
+    @since 0.3.3 *)
 
 val dup_map : ('a -> 'b) -> 'a -> ('a * 'b)
 (** [dup_map f x = (x, f x)]. Duplicates the value and applies the function
     to the second copy.
-    @since NEXT_RELEASE *)
+    @since 0.3.3 *)
 
 val equal : ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> ('a * 'b) -> ('a * 'b) -> bool
 

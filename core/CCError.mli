@@ -48,7 +48,7 @@ val of_exn : exn -> 'a t
 val fail_printf : ('a, Buffer.t, unit, 'a t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
     and then returns [`Error msg]
-    @since NEXT_VERSION *)
+    @since 0.3.3 *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 

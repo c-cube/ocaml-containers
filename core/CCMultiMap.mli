@@ -109,7 +109,7 @@ module Make(K : OrderedType)(V : OrderedType) : S with type key = K.t and type v
 Represents n-to-n mappings between two types. Each element from the "left"
 is mapped to several right values, and conversely.
 
-@since NEXT_RELEASE *)
+@since 0.3.3 *)
 
 module type BIDIR = sig
   type t
