@@ -69,10 +69,15 @@ val sequence_l : 'a t list -> 'a list t
     every [xi] is [Some yi]. Otherwise, if the list contains at least
     one [None], the result is [None]. *)
 
-val guard : ('a -> 'b) -> 'a -> 'b option
-(** [guard f x] calls [f x] and returns [Some y] if [f x = y]. If [f x] raises
+val wrap : ?handler:(exn -> bool) -> ('a -> 'b) -> 'a -> 'b option
+(** [wrap f x] calls [f x] and returns [Some y] if [f x = y]. If [f x] raises
     any exception, the result is [None]. This can be useful to wrap functions
-    such as [Map.S.find]. *)
+    such as [Map.S.find].
+    @param handler the exception handler, which returns [true] if the
+        exception is to be caught. *)
+
+val wrap2 : ?handler:(exn -> bool) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c option
+(** [wrap2 f x y] is similar to {!wrap1} but for binary functions. *)
 
 (** {2 Applicative} *)
 
