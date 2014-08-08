@@ -234,19 +234,18 @@ let last n l =
   let len = List.length l in
   if len < n then l else drop (len-n) l
 
-let find_idx p l =
-  let rec search i l = match l with
-  | [] -> None
-  | x::_ when p x -> Some (i, x)
-  | _::xs -> search (i+1) xs
-  in search 0 l
+let findi f l =
+  let rec aux f i = function
+    | [] -> None
+    | x::l' ->
+        match f i x with
+          | Some _ as res -> res
+          | None -> aux f (i+1) l'
+  in aux f 0 l
 
-let rec find f l = match l with
-  | [] -> None
-  | x::l' ->
-      match f x with
-      | Some _ as res -> res
-      | None -> find f l'
+let find f l = findi (fun _ -> f) l
+
+let find_idx p l = findi (fun i x -> if p x then Some (i, x) else None) l
 
 (*$T
   find (fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"
