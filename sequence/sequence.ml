@@ -336,9 +336,9 @@ let take n seq k =
   let count = ref 0 in
   try
     seq (fun x ->
+      if !count = n then raise ExitSequence;
       incr count;
       k x;
-      if !count = n then raise ExitSequence
     )
   with ExitSequence -> ()
 
@@ -436,13 +436,16 @@ let to_list seq = List.rev (fold (fun y x -> x::y) [] seq)
 
 let to_rev_list seq = fold (fun y x -> x :: y) [] seq
 
+let of_list l k = List.iter k l
+
+let on_list f l =
+  to_list (f (of_list l))
+
 let to_opt = head
 
 let of_opt o k = match o with
   | None -> ()
   | Some x -> k x
-
-let of_list l k = List.iter k l
 
 let to_array seq =
   let l = MList.of_seq seq in
@@ -767,5 +770,3 @@ module IO = struct
   let write_lines ?mode ?flags filename seq =
     write_to ?mode ?flags filename (snoc (intersperse "\n" seq) "\n")
 end
-
-

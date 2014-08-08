@@ -190,6 +190,13 @@ let test_int_range () =
   OUnit.assert_equal ~printer:pp_ilist [] S.(to_list (10 --^ 60));
   ()
 
+let test_take () =
+  let l = S.(to_list (take 0 (of_list [1]))) in
+  OUnit.assert_equal ~printer:pp_ilist [] l;
+  let l = S.(to_list (take 5 (of_list [1;2;3;4;5;6;7;8;9;10]))) in
+  OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5] l;
+  ()
+
 let suite =
   "test_sequence" >:::
     [ "test_empty" >:: test_empty;
@@ -217,4 +224,5 @@ let suite =
       "test_unfoldr" >:: test_unfoldr;
       "test_hashtbl" >:: test_hashtbl;
       "test_int_range" >:: test_int_range;
+      "test_take" >:: test_take;
     ]
