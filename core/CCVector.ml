@@ -486,10 +486,10 @@ let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf v =
   Buffer.add_string buf stop
 
 let print ?(start="[") ?(stop="]") ?(sep=", ") pp_item fmt v =
-  Format.fprintf fmt "@[%s" start;
+  Format.pp_print_string fmt start;
   iteri
     (fun i x ->
-      if i > 0 then Format.pp_print_string fmt sep;
+      if i > 0 then (Format.pp_print_string fmt sep; Format.pp_print_cut fmt());
       pp_item fmt x
     ) v;
-  Format.fprintf fmt "%s@]" stop
+  Format.pp_print_string fmt stop

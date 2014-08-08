@@ -343,7 +343,8 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let first = ref true in
     iter t
       (fun k v ->
-        if !first then first:=false else Format.pp_print_string fmt ", ";
+        if !first then first:=false
+        else (Format.pp_print_string fmt ", "; Format.pp_print_cut fmt ());
         Format.fprintf fmt "%a -> %a" pp_k k pp_v v
       );
     Format.pp_print_string fmt "}"

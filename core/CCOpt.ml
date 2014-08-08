@@ -110,6 +110,16 @@ let sequence_l l =
   sequence_l [] = Some []
 *)
 
+let wrap ?(handler=fun _ -> true) f x =
+  try Some (f x)
+  with e ->
+    if handler e then None else raise e
+
+let wrap2 ?(handler=fun _ -> true) f x y =
+  try Some (f x y)
+  with e ->
+    if handler e then None else raise e
+
 let to_list o = match o with
   | None -> []
   | Some x -> [x]

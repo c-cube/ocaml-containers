@@ -361,7 +361,11 @@ let pp ?(sep=",") pp_item buf l =
 let print ?(sep=",") pp_item fmt l =
   let rec pp fmt l = match l() with
     | `Nil -> ()
-    | `Cons (x,l') -> Format.pp_print_string fmt sep; pp_item fmt x; pp fmt l'
+    | `Cons (x,l') ->
+        Format.pp_print_string fmt sep;
+        Format.pp_print_cut fmt ();
+        pp_item fmt x;
+        pp fmt l'
   in
   match l() with
     | `Nil -> ()

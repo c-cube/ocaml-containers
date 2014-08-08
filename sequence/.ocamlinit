@@ -1,0 +1,5 @@
+#directory "_build";;
+#load "sequence.cma";;
+open Sequence.Infix;;
+(* vim:syntax=ocaml
+*)

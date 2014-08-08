@@ -1,13 +1,12 @@
-
 (*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
+Copyright (c) 2014, Simon Cruanes
+All rights reserved.
 
-redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.  Redistributions in binary
 form must reproduce the above copyright notice, this list of conditions and the
 following disclaimer in the documentation and/or other materials provided with
 the distribution.
@@ -24,23 +23,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Basic Bool functions} *)
+(** {1 Interface to Delimcc (Invert control flow)} *)
 
-type t = bool
+type 'a gen = unit -> 'a option
 
-val compare : t -> t -> int
-(** Total ordering on booleans, similar to {!Pervasives.compare} *)
-
-val equal : t -> t -> bool
-
-val negate : t -> t
-(** Negation on booleans (functional version of [not]) *)
-
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
-
-val pp : t printer
-(** Printer for booleans *)
-
-val print : t formatter
-
+val to_gen : 'a Sequence.t -> 'a gen
+(** Use delimited continuations to iterate on the sequence step by step.
+    Relatively costly but still useful *)

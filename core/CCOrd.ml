@@ -89,3 +89,5 @@ let array_ ord a1 a2 =
           then aux (i+1) else c
   in
   aux 0
+
+let map f ord a b = ord (f a) (f b)

@@ -68,6 +68,13 @@ module type S = sig
   (** [find f a] returns [Some y] if there is an element [x] such
       that [f x = Some y], else it returns [None] *)
 
+  val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+  (** Like {!find}, but also pass the index to the predicate function. *)
+
+  val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
+  (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
+    and [p x] holds. Otherwise returns [None] *)
+
   val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
   (** Lookup the index of some value in a sorted array.
       @return [None] if the key is not present, or
@@ -160,7 +167,7 @@ let rec _compare cmp a1 i1 j1 a2 i2 j2 =
 
 let rec _find f a i j =
   if i = j then None
-  else match f a.(i) with
+  else match f i a.(i) with
     | Some _ as res -> res
     | None -> _find f a (i+1) j
 
@@ -234,7 +241,7 @@ let _pp_i ~sep pp_item buf a i j =
 
 let _print ~sep pp_item fmt a i j =
   for k = i to j - 1 do
-    if k > i then Format.pp_print_string fmt sep;
+    if k > i then (Format.pp_print_string fmt sep; Format.pp_print_cut fmt ());
     pp_item fmt a.(k)
   done
 
@@ -290,7 +297,13 @@ let reverse_in_place a =
 *)
 
 let find f a =
+  _find (fun _ -> f ) a 0 (Array.length a)
+
+let findi f a =
   _find f a 0 (Array.length a)
+
+let find_idx p a =
+  _find (fun i x -> if p x then Some (i,x) else None) a 0 (Array.length a)
 
 let filter_map f a =
   let rec aux acc i =
@@ -494,7 +507,12 @@ module Sub = struct
     Sub.reverse_in_place s; a = [| 1; 2; 5; 4; 3; 6 |]
   *)
 
-  let find f a = _find f a.arr a.i a.j
+  let find f a = _find (fun _ -> f) a.arr a.i a.j
+
+  let findi f a = _find (fun i -> f (i-a.i)) a.arr a.i a.j
+
+  let find_idx p a =
+    _find (fun i x -> if p x then Some (i,x) else None) a.arr a.i a.j
 
   let lookup_exn ?(cmp=Pervasives.compare) k a =
     _lookup_exn ~cmp k a.arr a.i (a.j-1)

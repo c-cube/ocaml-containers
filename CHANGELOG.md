@@ -1,5 +1,15 @@
 # Changelog
 
+# 0.3.4
+
+- subtree for `sequence` repo
+- `CCSequence` is now a copy of `sequence`
+- `CCOpt.wrap{1,2}`
+- `CCList.findi`, `CCArray.findi` and `CCArray.find_idx`
+- better `Format` printers (using break hints)
+- specialize some comparison functions
+- `CCOrd.map`
+
 ## 0.3.3
 
 - readme: add ci hook (to http://ci.cedeela.fr)

@@ -77,26 +77,20 @@ val singleton : 'a -> 'a t
   (** Singleton sequence, with exactly one element. *)
 
 val doubleton : 'a -> 'a -> 'a t
-  (** Sequence with exactly two elements
-      @since 0.3.4 *)
+  (** Sequence with exactly two elements *)
 
 val cons : 'a -> 'a t -> 'a t
   (** [cons x l] yields [x], then yields from [l].
-      Same as [append (singleton x) l]
-      @since 0.3.4 *)
-
+      Same as [append (singleton x) l] *)
 
 val snoc : 'a t -> 'a -> 'a t
-  (** Same as {!cons} but yields the element after iterating on [l]
-      @since 0.3.4 *)
+  (** Same as {!cons} but yields the element after iterating on [l] *)
 
 val return : 'a -> 'a t
-  (** Synonym to {!singleton}
-      @since 0.3.4 *)
+  (** Synonym to {!singleton} *)
 
 val pure : 'a -> 'a t
-  (** Synonym to {!singleton}
-      @since 0.3.4 *)
+  (** Synonym to {!singleton} *)
 
 val repeat : 'a -> 'a t
   (** Infinite sequence of the same element. You may want to look
@@ -146,11 +140,11 @@ val exists : ('a -> bool) -> 'a t -> bool
 val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
   (** Is the value a member of the sequence?
       @param eq the equality predicate to use (default [(=)])
-      @since 0.3.4 *)
+      @since 0.5 *)
 
 val find : ('a -> 'b option) -> 'a t -> 'b option
   (** Find the first element on which the function doesn't return [None]
-      @since 0.3.4 *)
+      @since 0.5 *)
 
 val length : 'a t -> int
   (** How long is the sequence? Forces the sequence. *)
@@ -179,14 +173,14 @@ val flatMap : ('a -> 'b t) -> 'a t -> 'b t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
   (** Alias to {!flatMap} with a more explicit name
-      @since 0.3.4 *)
+      @since 0.5 *)
 
 val fmap : ('a -> 'b option) -> 'a t -> 'b t
   (** Specialized version of {!flatMap} for options.  *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
   (** Alias to {!fmap} with a more explicit name
-      @since 0.3.4 *)
+      @since 0.5 *)
 
 val intersperse : 'a -> 'a t -> 'a t
   (** Insert the single element between every element of the sequence *)
@@ -208,9 +202,7 @@ val persistent_lazy : 'a t -> 'a t
 
       {b warning}: on the first traversal of [s'], if the traversal
       is interrupted prematurely ({!take}, etc.) then [s'] will not be
-      memorized, and the next call to [s'] will traverse [s] again.
-
-      @since 0.3.4 *)
+      memorized, and the next call to [s'] will traverse [s] again. *)
 
 (** {2 Misc} *)
 
@@ -237,7 +229,7 @@ val product : 'a t -> 'b t -> ('a * 'b) t
 
 val product2 : 'a t -> 'b t -> ('a, 'b) t2
   (** Binary version of {!product}. Same requirements.
-      @since 0.3.4 *)
+      @since 0.5 *)
 
 val join : join_row:('a -> 'b -> 'c option) -> 'a t -> 'b t -> 'c t
   (** [join ~join_row a b] combines every element of [a] with every
@@ -264,12 +256,12 @@ val min : ?lt:('a -> 'a -> bool) -> 'a t -> 'a option
 
 val head : 'a t -> 'a option
   (** First element, if any, otherwise [None]
-      @since 0.3.4 *)
+      @since 0.5.1 *)
 
 val head_exn : 'a t -> 'a
   (** First element, if any, fails
       @raise Invalid_argument if the sequence is empty
-      @since 0.3.4 *)
+      @since 0.5.1 *)
 
 val take : int -> 'a t -> 'a t
   (** Take at most [n] elements from the sequence. Works on infinite
@@ -278,15 +270,13 @@ val take : int -> 'a t -> 'a t
 val take_while : ('a -> bool) -> 'a t -> 'a t
   (** Take elements while they satisfy the predicate, then stops iterating.
       Will work on an infinite sequence [s] if the predicate is false for at
-      least one element of [s].
-      @since 0.3.4 *)
+      least one element of [s]. *)
 
 val drop : int -> 'a t -> 'a t
   (** Drop the [n] first elements of the sequence. Lazy. *)
 
 val drop_while : ('a -> bool) -> 'a t -> 'a t
-  (** Predicate version of {!drop}
-      @since 0.3.4 *)
+  (** Predicate version of {!drop} *)
 
 val rev : 'a t -> 'a t
   (** Reverse the sequence. O(n) memory and time, needs the
@@ -331,12 +321,12 @@ val of_list : 'a list -> 'a t
 
 val on_list : ('a t -> 'b t) -> 'a list -> 'b list
 (** [on_list f l] is equivalent to [to_list @@ f @@ of_list l].
-    @since 0.3.4
+    @since 0.5.2
 *)
 
 val to_opt : 'a t -> 'a option
   (** Alias to {!head}
-      @since 0.3.4 *)
+      @since 0.5.1 *)
 
 val to_array : 'a t -> 'a array
   (** Convert to an array. Currently not very efficient because
@@ -355,7 +345,7 @@ val array_slice : 'a array -> int -> int -> 'a t
 
 val of_opt : 'a option -> 'a t
   (** Iterate on 0 or 1 values.
-      @since 0.3.4 *)
+      @since 0.5.1 *)
 
 val of_stream : 'a Stream.t -> 'a t
   (** Sequence of elements of a stream (usable only once) *)
@@ -404,7 +394,7 @@ val to_str :  char t -> string
 val concat_str : string t -> string
   (** Concatenate strings together, eagerly.
       Also see {!intersperse} to add a separator.
-      @since 0.3.4 *)
+      @since 0.5 *)
 
 exception OneShotSequence
   (** Raised when the user tries to iterate several times on
@@ -455,12 +445,8 @@ module Set : sig
     include Set.S
     val of_seq : elt sequence -> t
     val to_seq : t -> elt sequence
-
     val to_list : t -> elt list
-      (** @since 0.3.4 *)
-
     val of_list : elt list -> t
-      (** @since 0.3.4 *)
   end
 
   (** Create an enriched Set module from the given one *)
@@ -479,12 +465,8 @@ module Map : sig
     val of_seq : (key * 'a) sequence -> 'a t
     val keys : 'a t -> key sequence
     val values : 'a t -> 'a sequence
-
     val to_list : 'a t -> (key * 'a) list
-      (** @since 0.3.4 *)
-
     val of_list : (key * 'a) list -> 'a t
-      (** @since 0.3.4 *)
   end
 
   (** Adapt a pre-existing Map module to make it sequence-aware *)
@@ -526,19 +508,19 @@ module Infix : sig
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
     (** Monadic bind (infix version of {!flat_map}
-        @since 0.3.4 *)
+        @since 0.5 *)
 
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
     (** Infix version of {!map}
-        @since 0.3.4 *)
+        @since 0.5 *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
     (** Applicative operator (product+application)
-        @since 0.3.4 *)
+        @since 0.5 *)
 
   val (<+>) : 'a t -> 'a t -> 'a t
     (** Concatenation of sequences
-        @since 0.3.4 *)
+        @since 0.5 *)
 end
 
 include module type of Infix
@@ -576,7 +558,7 @@ By chunks of [4096] bytes:
   Sequence.IO.(chunks_of ~size:4096 "a" |> write_to "b");;
 ]}
 
-@since 0.3.4 *)
+@since 0.5.1 *)
 
 module IO : sig
   val lines_of : ?mode:int -> ?flags:open_flag list ->

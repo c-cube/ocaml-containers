@@ -3,6 +3,8 @@
 
 open OUnit
 
+module Future = CCFuture
+
 let test_mvar () =
   let box = Future.MVar.empty () in
   let f = Future.spawn (fun () -> Future.MVar.take box + 1) in
@@ -13,10 +15,9 @@ let test_mvar () =
   ()
 
 let test_parallel () =
-  let open Gen.Infix in
-  let l = 1 -- 300
-    |> Gen.map (fun _ -> Future.spawn (fun () -> Thread.delay 0.1; 1))
-    |> Gen.to_list in
+  let l = CCSequence.(1 -- 300)
+    |> CCSequence.map (fun _ -> Future.spawn (fun () -> Thread.delay 0.1; 1))
+    |> CCSequence.to_list in
   let l' = List.map Future.get l in
   OUnit.assert_equal 300 (List.fold_left (+) 0 l');
   ()

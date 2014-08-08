@@ -50,7 +50,7 @@ end
 
 type t = string
 
-let equal a b = a=b
+let equal (a:string) b = a=b
 
 let compare = String.compare
 

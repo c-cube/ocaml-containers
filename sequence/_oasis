@@ -1,0 +1,88 @@
+OASISFormat: 0.4
+Name:        sequence
+Version:     0.5.2
+Homepage:    https://github.com/c-cube/sequence
+Authors:     Simon Cruanes
+License:     BSD-2-clause
+LicenseFile: LICENSE
+Plugins:     META (0.3), DevFiles (0.3)
+BuildTools:  ocamlbuild
+
+Synopsis:    Simple sequence (iterator) datatype and combinators
+Description:
+    Simple sequence datatype, intended to transfer a finite number of
+    elements from one data structure to another. Some transformations on sequences,
+    like `filter`, `map`, `take`, `drop` and `append` can be performed before the
+    sequence is iterated/folded on.
+
+Flag bench
+    Description: enable benchmarks (require library Benchmark)
+    Default: false
+
+Flag invert
+    Description: build sequence.invert (requires Delimcc)
+    Default: false
+
+Library "sequence"
+  Path:             .
+  Modules:          Sequence
+
+Library "invert"
+  Path:             invert
+  Build$:           flag(invert)
+  Install$:         flag(invert)
+  Modules:          SequenceInvert
+  FindlibName:      invert
+  FindlibParent:    sequence
+  BuildDepends:     sequence,delimcc
+
+Document sequence
+  Title:                Sequence docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: sequence
+
+Test all
+  Type:         custom
+  Command:      make run-tests
+  TestTools:    run_tests
+  Run$:         flag(tests)
+
+Executable run_tests
+  Path:             tests/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           run_tests.ml
+  Build$:           flag(tests)
+  BuildDepends:     sequence,oUnit
+
+Executable benchs
+  Path:             bench
+  Install:          false
+  CompiledObject:   native
+  Build$:           flag(bench)
+  BuildDepends:     sequence,benchmark
+  MainIs:           benchs.ml
+
+Executable bench_persistent
+  Path:             bench
+  Install:          false
+  CompiledObject:   native
+  Build$:           flag(bench)
+  BuildDepends:     sequence,benchmark
+  MainIs:           bench_persistent.ml
+
+Executable bench_persistent_read
+  Path:             bench
+  Install:          false
+  CompiledObject:   native
+  Build$:           flag(bench)
+  BuildDepends:     sequence,benchmark
+  MainIs:           bench_persistent_read.ml
+
+SourceRepository head
+  Type: git
+  Location: https://github.com/c-cube/sequence
+  Browser: https://github.com/c-cube/sequence/tree/master/src

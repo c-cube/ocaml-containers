@@ -64,3 +64,11 @@ val list_ : 'a t -> 'a list t
 (** Lexicographic combination on lists *)
 
 val array_ : 'a t -> 'a array t
+
+val map : ('a -> 'b) -> 'b t -> 'a t
+(** [map f ord] is the comparison function that, given objects [x] and [y],
+    projects [x] and [y] using [f] (e.g. using a record field) and then
+    compares those projections with [ord].
+    Example:
+    [map fst CCInt.compare] compares values of type [(int * 'a)]  by their
+      first component. *)
