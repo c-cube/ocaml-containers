@@ -129,6 +129,9 @@ The prefered way to install is through [opam](http://opam.ocaml.org/).
 
 ### From Sources
 
+On the branch `master` you will need `oasis` to build the library. On the
+branch `stable` it is not necessary.
+
     $ make
 
 To build and run tests (requires `oUnit` and `qtest`):
@@ -147,3 +150,14 @@ To build the small benchmarking suite (requires `benchmark`):
     $ opam install benchmark
     $ make bench
     $ ./benchs.native
+
+## Contributing
+
+PRs on github are welcome (patches by email too, if you prefer so).
+
+A few guidelines:
+
+- no dependencies between basic modules (even just for signatures)
+- add `@since` tags for new functions
+- add tests if possible (using `qtest`)
+
