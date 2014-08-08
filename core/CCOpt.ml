@@ -110,6 +110,8 @@ let sequence_l l =
   sequence_l [] = Some []
 *)
 
+let guard f x = try Some (f x) with Not_found -> None
+
 let to_list o = match o with
   | None -> []
   | Some x -> [x]

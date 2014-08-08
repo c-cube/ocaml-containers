@@ -65,6 +65,14 @@ val get_exn : 'a t -> 'a
     @raise Invalid_argument if the option is [None] *)
 
 val sequence_l : 'a t list -> 'a list t
+(** [sequence_l [x1; x2; ...; xn]] returns [Some [y1;y2;...;yn]] if
+    every [xi] is [Some yi]. Otherwise, if the list contains at least
+    one [None], the result is [None]. *)
+
+val guard : ('a -> 'b) -> 'a -> 'b option
+(** [guard f x] calls [f x] and returns [Some y] if [f x = y]. If [f x] raises
+    any exception, the result is [None]. This can be useful to wrap functions
+    such as [Map.S.find]. *)
 
 (** {2 Applicative} *)
 
