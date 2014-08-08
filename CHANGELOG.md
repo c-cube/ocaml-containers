@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.2
+
+- bugfix in `take`
+- `on_list` for mapping lists through sequences
+
 ## 0.5.1
 
 - `Sequence.IO` module, a very very simple way to read/write files
