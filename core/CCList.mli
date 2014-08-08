@@ -94,11 +94,13 @@ val find : ('a -> 'b option) -> 'a t -> 'b option
     the call returns [None] *)
 
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-(** Like {!find}, but also pass the index to the predicate function. *)
+(** Like {!find}, but also pass the index to the predicate function.
+    @since NEXT_RELEASE *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
-    and [p x] holds. Otherwise returns [None] *)
+    and [p x] holds. Otherwise returns [None]
+    @since NEXT_RELEASE *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
