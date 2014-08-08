@@ -1,0 +1,8 @@
+S .
+S bench/
+S tests/
+B _build
+B _build/tests/
+B _build/bench/
+PKG oUnit
+PKG benchmark
