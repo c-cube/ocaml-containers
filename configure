@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # OASIS_START
-# DO NOT EDIT (digest: dc86c2ad450f91ca10c931b6045d0499)
+# DO NOT EDIT (digest: 6f7b8221311e800a7093dc3b793f67ca)
 set -e
 
 FST=true
@@ -23,5 +23,5 @@ for i in "$@"; do
   esac
 done
 
-ocaml setup.ml -configure "$@"
+make configure CONFIGUREFLAGS="$*"
 # OASIS_STOP
