@@ -54,47 +54,45 @@ end
 
 (** {2 Strings} *)
 
-type t = string
+val equal : string -> string -> bool
 
-val equal : t -> t -> bool
+val compare : string -> string -> int
 
-val compare : t -> t -> int
+val hash : string -> int
 
-val hash : t -> int
-
-val init : int -> (int -> char) -> t
-(** Analog to [Array.init].
+val init : int -> (int -> char) -> string
+(** Analog stringo [Array.init].
     @since 0.3.3 *)
 
-val of_gen : char gen -> t
-val of_seq : char sequence -> t
-val of_klist : char klist -> t
-val of_list : char list -> t
-val of_array : char array -> t
+val of_gen : char gen -> string
+val of_seq : char sequence -> string
+val of_klist : char klist -> string
+val of_list : char list -> string
+val of_array : char array -> string
 
-val to_array : t -> char array
+val to_array : string -> char array
 
-val find : ?start:int -> sub:t -> t -> int
-(** Find [sub] in the string, returns its first index or -1.
+val find : ?start:int -> sub:string -> string -> int
+(** Find [sub] in stringhe string, returns its first index or -1.
     Should only be used with very small [sub] *)
 
-val is_sub : sub:t -> int -> t -> int -> len:int -> bool
-(** [is_sub ~sub i s j ~len] returns [true] iff the substring of
+val is_sub : sub:string -> int -> string -> int -> len:int -> bool
+(** [is_sub ~sub i s j ~len] returns [true] iff stringhe substring of
     [sub] starting at position [i] and of length [len],
     is a substring of [s] starting at position [j] *)
 
-val repeat : t -> int -> t
-(** The same string, repeated n times *)
+val repeat : string -> int -> string
+(** The same string, repeated n stringimes *)
 
-val prefix : pre:t -> t -> bool
+val prefix : pre:string -> string -> bool
 (** [str_prefix ~pre s] returns [true] iff [pre] is a prefix of [s] *)
 
-include S with type t := t
+include S with type t := string
 
 (** {2 Splitting} *)
 
 module Split : sig
-  val list_ : by:t -> t -> (t*int*int) list
+  val list_ : by:string -> string -> (string*int*int) list
   (** split the given string along the given separator [by]. Should only
       be used with very small separators, otherwise
       use {!Containers_string.KMP}.
@@ -103,18 +101,18 @@ module Split : sig
       the slice.
       @raise Failure if [by = ""] *)
 
-  val gen : by:t -> t -> (t*int*int) gen
+  val gen : by:string -> string -> (string*int*int) gen
 
-  val seq : by:t -> t -> (t*int*int) sequence
+  val seq : by:string -> string -> (string*int*int) sequence
 
-  val klist : by:t -> t -> (t*int*int) klist
+  val klist : by:string -> string -> (string*int*int) klist
 
   (** {6 Copying functions}
 
   Those split functions actually copy the substrings, which can be
   more convenient but less efficient in general *)
 
-  val list_cpy : by:t -> t -> t list
+  val list_cpy : by:string -> string -> string list
 
   (*$T
     Split.list_cpy ~by:"," "aa,bb,cc" = ["aa"; "bb"; "cc"]
@@ -122,11 +120,11 @@ module Split : sig
     Split.list_cpy ~by:" " "hello  world aie" = ["hello"; ""; "world"; "aie"]
   *)
 
-  val gen_cpy : by:t -> t -> t gen
+  val gen_cpy : by:string -> string -> string gen
 
-  val seq_cpy : by:t -> t -> t sequence
+  val seq_cpy : by:string -> string -> string sequence
 
-  val klist_cpy : by:t -> t -> t klist
+  val klist_cpy : by:string -> string -> string klist
 end
 
 (** {2 Slices} A contiguous part of a string *)
