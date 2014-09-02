@@ -58,6 +58,13 @@ Library "containers_string"
   FindlibName:      string
   FindlibParent:    containers
 
+Library "containers_pervasives"
+  Path:             pervasives
+  Modules:          CCPervasives
+  BuildDepends:     containers
+  FindlibName:      pervasives
+  FindlibParent:    containers
+
 Library "containers_misc"
   Path:             misc
   Pack:             true

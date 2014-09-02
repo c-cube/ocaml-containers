@@ -2,11 +2,13 @@
 #thread
 #directory "_build/core";;
 #directory "_build/misc";;
+#directory "_build/pervasives/";;
 #directory "_build/string";;
 #directory "_build/threads";;
 #directory "_build/tests/";;
 #load "containers.cma";;
 #load "containers_string.cma";;
+#load "containers_pervasives.cma";;
 #load "containers_misc.cma";;
 #thread;;
 #load "containers_thread.cma";;
