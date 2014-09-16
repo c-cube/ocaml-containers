@@ -25,11 +25,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Simple S-expression parsing/printing} *)
 
+type 'a or_error = [ `Ok of 'a | `Error of string ]
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+
+(** {2 Basics} *)
+
 type t =
-  | K of string * t  (* keyword *)
-  | I of int
-  | S of string
-  | L of t list
+  | Atom of string
+  | List of t list
 
 val eq : t -> t -> bool
 val compare : t -> t -> int
@@ -39,48 +43,73 @@ val hash : t -> int
 
 val to_buf : Buffer.t -> t -> unit
 val to_string : t -> string
-val fmt : Format.formatter -> t -> unit
+val print : Format.formatter -> t -> unit
 
 (** {2 Deserialization (decoding)} *)
 
-(** Deserialization is based on the {! decoder} type. Parsing can be
-    incremental, in which case the input is provided chunk by chunk and
-    the decoder contains the parsing state. Once a Sexpr value
-    has been parsed, other values can still be read. *)
+type 'a parse_result = ['a or_error | `End ]
+type 'a partial_result = [ 'a parse_result | `Await ]
 
-type decoder
-  (** Decoding state *)
+(** {6 Streaming Parsing} *)
 
-val mk_decoder : unit -> decoder
-  (** Create a new decoder *)
+module Streaming : sig
+  type decoder
 
-type parse_result =
-  | ParseOk of t
-  | ParseError of string
-  | ParsePartial
+  val mk_decoder : unit -> decoder
 
-val parse : decoder -> string -> int -> int -> parse_result
-  (** [parse dec s i len] uses the partial state stored in [dec] and
-      the substring of [s] starting at index [i] with length [len].
-      It can return an error, a value or just [ParsePartial] if
-      more input is needed *)
+  val feed : decoder -> string -> int -> int -> unit
+  (** Feed a chunk of input to the decoder *)
 
-val reset : decoder -> unit
-  (** Reset the decoder to its pristine state, ready to parse something
-      different. Before that, {! rest} and {! rest_size} can be used
-      to recover the part of the input that has not been consumed yet. *)
+  val reached_end : decoder -> unit
+  (** Tell the decoder that end of input has been reached *)
 
-val state : decoder -> parse_result
-  (** Current state of the decoder *)
+  type token =
+    | Open
+    | Close
+    | Atom of string
+  (** An individual S-exp token *)
 
-val rest : decoder -> string
-  (** What remains after parsing (the additional, unused input) *)
+  val next : decoder -> token partial_result
+  (** Obtain the next token, an error, or block/end stream *)
+end
 
-val rest_size : decoder -> int
-  (** Length of [rest d]. 0 indicates that the whole input has been consumed. *)
+(** {6 Generator with errors} *)
+module ParseGen : sig
+  type 'a t = unit -> 'a parse_result
+  (** A generator-like structure, but with the possibility of errors.
+      When called, it can yield a new element, signal the end of stream,
+      or signal an error. *)
 
-val parse_string : string -> parse_result
-  (** Parse a full value from this string. *)
+  val to_list : 'a t -> 'a list or_error
 
-val of_string : string -> t
-  (** Parse the string. @raise Invalid_argument if it fails to parse. *)
+  val head : 'a t -> 'a or_error
+
+  val head_exn : 'a t -> 'a
+
+  val take : int -> 'a t -> 'a t
+end
+
+(** {6 Stream Parser} *)
+
+val parse_string : string -> t ParseGen.t
+(** Parse a string *)
+
+val parse_chan : in_channel -> t ParseGen.t
+(** Parse a channel *)
+
+val parse_gen : string gen -> t ParseGen.t
+(** Parse chunks of string *)
+
+(** {6 Blocking} *)
+
+val parse1_chan : in_channel -> t or_error
+
+val parse1_string : string -> t or_error
+
+val parse_l_chan : in_channel -> t list or_error
+
+val parse_l_string : string -> t list or_error
+
+val parse_l_gen : string gen -> t list or_error
+
+val parse_l_seq : string sequence -> t list or_error

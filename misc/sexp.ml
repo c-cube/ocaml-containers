@@ -25,11 +25,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Simple S-expression parsing/printing} *)
 
+type 'a or_error = [ `Ok of 'a | `Error of string ]
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+
 type t =
-  | K of string * t  (* keyword *)
-  | I of int
-  | S of string
-  | L of t list
+  | Atom of string
+  | List of t list
 
 let eq a b = a = b
 
@@ -39,242 +41,354 @@ let hash a = Hashtbl.hash a
 
 (** {2 Serialization (encoding)} *)
 
+let _must_escape s =
+  try
+    for i = 0 to String.length s - 1 do
+      let c = String.unsafe_get s i in
+      match c with
+      | ' ' | ')' | '(' | '\n' | '\t' -> raise Exit
+      | _ -> ()
+    done;
+    false
+  with Exit -> true
+
 let rec to_buf b t = match t with
-  | I i -> Printf.bprintf b "%d" i
-  | S s -> Buffer.add_string b (String.escaped s)
-  | K (s, t') ->
-    assert (s.[0] = ':');
-    Buffer.add_string b s;
-    Buffer.add_char b ' ';
-    to_buf b t'
-  | L l ->
-    Buffer.add_char b '(';
-    List.iteri (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t')) l;
-    Buffer.add_char b ')'
+  | Atom s when _must_escape s -> Printf.bprintf b "\"%s\"" (String.escaped s)
+  | Atom s -> Buffer.add_string b s
+  | List [] -> Buffer.add_string b "()"
+  | List [x] -> Printf.bprintf b "(%a)" to_buf x
+  | List l ->
+      Buffer.add_char b '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t'))
+        l;
+      Buffer.add_char b ')'
 
 let to_string t =
-  let b = Buffer.create 32 in
+  let b = Buffer.create 128 in
   to_buf b t;
   Buffer.contents b
 
-(* TODO: improve (slow and ugly) *)
-let fmt fmt t =
-  let b = Buffer.create 32 in
-  to_buf b t;
-  Format.pp_print_string fmt (Buffer.contents b)
+let rec print fmt t = match t with
+  | Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | Atom s -> Format.pp_print_string fmt s
+  | List [] -> Format.pp_print_string fmt "()"
+  | List [x] -> Format.fprintf fmt "(%a)" print x
+  | List l ->
+      Format.pp_print_char fmt '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; print fmt t'))
+        l;
+      Format.pp_print_char fmt ')'
 
 (** {2 Deserialization (decoding)} *)
 
-(** Deserialization is based on the {! decoder} type. Parsing can be
-    incremental, in which case the input is provided chunk by chunk and
-    the decoder contains the parsing state. Once a Sexpr value
-    has been parsed, other values can still be read. *)
+type 'a parse_result = ['a or_error | `End ]
+type 'a partial_result = [ 'a parse_result | `Await ]
 
-type decoder = {
-  mutable buf : string;  (* input buffer *)
-  mutable i : int;  (* index in buf *)
-  mutable len : int;  (* length of substring to read *)
-  mutable c : int;  (* line *)
-  mutable l : int;  (* column *)
-  mutable state : parse_result;
-  mutable stack : partial_state list;
-} (** Decoding state *)
+module Streaming = struct
+  type token =
+    | Open
+    | Close
+    | Atom of string
 
-(** Result of parsing *)
-and parse_result =
-  | ParseOk of t
-  | ParseError of string
-  | ParsePartial
+  type decode_state =
+    | St_start
+    | St_atom
+    | St_quoted
+    | St_escaped
+    | St_yield of token
+    | St_error of string
+    | St_end
 
-(** Partial state of the parser *)
-and partial_state =
-  | PS_I of bool * int (* sign and integer *)
-  | PS_S of Buffer.t (* parsing a string *)
-  | PS_S_escape of Buffer.t (* parsing a string; prev char is \ *)
-  | PS_L of t list
-  | PS_key of string  (* key, waiting for value *)
-  | PS_return of t  (* bottom of stack *)
-  | PS_error of string (* error *)
+  type decoder = {
+    mutable st : decode_state;
+    mutable i : int;
+    mutable line : int;
+    mutable col : int;
+    mutable stop : bool;
+    buf : Buffer.t;
+    atom : Buffer.t;  (* atom being parsed *)
+  }
 
-let mk_decoder () =
-  let dec = {
-    buf = "";
+  let mk_decoder () = {
     i = 0;
-    len = 0;
-    c = 0;
-    l = 0;
-    state = ParsePartial;
-    stack = [];
-  } in
-  dec
+    st = St_start;
+    line = 0;
+    col = 0;
+    stop = false;
+    buf=Buffer.create 32;
+    atom = Buffer.create 32;
+  }
 
-let is_empty dec = dec.len = 0
-let cur dec = dec.buf.[dec.i]
+  exception NeedMoar
+  exception Error of string
+  exception EOI
 
-let junk dec =
-  (* update line/column *)
-  (if cur dec = '\n'
-    then (dec.c <- 0; dec.l <- dec.l + 1)
-    else dec.c <- dec.c + 1);
-  dec.i <- dec.i + 1;
-  dec.len <- dec.len - 1
+  (* yield [x] with current state [st] *)
+  let _yield d st x =
+    d.st <- st;
+    x
 
-let next dec =
-  let c = cur dec in
-  junk dec;
-  c
+  (* read the next char *)
+  let _next_char d =
+    if d.i = Buffer.length d.buf
+      then (
+        (* need more input; reset buffer to put it in *)
+        Buffer.clear d.buf;
+        d.i <- 0;
+        raise NeedMoar
+      ) else (
+        let c = Buffer.nth d.buf d.i in
+        d.i <- d.i + 1;
+        c
+      )
 
-(* parse value *)
-let rec parse_rec dec =
-  match dec.stack with
-  | [PS_return v] ->  (* return value *)
-    dec.stack <- [];
-    dec.state <- ParseOk v;
-    dec.state
-  | [PS_error s] -> (* failure *)
-    dec.stack <- [];
-    dec.state <- ParseError s;
-    dec.state
-  | _ ->
-    if is_empty dec then ParsePartial (* wait *)
-    else begin
-      let c = next dec in
-      (match dec.stack, c with
-      | PS_S_escape b :: stack, 'n' ->
-        Buffer.add_char b '\n';
-        dec.stack <- PS_S b :: stack
-      | PS_S_escape b :: stack, 't' ->
-        Buffer.add_char b '\t';
-        dec.stack <- PS_S b :: stack
-      | (PS_S_escape b) :: stack, ('(' | '\\' | ')' | ' ') ->
-        Buffer.add_char b c;
-        dec.stack <- (PS_S b) :: stack;
-      | (PS_key s) :: _, (')' | '\n' | ' ' | '\t') -> (* error *)
-        error dec ("keyword " ^ s ^ " expected value")
-      | _, ')' -> (* special case for ')' *)
-        close_paren dec
-      | ((PS_L _ | PS_key _) :: _ | []), '-' ->  (* negative num *)
-        dec.stack <- PS_I (false, 0) :: dec.stack
-      | ((PS_L _ | PS_key _) :: _ | []), '0' .. '9' ->  (* positive num *)
-        dec.stack <- PS_I (true, Char.code c - Char.code '0') :: dec.stack
-      | (PS_I (sign, i)) :: stack, '0' .. '9' ->
-        dec.stack <- PS_I (sign, (Char.code c - Char.code '0') + 10 * i) :: stack;
-      | (PS_I (sign, i)) :: stack, (' ' | '\t' | '\n') ->
-        terminate_token dec
-      | stack, '(' ->
-        dec.stack <- PS_L [] :: stack  (* push new list *)
-      | PS_S b :: stack, (' ' | '\t' | '\n') -> (* parsed a string *)
-        terminate_token dec
-      | PS_S b :: stack, '\\' ->
-        dec.stack <- PS_S_escape b :: stack  (* escape next char *)
-      | PS_S b :: _, _ ->
-        Buffer.add_char b c  (* just a char of the string *)
-      | _, (' ' | '\t' | '\n') ->  (* skip *)
-        ()
-      | stack, c ->
-        let b = Buffer.create 7 in
-        Buffer.add_char b c;
-        dec.stack <- PS_S b :: stack
-      );
-      parse_rec dec
-    end
-(* When a value is parsed, push it on the stack (possibly collapsing it) *)
-and push_value dec v =
-  match v, dec.stack with
-  | _, [] ->
-    dec.stack <- [PS_return v] (* finished *)
-  | _, (PS_L l) :: stack ->
-    (* add to list *)
-    dec.stack <- (PS_L (v :: l)) :: stack;
-  | v, ((PS_key s) :: stack) ->
-    (* parsed a key/value *)
-    dec.stack <- stack;
-    push_value dec (K (s, v))
-  | _ ->
-    error dec "unexpected value"
-(* closing parenthesis: may terminate several states at once *)
-and close_paren dec =
-  match dec.stack with
-  | PS_L l :: stack ->
-    dec.stack <- stack;
-    push_value dec (L (List.rev l))
-  | (PS_I _ | PS_S _) :: stack ->
-    terminate_token dec;
-    close_paren dec  (* parenthesis still not closed *)
-  | _ ->
-    error dec "Sexp: unexpected ')'"
-(* terminate current token *)
-and terminate_token dec =
-  match dec.stack with
-  | [] -> assert false
-  | (PS_I (sign, i)) :: stack ->
-    dec.stack <- stack;
-    push_value dec (I (if sign then i else ~- i))  (* parsed int *)
-  | (PS_S b) :: stack ->
-    dec.stack <- stack;
+  let _take_buffer b =
     let s = Buffer.contents b in
-    if s.[0] = ':'
-      then dec.stack <- (PS_key s) :: stack  (* keyword, wait for value *)
-      else push_value dec (S s)
-  | _ ->
-    error dec "Sexp: ill-terminated token"
-(* signal error *)
-and error dec msg =
-  let msg = Printf.sprintf "Sexp: error at line %d, column %d: %s"
-    dec.l dec.c msg in
-  dec.stack <- [PS_error msg]
+    Buffer.clear b;
+    s
 
-(* exported parse function *)
-let parse dec s i len =
-  (if i < 0 || i+len > String.length s
-    then invalid_arg "Sexp.parse: not a valid substring");
-  (* add the input to [dec] *)
-  if dec.len = 0
-    then begin
-      dec.buf <- s;
-      dec.i <- i;
-      dec.len <- len;
-    end else begin
-      (* use a buffer to merge the stored input and the new input *)
-      let b = Buffer.create (dec.len + len) in
-      Buffer.add_substring b dec.buf dec.i dec.len;
-      Buffer.add_substring b s i len;
-      dec.buf <- Buffer.contents b;
-      dec.i <- 0;
-      dec.len <- dec.len + len;
-    end;
-  (* state machine *)
-  parse_rec dec
+  let _newline d =
+    d.line <- d.line + 1;
+    d.col <- 0;
+    ()
 
-let reset dec =
-  dec.l <- 0;
-  dec.c <- 0;
-  dec.i <- 0;
-  dec.len <- 0;
-  dec.state <- ParsePartial;
-  dec.stack <- [];
-  ()
+  (* raise an error *)
+  let _error d msg =
+    let msg' = Printf.sprintf "at %d,%d: %s" d.line d.col msg in
+    d.st <- St_error msg';
+    raise (Error msg')
 
-let state dec = dec.state
+  (* next token *)
+  let rec _next d st = match st with
+    | St_error msg -> raise (Error msg)
+    | St_end -> raise EOI
+    | St_yield x ->
+        (* yield the given token, then start a fresh one *)
+        _yield d St_start x
+    | St_start ->
+        (* start reading next token *)
+        let c = _next_char d in
+        begin match c with
+        | '\n' -> _newline d; _next d St_start
+        | ' ' | '\t' -> _next d St_start
+        | '(' -> _yield d St_start Open
+        | ')' -> _yield d St_start Close
+        | '"' -> _next d St_quoted
+        | _ -> (* read regular atom *)
+            Buffer.add_char d.atom c;
+            _next d St_atom
+        end
+    | St_atom when d.stop ->
+        let a = _take_buffer d.atom in
+        _yield d St_end (Atom a)
+    | St_atom ->
+        (* reading an unquoted atom *)
+        let c = _next_char d in
+        begin match c with
+        | ' ' | '\t' | '\n' ->
+            let a = _take_buffer d.atom in
+            _yield d St_start (Atom a)
+        | ')' ->
+            let a = _take_buffer d.atom in
+            _yield d (St_yield Close) (Atom a)
+        | '(' ->
+            let a = _take_buffer d.atom in
+            _yield d (St_yield Open) (Atom a)
+        | '\\' -> _error d "unexpected char"
+        | _ ->
+            Buffer.add_char d.atom c;
+            _next d St_atom
+        end
+    | St_quoted when d.stop ->
+        let a = _take_buffer d.atom in
+        _yield d St_end (Atom a)
+    | St_quoted ->
+        (* reading an unquoted atom *)
+        let c = _next_char d in
+        begin match c with
+        | '\\' -> _next d St_escaped
+        | '"' ->
+            let a = _take_buffer d.atom in
+            _yield d St_start (Atom a)
+        | _ ->
+            Buffer.add_char d.atom c;
+            _next d St_atom
+        end
+    | St_escaped ->
+        if d.stop
+          then _error d "unexpected end of input (escaping)";
+        let c = _next_char d in
+        Buffer.add_char d.atom
+          (match c with
+          | 'n' -> '\n'
+          | 't' -> '\t'
+          | 'r' -> '\r'
+          | '\\' -> '\\'
+          | _ -> _error d "unexpected escaped character"
+          );
+        _next d St_quoted
 
-let rest dec =
-  String.sub dec.buf dec.i dec.len
+  let feed d s i len =
+    if d.stop then failwith "Sexp.Streaming.feed: end of input reached";
+    Buffer.add_substring d.buf s i len
 
-let rest_size dec =
-  dec.len
+  let reached_end d =
+    d.stop <- true
+
+  let next_exn d = _next d d.st
+
+  let next d =
+    try
+      `Ok (_next d d.st)
+    with
+    | NeedMoar -> `Await
+    | Error msg -> `Error msg
+    | EOI -> `End
+end
+
+module ParseGen = struct
+  type 'a t = unit -> 'a parse_result
+
+  let to_list g : 'a list or_error =
+    let rec aux acc = match g() with
+      | `Error e -> `Error e
+      | `Ok x -> aux (x::acc)
+      | `End -> `Ok (List.rev acc)
+    in
+    aux []
+
+  let head g = match g() with
+    | `End -> `Error "expected at least one element"
+    | #or_error as x -> x
+
+  let head_exn g = match g() with
+    | `Ok x -> x
+    | `Error msg -> failwith msg
+    | `End -> failwith "expected at least one element"
+
+  let take n g =
+    assert (n>=0);
+    let n = ref n in
+    fun () ->
+      if !n = 0 then `End
+      else (
+        decr n;
+        g()
+      )
+end
+
+(* hidden parser state *)
+type parser_state = {
+  ps_d : Streaming.decoder;
+  mutable ps_stack : t list list;
+}
+
+let mk_ps () = {
+  ps_d = Streaming.mk_decoder ();
+  ps_stack = [];
+}
+
+let _error ps msg =
+  let msg' = Printf.sprintf "at %d,%d: %s"
+    ps.ps_d.Streaming.line ps.ps_d.Streaming.col msg in
+  `Error msg'
+
+(* next token, or await *)
+let rec _next ps : t partial_result = match Streaming.next ps.ps_d with
+  | `Ok (Streaming.Atom s) ->
+      _push ps (Atom s)
+  | `Ok Streaming.Open ->
+      ps.ps_stack <- [] :: ps.ps_stack;
+      _next ps
+  | `Ok Streaming.Close ->
+      begin match ps.ps_stack with
+      | [] -> _error ps "unbalanced ')'"
+      | l :: stack ->
+          ps.ps_stack <- stack;
+          _push ps (List (List.rev l))
+      end
+  | `Error msg -> `Error msg
+  | `Await -> `Await
+  | `End -> `End
+
+(* push a S-expr on top of the parser stack *)
+and _push ps e = match ps.ps_stack with
+  | [] ->
+      `Ok e
+  | l :: tl ->
+      ps.ps_stack <- (e :: l) :: tl;
+      _next ps
+
+let parse_gen g : t ParseGen.t =
+  let ps = mk_ps() in
+  let rec next () = match _next ps with
+    | `Await ->
+        begin match g() with
+        | None -> Streaming.reached_end ps.ps_d
+        | Some s -> Streaming.feed ps.ps_d s 0 (String.length s)
+        end;
+        next()
+    | `Ok x -> `Ok x
+    | `Error e -> `Error e
+    | `End -> `End
+  in
+  next
+
+(* singleton generator *)
+let _gen1 x =
+  let first = ref true in
+  fun () ->
+    if !first then (first:=false; Some x) else None
 
 let parse_string s =
-  let dec = mk_decoder () in
-  parse dec s 0 (String.length s)
+  parse_gen (_gen1 s)
 
-let of_string s =
-  match parse_string s with
-  | ParseOk t -> t
-  | ParsePartial -> invalid_arg "Sexp: partial parse"
-  | ParseError msg -> invalid_arg msg
+let parse_chan ic =
+  let buf = Buffer.create 512 in
+  let gen () =
+    Buffer.clear buf;
+    Buffer.add_channel buf ic 512;
+    if Buffer.length buf = 0
+      then None
+      else Some (Buffer.contents buf)
+  in
+  parse_gen gen
 
-(* tests:
+(** {6 Blocking} *)
 
-let s = Sexp.of_string "(0 a b c 42 :foo 45 :bar (hello-world foo\\tb\\na\\(\\)r -421) (41 -52) 0)";;
-Sexp.to_string s;;
-*)
+let parse1_chan ic =
+  ParseGen.head (parse_chan ic)
+
+let parse1_string s =
+  ParseGen.head (parse_string s)
+
+let parse_l_chan ic =
+  ParseGen.to_list (parse_chan ic)
+
+let parse_l_string s =
+  ParseGen.to_list (parse_string s)
+
+let parse_l_gen g =
+  ParseGen.to_list (parse_gen g)
+
+let parse_l_seq seq =
+  let ps = mk_ps() in
+  let l = ref [] in
+  (* read as many expressions as possible *)
+  let rec _nexts () = match _next ps with
+    | `Ok x -> l := x :: !l; _nexts ()
+    | `Error e -> raise (Streaming.Error e)
+    | `End -> raise Streaming.EOI
+    | `Await -> ()
+  in
+  try
+    seq
+      (fun s -> Streaming.feed ps.ps_d s 0 (String.length s); _nexts ());
+    Streaming.reached_end ps.ps_d;
+    _nexts ();
+    `Ok (List.rev !l)
+  with
+  | Streaming.Error msg -> `Error msg
+  | Streaming.EOI -> `Ok (List.rev !l)
