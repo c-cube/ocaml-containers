@@ -1,11 +1,13 @@
 S core
 S misc
 S string
+S pervasives
 S tests
 S examples
 B _build/core
 B _build/misc
 B _build/string
+B _build/pervasives
 B _build/tests
 B _build/examples
 PKG oUnit
