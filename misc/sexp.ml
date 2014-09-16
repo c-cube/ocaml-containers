@@ -46,7 +46,7 @@ let _must_escape s =
     for i = 0 to String.length s - 1 do
       let c = String.unsafe_get s i in
       match c with
-      | ' ' | ')' | '(' | '\n' | '\t' -> raise Exit
+      | ' ' | ')' | '(' | '"' | '\n' | '\t' -> raise Exit
       | _ -> ()
     done;
     false
@@ -141,6 +141,7 @@ module Streaming = struct
       ) else (
         let c = Buffer.nth d.buf d.i in
         d.i <- d.i + 1;
+        d.col <- d.col + 1;
         c
       )
 
@@ -160,13 +161,18 @@ module Streaming = struct
     d.st <- St_error msg';
     raise (Error msg')
 
+  let _end d =
+    d.st <- St_end;
+    raise EOI
+
   (* next token *)
   let rec _next d st = match st with
     | St_error msg -> raise (Error msg)
-    | St_end -> raise EOI
+    | St_end -> _end d
     | St_yield x ->
         (* yield the given token, then start a fresh one *)
         _yield d St_start x
+    | St_start when d.stop -> _end d
     | St_start ->
         (* start reading next token *)
         let c = _next_char d in
@@ -196,7 +202,8 @@ module Streaming = struct
         | '(' ->
             let a = _take_buffer d.atom in
             _yield d (St_yield Open) (Atom a)
-        | '\\' -> _error d "unexpected char"
+        | '"' -> _error d "unexpected \"" 
+        | '\\' -> _error d "unexpected \\"
         | _ ->
             Buffer.add_char d.atom c;
             _next d St_atom
@@ -214,7 +221,7 @@ module Streaming = struct
             _yield d St_start (Atom a)
         | _ ->
             Buffer.add_char d.atom c;
-            _next d St_atom
+            _next d St_quoted
         end
     | St_escaped ->
         if d.stop
@@ -225,6 +232,7 @@ module Streaming = struct
           | 'n' -> '\n'
           | 't' -> '\t'
           | 'r' -> '\r'
+          | '"' -> '"'
           | '\\' -> '\\'
           | _ -> _error d "unexpected escaped character"
           );
@@ -236,8 +244,6 @@ module Streaming = struct
 
   let reached_end d =
     d.stop <- true
-
-  let next_exn d = _next d d.st
 
   let next d =
     try
