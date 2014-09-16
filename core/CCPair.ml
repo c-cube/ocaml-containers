@@ -64,6 +64,10 @@ let compare f g (x1,y1) (x2,y2) =
   if c <> 0 then c else g y1 y2
 
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
 let pp pp_x pp_y buf (x,y) =
   Printf.bprintf buf "(%a, %a)" pp_x x pp_y y
+
+let print pa pb fmt (x,y) =
+  Format.fprintf fmt "(%a, %a)" pa x pb y
