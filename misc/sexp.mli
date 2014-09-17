@@ -47,10 +47,13 @@ val to_file : string -> t -> unit
 val to_chan : out_channel -> t -> unit
 
 val print : Format.formatter -> t -> unit
+(** Pretty-printer nice on human eyes (including indentation) *)
 
 val print_noindent : Format.formatter -> t -> unit
+(** Raw, direct printing as compact as possible *)
 
 val seq_to_file : string -> t sequence -> unit
+(** Print the given sequence of expressions to a file *)
 
 (** {2 Deserialization (decoding)} *)
 
@@ -59,16 +62,65 @@ type 'a partial_result = [ 'a parse_result | `Await ]
 
 (** {6 Streaming Parsing} *)
 
-module Streaming : sig
-  type decoder
+module Source : sig
+  type individual_char =
+    | NC_yield of char
+    | NC_end
+    | NC_await
+  (** An individual character returned by a source *)
 
-  val mk_decoder : unit -> decoder
+  type t = unit -> individual_char
+  (** A source of characters can yield them one by one, or signal the end,
+      or signal that some external intervention is needed *)
 
-  val feed : decoder -> string -> int -> int -> unit
-  (** Feed a chunk of input to the decoder *)
+  type source = t
 
-  val reached_end : decoder -> unit
-  (** Tell the decoder that end of input has been reached *)
+  (** A mnual source of individual characters. When it has exhausted its
+      data, it asked its caller to provide more, or signal that none remains
+      In particular, useful when the source of data is monadic IO *)
+  module Manual : sig
+    type t
+
+    val make : unit -> t
+    (** Make a new manual source. It needs to be fed input manually,
+        using {!feed} *)
+
+    val to_src : t -> source
+    (** The manual source contains a source! *)
+
+    val feed : t -> string -> int -> int -> unit
+    (** Feed a chunk of input to the manual source *)
+
+    val reached_end : t -> unit
+    (** Tell the decoder that end of input has been reached. From now
+        the source will only yield [NC_end] *)
+  end
+
+  val of_string : string -> t
+  (** Use a single string as the source *)
+
+  val of_chan : ?bufsize:int -> in_channel -> t
+  (** Use a channel as the source *)
+
+  val of_gen : string gen -> t
+end
+
+module Lexer : sig
+  type t
+  (** A streaming lexer, that parses atomic chunks of S-expressions (atoms
+      and delimiters) *)
+
+  val make : Source.t -> t
+  (** Create a lexer that uses the given source of characters as an input *)
+
+  val of_string : string -> t
+
+  val of_chan : in_channel -> t
+
+  val line : t -> int
+  val col : t -> int
+
+  (** Obtain next token *)
 
   type token =
     | Open
@@ -76,7 +128,7 @@ module Streaming : sig
     | Atom of string
   (** An individual S-exp token *)
 
-  val next : decoder -> token partial_result
+  val next : t -> token partial_result
   (** Obtain the next token, an error, or block/end stream *)
 end
 

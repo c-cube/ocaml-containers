@@ -118,7 +118,96 @@ let to_file filename t = seq_to_file filename (fun k -> k t)
 type 'a parse_result = ['a or_error | `End ]
 type 'a partial_result = [ 'a parse_result | `Await ]
 
-module Streaming = struct
+module Source = struct
+  type individual_char =
+    | NC_yield of char
+    | NC_end
+    | NC_await
+
+  type t = unit -> individual_char
+  type source = t
+
+  module Manual = struct
+    type t = {
+      mutable i : int;    (* offset *)
+      mutable stop : bool;
+      buf : Buffer.t;     (* accessible chunk of input *)
+    }
+      
+    let make() = {
+      i = 0;
+      stop = false;
+      buf=Buffer.create 32;
+    }
+
+    let to_src d () =
+      if d.i = Buffer.length d.buf
+        then
+          if d.stop then NC_end else NC_await
+        else (
+          let c = Buffer.nth d.buf d.i in
+          d.i <- d.i + 1;
+          NC_yield c
+        )
+
+    let feed d s i len =
+      if d.stop then failwith "Sexp.Streaming.Manual.feed: reached EOI";
+      Buffer.add_substring d.buf s i len
+
+    let reached_end d = d.stop <- true
+  end
+
+  let of_string s =
+    let i = ref 0 in
+    fun () ->
+      if !i=String.length s
+      then NC_end
+      else (
+        let c = String.get s !i in
+        incr i;
+        NC_yield c
+      )
+
+  let of_chan ?(bufsize=1024) ic =
+    let buf = String.make bufsize ' ' in
+    let i = ref 0 in
+    let n = ref 0 in
+    let stop = ref false in
+    let rec next() =
+      if !stop then NC_end
+      else if !i = !n
+      then ( (* refill *)
+        i := 0;
+        n := input ic buf 0 bufsize;
+        if !n = 0 then (stop := true; NC_end) else next()
+      ) else (  (* yield *)
+        let c = String.get buf !i in
+        incr i;
+        NC_yield c
+      )
+    in next
+
+  let of_gen g =
+    let s = ref "" in
+    let i = ref 0 in
+    let stop = ref false in
+    let rec next() =
+      if !stop then NC_end
+      else if !i = String.length !s
+      then (
+        match g() with
+        | None -> stop := true; NC_end
+        | Some buf -> s := buf; i := 0; next () 
+      ) else (
+        let c = String.get !s !i in
+        incr i;
+        NC_yield c
+      )
+    in next
+end
+
+module Lexer = struct
+  (** An individual character returned by a source *)
   type token =
     | Open
     | Close
@@ -135,59 +224,38 @@ module Streaming = struct
     | St_error of string
     | St_end
 
-  type decoder = {
+  type t = {
+    src : Source.t;
+    atom : Buffer.t;    (* atom being parsed *)
     mutable st : decode_state;
-    mutable i : int;
     mutable line : int;
     mutable col : int;
-    mutable stop : bool;
-    buf : Buffer.t;
-    atom : Buffer.t;  (* atom being parsed *)
   }
 
-  let mk_decoder () = {
-    i = 0;
+  let make src = {
+    src;
     st = St_start;
     line = 1;
     col = 1;
-    stop = false;
-    buf=Buffer.create 32;
     atom = Buffer.create 32;
   }
 
-  exception NeedMoar
-  exception Error of string
-  exception EOI
+  let of_string s = make (Source.of_string s)
+
+  let of_chan ic = make (Source.of_chan ic)
+
+  let line t = t.line
+  let col t = t.col
 
   (* yield [x] with current state [st] *)
   let _yield d st x =
     d.st <- st;
-    x
-
-  (* read the next char *)
-  let _next_char d =
-    if d.i = Buffer.length d.buf
-      then (
-        (* need more input; reset buffer to put it in *)
-        Buffer.clear d.buf;
-        d.i <- 0;
-        raise NeedMoar
-      ) else (
-        let c = Buffer.nth d.buf d.i in
-        d.i <- d.i + 1;
-        d.col <- d.col + 1;
-        c
-      )
+    `Ok x
 
   let _take_buffer b =
     let s = Buffer.contents b in
     Buffer.clear b;
     s
-
-  let _newline d =
-    d.line <- d.line + 1;
-    d.col <- 0;
-    ()
 
   (* raise an error *)
   let _error d msg =
@@ -197,121 +265,116 @@ module Streaming = struct
       (fun b ->
         let msg' = Buffer.contents b in
         d.st <- St_error msg';
-        raise (Error msg'))
+        `Error msg')
       b msg
 
   let _end d =
     d.st <- St_end;
-    raise EOI
+    `End
 
   let _is_digit c = Char.code '0' <= Char.code c && Char.code c <= Char.code '9'
   let _digit2i c = Char.code c - Char.code '0'
 
   (* next token *)
-  let rec _next d st =
-    d.st <- st;
+  let rec _next d st : token partial_result =
     match st with
-    | St_error msg -> raise (Error msg)
+    | St_error msg -> `Error msg
     | St_end -> _end d
     | St_yield x ->
         (* yield the given token, then start a fresh one *)
         _yield d St_start x
-    | St_start when d.stop -> _end d
-    | St_start ->
-        (* start reading next token *)
-        let c = _next_char d in
-        begin match c with
-        | '\n' -> _newline d; _next d St_start
-        | ' ' | '\t' -> _next d St_start
-        | '(' -> _yield d St_start Open
-        | ')' -> _yield d St_start Close
-        | '"' -> _next d St_quoted
-        | _ -> (* read regular atom *)
-            Buffer.add_char d.atom c;
-            _next d St_atom
-        end
-    | St_atom when d.stop ->
-        let a = _take_buffer d.atom in
-        _yield d St_end (Atom a)
-    | St_atom ->
-        (* reading an unquoted atom *)
-        let c = _next_char d in
-        begin match c with
-        | '\n' ->
-            _newline d;
-            let a = _take_buffer d.atom in
-            _yield d St_start (Atom a)
-        | ' ' | '\t' ->
-            let a = _take_buffer d.atom in
-            _yield d St_start (Atom a)
-        | ')' ->
-            let a = _take_buffer d.atom in
-            _yield d (St_yield Close) (Atom a)
-        | '(' ->
-            let a = _take_buffer d.atom in
-            _yield d (St_yield Open) (Atom a)
-        | '"' -> _error d "unexpected \" (parsing atom %s)" (Buffer.contents d.atom)
-        | '\\' -> _error d "unexpected \\"
-        | _ ->
-            Buffer.add_char d.atom c;
-            _next d St_atom
-        end
-    | St_quoted when d.stop ->
-        let a = _take_buffer d.atom in
-        _yield d St_end (Atom a)
-    | St_quoted ->
-        (* reading an unquoted atom *)
-        let c = _next_char d in
-        begin match c with
-        | '\\' -> _next d St_escaped
-        | '"' ->
-            let a = _take_buffer d.atom in
-            _yield d St_start (Atom a)
-        | _ ->
-            Buffer.add_char d.atom c;
-            _next d St_quoted
-        end
-    | (St_escaped | St_raw_char1 _ | St_raw_char2 _) when d.stop ->
-        _error d "unexpected end of input (escaping)"
-    | St_escaped ->
-        begin match _next_char d with
-          | 'n' -> Buffer.add_char d.atom '\n'; _next d St_quoted
-          | 't' -> Buffer.add_char d.atom '\t'; _next d St_quoted
-          | 'r' -> Buffer.add_char d.atom '\r'; _next d St_quoted
-          | 'b' -> Buffer.add_char d.atom '\b'; _next d St_quoted
-          | '"' -> Buffer.add_char d.atom '"'; _next d St_quoted
-          | '\\' -> Buffer.add_char d.atom '\\'; _next d St_quoted
-          | c when _is_digit c -> _next d (St_raw_char1 (_digit2i c))
-          | c -> _error d "unexpected escaped character %c" c
-        end
-    | St_raw_char1 i ->
-        begin match _next_char d with
-          | c when _is_digit c -> _next d (St_raw_char2 (i*10 + _digit2i c))
-          | c -> _error d "expected digit, got %c" c
-        end
-    | St_raw_char2 i ->
-        begin match _next_char d with
-          | c when _is_digit c ->
-              (* read an escaped char *)
-              Buffer.add_char d.atom (Char.chr (i*10+_digit2i c));
-              _next d St_quoted
-          | c -> _error d "expected digit, got %c" c
-        end
+    | _ ->
+        d.st <- st;
+        _process_next d st
 
-  let feed d s i len =
-    if d.stop then failwith "Sexp.Streaming.feed: end of input reached";
-    Buffer.add_substring d.buf s i len
+  (* read and proces the next character *)
+  and _process_next d st =
+    match d.src () with
+    | Source.NC_end ->
+        begin match st with
+        | St_error _ | St_end | St_yield _ -> assert false
+        | St_start -> _end d
+        | St_atom ->
+            let a = _take_buffer d.atom in
+            _yield d St_end (Atom a)
+        | St_quoted ->
+            let a = _take_buffer d.atom in
+            _yield d St_end (Atom a)
+        | (St_escaped | St_raw_char1 _ | St_raw_char2 _) ->
+            _error d "unexpected end of input (escaping)"
+        end
+    | Source.NC_await -> `Await
+    | Source.NC_yield c ->
+        if c='\n'
+          then (d.col <- 1; d.line <- d.line + 1)
+          else (d.col <- d.col + 1);
+        (* use the next char *)
+        match st with
+        | St_error _ | St_end | St_yield _ -> assert false
+        | St_start ->
+            begin match c with
+            | ' ' | '\t' | '\n' -> _next d St_start
+            | '(' -> _yield d St_start Open
+            | ')' -> _yield d St_start Close
+            | '"' -> _next d St_quoted
+            | _ -> (* read regular atom *)
+                Buffer.add_char d.atom c;
+                _next d St_atom
+            end
+        | St_atom ->
+            begin match c with
+            | ' ' | '\t' | '\n' ->
+                let a = _take_buffer d.atom in
+                _yield d St_start (Atom a)
+            | ')' ->
+                let a = _take_buffer d.atom in
+                _yield d (St_yield Close) (Atom a)
+            | '(' ->
+                let a = _take_buffer d.atom in
+                _yield d (St_yield Open) (Atom a)
+            | '"' -> _error d "unexpected \" (parsing atom %s)" (Buffer.contents d.atom)
+            | '\\' -> _error d "unexpected \\"
+            | _ ->
+                Buffer.add_char d.atom c;
+                _next d St_atom
+            end
+        | St_quoted ->
+            (* reading an unquoted atom *)
+            begin match c with
+            | '\\' -> _next d St_escaped
+            | '"' ->
+                let a = _take_buffer d.atom in
+                _yield d St_start (Atom a)
+            | _ ->
+                Buffer.add_char d.atom c;
+                _next d St_quoted
+            end
+        | St_escaped ->
+            begin match c with
+              | 'n' -> Buffer.add_char d.atom '\n'; _next d St_quoted
+              | 't' -> Buffer.add_char d.atom '\t'; _next d St_quoted
+              | 'r' -> Buffer.add_char d.atom '\r'; _next d St_quoted
+              | 'b' -> Buffer.add_char d.atom '\b'; _next d St_quoted
+              | '"' -> Buffer.add_char d.atom '"'; _next d St_quoted
+              | '\\' -> Buffer.add_char d.atom '\\'; _next d St_quoted
+              | _ when _is_digit c -> _next d (St_raw_char1 (_digit2i c))
+              | _ -> _error d "unexpected escaped character %c" c
+            end
+        | St_raw_char1 i ->
+            begin match c with
+              | _ when _is_digit c -> _next d (St_raw_char2 (i*10 + _digit2i c))
+              | _ -> _error d "expected digit, got %c" c
+            end
+        | St_raw_char2 i ->
+            begin match c with
+              | c when _is_digit c ->
+                  (* read an escaped char *)
+                  Buffer.add_char d.atom (Char.chr (i*10+_digit2i c));
+                  _next d St_quoted
+              | c -> _error d "expected digit, got %c" c
+            end
 
-  let reached_end d =
-    d.stop <- true
-
-  let next d =
-    try
-      `Ok (_next d d.st)
-    with
-    | NeedMoar -> `Await
-    | Error msg -> `Error msg
-    | EOI -> `End
+  let next d = _next d d.st
 end
 
 module ParseGen = struct
@@ -347,28 +410,28 @@ end
 
 (* hidden parser state *)
 type parser_state = {
-  ps_d : Streaming.decoder;
+  ps_d : Lexer.t;
   mutable ps_stack : t list list;
 }
 
-let mk_ps () = {
-  ps_d = Streaming.mk_decoder ();
+let mk_ps src = {
+  ps_d = Lexer.make src;
   ps_stack = [];
 }
 
 let _error ps msg =
-  let msg' = Printf.sprintf "at %d,%d: %s"
-    ps.ps_d.Streaming.line ps.ps_d.Streaming.col msg in
+  let msg' = Printf.sprintf "at %d,%d: %s" (Lexer.line ps.ps_d) (Lexer.col ps.ps_d) msg in
   `Error msg'
 
 (* next token, or await *)
-let rec _next ps : t partial_result = match Streaming.next ps.ps_d with
-  | `Ok (Streaming.Atom s) ->
+let rec _next ps : t partial_result =
+  match Lexer.next ps.ps_d with
+  | `Ok (Lexer.Atom s) ->
       _push ps (Atom s)
-  | `Ok Streaming.Open ->
+  | `Ok Lexer.Open ->
       ps.ps_stack <- [] :: ps.ps_stack;
       _next ps
-  | `Ok Streaming.Close ->
+  | `Ok Lexer.Close ->
       begin match ps.ps_stack with
       | [] -> _error ps "unbalanced ')'"
       | l :: stack ->
@@ -387,49 +450,25 @@ and _push ps e = match ps.ps_stack with
       ps.ps_stack <- (e :: l) :: tl;
       _next ps
 
+(* assume [ps] never needs [`Await] *)
+let _never_block ps () = match _next ps with
+  | `Await -> assert false
+  | `Ok x -> `Ok x
+  | `Error e -> `Error e
+  | `End -> `End
+
 (* parse from a generator of string slices *)
-let _parse_gen g : t ParseGen.t =
-  let ps = mk_ps() in
-  let rec next () = match _next ps with
-    | `Await ->
-        begin match g() with
-        | None -> Streaming.reached_end ps.ps_d
-        | Some (s,i,len) -> Streaming.feed ps.ps_d s i len
-        end;
-        next()
-    | `Ok x -> `Ok x
-    | `Error e -> `Error e
-    | `End -> `End
-  in
-  next
-
-let parse_gen g =
-  _parse_gen
-    (fun () ->
-      match g() with
-      | None -> None
-      | Some s -> Some (s,0,String.length s)
-    )
-
-(* singleton generator *)
-let _gen1 x =
-  let first = ref true in
-  fun () ->
-    if !first then (first:=false; Some x) else None
+let parse_gen g : t ParseGen.t =
+  let ps = mk_ps (Source.of_gen g) in
+  _never_block ps
 
 let parse_string s =
-  parse_gen (_gen1 s)
+  let ps = mk_ps (Source.of_string s) in
+  _never_block ps
 
-let parse_chan ?(bufsize=1024) ic =
-  let buf = String.make bufsize ' ' in
-  let stop = ref false in
-  let gen () =
-    if !stop then None
-    else
-      let n = input ic buf 0 bufsize in
-      if n=0 then (stop:=true; None) else Some (buf,0,n)
-  in
-  _parse_gen gen
+let parse_chan ?bufsize ic =
+  let ps = mk_ps (Source.of_chan ?bufsize ic) in
+  _never_block ps
 
 (** {6 Blocking} *)
 
@@ -458,22 +497,26 @@ let parse_l_string s =
 let parse_l_gen g =
   ParseGen.to_list (parse_gen g)
 
+exception OhNoes of string
+exception StopNaow
+
 let parse_l_seq seq =
-  let ps = mk_ps() in
+  let src = Source.Manual.make () in
+  let ps = mk_ps (Source.Manual.to_src src) in
   let l = ref [] in
   (* read as many expressions as possible *)
   let rec _nexts () = match _next ps with
     | `Ok x -> l := x :: !l; _nexts ()
-    | `Error e -> raise (Streaming.Error e)
-    | `End -> raise Streaming.EOI
+    | `Error e -> raise (OhNoes e)
+    | `End -> raise StopNaow
     | `Await -> ()
   in
   try
     seq
-      (fun s -> Streaming.feed ps.ps_d s 0 (String.length s); _nexts ());
-    Streaming.reached_end ps.ps_d;
+      (fun s -> Source.Manual.feed src s 0 (String.length s); _nexts ());
+    Source.Manual.reached_end src;
     _nexts ();
     `Ok (List.rev !l)
   with
-  | Streaming.Error msg -> `Error msg
-  | Streaming.EOI -> `Ok (List.rev !l)
+  | OhNoes msg -> `Error msg
+  | StopNaow -> `Ok (List.rev !l)
