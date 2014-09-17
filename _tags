@@ -159,4 +159,5 @@
 # OASIS_STOP
 <tests/*.ml{,i}>: thread
 <threads/*.ml{,i}>: thread
+<sequence>: -traverse
 <{string,core}/**/*.ml>: warn_K, warn_Y, warn_X
