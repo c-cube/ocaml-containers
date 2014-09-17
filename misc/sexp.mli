@@ -41,6 +41,15 @@ val equal : t -> t -> bool
 val compare : t -> t -> int
 val hash : t -> int
 
+val of_int : int -> t
+val of_bool : bool -> t
+val of_list : t list -> t
+val of_string : string -> t
+val of_float : float -> t
+val of_unit : t
+val of_pair : t * t -> t
+val of_triple : t * t * t -> t
+
 (** {2 Serialization (encoding)} *)
 
 val to_buf : Buffer.t -> t -> unit
@@ -199,4 +208,36 @@ module L : sig
   val of_gen : string gen -> t list or_error
 
   val of_seq : string sequence -> t list or_error
+end
+
+(** {6 Traversal of S-exp} *)
+
+module Traverse : sig
+  val list_any : t -> (t -> 'a option) -> 'a option
+  (** [list_any (List l) f] tries [f x] for every element [x] in [List l],
+      and returns the first non-None result (if any). *)
+
+  val list_all : t -> (t -> 'a option) -> 'a list
+  (** [list_all (List l) f] returns the list of all [y] such that [x] in [l]
+      and [f x = Some y] *)
+
+  val to_int : t -> int option
+
+  val to_string : t -> string option
+
+  val to_bool : t -> bool option
+
+  val to_list : t -> t list option
+
+  val to_pair : t -> (t * t) option
+
+  val to_triple : t -> (t * t * t) option
+
+  val (>>=) : 'a option -> ('a -> 'b option) -> 'b option
+
+  val return : 'a -> 'a option
+
+  val get_exn : 'a option -> 'a
+  (** Unwrap an option, possibly failing.
+      @raise Invalid_argument if the argument is [None] *)
 end

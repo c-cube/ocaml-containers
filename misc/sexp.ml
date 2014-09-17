@@ -39,6 +39,15 @@ let compare a b = Pervasives.compare a b
 
 let hash a = Hashtbl.hash a
 
+let of_int x = Atom (string_of_int x)
+let of_float x = Atom (string_of_float x)
+let of_bool x = Atom (string_of_bool x)
+let of_string x = Atom x
+let of_unit = List []
+let of_list l = List l
+let of_pair (x,y) = List[x;y]
+let of_triple (x,y,z) = List[x;y;z]
+
 let _with_in filename f =
   let ic = open_in filename in
   try
@@ -551,4 +560,60 @@ module L = struct
     with
     | OhNoes msg -> `Error msg
     | StopNaow -> `Ok (List.rev !l)
+end
+
+(** {6 Traversal of S-exp} *)
+
+module Traverse = struct
+  let rec _list_any f l = match l with
+    | [] -> None
+    | x::tl ->
+        match f x with
+        | Some _ as res -> res
+        | None -> _list_any f tl
+
+  let list_any e f = match e with
+    | Atom _ -> None
+    | List l -> _list_any f l
+
+  let rec _list_all f acc l = match l with
+    | [] -> List.rev acc
+    | x::tl ->
+        match f x with
+        | Some y -> _list_all f (y::acc) tl
+        | None -> _list_all f acc tl
+
+  let list_all e f = match e with
+    | Atom _ -> []
+    | List l -> _list_all f [] l
+
+  let _try_atom e f = match e with
+    | List _ -> None
+    | Atom x -> try Some (f x) with _ -> None
+
+  let to_int e = _try_atom e int_of_string
+  let to_bool e = _try_atom e bool_of_string
+  let to_string e = _try_atom e (fun x->x)
+
+  let to_pair e = match e with
+    | List [x;y] -> Some (x,y)
+    | _ -> None
+
+  let to_triple e = match e with
+    | List [x;y;z] -> Some (x,y,z)
+    | _ -> None
+
+  let to_list e = match e with
+    | List l -> Some l
+    | Atom _ -> None
+
+  let return x = Some x
+
+  let (>>=) e f = match e with
+    | None -> None
+    | Some x -> f x
+
+  let get_exn e = match e with
+    | None -> failwith "Sexp.Traverse.get_exn"
+    | Some x -> x
 end
