@@ -72,6 +72,14 @@ let map2 f g e = match e with
   | `Ok x -> `Ok (f x)
   | `Error s -> `Error (g s)
 
+let iter f e = match e with
+  | `Ok x -> f x
+  | `Error _ -> ()
+
+let get_exn = function
+  | `Ok x -> x
+  | `Error _ -> raise (Invalid_argument "CCError.get_exn")
+
 let flat_map f e = match e with
   | `Ok x -> f x
   | `Error s -> `Error s

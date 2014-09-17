@@ -56,6 +56,15 @@ val map2 : ('a -> 'b) -> (string -> string) -> 'a t -> 'b t
 (** Same as {!map}, but also with a function that can transform
     the error message in case of failure *)
 
+val iter : ('a -> unit) -> 'a t -> unit
+(** Apply the function only in case of `Ok *)
+
+val get_exn : 'a t -> 'a
+(** Extract the value [x] from [`Ok x], fails otherwise.
+    You should be careful with this function, and favor other combinators
+    whenever possible.
+    @raise Invalid_argument if the value is an error. *)
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
