@@ -47,6 +47,7 @@ let _must_escape s =
       let c = String.unsafe_get s i in
       match c with
       | ' ' | ')' | '(' | '"' | '\n' | '\t' -> raise Exit
+      | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
       | _ -> ()
     done;
     false
@@ -99,6 +100,8 @@ module Streaming = struct
     | St_atom
     | St_quoted
     | St_escaped
+    | St_raw_char1 of int
+    | St_raw_char2 of int
     | St_yield of token
     | St_error of string
     | St_end
@@ -172,6 +175,9 @@ module Streaming = struct
     d.st <- St_end;
     raise EOI
 
+  let _is_digit c = Char.code '0' <= Char.code c && Char.code c <= Char.code '9'
+  let _digit2i c = Char.code c - Char.code '0'
+
   (* next token *)
   let rec _next d st =
     d.st <- st;
@@ -236,20 +242,32 @@ module Streaming = struct
             Buffer.add_char d.atom c;
             _next d St_quoted
         end
+    | (St_escaped | St_raw_char1 _ | St_raw_char2 _) when d.stop ->
+        _error d "unexpected end of input (escaping)"
     | St_escaped ->
-        if d.stop
-          then _error d "unexpected end of input (escaping)";
-        let c = _next_char d in
-        Buffer.add_char d.atom
-          (match c with
-          | 'n' -> '\n'
-          | 't' -> '\t'
-          | 'r' -> '\r'
-          | '"' -> '"'
-          | '\\' -> '\\'
+        begin match _next_char d with
+          | 'n' -> Buffer.add_char d.atom '\n'; _next d St_quoted
+          | 't' -> Buffer.add_char d.atom '\t'; _next d St_quoted
+          | 'r' -> Buffer.add_char d.atom '\r'; _next d St_quoted
+          | 'b' -> Buffer.add_char d.atom '\b'; _next d St_quoted
+          | '"' -> Buffer.add_char d.atom '"'; _next d St_quoted
+          | '\\' -> Buffer.add_char d.atom '\\'; _next d St_quoted
+          | c when _is_digit c -> _next d (St_raw_char1 (_digit2i c))
           | c -> _error d "unexpected escaped character %c" c
-          );
-        _next d St_quoted
+        end
+    | St_raw_char1 i ->
+        begin match _next_char d with
+          | c when _is_digit c -> _next d (St_raw_char2 (i*10 + _digit2i c))
+          | c -> _error d "expected digit, got %c" c
+        end
+    | St_raw_char2 i ->
+        begin match _next_char d with
+          | c when _is_digit c ->
+              (* read an escaped char *)
+              Buffer.add_char d.atom (Char.chr (i*10+_digit2i c));
+              _next d St_quoted
+          | c -> _error d "expected digit, got %c" c
+        end
 
   let feed d s i len =
     if d.stop then failwith "Sexp.Streaming.feed: end of input reached";
