@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: fbebfae7c483734f1144067d9ae9954b)
+# DO NOT EDIT (digest: c9667e55919ea370f2e3a33376a7eec4)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -19,6 +19,9 @@
 "string/containers_string.cmxs": use_containers_string
 "string/KMP.cmx": for-pack(Containers_string)
 "string/levenshtein.cmx": for-pack(Containers_string)
+# Library containers_pervasives
+"pervasives/containers_pervasives.cmxs": use_containers_pervasives
+<pervasives/*.ml{,i}>: use_containers
 # Library containers_misc
 "misc/containers_misc.cmxs": use_containers_misc
 "misc/cache.cmx": for-pack(Containers_misc)
@@ -146,6 +149,10 @@
 "examples/lambda.byte": package(unix)
 "examples/lambda.byte": use_containers
 "examples/lambda.byte": use_containers_misc
+# Executable id_sexp
+"examples/id_sexp.native": package(unix)
+"examples/id_sexp.native": use_containers
+"examples/id_sexp.native": use_containers_misc
 <examples/*.ml{,i}>: package(unix)
 <examples/*.ml{,i}>: use_containers
 <examples/*.ml{,i}>: use_containers_misc

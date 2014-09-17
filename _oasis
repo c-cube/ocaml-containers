@@ -219,6 +219,14 @@ Executable lambda
   Build$: flag(misc)
   BuildDepends: containers,containers.misc
 
+Executable id_sexp
+  Path:     examples/
+  Install:  false
+  CompiledObject: native
+  MainIs:   id_sexp.ml
+  Build$:   flag(misc)
+  BuildDepends: containers,containers.misc
+
 SourceRepository head
   Type: git
   Location: https://github.com/c-cube/ocaml-containers
