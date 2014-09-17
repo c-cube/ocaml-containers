@@ -13,6 +13,7 @@
 #thread;;
 #load "containers_thread.cma";;
 open Containers_misc;;
+#install_printer Sexp.print;;
 #install_printer Bencode.pretty;;
 #install_printer HGraph.Default.fmt;;
 #require "CamlGI";;

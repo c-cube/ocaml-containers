@@ -61,7 +61,7 @@ val compare : string -> string -> int
 val hash : string -> int
 
 val init : int -> (int -> char) -> string
-(** Analog stringo [Array.init].
+(** Analog to [Array.init].
     @since 0.3.3 *)
 
 val of_gen : char gen -> string
