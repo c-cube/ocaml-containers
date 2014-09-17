@@ -50,6 +50,17 @@ val of_unit : t
 val of_pair : t * t -> t
 val of_triple : t * t * t -> t
 
+val of_variant : string -> t list -> t
+(** [of_variant name args] is used to encode algebraic variants
+    into a S-expr. For instance [of_variant "some" (of_int 1)]
+    represents the value [Some 1] *)
+
+val of_field : string -> t -> t
+(** Used to represent one record field *)
+
+val of_record : (string * t) list -> t
+(** Represent a record by its named fields *)
+
 (** {2 Serialization (encoding)} *)
 
 val to_buf : Buffer.t -> t -> unit
@@ -213,12 +224,12 @@ end
 (** {6 Traversal of S-exp} *)
 
 module Traverse : sig
-  val list_any : t -> (t -> 'a option) -> 'a option
-  (** [list_any (List l) f] tries [f x] for every element [x] in [List l],
+  val list_any : (t -> 'a option) -> t -> 'a option
+  (** [list_any f (List l)] tries [f x] for every element [x] in [List l],
       and returns the first non-None result (if any). *)
 
-  val list_all : t -> (t -> 'a option) -> 'a list
-  (** [list_all (List l) f] returns the list of all [y] such that [x] in [l]
+  val list_all : (t -> 'a option) -> t -> 'a list
+  (** [list_all f (List l)] returns the list of all [y] such that [x] in [l]
       and [f x = Some y] *)
 
   val to_int : t -> int option
@@ -232,6 +243,15 @@ module Traverse : sig
   val to_pair : t -> (t * t) option
 
   val to_triple : t -> (t * t * t) option
+
+  val get_field : string -> t -> t option
+  (** [get_field name e], when [e = List [(n1,x1); (n2,x2) ... ]], extracts
+      the [xi] such that [name = ni], if it can find it. *)
+
+  val get_variant : (string * (t list -> 'a option)) list -> t -> 'a option
+  (** [get_variant l e] checks whether [e = List (Atom s :: args)], and
+      if some pair of [l] is [s, f]. In this case, it calls [f args]
+      and returns its result, otherwise it returns None. *)
 
   val (>>=) : 'a option -> ('a -> 'b option) -> 'b option
 

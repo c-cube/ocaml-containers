@@ -48,6 +48,11 @@ let of_list l = List l
 let of_pair (x,y) = List[x;y]
 let of_triple (x,y,z) = List[x;y;z]
 
+let of_variant name args = List (Atom name :: args)
+let of_field name t = List [Atom name; t]
+let of_record l =
+  List (List.map (fun (n,x) -> of_field n x) l)
+
 let _with_in filename f =
   let ic = open_in filename in
   try
@@ -572,7 +577,7 @@ module Traverse = struct
         | Some _ as res -> res
         | None -> _list_any f tl
 
-  let list_any e f = match e with
+  let list_any f e = match e with
     | Atom _ -> None
     | List l -> _list_any f l
 
@@ -583,7 +588,7 @@ module Traverse = struct
         | Some y -> _list_all f (y::acc) tl
         | None -> _list_all f acc tl
 
-  let list_all e f = match e with
+  let list_all f e = match e with
     | Atom _ -> []
     | List l -> _list_all f [] l
 
@@ -606,6 +611,25 @@ module Traverse = struct
   let to_list e = match e with
     | List l -> Some l
     | Atom _ -> None
+
+  let rec _get_field name l = match l with
+    | List [Atom n; x] :: _ when name=n -> Some x
+    | _ :: tl -> _get_field name tl
+    | [] -> None
+
+  let get_field name e = match e with
+    | List l -> _get_field name l
+    | Atom _ -> None
+
+  let rec _get_variant s args l = match l with
+    | [] -> None
+    | (s', f) :: _ when s=s' -> f args
+    | _ :: tl -> _get_variant s args tl
+
+  let get_variant l e = match e with
+    | List (Atom s :: args) -> _get_variant s args l
+    | List _ -> None
+    | Atom s -> _get_variant s [] l
 
   let return x = Some x
 
