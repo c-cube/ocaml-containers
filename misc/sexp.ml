@@ -33,14 +33,35 @@ type t =
   | Atom of string
   | List of t list
 
-let eq a b = a = b
+let equal a b = a = b
 
 let compare a b = Pervasives.compare a b
 
 let hash a = Hashtbl.hash a
 
+let _with_in filename f =
+  let ic = open_in filename in
+  try
+    let x = f ic in
+    close_in ic;
+    x
+  with e ->
+    close_in ic;
+    `Error (Printexc.to_string e)
+
+let _with_out filename f =
+  let oc = open_out filename in
+  try
+    let x = f oc in
+    close_out oc;
+    x
+  with e ->
+    close_out oc;
+    raise e
+
 (** {2 Serialization (encoding)} *)
 
+(* shall we escape the string because of one of its chars? *)
 let _must_escape s =
   try
     for i = 0 to String.length s - 1 do
@@ -101,17 +122,13 @@ let to_chan oc t =
   print fmt t;
   Format.pp_print_flush fmt ()
 
-let seq_to_file filename seq =
-  let oc = open_out filename in
-  try
-    seq
-      (fun t -> to_chan oc t; output_char oc '\n');
-    close_out oc
-  with e ->
-    close_out oc;
-    raise e
+let to_file_seq filename seq =
+  _with_out filename
+    (fun oc -> 
+      seq (fun t -> to_chan oc t; output_char oc '\n')
+    )
 
-let to_file filename t = seq_to_file filename (fun k -> k t)
+let to_file filename t = to_file_seq filename (fun k -> k t)
 
 (** {2 Deserialization (decoding)} *)
 
@@ -472,51 +489,66 @@ let parse_chan ?bufsize ic =
 
 (** {6 Blocking} *)
 
-let parse1_chan ic =
+let of_chan ic =
   ParseGen.head (parse_chan ic)
 
-let parse1_string s =
+let of_string s =
   ParseGen.head (parse_string s)
 
-let parse_l_chan ?bufsize ic =
-  ParseGen.to_list (parse_chan ?bufsize ic)
+let of_file f =
+  _with_in f of_chan
 
-let parse_l_file ?bufsize filename =
-  let ic = open_in filename in
-  try
-    let l = parse_l_chan ?bufsize ic in
-    close_in ic;
-    l
-  with e ->
-    close_in ic;
-    `Error (Printexc.to_string e)
+module L = struct
+  let to_buf b l =
+    List.iter (to_buf b) l
 
-let parse_l_string s =
-  ParseGen.to_list (parse_string s)
+  let to_string l =
+    let b = Buffer.create 32 in
+    to_buf b l;
+    Buffer.contents b
 
-let parse_l_gen g =
-  ParseGen.to_list (parse_gen g)
+  let to_chan oc l =
+    let fmt = Format.formatter_of_out_channel oc in
+    List.iter (Format.fprintf fmt "%a@." print) l;
+    Format.pp_print_flush fmt ()
 
-exception OhNoes of string
-exception StopNaow
+  let to_file filename l =
+    _with_out filename (fun oc -> to_chan oc l)
 
-let parse_l_seq seq =
-  let src = Source.Manual.make () in
-  let ps = mk_ps (Source.Manual.to_src src) in
-  let l = ref [] in
-  (* read as many expressions as possible *)
-  let rec _nexts () = match _next ps with
-    | `Ok x -> l := x :: !l; _nexts ()
-    | `Error e -> raise (OhNoes e)
-    | `End -> raise StopNaow
-    | `Await -> ()
-  in
-  try
-    seq
-      (fun s -> Source.Manual.feed src s 0 (String.length s); _nexts ());
-    Source.Manual.reached_end src;
-    _nexts ();
-    `Ok (List.rev !l)
-  with
-  | OhNoes msg -> `Error msg
-  | StopNaow -> `Ok (List.rev !l)
+  let of_chan ?bufsize ic =
+    ParseGen.to_list (parse_chan ?bufsize ic)
+
+  let of_file ?bufsize filename =
+    _with_in filename
+      (fun ic -> of_chan ?bufsize ic)
+
+  let of_string s =
+    ParseGen.to_list (parse_string s)
+
+  let of_gen g =
+    ParseGen.to_list (parse_gen g)
+
+  exception OhNoes of string
+  exception StopNaow
+
+  let of_seq seq =
+    let src = Source.Manual.make () in
+    let ps = mk_ps (Source.Manual.to_src src) in
+    let l = ref [] in
+    (* read as many expressions as possible *)
+    let rec _nexts () = match _next ps with
+      | `Ok x -> l := x :: !l; _nexts ()
+      | `Error e -> raise (OhNoes e)
+      | `End -> raise StopNaow
+      | `Await -> ()
+    in
+    try
+      seq
+        (fun s -> Source.Manual.feed src s 0 (String.length s); _nexts ());
+      Source.Manual.reached_end src;
+      _nexts ();
+      `Ok (List.rev !l)
+    with
+    | OhNoes msg -> `Error msg
+    | StopNaow -> `Ok (List.rev !l)
+end

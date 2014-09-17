@@ -23,7 +23,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Simple S-expression parsing/printing} *)
+(** {1 Simple and efficient S-expression parsing/printing}
+
+@since NEXT_RELEASE *)
 
 type 'a or_error = [ `Ok of 'a | `Error of string ]
 type 'a sequence = ('a -> unit) -> unit
@@ -35,15 +37,21 @@ type t =
   | Atom of string
   | List of t list
 
-val eq : t -> t -> bool
+val equal : t -> t -> bool
 val compare : t -> t -> int
 val hash : t -> int
 
 (** {2 Serialization (encoding)} *)
 
 val to_buf : Buffer.t -> t -> unit
+
 val to_string : t -> string
+
 val to_file : string -> t -> unit
+
+val to_file_seq : string -> t sequence -> unit
+(** Print the given sequence of expressions to a file *)
+
 val to_chan : out_channel -> t -> unit
 
 val print : Format.formatter -> t -> unit
@@ -52,16 +60,12 @@ val print : Format.formatter -> t -> unit
 val print_noindent : Format.formatter -> t -> unit
 (** Raw, direct printing as compact as possible *)
 
-val seq_to_file : string -> t sequence -> unit
-(** Print the given sequence of expressions to a file *)
-
 (** {2 Deserialization (decoding)} *)
 
 type 'a parse_result = ['a or_error | `End ]
 type 'a partial_result = [ 'a parse_result | `Await ]
 
-(** {6 Streaming Parsing} *)
-
+(** {6 Source of characters} *)
 module Source : sig
   type individual_char =
     | NC_yield of char
@@ -105,6 +109,8 @@ module Source : sig
   val of_gen : string gen -> t
 end
 
+(** {6 Streaming Lexer}
+splits the input into opening parenthesis, closing ones, and atoms *)
 module Lexer : sig
   type t
   (** A streaming lexer, that parses atomic chunks of S-expressions (atoms
@@ -148,7 +154,8 @@ module ParseGen : sig
   val take : int -> 'a t -> 'a t
 end
 
-(** {6 Stream Parser} *)
+(** {6 Stream Parser}
+Returns a lazy stream of S-expressions. *)
 
 val parse_string : string -> t ParseGen.t
 (** Parse a string *)
@@ -159,20 +166,37 @@ val parse_chan : ?bufsize:int -> in_channel -> t ParseGen.t
 val parse_gen : string gen -> t ParseGen.t
 (** Parse chunks of string *)
 
-(** {6 Blocking} *)
+(** {6 Blocking API}
+Parse one S-expression from some source.  *)
 
-val parse1_chan : in_channel -> t or_error
+val of_chan : in_channel -> t or_error
+(** Parse a S-expression from the given channel. Can read more data than
+    necessary, so don't use this if you need finer-grained control (e.g.
+    to read something else {b after} the S-exp) *)
 
-val parse1_string : string -> t or_error
+val of_string : string -> t or_error
 
-val parse_l_chan : ?bufsize:int -> in_channel -> t list or_error
-(** Parse values from a channel. *)
+val of_file : string -> t or_error
+(** Open the file and read a S-exp from it *)
 
-val parse_l_file : ?bufsize:int -> string -> t list or_error
-(** Parse a file *)
+(** {6 Lists of S-exps} *)
 
-val parse_l_string : string -> t list or_error
+module L : sig
+  val to_buf : Buffer.t -> t list -> unit
 
-val parse_l_gen : string gen -> t list or_error
+  val to_string : t list -> string
 
-val parse_l_seq : string sequence -> t list or_error
+  val to_file : string -> t list -> unit
+
+  val to_chan : out_channel -> t list -> unit
+
+  val of_chan : ?bufsize:int -> in_channel -> t list or_error
+
+  val of_file : ?bufsize:int -> string -> t list or_error
+
+  val of_string : string -> t list or_error
+
+  val of_gen : string gen -> t list or_error
+
+  val of_seq : string sequence -> t list or_error
+end
