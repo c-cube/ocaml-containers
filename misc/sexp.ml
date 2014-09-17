@@ -84,6 +84,35 @@ let rec print fmt t = match t with
       Format.pp_print_char fmt ')';
       Format.close_box ()
 
+let rec print_noindent fmt t = match t with
+  | Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | Atom s -> Format.pp_print_string fmt s
+  | List [] -> Format.pp_print_string fmt "()"
+  | List [x] -> Format.fprintf fmt "(%a)" print_noindent x
+  | List l ->
+      Format.pp_print_char fmt '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Format.pp_print_char fmt ' '; print_noindent fmt t'))
+        l;
+      Format.pp_print_char fmt ')'
+
+let to_chan oc t =
+  let fmt = Format.formatter_of_out_channel oc in
+  print fmt t;
+  Format.pp_print_flush fmt ()
+
+let seq_to_file filename seq =
+  let oc = open_out filename in
+  try
+    seq
+      (fun t -> to_chan oc t; output_char oc '\n');
+    close_out oc
+  with e ->
+    close_out oc;
+    raise e
+
+let to_file filename t = seq_to_file filename (fun k -> k t)
+
 (** {2 Deserialization (decoding)} *)
 
 type 'a parse_result = ['a or_error | `End ]
@@ -358,13 +387,14 @@ and _push ps e = match ps.ps_stack with
       ps.ps_stack <- (e :: l) :: tl;
       _next ps
 
-let parse_gen g : t ParseGen.t =
+(* parse from a generator of string slices *)
+let _parse_gen g : t ParseGen.t =
   let ps = mk_ps() in
   let rec next () = match _next ps with
     | `Await ->
         begin match g() with
         | None -> Streaming.reached_end ps.ps_d
-        | Some s -> Streaming.feed ps.ps_d s 0 (String.length s)
+        | Some (s,i,len) -> Streaming.feed ps.ps_d s i len
         end;
         next()
     | `Ok x -> `Ok x
@@ -372,6 +402,14 @@ let parse_gen g : t ParseGen.t =
     | `End -> `End
   in
   next
+
+let parse_gen g =
+  _parse_gen
+    (fun () ->
+      match g() with
+      | None -> None
+      | Some s -> Some (s,0,String.length s)
+    )
 
 (* singleton generator *)
 let _gen1 x =
@@ -382,16 +420,16 @@ let _gen1 x =
 let parse_string s =
   parse_gen (_gen1 s)
 
-let parse_chan ic =
-  let buf = Buffer.create 512 in
+let parse_chan ?(bufsize=1024) ic =
+  let buf = String.make bufsize ' ' in
+  let stop = ref false in
   let gen () =
-    Buffer.clear buf;
-    Buffer.add_channel buf ic 512;
-    if Buffer.length buf = 0
-      then None
-      else Some (Buffer.contents buf)
+    if !stop then None
+    else
+      let n = input ic buf 0 bufsize in
+      if n=0 then (stop:=true; None) else Some (buf,0,n)
   in
-  parse_gen gen
+  _parse_gen gen
 
 (** {6 Blocking} *)
 
@@ -401,8 +439,18 @@ let parse1_chan ic =
 let parse1_string s =
   ParseGen.head (parse_string s)
 
-let parse_l_chan ic =
-  ParseGen.to_list (parse_chan ic)
+let parse_l_chan ?bufsize ic =
+  ParseGen.to_list (parse_chan ?bufsize ic)
+
+let parse_l_file ?bufsize filename =
+  let ic = open_in filename in
+  try
+    let l = parse_l_chan ?bufsize ic in
+    close_in ic;
+    l
+  with e ->
+    close_in ic;
+    `Error (Printexc.to_string e)
 
 let parse_l_string s =
   ParseGen.to_list (parse_string s)

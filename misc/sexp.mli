@@ -43,7 +43,14 @@ val hash : t -> int
 
 val to_buf : Buffer.t -> t -> unit
 val to_string : t -> string
+val to_file : string -> t -> unit
+val to_chan : out_channel -> t -> unit
+
 val print : Format.formatter -> t -> unit
+
+val print_noindent : Format.formatter -> t -> unit
+
+val seq_to_file : string -> t sequence -> unit
 
 (** {2 Deserialization (decoding)} *)
 
@@ -94,7 +101,7 @@ end
 val parse_string : string -> t ParseGen.t
 (** Parse a string *)
 
-val parse_chan : in_channel -> t ParseGen.t
+val parse_chan : ?bufsize:int -> in_channel -> t ParseGen.t
 (** Parse a channel *)
 
 val parse_gen : string gen -> t ParseGen.t
@@ -106,7 +113,11 @@ val parse1_chan : in_channel -> t or_error
 
 val parse1_string : string -> t or_error
 
-val parse_l_chan : in_channel -> t list or_error
+val parse_l_chan : ?bufsize:int -> in_channel -> t list or_error
+(** Parse values from a channel. *)
+
+val parse_l_file : ?bufsize:int -> string -> t list or_error
+(** Parse a file *)
 
 val parse_l_string : string -> t list or_error
 
