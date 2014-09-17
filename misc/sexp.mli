@@ -221,7 +221,29 @@ module L : sig
   val of_seq : string sequence -> t list or_error
 end
 
-(** {6 Traversal of S-exp} *)
+(** {6 Traversal of S-exp}
+
+Example: serializing 2D points
+{[
+type pt = {x:int; y:int };;
+
+let pt_of_sexp e =
+  Sexp.Traverse.(
+    field "x" to_int e >>= fun x ->
+    field "y" to_int e >>= fun y ->
+    return {x;y}
+  );;
+
+let sexp_of_pt pt = Sexp.(of_record ["x", of_int pt.x; "y", of_int pt.y]);;
+
+let l = [{x=1;y=1}; {x=2;y=10}];;
+
+let sexp = Sexp.(of_list (List.map sexp_of_pt l));;
+
+Sexp.Traverse.list_all pt_of_sexp sexp;;
+]}
+
+*)
 
 module Traverse : sig
   val list_any : (t -> 'a option) -> t -> 'a option
@@ -248,12 +270,17 @@ module Traverse : sig
   (** [get_field name e], when [e = List [(n1,x1); (n2,x2) ... ]], extracts
       the [xi] such that [name = ni], if it can find it. *)
 
+  val field : string -> (t -> 'a option) -> t -> 'a option
+  (** Enriched version of {!get_field}, with a converter as argument *)
+
   val get_variant : (string * (t list -> 'a option)) list -> t -> 'a option
   (** [get_variant l e] checks whether [e = List (Atom s :: args)], and
       if some pair of [l] is [s, f]. In this case, it calls [f args]
       and returns its result, otherwise it returns None. *)
 
   val (>>=) : 'a option -> ('a -> 'b option) -> 'b option
+
+  val (>|=) : 'a option -> ('a -> 'b) -> 'b option
 
   val return : 'a -> 'a option
 

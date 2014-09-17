@@ -570,6 +570,16 @@ end
 (** {6 Traversal of S-exp} *)
 
 module Traverse = struct
+  let return x = Some x
+
+  let (>|=) e f = match e with
+    | None -> None
+    | Some x -> Some (f x)
+
+  let (>>=) e f = match e with
+    | None -> None
+    | Some x -> f x
+
   let rec _list_any f l = match l with
     | [] -> None
     | x::tl ->
@@ -621,6 +631,9 @@ module Traverse = struct
     | List l -> _get_field name l
     | Atom _ -> None
 
+  let field name f e =
+    get_field name e >>= f
+
   let rec _get_variant s args l = match l with
     | [] -> None
     | (s', f) :: _ when s=s' -> f args
@@ -630,12 +643,6 @@ module Traverse = struct
     | List (Atom s :: args) -> _get_variant s args l
     | List _ -> None
     | Atom s -> _get_variant s [] l
-
-  let return x = Some x
-
-  let (>>=) e f = match e with
-    | None -> None
-    | Some x -> f x
 
   let get_exn e = match e with
     | None -> failwith "Sexp.Traverse.get_exn"
