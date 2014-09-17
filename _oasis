@@ -22,8 +22,7 @@ Description:
     library full of experimental ideas (not stable, not necessarily usable).
 
 Flag "misc"
-  Description:  Build the misc library, containing everything from
-                the rotating kitchen sink to automatic banana distributors
+  Description:  Build the misc library, containing everything from the rotating kitchen sink to automatic banana distributors
   Default:      false
 
 Flag "cgi"
@@ -137,7 +136,7 @@ Document containers_string
   XOCamlbuildLibraries: containers.string
 
 Executable benchs
-  Path:             tests/
+  Path:             benchs/
   Install:          false
   CompiledObject:   native
   Build$:           flag(bench)
@@ -145,7 +144,7 @@ Executable benchs
   BuildDepends:     containers,containers.string,containers.misc,bench
 
 Executable bench_conv
-  Path: tests/
+  Path:     benchs/
   Install: false
   CompiledObject: native
   Build$: flag(bench)
@@ -153,7 +152,7 @@ Executable bench_conv
   BuildDepends: containers,benchmark
 
 Executable bench_batch
-  Path: tests/
+  Path: benchs/
   Install: false
   CompiledObject: native
   Build$: flag(bench)
@@ -161,7 +160,7 @@ Executable bench_batch
   BuildDepends: containers,benchmark
 
 Executable bench_hash
-  Path: tests/
+  Path: benchs/
   Install: false
   CompiledObject: native
   Build$: flag(bench) && flag(misc)
@@ -174,7 +173,7 @@ Executable test_levenshtein
   CompiledObject: native
   Build$: flag(tests)
   MainIs: test_levenshtein.ml
-  BuildDepends: containers,qcheck
+  BuildDepends: containers,qcheck,containers.string
 
 Executable test_lwt
   Path: tests/lwt/
@@ -202,8 +201,8 @@ Executable run_tests
   Install: false
   CompiledObject: native
   MainIs: run_tests.ml
-  Build$: flag(tests)
-  BuildDepends: containers, oUnit, qcheck
+  Build$: flag(tests) && flag(misc)
+  BuildDepends: containers,oUnit,qcheck,containers.misc
 
 Executable web_pwd
   Path: examples/cgi/

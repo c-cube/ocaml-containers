@@ -3,6 +3,7 @@
 
 open OUnit
 open Helpers
+open Containers_misc
 
 module Sequence = CCSequence
 module G = PersistentGraph

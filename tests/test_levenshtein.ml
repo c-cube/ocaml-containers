@@ -1,5 +1,7 @@
 (* quickcheck for Levenshtein *)
 
+module Levenshtein = Containers_string.Levenshtein
+
 (* test that automaton accepts its string *)
 let test_automaton =
   let gen = QCheck.Arbitrary.(map string (fun s -> s, Levenshtein.of_string ~limit:1 s)) in

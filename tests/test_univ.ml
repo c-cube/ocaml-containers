@@ -1,5 +1,6 @@
 
 open OUnit
+open Containers_misc
 
 (** Test Univ embedding *)
 
