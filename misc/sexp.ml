@@ -73,13 +73,15 @@ let rec print fmt t = match t with
   | Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
   | Atom s -> Format.pp_print_string fmt s
   | List [] -> Format.pp_print_string fmt "()"
-  | List [x] -> Format.fprintf fmt "(%a)" print x
+  | List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" print x
   | List l ->
+      Format.open_hovbox 2;
       Format.pp_print_char fmt '(';
       List.iteri
         (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; print fmt t'))
         l;
-      Format.pp_print_char fmt ')'
+      Format.pp_print_char fmt ')';
+      Format.close_box ()
 
 (** {2 Deserialization (decoding)} *)
 
@@ -114,8 +116,8 @@ module Streaming = struct
   let mk_decoder () = {
     i = 0;
     st = St_start;
-    line = 0;
-    col = 0;
+    line = 1;
+    col = 1;
     stop = false;
     buf=Buffer.create 32;
     atom = Buffer.create 32;
@@ -157,16 +159,23 @@ module Streaming = struct
 
   (* raise an error *)
   let _error d msg =
-    let msg' = Printf.sprintf "at %d,%d: %s" d.line d.col msg in
-    d.st <- St_error msg';
-    raise (Error msg')
+    let b = Buffer.create 32 in
+    Printf.bprintf b "at %d, %d: " d.line d.col;
+    Printf.kbprintf
+      (fun b ->
+        let msg' = Buffer.contents b in
+        d.st <- St_error msg';
+        raise (Error msg'))
+      b msg
 
   let _end d =
     d.st <- St_end;
     raise EOI
 
   (* next token *)
-  let rec _next d st = match st with
+  let rec _next d st =
+    d.st <- st;
+    match st with
     | St_error msg -> raise (Error msg)
     | St_end -> _end d
     | St_yield x ->
@@ -193,7 +202,11 @@ module Streaming = struct
         (* reading an unquoted atom *)
         let c = _next_char d in
         begin match c with
-        | ' ' | '\t' | '\n' ->
+        | '\n' ->
+            _newline d;
+            let a = _take_buffer d.atom in
+            _yield d St_start (Atom a)
+        | ' ' | '\t' ->
             let a = _take_buffer d.atom in
             _yield d St_start (Atom a)
         | ')' ->
@@ -202,7 +215,7 @@ module Streaming = struct
         | '(' ->
             let a = _take_buffer d.atom in
             _yield d (St_yield Open) (Atom a)
-        | '"' -> _error d "unexpected \"" 
+        | '"' -> _error d "unexpected \" (parsing atom %s)" (Buffer.contents d.atom)
         | '\\' -> _error d "unexpected \\"
         | _ ->
             Buffer.add_char d.atom c;
@@ -234,7 +247,7 @@ module Streaming = struct
           | 'r' -> '\r'
           | '"' -> '"'
           | '\\' -> '\\'
-          | _ -> _error d "unexpected escaped character"
+          | c -> _error d "unexpected escaped character %c" c
           );
         _next d St_quoted
 
