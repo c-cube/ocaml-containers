@@ -260,6 +260,8 @@ module Traverse : sig
 
   val to_bool : t -> bool option
 
+  val to_float : t -> float option
+
   val to_list : t -> t list option
 
   val to_pair : t -> (t * t) option

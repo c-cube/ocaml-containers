@@ -608,6 +608,7 @@ module Traverse = struct
 
   let to_int e = _try_atom e int_of_string
   let to_bool e = _try_atom e bool_of_string
+  let to_float e = _try_atom e float_of_string
   let to_string e = _try_atom e (fun x->x)
 
   let to_pair e = match e with
