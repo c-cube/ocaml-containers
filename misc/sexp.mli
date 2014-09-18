@@ -99,9 +99,9 @@ module Source : sig
 
   type source = t
 
-  (** A mnual source of individual characters. When it has exhausted its
-      data, it asked its caller to provide more, or signal that none remains
-      In particular, useful when the source of data is monadic IO *)
+  (** A manual source of individual characters. When it has exhausted its
+      own input, it asks its caller to provide more or signal that none remains
+      This is especially useful when the source of data is monadic IO *)
   module Manual : sig
     type t
 
