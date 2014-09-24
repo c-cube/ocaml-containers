@@ -81,7 +81,7 @@ let _must_escape s =
     for i = 0 to String.length s - 1 do
       let c = String.unsafe_get s i in
       match c with
-      | ' ' | ')' | '(' | '"' | '\n' | '\t' -> raise Exit
+      | ' ' | ';' | ')' | '(' | '"' | '\n' | '\t' -> raise Exit
       | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
       | _ -> ()
     done;
@@ -248,6 +248,7 @@ module Lexer = struct
     | St_start
     | St_atom
     | St_quoted
+    | St_comment
     | St_escaped
     | St_raw_char1 of int
     | St_raw_char2 of int
@@ -324,7 +325,7 @@ module Lexer = struct
     | Source.NC_end ->
         begin match st with
         | St_error _ | St_end | St_yield _ -> assert false
-        | St_start -> _end d
+        | St_start | St_comment -> _end d
         | St_atom ->
             let a = _take_buffer d.atom in
             _yield d St_end (Atom a)
@@ -342,9 +343,15 @@ module Lexer = struct
         (* use the next char *)
         match st with
         | St_error _ | St_end | St_yield _ -> assert false
+        | St_comment ->
+            begin match c with
+            | '\n' -> _next d St_start
+            | _ -> _next d St_comment
+            end
         | St_start ->
             begin match c with
             | ' ' | '\t' | '\n' -> _next d St_start
+            | ';' -> _next d St_comment
             | '(' -> _yield d St_start Open
             | ')' -> _yield d St_start Close
             | '"' -> _next d St_quoted
@@ -357,6 +364,9 @@ module Lexer = struct
             | ' ' | '\t' | '\n' ->
                 let a = _take_buffer d.atom in
                 _yield d St_start (Atom a)
+            | ';' ->
+                let a = _take_buffer d.atom in
+                _yield d St_comment (Atom a)
             | ')' ->
                 let a = _take_buffer d.atom in
                 _yield d (St_yield Close) (Atom a)
