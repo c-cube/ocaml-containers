@@ -48,8 +48,6 @@ module type S = sig
   val pp : Buffer.t -> t -> unit
 end
 
-type t = string
-
 let equal (a:string) b = a=b
 
 let compare = String.compare

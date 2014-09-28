@@ -31,7 +31,7 @@ module IMap = Map.Make(struct
   let compare i j = i - j
 end)
 
-module ICCHashtbl = CCHashtbl.Make(struct
+module ICCHashtbl = CCFlatHashtbl.Make(struct
   type t = int
   let equal i j = i = j
   let hash i = i
@@ -111,7 +111,7 @@ let bench_maps1 () =
      "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n));
      "skiplist_add", (fun n -> ignore (skiplist_add n));
      "imap_add", (fun n -> ignore (imap_add n));
-     "cchashtbl_add", (fun n -> ignore (icchashtbl_add n))
+     "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n))
     ]
   in
   Bench.summarize 1. res
@@ -217,7 +217,7 @@ let bench_maps2 () =
      "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n));
      "skiplist_replace", (fun n -> ignore (skiplist_replace n));
      "imap_replace", (fun n -> ignore (imap_replace n));
-     "cchashtbl_replace", (fun n -> ignore (icchashtbl_replace n));
+     "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n));
     ]
   in
   Bench.summarize 1. res

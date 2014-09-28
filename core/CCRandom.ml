@@ -41,6 +41,8 @@ let map f g st = f (g st)
 
 let (>|=) g f st = map f g st
 
+let delay f st = f () st
+
 let _choose_array a st =
   if Array.length a = 0 then invalid_arg "CCRandom.choose_array";
   a.(Random.State.int st (Array.length a))
@@ -68,6 +70,8 @@ let replicate n g st =
   let rec aux acc n =
     if n = 0 then acc else aux (g st :: acc) (n-1)
   in aux [] n
+
+let list_seq l st = List.map (fun f -> f st) l
 
 exception SplitFail
 

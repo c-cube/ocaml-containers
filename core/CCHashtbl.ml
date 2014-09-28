@@ -24,249 +24,207 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-
-(** {1 Open-Addressing Hash-table}
-
-We use Robin-Hood hashing as described in
-http://codecapsule.com/2013/11/17/robin-hood-hashing-backward-shift-deletion/
-with backward shift. *)
+(** {1 Extension to the standard Hashtbl}  *)
 
 type 'a sequence = ('a -> unit) -> unit
+type 'a eq = 'a -> 'a -> bool
+type 'a hash = 'a -> int
+
+(** {2 Polymorphic tables} *)
+
+let get tbl x =
+  try Some (Hashtbl.find tbl x)
+  with Not_found -> None
+
+let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
+
+let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
+
+let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
+
+let of_seq seq =
+  let tbl = Hashtbl.create 32 in
+  seq (fun (k,v) -> Hashtbl.add tbl k v);
+  tbl
+
+let to_list tbl =
+  Hashtbl.fold
+    (fun k v l -> (k,v) :: l)
+    tbl []
+
+let of_list l =
+  let tbl = Hashtbl.create 32 in
+  List.iter (fun (k,v) -> Hashtbl.add tbl k v) l;
+  tbl
+
+(** {2 Functor} *)
 
 module type S = sig
-  type key
-  type 'a t
+  include Hashtbl.S
 
-  val create : int -> 'a t
-  (** Create a new table of the given initial capacity *)
+  val get : 'a t -> key -> 'a option
+  (** Safe version of {!Hashtbl.find} *)
 
-  val mem : 'a t -> key -> bool
-  (** [mem tbl k] returns [true] iff [k] is mapped to some value
-      in [tbl] *)
+  val keys : 'a t -> key sequence
+  (** Iterate on keys (similar order as {!Hashtbl.iter}) *)
 
-  val find : 'a t -> key -> 'a option
+  val values : 'a t -> 'a sequence
+  (** Iterate on values in the table *)
 
-  val find_exn : 'a t -> key -> 'a
-
-  val get : key -> 'a t -> 'a option
-  (** [get k tbl] recovers the value for [k] in [tbl], or
-      returns [None] if [k] doesn't belong *)
-
-  val get_exn : key -> 'a t -> 'a
-
-  val add : 'a t -> key -> 'a -> unit
-  (** [add tbl k v] adds [k -> v] to [tbl], possibly replacing the old
-      value associated with [k]. *)
-
-  val remove : 'a t -> key -> unit
-  (** Remove binding *)
-
-  val size : _ t -> int
-  (** Number of bindings *)
-
-  val of_list : (key * 'a) list -> 'a t
-  val to_list : 'a t -> (key * 'a) list
+  val to_seq : 'a t -> (key * 'a) sequence
+  (** Iterate on values in the table *)
 
   val of_seq : (key * 'a) sequence -> 'a t
-  val to_seq : 'a t -> (key * 'a) sequence
+  (** From the given bindings, added in order *)
 
-  val keys : _ t -> key sequence
-  val values : 'a t -> 'a sequence
+  val to_list : 'a t -> (key * 'a) list
+  (** List of bindings (order unspecified)  *)
+
+  val of_list : (key * 'a) list -> 'a t
+  (** From the given list of bindings, added in order *)
 end
 
-module type HASHABLE = sig
-  type t
-  val equal : t -> t -> bool
-  val hash : t -> int
-end
+module Make(X : Hashtbl.HashedType) = struct
+  include Hashtbl.Make(X)
 
-module Make(X : HASHABLE) = struct
-  type key = X.t
-
-  type 'a bucket =
-    | Empty
-    | Key of key * 'a * int   (* store the hash too *)
-
-  type 'a t = {
-    mutable arr : 'a bucket array;
-    mutable size : int;
-  }
-
-  let size tbl = tbl.size
-
-  let _reached_max_load tbl =
-    let n = Array.length tbl.arr in
-    (n - tbl.size) < n/10 (* full at 9/10 *)
-
-  let create i =
-    let i = min Sys.max_array_length (max i 8) in
-    { arr=Array.make i Empty; size=0; }
-
-  (* initial index for a value with hash [h] *)
-  let _initial_idx tbl h =
-    h mod Array.length tbl.arr
-
-  let _succ tbl i =
-    let i' = i+1 in
-    if i' = Array.length tbl.arr then 0 else i'
-
-  let _pred tbl i =
-    if i = 0 then Array.length tbl.arr - 1 else i-1
-
-  (* distance to initial bucket, at index [i] with hash [h] *)
-  let _dib tbl h i =
-    let i0 = _initial_idx tbl h in
-    if i>=i0
-      then i-i0
-      else i+ (Array.length tbl.arr - i0 - 1)
-
-  (* insert k->v in [tbl], currently at index [i] *)
-  let rec _linear_probe tbl k v h_k i =
-    match tbl.arr.(i) with
-    | Empty ->
-        (* add binding *)
-        tbl.size <- 1 + tbl.size;
-        tbl.arr.(i) <- Key (k, v, h_k)
-    | Key (k', _, h_k') when X.equal k k' ->
-        (* replace *)
-        assert (h_k = h_k');
-        tbl.arr.(i) <- Key (k, v, h_k)
-    | Key (k', v', h_k') ->
-        if _dib tbl h_k i < _dib tbl h_k' i
-        then (
-          (* replace *)
-          tbl.arr.(i) <- Key (k, v, h_k);
-          _linear_probe tbl k' v' h_k' (_succ tbl i)
-        ) else
-          (* go further *)
-          _linear_probe tbl k v h_k (_succ tbl i)
-
-  (* resize table: put a bigger array in it, then insert values
-    from the old array *)
-  let _resize tbl =
-    let size' = min Sys.max_array_length (2 * Array.length tbl.arr) in
-    let arr' = Array.make size' Empty in
-    let old_arr = tbl.arr in
-    (* replace with new table *)
-    tbl.size <- 0;
-    tbl.arr <- arr';
-    Array.iter
-      (function
-        | Empty -> ()
-        | Key (k, v, h_k) -> _linear_probe tbl k v h_k (_initial_idx tbl h_k)
-      ) old_arr
-
-  let add tbl k v =
-    if _reached_max_load tbl
-      then _resize tbl;
-    (* insert value *)
-    let h_k = X.hash k in
-    _linear_probe tbl k v h_k (_initial_idx tbl h_k)
-
-  (* shift back elements that have a DIB > 0 until an empty bucket is
-   met, or some element doesn't need shifting *)
-  let rec _backward_shift tbl i =
-    match tbl.arr.(i) with
-    | Empty -> ()
-    | Key (_, _, h_k) when _dib tbl h_k i = 0 ->
-        ()  (* stop *)
-    | Key (k, v, h_k) as bucket ->
-        assert (_dib tbl h_k i > 0);
-        (* shift backward *)
-        tbl.arr.(_pred tbl i) <- bucket;
-        tbl.arr.(i) <- Empty;
-        _backward_shift tbl (_succ tbl i)
-
-  (* linear probing for removal of [k] *)
-  let rec _linear_probe_remove tbl k h_k i =
-    match tbl.arr.(i) with
-    | Empty -> ()
-    | Key (k', _, _) when X.equal k k' ->
-        tbl.arr.(i) <- Empty;
-        tbl.size <- tbl.size - 1;
-        _backward_shift tbl (_succ tbl i)
-    | Key (_, _, h_k') ->
-        if _dib tbl h_k' i < _dib tbl h_k i
-          then ()  (* [k] not present, would be here otherwise *)
-          else _linear_probe_remove tbl k h_k (_succ tbl i)
-
-  let remove tbl k =
-    let h_k = X.hash k in
-    _linear_probe_remove tbl k h_k (_initial_idx tbl h_k)
-
-  let rec _get_exn tbl k h_k i dib =
-    match tbl.arr.(i) with
-    | Empty -> raise Not_found
-    | Key (k', v', _) when X.equal k k' -> v'
-    | Key (_, _, h_k') ->
-        if _dib tbl h_k' i < dib
-          then raise Not_found  (* [k] would be here otherwise *)
-          else _get_exn tbl k h_k (_succ tbl i) (dib+1)
-
-  let get_exn k tbl =
-    let h_k = X.hash k in
-    let i0 = _initial_idx tbl h_k in
-    match tbl.arr.(i0) with
-    | Empty -> raise Not_found
-    | Key (k', v, _) ->
-      if X.equal k k' then v
-      else let i1 = _succ tbl i0 in
-        match  tbl.arr.(i1) with
-        | Empty -> raise Not_found
-        | Key (k', v, _) ->
-          if X.equal k k' then v
-          else
-            let i2 = _succ tbl i1 in
-            match tbl.arr.(i2) with
-            | Empty -> raise Not_found
-            | Key (k', v, _) ->
-              if X.equal k k' then v
-              else _get_exn tbl k h_k (_succ tbl i2) 3
-
-  let get k tbl =
-    try Some (get_exn k tbl)
+  let get tbl x =
+    try Some (find tbl x)
     with Not_found -> None
 
-  let find_exn tbl k = get_exn k tbl
+  let keys tbl k = iter (fun key _ -> k key) tbl
 
-  let find tbl k =
-    try Some (get_exn k tbl)
-    with Not_found -> None
+  let values tbl k = iter (fun _ v -> k v) tbl
 
-  let mem tbl k =
-    try ignore (get_exn k tbl); true
-    with Not_found -> false
-
-  let of_list l =
-    let tbl = create 16 in
-    List.iter (fun (k,v) -> add tbl k v) l;
-    tbl
-
-  let to_list tbl =
-    Array.fold_left
-      (fun acc bucket -> match bucket with
-        | Empty -> acc
-        | Key (k,v,_) -> (k,v)::acc
-      ) [] tbl.arr
+  let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 
   let of_seq seq =
-    let tbl = create 16 in
+    let tbl = create 32 in
     seq (fun (k,v) -> add tbl k v);
     tbl
 
-  let to_seq tbl yield =
-    Array.iter
-      (function Empty -> () | Key (k, v, _) -> yield (k,v))
-      tbl.arr
+  let to_list tbl =
+    fold
+      (fun k v l -> (k,v) :: l)
+      tbl []
 
-  let keys tbl yield =
-    Array.iter
-      (function Empty -> () | Key (k, _, _) -> yield k)
-      tbl.arr
-
-  let values tbl yield =
-    Array.iter
-      (function Empty -> () | Key (_, v, _) -> yield v)
-      tbl.arr
+  let of_list l =
+    let tbl = create 32 in
+    List.iter (fun (k,v) -> add tbl k v) l;
+    tbl
 end
 
+(** {2 Default Table} *)
+
+module type DEFAULT = sig
+  type key
+
+  type 'a t
+  (** A hashtable for keys of type [key] and values of type ['a] *)
+
+  val create : ?size:int -> 'a -> 'a t
+  (** [create d] makes a new table that maps every key to [d] by default.
+      @param size optional size of the initial table *)
+
+  val create_with : ?size:int -> (key -> 'a) -> 'a t
+  (** Similar to [create d] but here [d] is a function called to obtain a
+      new default value for each distinct key. Useful if the default
+      value is stateful. *)
+
+  val get : 'a t -> key -> 'a
+  (** Unfailing retrieval (possibly returns the default value) *)
+
+  val set : 'a t -> key -> 'a -> unit
+  (** Replace the current binding for this key *)
+
+  val remove : 'a t -> key -> unit
+  (** Remove the binding for this key. If [get tbl k] is called later, the
+      default value for the table will be returned *)
+
+  val to_seq : 'a t -> (key * 'a) sequence
+  (** Pairs of [(elem, count)] for all elements whose count is positive *)
+end
+
+module MakeDefault(X : Hashtbl.HashedType) = struct
+  type key = X.t
+
+  module T = Hashtbl.Make(X)
+
+  type 'a t = {
+    default : key -> 'a;
+    tbl : 'a T.t
+  }
+
+  let create_with ?(size=32) default = { default; tbl=T.create size }
+
+  let create ?size d = create_with ?size (fun _ -> d)
+
+  let get tbl k =
+    try T.find tbl.tbl k
+    with Not_found ->
+      let v = tbl.default k in
+      T.add tbl.tbl k v;
+      v
+
+  let set tbl k v = T.replace tbl.tbl k v
+
+  let remove tbl k = T.remove tbl.tbl k
+
+  let to_seq tbl k = T.iter (fun key v -> k (key,v)) tbl.tbl
+end
+
+(** {2 Count occurrences using a Hashtbl} *)
+
+module type COUNTER = sig
+  type elt
+  (** Elements that are to be counted *)
+
+  type t
+
+  val create : int -> t
+  (** A counter maps elements to natural numbers (the number of times this
+      element occurred) *)
+
+  val incr : t -> elt -> unit
+  (** Increment the counter for the given element *)
+
+  val incr_by : t -> int -> elt -> unit
+  (** Add several occurrences at once *)
+
+  val get : t -> elt -> int
+  (** Number of occurrences for this element *)
+
+  val add_seq : t -> elt sequence -> unit
+  (** Increment each element of the sequence *)
+
+  val of_seq : elt sequence -> t
+  (** [of_seq s] is the same as [add_seq (create ())] *)
+end
+
+module MakeCounter(X : Hashtbl.HashedType) = struct
+  type elt = X.t
+
+  module T = Hashtbl.Make(X)
+
+  type t = int T.t
+
+  let create size = T.create size
+
+  let get tbl x = try T.find tbl x with Not_found -> 0
+
+  let incr tbl x =
+    let n = get tbl x in
+    T.replace tbl x (n+1)
+
+  let incr_by tbl n x = 
+    let n' = get tbl x in
+    if n' + n <= 0
+    then T.remove tbl x
+    else T.replace tbl x (n+n')
+
+  let add_seq tbl seq = seq (incr tbl)
+
+  let of_seq seq =
+    let tbl = create 32 in
+    add_seq tbl seq;
+    tbl
+end

@@ -92,7 +92,7 @@ module O = struct
   let create () =
     let s = {
       n = 0;
-      handlers = Array.create 3 nop_handler;
+      handlers = Array.make 3 nop_handler;
       alive = NotAlive;
     } in
     s
@@ -116,7 +116,7 @@ module O = struct
     (* resize handlers if needed *)
     (if s.n = Array.length s.handlers
       then begin
-        let handlers = Array.create (s.n + 4) nop_handler in
+        let handlers = Array.make (s.n + 4) nop_handler in
         Array.blit s.handlers 0 handlers 0 s.n;
         s.handlers <- handlers
       end);

@@ -45,6 +45,21 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
+val delay : (unit -> 'a t) -> 'a t
+(** Delay evaluation. Useful for side-effectful generators that
+    need some code to run for every call.
+    Example:
+    {[
+    let gensym = let r = ref 0 in fun () -> incr r; !r ;;
+
+    delay (fun () ->
+      let name = gensym() in
+      small_int >>= fun i -> return (name,i)
+    )
+    ]}
+    @since NEXT_RELEASE
+*)
+
 val choose : 'a t list -> 'a option t
 (** Choose a generator within the list. *)
 
@@ -59,6 +74,12 @@ val choose_return : 'a list -> 'a t
     @raise Invalid_argument if the list is empty *)
 
 val replicate : int -> 'a t -> 'a list t
+(** [replace n g] makes a list of [n] elements which are all generated
+    randomly using [g] *)
+
+val list_seq : 'a t list -> 'a list t
+(** Build random lists from lists of random generators
+    @since NEXT_RELEASE *)
 
 val small_int : int t
 

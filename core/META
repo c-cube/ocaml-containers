@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: c0cc05feb3c737cd5d151af31c1723c3)
+# DO NOT EDIT (digest: 176a952c03cc29ec8fbecdbfa8ef56f0)
 version = "0.3.4"
 description = "A modular standard library focused on data structures."
 archive(byte) = "containers.cma"
@@ -26,6 +26,17 @@ package "string" (
  archive(native) = "containers_string.cmxa"
  archive(native, plugin) = "containers_string.cmxs"
  exists_if = "containers_string.cma"
+)
+
+package "pervasives" (
+ version = "0.3.4"
+ description = "A modular standard library focused on data structures."
+ requires = "containers"
+ archive(byte) = "containers_pervasives.cma"
+ archive(byte, plugin) = "containers_pervasives.cma"
+ archive(native) = "containers_pervasives.cmxa"
+ archive(native, plugin) = "containers_pervasives.cmxs"
+ exists_if = "containers_pervasives.cma"
 )
 
 package "misc" (

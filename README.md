@@ -12,7 +12,10 @@ ocaml-containers
     KMP search algorithm, and a few naive utils). Again, modules are independent
     and sometimes parametric on the string and char types (so they should
     be able to deal with your favorite unicode library).
-3. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
+3. A drop-in replacement to the standard library, `containers.pervasives`,
+    that defined a `CCPervasives` module intented to be opened to extend some
+    modules of the stdlib.
+4. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
     in other dirs (mostly `misc` but also `lwt` and `threads`). It's where I
     tend to write code when I want to test some idea, so half the modules (at
     least) are unfinished or don't really work.
@@ -59,6 +62,8 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 - `CCArray`, utilities on arrays and slices
 - `CCLinq`, high-level query language over collections
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
+- `CCHashtbl`, an extension of the standard hashtbl module
+- `CCFlatHashtbl`, a flat (open-addressing) hashtable functorial implementation
 - `CCKTree`, an abstract lazy tree structure (similar to what `CCKlist` is to lists)
 - small modules (basic types, utilities):
   - `CCInt`

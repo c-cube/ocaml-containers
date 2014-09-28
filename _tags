@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b056133745a2be24fb08a6580d55ff77)
+# DO NOT EDIT (digest: 4eaa31a9f64d59d82a736ef275c18061)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -19,6 +19,9 @@
 "string/containers_string.cmxs": use_containers_string
 "string/KMP.cmx": for-pack(Containers_string)
 "string/levenshtein.cmx": for-pack(Containers_string)
+# Library containers_pervasives
+"pervasives/containers_pervasives.cmxs": use_containers_pervasives
+<pervasives/*.ml{,i}>: use_containers
 # Library containers_misc
 "misc/containers_misc.cmxs": use_containers_misc
 "misc/cache.cmx": for-pack(Containers_misc)
@@ -79,29 +82,32 @@
 <cgi/*.ml{,i}>: package(CamlGI)
 <cgi/*.ml{,i}>: use_containers
 # Executable benchs
-"tests/benchs.native": package(bench)
-"tests/benchs.native": package(unix)
-"tests/benchs.native": use_containers
-"tests/benchs.native": use_containers_misc
-"tests/benchs.native": use_containers_string
-<tests/*.ml{,i}>: package(bench)
-<tests/*.ml{,i}>: use_containers_string
+"benchs/benchs.native": package(bench)
+"benchs/benchs.native": package(unix)
+"benchs/benchs.native": use_containers
+"benchs/benchs.native": use_containers_misc
+"benchs/benchs.native": use_containers_string
+<benchs/*.ml{,i}>: package(bench)
+<benchs/*.ml{,i}>: use_containers_string
 # Executable bench_conv
-"tests/bench_conv.native": package(benchmark)
-"tests/bench_conv.native": use_containers
+"benchs/bench_conv.native": package(benchmark)
+"benchs/bench_conv.native": use_containers
 # Executable bench_batch
-"tests/bench_batch.native": package(benchmark)
-"tests/bench_batch.native": use_containers
-<tests/*.ml{,i}>: package(benchmark)
+"benchs/bench_batch.native": package(benchmark)
+"benchs/bench_batch.native": use_containers
+<benchs/*.ml{,i}>: package(benchmark)
 # Executable bench_hash
-"tests/bench_hash.native": package(unix)
-"tests/bench_hash.native": use_containers
-"tests/bench_hash.native": use_containers_misc
-<tests/*.ml{,i}>: package(unix)
-<tests/*.ml{,i}>: use_containers_misc
+"benchs/bench_hash.native": package(unix)
+"benchs/bench_hash.native": use_containers
+"benchs/bench_hash.native": use_containers_misc
+<benchs/*.ml{,i}>: package(unix)
+<benchs/*.ml{,i}>: use_containers
+<benchs/*.ml{,i}>: use_containers_misc
 # Executable test_levenshtein
 "tests/test_levenshtein.native": package(qcheck)
 "tests/test_levenshtein.native": use_containers
+"tests/test_levenshtein.native": use_containers_string
+<tests/*.ml{,i}>: use_containers_string
 # Executable test_lwt
 <tests/lwt/test_Behavior.{native,byte}>: package(lwt)
 <tests/lwt/test_Behavior.{native,byte}>: package(lwt.unix)
@@ -130,10 +136,14 @@
 # Executable run_tests
 "tests/run_tests.native": package(oUnit)
 "tests/run_tests.native": package(qcheck)
+"tests/run_tests.native": package(unix)
 "tests/run_tests.native": use_containers
+"tests/run_tests.native": use_containers_misc
 <tests/*.ml{,i}>: package(oUnit)
 <tests/*.ml{,i}>: package(qcheck)
+<tests/*.ml{,i}>: package(unix)
 <tests/*.ml{,i}>: use_containers
+<tests/*.ml{,i}>: use_containers_misc
 # Executable web_pwd
 "examples/cgi/web_pwd.byte": package(CamlGI)
 "examples/cgi/web_pwd.byte": package(threads)
@@ -147,10 +157,15 @@
 "examples/lambda.byte": package(unix)
 "examples/lambda.byte": use_containers
 "examples/lambda.byte": use_containers_misc
+# Executable id_sexp
+"examples/id_sexp.native": package(unix)
+"examples/id_sexp.native": use_containers
+"examples/id_sexp.native": use_containers_misc
 <examples/*.ml{,i}>: package(unix)
 <examples/*.ml{,i}>: use_containers
 <examples/*.ml{,i}>: use_containers_misc
 # OASIS_STOP
 <tests/*.ml{,i}>: thread
 <threads/*.ml{,i}>: thread
+<sequence>: -traverse
 <{string,core}/**/*.ml>: warn_K, warn_Y, warn_X

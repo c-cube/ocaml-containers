@@ -25,256 +25,637 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Simple S-expression parsing/printing} *)
 
-type t =
-  | K of string * t  (* keyword *)
-  | I of int
-  | S of string
-  | L of t list
+type 'a or_error = [ `Ok of 'a | `Error of string ]
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
 
-let eq a b = a = b
+type t =
+  | Atom of string
+  | List of t list
+
+let equal a b = a = b
 
 let compare a b = Pervasives.compare a b
 
 let hash a = Hashtbl.hash a
 
+let of_int x = Atom (string_of_int x)
+let of_float x = Atom (string_of_float x)
+let of_bool x = Atom (string_of_bool x)
+let of_string x = Atom x
+let of_unit = List []
+let of_list l = List l
+let of_pair (x,y) = List[x;y]
+let of_triple (x,y,z) = List[x;y;z]
+
+let of_variant name args = List (Atom name :: args)
+let of_field name t = List [Atom name; t]
+let of_record l =
+  List (List.map (fun (n,x) -> of_field n x) l)
+
+let _with_in filename f =
+  let ic = open_in filename in
+  try
+    let x = f ic in
+    close_in ic;
+    x
+  with e ->
+    close_in ic;
+    `Error (Printexc.to_string e)
+
+let _with_out filename f =
+  let oc = open_out filename in
+  try
+    let x = f oc in
+    close_out oc;
+    x
+  with e ->
+    close_out oc;
+    raise e
+
 (** {2 Serialization (encoding)} *)
 
+(* shall we escape the string because of one of its chars? *)
+let _must_escape s =
+  try
+    for i = 0 to String.length s - 1 do
+      let c = String.unsafe_get s i in
+      match c with
+      | ' ' | ';' | ')' | '(' | '"' | '\n' | '\t' -> raise Exit
+      | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
+      | _ -> ()
+    done;
+    false
+  with Exit -> true
+
 let rec to_buf b t = match t with
-  | I i -> Printf.bprintf b "%d" i
-  | S s -> Buffer.add_string b (String.escaped s)
-  | K (s, t') ->
-    assert (s.[0] = ':');
-    Buffer.add_string b s;
-    Buffer.add_char b ' ';
-    to_buf b t'
-  | L l ->
-    Buffer.add_char b '(';
-    List.iteri (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t')) l;
-    Buffer.add_char b ')'
+  | Atom s when _must_escape s -> Printf.bprintf b "\"%s\"" (String.escaped s)
+  | Atom s -> Buffer.add_string b s
+  | List [] -> Buffer.add_string b "()"
+  | List [x] -> Printf.bprintf b "(%a)" to_buf x
+  | List l ->
+      Buffer.add_char b '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t'))
+        l;
+      Buffer.add_char b ')'
 
 let to_string t =
-  let b = Buffer.create 32 in
+  let b = Buffer.create 128 in
   to_buf b t;
   Buffer.contents b
 
-(* TODO: improve (slow and ugly) *)
-let fmt fmt t =
-  let b = Buffer.create 32 in
-  to_buf b t;
-  Format.pp_print_string fmt (Buffer.contents b)
+let rec print fmt t = match t with
+  | Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | Atom s -> Format.pp_print_string fmt s
+  | List [] -> Format.pp_print_string fmt "()"
+  | List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" print x
+  | List l ->
+      Format.open_hovbox 2;
+      Format.pp_print_char fmt '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; print fmt t'))
+        l;
+      Format.pp_print_char fmt ')';
+      Format.close_box ()
+
+let rec print_noindent fmt t = match t with
+  | Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | Atom s -> Format.pp_print_string fmt s
+  | List [] -> Format.pp_print_string fmt "()"
+  | List [x] -> Format.fprintf fmt "(%a)" print_noindent x
+  | List l ->
+      Format.pp_print_char fmt '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Format.pp_print_char fmt ' '; print_noindent fmt t'))
+        l;
+      Format.pp_print_char fmt ')'
+
+let to_chan oc t =
+  let fmt = Format.formatter_of_out_channel oc in
+  print fmt t;
+  Format.pp_print_flush fmt ()
+
+let to_file_seq filename seq =
+  _with_out filename
+    (fun oc -> 
+      seq (fun t -> to_chan oc t; output_char oc '\n')
+    )
+
+let to_file filename t = to_file_seq filename (fun k -> k t)
 
 (** {2 Deserialization (decoding)} *)
 
-(** Deserialization is based on the {! decoder} type. Parsing can be
-    incremental, in which case the input is provided chunk by chunk and
-    the decoder contains the parsing state. Once a Sexpr value
-    has been parsed, other values can still be read. *)
+type 'a parse_result = ['a or_error | `End ]
+type 'a partial_result = [ 'a parse_result | `Await ]
 
-type decoder = {
-  mutable buf : string;  (* input buffer *)
-  mutable i : int;  (* index in buf *)
-  mutable len : int;  (* length of substring to read *)
-  mutable c : int;  (* line *)
-  mutable l : int;  (* column *)
-  mutable state : parse_result;
-  mutable stack : partial_state list;
-} (** Decoding state *)
+module Source = struct
+  type individual_char =
+    | NC_yield of char
+    | NC_end
+    | NC_await
 
-(** Result of parsing *)
-and parse_result =
-  | ParseOk of t
-  | ParseError of string
-  | ParsePartial
+  type t = unit -> individual_char
+  type source = t
 
-(** Partial state of the parser *)
-and partial_state =
-  | PS_I of bool * int (* sign and integer *)
-  | PS_S of Buffer.t (* parsing a string *)
-  | PS_S_escape of Buffer.t (* parsing a string; prev char is \ *)
-  | PS_L of t list
-  | PS_key of string  (* key, waiting for value *)
-  | PS_return of t  (* bottom of stack *)
-  | PS_error of string (* error *)
+  module Manual = struct
+    type t = {
+      mutable i : int;    (* offset *)
+      mutable stop : bool;
+      buf : Buffer.t;     (* accessible chunk of input *)
+    }
+      
+    let make() = {
+      i = 0;
+      stop = false;
+      buf=Buffer.create 32;
+    }
 
-let mk_decoder () =
-  let dec = {
-    buf = "";
-    i = 0;
-    len = 0;
-    c = 0;
-    l = 0;
-    state = ParsePartial;
-    stack = [];
-  } in
-  dec
+    let to_src d () =
+      if d.i = Buffer.length d.buf
+        then
+          if d.stop then NC_end else NC_await
+        else (
+          let c = Buffer.nth d.buf d.i in
+          d.i <- d.i + 1;
+          NC_yield c
+        )
 
-let is_empty dec = dec.len = 0
-let cur dec = dec.buf.[dec.i]
+    let feed d s i len =
+      if d.stop then failwith "Sexp.Streaming.Manual.feed: reached EOI";
+      Buffer.add_substring d.buf s i len
 
-let junk dec =
-  (* update line/column *)
-  (if cur dec = '\n'
-    then (dec.c <- 0; dec.l <- dec.l + 1)
-    else dec.c <- dec.c + 1);
-  dec.i <- dec.i + 1;
-  dec.len <- dec.len - 1
+    let reached_end d = d.stop <- true
+  end
 
-let next dec =
-  let c = cur dec in
-  junk dec;
-  c
+  let of_string s =
+    let i = ref 0 in
+    fun () ->
+      if !i=String.length s
+      then NC_end
+      else (
+        let c = String.get s !i in
+        incr i;
+        NC_yield c
+      )
 
-(* parse value *)
-let rec parse_rec dec =
-  match dec.stack with
-  | [PS_return v] ->  (* return value *)
-    dec.stack <- [];
-    dec.state <- ParseOk v;
-    dec.state
-  | [PS_error s] -> (* failure *)
-    dec.stack <- [];
-    dec.state <- ParseError s;
-    dec.state
-  | _ ->
-    if is_empty dec then ParsePartial (* wait *)
-    else begin
-      let c = next dec in
-      (match dec.stack, c with
-      | PS_S_escape b :: stack, 'n' ->
-        Buffer.add_char b '\n';
-        dec.stack <- PS_S b :: stack
-      | PS_S_escape b :: stack, 't' ->
-        Buffer.add_char b '\t';
-        dec.stack <- PS_S b :: stack
-      | (PS_S_escape b) :: stack, ('(' | '\\' | ')' | ' ') ->
-        Buffer.add_char b c;
-        dec.stack <- (PS_S b) :: stack;
-      | (PS_key s) :: _, (')' | '\n' | ' ' | '\t') -> (* error *)
-        error dec ("keyword " ^ s ^ " expected value")
-      | _, ')' -> (* special case for ')' *)
-        close_paren dec
-      | ((PS_L _ | PS_key _) :: _ | []), '-' ->  (* negative num *)
-        dec.stack <- PS_I (false, 0) :: dec.stack
-      | ((PS_L _ | PS_key _) :: _ | []), '0' .. '9' ->  (* positive num *)
-        dec.stack <- PS_I (true, Char.code c - Char.code '0') :: dec.stack
-      | (PS_I (sign, i)) :: stack, '0' .. '9' ->
-        dec.stack <- PS_I (sign, (Char.code c - Char.code '0') + 10 * i) :: stack;
-      | (PS_I (sign, i)) :: stack, (' ' | '\t' | '\n') ->
-        terminate_token dec
-      | stack, '(' ->
-        dec.stack <- PS_L [] :: stack  (* push new list *)
-      | PS_S b :: stack, (' ' | '\t' | '\n') -> (* parsed a string *)
-        terminate_token dec
-      | PS_S b :: stack, '\\' ->
-        dec.stack <- PS_S_escape b :: stack  (* escape next char *)
-      | PS_S b :: _, _ ->
-        Buffer.add_char b c  (* just a char of the string *)
-      | _, (' ' | '\t' | '\n') ->  (* skip *)
-        ()
-      | stack, c ->
-        let b = Buffer.create 7 in
-        Buffer.add_char b c;
-        dec.stack <- PS_S b :: stack
-      );
-      parse_rec dec
-    end
-(* When a value is parsed, push it on the stack (possibly collapsing it) *)
-and push_value dec v =
-  match v, dec.stack with
-  | _, [] ->
-    dec.stack <- [PS_return v] (* finished *)
-  | _, (PS_L l) :: stack ->
-    (* add to list *)
-    dec.stack <- (PS_L (v :: l)) :: stack;
-  | v, ((PS_key s) :: stack) ->
-    (* parsed a key/value *)
-    dec.stack <- stack;
-    push_value dec (K (s, v))
-  | _ ->
-    error dec "unexpected value"
-(* closing parenthesis: may terminate several states at once *)
-and close_paren dec =
-  match dec.stack with
-  | PS_L l :: stack ->
-    dec.stack <- stack;
-    push_value dec (L (List.rev l))
-  | (PS_I _ | PS_S _) :: stack ->
-    terminate_token dec;
-    close_paren dec  (* parenthesis still not closed *)
-  | _ ->
-    error dec "Sexp: unexpected ')'"
-(* terminate current token *)
-and terminate_token dec =
-  match dec.stack with
-  | [] -> assert false
-  | (PS_I (sign, i)) :: stack ->
-    dec.stack <- stack;
-    push_value dec (I (if sign then i else ~- i))  (* parsed int *)
-  | (PS_S b) :: stack ->
-    dec.stack <- stack;
+  let of_chan ?(bufsize=1024) ic =
+    let buf = String.make bufsize ' ' in
+    let i = ref 0 in
+    let n = ref 0 in
+    let stop = ref false in
+    let rec next() =
+      if !stop then NC_end
+      else if !i = !n
+      then ( (* refill *)
+        i := 0;
+        n := input ic buf 0 bufsize;
+        if !n = 0 then (stop := true; NC_end) else next()
+      ) else (  (* yield *)
+        let c = String.get buf !i in
+        incr i;
+        NC_yield c
+      )
+    in next
+
+  let of_gen g =
+    let s = ref "" in
+    let i = ref 0 in
+    let stop = ref false in
+    let rec next() =
+      if !stop then NC_end
+      else if !i = String.length !s
+      then (
+        match g() with
+        | None -> stop := true; NC_end
+        | Some buf -> s := buf; i := 0; next () 
+      ) else (
+        let c = String.get !s !i in
+        incr i;
+        NC_yield c
+      )
+    in next
+end
+
+module Lexer = struct
+  (** An individual character returned by a source *)
+  type token =
+    | Open
+    | Close
+    | Atom of string
+
+  type decode_state =
+    | St_start
+    | St_atom
+    | St_quoted
+    | St_comment
+    | St_escaped
+    | St_raw_char1 of int
+    | St_raw_char2 of int
+    | St_yield of token
+    | St_error of string
+    | St_end
+
+  type t = {
+    src : Source.t;
+    atom : Buffer.t;    (* atom being parsed *)
+    mutable st : decode_state;
+    mutable line : int;
+    mutable col : int;
+  }
+
+  let make src = {
+    src;
+    st = St_start;
+    line = 1;
+    col = 1;
+    atom = Buffer.create 32;
+  }
+
+  let of_string s = make (Source.of_string s)
+
+  let of_chan ic = make (Source.of_chan ic)
+
+  let line t = t.line
+  let col t = t.col
+
+  (* yield [x] with current state [st] *)
+  let _yield d st x =
+    d.st <- st;
+    `Ok x
+
+  let _take_buffer b =
     let s = Buffer.contents b in
-    if s.[0] = ':'
-      then dec.stack <- (PS_key s) :: stack  (* keyword, wait for value *)
-      else push_value dec (S s)
-  | _ ->
-    error dec "Sexp: ill-terminated token"
-(* signal error *)
-and error dec msg =
-  let msg = Printf.sprintf "Sexp: error at line %d, column %d: %s"
-    dec.l dec.c msg in
-  dec.stack <- [PS_error msg]
+    Buffer.clear b;
+    s
 
-(* exported parse function *)
-let parse dec s i len =
-  (if i < 0 || i+len > String.length s
-    then invalid_arg "Sexp.parse: not a valid substring");
-  (* add the input to [dec] *)
-  if dec.len = 0
-    then begin
-      dec.buf <- s;
-      dec.i <- i;
-      dec.len <- len;
-    end else begin
-      (* use a buffer to merge the stored input and the new input *)
-      let b = Buffer.create (dec.len + len) in
-      Buffer.add_substring b dec.buf dec.i dec.len;
-      Buffer.add_substring b s i len;
-      dec.buf <- Buffer.contents b;
-      dec.i <- 0;
-      dec.len <- dec.len + len;
-    end;
-  (* state machine *)
-  parse_rec dec
+  (* raise an error *)
+  let _error d msg =
+    let b = Buffer.create 32 in
+    Printf.bprintf b "at %d, %d: " d.line d.col;
+    Printf.kbprintf
+      (fun b ->
+        let msg' = Buffer.contents b in
+        d.st <- St_error msg';
+        `Error msg')
+      b msg
 
-let reset dec =
-  dec.l <- 0;
-  dec.c <- 0;
-  dec.i <- 0;
-  dec.len <- 0;
-  dec.state <- ParsePartial;
-  dec.stack <- [];
-  ()
+  let _end d =
+    d.st <- St_end;
+    `End
 
-let state dec = dec.state
+  let _is_digit c = Char.code '0' <= Char.code c && Char.code c <= Char.code '9'
+  let _digit2i c = Char.code c - Char.code '0'
 
-let rest dec =
-  String.sub dec.buf dec.i dec.len
+  (* next token *)
+  let rec _next d st : token partial_result =
+    match st with
+    | St_error msg -> `Error msg
+    | St_end -> _end d
+    | St_yield x ->
+        (* yield the given token, then start a fresh one *)
+        _yield d St_start x
+    | _ ->
+        d.st <- st;
+        _process_next d st
 
-let rest_size dec =
-  dec.len
+  (* read and proces the next character *)
+  and _process_next d st =
+    match d.src () with
+    | Source.NC_end ->
+        begin match st with
+        | St_error _ | St_end | St_yield _ -> assert false
+        | St_start | St_comment -> _end d
+        | St_atom ->
+            let a = _take_buffer d.atom in
+            _yield d St_end (Atom a)
+        | St_quoted ->
+            let a = _take_buffer d.atom in
+            _yield d St_end (Atom a)
+        | (St_escaped | St_raw_char1 _ | St_raw_char2 _) ->
+            _error d "unexpected end of input (escaping)"
+        end
+    | Source.NC_await -> `Await
+    | Source.NC_yield c ->
+        if c='\n'
+          then (d.col <- 1; d.line <- d.line + 1)
+          else (d.col <- d.col + 1);
+        (* use the next char *)
+        match st with
+        | St_error _ | St_end | St_yield _ -> assert false
+        | St_comment ->
+            begin match c with
+            | '\n' -> _next d St_start
+            | _ -> _next d St_comment
+            end
+        | St_start ->
+            begin match c with
+            | ' ' | '\t' | '\n' -> _next d St_start
+            | ';' -> _next d St_comment
+            | '(' -> _yield d St_start Open
+            | ')' -> _yield d St_start Close
+            | '"' -> _next d St_quoted
+            | _ -> (* read regular atom *)
+                Buffer.add_char d.atom c;
+                _next d St_atom
+            end
+        | St_atom ->
+            begin match c with
+            | ' ' | '\t' | '\n' ->
+                let a = _take_buffer d.atom in
+                _yield d St_start (Atom a)
+            | ';' ->
+                let a = _take_buffer d.atom in
+                _yield d St_comment (Atom a)
+            | ')' ->
+                let a = _take_buffer d.atom in
+                _yield d (St_yield Close) (Atom a)
+            | '(' ->
+                let a = _take_buffer d.atom in
+                _yield d (St_yield Open) (Atom a)
+            | '"' -> _error d "unexpected \" (parsing atom %s)" (Buffer.contents d.atom)
+            | '\\' -> _error d "unexpected \\"
+            | _ ->
+                Buffer.add_char d.atom c;
+                _next d St_atom
+            end
+        | St_quoted ->
+            (* reading an unquoted atom *)
+            begin match c with
+            | '\\' -> _next d St_escaped
+            | '"' ->
+                let a = _take_buffer d.atom in
+                _yield d St_start (Atom a)
+            | _ ->
+                Buffer.add_char d.atom c;
+                _next d St_quoted
+            end
+        | St_escaped ->
+            begin match c with
+              | 'n' -> Buffer.add_char d.atom '\n'; _next d St_quoted
+              | 't' -> Buffer.add_char d.atom '\t'; _next d St_quoted
+              | 'r' -> Buffer.add_char d.atom '\r'; _next d St_quoted
+              | 'b' -> Buffer.add_char d.atom '\b'; _next d St_quoted
+              | '"' -> Buffer.add_char d.atom '"'; _next d St_quoted
+              | '\\' -> Buffer.add_char d.atom '\\'; _next d St_quoted
+              | _ when _is_digit c -> _next d (St_raw_char1 (_digit2i c))
+              | _ -> _error d "unexpected escaped character %c" c
+            end
+        | St_raw_char1 i ->
+            begin match c with
+              | _ when _is_digit c -> _next d (St_raw_char2 (i*10 + _digit2i c))
+              | _ -> _error d "expected digit, got %c" c
+            end
+        | St_raw_char2 i ->
+            begin match c with
+              | c when _is_digit c ->
+                  (* read an escaped char *)
+                  Buffer.add_char d.atom (Char.chr (i*10+_digit2i c));
+                  _next d St_quoted
+              | c -> _error d "expected digit, got %c" c
+            end
+
+  let next d = _next d d.st
+end
+
+module ParseGen = struct
+  type 'a t = unit -> 'a parse_result
+
+  let to_list g : 'a list or_error =
+    let rec aux acc = match g() with
+      | `Error e -> `Error e
+      | `Ok x -> aux (x::acc)
+      | `End -> `Ok (List.rev acc)
+    in
+    aux []
+
+  let head g = match g() with
+    | `End -> `Error "expected at least one element"
+    | #or_error as x -> x
+
+  let head_exn g = match g() with
+    | `Ok x -> x
+    | `Error msg -> failwith msg
+    | `End -> failwith "expected at least one element"
+
+  let take n g =
+    assert (n>=0);
+    let n = ref n in
+    fun () ->
+      if !n = 0 then `End
+      else (
+        decr n;
+        g()
+      )
+end
+
+(* hidden parser state *)
+type parser_state = {
+  ps_d : Lexer.t;
+  mutable ps_stack : t list list;
+}
+
+let mk_ps src = {
+  ps_d = Lexer.make src;
+  ps_stack = [];
+}
+
+let _error ps msg =
+  let msg' = Printf.sprintf "at %d,%d: %s" (Lexer.line ps.ps_d) (Lexer.col ps.ps_d) msg in
+  `Error msg'
+
+(* next token, or await *)
+let rec _next ps : t partial_result =
+  match Lexer.next ps.ps_d with
+  | `Ok (Lexer.Atom s) ->
+      _push ps (Atom s)
+  | `Ok Lexer.Open ->
+      ps.ps_stack <- [] :: ps.ps_stack;
+      _next ps
+  | `Ok Lexer.Close ->
+      begin match ps.ps_stack with
+      | [] -> _error ps "unbalanced ')'"
+      | l :: stack ->
+          ps.ps_stack <- stack;
+          _push ps (List (List.rev l))
+      end
+  | `Error msg -> `Error msg
+  | `Await -> `Await
+  | `End -> `End
+
+(* push a S-expr on top of the parser stack *)
+and _push ps e = match ps.ps_stack with
+  | [] ->
+      `Ok e
+  | l :: tl ->
+      ps.ps_stack <- (e :: l) :: tl;
+      _next ps
+
+(* assume [ps] never needs [`Await] *)
+let _never_block ps () = match _next ps with
+  | `Await -> assert false
+  | `Ok x -> `Ok x
+  | `Error e -> `Error e
+  | `End -> `End
+
+(* parse from a generator of string slices *)
+let parse_gen g : t ParseGen.t =
+  let ps = mk_ps (Source.of_gen g) in
+  _never_block ps
 
 let parse_string s =
-  let dec = mk_decoder () in
-  parse dec s 0 (String.length s)
+  let ps = mk_ps (Source.of_string s) in
+  _never_block ps
+
+let parse_chan ?bufsize ic =
+  let ps = mk_ps (Source.of_chan ?bufsize ic) in
+  _never_block ps
+
+(** {6 Blocking} *)
+
+let of_chan ic =
+  ParseGen.head (parse_chan ic)
 
 let of_string s =
-  match parse_string s with
-  | ParseOk t -> t
-  | ParsePartial -> invalid_arg "Sexp: partial parse"
-  | ParseError msg -> invalid_arg msg
+  ParseGen.head (parse_string s)
 
-(* tests:
+let of_file f =
+  _with_in f of_chan
 
-let s = Sexp.of_string "(0 a b c 42 :foo 45 :bar (hello-world foo\\tb\\na\\(\\)r -421) (41 -52) 0)";;
-Sexp.to_string s;;
-*)
+module L = struct
+  let to_buf b l =
+    List.iter (to_buf b) l
+
+  let to_string l =
+    let b = Buffer.create 32 in
+    to_buf b l;
+    Buffer.contents b
+
+  let to_chan oc l =
+    let fmt = Format.formatter_of_out_channel oc in
+    List.iter (Format.fprintf fmt "%a@." print) l;
+    Format.pp_print_flush fmt ()
+
+  let to_file filename l =
+    _with_out filename (fun oc -> to_chan oc l)
+
+  let of_chan ?bufsize ic =
+    ParseGen.to_list (parse_chan ?bufsize ic)
+
+  let of_file ?bufsize filename =
+    _with_in filename
+      (fun ic -> of_chan ?bufsize ic)
+
+  let of_string s =
+    ParseGen.to_list (parse_string s)
+
+  let of_gen g =
+    ParseGen.to_list (parse_gen g)
+
+  exception OhNoes of string
+  exception StopNaow
+
+  let of_seq seq =
+    let src = Source.Manual.make () in
+    let ps = mk_ps (Source.Manual.to_src src) in
+    let l = ref [] in
+    (* read as many expressions as possible *)
+    let rec _nexts () = match _next ps with
+      | `Ok x -> l := x :: !l; _nexts ()
+      | `Error e -> raise (OhNoes e)
+      | `End -> raise StopNaow
+      | `Await -> ()
+    in
+    try
+      seq
+        (fun s -> Source.Manual.feed src s 0 (String.length s); _nexts ());
+      Source.Manual.reached_end src;
+      _nexts ();
+      `Ok (List.rev !l)
+    with
+    | OhNoes msg -> `Error msg
+    | StopNaow -> `Ok (List.rev !l)
+end
+
+(** {6 Traversal of S-exp} *)
+
+module Traverse = struct
+  let return x = Some x
+
+  let (>|=) e f = match e with
+    | None -> None
+    | Some x -> Some (f x)
+
+  let (>>=) e f = match e with
+    | None -> None
+    | Some x -> f x
+
+  let rec _list_any f l = match l with
+    | [] -> None
+    | x::tl ->
+        match f x with
+        | Some _ as res -> res
+        | None -> _list_any f tl
+
+  let list_any f e = match e with
+    | Atom _ -> None
+    | List l -> _list_any f l
+
+  let rec _list_all f acc l = match l with
+    | [] -> List.rev acc
+    | x::tl ->
+        match f x with
+        | Some y -> _list_all f (y::acc) tl
+        | None -> _list_all f acc tl
+
+  let list_all f e = match e with
+    | Atom _ -> []
+    | List l -> _list_all f [] l
+
+  let _try_atom e f = match e with
+    | List _ -> None
+    | Atom x -> try Some (f x) with _ -> None
+
+  let to_int e = _try_atom e int_of_string
+  let to_bool e = _try_atom e bool_of_string
+  let to_float e = _try_atom e float_of_string
+  let to_string e = _try_atom e (fun x->x)
+
+  let to_pair e = match e with
+    | List [x;y] -> Some (x,y)
+    | _ -> None
+
+  let to_triple e = match e with
+    | List [x;y;z] -> Some (x,y,z)
+    | _ -> None
+
+  let to_list e = match e with
+    | List l -> Some l
+    | Atom _ -> None
+
+  let rec _get_field name l = match l with
+    | List [Atom n; x] :: _ when name=n -> Some x
+    | _ :: tl -> _get_field name tl
+    | [] -> None
+
+  let get_field name e = match e with
+    | List l -> _get_field name l
+    | Atom _ -> None
+
+  let field name f e =
+    get_field name e >>= f
+
+  let rec _get_variant s args l = match l with
+    | [] -> None
+    | (s', f) :: _ when s=s' -> f args
+    | _ :: tl -> _get_variant s args tl
+
+  let get_variant l e = match e with
+    | List (Atom s :: args) -> _get_variant s args l
+    | List _ -> None
+    | Atom s -> _get_variant s [] l
+
+  let get_exn e = match e with
+    | None -> failwith "Sexp.Traverse.get_exn"
+    | Some x -> x
+end

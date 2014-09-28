@@ -1,6 +1,7 @@
 
 open OUnit
 
+open Containers_misc
 open PiCalculus
 module Pi = PiCalculus
 

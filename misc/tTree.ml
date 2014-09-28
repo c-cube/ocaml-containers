@@ -40,7 +40,7 @@ module PArray = struct
   (* XXX maybe having a snapshot of the array from point to point may help? *)
 
   let make size elt =
-    let a = Array.create size elt in
+    let a = Array.make size elt in
     ref (Array a)
 
   (** Recover the given version of the shared array. Returns the array

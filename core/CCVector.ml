@@ -86,7 +86,7 @@ let _empty_array v =
 let _resize v newcapacity =
   assert (newcapacity >= v.size);
   assert (not (_empty_array v));
-  let new_vec = Array.create newcapacity v.vec.(0) in
+  let new_vec = Array.make newcapacity v.vec.(0) in
   Array.blit v.vec 0 new_vec 0 v.size;
   v.vec <- new_vec;
   ()
