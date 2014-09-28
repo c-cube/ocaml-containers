@@ -41,11 +41,12 @@ val equal : t -> t -> bool
 val compare : t -> t -> int
 val hash : t -> int
 
+val atom : string -> t  (** Build an atom directly from a string *)
+
 val of_int : int -> t
 val of_bool : bool -> t
 val of_list : t list -> t
 val of_rev_list : t list -> t  (** Reverse the list *)
-val of_string : string -> t
 val of_float : float -> t
 val of_unit : t
 val of_pair : t * t -> t
