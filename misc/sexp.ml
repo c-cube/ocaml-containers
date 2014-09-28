@@ -45,8 +45,10 @@ let of_bool x = Atom (string_of_bool x)
 let of_string x = Atom x
 let of_unit = List []
 let of_list l = List l
+let of_rev_list l = List (List.rev l)
 let of_pair (x,y) = List[x;y]
 let of_triple (x,y,z) = List[x;y;z]
+let of_quad (x,y,z,u) = List[x;y;z;u]
 
 let of_variant name args = List (Atom name :: args)
 let of_field name t = List [Atom name; t]
