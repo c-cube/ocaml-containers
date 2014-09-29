@@ -33,9 +33,10 @@ type 'a gen = unit -> 'a option
 
 (** {2 Basics} *)
 
-type t =
-  | Atom of string
-  | List of t list
+type t = [
+  | `Atom of string
+  | `List of t list
+  ]
 
 val equal : t -> t -> bool
 val compare : t -> t -> int

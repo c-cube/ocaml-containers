@@ -29,9 +29,10 @@ type 'a or_error = [ `Ok of 'a | `Error of string ]
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
-type t =
-  | Atom of string
-  | List of t list
+type t = [
+  | `Atom of string
+  | `List of t list
+  ]
 
 let equal a b = a = b
 
@@ -39,21 +40,21 @@ let compare a b = Pervasives.compare a b
 
 let hash a = Hashtbl.hash a
 
-let of_int x = Atom (string_of_int x)
-let of_float x = Atom (string_of_float x)
-let of_bool x = Atom (string_of_bool x)
-let atom x = Atom x
-let of_unit = List []
-let of_list l = List l
-let of_rev_list l = List (List.rev l)
-let of_pair (x,y) = List[x;y]
-let of_triple (x,y,z) = List[x;y;z]
-let of_quad (x,y,z,u) = List[x;y;z;u]
+let of_int x = `Atom (string_of_int x)
+let of_float x = `Atom (string_of_float x)
+let of_bool x = `Atom (string_of_bool x)
+let atom x = `Atom x
+let of_unit = `List []
+let of_list l = `List l
+let of_rev_list l = `List (List.rev l)
+let of_pair (x,y) = `List[x;y]
+let of_triple (x,y,z) = `List[x;y;z]
+let of_quad (x,y,z,u) = `List[x;y;z;u]
 
-let of_variant name args = List (Atom name :: args)
-let of_field name t = List [Atom name; t]
+let of_variant name args = `List (`Atom name :: args)
+let of_field name t = `List [`Atom name; t]
 let of_record l =
-  List (List.map (fun (n,x) -> of_field n x) l)
+  `List (List.map (fun (n,x) -> of_field n x) l)
 
 let _with_in filename f =
   let ic = open_in filename in
@@ -91,11 +92,11 @@ let _must_escape s =
   with Exit -> true
 
 let rec to_buf b t = match t with
-  | Atom s when _must_escape s -> Printf.bprintf b "\"%s\"" (String.escaped s)
-  | Atom s -> Buffer.add_string b s
-  | List [] -> Buffer.add_string b "()"
-  | List [x] -> Printf.bprintf b "(%a)" to_buf x
-  | List l ->
+  | `Atom s when _must_escape s -> Printf.bprintf b "\"%s\"" (String.escaped s)
+  | `Atom s -> Buffer.add_string b s
+  | `List [] -> Buffer.add_string b "()"
+  | `List [x] -> Printf.bprintf b "(%a)" to_buf x
+  | `List l ->
       Buffer.add_char b '(';
       List.iteri
         (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t'))
@@ -108,11 +109,11 @@ let to_string t =
   Buffer.contents b
 
 let rec print fmt t = match t with
-  | Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
-  | Atom s -> Format.pp_print_string fmt s
-  | List [] -> Format.pp_print_string fmt "()"
-  | List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" print x
-  | List l ->
+  | `Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | `Atom s -> Format.pp_print_string fmt s
+  | `List [] -> Format.pp_print_string fmt "()"
+  | `List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" print x
+  | `List l ->
       Format.open_hovbox 2;
       Format.pp_print_char fmt '(';
       List.iteri
@@ -122,11 +123,11 @@ let rec print fmt t = match t with
       Format.close_box ()
 
 let rec print_noindent fmt t = match t with
-  | Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
-  | Atom s -> Format.pp_print_string fmt s
-  | List [] -> Format.pp_print_string fmt "()"
-  | List [x] -> Format.fprintf fmt "(%a)" print_noindent x
-  | List l ->
+  | `Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | `Atom s -> Format.pp_print_string fmt s
+  | `List [] -> Format.pp_print_string fmt "()"
+  | `List [x] -> Format.fprintf fmt "(%a)" print_noindent x
+  | `List l ->
       Format.pp_print_char fmt '(';
       List.iteri
         (fun i t' -> (if i > 0 then Format.pp_print_char fmt ' '; print_noindent fmt t'))
@@ -470,7 +471,7 @@ let _error ps msg =
 let rec _next ps : t partial_result =
   match Lexer.next ps.ps_d with
   | `Ok (Lexer.Atom s) ->
-      _push ps (Atom s)
+      _push ps (`Atom s)
   | `Ok Lexer.Open ->
       ps.ps_stack <- [] :: ps.ps_stack;
       _next ps
@@ -479,7 +480,7 @@ let rec _next ps : t partial_result =
       | [] -> _error ps "unbalanced ')'"
       | l :: stack ->
           ps.ps_stack <- stack;
-          _push ps (List (List.rev l))
+          _push ps (`List (List.rev l))
       end
   | `Error msg -> `Error msg
   | `Await -> `Await
@@ -600,8 +601,8 @@ module Traverse = struct
         | None -> _list_any f tl
 
   let list_any f e = match e with
-    | Atom _ -> None
-    | List l -> _list_any f l
+    | `Atom _ -> None
+    | `List l -> _list_any f l
 
   let rec _list_all f acc l = match l with
     | [] -> List.rev acc
@@ -611,12 +612,12 @@ module Traverse = struct
         | None -> _list_all f acc tl
 
   let list_all f e = match e with
-    | Atom _ -> []
-    | List l -> _list_all f [] l
+    | `Atom _ -> []
+    | `List l -> _list_all f [] l
 
   let _try_atom e f = match e with
-    | List _ -> None
-    | Atom x -> try Some (f x) with _ -> None
+    | `List _ -> None
+    | `Atom x -> try Some (f x) with _ -> None
 
   let to_int e = _try_atom e int_of_string
   let to_bool e = _try_atom e bool_of_string
@@ -624,25 +625,25 @@ module Traverse = struct
   let to_string e = _try_atom e (fun x->x)
 
   let to_pair e = match e with
-    | List [x;y] -> Some (x,y)
+    | `List [x;y] -> Some (x,y)
     | _ -> None
 
   let to_triple e = match e with
-    | List [x;y;z] -> Some (x,y,z)
+    | `List [x;y;z] -> Some (x,y,z)
     | _ -> None
 
   let to_list e = match e with
-    | List l -> Some l
-    | Atom _ -> None
+    | `List l -> Some l
+    | `Atom _ -> None
 
   let rec _get_field name l = match l with
-    | List [Atom n; x] :: _ when name=n -> Some x
+    | `List [`Atom n; x] :: _ when name=n -> Some x
     | _ :: tl -> _get_field name tl
     | [] -> None
 
   let get_field name e = match e with
-    | List l -> _get_field name l
-    | Atom _ -> None
+    | `List l -> _get_field name l
+    | `Atom _ -> None
 
   let field name f e =
     get_field name e >>= f
@@ -653,9 +654,9 @@ module Traverse = struct
     | _ :: tl -> _get_variant s args tl
 
   let get_variant l e = match e with
-    | List (Atom s :: args) -> _get_variant s args l
-    | List _ -> None
-    | Atom s -> _get_variant s [] l
+    | `List (`Atom s :: args) -> _get_variant s args l
+    | `List _ -> None
+    | `Atom s -> _get_variant s [] l
 
   let get_exn e = match e with
     | None -> failwith "Sexp.Traverse.get_exn"
