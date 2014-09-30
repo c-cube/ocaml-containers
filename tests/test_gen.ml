@@ -1,5 +1,6 @@
 
 open OUnit
+open CCFun
 
 module Gen = CCGen
 module GR = Gen.Restart

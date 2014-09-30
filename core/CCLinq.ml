@@ -173,25 +173,23 @@ module PMap = struct
     );
   }
 
-  let to_list m = m.to_seq |> CCSequence.to_rev_list
+  let to_list m = CCSequence.to_rev_list m.to_seq
 
   let to_coll m = Seq m.to_seq
 
   let reverse ~build m =
     let build = make ~build () in
-    to_seq m
-      |> CCSequence.map (fun (x,y) -> y,x)
-      |> multimap_of_seq ~build
+    let seq = CCSequence.map (fun (x,y) -> y,x) (to_seq m) in
+    multimap_of_seq ~build seq
 
   let reverse_multimap ~build m =
     let build = make ~build () in
-    to_seq m
-      |> CCSequence.flatMap
-        (fun (x,l) -> 
-          CCSequence.of_list l
-          |> CCSequence.map (fun y -> y,x)
-        )
-      |> multimap_of_seq ~build
+    let seq = to_seq m in
+    let seq = CCSequence.flat_map
+        (fun (x,l) -> CCSequence.map (fun y -> y,x) (CCSequence.of_list l)
+        ) seq
+    in
+    multimap_of_seq ~build seq
 end
 
 type 'a search_result =
@@ -280,7 +278,7 @@ module Coll = struct
     | List [] -> fail ()
     | List (x::_) -> x
     | Seq s ->
-        begin match CCSequence.take 1 s |> CCSequence.to_list with
+        begin match CCSequence.to_list (CCSequence.take 1 s) with
         | [x] -> x
         | _ -> fail ()
         end
@@ -304,15 +302,14 @@ module Coll = struct
     with MySurpriseExit -> ()
 
   let take_while p c =
-    to_seq c |> _seq_take_while p |> of_seq
+    of_seq (_seq_take_while p (to_seq c))
 
   let distinct ~cmp c = set_of_seq ~cmp (to_seq c)
 
   let sort cmp c = match c with
     | List l -> List (List.sort cmp l)
     | Seq s -> List (List.sort cmp (CCSequence.to_rev_list s))
-    | _ ->
-        to_seq c |> set_of_seq ~cmp
+    | _ -> set_of_seq ~cmp (to_seq c)
 
   let search obj c =
     let _search_seq obj seq =
@@ -327,7 +324,7 @@ module Coll = struct
       | None -> obj#failure
       | Some x -> x
     in
-    to_seq c |> _search_seq obj
+    _search_seq obj (to_seq c)
 
   let contains (type elt) ~eq x c = match c with
     | List l -> List.exists (eq x) l
@@ -336,17 +333,13 @@ module Coll = struct
         let module S = (val m : CCSequence.Set.S
              with type elt = elt and type t = 'b) in
         (* XXX: here we don't use the equality relation *)
-        try
-          let y = S.find x set in
-          assert (eq x y);
-          true
-        with Not_found -> false
+        S.mem x set
 
   let do_join ~join c1 c2 =
     let build1 =
-      to_seq c1
-      |> CCSequence.map (fun x -> join.join_key1 x, x)
-      |> PMap.multimap_of_seq ~build:(PMap.make ~build:join.join_build ())
+      let seq = to_seq c1 in
+      let seq = CCSequence.map (fun x -> join.join_key1 x, x) seq in
+      PMap.multimap_of_seq ~build:(PMap.make ~build:join.join_build ()) seq
     in
     let l = CCSequence.fold
       (fun acc y ->
@@ -386,9 +379,8 @@ module Coll = struct
     let build = PMap.make ~build () in
     to_seq c1 (fun x -> PMap.add build x ());
     to_seq c2 (fun x -> PMap.add build x ());
-    PMap.to_seq (PMap.build_get build)
-      |> CCSequence.map fst
-      |> of_seq
+    let seq = PMap.to_seq (PMap.build_get build) in
+    of_seq (CCSequence.map fst seq)
 
   type inter_status =
     | InterLeft
@@ -415,9 +407,8 @@ module Coll = struct
     to_seq c2 (fun x -> PMap.add build x ());
     let map = PMap.build_get build in
     (* output elements of [c1] not in [map] *)
-    to_seq c1
-      |> CCSequence.filter (fun x -> not (PMap.mem map x))
-      |> of_seq
+    let seq = to_seq c1 in
+    of_seq (CCSequence.filter (fun x -> not (PMap.mem map x)) seq)
 end
 
 (** {2 Query operators} *)
@@ -487,7 +478,7 @@ let of_array a =
   Start (Coll.of_array a)
 
 let of_array_i a =
-  Start (CCSequence.of_array_i a |> Coll.of_seq)
+  Start (Coll.of_seq (CCSequence.of_array_i a))
 
 let of_hashtbl h =
   Start (Coll.of_seq (CCSequence.of_hashtbl h))
@@ -496,13 +487,13 @@ let of_seq seq =
   Start (Coll.of_seq seq)
 
 let of_queue q =
-  Start (CCSequence.of_queue q |> Coll.of_seq)
+  Start (Coll.of_seq (CCSequence.of_queue q))
 
 let of_stack s =
-  Start (CCSequence.of_stack s |> Coll.of_seq)
+  Start (Coll.of_seq (CCSequence.of_stack s))
 
 let of_string s =
-  Start (CCSequence.of_str s |> Coll.of_seq)
+  Start (Coll.of_seq (CCSequence.of_str s))
 
 (** {6 Execution} *)
 
@@ -562,12 +553,11 @@ let _do_unary : type a b. (a,b) unary -> a -> b
   | Fold (f, acc) -> Coll.fold f acc c
   | FoldMap (f, acc) -> PMap.fold f acc c
   | Reduce (safety, start, mix, stop) ->
-      let acc = Coll.to_seq c
-        |> CCSequence.fold
-          (fun acc x -> match acc with
-            | None -> Some (start x)
-            | Some acc -> Some (mix x acc)
-          ) None
+      let acc = CCSequence.fold
+        (fun acc x -> match acc with
+          | None -> Some (start x)
+          | Some acc -> Some (mix x acc)
+        ) None (Coll.to_seq c)
       in
       begin match acc, safety with
       | Some x, Implicit -> stop x
@@ -588,13 +578,11 @@ let _do_unary : type a b. (a,b) unary -> a -> b
   | Get (Implicit, k) -> PMap.get_exn c k
   | Get (Explicit, k) -> PMap.get_err c k
   | GroupBy (build,f) ->
-      Coll.to_seq c
-      |> CCSequence.map (fun x -> f x, x)
-      |> PMap.multimap_of_seq ~build:(PMap.make ~build ())
+      let seq = CCSequence.map (fun x -> f x, x) (Coll.to_seq c) in
+      PMap.multimap_of_seq ~build:(PMap.make ~build ()) seq
   | Contains (eq, x) -> Coll.contains ~eq x c
   | Count build ->
-      Coll.to_seq c
-      |> PMap.count_of_seq ~build:(PMap.make ~build ())
+      PMap.count_of_seq ~build:(PMap.make ~build ()) (Coll.to_seq c)
   | Lazy -> Lazy.force c
 
 let _do_binary : type a b c. (a, b, c) binary -> a -> b -> c
@@ -706,18 +694,20 @@ module M = struct
     Unary (GeneralMap (fun m -> Coll.of_seq m.PMap.to_seq), q)
 
   let flatten q =
-    let f m = m.PMap.to_seq
-        |> CCSequence.flatMap
-          (fun (k,v) -> Coll.to_seq v |> CCSequence.map (fun v' -> k,v'))
-        |> Coll.of_seq
+    let f m =
+      let seq = CCSequence.flat_map
+        (fun (k,v) -> CCSequence.map (fun v' -> k,v') (Coll.to_seq v))
+         m.PMap.to_seq
+      in Coll.of_seq seq
     in
     Unary (GeneralMap f, q)
 
   let flatten' q =
-    let f m = m.PMap.to_seq
-        |> CCSequence.flatMap
-          (fun (k,v) -> CCSequence.of_list v |> CCSequence.map (fun v' -> k,v'))
-        |> Coll.of_seq
+    let f m =
+      let seq = CCSequence.flatMap
+          (fun (k,v) -> CCSequence.map (fun v' -> k,v') (CCSequence.of_list v))
+          m.PMap.to_seq
+      in Coll.of_seq seq
     in
     Unary (GeneralMap f, q)
 
@@ -895,7 +885,7 @@ let to_array q =
   QueryMap ((fun c -> Array.of_list (Coll.to_list c)), q)
 
 let to_seq q =
-  QueryMap ((fun c -> Coll.to_seq c |> CCSequence.persistent), q)
+  QueryMap ((fun c -> CCSequence.persistent (Coll.to_seq c)), q)
 
 let to_hashtbl q =
   QueryMap ((fun c -> CCSequence.to_hashtbl (Coll.to_seq c)), q)
@@ -919,9 +909,7 @@ module AdaptSet(S : Set.S) = struct
     return (Coll.of_seq (fun k -> S.iter k set))
 
   let to_set q =
-    let f c =
-      Coll.to_seq c |> CCSequence.fold (fun set x -> S.add x set) S.empty
-    in
+    let f c = CCSequence.fold (fun set x -> S.add x set) S.empty (Coll.to_seq c) in
     query_map f q
 
   let run q = run (to_set q)
@@ -944,13 +932,12 @@ module AdaptMap(M : Map.S) = struct
 
   let to_map q =
     let f c =
-      Coll.to_seq c
-      |> CCSequence.fold (fun m (x,y) -> M.add x y m) M.empty
+      CCSequence.fold (fun m (x,y) -> M.add x y m) M.empty (Coll.to_seq c)
     in
     query_map f q
 
-  let run q = run (q |> to_map)
-  let run_exn q = run_exn (q |> to_map)
+  let run q = run (to_map q)
+  let run_exn q = run_exn (to_map q)
 end
 
 module IO = struct
@@ -1017,20 +1004,21 @@ module IO = struct
 
   let lines q =
     (* sequence of lines *)
-    let f s = _lines s 0 |> Coll.of_seq in
+    let f s = Coll.of_seq (_lines s 0) in
     query_map f q
-      
+
   let lines' q =
-    let f s = lazy (_lines s 0 |> CCSequence.to_list) in
+    let f s = lazy (CCSequence.to_list (_lines s 0)) in
     lazy_ (query_map f q)
 
   let _join ~sep ?(stop="") l =
     let buf = Buffer.create 128 in
-    Coll.to_seq l
-      |> CCSequence.iteri
-        (fun i x ->
-          if i>0 then Buffer.add_string buf sep;
-          Buffer.add_string buf x);
+    let seq = Coll.to_seq l in
+    CCSequence.iteri
+      (fun i x ->
+        if i>0 then Buffer.add_string buf sep;
+        Buffer.add_string buf x)
+      seq;
     Buffer.add_string buf stop;
     Buffer.contents buf
 
@@ -1043,12 +1031,11 @@ module IO = struct
     lazy_ (query_map f q)
 
   let out oc q =
-    run_exn q |> output_string oc
+    output_string oc (run_exn q)
 
   let out_lines oc q =
-    run_exn q
-    |> Coll.to_seq
-    |> CCSequence.iter (fun l -> output_string oc l; output_char oc '\n')
+    let x = run_exn q in
+    CCSequence.iter (fun l -> output_string oc l; output_char oc '\n') (Coll.to_seq x)
 
   let to_file_exn filename q =
     _with_file_out filename (fun oc -> out oc q)

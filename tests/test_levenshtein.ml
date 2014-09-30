@@ -1,6 +1,7 @@
 (* quickcheck for Levenshtein *)
 
 module Levenshtein = Containers_string.Levenshtein
+open CCFun
 
 (* test that automaton accepts its string *)
 let test_automaton =

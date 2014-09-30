@@ -546,6 +546,8 @@ end
 
 (* tests *)
 
+let (@@) f x = f x
+
 module Point = struct
   type t = {
     x : int;
