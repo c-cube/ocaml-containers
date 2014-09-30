@@ -34,7 +34,7 @@ This module is meant to be opened if one doesn't want to use both, say,
   end
 ]}
 
-@since NEXT_RELEASE
+@since 0.4
 *)
 
 module Array = struct include Array include CCArray end

@@ -1,6 +1,21 @@
 # Changelog
 
-# 0.3.4
+## 0.4
+
+- `core/CCSexp` for fast and lightweight S-expressions parsing/printing
+- moved `CCLinq`, `CCBatch` and `CCat` from core/ to advanced/
+- ensure compatibility with ocaml 4.00
+- get rid of deprecated `Array.create`
+- move benchmarks to benchs/ so they are separate from tests
+- `CCError.{iter,get_exn}`
+- `CCPair.print`
+- some small improvements to `CCRandom`
+- moved `CCHashtbl` to `CCFlatHashtbl`; new module `CCHashtbl` that
+  wraps and extends the standard hashtable
+- `CCPervasives` module, replacing modules of the standard library
+- removed type alias `CCString.t` (duplicate of String.t which already exists)
+
+## 0.3.4
 
 - subtree for `sequence` repo
 - `CCSequence` is now a copy of `sequence`

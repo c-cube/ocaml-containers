@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 This module was previously named [CCHashtbl], but the name is now used for
 an extension of the standard library's hashtables.
 
-@since NEXT_RELEASE *)
+@since 0.4 *)
 
 type 'a sequence = ('a -> unit) -> unit
 
