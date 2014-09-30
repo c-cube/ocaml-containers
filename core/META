@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 176a952c03cc29ec8fbecdbfa8ef56f0)
+# DO NOT EDIT (digest: 9ea9a3fbcbba3c5c19725ea1fd444cc8)
 version = "0.3.4"
 description = "A modular standard library focused on data structures."
 archive(byte) = "containers.cma"
@@ -70,6 +70,17 @@ package "cgi" (
  archive(native) = "containers_cgi.cmxa"
  archive(native, plugin) = "containers_cgi.cmxs"
  exists_if = "containers_cgi.cma"
+)
+
+package "advanced" (
+ version = "0.3.4"
+ description = "A modular standard library focused on data structures."
+ requires = "containers"
+ archive(byte) = "containers_advanced.cma"
+ archive(byte, plugin) = "containers_advanced.cma"
+ archive(native) = "containers_advanced.cmxa"
+ archive(native, plugin) = "containers_advanced.cmxs"
+ exists_if = "containers_advanced.cma"
 )
 # OASIS_STOP
 

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 4eaa31a9f64d59d82a736ef275c18061)
+# DO NOT EDIT (digest: 126bedd0d6759f38e9b7190eebb08140)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -19,6 +19,12 @@
 "string/containers_string.cmxs": use_containers_string
 "string/KMP.cmx": for-pack(Containers_string)
 "string/levenshtein.cmx": for-pack(Containers_string)
+# Library containers_advanced
+"advanced/containers_advanced.cmxs": use_containers_advanced
+"advanced/CCLinq.cmx": for-pack(Containers_advanced)
+"advanced/CCBatch.cmx": for-pack(Containers_advanced)
+"advanced/CCCat.cmx": for-pack(Containers_advanced)
+<advanced/*.ml{,i}>: use_containers
 # Library containers_pervasives
 "pervasives/containers_pervasives.cmxs": use_containers_pervasives
 <pervasives/*.ml{,i}>: use_containers
@@ -39,7 +45,6 @@
 "misc/bij.cmx": for-pack(Containers_misc)
 "misc/piCalculus.cmx": for-pack(Containers_misc)
 "misc/bencode.cmx": for-pack(Containers_misc)
-"misc/sexp.cmx": for-pack(Containers_misc)
 "misc/RAL.cmx": for-pack(Containers_misc)
 "misc/unionFind.cmx": for-pack(Containers_misc)
 "misc/smallSet.cmx": for-pack(Containers_misc)
@@ -85,9 +90,11 @@
 "benchs/benchs.native": package(bench)
 "benchs/benchs.native": package(unix)
 "benchs/benchs.native": use_containers
+"benchs/benchs.native": use_containers_advanced
 "benchs/benchs.native": use_containers_misc
 "benchs/benchs.native": use_containers_string
 <benchs/*.ml{,i}>: package(bench)
+<benchs/*.ml{,i}>: use_containers_advanced
 <benchs/*.ml{,i}>: use_containers_string
 # Executable bench_conv
 "benchs/bench_conv.native": package(benchmark)
@@ -157,13 +164,11 @@
 "examples/lambda.byte": package(unix)
 "examples/lambda.byte": use_containers
 "examples/lambda.byte": use_containers_misc
-# Executable id_sexp
-"examples/id_sexp.native": package(unix)
-"examples/id_sexp.native": use_containers
-"examples/id_sexp.native": use_containers_misc
 <examples/*.ml{,i}>: package(unix)
-<examples/*.ml{,i}>: use_containers
 <examples/*.ml{,i}>: use_containers_misc
+# Executable id_sexp
+"examples/id_sexp.native": use_containers
+<examples/*.ml{,i}>: use_containers
 # OASIS_STOP
 <tests/*.ml{,i}>: thread
 <threads/*.ml{,i}>: thread

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1de551686e91870f31fc6db16438e2c0)
+# DO NOT EDIT (digest: 5c08a0bf51a82d21179a12753e47acff)
 misc/Cache
 misc/FHashtbl
 misc/FlatHashtbl
@@ -15,7 +15,6 @@ misc/Univ
 misc/Bij
 misc/PiCalculus
 misc/Bencode
-misc/Sexp
 misc/RAL
 misc/UnionFind
 misc/SmallSet
