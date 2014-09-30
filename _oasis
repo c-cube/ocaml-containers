@@ -48,7 +48,7 @@ Library "containers"
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl
+                    CCFlatHashtbl, CCSexp
   FindlibName:      containers
 
 Library "containers_string"
@@ -79,7 +79,7 @@ Library "containers_misc"
   Modules:          Cache, FHashtbl, FlatHashtbl, Hashset,
                     Heap, LazyGraph, PersistentGraph,
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
-                    Bij, PiCalculus, Bencode, Sexp, RAL,
+                    Bij, PiCalculus, Bencode, RAL,
                     UnionFind, SmallSet, AbsSet, CSM,
                     ActionMan, BencodeOnDisk, TTree, PrintBox,
                     HGraph, Automaton, Conv, Bidir, Iteratee, BTree,
@@ -227,12 +227,12 @@ Executable lambda
   BuildDepends: containers,containers.misc
 
 Executable id_sexp
-  Path:     examples/
-  Install:  false
-  CompiledObject: native
-  MainIs:   id_sexp.ml
-  Build$:   flag(misc)
-  BuildDepends: containers,containers.misc
+  Path:             examples/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           id_sexp.ml
+  Build$:           flag(misc)
+  BuildDepends:     containers
 
 SourceRepository head
   Type: git
