@@ -45,9 +45,9 @@ Library "containers"
   Path:             core
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
-                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash, CCCat,
-                    CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd, CCIO,
-                    CCRandom, CCLinq, CCKTree, CCTrie, CCString, CCHashtbl,
+                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
+                    CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
+                    CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
                     CCFlatHashtbl
   FindlibName:      containers
 
@@ -57,6 +57,14 @@ Library "containers_string"
   Modules:          KMP, Levenshtein
   FindlibName:      string
   FindlibParent:    containers
+
+Library "containers_advanced"
+  Path:             advanced
+  Pack:             true
+  Modules:          CCLinq, CCBatch, CCCat
+  FindlibName:      advanced
+  FindlibParent:    containers
+  BuildDepends:     containers
 
 Library "containers_pervasives"
   Path:             pervasives
