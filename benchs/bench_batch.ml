@@ -1,5 +1,7 @@
 (** benchmark CCBatch *)
 
+open Containers_advanced
+
 module type COLL = sig
   val name : string
   include CCBatch.COLLECTION

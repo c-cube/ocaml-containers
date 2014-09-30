@@ -78,6 +78,7 @@ let () =
   Printf.printf "list of 5 elements...\n";
   bench_list [1,2; 3,4; 5,6; 7,8; 9,10];
 
+  let open CCFun in
   let l = CCGen.(1 -- 100 |> map (fun x->x,x) |> to_rev_list) in
   Printf.printf "list of %d elements...\n" (List.length l);
   bench_list l;

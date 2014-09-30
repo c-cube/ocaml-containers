@@ -149,7 +149,7 @@ Executable benchs
   CompiledObject:   native
   Build$:           flag(bench)
   MainIs:           benchs.ml
-  BuildDepends:     containers,containers.string,containers.misc,bench
+  BuildDepends:     containers,containers.string,containers.misc,bench,containers.advanced
 
 Executable bench_conv
   Path:     benchs/

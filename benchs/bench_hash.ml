@@ -28,7 +28,7 @@ let rec eq t1 t2 = match t1, t2 with
 let rec hash_tree t h = match t with
   | Empty -> CCHash.string_ "empty" h
   | Node (i, l) ->
-      h |> CCHash.string_ "node" |> CCHash.int_ i |> CCHash.list_ hash_tree l
+      CCHash.list_ hash_tree l (CCHash.int_ i (CCHash.string_ "node" h))
 
 module Box = Containers_misc.PrintBox
 
