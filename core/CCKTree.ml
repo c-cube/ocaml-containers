@@ -178,7 +178,7 @@ let find ?pset f t =
         | None -> _find_kl f l'
         | Some _ as res -> res
   in
-  bfs ?pset t |> _find_kl f
+  _find_kl f (bfs ?pset t)
 
 (** {2 Pretty printing in the DOT (graphviz) format} *)
 

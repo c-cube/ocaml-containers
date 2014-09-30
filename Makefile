@@ -62,9 +62,11 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 qtest-clean:
 	@rm -rf qtest/
 
+QTEST_PREAMBLE='open CCFun;; '
+
 qtest-build: qtest-clean build
 	@mkdir -p qtest
-	@qtest extract -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
+	@qtest extract --preamble $(QTEST_PREAMBLE) -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
 	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib \
 		-I core -I misc -I string \
 		qtest/qtest_all.native

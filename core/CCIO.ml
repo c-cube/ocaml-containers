@@ -471,17 +471,17 @@ module File = struct
     if Sys.is_directory d
     then
       let arr = Sys.readdir d in
-      Seq.of_array arr
-      |> Seq.map_pure make
+      Seq.map_pure make (Seq.of_array arr)
     else Seq.empty
 
   let rec _walk d () =
     if Sys.is_directory d
     then
       let arr = Sys.readdir d in
-      let tail = Seq.of_array arr
-        |> Seq.flat_map
-          (fun s -> return (_walk (Filename.concat d s) ()))
+      let tail = Seq.of_array arr in
+      let tail = Seq.flat_map
+        (fun s -> return (_walk (Filename.concat d s) ()))
+        tail
       in Seq.cons (`Dir,d) tail
     else Seq.singleton (`File, d)
 
@@ -501,14 +501,14 @@ module File = struct
     if Sys.is_directory d
     then
       let arr = Sys.readdir d in
-      Seq.of_array arr
-      |> Seq.map_pure (fun s -> Filename.concat d s)
-      |> Seq.flat_map
+      let arr = Seq.of_array arr in
+      let arr = Seq.map_pure (fun s -> Filename.concat d s) arr in
+      Seq.flat_map
         (fun s ->
           if Sys.is_directory s
             then return (_read_dir_rec s ())
             else return (Seq.singleton s)
-        )
+        ) arr
     else Seq.empty
 end
 

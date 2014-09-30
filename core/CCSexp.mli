@@ -33,26 +33,30 @@ type 'a gen = unit -> 'a option
 
 (** {2 Basics} *)
 
-type t =
-  | Atom of string
-  | List of t list
+type t = [
+  | `Atom of string
+  | `List of t list
+  ]
 
 val equal : t -> t -> bool
 val compare : t -> t -> int
 val hash : t -> int
 
+val atom : string -> t  (** Build an atom directly from a string *)
+
 val of_int : int -> t
 val of_bool : bool -> t
 val of_list : t list -> t
-val of_string : string -> t
+val of_rev_list : t list -> t  (** Reverse the list *)
 val of_float : float -> t
 val of_unit : t
 val of_pair : t * t -> t
 val of_triple : t * t * t -> t
+val of_quad : t * t * t * t -> t
 
 val of_variant : string -> t list -> t
 (** [of_variant name args] is used to encode algebraic variants
-    into a S-expr. For instance [of_variant "some" (of_int 1)]
+    into a S-expr. For instance [of_variant "some" [of_int 1]]
     represents the value [Some 1] *)
 
 val of_field : string -> t -> t

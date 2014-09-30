@@ -471,13 +471,14 @@ module Make(W : WORD) = struct
             else None, alternatives
       | Some (Node (_, map), trail) ->
           let alternatives =
-            _seq_map map
-            |> _filter_map_seq
+            let seq = _seq_map map in
+            let seq = _filter_map_seq
               (fun (c', t') -> if p c c'
                 then Some (t', _difflist_add trail c')
                 else None
-              )
-            |> _seq_append_list alternatives
+              ) seq
+            in
+            _seq_append_list alternatives seq
           in
           begin try
             let t' = M.find c map in

@@ -44,10 +44,10 @@ Library "containers"
   Path:             core
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
-                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash, CCCat,
-                    CCKList, CCInt, CCBool, CCArray, CCBatch, CCOrd, CCIO,
-                    CCRandom, CCLinq, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl
+                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
+                    CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
+                    CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
+                    CCFlatHashtbl, CCSexp
   FindlibName:      containers
 
 Library "containers_string"
@@ -56,6 +56,14 @@ Library "containers_string"
   Modules:          KMP, Levenshtein
   FindlibName:      string
   FindlibParent:    containers
+
+Library "containers_advanced"
+  Path:             advanced
+  Pack:             true
+  Modules:          CCLinq, CCBatch, CCCat
+  FindlibName:      advanced
+  FindlibParent:    containers
+  BuildDepends:     containers
 
 Library "containers_pervasives"
   Path:             pervasives
@@ -70,7 +78,7 @@ Library "containers_misc"
   Modules:          Cache, FHashtbl, FlatHashtbl, Hashset,
                     Heap, LazyGraph, PersistentGraph,
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
-                    Bij, PiCalculus, Bencode, Sexp, RAL,
+                    Bij, PiCalculus, Bencode, RAL,
                     UnionFind, SmallSet, AbsSet, CSM,
                     ActionMan, BencodeOnDisk, TTree, PrintBox,
                     HGraph, Automaton, Conv, Bidir, Iteratee, BTree,
@@ -140,7 +148,7 @@ Executable benchs
   CompiledObject:   native
   Build$:           flag(bench)
   MainIs:           benchs.ml
-  BuildDepends:     containers,containers.string,containers.misc,bench
+  BuildDepends:     containers,containers.string,containers.misc,bench,containers.advanced
 
 Executable bench_conv
   Path:     benchs/
@@ -218,12 +226,12 @@ Executable lambda
   BuildDepends: containers,containers.misc
 
 Executable id_sexp
-  Path:     examples/
-  Install:  false
-  CompiledObject: native
-  MainIs:   id_sexp.ml
-  Build$:   flag(misc)
-  BuildDepends: containers,containers.misc
+  Path:             examples/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           id_sexp.ml
+  Build$:           flag(misc)
+  BuildDepends:     containers
 
 SourceRepository head
   Type: git
