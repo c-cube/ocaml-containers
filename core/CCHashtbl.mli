@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Extension to the standard Hashtbl} 
 
-@since NEXT_RELEASE *)
+@since 0.4 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a eq = 'a -> 'a -> bool

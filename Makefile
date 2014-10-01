@@ -88,6 +88,9 @@ push-stable:
 	git push origin
 	git checkout master
 
+clean-generated:
+	rm **/*.{mldylib,mlpack,mllib} myocamlbuild.ml -f
+
 run-test: build qtest-build
 	./qtest_all.native
 	./run_tests.native
@@ -96,5 +99,12 @@ test-all: run-test qtest
 
 tags:
 	otags *.ml *.mli
+
+VERSION=$(shell awk '/^Version:/ {print $$2}' _oasis)
+
+update_next_tag:
+	@echo "update version to $(VERSION)..."
+	sed -i "s/NEXT_VERSION/$(VERSION)/g" **/*.ml **/*.mli
+	sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli
 
 .PHONY: examples push_doc tags qtest

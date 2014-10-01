@@ -72,12 +72,12 @@ module type S = sig
 
   val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
   (** Like {!find}, but also pass the index to the predicate function.
-      @since NEXT_RELEASE *)
+      @since 0.4 *)
 
   val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
   (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
       and [p x] holds. Otherwise returns [None]
-      @since NEXT_RELEASE *)
+      @since 0.4 *)
 
   val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
   (** Lookup the index of some value in a sorted array.

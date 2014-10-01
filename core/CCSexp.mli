@@ -25,7 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Simple and efficient S-expression parsing/printing}
 
-@since NEXT_RELEASE *)
+@since 0.4 *)
 
 type 'a or_error = [ `Ok of 'a | `Error of string ]
 type 'a sequence = ('a -> unit) -> unit

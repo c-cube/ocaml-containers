@@ -57,7 +57,7 @@ val delay : (unit -> 'a t) -> 'a t
       small_int >>= fun i -> return (name,i)
     )
     ]}
-    @since NEXT_RELEASE
+    @since 0.4
 *)
 
 val choose : 'a t list -> 'a option t
@@ -79,7 +79,7 @@ val replicate : int -> 'a t -> 'a list t
 
 val list_seq : 'a t list -> 'a list t
 (** Build random lists from lists of random generators
-    @since NEXT_RELEASE *)
+    @since 0.4 *)
 
 val small_int : int t
 

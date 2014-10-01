@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     dev
+Version:     0.4
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -192,12 +192,12 @@ Executable test_lwt
   BuildDepends: containers,lwt,lwt.unix,oUnit,containers.lwt
 
 Executable test_threads
-  Path: tests/threads/
+  Path: tests/lwt/
   Install: false
   CompiledObject: best
   Build$: flag(tests) && flag(thread)
-  MainIs: test_future.ml
-  BuildDepends: containers,threads,oUnit,containers.thread
+  MainIs: test_Future.ml
+  BuildDepends: containers,threads,oUnit,containers.lwt
 
 Test all
   Command: make test-all
