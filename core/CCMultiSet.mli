@@ -46,25 +46,35 @@ module type S = sig
   val remove : t -> elt -> t
 
   val min : t -> elt
+  (** Minimal element w.r.t the total ordering on elements *)
 
   val max : t -> elt
 
   val union : t -> t -> t
+  (** [union a b] contains as many occurrences of an element [x]
+      as [count a x + count b x]. *)
 
   val meet : t -> t -> t
+  (** [meet a b] is a multiset such that
+      [count (meet a b) x = max (count a x) (count b x)] *)
 
   val intersection : t -> t -> t
+  (** [intersection a b] is a multiset such that
+      [count (intersection a b) x = min (count a x) (count b x)] *)
 
   val diff : t -> t -> t
+  (** MultiSet difference.
+      [count (diff a b) x = max (count a x - count b x) 0] *)
 
   val contains : t -> t -> bool
+  (** [contains a x = (count m x > 0)] *)
 
   val compare : t -> t -> int
 
   val equal : t -> t -> bool
 
   val cardinal : t -> int
-    (** Number of distinct elements *)
+  (** Number of distinct elements *)
 
   val iter : t -> (int -> elt -> unit) -> unit
 

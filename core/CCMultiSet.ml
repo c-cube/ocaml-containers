@@ -148,16 +148,16 @@ module Make(O : Set.OrderedType) = struct
         | Some n1, None -> Some n1
         | None, Some n2 -> None
         | Some n1, Some n2 ->
-          if n1 > n2 
+          if n1 > n2
             then Some (n1 - n2)
             else None)
       m1 m2
 
   let contains m1 m2 =
-    try 
+    try
       M.for_all (fun x c -> M.find x m1 >= c) m2
     with Not_found -> false
-    
+
   let compare m1 m2 =
     M.compare (fun x y -> x - y) m1 m2
 
