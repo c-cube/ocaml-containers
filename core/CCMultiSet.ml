@@ -51,6 +51,8 @@ module type S = sig
 
   val union : t -> t -> t
 
+  val meet : t -> t -> t
+
   val intersection : t -> t -> t
 
   val diff : t -> t -> t
@@ -117,10 +119,18 @@ module Make(O : Set.OrderedType) = struct
     M.merge
       (fun x n1 n2 -> match n1, n2 with
         | None, None -> assert false
-        | Some n1, None -> Some n1
-        | None, Some n2 -> Some n2
+        | Some n, None
+        | None, Some n -> Some n
         | Some n1, Some n2 -> Some (n1+n2))
       m1 m2
+
+  let meet m1 m2 =
+	M.merge
+	  (fun _ n1 n2 -> match n1, n2 with
+		| None, None -> assert false
+		| Some n, None | None, Some n -> Some n
+		| Some n1, Some n2 -> Some (Pervasives.max n1 n2))
+	  m1 m2
 
   let intersection m1 m2 =
     M.merge

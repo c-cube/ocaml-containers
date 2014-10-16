@@ -51,6 +51,8 @@ module type S = sig
 
   val union : t -> t -> t
 
+  val meet : t -> t -> t
+
   val intersection : t -> t -> t
 
   val diff : t -> t -> t
