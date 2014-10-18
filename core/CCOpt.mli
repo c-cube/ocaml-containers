@@ -60,6 +60,10 @@ val iter : ('a -> unit) -> 'a t -> unit
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** Fold on 0 or 1 elements *)
 
+val get : 'a -> 'a t -> 'a
+(** [get default x] unwraps [x], but if [x = None] it returns [default] instead.
+    @since NEXT_RELEASE *)
+
 val get_exn : 'a t -> 'a
 (** Open the option, possibly failing if it is [None]
     @raise Invalid_argument if the option is [None] *)
