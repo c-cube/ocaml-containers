@@ -583,6 +583,8 @@ end
 (** {6 Traversal of S-exp} *)
 
 module Traverse = struct
+  type 'a conv = t -> 'a option
+
   let return x = Some x
 
   let (>|=) e f = match e with
@@ -592,6 +594,15 @@ module Traverse = struct
   let (>>=) e f = match e with
     | None -> None
     | Some x -> f x
+
+  let map_opt f l =
+    let rec recurse acc l = match l with
+    | [] -> Some (List.rev acc)
+    | x::l' ->
+        match f x with
+        | None -> None
+        | Some y -> recurse (y::acc) l'
+    in recurse [] l
 
   let rec _list_any f l = match l with
     | [] -> None
@@ -628,12 +639,29 @@ module Traverse = struct
     | `List [x;y] -> Some (x,y)
     | _ -> None
 
+  let to_pair_with f1 f2 e =
+    to_pair e >>= fun (x,y) ->
+    f1 x >>= fun x ->
+    f2 y >>= fun y ->
+    return (x,y)
+
   let to_triple e = match e with
     | `List [x;y;z] -> Some (x,y,z)
     | _ -> None
 
+  let to_triple_with f1 f2 f3 e =
+    to_triple e >>= fun (x,y,z) ->
+    f1 x >>= fun x ->
+    f2 y >>= fun y ->
+    f3 z >>= fun z ->
+    return (x,y,z)
+
   let to_list e = match e with
     | `List l -> Some l
+    | `Atom _ -> None
+
+  let to_list_with f (e:t) = match e with
+    | `List l -> map_opt f l
     | `Atom _ -> None
 
   let rec _get_field name l = match l with
@@ -647,6 +675,15 @@ module Traverse = struct
 
   let field name f e =
     get_field name e >>= f
+
+  let rec _get_field_list name l = match l with
+    | `List (`Atom n :: tl) :: _ when name=n -> Some tl
+    | _ :: tl -> _get_field_list name tl
+    | [] -> None
+
+  let field_list name f e = match e with
+    | `List l -> _get_field_list name l >>= f
+    | `Atom _ -> None
 
   let rec _get_variant s args l = match l with
     | [] -> None

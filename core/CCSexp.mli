@@ -250,39 +250,71 @@ Sexp.Traverse.list_all pt_of_sexp sexp;;
 *)
 
 module Traverse : sig
-  val list_any : (t -> 'a option) -> t -> 'a option
+  type 'a conv = t -> 'a option
+  (** A converter from S-expressions to 'a is a function [sexp -> 'a option].
+      @since NEXT_RELEASE *)
+
+  val map_opt : ('a -> 'b option) -> 'a list -> 'b list option
+  (** Map over a list, failing as soon as the function fails on any element
+      @since NEXT_RELEASE *)
+
+  val list_any : 'a conv -> t -> 'a option
   (** [list_any f (List l)] tries [f x] for every element [x] in [List l],
       and returns the first non-None result (if any). *)
 
-  val list_all : (t -> 'a option) -> t -> 'a list
+  val list_all : 'a conv -> t -> 'a list
   (** [list_all f (List l)] returns the list of all [y] such that [x] in [l]
       and [f x = Some y] *)
 
-  val to_int : t -> int option
+  val to_int : int conv
+  (** Expect an integer *)
 
-  val to_string : t -> string option
+  val to_string : string conv
+  (** Expect a string (an atom) *)
 
-  val to_bool : t -> bool option
+  val to_bool : bool conv
+  (** Expect a boolean *)
 
-  val to_float : t -> float option
+  val to_float : float conv
+  (** Expect a float *)
 
-  val to_list : t -> t list option
+  val to_list : t list conv
+  (** Expect a list *)
 
-  val to_pair : t -> (t * t) option
+  val to_list_with : (t -> 'a option) -> 'a list conv
+  (** Expect a list, applies [f] to all the elements of the list, and succeeds
+      only if [f] succeeded on every element 
+      @since NEXT_RELEASE *)
 
-  val to_triple : t -> (t * t * t) option
+  val to_pair : (t * t) conv
+  (** Expect a list of two elements *)
 
-  val get_field : string -> t -> t option
+  val to_pair_with : 'a conv -> 'b conv -> ('a * 'b) conv
+  (** Same as {!to_pair} but applies conversion functions
+      @since NEXT_RELEASE *)
+
+  val to_triple : (t * t * t) conv
+
+  val to_triple_with : 'a conv -> 'b conv -> 'c conv -> ('a * 'b * 'c) conv
+      (* @since NEXT_RELEASE *)
+
+  val get_field : string -> t conv
   (** [get_field name e], when [e = List [(n1,x1); (n2,x2) ... ]], extracts
       the [xi] such that [name = ni], if it can find it. *)
 
-  val field : string -> (t -> 'a option) -> t -> 'a option
+  val field : string -> 'a conv -> 'a conv
   (** Enriched version of {!get_field}, with a converter as argument *)
 
-  val get_variant : (string * (t list -> 'a option)) list -> t -> 'a option
+  val get_variant : (string * (t list -> 'a option)) list -> 'a conv
   (** [get_variant l e] checks whether [e = List (Atom s :: args)], and
       if some pair of [l] is [s, f]. In this case, it calls [f args]
       and returns its result, otherwise it returns None. *)
+
+  val field_list : string -> (t list -> 'a option) -> 'a conv
+  (** [field_list name f  "(... (name a b c d) ...record)"]
+      will look for a field based on the given [name], and expect it to have a
+      list of arguments dealt with by [f] (here, "a b c d").
+      @since NEXT_RELEASE *)
 
   val (>>=) : 'a option -> ('a -> 'b option) -> 'b option
 
