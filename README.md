@@ -23,7 +23,7 @@ ocaml-containers
     least) are unfinished or don't really work.
 
 Some of the modules have been moved to their own repository (e.g. `sequence`,
-`gen`, `qcheck` and are on opam for great fun and profit (or not)).
+`gen`, `qcheck`) and are on opam for great fun and profit.
 
 [![Build Status](http://ci.cedeela.fr/buildStatus/icon?job=containers)](http://ci.cedeela.fr/job/containers/)
 
