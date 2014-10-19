@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.1
+
+- `CCOpt.get`
+- new functions in `CCSexp.Traverse`
+- comments in `CCMultiSet.mli`, to explain meet/intersection/union
+- `CCMultiset`: Add meet
+- update of readme
+- generate doc for `containers.advanced`
+
 ## 0.4
 
 - `core/CCSexp` for fast and lightweight S-expressions parsing/printing

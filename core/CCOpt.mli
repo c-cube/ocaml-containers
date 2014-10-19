@@ -62,7 +62,7 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
 val get : 'a -> 'a t -> 'a
 (** [get default x] unwraps [x], but if [x = None] it returns [default] instead.
-    @since NEXT_RELEASE *)
+    @since 0.4.1 *)
 
 val get_exn : 'a t -> 'a
 (** Open the option, possibly failing if it is [None]
