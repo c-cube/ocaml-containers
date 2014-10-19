@@ -108,4 +108,7 @@ update_next_tag:
 	sed -i "s/NEXT_VERSION/$(VERSION)/g" **/*.ml **/*.mli
 	sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli
 
-.PHONY: examples push_doc tags qtest
+udpate_sequence:
+	git subtree pull --prefix sequence sequence stable --squash
+
+.PHONY: examples push_doc tags qtest update_sequence
