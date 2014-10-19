@@ -50,6 +50,7 @@ examples: all
 push_doc: doc
 	scp -r containers.docdir/* cedeela.fr:~/simon/root/software/containers/
 	scp -r containers_string.docdir/* cedeela.fr:~/simon/root/software/containers/string/
+	scp -r containers_advanced.docdir/* cedeela.fr:~/simon/root/software/containers/advanced
 	scp -r containers_misc.docdir/* cedeela.fr:~/simon/root/software/containers/misc/
 
 DONTTEST=myocamlbuild.ml setup.ml
@@ -102,4 +103,8 @@ update_next_tag:
 	sed -i "s/NEXT_VERSION/$(VERSION)/g" **/*.ml **/*.mli
 	sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli
 
-.PHONY: examples push_doc tags qtest push-stable clean-generated
+udpate_sequence:
+	git subtree pull --prefix sequence sequence stable --squash
+
+.PHONY: examples push_doc tags qtest clean update_sequence push-stable clean-generated
+

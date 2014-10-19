@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: f4f3ee8dc8cda763af26a927b88956e6)
-version = "0.5.2"
+# DO NOT EDIT (digest: 99194977427ba82f5912e81125f6cac0)
+version = "0.5.3"
 description = "Simple sequence (iterator) datatype and combinators"
 archive(byte) = "sequence.cma"
 archive(byte, plugin) = "sequence.cma"
@@ -8,7 +8,7 @@ archive(native) = "sequence.cmxa"
 archive(native, plugin) = "sequence.cmxs"
 exists_if = "sequence.cma"
 package "invert" (
- version = "0.5.2"
+ version = "0.5.3"
  description = "Simple sequence (iterator) datatype and combinators"
  requires = "sequence delimcc"
  archive(byte) = "invert.cma"

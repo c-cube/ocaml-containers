@@ -15,7 +15,9 @@ ocaml-containers
 3. A drop-in replacement to the standard library, `containers.pervasives`,
     that defined a `CCPervasives` module intented to be opened to extend some
     modules of the stdlib.
-4. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
+4. A sub-library with complicated abstractions, `containers.advanced` (with
+   a LINQ-like query module, batch operations using GADTs, and others)
+5. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
     in other dirs (mostly `misc` but also `lwt` and `threads`). It's where I
     tend to write code when I want to test some idea, so half the modules (at
     least) are unfinished or don't really work.
@@ -60,7 +62,6 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 - `CCKList`, a persistent iterator structure (akin to a lazy list)
 - `CCList`, functions on lists, including tail-recursive implementations of `map` and `append` and many other things
 - `CCArray`, utilities on arrays and slices
-- `CCLinq`, high-level query language over collections
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
 - `CCHashtbl`, an extension of the standard hashtbl module
 - `CCFlatHashtbl`, a flat (open-addressing) hashtable functorial implementation
@@ -80,11 +81,24 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 
 ### String
 
+See [doc](http://cedeela.fr/~simon/software/containers/string).
+
 In the module `Containers_string`:
 - `Levenshtein`: edition distance between two strings
 - `KMP`: Knuth-Morris-Pratt substring algorithm
 
+### Advanced
+
+See [doc](http://cedeela.fr/~simon/software/containers/advanced).
+
+In the module `Containers_advanced`:
+- `CCLinq`, high-level query language over collections
+- `CCCat`, a few categorical structures
+- `CCBatch`, to combine operations on collections into one traversal
+
 ### Misc
+
+See [doc](http://cedeela.fr/~simon/software/containers/misc).
 
 - `PHashtbl`, a polymorphic hashtable (with open addressing)
 - `SplayTree`, a polymorphic splay heap implementation (not quite finished)

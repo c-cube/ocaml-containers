@@ -6,7 +6,8 @@ open Sequence.Infix
 
 let pp_ilist l =
   let b = Buffer.create 15 in
-  Format.bprintf b "@[<h>%a@]" (S.pp_seq Format.pp_print_int) (S.of_list l);
+  let fmt = Format.formatter_of_buffer b in
+  Format.fprintf fmt "@[<h>%a@]" (S.pp_seq Format.pp_print_int) (S.of_list l);
   Buffer.contents b
 
 let test_empty () =
@@ -197,6 +198,11 @@ let test_take () =
   OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5] l;
   ()
 
+let test_regression1 () =
+  let s = S.(take 10 (repeat 1)) in
+  OUnit.assert_bool "not empty" (not (S.is_empty s));
+  ()
+
 let suite =
   "test_sequence" >:::
     [ "test_empty" >:: test_empty;
@@ -225,4 +231,5 @@ let suite =
       "test_hashtbl" >:: test_hashtbl;
       "test_int_range" >:: test_int_range;
       "test_take" >:: test_take;
+      "test_regression1" >:: test_regression1
     ]

@@ -319,33 +319,37 @@ let min ?(lt=fun x y -> x < y) seq =
     | Some y -> if lt x y then ret := Some x);
   !ret
 
-exception ExitSequence
+exception ExitHead
 
 let head seq =
   let r = ref None in
   try
-    seq (fun x -> r := Some x; raise ExitSequence); None
-  with ExitSequence -> !r
+    seq (fun x -> r := Some x; raise ExitHead); None
+  with ExitHead -> !r
 
 let head_exn seq =
   match head seq with
   | None -> invalid_arg "Sequence.head_exn"
   | Some x -> x
 
+exception ExitTake
+
 let take n seq k =
   let count = ref 0 in
   try
     seq (fun x ->
-      if !count = n then raise ExitSequence;
+      if !count = n then raise ExitTake;
       incr count;
       k x;
     )
-  with ExitSequence -> ()
+  with ExitTake -> ()
+
+exception ExitTakeWhile
 
 let take_while p seq k =
   try
-    seq (fun x -> if p x then k x else raise ExitSequence)
-  with ExitSequence -> ()
+    seq (fun x -> if p x then k x else raise ExitTakeWhile)
+  with ExitTakeWhile -> ()
 
 let drop n seq k =
   let count = ref 0 in
@@ -362,29 +366,35 @@ let rev seq =
   let l = MList.of_seq seq in
   fun k -> MList.iter_rev k l
 
+exception ExitForall
+
 let for_all p seq =
   try
-    seq (fun x -> if not (p x) then raise ExitSequence);
+    seq (fun x -> if not (p x) then raise ExitForall);
     true
-  with ExitSequence -> false
+  with ExitForall -> false
+
+exception ExitExists
 
 (** Exists there some element satisfying the predicate? *)
 let exists p seq =
   try
-    seq (fun x -> if p x then raise ExitSequence);
+    seq (fun x -> if p x then raise ExitExists);
     false
-  with ExitSequence -> true
+  with ExitExists -> true
 
 let mem ?(eq=(=)) x seq = exists (eq x) seq
+
+exception ExitFind
 
 let find f seq =
   let r = ref None in
   begin try
     seq (fun x -> match f x with
       | None -> ()
-      | Some _ as res -> r := res
+      | Some _ as res -> r := res; raise ExitFind
     );
-  with ExitSequence -> ()
+  with ExitFind -> ()
   end;
   !r
 
@@ -393,17 +403,19 @@ let length seq =
   seq (fun _ -> incr r);
   !r
 
+exception ExitIsEmpty
+
 let is_empty seq =
-  try seq (fun _ -> raise ExitSequence); true
-  with ExitSequence -> false
+  try seq (fun _ -> raise ExitIsEmpty); true
+  with ExitIsEmpty -> false
 
 (** {2 Transform a sequence} *)
 
 let empty2 k = ()
 
 let is_empty2 seq2 =
-  try ignore (seq2 (fun _ _ -> raise ExitSequence)); true
-  with ExitSequence -> false
+  try ignore (seq2 (fun _ _ -> raise ExitIsEmpty)); true
+  with ExitIsEmpty -> false
 
 let length2 seq2 =
   let r = ref 0 in

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.3
+
+- bugfix: interaction between `take` and `is_empty`
+
 ## 0.5.2
 
 - bugfix in `take`

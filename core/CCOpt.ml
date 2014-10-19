@@ -92,6 +92,10 @@ let fold f acc o = match o with
   | None -> acc
   | Some x -> f acc x
 
+let get default x = match x with
+  | None -> default
+  | Some y -> y
+
 let get_exn = function
   | Some x -> x
   | None -> invalid_arg "CCOpt.get_exn"
