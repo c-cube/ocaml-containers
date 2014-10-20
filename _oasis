@@ -48,7 +48,7 @@ Library "containers"
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl, CCSexp
+                    CCFlatHashtbl, CCSexp, CCMap
   FindlibName:      containers
 
 Library "containers_string"
