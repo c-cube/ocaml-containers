@@ -100,10 +100,6 @@ module Make(O : Map.OrderedType) = struct
       ) m;
     Buffer.add_string buf stop
 
-  (*$T
-    CCPrint.to_string (pp CCPrint.int) [1;2;3] = "[1, 2, 3]"
-    *)
-
   let print ?(start="[") ?(stop="]") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
     Format.pp_print_string fmt start;
     let first = ref true in
