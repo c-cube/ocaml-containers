@@ -46,6 +46,7 @@ module type S = sig
   val to_list : t -> char list
 
   val pp : Buffer.t -> t -> unit
+  val print : Format.formatter -> t -> unit
 end
 
 let equal (a:string) b = a=b
@@ -251,6 +252,9 @@ let pp buf s =
   Buffer.add_string buf s;
   Buffer.add_char buf '"'
 
+let print fmt s =
+  Format.fprintf fmt "\"%s\"" s
+
 module Sub = struct
   type t = string * int * int
 
@@ -284,4 +288,7 @@ module Sub = struct
     Buffer.add_char buf '"';
     Buffer.add_substring buf s i len;
     Buffer.add_char buf '"'
+
+  let print fmt s =
+    Format.fprintf fmt "\"%s\"" (copy s)
 end
