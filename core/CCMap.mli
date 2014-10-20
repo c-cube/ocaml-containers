@@ -29,10 +29,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Provide useful functions and iterators on [Map.S]
 @since NEXT_RELEASE *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
+
 module type S = sig
   include Map.S
 
+  val get : key -> 'a t -> 'a option
+  (** Safe version of {!find} *)
+
+  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
+  (** [update k f m] calls [f (Some v)] if [find k m = v],
+      otherwise it calls [f None]. In any case, if the result is [None]
+      [k] is removed from [m], and if the result is [Some v'] then
+      [add k v' m] is returned. *)
+
+  val of_seq : (key * 'a) sequence -> 'a t
+
+  val to_seq : 'a t -> (key * 'a) sequence
+
+  val of_list : (key * 'a) list -> 'a t
+
   val to_list : 'a t -> (key * 'a) list
+
+  val pp : ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
+            key printer -> 'a printer -> 'a t printer
+
+  val print : ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
+              key formatter -> 'a formatter -> 'a t formatter
 end
 
 module Make(O : Map.OrderedType) : S
