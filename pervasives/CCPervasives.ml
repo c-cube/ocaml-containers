@@ -35,6 +35,11 @@ This module is meant to be opened if one doesn't want to use both, say,
 ]}
 
 @since 0.4
+
+Changed [Opt] to [Option] to better reflect that this module is about the
+['a option] type, with [module Option = CCOpt].
+
+@since NEXT_RELEASE
 *)
 
 module Array = struct include Array include CCArray end
@@ -43,7 +48,7 @@ module Error = CCError
 module Fun = CCFun
 module Int = CCInt
 module List = struct include List include CCList end
-module Opt = CCOpt
+module Option = CCOpt
 module Pair = CCPair
 module String = struct include String include CCString end
 module Vector = CCVector
