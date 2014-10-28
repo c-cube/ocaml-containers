@@ -37,6 +37,8 @@ let sign i =
   else if i>0 then 1
   else 0
 
+let neg i = -i
+
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a

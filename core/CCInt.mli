@@ -37,6 +37,10 @@ val hash : t -> int
 val sign : t -> int
 (** [sign i] is one of [-1, 0, 1] *)
 
+val neg : t -> t
+(** [neg i = - i]
+    @since NEXT_RELEASE *)
+
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
