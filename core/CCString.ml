@@ -56,9 +56,9 @@ let compare = String.compare
 let hash s = Hashtbl.hash s
 
 let init n f =
-  let s = String.make n ' ' in
-  for i = 0 to n-1 do s.[i] <- f i done;
-  s
+  let buf = Buffer.create n in
+  for i = 0 to n-1 do Buffer.add_char buf (f i) done;
+  Buffer.contents buf
 
 let length = String.length
 
@@ -168,11 +168,7 @@ let repeat s n =
   assert (n>=0);
   let len = String.length s in
   assert(len > 0);
-  let buf = String.create (len * n) in
-  for i = 0 to n-1 do
-    String.blit s 0 buf (i * len) len;
-  done;
-  buf
+  init (len * n) (fun i -> s.[i mod len])
 
 let prefix ~pre s =
   String.length pre <= String.length s &&
@@ -213,26 +209,23 @@ let rec _to_klist s i len () =
   else `Cons (s.[i], _to_klist s (i+1)(len-1))
 
 let of_klist l =
-  let rec aux acc n l = match l() with
+  let b = Buffer.create 15 in
+  let rec aux l = match l() with
     | `Nil ->
-        let s = String.create n in
-        let acc = ref acc in
-        for i=n-1 downto 0 do
-          s.[i] <- List.hd !acc;
-          acc := List.tl !acc
-        done;
-        s
-    | `Cons (x,l') -> aux (x::acc) (n+1) l'
-  in aux [] 0 l
+        Buffer.contents b
+    | `Cons (x,l') ->
+        Buffer.add_char b x;
+        aux l'
+  in aux l
 
 let to_klist s = _to_klist s 0 (String.length s)
 
 let to_list s = _to_list s [] 0 (String.length s)
 
 let of_list l =
-  let s = String.make (List.length l) ' ' in
-  List.iteri (fun i c -> s.[i] <- c) l;
-  s
+  let buf = Buffer.create (List.length l) in
+  List.iter (Buffer.add_char buf) l;
+  Buffer.contents buf
 
 (*$T
   of_list ['a'; 'b'; 'c'] = "abc"
@@ -240,9 +233,7 @@ let of_list l =
 *)
 
 let of_array a =
-  let s = String.make (Array.length a) ' ' in
-  Array.iteri (fun i c -> s.[i] <- c) a;
-  s
+  init (Array.length a) (fun i -> a.(i))
 
 let to_array s =
   Array.init (String.length s) (fun i -> s.[i])

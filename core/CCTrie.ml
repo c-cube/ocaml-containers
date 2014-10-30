@@ -535,9 +535,9 @@ module String = Make(struct
   let compare = Char.compare
   let to_seq s k = String.iter k s
   let of_list l =
-    let s = String.create (List.length l) in
-    List.iteri (fun i c -> s.[i] <- c) l;
-    s
+    let buf = Buffer.create (List.length l) in
+    List.iter (fun c -> Buffer.add_char buf c) l;
+    Buffer.contents buf
 end)
 
 (*$T
