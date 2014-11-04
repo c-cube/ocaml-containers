@@ -6,3 +6,4 @@ B _build/tests/
 B _build/bench/
 PKG oUnit
 PKG benchmark
+FLAG -safe-string
