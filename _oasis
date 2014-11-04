@@ -208,10 +208,16 @@ Executable test_threads
   MainIs: test_Future.ml
   BuildDepends: containers,threads,oUnit,containers.lwt
 
-Test all
-  Command: make test-all
-  TestTools: run_tests
-  Run$: flag(tests)
+PreBuildCommand: make qtest-gen
+
+Executable run_qtest
+  Path:             qtest/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           run_qtest.ml
+  Build$:           flag(tests)
+  BuildDepends:     containers, containers.misc, containers.string,
+                    oUnit, QTest2Lib
 
 Executable run_tests
   Path: tests/
@@ -219,7 +225,12 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
-  BuildDepends: containers,oUnit,qcheck,containers.misc
+  BuildDepends: containers, oUnit, qcheck, containers.misc
+
+Test all
+  Command:      make test-all
+  TestTools:    run_tests, run_qtest
+  Run$:         flag(tests) && flag(misc)
 
 Executable web_pwd
   Path: examples/cgi/

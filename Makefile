@@ -47,7 +47,7 @@ setup.exe: setup.ml
 
 EXAMPLES = examples/mem_size.native examples/collatz.native \
 	examples/bencode_write.native # examples/crawl.native
-OPTIONS = -use-ocamlfind
+OPTIONS = -use-ocamlfind -I _build
 
 examples: all
 	ocamlbuild $(OPTIONS) -package unix -I . $(EXAMPLES)
@@ -58,7 +58,7 @@ push_doc: doc
 	scp -r containers_advanced.docdir/* cedeela.fr:~/simon/root/software/containers/advanced
 	scp -r containers_misc.docdir/* cedeela.fr:~/simon/root/software/containers/misc/
 
-DONTTEST=myocamlbuild.ml setup.ml
+DONTTEST=myocamlbuild.ml setup.ml $(wildcard **/*.cppo*)
 QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard core/*.ml) $(wildcard core/*.mli) \
 	$(wildcard misc/*.ml) $(wildcard misc/*.mli) \
@@ -70,16 +70,16 @@ qtest-clean:
 
 QTEST_PREAMBLE='open CCFun;; '
 
-qtest-build: qtest-clean build
-	@mkdir -p qtest
-	@qtest extract --preamble $(QTEST_PREAMBLE) -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
-	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib \
-		-I core -I misc -I string \
-		qtest/qtest_all.native
+#qtest-build: qtest-clean build
+#	@mkdir -p qtest
+#	@qtest extract --preamble $(QTEST_PREAMBLE) -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
+#	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib,ocamlbuildlib \
+#		-I core -I misc -I string \
+#		qtest/qtest_all.native
 
-qtest: qtest-build
-	@echo 
-	./qtest_all.native
+qtest-gen: qtest-clean
+	@mkdir -p qtest
+	@qtest extract --preamble $(QTEST_PREAMBLE) -o qtest/run_qtest.ml $(QTESTABLE) 2> /dev/null
 
 push-stable:
 	git checkout stable
@@ -92,11 +92,11 @@ push-stable:
 clean-generated:
 	rm **/*.{mldylib,mlpack,mllib} myocamlbuild.ml -f
 
-run-test: build qtest-build
-	./qtest_all.native
+run-test: build
+	./run_qtest.native
 	./run_tests.native
 
-test-all: run-test qtest
+test-all: run-test
 
 tags:
 	otags *.ml *.mli
