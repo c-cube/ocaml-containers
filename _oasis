@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        sequence
-Version:     0.5.3
+Version:     0.5.4
 Homepage:    https://github.com/c-cube/sequence
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -23,9 +23,14 @@ Flag invert
     Description: build sequence.invert (requires Delimcc)
     Default: false
 
+Flag bigarray
+    Description: build sequence.bigarray (requires bigarray)
+    Default: true
+
 Library "sequence"
   Path:             .
   Modules:          Sequence
+  BuildDepends:     bytes
 
 Library "invert"
   Path:             invert
@@ -35,6 +40,15 @@ Library "invert"
   FindlibName:      invert
   FindlibParent:    sequence
   BuildDepends:     sequence,delimcc
+
+Library "bigarray"
+  Path:             bigarray
+  Build$:           flag(bigarray)
+  Install$:         flag(bigarray)
+  Modules:          SequenceBigarray
+  FindlibName:      bigarray
+  FindlibParent:    sequence
+  BuildDepends:     sequence,bigarray
 
 Document sequence
   Title:                Sequence docs

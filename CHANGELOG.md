@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.4
+
+- depend on `bytes`
+- compliance with `-safe-string`
+- `sequence.bigarray`
+
 ## 0.5.3
 
 - bugfix: interaction between `take` and `is_empty`
@@ -76,4 +82,4 @@
 - `zip`, `unzip` and `zip_i` to convert between `t` and `t2`
 - added `scan` combinator
 
-note: git log --no-merges previous_version..HEAD --pretty=%s
+note: git log --no-merges --pretty=%s previous_version..HEAD
