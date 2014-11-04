@@ -8,7 +8,7 @@ LicenseFile: LICENSE
 Plugins:     META (0.3), DevFiles (0.3)
 OCamlVersion: >= 4.00.1
 BuildTools:  ocamlbuild
-AlphaFeatures: ocamlbuild_more_args, compiled_setup_ml
+AlphaFeatures: compiled_setup_ml
 
 Synopsis:    A modular standard library focused on data structures.
 Description:
@@ -49,7 +49,7 @@ Library "containers"
                     CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
                     CCFlatHashtbl, CCSexp, CCMap
-  BuildDepends:     cppo
+  XMETARequires:    cppo
   FindlibName:      containers
 
 Library "containers_string"

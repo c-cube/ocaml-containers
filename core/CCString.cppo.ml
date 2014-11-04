@@ -55,10 +55,18 @@ let compare = String.compare
 
 let hash s = Hashtbl.hash s
 
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+
+let init = String.init
+
+#else
+
 let init n f =
   let buf = Buffer.create n in
   for i = 0 to n-1 do Buffer.add_char buf (f i) done;
   Buffer.contents buf
+
+#endif
 
 let length = String.length
 

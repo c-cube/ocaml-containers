@@ -26,7 +26,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Basic Functions} *)
 
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+
+external (|>) : 'a -> ('a -> 'b) -> 'b = "%revapply"
+external (@@) : ('a -> 'b) -> 'a -> 'b = "%apply"
+
+#else
+
 let (|>) x f = f x
+let (@@) f x = f x
+
+#endif
 
 let compose f g x = g (f x)
 
