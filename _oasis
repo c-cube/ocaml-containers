@@ -49,6 +49,7 @@ Library "containers"
                     CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
                     CCFlatHashtbl, CCSexp, CCMap
+  BuildDepends:     cppo
   FindlibName:      containers
 
 Library "containers_string"
