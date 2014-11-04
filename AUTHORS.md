@@ -4,4 +4,4 @@
 - Drup (Gabriel Radanne)
 - Jacques-Pascal Deplaix
 - Nicolas Braud-Santoni
-
+- Whitequark (Peter Zotov)
