@@ -552,7 +552,7 @@ module type MONAD = sig
 end
 
 module Traverse(M : MONAD) = struct
-  open! M
+  open M
 
   let map_m f l =
     let rec aux f acc l = match l with
