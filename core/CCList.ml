@@ -51,6 +51,8 @@ let map f l =
     List.rev (List.rev_map f l) = map f l)
 *)
 
+let (>|=) l f = map f l
+
 let append l1 l2 =
   let rec direct i l1 l2 = match l1 with
     | [] -> l2
@@ -550,7 +552,7 @@ module type MONAD = sig
 end
 
 module Traverse(M : MONAD) = struct
-  open M
+  open! M
 
   let map_m f l =
     let rec aux f acc l = match l with
