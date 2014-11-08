@@ -26,10 +26,10 @@ let test_mutation =
     return (s,i,c)
   ) in
   let test (s,i,c) =
-    let s' = String.copy s in
-    s'.[i] <- c;
+    let s' = Bytes.of_string s in
+    Bytes.set s' i c;
     let a = Levenshtein.of_string ~limit:1 s in
-    Levenshtein.match_with a s'
+    Levenshtein.match_with a (Bytes.to_string s')
   in
   let name = "mutating s.[i] into s' still accepted by automaton(s)" in
   QCheck.mk_test ~name ~size:(fun (s,_,_)->String.length s) gen test

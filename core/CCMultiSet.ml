@@ -117,7 +117,7 @@ module Make(O : Set.OrderedType) = struct
 
   let union m1 m2 =
     M.merge
-      (fun x n1 n2 -> match n1, n2 with
+      (fun _x n1 n2 -> match n1, n2 with
         | None, None -> assert false
         | Some n, None
         | None, Some n -> Some n
@@ -134,7 +134,7 @@ module Make(O : Set.OrderedType) = struct
 
   let intersection m1 m2 =
     M.merge
-      (fun x n1 n2 -> match n1, n2 with
+      (fun _x n1 n2 -> match n1, n2 with
         | None, None -> assert false
         | Some _, None
         | None, Some _ -> None
@@ -143,10 +143,10 @@ module Make(O : Set.OrderedType) = struct
 
   let diff m1 m2 =
     M.merge
-      (fun x n1 n2 -> match n1, n2 with
+      (fun _x n1 n2 -> match n1, n2 with
         | None, None -> assert false
         | Some n1, None -> Some n1
-        | None, Some n2 -> None
+        | None, Some _n2 -> None
         | Some n1, Some n2 ->
           if n1 > n2
             then Some (n1 - n2)

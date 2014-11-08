@@ -167,7 +167,7 @@ module Make(K : OrderedType)(V : OrderedType) = struct
 
   let union m1 m2 =
     M.merge
-      (fun k v1 v2 -> match v1, v2 with
+      (fun _k v1 v2 -> match v1, v2 with
         | None, None -> None
         | Some set1, Some set2 -> Some (S.union set1 set2)
         | Some set, None
@@ -176,7 +176,7 @@ module Make(K : OrderedType)(V : OrderedType) = struct
 
   let inter m1 m2 =
     M.merge
-      (fun k v1 v2 -> match v1, v2 with
+      (fun _k v1 v2 -> match v1, v2 with
         | None, _
         | _, None -> None
         | Some set1, Some set2 ->
@@ -188,7 +188,7 @@ module Make(K : OrderedType)(V : OrderedType) = struct
 
   let diff m1 m2 =
     M.merge
-      (fun k v1 v2 -> match v1, v2 with
+      (fun _k v1 v2 -> match v1, v2 with
         | None, _ -> None
         | Some set, None -> Some set
         | Some set1, Some set2 ->

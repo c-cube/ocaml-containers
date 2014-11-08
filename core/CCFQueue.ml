@@ -68,7 +68,7 @@ let rec cons : 'a. 'a -> 'a t -> 'a t
   | Shallow (Two (y,z)) -> Shallow (Three (x,y,z))
   | Shallow (Three (y,z,z')) ->
       _deep 4 (Two (x,y)) _empty (Two (z,z'))
-  | Deep (_, Zero, middle, tl) -> assert false
+  | Deep (_, Zero, _middle, _tl) -> assert false
   | Deep (n,One y, middle, tl) -> _deep (n+1) (Two (x,y)) middle tl
   | Deep (n,Two (y,z), middle, tl) -> _deep (n+1)(Three (x,y,z)) middle tl
   | Deep (n,Three (y,z,z'), lazy q', tail) ->
@@ -81,7 +81,7 @@ let rec snoc : 'a. 'a t -> 'a -> 'a t
   | Shallow (Two (y,z)) -> Shallow (Three (y,z,x))
   | Shallow (Three (y,z,z')) ->
       _deep 4 (Two (y,z)) _empty (Two (z',x))
-  | Deep (_,hd, middle, Zero) -> assert false
+  | Deep (_,_hd, _middle, Zero) -> assert false
   | Deep (n,hd, middle, One y) -> _deep (n+1) hd middle (Two(y,x))
   | Deep (n,hd, middle, Two (y,z)) -> _deep (n+1) hd middle (Three(y,z,x))
   | Deep (n,hd, lazy q', Three (y,z,z')) ->
@@ -131,7 +131,7 @@ let rec take_back_exn : 'a. 'a t -> 'a t * 'a
   | Shallow (One x) -> empty, x
   | Shallow (Two (x,y)) -> _single x, y
   | Shallow (Three (x,y,z)) -> Shallow (Two(x,y)), z
-  | Deep (_, hd, middle, Zero) -> assert false
+  | Deep (_, _hd, _middle, Zero) -> assert false
   | Deep (n, hd, lazy q', One x) ->
       if is_empty q'
         then Shallow hd, x
@@ -206,7 +206,7 @@ let rec nth_exn : 'a. int -> 'a t -> 'a
   | 1, Shallow (Three (_,x,_)) -> x
   | 2, Shallow (Three (_,_,x)) -> x
   | _, Shallow _ -> raise Not_found
-  | _, Deep (n, l, q, r) ->
+  | _, Deep (_, l, q, r) ->
       if i<_size_digit l
       then _nth_digit i l
       else

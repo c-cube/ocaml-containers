@@ -437,7 +437,7 @@ let of_array a =
 
 let of_list l = match l with
   | [] -> create()
-  | x::l' ->
+  | x::_ ->
       let v = create_with ~capacity:(List.length l + 5) x in
       List.iter (push v) l;
       v

@@ -36,7 +36,7 @@ let _minus pos1 pos2 = _move pos1 (- pos2.x) (- pos2.y)
 let _move_x pos x = _move pos x 0
 let _move_y pos y = _move pos 0 y
 
-let _string_len = ref String.length
+let _string_len = ref Bytes.length
 
 let set_string_len f = _string_len := f
 
@@ -61,11 +61,11 @@ module Output = struct
     mutable buf_len : int;
   }
   and buf_line = {
-    mutable bl_str : string;
+    mutable bl_str : Bytes.t;
     mutable bl_len : int;
   }
 
-  let _make_line _ = {bl_str=""; bl_len=0}
+  let _make_line _ = {bl_str=Bytes.empty; bl_len=0}
 
   let _ensure_lines buf i =
     if i >= Array.length buf.buf_lines
@@ -78,8 +78,8 @@ module Output = struct
   let _ensure_line line i =
     if i >= !_string_len line.bl_str
     then (
-      let str' = String.make (2 * i + 5) ' ' in
-      String.blit line.bl_str 0 str' 0 line.bl_len;
+      let str' = Bytes.make (2 * i + 5) ' ' in
+      Bytes.blit line.bl_str 0 str' 0 line.bl_len;
       line.bl_str <- str';
     )
 
@@ -88,7 +88,7 @@ module Output = struct
     _ensure_line buf.buf_lines.(pos.y) pos.x;
     buf.buf_len <- max buf.buf_len (pos.y+1);
     let line = buf.buf_lines.(pos.y) in
-    line.bl_str.[pos.x] <- c;
+    Bytes.set line.bl_str pos.x c;
     line.bl_len <- max line.bl_len (pos.x+1)
 
   let _buf_put_sub_string buf pos s s_i s_len =
@@ -100,7 +100,7 @@ module Output = struct
     line.bl_len <- max line.bl_len (pos.x+s_len)
 
   let _buf_put_string buf pos s =
-    _buf_put_sub_string buf pos s 0 (!_string_len s)
+    _buf_put_sub_string buf pos s 0 (!_string_len (Bytes.unsafe_of_string s))
 
   (* create a new buffer *)
   let make_buffer () =
@@ -121,7 +121,7 @@ module Output = struct
     for i = 0 to buf.buf_len - 1 do
       for k = 1 to indent do Buffer.add_char buffer ' ' done;
       let line = buf.buf_lines.(i) in
-      Buffer.add_substring buffer line.bl_str 0 line.bl_len;
+      Buffer.add_substring buffer (Bytes.unsafe_to_string line.bl_str) 0 line.bl_len;
       Buffer.add_char buffer '\n';
     done;
     Buffer.contents buffer
@@ -238,7 +238,7 @@ module Box = struct
     | Empty -> origin
     | Text l ->
         let width = List.fold_left
-          (fun acc line -> max acc (!_string_len line)) 0 l
+          (fun acc line -> max acc (!_string_len (Bytes.unsafe_of_string line))) 0 l
         in
         { x=width; y=List.length l; }
     | Frame t ->
@@ -337,7 +337,7 @@ let tree ?(indent=1) node children =
   let children =
     List.filter
     (function
-      | {Box.shape=Box.Empty} -> false
+      | {Box.shape=Box.Empty; _} -> false
       | _ -> true
     ) children
   in
@@ -384,10 +384,10 @@ let rec _render ?(offset=origin) ?expected_size ~out b pos =
         Output.put_char out (_move pos (x+1) (y+1)) '+';
         Output.put_char out (_move pos 0 (y+1)) '+';
         Output.put_char out (_move pos (x+1) 0) '+';
-        _write_hline out (_move_x pos 1) x;
-        _write_hline out (_move pos 1 (y+1)) x;
-        _write_vline out (_move_y pos 1) y;
-        _write_vline out (_move pos (x+1) 1) y;
+        _write_hline ~out (_move_x pos 1) x;
+        _write_hline ~out (_move pos 1 (y+1)) x;
+        _write_vline ~out (_move_y pos 1) y;
+        _write_vline ~out (_move pos (x+1) 1) y;
         _render ~out b' (_move pos 1 1)
     | Box.Pad (dim, b') ->
         let expected_size = Box.size b in

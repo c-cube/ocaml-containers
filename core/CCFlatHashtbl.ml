@@ -170,7 +170,7 @@ module Make(X : HASHABLE) = struct
     | Empty -> ()
     | Key (_, _, h_k) when _dib tbl h_k i = 0 ->
         ()  (* stop *)
-    | Key (k, v, h_k) as bucket ->
+    | Key (_k, _v, h_k) as bucket ->
         assert (_dib tbl h_k i > 0);
         (* shift backward *)
         tbl.arr.(_pred tbl i) <- bucket;

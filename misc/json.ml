@@ -79,7 +79,6 @@ let parse chars =
           read_list (t::acc)  (* next *)
         | Some (Genlex.Kwd "]") ->
           read_list (t::acc)  (* next *)
-        | Some (Genlex.Kwd "]") -> List.rev acc  (* yield *)
         | _ -> raise (Stream.Error "expected ','"))
   and read_pairs acc =
     match peek tokens with
@@ -163,7 +162,8 @@ let rec pp fmt t =
 
 let to_string t =
   let buf = Buffer.create 16 in
-  Format.bprintf buf "%a@?" pp t;
+  let fmt = Format.formatter_of_buffer buf in
+  Format.fprintf fmt "%a@?" pp t;
   Buffer.contents buf
 
 (** {2 Utils *)

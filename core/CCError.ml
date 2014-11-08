@@ -170,7 +170,7 @@ let choose l =
     (* print errors on the buffer *)
     let rec print buf l = match l with
       | `Ok _ :: _ -> assert false
-      | (`Error x)::((y::xs) as l) ->
+      | (`Error x)::((_::_) as l) ->
         Buffer.add_string buf x;
         Buffer.add_string buf ", ";
         print buf l
@@ -205,7 +205,7 @@ module Traverse(M : MONAD) = struct
   let sequence_m m = map_m (fun x->x) m
 
   let fold_m f acc e = match e with
-    | `Error s -> M.return acc
+    | `Error _ -> M.return acc
     | `Ok x -> f acc x >>= fun y -> M.return y
 
   let rec retry_m n f = match n with

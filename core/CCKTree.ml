@@ -199,14 +199,14 @@ module Dot = struct
   let mk_id format =
     let buf = Buffer.create 64 in
     Printf.kbprintf
-      (fun fmt -> `Id (Buffer.contents buf))
+      (fun _ -> `Id (Buffer.contents buf))
       buf
       format
 
   let mk_label format =
     let buf = Buffer.create 64 in
     Printf.kbprintf
-      (fun fmt -> `Label(Buffer.contents buf))
+      (fun _ -> `Label(Buffer.contents buf))
       buf
       format
 
@@ -287,6 +287,6 @@ module Dot = struct
     Printf.bprintf buf "}\n";
     ()
 
-  let pp_single name buf t = pp buf (singleton name t)
+  let pp_single name buf t = pp buf (singleton ~name t)
 end
 

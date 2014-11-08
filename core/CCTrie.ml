@@ -211,7 +211,7 @@ module Make(W : WORD) = struct
   let _remove_sub c t = match t with
     | Empty -> t
     | Path ([], _) -> assert false
-    | Path (c'::l, t') ->
+    | Path (c'::_, _) ->
         if W.compare c c' = 0
           then Empty
           else t
@@ -357,7 +357,7 @@ module Make(W : WORD) = struct
           | Some v -> f acc v
         in
         M.fold
-          (fun c t' acc -> fold_values f acc t')
+          (fun _c t' acc -> fold_values f acc t')
           map acc
 
   let iter_values f t = fold_values (fun () x -> f x) () t
