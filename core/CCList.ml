@@ -51,6 +51,8 @@ let map f l =
     List.rev (List.rev_map f l) = map f l)
 *)
 
+let (>|=) l f = map f l
+
 let append l1 l2 =
   let rec direct i l1 l2 = match l1 with
     | [] -> l2
@@ -448,7 +450,7 @@ module Assoc = struct
     let rec search eq acc l x y = match l with
       | [] -> (x,y)::acc
       | (x',y')::l' ->
-          if eq x x' 
+          if eq x x'
             then (x,y)::List.rev_append acc l'
             else search eq ((x',y')::acc) l' x y
     in search eq [] l x y
@@ -497,7 +499,7 @@ module Zipper = struct
     | l, x::r ->
         begin match f (Some x) with
         | None -> l,r
-        | Some x' -> l, x::r
+        | Some _ -> l, x::r
         end
 
   let focused = function
@@ -661,7 +663,7 @@ let of_klist l =
 
 let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf l =
   let rec print l = match l with
-    | x::((y::xs) as l) ->
+    | x::((_::_) as l) ->
       pp_item buf x;
       Buffer.add_string buf sep;
       print l
@@ -675,7 +677,7 @@ let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf l =
 
 let print ?(start="[") ?(stop="]") ?(sep=", ") pp_item fmt l =
   let rec print fmt l = match l with
-    | x::((y::xs) as l) ->
+    | x::((_::_) as l) ->
       pp_item fmt x;
       Format.pp_print_string fmt sep;
       Format.pp_print_cut fmt ();
