@@ -604,7 +604,15 @@ module IO : sig
       @param mode default [0o644]
       @param flags used by [open_out_gen]. Default: [[Open_creat;Open_wronly]]. *)
 
+  val write_bytes_to : ?mode:int -> ?flags:open_flag list ->
+                       string -> Bytes.t t -> unit
+  (** @since NEXT_RELEASE *)
+
   val write_lines : ?mode:int -> ?flags:open_flag list ->
                     string -> string t -> unit
   (** Same as {!write_to}, but intercales ['\n'] between each string *)
+
+  val write_bytes_lines : ?mode:int -> ?flags:open_flag list ->
+                    string -> Bytes.t t -> unit
+  (** @since NEXT_RELEASE *)
 end
