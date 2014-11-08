@@ -98,7 +98,7 @@ module type S = sig
       (** Add a pair string/value to the index. If a value was already present
          for this string it is replaced. *)
 
-    val remove : 'b t -> string_ -> 'b -> 'b t
+    val remove : 'b t -> string_ -> 'b t
       (** Remove a string (and its associated value, if any) from the index. *)
 
     val retrieve : limit:int -> 'b t -> string_ -> 'b klist
@@ -338,7 +338,7 @@ module Make(Str : STRING) = struct
 
     let rec get_transitions_for_any nda acc transitions =
       match transitions with
-      | NDA.Upon (NDA.Char _, i, j) :: transitions' ->
+      | NDA.Upon (NDA.Char _, _, _) :: transitions' ->
           get_transitions_for_any nda acc transitions'
       | NDA.Upon (NDA.Any, i, j) :: transitions' ->
           let acc = NDAStateSet.add (i,j) acc in
@@ -558,7 +558,7 @@ module Make(Str : STRING) = struct
         (function
           | Node (_, m) -> Node (Some value, m))
 
-    let remove trie s value =
+    let remove trie s =
       goto_leaf s trie
         (function
           | Node (_, m) -> Node (None, m))
