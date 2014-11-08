@@ -84,6 +84,10 @@ let map2 f o1 o2 = match o1, o2 with
   | _, None -> None
   | Some x, Some y -> Some (f x y)
 
+let filter p = function
+  | Some x as o when p x -> o
+  | o -> o
+
 let iter f o = match o with
   | None -> ()
   | Some x -> f x
