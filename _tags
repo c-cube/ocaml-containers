@@ -160,4 +160,5 @@
 <tests/*.ml{,i}>: thread
 <threads/*.ml{,i}>: thread
 <sequence>: -traverse
+<core/CCVector.cmx>: inline(25)
 <{string,core}/**/*.ml>: warn_A, warn(-4), warn(-44)
