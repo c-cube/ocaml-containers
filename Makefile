@@ -61,6 +61,7 @@ push_doc: doc
 DONTTEST=myocamlbuild.ml setup.ml $(wildcard **/*.cppo*)
 QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard core/*.ml) $(wildcard core/*.mli) \
+	$(wildcard core/*.cppo.ml) $(wildcard core/*.cppo.mli) \
 	$(wildcard misc/*.ml) $(wildcard misc/*.mli) \
 	$(wildcard string/*.ml) $(wildcard string/*.mli) \
 	)
@@ -72,14 +73,18 @@ QTEST_PREAMBLE='open CCFun;; '
 
 #qtest-build: qtest-clean build
 #	@mkdir -p qtest
-#	@qtest extract --preamble $(QTEST_PREAMBLE) -o qtest/qtest_all.ml $(QTESTABLE) 2> /dev/null
+#	@qtest extract --preamble $(QTEST_PREAMBLE) \
+#		-o qtest/qtest_all.ml \
+#		$(QTESTABLE) 2> /dev/null
 #	@ocamlbuild $(OPTIONS) -pkg oUnit,QTest2Lib,ocamlbuildlib \
 #		-I core -I misc -I string \
 #		qtest/qtest_all.native
 
 qtest-gen: qtest-clean
 	@mkdir -p qtest
-	@qtest extract --preamble $(QTEST_PREAMBLE) -o qtest/run_qtest.ml $(QTESTABLE) 2> /dev/null
+	@qtest extract --preamble $(QTEST_PREAMBLE) \
+		-o qtest/run_qtest.cppo.ml \
+		$(QTESTABLE) 2> /dev/null
 
 push-stable:
 	git checkout stable
