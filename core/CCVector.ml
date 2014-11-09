@@ -139,6 +139,11 @@ let append a b =
     a.size <- a.size + b.size
   )
 
+(*$T
+  let v1 = init 5 (fun i->i) and v2 = init 5 (fun i->i+5) in \
+  append v1 v2; to_list v1 = CCList.(0--9)
+*)
+
 let get v i =
   if i < 0 || i >= v.size then failwith "Vector.get";
   Array.unsafe_get v.vec i
@@ -159,7 +164,13 @@ let append_seq a seq =
   seq (fun x -> push a x)
 
 let append_array a b =
+  ensure a (a.size + Array.length b);
   Array.iter (push a) b
+
+(*$T
+  let v1 = init 5 (fun i->i) and v2 = Array.init 5 (fun i->i+5) in \
+  append_array v1 v2; to_list v1 = CCList.(0--9)
+*)
 
 let equal eq v1 v2 =
   let n = min v1.size v2.size in
@@ -243,6 +254,11 @@ let uniq_sort cmp v =
     then traverse v.vec.(0) 1 1
     (* start at 1, to get the first element in hand *)
 
+(*$T
+  let v = of_list [1;4;5;3;2;4;1] in \
+  uniq_sort Pervasives.compare v; to_list v = [1;2;3;4;5]
+*)
+
 let iter k v =
   for i = 0 to v.size -1 do
     k (Array.unsafe_get v.vec i)
@@ -256,10 +272,18 @@ let iteri k v =
 let map f v =
   if _empty_array v
   then create ()
-  else {
-    size=v.size;
-    vec=Array.map f v.vec
-  }
+  else (
+    let vec = Array.init v.size (fun i -> f (Array.unsafe_get v.vec i)) in
+    {
+      size=v.size;
+      vec;
+    }
+  )
+
+(*$T
+  let v = create() in push v 1; push v 2; push v 3; \
+  to_list (map string_of_int v) = ["1"; "2"; "3"]
+  *)
 
 let filter' p v =
   let i = ref (v.size - 1) in
@@ -463,6 +487,10 @@ let to_gen v =
         incr i;
         Some x
       ) else None
+
+(*$T
+  let v = (1--10) in to_list v = CCGen.to_list (to_gen v)
+  *)
 
 let of_klist ?(init=create ()) l =
   let rec aux l = match l() with
