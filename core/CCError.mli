@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Error Monad}
 
-The variant is polymorphic in the error type since NEXT_RELEASE *)
+The variant is polymorphic in the error type since 0.5 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
@@ -60,7 +60,7 @@ val map : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
 
 val map_err : ('err1 -> 'err2) -> ('a, 'err1) t -> ('a, 'err2) t
 (** Map on error.
-    @since NEXT_RELEASE *)
+    @since 0.5 *)
 
 val map2 : ('a -> 'b) -> ('err -> 'err) -> ('a, 'err) t -> ('b, 'err) t
 (** Same as {!map}, but also with a function that can transform
@@ -92,7 +92,7 @@ val fold : success:('a -> 'b) -> failure:('err -> 'b) -> ('a, 'err) t -> 'b
 (** {2 Wrappers}
 
 The functions {!guard}, {!wrap1}, {!wrap2} and {!wrap3} now return
-exceptions in case of failure, @since NEXT_RELEASE *)
+exceptions in case of failure, @since 0.5 *)
 
 val guard : (unit -> 'a) -> ('a, exn) t
 (** [guard f] runs [f ()] and returns its result wrapped in [`Ok]. If

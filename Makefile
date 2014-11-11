@@ -77,9 +77,12 @@ QTEST_PREAMBLE='open CCFun;; '
 
 qtest-gen: qtest-clean
 	@mkdir -p qtest
-	@qtest extract --preamble $(QTEST_PREAMBLE) \
-		-o qtest/run_qtest.cppo.ml \
-		$(QTESTABLE) 2> /dev/null
+	@if which qtest ; then \
+		qtest extract --preamble $(QTEST_PREAMBLE) \
+			-o qtest/run_qtest.cppo.ml \
+			$(QTESTABLE) 2> /dev/null ; \
+	else touch qtest/run_qtest.cppo.ml ; \
+	fi
 
 push-stable:
 	git checkout stable

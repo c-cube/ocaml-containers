@@ -39,7 +39,7 @@ This module is meant to be opened if one doesn't want to use both, say,
 Changed [Opt] to [Option] to better reflect that this module is about the
 ['a option] type, with [module Option = CCOpt].
 
-@since NEXT_RELEASE
+@since 0.5
 *)
 
 module Array = struct include Array include CCArray end

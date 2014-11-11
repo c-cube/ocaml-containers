@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.5
+
+### breaking changes
+
+- dependency on `cppo` (thanks to @whitequark, see AUHORS.md) and `bytes`
+- `CCError`:
+    * now polymorphic on the error type
+    * some retro-incompatibilies (wrap,guard)
+- `CCPervasives.Opt` -> `CCPervasives.Option`
+- `Levenshtein.Index.remove` changed signature (useless param removed)
+
+### other changes
+
+- stronger inlining for `CCVector` (so that e.g. push is inline)
+- more tests for `CCVector`
+- removed many warnings
+- `CCSequence` now provides some bytes-dependent operations
+- `CCList.(>|=)` map operator
+- `CCOpt.filter`
+- `CCInt.neg`
+- `CCMap` wrapper to the standard `Map` module
+- make some functions in `CCFun` and `CCString` depend on ocaml version
+- thanks to @whitequark, could use cppo for preprocessing files
+- add Format printers to `CCString`
+- `AUTHORS.md`
+
 ## 0.4.1
 
 - `CCOpt.get`

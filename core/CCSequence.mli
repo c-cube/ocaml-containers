@@ -606,7 +606,7 @@ module IO : sig
 
   val write_bytes_to : ?mode:int -> ?flags:open_flag list ->
                        string -> Bytes.t t -> unit
-  (** @since NEXT_RELEASE *)
+  (** @since 0.5 *)
 
   val write_lines : ?mode:int -> ?flags:open_flag list ->
                     string -> string t -> unit
@@ -614,5 +614,5 @@ module IO : sig
 
   val write_bytes_lines : ?mode:int -> ?flags:open_flag list ->
                     string -> Bytes.t t -> unit
-  (** @since NEXT_RELEASE *)
+  (** @since 0.5 *)
 end

@@ -37,7 +37,7 @@ val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 
 val (@@) : ('a -> 'b) -> 'a -> 'b
 (** [f @@ x] is the same as [f x], but right-associative.
-    @since NEXT_RELEASE *)
+    @since 0.5 *)
 
 val id : 'a -> 'a
 (** Identity function *)

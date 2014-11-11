@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Extensions of Standard Map}
 
 Provide useful functions and iterators on [Map.S]
-@since NEXT_RELEASE *)
+@since 0.5 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Buffer.t -> 'a -> unit
