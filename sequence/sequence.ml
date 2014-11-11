@@ -751,7 +751,7 @@ module IO = struct
     fun k ->
       let ic = open_in_gen flags mode filename in
       try
-        let buf = String.create size in
+        let buf = Bytes.create size in
         let n = ref 0 in
         let stop = ref false in
         while not !stop do
@@ -763,22 +763,29 @@ module IO = struct
             if n' = 0 then stop := true else n := !n + n';
           done;
           if !n > 0
-            then k (String.sub buf 0 !n)
+            then k (Bytes.sub_string buf 0 !n)
         done;
         close_in ic
       with e ->
         close_in_noerr ic;
         raise e
 
-  let write_to ?(mode=0o644) ?(flags=[Open_creat;Open_wronly]) filename seq =
+  let write_bytes_to ?(mode=0o644) ?(flags=[Open_creat;Open_wronly]) filename seq =
     let oc = open_out_gen flags mode filename in
     try
-      seq (fun s -> output oc s 0 (String.length s));
+      seq (fun s -> output oc s 0 (Bytes.length s));
       close_out oc
     with e ->
       close_out oc;
       raise e
 
+  let write_to ?mode ?flags filename seq =
+    write_bytes_to ?mode ?flags filename (map Bytes.unsafe_of_string seq)
+
+  let write_bytes_lines ?mode ?flags filename seq =
+    let ret = Bytes.unsafe_of_string "\n" in
+    write_bytes_to ?mode ?flags filename (snoc (intersperse ret seq) ret)
+
   let write_lines ?mode ?flags filename seq =
-    write_to ?mode ?flags filename (snoc (intersperse "\n" seq) "\n")
+    write_bytes_lines ?mode ?flags filename (map Bytes.unsafe_of_string seq)
 end

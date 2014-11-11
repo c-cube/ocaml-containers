@@ -1,13 +1,12 @@
-
 (*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
+Copyright (c) 2014, Simon Cruanes
+All rights reserved.
 
-redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.  Redistributions in binary
 form must reproduce the above copyright notice, this list of conditions and the
 following disclaimer in the documentation and/or other materials provided with
 the distribution.
@@ -24,30 +23,23 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Basic Int functions} *)
+(** {1 Interface and Helpers for bigarrays} *)
 
-type t = int
+let of_bigarray b yield =
+  let len = Bigarray.Array1.dim b in
+  for i=0 to len-1 do
+    yield b.{i}
+  done
 
-val compare : t -> t -> int
-
-val equal : t -> t -> bool
-
-val hash : t -> int
-
-val sign : t -> int
-(** [sign i] is one of [-1, 0, 1] *)
-
-val neg : t -> t
-(** [neg i = - i]
-    @since NEXT_RELEASE *)
-
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
-type 'a random_gen = Random.State.t -> 'a
-
-val random : int -> t random_gen
-val random_small : t random_gen
-val random_range : int -> int -> t random_gen
-
-val pp : t printer
-val print : t formatter
+let mmap filename =
+  fun yield ->
+    let fd = Unix.openfile filename [Unix.O_RDONLY] 0 in
+    let len = Unix.lseek fd 0 Unix.SEEK_END in
+    let _ = Unix.lseek fd 0 Unix.SEEK_SET in
+    let b = Bigarray.Array1.map_file fd Bigarray.Char Bigarray.C_layout false len in
+    try
+      of_bigarray b yield;
+      Unix.close fd
+    with e ->
+      Unix.close fd;
+      raise e

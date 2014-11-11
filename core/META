@@ -1,7 +1,8 @@
 # OASIS_START
-# DO NOT EDIT (digest: caeabec618f289bbaa0522b65bf421f3)
+# DO NOT EDIT (digest: e4ab50f4ef28e5ea06e4145c3414c218)
 version = "0.4.1"
 description = "A modular standard library focused on data structures."
+requires = "cppo"
 archive(byte) = "containers.cma"
 archive(byte, plugin) = "containers.cma"
 archive(native) = "containers.cmxa"

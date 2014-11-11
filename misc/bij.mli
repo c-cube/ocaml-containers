@@ -163,25 +163,3 @@ exception EncodingError of string
 
 exception DecodingError of string
   (** Raised when decoding is impossible *)
-
-(** {2 Translations} *)
-
-module TrBencode : sig
-  val encode : bij:'a t -> 'a -> Bencode.t
-
-  val decode : bij:'a t -> Bencode.t -> 'a
-
-  val to_string : bij:'a t -> 'a -> string
-
-  val of_string : bij:'a t -> string -> 'a
-
-  val read : bij:'a t -> in_channel -> 'a
-    (** Read a single value from the channel *)
-
-  val read_stream : bij:'a t -> in_channel -> 'a Stream.t
-
-  val write : bij:'a t -> out_channel -> 'a -> unit
-
-  val write_stream : bij:'a t -> out_channel -> 'a Stream.t -> unit
-end
-

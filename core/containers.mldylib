@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f5cc3719f4c5e3e210a649e32f08ebde)
+# DO NOT EDIT (digest: ce5ac7ea3a03a61e3ed7dc10a551b94e)
 CCVector
 CCDeque
 CCGen
@@ -30,4 +30,5 @@ CCString
 CCHashtbl
 CCFlatHashtbl
 CCSexp
+CCMap
 # OASIS_STOP

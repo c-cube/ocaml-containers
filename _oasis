@@ -47,8 +47,9 @@ Library "containers"
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl, CCSexp
-  FindlibName:      containers
+                    CCFlatHashtbl, CCSexp, CCMap
+  BuildDepends:     bytes
+  XMETARequires:    cppo
 
 Library "containers_string"
   Path:             string
@@ -78,11 +79,9 @@ Library "containers_misc"
   Modules:          Cache, FHashtbl, FlatHashtbl, Hashset,
                     Heap, LazyGraph, PersistentGraph,
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
-                    Bij, PiCalculus, Bencode, RAL,
-                    UnionFind, SmallSet, AbsSet, CSM,
-                    ActionMan, BencodeOnDisk, TTree, PrintBox,
-                    HGraph, Automaton, Conv, Bidir, Iteratee, BTree,
-                    Ty, Tell, BencodeStream, RatTerm, Cause, AVL, ParseReact
+                    Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
+                    TTree, PrintBox, HGraph, Automaton, Conv, Bidir, Iteratee,
+                    BTree, Ty, Cause, AVL, ParseReact
   BuildDepends:     unix,containers
   FindlibName:      misc
   FindlibParent:    containers
@@ -206,10 +205,16 @@ Executable test_threads
   MainIs: test_Future.ml
   BuildDepends: containers,threads,oUnit,containers.lwt
 
-Test all
-  Command: make test-all
-  TestTools: run_tests
-  Run$: flag(tests)
+PreBuildCommand: make qtest-gen
+
+Executable run_qtest
+  Path:             qtest/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           run_qtest.ml
+  Build$:           flag(tests)
+  BuildDepends:     containers, containers.misc, containers.string,
+                    oUnit, QTest2Lib
 
 Executable run_tests
   Path: tests/
@@ -217,7 +222,12 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
-  BuildDepends: containers,oUnit,qcheck,containers.misc
+  BuildDepends: containers, oUnit, qcheck, containers.misc
+
+Test all
+  Command:      make test-all
+  TestTools:    run_tests, run_qtest
+  Run$:         flag(tests) && flag(misc)
 
 Executable web_pwd
   Path: examples/cgi/

@@ -24,44 +24,42 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Basic Functions} *)
+(** {1 Extensions of Standard Map}
 
-let (|>) x f = f x
+Provide useful functions and iterators on [Map.S]
+@since NEXT_RELEASE *)
 
-let compose f g x = g (f x)
+type 'a sequence = ('a -> unit) -> unit
+type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
-let flip f x y = f y x
+module type S = sig
+  include Map.S
 
-let curry f x y = f (x,y)
+  val get : key -> 'a t -> 'a option
+  (** Safe version of {!find} *)
 
-let id x = x
+  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
+  (** [update k f m] calls [f (Some v)] if [find k m = v],
+      otherwise it calls [f None]. In any case, if the result is [None]
+      [k] is removed from [m], and if the result is [Some v'] then
+      [add k v' m] is returned. *)
 
-let const x _ = x
+  val of_seq : (key * 'a) sequence -> 'a t
 
-let uncurry f (x,y) = f x y
+  val to_seq : 'a t -> (key * 'a) sequence
 
-let tap f x = ignore (f x); x
+  val of_list : (key * 'a) list -> 'a t
 
-let (%>) = compose
+  val to_list : 'a t -> (key * 'a) list
 
-let (%) f g x = f (g x)
+  val pp : ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
+            key printer -> 'a printer -> 'a t printer
 
-let lexicographic f1 f2 x y =
-  let c = f1 x y in
-  if c <> 0 then c else f2 x y
-
-let finally ~h ~f =
-  try
-    let x = f () in
-    h ();
-    x
-  with e ->
-    h ();
-    raise e
-
-module Monad(X : sig type t end) = struct
-  type 'a t = X.t -> 'a
-  let return x _ = x
-  let (>|=) f g x = g (f x)
-  let (>>=) f g x = g (f x) x
+  val print : ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
+              key formatter -> 'a formatter -> 'a t formatter
 end
+
+module Make(O : Map.OrderedType) : S
+  with type 'a t = 'a Map.Make(O).t
+  and type key = O.t

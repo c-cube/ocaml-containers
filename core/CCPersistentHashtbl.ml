@@ -294,7 +294,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
       (fun k v2 ->
         if not (mem t1 k) then match f k None (Some v2) with
           | None -> ()
-          | Some v' -> Table.replace tbl k v2);
+          | Some _ -> Table.replace tbl k v2);
     ref (Table tbl)
 
   let add_seq init seq =

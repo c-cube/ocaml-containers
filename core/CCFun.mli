@@ -27,13 +27,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Basic Functions} *)
 
 val (|>) : 'a -> ('a -> 'b) -> 'b
-(** Pipeline (naive implementation) *)
+(** Pipeline. [x |> f] is the same as [f x]. *)
 
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition *)
 
 val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Alias to [compose] *)
+
+val (@@) : ('a -> 'b) -> 'a -> 'b
+(** [f @@ x] is the same as [f x], but right-associative.
+    @since NEXT_RELEASE *)
 
 val id : 'a -> 'a
 (** Identity function *)

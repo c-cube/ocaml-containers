@@ -38,7 +38,7 @@ type 'a t = Buffer.t -> 'a -> unit
 
 (** {2 Combinators} *)
 
-let silent buf _ = ()
+let silent _buf _ = ()
 
 let unit buf () = Buffer.add_string buf "()"
 let int buf i = Buffer.add_string buf (string_of_int i)
@@ -49,7 +49,7 @@ let float buf f = Buffer.add_string buf (string_of_float f)
 
 let list ?(start="[") ?(stop="]") ?(sep=", ") pp buf l =
   let rec pp_list l = match l with
-  | x::((y::xs) as l) ->
+  | x::((_::_) as l) ->
     pp buf x;
     Buffer.add_string buf sep;
     pp_list l
@@ -116,14 +116,14 @@ let to_string pp x =
 let sprintf format =
   let buffer = Buffer.create 64 in
   Printf.kbprintf
-    (fun fmt -> Buffer.contents buffer)
+    (fun _fmt -> Buffer.contents buffer)
     buffer
     format
 
 let fprintf oc format =
   let buffer = Buffer.create 64 in
   Printf.kbprintf
-    (fun fmt -> Buffer.output_buffer oc buffer)
+    (fun _fmt -> Buffer.output_buffer oc buffer)
     buffer
     format
 

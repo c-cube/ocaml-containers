@@ -225,7 +225,7 @@ let _shuffle _rand_int a i j =
 
 let _choose a i j st =
   if i>=j then raise Not_found;
-  a.(i+Random.int (j-i))
+  a.(i+Random.State.int st (j-i))
 
 let _pp ~sep pp_item buf a i j =
   for k = i to j - 1 do
@@ -283,7 +283,7 @@ let iteri = Array.iteri
 let blit = Array.blit
 
 let reverse_in_place a =
-  _reverse_in_place a 0 (Array.length a)
+  _reverse_in_place a 0 ~len:(Array.length a)
 
 (*$T
   reverse_in_place [| |]; true
@@ -464,7 +464,7 @@ module Sub = struct
 
   let copy a = Array.sub a.arr a.i (length a)
 
-  let sub a i len = make a.arr (a.i + i) len
+  let sub a i len = make a.arr ~len:(a.i + i) len
 
   let equal eq a b =
     length a = length b && _equal eq a.arr a.i a.j b.arr b.i b.j

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 5c08a0bf51a82d21179a12753e47acff)
+# DO NOT EDIT (digest: 3c4c75622413b2b99679e7439134f037)
 misc/Cache
 misc/FHashtbl
 misc/FlatHashtbl
@@ -14,14 +14,11 @@ misc/SplayMap
 misc/Univ
 misc/Bij
 misc/PiCalculus
-misc/Bencode
 misc/RAL
 misc/UnionFind
 misc/SmallSet
 misc/AbsSet
 misc/CSM
-misc/ActionMan
-misc/BencodeOnDisk
 misc/TTree
 misc/PrintBox
 misc/HGraph
@@ -31,9 +28,6 @@ misc/Bidir
 misc/Iteratee
 misc/BTree
 misc/Ty
-misc/Tell
-misc/BencodeStream
-misc/RatTerm
 misc/Cause
 misc/AVL
 misc/ParseReact

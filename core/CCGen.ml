@@ -201,7 +201,7 @@ module type S = sig
         [e1, e2, ... ] picks elements in [e1], [e2],
         in [e3], [e1], [e2] .... Once a generator is empty, it is skipped;
         when they are all empty, and none remains in the input,
-        their merge is also empty. 
+        their merge is also empty.
         For instance, [merge [1;3;5] [2;4;6]] will be, in disorder, [1;2;3;4;5;6]. *)
 
   val intersection : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t
@@ -384,7 +384,7 @@ let reduce f g =
   let acc = match g () with
     | None -> raise (Invalid_argument "reduce")
     | Some x -> x
-  in 
+  in
   fold f acc g
 
 (* Dual of {!fold}, with a deconstructing operation *)
@@ -671,7 +671,7 @@ let drop_while p gen =
     | Yield ->
         begin match gen () with
         | None -> state := Stop; None
-        | (Some x) as res -> res
+        | Some _ as res -> res
         end
   in next
 
@@ -1088,7 +1088,7 @@ let sorted_merge_n ?(cmp=Pervasives.compare) l =
 
 let round_robin ?(n=2) gen =
   (* array of queues, together with their index *)
-  let qs = Array.init n (fun i -> Queue.create ()) in
+  let qs = Array.init n (fun _ -> Queue.create ()) in
   let cur = ref 0 in
   (* get next element for the i-th queue *)
   let rec next i =
@@ -1128,7 +1128,7 @@ let round_robin ?(n=2) gen =
    when they are consumed evenly *)
 let tee ?(n=2) gen =
   (* array of queues, together with their index *)
-  let qs = Array.init n (fun i -> Queue.create ()) in
+  let qs = Array.init n (fun _ -> Queue.create ()) in
   let finished = ref false in (* is [gen] exhausted? *)
   (* get next element for the i-th queue *)
   let rec next i =
@@ -1139,7 +1139,7 @@ let tee ?(n=2) gen =
       else Queue.pop qs.(i)
   (* consume one more element *)
   and get_next i = match gen() with
-    | (Some x) as res ->
+    | Some _ as res ->
       for j = 0 to n-1 do
         if j <> i then Queue.push res qs.(j)
       done;
@@ -1158,7 +1158,7 @@ let tee ?(n=2) gen =
 
 module InterleaveState = struct
   type 'a t =
-    | Only of 'a gen 
+    | Only of 'a gen
     | Both of 'a gen * 'a gen * bool ref
     | Stop
 end
@@ -1487,7 +1487,7 @@ module Restart = struct
 
   let repeat x () = repeat x
 
-  let unfold f acc () = unfold f acc 
+  let unfold f acc () = unfold f acc
 
   let init ?limit f () = init ?limit f
 
@@ -1625,7 +1625,7 @@ module Restart = struct
   let of_list l () = of_list l
 
   let to_rev_list e = to_rev_list (e ())
-  
+
   let to_list e = to_list (e ())
 
   let to_array e = to_array (e ())
@@ -1678,7 +1678,7 @@ module MList = struct
           then begin
             prev := cur;
             fill next Nil
-          end else fill prev cur 
+          end else fill prev cur
     in
     fill start !start ;
     !start

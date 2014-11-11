@@ -50,6 +50,7 @@ module type S = sig
   val to_list : t -> char list
 
   val pp : Buffer.t -> t -> unit
+  val print : Format.formatter -> t -> unit
 end
 
 (** {2 Strings} *)

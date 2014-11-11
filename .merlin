@@ -15,4 +15,4 @@ PKG benchmark
 PKG threads
 PKG threads.posix
 PKG lwt
-FLG -w +K,+Y,+X
+FLG -w +a -w -4 -w -44

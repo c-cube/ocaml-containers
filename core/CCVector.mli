@@ -90,7 +90,7 @@ val append_seq : ('a, rw) t -> 'a sequence -> unit
 val equal : 'a equal -> ('a,_) t equal
 
 val compare : 'a ord -> ('a,_) t ord
-(** Lexicographic comparison *)
+(** Total ordering on vectors: Lexicographic comparison. *)
 
 val pop : ('a, rw) t -> 'a option
 (** Remove last element, or [None] *)

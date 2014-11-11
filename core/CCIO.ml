@@ -415,7 +415,7 @@ module Seq = struct
     try _yield (input_line ic)
     with End_of_file -> _stop()
 
-  let words g =
+  let words _g =
     failwith "words: not implemented yet"
     (* TODO: state machine that goes:
         - 0: read input chunk

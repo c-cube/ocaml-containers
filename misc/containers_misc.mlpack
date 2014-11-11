@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9851db0fe3105f1a9f67c941d62c467a)
+# DO NOT EDIT (digest: 77c9e2e3233437cee692be334bdaa224)
 Cache
 FHashtbl
 FlatHashtbl
@@ -14,14 +14,11 @@ SplayMap
 Univ
 Bij
 PiCalculus
-Bencode
 RAL
 UnionFind
 SmallSet
 AbsSet
 CSM
-ActionMan
-BencodeOnDisk
 TTree
 PrintBox
 HGraph
@@ -31,9 +28,6 @@ Bidir
 Iteratee
 BTree
 Ty
-Tell
-BencodeStream
-RatTerm
 Cause
 AVL
 ParseReact

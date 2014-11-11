@@ -34,9 +34,9 @@ type 'a formatter = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type +'a t =
-  [ `Ok of 'a
-  | `Error of string
+type (+'good, +'bad) t =
+  [ `Ok of 'good
+  | `Error of 'bad
   ]
 
 let return x = `Ok x
@@ -68,6 +68,10 @@ let map f e = match e with
   | `Ok x -> `Ok (f x)
   | `Error s -> `Error s
 
+let map_err f e = match e with
+  | `Ok _ as res -> res
+  | `Error y -> `Error (f y)
+
 let map2 f g e = match e with
   | `Ok x -> `Ok (f x)
   | `Error s -> `Error (g s)
@@ -88,16 +92,16 @@ let (>|=) e f = map f e
 
 let (>>=) e f = flat_map f e
 
-let equal eq a b = match a, b with
+let equal ?(err=Pervasives.(=)) eq a b = match a, b with
   | `Ok x, `Ok y -> eq x y
-  | `Error s, `Error s' -> s = s'
+  | `Error s, `Error s' -> err s s'
   | _ -> false
 
-let compare cmp a b = match a, b with
+let compare ?(err=Pervasives.compare) cmp a b = match a, b with
   | `Ok x, `Ok y -> cmp x y
   | `Ok _, _  -> 1
   | _, `Ok _ -> -1
-  | `Error s, `Error s' -> String.compare s s'
+  | `Error s, `Error s' -> err s s'
 
 let fold ~success ~failure x = match x with
   | `Ok x -> success x
@@ -106,21 +110,24 @@ let fold ~success ~failure x = match x with
 (** {2 Wrappers} *)
 
 let guard f =
-  try
-    return (f ())
+  try `Ok (f ())
+  with e -> `Error e
+
+let guard_str f =
+  try `Ok (f())
   with e -> of_exn e
 
 let wrap1 f x =
   try return (f x)
-  with e -> of_exn e
+  with e -> `Error e
 
 let wrap2 f x y =
   try return (f x y)
-  with e -> of_exn e
+  with e -> `Error e
 
 let wrap3 f x y z =
   try return (f x y z)
-  with e -> of_exn e
+  with e -> `Error e
 
 (** {2 Applicative} *)
 
@@ -141,18 +148,20 @@ let map_l f l =
       | `Ok y -> map (y::acc) l'
   in map [] l
 
-exception LocalExit of string
+exception LocalExit
 
 let fold_seq f acc seq =
+  let err = ref None in
   try
     let acc = ref acc in
     seq
       (fun x -> match f !acc x with
-        | `Error s -> raise (LocalExit s)
+      | `Error s -> err := Some s; raise LocalExit
         | `Ok y -> acc := y
       );
     `Ok !acc
-  with LocalExit s -> `Error s
+  with LocalExit ->
+    match !err with None -> assert false | Some s -> `Error s
 
 let fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
 
@@ -166,26 +175,17 @@ let choose l =
   in
   try _find l
   with Not_found ->
-    let buf = Buffer.create 32 in
-    (* print errors on the buffer *)
-    let rec print buf l = match l with
-      | `Ok _ :: _ -> assert false
-      | (`Error x)::((y::xs) as l) ->
-        Buffer.add_string buf x;
-        Buffer.add_string buf ", ";
-        print buf l
-      | `Error x::[] -> Buffer.add_string buf x
-      | [] -> ()
-    in
-    Printf.bprintf buf "CCError.choice failed: [%a]" print l;
-    fail (Buffer.contents buf)
+    let l' = List.map (function `Error s -> s | `Ok _ -> assert false) l in
+    `Error l'
 
-let rec retry n f = match n with
-  | 0 -> fail "retry failed"
+let retry n f =
+  let rec retry n acc = match n with
+  | 0 -> fail (List.rev acc)
   | _ ->
       match f () with
       | `Ok _ as res -> res
-      | `Error _ -> retry (n-1) f
+      | `Error e -> retry (n-1) (e::acc)
+  in retry n []
 
 (** {2 Monadic Operations} *)
 
@@ -205,16 +205,17 @@ module Traverse(M : MONAD) = struct
   let sequence_m m = map_m (fun x->x) m
 
   let fold_m f acc e = match e with
-    | `Error s -> M.return acc
+    | `Error _ -> M.return acc
     | `Ok x -> f acc x >>= fun y -> M.return y
 
-  let rec retry_m n f = match n with
-    | 0 -> M.return (fail "retry failed")
+  let retry_m n f =
+    let rec retry n acc = match n with
+    | 0 -> M.return (fail (List.rev acc))
     | _ ->
-        let x = f () in
-        x >>= function
-        | `Ok _ -> x
-        | `Error _ -> retry_m (n-1) f
+        f () >>= function
+        | `Ok x -> M.return (`Ok x)
+        | `Error e -> retry (n-1) (e::acc)
+    in retry n []
 end
 
 (** {2 Conversions} *)

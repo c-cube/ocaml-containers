@@ -1,6 +1,6 @@
 
 (*
-copyright (c) 2013, simon cruanes
+copyright (c) 2013-2014, simon cruanes
 all rights reserved.
 
 redistribution and use in source and binary forms, with or without
@@ -24,37 +24,54 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Serialize Bencode on disk with persistency guarantees}
+(** {1 Basic Functions} *)
 
-    This module provides an append-only interface to some file, with
-    synchronized access and fsync() called after every write.
-    It needs {b Extunix} to compile (needs fsync).
-    *)
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
 
-type t
-  (** Handle to a file on which we can append values atomically *)
+external (|>) : 'a -> ('a -> 'b) -> 'b = "%revapply"
+external (@@) : ('a -> 'b) -> 'a -> 'b = "%apply"
 
-val open_out : ?lock:string -> string -> t
-  (** Open the given file for appending values. Creates the file
-      if it doesn't exist.
-      @param lock, if provided, is the name of the lock file used. By default,
-        the file that is provided for writing is also used for locking.
-      @raise Unix.Unix_error if some IO error occurs. *)
+#else
 
-val close_out : t -> unit
-  (** Close the file descriptor *)
+let (|>) x f = f x
+let (@@) f x = f x
 
-val write : t -> Bencode.t -> unit
-  (** Write "atomically" a value to the end of the file *)
+#endif
 
-val write_batch : t -> Bencode.t list -> unit
-  (** Write several values at once, at the end of the file *)
+let compose f g x = g (f x)
 
-type 'a result =
-  | Ok of 'a
-  | Error of string
+let flip f x y = f y x
 
-val read : ?lock:string -> string -> 'a -> ('a -> Bencode.t -> 'a) -> 'a result
-  (** Fold on values serialized in the given file.
-      @param lock see {!open_out}.
-      @raise Unix.Unix_error if some IO error occurs. *)
+let curry f x y = f (x,y)
+
+let id x = x
+
+let const x _ = x
+
+let uncurry f (x,y) = f x y
+
+let tap f x = ignore (f x); x
+
+let (%>) = compose
+
+let (%) f g x = f (g x)
+
+let lexicographic f1 f2 x y =
+  let c = f1 x y in
+  if c <> 0 then c else f2 x y
+
+let finally ~h ~f =
+  try
+    let x = f () in
+    h ();
+    x
+  with e ->
+    h ();
+    raise e
+
+module Monad(X : sig type t end) = struct
+  type 'a t = X.t -> 'a
+  let return x _ = x
+  let (>|=) f g x = g (f x)
+  let (>>=) f g x = g (f x) x
+end

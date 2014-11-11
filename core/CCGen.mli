@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Values of type ['a Gen.t] represent a possibly infinite sequence of values
 of type 'a. One can only iterate once on the sequence, as it is consumed
 by iteration/deconstruction/access. [None] is returned when the generator
-is exhausted.
+is exhausted. Most functions consume elements.
 
 The submodule {!Restart} provides utilities to work with
 {b restartable generators}, that is, functions [unit -> 'a Gen.t] that
@@ -78,25 +78,27 @@ module type S = sig
   (** {2 Basic combinators} *)
 
   val is_empty : _ t -> bool
-    (** Check whether the enum is empty. *)
+    (** Check whether the genertor is empty. Consumes one element if the
+        generator isn't empty. *)
 
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-    (** Fold on the generator, tail-recursively *)
+    (** Fold on the generator, tail-recursively; consumes it *)
 
   val reduce : ('a -> 'a -> 'a) -> 'a t -> 'a
-    (** Fold on non-empty sequences (otherwise raise Invalid_argument) *)
+    (** Fold on non-empty sequences
+        @raise Invalid_argument if the generator is empty *)
 
   val scan : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
     (** Like {!fold}, but keeping successive values of the accumulator *)
 
   val iter : ('a -> unit) -> 'a t -> unit
-    (** Iterate on the enum *)
+    (** Iterate on the generator, consuming it *)
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
-    (** Iterate on elements with their index in the enum, from 0 *)
+    (** Iterate on elements with their index in the enum, from 0. Consumes it. *)
 
   val length : _ t -> int
-    (** Length of an enum (linear time) *)
+    (** Length of a generator (linear time, consumes its input) *)
 
   val map : ('a -> 'b) -> 'a t -> 'b t
     (** Lazy map. No iteration is performed now, the function will be called
@@ -217,7 +219,7 @@ module type S = sig
         [e1, e2, ... ] picks elements in [e1], [e2],
         in [e3], [e1], [e2] .... Once a generator is empty, it is skipped;
         when they are all empty, and none remains in the input,
-        their merge is also empty. 
+        their merge is also empty.
         For instance, [merge [1;3;5] [2;4;6]] will be, in disorder, [1;2;3;4;5;6]. *)
 
   val intersection : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> 'a t

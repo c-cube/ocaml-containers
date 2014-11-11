@@ -59,9 +59,11 @@ push_stable: all
 
 VERSION=$(shell awk '/^Version:/ {print $$2}' _oasis)
 
+SOURCE=*.ml *.mli invert/*.ml invert/*.mli bigarray/*.ml bigarray/*.mli
+
 update_next_tag:
 	@echo "update version to $(VERSION)..."
-	sed -i "s/NEXT_VERSION/$(VERSION)/g" *.ml *.mli
-	sed -i "s/NEXT_RELEASE/$(VERSION)/g" *.ml *.mli
+	sed -i "s/NEXT_VERSION/$(VERSION)/g" $(SOURCE)
+	sed -i "s/NEXT_RELEASE/$(VERSION)/g" $(SOURCE)
 
 .PHONY: benchs tests examples update_next_tag push_doc push_stable

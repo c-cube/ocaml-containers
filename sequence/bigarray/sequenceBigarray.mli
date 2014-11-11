@@ -1,13 +1,12 @@
-
 (*
-copyright (c) 2014, simon cruanes
-all rights reserved.
+Copyright (c) 2014, Simon Cruanes
+All rights reserved.
 
-redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.  Redistributions in binary
 form must reproduce the above copyright notice, this list of conditions and the
 following disclaimer in the documentation and/or other materials provided with
 the distribution.
@@ -24,42 +23,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Full-Streaming API of Bencode} *)
+(** {1 Interface and Helpers for bigarrays}
 
-type token =
-  | Int of int
-  | String of string
-  | BeginDict
-  | BeginList
-  | End
+@since 0.5.4 *)
 
-module Encode : sig
-  type t
+val of_bigarray : ('a, _, _) Bigarray.Array1.t -> 'a Sequence.t
+(** Iterate on the elements of a 1-D array *)
 
-  type sink =
-    [ `File of string
-    | `Out of out_channel
-    | `Buf of Buffer.t
-    ]
-
-  val create : sink -> t
-
-  val push : t -> token -> unit
-end
-
-module Decode : sig
-  type t
-
-  val create : unit -> t
-  (** Create a new decoder with the given source. *)
-
-  val feed : t -> string -> unit
-  (** For manual mode, provide some input *)
-
-  type result =
-    | Yield of token
-    | Error of string (** Invalid B-encode *)
-    | Await  (** The user needs to call {!feed} with some input *)
-
-  val next : t -> result
-end
+val mmap : string -> char Sequence.t
+(** Map the file into memory, and read the characters. *)
