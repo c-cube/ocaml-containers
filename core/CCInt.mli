@@ -39,7 +39,7 @@ val sign : t -> int
 
 val neg : t -> t
 (** [neg i = - i]
-    @since NEXT_RELEASE *)
+    @since 0.5 *)
 
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit

@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.4
+Version:     dev
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -50,8 +50,6 @@ Library "containers"
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
                     CCFlatHashtbl, CCSexp, CCMap
   BuildDepends:     bytes
-  XMETARequires:    cppo
-  FindlibName:      containers
 
 Library "containers_string"
   Path:             string

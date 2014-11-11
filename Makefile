@@ -116,4 +116,4 @@ update_next_tag:
 udpate_sequence:
 	git subtree pull --prefix sequence sequence stable --squash
 
-.PHONY: examples push_doc tags qtest update_sequence
+.PHONY: examples push_doc tags qtest update_sequence update_next_tag

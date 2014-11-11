@@ -35,7 +35,7 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix version of [map] with reversed arguments
-    @since NEXT_RELEASE *)
+    @since 0.5 *)
 
 val append : 'a t -> 'a t -> 'a t
 (** Safe version of append *)
