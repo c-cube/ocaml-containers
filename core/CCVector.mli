@@ -134,8 +134,7 @@ val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
     returns a new vector that only contains elements of [v] satisfying [p]. *)
 
 val filter' : ('a -> bool) -> ('a, rw) t -> unit
-(** Filter elements in place. Does {b NOT} preserve the order
-    of the elements. *)
+(** Filter elements in place.  *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
 (** fold on elements of the vector *)

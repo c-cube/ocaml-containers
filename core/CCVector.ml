@@ -92,36 +92,48 @@ let _resize v newcapacity =
   ()
 
 (*$T
-  (let v = create_with ~capacity:10 1 in ensure v 200; capacity v >= 200)
+  let v = create_with ~capacity:10 1 in \
+    ensure v 200; capacity v >= 200
 *)
 
 (* grow the array, using [x] as a filler if required *)
 let _grow v x =
   if _empty_array v
     then v.vec <- Array.make 32 x
-    else
+    else (
       let n = Array.length v.vec in
-      let size = min (n + n/2 + 10) Sys.max_array_length in
+      let size = min (2 * n + 10) Sys.max_array_length in
+      if size = n then failwith "vec: can't grow any further";
       _resize v size
+    )
 
+(* resize so that capacity is at least size. Use a doubling-size
+  strategy so that calling many times [ensure] will
+  behave well *)
 let ensure v size =
   if Array.length v.vec = 0
     then ()
-  else if v.size < size
-    then
-      let size' = min size Sys.max_array_length in
-      _resize v size'
+  else if size > Sys.max_array_length
+    then failwith "vec.ensure: size too big"
+  else (
+    let n = ref (max 16 (Array.length v.vec)) in
+    while !n < size do n := min Sys.max_array_length (2* !n) done;
+    _resize v !n
+  )
 
 let clear v =
   v.size <- 0
 
 let is_empty v = v.size = 0
 
+let push_unsafe v x =
+  Array.unsafe_set v.vec v.size x;
+  v.size <- v.size + 1
+
 let push v x =
   if v.size = Array.length v.vec
     then _grow v x;
-  Array.unsafe_set v.vec v.size x;
-  v.size <- v.size + 1
+  push_unsafe v x
 
 (** add all elements of b to a *)
 let append a b =
@@ -164,8 +176,10 @@ let append_seq a seq =
   seq (fun x -> push a x)
 
 let append_array a b =
-  ensure a (a.size + Array.length b);
-  Array.iter (push a) b
+  let len_b = Array.length b in
+  ensure a (a.size + len_b);
+  Array.blit b 0 a.vec a.size len_b;
+  a.size <- a.size + len_b
 
 (*$T
   let v1 = init 5 (fun i->i) and v2 = Array.init 5 (fun i->i+5) in \
@@ -274,10 +288,7 @@ let map f v =
   then create ()
   else (
     let vec = Array.init v.size (fun i -> f (Array.unsafe_get v.vec i)) in
-    {
-      size=v.size;
-      vec;
-    }
+    { size=v.size; vec; }
   )
 
 (*$T
@@ -286,17 +297,23 @@ let map f v =
   *)
 
 let filter' p v =
-  let i = ref (v.size - 1) in
-  while !i >= 0 do
-    if not (p v.vec.(! i))
-      (* remove i-th item! *)
-      then remove v !i;
-    decr i
-  done
+  let i = ref 0 in (* cur element *)
+  let j = ref 0 in  (* cur insertion point *)
+  let n = v.size in
+  while !i < n do
+    if p v.vec.(! i) then (
+      (* move element i at the first empty slot.
+        invariant: i >= j*)
+      if !i > !j then v.vec.(!j) <- v.vec.(!i);
+      incr i;
+      incr j
+    ) else incr i
+  done;
+  v.size <- !j
 
 (*$T
   let v = 1 -- 10 in filter' (fun x->x<4) v; \
-   to_list v |> List.sort Pervasives.compare = [1;2;3]
+    to_list v = [1;2;3]
 *)
 
 let filter p v =
@@ -305,13 +322,14 @@ let filter p v =
   else (
     let v' = create_with ~capacity:v.size v.vec.(0) in
     Array.iter
-      (fun x -> if p x then push v' x)
+      (fun x -> if p x then push_unsafe v' x)
       v.vec;
     v'
   )
 
 (*$T
   filter (fun x-> x mod 2=0) (of_list [1;2;3;4;5]) |> to_list = [2;4]
+  filter (fun x-> x mod 2=0) (1 -- 1_000_000) |> length = 500_000
 *)
 
 let fold f acc v =
@@ -463,8 +481,12 @@ let of_list l = match l with
   | [] -> create()
   | x::_ ->
       let v = create_with ~capacity:(List.length l + 5) x in
-      List.iter (push v) l;
+      List.iter (push_unsafe v) l;
       v
+
+(*$T
+  of_list CCList.(1--300_000) |> to_list = CCList.(1--300_000)
+*)
 
 let to_array v =
   Array.sub v.vec 0 v.size
