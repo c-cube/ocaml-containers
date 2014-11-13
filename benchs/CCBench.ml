@@ -109,8 +109,8 @@ let map_int l =
 let rec print fmt = function
   | Multiple (l, m) ->
       Format.fprintf fmt "@[<hv>%a%a@]"
-        (print_list_ ~sep:"," print) l
         print_map m
+        (print_list_ ~sep:"," print) l
   | WithInt l ->
       Format.fprintf fmt "@[<hv>[%a]@]"
         (print_list_ print_pair)
@@ -119,8 +119,11 @@ let rec print fmt = function
 and print_pair fmt (n,t) =
   Format.fprintf fmt "@[<h>%d: %a@]" n print t
 and print_map fmt m =
-  Format.pp_open_hvbox fmt 0;
-  SMap.iter (fun n t -> Format.fprintf fmt "@[%s.%a@]" n print t) m;
+  let first = ref true in
+  Format.pp_open_vbox fmt 0;
+  SMap.iter (fun n t ->
+    if !first then first := false else Format.pp_print_cut fmt ();
+    Format.fprintf fmt "@[%s.%a@]" n print t) m;
   Format.pp_close_box fmt ()
 
 (** {2 Path} *)
