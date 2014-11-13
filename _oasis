@@ -155,7 +155,16 @@ Executable benchs
   CompiledObject:   native
   Build$:           flag(bench)
   MainIs:           benchs.ml
-  BuildDepends:     containers,containers.string,containers.misc,bench,containers.advanced
+  BuildDepends:     containers,benchmark
+
+Executable bench_tbl
+  Path:             benchs/
+  Install:          false
+  CompiledObject:   native
+  Build$:           flag(bench)
+  MainIs:           bench_tbl.ml
+  BuildDepends:     containers, containers.string, containers.misc,
+                    benchmark, containers.advanced
 
 Executable bench_conv
   Path:     benchs/

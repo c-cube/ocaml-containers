@@ -55,9 +55,9 @@ module Make(C : COLL) = struct
     Benchmark.tabulate res
 
   let bench () =
-    bench_for 1 100;
-    bench_for 4 100_000;
-    bench_for 4 1_000_000;
+    bench_for ~time:1 100;
+    bench_for ~time:4 100_000;
+    bench_for ~time:4 1_000_000;
     ()
 end
 
