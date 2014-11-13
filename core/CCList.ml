@@ -31,7 +31,7 @@ type 'a t = 'a list
 let empty = []
 
 (* max depth for direct recursion *)
-let _direct_depth = 500
+let direct_depth_default_ = 1000
 
 let map f l =
   let rec direct f i l = match l with
@@ -43,7 +43,7 @@ let map f l =
   and safe f l =
     List.rev (List.rev_map f l)
   in
-  direct f _direct_depth l
+  direct f direct_depth_default_ l
 
 (*$Q
   (Q.list Q.small_int) (fun l -> \
@@ -53,6 +53,8 @@ let map f l =
 
 let (>|=) l f = map f l
 
+let direct_depth_append_ = 10_000
+
 let append l1 l2 =
   let rec direct i l1 l2 = match l1 with
     | [] -> l2
@@ -61,9 +63,16 @@ let append l1 l2 =
   and safe l1 l2 =
     List.rev_append (List.rev l1) l2
   in
-  direct _direct_depth l1 l2
+  direct direct_depth_append_ l1 l2
 
 let (@) = append
+
+(*$T
+  [1;2;3] @ [4;5;6] = [1;2;3;4;5;6]
+  (1-- 10_000) @ (10_001 -- 20_000) = 1 -- 20_000
+*)
+
+let direct_depth_filter_ = 10_000
 
 let filter p l =
   let rec direct i p l = match l with
@@ -76,7 +85,7 @@ let filter p l =
     | x::l' when not (p x) -> safe p l' acc
     | x::l' -> safe p l' (x::acc)
   in
-  direct _direct_depth p l
+  direct direct_depth_filter_ p l
 
 let fold_right f l acc =
   let rec direct i f l acc = match l with
@@ -91,7 +100,7 @@ let fold_right f l acc =
         let acc = f x acc in
         safe f l' acc
   in
-  direct _direct_depth f l acc
+  direct direct_depth_default_ f l acc
 
 (*$T
   fold_right (+) (1 -- 1_000_000) 0 = \
@@ -116,25 +125,30 @@ let rec equal f l1 l2 = match l1, l2 with
   | [], _ | _, [] -> false
   | x1::l1', x2::l2' -> f x1 x2 && equal f l1' l2'
 
-(* append difference lists *)
-let _d_append f1 f2 =
-  fun l -> f1 (f2 l)
-
 let flat_map f l =
-  let rec aux prefix f l = match l with
-    | [] -> prefix []
+  let rec aux f l kont = match l with
+    | [] -> kont []
     | x::l' ->
-        let sublist = append (f x) in
-        let prefix = _d_append prefix sublist in
-        aux prefix f l'
+        let y = f x in
+        let kont' tail = match y with
+          | [] -> kont tail
+          | [x] -> kont (x :: tail)
+          | [x;y] -> kont (x::y::tail)
+          | l -> kont (append l tail)
+        in
+        aux f l' kont'
   in
-  aux (fun l->l) f l
+  aux f l (fun l->l)
 
 (*$T
   flat_map (fun x -> [x+1; x*2]) [10;100] = [11;20;101;200]
 *)
 
-let flatten l = flat_map (fun l -> l) l
+let flatten l = fold_right append l []
+
+(*$T
+  flatten [[1]; [2;3;4]; []; []; [5;6]] = 1--6
+  *)
 
 let product f l1 l2 =
   flat_map (fun x -> map (fun y -> f x y) l2) l1
@@ -210,7 +224,7 @@ let take n l =
     | _ when n=0 -> List.rev acc
     | x::l' -> safe (n-1) (x::acc) l'
   in
-  direct _direct_depth n l
+  direct direct_depth_default_ n l
 
 (*$T
   take 2 [1;2;3;4;5] = [1;2]
@@ -639,7 +653,7 @@ let of_gen g =
     | None -> List.rev acc
     | Some x -> safe (x::acc) g
   in
-  direct _direct_depth g
+  direct direct_depth_default_ g
 
 let to_klist l =
   let rec make l () = match l with
@@ -657,7 +671,7 @@ let of_klist l =
     | `Nil -> List.rev acc
     | `Cons (x,l') -> safe (x::acc) l'
   in
-  direct _direct_depth l
+  direct direct_depth_default_ l
 
 (** {2 IO} *)
 
