@@ -149,12 +149,12 @@ Document containers_advanced
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: containers.advanced
 
-Executable benchs
+Executable run_benchs
   Path:             benchs/
   Install:          false
   CompiledObject:   native
   Build$:           flag(bench)
-  MainIs:           benchs.ml
+  MainIs:           run_benchs.ml
   BuildDepends:     containers,benchmark
 
 Executable bench_tbl
