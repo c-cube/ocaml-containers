@@ -255,6 +255,7 @@ let take n l =
   take 2 [1;2;3;4;5] = [1;2]
   take 10_000 (range 0 100_000) |> List.length = 10_000
   take 10_000 (range 0 2_000) = range 0 2_000
+  take 300_000 (1 -- 400_000) = 1 -- 300_000
 *)
 
 let rec drop n l = match l with
@@ -313,20 +314,38 @@ module Set = struct
       (fun t -> mem ~eq t l2)
       l1
 
-  let rec uniq ?(eq=(=)) l = match l with
-    | [] -> []
-    | x::xs when List.exists (eq x) xs -> uniq ~eq xs
-    | x::xs -> x :: uniq ~eq xs
+  let uniq ?(eq=(=)) l =
+    let rec uniq eq acc l = match l with
+      | [] -> List.rev acc
+      | x::xs when List.exists (eq x) xs -> uniq eq acc xs
+      | x::xs -> uniq eq (x::acc) xs
+    in uniq eq [] l
 
-  let rec union ?(eq=(=)) l1 l2 = match l1 with
-    | [] -> l2
-    | x::xs when mem ~eq x l2 -> union ~eq xs l2
-    | x::xs -> x::(union ~eq xs l2)
+  (*$T
+    Set.uniq [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
+  *)
 
-  let rec inter ?(eq=(=)) l1 l2 = match l1 with
-    | [] -> []
-    | x::xs when mem ~eq x l2 -> x::(inter ~eq xs l2)
-    | _::xs -> inter ~eq xs l2
+  let union ?(eq=(=)) l1 l2 =
+    let rec union eq acc l1 l2 = match l1 with
+      | [] -> List.rev_append acc l2
+      | x::xs when mem ~eq x l2 -> union eq acc xs l2
+      | x::xs -> union eq (x::acc) xs l2
+    in union eq [] l1 l2
+
+  (*$T
+    Set.union [1;2;4] [2;3;4;5] = [1;2;3;4;5]
+  *)
+
+  let inter ?(eq=(=)) l1 l2 =
+    let rec inter eq acc l1 l2 = match l1 with
+      | [] -> List.rev acc
+      | x::xs when mem ~eq x l2 -> inter eq (x::acc) xs l2
+      | _::xs -> inter eq acc xs l2
+    in inter eq [] l1 l2
+
+  (*$T
+    Set.inter [1;2;4] [2;3;4;5] = [2;4]
+  *)
 end
 
 module Idx = struct
@@ -630,7 +649,7 @@ type 'a formatter = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 let random_len len g st =
-  map (fun _ -> g st) (range' 0 len)
+  init len (fun _ -> g st)
 
 (*$T
   random_len 10 CCInt.random_small (Random.State.make [||]) |> List.length = 10
