@@ -171,7 +171,7 @@ let prefix path t = List.fold_right (fun s t -> s >:: t) path t
 (* run one atomic single_bench *)
 let run_single_bench_ fmt path f =
   print_line_ fmt ();
-  Format.fprintf fmt "run single_bench %a@." print_path (List.rev path);
+  Format.fprintf fmt "run bench %a@." print_path (List.rev path);
   let res = f () in
   Benchmark.tabulate res
 
@@ -186,7 +186,7 @@ let rec run_all fmt path t = match t with
           run_all fmt path t'
         ) m
   | WithInt l ->
-      List.iter (fun (f, n) -> run_all fmt path (f n)) l
+      List.iter (fun (f, n) -> run_all fmt (string_of_int n::path) (f n)) l
 
 let run fmt t = run_all fmt [] t
 
@@ -209,7 +209,7 @@ let rec run_path_rec_ fmt path remaining t = match t, remaining with
         failwith msg
       end
   | WithInt l, _ ->
-      List.iter (fun (f, n) -> run_path_rec_ fmt path remaining (f n)) l
+      List.iter (fun (f, n) -> run_path_rec_ fmt (string_of_int n::path) remaining (f n)) l
   | Bench _, _::_ -> ()
 
 let run_path fmt t path = run_path_rec_ fmt [] path t
