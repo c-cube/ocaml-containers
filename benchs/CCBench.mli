@@ -97,19 +97,17 @@ val run_main :
 
 (** {2 Global Registration} *)
 
-module Glob : sig
-  val register : ?path:path -> bench -> unit
-  (** Register a benchmark to the global register of benchmarks (a global tree) *)
+val register : ?path:path -> bench -> unit
+(** Register a benchmark to the global register of benchmarks (a global tree) *)
 
-  val register' : path:string -> bench -> unit
-  (** Same as {!register} but applies {!parse_path} first to its argument *)
+val register' : path:string -> bench -> unit
+(** Same as {!register} but applies {!parse_path} first to its argument *)
 
-  val get : unit -> bench
-  (** Global bench tree *)
+val global_bench : unit -> bench
+(** Global bench tree, built from calls to {!register} *)
 
-  val run_main :
-    ?argv:string array ->
-    ?out:Format.formatter ->
-    unit -> unit
-    (** Same as {!run_main} but on the global tree of benchmarks *)
-end
+val run_main :
+  ?argv:string array ->
+  ?out:Format.formatter ->
+  unit -> unit
+  (** Same as {!run_main} but on the global tree of benchmarks *)

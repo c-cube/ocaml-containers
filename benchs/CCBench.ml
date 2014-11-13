@@ -238,17 +238,15 @@ let run_main ?(argv=Sys.argv) ?(out=Format.std_formatter) t =
 
 (** {2 Global Registration} *)
 
-module Glob = struct
-  let tree_ = ref (Multiple ([], SMap.empty))
+let tree_ = ref (Multiple ([], SMap.empty))
 
-  let get () = !tree_
+let global_bench () = !tree_
 
-  let register ?(path=[]) new_t =
-    tree_ := merge_ !tree_ (prefix path new_t)
+let register ?(path=[]) new_t =
+  tree_ := merge_ !tree_ (prefix path new_t)
 
-  let register' ~path new_t =
-    register ~path:(parse_path path) new_t
+let register' ~path new_t =
+  register ~path:(parse_path path) new_t
 
-  let run_main ?argv ?out () =
-    run_main ?argv ?out !tree_
-end
+let run_main ?argv ?out () =
+  run_main ?argv ?out !tree_

@@ -45,7 +45,7 @@ module L = struct
 
   (* MAIN *)
 
-  let bench = CCBench.(
+  let () = CCBench.register CCBench.(
     "list" >:::
       [ "flat_map" >::
         map_int
@@ -64,8 +64,6 @@ module L = struct
           ; bench_append ~time:4, 100_000]
       ]
     )
-
-  let () = CCBench.Glob.register bench
 end
 
 module Vec = struct
@@ -105,18 +103,15 @@ module Vec = struct
       ; "append_naive", try_append_ append_naive_ n v2, ()
       ]
 
-  let bench = CCBench.(
+  let () = CCBench.register CCBench.(
     "vector" >:::
       [ "map" >:: with_int bench_map [100; 10_000; 100_000]
       ; "append" >:: with_int bench_append [100; 10_000; 50_000]
       ]
   )
-
-  let () =
-    CCBench.Glob.register bench
 end
 
 let () =
-  CCBench.Glob.run_main ()
+  CCBench.run_main ()
 
 
