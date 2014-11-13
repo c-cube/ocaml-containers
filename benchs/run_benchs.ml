@@ -68,6 +68,54 @@ module L = struct
   let () = CCBench.Glob.register bench
 end
 
+module Vec = struct
+  let f x = x+1
+
+  let map_push_ f v =
+    let v' = CCVector.create () in
+    CCVector.iter (fun x -> CCVector.push v' (f x)) v;
+    v'
+
+  let map_push_size_ f v =
+    let v' = CCVector.create_with ~capacity:(CCVector.length v) 0 in
+    CCVector.iter (fun x -> CCVector.push v' (f x)) v;
+    v'
+
+  let bench_map n =
+    let v = CCVector.init n (fun x->x) in
+    CCBench.throughputN 2
+      [ "map", CCVector.map f, v
+      ; "map_push", map_push_ f, v
+      ; "map_push_cap", map_push_size_ f, v
+      ]
+
+  let try_append_ app n v2 () =
+    let v1 = CCVector.init n (fun x->x) in
+    app v1 v2;
+    assert (CCVector.length v1 = 2*n);
+    ()
+
+  let append_naive_ v1 v2 =
+    CCVector.iter (fun x -> CCVector.push v1 x) v2
+
+  let bench_append n =
+    let v2 = CCVector.init n (fun x->n+x) in
+    CCBench.throughputN 2
+      [ "append", try_append_ CCVector.append n v2, ()
+      ; "append_naive", try_append_ append_naive_ n v2, ()
+      ]
+
+  let bench = CCBench.(
+    "vector" >:::
+      [ "map" >:: with_int bench_map [100; 10_000; 100_000]
+      ; "append" >:: with_int bench_append [100; 10_000; 50_000]
+      ]
+  )
+
+  let () =
+    CCBench.Glob.register bench
+end
+
 let () =
   CCBench.Glob.run_main ()
 
