@@ -63,7 +63,11 @@ let append l1 l2 =
   and safe l1 l2 =
     List.rev_append (List.rev l1) l2
   in
-  direct direct_depth_append_ l1 l2
+  match l1 with
+  | [] -> l2
+  | [x] -> x::l2
+  | [x;y] -> x::y::l2
+  | _ -> direct direct_depth_append_ l1 l2
 
 let (@) = append
 
@@ -112,6 +116,21 @@ let fold_right f l acc =
     l = fold_right (fun x y->x::y) l [])
 *)
 
+let init len f =
+  let rec init_rec acc i f =
+    if i=0 then f i :: acc
+    else init_rec (f i :: acc) (i-1) f
+  in
+  if len<0 then invalid_arg "init"
+  else if len=0 then []
+  else init_rec [] (len-1) f
+
+(*$T
+  init 0 (fun _ -> 0) = []
+  init 1 (fun x->x) = [0]
+  init 1000 (fun x->x) = 0--999
+*)
+
 let rec compare f l1 l2 = match l1, l2 with
   | [], [] -> 0
   | _, [] -> 1
@@ -124,6 +143,10 @@ let rec equal f l1 l2 = match l1, l2 with
   | [], [] -> true
   | [], _ | _, [] -> false
   | x1::l1', x2::l2' -> f x1 x2 && equal f l1' l2'
+
+(*$T
+  equal CCInt.equal (1--1_000_000) (1--1_000_000)
+*)
 
 let flat_map f l =
   let rec aux f l kont = match l with
@@ -142,13 +165,15 @@ let flat_map f l =
 
 (*$T
   flat_map (fun x -> [x+1; x*2]) [10;100] = [11;20;101;200]
+  List.length (flat_map (fun x->[x]) (1--300_000)) = 300_000
 *)
 
 let flatten l = fold_right append l []
 
 (*$T
   flatten [[1]; [2;3;4]; []; []; [5;6]] = 1--6
-  *)
+  flatten (init 300_001 (fun x->[x])) = 0--300_000
+*)
 
 let product f l1 l2 =
   flat_map (fun x -> map (fun y -> f x y) l2) l1
