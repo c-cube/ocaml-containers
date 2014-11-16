@@ -128,7 +128,7 @@ and _sequence_map : type a b. (a -> b t) -> a list -> b list -> b list
   | a::tail ->
       let x = _run (f a) in
       _sequence_map f tail (x::acc)
-      
+
 let _printers =
   ref [
     (* default printer *)

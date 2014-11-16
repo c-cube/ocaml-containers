@@ -112,9 +112,9 @@ val fail : string -> 'a t
 (** {2 Finalizers} *)
 
 val (>>>=) : 'a with_finalizer -> ('a -> 'b t) -> 'b t
-(** Alternative to {!(>>=)} that also takes a [unit t] value, that is a
-    finalizer. This action will run in any case (even failure).
-    Other than the finalizer, this behaves like {!(>>=)} *)
+(** Same as {!(>>=)}, but taking the finalizer into account. Once this
+    IO value is done executing, the finalizer is executed and the resource,
+    fred. *)
 
 (** {2 Running} *)
 
@@ -281,7 +281,7 @@ How to list recursively files in a directory:
     File.read_dir ~recurse:true (File.make "/tmp")
     >>= Seq.output ~sep:"\n" stdout
   ) |> CCIO.run_exn ;;
-  
+
   ]}
 
 See {!File.walk} if you also need to list directories.
