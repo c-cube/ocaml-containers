@@ -142,8 +142,11 @@ module Cache = struct
 
   let bench_fib n =
     let l =
-      [ "replacing_fib", make_fib (Cache.replacing 256), n
-      ; "LRU_fib", make_fib (Cache.lru 256), n
+      [ "replacing_fib (128)", make_fib (Cache.replacing 128), n
+      ; "LRU_fib (128)", make_fib (Cache.lru 128), n
+      ; "replacing_fib (16)", make_fib (Cache.replacing 16), n
+      ; "LRU_fib (16)", make_fib (Cache.lru 16), n
+      ; "unbounded", make_fib (Cache.unbounded 32), n
       ]
     in
     let l = if n <= 20
