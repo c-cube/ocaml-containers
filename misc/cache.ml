@@ -152,13 +152,13 @@ module LRU(X:HASH) = struct
   type 'a t = {
     table : 'a node H.t;  (* hashtable key -> node *)
     mutable first : 'a node option;
-    mutable last : 'a node option;
     size : int;           (* max size *)
   }
   and 'a node = {
     mutable key : key;
     mutable value : 'a;
-    mutable next : 'a node option;
+    mutable next : 'a node;
+    mutable prev : 'a node;
   } (** Meta data for the value, making a chained list *)
 
   let make size =
@@ -166,70 +166,81 @@ module LRU(X:HASH) = struct
     { table = H.create size;
       size;
       first=None;
-      last=None;
     }
 
   let clear c =
     H.clear c.table;
     c.first <- None;
-    c.last <- None;
     ()
-
-  let get c x = (H.find c.table x).value
 
   let get_opt = function
     | None -> assert false
     | Some x -> x
 
-  (* reverse the list *)
-  let rec reverse_ prev = function
-    | None -> prev
-    | Some n as node ->
-        let next = n.next in
-        n.next <- prev;
-        reverse_ node next
-
   (* take first from queue *)
   let take_ c =
     match c.first with
+    | Some n when n.next == n ->
+        (* last element *)
+        c.first <- None;
+        n
     | Some n ->
-        c.first <- n.next;
+        c.first <- Some n.next;
+        n.prev.next <- n.next;
+        n.next.prev <- n.prev;
         n
     | None ->
-        (* re-fill front list *)
-        match reverse_ None c.last with
-        | None -> assert false
-        | Some n ->
-            c.first <- n.next;
-            n
+        failwith "LRU: empty queue"
 
+  (* push at back of queue *)
   let push_ c n =
-    n.next <- c.last;
-    c.last <- Some n
+    match c.first with
+    | None ->
+        n.next <- n;
+        n.prev <- n;
+        c.first <- Some n
+    | Some n1 when n1==n -> ()
+    | Some n1 ->
+        n.prev <- n1.prev;
+        n.next <- n1;
+        n1.prev.next <- n;
+        n1.prev <- n
+
+  (* remove from queue *)
+  let remove_ n =
+    n.prev.next <- n.next;
+    n.next.prev <- n.prev
 
   (* Replace least recently used element of [c] by x->y *)
   let replace_ c x y =
     (* remove old *)
     let n = take_ c in
     H.remove c.table n.key;
-    (* add x->y *)
-    H.add c.table x n;
+    (* add x->y, at the back of the queue *)
     n.key <- x;
     n.value <- y;
-    (* push at back of queue *)
+    H.add c.table x n;
     push_ c n;
     ()
 
   (* Insert x->y in the cache, increasing its entry count *)
   let insert_ c x y =
-    let n = {
+    let rec n = {
       key = x;
       value = y;
-      next = c.last;
+      next = n;
+      prev = n;
     } in
     H.add c.table x n;
-    c.last <- Some n;
+    push_ c n;
     ()
+
+  let get c x =
+    let n = H.find c.table x in
+    (* put n at the back of the queue *)
+    remove_ n;
+    push_ c n;
+    n.value
 
   let set c x y =
     let len = H.length c.table in
