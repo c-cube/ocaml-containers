@@ -25,356 +25,258 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Memoization caches} *)
 
-module type EQ = sig
-  type t
-  val equal : t -> t -> bool
+type 'a equal = 'a -> 'a -> bool
+type 'a hash = 'a -> int
+
+let default_eq_ = Pervasives.(=)
+let default_hash_ = Hashtbl.hash
+
+(** {2 Value interface} *)
+
+type ('a,'b) t = {
+  set : 'a -> 'b -> unit;
+  get : 'a -> 'b;  (* or raise Not_found *)
+  clear : unit -> unit;
+}
+
+let clear c = c.clear ()
+
+let with_cache c f x =
+  try
+    c.get x
+  with Not_found ->
+    let y = f x in
+    c.set x y;
+    y
+
+let with_cache_rec c f =
+  let rec f' x = with_cache c (f f') x in
+  f'
+
+let dummy = {
+  set=(fun _ _ -> ());
+  get=(fun _ -> raise Not_found);
+  clear=(fun _ -> ());
+}
+
+module Linear = struct
+  type ('a,'b) bucket =
+    | Empty
+    | Pair of 'a * 'b
+
+  type ('a,'b) t = {
+    eq : 'a equal;
+    arr : ('a,'b) bucket array;
+    mutable i : int;  (* index for next assertion, cycles through *)
+  }
+
+  let make eq size =
+    assert (size>0);
+    {arr=Array.make size Empty; eq; i=0; }
+
+  let clear c =
+    Array.fill c.arr 0 (Array.length c.arr) Empty;
+    c.i <- 0
+
+  (* linear lookup *)
+  let rec search_ c i x =
+    if i=Array.length c.arr then raise Not_found;
+    match c.arr.(i) with
+      | Pair (x', y) when c.eq x x' -> y
+      | Pair _
+      | Empty -> search_ c (i+1) x
+
+  let get c x = search_ c 0 x
+
+  let set c x y =
+    c.arr.(c.i) <- Pair (x,y);
+    c.i <- (c.i + 1) mod Array.length c.arr
 end
+
+let linear ?(eq=default_eq_) size =
+  let size = max size 1 in
+  let arr = Linear.make eq size in
+  { get=(fun x -> Linear.get arr x);
+    set=(fun x y -> Linear.set arr x y);
+    clear=(fun () -> Linear.clear arr);
+  }
+
+module Replacing = struct
+  type ('a,'b) bucket =
+    | Empty
+    | Pair of 'a * 'b
+
+  type ('a,'b) t = {
+    eq : 'a equal;
+    hash : 'a hash;
+    arr : ('a,'b) bucket array;
+  }
+
+  let make eq hash size =
+    assert (size>0);
+    {arr=Array.make size Empty; eq; hash }
+
+  let clear c =
+    Array.fill c.arr 0 (Array.length c.arr) Empty
+
+  let get c x =
+    let i = c.hash x mod Array.length c.arr in
+    match c.arr.(i) with
+    | Pair (x', y) when c.eq x x' -> y
+    | Pair _
+    | Empty -> raise Not_found
+
+  let set c x y =
+    let i = c.hash x mod Array.length c.arr in
+    c.arr.(i) <- Pair (x,y)
+end
+
+let replacing ?(eq=default_eq_) ?(hash=default_hash_) size =
+  let c = Replacing.make eq hash size in
+  { get=(fun x -> Replacing.get c x);
+    set=(fun x y -> Replacing.set c x y);
+    clear=(fun () -> Replacing.clear c);
+  }
 
 module type HASH = sig
-  include EQ
-  val hash : t -> int
+  type t
+  val equal : t equal
+  val hash : t hash
 end
 
-(** Signature of a cache for values *)
-module type S = sig
-  type 'a t
-  type key
-
-  val create : int -> 'a t
-    (** Create a new cache of the given size. *)
-
-  val clear : 'a t -> unit
-    (** Clear content of the cache *)
-
-  val with_cache : 'a t -> (key -> 'a) -> key -> 'a
-    (** Wrap the function with the cache. This means that
-        [with_cache cache f x] always returns the same value as
-        [f x], if [f x] returns, or raise the same exception.
-        However, [f] may not be called if [x] is in the cache. *)
-
-  val with_cache_rec : 'a t -> ((key -> 'a) -> key -> 'a) -> key -> 'a
-    (** Partially apply the given function with a cached version of itself.
-        It returns the specialized function.
-        [with_cache_rec cache f] applies [f] to a cached version of [f],
-        called [f'], so that [f' x = f f' x]. *)
-end
-
-(** Signature of a cache for pairs of values *)
-module type S2 = sig
-  type 'a t
-  type key1
-  type key2
-
-  val create : int -> 'a t
-    (** Create a new cache of the given size. *)
-
-  val clear : 'a t -> unit
-    (** Clear content of the cache *)
-
-  val with_cache : 'a t -> (key1 -> key2 -> 'a) -> key1 -> key2 -> 'a
-    (** Wrap the function with the cache *)
-end
-
-(** {2 Dummy cache (no caching) *)
-
-module Dummy(X : sig type t end) = struct
-  type 'a t = unit
-  and key = X.t
-
-  let create size = ()
-
-  let clear () = ()
-
-  let with_cache () f x = f x
-
-  let with_cache_rec () f x =
-    let rec f' x = f f' x in
-    f' x
-end
-
-module Dummy2(X : sig type t end)(Y : sig type t end) = struct
-  type 'a t = unit
-  and key1 = X.t
-  and key2 = Y.t
-
-  let create size = ()
-
-  let clear () = ()
-
-  let with_cache () f x1 x2 = f x1 x2
-end
-
-(** {2 Small linear cache} *)
-
-(** This cache stores (key,value) pairs in an array, that is traversed
-    linearily. It is therefore only reasonable for small sizes (like 5). *)
-
-module Linear(X : EQ) = struct
-  type 'a t = 'a bucket array
-  and 'a bucket = Empty | Pair of key * 'a | PairRaise of key * exn
-  and key = X.t
-
-  let create size =
-    assert (size >= 1);
-    Array.make size Empty
-
-  let clear cache =
-    Array.fill cache 0 (Array.length cache) Empty
-
-  (** Insert the bucket [b] into the cache *)
-  let insert cache b =
-    let n = Array.length cache in
-    (* shift other values toward the end *)
-    Array.blit cache 0 cache 1 (n-1);
-    cache.(0) <- b
-
-  (** Try to find [f x] in the cache, otherwise compute it
-      and cache the result *)
-  let with_cache cache f x =
-    let n = Array.length cache in
-    let rec search i =
-      (* function that performs the lookup *)
-      if i = n then begin
-        (* cache miss *)
-        try
-          let y = f x in
-          insert cache (Pair (x, y));
-          y
-        with e ->
-          insert cache (PairRaise (x, e));
-          raise e
-      end else match cache.(i) with
-      | Pair (x',y) when X.equal x x' -> y
-      | PairRaise (x', e) when X.equal x x' -> raise e
-      | _ -> search (i+1)
-    in
-    search 0
-
-  let with_cache_rec cache f x =
-    (* make a recursive version of [f] that uses the cache *)
-    let rec f' x = with_cache cache (fun x -> f f' x) x in
-    f' x
-end
-
-module Linear2(X : EQ)(Y : EQ) = struct
-  type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key1 * key2 * 'a | AssocRaise of key1 * key2 * exn
-  and key1 = X.t
-  and key2 = Y.t
-
-  let create size =
-    assert (size >= 1);
-    Array.make size Empty
-
-  let clear cache =
-    Array.fill cache 0 (Array.length cache) Empty
-
-  (** Insert the binding [b] into the cache *)
-  let insert cache b =
-    let n = Array.length cache in
-    (* shift other values toward the end *)
-    Array.blit cache 0 cache 1 (n-1);
-    cache.(0) <- b
-
-  (** Try to find [f x] in the cache, otherwise compute it
-      and cache the result *)
-  let with_cache cache f x1 x2 =
-    let n = Array.length cache in
-    let rec search i =
-      (* function that performs the lookup *)
-      if i = n then begin
-          (* cache miss *)
-          try
-            let y = f x1 x2 in
-            insert cache (Assoc (x1, x2, y));
-            y
-          with e ->
-            insert cache (AssocRaise (x1, x2, e));
-            raise e
-      end else match cache.(i) with
-      | Assoc (x1',x2',y) when X.equal x1 x1' && Y.equal x2 x2' -> y
-      | AssocRaise (x1',x2',e) when X.equal x1 x1' && Y.equal x2 x2' -> raise e
-      | _ -> search (i+1)
-    in
-    search 0
-end
-
-(** {2 An imperative cache of fixed size for memoization of pairs} *)
-
-module Replacing(X : HASH) = struct
-  type key = X.t
-
-  (** A slot of the array contains a (key, value, true)
-      if key->value is stored there (at index hash(key) % length),
-      (null, null, false) otherwise.
-      
-      The first slot in the array contains the function
-      used to produce the value upon a cache miss. *)
-  type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key * 'a | AssocRaise of key * exn
-
-  let create size =
-    Array.make size Empty
-
-  let clear c =
-    Array.fill c 0 (Array.length c) Empty
-
-  (** Try to find [f x] in the cache, otherwise compute it
-      and cache the result *)
-  let with_cache c f x =
-    let i = (X.hash x) mod (Array.length c) in
-    match c.(i) with
-    | Assoc (x', y) when X.equal x x' ->
-      y (* cache hit *)
-    | AssocRaise (x', e) when X.equal x x' ->
-      raise e  (* cache hit *)
-    | _ -> (* cache miss *)
-      try
-        let y = f x in
-        c.(i) <- Assoc (x, y);
-        y
-      with e ->
-        c.(i) <- AssocRaise (x, e);
-        raise e
-
-  let with_cache_rec cache f x =
-    (* make a recursive version of [f] that uses the cache *)
-    let rec f' x = with_cache cache (fun x -> f f' x) x in
-    f' x
-end
-
-module Replacing2(X : HASH)(Y : HASH) = struct
-  (** A slot of the array contains a (key, value, true)
-      if key->value is stored there (at index hash(key) % length),
-      (null, null, false) otherwise.
-      
-      The first slot in the array contains the function
-      used to produce the value upon a cache miss. *)
-  type 'a t = 'a bucket array
-  and 'a bucket = Empty | Assoc of key1 * key2 * 'a | AssocRaise of key1 * key2 * exn
-  and key1 = X.t
-  and key2 = Y.t
-
-  let create size =
-    Array.make size Empty
-
-  let clear c =
-    Array.fill c 0 (Array.length c) Empty
-
-  let with_cache c f x1 x2 =
-    let i = (((X.hash x1 + 17) lxor Y.hash x2) mod Array.length c) in
-    match c.(i) with
-    | Assoc (x1', x2', y) when X.equal x1 x1' && Y.equal x2 x2' ->
-      y (* cache hit *)
-    | AssocRaise (x1', x2', e) when X.equal x1 x1' && Y.equal x2 x2' ->
-      raise e (* cache hit *)
-    | _ -> (* cache miss *)
-      try
-        let y = f x1 x2 in
-        c.(i) <- Assoc (x1, x2, y);
-        y
-      with e ->
-        c.(i) <- AssocRaise (x1, x2, e);
-        raise e
-end
-
-(** {2 Hashtables with Least Recently Used eviction policy *)
-
-(* TODO: handle exceptions *)
-
-module LRU(X : HASH) = struct
+module LRU(X:HASH) = struct
   type key = X.t
 
   module H = Hashtbl.Make(X)
 
   type 'a t = {
     table : 'a node H.t;  (* hashtable key -> node *)
-    first : 'a node;      (* dummy node for the entry of the list *)
-    mutable len : int;    (* number of entries *)
+    mutable first : 'a node option;
+    mutable last : 'a node option;
     size : int;           (* max size *)
   }
   and 'a node = {
     mutable key : key;
     mutable value : 'a;
-    mutable next : 'a node;
-    mutable prev : 'a node;
-  } (** Meta data for the value *)
+    mutable next : 'a node option;
+  } (** Meta data for the value, making a chained list *)
 
-  let create size =
-    let rec first = 
-      { key = Obj.magic 0; value = Obj.magic 0; next=first; prev=first; }
-    in
+  let make size =
+    assert (size > 0);
     { table = H.create size;
-      len = 0;
       size;
-      first;
+      first=None;
+      last=None;
     }
 
-  (** Clear the content of the cache *)
   let clear c =
-    c.len <- 0;
     H.clear c.table;
-    c.first.next <- c.first;
-    c.first.prev <- c.first;
+    c.first <- None;
+    c.last <- None;
     ()
 
-  (** Find an element, or raise Not_found *)
-  let find c x =
-    let n = H.find c.table x in
-    assert (X.equal n.key x);
-    n.value
+  let get c x = (H.find c.table x).value
 
-  (** Replace least recently used element of [c] by x->y *)
-  let replace c x y =
-    let n = c.first.next in
-    (* remove old element *)
+  let get_opt = function
+    | None -> assert false
+    | Some x -> x
+
+  (* reverse the list *)
+  let rec reverse_ prev = function
+    | None -> prev
+    | Some n as node ->
+        let next = n.next in
+        n.next <- prev;
+        reverse_ node next
+
+  (* take first from queue *)
+  let take_ c =
+    match c.first with
+    | Some n ->
+        c.first <- n.next;
+        n
+    | None ->
+        (* re-fill front list *)
+        match reverse_ None c.last with
+        | None -> assert false
+        | Some n ->
+            c.first <- n.next;
+            n
+
+  let push_ c n =
+    n.next <- c.last;
+    c.last <- Some n
+
+  (* Replace least recently used element of [c] by x->y *)
+  let replace_ c x y =
+    (* remove old *)
+    let n = take_ c in
     H.remove c.table n.key;
-    (* insertion in hashtable *)
+    (* add x->y *)
     H.add c.table x n;
-    (* re-use the node for x,y *)
     n.key <- x;
     n.value <- y;
-    (* remove from front of queue *)
-    n.next.prev <- c.first;
-    c.first.next <- n.next;
-    (* insert at back of queue *)
-    let last = c.first.prev in
-    last.next <- n;
-    c.first.prev <- n;
-    n.next <- c.first;
-    n.prev <- last;
+    (* push at back of queue *)
+    push_ c n;
     ()
 
-  (** Insert x->y in the cache, increasing its entry count *)
-  let insert c x y =
-    c.len <- c.len + 1;
+  (* Insert x->y in the cache, increasing its entry count *)
+  let insert_ c x y =
     let n = {
       key = x;
       value = y;
-      next = c.first;
-      prev = c.first.prev;
+      next = c.last;
     } in
-    (* insertion in hashtable *)
     H.add c.table x n;
-    (* insertion at back of queue *)
-    c.first.prev.next <- n;
-    c.first.prev <- n;
+    c.last <- Some n;
     ()
 
-  (** Try to find [f x] in the cache, otherwise compute it
-      and cache the result *)
-  let with_cache c f x =
-    try
-      find c x
-    with Not_found ->
-      let y = f x in
-      (if c.len = c.size
-        then replace c x y
-        else insert c x y);
-      y
-
-  let with_cache_rec cache f x =
-    (* make a recursive version of [f] that uses the cache *)
-    let rec f' x = with_cache cache (fun x -> f f' x) x in
-    f' x
+  let set c x y =
+    let len = H.length c.table in
+    assert (len <= c.size);
+    if len = c.size
+      then replace_ c x y
+      else insert_ c x y
 end
+
+let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+  let module L = LRU(struct
+    type t = a
+    let equal = eq
+    let hash = hash
+  end) in
+  let c = L.make size in
+  { get=(fun x -> L.get c x);
+    set=(fun x y -> L.set c x y);
+    clear=(fun () -> L.clear c);
+  }
+
+module UNBOUNDED(X:HASH) = struct
+  type key = X.t
+
+  module H = Hashtbl.Make(X)
+
+  type 'a t = 'a H.t
+
+  let make size =
+    assert (size > 0);
+    H.create size
+
+  let clear c = H.clear c
+
+  let get c x = H.find c x
+
+  let set c x y = H.replace c x y
+end
+
+let unbounded (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+  let module C = UNBOUNDED(struct
+    type t = a
+    let equal = eq
+    let hash = hash
+  end) in
+  let c = C.make size in
+  { get=(fun x -> C.get c x);
+    set=(fun x y -> C.set c x y);
+    clear=(fun () -> C.clear c);
+  }

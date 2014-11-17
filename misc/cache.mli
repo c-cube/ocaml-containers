@@ -25,83 +25,109 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Memoization caches} *)
 
-(** {2 Signatures} *)
+type 'a equal = 'a -> 'a -> bool
+type 'a hash = 'a -> int
 
-module type EQ = sig
-  type t
-  val equal : t -> t -> bool
+(** {2 Value interface}
+
+Typical use case: one wants to memoize a function [f : 'a -> 'b]. Code sample:
+{[
+let f x =
+  print_endline "call f";
+  x + 1;;
+
+let f' = with_cache (lru 256) f;;
+f' 0;;  (* prints *)
+f' 1;;  (* prints *)
+f' 0;;  (* doesn't print, returns cached value *)
+]}
+
+@since NEXT_RELEASE *)
+
+type ('a, 'b) t
+
+val clear : (_,_) t -> unit
+(** Clear the content of the cache *)
+
+val with_cache : ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
+(** [with_cache c f] behaves like [f], but caches calls to [f] in the
+    cache [c]. It always returns the same value as
+    [f x], if [f x] returns, or raise the same exception.
+    However, [f] may not be called if [x] is in the cache. *)
+
+val with_cache_rec : ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
+(** [with_cache_rec c f] is a function that first, applies [f] to
+    some [f' = fix f], such that recursive calls to [f'] are cached in [c].
+    It is similar to {!with_cache} but with a function that takes as
+    first argument its own recursive version.
+    Examples (memoized Fibonacci function):
+{[
+let fib = with_cache_rec (lru 256)
+  (fun fib' n -> match n with
+    | 1 | 2 -> 1
+    | _ -> fib' (n-1) + fib' (n-2)
+  );;
+
+fib 70;;
+]}
+*)
+
+val dummy : ('a,'b) t
+(** dummy cache, never stores any value *)
+
+val linear : ?eq:'a equal -> int -> ('a, 'b) t
+(** Linear cache with the given size. It stores key/value pairs in
+    an array and does linear search at every call, so it should only be used
+    with small size.
+    @param eq optional equality predicate for keys *)
+
+val replacing : ?eq:'a equal -> ?hash:'a hash ->
+                int -> ('a,'b) t
+(** Replacing cache of the given size. Equality and hash functions can be
+    parametrized. It's a hash table that handles collisions by replacing
+    the old value with the new (so a cache entry is evicted when another
+    entry with the same hash (modulo size) is added).
+    Never grows wider than the given size. *)
+
+val lru : ?eq:'a equal -> ?hash:'a hash ->
+          int -> ('a,'b) t
+(** LRU cache of the given size ("Least Recently Used": keys that have not been
+    used recently are deleted first). Never grows wider. *)
+
+val unbounded : ?eq:'a equal -> ?hash:'a hash ->
+                int -> ('a,'b) t
+(** Unbounded cache, backed by a Hash table. Will grow forever
+    unless {!clear} is called manually. *)
+
+(** {2 Binary Caches}
+TODO
+
+module C2 : sig
+  type ('a, 'b, 'c) t
+
+  val clear : (_,_,_) t -> unit
+
+  val with_cache : ('a, 'b, 'c) t -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+
+  val with_cache_rec : ('a,'b,'c) t ->
+                       (('a -> 'b -> 'c) -> 'a -> 'b -> 'c) ->
+                       'a -> 'b -> 'c
+
+  val dummy : ('a,'b,'c) t
+
+  val linear : ?eq1:('a -> 'a -> bool) -> ?eq2:('b -> 'b -> bool) ->
+               int -> ('a, 'b, 'c) t
+
+  val replacing : ?eq1:('a -> 'a -> bool) -> ?hash1:('a -> int) ->
+                  ?eq2:('b -> 'b -> bool) -> ?hash2:('b -> int) ->
+                  int -> ('a,'b,'c) t
+
+  val lru : ?eq1:('a -> 'a -> bool) -> ?hash1:('a -> int) ->
+            ?eq2:('b -> 'b -> bool) -> ?hash2:('b -> int) ->
+            int -> ('a,'b,'c) t
+
+  val unbounded : ?eq1:('a -> 'a -> bool) -> ?hash1:('a -> int) ->
+                  ?eq2:('b -> 'b -> bool) -> ?hash2:('b -> int) ->
+                  int -> ('a,'b,'c) t
 end
-
-module type HASH = sig
-  include EQ
-  val hash : t -> int
-end
-
-(** Signature of a cache for values *)
-module type S = sig
-  type 'a t
-  type key
-
-  val create : int -> 'a t
-    (** Create a new cache of the given size. *)
-
-  val clear : 'a t -> unit
-    (** Clear content of the cache *)
-
-  val with_cache : 'a t -> (key -> 'a) -> key -> 'a
-    (** Wrap the function with the cache. This means that
-        [with_cache cache f x] always returns the same value as
-        [f x], if [f x] returns, or raise the same exception.
-        However, [f] may not be called if [x] is in the cache. *)
-
-  val with_cache_rec : 'a t -> ((key -> 'a) -> key -> 'a) -> key -> 'a
-    (** Partially apply the given function with a cached version of itself.
-        It returns the specialized function.
-        [with_cache_rec cache f] applies [f] to a cached version of [f],
-        called [f'], so that [f' x = f f' x]. *)
-end
-
-(** Signature of a cache for pairs of values *)
-module type S2 = sig
-  type 'a t
-  type key1
-  type key2
-
-  val create : int -> 'a t
-    (** Create a new cache of the given size. *)
-
-  val clear : 'a t -> unit
-    (** Clear content of the cache *)
-
-  val with_cache : 'a t -> (key1 -> key2 -> 'a) -> key1 -> key2 -> 'a
-    (** Wrap the function with the cache *)
-end
-
-(** {2 Dummy cache (no caching)} *)
-
-module Dummy(X : sig type t end) : S with type key = X.t
-
-module Dummy2(X : sig type t end)(Y : sig type t end) : S2 with type key1 = X.t and type key2 = Y.t
-
-(** {2 Small linear cache} *)
-
-(** This cache stores (key,value) pairs in an array, that is traversed
-    linearily. It is therefore only reasonable for small sizes (like 5). *)
-
-module Linear(X : EQ) : S with type key = X.t
-
-module Linear2(X : EQ)(Y : EQ) : S2 with type key1 = X.t and type key2 = Y.t
-
-(** {2 Hashtables that resolve collisions by replacing} *)
-
-module Replacing(X : HASH) : S with type key = X.t
-
-module Replacing2(X : HASH)(Y : HASH) : S2 with type key1 = X.t and type key2 = Y.t
-
-(** {2 Hashtables with Least Recently Used eviction policy} *)
-
-module LRU(X : HASH) : S with type key = X.t
-
-(* TODO exception handling in LRU *)
-(* TODO LRU2 *)
-
+*)
