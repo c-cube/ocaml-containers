@@ -153,34 +153,10 @@ Executable run_benchs
   Path:             benchs/
   Install:          false
   CompiledObject:   native
-  Build$:           flag(bench)
+  Build$:           flag(bench) && flag(misc)
   MainIs:           run_benchs.ml
-  BuildDepends:     containers,benchmark
-
-Executable bench_tbl
-  Path:             benchs/
-  Install:          false
-  CompiledObject:   native
-  Build$:           flag(bench)
-  MainIs:           bench_tbl.ml
-  BuildDepends:     containers, containers.string, containers.misc,
-                    benchmark, containers.advanced
-
-Executable bench_conv
-  Path:     benchs/
-  Install: false
-  CompiledObject: native
-  Build$: flag(bench)
-  MainIs: bench_conv.ml
-  BuildDepends: containers,benchmark
-
-Executable bench_batch
-  Path: benchs/
-  Install: false
-  CompiledObject: native
-  Build$: flag(bench)
-  MainIs: bench_batch.ml
-  BuildDepends: containers,benchmark
+  BuildDepends:     containers, containers.misc, containers.advanced,
+                    containers.string, benchmark
 
 Executable bench_hash
   Path: benchs/
@@ -189,6 +165,14 @@ Executable bench_hash
   Build$: flag(bench) && flag(misc)
   MainIs: bench_hash.ml
   BuildDepends: containers,containers.misc
+
+Executable bench_conv
+  Path:     benchs/
+  Install: false
+  CompiledObject: native
+  Build$: flag(bench)
+  MainIs: bench_conv.ml
+  BuildDepends: containers,benchmark
 
 Executable test_levenshtein
   Path: tests/
