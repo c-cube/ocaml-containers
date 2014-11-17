@@ -127,56 +127,37 @@ module Vec = struct
 end
 
 module Cache = struct
-  module Fibo(C : Cache.S with type key = int) = struct
-    let fib ~size =
-      let fib fib' n =
-        match n with
+  let make_fib c =
+    let f = Cache.with_cache_rec c
+      (fun fib n -> match n with
         | 0 -> 0
         | 1 -> 1
         | 2 -> 1
-        | n ->
-          fib' (n-1) + fib' (n-2)
-      in
-      let cache = C.create size in
-      let cached_fib x = C.with_cache_rec cache fib x in
-      cached_fib
-  end
-
-  module LinearIntCache = Cache.Linear(struct
-    type t = int
-    let equal i j = i = j
-  end)
-
-  module ReplacingIntCache = Cache.Replacing(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
-
-  module LRUIntCache = Cache.LRU(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
-
-  module DummyIntCache = Cache.Dummy(struct type t = int end)
-
-  module LinearFibo = Fibo(LinearIntCache)
-  module ReplacingFibo = Fibo(ReplacingIntCache)
-  module LRUFibo= Fibo(LRUIntCache)
-  module DummyFibo = Fibo(DummyIntCache)
+        | n -> fib (n-1) + fib (n-2)
+      )
+    in
+    fun x ->
+      Cache.clear c;
+      f x
 
   let bench_fib n =
-    CCBench.throughputN 3
-      [ "linear_fib", LinearFibo.fib ~size:5, n;
-        "replacing_fib", ReplacingFibo.fib ~size:256, n;
-        "LRU_fib", LRUFibo.fib ~size:256, n;
-        "dummy_fib", DummyFibo.fib ~size:5, n;
+    let l =
+      [ "replacing_fib", make_fib (Cache.replacing 256), n
+      ; "LRU_fib", make_fib (Cache.lru 256), n
       ]
+    in
+    let l = if n <= 20
+      then  [ "linear_fib (5)", make_fib (Cache.linear 5), n
+            ; "linear_fib (32)", make_fib (Cache.linear 32), n
+            ; "dummy_fib", make_fib Cache.dummy, n
+            ] @ l
+      else l
+    in
+    CCBench.throughputN 3 l
 
   let () = CCBench.register CCBench.(
     "cache" >:::
-      [ "fib" >:: with_int bench_fib [10; 100]
+      [ "fib" >:: with_int bench_fib [10; 20; 100; 200; 1_000;]
       ]
   )
 end
