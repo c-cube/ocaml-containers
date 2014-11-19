@@ -1,14 +1,15 @@
 
 open OUnit
 open Containers_misc
+open CCFun
 
 let example () =
-  let inj_int = Mixtbl.access () in
+  let inj_int = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 10 in
   OUnit.assert_equal None (Mixtbl.get ~inj:inj_int tbl "a");
   Mixtbl.set inj_int tbl "a" 1;
   OUnit.assert_equal (Some 1) (Mixtbl.get ~inj:inj_int tbl "a");
-  let inj_string = Mixtbl.access () in
+  let inj_string = Mixtbl.create_inj () in
   Mixtbl.set inj_string tbl "b" "Hello";
   OUnit.assert_equal (Some "Hello") (Mixtbl.get inj_string tbl "b");
   OUnit.assert_equal None (Mixtbl.get inj_string tbl "a");
@@ -19,7 +20,7 @@ let example () =
   ()
 
 let test_length () =
-  let inj_int = Mixtbl.access () in
+  let inj_int = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 5 in
   Mixtbl.set ~inj:inj_int tbl "foo" 1;
   Mixtbl.set ~inj:inj_int tbl "bar" 2;
@@ -32,8 +33,8 @@ let test_length () =
   ()
 
 let test_clear () =
-  let inj_int = Mixtbl.access () in
-  let inj_str = Mixtbl.access () in
+  let inj_int = Mixtbl.create_inj () in
+  let inj_str = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 5 in
   Mixtbl.set ~inj:inj_int tbl "foo" 1;
   Mixtbl.set ~inj:inj_int tbl "bar" 2;
@@ -44,8 +45,8 @@ let test_clear () =
   ()
 
 let test_mem () =
-  let inj_int = Mixtbl.access () in
-  let inj_str = Mixtbl.access () in
+  let inj_int = Mixtbl.create_inj () in
+  let inj_str = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 5 in
   Mixtbl.set ~inj:inj_int tbl "foo" 1;
   Mixtbl.set ~inj:inj_int tbl "bar" 2;
@@ -59,27 +60,27 @@ let test_mem () =
   ()
 
 let test_keys () =
-  let inj_int = Mixtbl.access () in
-  let inj_str = Mixtbl.access () in
+  let inj_int = Mixtbl.create_inj () in
+  let inj_str = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 5 in
   Mixtbl.set ~inj:inj_int tbl "foo" 1;
   Mixtbl.set ~inj:inj_int tbl "bar" 2;
   Mixtbl.set ~inj:inj_str tbl "baaz" "hello";
-  let l = Mixtbl.keys tbl in
+  let l = Mixtbl.keys_seq tbl |> CCSequence.to_list in
   OUnit.assert_equal ["baaz"; "bar"; "foo"] (List.sort compare l);
   ()
 
 let test_bindings () =
-  let inj_int = Mixtbl.access () in
-  let inj_str = Mixtbl.access () in
+  let inj_int = Mixtbl.create_inj () in
+  let inj_str = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 5 in
   Mixtbl.set ~inj:inj_int tbl "foo" 1;
   Mixtbl.set ~inj:inj_int tbl "bar" 2;
   Mixtbl.set ~inj:inj_str tbl "baaz" "hello";
   Mixtbl.set ~inj:inj_str tbl "str" "rts";
-  let l_int = Mixtbl.bindings tbl ~inj:inj_int in
+  let l_int = Mixtbl.bindings_of tbl ~inj:inj_int |> CCSequence.to_list in
   OUnit.assert_equal ["bar", 2; "foo", 1] (List.sort compare l_int);
-  let l_str = Mixtbl.bindings tbl ~inj:inj_str in
+  let l_str = Mixtbl.bindings_of tbl ~inj:inj_str |> CCSequence.to_list in
   OUnit.assert_equal ["baaz", "hello"; "str", "rts"] (List.sort compare l_str);
   ()
 

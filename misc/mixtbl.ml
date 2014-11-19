@@ -26,35 +26,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Hash Table with Heterogeneous Keys} *)
 
-type 'a t = ('a, (unit -> unit)) Hashtbl.t
-
-type ('a, 'b) injection = {
-  getter : 'a t -> 'a -> 'b option;
-  setter : 'a t -> 'a -> 'b -> unit;
+type 'b injection = {
+  get : (unit -> unit) -> 'b option;
+  set : 'b -> (unit -> unit);
 }
+
+type 'a t = ('a, unit -> unit) Hashtbl.t
 
 let create n = Hashtbl.create n
 
-let access () =
+let create_inj () =
   let r = ref None in
-  let getter tbl k =
-    r := None; (* reset state in case last operation was not a get *)
-    try
-      (Hashtbl.find tbl k) ();
-      let result = !r in
-      r := None; (* clean up here in order to avoid memory leak *)
-      result
-    with Not_found -> None
+  let get f =
+    r := None;
+    f ();
+    !r
+  and set v =
+    (fun () -> r := Some v)
   in
-  let setter tbl k v =
-    let v_opt = Some v in
-    Hashtbl.replace tbl k (fun () -> r := v_opt)
-  in
-  { getter; setter; }
+  {get;set}
 
-let get ~inj tbl x = inj.getter tbl x
+let get ~inj tbl x =
+  try inj.get (Hashtbl.find tbl x)
+  with Not_found -> None
 
-let set ~inj tbl x y = inj.setter tbl x y
+let set ~inj tbl x y =
+  Hashtbl.replace tbl x (inj.set y)
 
 let length tbl = Hashtbl.length tbl
 
@@ -65,14 +62,14 @@ let remove tbl x = Hashtbl.remove tbl x
 let copy tbl = Hashtbl.copy tbl
 
 let mem ~inj tbl x =
-  match inj.getter tbl x with
-  | None -> false
-  | Some _ -> true
+  try
+    inj.get (Hashtbl.find tbl x) <> None
+  with Not_found -> false
 
 let find ~inj tbl x =
-  match inj.getter tbl x with
-  | None -> raise Not_found
-  | Some y -> y
+  match inj.get (Hashtbl.find tbl x) with
+    | None -> raise Not_found
+    | Some v -> v
 
 let iter_keys tbl f =
   Hashtbl.iter (fun x _ -> f x) tbl
@@ -80,12 +77,27 @@ let iter_keys tbl f =
 let fold_keys tbl acc f =
   Hashtbl.fold (fun x _ acc -> f acc x) tbl acc
 
-let keys tbl =
-  Hashtbl.fold (fun x _ acc -> x :: acc) tbl []
+(** {2 Iterators} *)
 
-let bindings ~inj tbl =
-  fold_keys tbl []
-    (fun acc k ->
-      match inj.getter tbl k with
-      | None -> acc
-      | Some v -> (k, v) :: acc)
+type 'a sequence = ('a -> unit) -> unit
+
+let keys_seq tbl yield =
+  Hashtbl.iter
+    (fun x _ -> yield x)
+    tbl
+
+let bindings_of ~inj tbl yield =
+  Hashtbl.iter
+    (fun k value ->
+      match inj.get value with
+      | None -> ()
+      | Some v -> yield (k, v)
+    ) tbl
+
+type value =
+  | Value : ('b injection -> 'b option) -> value
+
+let bindings tbl yield =
+  Hashtbl.iter
+    (fun x y -> yield (x, Value (fun inj -> inj.get y)))
+    tbl
