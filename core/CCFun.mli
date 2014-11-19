@@ -32,6 +32,12 @@ val (|>) : 'a -> ('a -> 'b) -> 'b
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition *)
 
+val compose_binop : ('a -> 'b) -> ('b -> 'b -> 'c) -> 'a -> 'a -> 'c
+(** [compose_binop f g] is [fun x y -> g (f x) (f y)]
+    Example (partial order):
+      [List.sort (compose_binop fst CCInt.compare) [1, true; 2, false; 1, false]]
+    @since NEXT_RELEASE*)
+
 val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Alias to [compose] *)
 
@@ -68,9 +74,9 @@ val lexicographic : ('a -> 'a -> int) -> ('a -> 'a -> int) -> 'a -> 'a -> int
 (** Lexicographic combination of comparison functions *)
 
 val finally : h:(unit -> unit) -> f:(unit -> 'a) -> 'a
-  (** [finally h f] calls [f ()] and returns its result. If it raises, the
-      same exception is raised; in {b any} case, [h ()] is called after
-      [f ()] terminates. *)
+(** [finally h f] calls [f ()] and returns its result. If it raises, the
+    same exception is raised; in {b any} case, [h ()] is called after
+    [f ()] terminates. *)
 
 (** {2 Monad}
 
