@@ -215,6 +215,19 @@ let pop v =
   try Some (pop_exn v)
   with Failure _ -> None
 
+let top v =
+  if v.size = 0 then None else Some v.vec.(v.size-1)
+
+let top_exn v =
+  if v.size = 0 then failwith "Vector.top";
+  v.vec.(v.size-1)
+
+(*$T
+  1 -- 10 |> top = Some 10
+  create () |> top = None
+  1 -- 10 |> top_exn = 10
+  *)
+
 let copy v = {
   size = v.size;
   vec = Array.sub v.vec 0 v.size;
