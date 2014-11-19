@@ -7,16 +7,16 @@ let example () =
   let inj_int = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 10 in
   OUnit.assert_equal None (Mixtbl.get ~inj:inj_int tbl "a");
-  Mixtbl.set inj_int tbl "a" 1;
+  Mixtbl.set ~inj:inj_int tbl "a" 1;
   OUnit.assert_equal (Some 1) (Mixtbl.get ~inj:inj_int tbl "a");
   let inj_string = Mixtbl.create_inj () in
-  Mixtbl.set inj_string tbl "b" "Hello";
-  OUnit.assert_equal (Some "Hello") (Mixtbl.get inj_string tbl "b");
-  OUnit.assert_equal None (Mixtbl.get inj_string tbl "a");
-  OUnit.assert_equal (Some 1) (Mixtbl.get inj_int tbl "a");
-  Mixtbl.set inj_string tbl "a" "Bye";
-  OUnit.assert_equal None (Mixtbl.get inj_int tbl "a");
-  OUnit.assert_equal (Some "Bye") (Mixtbl.get inj_string tbl "a");
+  Mixtbl.set ~inj:inj_string tbl "b" "Hello";
+  OUnit.assert_equal (Some "Hello") (Mixtbl.get ~inj:inj_string tbl "b");
+  OUnit.assert_equal None (Mixtbl.get ~inj:inj_string tbl "a");
+  OUnit.assert_equal (Some 1) (Mixtbl.get ~inj:inj_int tbl "a");
+  Mixtbl.set ~inj:inj_string tbl "a" "Bye";
+  OUnit.assert_equal None (Mixtbl.get ~inj:inj_int tbl "a");
+  OUnit.assert_equal (Some "Bye") (Mixtbl.get ~inj:inj_string tbl "a");
   ()
 
 let test_length () =
