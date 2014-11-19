@@ -98,7 +98,7 @@ Library "containers_thread"
 
 Library "containers_lwt"
   Path:             lwt
-  Modules:          Behavior, Lwt_automaton
+  Modules:          Behavior, Lwt_automaton, Lwt_actor
   Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
