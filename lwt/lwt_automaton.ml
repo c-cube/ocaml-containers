@@ -26,6 +26,8 @@ of this software, even if advised of the possibility of such damage.
 
 (** {1 interface lwt-automaton} *)
 
+open Containers_misc
+
 module I = struct
   let send f i =
     Lwt.on_success f (Automaton.I.send i)

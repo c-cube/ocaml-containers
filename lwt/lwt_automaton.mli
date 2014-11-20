@@ -26,6 +26,8 @@ of this software, even if advised of the possibility of such damage.
 
 (** {1 interface lwt-automaton} *)
 
+open Containers_misc
+
 module I : sig
   val send : 'a Lwt.t -> 'a Automaton.I.t -> unit
   (** Feed the content of the Lwt value into the automaton input, as soon as

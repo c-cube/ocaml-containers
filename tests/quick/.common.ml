@@ -1,5 +1,8 @@
 #use "topfind";;
-#directory "_build/";;
+#directory "_build/core/";;
+#directory "_build/string";;
+#directory "_build/misc";;
+#directory "_build/lwt";;
 
 #require "unix";;
 
