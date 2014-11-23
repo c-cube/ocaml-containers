@@ -59,7 +59,6 @@ Examples:
 ]}
 *)
 
-type 'a or_error = [ `Ok of 'a | `Error of string ]  (** See {!CCError} *)
 type 'a gen = unit -> 'a option  (** See {!CCGen} *)
 
 (** {2 Input} *)
@@ -128,6 +127,7 @@ See {!File.walk} if you also need to list directories:
 {[
 # let content = CCIO.File.walk (CCIO.File.make "/tmp");;
 # CCGen.map CCIO.File.show_walk_item content |> CCIO.write_lines stdout;;
+]}
 *)
 
 module File : sig

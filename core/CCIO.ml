@@ -26,7 +26,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 IO Utils} *)
 
-type 'a or_error = [ `Ok of 'a | `Error of string ]  (** See {!CCError} *)
 type 'a gen = unit -> 'a option  (** See {!CCGen} *)
 
 let with_in ?(mode=0o644) ?(flags=[]) filename f =
