@@ -252,11 +252,11 @@ Sexp.Traverse.list_all pt_of_sexp sexp;;
 module Traverse : sig
   type 'a conv = t -> 'a option
   (** A converter from S-expressions to 'a is a function [sexp -> 'a option].
-      @since 0.5 *)
+      @since 0.4.1 *)
 
   val map_opt : ('a -> 'b option) -> 'a list -> 'b list option
   (** Map over a list, failing as soon as the function fails on any element
-      @since 0.5 *)
+      @since 0.4.1 *)
 
   val list_any : 'a conv -> t -> 'a option
   (** [list_any f (List l)] tries [f x] for every element [x] in [List l],
@@ -284,19 +284,19 @@ module Traverse : sig
   val to_list_with : (t -> 'a option) -> 'a list conv
   (** Expect a list, applies [f] to all the elements of the list, and succeeds
       only if [f] succeeded on every element 
-      @since 0.5 *)
+      @since 0.4.1 *)
 
   val to_pair : (t * t) conv
   (** Expect a list of two elements *)
 
   val to_pair_with : 'a conv -> 'b conv -> ('a * 'b) conv
   (** Same as {!to_pair} but applies conversion functions
-      @since 0.5 *)
+      @since 0.4.1 *)
 
   val to_triple : (t * t * t) conv
 
   val to_triple_with : 'a conv -> 'b conv -> 'c conv -> ('a * 'b * 'c) conv
-      (* @since 0.5 *)
+      (* @since 0.4.1 *)
 
   val get_field : string -> t conv
   (** [get_field name e], when [e = List [(n1,x1); (n2,x2) ... ]], extracts
@@ -314,7 +314,7 @@ module Traverse : sig
   (** [field_list name f  "(... (name a b c d) ...record)"]
       will look for a field based on the given [name], and expect it to have a
       list of arguments dealt with by [f] (here, "a b c d").
-      @since 0.5 *)
+      @since 0.4.1 *)
 
   val (>>=) : 'a option -> ('a -> 'b option) -> 'b option
 
