@@ -33,6 +33,10 @@ Flag "lwt"
   Description:  Build modules which depend on Lwt
   Default:      false
 
+Flag "unix"
+  Description:  Build modules that depend on Unix
+  Default:      true
+
 Flag "thread"
   Description:  Build modules that depend on threads
   Default:      false
@@ -65,6 +69,14 @@ Library "containers_advanced"
   FindlibName:      advanced
   FindlibParent:    containers
   BuildDepends:     containers
+
+Library "containers_unix"
+  Path:             unix
+  Pack:             false
+  Modules:          CCIO_unix
+  FindlibName:      unix
+  FindlibParent:    containers
+  BuildDepends:     containers, unix
 
 Library "containers_pervasives"
   Path:             pervasives
