@@ -148,6 +148,14 @@ Document containers_advanced
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: containers.advanced
 
+Document containers_lwt
+  Title:                Containers_lwt docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: containers.lwt
+
 Executable run_benchs
   Path:             benchs/
   Install:          false

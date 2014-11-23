@@ -17,7 +17,9 @@ ocaml-containers
     modules of the stdlib.
 4. A sub-library with complicated abstractions, `containers.advanced` (with
    a LINQ-like query module, batch operations using GADTs, and others)
-5. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
+5. A library using [Lwt](https://github.com/ocsigen/lwt/), `containers.lwt`.
+    Currently only contains experimental, unstable stuff.
+6. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
     in other dirs (mostly `misc` but also `lwt` and `threads`). It's where I
     tend to write code when I want to test some idea, so half the modules (at
     least) are unfinished or don't really work.
@@ -50,17 +52,18 @@ If you have comments, requests, or bugfixes, please share them! :-)
 
 This code is free, under the BSD license.
 
-## Documentation
-
-The API documentation can be
-found [here](http://cedeela.fr/~simon/software/containers).
-
 ## Contents
 
 The design is mostly centered around polymorphism rather than functors. Such
 structures comprise (some modules in `misc/`, some other in `core/`):
 
 ### Core Structures
+
+the core library, `containers`, now depends on
+[cppo](https://github.com/mjambon/cppo) and `base-bytes` (provided
+by ocamlfind).
+
+Documentation [here](http://cedeela.fr/~simon/software/containers).
 
 - `CCHeap`, a purely functional heap structure.
 - `CCFQueue`, a purely functional double-ended queue structure
@@ -72,9 +75,10 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 - `CCList`, functions on lists, including tail-recursive implementations of `map` and `append` and many other things
 - `CCArray`, utilities on arrays and slices
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
-- `CCHashtbl`, an extension of the standard hashtbl module
+- `CCHashtbl`, `CCMap` extensions of the standard modules `Hashtbl` and `Map`
 - `CCFlatHashtbl`, a flat (open-addressing) hashtable functorial implementation
 - `CCKTree`, an abstract lazy tree structure (similar to what `CCKlist` is to lists)
+- `CCTrie`, a prefix tree
 - small modules (basic types, utilities):
   - `CCInt`
   - `CCString` (basic string operations)
@@ -87,6 +91,9 @@ structures comprise (some modules in `misc/`, some other in `core/`):
   - `CCPrint` (printing combinators)
   - `CCHash` (hashing combinators)
   - `CCError` (monadic error handling, very useful)
+- `CCSexp`, a small S-expression library
+- `CCIO`, basic utilities for IO
+- `CCCache`, memoization caches, LRU, etc.
 
 ### String
 
