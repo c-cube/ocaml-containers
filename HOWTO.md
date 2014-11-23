@@ -10,3 +10,6 @@
 7. commit, tag, and push both to github
 8. new opam package
 
+## List Authors
+
+`git log --format='%aN' | sort -u`

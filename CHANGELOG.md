@@ -6,7 +6,7 @@
 
 - new `CCIO` module, much simpler, but incompatible interface
 - renamed `CCIO` to `advanced.CCMonadIO`
-- `CCError.t` now has two type arguments
+- `CCError.t` now has two type arguments (thanks to @hcarty)
 
 #### other changes
 
@@ -29,7 +29,7 @@
 
 #### breaking changes
 
-- dependency on `cppo` (thanks to @whitequark, see AUHORS.md) and `bytes`
+- dependency on `cppo` (thanks to @whitequark, see `AUTHORS.md`) and `bytes`
 - `CCError`:
     * now polymorphic on the error type
     * some retro-incompatibilies (wrap,guard)

@@ -5,3 +5,4 @@
 - Jacques-Pascal Deplaix
 - Nicolas Braud-Santoni
 - Whitequark (Peter Zotov)
+- hcarty (Hezekiah M. Carty)
