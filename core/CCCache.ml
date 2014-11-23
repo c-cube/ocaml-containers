@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Memoization caches} *)
+(** {1 Caches} *)
 
 type 'a equal = 'a -> 'a -> bool
 type 'a hash = 'a -> int
@@ -36,6 +36,8 @@ let default_hash_ = Hashtbl.hash
 type ('a,'b) t = {
   set : 'a -> 'b -> unit;
   get : 'a -> 'b;  (* or raise Not_found *)
+  size : unit -> int;
+  iter : ('a -> 'b -> unit) -> unit;
   clear : unit -> unit;
 }
 
@@ -53,10 +55,16 @@ let with_cache_rec c f =
   let rec f' x = with_cache c (f f') x in
   f'
 
+let size c = c.size ()
+
+let iter c f = c.iter f
+
 let dummy = {
   set=(fun _ _ -> ());
   get=(fun _ -> raise Not_found);
   clear=(fun _ -> ());
+  size=(fun _ -> 0);
+  iter=(fun _ -> ());
 }
 
 module Linear = struct
@@ -91,6 +99,14 @@ module Linear = struct
   let set c x y =
     c.arr.(c.i) <- Pair (x,y);
     c.i <- (c.i + 1) mod Array.length c.arr
+
+  let iter c f =
+    Array.iter (function Pair (x,y) -> f x y | Empty -> ()) c.arr
+
+  let size c () =
+    let r = ref 0 in
+    iter c (fun _ _ -> incr r);
+    !r
 end
 
 let linear ?(eq=default_eq_) size =
@@ -99,6 +115,8 @@ let linear ?(eq=default_eq_) size =
   { get=(fun x -> Linear.get arr x);
     set=(fun x y -> Linear.set arr x y);
     clear=(fun () -> Linear.clear arr);
+    size=Linear.size arr;
+    iter=Linear.iter arr;
   }
 
 module Replacing = struct
@@ -110,13 +128,15 @@ module Replacing = struct
     eq : 'a equal;
     hash : 'a hash;
     arr : ('a,'b) bucket array;
+    mutable c_size : int;
   }
 
   let make eq hash size =
     assert (size>0);
-    {arr=Array.make size Empty; eq; hash }
+    {arr=Array.make size Empty; eq; hash; c_size=0 }
 
   let clear c =
+    c.c_size <- 0;
     Array.fill c.arr 0 (Array.length c.arr) Empty
 
   let get c x =
@@ -128,7 +148,13 @@ module Replacing = struct
 
   let set c x y =
     let i = c.hash x mod Array.length c.arr in
+    if c.arr.(i) = Empty then c.c_size <- c.c_size + 1;
     c.arr.(i) <- Pair (x,y)
+
+  let iter c f =
+    Array.iter (function Empty -> () | Pair (x,y) -> f x y) c.arr
+
+  let size c () = c.c_size
 end
 
 let replacing ?(eq=default_eq_) ?(hash=default_hash_) size =
@@ -136,6 +162,8 @@ let replacing ?(eq=default_eq_) ?(hash=default_hash_) size =
   { get=(fun x -> Replacing.get c x);
     set=(fun x y -> Replacing.set c x y);
     clear=(fun () -> Replacing.clear c);
+    size=Replacing.size c;
+    iter=Replacing.iter c;
   }
 
 module type HASH = sig
@@ -172,10 +200,6 @@ module LRU(X:HASH) = struct
     H.clear c.table;
     c.first <- None;
     ()
-
-  let get_opt = function
-    | None -> assert false
-    | Some x -> x
 
   (* take first from queue *)
   let take_ c =
@@ -248,6 +272,11 @@ module LRU(X:HASH) = struct
     if len = c.size
       then replace_ c x y
       else insert_ c x y
+
+  let size c () = H.length c.table
+
+  let iter c f =
+    H.iter (fun x node -> f x node.value) c.table
 end
 
 let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
@@ -260,14 +289,12 @@ let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
   { get=(fun x -> L.get c x);
     set=(fun x y -> L.set c x y);
     clear=(fun () -> L.clear c);
+    size=L.size c;
+    iter=L.iter c;
   }
 
 module UNBOUNDED(X:HASH) = struct
-  type key = X.t
-
   module H = Hashtbl.Make(X)
-
-  type 'a t = 'a H.t
 
   let make size =
     assert (size > 0);
@@ -278,6 +305,10 @@ module UNBOUNDED(X:HASH) = struct
   let get c x = H.find c x
 
   let set c x y = H.replace c x y
+  
+  let size c () = H.length c
+
+  let iter c f = H.iter f c
 end
 
 let unbounded (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
@@ -290,4 +321,6 @@ let unbounded (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
   { get=(fun x -> C.get c x);
     set=(fun x y -> C.set c x y);
     clear=(fun () -> C.clear c);
+    iter=C.iter c;
+    size=C.size c;
   }

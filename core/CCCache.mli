@@ -23,7 +23,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Memoization caches} *)
+(** {1 Caches}
+
+Particularly useful for memoization. See {!with_cache} and {!with_cache_rec}
+for more details.
+@since NEXT_RELEASE *)
 
 type 'a equal = 'a -> 'a -> bool
 type 'a hash = 'a -> int
@@ -72,6 +76,13 @@ fib 70;;
 ]}
 *)
 
+val size : (_,_) t -> int
+(** Size of the cache (number of entries). At most linear in the number
+    of entries. *)
+
+val iter : ('a,'b) t -> ('a -> 'b -> unit) -> unit
+(** Iterate on cached values. Should yield [size cache] pairs. *)
+
 val dummy : ('a,'b) t
 (** dummy cache, never stores any value *)
 
@@ -92,42 +103,9 @@ val replacing : ?eq:'a equal -> ?hash:'a hash ->
 val lru : ?eq:'a equal -> ?hash:'a hash ->
           int -> ('a,'b) t
 (** LRU cache of the given size ("Least Recently Used": keys that have not been
-    used recently are deleted first). Never grows wider. *)
+    used recently are deleted first). Never grows wider than the given size. *)
 
 val unbounded : ?eq:'a equal -> ?hash:'a hash ->
                 int -> ('a,'b) t
 (** Unbounded cache, backed by a Hash table. Will grow forever
     unless {!clear} is called manually. *)
-
-(** {2 Binary Caches}
-TODO
-
-module C2 : sig
-  type ('a, 'b, 'c) t
-
-  val clear : (_,_,_) t -> unit
-
-  val with_cache : ('a, 'b, 'c) t -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
-
-  val with_cache_rec : ('a,'b,'c) t ->
-                       (('a -> 'b -> 'c) -> 'a -> 'b -> 'c) ->
-                       'a -> 'b -> 'c
-
-  val dummy : ('a,'b,'c) t
-
-  val linear : ?eq1:('a -> 'a -> bool) -> ?eq2:('b -> 'b -> bool) ->
-               int -> ('a, 'b, 'c) t
-
-  val replacing : ?eq1:('a -> 'a -> bool) -> ?hash1:('a -> int) ->
-                  ?eq2:('b -> 'b -> bool) -> ?hash2:('b -> int) ->
-                  int -> ('a,'b,'c) t
-
-  val lru : ?eq1:('a -> 'a -> bool) -> ?hash1:('a -> int) ->
-            ?eq2:('b -> 'b -> bool) -> ?hash2:('b -> int) ->
-            int -> ('a,'b,'c) t
-
-  val unbounded : ?eq1:('a -> 'a -> bool) -> ?hash1:('a -> int) ->
-                  ?eq2:('b -> 'b -> bool) -> ?hash2:('b -> int) ->
-                  int -> ('a,'b,'c) t
-end
-*)
