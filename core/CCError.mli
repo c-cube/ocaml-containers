@@ -62,7 +62,7 @@ val map_err : ('err1 -> 'err2) -> ('a, 'err1) t -> ('a, 'err2) t
 (** Map on error.
     @since 0.5 *)
 
-val map2 : ('a -> 'b) -> ('err -> 'err) -> ('a, 'err) t -> ('b, 'err) t
+val map2 : ('a -> 'b) -> ('err1 -> 'err2) -> ('a, 'err1) t -> ('b, 'err2) t
 (** Same as {!map}, but also with a function that can transform
     the error message in case of failure *)
 

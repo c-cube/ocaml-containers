@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.5
+Version:     0.6
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -47,7 +47,7 @@ Library "containers"
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl, CCSexp, CCMap
+                    CCFlatHashtbl, CCSexp, CCMap, CCCache
   BuildDepends:     bytes
 
 Library "containers_string"
@@ -60,7 +60,7 @@ Library "containers_string"
 Library "containers_advanced"
   Path:             advanced
   Pack:             true
-  Modules:          CCLinq, CCBatch, CCCat
+  Modules:          CCLinq, CCBatch, CCCat, CCMonadIO
   FindlibName:      advanced
   FindlibParent:    containers
   BuildDepends:     containers
@@ -75,12 +75,12 @@ Library "containers_pervasives"
 Library "containers_misc"
   Path:             misc
   Pack:             true
-  Modules:          Cache, FHashtbl, FlatHashtbl, Hashset,
+  Modules:          FHashtbl, FlatHashtbl, Hashset,
                     Heap, LazyGraph, PersistentGraph,
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
                     Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
                     TTree, PrintBox, HGraph, Automaton, Conv, Bidir, Iteratee,
-                    BTree, Ty, Cause, AVL, ParseReact
+                    BTree, Ty, Cause, AVL, ParseReact, Mixtbl
   BuildDepends:     unix,containers
   FindlibName:      misc
   FindlibParent:    containers
@@ -97,14 +97,13 @@ Library "containers_thread"
 
 Library "containers_lwt"
   Path:             lwt
-  Modules:          Behavior, Lwt_automaton
+  Modules:          Behavior, Lwt_automaton, Lwt_actor
   Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
   Build$:           flag(lwt) && flag(misc)
   Install$:         flag(lwt) && flag(misc)
-  BuildDepends:     containers,lwt,lwt.unix,containers.misc
-  XMETARequires:    containers,lwt,lwt.unix,containers.misc
+  BuildDepends:     containers, lwt, lwt.unix, containers.misc
 
 Library "containers_cgi"
   Path:             cgi
@@ -148,29 +147,14 @@ Document containers_advanced
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: containers.advanced
 
-Executable benchs
+Executable run_benchs
   Path:             benchs/
   Install:          false
   CompiledObject:   native
-  Build$:           flag(bench)
-  MainIs:           benchs.ml
-  BuildDepends:     containers,containers.string,containers.misc,bench,containers.advanced
-
-Executable bench_conv
-  Path:     benchs/
-  Install: false
-  CompiledObject: native
-  Build$: flag(bench)
-  MainIs: bench_conv.ml
-  BuildDepends: containers,benchmark
-
-Executable bench_batch
-  Path: benchs/
-  Install: false
-  CompiledObject: native
-  Build$: flag(bench)
-  MainIs: bench_batch.ml
-  BuildDepends: containers,benchmark
+  Build$:           flag(bench) && flag(misc)
+  MainIs:           run_benchs.ml
+  BuildDepends:     containers, containers.misc, containers.advanced,
+                    containers.string, benchmark
 
 Executable bench_hash
   Path: benchs/
@@ -179,6 +163,14 @@ Executable bench_hash
   Build$: flag(bench) && flag(misc)
   MainIs: bench_hash.ml
   BuildDepends: containers,containers.misc
+
+Executable bench_conv
+  Path:     benchs/
+  Install: false
+  CompiledObject: native
+  Build$: flag(bench)
+  MainIs: bench_conv.ml
+  BuildDepends: containers,benchmark
 
 Executable test_levenshtein
   Path: tests/

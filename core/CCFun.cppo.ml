@@ -40,6 +40,8 @@ let (@@) f x = f x
 
 let compose f g x = g (f x)
 
+let compose_binop f g x y = g (f x) (f y)
+
 let flip f x y = f y x
 
 let curry f x y = f (x,y)

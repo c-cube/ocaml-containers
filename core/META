@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: f28449d1761e3b4dfea6c77b24996bbb)
-version = "0.5"
+# DO NOT EDIT (digest: 34ddfea96490dfa42580c0446eef8db6)
+version = "0.6"
 description = "A modular standard library focused on data structures."
 requires = "bytes"
 archive(byte) = "containers.cma"
@@ -9,7 +9,7 @@ archive(native) = "containers.cmxa"
 archive(native, plugin) = "containers.cmxs"
 exists_if = "containers.cma"
 package "thread" (
- version = "0.5"
+ version = "0.6"
  description = "A modular standard library focused on data structures."
  requires = "containers threads"
  archive(byte) = "containers_thread.cma"
@@ -20,7 +20,7 @@ package "thread" (
 )
 
 package "string" (
- version = "0.5"
+ version = "0.6"
  description = "A modular standard library focused on data structures."
  archive(byte) = "containers_string.cma"
  archive(byte, plugin) = "containers_string.cma"
@@ -30,7 +30,7 @@ package "string" (
 )
 
 package "pervasives" (
- version = "0.5"
+ version = "0.6"
  description = "A modular standard library focused on data structures."
  requires = "containers"
  archive(byte) = "containers_pervasives.cma"
@@ -41,7 +41,7 @@ package "pervasives" (
 )
 
 package "misc" (
- version = "0.5"
+ version = "0.6"
  description = "A modular standard library focused on data structures."
  requires = "unix containers"
  archive(byte) = "containers_misc.cma"
@@ -52,7 +52,7 @@ package "misc" (
 )
 
 package "lwt" (
- version = "0.5"
+ version = "0.6"
  description = "A modular standard library focused on data structures."
  requires = "containers lwt lwt.unix containers.misc"
  archive(byte) = "containers_lwt.cma"
@@ -63,7 +63,7 @@ package "lwt" (
 )
 
 package "cgi" (
- version = "0.5"
+ version = "0.6"
  description = "A modular standard library focused on data structures."
  requires = "containers CamlGI"
  archive(byte) = "containers_cgi.cma"
@@ -74,7 +74,7 @@ package "cgi" (
 )
 
 package "advanced" (
- version = "0.5"
+ version = "0.6"
  description = "A modular standard library focused on data structures."
  requires = "containers"
  archive(byte) = "containers_advanced.cma"

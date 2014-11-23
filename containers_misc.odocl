@@ -1,6 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3c4c75622413b2b99679e7439134f037)
-misc/Cache
+# DO NOT EDIT (digest: df85a5182175d1029216007c66a27aa4)
 misc/FHashtbl
 misc/FlatHashtbl
 misc/Hashset
@@ -31,4 +30,5 @@ misc/Ty
 misc/Cause
 misc/AVL
 misc/ParseReact
+misc/Mixtbl
 # OASIS_STOP

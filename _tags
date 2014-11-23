@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: c052544c3d7576d929b768e46a58e0a9)
+# DO NOT EDIT (digest: 87b09f8c85905e63062b223fad9468e9)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -26,6 +26,7 @@ true: annot, bin_annot
 "advanced/CCLinq.cmx": for-pack(Containers_advanced)
 "advanced/CCBatch.cmx": for-pack(Containers_advanced)
 "advanced/CCCat.cmx": for-pack(Containers_advanced)
+"advanced/CCMonadIO.cmx": for-pack(Containers_advanced)
 <advanced/*.ml{,i,y}>: package(bytes)
 <advanced/*.ml{,i,y}>: use_containers
 # Library containers_pervasives
@@ -34,7 +35,6 @@ true: annot, bin_annot
 <pervasives/*.ml{,i,y}>: use_containers
 # Library containers_misc
 "misc/containers_misc.cmxs": use_containers_misc
-"misc/cache.cmx": for-pack(Containers_misc)
 "misc/fHashtbl.cmx": for-pack(Containers_misc)
 "misc/flatHashtbl.cmx": for-pack(Containers_misc)
 "misc/hashset.cmx": for-pack(Containers_misc)
@@ -65,6 +65,7 @@ true: annot, bin_annot
 "misc/cause.cmx": for-pack(Containers_misc)
 "misc/AVL.cmx": for-pack(Containers_misc)
 "misc/parseReact.cmx": for-pack(Containers_misc)
+"misc/mixtbl.cmx": for-pack(Containers_misc)
 <misc/*.ml{,i,y}>: package(bytes)
 <misc/*.ml{,i,y}>: package(unix)
 <misc/*.ml{,i,y}>: use_containers
@@ -77,6 +78,7 @@ true: annot, bin_annot
 "lwt/containers_lwt.cmxs": use_containers_lwt
 "lwt/behavior.cmx": for-pack(Containers_lwt)
 "lwt/lwt_automaton.cmx": for-pack(Containers_lwt)
+"lwt/lwt_actor.cmx": for-pack(Containers_lwt)
 <lwt/*.ml{,i,y}>: package(bytes)
 <lwt/*.ml{,i,y}>: package(lwt)
 <lwt/*.ml{,i,y}>: package(lwt.unix)
@@ -88,35 +90,30 @@ true: annot, bin_annot
 <cgi/*.ml{,i,y}>: package(CamlGI)
 <cgi/*.ml{,i,y}>: package(bytes)
 <cgi/*.ml{,i,y}>: use_containers
-# Executable benchs
-"benchs/benchs.native": package(bench)
-"benchs/benchs.native": package(bytes)
-"benchs/benchs.native": package(unix)
-"benchs/benchs.native": use_containers
-"benchs/benchs.native": use_containers_advanced
-"benchs/benchs.native": use_containers_misc
-"benchs/benchs.native": use_containers_string
-<benchs/*.ml{,i,y}>: package(bench)
+# Executable run_benchs
+"benchs/run_benchs.native": package(benchmark)
+"benchs/run_benchs.native": package(bytes)
+"benchs/run_benchs.native": package(unix)
+"benchs/run_benchs.native": use_containers
+"benchs/run_benchs.native": use_containers_advanced
+"benchs/run_benchs.native": use_containers_misc
+"benchs/run_benchs.native": use_containers_string
 <benchs/*.ml{,i,y}>: use_containers_advanced
 <benchs/*.ml{,i,y}>: use_containers_string
-# Executable bench_conv
-"benchs/bench_conv.native": package(benchmark)
-"benchs/bench_conv.native": package(bytes)
-"benchs/bench_conv.native": use_containers
-# Executable bench_batch
-"benchs/bench_batch.native": package(benchmark)
-"benchs/bench_batch.native": package(bytes)
-"benchs/bench_batch.native": use_containers
-<benchs/*.ml{,i,y}>: package(benchmark)
 # Executable bench_hash
 "benchs/bench_hash.native": package(bytes)
 "benchs/bench_hash.native": package(unix)
 "benchs/bench_hash.native": use_containers
 "benchs/bench_hash.native": use_containers_misc
-<benchs/*.ml{,i,y}>: package(bytes)
 <benchs/*.ml{,i,y}>: package(unix)
-<benchs/*.ml{,i,y}>: use_containers
 <benchs/*.ml{,i,y}>: use_containers_misc
+# Executable bench_conv
+"benchs/bench_conv.native": package(benchmark)
+"benchs/bench_conv.native": package(bytes)
+"benchs/bench_conv.native": use_containers
+<benchs/*.ml{,i,y}>: package(benchmark)
+<benchs/*.ml{,i,y}>: package(bytes)
+<benchs/*.ml{,i,y}>: use_containers
 # Executable test_levenshtein
 "tests/test_levenshtein.native": package(bytes)
 "tests/test_levenshtein.native": package(qcheck)

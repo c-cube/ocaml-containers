@@ -4,12 +4,14 @@ S string
 S pervasives
 S tests
 S examples
+S benchs
 B _build/core
 B _build/misc
 B _build/string
 B _build/pervasives
 B _build/tests
 B _build/examples
+B _build/benchs/
 PKG oUnit
 PKG benchmark
 PKG threads

@@ -1,0 +1,326 @@
+(*
+Copyright (c) 2013, Simon Cruanes
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.  Redistributions in binary
+form must reproduce the above copyright notice, this list of conditions and the
+following disclaimer in the documentation and/or other materials provided with
+the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*)
+
+(** {1 Caches} *)
+
+type 'a equal = 'a -> 'a -> bool
+type 'a hash = 'a -> int
+
+let default_eq_ = Pervasives.(=)
+let default_hash_ = Hashtbl.hash
+
+(** {2 Value interface} *)
+
+type ('a,'b) t = {
+  set : 'a -> 'b -> unit;
+  get : 'a -> 'b;  (* or raise Not_found *)
+  size : unit -> int;
+  iter : ('a -> 'b -> unit) -> unit;
+  clear : unit -> unit;
+}
+
+let clear c = c.clear ()
+
+let with_cache c f x =
+  try
+    c.get x
+  with Not_found ->
+    let y = f x in
+    c.set x y;
+    y
+
+let with_cache_rec c f =
+  let rec f' x = with_cache c (f f') x in
+  f'
+
+let size c = c.size ()
+
+let iter c f = c.iter f
+
+let dummy = {
+  set=(fun _ _ -> ());
+  get=(fun _ -> raise Not_found);
+  clear=(fun _ -> ());
+  size=(fun _ -> 0);
+  iter=(fun _ -> ());
+}
+
+module Linear = struct
+  type ('a,'b) bucket =
+    | Empty
+    | Pair of 'a * 'b
+
+  type ('a,'b) t = {
+    eq : 'a equal;
+    arr : ('a,'b) bucket array;
+    mutable i : int;  (* index for next assertion, cycles through *)
+  }
+
+  let make eq size =
+    assert (size>0);
+    {arr=Array.make size Empty; eq; i=0; }
+
+  let clear c =
+    Array.fill c.arr 0 (Array.length c.arr) Empty;
+    c.i <- 0
+
+  (* linear lookup *)
+  let rec search_ c i x =
+    if i=Array.length c.arr then raise Not_found;
+    match c.arr.(i) with
+      | Pair (x', y) when c.eq x x' -> y
+      | Pair _
+      | Empty -> search_ c (i+1) x
+
+  let get c x = search_ c 0 x
+
+  let set c x y =
+    c.arr.(c.i) <- Pair (x,y);
+    c.i <- (c.i + 1) mod Array.length c.arr
+
+  let iter c f =
+    Array.iter (function Pair (x,y) -> f x y | Empty -> ()) c.arr
+
+  let size c () =
+    let r = ref 0 in
+    iter c (fun _ _ -> incr r);
+    !r
+end
+
+let linear ?(eq=default_eq_) size =
+  let size = max size 1 in
+  let arr = Linear.make eq size in
+  { get=(fun x -> Linear.get arr x);
+    set=(fun x y -> Linear.set arr x y);
+    clear=(fun () -> Linear.clear arr);
+    size=Linear.size arr;
+    iter=Linear.iter arr;
+  }
+
+module Replacing = struct
+  type ('a,'b) bucket =
+    | Empty
+    | Pair of 'a * 'b
+
+  type ('a,'b) t = {
+    eq : 'a equal;
+    hash : 'a hash;
+    arr : ('a,'b) bucket array;
+    mutable c_size : int;
+  }
+
+  let make eq hash size =
+    assert (size>0);
+    {arr=Array.make size Empty; eq; hash; c_size=0 }
+
+  let clear c =
+    c.c_size <- 0;
+    Array.fill c.arr 0 (Array.length c.arr) Empty
+
+  let get c x =
+    let i = c.hash x mod Array.length c.arr in
+    match c.arr.(i) with
+    | Pair (x', y) when c.eq x x' -> y
+    | Pair _
+    | Empty -> raise Not_found
+
+  let set c x y =
+    let i = c.hash x mod Array.length c.arr in
+    if c.arr.(i) = Empty then c.c_size <- c.c_size + 1;
+    c.arr.(i) <- Pair (x,y)
+
+  let iter c f =
+    Array.iter (function Empty -> () | Pair (x,y) -> f x y) c.arr
+
+  let size c () = c.c_size
+end
+
+let replacing ?(eq=default_eq_) ?(hash=default_hash_) size =
+  let c = Replacing.make eq hash size in
+  { get=(fun x -> Replacing.get c x);
+    set=(fun x y -> Replacing.set c x y);
+    clear=(fun () -> Replacing.clear c);
+    size=Replacing.size c;
+    iter=Replacing.iter c;
+  }
+
+module type HASH = sig
+  type t
+  val equal : t equal
+  val hash : t hash
+end
+
+module LRU(X:HASH) = struct
+  type key = X.t
+
+  module H = Hashtbl.Make(X)
+
+  type 'a t = {
+    table : 'a node H.t;  (* hashtable key -> node *)
+    mutable first : 'a node option;
+    size : int;           (* max size *)
+  }
+  and 'a node = {
+    mutable key : key;
+    mutable value : 'a;
+    mutable next : 'a node;
+    mutable prev : 'a node;
+  } (** Meta data for the value, making a chained list *)
+
+  let make size =
+    assert (size > 0);
+    { table = H.create size;
+      size;
+      first=None;
+    }
+
+  let clear c =
+    H.clear c.table;
+    c.first <- None;
+    ()
+
+  (* take first from queue *)
+  let take_ c =
+    match c.first with
+    | Some n when n.next == n ->
+        (* last element *)
+        c.first <- None;
+        n
+    | Some n ->
+        c.first <- Some n.next;
+        n.prev.next <- n.next;
+        n.next.prev <- n.prev;
+        n
+    | None ->
+        failwith "LRU: empty queue"
+
+  (* push at back of queue *)
+  let push_ c n =
+    match c.first with
+    | None ->
+        n.next <- n;
+        n.prev <- n;
+        c.first <- Some n
+    | Some n1 when n1==n -> ()
+    | Some n1 ->
+        n.prev <- n1.prev;
+        n.next <- n1;
+        n1.prev.next <- n;
+        n1.prev <- n
+
+  (* remove from queue *)
+  let remove_ n =
+    n.prev.next <- n.next;
+    n.next.prev <- n.prev
+
+  (* Replace least recently used element of [c] by x->y *)
+  let replace_ c x y =
+    (* remove old *)
+    let n = take_ c in
+    H.remove c.table n.key;
+    (* add x->y, at the back of the queue *)
+    n.key <- x;
+    n.value <- y;
+    H.add c.table x n;
+    push_ c n;
+    ()
+
+  (* Insert x->y in the cache, increasing its entry count *)
+  let insert_ c x y =
+    let rec n = {
+      key = x;
+      value = y;
+      next = n;
+      prev = n;
+    } in
+    H.add c.table x n;
+    push_ c n;
+    ()
+
+  let get c x =
+    let n = H.find c.table x in
+    (* put n at the back of the queue *)
+    remove_ n;
+    push_ c n;
+    n.value
+
+  let set c x y =
+    let len = H.length c.table in
+    assert (len <= c.size);
+    if len = c.size
+      then replace_ c x y
+      else insert_ c x y
+
+  let size c () = H.length c.table
+
+  let iter c f =
+    H.iter (fun x node -> f x node.value) c.table
+end
+
+let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+  let module L = LRU(struct
+    type t = a
+    let equal = eq
+    let hash = hash
+  end) in
+  let c = L.make size in
+  { get=(fun x -> L.get c x);
+    set=(fun x y -> L.set c x y);
+    clear=(fun () -> L.clear c);
+    size=L.size c;
+    iter=L.iter c;
+  }
+
+module UNBOUNDED(X:HASH) = struct
+  module H = Hashtbl.Make(X)
+
+  let make size =
+    assert (size > 0);
+    H.create size
+
+  let clear c = H.clear c
+
+  let get c x = H.find c x
+
+  let set c x y = H.replace c x y
+  
+  let size c () = H.length c
+
+  let iter c f = H.iter f c
+end
+
+let unbounded (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+  let module C = UNBOUNDED(struct
+    type t = a
+    let equal = eq
+    let hash = hash
+  end) in
+  let c = C.make size in
+  { get=(fun x -> C.get c x);
+    set=(fun x y -> C.set c x y);
+    clear=(fun () -> C.clear c);
+    iter=C.iter c;
+    size=C.size c;
+  }

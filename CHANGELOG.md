@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.6
+
+### breaking changes
+
+- new `CCIO` module, much simpler, but incompatible interface
+- renamed `CCIO` to `advanced.CCMonadIO`
+- `CCError.t` now has two type arguments
+
+### other changes
+
+- `CCMultiSet.{add_mult,remove_mult,update}`
+- `CCVector.{top,top_exn}`
+- `CCFun.compose_binop` (binary composition)
+- `CCList.init`
+
+- new module `CCCache`
+    * moved from `misc`
+    * add `CCache`.{size,iter}
+    * incompatible interface (functor -> values), much simpler to use
+- `lwt/Lwt_actor` stub, for erlang-style concurrency (albeit much much more naive)
+- `misc/Mixtbl`
+- more benchmarks, with a more general system to select/run them
+- more efficient versions of `CCList.{flatten,append,flat_map}`, some functions
+  are now tailrec
+
+
 ## 0.5
 
 ### breaking changes

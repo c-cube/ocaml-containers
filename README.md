@@ -27,6 +27,11 @@ Some of the modules have been moved to their own repository (e.g. `sequence`,
 
 [![Build Status](http://ci.cedeela.fr/buildStatus/icon?job=containers)](http://ci.cedeela.fr/job/containers/)
 
+## Finding help
+
+- the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
+- the IRC channel (`##ocaml-containers` on Freenode)
+
 ## Use
 
 You can either build and install the library (see `Build`), or just copy

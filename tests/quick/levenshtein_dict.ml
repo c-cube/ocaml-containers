@@ -1,18 +1,19 @@
 #!/usr/bin/env ocaml
 #use "tests/quick/.common.ml";;
 #load "containers.cma";;
-open Containers;;
+#load "containers_string.cma";;
 
-#require "batteries";;
-open Batteries;;
+open Containers_string
 
-let words = File.with_file_in "/usr/share/dict/cracklib-small"
-  (fun i -> IO.read_all i |> String.nsplit ~by:"\\n");;
+let words = CCIO.(
+  (with_in "/usr/share/dict/cracklib-small" >>>= read_lines)
+  |> run_exn
+  )
 
 let idx = List.fold_left
-  (fun idx s -> Levenshtein.StrIndex.add_string idx s s)
-  Levenshtein.StrIndex.empty words;;
+  (fun idx s -> Levenshtein.Index.add idx s s)
+  Levenshtein.Index.empty words;;
 
-Levenshtein.StrIndex.retrieve_string ~limit:1 idx "hell"
+Levenshtein.Index.retrieve ~limit:1 idx "hell"
   |> Levenshtein.klist_to_list
   |> List.iter print_endline;;
