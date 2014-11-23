@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Particularly useful for memoization. See {!with_cache} and {!with_cache_rec}
 for more details.
-@since NEXT_RELEASE *)
+@since 0.6 *)
 
 type 'a equal = 'a -> 'a -> bool
 type 'a hash = 'a -> int
@@ -46,7 +46,7 @@ f' 1;;  (* prints *)
 f' 0;;  (* doesn't print, returns cached value *)
 ]}
 
-@since NEXT_RELEASE *)
+@since 0.6 *)
 
 type ('a, 'b) t
 

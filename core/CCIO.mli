@@ -31,7 +31,7 @@ way. For advanced IO tasks, the user is advised to use something
 like Lwt or Async, that are far more comprehensive.
 This module depends on {!CCGen}.
 
-@since NEXT_RELEASE
+@since 0.6
 
 {b NOTE} this was formerly a monadic IO module. The old module is now
 in [containers.advanced] under the name [CCMonadIO].

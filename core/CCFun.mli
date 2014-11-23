@@ -36,7 +36,7 @@ val compose_binop : ('a -> 'b) -> ('b -> 'b -> 'c) -> 'a -> 'a -> 'c
 (** [compose_binop f g] is [fun x y -> g (f x) (f y)]
     Example (partial order):
       [List.sort (compose_binop fst CCInt.compare) [1, true; 2, false; 1, false]]
-    @since NEXT_RELEASE*)
+    @since 0.6*)
 
 val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Alias to [compose] *)

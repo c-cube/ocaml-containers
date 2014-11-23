@@ -52,7 +52,7 @@ OUnit.assert_equal None (Mixtbl.get inj_int tbl "a");;
 OUnit.assert_equal (Some "Bye") (Mixtbl.get inj_string tbl "a");;
 ]}
 
-@since NEXT_RELEASE *)
+@since 0.6 *)
 
 type 'a t
 (** A hash table containing values of different types.

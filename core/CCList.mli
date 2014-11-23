@@ -50,7 +50,7 @@ val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 
 val init : int -> (int -> 'a) -> 'a t
 (** Same as [Array.init]
-    @since NEXT_RELEASE *)
+    @since 0.6 *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 

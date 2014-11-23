@@ -101,12 +101,12 @@ val pop_exn : ('a, rw) t -> 'a
 
 val top : ('a, _) t -> 'a option
 (** Top element, if present
-    @since NEXT_RELEASE *)
+    @since 0.6 *)
 
 val top_exn : ('a, _) t -> 'a
 (** Top element, if present
     @raise Failure on an empty vector
-    @since NEXT_RELEASE *)
+    @since 0.6 *)
 
 val copy : ('a,_) t -> ('a,'mut) t
 (** Shallow copy (may give an immutable or mutable vector) *)
