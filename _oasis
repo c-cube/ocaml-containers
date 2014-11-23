@@ -61,7 +61,7 @@ Library "containers_string"
 Library "containers_advanced"
   Path:             advanced
   Pack:             true
-  Modules:          CCLinq, CCBatch, CCCat
+  Modules:          CCLinq, CCBatch, CCCat, CCMonadIO
   FindlibName:      advanced
   FindlibParent:    containers
   BuildDepends:     containers
