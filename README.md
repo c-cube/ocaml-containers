@@ -114,7 +114,8 @@ In the module `Containers_advanced`:
 
 ### Misc
 
-See [doc](http://cedeela.fr/~simon/software/containers/misc).
+See [doc](http://cedeela.fr/~simon/software/containers/misc). This list
+is not necessarily up-to-date.
 
 - `PHashtbl`, a polymorphic hashtable (with open addressing)
 - `SplayTree`, a polymorphic splay heap implementation (not quite finished)
@@ -132,8 +133,6 @@ access to elements by their index.
 - `SmallSet`, a sorted list implementation behaving like a set.
 - `AbsSet`, an abstract Set data structure, a bit like `LazyGraph`.
 - `Univ`, a universal type encoding with affectation
-- `Cache`, a low level memoization cache for unary and binary functions
-- `Deque`, an imperative double ended FIFO (double-linked list)
 - `FlatHashtbl`, a (deprecated) open addressing hashtable with
     a functorial interface (replaced by PHashtbl)
 - `UnionFind`, a functorial imperative Union-Find structure.
