@@ -127,8 +127,10 @@ module Vec = struct
 end
 
 module Cache = struct
+  module C = CCCache
+
   let make_fib c =
-    let f = Cache.with_cache_rec c
+    let f = C.with_cache_rec c
       (fun fib n -> match n with
         | 0 -> 0
         | 1 -> 1
@@ -137,22 +139,22 @@ module Cache = struct
       )
     in
     fun x ->
-      Cache.clear c;
+      C.clear c;
       f x
 
   let bench_fib n =
     let l =
-      [ "replacing_fib (128)", make_fib (Cache.replacing 128), n
-      ; "LRU_fib (128)", make_fib (Cache.lru 128), n
-      ; "replacing_fib (16)", make_fib (Cache.replacing 16), n
-      ; "LRU_fib (16)", make_fib (Cache.lru 16), n
-      ; "unbounded", make_fib (Cache.unbounded 32), n
+      [ "replacing_fib (128)", make_fib (C.replacing 128), n
+      ; "LRU_fib (128)", make_fib (C.lru 128), n
+      ; "replacing_fib (16)", make_fib (C.replacing 16), n
+      ; "LRU_fib (16)", make_fib (C.lru 16), n
+      ; "unbounded", make_fib (C.unbounded 32), n
       ]
     in
     let l = if n <= 20
-      then  [ "linear_fib (5)", make_fib (Cache.linear 5), n
-            ; "linear_fib (32)", make_fib (Cache.linear 32), n
-            ; "dummy_fib", make_fib Cache.dummy, n
+      then  [ "linear_fib (5)", make_fib (C.linear 5), n
+            ; "linear_fib (32)", make_fib (C.linear 32), n
+            ; "dummy_fib", make_fib C.dummy, n
             ] @ l
       else l
     in

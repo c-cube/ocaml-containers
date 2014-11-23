@@ -48,7 +48,7 @@ Library "containers"
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
                     CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl, CCSexp, CCMap
+                    CCFlatHashtbl, CCSexp, CCMap, CCCache
   BuildDepends:     bytes
 
 Library "containers_string"
@@ -76,7 +76,7 @@ Library "containers_pervasives"
 Library "containers_misc"
   Path:             misc
   Pack:             true
-  Modules:          Cache, FHashtbl, FlatHashtbl, Hashset,
+  Modules:          FHashtbl, FlatHashtbl, Hashset,
                     Heap, LazyGraph, PersistentGraph,
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
                     Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
