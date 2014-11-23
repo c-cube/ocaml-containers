@@ -45,6 +45,23 @@ module type S = sig
 
   val remove : t -> elt -> t
 
+  val add_mult : t -> elt -> int -> t
+  (** [add_mult set x n] adds [n] occurrences of [x] to [set]
+      @raise Invalid_argument if [n < 0]
+      @since NEXT_RELEASE *)
+
+  val remove_mult : t -> elt -> int -> t
+  (** [remove_mult set x n] removes at most [n] occurrences of [x] from [set]
+      @raise Invalid_argument if [n < 0]
+      @since NEXT_RELEASE *)
+
+  val update : t -> elt -> (int -> int) -> t
+  (** [update set x f] calls [f n] where [n] is the current multiplicity
+      of [x] in [set] ([0] to indicate its absence); the result of [f n]
+      is the new multiplicity of [x].
+      @raise Invalid_argument if [f n < 0]
+      @since NEXT_RELEASE *)
+
   val min : t -> elt
   (** Minimal element w.r.t the total ordering on elements *)
 
