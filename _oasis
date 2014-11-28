@@ -46,7 +46,7 @@ Library "containers"
   Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
-                    CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
+                    CCKList, CCInt, CCBool, CCFloat, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
                     CCFlatHashtbl, CCSexp, CCMap, CCCache
   BuildDepends:     bytes
