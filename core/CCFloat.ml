@@ -1,5 +1,5 @@
 (*
-copyright (c) 2013-2014, simon cruanes
+copyright (c) 2014, Carmelo Piccione
 all rights reserved.
 
 redistribution and use in source and binary forms, with or without
@@ -24,7 +24,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 type t = float
-
+type fpclass = Pervasives.fpclass
 
 let nan = Pervasives.nan
 
@@ -35,6 +35,8 @@ let max_value = infinity
 let min_value = neg_infinity
 
 let max_finite_value = Pervasives.max_float
+
+let epsilon = Pervasives.epsilon_float
 
 let is_nan x = (x : t) <> x
 
@@ -79,4 +81,8 @@ let of_string (a:string) = Pervasives.float_of_string a
 let random n st = Random.State.float st n
 let random_small = random 100.0
 let random_range i j st = i +. random (j-.i) st
+
+let equal_precision ~epsilon a b = abs_float (a-.b) < epsilon
+
+let classify = Pervasives.classify_float
 

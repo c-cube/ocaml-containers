@@ -1,5 +1,5 @@
 (*
-copyright (c) 2013-2014, simon cruanes
+copyright (c) 2014, Carmelo Piccione
 all rights reserved.
 
 redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Basic Float functions} *)
 
 type t = float
+type fpclass
 
 val nan : t
 
@@ -33,6 +34,8 @@ val max_value : t
 val min_value : t
 
 val max_finite_value : t 
+
+val epsilon : float
 
 val is_nan : t -> bool 
 
@@ -75,3 +78,9 @@ val of_int : int -> t
 
 val to_string : t -> string 
 val of_string : string -> t
+
+
+val equal_precision : epsilon:t -> t -> t -> bool
+(** Equality with allowed error up to a non negative epsilon value *)
+
+val classify : float -> fpclass
