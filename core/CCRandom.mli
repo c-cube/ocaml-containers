@@ -88,6 +88,14 @@ val int : int -> int t
 val int_range : int -> int -> int t
 (** Inclusive range *)
 
+val small_float : float t
+
+val float : float -> float t
+
+val float_range : float -> float -> float t
+(** Inclusive range *)
+
+
 val split : int -> (int * int) option t
 (** Split a positive value [n] into [n1,n2] where [n = n1 + n2].
     @return [None] if the value is too small *)
@@ -134,4 +142,5 @@ val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val run : ?st:state -> 'a t -> 'a
 (** Using a random state (possibly the one in argument) run a generator *)
+
 

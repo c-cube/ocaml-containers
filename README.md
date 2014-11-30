@@ -86,6 +86,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
   - `CCOpt` (options, very useful)
   - `CCFun` (function combinators)
   - `CCBool`
+  - `CCFloat`
   - `CCOrd` (combinators for total orderings)
   - `CCRandom` (combinators for random generators)
   - `CCPrint` (printing combinators)
