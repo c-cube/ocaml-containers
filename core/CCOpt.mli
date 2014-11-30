@@ -73,6 +73,10 @@ val get_exn : 'a t -> 'a
 (** Open the option, possibly failing if it is [None]
     @raise Invalid_argument if the option is [None] *)
 
+val get_lazy : (unit -> 'a) -> 'a t -> 'a
+(** [get_lazy default_fn x] unwraps [x], but if [x = None] it returns [default_fn ()] instead.
+    @since NEXT_RELEASE *)
+
 val sequence_l : 'a t list -> 'a list t
 (** [sequence_l [x1; x2; ...; xn]] returns [Some [y1;y2;...;yn]] if
     every [xi] is [Some yi]. Otherwise, if the list contains at least
