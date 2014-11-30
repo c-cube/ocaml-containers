@@ -27,7 +27,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @since NEXT_RELEASE *)
 
 type t = float
-type fpclass
+type fpclass = Pervasives.fpclass =
+  | FP_normal
+  | FP_subnormal
+  | FP_zero
+  | FP_infinite
+  | FP_nan
 
 val nan : t
 

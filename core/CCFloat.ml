@@ -24,7 +24,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 type t = float
-type fpclass = Pervasives.fpclass
+type fpclass = Pervasives.fpclass =
+  | FP_normal
+  | FP_subnormal
+  | FP_zero
+  | FP_infinite
+  | FP_nan
 
 let nan = Pervasives.nan
 
