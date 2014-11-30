@@ -23,7 +23,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Basic Float functions} *)
+(** {1 Basic Float functions}
+@since NEXT_RELEASE *)
 
 type t = float
 type fpclass
