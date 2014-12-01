@@ -283,7 +283,7 @@ module Dot = struct
         FQ.empty l
     in
     (* preamble *)
-    Format.fprintf fmt "@[<hv 2>digraph %s {@," name;
+    Format.fprintf fmt "@[<hv 2>digraph \"%s\" {@," name;
     aux q;
     Format.fprintf fmt "}@]@.";
     ()
