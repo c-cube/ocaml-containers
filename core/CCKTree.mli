@@ -126,5 +126,18 @@ module Dot : sig
   val pp_single : string -> attribute list t printer
 
   val print : graph formatter
+  (** Printer with indentation, etc.
+      @since NEXT_RELEASE *)
+
+  val print_to_file : string -> graph -> unit
+  (** [print_to_file filename g] prints [g] into a file whose name
+      is [filename].
+      @since NEXT_RELEASE *)
+
+  val to_file : ?name:string -> string -> attribute list t list -> unit
+  (** [to_file filename trees] makes a graph out of the trees, opens the
+      file [filename] and prints the graph into the file.
+      @param name name of the graph
+      @since NEXT_RELEASE *)
 end
 

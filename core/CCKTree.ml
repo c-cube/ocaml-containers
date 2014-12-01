@@ -294,5 +294,20 @@ module Dot = struct
     Format.pp_print_flush fmt ()
 
   let pp_single name buf t = pp buf (singleton ~name t)
+
+  let print_to_file filename g =
+    let oc = open_out filename in
+    let fmt = Format.formatter_of_out_channel oc in
+    try
+      print fmt g;
+      Format.pp_print_flush fmt ();
+      close_out oc
+    with e ->
+      close_out oc;
+      raise e
+
+  let to_file ?(name="graph") filename trees =
+    let g = make ~name trees in
+    print_to_file filename g
 end
 
