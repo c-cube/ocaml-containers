@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        sequence
-Version:     0.5.4
+Version:     dev
 Homepage:    https://github.com/c-cube/sequence
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -59,7 +59,7 @@ Document sequence
   XOCamlbuildLibraries: sequence
 
 Test all
-  Type:         custom (0.4)
+  Type:         custom
   Command:      make run-tests
   TestTools:    run_tests
   Run$:         flag(tests)
