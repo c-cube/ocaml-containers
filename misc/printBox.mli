@@ -147,6 +147,8 @@ val vpad : int -> Box.t -> Box.t
 val hpad : int -> Box.t -> Box.t
 (** Pad horizontally *)
 
+(* TODO: right-align/left-align *)
+
 val grid : ?pad:(Box.t -> Box.t) -> ?bars:bool ->
            Box.t array array -> Box.t
 (** Grid of boxes (no frame between boxes). The matrix is indexed

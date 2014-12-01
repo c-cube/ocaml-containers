@@ -33,6 +33,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
 type +'a t = unit -> [`Nil | `Node of 'a * 'a t list]
 
@@ -132,7 +133,7 @@ module FQ = struct
     hd : 'a list;
     tl : 'a list;
   }
-  
+
   exception Empty
 
   (* invariant: if hd=[], then tl=[] *)
@@ -220,24 +221,24 @@ module Dot = struct
     | `Id n :: l' -> n, List.rev_append acc l'
     | x :: l' -> _find_id (x::acc) l'
 
-  let _pp_attr buf attr = match attr with
-    | `Color c -> Printf.bprintf buf "color=%s" c
-    | `Shape s -> Printf.bprintf buf "shape=%s" s
-    | `Weight w -> Printf.bprintf buf "weight=%d" w
-    | `Style s -> Printf.bprintf buf "style=%s" s
-    | `Label l -> Printf.bprintf buf "label=\"%s\"" l
-    | `Other (name, value) -> Printf.bprintf buf "%s=\"%s\"" name value
+  let _pp_attr fmt attr = match attr with
+    | `Color c -> Format.fprintf fmt "color=%s" c
+    | `Shape s -> Format.fprintf fmt "shape=%s" s
+    | `Weight w -> Format.fprintf fmt "weight=%d" w
+    | `Style s -> Format.fprintf fmt "style=%s" s
+    | `Label l -> Format.fprintf fmt "label=\"%s\"" l
+    | `Other (name, value) -> Format.fprintf fmt "%s=\"%s\"" name value
     | `Id _ -> ()  (* should not be here *)
 
-  let rec _pp_attrs buf l = match l with
+  let rec _pp_attrs fmt l = match l with
     | [] -> ()
-    | [x] -> _pp_attr buf x
+    | [x] -> _pp_attr fmt x
     | x::l' ->
-        _pp_attr buf x;
-        Buffer.add_char buf ',';
-        _pp_attrs buf l'
+        _pp_attr fmt x;
+        Format.pp_print_char fmt ',';
+        _pp_attrs fmt l'
 
-  let pp buf (name,l) =
+  let print fmt (name,l) =
     (* nodes already printed *)
     let tbl = Hashtbl.create 32 in
     (* fresh name generator *)
@@ -267,11 +268,11 @@ module Dot = struct
           let name, attrs = get_name x in
           begin match parent with
             | None -> ()
-            | Some n -> Printf.bprintf buf "  %s -> %s;\n" n name
+            | Some n -> Format.fprintf fmt "  %s -> %s;@," n name
           end;
           if not (Hashtbl.mem tbl name) then (
             Hashtbl.add tbl name ();
-            Printf.bprintf buf "  %s [%a];\n" name _pp_attrs attrs;
+            Format.fprintf fmt "@[%s [%a];@]@," name _pp_attrs attrs;
             List.fold_left
               (fun q y -> FQ.push q (Some name, y)) q l
           ) else q
@@ -282,10 +283,15 @@ module Dot = struct
         FQ.empty l
     in
     (* preamble *)
-    Printf.bprintf buf "digraph %s {\n" name;
+    Format.fprintf fmt "@[<hv 2>digraph %s {@," name;
     aux q;
-    Printf.bprintf buf "}\n";
+    Format.fprintf fmt "}@]@.";
     ()
+
+  let pp buf t =
+    let fmt = Format.formatter_of_buffer buf in
+    print fmt t;
+    Format.pp_print_flush fmt ()
 
   let pp_single name buf t = pp buf (singleton ~name t)
 end

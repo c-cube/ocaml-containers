@@ -33,6 +33,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -123,5 +124,7 @@ module Dot : sig
   (** Print the graph in DOT *)
 
   val pp_single : string -> attribute list t printer
+
+  val print : graph formatter
 end
 
