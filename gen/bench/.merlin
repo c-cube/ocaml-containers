@@ -1,0 +1,4 @@
+S .
+B ../_build/bench/
+REC
+PKG benchmark

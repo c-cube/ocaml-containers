@@ -1,0 +1,11 @@
+.*.swp
+.*.swo
+_build
+*.native
+*.byte
+.session
+TAGS
+*.docdir
+setup.log
+setup.data
+qtest
