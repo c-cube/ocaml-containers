@@ -506,10 +506,34 @@ module Iter = struct
         "klist.flat_map", klist, ();
       ]
 
+  let bench_iter n =
+    let seq () =
+      let i = ref 2 in
+      CCSequence.(
+        1 -- n |> iter (fun x -> i := !i * x)
+      )
+    and gen () =
+      let i = ref 2 in
+      CCGen.(
+        1 -- n |> iter (fun x -> i := !i * x)
+      )
+    and klist () =
+      let i = ref 2 in
+      CCKList.(
+        1 -- n |> iter (fun x -> i := !i * x)
+      )
+    in
+    CCBench.throughputN 3
+      [ "sequence.iter", seq, ();
+        "gen.iter", gen, ();
+        "klist.iter", klist, ();
+      ]
+
   let () = CCBench.register CCBench.(
     "iter" >:::
       [ "fold" >:: with_int bench_fold [100; 1_000; 10_000; 1_000_000]
       ; "flat_map" >:: with_int bench_flat_map [1_000; 10_000]
+      ; "iter" >:: with_int bench_iter [1_000; 10_000]
       ])
 end
 
@@ -608,5 +632,3 @@ end
 
 let () =
   CCBench.run_main ()
-
-
