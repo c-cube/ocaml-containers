@@ -13,3 +13,8 @@
 ## List Authors
 
 `git log --format='%aN' | sort -u`
+
+## Subtree
+
+If gen is [this remote](https://github.com/c-cube/gen.git):
+`git subtree pull --prefix gen gen master --squash`
