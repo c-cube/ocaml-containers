@@ -1,0 +1,43 @@
+# OASIS_START
+# DO NOT EDIT (digest: a9f4ed4316e4221c9e3cad121ae7a8a9)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library gen
+"gen.cmxs": use_gen
+# Executable run_tests
+"tests/run_tests.native": pkg_oUnit
+"tests/run_tests.native": use_gen
+<tests/*.ml{,i,y}>: pkg_oUnit
+<tests/*.ml{,i,y}>: use_gen
+# Executable run_qtest
+"qtest/run_qtest.native": pkg_QTest2Lib
+"qtest/run_qtest.native": pkg_containers
+"qtest/run_qtest.native": pkg_containers.misc
+"qtest/run_qtest.native": pkg_containers.string
+"qtest/run_qtest.native": pkg_oUnit
+<qtest/*.ml{,i,y}>: pkg_QTest2Lib
+<qtest/*.ml{,i,y}>: pkg_containers
+<qtest/*.ml{,i,y}>: pkg_containers.misc
+<qtest/*.ml{,i,y}>: pkg_containers.string
+<qtest/*.ml{,i,y}>: pkg_oUnit
+# Executable bench_persistent
+"bench/bench_persistent.native": pkg_benchmark
+"bench/bench_persistent.native": use_gen
+<bench/*.ml{,i,y}>: pkg_benchmark
+<bench/*.ml{,i,y}>: use_gen
+# OASIS_STOP
+"qtest": include
+<**/*.ml>: warn_A, warn(-4), warn(-44)
+
