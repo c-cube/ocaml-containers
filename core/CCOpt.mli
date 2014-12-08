@@ -75,7 +75,7 @@ val get_exn : 'a t -> 'a
 
 val get_lazy : (unit -> 'a) -> 'a t -> 'a
 (** [get_lazy default_fn x] unwraps [x], but if [x = None] it returns [default_fn ()] instead.
-    @since NEXT_RELEASE *)
+    @since 0.6.1 *)
 
 val sequence_l : 'a t list -> 'a list t
 (** [sequence_l [x1; x2; ...; xn]] returns [Some [y1;y2;...;yn]] if

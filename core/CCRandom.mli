@@ -90,15 +90,15 @@ val int_range : int -> int -> int t
 
 val small_float : float t
 (** A reasonably small float.
-    @since NEXT_RELEASE *)
+    @since 0.6.1 *)
 
 val float : float -> float t
 (** Random float within the given range
-    @since NEXT_RELEASE *)
+    @since 0.6.1 *)
 
 val float_range : float -> float -> float t
 (** Inclusive range
-    @since NEXT_RELEASE *)
+    @since 0.6.1 *)
 
 
 val split : int -> (int * int) option t

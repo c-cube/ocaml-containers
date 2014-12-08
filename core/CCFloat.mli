@@ -24,7 +24,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 (** {1 Basic Float functions}
-@since NEXT_RELEASE *)
+@since 0.6.1 *)
 
 type t = float
 type fpclass = Pervasives.fpclass =

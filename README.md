@@ -70,7 +70,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCBV`, mutable bitvectors
 - `CCPersistentHashtbl`, a semi-persistent hashtable (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
 - `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
-- `CCGen` and `CCSequence`, generic iterators structures (with structural types so they can be defined in several places). Now also in their own repository and opam packages (`gen` and `sequence`).
+- `CCGen` and `CCSequence`, generic iterators structures (with structural types so they can be defined in several places). They are also available in their own repository and opam packages (`gen` and `sequence`). Note that the `@since` annotations may not be accurate because of the use of `git subtree`.
 - `CCKList`, a persistent iterator structure (akin to a lazy list)
 - `CCList`, functions on lists, including tail-recursive implementations of `map` and `append` and many other things
 - `CCArray`, utilities on arrays and slices

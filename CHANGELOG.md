@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+- use subtree `gen/` for `CCGen` (symlink) rather than a copy.
+- Add benchmarks for the function `iter` of iterators.
+- `CCKTree`: more printers (to files), `Format` printer
+- `CCOpt.get_lazy` convenience function
+- introduce `CCFloat`, add float functions to `CCRandom` (thanks to @struktured)
+
 ## 0.6
 
 #### breaking changes
