@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.6
+Version:     0.6.1
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -42,10 +42,10 @@ Flag "bench"
 
 Library "containers"
   Path:             core
-  Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
+  Modules:          CCVector, CCDeque, CCGen, Gen_intf, CCSequence, CCFQueue, CCMultiMap,
                     CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
                     CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
-                    CCKList, CCInt, CCBool, CCArray, CCOrd, CCIO,
+                    CCKList, CCInt, CCBool, CCFloat, CCArray, CCOrd, CCIO,
                     CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
                     CCFlatHashtbl, CCSexp, CCMap, CCCache
   BuildDepends:     bytes
@@ -146,6 +146,14 @@ Document containers_advanced
   Install:              true
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: containers.advanced
+
+Document containers_lwt
+  Title:                Containers_lwt docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: containers.lwt
 
 Executable run_benchs
   Path:             benchs/

@@ -17,7 +17,9 @@ ocaml-containers
     modules of the stdlib.
 4. A sub-library with complicated abstractions, `containers.advanced` (with
    a LINQ-like query module, batch operations using GADTs, and others)
-5. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
+5. A library using [Lwt](https://github.com/ocsigen/lwt/), `containers.lwt`.
+    Currently only contains experimental, unstable stuff.
+6. Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
     in other dirs (mostly `misc` but also `lwt` and `threads`). It's where I
     tend to write code when I want to test some idea, so half the modules (at
     least) are unfinished or don't really work.
@@ -26,6 +28,10 @@ Some of the modules have been moved to their own repository (e.g. `sequence`,
 `gen`, `qcheck`) and are on opam for great fun and profit.
 
 [![Build Status](http://ci.cedeela.fr/buildStatus/icon?job=containers)](http://ci.cedeela.fr/job/containers/)
+
+## Change Log
+
+See [this file](https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md).
 
 ## Finding help
 
@@ -46,11 +52,6 @@ If you have comments, requests, or bugfixes, please share them! :-)
 
 This code is free, under the BSD license.
 
-## Documentation
-
-The API documentation can be
-found [here](http://cedeela.fr/~simon/software/containers).
-
 ## Contents
 
 The design is mostly centered around polymorphism rather than functors. Such
@@ -58,19 +59,26 @@ structures comprise (some modules in `misc/`, some other in `core/`):
 
 ### Core Structures
 
+the core library, `containers`, now depends on
+[cppo](https://github.com/mjambon/cppo) and `base-bytes` (provided
+by ocamlfind).
+
+Documentation [here](http://cedeela.fr/~simon/software/containers).
+
 - `CCHeap`, a purely functional heap structure.
 - `CCFQueue`, a purely functional double-ended queue structure
 - `CCBV`, mutable bitvectors
 - `CCPersistentHashtbl`, a semi-persistent hashtable (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
 - `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
-- `CCGen` and `CCSequence`, generic iterators structures (with structural types so they can be defined in several places). Now also in their own repository and opam packages (`gen` and `sequence`).
+- `CCGen` and `CCSequence`, generic iterators structures (with structural types so they can be defined in several places). They are also available in their own repository and opam packages (`gen` and `sequence`). Note that the `@since` annotations may not be accurate because of the use of `git subtree`.
 - `CCKList`, a persistent iterator structure (akin to a lazy list)
 - `CCList`, functions on lists, including tail-recursive implementations of `map` and `append` and many other things
 - `CCArray`, utilities on arrays and slices
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
-- `CCHashtbl`, an extension of the standard hashtbl module
+- `CCHashtbl`, `CCMap` extensions of the standard modules `Hashtbl` and `Map`
 - `CCFlatHashtbl`, a flat (open-addressing) hashtable functorial implementation
 - `CCKTree`, an abstract lazy tree structure (similar to what `CCKlist` is to lists)
+- `CCTrie`, a prefix tree
 - small modules (basic types, utilities):
   - `CCInt`
   - `CCString` (basic string operations)
@@ -78,11 +86,15 @@ structures comprise (some modules in `misc/`, some other in `core/`):
   - `CCOpt` (options, very useful)
   - `CCFun` (function combinators)
   - `CCBool`
+  - `CCFloat`
   - `CCOrd` (combinators for total orderings)
   - `CCRandom` (combinators for random generators)
   - `CCPrint` (printing combinators)
   - `CCHash` (hashing combinators)
   - `CCError` (monadic error handling, very useful)
+- `CCSexp`, a small S-expression library
+- `CCIO`, basic utilities for IO
+- `CCCache`, memoization caches, LRU, etc.
 
 ### String
 
@@ -103,7 +115,8 @@ In the module `Containers_advanced`:
 
 ### Misc
 
-See [doc](http://cedeela.fr/~simon/software/containers/misc).
+See [doc](http://cedeela.fr/~simon/software/containers/misc). This list
+is not necessarily up-to-date.
 
 - `PHashtbl`, a polymorphic hashtable (with open addressing)
 - `SplayTree`, a polymorphic splay heap implementation (not quite finished)
@@ -121,8 +134,6 @@ access to elements by their index.
 - `SmallSet`, a sorted list implementation behaving like a set.
 - `AbsSet`, an abstract Set data structure, a bit like `LazyGraph`.
 - `Univ`, a universal type encoding with affectation
-- `Cache`, a low level memoization cache for unary and binary functions
-- `Deque`, an imperative double ended FIFO (double-linked list)
 - `FlatHashtbl`, a (deprecated) open addressing hashtable with
     a functorial interface (replaced by PHashtbl)
 - `UnionFind`, a functorial imperative Union-Find structure.

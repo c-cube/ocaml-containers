@@ -104,6 +104,10 @@ let get_exn = function
   | Some x -> x
   | None -> invalid_arg "CCOpt.get_exn"
 
+let get_lazy default_fn x = match x with
+  | None -> default_fn ()
+  | Some y -> y
+
 let sequence_l l =
   let rec aux acc l = match l with
     | [] -> Some (List.rev acc)

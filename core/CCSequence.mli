@@ -576,6 +576,12 @@ By chunks of [4096] bytes:
   Sequence.IO.(chunks_of ~size:4096 "a" |> write_to "b");;
 ]}
 
+Read the lines of a file into a list:
+
+{[
+  Sequence.IO.lines "a" |> Sequence.to_list
+]}
+
 @since 0.3.4 *)
 
 module IO : sig

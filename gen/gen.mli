@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Values of type ['a Gen.t] represent a possibly infinite sequence of values
 of type 'a. One can only iterate once on the sequence, as it is consumed
 by iteration/deconstruction/access. [None] is returned when the generator
-is exhausted. Most functions consume elements.
+is exhausted.
 
 The submodule {!Restart} provides utilities to work with
 {b restartable generators}, that is, functions [unit -> 'a Gen.t] that
@@ -43,9 +43,6 @@ type 'a t = unit -> 'a option
 
 type 'a gen = 'a t
 
-(** {b NOTE}: version informations ("@since" annotations) in CCGen_intf
-    will not be reliable, for they will represent versions of Gen
-    rather than containers. *)
 module type S = Gen_intf.S
 
 (** {2 Transient generators} *)
@@ -97,8 +94,8 @@ val persistent : 'a t -> 'a Restart.t
 val persistent_lazy : 'a t -> 'a Restart.t
   (** Same as {!persistent}, but consumes the generator on demand (by chunks).
       This allows to make a restartable generator out of an ephemeral one,
-      without paying a big cost upfront (nor even consuming it fully). 
-      @since 0.6.1 *)
+      without paying a big cost upfront (nor even consuming it fully).
+      @since 0.2.2 *)
 
 val start : 'a Restart.t -> 'a t
   (** Create a new transient generator.

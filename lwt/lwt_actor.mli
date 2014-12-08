@@ -26,7 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Small Actor system for Lwt}
 
-Let's draw inspiration from Erlang. Just a tiny bit.
+Let's draw inspiration from Erlang. Just a tiny bit. Currently
+this module is unstable and experimental.
+
 {b NOTE}: this module is not thread-safe at all.
 *)
 

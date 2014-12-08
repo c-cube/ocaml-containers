@@ -33,6 +33,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -123,5 +124,20 @@ module Dot : sig
   (** Print the graph in DOT *)
 
   val pp_single : string -> attribute list t printer
+
+  val print : graph formatter
+  (** Printer with indentation, etc.
+      @since 0.6.1 *)
+
+  val print_to_file : string -> graph -> unit
+  (** [print_to_file filename g] prints [g] into a file whose name
+      is [filename].
+      @since 0.6.1 *)
+
+  val to_file : ?name:string -> string -> attribute list t list -> unit
+  (** [to_file filename trees] makes a graph out of the trees, opens the
+      file [filename] and prints the graph into the file.
+      @param name name of the graph
+      @since 0.6.1 *)
 end
 

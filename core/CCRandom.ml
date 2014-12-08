@@ -66,6 +66,13 @@ let small_int = int 100
 
 let int_range i j st = i + Random.State.int st (j-i+1)
 
+let float f st = Random.State.float st f
+
+let small_float = float 100.0
+
+let float_range i j st = i +. Random.State.float st (j-.i+.1.)
+
+
 let replicate n g st =
   let rec aux acc n =
     if n = 0 then acc else aux (g st :: acc) (n-1)

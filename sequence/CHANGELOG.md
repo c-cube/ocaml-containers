@@ -1,25 +1,5 @@
 # Changelog
 
-## 0.5.4
-
-- depend on `bytes`
-- compliance with `-safe-string`
-- `sequence.bigarray`
-
-## 0.5.3
-
-- bugfix: interaction between `take` and `is_empty`
-
-## 0.5.2
-
-- bugfix in `take`
-- `on_list` for mapping lists through sequences
-
-## 0.5.1
-
-- `Sequence.IO` module, a very very simple way to read/write files
-- options: `to_opt/of_opt/head/head_exn`
-
 ## 0.5
 
 - conversion with `klist`
@@ -82,4 +62,4 @@
 - `zip`, `unzip` and `zip_i` to convert between `t` and `t2`
 - added `scan` combinator
 
-note: git log --no-merges --pretty=%s previous_version..HEAD
+note: git log --no-merges previous_version..HEAD --pretty=%s

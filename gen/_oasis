@@ -1,0 +1,65 @@
+OASISFormat: 0.3
+Name:        gen
+Version:     0.2.2
+Homepage:    https://github.com/c-cube/gen
+Authors:     Simon Cruanes
+License:     BSD3
+LicenseFile: LICENSE
+Plugins:     META (0.3), DevFiles (0.3)
+BuildTools:  ocamlbuild
+
+Synopsis:    Simple, efficient iterators for OCaml
+
+Flag "bench"
+  Description: build benchmark
+  Default: false
+
+Library "gen"
+  Path:             .
+  Pack:             false
+  Modules:          Gen, Gen_intf
+
+Document gen
+  Title:                Containers docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: gen
+
+PreBuildCommand: make qtest-gen
+
+Executable run_tests
+  Path: tests/
+  Install: false
+  CompiledObject: native
+  MainIs: run_tests.ml
+  Build$: flag(tests)
+  BuildDepends: gen,oUnit
+
+Executable run_qtest
+  Path:             qtest/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           run_qtest.ml
+  Build$:           flag(tests)
+  BuildDepends:     containers, containers.misc, containers.string,
+                    oUnit, QTest2Lib
+
+Test all
+  Command: make test-all
+  TestTools: run_tests, run_qtest
+  Run$: flag(tests)
+
+Executable bench_persistent
+  Path: bench/
+  Install: false
+  CompiledObject: native
+  MainIs: bench_persistent.ml
+  Build$: flag(bench)
+  BuildDepends: gen,benchmark
+
+SourceRepository head
+  Type: git
+  Location: https://github.com/c-cube/gen
+  Browser: https://github.com/c-cube/gen/tree/master/src

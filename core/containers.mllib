@@ -1,8 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3c18f9fa7222954b0235c41f44fd620a)
+# DO NOT EDIT (digest: 8d84707fdc7358bdadca9b7202118243)
 CCVector
 CCDeque
 CCGen
+Gen_intf
 CCSequence
 CCFQueue
 CCMultiMap
@@ -20,6 +21,7 @@ CCHash
 CCKList
 CCInt
 CCBool
+CCFloat
 CCArray
 CCOrd
 CCIO

@@ -1,8 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: 06463ded0a7c83efb61e8ab83df42fcb)
+# DO NOT EDIT (digest: ce652946b9e4e3d4bbad78e220466df8)
 core/CCVector
 core/CCDeque
 core/CCGen
+core/Gen_intf
 core/CCSequence
 core/CCFQueue
 core/CCMultiMap
@@ -20,6 +21,7 @@ core/CCHash
 core/CCKList
 core/CCInt
 core/CCBool
+core/CCFloat
 core/CCArray
 core/CCOrd
 core/CCIO

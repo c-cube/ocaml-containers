@@ -1,26 +1,33 @@
 # Changelog
 
+## 0.6.1
+
+- use subtree `gen/` for `CCGen` (symlink) rather than a copy.
+- Add benchmarks for the function `iter` of iterators.
+- `CCKTree`: more printers (to files), `Format` printer
+- `CCOpt.get_lazy` convenience function
+- introduce `CCFloat`, add float functions to `CCRandom` (thanks to @struktured)
+
 ## 0.6
 
-### breaking changes
+#### breaking changes
 
 - new `CCIO` module, much simpler, but incompatible interface
 - renamed `CCIO` to `advanced.CCMonadIO`
-- `CCError.t` now has two type arguments
 
-### other changes
+#### other changes
 
 - `CCMultiSet.{add_mult,remove_mult,update}`
 - `CCVector.{top,top_exn}`
 - `CCFun.compose_binop` (binary composition)
 - `CCList.init`
-
+- `CCError.map2` has a more general type (thanks to @hcarty)
 - new module `CCCache`
     * moved from `misc`
     * add `CCache`.{size,iter}
     * incompatible interface (functor -> values), much simpler to use
 - `lwt/Lwt_actor` stub, for erlang-style concurrency (albeit much much more naive)
-- `misc/Mixtbl`
+- `misc/Mixtbl` added from its old repository
 - more benchmarks, with a more general system to select/run them
 - more efficient versions of `CCList.{flatten,append,flat_map}`, some functions
   are now tailrec
@@ -28,16 +35,16 @@
 
 ## 0.5
 
-### breaking changes
+#### breaking changes
 
-- dependency on `cppo` (thanks to @whitequark, see AUHORS.md) and `bytes`
+- dependency on `cppo` (thanks to @whitequark, see `AUTHORS.md`) and `bytes`
 - `CCError`:
     * now polymorphic on the error type
     * some retro-incompatibilies (wrap,guard)
 - `CCPervasives.Opt` -> `CCPervasives.Option`
 - `Levenshtein.Index.remove` changed signature (useless param removed)
 
-### other changes
+#### other changes
 
 - stronger inlining for `CCVector` (so that e.g. push is inline)
 - more tests for `CCVector`
