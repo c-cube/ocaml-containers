@@ -163,3 +163,4 @@
 <gen>: -traverse
 <core/CCVector.cmx>: inline(25)
 <{string,core}/**/*.ml>: warn_A, warn(-4), warn(-44)
+true: no_alias_deps
