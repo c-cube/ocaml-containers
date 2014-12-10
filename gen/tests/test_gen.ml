@@ -42,7 +42,7 @@ let test_iter () =
 
 let test_map () =
   let e = 1 -- 10 in
-  let e' = Gen.map string_of_int e in
+  let e' = e >>| string_of_int in
   OUnit.assert_equal ~printer:pstrlist ["9"; "10"] (Gen.to_list (Gen.drop 8 e'));
   ()
 
