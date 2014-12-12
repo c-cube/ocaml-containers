@@ -43,14 +43,36 @@ Flag "bench"
 
 Library "containers"
   Path:             core
-  Modules:          CCVector, CCDeque, CCGen, CCSequence, CCFQueue, CCMultiMap,
-                    CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
-                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
-                    CCKList, CCInt, CCBool, CCFloat, CCArray, CCOrd, CCIO,
-                    CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl, CCSexp, CCMap, CCCache
-  InternalModules:  Gen_intf
+  Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
+                    CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray,
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap
   BuildDepends:     bytes
+
+Library "containers_io"
+  Path:             core
+  Modules:          CCIO
+  FindlibParent:    containers
+  FindlibName:      io
+
+Library "containers_sexp"
+  Path:             core
+  Modules:          CCSexp
+  FindlibParent:    containers
+  FindlibName:      sexp
+
+Library "containers_data"
+  Path:             core
+  Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
+                    CCPersistentHashtbl, CCDeque, CCFQueue, CCBV
+  FindlibParent:    containers
+  FindlibName:      data
+
+Library "containers_iter"
+  Path:             core
+  Modules:          CCKTree, CCGen, CCSequence, CCKList
+  InternalModules:  Gen_intf
+  FindlibParent:    containers
+  FindlibName:      iter
 
 Library "containers_string"
   Path:             string
