@@ -1,6 +1,10 @@
 ocaml-containers
 ================
 
+![logo](media/logo.png)
+
+What is _containers_?
+
 - A usable, reasonably well-designed library that extends OCaml's standard
   library (in `core/`, packaged under `containers` in ocamlfind. Modules
   are totally independent and are prefixed with `CC` (for "containers-core"
@@ -56,6 +60,9 @@ If you have comments, requests, or bugfixes, please share them! :-)
 ## License
 
 This code is free, under the BSD license.
+
+The logo (`media/logo.png`) is
+CC-SA3 [wikimedia](http://en.wikipedia.org/wiki/File:Hypercube.svg).
 
 ## Contents
 
