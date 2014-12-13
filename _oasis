@@ -69,8 +69,7 @@ Library "containers_data"
 
 Library "containers_iter"
   Path:             core
-  Modules:          CCKTree, CCGen, CCSequence, CCKList
-  InternalModules:  Gen_intf
+  Modules:          CCKTree, CCKList
   FindlibParent:    containers
   FindlibName:      iter
 
@@ -92,7 +91,7 @@ Library "containers_advanced"
 Library "containers_pervasives"
   Path:             pervasives
   Modules:          CCPervasives
-  BuildDepends:     containers
+  BuildDepends:     containers, 
   FindlibName:      pervasives
   FindlibParent:    containers
 
