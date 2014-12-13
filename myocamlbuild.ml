@@ -1,6 +1,8 @@
 (* OASIS_START *)
 (* OASIS_STOP *)
 
+let doc_intro = "doc/intro.txt"
+
 open Ocamlbuild_plugin;;
 
 dispatch
@@ -40,7 +42,15 @@ dispatch
       let ocaml_major = "OCAML_MAJOR " ^ string_of_int major in
       let ocaml_minor = "OCAML_MINOR " ^ string_of_int minor in
 
-      flag ["cppo"] & S[A"-D"; A ocaml_major; A"-D"; A ocaml_minor]
+      flag ["cppo"] & S[A"-D"; A ocaml_major; A"-D"; A ocaml_minor] ;
+
+      (* Documentation index *)
+      dep ["ocaml"; "doc"; "extension:html"] & [doc_intro] ;
+      flag ["ocaml"; "doc"; "extension:html"] &
+      (S[A"-t"; A"LILiS user guide";
+         A"-intro"; P doc_intro;
+        ]);
+
     | _ -> ()
     end;
     dispatch_default
