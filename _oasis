@@ -8,7 +8,7 @@ LicenseFile: LICENSE
 Plugins:     META (0.3), DevFiles (0.3)
 OCamlVersion: >= 4.00.1
 BuildTools:  ocamlbuild
-AlphaFeatures: compiled_setup_ml
+AlphaFeatures: compiled_setup_ml, ocamlbuild_more_args
 
 Synopsis:    A modular standard library focused on data structures.
 Description:
@@ -144,39 +144,13 @@ Document containers
   BuildTools+:          ocamldoc
   Install:              true
   XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers,containers.string
+  XOCamlbuildExtraArgs:
+    "-docflags '-colorize-code -short-functors -charset utf-8'"
+  XOCamlbuildLibraries:
+    containers, containers.misc, containers.iter, containers.data,
+    containers.string, containers.advanced, containers.io, containers.sexp,
+    containers.lwt
 
-Document containers_misc
-  Title:                Containers_misc docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.misc
-
-Document containers_string
-  Title:                Containers_string docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.string
-
-Document containers_advanced
-  Title:                Containers_advanced docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.advanced
-
-Document containers_lwt
-  Title:                Containers_lwt docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.lwt
 
 Executable run_benchs
   Path:             benchs/
