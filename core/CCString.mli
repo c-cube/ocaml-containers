@@ -25,6 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 (** {1 Basic String Utils}
+
 Consider using {!Containers_string.KMP} for pattern search, or Regex
 libraries. *)
 

@@ -29,9 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Simple utilities to deal with basic Input/Output tasks in a resource-safe
 way. For advanced IO tasks, the user is advised to use something
 like Lwt or Async, that are far more comprehensive.
-This module depends on {!CCGen}.
-
-@since 0.6
 
 {b NOTE} this was formerly a monadic IO module. The old module is now
 in [containers.advanced] under the name [CCMonadIO].
@@ -57,7 +54,11 @@ Examples:
     )
 ) ;;
 ]}
+
+@since 0.6
+
 *)
+
 
 type 'a gen = unit -> 'a option  (** See {!CCGen} *)
 

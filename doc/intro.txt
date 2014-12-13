@@ -1,0 +1,115 @@
+{1 Containers}
+
+{2 Change Log}
+
+See {{: https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md } this file}
+
+{2 License}
+
+This code is free, under the BSD license.
+
+The logo (media/logo.png) is
+CC-SA3 {{:http://en.wikipedia.org/wiki/File:Hypercube.svg} wikimedia}
+
+{2 Contents}
+
+The design is mostly centered around polymorphism rather than functors. Such
+structures comprise (some modules in misc/, some other in core/):
+
+the core library, containers, now depends on
+{{:https://github.com/mjambon/cppo}cppo} and base-bytes (provided
+by ocamlfind).
+
+{4 Core Modules (extension of the standard library)}
+
+{!modules:
+CCArray
+CCBool
+CCError
+CCFloat
+CCFun
+CCHash
+CCHeap
+CCInt
+CCList
+CCOpt
+CCOrd
+CCPair
+CCPrint
+CCRandom
+CCString
+CCVector
+}
+
+{4 Containers.data}
+
+{!modules:
+CCBV
+CCCache
+CCFQueue
+CCFlatHashtbl
+CCMultiMap
+CCMultiSet
+CCPersistentHashtbl
+CCTrie
+}
+
+{4 Containers.io}
+
+{!modules: CCIO}
+
+{4 Containers.sexp}
+
+A small S-expression library.
+
+{!modules: CCSexp}
+
+{4 Containers.iter}
+
+Iterators:
+
+{!modules: CCKList CCKTree}
+
+{4 S-expressions}
+
+{!modules: CCSexp}
+
+{4 String}
+
+{!modules: Levenshtein KMP}
+
+{4 Advanced}
+
+{!modules: CCLinq CCCat CCBatch}
+
+{4 Misc}
+
+This list is not necessarily up-to-date.
+
+{!modules:
+AbsSet
+Bij
+FlatHashtbl
+Hashset
+Heap
+Heap
+LazyGraph
+Mixtbl
+PHashtbl
+PrintBox
+RAL
+SmallSet
+SplayMap
+SplayTree
+UnionFind
+Univ
+}
+
+{4 Others}
+
+{!modules: Future}
+
+
+{2 Index}
+
+{!indexlist}
