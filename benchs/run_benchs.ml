@@ -480,8 +480,8 @@ module Iter = struct
   (** {2 Sequence/Gen} *)
 
   let bench_fold n =
-    let seq () = CCSequence.fold (+) 0 CCSequence.(0 --n) in
-    let gen () = CCGen.fold (+) 0 CCGen.(0 -- n) in
+    let seq () = Sequence.fold (+) 0 Sequence.(0 --n) in
+    let gen () = Gen.fold (+) 0 Gen.(0 -- n) in
     let klist () = CCKList.fold (+) 0 CCKList.(0 -- n) in
     CCBench.throughputN 3
       [ "sequence.fold", seq, ();
@@ -490,10 +490,10 @@ module Iter = struct
       ]
 
   let bench_flat_map n =
-    let seq () = CCSequence.(
+    let seq () = Sequence.(
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
-    and gen () = CCGen.(
+    and gen () = Gen.(
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
     and klist () = CCKList.(
@@ -509,12 +509,12 @@ module Iter = struct
   let bench_iter n =
     let seq () =
       let i = ref 2 in
-      CCSequence.(
+      Sequence.(
         1 -- n |> iter (fun x -> i := !i * x)
       )
     and gen () =
       let i = ref 2 in
-      CCGen.(
+      Gen.(
         1 -- n |> iter (fun x -> i := !i * x)
       )
     and klist () =

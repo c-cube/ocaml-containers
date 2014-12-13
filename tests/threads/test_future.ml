@@ -15,9 +15,9 @@ let test_mvar () =
   ()
 
 let test_parallel () =
-  let l = CCSequence.(1 -- 300) in
-  let l = CCSequence.map (fun _ -> Future.spawn (fun () -> Thread.delay 0.1; 1)) l in
-  let l = CCSequence.to_list l in
+  let l = Sequence.(1 -- 300) in
+  let l = Sequence.map (fun _ -> Future.spawn (fun () -> Thread.delay 0.1; 1)) l in
+  let l = Sequence.to_list l in
   let l' = List.map Future.get l in
   OUnit.assert_equal 300 (List.fold_left (+) 0 l');
   ()

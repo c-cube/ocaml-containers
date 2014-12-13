@@ -29,6 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     a graph is always accessed from a given initial node (so only connected
     components can be represented by a single value of type ('v,'e) t). *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 (** {2 Type definitions} *)
 
 type ('id, 'v, 'e) t = {
@@ -41,7 +43,7 @@ type ('id, 'v, 'e) t = {
       other vertices, or to Empty if the identifier is not part of the graph. *)
 and ('id, 'v, 'e) node =
   | Empty
-  | Node of 'id * 'v * ('e * 'id) CCSequence.t
+  | Node of 'id * 'v * ('e * 'id) sequence
   (** A single node of the graph, with outgoing edges *)
 and ('id, 'e) path = ('id * 'e * 'id) list
   (** A reverse path (from the last element of the path to the first). *)
@@ -56,7 +58,7 @@ let empty =
 
 let singleton ?(eq=(=)) ?(hash=Hashtbl.hash) v label =
   let force v' =
-    if eq v v' then Node (v, label, CCSequence.empty) else Empty in
+    if eq v v' then Node (v, label, fun _ -> ()) else Empty in
   { force; eq; hash; }
 
 let make ?(eq=(=)) ?(hash=Hashtbl.hash) force =
@@ -66,7 +68,7 @@ let from_fun ?(eq=(=)) ?(hash=Hashtbl.hash) f =
   let force v =
     match f v with
     | None -> Empty
-    | Some (l, edges) -> Node (v, l, CCSequence.of_list edges) in
+    | Some (l, edges) -> Node (v, l, fun k -> List.iter k edges) in
   { eq; hash; force; }
 
 (** {2 Polymorphic map} *)
@@ -110,7 +112,7 @@ module Mutable = struct
     let map = mk_map ~eq ~hash in
     let force v =
       try let node = map.map_get v in
-          Node (v, node.mut_v, CCSequence.of_list node.mut_outgoing)
+          Node (v, node.mut_v, fun k -> List.iter k node.mut_outgoing)
       with Not_found -> Empty in
     let graph = { eq; hash; force; } in
     map, graph
@@ -129,12 +131,10 @@ end
 
 let from_enum ?(eq=(=)) ?(hash=Hashtbl.hash) ~vertices ~edges =
   let g, lazy_g = Mutable.create ~eq ~hash () in
-  CCSequence.iter
-    (fun (v,label_v) -> Mutable.add_vertex g v label_v;)
-    vertices;
-  CCSequence.iter
-    (fun (v1, e, v2) -> Mutable.add_edge g v1 e v2)
-    edges;
+  vertices
+    (fun (v,label_v) -> Mutable.add_vertex g v label_v;);
+  edges
+    (fun (v1, e, v2) -> Mutable.add_edge g v1 e v2);
   lazy_g
 
 let from_list ?(eq=(=)) ?(hash=Hashtbl.hash) l =
@@ -174,11 +174,11 @@ module Full = struct
     | [] -> false
 
   let bfs_full graph vertices =
-    CCSequence.from_iter (fun k ->
+    fun k ->
       let explored = mk_map ~eq:graph.eq ~hash:graph.hash in
       let id = ref 0 in
       let q = Queue.create () in (* queue of nodes to explore *)
-      CCSequence.iter (fun v -> Queue.push (FullEnter (v,[])) q) vertices;
+      vertices (fun v -> Queue.push (FullEnter (v,[])) q);
       while not (Queue.is_empty q) do
         match Queue.pop q with
         | FullEnter (v', path) ->
@@ -188,11 +188,11 @@ module Full = struct
             | Node (_, label, edges) ->
               explored.map_add v' ();
               (* explore neighbors *)
-              CCSequence.iter
+              edges
                 (fun (e,v'') ->
                   let path' = (v'',e,v') :: path in
-                  Queue.push (FullFollowEdge path') q)
-                edges;
+                  Queue.push (FullFollowEdge path') q
+                );
               (* exit node afterward *)
               Queue.push (FullExit v') q;
               (* return this vertex *)
@@ -213,17 +213,17 @@ module Full = struct
               Queue.push (FullEnter (v'', path')) q;
               k (MeetEdge (v'', e, v', EdgeForward))
             end
-      done)
+      done
 
   (* TODO: use a set of nodes currently being explored, rather than
     checking whether the node is in the path (should be faster) *)
 
   let dfs_full graph vertices =
-    CCSequence.from_iter (fun k ->
+    fun k ->
       let explored = mk_map ~eq:graph.eq ~hash:graph.hash in
       let id = ref 0 in
       let s = Stack.create () in (* stack of nodes to explore *)
-      CCSequence.iter (fun v -> Stack.push (FullEnter (v,[])) s) vertices;
+      vertices (fun v -> Stack.push (FullEnter (v,[])) s);
       while not (Stack.is_empty s) do
         match Stack.pop s with
         | FullExit v' -> k (ExitVertex v')
@@ -237,10 +237,10 @@ module Full = struct
               (* prepare to exit later *)
               Stack.push (FullExit v') s;
               (* explore neighbors *)
-              CCSequence.iter
+              edges
                 (fun (e,v'') ->
-                  Stack.push (FullFollowEdge ((v'', e, v') :: path)) s)
-                edges;
+                  Stack.push (FullFollowEdge ((v'', e, v') :: path)) s
+                );
               (* return this vertex *)
               let i = !id in
               incr id;
@@ -258,22 +258,28 @@ module Full = struct
               Stack.push (FullEnter (v'', path')) s;
               k (MeetEdge (v'', e, v', EdgeForward))
             end
-      done)
+      done
 end
 
+let seq_filter_map f seq k =
+  seq (fun x -> match f x with
+      | None -> ()
+      | Some y -> k y
+      )
+
 let bfs graph v =
-  CCSequence.fmap
+  seq_filter_map
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.bfs_full graph (CCSequence.singleton v))
+    (Full.bfs_full graph (fun k -> k v))
 
 let dfs graph v =
-  CCSequence.fmap
+  seq_filter_map
     (function
       | Full.EnterVertex (v, l, i, _) -> Some (v, l, i)
       | _ -> None)
-    (Full.dfs_full graph (CCSequence.singleton v))
+    (Full.dfs_full graph (fun k -> k v))
 
 (** {3 Mutable heap} *)
 module Heap = struct
@@ -342,7 +348,7 @@ let a_star graph
   ?(distance=(fun v1 e v2 -> 1.))
   ~goal
   start =
-  CCSequence.from_iter (fun k ->
+  fun k ->
     (* map node -> 'came_from' cell *)
     let nodes = mk_map ~eq:graph.eq ~hash:graph.hash in
     (* priority queue for nodes to explore *)
@@ -376,7 +382,7 @@ let a_star graph
         | Empty -> ()
         | Node (_, label, edges) ->
           (* explore neighbors *)
-          CCSequence.iter
+          edges
             (fun (e,v'') ->
               let cost = dist +. distance v' e v'' +. heuristic v'' in
               let cell' =
@@ -395,14 +401,20 @@ let a_star graph
                   Heap.insert h (cost, v'');
                   cell'.cf_cost <- cost; (* update best cost/path *)
                   cell'.cf_prev <- CFEdge (e, cell);
-                end)
-            edges;
+                end);
           (* check whether the node we just explored is a goal node *)
           if goal v'
             (* found a goal node! yield it *)
             then k (dist, mk_path nodes [] v')
         end
-    done)
+    done
+
+exception ExitHead
+let seq_head seq =
+  let r = ref None in
+  try
+    seq (fun x -> r := Some x; raise ExitHead); None
+  with ExitHead -> !r
     
 (** Shortest path from the first node to the second one, according
     to the given (positive!) distance function. The path is reversed,
@@ -413,22 +425,29 @@ let dijkstra graph ?on_explore ?(ignore=fun v -> false)
     a_star graph ?on_explore ~ignore ~distance ~heuristic:(fun _ -> 0.)
        ~goal:(fun v -> graph.eq v v2) v1
   in
-  match CCSequence.to_list (CCSequence.take 1 paths) with
-  | [] -> raise Not_found
-  | [x] -> x
-  | _ -> assert false
+  match seq_head paths with
+  | None -> raise Not_found
+  | Some x -> x
+
+exception ExitForall
+let seq_for_all p seq =
+  try
+    seq (fun x -> if not (p x) then raise ExitForall);
+    true
+  with ExitForall -> false
+
 
 (** Is the subgraph explorable from the given vertex, a Directed
     Acyclic Graph? *)
 let is_dag graph v =
-  CCSequence.for_all
+  seq_for_all
     (function
       | Full.MeetEdge (_, _, _, Full.EdgeBackward) -> false
       | _ -> true)
-    (Full.dfs_full graph (CCSequence.singleton v))
+    (Full.dfs_full graph (fun k -> k v))
 
 let is_dag_full graph vs =
-  CCSequence.for_all
+  seq_for_all
     (function
       | Full.MeetEdge (_, _, _, Full.EdgeBackward) -> false
       | _ -> true)
@@ -443,9 +462,8 @@ let find_cycle graph v =
   let cycle = ref [] in
   try
     let path_stack = Stack.create () in
-    let seq = Full.dfs_full graph (CCSequence.singleton v) in
-    CCSequence.iter
-      (function
+    let seq = Full.dfs_full graph (fun k -> k v) in
+    seq (function
       | Full.EnterVertex (_, _, _, path) ->
         Stack.push path path_stack
       | Full.ExitVertex _ ->
@@ -456,8 +474,8 @@ let find_cycle graph v =
         let path = (v1, e, v2) :: path in
         cycle := path;
         raise Exit
-      | Full.MeetEdge _ -> ())
-      seq;
+      | Full.MeetEdge _ -> ()
+    );
     raise Not_found
   with Exit ->
     !cycle
@@ -471,6 +489,9 @@ let rev_path p =
 
 (** {2 Lazy transformations} *)
 
+let seq_map f seq k = seq (fun x -> k (f x))
+let seq_append s1 s2 k = s1 k; s2 k
+
 let union ?(combine=fun x y -> x) g1 g2 =
   let force v =
     match g1.force v, g2.force v with
@@ -478,7 +499,7 @@ let union ?(combine=fun x y -> x) g1 g2 =
     | ((Node _) as n), Empty -> n
     | Empty, ((Node _) as n) -> n
     | Node (_, l1, e1), Node (_, l2, e2) ->
-      Node (v, combine l1 l2, CCSequence.append e1 e2)
+      Node (v, combine l1 l2, seq_append e1 e2)
   in { eq=g1.eq; hash=g1.hash; force; }
 
 let map ~vertices ~edges g =
@@ -486,9 +507,11 @@ let map ~vertices ~edges g =
     match g.force v with
     | Empty -> Empty
     | Node (_, l, edges_enum) ->
-      let edges_enum' = CCSequence.map (fun (e,v') -> (edges e), v') edges_enum in
+      let edges_enum' = seq_map (fun (e,v') -> (edges e), v') edges_enum in
       Node (v, vertices l, edges_enum')
   in { eq=g.eq; hash=g.hash; force; }
+
+let seq_flat_map f seq k = seq (fun x -> f x k)
 
 (** Replace each vertex by some vertices. By mapping [v'] to [f v'=v1,...,vn],
     whenever [v] ---e---> [v'], then [v --e--> vi] for i=1,...,n. *)
@@ -497,12 +520,14 @@ let flatMap f g =
     match g.force v with
     | Empty -> Empty
     | Node (_, l, edges_enum) ->
-      let edges_enum' = CCSequence.flatMap
+      let edges_enum' = seq_flat_map
         (fun (e, v') ->
-          CCSequence.map (fun v'' -> e, v'') (f v'))
+          seq_map (fun v'' -> e, v'') (f v'))
         edges_enum in
       Node (v, l, edges_enum')
   in { eq=g.eq; hash=g.hash; force; }
+
+let seq_filter p seq k = seq (fun x -> if p x then k x)
 
 let filter ?(vertices=(fun v l -> true)) ?(edges=fun v1 e v2 -> true) g =
   let force v =
@@ -510,10 +535,13 @@ let filter ?(vertices=(fun v l -> true)) ?(edges=fun v1 e v2 -> true) g =
     | Empty -> Empty
     | Node (_, l, edges_enum) when vertices v l ->
       (* filter out edges *)
-      let edges_enum' = CCSequence.filter (fun (e,v') -> edges v e v') edges_enum in
+      let edges_enum' = seq_filter (fun (e,v') -> edges v e v') edges_enum in
       Node (v, l, edges_enum')
     | Node _ -> Empty  (* filter out this vertex *)
   in { eq=g.eq; hash=g.hash; force; }
+
+let seq_product s1 s2 k =
+  s1 (fun x -> s2 (fun y -> k(x,y)))
 
 let product g1 g2 =
   let force (v1,v2) =
@@ -522,8 +550,8 @@ let product g1 g2 =
     | _, Empty -> Empty
     | Node (_, l1, edges1), Node (_, l2, edges2) ->
       (* product of edges *)
-      let edges = CCSequence.product edges1 edges2 in
-      let edges = CCSequence.map (fun ((e1,v1'),(e2,v2')) -> ((e1,e2),(v1',v2'))) edges in
+      let edges = seq_product edges1 edges2 in
+      let edges = seq_map (fun ((e1,v1'),(e2,v2')) -> ((e1,e2),(v1',v2'))) edges in
       Node ((v1,v2), (l1,l2), edges)
   and eq (v1,v2) (v1',v2') =
     g1.eq v1 v1' && g2.eq v2 v2'
@@ -574,7 +602,7 @@ module Dot = struct
     (* print preamble *)
     Format.fprintf formatter "@[<v2>digraph %s {@;" name;
     (* traverse *)
-    CCSequence.iter
+    events
       (function
         | Full.EnterVertex (v, attrs, _, _) ->
           Format.fprintf formatter "  @[<h>%a %a;@]@." pp_vertex v
@@ -584,8 +612,8 @@ module Dot = struct
           Format.fprintf formatter "  @[<h>%a -> %a %a;@]@."
             pp_vertex v1 pp_vertex v2
             (CCList.print ~start:"[" ~stop:"]" ~sep:"," print_attribute)
-            attrs)
-      events;
+            attrs
+      );
     (* close *)
     Format.fprintf formatter "}@]@;@?";
     ()
@@ -608,17 +636,17 @@ let divisors_graph =
     if i > 2
       then
         let l = divisors [] 2 i in
-        let edges = CCSequence.map (fun i -> (), i) (CCSequence.of_list l) in
+        let edges = seq_map (fun i -> (), i) (fun k -> List.iter k l) in
         Node (i, i, edges)
       else
-        Node (i, i, CCSequence.empty)
+        Node (i, i, fun _ -> ())
   in make force
 
 let collatz_graph =
   let force i =
     if i mod 2 = 0
-      then Node (i, i, CCSequence.singleton ((), i / 2))
-      else Node (i, i, CCSequence.singleton ((), i * 3 + 1))
+      then Node (i, i, fun k -> k ((), i / 2))
+      else Node (i, i, fun k -> k ((), i * 3 + 1))
   in make force
 
 let collatz_graph_bis =
@@ -628,10 +656,10 @@ let collatz_graph_bis =
       ; false, i * 2 ] @
       if i mod 3 = 1 then [false, (i-1)/3] else []
     in
-    Node (i, i, CCSequence.of_list l)
+    Node (i, i, fun k -> List.iter k l)
   in make force
 
 let heap_graph =
   let force i =
-    Node (i, i, CCSequence.of_list [(), 2*i; (), 2*i+1])
+    Node (i, i, fun k -> List.iter k [(), 2*i; (), 2*i+1])
   in make force

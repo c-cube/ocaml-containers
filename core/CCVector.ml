@@ -451,7 +451,7 @@ let of_seq ?(init=create ()) seq =
   init
 
 (*$T
-  of_seq CCSequence.(1 -- 10) |> to_list = CCList.(1 -- 10)
+  of_seq Sequence.(1 -- 10) |> to_list = CCList.(1 -- 10)
 *)
 
 let to_seq v k = iter k v
@@ -524,7 +524,7 @@ let to_gen v =
       ) else None
 
 (*$T
-  let v = (1--10) in to_list v = CCGen.to_list (to_gen v)
+  let v = (1--10) in to_list v = Gen.to_list (to_gen v)
   *)
 
 let of_klist ?(init=create ()) l =

@@ -3,8 +3,6 @@
 
 open OUnit
 
-module Sequence = CCSequence
-
 module H = CCHeap.Make(struct type t = int let leq x y =x<=y end)
 
 let empty = H.empty

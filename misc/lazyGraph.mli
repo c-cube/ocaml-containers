@@ -34,6 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {2 Type definitions} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type ('id, 'v, 'e) t = {
   eq : 'id -> 'id -> bool;
   hash : 'id -> int;
@@ -44,7 +46,7 @@ type ('id, 'v, 'e) t = {
       other vertices, or to Empty if the identifier is not part of the graph. *)
 and ('id, 'v, 'e) node =
   | Empty
-  | Node of 'id * 'v * ('e * 'id) CCSequence.t
+  | Node of 'id * 'v * ('e * 'id) sequence
   (** A single node of the graph, with outgoing edges *)
 and ('id, 'e) path = ('id * 'e * 'id) list
   (** A reverse path (from the last element of the path to the first). *)
@@ -70,8 +72,8 @@ val make : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
   (** Build a graph from the [force] function *)
 
 val from_enum : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
-                vertices:('id * 'v) CCSequence.t ->
-                edges:('id * 'e * 'id) CCSequence.t ->
+                vertices:('id * 'v) sequence ->
+                edges:('id * 'e * 'id) sequence ->
                 ('id, 'v, 'e) t
   (** Concrete (eager) representation of a Graph *)
 
@@ -117,21 +119,21 @@ module Full : sig
     | EdgeBackward    (* toward the current trail *)
     | EdgeTransverse  (* toward a totally explored part of the graph *)
 
-  val bfs_full : ('id, 'v, 'e) t -> 'id CCSequence.t ->
-                  ('id, 'v, 'e) traverse_event CCSequence.t
+  val bfs_full : ('id, 'v, 'e) t -> 'id sequence ->
+                  ('id, 'v, 'e) traverse_event sequence
     (** Lazy traversal in breadth first from a finite set of vertices *)
 
-  val dfs_full : ('id, 'v, 'e) t -> 'id CCSequence.t ->
-                 ('id, 'v, 'e) traverse_event CCSequence.t
+  val dfs_full : ('id, 'v, 'e) t -> 'id sequence ->
+                 ('id, 'v, 'e) traverse_event sequence
     (** Lazy traversal in depth first from a finite set of vertices *)
 end
 
 (** The traversal functions assign a unique ID to every traversed node *)
 
-val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) CCSequence.t
+val bfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) sequence
   (** Lazy traversal in breadth first *)
 
-val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) CCSequence.t
+val dfs : ('id, 'v, 'e) t -> 'id -> ('id * 'v * int) sequence
   (** Lazy traversal in depth first *)
 
 module Heap : sig
@@ -149,7 +151,7 @@ val a_star : ('id, 'v, 'e) t ->
              ?distance:('id -> 'e -> 'id -> float) ->
              goal:('id -> bool) ->
              'id ->
-             (float * ('id, 'e) path) CCSequence.t
+             (float * ('id, 'e) path) sequence
   (** Shortest path from the first node to nodes that satisfy [goal], according
       to the given (positive!) distance function. The distance is also returned.
       [ignore] allows one to ignore some vertices during exploration.
@@ -174,7 +176,7 @@ val is_dag : ('id, _, _) t -> 'id -> bool
   (** Is the subgraph explorable from the given vertex, a Directed
       Acyclic Graph? *)
 
-val is_dag_full : ('id, _, _) t -> 'id CCSequence.t -> bool
+val is_dag_full : ('id, _, _) t -> 'id sequence -> bool
   (** Is the Graph reachable from the given vertices, a DAG? See {! is_dag} *)
 
 val find_cycle : ('id, _, 'e) t -> 'id -> ('id, 'e) path
@@ -196,7 +198,7 @@ val map : vertices:('v -> 'v2) -> edges:('e -> 'e2) ->
           ('id, 'v, 'e) t -> ('id, 'v2, 'e2) t
   (** Map vertice and edge labels *)
 
-val flatMap : ('id -> 'id CCSequence.t) ->
+val flatMap : ('id -> 'id sequence) ->
               ('id, 'v, 'e) t ->
               ('id, 'v, 'e) t
   (** Replace each vertex by some vertices. By mapping [v'] to [f v'=v1,...,vn],
@@ -231,12 +233,12 @@ module Dot : sig
 
   val pp_enum : ?eq:('id -> 'id -> bool) -> ?hash:('id -> int) ->
                 name:string -> Format.formatter ->
-                ('id,attribute list,attribute list) Full.traverse_event CCSequence.t ->
+                ('id,attribute list,attribute list) Full.traverse_event sequence ->
                 unit
 
   val pp : name:string -> ('id, attribute list, attribute list) t ->
            Format.formatter ->
-           'id CCSequence.t -> unit
+           'id sequence -> unit
     (** Pretty print the given graph (starting from the given set of vertices)
         to the channel in DOT format *)
 end

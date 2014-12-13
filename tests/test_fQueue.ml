@@ -2,7 +2,7 @@
 open OUnit
 
 module FQueue = CCFQueue
-module Sequence = CCSequence
+
 
 let test_empty () =
   let q = FQueue.empty in

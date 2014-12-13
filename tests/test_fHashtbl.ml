@@ -2,7 +2,7 @@
 open OUnit
 open Containers_misc
 
-module Sequence = CCSequence
+
 
 module Test(SomeHashtbl : FHashtbl.S with type key = int) = struct
   let test_add () =

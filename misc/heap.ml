@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Imperative priority queue} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type 'a t = {
   mutable tree : 'a tree;
   cmp : 'a -> 'a -> int;

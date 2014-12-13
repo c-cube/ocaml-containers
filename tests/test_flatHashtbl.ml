@@ -2,7 +2,7 @@
 open OUnit
 open Containers_misc
 
-module Sequence = CCSequence
+
 
 module IHashtbl = FlatHashtbl.Make(struct
   type t = int

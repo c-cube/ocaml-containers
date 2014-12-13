@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Functional (persistent) hashtable} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 (** {2 Signatures} *)
 
 module type HASH = sig
@@ -64,9 +66,9 @@ module type S = sig
   val size : 'a t -> int
     (** Number of bindings *)
 
-  val to_seq : 'a t -> (key * 'a) CCSequence.t
+  val to_seq : 'a t -> (key * 'a) sequence
 
-  val of_seq : ?size:int -> (key * 'a) CCSequence.t -> 'a t
+  val of_seq : ?size:int -> (key * 'a) sequence -> 'a t
 end
 
 (** {2 Persistent array} *)

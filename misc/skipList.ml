@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Imperative skip-list} *)
 
+type 'a gen = unit -> 'a option
+
 (** Most functions are inspired from
     "A skip list cookbook", William Pugh, 1989. *)
 
@@ -187,6 +189,10 @@ let gen l =
       x := a.(0);
       Some (k, !v)
 
+let rec gen_iter f g = match g() with
+  | None -> ()
+  | Some x -> f x; gen_iter f g
+
 (** Add content of the iterator to the list *)
 let of_gen l gen =
-  CCGen.iter (fun (k,v) -> add l k v) gen
+  gen_iter (fun (k,v) -> add l k v) gen

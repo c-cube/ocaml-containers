@@ -5,7 +5,7 @@ open OUnit
 open Helpers
 open Containers_misc
 
-module Sequence = CCSequence
+
 module G = PersistentGraph
 
 (* build a graph from a list of pairs of ints *)

@@ -25,6 +25,8 @@ for any direct, indirect, incidental, special, exemplary, or consequential
 
 (** {1 Abstract set/relation} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type 'a t = {
   mem : 'a -> bool;
   iter : ('a -> unit) -> unit;
@@ -102,8 +104,7 @@ let product s1 s2 =
   let cardinal () = s1.cardinal () * s2.cardinal () in
   { mem; iter; cardinal; }
 
-let to_seq set =
-  CCSequence.from_iter (fun k -> set.iter k)
+let to_seq set k = set.iter k
 
 let to_list set =
   let l = ref [] in
@@ -154,7 +155,7 @@ let builder_cmp (type k) ?(cmp=Pervasives.compare) () =
   mk_builder ~add ~get
 
 let of_seq_builder ~builder seq =
-  CCSequence.iter builder.add seq;
+  seq builder.add;
   builder.get ()
 
 let of_seq_hash ?eq ?hash seq =
@@ -165,7 +166,7 @@ let of_seq_cmp ?cmp seq =
   let b = builder_cmp ?cmp () in
   of_seq_builder b seq
 
-let of_list l = of_seq_hash (CCSequence.of_list l)
+let of_list l = of_seq_hash (fun k -> List.iter k l)
 
 let map ?(builder=builder_hash ()) set ~f =
   set.iter
@@ -202,7 +203,7 @@ module MakeHash(X : Hashtbl.HashedType) = struct
 
   let of_seq ?(size=5) seq =
     let h = Hashtbl.create size in
-    CCSequence.iter (fun x -> Hashtbl.add h x ()) seq;
+    seq (fun x -> Hashtbl.add h x ());
     let mem x = Hashtbl.mem h x in
     let iter k = Hashtbl.iter (fun x () -> k x) h in
     let cardinal () = Hashtbl.length h in
@@ -220,8 +221,9 @@ module MakeSet(S : Set.S) = struct
     mk_generic ~cardinal ~mem ~iter
 
   let of_seq ?(init=S.empty) seq =
-    let set = CCSequence.fold (fun s x -> S.add x s) init seq in
-    of_set set
+    let set = ref init in
+    seq (fun x -> set := S.add x !set);
+    of_set !set
 
   let to_set set =
     fold set S.empty (fun set x -> S.add x set)

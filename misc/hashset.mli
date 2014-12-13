@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Mutable polymorphic hash-set} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type 'a t = ('a, unit) PHashtbl.t
   (** A set is a hashtable, with trivial values *)
 
@@ -51,9 +53,9 @@ val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 val filter : ('a -> bool) -> 'a t -> unit
   (** destructive filter (remove elements that do not satisfy the predicate) *)
 
-val to_seq : 'a t -> 'a CCSequence.t
+val to_seq : 'a t -> 'a sequence
 
-val of_seq : 'a t -> 'a CCSequence.t -> unit
+val of_seq : 'a t -> 'a sequence -> unit
 
 val union : ?into:'a t -> 'a t -> 'a t -> 'a t
   (** Set union. The result is stored in [into] *)

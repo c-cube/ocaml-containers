@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Functional (persistent) hashtable} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 (** {2 Signatures} *)
 
 module type HASH = sig
@@ -64,9 +66,9 @@ module type S = sig
   val size : 'a t -> int
     (** Number of bindings *)
 
-  val to_seq : 'a t -> (key * 'a) CCSequence.t
+  val to_seq : 'a t -> (key * 'a) sequence
 
-  val of_seq : ?size:int -> (key * 'a) CCSequence.t -> 'a t
+  val of_seq : ?size:int -> (key * 'a) sequence -> 'a t
 end
 
 (** {2 Persistent array} *)
@@ -336,13 +338,13 @@ module Tree(X : HASH) = struct
   let size t =
     fold (fun n _ _ -> n + 1) 0 t
 
-  let to_seq t =
-    CCSequence.from_iter (fun k -> iter (fun key value -> k (key, value)) t)
+  let to_seq t k =
+    iter (fun key value -> k (key, value)) t
 
   let of_seq ?(size=32) seq =
-    CCSequence.fold
-      (fun t (k,v) -> replace t k v)
-      (empty size) seq
+    let cur = ref (empty size) in
+    seq (fun (k,v) -> cur := replace !cur k v);
+    !cur
 end
 
 (** {2 Flat hashtable} *)
@@ -492,10 +494,10 @@ module Flat(X : HASH) = struct
         | _ -> acc)
       acc t.buckets
 
-  let to_seq t =
-    CCSequence.from_iter
-      (fun k -> iter (fun key value -> k (key, value)) t)
+  let to_seq t k = iter (fun key value -> k (key, value)) t
 
   let of_seq ?(size=32) seq =
-    CCSequence.fold (fun t (k,v) -> replace t k v) (empty size) seq
+    let t = ref (empty size) in
+    seq (fun (k,v) -> t := replace !t k v);
+    !t
 end

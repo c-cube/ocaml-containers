@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Imperative priority queue} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type 'a t
   (** A heap containing values of type 'a *)
 
@@ -51,6 +53,6 @@ val iter : 'a t -> ('a -> unit) -> unit
 
 val size : _ t -> int
 
-val to_seq : 'a t -> 'a CCSequence.t
+val to_seq : 'a t -> 'a sequence
 
-val of_seq : 'a t -> 'a CCSequence.t -> unit
+val of_seq : 'a t -> 'a sequence -> unit

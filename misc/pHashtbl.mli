@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Open addressing hashtable (robin hood hashing)} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type ('a, 'b) t = {
   mutable buckets : ('a, 'b) bucket array;
   mutable size : int;
@@ -90,11 +92,11 @@ val filter : ('a -> 'b -> bool) -> ('a, 'b) t -> unit
 val fold : ('c -> 'a -> 'b -> 'c) -> 'c -> ('a, 'b) t -> 'c
   (** Fold on bindings *)
 
-val of_seq : ('a, 'b) t -> ('a * 'b) CCSequence.t -> unit
+val of_seq : ('a, 'b) t -> ('a * 'b) sequence -> unit
   (** Add the given pairs to the hashtable *)
 
-val to_seq : ('a, 'b) t -> ('a * 'b) CCSequence.t
-  (** CCSequence of pairs *)
+val to_seq : ('a, 'b) t -> ('a * 'b) sequence
+  (** Sequence of pairs *)
 
 val stats : (_, _) t -> int * int * int * int * int * int
   (** Cf Weak.S *)

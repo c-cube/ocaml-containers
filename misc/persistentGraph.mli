@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 A simple polymorphic directed graph.} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 (** {2 Basics} *)
 
 type ('v, 'e) t
@@ -51,31 +53,31 @@ val length : (_, _) t -> int
 val add : ('v,'e) t -> 'v -> 'e -> 'v -> unit
   (** Add an edge between two vertices *)
 
-val add_seq : ('v,'e) t -> ('v * 'e * 'v) CCSequence.t -> unit
+val add_seq : ('v,'e) t -> ('v * 'e * 'v) sequence -> unit
   (** Add the vertices to the graph *)
 
-val next : ('v, 'e) t -> 'v -> ('e * 'v) CCSequence.t
+val next : ('v, 'e) t -> 'v -> ('e * 'v) sequence
   (** Outgoing edges *)
 
-val prev : ('v, 'e) t -> 'v -> ('e * 'v) CCSequence.t
+val prev : ('v, 'e) t -> 'v -> ('e * 'v) sequence
   (** Incoming edges *)
 
-val between : ('v, 'e) t -> 'v -> 'v -> 'e CCSequence.t
+val between : ('v, 'e) t -> 'v -> 'v -> 'e sequence
 
 val iter_vertices : ('v, 'e) t -> ('v -> unit) -> unit
-val vertices : ('v, 'e) t -> 'v CCSequence.t
+val vertices : ('v, 'e) t -> 'v sequence
     (** Iterate on vertices *)
 
 val iter : ('v, 'e) t -> ('v * 'e * 'v -> unit) -> unit 
-val to_seq : ('v, 'e) t -> ('v * 'e * 'v) CCSequence.t
+val to_seq : ('v, 'e) t -> ('v * 'e * 'v) sequence
   (** Dump the graph as a sequence of vertices *)
 
 (** {2 Global operations} *)
 
-val roots : ('v, 'e) t -> 'v CCSequence.t
+val roots : ('v, 'e) t -> 'v sequence
   (** Roots, ie vertices with no incoming edges *)
 
-val leaves : ('v, 'e) t -> 'v CCSequence.t
+val leaves : ('v, 'e) t -> 'v sequence
   (** Leaves, ie vertices with no outgoing edges *)
 
 val choose : ('v, 'e) t -> 'v
@@ -92,8 +94,8 @@ val rev : ('v, 'e) t -> unit
 val bfs : ('v, 'e) t -> 'v -> ('v -> unit) -> unit
   (** Breadth-first search, from given 'v *)
 
-val bfs_seq : ('v, 'e) t -> 'v -> 'v CCSequence.t
-  (** CCSequence of vertices traversed during breadth-first search *)
+val bfs_seq : ('v, 'e) t -> 'v -> 'v sequence
+  (** Sequence of vertices traversed during breadth-first search *)
 
 val dfs_full : ('v, 'e) t ->
                ?labels:('v, int) PHashtbl.t ->

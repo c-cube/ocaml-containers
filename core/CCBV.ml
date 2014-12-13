@@ -172,7 +172,7 @@ let iter_true bv f =
   done
 
 (*$T
-  of_list [1;5;7] |> iter_true |> CCSequence.to_list |> List.sort CCOrd.compare = [1;5;7]
+  of_list [1;5;7] |> iter_true |> Sequence.to_list |> List.sort CCOrd.compare = [1;5;7]
 *)
 
 let to_list bv =

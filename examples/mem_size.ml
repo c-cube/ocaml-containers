@@ -1,7 +1,7 @@
 (** Compute the memory footprint of a value (and its subvalues). Reference is
     http://rwmj.wordpress.com/2009/08/05/ocaml-internals-part-2-strings-and-other-types/ *)
 
-module Sequence = CCSequence
+
 
 (** A graph vertex is an Obj.t value *)
 let graph =

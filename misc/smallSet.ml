@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Small set structure} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type 'a t = {
   cmp : 'a -> 'a -> int;
   nodes : 'a node;
@@ -123,11 +125,15 @@ let to_seq set =
     iter k set
 
 let of_seq set seq =
-  CCSequence.fold add set seq
+  let set = ref set in
+  seq (fun x -> set := add !set x);
+  !set
 
 let to_list set =
-  CCSequence.to_rev_list (to_seq set)
+  let l = ref [] in
+  to_seq set (fun x -> l := x :: !l);
+  !l
 
 let of_list set l =
-  of_seq set (CCSequence.of_list l)
+  List.fold_left add set l
 

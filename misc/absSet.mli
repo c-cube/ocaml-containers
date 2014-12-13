@@ -25,6 +25,8 @@ for any direct, indirect, incidental, special, exemplary, or consequential
 
 (** {1 Abstract set/relation} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type 'a t
 
 val empty : 'a t
@@ -67,7 +69,7 @@ val intersection : 'a t -> 'a t -> 'a t
 val product : 'a t -> 'b t -> ('a * 'b) t
   (** Cartesian product *)
 
-val to_seq : 'a t -> 'a CCSequence.t
+val to_seq : 'a t -> 'a sequence
 
 val to_list : 'a t -> 'a list
 
@@ -93,13 +95,13 @@ val builder_hash : ?size:int ->
 
 val builder_cmp : ?cmp:('a -> 'a -> int) -> unit -> 'a builder
 
-val of_seq_builder : builder:'a builder -> 'a CCSequence.t -> 'a t
+val of_seq_builder : builder:'a builder -> 'a sequence -> 'a t
   (** Uses the given builder to construct a set from a sequence of elements *)
 
-val of_seq_hash : ?eq:('a -> 'a -> bool) -> ?hash:('a -> int) -> 'a CCSequence.t -> 'a t
+val of_seq_hash : ?eq:('a -> 'a -> bool) -> ?hash:('a -> int) -> 'a sequence -> 'a t
   (** Construction of a set from a sequence of hashable elements *)
 
-val of_seq_cmp : ?cmp:('a -> 'a -> int) -> 'a CCSequence.t -> 'a t
+val of_seq_cmp : ?cmp:('a -> 'a -> int) -> 'a sequence -> 'a t
   (** Construction of a set from a sequence of comparable elements *)
 
 val of_list : 'a list -> 'a t
@@ -133,7 +135,7 @@ module MakeHash(X : Hashtbl.HashedType) : sig
   type elt = X.t
     (** Elements of the set are hashable *)
 
-  val of_seq : ?size:int -> elt CCSequence.t -> elt t
+  val of_seq : ?size:int -> elt sequence -> elt t
     (** Build a set from a sequence *)
 end
 
@@ -141,7 +143,7 @@ end
 module MakeSet(S : Set.S) : sig
   type elt = S.elt
 
-  val of_seq : ?init:S.t -> elt CCSequence.t -> elt t
+  val of_seq : ?init:S.t -> elt sequence -> elt t
     (** Build a set from a sequence *)
 
   val of_set : S.t -> elt t

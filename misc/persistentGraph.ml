@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 A simple polymorphic directed graph.} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type ('v, 'e) t = ('v, ('v, 'e) node) PHashtbl.t
   (** Graph parametrized by a type for vertices, and one for edges *)
 and ('v, 'e) node = {
@@ -83,25 +85,27 @@ let add t v1 e v2 =
   ()
 
 let add_seq t seq =
-  CCSequence.iter (fun (v1,e,v2) -> add t v1 e v2) seq
+  seq (fun (v1,e,v2) -> add t v1 e v2)
 
-let next t v =
-  CCSequence.of_list (PHashtbl.find t v).n_next
+let next t v k =
+  List.iter k  (PHashtbl.find t v).n_next
 
-let prev t v =
-  CCSequence.of_list (PHashtbl.find t v).n_prev
+let prev t v k =
+  List.iter k (PHashtbl.find t v).n_prev
+
+let seq_map f seq k = seq (fun x -> k (f x))
+let seq_filter p seq k = seq (fun x -> if p x then k x)
 
 let between t v1 v2 =
-  let edges = CCSequence.of_list (PHashtbl.find t v1).n_next in
-  let edges = CCSequence.filter (fun (e, v2') -> (PHashtbl.get_eq t) v2 v2') edges in
-  CCSequence.map fst edges
+  let edges k = List.iter k (PHashtbl.find t v1).n_next in
+  let edges = seq_filter (fun (e, v2') -> (PHashtbl.get_eq t) v2 v2') edges in
+  seq_map fst edges
 
 (** Call [k] on every vertex *)
 let iter_vertices t k =
   PHashtbl.iter (fun v _ -> k v) t
 
-let vertices t =
-  CCSequence.from_iter (iter_vertices t)
+let vertices t = iter_vertices t
 
 (** Call [k] on every edge *)
 let iter t k =
@@ -109,27 +113,37 @@ let iter t k =
     (fun v1 node -> List.iter (fun (e, v2) -> k (v1, e, v2)) node.n_next)
     t
 
-let to_seq t =
-  CCSequence.from_iter (iter t)
+let to_seq t = iter t
 
 (** {2 Global operations} *)
+
+exception ExitIsEmpty
+let seq_is_empty seq =
+  try seq (fun _ -> raise ExitIsEmpty); true
+  with ExitIsEmpty -> false
 
 (** Roots, ie vertices with no incoming edges *)
 let roots g =
   let vertices = vertices g in
-  CCSequence.filter (fun v -> CCSequence.is_empty (prev g v)) vertices
+  seq_filter (fun v -> seq_is_empty (prev g v)) vertices
 
 (** Leaves, ie vertices with no outgoing edges *)
 let leaves g =
   let vertices = vertices g in
-  CCSequence.filter (fun v -> CCSequence.is_empty (next g v)) vertices
+  seq_filter (fun v -> seq_is_empty (next g v)) vertices
+
+exception ExitHead
+let seq_head seq =
+  let r = ref None in
+  try
+    seq (fun x -> r := Some x; raise ExitHead); None
+  with ExitHead -> !r
 
 (** Pick a vertex, or raise Not_found *)
 let choose g =
-  match CCSequence.to_list (CCSequence.take 1 (vertices g)) with
-  | [x] -> x
-  | [] -> raise Not_found
-  | _ -> assert false
+  match seq_head (vertices g) with
+  | Some x -> x
+  | None -> raise Not_found
 
 let rev_edge (v,e,v') = (v',e,v)
 
@@ -155,14 +169,12 @@ let bfs graph first k =
     (* yield current node *)
     k v;
     (* explore children *)
-    CCSequence.iter
+    next graph v 
       (fun (e, v') -> if not (Hashset.mem explored v')
         then (Hashset.add explored v'; Queue.push v' q))
-      (next graph v)
   done
 
-let bfs_seq graph first =
-  CCSequence.from_iter (fun k -> bfs graph first k)
+let bfs_seq graph first k = bfs graph first k
 
 (** DFS, with callbacks called on each encountered node and edge *)
 let dfs_full graph ?(labels=mk_v_table graph)
@@ -183,7 +195,7 @@ first
       (* enter the node *)
       enter trail';
       (* explore edges *)
-      CCSequence.iter
+      next graph v
         (fun (e, v') ->
           try let n' = PHashtbl.find labels v' in
               if n' < n && List.exists (fun (_,n'') -> n' = n'') trail'
@@ -192,8 +204,8 @@ first
                 fwd_edge (v,e,v')   (* forward or cross edge *)
           with Not_found ->
             tree_edge (v,e,v'); (* tree edge *)
-            explore trail' v')  (* explore the subnode *)
-        (next graph v);
+            explore trail' v'  (* explore the subnode *)
+        );
       (* exit the node *)
       exit trail'
     end
@@ -216,10 +228,10 @@ let is_dag g =
   else try
     let labels = mk_v_table g in
     (* do a DFS from each root; any back edge indicates a cycle *)
-    CCSequence.iter
+    vertices g
       (fun v ->
-        dfs_full g ~labels ~back_edge:(fun _ -> raise Exit) v)
-      (vertices g);
+        dfs_full g ~labels ~back_edge:(fun _ -> raise Exit) v
+      );
     true   (* complete traversal without back edge *)
   with Exit ->
     false  (* back edge detected! *)
@@ -259,14 +271,13 @@ let min_path_full (type v) (type e) graph
       else begin
         Hashset.add explored v;
         (* explore successors *)
-        CCSequence.iter
+        next graph v
           (fun (e, v') ->
             if Hashset.mem explored v' || ignore v' then ()
             else
               let cost_v' = (cost v e v') + cost_v in
               let path' = (v',e,v) :: path in
               Heap.insert q (v', cost_v', path'))
-          (next graph v)
       end
     done;
     (* if a satisfying path was found, Exit would have been raised *)
@@ -307,7 +318,7 @@ type attribute = [
 
 (** Pretty print the graph in DOT, on given formatter. Using a sequence
     allows to easily select which edges are important,
-    or to combine several graphs with [CCSequence.append]. *)
+    or to combine several graphs with [seq_append]. *)
 let pp ~name ?vertices
 ~(print_edge : 'v -> 'e -> 'v -> attribute list)
 ~(print_vertex : 'v -> attribute list) formatter (graph : ('v, 'e) t) =
@@ -341,14 +352,14 @@ let pp ~name ?vertices
   (* print preamble *)
   Format.fprintf formatter "@[<v2>digraph %s {@;" name;
   (* print edges *)
-  CCSequence.iter
+  to_seq graph
     (fun (v1, e, v2) ->
       let attributes = print_edge v1 e v2 in
       Format.fprintf formatter "  @[<h>%a -> %a [%a];@]@."
         pp_vertex v1 pp_vertex v2
         (CCList.print ~sep:"," print_attribute)
-        attributes)
-    (to_seq graph);
+        attributes
+    );
   (* print vertices *)
   PHashtbl.iter
     (fun v _ ->

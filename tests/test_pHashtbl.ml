@@ -2,7 +2,7 @@
 open OUnit
 open Containers_misc
 
-module Sequence = CCSequence
+
 
 let test_add () =
   let h = PHashtbl.create 5 in

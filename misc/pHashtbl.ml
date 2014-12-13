@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Open addressing hashtable (robin hood hashing)} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type ('a, 'b) t = {
   mutable buckets : ('a, 'b) bucket array;
   mutable size : int;
@@ -77,7 +79,7 @@ let clear t =
 (** Index of slot, for i-th probing starting from hash [h] in
     a table of length [n] *)
 let addr h n i = (h + i) mod n
-  
+
 (** Insert (key -> value) in table, starting with the hash. *)
 let insert t key value =
   let n = Array.length t.buckets in
@@ -217,12 +219,10 @@ let filter pred t =
 
 (** Add the given pairs to the hashtable *)
 let of_seq t seq =
-  CCSequence.iter (fun (k,v) -> add t k v) seq
+  seq (fun (k,v) -> add t k v)
 
 (** CCSequence of pairs *)
-let to_seq t =
-  CCSequence.from_iter
-    (fun kont -> iter (fun k v -> kont (k,v)) t)
+let to_seq t kont = iter (fun k v -> kont (k,v)) t
 
 (** Statistics on the table *)
 let stats t = (Array.length t.buckets, t.size, t.size, 0, 0, 1)

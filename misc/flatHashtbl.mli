@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** Open addressing hashtable, with linear probing. *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 module type S =
   sig
     type key
@@ -61,9 +63,9 @@ module type S =
     val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
       (** Fold on bindings *)
 
-    val to_seq : 'a t -> (key * 'a) CCSequence.t
+    val to_seq : 'a t -> (key * 'a) sequence
 
-    val of_seq : 'a t -> (key * 'a) CCSequence.t -> unit
+    val of_seq : 'a t -> (key * 'a) sequence -> unit
 
     val stats : 'a t -> int * int * int * int * int * int
       (** Cf Weak.S *)

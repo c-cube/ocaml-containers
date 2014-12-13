@@ -28,6 +28,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (* TODO: map-wide operations: merge, compare, equal, for_all, exists,
         batch (sorted) add, partition, split, max_elt, min_elt, map... *)
 
+type 'a sequence = ('a -> unit) -> unit
+
+
 (** {2 Polymorphic Maps} *)
 
 type ('a, 'b) t
@@ -69,9 +72,9 @@ val size : (_, _) t -> int
 val choose : ('a, 'b) t -> ('a * 'b)
   (** Some binding, or raises Not_found *)
 
-val to_seq : ('a, 'b) t -> ('a * 'b) CCSequence.t
+val to_seq : ('a, 'b) t -> ('a * 'b) sequence
 
-val of_seq : ('a, 'b) t -> ('a * 'b) CCSequence.t -> ('a, 'b) t
+val of_seq : ('a, 'b) t -> ('a * 'b) sequence -> ('a, 'b) t
 
 (** {2 Functorial interface} *)
 
@@ -113,9 +116,9 @@ module type S = sig
   val choose : 'a t -> (key * 'a)
     (** Some binding, or raises Not_found *)
 
-  val to_seq : 'a t -> (key * 'a) CCSequence.t
+  val to_seq : 'a t -> (key * 'a) sequence
 
-  val of_seq : 'a t -> (key * 'a) CCSequence.t -> 'a t
+  val of_seq : 'a t -> (key * 'a) sequence -> 'a t
 end
 
 module type ORDERED = sig

@@ -232,6 +232,6 @@ let run p seq =
     <|> (skip_spaces >> exact '(' >> many1 ~sep:(exact ' ') (delay p) >>= fun l ->
         skip_spaces >> exact ')' >> return (list_ l))
   in
-  let res = run (p ()) (CCSequence.of_str "(a b (c d))") in
+  let res = run (p ()) (Sequence.of_str "(a b (c d))") in
   assert_equal res [list_ [atom "a"; atom "b"; list_ [atom "c"; atom "d"]]]
 *)

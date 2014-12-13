@@ -29,6 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 http://www.cs.cornell.edu/Courses/cs3110/2009fa/recitations/rec-splay.html
 *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 (** {2 Polymorphic Maps} *)
 
 type ('a, 'b) t = {
@@ -192,11 +194,12 @@ let choose t =
   | Node (k, v, _, _) -> k, v
 
 let to_seq t =
-  CCSequence.from_iter
-    (fun kont -> iter t (fun k v -> kont (k, v)))
+  fun kont -> iter t (fun k v -> kont (k, v))
 
 let of_seq t seq =
-  CCSequence.fold (fun t (k, v) -> add t k v) t seq
+  let t = ref t in
+  seq (fun (k, v) -> t := add !t k v);
+  !t
 
 (** {2 Functorial interface} *)
 
@@ -238,9 +241,9 @@ module type S = sig
   val choose : 'a t -> (key * 'a)
     (** Some binding, or raises Not_found *)
 
-  val to_seq : 'a t -> (key * 'a) CCSequence.t
+  val to_seq : 'a t -> (key * 'a) sequence
 
-  val of_seq : 'a t -> (key * 'a) CCSequence.t -> 'a t
+  val of_seq : 'a t -> (key * 'a) sequence -> 'a t
 end
 
 module type ORDERED = sig
@@ -404,9 +407,10 @@ module Make(X : ORDERED) = struct
     | Node (k, v, _, _) -> k, v
 
   let to_seq t =
-    CCSequence.from_iter
-      (fun kont -> iter t (fun k v -> kont (k, v)))
+    fun kont -> iter t (fun k v -> kont (k, v))
 
   let of_seq t seq =
-    CCSequence.fold (fun t (k, v) -> add t k v) t seq
+    let t = ref t in
+    seq (fun (k, v) -> t := add !t k v);
+    !t
 end

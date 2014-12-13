@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Imperative skip-list} *)
 
+type 'a gen = unit -> 'a option
+
 type ('a, 'b) t
   (** A skip list that maps elements of type 'a to elements of type 'b *)
 
@@ -53,6 +55,6 @@ val remove : ('a, 'b) t -> 'a -> unit
 val length : (_, _) t -> int
   (** Number of elements *)
 
-val gen : ('a, 'b) t -> ('a * 'b) CCGen.t
+val gen : ('a, 'b) t -> ('a * 'b) gen
 
-val of_gen : ('a, 'b) t -> ('a * 'b) CCGen.t -> unit
+val of_gen : ('a, 'b) t -> ('a * 'b) gen -> unit

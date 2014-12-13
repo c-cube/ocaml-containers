@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Mutable polymorphic hash-set} *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 type 'a t = ('a, unit) PHashtbl.t
   (** A set is a hashtable, with trivial values *)
 
@@ -49,11 +51,10 @@ let fold f acc set = PHashtbl.fold (fun acc x () -> f acc x) acc set
 
 let filter p set = PHashtbl.filter (fun x () -> p x) set 
 
-let to_seq set =
-  CCSequence.from_iter (fun k -> iter k set)
+let to_seq set k = iter k set
 
 let of_seq set seq =
-  CCSequence.iter (fun x -> add set x) seq
+  seq (fun x -> add set x)
 
 let union ?into (s1 : 'a t) (s2 : 'a t) =
   let into = match into with
@@ -62,10 +63,13 @@ let union ?into (s1 : 'a t) (s2 : 'a t) =
   of_seq into (to_seq s2);
   into
 
+let seq_filter p seq k =
+  seq (fun x -> if p x then k x)
+
 let inter ?into (s1 : 'a t) (s2 : 'a t) =
   let into = match into with
   | Some s -> s
   | None -> empty ~eq:s1.PHashtbl.eq ~hash:s1.PHashtbl.hash (cardinal s1) in
   (* add to [into] elements of [s1] that also belong to [s2] *)
-  of_seq into (CCSequence.filter (fun x -> mem s2 x) (to_seq s1));
+  of_seq into (seq_filter (fun x -> mem s2 x) (to_seq s1));
   into

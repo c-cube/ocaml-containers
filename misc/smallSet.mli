@@ -29,6 +29,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     function. It is implemented as a sorted list, so most operations
     are in linear time. *)
 
+type 'a sequence = ('a -> unit) -> unit
+
+
 type 'a t
   (** Set of elements of type 'a *)
 
@@ -59,9 +62,9 @@ val iter : ('a -> unit) -> 'a t -> unit
 val size : _ t -> int
   (** Number of elements *)
 
-val to_seq : 'a t -> 'a CCSequence.t
+val to_seq : 'a t -> 'a sequence
 
-val of_seq : 'a t -> 'a CCSequence.t -> 'a t
+val of_seq : 'a t -> 'a sequence -> 'a t
 
 val to_list : 'a t -> 'a list
 

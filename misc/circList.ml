@@ -124,7 +124,7 @@ let gen l =
 (*$Q
   (Q.list Q.small_int) (fun l -> \
     l = [] || let q = of_list l in \
-    gen q |> CCGen.take (List.length l) |> CCGen.to_list = l)
+    gen q |> Gen.take (List.length l) |> Gen.to_list = l)
   *)
 
 let seq l k =

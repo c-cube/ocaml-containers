@@ -2,7 +2,6 @@
 open OUnit
 
 module H = CCPersistentHashtbl.Make(CCInt)
-module Sequence = CCSequence
 
 let test_add () =
   let h = H.create 32 in

@@ -2,7 +2,7 @@
 open OUnit
 
 module Deque = CCDeque
-module Sequence = CCSequence
+
 
 let plist l = CCPrint.to_string (CCList.pp CCInt.pp) l 
 let pint i = string_of_int i

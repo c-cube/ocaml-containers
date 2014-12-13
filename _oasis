@@ -86,12 +86,12 @@ Library "containers_advanced"
   Modules:          CCLinq, CCBatch, CCCat, CCMonadIO
   FindlibName:      advanced
   FindlibParent:    containers
-  BuildDepends:     containers
+  BuildDepends:     containers, sequence
 
 Library "containers_pervasives"
   Path:             pervasives
   Modules:          CCPervasives
-  BuildDepends:     containers, 
+  BuildDepends:     containers
   FindlibName:      pervasives
   FindlibParent:    containers
 
@@ -185,7 +185,7 @@ Executable run_benchs
   Build$:           flag(bench) && flag(misc)
   MainIs:           run_benchs.ml
   BuildDepends:     containers, containers.misc, containers.advanced,
-                    containers.string, benchmark
+                    containers.string, sequence, gen, benchmark
 
 Executable bench_hash
   Path: benchs/
@@ -201,7 +201,7 @@ Executable bench_conv
   CompiledObject: native
   Build$: flag(bench)
   MainIs: bench_conv.ml
-  BuildDepends: containers,benchmark
+  BuildDepends: containers,benchmark,gen
 
 Executable test_levenshtein
   Path: tests/
@@ -236,7 +236,7 @@ Executable run_qtest
   MainIs:           run_qtest.ml
   Build$:           flag(tests)
   BuildDepends:     containers, containers.misc, containers.string,
-                    oUnit, QTest2Lib
+                    sequence, gen, oUnit, QTest2Lib
 
 Executable run_tests
   Path: tests/
@@ -244,7 +244,7 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
-  BuildDepends: containers, oUnit, qcheck, containers.misc
+  BuildDepends: containers, oUnit, sequence, gen, qcheck, containers.misc
 
 Test all
   Command:      make test-all

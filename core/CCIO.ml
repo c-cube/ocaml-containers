@@ -28,6 +28,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type 'a gen = unit -> 'a option  (** See {!CCGen} *)
 
+let gen_singleton x =
+  let done_ = ref false in
+  fun () -> if !done_ then None else (done_ := true; Some x)
+
+let gen_filter_map f gen =
+  (* tailrec *)
+  let rec next () =
+    match gen() with
+    | None -> None
+    | Some x ->
+        match f x with
+        | None -> next()
+        | (Some _) as res -> res
+  in next
+
+let gen_of_array arr =
+  let r = ref 0 in
+  fun () ->
+    if !r = Array.length arr then None
+    else (
+      let x = arr.(!r) in
+      incr r; 
+      Some x
+    )
+
+let gen_flat_map f next_elem =
+  let state = ref `Init in
+  let rec next() =
+    match !state with
+    | `Init -> get_next_gen()
+    | `Run gen ->
+      begin match gen () with
+      | None -> get_next_gen ()
+      | (Some _) as x -> x
+      end
+    | `Stop -> None
+  and get_next_gen() = match next_elem() with
+    | None -> state:=`Stop; None
+    | Some x ->
+        try state := `Run (f x); next()
+        with e -> state := `Stop; raise e
+  in
+  next
+
 let with_in ?(mode=0o644) ?(flags=[]) filename f =
   let ic = open_in_gen flags mode filename in
   try
@@ -165,8 +209,8 @@ module File = struct
     if Sys.is_directory d
     then
       let arr = Sys.readdir d in
-      CCGen.of_array arr
-    else CCGen.empty
+      gen_of_array arr
+    else fun () -> None
 
   let cons_ x tl =
     let first=ref true in
@@ -180,19 +224,19 @@ module File = struct
     if Sys.is_directory d
     then
       let arr = Sys.readdir d in
-      let tail = CCGen.of_array arr in
-      let tail = CCGen.flat_map
+      let tail = gen_of_array arr in
+      let tail = gen_flat_map
         (fun s -> walk (Filename.concat d s))
         tail
       in cons_ (`Dir,d) tail
-    else CCGen.singleton (`File, d)
+    else gen_singleton (`File, d)
 
   type walk_item = [`File | `Dir] * t
 
   let read_dir ?(recurse=false) d =
     if recurse
     then
-      CCGen.filter_map
+      gen_filter_map
         (function
           | `File, f -> Some f
           | `Dir, _ -> None
