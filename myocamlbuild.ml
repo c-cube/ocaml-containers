@@ -1,7 +1,7 @@
 (* OASIS_START *)
 (* OASIS_STOP *)
 
-let doc_intro = "doc/intro.txt"
+let doc_intro = "doc/intro.txt";;
 
 open Ocamlbuild_plugin;;
 
@@ -45,9 +45,10 @@ dispatch
       flag ["cppo"] & S[A"-D"; A ocaml_major; A"-D"; A ocaml_minor] ;
 
       (* Documentation index *)
+      let open Ocamlbuild_plugin in
       dep ["ocaml"; "doc"; "extension:html"] & [doc_intro] ;
       flag ["ocaml"; "doc"; "extension:html"] &
-      (S[A"-t"; A"LILiS user guide";
+      (S[A"-t"; A"Containers user guide";
          A"-intro"; P doc_intro;
         ]);
 
