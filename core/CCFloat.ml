@@ -76,6 +76,17 @@ let sign (a:float) =
   else if a > 0.0 then 1 
   else 0
 
+let fsign a =
+  if is_nan a then nan
+  else if a = 0. then a
+  else Pervasives.copysign 1. a
+
+exception TrapNaN of string
+
+let sign_exn (a:float) =
+  if is_nan a then raise (TrapNaN "sign")
+  else compare a 0.
+
 let to_int (a:float) = Pervasives.int_of_float a
 let of_int (a:int) = Pervasives.float_of_int a
 

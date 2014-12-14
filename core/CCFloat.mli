@@ -77,7 +77,20 @@ val random_small : t random_gen
 val random_range : t -> t -> t random_gen
 
 val sign : t -> int
-(** [sign t] is one of [-1, 0, 1] *)
+(** [sign t] is one of [-1, 0, 1], depending on how the float
+    compares to [0.]
+    @deprecated use {! fsign} or {!sign_exn} since it's more accurate *)
+
+val fsign : t -> float
+(** [fsign x] is one of [-1., -0., +0., +1.], or [nan] if [x] is NaN.
+    @since NEXT_RELEASE *)
+
+exception TrapNaN of string
+val sign_exn : t -> int
+(** [sign_exn x] will return the sign of [x] as [1, 0] or [-1], or raise an
+    exception [TrapNaN] if [x] is a NaN.
+    Note that infinities have defined signs in OCaml.
+    @since NEXT_RELEASE *)
 
 val to_int : t -> int
 val of_int : int -> t
