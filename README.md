@@ -11,11 +11,11 @@ What is _containers_?
   or "companion-cube" because I'm megalomaniac). This part should be
   usable and should work. For instance, `CCList` contains functions and
   lists including safe versions of `map` and `append`.
-- Several small additional libraries that completent it:
+- Several small additional libraries that complement it:
   * `containers.data` with additional data structures that don't have an
-    equivalent in the standard library
-  * `containers.io` with utils to handle files and I/O streams
-  * `containers.iter` with list-like and tree-like iterators
+    equivalent in the standard library;
+  * `containers.io` with utils to handle files and I/O streams;
+  * `containers.iter` with list-like and tree-like iterators;
   * `containers.string` (in directory `string`) with
     a few packed modules that deal with strings (Levenshtein distance,
     KMP search algorithm, and a few naive utils). Again, modules are independent
@@ -25,7 +25,7 @@ What is _containers_?
   that defined a `CCPervasives` module intented to be opened to extend some
   modules of the stdlib.
 - A sub-library with complicated abstractions, `containers.advanced` (with
-  a LINQ-like query module, batch operations using GADTs, and others)
+  a LINQ-like query module, batch operations using GADTs, and others).
 - A library using [Lwt](https://github.com/ocsigen/lwt/), `containers.lwt`.
   Currently only contains experimental, unstable stuff.
 - Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
@@ -77,7 +77,7 @@ by ocamlfind).
 
 Documentation [here](http://cedeela.fr/~simon/software/containers).
 
-- `CCHeap`, a purely functional heap structure.
+- `CCHeap`, a purely functional heap structure
 - `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
 - `CCList`, functions on lists, including tail-recursive implementations of `map` and `append` and many other things
 - `CCArray`, utilities on arrays and slices
@@ -162,7 +162,7 @@ access to elements by their index.
 - `Univ`, a universal type encoding with affectation
 - `FlatHashtbl`, a (deprecated) open addressing hashtable with
     a functorial interface (replaced by PHashtbl)
-- `UnionFind`, a functorial imperative Union-Find structure.
+- `UnionFind`, a functorial imperative Union-Find structure
 
 ### Others
 
@@ -218,7 +218,7 @@ PRs on github are welcome (patches by email too, if you prefer so).
 
 A few guidelines:
 
-- no dependencies between basic modules (even just for signatures)
-- add `@since` tags for new functions
-- add tests if possible (using `qtest`)
+- no dependencies between basic modules (even just for signatures);
+- add `@since` tags for new functions;
+- add tests if possible (using `qtest`).
 
