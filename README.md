@@ -169,12 +169,7 @@ access to elements by their index.
 - `Future`, a set of tools for preemptive threading, including a thread pool,
 monadic futures, and MVars (concurrent boxes)
 
-Some serialisation formats are also implemented, with a streaming, non-blocking
-interface that allows the user to feed the input in chunk by chunk (useful
-in combination with Lwt/Async). Currently, the modules are:
-
-- `Bencode`, for the [B-encode format](http://en.wikipedia.org/wiki/Bencode),
-- `Sexp`, for S-expressions.
+- `containers.lwt` contains [Lwt](http://ocsigen.org/lwt/)-related modules (experimental)
 
 There is a QuickCheck-like library called `QCheck` (now in its own repo).
 

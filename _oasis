@@ -120,13 +120,13 @@ Library "containers_thread"
 
 Library "containers_lwt"
   Path:             lwt
-  Modules:          Behavior, Lwt_automaton, Lwt_actor
+  Modules:          Lwt_automaton, Lwt_actor
   Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
   Build$:           flag(lwt) && flag(misc)
   Install$:         flag(lwt) && flag(misc)
-  BuildDepends:     containers, lwt, lwt.unix, containers.misc
+  BuildDepends:     containers, lwt, containers.misc
 
 Library "containers_cgi"
   Path:             cgi
@@ -184,14 +184,6 @@ Executable test_levenshtein
   Build$: flag(tests)
   MainIs: test_levenshtein.ml
   BuildDepends: containers,qcheck,containers.string
-
-Executable test_lwt
-  Path: tests/lwt/
-  Install: false
-  CompiledObject: best
-  Build$: flag(tests) && flag(lwt)
-  MainIs: test_Behavior.ml
-  BuildDepends: containers,lwt,lwt.unix,oUnit,containers.lwt
 
 Executable test_threads
   Path: tests/lwt/
