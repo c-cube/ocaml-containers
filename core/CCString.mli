@@ -75,16 +75,15 @@ val of_array : char array -> string
 val to_array : string -> char array
 
 val find : ?start:int -> sub:string -> string -> int
-(** Find [sub] in stringhe string, returns its first index or -1.
+(** Find [sub] in string, returns its first index or [-1].
     Should only be used with very small [sub] *)
 
 val is_sub : sub:string -> int -> string -> int -> len:int -> bool
-(** [is_sub ~sub i s j ~len] returns [true] iff stringhe substring of
-    [sub] starting at position [i] and of length [len],
-    is a substring of [s] starting at position [j] *)
+(** [is_sub ~sub i s j ~len] returns [true] iff the substring of
+    [sub] starting at position [i] and of length [len] *)
 
 val repeat : string -> int -> string
-(** The same string, repeated n stringimes *)
+(** The same string, repeated n times *)
 
 val prefix : pre:string -> string -> bool
 (** [str_prefix ~pre s] returns [true] iff [pre] is a prefix of [s] *)
