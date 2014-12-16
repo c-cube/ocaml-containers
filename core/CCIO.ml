@@ -38,20 +38,16 @@ let with_in ?(mode=0o644) ?(flags=[]) filename f =
     close_in ic;
     raise e
 
-let read_chunks ?(size=256) ic =
-  let buf = Buffer.create size in
+let read_chunks ?(size=1024) ic =
+  let buf = Bytes.create size in
   let eof = ref false in
   let next() =
     if !eof then None
-    else try
-      Buffer.add_channel buf ic size;
-      let s = Buffer.contents buf in
-      Buffer.clear buf;
-      Some s
-    with End_of_file ->
-      let s = Buffer.contents buf in
-      eof := true;
-      if s="" then None else Some s
+    else
+      let n = input ic buf 0 size in
+      if n = 0
+      then None
+      else Some (Bytes.sub_string buf 0 n)
   in
   next
 
@@ -77,14 +73,24 @@ let read_lines_l ic =
     List.rev !l
 
 let read_all ic =
-  let buf = Buffer.create 256 in
+  let buf = ref (Bytes.create 256) in
+  let len = ref 0 in
   try
     while true do
-      Buffer.add_channel buf ic 1024
+      (* resize *)
+      if !len = Bytes.length !buf then (
+        let buf' = Bytes.create (2* !len) in
+        Bytes.blit !buf 0 buf' 0 !len;
+        buf := buf'
+      );
+      assert (Bytes.length !buf > !len);
+      let n = input ic !buf !len (Bytes.length !buf - !len) in
+      len := !len + n;
+      if n = 0 then raise Exit;  (* exhausted *)
     done;
     assert false (* never reached*)
-  with End_of_file ->
-    Buffer.contents buf
+  with Exit ->
+    Bytes.sub_string !buf 0 !len
 
 let with_out ?(mode=0o644) ?(flags=[]) filename f =
   let oc = open_out_gen flags mode filename in
