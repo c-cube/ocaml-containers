@@ -38,7 +38,7 @@ let _id x = x
 
 exception ExitWithError of string
 let _exit_with_error s = raise (ExitWithError s)
-let _error_of_exn f = try `Ok (f ()) with ExitWithError s -> `Error
+let _error_of_exn f = try `Ok (f ()) with ExitWithError s -> `Error s
 
 type 'a collection =
   | Seq : 'a sequence -> 'a collection
@@ -519,9 +519,9 @@ and _optimize_unary : type a b. (a,b) unary -> a t -> b t
         _optimize_unary
           (FilterMap (fun x -> if p x then Some (f x) else None))
           cont
-    | PMap f, Binary (Append, q1, q2) ->
+    | PMap _, Binary (Append, q1, q2) ->
         _optimize_binary Append (Unary (u, q1)) (Unary (u, q2))
-    | Filter p, Binary (Append, q1, q2) ->
+    | Filter _, Binary (Append, q1, q2) ->
         _optimize_binary Append (Unary (u, q1)) (Unary (u, q2))
     | Fold (f,acc), Unary (PMap f', cont) ->
         _optimize_unary
@@ -739,7 +739,7 @@ let group_by ?cmp ?eq ?hash f q =
   Unary (GroupBy (_make_build ?cmp ?eq ?hash (),f), q)
 
 let group_by' ?cmp ?eq ?hash f q =
-  M.iter (group_by ?cmp f q)
+  M.iter (group_by ?cmp ?eq ?hash f q)
 
 let count ?cmp ?eq ?hash () q =
   Unary (Count (_make_build ?cmp ?eq ?hash ()), q)

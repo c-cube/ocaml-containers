@@ -41,6 +41,10 @@ CCString
 CCVector
 }
 
+{4 Pervasives (aliases to Core Modules)}
+
+{!modules: CCPervasives}
+
 {4 Containers.data}
 
 {!modules:
@@ -48,6 +52,7 @@ CCBV
 CCCache
 CCFQueue
 CCFlatHashtbl
+CCMixtbl
 CCMultiMap
 CCMultiSet
 CCPersistentHashtbl
@@ -94,7 +99,6 @@ Hashset
 Heap
 Heap
 LazyGraph
-Mixtbl
 PHashtbl
 PrintBox
 RAL
@@ -107,7 +111,7 @@ Univ
 
 {4 Others}
 
-{!modules: Future}
+{!modules: CCFuture}
 
 
 {2 Index}

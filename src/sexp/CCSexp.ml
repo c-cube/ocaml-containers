@@ -141,7 +141,7 @@ let to_chan oc t =
 
 let to_file_seq filename seq =
   _with_out filename
-    (fun oc -> 
+    (fun oc ->
       seq (fun t -> to_chan oc t; output_char oc '\n')
     )
 
@@ -167,7 +167,7 @@ module Source = struct
       mutable stop : bool;
       buf : Buffer.t;     (* accessible chunk of input *)
     }
-      
+
     let make() = {
       i = 0;
       stop = false;
@@ -231,7 +231,7 @@ module Source = struct
       then (
         match g() with
         | None -> stop := true; NC_end
-        | Some buf -> s := buf; i := 0; next () 
+        | Some buf -> s := buf; i := 0; next ()
       ) else (
         let c = String.get !s !i in
         incr i;

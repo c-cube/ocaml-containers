@@ -283,7 +283,7 @@ module Traverse : sig
 
   val to_list_with : (t -> 'a option) -> 'a list conv
   (** Expect a list, applies [f] to all the elements of the list, and succeeds
-      only if [f] succeeded on every element 
+      only if [f] succeeded on every element
       @since 0.4.1 *)
 
   val to_pair : (t * t) conv

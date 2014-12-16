@@ -117,8 +117,8 @@ Library "containers_thread"
   FindlibParent:    containers
   Build$:           flag(thread)
   Install$:         flag(thread)
-  BuildDepends:     containers,threads
-  XMETARequires:    containers,threads
+  BuildDepends:     containers, threads
+  XMETARequires:    containers, threads
 
 Library "containers_lwt"
   Path:             src/lwt
