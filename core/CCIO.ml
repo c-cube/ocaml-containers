@@ -116,8 +116,8 @@ let read_lines_l ic =
   with End_of_file ->
     List.rev !l
 
-let read_all ic =
-  let buf = ref (Bytes.create 256) in
+let read_all ?(size=1024) ic =
+  let buf = ref (Bytes.create size) in
   let len = ref 0 in
   try
     while true do

@@ -83,8 +83,9 @@ val read_lines : in_channel -> string gen
 val read_lines_l : in_channel -> string list
 (** Read all lines into a list *)
 
-val read_all : in_channel -> string
-(** Read the whole channel into a buffer, then converted into a string *)
+val read_all : ?size:int -> in_channel -> string
+(** Read the whole channel into a buffer, then converted into a string.
+    @param size the internal buffer size @since NEXT_RELEASE *)
 
 (** {6 Output} *)
 
