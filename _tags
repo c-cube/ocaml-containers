@@ -158,9 +158,7 @@
 <examples/*.ml{,i}>: use_containers_misc
 # OASIS_STOP
 <tests/*.ml{,i}>: thread
-<threads/*.ml{,i}>: thread
-<sequence>: -traverse
-<gen>: -traverse
-<core/CCVector.cmx>: inline(25)
-<{string,core}/**/*.ml>: warn_A, warn(-4), warn(-44)
+<src/threads/*.ml{,i}>: thread
+<src/core/CCVector.cmx>: inline(25)
+<src/{string,core}/**/*.ml>: warn_A, warn(-4), warn(-44)
 true: no_alias_deps

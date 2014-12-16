@@ -29,27 +29,27 @@ From https://github.com/mjambon/mixtbl , thanks to him.
 Example:
 
 {[
-let inj_int = Mixtbl.access () ;;
+let inj_int = CCMixtbl.access () ;;
 
-let tbl = Mixtbl.create 10 ;;
+let tbl = CCMixtbl.create 10 ;;
 
-OUnit.assert_equal None (Mixtbl.get ~inj:inj_int tbl "a");;
+OUnit.assert_equal None (CCMixtbl.get ~inj:inj_int tbl "a");;
 
-Mixtbl.set inj_int tbl "a" 1;;
+CCMixtbl.set inj_int tbl "a" 1;;
 
-OUnit.assert_equal (Some 1) (Mixtbl.get ~inj:inj_int tbl "a");;
+OUnit.assert_equal (Some 1) (CCMixtbl.get ~inj:inj_int tbl "a");;
 
-let inj_string = Mixtbl.access () ;;
+let inj_string = CCMixtbl.access () ;;
 
-Mixtbl.set inj_string tbl "b" "Hello";
+CCMixtbl.set inj_string tbl "b" "Hello";
 
-OUnit.assert_equal (Some "Hello") (Mixtbl.get inj_string tbl "b");;
-OUnit.assert_equal None (Mixtbl.get inj_string tbl "a");;
-OUnit.assert_equal (Some 1) (Mixtbl.get inj_int tbl "a");;
-Mixtbl.set inj_string tbl "a" "Bye";;
+OUnit.assert_equal (Some "Hello") (CCMixtbl.get inj_string tbl "b");;
+OUnit.assert_equal None (CCMixtbl.get inj_string tbl "a");;
+OUnit.assert_equal (Some 1) (CCMixtbl.get inj_int tbl "a");;
+CCMixtbl.set inj_string tbl "a" "Bye";;
 
-OUnit.assert_equal None (Mixtbl.get inj_int tbl "a");;
-OUnit.assert_equal (Some "Bye") (Mixtbl.get inj_string tbl "a");;
+OUnit.assert_equal None (CCMixtbl.get inj_int tbl "a");;
+OUnit.assert_equal (Some "Bye") (CCMixtbl.get inj_string tbl "a");;
 ]}
 
 @since 0.6 *)

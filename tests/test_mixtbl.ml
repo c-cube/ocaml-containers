@@ -3,6 +3,8 @@ open OUnit
 open Containers_misc
 open CCFun
 
+module Mixtbl = CCMixtbl
+
 let example () =
   let inj_int = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 10 in

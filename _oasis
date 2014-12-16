@@ -42,46 +42,48 @@ Flag "bench"
   Default:      false
 
 Library "containers"
-  Path:             core
+  Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray,
                     CCOrd, CCRandom, CCString, CCHashtbl, CCMap
   BuildDepends:     bytes
 
 Library "containers_io"
-  Path:             core
+  Path:             src/io
   Modules:          CCIO
+  BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      io
 
 Library "containers_sexp"
-  Path:             core
+  Path:             src/sexp
   Modules:          CCSexp
+  BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      sexp
 
 Library "containers_data"
-  Path:             core
+  Path:             src/data
   Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
-                    CCPersistentHashtbl, CCDeque, CCFQueue, CCBV
+                    CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl
   FindlibParent:    containers
   FindlibName:      data
 
 Library "containers_iter"
-  Path:             core
+  Path:             src/iter
   Modules:          CCKTree, CCKList
   FindlibParent:    containers
   FindlibName:      iter
 
 Library "containers_string"
-  Path:             string
+  Path:             src/string
   Pack:             true
   Modules:          KMP, Levenshtein
   FindlibName:      string
   FindlibParent:    containers
 
 Library "containers_advanced"
-  Path:             advanced
+  Path:             src/advanced
   Pack:             true
   Modules:          CCLinq, CCBatch, CCCat, CCMonadIO
   FindlibName:      advanced
@@ -89,27 +91,27 @@ Library "containers_advanced"
   BuildDepends:     containers, sequence
 
 Library "containers_pervasives"
-  Path:             pervasives
+  Path:             src/pervasives
   Modules:          CCPervasives
   BuildDepends:     containers
   FindlibName:      pervasives
   FindlibParent:    containers
 
 Library "containers_misc"
-  Path:             misc
+  Path:             src/misc
   Pack:             true
   Modules:          FHashtbl, FlatHashtbl, Hashset,
                     Heap, LazyGraph, PersistentGraph,
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
                     Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
                     TTree, PrintBox, HGraph, Automaton, Conv, Bidir, Iteratee,
-                    BTree, Ty, Cause, AVL, ParseReact, Mixtbl
-  BuildDepends:     unix,containers
+                    BTree, Ty, Cause, AVL, ParseReact
+  BuildDepends:     unix, containers, containers.data
   FindlibName:      misc
   FindlibParent:    containers
 
 Library "containers_thread"
-  Path:             threads/
+  Path:             src/threads/
   Modules:          CCFuture
   FindlibName:      thread
   FindlibParent:    containers
@@ -119,7 +121,7 @@ Library "containers_thread"
   XMETARequires:    containers,threads
 
 Library "containers_lwt"
-  Path:             lwt
+  Path:             src/lwt
   Modules:          Lwt_automaton, Lwt_actor
   Pack:             true
   FindlibName:      lwt
@@ -127,16 +129,6 @@ Library "containers_lwt"
   Build$:           flag(lwt) && flag(misc)
   Install$:         flag(lwt) && flag(misc)
   BuildDepends:     containers, lwt, containers.misc
-
-Library "containers_cgi"
-  Path:             cgi
-  Modules:          ToWeb
-  FindlibName:      cgi
-  FindlibParent:    containers
-  Build$:           flag(cgi)
-  Install$:         flag(cgi)
-  BuildDepends:     containers,CamlGI
-  XMETARequires:    containers,CamlGI
 
 Document containers
   Title:                Containers docs
@@ -148,7 +140,8 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.misc, containers.iter, containers.data,
-    containers.string, containers.advanced, containers.io, containers.sexp,
+    containers.string, containers.pervasives, 
+    containers.advanced, containers.io, containers.sexp,
     containers.lwt
 
 
@@ -159,7 +152,8 @@ Executable run_benchs
   Build$:           flag(bench) && flag(misc)
   MainIs:           run_benchs.ml
   BuildDepends:     containers, containers.misc, containers.advanced,
-                    containers.string, sequence, gen, benchmark
+                    containers.data, containers.string, containers.iter,
+                    sequence, gen, benchmark
 
 Executable bench_hash
   Path: benchs/
@@ -167,7 +161,7 @@ Executable bench_hash
   CompiledObject: native
   Build$: flag(bench) && flag(misc)
   MainIs: bench_hash.ml
-  BuildDepends: containers,containers.misc
+  BuildDepends: containers, containers.misc
 
 Executable bench_conv
   Path:     benchs/
@@ -175,7 +169,7 @@ Executable bench_conv
   CompiledObject: native
   Build$: flag(bench)
   MainIs: bench_conv.ml
-  BuildDepends: containers,benchmark,gen
+  BuildDepends: containers, benchmark, gen
 
 Executable test_levenshtein
   Path: tests/
@@ -183,7 +177,7 @@ Executable test_levenshtein
   CompiledObject: native
   Build$: flag(tests)
   MainIs: test_levenshtein.ml
-  BuildDepends: containers,qcheck,containers.string
+  BuildDepends: containers, qcheck, containers.string
 
 Executable test_threads
   Path: tests/lwt/
@@ -191,7 +185,7 @@ Executable test_threads
   CompiledObject: best
   Build$: flag(tests) && flag(thread)
   MainIs: test_Future.ml
-  BuildDepends: containers,threads,oUnit,containers.lwt
+  BuildDepends: containers, threads, oUnit, containers.lwt
 
 PreBuildCommand: make qtest-gen
 
@@ -210,7 +204,8 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
-  BuildDepends: containers, oUnit, sequence, gen, qcheck, containers.misc
+  BuildDepends: containers, containers.data, oUnit, sequence, gen,
+                qcheck, containers.misc
 
 Test all
   Command:      make test-all
@@ -229,7 +224,7 @@ Executable lambda
   Install: false
   MainIs: lambda.ml
   Build$: flag(misc)
-  BuildDepends: containers,containers.misc
+  BuildDepends: containers, containers.misc
 
 Executable id_sexp
   Path:             examples/
@@ -237,7 +232,7 @@ Executable id_sexp
   CompiledObject:   native
   MainIs:           id_sexp.ml
   Build$:           flag(misc)
-  BuildDepends:     containers
+  BuildDepends:     containers.sexp
 
 SourceRepository head
   Type: git
