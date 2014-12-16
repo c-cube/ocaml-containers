@@ -49,7 +49,7 @@ let gen_of_array arr =
     if !r = Array.length arr then None
     else (
       let x = arr.(!r) in
-      incr r; 
+      incr r;
       Some x
     )
 
@@ -123,9 +123,7 @@ let read_all ic =
     while true do
       (* resize *)
       if !len = Bytes.length !buf then (
-        let buf' = Bytes.create (2* !len) in
-        Bytes.blit !buf 0 buf' 0 !len;
-        buf := buf'
+        buf := Bytes.extend !buf 0 !len;
       );
       assert (Bytes.length !buf > !len);
       let n = input ic !buf !len (Bytes.length !buf - !len) in
