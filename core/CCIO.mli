@@ -47,9 +47,10 @@ Examples:
 # CCIO.(
   with_in "/tmp/input"
     (fun ic ->
-      with_out ~flags:[Open_creat] ~mode:0o644 "/tmp/output"
+      let chunks = read_chunks ic in
+      with_out ~flags:[Open_creat; Open_wronly] ~mode:0o644 "/tmp/output"
         (fun oc ->
-          Seq.chunks 512 ic |> Seq.to_output oc
+          write_gen oc chunks
         )
     )
 ) ;;
