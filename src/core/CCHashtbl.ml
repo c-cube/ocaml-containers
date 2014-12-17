@@ -40,6 +40,16 @@ let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
 
 let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
 
+let map_list f h =
+  Hashtbl.fold
+    (fun x y acc -> f x y :: acc)
+    h []
+
+(*$T
+  of_list [1,"a"; 2,"b"] |> map_list (fun x y -> string_of_int x ^ y) \
+    |> List.sort Pervasives.compare = ["1a"; "2b"]
+*)
+
 let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
 
 let of_seq seq =
@@ -71,6 +81,9 @@ module type S = sig
   val values : 'a t -> 'a sequence
   (** Iterate on values in the table *)
 
+  val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list
+  (** Map on a hashtable's items, collect into a list *)
+
   val to_seq : 'a t -> (key * 'a) sequence
   (** Iterate on values in the table *)
 
@@ -94,6 +107,11 @@ module Make(X : Hashtbl.HashedType) = struct
   let keys tbl k = iter (fun key _ -> k key) tbl
 
   let values tbl k = iter (fun _ v -> k v) tbl
+
+  let map_list f h =
+    fold
+      (fun x y acc -> f x y :: acc)
+      h []
 
   let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 
@@ -215,7 +233,7 @@ module MakeCounter(X : Hashtbl.HashedType) = struct
     let n = get tbl x in
     T.replace tbl x (n+1)
 
-  let incr_by tbl n x = 
+  let incr_by tbl n x =
     let n' = get tbl x in
     if n' + n <= 0
     then T.remove tbl x

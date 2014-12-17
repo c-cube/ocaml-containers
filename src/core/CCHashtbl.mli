@@ -25,7 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 
-(** {1 Extension to the standard Hashtbl} 
+(** {1 Extension to the standard Hashtbl}
 
 @since 0.4 *)
 
@@ -43,6 +43,9 @@ val keys : ('a,'b) Hashtbl.t -> 'a sequence
 
 val values : ('a,'b) Hashtbl.t -> 'b sequence
 (** Iterate on values in the table *)
+
+val map_list : ('a -> 'b -> 'c) -> ('a, 'b) Hashtbl.t -> 'c list
+(** Map on a hashtable's items, collect into a list *)
 
 val to_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence
 (** Iterate on bindings in the table *)
@@ -69,6 +72,9 @@ module type S = sig
 
   val values : 'a t -> 'a sequence
   (** Iterate on values in the table *)
+
+  val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list
+  (** Map on a hashtable's items, collect into a list *)
 
   val to_seq : 'a t -> (key * 'a) sequence
   (** Iterate on values in the table *)
