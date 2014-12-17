@@ -195,7 +195,8 @@ Executable run_qtest
   CompiledObject:   native
   MainIs:           run_qtest.ml
   Build$:           flag(tests)
-  BuildDepends:     containers, containers.misc, containers.string,
+  BuildDepends:     containers, containers.misc, containers.string, containers.iter,
+                    containers.io, containers.advanced, containers.sexp,
                     sequence, gen, oUnit, QTest2Lib
 
 Executable run_tests
