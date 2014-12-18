@@ -62,9 +62,8 @@ let init = String.init
 #else
 
 let init n f =
-  let buf = Buffer.create n in
-  for i = 0 to n-1 do Buffer.add_char buf (f i) done;
-  Buffer.contents buf
+  let buf = Bytes.init n f in
+  Bytes.unsafe_to_string buf
 
 #endif
 

@@ -66,6 +66,11 @@ val init : int -> (int -> char) -> string
 (** Analog to [Array.init].
     @since 0.3.3 *)
 
+(*$T
+  init 3 (fun i -> [|'a'; 'b'; 'c'|].(i)) = "abc"
+  init 0 (fun _ -> assert false) = ""
+*)
+
 val of_gen : char gen -> string
 val of_seq : char sequence -> string
 val of_klist : char klist -> string
