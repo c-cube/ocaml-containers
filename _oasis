@@ -25,10 +25,6 @@ Flag "misc"
   Description:  Build the misc library, containing everything from the rotating kitchen sink to automatic banana distributors
   Default:      false
 
-Flag "cgi"
-  Description:  Build modules related to FastCGI, depending on CamlGI
-  Default:      false
-
 Flag "lwt"
   Description:  Build modules which depend on Lwt
   Default:      false
@@ -106,7 +102,7 @@ Library "containers_misc"
                     Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
                     TTree, PrintBox, HGraph, Automaton, Conv, Bidir, Iteratee,
                     BTree, Ty, Cause, AVL, ParseReact
-  BuildDepends:     unix, containers, containers.data
+  BuildDepends:     containers, containers.data
   FindlibName:      misc
   FindlibParent:    containers
 
@@ -140,7 +136,7 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.misc, containers.iter, containers.data,
-    containers.string, containers.pervasives, 
+    containers.string, containers.pervasives,
     containers.advanced, containers.io, containers.sexp,
     containers.lwt
 
@@ -212,13 +208,6 @@ Test all
   Command:      make test-all
   TestTools:    run_tests, run_qtest
   Run$:         flag(tests) && flag(misc)
-
-Executable web_pwd
-  Path: examples/cgi/
-  Install: false
-  MainIs: web_pwd.ml
-  Build$: flag(cgi)
-  BuildDepends: containers, containers.cgi, threads, CamlGI
 
 Executable lambda
   Path: examples/
