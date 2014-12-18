@@ -217,3 +217,7 @@ A few guidelines:
 - add `@since` tags for new functions;
 - add tests if possible (using `qtest`).
 
+Powered by <a href="http://oasis.forge.ocamlcore.org/">
+<img src="http://oasis.forge.ocamlcore.org/oasis-badge.png"
+     alt="OASIS" style="border: none;" />
+</a>
