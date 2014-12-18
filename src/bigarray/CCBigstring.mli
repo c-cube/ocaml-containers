@@ -107,11 +107,12 @@ val to_gen_slice : t -> int -> int -> char gen
 (** {2 Memory-map} *)
 
 val with_map_file :
-  ?pos:int64 -> ?mode:int -> ?flags:Unix.open_flag list -> ?shared:bool ->
-  string -> int -> (t -> 'a) -> 'a
-(** [with_map_file name len f] maps the file into memory, opening it, and
-    call [f] with a slice [pos.... pos+len] of the bytes of the file. When
-    [f] returns, the file is closed.
+  ?pos:int64 -> ?len:int -> ?mode:int -> ?flags:open_flag list -> ?shared:bool ->
+  string -> (t -> 'a) -> 'a
+(** [with_map_file name f] maps the file into memory, opening it, and
+    call [f] with a slice [pos.... pos+len] of the bytes of the file
+    where [len] is the length of the file if not provided.
+    When [f] returns, the file is closed.
     @param pos offset in the file (default 0)
     @param shared if true, modifications are shared between processes that
       have mapped this file (requires the filedescr to be open in write mode).

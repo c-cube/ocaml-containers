@@ -207,13 +207,17 @@ let to_gen_slice a i len =
 let map_file_descr ?pos ?(shared=false) fd len =
   B.map_file fd ?pos Bigarray.char Bigarray.c_layout shared len
 
-let with_map_file ?pos ?(mode=0o644) ?(flags=[Unix.O_RDONLY]) ?shared name len f =
-  let fd = Unix.openfile name flags mode in
-  let a = map_file_descr ?pos ?shared fd len in
+let with_map_file ?pos ?len ?(mode=0o644) ?(flags=[Open_rdonly]) ?shared name f =
+  let ic = open_in_gen flags mode name in
+  let len = match len with
+    | None -> in_channel_length ic
+    | Some n -> n
+  in
+  let a = map_file_descr ?pos ?shared (Unix.descr_of_in_channel ic) len in
   try
     let x = f a in
-    Unix.close fd;
+    close_in ic;
     x
   with e ->
-    Unix.close fd;
+    close_in ic;
     raise e
