@@ -91,7 +91,23 @@ val repeat : string -> int -> string
 (** The same string, repeated n times *)
 
 val prefix : pre:string -> string -> bool
-(** [str_prefix ~pre s] returns [true] iff [pre] is a prefix of [s] *)
+(** [prefix ~pre s] returns [true] iff [pre] is a prefix of [s] *)
+
+(*$T
+  prefix ~pre:"aab" "aabcd"
+  not (prefix ~pre:"ab" "aabcd")
+  not (prefix ~pre:"abcd" "abc")
+*)
+
+val suffix : suf:string -> string -> bool
+(** [suffix ~suf s] returns [true] iff [suf] is a suffix of [s]
+    @since NEXT_RELEASE *)
+
+(*$T
+  suffix ~suf:"cd" "abcd"
+  not (suffix ~suf:"cd" "abcde")
+  not (suffix ~suf:"abcd" "cd")
+*)
 
 include S with type t := string
 

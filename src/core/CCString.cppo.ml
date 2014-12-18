@@ -181,7 +181,17 @@ let prefix ~pre s =
   String.length pre <= String.length s &&
   (let i = ref 0 in
     while !i < String.length pre && s.[!i] = pre.[!i] do incr i done;
-    !i = String.length pre)
+    !i = String.length pre
+  )
+
+let suffix ~suf s =
+  String.length suf <= String.length s &&
+  let off = String.length s - String.length suf in
+  (let i = ref 0 in
+    while !i < String.length suf && s.[off + !i] = suf.[!i] do incr i done;
+    !i = String.length suf
+  )
+
 
 let blit = String.blit
 
