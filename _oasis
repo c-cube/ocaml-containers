@@ -57,7 +57,7 @@ Library "containers_io"
 
 Library "containers_sexp"
   Path:             src/sexp
-  Modules:          CCSexp
+  Modules:          CCSexp, CCSexpStream, CCSexpM
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      sexp
@@ -233,6 +233,14 @@ Executable id_sexp
   Install:          false
   CompiledObject:   native
   MainIs:           id_sexp.ml
+  Build$:           flag(misc)
+  BuildDepends:     containers.sexp
+
+Executable id_sexp2
+  Path:             examples/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           id_sexp2.ml
   Build$:           flag(misc)
   BuildDepends:     containers.sexp
 
