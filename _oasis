@@ -37,6 +37,10 @@ Flag "bench"
   Description:  Build and run benchmarks
   Default:      false
 
+Flag "bigarray"
+  Description:  Build modules that depend on bigarrays
+  Default:      false
+
 Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
@@ -85,6 +89,13 @@ Library "containers_advanced"
   FindlibName:      advanced
   FindlibParent:    containers
   BuildDepends:     containers, sequence
+
+Library "containers_bigarray"
+  Path:             src/bigarray
+  Modules:          CCBigstring
+  FindlibName:      bigarray
+  FindlibParent:    containers
+  BuildDepends:     containers, bigarray, bytes
 
 Library "containers_pervasives"
   Path:             src/pervasives
@@ -193,6 +204,7 @@ Executable run_qtest
   Build$:           flag(tests)
   BuildDepends:     containers, containers.misc, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
+                    containers.bigarray,
                     sequence, gen, oUnit, QTest2Lib
 
 Executable run_tests

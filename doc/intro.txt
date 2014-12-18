@@ -83,6 +83,10 @@ Iterators:
 
 {!modules: Levenshtein KMP}
 
+{4 Bigarrays}
+
+{!modules: CCBigstring}
+
 {4 Advanced}
 
 {!modules: CCLinq CCCat CCBatch}

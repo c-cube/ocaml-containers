@@ -75,6 +75,8 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/advanced/*.mli) \
 	$(wildcard src/iter/*.ml) \
 	$(wildcard src/iter/*.mli) \
+	$(wildcard src/bigarray/*.ml) \
+	$(wildcard src/bigarray/*.mli) \
 	)
 
 qtest-clean:
