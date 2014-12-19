@@ -41,6 +41,10 @@ Flag "bigarray"
   Description:  Build modules that depend on bigarrays
   Default:      false
 
+Flag "advanced"
+  Description:  Build advanced combinators, including CCLinq (requires "sequence")
+  Default:      true
+
 Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
@@ -86,6 +90,8 @@ Library "containers_advanced"
   Path:             src/advanced
   Pack:             true
   Modules:          CCLinq, CCBatch, CCCat, CCMonadIO
+  Build$:           flag(advanced)
+  Install$:         flag(advanced)
   FindlibName:      advanced
   FindlibParent:    containers
   BuildDepends:     containers, sequence

@@ -49,10 +49,6 @@ examples: all
 
 push_doc: doc
 	scp -r containers.docdir/* cedeela.fr:~/simon/root/software/containers/
-	scp -r containers_string.docdir/* cedeela.fr:~/simon/root/software/containers/string/
-	scp -r containers_advanced.docdir/* cedeela.fr:~/simon/root/software/containers/advanced
-	scp -r containers_misc.docdir/* cedeela.fr:~/simon/root/software/containers/misc/
-	scp -r containers_lwt.docdir/* cedeela.fr:~/simon/root/software/containers/lwt/
 
 DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*)
 QTESTABLE=$(filter-out $(DONTTEST), \
