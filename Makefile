@@ -54,12 +54,24 @@ push_doc: doc
 	scp -r containers_misc.docdir/* cedeela.fr:~/simon/root/software/containers/misc/
 	scp -r containers_lwt.docdir/* cedeela.fr:~/simon/root/software/containers/lwt/
 
-DONTTEST=myocamlbuild.ml setup.ml $(wildcard **/*.cppo*)
+DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*)
 QTESTABLE=$(filter-out $(DONTTEST), \
-	$(wildcard core/*.ml) $(wildcard core/*.mli) \
-	$(wildcard core/*.cppo.ml) $(wildcard core/*.cppo.mli) \
-	$(wildcard misc/*.ml) $(wildcard misc/*.mli) \
-	$(wildcard string/*.ml) $(wildcard string/*.mli) \
+	$(wildcard src/core/*.ml) \
+	$(wildcard src/core/*.mli) \
+	$(wildcard src/data/*.ml) \
+	$(wildcard src/data/*.mli) \
+	$(wildcard src/string/*.ml) \
+	$(wildcard src/string/*.mli) \
+	$(wildcard src/io/*.ml) \
+	$(wildcard src/io/*.mli) \
+	$(wildcard src/sexp/*.ml) \
+	$(wildcard src/sexp/*.mli) \
+	$(wildcard src/advanced/*.ml) \
+	$(wildcard src/advanced/*.mli) \
+	$(wildcard src/iter/*.ml) \
+	$(wildcard src/iter/*.mli) \
+	$(wildcard src/bigarray/*.ml) \
+	$(wildcard src/bigarray/*.mli) \
 	)
 
 qtest-clean:
@@ -78,11 +90,11 @@ QTEST_PREAMBLE='open CCFun;; '
 
 qtest-gen: qtest-clean
 	@mkdir -p qtest
-	@if which qtest ; then \
+	@if which qtest > /dev/null ; then \
 		qtest extract --preamble $(QTEST_PREAMBLE) \
-			-o qtest/run_qtest.cppo.ml \
+			-o qtest/run_qtest.ml \
 			$(QTESTABLE) 2> /dev/null ; \
-	else touch qtest/run_qtest.cppo.ml ; \
+	else touch qtest/run_qtest.ml ; \
 	fi
 
 push-stable:
@@ -109,11 +121,10 @@ VERSION=$(shell awk '/^Version:/ {print $$2}' _oasis)
 
 update_next_tag:
 	@echo "update version to $(VERSION)..."
-	sed -i "s/NEXT_VERSION/$(VERSION)/g" **/*.ml **/*.mli
-	sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli
+	zsh -c 'sed -i "s/NEXT_VERSION/$(VERSION)/g" **/*.ml **/*.mli'
+	zsh -c 'sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli'
 
 udpate_sequence:
 	git subtree pull --prefix sequence sequence stable --squash
 
 .PHONY: examples push_doc tags qtest clean update_sequence update_next_tag push-stable clean-generated
-

@@ -1,5 +1,0 @@
-S .
-B _build
-S tests
-B _build/tests
-PKG oUnit

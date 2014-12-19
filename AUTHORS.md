@@ -7,3 +7,4 @@
 - Whitequark (Peter Zotov)
 - hcarty (Hezekiah M. Carty)
 - struktured (Carmelo Piccione)
+- Bernardo da Costa

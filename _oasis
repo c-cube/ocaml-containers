@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.6.1
+Version:     0.7
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -8,6 +8,7 @@ LicenseFile: LICENSE
 Plugins:     META (0.3), DevFiles (0.3)
 OCamlVersion: >= 4.00.1
 BuildTools:  ocamlbuild
+AlphaFeatures: ocamlbuild_more_args
 
 Synopsis:    A modular standard library focused on data structures.
 Description:
@@ -24,10 +25,6 @@ Flag "misc"
   Description:  Build the misc library, containing everything from the rotating kitchen sink to automatic banana distributors
   Default:      false
 
-Flag "cgi"
-  Description:  Build modules related to FastCGI, depending on CamlGI
-  Default:      false
-
 Flag "lwt"
   Description:  Build modules which depend on Lwt
   Default:      false
@@ -40,80 +37,105 @@ Flag "bench"
   Description:  Build and run benchmarks
   Default:      false
 
+Flag "bigarray"
+  Description:  Build modules that depend on bigarrays
+  Default:      false
+
 Library "containers"
-  Path:             core
-  Modules:          CCVector, CCDeque, CCGen, Gen_intf, CCSequence, CCFQueue, CCMultiMap,
-                    CCMultiSet, CCBV, CCPrint, CCPersistentHashtbl, CCError,
-                    CCHeap, CCList, CCOpt, CCPair, CCFun, CCHash,
-                    CCKList, CCInt, CCBool, CCFloat, CCArray, CCOrd, CCIO,
-                    CCRandom, CCKTree, CCTrie, CCString, CCHashtbl,
-                    CCFlatHashtbl, CCSexp, CCMap, CCCache
+  Path:             src/core
+  Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
+                    CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray,
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap
   BuildDepends:     bytes
 
+Library "containers_io"
+  Path:             src/io
+  Modules:          CCIO
+  BuildDepends:     bytes
+  FindlibParent:    containers
+  FindlibName:      io
+
+Library "containers_sexp"
+  Path:             src/sexp
+  Modules:          CCSexp, CCSexpStream, CCSexpM
+  BuildDepends:     bytes
+  FindlibParent:    containers
+  FindlibName:      sexp
+
+Library "containers_data"
+  Path:             src/data
+  Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
+                    CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl
+  FindlibParent:    containers
+  FindlibName:      data
+
+Library "containers_iter"
+  Path:             src/iter
+  Modules:          CCKTree, CCKList
+  FindlibParent:    containers
+  FindlibName:      iter
+
 Library "containers_string"
-  Path:             string
+  Path:             src/string
   Pack:             true
   Modules:          KMP, Levenshtein
   FindlibName:      string
   FindlibParent:    containers
 
 Library "containers_advanced"
-  Path:             advanced
+  Path:             src/advanced
   Pack:             true
   Modules:          CCLinq, CCBatch, CCCat, CCMonadIO
   FindlibName:      advanced
   FindlibParent:    containers
-  BuildDepends:     containers
+  BuildDepends:     containers, sequence
+
+Library "containers_bigarray"
+  Path:             src/bigarray
+  Modules:          CCBigstring
+  FindlibName:      bigarray
+  FindlibParent:    containers
+  BuildDepends:     containers, bigarray, bytes
 
 Library "containers_pervasives"
-  Path:             pervasives
+  Path:             src/pervasives
   Modules:          CCPervasives
   BuildDepends:     containers
   FindlibName:      pervasives
   FindlibParent:    containers
 
 Library "containers_misc"
-  Path:             misc
+  Path:             src/misc
   Pack:             true
   Modules:          FHashtbl, FlatHashtbl, Hashset,
                     Heap, LazyGraph, PersistentGraph,
                     PHashtbl, SkipList, SplayTree, SplayMap, Univ,
                     Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
                     TTree, PrintBox, HGraph, Automaton, Conv, Bidir, Iteratee,
-                    BTree, Ty, Cause, AVL, ParseReact, Mixtbl
-  BuildDepends:     unix,containers
+                    BTree, Ty, Cause, AVL, ParseReact
+  BuildDepends:     containers, containers.data
   FindlibName:      misc
   FindlibParent:    containers
 
 Library "containers_thread"
-  Path:             threads/
+  Path:             src/threads/
   Modules:          CCFuture
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)
   Install$:         flag(thread)
-  BuildDepends:     containers,threads
-  XMETARequires:    containers,threads
+  BuildDepends:     containers, threads
+  XMETARequires:    containers, threads
 
 Library "containers_lwt"
-  Path:             lwt
-  Modules:          Behavior, Lwt_automaton, Lwt_actor
+  Path:             src/lwt
+  Modules:          Lwt_automaton, Lwt_actor
   Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
   Build$:           flag(lwt) && flag(misc)
   Install$:         flag(lwt) && flag(misc)
-  BuildDepends:     containers, lwt, lwt.unix, containers.misc
-
-Library "containers_cgi"
-  Path:             cgi
-  Modules:          ToWeb
-  FindlibName:      cgi
-  FindlibParent:    containers
-  Build$:           flag(cgi)
-  Install$:         flag(cgi)
-  BuildDepends:     containers,CamlGI
-  XMETARequires:    containers,CamlGI
+  BuildDepends:     containers, lwt, containers.misc
 
 Document containers
   Title:                Containers docs
@@ -121,39 +143,13 @@ Document containers
   BuildTools+:          ocamldoc
   Install:              true
   XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers,containers.string
-
-Document containers_misc
-  Title:                Containers_misc docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.misc
-
-Document containers_string
-  Title:                Containers_string docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.string
-
-Document containers_advanced
-  Title:                Containers_advanced docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.advanced
-
-Document containers_lwt
-  Title:                Containers_lwt docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Install:              true
-  XOCamlbuildPath:      .
-  XOCamlbuildLibraries: containers.lwt
+  XOCamlbuildExtraArgs:
+    "-docflags '-colorize-code -short-functors -charset utf-8'"
+  XOCamlbuildLibraries:
+    containers, containers.misc, containers.iter, containers.data,
+    containers.string, containers.pervasives, containers.bigarray,
+    containers.advanced, containers.io, containers.sexp,
+    containers.lwt
 
 Executable run_benchs
   Path:             benchs/
@@ -162,7 +158,8 @@ Executable run_benchs
   Build$:           flag(bench) && flag(misc)
   MainIs:           run_benchs.ml
   BuildDepends:     containers, containers.misc, containers.advanced,
-                    containers.string, benchmark
+                    containers.data, containers.string, containers.iter,
+                    sequence, gen, benchmark
 
 Executable bench_hash
   Path: benchs/
@@ -170,7 +167,7 @@ Executable bench_hash
   CompiledObject: native
   Build$: flag(bench) && flag(misc)
   MainIs: bench_hash.ml
-  BuildDepends: containers,containers.misc
+  BuildDepends: containers, containers.misc
 
 Executable bench_conv
   Path:     benchs/
@@ -178,7 +175,7 @@ Executable bench_conv
   CompiledObject: native
   Build$: flag(bench)
   MainIs: bench_conv.ml
-  BuildDepends: containers,benchmark
+  BuildDepends: containers, benchmark, gen
 
 Executable test_levenshtein
   Path: tests/
@@ -186,15 +183,7 @@ Executable test_levenshtein
   CompiledObject: native
   Build$: flag(tests)
   MainIs: test_levenshtein.ml
-  BuildDepends: containers,qcheck,containers.string
-
-Executable test_lwt
-  Path: tests/lwt/
-  Install: false
-  CompiledObject: best
-  Build$: flag(tests) && flag(lwt)
-  MainIs: test_Behavior.ml
-  BuildDepends: containers,lwt,lwt.unix,oUnit,containers.lwt
+  BuildDepends: containers, qcheck, containers.string
 
 Executable test_threads
   Path: tests/lwt/
@@ -202,7 +191,7 @@ Executable test_threads
   CompiledObject: best
   Build$: flag(tests) && flag(thread)
   MainIs: test_Future.ml
-  BuildDepends: containers,threads,oUnit,containers.lwt
+  BuildDepends: containers, threads, oUnit, containers.lwt
 
 PreBuildCommand: make qtest-gen
 
@@ -212,8 +201,10 @@ Executable run_qtest
   CompiledObject:   native
   MainIs:           run_qtest.ml
   Build$:           flag(tests)
-  BuildDepends:     containers, containers.misc, containers.string,
-                    oUnit, QTest2Lib
+  BuildDepends:     containers, containers.misc, containers.string, containers.iter,
+                    containers.io, containers.advanced, containers.sexp,
+                    containers.bigarray,
+                    sequence, gen, oUnit, QTest2Lib
 
 Executable run_tests
   Path: tests/
@@ -221,26 +212,20 @@ Executable run_tests
   CompiledObject: native
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
-  BuildDepends: containers, oUnit, qcheck, containers.misc
+  BuildDepends: containers, containers.data, oUnit, sequence, gen,
+                qcheck, containers.misc
 
 Test all
   Command:      make test-all
   TestTools:    run_tests, run_qtest
   Run$:         flag(tests) && flag(misc)
 
-Executable web_pwd
-  Path: examples/cgi/
-  Install: false
-  MainIs: web_pwd.ml
-  Build$: flag(cgi)
-  BuildDepends: containers, containers.cgi, threads, CamlGI
-
 Executable lambda
   Path: examples/
   Install: false
   MainIs: lambda.ml
   Build$: flag(misc)
-  BuildDepends: containers,containers.misc
+  BuildDepends: containers, containers.misc
 
 Executable id_sexp
   Path:             examples/
@@ -248,7 +233,15 @@ Executable id_sexp
   CompiledObject:   native
   MainIs:           id_sexp.ml
   Build$:           flag(misc)
-  BuildDepends:     containers
+  BuildDepends:     containers.sexp
+
+Executable id_sexp2
+  Path:             examples/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           id_sexp2.ml
+  Build$:           flag(misc)
+  BuildDepends:     containers.sexp
 
 SourceRepository head
   Type: git

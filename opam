@@ -3,7 +3,8 @@ author: "Simon Cruanes"
 maintainer: "simon.cruanes@inria.fr"
 build: [
     ["./configure" "--prefix" prefix "--disable-thread" "--disable-bench"
-        "--disable-tests" "--disable-cgi" "--%{lwt:enable}%-lwt"
+        "--disable-tests" "--%{lwt:enable}%-lwt"
+        "--%{base-bigarray:enable}%-bigarray"
         "--enable-docs" "--enable-misc"]
     [make "build"]
 ]
@@ -16,7 +17,10 @@ remove: [
     ["ocamlfind" "remove" "containers"]
 ]
 post-messages: [
-    "in containers, modules start with 'CC' (stands for 'core containers')"
+    "containers is now split into finer-grained sub-libraries, including
+    `containers.io`, `containers.iter`, `containers.sexp`, `containers.data`.
+    CCGen and CCSequence have been removed, consider using the libraries
+    `gen` and `sequence` on opam."
 ]
 depends: [
     "ocamlfind" {build}

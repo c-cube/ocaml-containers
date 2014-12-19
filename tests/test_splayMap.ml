@@ -2,7 +2,7 @@
 open OUnit
 open Containers_misc
 
-module Sequence = CCSequence
+
 
 let test1 () =
   let empty = SplayMap.empty () in

@@ -3,6 +3,8 @@ open OUnit
 open Containers_misc
 open CCFun
 
+module Mixtbl = CCMixtbl
+
 let example () =
   let inj_int = Mixtbl.create_inj () in
   let tbl = Mixtbl.create 10 in
@@ -66,7 +68,7 @@ let test_keys () =
   Mixtbl.set ~inj:inj_int tbl "foo" 1;
   Mixtbl.set ~inj:inj_int tbl "bar" 2;
   Mixtbl.set ~inj:inj_str tbl "baaz" "hello";
-  let l = Mixtbl.keys_seq tbl |> CCSequence.to_list in
+  let l = Mixtbl.keys_seq tbl |> Sequence.to_list in
   OUnit.assert_equal ["baaz"; "bar"; "foo"] (List.sort compare l);
   ()
 
@@ -78,9 +80,9 @@ let test_bindings () =
   Mixtbl.set ~inj:inj_int tbl "bar" 2;
   Mixtbl.set ~inj:inj_str tbl "baaz" "hello";
   Mixtbl.set ~inj:inj_str tbl "str" "rts";
-  let l_int = Mixtbl.bindings_of tbl ~inj:inj_int |> CCSequence.to_list in
+  let l_int = Mixtbl.bindings_of tbl ~inj:inj_int |> Sequence.to_list in
   OUnit.assert_equal ["bar", 2; "foo", 1] (List.sort compare l_int);
-  let l_str = Mixtbl.bindings_of tbl ~inj:inj_str |> CCSequence.to_list in
+  let l_str = Mixtbl.bindings_of tbl ~inj:inj_str |> Sequence.to_list in
   OUnit.assert_equal ["baaz", "hello"; "str", "rts"] (List.sort compare l_str);
   ()
 

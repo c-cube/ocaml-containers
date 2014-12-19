@@ -2,7 +2,7 @@
 open OUnit
 
 module Vector = CCVector
-module Sequence = CCSequence
+
 
 let test_clear () =
   let v = Vector.of_seq Sequence.(1 -- 10) in

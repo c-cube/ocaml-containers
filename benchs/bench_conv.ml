@@ -79,11 +79,11 @@ let () =
   bench_list [1,2; 3,4; 5,6; 7,8; 9,10];
 
   let open CCFun in
-  let l = CCGen.(1 -- 100 |> map (fun x->x,x) |> to_rev_list) in
+  let l = Gen.(1 -- 100 |> map (fun x->x,x) |> to_rev_list) in
   Printf.printf "list of %d elements...\n" (List.length l);
   bench_list l;
 
-  let l = CCGen.(repeat Point.p |> take 10 |> to_rev_list) in
+  let l = Gen.(repeat Point.p |> take 10 |> to_rev_list) in
   Printf.printf "list of %d points...\n" (List.length l);
   bench_point_list l;
 

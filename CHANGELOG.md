@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.7
+
+### breaking
+
+- remove `cgi`/
+- removed useless Lwt-related module
+- remove `CCGen` and `CCsequence` (use the separate libraries)
+- split the library into smaller pieces (with `containers.io`, `containers.iter`,
+    `containers.sexp`, `containers.data`)
+
+#### other changes
+
+- cleanup: move sub-libraries to their own subdir each; mv everything into `src/`
+- `sexp`:
+    * `CCSexp` now splitted into `CCSexp` (manipulating expressions) and `CCSexpStream`
+    * add `CCSexpM` for a simpler, monadic parser of S-expressions (deprecating `CCSexpStream`)
+- `core`:
+    * `CCString.fold`
+    * `CCstring.suffix`
+    * more efficient `CCString.init`
+    * fix errors in documentation of `CCString` (slightly over-reaching sed)
+    * add `CCFloat.{fsign, sign_exn}` (thanks @bernardofpc)
+- new `containers.bigarray`, with `CCBigstring`
+- `CCHashtbl.map_list`
+- `io`:
+    * `CCIO.read_all` now with ?size parameter
+    * use `Bytes.extend` (praise modernity!)
+    * bugfix in `CCIO.read_all` and `CCIO.read_chunks`
+- use `-no-alias-deps`
+
 ## 0.6.1
 
 - use subtree `gen/` for `CCGen` (symlink) rather than a copy.

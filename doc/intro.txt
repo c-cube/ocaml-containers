@@ -1,0 +1,137 @@
+{1 Containers}
+
+{2 Change Log}
+
+See {{: https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md } this file}
+
+{2 License}
+
+This code is free, under the BSD license.
+
+The logo (media/logo.png) is
+CC-SA3 {{:http://en.wikipedia.org/wiki/File:Hypercube.svg} wikimedia}
+
+{2 Contents}
+
+The design is mostly centered around polymorphism rather than functors. Such
+structures comprise (some modules in misc/, some other in core/):
+
+the core library, containers, now depends on
+{{:https://github.com/mjambon/cppo}cppo} and base-bytes (provided
+by ocamlfind).
+
+{4 Core Modules (extension of the standard library)}
+
+{!modules:
+CCArray
+CCBool
+CCError
+CCFloat
+CCFun
+CCHash
+CCHeap
+CCInt
+CCList
+CCOpt
+CCOrd
+CCPair
+CCPrint
+CCRandom
+CCString
+CCVector
+}
+
+{4 Pervasives (aliases to Core Modules)}
+
+Contains aliases to most modules from {i containers core}, and mixins
+such as:
+
+{[ module List = struct
+    include List
+    include CCList
+  end
+]}
+
+{!modules: CCPervasives}
+
+{4 Containers.data}
+
+Various data structures.
+
+{!modules:
+CCBV
+CCCache
+CCFQueue
+CCFlatHashtbl
+CCMixtbl
+CCMultiMap
+CCMultiSet
+CCPersistentHashtbl
+CCTrie
+}
+
+{4 Containers.io}
+
+Helpers to perform simple IO (mostly on files) and iterate on channels.
+
+{!modules: CCIO}
+
+{4 Containers.sexp}
+
+A small S-expression library. The interface is relatively unstable, but
+the main type ([CCSexp.t]) isn't.
+
+{!modules: CCSexp CCSexpStream CCSexpM}
+
+{4 Containers.iter}
+
+Iterators:
+
+{!modules: CCKList CCKTree}
+
+{4 String}
+
+{!modules: Levenshtein KMP}
+
+{4 Bigarrays}
+
+Use bigarrays to hold large strings and map files directly into memory.
+
+{!modules: CCBigstring}
+
+{4 Advanced}
+
+This module is qualified with [Containers_advanced].
+
+{!modules: CCLinq CCCat CCBatch}
+
+{4 Misc}
+
+This list is not necessarily up-to-date.
+
+{!modules:
+AbsSet
+Bij
+FlatHashtbl
+Hashset
+Heap
+Heap
+LazyGraph
+PHashtbl
+PrintBox
+RAL
+SmallSet
+SplayMap
+SplayTree
+UnionFind
+Univ
+}
+
+{4 Others}
+
+{!modules: CCFuture}
+
+
+{2 Index}
+
+{!indexlist}

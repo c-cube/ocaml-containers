@@ -1,0 +1,129 @@
+# OASIS_START
+# DO NOT EDIT (digest: 9c70d2a3b15d841d97052a6ac9fe3a5f)
+version = "0.7"
+description = "A modular standard library focused on data structures."
+requires = "bytes"
+archive(byte) = "containers.cma"
+archive(byte, plugin) = "containers.cma"
+archive(native) = "containers.cmxa"
+archive(native, plugin) = "containers.cmxs"
+exists_if = "containers.cma"
+package "thread" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "containers threads"
+ archive(byte) = "containers_thread.cma"
+ archive(byte, plugin) = "containers_thread.cma"
+ archive(native) = "containers_thread.cmxa"
+ archive(native, plugin) = "containers_thread.cmxs"
+ exists_if = "containers_thread.cma"
+)
+
+package "string" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ archive(byte) = "containers_string.cma"
+ archive(byte, plugin) = "containers_string.cma"
+ archive(native) = "containers_string.cmxa"
+ archive(native, plugin) = "containers_string.cmxs"
+ exists_if = "containers_string.cma"
+)
+
+package "sexp" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "bytes"
+ archive(byte) = "containers_sexp.cma"
+ archive(byte, plugin) = "containers_sexp.cma"
+ archive(native) = "containers_sexp.cmxa"
+ archive(native, plugin) = "containers_sexp.cmxs"
+ exists_if = "containers_sexp.cma"
+)
+
+package "pervasives" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "containers"
+ archive(byte) = "containers_pervasives.cma"
+ archive(byte, plugin) = "containers_pervasives.cma"
+ archive(native) = "containers_pervasives.cmxa"
+ archive(native, plugin) = "containers_pervasives.cmxs"
+ exists_if = "containers_pervasives.cma"
+)
+
+package "misc" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "containers containers.data"
+ archive(byte) = "containers_misc.cma"
+ archive(byte, plugin) = "containers_misc.cma"
+ archive(native) = "containers_misc.cmxa"
+ archive(native, plugin) = "containers_misc.cmxs"
+ exists_if = "containers_misc.cma"
+)
+
+package "lwt" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "containers lwt containers.misc"
+ archive(byte) = "containers_lwt.cma"
+ archive(byte, plugin) = "containers_lwt.cma"
+ archive(native) = "containers_lwt.cmxa"
+ archive(native, plugin) = "containers_lwt.cmxs"
+ exists_if = "containers_lwt.cma"
+)
+
+package "iter" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ archive(byte) = "containers_iter.cma"
+ archive(byte, plugin) = "containers_iter.cma"
+ archive(native) = "containers_iter.cmxa"
+ archive(native, plugin) = "containers_iter.cmxs"
+ exists_if = "containers_iter.cma"
+)
+
+package "io" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "bytes"
+ archive(byte) = "containers_io.cma"
+ archive(byte, plugin) = "containers_io.cma"
+ archive(native) = "containers_io.cmxa"
+ archive(native, plugin) = "containers_io.cmxs"
+ exists_if = "containers_io.cma"
+)
+
+package "data" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ archive(byte) = "containers_data.cma"
+ archive(byte, plugin) = "containers_data.cma"
+ archive(native) = "containers_data.cmxa"
+ archive(native, plugin) = "containers_data.cmxs"
+ exists_if = "containers_data.cma"
+)
+
+package "bigarray" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "containers bigarray bytes"
+ archive(byte) = "containers_bigarray.cma"
+ archive(byte, plugin) = "containers_bigarray.cma"
+ archive(native) = "containers_bigarray.cmxa"
+ archive(native, plugin) = "containers_bigarray.cmxs"
+ exists_if = "containers_bigarray.cma"
+)
+
+package "advanced" (
+ version = "0.7"
+ description = "A modular standard library focused on data structures."
+ requires = "containers sequence"
+ archive(byte) = "containers_advanced.cma"
+ archive(byte, plugin) = "containers_advanced.cma"
+ archive(native) = "containers_advanced.cmxa"
+ archive(native, plugin) = "containers_advanced.cmxs"
+ exists_if = "containers_advanced.cma"
+)
+# OASIS_STOP
+

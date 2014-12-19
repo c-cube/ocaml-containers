@@ -1,6 +1,6 @@
 open OUnit
 
-module Sequence = CCSequence
+
 
 let test_cardinal () =
   let bv1 = CCBV.create ~size:87 true in
