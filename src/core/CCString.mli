@@ -43,6 +43,10 @@ module type S = sig
   val blit : t -> int -> t -> int -> int -> unit
   (** See {!String.blit} *)
 
+  val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
+  (** Fold on chars by increasing index.
+      @since NEXT_RELEASE *)
+
   (** {2 Conversions} *)
 
   val to_gen : t -> char gen
@@ -169,4 +173,11 @@ module Sub : sig
   (** Sub-slice *)
 
   include S with type t := t
+
+  (*$T
+    let s = Sub.make "abcde" 1 3 in \
+      Sub.fold (fun acc x -> x::acc) [] s = ['d'; 'c'; 'b']
+    Sub.make "abcde" 1 3 |> Sub.copy = "bcd"
+    Sub.full "abcde" |> Sub.copy = "abcde"
+  *)
 end

@@ -38,6 +38,8 @@ module type S = sig
   val blit : t -> int -> t -> int -> int -> unit
   (** See {!String.blit} *)
 
+  val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
+
   (** {2 Conversions} *)
 
   val to_gen : t -> char gen
@@ -195,6 +197,12 @@ let suffix ~suf s =
 
 let blit = String.blit
 
+let fold f acc s =
+  let rec fold_rec f acc s i =
+    if i = String.length s then acc
+    else fold_rec f (f acc s.[i]) s (i+1)
+  in fold_rec f acc s 0
+
 let _to_gen s i0 len =
   let i = ref i0 in
   fun () ->
@@ -285,6 +293,12 @@ module Sub = struct
   let blit (a1,i1,len1) o1 (a2,i2,len2) o2 len =
     if o1+len>len1 || o2+len>len2 then invalid_arg "CCString.Sub.blit";
     String.blit a1 (i1+o1) a2 (i2+o2) len
+
+  let fold f acc (s,i,len) =
+    let rec fold_rec f acc s i j =
+      if i = j then acc
+      else fold_rec f (f acc s.[i]) s (i+1) j
+    in fold_rec f acc s i (i+len)
 
   let to_gen (s,i,len) = _to_gen s i len
   let to_seq (s,i,len) k =
