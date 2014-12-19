@@ -45,7 +45,7 @@ module type S = sig
 
   val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
   (** Fold on chars by increasing index.
-      @since NEXT_RELEASE *)
+      @since 0.7 *)
 
   (** {2 Conversions} *)
 
@@ -105,7 +105,7 @@ val prefix : pre:string -> string -> bool
 
 val suffix : suf:string -> string -> bool
 (** [suffix ~suf s] returns [true] iff [suf] is a suffix of [s]
-    @since NEXT_RELEASE *)
+    @since 0.7 *)
 
 (*$T
   suffix ~suf:"cd" "abcd"

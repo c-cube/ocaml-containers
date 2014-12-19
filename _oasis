@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.6.1
+Version:     0.7
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -147,7 +147,7 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.misc, containers.iter, containers.data,
-    containers.string, containers.pervasives,
+    containers.string, containers.pervasives, containers.bigarray,
     containers.advanced, containers.io, containers.sexp,
     containers.lwt
 

@@ -83,14 +83,14 @@ val sign : t -> int
 
 val fsign : t -> float
 (** [fsign x] is one of [-1., -0., +0., +1.], or [nan] if [x] is NaN.
-    @since NEXT_RELEASE *)
+    @since 0.7 *)
 
 exception TrapNaN of string
 val sign_exn : t -> int
 (** [sign_exn x] will return the sign of [x] as [1, 0] or [-1], or raise an
     exception [TrapNaN] if [x] is a NaN.
     Note that infinities have defined signs in OCaml.
-    @since NEXT_RELEASE *)
+    @since 0.7 *)
 
 val to_int : t -> int
 val of_int : int -> t

@@ -43,9 +43,20 @@ CCVector
 
 {4 Pervasives (aliases to Core Modules)}
 
+Contains aliases to most modules from {i containers core}, and mixins
+such as:
+
+{[ module List = struct
+    include List
+    include CCList
+  end
+]}
+
 {!modules: CCPervasives}
 
 {4 Containers.data}
+
+Various data structures.
 
 {!modules:
 CCBV
@@ -61,13 +72,16 @@ CCTrie
 
 {4 Containers.io}
 
+Helpers to perform simple IO (mostly on files) and iterate on channels.
+
 {!modules: CCIO}
 
 {4 Containers.sexp}
 
-A small S-expression library.
+A small S-expression library. The interface is relatively unstable, but
+the main type ([CCSexp.t]) isn't.
 
-{!modules: CCSexp}
+{!modules: CCSexp CCSexpStream CCSexpM}
 
 {4 Containers.iter}
 
@@ -75,19 +89,19 @@ Iterators:
 
 {!modules: CCKList CCKTree}
 
-{4 S-expressions}
-
-{!modules: CCSexp}
-
 {4 String}
 
 {!modules: Levenshtein KMP}
 
 {4 Bigarrays}
 
+Use bigarrays to hold large strings and map files directly into memory.
+
 {!modules: CCBigstring}
 
 {4 Advanced}
+
+This module is qualified with [Containers_advanced].
 
 {!modules: CCLinq CCCat CCBatch}
 

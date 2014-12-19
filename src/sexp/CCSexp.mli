@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 @since 0.4
 
-@since NEXT_RELEASE
+@since 0.7
 Moved the streaming parser to CCSexpStream
 *)
 

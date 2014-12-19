@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Interface to 1-dimension Bigarrays of bytes (char)}
 
-@since NEXT_RELEASE *)
+@since 0.7 *)
 
 type t = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
@@ -118,10 +118,10 @@ val with_map_file :
       have mapped this file (requires the filedescr to be open in write mode).
     @param mode the mode for the file, if it's created
     @param flags opening flags (default rdonly)
-    @see {!Bigarray.Array1.map_file} for more details *)
+    see {!Bigarray.Array1.map_file} for more details *)
 
 val map_file_descr : ?pos:int64 -> ?shared:bool -> Unix.file_descr -> int -> t
 (** [map_file_descr descr len] is a lower-level access to an underlying file descriptor.
     @param shared if true, modifications are shared between processes that
     have mapped this file (requires the filedescr to be open in write mode).
-    @see {!Bigarray.Array1.map_file} for more details *)
+    see {!Bigarray.Array1.map_file} for more details *)

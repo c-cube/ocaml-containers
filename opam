@@ -17,7 +17,10 @@ remove: [
     ["ocamlfind" "remove" "containers"]
 ]
 post-messages: [
-    "in containers, modules start with 'CC' (stands for 'core containers')"
+    "containers is now split into finer-grained sub-libraries, including
+    `containers.io`, `containers.iter`, `containers.sexp`, `containers.data`.
+    CCGen and CCSequence have been removed, consider using the libraries
+    `gen` and `sequence` on opam."
 ]
 depends: [
     "ocamlfind" {build}
