@@ -89,7 +89,8 @@ module type S = sig
   (** From the given list of bindings, added in order *)
 end
 
-module Make(X : Hashtbl.HashedType) : S with type key = X.t
+module Make(X : Hashtbl.HashedType) :
+  S with type key = X.t and type 'a t = 'a Hashtbl.Make(X).t
 
 (** {2 Default Table}
 
