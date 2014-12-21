@@ -29,9 +29,11 @@ CCError
 CCFloat
 CCFun
 CCHash
+CCHashtbl
 CCHeap
 CCInt
 CCList
+CCMap
 CCOpt
 CCOrd
 CCPair
