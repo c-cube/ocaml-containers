@@ -48,9 +48,8 @@ module MVar : sig
   val put : 'a t -> 'a -> unit
     (** Put a value in the box. Waits if the box is already empty *)
 
-  val update : 'a t -> ('a -> 'a) -> 'a * 'a
-    (** Use given function to atomically update content, and return
-        the previous value and the new one *)
+  val update : 'a t -> ('a -> 'a * 'b) -> 'b
+    (** Use given function to atomically update content, and return a value *)
 
   val peek : 'a t -> 'a
     (** Look at the value, without removing it *)
@@ -63,7 +62,7 @@ module type S = sig
     (** A future value of type 'a *)
 
   val run : (unit -> unit) -> unit
-    (** Run the function in the pool *)
+    (** Use the underlying thread pool to run this job *)
 
   val finish : unit -> unit
     (** Kill threads in the pool. The pool won't be usable any more. *)
@@ -126,10 +125,10 @@ module type S = sig
   (** {2 Event timer} *)
 
   module Timer : sig
-    val schedule_at : at:float -> (unit -> unit) -> unit
+    val at : float -> (unit -> unit) -> unit
       (** [schedule_at ~at act] will run [act] at the Unix echo [at] *)
 
-    val schedule_after : after:float -> (unit -> unit) -> unit
+    val after : float -> (unit -> unit) -> unit
       (** [schedule_after ~after act] will run [act] in [after] seconds *)
   end
 
@@ -145,9 +144,8 @@ end
 (** {2 Functor} *)
 
 module type CONFIG = sig
-  val timeout : float
-
-  val max_size : int
+  val min_size : int  (** Minimum (initial) number of threads *)
+  val max_size : int  (** Maximum number of active threads *)
 end
 
 module DefaultConfig : CONFIG

@@ -27,21 +27,18 @@ let test_parallel () =
   ()
 
 let test_time () =
-  let start = Unix.gettimeofday () in
   let f1 = F.spawn (fun () -> Thread.delay 0.5) in
   let f2 = F.spawn (fun () -> Thread.delay 0.5) in
-  F.get f1;
-  F.get f2;
-  let stop = Unix.gettimeofday () in
-  OUnit.assert_bool "parallelism" (stop -. start < 0.75);
-  ()
+  Thread.delay 0.75;
+  match F.state f1, F.state f2 with
+  | F.Success _, F.Success _ -> ()
+  | _ -> OUnit.assert_failure "parallelism"
 
 let test_timer () =
-  let timer = F.Timer.create () in
   let mvar = MVar.full 1 in
-  F.Timer.schedule_in timer 0.5
+  F.Timer.after 0.5
     (fun () -> ignore (MVar.update mvar (fun x -> x + 2)));
-  F.Timer.schedule_in timer 0.2
+  F.Timer.after 0.2
     (fun () -> ignore (MVar.update mvar (fun x -> x * 4)));
   Thread.delay 0.7;
   OUnit.assert_equal 6 (MVar.peek mvar);
