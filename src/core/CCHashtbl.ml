@@ -84,6 +84,14 @@ module type S = sig
   val values : 'a t -> 'a sequence
   (** Iterate on values in the table *)
 
+  val keys_list : ('a, 'b) Hashtbl.t -> 'a list
+  (** [keys t] is the list of keys in [t].
+      @since NEXT_RELEASE *)
+
+  val values_list : ('a, 'b) Hashtbl.t -> 'b list
+  (** [values t] is the list of values in [t].
+      @since NEXT_RELEASE *)
+
   val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list
   (** Map on a hashtable's items, collect into a list *)
 
@@ -110,6 +118,9 @@ module Make(X : Hashtbl.HashedType) = struct
   let keys tbl k = iter (fun key _ -> k key) tbl
 
   let values tbl k = iter (fun _ v -> k v) tbl
+
+  let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
+  let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
 
   let map_list f h =
     fold
