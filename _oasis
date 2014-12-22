@@ -147,6 +147,7 @@ Document containers
   Title:                Containers docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
+  Build$:               flag(docs) && flag(advanced) && flag(bigarray) && flag(lwt) && flag(misc)
   Install:              true
   XOCamlbuildPath:      .
   XOCamlbuildExtraArgs:
