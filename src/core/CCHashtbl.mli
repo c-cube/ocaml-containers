@@ -44,6 +44,12 @@ val keys : ('a,'b) Hashtbl.t -> 'a sequence
 val values : ('a,'b) Hashtbl.t -> 'b sequence
 (** Iterate on values in the table *)
 
+val keys_list : ('a, 'b) Hashtbl.t -> 'a list
+(** [keys t] is the list of keys in [t]. *)
+
+val values_list : ('a, 'b) Hashtbl.t -> 'b list
+(** [values t] is the list of values in [t]. *)
+
 val map_list : ('a -> 'b -> 'c) -> ('a, 'b) Hashtbl.t -> 'c list
 (** Map on a hashtable's items, collect into a list *)
 

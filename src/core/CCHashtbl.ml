@@ -40,6 +40,9 @@ let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
 
 let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
 
+let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
+let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
+
 let map_list f h =
   Hashtbl.fold
     (fun x y acc -> f x y :: acc)
