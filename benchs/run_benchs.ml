@@ -1,9 +1,8 @@
 (** Generic benchs *)
 
-(* composition *)
-let (%%) f g x = f (g x)
-
-(* FIXME: find out why -tree takes so long *)
+let (@>) = Benchmark.Tree.(@>)
+let (@>>) = Benchmark.Tree.(@>>)
+let (@>>>) = Benchmark.Tree.(@>>>)
 
 module L = struct
   (* FLAT MAP *)
@@ -13,72 +12,66 @@ module L = struct
     else if x mod 5 = 1 then [x;x+1]
     else [x;x+1;x+2;x+3]
 
-  let bench_flat_map ?(time=2) n =
-    let l = lazy CCList.(1 -- n) in
+  let bench_flat_map ?(time=2) n = ("flat_map_" ^ string_of_int n) @> lazy(
+    let l = CCList.(1 -- n) in
     let flatten_map_ l = List.flatten (CCList.map f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
-    CCBench.throughputN time
-      [ "flat_map", CCList.flat_map f_ %% Lazy.force, l
-      ; "flatten o CCList.map", flatten_ccmap_ %% Lazy.force, l
-      ; "flatten o map", flatten_map_ %% Lazy.force, l
+    Benchmark.throughputN time
+      [ "flat_map", CCList.flat_map f_, l
+      ; "flatten o CCList.map", flatten_ccmap_, l
+      ; "flatten o map", flatten_map_, l
       ]
+  )
 
   (* APPEND *)
 
-  let append_ f (lazy l1, lazy l2, lazy l3) =
+  let append_ f (l1, l2, l3) =
     ignore (f (f l1 l2) l3)
 
-  let bench_append ?(time=2) n =
-    let l1 = lazy CCList.(1 -- n) in
-    let l2 = lazy CCList.(n+1 -- 2*n) in
-    let l3 = lazy CCList.(2*n+1 -- 3*n) in
+  let bench_append ?(time=2) n = ("append_" ^ string_of_int n) @> lazy (
+    let l1 = CCList.(1 -- n) in
+    let l2 = CCList.(n+1 -- 2*n) in
+    let l3 = CCList.(2*n+1 -- 3*n) in
     let arg = l1, l2, l3 in
-    CCBench.throughputN time
+    Benchmark.throughputN time
       [ "CCList.append", append_ CCList.append, arg
       ; "List.append", append_ List.append, arg
       ]
+    )
 
   (* FLATTEN *)
 
-  let bench_flatten ?(time=2) n =
+  let bench_flatten ?(time=2) n = ("flatten_" ^ string_of_int n) @> lazy (
     let fold_right_append_ l =
       List.fold_right List.append l []
     and cc_fold_right_append_ l =
       CCList.fold_right CCList.append l []
     in
-    let l = lazy (
+    let l =
       CCList.Idx.mapi
         (fun i x -> CCList.(x -- (x+ min i 100)))
-        CCList.(1 -- n))
+        CCList.(1 -- n)
     in
-    CCBench.throughputN time
-      [ "CCList.flatten", CCList.flatten %% Lazy.force, l
-      ; "List.flatten", List.flatten %% Lazy.force, l
-      ; "fold_right append", fold_right_append_ %% Lazy.force, l
-      ; "CCList.(fold_right append)", cc_fold_right_append_ %% Lazy.force, l
+    Benchmark.throughputN time
+      [ "CCList.flatten", CCList.flatten, l
+      ; "List.flatten", List.flatten, l
+      ; "fold_right append", fold_right_append_, l
+      ; "CCList.(fold_right append)", cc_fold_right_append_, l
       ]
+  )
 
   (* MAIN *)
 
-  let () = CCBench.register CCBench.(
-    "list" >:::
-      [ "flat_map" >::
-        map_int
-          [ bench_flat_map ~time:2, 100
-          ; bench_flat_map ~time:2, 10_000
-          ; bench_flat_map ~time:4, 100_000]
-      ; "flatten" >::
-        map_int
-          [ bench_flatten ~time:2, 100
-          ; bench_flatten ~time:2, 10_000
-          ; bench_flatten ~time:4, 100_000]
-      ; "append" >::
-        map_int
-          [ bench_append ~time:2, 100
-          ; bench_append ~time:2, 10_000
-          ; bench_append ~time:4, 100_000]
+  let () = Benchmark.Tree.(register (
+    "list" @>>>
+      [ "flat_map" @>>
+        with_int (bench_flat_map ~time:2) [100; 10_000; 100_00]
+      ; "flatten" @>>
+        with_int (bench_flatten ~time:2) [100; 10_000; 100_000]
+      ; "append" @>>
+        with_int (bench_append ~time:2) [100; 10_000; 100_000]
       ]
-    )
+    ))
 end
 
 module Vec = struct
@@ -94,36 +87,38 @@ module Vec = struct
     CCVector.iter (fun x -> CCVector.push v' (f x)) v;
     v'
 
-  let bench_map n =
-    let v = lazy (CCVector.init n (fun x->x)) in
-    CCBench.throughputN 2
-      [ "map", CCVector.map f %% Lazy.force, v
-      ; "map_push", map_push_ f %% Lazy.force, v
-      ; "map_push_cap", map_push_size_ f %% Lazy.force, v
+  let bench_map n = "map" @> lazy (
+    let v = CCVector.init n (fun x->x) in
+    Benchmark.throughputN 2
+      [ "map", CCVector.map f, v
+      ; "map_push", map_push_ f, v
+      ; "map_push_cap", map_push_size_ f, v
       ]
+  )
 
   let try_append_ app n v2 () =
     let v1 = CCVector.init n (fun x->x) in
-    app v1 (Lazy.force v2);
+    app v1 v2;
     assert (CCVector.length v1 = 2*n);
     ()
 
   let append_naive_ v1 v2 =
     CCVector.iter (fun x -> CCVector.push v1 x) v2
 
-  let bench_append n =
-    let v2 = lazy (CCVector.init n (fun x->n+x)) in
-    CCBench.throughputN 2
+  let bench_append n = "append" @> lazy (
+    let v2 = CCVector.init n (fun x->n+x) in
+    Benchmark.throughputN 2
       [ "append", try_append_ CCVector.append n v2, ()
       ; "append_naive", try_append_ append_naive_ n v2, ()
       ]
+    )
 
-  let () = CCBench.register CCBench.(
-    "vector" >:::
-      [ "map" >:: with_int bench_map [100; 10_000; 100_000]
-      ; "append" >:: with_int bench_append [100; 10_000; 50_000]
+  let () = Benchmark.Tree.(register (
+    "vector" @>>>
+      [ with_int bench_map [100; 10_000; 100_000]
+      ; with_int bench_append [100; 10_000; 50_000]
       ]
-  )
+  ))
 end
 
 module Cache = struct
@@ -142,7 +137,7 @@ module Cache = struct
       C.clear c;
       f x
 
-  let bench_fib n =
+  let bench_fib n = "fib" @> lazy (
     let l =
       [ "replacing_fib (128)", make_fib (C.replacing 128), n
       ; "LRU_fib (128)", make_fib (C.lru 128), n
@@ -158,13 +153,14 @@ module Cache = struct
             ] @ l
       else l
     in
-    CCBench.throughputN 3 l
-
-  let () = CCBench.register CCBench.(
-    "cache" >:::
-      [ "fib" >:: with_int bench_fib [10; 20; 100; 200; 1_000;]
-      ]
+    Benchmark.throughputN 3 l
   )
+
+  let () = Benchmark.Tree.(register (
+    "cache" @>>>
+      [ with_int bench_fib [10; 20; 100; 200; 1_000;]
+      ]
+  ))
 end
 
 module Tbl = struct
@@ -266,8 +262,8 @@ module Tbl = struct
     done;
     h
 
-  let bench_maps1 n =
-    CCBench.throughputN 3
+  let bench_maps1 n = "add" @> lazy (
+    Benchmark.throughputN 3
       ["phashtbl_add", (fun n -> ignore (phashtbl_add n)), n;
        "hashtbl_add", (fun n -> ignore (hashtbl_add n)), n;
        "ihashtbl_add", (fun n -> ignore (ihashtbl_add n)), n;
@@ -278,6 +274,7 @@ module Tbl = struct
        "imap_add", (fun n -> ignore (imap_add n)), n;
        "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n)), n;
       ]
+  )
 
   let phashtbl_replace n =
     let h = PHashtbl.create 50 in
@@ -369,8 +366,8 @@ module Tbl = struct
     done;
     h
 
-  let bench_maps2 n =
-    CCBench.throughputN 3
+  let bench_maps2 n = "replace" @> lazy (
+    Benchmark.throughputN 3
       ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n)), n;
        "hashtbl_replace", (fun n -> ignore (hashtbl_replace n)), n;
        "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n)), n;
@@ -380,7 +377,7 @@ module Tbl = struct
        "skiplist_replace", (fun n -> ignore (skiplist_replace n)), n;
        "imap_replace", (fun n -> ignore (imap_replace n)), n;
        "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n)), n;
-      ]
+      ])
 
   let my_len = 250
 
@@ -444,7 +441,7 @@ module Tbl = struct
         ignore (ICCHashtbl.get_exn i m);
       done
 
-  let bench_maps3 n =
+  let bench_maps3 n = "find" @> lazy (
     let h = phashtbl_add n in
     let h' = hashtbl_add n in
     let h'' = ihashtbl_add n in
@@ -455,7 +452,7 @@ module Tbl = struct
     let a = Array.init n (fun i -> string_of_int i) in
     let m = imap_add n in
     let h'''''' = icchashtbl_add n in
-    CCBench.throughputN 3 [
+    Benchmark.throughputN 3 [
       "phashtbl_find", (fun () -> phashtbl_find h n), ();
       "hashtbl_find", (fun () -> hashtbl_find h' n), ();
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
@@ -466,30 +463,32 @@ module Tbl = struct
       "array_find", (fun () -> array_find a n), ();
       "imap_find", (fun () -> imap_find m n), ();
       "cchashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
-    ]
+    ])
 
-  let () = CCBench.register CCBench.(
-    "tbl" >:::
-      [ "add" >:: with_int bench_maps1 [10; 100; 1_000; 10_000;]
-      ; "replace" >:: with_int bench_maps2 [10; 100; 1_000; 10_000]
-      ; "find" >:: with_int bench_maps3 [10; 20; 100; 1_000; 10_000]
-      ])
+  let () = Benchmark.Tree.(register (
+    "tbl" @>>>
+      [ with_int bench_maps1 [10; 100; 1_000; 10_000;]
+      ; with_int bench_maps2 [10; 100; 1_000; 10_000]
+      ; with_int bench_maps3 [10; 20; 100; 1_000; 10_000]
+      ]
+  ))
 end
 
 module Iter = struct
   (** {2 Sequence/Gen} *)
 
-  let bench_fold n =
+  let bench_fold n = "fold" @> lazy (
     let seq () = Sequence.fold (+) 0 Sequence.(0 --n) in
     let gen () = Gen.fold (+) 0 Gen.(0 -- n) in
     let klist () = CCKList.fold (+) 0 CCKList.(0 -- n) in
-    CCBench.throughputN 3
+    Benchmark.throughputN 3
       [ "sequence.fold", seq, ();
         "gen.fold", gen, ();
         "klist.fold", klist, ();
       ]
+  )
 
-  let bench_flat_map n =
+  let bench_flat_map n = "flat_map" @> lazy (
     let seq () = Sequence.(
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
@@ -500,13 +499,14 @@ module Iter = struct
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
     in
-    CCBench.throughputN 3
+    Benchmark.throughputN 3
       [ "sequence.flat_map", seq, ();
         "gen.flat_map", gen, ();
         "klist.flat_map", klist, ();
       ]
+  )
 
-  let bench_iter n =
+  let bench_iter n = "iter" @> lazy (
     let seq () =
       let i = ref 2 in
       Sequence.(
@@ -523,18 +523,20 @@ module Iter = struct
         1 -- n |> iter (fun x -> i := !i * x)
       )
     in
-    CCBench.throughputN 3
+    Benchmark.throughputN 3
       [ "sequence.iter", seq, ();
         "gen.iter", gen, ();
         "klist.iter", klist, ();
       ]
+  )
 
-  let () = CCBench.register CCBench.(
-    "iter" >:::
-      [ "fold" >:: with_int bench_fold [100; 1_000; 10_000; 1_000_000]
-      ; "flat_map" >:: with_int bench_flat_map [1_000; 10_000]
-      ; "iter" >:: with_int bench_iter [1_000; 10_000]
-      ])
+  let () = Benchmark.Tree.(register (
+    "iter" @>>>
+      [ with_int bench_fold [100; 1_000; 10_000; 1_000_000]
+      ; with_int bench_flat_map [1_000; 10_000]
+      ; with_int bench_iter [1_000; 10_000]
+      ]
+  ))
 end
 
 module Batch = struct
@@ -578,7 +580,7 @@ module Batch = struct
       ignore (collect a);
       a
 
-    let bench_for ~time n =
+    let bench_for ~time n = "batch" @> lazy (
       let a = C.(0 -- n) in
       (* debug
       CCPrint.printf "naive: %a\n" (CCArray.pp CCInt.pp) (naive a);
@@ -586,16 +588,17 @@ module Batch = struct
       CCPrint.printf "batch: %a\n" (CCArray.pp CCInt.pp) (batch a);
       *)
       assert (C.equal (batch a) (naive a));
-      CCBench.throughputN time
+      Benchmark.throughputN time
         [ C.name ^ "_naive", naive, a
         ; C.name ^ "_batch", batch, a
         ]
+    )
 
-    let bench = CCBench.(
-      C.name >:: map_int
-      [ bench_for ~time:1, 100
-      ; bench_for ~time:4, 100_000
-      ; bench_for ~time:4, 1_000_000
+    let bench = Benchmark.(
+      C.name @>>>
+      [ bench_for ~time:1 100
+      ; bench_for ~time:4 100_000
+      ; bench_for ~time:4 1_000_000
       ])
   end
 
@@ -622,13 +625,14 @@ module Batch = struct
     let doubleton x y = CCKList.of_list [ x; y ]
   end)
 
-  let () = CCBench.register CCBench.(
-    "batch" >:: mk_list
+  let () = Benchmark.Tree.(register (
+    "batch" @>>>
       [ BenchKList.bench
       ; BenchArray.bench
       ; BenchList.bench
-      ])
+      ]
+  ))
 end
 
 let () =
-  CCBench.run_main ()
+  Benchmark.Tree.run_global ()
