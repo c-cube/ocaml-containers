@@ -8,3 +8,4 @@
 - hcarty (Hezekiah M. Carty)
 - struktured (Carmelo Piccione)
 - Bernardo da Costa
+- Vincent Bernardoff (vbmithr)
