@@ -61,7 +61,7 @@ Examples:
 *)
 
 
-type 'a gen = unit -> 'a option  (** See {!CCGen} *)
+type 'a gen = unit -> 'a option  (** See {!Gen} *)
 
 (** {2 Input} *)
 
@@ -129,7 +129,7 @@ See {!File.walk} if you also need to list directories:
 
 {[
 # let content = CCIO.File.walk (CCIO.File.make "/tmp");;
-# CCGen.map CCIO.File.show_walk_item content |> CCIO.write_lines stdout;;
+# Gen.map CCIO.File.show_walk_item content |> CCIO.write_lines stdout;;
 ]}
 *)
 
