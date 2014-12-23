@@ -8,4 +8,5 @@ TAGS
 *.docdir
 setup.log
 setup.data
+setup.exe
 qtest*
