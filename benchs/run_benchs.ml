@@ -12,7 +12,7 @@ module L = struct
     else if x mod 5 = 1 then [x;x+1]
     else [x;x+1;x+2;x+3]
 
-  let bench_flat_map ?(time=2) n = ("flat_map_" ^ string_of_int n) @> lazy(
+  let bench_flat_map ?(time=2) n = "flat_map" @> lazy(
     let l = CCList.(1 -- n) in
     let flatten_map_ l = List.flatten (CCList.map f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
@@ -28,7 +28,7 @@ module L = struct
   let append_ f (l1, l2, l3) =
     ignore (f (f l1 l2) l3)
 
-  let bench_append ?(time=2) n = ("append_" ^ string_of_int n) @> lazy (
+  let bench_append ?(time=2) n = "append" @> lazy (
     let l1 = CCList.(1 -- n) in
     let l2 = CCList.(n+1 -- 2*n) in
     let l3 = CCList.(2*n+1 -- 3*n) in
@@ -41,7 +41,7 @@ module L = struct
 
   (* FLATTEN *)
 
-  let bench_flatten ?(time=2) n = ("flatten_" ^ string_of_int n) @> lazy (
+  let bench_flatten ?(time=2) n = "flatten" @> lazy (
     let fold_right_append_ l =
       List.fold_right List.append l []
     and cc_fold_right_append_ l =
