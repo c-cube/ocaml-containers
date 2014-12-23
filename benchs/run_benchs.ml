@@ -12,7 +12,7 @@ module L = struct
     else if x mod 5 = 1 then [x;x+1]
     else [x;x+1;x+2;x+3]
 
-  let bench_flat_map ?(time=2) n = "flat_map" @> lazy(
+  let bench_flat_map ?(time=2) n = "" @> lazy(
     let l = CCList.(1 -- n) in
     let flatten_map_ l = List.flatten (CCList.map f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
@@ -28,7 +28,7 @@ module L = struct
   let append_ f (l1, l2, l3) =
     ignore (f (f l1 l2) l3)
 
-  let bench_append ?(time=2) n = "append" @> lazy (
+  let bench_append ?(time=2) n = "" @> lazy (
     let l1 = CCList.(1 -- n) in
     let l2 = CCList.(n+1 -- 2*n) in
     let l3 = CCList.(2*n+1 -- 3*n) in
@@ -41,7 +41,7 @@ module L = struct
 
   (* FLATTEN *)
 
-  let bench_flatten ?(time=2) n = "flatten" @> lazy (
+  let bench_flatten ?(time=2) n = "" @> lazy (
     let fold_right_append_ l =
       List.fold_right List.append l []
     and cc_fold_right_append_ l =
@@ -62,16 +62,16 @@ module L = struct
 
   (* MAIN *)
 
-  let () = Benchmark.Tree.(register (
+  let () = Benchmark.Tree.(
     "list" @>>>
       [ "flat_map" @>>
-        with_int (bench_flat_map ~time:2) [100; 10_000; 100_00]
+          with_int (bench_flat_map ~time:2) [100; 10_000; 100_00]
       ; "flatten" @>>
         with_int (bench_flatten ~time:2) [100; 10_000; 100_000]
       ; "append" @>>
         with_int (bench_append ~time:2) [100; 10_000; 100_000]
       ]
-    ))
+    |> register)
 end
 
 module Vec = struct
@@ -580,7 +580,7 @@ module Batch = struct
       ignore (collect a);
       a
 
-    let bench_for ~time n = "batch" @> lazy (
+    let bench_for ~time n = "" @> lazy (
       let a = C.(0 -- n) in
       (* debug
       CCPrint.printf "naive: %a\n" (CCArray.pp CCInt.pp) (naive a);
