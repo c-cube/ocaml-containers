@@ -147,6 +147,7 @@ module File : sig
   val is_directory : t -> bool
 
   val remove : t -> unit
+  val remove_safe : t -> unit
 
   val read_dir : ?recurse:bool -> t -> t gen
   (** [read_dir d] returns a sequence of files and directory contained

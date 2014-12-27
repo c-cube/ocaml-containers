@@ -209,6 +209,8 @@ module File = struct
 
   let remove f = Sys.remove f
 
+  let remove_safe f = try Sys.remove f with _ -> ()
+
   let read_dir_base d =
     if Sys.is_directory d
     then
