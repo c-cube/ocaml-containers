@@ -194,6 +194,7 @@ let tee funs g () = match g() with
 *)
 
 module File = struct
+  type 'a or_error = [`Ok of 'a | `Error of string]
   type t = string
 
   let to_string f = f
@@ -207,7 +208,14 @@ module File = struct
 
   let is_directory f = Sys.is_directory f
 
-  let remove f = Sys.remove f
+  let remove_exn f = Sys.remove f
+
+  let remove f =
+    try `Ok (Sys.remove f)
+    with exn ->
+      `Error (Printexc.to_string exn)
+
+  let remove_noerr f = try Sys.remove f with _ -> ()
 
   let read_dir_base d =
     if Sys.is_directory d
