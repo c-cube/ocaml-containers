@@ -151,13 +151,16 @@ module File : sig
   (** [remove_exn path] tries to remove the file at [path] from the
       file system.
 
-      {b Raises} [Sys_error] if there is no file at [path] *)
+      {b Raises} [Sys_error] if there is no file at [path].
+      @since NEXT_RELEASE *)
 
   val remove : t -> unit or_error
-  (** Like [remove_exn] but with an error monad. *)
+  (** Like [remove_exn] but with an error monad.
+      @since NEXT_RELEASE *)
 
   val remove_noerr : t -> unit
-  (** Like [remove_exn] but do not raise any exception on failure. *)
+  (** Like [remove_exn] but do not raise any exception on failure.
+      @since NEXT_RELEASE *)
 
   val read_dir : ?recurse:bool -> t -> t gen
   (** [read_dir d] returns a sequence of files and directory contained
