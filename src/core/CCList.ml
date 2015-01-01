@@ -116,6 +116,17 @@ let fold_right f l acc =
     l = fold_right (fun x y->x::y) l [])
 *)
 
+let rec fold_while f acc = function
+  | [] -> acc
+  | e::l -> let acc, cont = f acc e in
+    match cont with
+    | `Stop -> acc
+    | `Continue -> fold_while f acc l
+
+(*$T
+  fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 [true;true;false;true] = 2
+*)
+
 let init len f =
   let rec init_rec acc i f =
     if i=0 then f i :: acc
