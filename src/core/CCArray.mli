@@ -155,6 +155,14 @@ val flat_map : ('a -> 'b t) -> 'a t -> 'b array
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** Infix version of {!flat_map} *)
 
+val (>>|) : 'a t -> ('a -> 'b) -> 'b t
+(** Infix version of {!map}
+    @since NEXT_RELEASE *)
+
+val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+(** Infix version of {!map}
+    @since NEXT_RELEASE *)
+
 val except_idx : 'a t -> int -> 'a list
 (** Remove given index, obtaining the list of the other elements *)
 
