@@ -50,10 +50,15 @@ module type S = sig
 
   val length : _ t -> int
 
-  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
-  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** fold left on array, with index *)
+  val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  (** Fold left on array, with index *)
+
+  val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+  (** Fold left on array until a stop condition via [('a, `Stop)] is
+      indicated by the accumulator
+      @since NEXT_RELEASE *)
 
   val iter : ('a -> unit) -> 'a t -> unit
 
