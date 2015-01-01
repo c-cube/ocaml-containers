@@ -45,6 +45,10 @@ val fill : t -> char -> unit
 val size : t -> int
 (** Number of bytes *)
 
+val length : t -> int
+(** Alias for [size].
+    @since NEXT_RELEASE *)
+
 val get : t -> int -> char
 
 val set : t -> int -> char -> unit
