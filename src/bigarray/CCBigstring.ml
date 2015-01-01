@@ -48,6 +48,7 @@ let get = B.get
 let set = B.set
 
 let size = B.dim
+let length = B.dim
 
 let sub = B.sub
 
