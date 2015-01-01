@@ -392,6 +392,10 @@ let lookup ?(cmp=Pervasives.compare) k a =
 
 let (>>=) a f = flat_map f a
 
+let (>>|) a f = map f a
+
+let (>|=) a f = map f a
+
 let for_all p a = _for_all p a 0 (Array.length a)
 
 let exists p a = _exists p a 0 (Array.length a)
