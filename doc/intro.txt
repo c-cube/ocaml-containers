@@ -28,6 +28,7 @@ CCBool
 CCError
 CCFloat
 CCFun
+CCFormat
 CCHash
 CCHashtbl
 CCHeap

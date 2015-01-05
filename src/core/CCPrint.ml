@@ -59,7 +59,7 @@ let list ?(start="[") ?(stop="]") ?(sep=", ") pp buf l =
   Buffer.add_string buf start;
   pp_list l;
   Buffer.add_string buf stop
-  
+
 let array ?(start="[") ?(stop="]") ?(sep=", ") pp buf a =
   Buffer.add_string buf start;
   for i = 0 to Array.length a - 1 do
@@ -67,7 +67,7 @@ let array ?(start="[") ?(stop="]") ?(sep=", ") pp buf a =
     pp buf a.(i)
   done;
   Buffer.add_string buf stop
-  
+
 let arrayi ?(start="[") ?(stop="]") ?(sep=", ") pp buf a =
   Buffer.add_string buf start;
   for i = 0 to Array.length a - 1 do

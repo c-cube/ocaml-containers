@@ -49,7 +49,7 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat
   BuildDepends:     bytes
 
 Library "containers_io"
