@@ -23,7 +23,7 @@ Description:
 
 Flag "misc"
   Description:  Build the misc library, containing everything from the rotating kitchen sink to automatic banana distributors
-  Default:      false
+  Default:      true
 
 Flag "lwt"
   Description:  Build modules which depend on Lwt
@@ -31,15 +31,15 @@ Flag "lwt"
 
 Flag "thread"
   Description:  Build modules that depend on threads
-  Default:      false
+  Default:      true
 
 Flag "bench"
   Description:  Build and run benchmarks
-  Default:      false
+  Default:      true
 
 Flag "bigarray"
   Description:  Build modules that depend on bigarrays
-  Default:      false
+  Default:      true
 
 Flag "advanced"
   Description:  Build advanced combinators, including CCLinq (requires "sequence")
@@ -193,12 +193,12 @@ Executable test_levenshtein
   BuildDepends: containers, qcheck, containers.string
 
 Executable test_threads
-  Path: tests/lwt/
-  Install: false
+  Path:         tests/threads/
+  Install:      false
   CompiledObject: best
-  Build$: flag(tests) && flag(thread)
-  MainIs: test_Future.ml
-  BuildDepends: containers, threads, oUnit, containers.lwt
+  Build$:       flag(tests) && flag(thread)
+  MainIs:       test_future.ml
+  BuildDepends: containers, threads, sequence, oUnit, containers.thread
 
 PreBuildCommand: make qtest-gen
 
