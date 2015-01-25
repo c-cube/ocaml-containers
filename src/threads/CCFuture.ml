@@ -348,7 +348,7 @@ let choose futures =
   (* add handlers to all futures *)
   List.iter
     (fun fut ->
-      on_finish fut 
+      on_finish fut
         (fun res -> match res, !state with
           | Done x, `Waiting -> state := `Done; set_done_ cell x
           | Failed e, `Waiting -> state := `Done; set_fail_ cell e
@@ -373,9 +373,17 @@ let slurp i_chan =
       )
   in next ()
 
+let read_chan ic = make1 slurp ic
+
+type subprocess_res = <
+  errcode : int;
+  stdout : Bytes.t;
+  stderr : Bytes.t;
+>
+
 (** Spawn a sub-process with the given command [cmd] (and possibly input);
     returns a future containing (returncode, stdout, stderr) *)
-let spawn_process ?(stdin="") ~cmd () =
+let spawn_process ?(stdin="") cmd : subprocess_res t =
    make
     (fun () ->
       (* spawn subprocess *)
@@ -394,7 +402,11 @@ let spawn_process ?(stdin="") ~cmd () =
         | Unix.WEXITED i -> i
         | Unix.WSIGNALED i -> i
         | Unix.WSTOPPED i -> i in
-      (returncode, out', err')
+      object
+        method errcode = returncode
+        method stdout = out'
+        method stderr = err'
+      end
     )
 
 let sleep time = make (fun () -> Thread.delay time)

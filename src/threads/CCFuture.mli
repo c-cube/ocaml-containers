@@ -94,13 +94,23 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 
 (** {2 Helpers} *)
 
-val spawn_process : ?stdin:string -> cmd:string -> unit ->
-                    (int * string * string) t
-(** Spawn a sub-process with the given command [cmd] (and possibly input);
-      returns a future containing (returncode, stdout, stderr) *)
+val read_chan : in_channel -> Bytes.t t
+(** Read the whole channel *)
+
+type subprocess_res = <
+  errcode : int;
+  stdout : Bytes.t;
+  stderr : Bytes.t;
+>
+
+val spawn_process : ?stdin:string -> string -> subprocess_res t
+(** Spawn a sub-process with the given command (and possibly input);
+      returns a future containing [(returncode, stdout, stderr)] *)
 
 val sleep : float -> unit t
-(** Future that returns with success in the given amount of seconds *)
+(** Future that returns with success in the given amount of seconds. Blocks
+    the thread! If you need to wait on many events, consider
+    using {!Timer} *)
 
 (** {2 Event timer} *)
 
