@@ -2,6 +2,7 @@
 (** Test Future *)
 
 open OUnit
+open CCFun
 
 module Future = CCFuture
 open Future.Infix
