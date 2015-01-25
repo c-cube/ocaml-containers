@@ -49,9 +49,18 @@ let print formatter string_of_value tree =
 
 module Zipper = struct
 
-  type 'a parent = { left_siblings: ('a tree) list; value: 'a; right_siblings: ('a tree) list }
+  type 'a parent = {
+    left_siblings: ('a tree) list ;
+    value: 'a ;
+    right_siblings: ('a tree) list ;
+  }
 
-  type 'a t = { tree: 'a tree; lefts: ('a tree) list; rights: ('a tree) list; parents: ('a parent) list }
+  type 'a t = {
+    tree: 'a tree ;
+    lefts: ('a tree) list ;
+    rights: ('a tree) list ;
+    parents: ('a parent) list ;
+  }
 
   let zipper tree = { tree = tree ; lefts = []; rights = []; parents = [] }
 
