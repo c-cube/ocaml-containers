@@ -121,7 +121,7 @@ Library "containers_misc"
 
 Library "containers_thread"
   Path:             src/threads/
-  Modules:          CCFuture
+  Modules:          CCFuture, CCLock
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)
@@ -172,21 +172,18 @@ Executable bench_hash
   MainIs: bench_hash.ml
   BuildDepends: containers, containers.misc
 
-Executable test_levenshtein
-  Path: tests/
-  Install: false
-  CompiledObject: native
-  Build$: flag(tests)
-  MainIs: test_levenshtein.ml
-  BuildDepends: containers, qcheck, containers.string
-
-Executable test_threads
+Executable run_test_future
   Path:         tests/threads/
   Install:      false
   CompiledObject: best
   Build$:       flag(tests) && flag(thread)
-  MainIs:       test_future.ml
+  MainIs:       run_test_future.ml
   BuildDepends: containers, threads, sequence, oUnit, containers.thread
+
+Test future
+  Command:      echo "run test future" ; ./run_test_future.native
+  TestTools:    run_test_future
+  Run$:         flag(tests) && flag(thread)
 
 PreBuildCommand: make qtest-gen
 
@@ -208,7 +205,7 @@ Executable run_tests
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
   BuildDepends: containers, containers.data, oUnit, sequence, gen,
-                qcheck, containers.misc
+                qcheck, containers.misc, containers.string
 
 Test all
   Command:      make test-all
