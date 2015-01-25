@@ -58,13 +58,13 @@ module Zipper = struct
   let tree zipper = zipper.tree
 
   let left_sibling zipper =
-    match zipper.lefts with
+    let rev_lefts = List.rev zipper.lefts in
+    match rev_lefts with
     | []    -> None
-    | lefts ->
-      let rev_lefts = List.rev lefts in
+    | last_left::tail_rev_lefts ->
       Some {
-        tree = List.hd rev_lefts ;
-        lefts = List.tl rev_lefts |> List.rev ;
+        tree = last_left ;
+        lefts = tail_rev_lefts |> List.rev ;
         rights = zipper.tree::zipper.rights ;
         parents = zipper.parents
       }
