@@ -1,24 +1,15 @@
 open OUnit
 
-(* TODO more tests *)
-
 let suite =
   "all_tests" >:::
     [ Test_pHashtbl.suite;
       Test_PersistentHashtbl.suite;
       Test_bv.suite;
-      Test_PiCalculus.suite;
-      Test_splayMap.suite;
       Test_CCHeap.suite;
-      Test_cc.suite;
       Test_puf.suite;
       Test_vector.suite;
       Test_deque.suite;
-      Test_fHashtbl.suite;
       Test_fQueue.suite;
-      Test_flatHashtbl.suite;
-      Test_heap.suite;
-      Test_graph.suite;
       Test_univ.suite;
       Test_mixtbl.suite;
     ]

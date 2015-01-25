@@ -182,18 +182,6 @@ module Tbl = struct
     let hash i = i
   end)
 
-  module IFlatHashtbl = FlatHashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
-
-  module IFHashtbl = FHashtbl.Tree(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
-
   module IPersistentHashtbl = CCPersistentHashtbl.Make(struct
     type t = int
     let equal i j = i = j
@@ -232,27 +220,6 @@ module Tbl = struct
     done;
     h
 
-  let iflathashtbl_add n =
-    let h = IFlatHashtbl.create 50 in
-    for i = n downto 0 do
-      IFlatHashtbl.replace h i i;
-    done;
-    h
-
-  let ifhashtbl_add n =
-    let h = ref (IFHashtbl.empty 32) in
-    for i = n downto 0 do
-      h := IFHashtbl.replace !h i i;
-    done;
-    !h
-
-  let skiplist_add n =
-    let l = SkipList.create compare in
-    for i = n downto 0 do
-      SkipList.add l i i;
-    done;
-    l
-
   let ipersistenthashtbl_add n =
     let h = ref (IPersistentHashtbl.create 32) in
     for i = n downto 0 do
@@ -279,10 +246,7 @@ module Tbl = struct
       ["phashtbl_add", (fun n -> ignore (phashtbl_add n)), n;
        "hashtbl_add", (fun n -> ignore (hashtbl_add n)), n;
        "ihashtbl_add", (fun n -> ignore (ihashtbl_add n)), n;
-       "iflathashtbl_add", (fun n -> ignore (iflathashtbl_add n)), n;
-       "ifhashtbl_add", (fun n -> ignore (ifhashtbl_add n)), n;
        "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n)), n;
-       "skiplist_add", (fun n -> ignore (skiplist_add n)), n;
        "imap_add", (fun n -> ignore (imap_add n)), n;
        "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n)), n;
       ]
@@ -317,26 +281,6 @@ module Tbl = struct
     done;
     h
 
-  let iflathashtbl_replace n =
-    let h = IFlatHashtbl.create 50 in
-    for i = 0 to n do
-      IFlatHashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      IFlatHashtbl.replace h i i;
-    done;
-    h
-
-  let ifhashtbl_replace n =
-    let h = ref (IFHashtbl.empty 32) in
-    for i = 0 to n do
-      h := IFHashtbl.replace !h i i;
-    done;
-    for i = n downto 0 do
-      h := IFHashtbl.replace !h i i;
-    done;
-    !h
-
   let ipersistenthashtbl_replace n =
     let h = ref (IPersistentHashtbl.create 32) in
     for i = 0 to n do
@@ -346,16 +290,6 @@ module Tbl = struct
       h := IPersistentHashtbl.replace !h i i;
     done;
     !h
-
-  let skiplist_replace n =
-    let l = SkipList.create compare in
-    for i = 0 to n do
-      SkipList.add l i i;
-    done;
-    for i = n downto 0 do
-      SkipList.add l i i;
-    done;
-    l
 
   let imap_replace n =
     let h = ref IMap.empty in
@@ -382,10 +316,7 @@ module Tbl = struct
       ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n)), n;
        "hashtbl_replace", (fun n -> ignore (hashtbl_replace n)), n;
        "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n)), n;
-       "iflathashtbl_replace", (fun n -> ignore (iflathashtbl_replace n)), n;
-       "ifhashtbl_replace", (fun n -> ignore (ifhashtbl_replace n)), n;
        "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n)), n;
-       "skiplist_replace", (fun n -> ignore (skiplist_replace n)), n;
        "imap_replace", (fun n -> ignore (imap_replace n)), n;
        "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n)), n;
       ]
@@ -410,28 +341,10 @@ module Tbl = struct
         ignore (IHashtbl.find h i);
       done
 
-  let iflathashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IFlatHashtbl.find h i);
-      done
-
-  let ifhashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IFHashtbl.find h i);
-      done
-
   let ipersistenthashtbl_find h =
     fun n ->
       for i = 0 to n-1 do
         ignore (IPersistentHashtbl.find h i);
-      done
-
-  let skiplist_find l =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (SkipList.find l i);
       done
 
   let array_find a =
@@ -456,10 +369,7 @@ module Tbl = struct
     let h = phashtbl_add n in
     let h' = hashtbl_add n in
     let h'' = ihashtbl_add n in
-    let h''' = iflathashtbl_add n in
-    let h'''' = ifhashtbl_add n in
     let h''''' = ipersistenthashtbl_add n in
-    let l = skiplist_add n in
     let a = Array.init n (fun i -> string_of_int i) in
     let m = imap_add n in
     let h'''''' = icchashtbl_add n in
@@ -467,10 +377,7 @@ module Tbl = struct
       "phashtbl_find", (fun () -> phashtbl_find h n), ();
       "hashtbl_find", (fun () -> hashtbl_find h' n), ();
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
-      "iflathashtbl_find", (fun () -> iflathashtbl_find h''' n), ();
-      "ifhashtbl_find", (fun () -> ifhashtbl_find h'''' n), ();
       "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n), ();
-      "skiplist_find", (fun () -> skiplist_find l n), ();
       "array_find", (fun () -> array_find a n), ();
       "imap_find", (fun () -> imap_find m n), ();
       "cchashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();

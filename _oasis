@@ -22,7 +22,7 @@ Description:
     library full of experimental ideas (not stable, not necessarily usable).
 
 Flag "misc"
-  Description:  Build the misc library, containing everything from the rotating kitchen sink to automatic banana distributors
+  Description:  Build the misc library, with experimental modules still susceptible to change
   Default:      true
 
 Flag "lwt"
@@ -113,12 +113,8 @@ Library "containers_pervasives"
 Library "containers_misc"
   Path:             src/misc
   Pack:             true
-  Modules:          FHashtbl, FlatHashtbl, Hashset,
-                    Heap, LazyGraph, PersistentGraph,
-                    PHashtbl, SkipList, SplayTree, SplayMap, Univ,
-                    Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
-                    TTree, PrintBox, HGraph, Automaton, Conv, Bidir, Iteratee,
-                    BTree, Ty, Cause, AVL, ParseReact
+  Modules:          AbsSet, Automaton, Bij, CSM, LazyGraph, PHashtbl,
+                    PrintBox, RAL, SmallSet, UnionFind, Univ
   BuildDepends:     containers, containers.data
   FindlibName:      misc
   FindlibParent:    containers
@@ -175,14 +171,6 @@ Executable bench_hash
   Build$: flag(bench) && flag(misc)
   MainIs: bench_hash.ml
   BuildDepends: containers, containers.misc
-
-Executable bench_conv
-  Path:     benchs/
-  Install: false
-  CompiledObject: native
-  Build$: flag(bench)
-  MainIs: bench_conv.ml
-  BuildDepends: containers, benchmark, gen
 
 Executable test_levenshtein
   Path: tests/
