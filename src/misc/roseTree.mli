@@ -3,6 +3,8 @@
 
    A persistent, non-lazy tree where each node may have an arbitrary number of
    children.
+
+   @since NEXT_RELEASE
 *)
 
 (**
