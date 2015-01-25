@@ -12,6 +12,7 @@ let suite =
       Test_fQueue.suite;
       Test_univ.suite;
       Test_mixtbl.suite;
+      Test_RoseTree.suite;
     ]
 
 let props =
