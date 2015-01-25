@@ -59,13 +59,13 @@ let test_time () =
 let test_timer () =
   let timer = Future.Timer.create () in
   let n = CCLock.create 1 in
-  let get = Future.make (fun () -> Thread.delay 0.7; CCLock.get n) in
+  let get = Future.make (fun () -> Thread.delay 0.8; CCLock.get n) in
   let _ =
-    Future.Timer.after timer 0.5
+    Future.Timer.after timer 0.6
     >>= fun () -> CCLock.update n (fun x -> x+2); Future.return()
   in
   let _ =
-    Future.Timer.after timer 0.2
+    Future.Timer.after timer 0.4
     >>= fun () -> CCLock.update n (fun x -> x * 4); Future.return()
   in
   OUnit.assert_equal 6 (Future.get get);
