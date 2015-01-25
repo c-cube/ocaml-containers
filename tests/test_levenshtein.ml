@@ -54,13 +54,8 @@ let test_index =
   let name = "strings retrieved from automaton with limit:n are at distance <= n" in
   QCheck.mk_test ~name gen test
 
-let suite =
+let props =
   [ test_automaton
   ; test_mutation
   ; test_index
   ]
-
-let () =
-  if not (QCheck.run_tests suite)
-    then exit 1;
-  ()

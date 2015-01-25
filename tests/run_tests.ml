@@ -19,6 +19,7 @@ let props =
     [ Test_PersistentHashtbl.props
     ; Test_bv.props
     ; Test_vector.props
+    ; Test_levenshtein.props
     ]
 
 let _ =
