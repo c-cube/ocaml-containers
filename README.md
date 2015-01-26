@@ -144,27 +144,16 @@ In the module `Containers_advanced`:
 See [doc](http://cedeela.fr/~simon/software/containers/misc). This list
 is not necessarily up-to-date.
 
-- `PHashtbl`, a polymorphic hashtable (with open addressing)
-- `SplayTree`, a polymorphic splay heap implementation (not quite finished)
-- `SplayMap`, a polymorphic functional map based on splay trees
-- `Heap`, an imperative heap based on `SplayTree`
-- `Graph`, a polymorphic imperative directed graph (on top of `PHashtbl`)
-- `Hashset`, a polymorphic imperative set on top of `PHashtbl`
-- `LazyGraph`, a lazy graph structure on arbitrary (hashable+eq) types, with
-basic graph functions that work even on infinite graphs, and printing to DOT.
-- `Heap`, a purely functional polymorphic heap
-- `Bij`, a GADT-based bijection language used to serialize/deserialize your
-data structures
-- `RAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
-access to elements by their index.
-- `SmallSet`, a sorted list implementation behaving like a set.
 - `AbsSet`, an abstract Set data structure, a bit like `LazyGraph`.
-- `Univ`, a universal type encoding with affectation
-- `FlatHashtbl`, a (deprecated) open addressing hashtable with
-    a functorial interface (replaced by PHashtbl)
-- `RoseTree`, a tree with an arbitrary number of children and its associated
-  zipper
+- `Automaton`, `CSM`, state machine abstractions
+- `Bij`, a GADT-based bijection language used to serialize/deserialize your data structures
+- `LazyGraph`, a lazy graph structure on arbitrary (hashable+eq) types, with basic graph functions that work even on infinite graphs, and printing to DOT.
+- `PHashtbl`, a polymorphic hashtable (with open addressing)
+- `RAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))` access to elements by their index.
+- `RoseTree`, a tree with an arbitrary number of children and its associated zipper
+- `SmallSet`, a sorted list implementation behaving like a set.
 - `UnionFind`, a functorial imperative Union-Find structure
+- `Univ`, a universal type encoding with affectation
 
 ### Others
 

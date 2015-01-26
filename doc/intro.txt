@@ -115,19 +115,15 @@ This list is not necessarily up-to-date.
 
 {!modules:
 AbsSet
+Automaton
 Bij
-FlatHashtbl
-Hashset
-Heap
-Heap
+CSM
 LazyGraph
 PHashtbl
 PrintBox
 RAL
 RoseTree
 SmallSet
-SplayMap
-SplayTree
 UnionFind
 Univ
 }
