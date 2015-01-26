@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.8
+
+- add `@Emm` to authors
+- refactored heavily `CCFuture` (much simpler, cleaner, basic API and thread pool)
+- add `CCLock` in containers.thread
+- merged `test_levenshtein` with other tests
+- Add experimental rose tree in `Containers_misc.RoseTree`.
+- remove a lot of stuff from `containers.misc` (see `_oasis` for details)
+- `make devel` command, activating most flags, for developpers (see #27)
+- use benchmark 1.4, with the upstreamed tree system
+- test `ccvector.iteri`
+- add `CCFormat` into core/
+- infix map operators for `CCArray`
+- `fold_while` impl for `CCList` and `CCArray`
+- Added `CCBigstring.length` for more consistency with the `CCString` module.
+- Added name and dev fields in the OPAM file for local pinning.
+- Fix `CCIO.remove*` functions.
+- Added `CCIO.remove_safe`.
+- only build doc if all the required flags are enabled
+- `CCHashtbl.{keys,values}_list` in the functor as well. Better doc.
+- `CCHashtbl.{keys,values}_list`
+- more accurate type for `CCHashtbl.Make`
+
 ## 0.7
 
 ### breaking

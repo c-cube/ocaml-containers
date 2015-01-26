@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    A persistent, non-lazy tree where each node may have an arbitrary number of
    children.
 
-   @since NEXT_RELEASE *)
+   @since 0.8 *)
 
 (** The type of a tree node - a (value, children) pair.  *)
 type +'a t = [`Node of 'a * 'a t list]

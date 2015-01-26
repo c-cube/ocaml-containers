@@ -58,7 +58,7 @@ module type S = sig
   val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
   (** Fold left on array until a stop condition via [('a, `Stop)] is
       indicated by the accumulator
-      @since NEXT_RELEASE *)
+      @since 0.8 *)
 
   val iter : ('a -> unit) -> 'a t -> unit
 
@@ -157,11 +157,11 @@ val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 
 val (>>|) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix version of {!map}
-    @since NEXT_RELEASE *)
+    @since 0.8 *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix version of {!map}
-    @since NEXT_RELEASE *)
+    @since 0.8 *)
 
 val except_idx : 'a t -> int -> 'a list
 (** Remove given index, obtaining the list of the other elements *)

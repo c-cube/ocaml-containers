@@ -152,15 +152,15 @@ module File : sig
       file system.
 
       {b Raises} [Sys_error] if there is no file at [path].
-      @since NEXT_RELEASE *)
+      @since 0.8 *)
 
   val remove : t -> unit or_error
   (** Like [remove_exn] but with an error monad.
-      @since NEXT_RELEASE *)
+      @since 0.8 *)
 
   val remove_noerr : t -> unit
   (** Like [remove_exn] but do not raise any exception on failure.
-      @since NEXT_RELEASE *)
+      @since 0.8 *)
 
   val read_dir : ?recurse:bool -> t -> t gen
   (** [read_dir d] returns a sequence of files and directory contained

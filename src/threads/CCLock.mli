@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Utils around Mutex}
 
-@since NEXT_RELEASE *)
+@since 0.8 *)
 
 type 'a t
 (** A value surrounded with a lock *)

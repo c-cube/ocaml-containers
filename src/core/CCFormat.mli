@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Helpers for Format}
 
-@since NEXT_RELEASE *)
+@since 0.8 *)
 
 type 'a sequence = ('a -> unit) -> unit
 
