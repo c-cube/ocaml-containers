@@ -124,6 +124,7 @@ LazyGraph
 PHashtbl
 PrintBox
 RAL
+RoseTree
 SmallSet
 SplayMap
 SplayTree

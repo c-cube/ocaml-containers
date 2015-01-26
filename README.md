@@ -162,6 +162,8 @@ access to elements by their index.
 - `Univ`, a universal type encoding with affectation
 - `FlatHashtbl`, a (deprecated) open addressing hashtable with
     a functorial interface (replaced by PHashtbl)
+- `RoseTree`, a tree with an arbitrary number of children and its associated
+  zipper
 - `UnionFind`, a functorial imperative Union-Find structure
 
 ### Others
