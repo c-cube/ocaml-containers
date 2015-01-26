@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: ffa47e180123d84227a563bc0c3e8534)
+# DO NOT EDIT (digest: b0ee2a2a21ef35240553e6d971c8e0b3)
 src/core/CCVector
 src/core/CCPrint
 src/core/CCError
@@ -18,36 +18,19 @@ src/core/CCRandom
 src/core/CCString
 src/core/CCHashtbl
 src/core/CCMap
-src/misc/FHashtbl
-src/misc/FlatHashtbl
-src/misc/Hashset
-src/misc/Heap
-src/misc/LazyGraph
-src/misc/PersistentGraph
-src/misc/PHashtbl
-src/misc/SkipList
-src/misc/SplayTree
-src/misc/SplayMap
-src/misc/Univ
-src/misc/Bij
-src/misc/PiCalculus
-src/misc/RAL
-src/misc/UnionFind
-src/misc/SmallSet
+src/core/CCFormat
 src/misc/AbsSet
-src/misc/CSM
-src/misc/TTree
-src/misc/PrintBox
-src/misc/HGraph
 src/misc/Automaton
-src/misc/Conv
-src/misc/Bidir
-src/misc/Iteratee
-src/misc/BTree
-src/misc/Ty
-src/misc/Cause
-src/misc/AVL
-src/misc/ParseReact
+src/misc/Bij
+src/misc/CSM
+src/misc/LazyGraph
+src/misc/PHashtbl
+src/misc/PrintBox
+src/misc/RAL
+src/misc/RoseTree
+src/misc/SmallSet
+src/misc/UnionFind
+src/misc/Univ
 src/iter/CCKTree
 src/iter/CCKList
 src/data/CCMultiMap

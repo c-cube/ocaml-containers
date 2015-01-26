@@ -53,6 +53,11 @@ module type S = sig
   val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** fold left on array, with index *)
 
+  val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+  (** fold left on array until a stop condition via [('a, `Stop)] is
+      indicated by the accumulator
+      @since 0.8 *)
+
   val iter : ('a -> unit) -> 'a t -> unit
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
@@ -276,6 +281,20 @@ let fold = Array.fold_left
 
 let foldi f acc a = _foldi f acc a 0 (Array.length a)
 
+let fold_while f acc a =
+  let rec fold_while_i f acc i =
+    if i < Array.length a then
+      let acc, cont = f acc a.(i) in
+      match cont with
+      | `Stop -> acc
+      | `Continue -> fold_while_i f acc (i+1)
+    else acc
+  in fold_while_i f acc 0
+
+(*$T
+  fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 (Array.of_list [true;true;false;true]) = 2
+*)
+
 let iter = Array.iter
 
 let iteri = Array.iteri
@@ -372,6 +391,10 @@ let lookup ?(cmp=Pervasives.compare) k a =
 *)
 
 let (>>=) a f = flat_map f a
+
+let (>>|) a f = map f a
+
+let (>|=) a f = map f a
 
 let for_all p a = _for_all p a 0 (Array.length a)
 
@@ -479,6 +502,16 @@ module Sub = struct
     in _fold acc a.i a.j
 
   let foldi f acc a = _foldi f acc a.arr a.i a.j
+
+  let fold_while f acc a =
+    let rec fold_while_i f acc i =
+      if i < Array.length a.arr && i < a.j then
+        let acc, cont = f acc a.arr.(i) in
+        match cont with
+        | `Stop -> acc
+        | `Continue -> fold_while_i f acc (i+1)
+      else acc
+    in fold_while_i f acc a.i
 
   let get a i =
     let j = a.i + i in

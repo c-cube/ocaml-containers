@@ -48,6 +48,11 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Safe version of [fold_right] *)
 
+val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+(** Fold until a stop condition via [('a, `Stop)] is
+    indicated by the accumulator
+    @since 0.8 *)
+
 val init : int -> (int -> 'a) -> 'a t
 (** Same as [Array.init]
     @since 0.6 *)

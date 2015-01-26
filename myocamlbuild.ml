@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: e3363561f51c33bc1d07d0c9f2bd631a) *)
+(* DO NOT EDIT (digest: 8dc70d44b47f905c72a130921147d104) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -626,7 +626,7 @@ let package_default =
      flags = [];
      includes =
        [
-          ("tests/lwt", ["src/core"; "src/lwt"]);
+          ("tests/threads", ["src/core"; "src/threads"]);
           ("tests", ["src/core"; "src/data"; "src/misc"; "src/string"]);
           ("src/threads", ["src/core"]);
           ("src/pervasives", ["src/core"]);

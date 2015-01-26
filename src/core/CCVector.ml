@@ -296,6 +296,11 @@ let iteri k v =
     k i (Array.unsafe_get v.vec i)
   done
 
+(*$T
+  let v = (0--6) in \
+    iteri (fun i x ->  if i = 3 then remove v i) v; length v = 6
+  *)
+
 let map f v =
   if _empty_array v
   then create ()

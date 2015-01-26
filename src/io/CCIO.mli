@@ -61,7 +61,7 @@ Examples:
 *)
 
 
-type 'a gen = unit -> 'a option  (** See {!CCGen} *)
+type 'a gen = unit -> 'a option  (** See {!Gen} *)
 
 (** {2 Input} *)
 
@@ -129,11 +129,12 @@ See {!File.walk} if you also need to list directories:
 
 {[
 # let content = CCIO.File.walk (CCIO.File.make "/tmp");;
-# CCGen.map CCIO.File.show_walk_item content |> CCIO.write_lines stdout;;
+# Gen.map CCIO.File.show_walk_item content |> CCIO.write_lines stdout;;
 ]}
 *)
 
 module File : sig
+  type 'a or_error = [`Ok of 'a | `Error of string]
   type t = string
   (** A file is always represented by its absolute path *)
 
@@ -146,7 +147,20 @@ module File : sig
 
   val is_directory : t -> bool
 
-  val remove : t -> unit
+  val remove_exn : t -> unit
+  (** [remove_exn path] tries to remove the file at [path] from the
+      file system.
+
+      {b Raises} [Sys_error] if there is no file at [path].
+      @since 0.8 *)
+
+  val remove : t -> unit or_error
+  (** Like [remove_exn] but with an error monad.
+      @since 0.8 *)
+
+  val remove_noerr : t -> unit
+  (** Like [remove_exn] but do not raise any exception on failure.
+      @since 0.8 *)
 
   val read_dir : ?recurse:bool -> t -> t gen
   (** [read_dir d] returns a sequence of files and directory contained

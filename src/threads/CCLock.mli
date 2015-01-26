@@ -1,6 +1,6 @@
 
 (*
-copyright (c) 2013, simon cruanes
+copyright (c) 2013-2014, simon cruanes
 all rights reserved.
 
 redistribution and use in source and binary forms, with or without
@@ -24,50 +24,28 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-type 'a t = {
-  fold: 'b. ('b -> 'a -> [`Continue | `Stop] * 'b) -> 'b -> 'b
-}
 
-exception StopNow
+(** {1 Utils around Mutex}
 
-let of_iter i = {
-  fold = (fun f acc ->
-      let r = ref acc in
-      begin try i (fun x ->
-        let cont, acc' = f !r x in
-        r := acc';
-        match cont with
-        | `Stop -> raise StopNow
-        | `Continue -> ());
-      with StopNow -> ()
-      end;
-      !r
-  );
-}
+@since 0.8 *)
 
-let fold f acc i =
-  i.fold (fun acc x -> `Continue, f acc x) acc
+type 'a t
+(** A value surrounded with a lock *)
 
-let iter f i =
-  i.fold (fun () x -> f x; `Continue, ()) ()
+val create : 'a -> 'a t
+(** Create a new protected value *)
 
-let map f i = {
-  fold=(fun g acc ->
-      i.fold (fun acc x -> g acc (f x)) acc
-  )
-}
+val with_lock : 'a t -> ('a -> 'b) -> 'b
+(** [with_lock l f] runs [f x] where [x] is the value protected with
+    the lock [l], in a critical section. If [f x] fails, [with_lock l f]
+    fails too but the lock is released *)
 
-let of_list l =
-  let rec next f acc l = match l with
-    | [] -> acc
-    | x::l' ->
-        match f acc x with
-        | `Continue, acc' -> next f acc' l'
-        | `Stop, res -> res
-  in
-  {fold=(fun f acc -> next f acc l) }
+val update : 'a t -> ('a -> 'a) -> unit
+(** [update l f] replaces the content [x] of [l] with [f x], atomically *)
 
-let to_rev_list i =
-  i.fold (fun acc x -> `Continue, x::acc) []
+val mutex : _ t -> Mutex.t
+(** Underlying mutex *)
 
-let to_list i = List.rev (to_rev_list i)
+val get : 'a t -> 'a
+(** Get the value in the lock. The value that is returned isn't protected! *)
+

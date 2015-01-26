@@ -1,6 +1,6 @@
 
 (*
-copyright (c) 2013, simon cruanes
+copyright (c) 2013-2014, simon cruanes
 all rights reserved.
 
 redistribution and use in source and binary forms, with or without
@@ -24,42 +24,38 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 T-Trees}
 
-Shallow, cache-friendly associative data structure.
-See {{:http://en.wikipedia.org/wiki/T-tree} wikipedia}.
+(** {1 Utils around Mutex} *)
 
-Not thread-safe.
-*)
+type 'a t = {
+  mutex : Mutex.t;
+  mutable content : 'a;
+}
 
-(** {2 signature} *)
+let create content = {
+  mutex = Mutex.create();
+  content;
+}
 
-module type S = sig
-  type key
+let with_lock l f =
+  Mutex.lock l.mutex;
+  try
+    let x = f l.content in
+    Mutex.unlock l.mutex;
+    x
+  with e ->
+    Mutex.unlock l.mutex;
+    raise e
 
-  type 'a t
+let mutex l = l.mutex
 
-  val empty : 'a t
-    (** Empty tree *)
+let update l f =
+  with_lock l (fun x -> l.content <- f x)
 
-  val add : 'a t -> key -> 'a -> 'a t
-    (** Add a binding key/value. If the key already was bound to some
-        value, the old binding is erased. *)
+let get l =
+  Mutex.lock l.mutex;
+  let x = l.content in
+  Mutex.unlock l.mutex;
+  x
 
-  val remove : 'a t -> key -> 'a t
-    (** Remove the key *)
 
-  val find : 'a t -> key -> 'a
-    (** Find the element associated with this key.
-        @raise Not_found if the key is not present *)
-
-  val length : 'a t -> int
-    (** Number of bindings *)
-
-  val fold : 'a t -> 'b -> ('b -> key -> 'a -> 'b) -> 'b
-    (** Fold on bindings *)
-end
-
-(** {2 Functor that builds T trees for comparable keys} *)
-
-module Make(X : Set.OrderedType) : S with type key = X.t

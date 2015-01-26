@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 616ce46d4cb6f4ca580b6de54c9a1d70)
+# DO NOT EDIT (digest: 5d9eb57cbb89da8bde9292277cec7a96)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -51,36 +51,18 @@ true: annot, bin_annot
 <src/pervasives/*.ml{,i,y}>: use_containers
 # Library containers_misc
 "src/misc/containers_misc.cmxs": use_containers_misc
-"src/misc/fHashtbl.cmx": for-pack(Containers_misc)
-"src/misc/flatHashtbl.cmx": for-pack(Containers_misc)
-"src/misc/hashset.cmx": for-pack(Containers_misc)
-"src/misc/heap.cmx": for-pack(Containers_misc)
-"src/misc/lazyGraph.cmx": for-pack(Containers_misc)
-"src/misc/persistentGraph.cmx": for-pack(Containers_misc)
-"src/misc/pHashtbl.cmx": for-pack(Containers_misc)
-"src/misc/skipList.cmx": for-pack(Containers_misc)
-"src/misc/splayTree.cmx": for-pack(Containers_misc)
-"src/misc/splayMap.cmx": for-pack(Containers_misc)
-"src/misc/univ.cmx": for-pack(Containers_misc)
-"src/misc/bij.cmx": for-pack(Containers_misc)
-"src/misc/piCalculus.cmx": for-pack(Containers_misc)
-"src/misc/RAL.cmx": for-pack(Containers_misc)
-"src/misc/unionFind.cmx": for-pack(Containers_misc)
-"src/misc/smallSet.cmx": for-pack(Containers_misc)
 "src/misc/absSet.cmx": for-pack(Containers_misc)
-"src/misc/CSM.cmx": for-pack(Containers_misc)
-"src/misc/tTree.cmx": for-pack(Containers_misc)
-"src/misc/printBox.cmx": for-pack(Containers_misc)
-"src/misc/hGraph.cmx": for-pack(Containers_misc)
 "src/misc/automaton.cmx": for-pack(Containers_misc)
-"src/misc/conv.cmx": for-pack(Containers_misc)
-"src/misc/bidir.cmx": for-pack(Containers_misc)
-"src/misc/iteratee.cmx": for-pack(Containers_misc)
-"src/misc/bTree.cmx": for-pack(Containers_misc)
-"src/misc/ty.cmx": for-pack(Containers_misc)
-"src/misc/cause.cmx": for-pack(Containers_misc)
-"src/misc/AVL.cmx": for-pack(Containers_misc)
-"src/misc/parseReact.cmx": for-pack(Containers_misc)
+"src/misc/bij.cmx": for-pack(Containers_misc)
+"src/misc/CSM.cmx": for-pack(Containers_misc)
+"src/misc/lazyGraph.cmx": for-pack(Containers_misc)
+"src/misc/pHashtbl.cmx": for-pack(Containers_misc)
+"src/misc/printBox.cmx": for-pack(Containers_misc)
+"src/misc/RAL.cmx": for-pack(Containers_misc)
+"src/misc/roseTree.cmx": for-pack(Containers_misc)
+"src/misc/smallSet.cmx": for-pack(Containers_misc)
+"src/misc/unionFind.cmx": for-pack(Containers_misc)
+"src/misc/univ.cmx": for-pack(Containers_misc)
 <src/misc/*.ml{,i,y}>: package(bytes)
 <src/misc/*.ml{,i,y}>: use_containers
 <src/misc/*.ml{,i,y}>: use_containers_data
@@ -109,6 +91,8 @@ true: annot, bin_annot
 "benchs/run_benchs.native": use_containers_iter
 "benchs/run_benchs.native": use_containers_misc
 "benchs/run_benchs.native": use_containers_string
+<benchs/*.ml{,i,y}>: package(benchmark)
+<benchs/*.ml{,i,y}>: package(gen)
 <benchs/*.ml{,i,y}>: package(sequence)
 <benchs/*.ml{,i,y}>: use_containers_advanced
 <benchs/*.ml{,i,y}>: use_containers_iter
@@ -118,40 +102,23 @@ true: annot, bin_annot
 "benchs/bench_hash.native": use_containers
 "benchs/bench_hash.native": use_containers_data
 "benchs/bench_hash.native": use_containers_misc
+<benchs/*.ml{,i,y}>: package(bytes)
+<benchs/*.ml{,i,y}>: use_containers
 <benchs/*.ml{,i,y}>: use_containers_data
 <benchs/*.ml{,i,y}>: use_containers_misc
-# Executable bench_conv
-"benchs/bench_conv.native": package(benchmark)
-"benchs/bench_conv.native": package(bytes)
-"benchs/bench_conv.native": package(gen)
-"benchs/bench_conv.native": use_containers
-<benchs/*.ml{,i,y}>: package(benchmark)
-<benchs/*.ml{,i,y}>: package(bytes)
-<benchs/*.ml{,i,y}>: package(gen)
-<benchs/*.ml{,i,y}>: use_containers
-# Executable test_levenshtein
-"tests/test_levenshtein.native": package(bytes)
-"tests/test_levenshtein.native": package(qcheck)
-"tests/test_levenshtein.native": use_containers
-"tests/test_levenshtein.native": use_containers_string
-<tests/*.ml{,i,y}>: use_containers_string
-# Executable test_threads
-<tests/lwt/test_Future.{native,byte}>: package(bytes)
-<tests/lwt/test_Future.{native,byte}>: package(lwt)
-<tests/lwt/test_Future.{native,byte}>: package(oUnit)
-<tests/lwt/test_Future.{native,byte}>: package(threads)
-<tests/lwt/test_Future.{native,byte}>: use_containers
-<tests/lwt/test_Future.{native,byte}>: use_containers_data
-<tests/lwt/test_Future.{native,byte}>: use_containers_lwt
-<tests/lwt/test_Future.{native,byte}>: use_containers_misc
-<tests/lwt/*.ml{,i,y}>: package(bytes)
-<tests/lwt/*.ml{,i,y}>: package(lwt)
-<tests/lwt/*.ml{,i,y}>: package(oUnit)
-<tests/lwt/*.ml{,i,y}>: package(threads)
-<tests/lwt/*.ml{,i,y}>: use_containers
-<tests/lwt/*.ml{,i,y}>: use_containers_data
-<tests/lwt/*.ml{,i,y}>: use_containers_lwt
-<tests/lwt/*.ml{,i,y}>: use_containers_misc
+# Executable run_test_future
+<tests/threads/run_test_future.{native,byte}>: package(bytes)
+<tests/threads/run_test_future.{native,byte}>: package(oUnit)
+<tests/threads/run_test_future.{native,byte}>: package(sequence)
+<tests/threads/run_test_future.{native,byte}>: package(threads)
+<tests/threads/run_test_future.{native,byte}>: use_containers
+<tests/threads/run_test_future.{native,byte}>: use_containers_thread
+<tests/threads/*.ml{,i,y}>: package(bytes)
+<tests/threads/*.ml{,i,y}>: package(oUnit)
+<tests/threads/*.ml{,i,y}>: package(sequence)
+<tests/threads/*.ml{,i,y}>: package(threads)
+<tests/threads/*.ml{,i,y}>: use_containers
+<tests/threads/*.ml{,i,y}>: use_containers_thread
 # Executable run_qtest
 "qtest/run_qtest.native": package(QTest2Lib)
 "qtest/run_qtest.native": package(bigarray)
@@ -192,6 +159,7 @@ true: annot, bin_annot
 "tests/run_tests.native": use_containers
 "tests/run_tests.native": use_containers_data
 "tests/run_tests.native": use_containers_misc
+"tests/run_tests.native": use_containers_string
 <tests/*.ml{,i,y}>: package(bytes)
 <tests/*.ml{,i,y}>: package(gen)
 <tests/*.ml{,i,y}>: package(oUnit)
@@ -200,6 +168,7 @@ true: annot, bin_annot
 <tests/*.ml{,i,y}>: use_containers
 <tests/*.ml{,i,y}>: use_containers_data
 <tests/*.ml{,i,y}>: use_containers_misc
+<tests/*.ml{,i,y}>: use_containers_string
 # Executable lambda
 "examples/lambda.byte": package(bytes)
 "examples/lambda.byte": use_containers

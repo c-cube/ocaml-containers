@@ -1,6 +1,6 @@
 # Authors and contributors
 
-- Simon Cruanes (companion_cube)
+- Simon Cruanes (`companion_cube`)
 - Drup (Gabriel Radanne)
 - Jacques-Pascal Deplaix
 - Nicolas Braud-Santoni
@@ -8,3 +8,5 @@
 - hcarty (Hezekiah M. Carty)
 - struktured (Carmelo Piccione)
 - Bernardo da Costa
+- Vincent Bernardoff (vbmithr)
+- Emmanuel Surleau (emm)

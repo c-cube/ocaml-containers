@@ -120,7 +120,9 @@ update_next_tag:
 	zsh -c 'sed -i "s/NEXT_VERSION/$(VERSION)/g" **/*.ml **/*.mli'
 	zsh -c 'sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli'
 
-udpate_sequence:
-	git subtree pull --prefix sequence sequence stable --squash
+devel:
+	./configure --enable-bench --enable-tests --enable-misc \
+		--enable-bigarray --enable-thread --enable-advanced
+	make all
 
-.PHONY: examples push_doc tags qtest clean update_sequence update_next_tag push-stable clean-generated
+.PHONY: examples push_doc tags qtest-gen qtest-clean devel update_next_tag

@@ -50,10 +50,15 @@ module type S = sig
 
   val length : _ t -> int
 
-  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
-  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** fold left on array, with index *)
+  val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  (** Fold left on array, with index *)
+
+  val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+  (** Fold left on array until a stop condition via [('a, `Stop)] is
+      indicated by the accumulator
+      @since 0.8 *)
 
   val iter : ('a -> unit) -> 'a t -> unit
 
@@ -149,6 +154,14 @@ val flat_map : ('a -> 'b t) -> 'a t -> 'b array
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** Infix version of {!flat_map} *)
+
+val (>>|) : 'a t -> ('a -> 'b) -> 'b t
+(** Infix version of {!map}
+    @since 0.8 *)
+
+val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+(** Infix version of {!map}
+    @since 0.8 *)
 
 val except_idx : 'a t -> int -> 'a list
 (** Remove given index, obtaining the list of the other elements *)

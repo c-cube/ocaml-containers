@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.7
+Version:     0.8
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -22,8 +22,8 @@ Description:
     library full of experimental ideas (not stable, not necessarily usable).
 
 Flag "misc"
-  Description:  Build the misc library, containing everything from the rotating kitchen sink to automatic banana distributors
-  Default:      false
+  Description:  Build the misc library, with experimental modules still susceptible to change
+  Default:      true
 
 Flag "lwt"
   Description:  Build modules which depend on Lwt
@@ -31,15 +31,15 @@ Flag "lwt"
 
 Flag "thread"
   Description:  Build modules that depend on threads
-  Default:      false
+  Default:      true
 
 Flag "bench"
   Description:  Build and run benchmarks
-  Default:      false
+  Default:      true
 
 Flag "bigarray"
   Description:  Build modules that depend on bigarrays
-  Default:      false
+  Default:      true
 
 Flag "advanced"
   Description:  Build advanced combinators, including CCLinq (requires "sequence")
@@ -49,7 +49,7 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat
   BuildDepends:     bytes
 
 Library "containers_io"
@@ -113,19 +113,15 @@ Library "containers_pervasives"
 Library "containers_misc"
   Path:             src/misc
   Pack:             true
-  Modules:          FHashtbl, FlatHashtbl, Hashset,
-                    Heap, LazyGraph, PersistentGraph,
-                    PHashtbl, SkipList, SplayTree, SplayMap, Univ,
-                    Bij, PiCalculus, RAL, UnionFind, SmallSet, AbsSet, CSM,
-                    TTree, PrintBox, HGraph, Automaton, Conv, Bidir, Iteratee,
-                    BTree, Ty, Cause, AVL, ParseReact
+  Modules:          AbsSet, Automaton, Bij, CSM, LazyGraph, PHashtbl,
+                    PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ
   BuildDepends:     containers, containers.data
   FindlibName:      misc
   FindlibParent:    containers
 
 Library "containers_thread"
   Path:             src/threads/
-  Modules:          CCFuture
+  Modules:          CCFuture, CCLock
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)
@@ -176,29 +172,18 @@ Executable bench_hash
   MainIs: bench_hash.ml
   BuildDepends: containers, containers.misc
 
-Executable bench_conv
-  Path:     benchs/
-  Install: false
-  CompiledObject: native
-  Build$: flag(bench)
-  MainIs: bench_conv.ml
-  BuildDepends: containers, benchmark, gen
-
-Executable test_levenshtein
-  Path: tests/
-  Install: false
-  CompiledObject: native
-  Build$: flag(tests)
-  MainIs: test_levenshtein.ml
-  BuildDepends: containers, qcheck, containers.string
-
-Executable test_threads
-  Path: tests/lwt/
-  Install: false
+Executable run_test_future
+  Path:         tests/threads/
+  Install:      false
   CompiledObject: best
-  Build$: flag(tests) && flag(thread)
-  MainIs: test_Future.ml
-  BuildDepends: containers, threads, oUnit, containers.lwt
+  Build$:       flag(tests) && flag(thread)
+  MainIs:       run_test_future.ml
+  BuildDepends: containers, threads, sequence, oUnit, containers.thread
+
+Test future
+  Command:      echo "run test future" ; ./run_test_future.native
+  TestTools:    run_test_future
+  Run$:         flag(tests) && flag(thread)
 
 PreBuildCommand: make qtest-gen
 
@@ -220,7 +205,7 @@ Executable run_tests
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
   BuildDepends: containers, containers.data, oUnit, sequence, gen,
-                qcheck, containers.misc
+                qcheck, containers.misc, containers.string
 
 Test all
   Command:      make test-all

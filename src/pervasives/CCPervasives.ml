@@ -42,13 +42,38 @@ Changed [Opt] to [Option] to better reflect that this module is about the
 @since 0.5
 *)
 
-module Array = struct include Array include CCArray end
+module Array = struct
+  include Array
+  include CCArray
+end
 module Bool = CCBool
 module Error = CCError
 module Fun = CCFun
 module Int = CCInt
-module List = struct include List include CCList end
+(* FIXME
+module Hashtbl = struct
+  include (Hashtbl : module type of Hashtbl
+    with type statistics = Hashtbl.statistics
+    and module Make := Hashtbl.Make
+    and module type S := Hashtbl.S
+    and type ('a,'b) t := ('a,'b) Hashtbl.t
+  )
+  include CCHashtbl
+end
+*)
+module List = struct
+  include List
+  include CCList
+end
+module Map = CCMap
 module Option = CCOpt
 module Pair = CCPair
-module String = struct include String include CCString end
+module Random = struct
+  include Random
+  include CCRandom
+end
+module String = struct
+  include String
+  include CCString
+end
 module Vector = CCVector

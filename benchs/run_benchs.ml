@@ -1,5 +1,13 @@
 (** Generic benchs *)
 
+module B = Benchmark
+let (@>) = B.Tree.(@>)
+let (@>>) = B.Tree.(@>>)
+let (@>>>) = B.Tree.(@>>>)
+
+let app_int f n = string_of_int n @> lazy (f n)
+let app_ints f l = B.Tree.concat (List.map (app_int f) l)
+
 (* composition *)
 let (%%) f g x = f (g x)
 
@@ -17,7 +25,7 @@ module L = struct
     let l = lazy CCList.(1 -- n) in
     let flatten_map_ l = List.flatten (CCList.map f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
-    CCBench.throughputN time
+    B.throughputN time
       [ "flat_map", CCList.flat_map f_ %% Lazy.force, l
       ; "flatten o CCList.map", flatten_ccmap_ %% Lazy.force, l
       ; "flatten o map", flatten_map_ %% Lazy.force, l
@@ -33,7 +41,7 @@ module L = struct
     let l2 = lazy CCList.(n+1 -- 2*n) in
     let l3 = lazy CCList.(2*n+1 -- 3*n) in
     let arg = l1, l2, l3 in
-    CCBench.throughputN time
+    B.throughputN time
       [ "CCList.append", append_ CCList.append, arg
       ; "List.append", append_ List.append, arg
       ]
@@ -51,7 +59,7 @@ module L = struct
         (fun i x -> CCList.(x -- (x+ min i 100)))
         CCList.(1 -- n))
     in
-    CCBench.throughputN time
+    B.throughputN time
       [ "CCList.flatten", CCList.flatten %% Lazy.force, l
       ; "List.flatten", List.flatten %% Lazy.force, l
       ; "fold_right append", fold_right_append_ %% Lazy.force, l
@@ -60,23 +68,23 @@ module L = struct
 
   (* MAIN *)
 
-  let () = CCBench.register CCBench.(
-    "list" >:::
-      [ "flat_map" >::
-        map_int
-          [ bench_flat_map ~time:2, 100
-          ; bench_flat_map ~time:2, 10_000
-          ; bench_flat_map ~time:4, 100_000]
-      ; "flatten" >::
-        map_int
-          [ bench_flatten ~time:2, 100
-          ; bench_flatten ~time:2, 10_000
-          ; bench_flatten ~time:4, 100_000]
-      ; "append" >::
-        map_int
-          [ bench_append ~time:2, 100
-          ; bench_append ~time:2, 10_000
-          ; bench_append ~time:4, 100_000]
+  let () = B.Tree.register (
+    "list" @>>>
+      [ "flat_map" @>>
+        B.Tree.concat
+          [ app_int (bench_flat_map ~time:2) 100
+          ; app_int (bench_flat_map ~time:2) 10_000
+          ; app_int (bench_flat_map ~time:4) 100_000]
+      ; "flatten" @>>
+        B.Tree.concat
+          [ app_int (bench_flatten ~time:2) 100
+          ; app_int (bench_flatten ~time:2) 10_000
+          ; app_int (bench_flatten ~time:4) 100_000]
+      ; "append" @>>
+        B.Tree.concat
+          [ app_int (bench_append ~time:2) 100
+          ; app_int (bench_append ~time:2) 10_000
+          ; app_int (bench_append ~time:4) 100_000]
       ]
     )
 end
@@ -96,7 +104,7 @@ module Vec = struct
 
   let bench_map n =
     let v = lazy (CCVector.init n (fun x->x)) in
-    CCBench.throughputN 2
+    B.throughputN 2
       [ "map", CCVector.map f %% Lazy.force, v
       ; "map_push", map_push_ f %% Lazy.force, v
       ; "map_push_cap", map_push_size_ f %% Lazy.force, v
@@ -113,15 +121,15 @@ module Vec = struct
 
   let bench_append n =
     let v2 = lazy (CCVector.init n (fun x->n+x)) in
-    CCBench.throughputN 2
+    B.throughputN 2
       [ "append", try_append_ CCVector.append n v2, ()
       ; "append_naive", try_append_ append_naive_ n v2, ()
       ]
 
-  let () = CCBench.register CCBench.(
-    "vector" >:::
-      [ "map" >:: with_int bench_map [100; 10_000; 100_000]
-      ; "append" >:: with_int bench_append [100; 10_000; 50_000]
+  let () = B.Tree.register (
+    "vector" @>>>
+      [ "map" @>> app_ints bench_map [100; 10_000; 100_000]
+      ; "append" @>> app_ints bench_append [100; 10_000; 50_000]
       ]
   )
 end
@@ -158,29 +166,17 @@ module Cache = struct
             ] @ l
       else l
     in
-    CCBench.throughputN 3 l
+    B.throughputN 3 l
 
-  let () = CCBench.register CCBench.(
-    "cache" >:::
-      [ "fib" >:: with_int bench_fib [10; 20; 100; 200; 1_000;]
+  let () = B.Tree.register (
+    "cache" @>>>
+      [ "fib" @>> app_ints bench_fib [10; 20; 100; 200; 1_000;]
       ]
   )
 end
 
 module Tbl = struct
   module IHashtbl = Hashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
-
-  module IFlatHashtbl = FlatHashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
-
-  module IFHashtbl = FHashtbl.Tree(struct
     type t = int
     let equal i j = i = j
     let hash i = i
@@ -224,27 +220,6 @@ module Tbl = struct
     done;
     h
 
-  let iflathashtbl_add n =
-    let h = IFlatHashtbl.create 50 in
-    for i = n downto 0 do
-      IFlatHashtbl.replace h i i;
-    done;
-    h
-
-  let ifhashtbl_add n =
-    let h = ref (IFHashtbl.empty 32) in
-    for i = n downto 0 do
-      h := IFHashtbl.replace !h i i;
-    done;
-    !h
-
-  let skiplist_add n =
-    let l = SkipList.create compare in
-    for i = n downto 0 do
-      SkipList.add l i i;
-    done;
-    l
-
   let ipersistenthashtbl_add n =
     let h = ref (IPersistentHashtbl.create 32) in
     for i = n downto 0 do
@@ -267,14 +242,11 @@ module Tbl = struct
     h
 
   let bench_maps1 n =
-    CCBench.throughputN 3
+    B.throughputN 3
       ["phashtbl_add", (fun n -> ignore (phashtbl_add n)), n;
        "hashtbl_add", (fun n -> ignore (hashtbl_add n)), n;
        "ihashtbl_add", (fun n -> ignore (ihashtbl_add n)), n;
-       "iflathashtbl_add", (fun n -> ignore (iflathashtbl_add n)), n;
-       "ifhashtbl_add", (fun n -> ignore (ifhashtbl_add n)), n;
        "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n)), n;
-       "skiplist_add", (fun n -> ignore (skiplist_add n)), n;
        "imap_add", (fun n -> ignore (imap_add n)), n;
        "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n)), n;
       ]
@@ -309,26 +281,6 @@ module Tbl = struct
     done;
     h
 
-  let iflathashtbl_replace n =
-    let h = IFlatHashtbl.create 50 in
-    for i = 0 to n do
-      IFlatHashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      IFlatHashtbl.replace h i i;
-    done;
-    h
-
-  let ifhashtbl_replace n =
-    let h = ref (IFHashtbl.empty 32) in
-    for i = 0 to n do
-      h := IFHashtbl.replace !h i i;
-    done;
-    for i = n downto 0 do
-      h := IFHashtbl.replace !h i i;
-    done;
-    !h
-
   let ipersistenthashtbl_replace n =
     let h = ref (IPersistentHashtbl.create 32) in
     for i = 0 to n do
@@ -338,16 +290,6 @@ module Tbl = struct
       h := IPersistentHashtbl.replace !h i i;
     done;
     !h
-
-  let skiplist_replace n =
-    let l = SkipList.create compare in
-    for i = 0 to n do
-      SkipList.add l i i;
-    done;
-    for i = n downto 0 do
-      SkipList.add l i i;
-    done;
-    l
 
   let imap_replace n =
     let h = ref IMap.empty in
@@ -370,14 +312,11 @@ module Tbl = struct
     h
 
   let bench_maps2 n =
-    CCBench.throughputN 3
+    B.throughputN 3
       ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n)), n;
        "hashtbl_replace", (fun n -> ignore (hashtbl_replace n)), n;
        "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n)), n;
-       "iflathashtbl_replace", (fun n -> ignore (iflathashtbl_replace n)), n;
-       "ifhashtbl_replace", (fun n -> ignore (ifhashtbl_replace n)), n;
        "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n)), n;
-       "skiplist_replace", (fun n -> ignore (skiplist_replace n)), n;
        "imap_replace", (fun n -> ignore (imap_replace n)), n;
        "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n)), n;
       ]
@@ -402,28 +341,10 @@ module Tbl = struct
         ignore (IHashtbl.find h i);
       done
 
-  let iflathashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IFlatHashtbl.find h i);
-      done
-
-  let ifhashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IFHashtbl.find h i);
-      done
-
   let ipersistenthashtbl_find h =
     fun n ->
       for i = 0 to n-1 do
         ignore (IPersistentHashtbl.find h i);
-      done
-
-  let skiplist_find l =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (SkipList.find l i);
       done
 
   let array_find a =
@@ -448,31 +369,25 @@ module Tbl = struct
     let h = phashtbl_add n in
     let h' = hashtbl_add n in
     let h'' = ihashtbl_add n in
-    let h''' = iflathashtbl_add n in
-    let h'''' = ifhashtbl_add n in
     let h''''' = ipersistenthashtbl_add n in
-    let l = skiplist_add n in
     let a = Array.init n (fun i -> string_of_int i) in
     let m = imap_add n in
     let h'''''' = icchashtbl_add n in
-    CCBench.throughputN 3 [
+    B.throughputN 3 [
       "phashtbl_find", (fun () -> phashtbl_find h n), ();
       "hashtbl_find", (fun () -> hashtbl_find h' n), ();
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
-      "iflathashtbl_find", (fun () -> iflathashtbl_find h''' n), ();
-      "ifhashtbl_find", (fun () -> ifhashtbl_find h'''' n), ();
       "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n), ();
-      "skiplist_find", (fun () -> skiplist_find l n), ();
       "array_find", (fun () -> array_find a n), ();
       "imap_find", (fun () -> imap_find m n), ();
       "cchashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
     ]
 
-  let () = CCBench.register CCBench.(
-    "tbl" >:::
-      [ "add" >:: with_int bench_maps1 [10; 100; 1_000; 10_000;]
-      ; "replace" >:: with_int bench_maps2 [10; 100; 1_000; 10_000]
-      ; "find" >:: with_int bench_maps3 [10; 20; 100; 1_000; 10_000]
+  let () = B.Tree.register (
+    "tbl" @>>>
+      [ "add" @>> app_ints bench_maps1 [10; 100; 1_000; 10_000;]
+      ; "replace" @>> app_ints bench_maps2 [10; 100; 1_000; 10_000]
+      ; "find" @>> app_ints bench_maps3 [10; 20; 100; 1_000; 10_000]
       ])
 end
 
@@ -483,7 +398,7 @@ module Iter = struct
     let seq () = Sequence.fold (+) 0 Sequence.(0 --n) in
     let gen () = Gen.fold (+) 0 Gen.(0 -- n) in
     let klist () = CCKList.fold (+) 0 CCKList.(0 -- n) in
-    CCBench.throughputN 3
+    B.throughputN 3
       [ "sequence.fold", seq, ();
         "gen.fold", gen, ();
         "klist.fold", klist, ();
@@ -500,7 +415,7 @@ module Iter = struct
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
     in
-    CCBench.throughputN 3
+    B.throughputN 3
       [ "sequence.flat_map", seq, ();
         "gen.flat_map", gen, ();
         "klist.flat_map", klist, ();
@@ -523,17 +438,17 @@ module Iter = struct
         1 -- n |> iter (fun x -> i := !i * x)
       )
     in
-    CCBench.throughputN 3
+    B.throughputN 3
       [ "sequence.iter", seq, ();
         "gen.iter", gen, ();
         "klist.iter", klist, ();
       ]
 
-  let () = CCBench.register CCBench.(
-    "iter" >:::
-      [ "fold" >:: with_int bench_fold [100; 1_000; 10_000; 1_000_000]
-      ; "flat_map" >:: with_int bench_flat_map [1_000; 10_000]
-      ; "iter" >:: with_int bench_iter [1_000; 10_000]
+  let () = B.Tree.register (
+    "iter" @>>>
+      [ "fold" @>> app_ints bench_fold [100; 1_000; 10_000; 1_000_000]
+      ; "flat_map" @>> app_ints bench_flat_map [1_000; 10_000]
+      ; "iter" @>> app_ints bench_iter [1_000; 10_000]
       ])
 end
 
@@ -586,16 +501,16 @@ module Batch = struct
       CCPrint.printf "batch: %a\n" (CCArray.pp CCInt.pp) (batch a);
       *)
       assert (C.equal (batch a) (naive a));
-      CCBench.throughputN time
+      B.throughputN time
         [ C.name ^ "_naive", naive, a
         ; C.name ^ "_batch", batch, a
         ]
 
-    let bench = CCBench.(
-      C.name >:: map_int
-      [ bench_for ~time:1, 100
-      ; bench_for ~time:4, 100_000
-      ; bench_for ~time:4, 1_000_000
+    let bench = B.(
+      C.name @>> B.Tree.concat
+      [ app_int (bench_for ~time:1) 100
+      ; app_int (bench_for ~time:4) 100_000
+      ; app_int (bench_for ~time:4) 1_000_000
       ])
   end
 
@@ -622,8 +537,8 @@ module Batch = struct
     let doubleton x y = CCKList.of_list [ x; y ]
   end)
 
-  let () = CCBench.register CCBench.(
-    "batch" >:: mk_list
+  let () = B.Tree.register (
+    "batch" @>> B.Tree.concat
       [ BenchKList.bench
       ; BenchArray.bench
       ; BenchList.bench
@@ -631,4 +546,4 @@ module Batch = struct
 end
 
 let () =
-  CCBench.run_main ()
+  B.Tree.run_global ()
