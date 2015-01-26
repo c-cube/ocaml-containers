@@ -56,7 +56,7 @@ module type S = sig
   val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
   (** fold left on array until a stop condition via [('a, `Stop)] is
       indicated by the accumulator
-      @since NEXT_RELEASE *)
+      @since 0.8 *)
 
   val iter : ('a -> unit) -> 'a t -> unit
 

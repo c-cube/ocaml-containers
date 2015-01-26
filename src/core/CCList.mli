@@ -51,7 +51,7 @@ val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
 (** Fold until a stop condition via [('a, `Stop)] is
     indicated by the accumulator
-    @since NEXT_RELEASE *)
+    @since 0.8 *)
 
 val init : int -> (int -> 'a) -> 'a t
 (** Same as [Array.init]

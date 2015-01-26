@@ -86,11 +86,11 @@ module type S = sig
 
   val keys_list : ('a, 'b) Hashtbl.t -> 'a list
   (** [keys t] is the list of keys in [t].
-      @since NEXT_RELEASE *)
+      @since 0.8 *)
 
   val values_list : ('a, 'b) Hashtbl.t -> 'b list
   (** [values t] is the list of values in [t].
-      @since NEXT_RELEASE *)
+      @since 0.8 *)
 
   val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list
   (** Map on a hashtable's items, collect into a list *)

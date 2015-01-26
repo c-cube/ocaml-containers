@@ -47,7 +47,7 @@ val size : t -> int
 
 val length : t -> int
 (** Alias for [size].
-    @since NEXT_RELEASE *)
+    @since 0.8 *)
 
 val get : t -> int -> char
 
