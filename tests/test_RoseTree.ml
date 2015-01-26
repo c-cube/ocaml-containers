@@ -4,10 +4,8 @@ open OUnit
 let format_node value = Printf.sprintf "%d" value
 
 let string_of_tree tree =
-  let buffer = Buffer.create 1024 in
-  let formatter = Format.formatter_of_buffer buffer in
-  RoseTree.print formatter format_node tree;
-  Buffer.contents buffer
+  CCFormat.sprintf "%a" (fun formatter value ->
+      RoseTree.print formatter format_node tree) tree
 
 let assert_equal_tree expected_tree_rep tree =
   let expected_tree_rep_string =
