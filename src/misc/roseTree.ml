@@ -1,10 +1,47 @@
+
+(*
+copyright (c) 2013-2014, Simon Cruanes, Emmanuel Surleau
+all rights reserved.
+
+redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.  redistributions in binary
+form must reproduce the above copyright notice, this list of conditions and the
+following disclaimer in the documentation and/or other materials provided with
+the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*)
+
+
 type +'a t = [`Node of 'a * 'a t list]
 
 type 'a tree = 'a t
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a printer = Format.formatter -> 'a -> unit
+
 let rec fold ~f init_acc (`Node (value, children)) =
   let acc = f value init_acc in
   List.fold_left (fun acc' child_node -> fold ~f acc' child_node) acc children
+
+let to_seq t yield =
+  let rec iter (`Node (value, children)) =
+    yield value;
+    List.iter iter children
+  in
+  iter t
 
 let split_at_length_minus_1 l =
   let rev_list = List.rev l in
@@ -13,7 +50,7 @@ let split_at_length_minus_1 l =
   | [item]      -> ([], Some item)
   | item::items -> (List.rev items, Some item)
 
-let print formatter string_of_value tree =
+let print pp_val formatter tree =
   let rec print_children children indent_string =
     let non_last_children, maybe_last_child =
       split_at_length_minus_1 children
@@ -26,7 +63,7 @@ let print formatter string_of_value tree =
     List.iter (fun (`Node (child_value, grandchildren)) ->
         Format.pp_print_string formatter indent_string;
         Format.pp_print_string formatter "|- ";
-        string_of_value child_value |> Format.pp_print_string formatter;
+        pp_val formatter child_value;
         Format.pp_force_newline formatter ();
         let indent_string' = indent_string ^ "|  " in
         print_children grandchildren indent_string'
@@ -34,13 +71,13 @@ let print formatter string_of_value tree =
   and print_last_child (`Node (last_child_value, last_grandchildren)) indent_string =
     Format.pp_print_string formatter indent_string;
     Format.pp_print_string formatter "'- ";
-    string_of_value last_child_value |> Format.pp_print_string formatter;
+    pp_val formatter last_child_value;
     Format.pp_force_newline formatter ();
     let indent_string' = indent_string ^ "   " in
     print_children last_grandchildren indent_string'
   in
   let print_root (`Node (root_value, root_children)) =
-    string_of_value root_value |> Format.pp_print_string formatter;
+    pp_val formatter root_value;
     Format.pp_force_newline formatter ();
     print_children root_children ""
   in

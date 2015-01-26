@@ -1,11 +1,10 @@
 open Containers_misc
 open OUnit
 
-let format_node value = Printf.sprintf "%d" value
+let format_node = Format.pp_print_int
 
 let string_of_tree tree =
-  CCFormat.sprintf "%a" (fun formatter value ->
-      RoseTree.print formatter format_node tree) tree
+  CCFormat.sprintf "%a" (RoseTree.print format_node) tree
 
 let assert_equal_tree expected_tree_rep tree =
   let expected_tree_rep_string =
@@ -66,8 +65,8 @@ let new_tree_strings = [
   "|- 1000" ;
   "|  '- 10000" ;
   "'- 1001" ;
-  "   |- 10010" ; 
-  "   '- 10012" ; 
+  "   |- 10010" ;
+  "   '- 10012" ;
 ]
 
 let test_print_single_node_tree () =
@@ -78,12 +77,12 @@ let test_print_normal_tree () =
   let expected = normal_tree_strings in
   assert_equal_tree expected normal_tree
 
-let test_fold_single_node_tree () = 
+let test_fold_single_node_tree () =
   let tree_double_sum = RoseTree.fold ~f:(fun value acc -> acc + value * 2) 0 single_node_tree
   in
   assert_equal 20 tree_double_sum
 
-let test_fold_normal_tree () = 
+let test_fold_normal_tree () =
   let tree_sum = RoseTree.fold ~f:(fun value acc -> acc + value) 0 normal_tree
   in
   assert_equal 150 tree_sum
@@ -325,8 +324,8 @@ let test_insert_left_sibling () =
     "|  |  |- 1000" ;
     "|  |  |  '- 10000" ;
     "|  |  '- 1001" ;
-    "|  |     |- 10010" ; 
-    "|  |     '- 10012" ; 
+    "|  |     |- 10010" ;
+    "|  |     '- 10012" ;
     "|  '- 10" ;
     "|- 2" ;
     "|  |- 20" ;
@@ -375,8 +374,8 @@ let test_insert_right_sibling () =
     "|     |- 1000" ;
     "|     |  '- 10000" ;
     "|     '- 1001" ;
-    "|        |- 10010" ; 
-    "|        '- 10012" ; 
+    "|        |- 10010" ;
+    "|        '- 10012" ;
     "|- 2" ;
     "|  |- 20" ;
     "|  '- 21" ;
@@ -428,8 +427,8 @@ let test_append_child () =
     "      |- 1000" ;
     "      |  '- 10000" ;
     "      '- 1001" ;
-    "         |- 10010" ; 
-    "         '- 10012" ; 
+    "         |- 10010" ;
+    "         '- 10012" ;
   ]
   in
   assert_equal_zipper expected zipper
@@ -459,8 +458,8 @@ let test_replace () =
   "|  |- 1000" ;
   "|  |  '- 10000" ;
   "|  '- 1001" ;
-  "|     |- 10010" ; 
-  "|     '- 10012" ; 
+  "|     |- 10010" ;
+  "|     '- 10012" ;
   "'- 3" ;
   "   |- 30" ;
   "   |- 31" ;
