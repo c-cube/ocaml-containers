@@ -1,9 +1,10 @@
 # OASIS_START
-# DO NOT EDIT (digest: eb7a9d2756639dc6f89797f82adff355)
+# DO NOT EDIT (digest: 64ac3a98881a419a2ed1f076194542f9)
 AbsSet
 Automaton
 Bij
 CSM
+Hashset
 LazyGraph
 PHashtbl
 PrintBox

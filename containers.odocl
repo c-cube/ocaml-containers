@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b0ee2a2a21ef35240553e6d971c8e0b3)
+# DO NOT EDIT (digest: 2892d9c53521db701e90ccd56fbdc99a)
 src/core/CCVector
 src/core/CCPrint
 src/core/CCError
@@ -23,6 +23,7 @@ src/misc/AbsSet
 src/misc/Automaton
 src/misc/Bij
 src/misc/CSM
+src/misc/Hashset
 src/misc/LazyGraph
 src/misc/PHashtbl
 src/misc/PrintBox

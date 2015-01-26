@@ -113,7 +113,7 @@ Library "containers_pervasives"
 Library "containers_misc"
   Path:             src/misc
   Pack:             true
-  Modules:          AbsSet, Automaton, Bij, CSM, LazyGraph, PHashtbl,
+  Modules:          AbsSet, Automaton, Bij, CSM, Hashset, LazyGraph, PHashtbl,
                     PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ
   BuildDepends:     containers, containers.data
   FindlibName:      misc

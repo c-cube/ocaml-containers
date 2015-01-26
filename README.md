@@ -147,6 +147,7 @@ is not necessarily up-to-date.
 - `AbsSet`, an abstract Set data structure, a bit like `LazyGraph`.
 - `Automaton`, `CSM`, state machine abstractions
 - `Bij`, a GADT-based bijection language used to serialize/deserialize your data structures
+- `Hashset`, a polymorphic imperative set on top of `PHashtbl`
 - `LazyGraph`, a lazy graph structure on arbitrary (hashable+eq) types, with basic graph functions that work even on infinite graphs, and printing to DOT.
 - `PHashtbl`, a polymorphic hashtable (with open addressing)
 - `RAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))` access to elements by their index.
