@@ -1,5 +1,7 @@
-open Containers_misc
 open OUnit
+open CCFun
+
+module RoseTree = Containers_misc.RoseTree
 
 let format_node = Format.pp_print_int
 

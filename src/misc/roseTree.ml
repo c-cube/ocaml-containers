@@ -110,7 +110,7 @@ module Zipper = struct
     | last_left::tail_rev_lefts ->
       Some {
         tree = last_left ;
-        lefts = tail_rev_lefts |> List.rev ;
+        lefts = List.rev tail_rev_lefts;
         rights = zipper.tree::zipper.rights ;
         parents = zipper.parents
       }
