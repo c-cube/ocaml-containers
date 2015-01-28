@@ -41,6 +41,7 @@ CCPair
 CCPrint
 CCRandom
 CCRef
+CCSet
 CCString
 CCVector
 }
