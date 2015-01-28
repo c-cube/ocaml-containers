@@ -24,7 +24,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Wrapper around Set} *)
+(** {1 Wrapper around Set}
+@since NEXT_RELEASE *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Buffer.t -> 'a -> unit
