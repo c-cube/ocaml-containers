@@ -48,7 +48,7 @@ Flag "advanced"
 Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
-                    CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray,
+                    CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef,
                     CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat
   BuildDepends:     bytes
 
