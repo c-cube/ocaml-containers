@@ -131,7 +131,7 @@ Library "containers_thread"
 
 Library "containers_lwt"
   Path:             src/lwt
-  Modules:          Lwt_automaton, Lwt_actor
+  Modules:          Lwt_automaton, Lwt_actor, Lwt_klist
   Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
@@ -192,7 +192,7 @@ Executable run_qtest
   Install:          false
   CompiledObject:   native
   MainIs:           run_qtest.ml
-  Build$:           flag(tests)
+  Build$:           flag(tests) && flag(bigarray)
   BuildDepends:     containers, containers.misc, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
                     containers.bigarray,
