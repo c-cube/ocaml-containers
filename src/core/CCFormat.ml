@@ -82,7 +82,10 @@ let seq ?(start="[") ?(stop="]") ?(sep=", ") pp fmt seq =
   Format.pp_print_string fmt start;
   let first = ref true in
   seq (fun x ->
-    (if !first then first := false else Format.pp_print_string fmt sep);
+    (if !first then first := false else (
+      Format.pp_print_string fmt sep;
+      Format.pp_print_cut fmt ();
+    ));
     pp fmt x);
   Format.pp_print_string fmt stop
 
