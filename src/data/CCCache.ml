@@ -33,6 +33,13 @@ let default_hash_ = Hashtbl.hash
 
 (** {2 Value interface} *)
 
+(** Invariants:
+  - after [cache.set x y], [get cache x] must return [y] or raise [Not_found]
+  - [cache.set x y] is only called if [get cache x] fails, never if [x] is already bound
+  - [cache.size()] must be positive and correspond to the number of items in [cache.iter]
+  - [cache.iter f] calls [f x y] with every [x] such that [cache.get x = y]
+  - after [cache.clear()], [cache.get x] fails for every [x]
+*)
 type ('a,'b) t = {
   set : 'a -> 'b -> unit;
   get : 'a -> 'b;  (* or raise Not_found *)
