@@ -293,6 +293,24 @@ let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
     iter=L.iter c;
   }
 
+(*$T
+  let eq (i1,_)(i2,_) = i1=i2 and hash (i,_) = CCInt.hash i in \
+  let c = lru ~eq ~hash 2 in \
+  ignore (with_cache c CCFun.id (1, true)); \
+  ignore (with_cache c CCFun.id (1, false)); \
+  with_cache c CCFun.id (1, false) = (1, true)
+*)
+
+(*$T
+  let f = (let r = ref 0 in fun _ -> incr r; !r) in \
+  let c = lru 2 in \
+  let res1 = with_cache c f 1 in \
+  let res2 = with_cache c f 2 in \
+  let res3 = with_cache c f 3 in \
+  let res1_bis = with_cache c f 1 in \
+  res1 <> res2 && res2 <> res3 && res3 <> res1_bis && res1_bis <> res1
+*)
+
 module UNBOUNDED(X:HASH) = struct
   module H = Hashtbl.Make(X)
 
