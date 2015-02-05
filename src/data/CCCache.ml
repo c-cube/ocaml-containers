@@ -330,7 +330,7 @@ module UNBOUNDED(X:HASH) = struct
   let get c x = H.find c x
 
   let set c x y = H.replace c x y
-  
+
   let size c () = H.length c
 
   let iter c f = H.iter f c
