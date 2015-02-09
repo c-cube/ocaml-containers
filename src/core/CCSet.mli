@@ -25,6 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 (** {1 Wrapper around Set}
+
 @since NEXT_RELEASE *)
 
 type 'a sequence = ('a -> unit) -> unit

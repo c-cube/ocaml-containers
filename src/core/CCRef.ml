@@ -24,7 +24,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 References} *)
+(** {1 References}
+
+@since NEXT_RELEASE *)
 
 type 'a print = Format.formatter -> 'a -> unit
 type 'a pp = Buffer.t -> 'a -> unit
