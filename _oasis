@@ -157,7 +157,7 @@ Document containers
 Executable run_benchs
   Path:             benchs/
   Install:          false
-  CompiledObject:   native
+  CompiledObject:   best
   Build$:           flag(bench) && flag(misc)
   MainIs:           run_benchs.ml
   BuildDepends:     containers, containers.misc, containers.advanced,
@@ -167,7 +167,7 @@ Executable run_benchs
 Executable bench_hash
   Path: benchs/
   Install: false
-  CompiledObject: native
+  CompiledObject: best
   Build$: flag(bench) && flag(misc)
   MainIs: bench_hash.ml
   BuildDepends: containers, containers.misc
@@ -190,7 +190,7 @@ PreBuildCommand: make qtest-gen
 Executable run_qtest
   Path:             qtest/
   Install:          false
-  CompiledObject:   native
+  CompiledObject:   best
   MainIs:           run_qtest.ml
   Build$:           flag(tests) && flag(bigarray)
   BuildDepends:     containers, containers.misc, containers.string, containers.iter,
@@ -201,7 +201,7 @@ Executable run_qtest
 Executable run_tests
   Path: tests/
   Install: false
-  CompiledObject: native
+  CompiledObject: best
   MainIs: run_tests.ml
   Build$: flag(tests) && flag(misc)
   BuildDepends: containers, containers.data, oUnit, sequence, gen,
@@ -215,6 +215,7 @@ Test all
 Executable lambda
   Path: examples/
   Install: false
+  CompiledObject: best
   MainIs: lambda.ml
   Build$: flag(misc)
   BuildDepends: containers, containers.misc
@@ -222,7 +223,7 @@ Executable lambda
 Executable id_sexp
   Path:             examples/
   Install:          false
-  CompiledObject:   native
+  CompiledObject:   best
   MainIs:           id_sexp.ml
   Build$:           flag(misc)
   BuildDepends:     containers.sexp
@@ -230,7 +231,7 @@ Executable id_sexp
 Executable id_sexp2
   Path:             examples/
   Install:          false
-  CompiledObject:   native
+  CompiledObject:   best
   MainIs:           id_sexp2.ml
   Build$:           flag(misc)
   BuildDepends:     containers.sexp
