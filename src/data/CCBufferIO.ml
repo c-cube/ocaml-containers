@@ -1,5 +1,5 @@
 (*
- * BatBufferIO - Circular byte buffer
+ * CCBufferIO - Polymorphic circular buffer
  * Copyright (C) 2014 Simon Cruanes
  *
  * This library is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *)
 
-(** Circular Byte Buffer for IO *)
+(** Polymorphic Circular Buffer for IO *)
 
 type 'a t = {
   mutable start : int;
