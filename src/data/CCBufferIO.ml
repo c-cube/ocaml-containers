@@ -20,10 +20,11 @@
 
 (** Circular Byte Buffer for IO *)
 
-type t = {
+type 'a t = {
   mutable start : int;
   mutable stop : int; (* excluded *)
-  mutable buf : string;
+  mutable buf : 'a array;
+  size: int
 }
 
 exception Empty
@@ -31,39 +32,35 @@ exception Empty
 let create size =
   { start=0;
     stop=0;
-    buf =String.make size ' ';
+    size;
+    buf = Array.of_list [];
   }
 
 let copy b =
-  { b with buf=String.copy b.buf; }
+  { b with buf=Array.copy b.buf; }
 
-let of_string s =
-  { start=0;
-    stop=String.length s;
-    buf=String.copy s;
-  }
 
-let capacity b = String.length b.buf
+let capacity b = b.size
 
 let length b =
   if b.stop >= b.start
   then b.stop - b.start
-  else (String.length b.buf - b.start) + b.stop
+  else (Array.length b.buf - b.start) + b.stop
 
 (* resize [b] so that inner capacity is [cap] *)
-let resize b cap =
-  assert (cap >= String.length b.buf);
-  let buf' = String.make cap ' ' in
+let resize b cap elem =
+  assert (cap >= Array.length b.buf);
+  let buf' = Array.make cap elem in
   (* copy into buf' *)
   let len =
     if b.stop >= b.start
     then begin
-      String.blit b.buf b.start buf' 0 (b.stop - b.start);
+      Array.blit b.buf b.start buf' 0 (b.stop - b.start);
       b.stop - b.start
     end else begin
-      let len_end = String.length b.buf - b.start in
-      String.blit b.buf b.start buf' 0 len_end;
-      String.blit b.buf 0 buf' len_end b.stop;
+      let len_end = Array.length b.buf - b.start in
+      Array.blit b.buf b.start buf' 0 len_end;
+      Array.blit b.buf 0 buf' len_end b.stop;
       len_end + b.stop
     end
   in
@@ -72,66 +69,56 @@ let resize b cap =
   b.stop <- len;
   ()
 
-let blit_from b s o len =
+let blit_from b from_buf o len =
   let cap = capacity b - length b in
   (* resize if needed, with a constant to amortize *)
-  if cap < len then resize b (String.length b.buf + len + 24);
+  if (Array.length from_buf) = 0 then () else
+  if cap < len then 
+    resize b (Array.length b.buf + len + 24) from_buf.(0);
   assert (capacity b - length b >= len);
   if b.stop >= b.start
   then (*  [_______ start xxxxxxxxx stop ______] *)
-    let len_end = String.length b.buf - b.stop in
+    let len_end = Array.length b.buf - b.stop in
     if len_end >= len
-    then (String.blit s o b.buf b.stop len;
+    then (Array.blit from_buf o b.buf b.stop len;
           b.stop <- b.stop + len)
-    else (String.blit s o b.buf b.stop len_end;
-          String.blit s (o+len_end) b.buf 0 (len-len_end);
+    else (Array.blit from_buf o b.buf b.stop len_end;
+          Array.blit from_buf (o+len_end) b.buf 0 (len-len_end);
           b.stop <- len-len_end)
   else begin (* [xxxxx stop ____________ start xxxxxx] *)
     let len_middle = b.start - b.stop in
     assert (len_middle >= len);
-    String.blit s o b.buf b.stop len;
+    Array.blit from_buf 0 b.buf b.stop len;
     b.stop <- b.stop + len
   end;
   ()
 
-let blit_into b s o len =
-  if o+len > String.length s
+let blit_into b to_buf o len =
+  if o+len > Array.length to_buf
     then raise (Invalid_argument "BufferIO.blit_into");
   if b.stop >= b.start
   then
     let n = min (b.stop - b.start) len in
-    let _ = String.blit b.buf b.start s o n in
+    let _ = Array.blit b.buf b.start to_buf o n in
     n
   else begin
-    let len_end = String.length b.buf - b.start in
-    String.blit b.buf b.start s o (min len_end len);
+    let len_end = Array.length b.buf - b.start in
+    Array.blit b.buf b.start to_buf o (min len_end len);
     if len_end >= len
     then len  (* done *)
     else begin
       let n = min b.stop (len - len_end) in
-      String.blit b.buf 0 s (o+len_end) n;
+      Array.blit b.buf 0 to_buf (o+len_end) n;
       n + len_end
     end
   end
 
-let add_string b s = blit_from b s 0 (String.length s)
+let add b s = blit_from b s 0 (Array.length s)
 
 (*$Q
   (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
-    let b = create 24 in add_string b s; add_string b s'; \
-    String.length s + String.length s' = length b)
-*)
-
-let to_string b =
-  let s = String.make (length b) ' ' in
-  let n = blit_into b s 0 (String.length s) in
-  assert (n = String.length s);
-  s
-
-(*$Q
-  (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
-    let b = create 24 in add_string b s; add_string b s'; \
-    to_string b = s ^ s')
+    let b = create 24 in add b s; add_string b s'; \
+    Array.length s + String.length s' = length b)
 *)
 
 let clear b =
@@ -142,26 +129,26 @@ let clear b =
 let reset b =
   clear b;
   if capacity b > 64
-    then b.buf <- String.make 64 ' ';  (* reset *)
+    then b.buf <- Array.sub b.buf 0 64;
   ()
 
 let is_empty b = b.start = b.stop
 
 let next b =
   if b.start = b.stop then raise Empty;
-  b.buf.[b.start]
+  b.buf.(b.start)
 
 let pop b =
   if b.start = b.stop then raise Empty;
-  let c = b.buf.[b.start] in
-  if b.start + 1 = String.length b.buf
+  let c = b.buf.(b.start) in
+  if b.start + 1 = Array.length b.buf
   then b.start <- 0
   else b.start <- b.start + 1;
   c
 
 let junk b =
   if b.start = b.stop then raise Empty;
-  if b.start + 1 = String.length b.buf
+  if b.start + 1 = Array.length b.buf
   then b.start <- 0
   else b.start <- b.start + 1
 
@@ -170,7 +157,7 @@ let skip b len =
   if b.stop >= b.start
   then b.start <- b.start + len
   else
-    let len_end = String.length b.buf - b.start in
+    let len_end = Array.length b.buf - b.start in
     if len > len_end
     then b.start <- len-len_end  (* wrap to the beginning *)
     else b.start <- b.start + len
@@ -185,10 +172,10 @@ let skip b len =
 
 let iteri b f =
   if b.stop >= b.start
-  then for i = b.start to b.stop - 1 do f i b.buf.[i] done
+  then for i = b.start to b.stop - 1 do f i b.buf.(i) done
   else (
-    for i = b.start to String.length b.buf -1 do f i b.buf.[i] done;
-    for i = 0 to b.stop - 1 do f i b.buf.[i] done;
+    for i = b.start to Array.length b.buf -1 do f i b.buf.(i) done;
+    for i = 0 to b.stop - 1 do f i b.buf.(i) done;
   )
 
 (*$T
@@ -202,13 +189,14 @@ let get b i =
   then
     if i >= b.stop - b.start
     then raise (Invalid_argument "BufferIO.get")
-    else b.buf.[b.start + i]
+    else b.buf.(b.start + i)
   else
-    let len_end = String.length b.buf - b.start in
+    let len_end = Array.length b.buf - b.start in
     if i < len_end
-      then b.buf.[b.start + i]
+      then b.buf.(b.start + i)
     else if i - len_end > b.stop
       then raise (Invalid_argument "BufferIO.get")
-      else b.buf.[i - len_end]
+      else b.buf.(i - len_end)
 
-
+let to_list b =
+  Array.to_list (Array.sub b.buf b.start b.stop)
