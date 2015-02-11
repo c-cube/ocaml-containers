@@ -40,7 +40,7 @@ let copy b =
   { b with buf=Array.copy b.buf; }
 
 
-let capacity b = b.size
+let capacity b = Array.length b.buf
 
 let length b =
   if b.stop >= b.start
@@ -65,34 +65,20 @@ let resize b cap elem =
     end
   in
   b.buf <- buf';
-  b.start <- 0;
-  b.stop <- len;
   ()
 
 let blit_from b from_buf o len =
+  if (Array.length from_buf) = 0 then () else
   let cap = capacity b - length b in
   (* resize if needed, with a constant to amortize *)
-  if (Array.length from_buf) = 0 then () else
-  if cap < len then 
-    resize b (Array.length b.buf + len + 24) from_buf.(0);
-  assert (capacity b - length b >= len);
-  if b.stop >= b.start
-  then (*  [_______ start xxxxxxxxx stop ______] *)
-    let len_end = Array.length b.buf - b.stop in
-    if len_end >= len
-    then (Array.blit from_buf o b.buf b.stop len;
-          b.stop <- b.stop + len)
-    else (Array.blit from_buf o b.buf b.stop len_end;
-          Array.blit from_buf (o+len_end) b.buf 0 (len-len_end);
-          b.stop <- len-len_end)
-  else begin (* [xxxxx stop ____________ start xxxxxx] *)
-    let len_middle = b.start - b.stop in
-    assert (len_middle >= len);
-    Array.blit from_buf 0 b.buf b.stop len;
-    b.stop <- b.stop + len
-  end;
-  ()
-
+  if capacity b < b.size then 
+    resize b b.size from_buf.(0);
+  let sub = Array.sub from_buf o len in
+    let iter i x = 
+      b.start <- i mod capacity b;
+      Array.set b.buf x b.start in
+    Array.iteri iter sub
+     
 let blit_into b to_buf o len =
   if o+len > Array.length to_buf
     then raise (Invalid_argument "BufferIO.blit_into");
@@ -128,9 +114,7 @@ let clear b =
 
 let reset b =
   clear b;
-  if capacity b > 64
-    then b.buf <- Array.sub b.buf 0 64;
-  ()
+  b.buf <- Array.of_list []
 
 let is_empty b = b.start = b.stop
 
@@ -199,4 +183,10 @@ let get b i =
       else b.buf.(i - len_end)
 
 let to_list b =
-  Array.to_list (Array.sub b.buf b.start b.stop)
+  if (b.stop >= b.start) 
+    then Array.to_list (Array.sub b.buf b.start b.stop)
+  else List.append 
+    (Array.to_list (Array.sub b.buf b.start (Array.length b.buf)))
+    (Array.to_list (Array.sub b.buf 0 b.stop)) 
+    
+
