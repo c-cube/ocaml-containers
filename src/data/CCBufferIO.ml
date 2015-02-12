@@ -52,7 +52,7 @@ let resize b cap elem =
   assert (cap >= Array.length b.buf);
   let buf' = Array.make cap elem in
   (* copy into buf' *)
-  let len =
+  let _:int =
     if b.stop >= b.start
     then begin
       Array.blit b.buf b.start buf' 0 (b.stop - b.start);
@@ -64,20 +64,23 @@ let resize b cap elem =
       len_end + b.stop
     end
   in
-  b.buf <- buf';
-  ()
+  b.buf <- buf'
 
 let blit_from b from_buf o len =
   if (Array.length from_buf) = 0 then () else
   let cap = capacity b - length b in
   (* resize if needed, with a constant to amortize *)
    if cap < len then
-     resize b (min b.size (Array.length b.buf + len + 24)) from_buf.(0);
+     resize b (min (b.size+1) (Array.length b.buf + len + 24)) from_buf.(0);
   let sub = Array.sub from_buf o len in
-    let iter i x = 
-      b.start <- i mod capacity b;
-      Array.set b.buf x b.start in
-    Array.iteri iter sub
+    let iter x =
+      if b.start = 0 then b.start <- capacity b - 1 else b.start <- b.start - 1;
+      if b.start = b.stop then
+        begin
+          if b.stop = 0 then b.stop <- capacity b - 1 else b.stop <- b.stop - 1
+        end;
+      Array.set b.buf b.start x in
+    Array.iter iter sub
      
 let blit_into b to_buf o len =
   if o+len > Array.length to_buf
@@ -184,9 +187,9 @@ let get b i =
 
 let to_list b =
   if (b.stop >= b.start) 
-    then Array.to_list (Array.sub b.buf b.start b.stop)
+    then Array.to_list (Array.sub b.buf b.start (b.stop-b.start))
   else List.append 
-    (Array.to_list (Array.sub b.buf b.start (Array.length b.buf)))
+    (Array.to_list (Array.sub b.buf b.start (Array.length b.buf - b.start)))
     (Array.to_list (Array.sub b.buf 0 b.stop)) 
     
 
