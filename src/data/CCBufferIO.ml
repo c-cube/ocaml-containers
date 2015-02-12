@@ -71,8 +71,8 @@ let blit_from b from_buf o len =
   if (Array.length from_buf) = 0 then () else
   let cap = capacity b - length b in
   (* resize if needed, with a constant to amortize *)
-  if capacity b < b.size then 
-    resize b b.size from_buf.(0);
+   if cap < len then
+     resize b (min b.size (Array.length b.buf + len + 24)) from_buf.(0);
   let sub = Array.sub from_buf o len in
     let iter i x = 
       b.start <- i mod capacity b;
