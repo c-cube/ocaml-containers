@@ -24,19 +24,23 @@ type 'a t = private {
   mutable start : int;
   mutable stop : int; (* excluded *)
   mutable buf : 'a array;
-  size : int
+  max_capacity : int
 }
 
 exception Empty
 
-val create : int -> 'a t
-(** [create size] creates a new buffer with given size *)
+val create : ?max_capacity:int -> unit -> 'a t
+(** [create ~max_capacity ()] creates a new buffer with given maximum capacity.
+    Defaults to unbounded. *)
 
 val copy : 'a t ->'a  t
 (** fresh copy of the buffer *)
 
 val capacity : 'a t -> int
 (** length of the inner buffer *)
+
+val max_capacity : 'a t -> int
+(** maximum length of the inner buffer *)
 
 val length : 'a t -> int
 (** number of elements currently stored in the buffer *)

@@ -26,16 +26,16 @@ type 'a t = {
   mutable start : int;
   mutable stop : int; (* excluded *)
   mutable buf : 'a array;
-  size: int
+  max_capacity: int
 }
 
 exception Empty
 
-let create size =
+let create ?(max_capacity=max_int) () =
   { start=0;
     stop=0;
-    size;
-    buf = Array.of_list [];
+    max_capacity;
+    buf = Array.of_list []
   }
 
 let copy b =
@@ -43,6 +43,8 @@ let copy b =
 
 
 let capacity b = Array.length b.buf
+
+let max_capacity b = b.max_capacity
 
 let length b =
   if b.stop >= b.start
@@ -73,7 +75,7 @@ let blit_from b from_buf o len =
   let cap = capacity b - length b in
   (* resize if needed, with a constant to amortize *)
    if cap < len then
-     resize b (min (b.size+1) (Array.length b.buf + len + 24)) from_buf.(0);
+     resize b (min (b.max_capacity+1) (Array.length b.buf + len + 24)) from_buf.(0);
   let sub = Array.sub from_buf o len in
     let iter x =
       if b.start = 0 then b.start <- capacity b - 1 else b.start <- b.start - 1;
