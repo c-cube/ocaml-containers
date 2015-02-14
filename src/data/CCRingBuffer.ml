@@ -1,5 +1,7 @@
 (*
- * CCBufferIO - Polymorphic circular buffer
+ * CCRingBufferIO - Polymorphic circular buffer with
+ * deque semantics for accessing both the head and tail.
+ *
  * Copyright (C) 2014 Simon Cruanes
  *
  * This library is free software; you can redistribute it and/or
