@@ -26,15 +26,17 @@ type 'a t = {
   mutable start : int;
   mutable stop : int; (* excluded *)
   mutable buf : 'a array;
-  max_capacity: int
+  bounded : bool;
+  size : int
 }
 
 exception Empty
 
-let create ?(max_capacity=max_int) () =
+let create ?(bounded=false) size =
   { start=0;
     stop=0;
-    max_capacity;
+    bounded;
+    size;
     buf = Array.of_list []
   }
 
@@ -44,7 +46,7 @@ let copy b =
 
 let capacity b = Array.length b.buf
 
-let max_capacity b = b.max_capacity
+let max_capacity b = if b.bounded then Some b.size else None
 
 let length b =
   if b.stop >= b.start
@@ -70,22 +72,56 @@ let resize b cap elem =
   in
   b.buf <- buf'
 
-let blit_from b from_buf o len =
-  if (Array.length from_buf) = 0 then () else
-  let cap = capacity b - length b in
+let blit_from_bounded b from_buf o len =
+  let cap = capacity b - len in
   (* resize if needed, with a constant to amortize *)
    if cap < len then
-     resize b (min (b.max_capacity+1) (Array.length b.buf + len + 24)) from_buf.(0);
+     let new_size =
+       let desired = Array.length b.buf + len + 24 in
+       min (b.size+1) desired in
+     resize b new_size from_buf.(0);
   let sub = Array.sub from_buf o len in
+  let capacity = capacity b in
     let iter x =
-      if b.start = 0 then b.start <- capacity b - 1 else b.start <- b.start - 1;
+     Array.set b.buf b.stop x;
+     if b.stop = capacity-1 then b.stop <- 0 else b.stop <- b.stop + 1;
       if b.start = b.stop then
-        begin
-          if b.stop = 0 then b.stop <- capacity b - 1 else b.stop <- b.stop - 1
-        end;
-      Array.set b.buf b.start x in
+      begin
+          if b.start = capacity-1 then b.start <- 0 else b.start <- b.start + 1
+      end
+    in
     Array.iter iter sub
      
+
+let blit_from_unbounded b from_buf o len =
+  let cap = capacity b - len in
+  (* resize if needed, with a constant to amortize *)
+  if cap < len then resize b (max b.size (Array.length b.buf + len + 24)) from_buf.(0);
+  assert (capacity b - length b >= len);
+  if b.stop >= b.start
+  then (*  [_______ start xxxxxxxxx stop ______] *)
+    let len_end = Array.length b.buf - b.stop in
+    if len_end >= len
+    then (Array.blit from_buf o b.buf b.stop len;
+          b.stop <- b.stop + len)
+    else (Array.blit from_buf o b.buf b.stop len_end;
+          Array.blit from_buf (o+len_end) b.buf 0 (len-len_end);
+          b.stop <- len-len_end)
+  else begin (* [xxxxx stop ____________ start xxxxxx] *)
+    let len_middle = b.start - b.stop in
+    assert (len_middle >= len);
+    Array.blit from_buf o b.buf b.stop len;
+    b.stop <- b.stop + len
+  end;
+  ()
+
+let blit_from b from_buf o len =
+  if (Array.length from_buf) = 0 then () else
+ if b.bounded then
+    blit_from_bounded b from_buf o len
+  else
+    blit_from_unbounded b from_buf o len
+
 let blit_into b to_buf o len =
   if o+len > Array.length to_buf
     then raise (Invalid_argument "BufferIO.blit_into");

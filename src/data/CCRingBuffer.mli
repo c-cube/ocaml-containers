@@ -24,14 +24,15 @@ type 'a t = private {
   mutable start : int;
   mutable stop : int; (* excluded *)
   mutable buf : 'a array;
-  max_capacity : int
+  bounded: bool;
+  size : int
 }
 
 exception Empty
 
-val create : ?max_capacity:int -> unit -> 'a t
-(** [create ~max_capacity ()] creates a new buffer with given maximum capacity.
-    Defaults to unbounded. *)
+val create : ?bounded:bool -> int -> 'a t
+(** [create ?bounded size] creates a new buffer with given size.
+    Defaults to [bounded=false]. *)
 
 val copy : 'a t ->'a  t
 (** fresh copy of the buffer *)
@@ -39,8 +40,8 @@ val copy : 'a t ->'a  t
 val capacity : 'a t -> int
 (** length of the inner buffer *)
 
-val max_capacity : 'a t -> int
-(** maximum length of the inner buffer *)
+val max_capacity : 'a t -> int option
+(** maximum length of the inner buffer, or [None] if unbounded. *)
 
 val length : 'a t -> int
 (** number of elements currently stored in the buffer *)
