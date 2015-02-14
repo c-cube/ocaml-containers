@@ -57,9 +57,6 @@ val blit_into : 'a t -> 'a array -> int -> int -> int
     @return the number of elements actually copied ([min len (length buf)]).
     @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
-val add : 'a t -> 'a array -> unit
-(** [add buf t] adds elements [t] at the end of [buf]. *)
-
 val to_list : 'a t -> 'a list
 (** extract the current content into a list *)
 
@@ -74,10 +71,6 @@ val is_empty :'a t -> bool
 
 val next : 'a t -> 'a
 (** obtain next element (the first one of the buffer)
-    @raise Empty if the buffer is empty *)
-
-val pop : 'a t -> 'a
-(** obtain and remove next element (the first one)
     @raise Empty if the buffer is empty *)
 
 val junk : 'a t -> unit
@@ -96,3 +89,20 @@ val get : 'a t -> int -> 'a
 (** [get buf i] returns the [i]-th element of [buf], ie the one that
     is returned by [next buf] after [i-1] calls to [junk buf].
     @raise Invalid_argument if the index is invalid (> [length buf]) *)
+
+val push_back : 'a t -> 'a -> unit
+  (** Push value at the back *)
+
+val peek_front : 'a t -> 'a
+  (** First value, or Empty *)
+
+val peek_back : 'a t -> 'a
+  (** Last value, or Empty *)
+
+val take_back : 'a t -> 'a
+  (** Take last value, or raise Empty *)
+
+val take_front : 'a t -> 'a
+  (** Take first value, or raise Empty *)
+
+

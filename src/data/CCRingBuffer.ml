@@ -1,5 +1,5 @@
 (*
- * CCRingBufferIO - Polymorphic circular buffer with
+ * CCRingBuffer - Polymorphic circular buffer with
  * deque semantics for accessing both the head and tail.
  *
  * Copyright (C) 2014 Simon Cruanes
@@ -75,22 +75,23 @@ let resize b cap elem =
 let blit_from_bounded b from_buf o len =
   let cap = capacity b - len in
   (* resize if needed, with a constant to amortize *)
-   if cap < len then
+  if cap < len then begin
      let new_size =
        let desired = Array.length b.buf + len + 24 in
        min (b.size+1) desired in
-     resize b new_size from_buf.(0);
+     resize b new_size from_buf.(0)
+  end;
   let sub = Array.sub from_buf o len in
-  let capacity = capacity b in
-    let iter x =
-     Array.set b.buf b.stop x;
-     if b.stop = capacity-1 then b.stop <- 0 else b.stop <- b.stop + 1;
-      if b.start = b.stop then
+  let iter x = 
+    let capacity = capacity b in
+    Array.set b.buf b.stop x;
+    if b.stop = capacity-1 then b.stop <- 0 else b.stop <- b.stop + 1;
+    if b.start = b.stop then
       begin
-          if b.start = capacity-1 then b.start <- 0 else b.start <- b.start + 1
+        if b.start = capacity-1 then b.start <- 0 else b.start <- b.start + 1
       end
-    in
-    Array.iter iter sub
+  in
+  Array.iter iter sub
      
 
 let blit_from_unbounded b from_buf o len =
@@ -117,7 +118,7 @@ let blit_from_unbounded b from_buf o len =
 
 let blit_from b from_buf o len =
   if (Array.length from_buf) = 0 then () else
- if b.bounded then
+  if b.bounded then
     blit_from_bounded b from_buf o len
   else
     blit_from_unbounded b from_buf o len
@@ -165,13 +166,20 @@ let next b =
   if b.start = b.stop then raise Empty;
   b.buf.(b.start)
 
-let pop b =
+let take_front b =
   if b.start = b.stop then raise Empty;
   let c = b.buf.(b.start) in
   if b.start + 1 = Array.length b.buf
   then b.start <- 0
   else b.start <- b.start + 1;
   c
+
+let take_back b =
+  if b.start = b.stop then raise Empty;
+  if b.stop - 1 = 0
+  then b.stop <- Array.length b.buf - 1
+  else b.stop <- b.stop - 1;
+  b.buf.(b.stop)
 
 let junk b =
   if b.start = b.stop then raise Empty;
@@ -232,4 +240,16 @@ let to_list b =
     (Array.to_list (Array.sub b.buf b.start (Array.length b.buf - b.start)))
     (Array.to_list (Array.sub b.buf 0 b.stop)) 
     
+let push_back b e = add b (Array.of_list [e])
+
+let peek_front b = if is_empty b then 
+  raise Empty else Array.get b.buf b.start
+
+let peek_back b = if is_empty b then
+  raise Empty else Array.get b.buf 
+    (if b.stop = 0 then capacity b - 1 else b.stop-1)
+
+
+
+
 
