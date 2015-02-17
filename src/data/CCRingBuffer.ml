@@ -444,5 +444,3 @@ module Ints = Make_array(Array.IntArray)
 module Bools = Make_array(Array.BoolArray)
 
 module Make(Elt:sig type t end) = Make_array(Array.Make(Elt))
-
-
