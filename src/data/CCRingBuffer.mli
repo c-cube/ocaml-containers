@@ -61,9 +61,10 @@ module Array : sig
 
 end
 
-
-module Make : functor (Array:Array.S) ->
+module type S =
 sig
+
+  module Array : Array.S
 
   type t = private {
     mutable start : int;
@@ -72,7 +73,6 @@ sig
     bounded: bool;
     size : int
   }
-
   exception Empty
 
   val create : ?bounded:bool -> int -> t
@@ -151,3 +151,12 @@ sig
   (** Take first value, or raise Empty *)
 
 end
+
+module Make_array : functor (Array:Array.S) -> S with module Array = Array
+
+module Bytes : S with module Array = Array.ByteArray
+module Floats : S with module Array = Array.FloatArray
+module Ints : S with module Array = Array.IntArray
+module Bools : S with module Array = Array.BoolArray
+
+module Make: functor(Elt:sig type t end) -> S with module Array = Array.Make(Elt)
