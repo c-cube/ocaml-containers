@@ -22,29 +22,100 @@
 
 (** Polymorphic Circular Buffer for IO *)
 
-module type ARRAY = sig
-  type elt
-  type t
+module Array = struct
 
-  val make: int -> elt -> t
-  val length: t -> int
+  module type S = sig
+    type elt
+    type t
 
-  val get: t -> int -> elt
+    val empty : t
+    val make: int -> elt -> t
+    val length: t -> int
 
-  val set: t -> int -> elt -> unit
+    val get: t -> int -> elt
 
-  val sub: t -> int -> int -> t
-  val max_length: int
+    val set: t -> int -> elt -> unit
 
-  val copy : t -> t
-  val of_list : elt list -> t
-  val to_list : t -> elt list
-  val blit : t -> int -> t -> int -> int -> unit
+    val sub: t -> int -> int -> t
 
-  val iter : (elt -> unit) -> t -> unit
+    val copy : t -> t
+    val blit : t -> int -> t -> int -> int -> unit
+
+    val iter : (elt -> unit) -> t -> unit
+  end
+
+  module ByteArray :
+    S with type elt = char and type t = bytes = struct
+    type elt = char
+    include Bytes
+  end
+
+  module FloatArray :
+    S with type elt = float and type t = float array = struct
+    type t = float array
+    type elt = float 
+    let make = Array.make
+    let length = Array.length
+    let get = Array.get
+    let set = Array.set
+    let copy = Array.copy
+    let blit = Array.blit
+    let iter = Array.iter
+    let sub = Array.sub
+    let empty = Array.of_list []
+  end
+
+
+  module IntArray :
+    S with type elt = int and type t = int array = struct
+    type t = int array
+    type elt = int
+    let make = Array.make
+    let length = Array.length
+    let get = Array.get
+    let set = Array.set
+    let copy = Array.copy
+    let blit = Array.blit
+    let iter = Array.iter
+    let sub = Array.sub
+    let empty = Array.of_list []
+  end
+
+
+  module BoolArray :
+    S with type elt = bool and type t = bool array = struct
+    type t = bool array
+    type elt = bool
+    let make = Array.make
+    let length = Array.length
+    let get = Array.get
+    let set = Array.set
+    let copy = Array.copy
+    let blit = Array.blit
+    let iter = Array.iter
+    let sub = Array.sub
+    let empty = Array.of_list []
+  end
+
+
+  module Make(Elt:sig type t end) :
+      S with type elt = Elt.t and type t = Elt.t array = struct
+    type elt = Elt.t
+    type t = Elt.t array
+    let make = Array.make
+    let length = Array.length
+    let get = Array.get
+    let set = Array.set
+    let copy = Array.copy
+    let blit = Array.blit
+    let iter = Array.iter
+    let sub = Array.sub
+    let empty = Array.of_list []
+  end
+
 end
 
-module Make(Array:ARRAY) =
+module Make(Array:Array.S) =
 struct
 
   type t = {
@@ -62,7 +133,7 @@ struct
       stop=0;
       bounded;
       size;
-      buf = Array.of_list []
+      buf = Array.empty
     }
 
   let copy b =
@@ -183,7 +254,7 @@ struct
 
   let reset b =
     clear b;
-    b.buf <- Array.of_list []
+    b.buf <- Array.empty
 
   let is_empty b = b.start = b.stop
 
@@ -259,13 +330,13 @@ struct
       else b.buf.(i - len_end)
 
   let to_list b =
-    if (b.stop >= b.start) 
-    then Array.to_list (Array.sub b.buf b.start (b.stop-b.start))
-    else List.append 
-           (Array.to_list (Array.sub b.buf b.start (Array.length b.buf - b.start)))
-           (Array.to_list (Array.sub b.buf 0 b.stop)) 
+    let len = length b in
+    let rec build l i =
+      if i < 0 then l else
+      build ((get b i)::l) (i-1) in
+    build [] (len-1)
 
-  let push_back b e = add b (Array.of_list [e])
+  let push_back b e = add b (Array.make 1 e)
 
   let peek_front b = if is_empty b then 
       raise Empty else Array.get b.buf b.start
@@ -274,3 +345,4 @@ struct
       raise Empty else Array.get b.buf 
                          (if b.stop = 0 then capacity b - 1 else b.stop-1)
 end
+

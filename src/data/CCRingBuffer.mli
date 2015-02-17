@@ -20,30 +20,49 @@
 
 (** Circular Polymorphic Buffer for IO *)
 
-module type ARRAY = sig
-  type elt
-  type t
+module Array : sig
 
-  val make: int -> elt -> t
-  val length: t -> int
+  module type S = sig
+    type elt
+    type t
 
-  val get: t -> int -> elt
+    val empty : t
+    val make: int -> elt -> t
+    val length: t -> int
 
-  val set: t -> int -> elt -> unit
+    val get: t -> int -> elt
 
-  val sub: t -> int -> int -> t
-  val max_length: int
+    val set: t -> int -> elt -> unit
 
-  val copy : t -> t
-  val of_list : elt list -> t
-  val to_list : t -> elt list
-  val blit : t -> int -> t -> int -> int -> unit
+    val sub: t -> int -> int -> t
 
-  val iter : (elt -> unit) -> t -> unit
+    val copy : t -> t
+    val blit : t -> int -> t -> int -> int -> unit
+
+    val iter : (elt -> unit) -> t -> unit
+  end
+
+  module ByteArray :
+    S with type elt = char and type t = bytes 
+
+  module FloatArray :
+    S with type elt = float and type t = float array 
+
+
+  module IntArray :
+    S with type elt = int and type t = int array 
+
+  module BoolArray :
+    S with type elt = bool and type t = bool array 
+
+  module Make  :
+   functor (Elt:sig type t end) ->
+      S with type elt = Elt.t and type t = Elt.t array
+
 end
 
 
-module Make : functor (Array:ARRAY) ->
+module Make : functor (Array:Array.S) ->
 sig
 
   type t = private {
