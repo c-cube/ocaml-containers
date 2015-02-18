@@ -155,8 +155,5 @@ end
 module Make_array : functor (Array:Array.S) -> S with module Array = Array
 
 module Bytes : S with module Array = Array.ByteArray
-module Floats : S with module Array = Array.FloatArray
-module Ints : S with module Array = Array.IntArray
-module Bools : S with module Array = Array.BoolArray
 
 module Make: functor(Elt:sig type t end) -> S with module Array = Array.Make(Elt)

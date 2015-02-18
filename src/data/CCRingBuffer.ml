@@ -439,8 +439,6 @@ struct
 end
 
 module Bytes = Make_array(Array.ByteArray)
-module Floats = Make_array(Array.FloatArray)
-module Ints = Make_array(Array.IntArray)
-module Bools = Make_array(Array.BoolArray)
 
 module Make(Elt:sig type t end) = Make_array(Array.Make(Elt))
+
