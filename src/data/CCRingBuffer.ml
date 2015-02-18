@@ -53,7 +53,7 @@ module Array = struct
   module FloatArray :
     S with type elt = float and type t = float array = struct
     type t = float array
-    type elt = float 
+    type elt = float
     let make = Array.make
     let length = Array.length
     let get = Array.get
@@ -130,79 +130,48 @@ sig
   exception Empty
 
   val create : ?bounded:bool -> int -> t
-  (** [create ?bounded size] creates a new buffer with given size.
-      Defaults to [bounded=false]. *)
 
   val copy : t -> t
-  (** fresh copy of the buffer *)
 
   val capacity : t -> int
-  (** length of the inner buffer *)
 
   val max_capacity : t -> int option
-  (** maximum length of the inner buffer, or [None] if unbounded. *)
 
   val length : t -> int
-  (** number of elements currently stored in the buffer *)
 
   val blit_from : t -> Array.t -> int -> int -> unit
-  (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
-      a input buffer [from_buf] to the end of the buffer.
-      @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
   val blit_into : t ->  Array.t -> int -> int -> int
-  (** [blit_into buf to_buf o len] copies at most [len] elements from [buf]
-      into [to_buf] starting at offset [o] in [s].
-      @return the number of elements actually copied ([min len (length buf)]).
-      @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
   val to_list : t -> Array.elt list
-  (** extract the current content into a list *)
 
   val clear : t -> unit
-  (** clear the content of the buffer. Doesn't actually destroy the content. *)
 
   val reset : t -> unit
-  (** clear the content of the buffer, and also resize it to a default size *)
 
   val is_empty :t -> bool
-  (** is the buffer empty (i.e. contains no elements)? *)
 
-  val next : t -> Array.elt
-  (** obtain next element (the first one of the buffer)
-      @raise Empty if the buffer is empty *)
+  val junk_front : t -> unit
 
-  val junk : t -> unit
-  (** Drop next element.
-      @raise Empty if the buffer is already empty *)
+  val junk_back : t -> unit
 
   val skip : t -> int -> unit
-  (** [skip b len] removes [len] elements from [b].
-      @raise Invalid_argument if [len > length b]. *)
 
   val iteri : t -> (int -> Array.elt -> unit) -> unit
-  (** [iteri b f] calls [f i t] for each element [t] in [buf], with [i]
-      being its relative index within [buf]. *)
 
-  val get : t -> int -> Array.elt
-  (** [get buf i] returns the [i]-th element of [buf], ie the one that
-      is returned by [next buf] after [i-1] calls to [junk buf].
-      @raise Invalid_argument if the index is invalid (> [length buf]) *)
+  val get_front : t -> int -> Array.elt
+
+  val get_back : t -> int -> Array.elt
 
   val push_back : t -> Array.elt -> unit
-  (** Push value at the back *)
 
   val peek_front : t -> Array.elt
-  (** First value, or Empty *)
 
   val peek_back : t -> Array.elt
-  (** Last value, or Empty *)
 
   val take_back : t -> Array.elt
-  (** Take last value, or raise Empty *)
 
   val take_front : t -> Array.elt
-  (** Take first value, or raise Empty *)
 
 end
 
@@ -350,10 +319,6 @@ struct
 
   let is_empty b = b.start = b.stop
 
-  let next b =
-    if b.start = b.stop then raise Empty;
-    b.buf.(b.start)
-
   let take_front b =
     if b.start = b.stop then raise Empty;
     let c = b.buf.(b.start) in
@@ -369,11 +334,17 @@ struct
     else b.stop <- b.stop - 1;
     b.buf.(b.stop)
 
-  let junk b =
+  let junk_front b =
     if b.start = b.stop then raise Empty;
     if b.start + 1 = Array.length b.buf
     then b.start <- 0
     else b.start <- b.start + 1
+
+  let junk_back b =
+    if b.start = b.stop then raise Empty;
+    if b.stop - 1 = 0
+    then b.stop <- Array.length b.buf - 1
+    else b.stop <- b.stop - 1
 
   let skip b len =
     if len > length b then raise (Invalid_argument "BufferIO.skip");
@@ -411,30 +382,42 @@ struct
     if b.stop >= b.start
     then
       if i >= b.stop - b.start
-      then raise (Invalid_argument "BufferIO.get")
+      then raise (Invalid_argument "CCRingBuffer.get")
       else b.buf.(b.start + i)
     else
       let len_end = Array.length b.buf - b.start in
       if i < len_end
       then b.buf.(b.start + i)
       else if i - len_end > b.stop
-      then raise (Invalid_argument "BufferIO.get")
+      then raise (Invalid_argument "CCRingBuffer.get")
       else b.buf.(i - len_end)
+
+  let get_front b i =
+    if is_empty b then
+      raise (Invalid_argument "CCRingBuffer.get_front")
+    else
+      get b i
+
+  let get_back b i =
+    let offset = ((length b) - i - 1) in
+      if offset < 0 then
+        raise (Invalid_argument "CCRingBuffer.get_back")
+      else get b offset
 
   let to_list b =
     let len = length b in
     let rec build l i =
       if i < 0 then l else
-      build ((get b i)::l) (i-1) in
+      build ((get_front b i)::l) (i-1) in
     build [] (len-1)
 
   let push_back b e = add b (Array.make 1 e)
 
-  let peek_front b = if is_empty b then 
+  let peek_front b = if is_empty b then
       raise Empty else Array.get b.buf b.start
 
   let peek_back b = if is_empty b then
-      raise Empty else Array.get b.buf 
+      raise Empty else Array.get b.buf
                          (if b.stop = 0 then capacity b - 1 else b.stop-1)
 end
 

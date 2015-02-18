@@ -1,5 +1,5 @@
 (**
- * CCBufferIO - Polymorphic Circular Buffer
+ * CCRingBuffer - Polymorphic Circular Buffer
  * Copyright (C) 2014 Simon Cruanes
  *
  * This library is free software; you can redistribute it and/or
@@ -27,7 +27,9 @@ module Array : sig
     type t
 
     val empty : t
+
     val make: int -> elt -> t
+
     val length: t -> int
 
     val get: t -> int -> elt
@@ -37,28 +39,27 @@ module Array : sig
     val sub: t -> int -> int -> t
 
     val copy : t -> t
+
     val blit : t -> int -> t -> int -> int -> unit
 
     val iter : (elt -> unit) -> t -> unit
   end
 
   module ByteArray :
-    S with type elt = char and type t = bytes 
+    S with type elt = char and type t = bytes
 
   module FloatArray :
-    S with type elt = float and type t = float array 
-
+    S with type elt = float and type t = float array
 
   module IntArray :
-    S with type elt = int and type t = int array 
+    S with type elt = int and type t = int array
 
   module BoolArray :
-    S with type elt = bool and type t = bool array 
+    S with type elt = bool and type t = bool array
 
-  module Make  :
+  module Make :
    functor (Elt:sig type t end) ->
       S with type elt = Elt.t and type t = Elt.t array
-
 end
 
 module type S =
@@ -80,16 +81,16 @@ sig
       Defaults to [bounded=false]. *)
 
   val copy : t -> t
-  (** fresh copy of the buffer *)
+  (** Make a fresh copy of the buffer. *)
 
   val capacity : t -> int
-  (** length of the inner buffer *)
+  (** Length of the inner buffer. *)
 
   val max_capacity : t -> int option
-  (** maximum length of the inner buffer, or [None] if unbounded. *)
+  (** Maximum length of the inner buffer, or [None] if unbounded. *)
 
   val length : t -> int
-  (** number of elements currently stored in the buffer *)
+  (** Number of elements currently stored in the buffer. *)
 
   val blit_from : t -> Array.t -> int -> int -> unit
   (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
@@ -103,57 +104,71 @@ sig
       @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
   val to_list : t -> Array.elt list
-  (** extract the current content into a list *)
+  (** Extract the current content into a list *)
 
   val clear : t -> unit
-  (** clear the content of the buffer. Doesn't actually destroy the content. *)
+  (** Clear the content of the buffer. Doesn't actually destroy the content. *)
 
   val reset : t -> unit
-  (** clear the content of the buffer, and also resize it to a default size *)
+  (** Clear the content of the buffer, and also resize it to a default size *)
 
   val is_empty :t -> bool
-  (** is the buffer empty (i.e. contains no elements)? *)
+  (** Is the buffer empty (i.e. contains no elements)? *)
 
-  val next : t -> Array.elt
-  (** obtain next element (the first one of the buffer)
-      @raise Empty if the buffer is empty *)
+  val junk_front : t -> unit
+  (** Drop the front element from [t].
+      @raise Empty if the buffer is already empty. *)
 
-  val junk : t -> unit
-  (** Drop next element.
-      @raise Empty if the buffer is already empty *)
+  val junk_back : t -> unit
+  (** Drop the back element from [t].
+      @raise Empty if the buffer is already empty. *)
 
   val skip : t -> int -> unit
-  (** [skip b len] removes [len] elements from [b].
+  (** [skip b len] removes [len] elements from the front of [b].
       @raise Invalid_argument if [len > length b]. *)
 
   val iteri : t -> (int -> Array.elt -> unit) -> unit
   (** [iteri b f] calls [f i t] for each element [t] in [buf], with [i]
       being its relative index within [buf]. *)
 
-  val get : t -> int -> Array.elt
-  (** [get buf i] returns the [i]-th element of [buf], ie the one that
-      is returned by [next buf] after [i-1] calls to [junk buf].
+  val get_front : t -> int -> Array.elt
+  (** [get_front buf i] returns the [i]-th element of [buf] from the front, ie
+      the one returned by [take_front buf] after [i-1] calls to [junk_front buf].
+      @raise Invalid_argument if the index is invalid (> [length buf]) *)
+
+  val get_back : t -> int -> Array.elt
+  (** [get_back buf i] returns the [i]-th element of [buf] from the back, ie
+      the one returned by [take_back buf] after [i-1] calls to [junk_back buf].
       @raise Invalid_argument if the index is invalid (> [length buf]) *)
 
   val push_back : t -> Array.elt -> unit
-  (** Push value at the back *)
+  (** Push value at the back of [t].
+      If [t.bounded=false], the buffer will grow as needed,
+      otherwise the oldest elements are replaced first. *)
 
   val peek_front : t -> Array.elt
-  (** First value, or Empty *)
+  (** First value from front of [t].
+      @raise Empty if buffer is empty. *)
 
   val peek_back : t -> Array.elt
-  (** Last value, or Empty *)
+  (** Get the last value from back of [t].
+      @raise Empty if buffer is empty. *)
 
   val take_back : t -> Array.elt
-  (** Take last value, or raise Empty *)
+  (** Take the last value from back of [t].
+      @raise Empty if buffer is already empty. *)
 
   val take_front : t -> Array.elt
-  (** Take first value, or raise Empty *)
+  (** Take the first value from front of [t].
+      @raise Empty if buffer is already empty. *)
 
 end
 
+(** Makes a ring buffer module given array implementation *)
 module Make_array : functor (Array:Array.S) -> S with module Array = Array
 
+(** An efficient byte based ring buffer *)
 module Bytes : S with module Array = Array.ByteArray
 
+(** Makes a ring buffer module given the element type *)
 module Make: functor(Elt:sig type t end) -> S with module Array = Array.Make(Elt)
