@@ -125,7 +125,7 @@ module Make(W : WORD) = struct
 
   type 'a t =
     | Empty
-    | Path of char_ list * 'a t
+    | Cons of char_ * 'a t  (* simple case *)
     | Node of 'a option * 'a t M.t
 
   (* invariants:
@@ -136,7 +136,6 @@ module Make(W : WORD) = struct
   let empty = Empty
 
   let _invariant = function
-    | Path ([],_) -> false
     | Node (None, map) when M.is_empty map -> false
     | _ -> true
 
@@ -164,10 +163,6 @@ module Make(W : WORD) = struct
   let _seq_map map k =
     M.iter (fun key v -> k (key,v)) map
 
-  let _is_path = function
-    | Path _ -> true
-    | _ -> false
-
   (* return common prefix, and disjoint suffixes *)
   let rec _merge_lists l1 l2 = match l1, l2 with
     | [], _
@@ -180,41 +175,28 @@ module Make(W : WORD) = struct
         else
           [], l1, l2
 
-  (* prefix [l] to the tree [t] *)
-  let _mk_path l t = match l, t with
-    | [], _ -> t
-    | _, Empty -> Empty
-    | _, Node _ -> Path (l, t)
-    | _, Path (l',t') ->
-        assert (not(_is_path t'));
-        Path (l@l', t')
 
-  let _mk_path_cons x t = match t with
-    | Empty -> Empty
-    | Node _ -> Path ([x], t)
-    | Path (l', t') ->
-        assert (not(_is_path t'));
-        Path (x::l', t')
-
+  (* sub-tree t prefixed with c *)
+  let _cons c t = Cons (c, t)
   (* build a Node value *)
   let _mk_node value map = match value with
     | Some _ -> Node (value, map)
     | None ->
-        if M.is_empty map then Empty
-        else
-          let high, t' = M.max_binding map in
-          let low, _ = M.min_binding map in
-          if W.compare low high = 0
-            then _mk_path [high] t'  (* only one element *)
-            else Node (value,map)
+      if M.is_empty map then Empty
+      else
+        if M.cardinal map = 1
+        then
+          let c, sub = M.min_binding map in
+          _cons c sub
+        else Node (value,map)
 
-  let _remove_sub c t = match t with
+  (* remove key [c] from [t] *)
+  let _remove c t = match t with
     | Empty -> t
-    | Path ([], _) -> assert false
-    | Path (c'::_, _) ->
-        if W.compare c c' = 0
-          then Empty
-          else t
+    | Cons (c', _) ->
+      if W.compare c c' = 0
+      then Empty
+      else t
     | Node (value, map) ->
         if M.mem c map
         then
@@ -223,29 +205,23 @@ module Make(W : WORD) = struct
         else t
 
   let update key f t =
-    (* [state]: current subtree and rebuild function; [x]: current char *)
+    (* first arg: current subtree and rebuild function; [c]: current char *)
     let goto (t, rebuild) c =
       match t with
-      | Empty -> (t, fun t -> rebuild (_mk_path_cons c t))
-      | Path ([], _) -> assert false
-      | Path (c'::l, t') ->
-          if W.compare c c' = 0
-          then
-            (* follow the path *)
-            _mk_path l t', (fun t -> rebuild (_mk_path_cons c t))
-          else
-            (* exit the path, so we have an empty tree. Upon rebuild we
-                potentially need to make a map *)
-            let rebuild' new_child =
-              rebuild (
-                if is_empty new_child then t
-                else
-                  let map = M.singleton c new_child in
-                  let map = M.add c' (_mk_path l t') map in
-                  _mk_node None map
-              )
-            in
-            empty, rebuild'
+      | Empty -> empty, fun t -> rebuild (_cons c t)
+      | Cons (c', t') ->
+        if W.compare c c' = 0
+        then t', (fun t -> rebuild (_cons c t))
+        else
+          let rebuild' new_child =
+            rebuild (
+              if is_empty new_child then t
+              else
+                let map = M.singleton c new_child in
+                let map = M.add c' t' map in
+                _mk_node None map
+          ) in
+          empty, rebuild'
       | Node (value, map) ->
           try
             let t' = M.find c map in
@@ -271,13 +247,11 @@ module Make(W : WORD) = struct
     in
     let finish (t,rebuild) = match t with
       | Empty -> rebuild (_mk_node (f None) M.empty)
-      | Path ([], _) -> assert false
-      | Path (c::l', t') ->
-          rebuild (
-            match f None with
-            | None -> t   (* TODO: raise exception & return original tree *)
-            | Some _ as v ->
-                _mk_node v (M.singleton c (_mk_path l' t'))
+      | Cons (c, t') ->
+        rebuild
+          (match f None with
+           | None -> t
+           | Some _ as v -> _mk_node v (M.singleton c t')
           )
       | Node (value, map) ->
           let value' = f value in
@@ -294,10 +268,9 @@ module Make(W : WORD) = struct
     (* at subtree [t], and character [c] *)
     let goto t c = match t with
       | Empty -> raise Not_found
-      | Path ([], _) -> assert false
-      | Path (c'::l, t') ->
+      | Cons (c', t') ->
           if W.compare c c' = 0
-            then _mk_path l t'
+            then t'
             else raise Not_found
       | Node (_, map) -> M.find c map
     and finish t = match t with
@@ -311,7 +284,6 @@ module Make(W : WORD) = struct
     try Some (find_exn k t)
     with Not_found -> None
 
-  let _difflist_append f l = fun l' -> f (l @ l')
   let _difflist_add f x = fun l' -> f (x :: l')
 
   (* fold that also keeps the path from the root, so as to provide the list
@@ -319,7 +291,7 @@ module Make(W : WORD) = struct
       a function that prepends a list to some suffix *)
   let rec _fold f path t acc = match t with
     | Empty -> acc
-    | Path (l, t') -> _fold f (_difflist_append path l) t' acc
+    | Cons (c, t') -> _fold f (_difflist_add path c) t' acc
     | Node (v, map) ->
         let acc = match v with
           | None -> acc
@@ -350,7 +322,7 @@ module Make(W : WORD) = struct
 
   let rec fold_values f acc t = match t with
     | Empty -> acc
-    | Path (_, t') -> fold_values f acc t'
+    | Cons (_, t') -> fold_values f acc t'
     | Node (v, map) ->
         let acc = match v with
           | None -> acc
@@ -365,29 +337,19 @@ module Make(W : WORD) = struct
   let rec merge f t1 t2 = match t1, t2 with
     | Empty, _ -> t2
     | _, Empty -> t1
-    | Path (l1,t1'), Path (l2,t2') ->
-        let common, l1', l2' = _merge_lists l1 l2 in
-        begin match l1', l2' with
-          | c1::l1'', c2::l2'' ->
-              (* need to build a map here, to represent the choice
-                between [c1] and [c2] *)
-              assert (W.compare c1 c2 <> 0);
-              let map = M.add c1 (_mk_path l1'' t1') M.empty in
-              let map = M.add c2 (_mk_path l2'' t2') map in
-              _mk_path common (Node (None, map))
-          | _ ->
-              _mk_path common
-                (merge f
-                  (_mk_path l1' t1')
-                  (_mk_path l2' t2')
-                )
-        end
-    | Path ([], _), _ -> assert false
-    | Path (c1::l1, t1'), Node (value, map) ->
+    | Cons (c1,t1'), Cons (c2,t2') ->
+      if W.compare c1 c2 = 0
+      then _cons c1 (merge f t1' t2')
+      else
+        let map = M.add c1 t1' M.empty in
+        let map = M.add c2 t2' map in
+        _mk_node None map
+
+    | Cons (c1, t1'), Node (value, map) ->
         begin try
           (* collision *)
           let t2' = M.find c1 map in
-          let new_t = merge f (_mk_path l1 t1') t2' in
+          let new_t = merge f t1' t2' in
           let map' = if is_empty new_t
             then M.remove c1 map
             else M.add c1 new_t map
@@ -396,9 +358,9 @@ module Make(W : WORD) = struct
         with Not_found ->
           (* no collision *)
           assert (not(is_empty t1'));
-          Node (value, M.add c1 (_mk_path l1 t1') map)
+          Node (value, M.add c1 t1' map)
         end
-    | Node _, Path _ -> merge f t2 t1  (* previous case *)
+    | Node _, Cons _ -> merge f t2 t1  (* previous case *)
     | Node(v1, map1), Node (v2, map2) ->
         let v = match v1, v2 with
           | None, _ -> v2
@@ -419,7 +381,7 @@ module Make(W : WORD) = struct
 
   let rec size t = match t with
     | Empty -> 0
-    | Path (_, t') -> size t'
+    | Cons (_, t') -> size t'
     | Node (v, map) ->
         let s = if v=None then 0 else 1 in
         M.fold
@@ -442,8 +404,7 @@ module Make(W : WORD) = struct
     let _tree_node x l () = `Node (x,l) in
     match t with
     | Empty -> `Nil
-    | Path ([], _) -> assert false
-    | Path (c::l, t') -> `Node (`Char c, [to_tree (_mk_path l t')])
+    | Cons (c, t') -> `Node (`Char c, [to_tree t'])
     | Node (v, map) ->
         let x = match v with
           | None -> `Switch
@@ -464,10 +425,9 @@ module Make(W : WORD) = struct
       match cur with
       | None -> (None, alternatives)
       | Some (Empty,_) -> (None, alternatives)
-      | Some (Path ([], _),_) -> assert false
-      | Some (Path (c'::l, t'), trail) ->
+      | Some (Cons (c', t'), trail) ->
           if W.compare c c' = 0
-            then Some (_mk_path l t', _difflist_add trail c), alternatives
+            then Some (t', _difflist_add trail c), alternatives
             else None, alternatives
       | Some (Node (_, map), trail) ->
           let alternatives =
