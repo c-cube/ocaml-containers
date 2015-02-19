@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Functional streams for Lwt} *)
 
-type 'a t = [ `Nil | `Cons of 'a * (unit -> 'a t) ] Lwt.t
+type 'a t = [ `Nil | `Cons of 'a * 'a t ] Lwt.t
 type 'a stream = 'a t
 
 let (>>=) = Lwt.(>>=)
@@ -34,126 +34,120 @@ let (>|=) = Lwt.(>|=)
 
 let empty = Lwt.return `Nil
 
-let cons x l = Lwt.return (`Cons (x, fun () -> l))
+let cons x l = Lwt.return (`Cons (x, l))
 
-let rec of_list_rec l () = match l with
-  | [] -> empty
-  | x :: tl -> Lwt.return (`Cons (x, of_list_rec tl))
-
-let of_list l : 'a t = of_list_rec l ()
-
-let rec create_rec f () : 'a t =
+let rec create f : 'a t =
+  let fut, wake = Lwt.wait () in
   f () >|= function
   | None -> `Nil
-  | Some x -> `Cons (x, create_rec f)
-
-let create f = create_rec f ()
+  | Some x -> `Cons (x, create f)
+and create_rec f () =
+  f () >|= function
+  | None -> `Nil
+  | Some x -> `Cons (x, create f)
 
 let next l =
   l >|= function
   | `Nil -> None
-  | `Cons (x, tl) -> Some (x, tl())
+  | `Cons (x, tl) -> Some (x, tl)
 
 let next_exn l =
   l >>= function
   | `Nil -> Lwt.fail Not_found
-  | `Cons (x, tl) -> Lwt.return (x, tl ())
+  | `Cons (x, tl) -> Lwt.return (x, tl)
 
-let rec map_rec f l () =
+let rec map f l =
   l >|= function
   | `Nil -> `Nil
-  | `Cons (x, tl) -> `Cons (f x, map_rec f (tl ()))
+  | `Cons (x, tl) -> `Cons (f x, map f tl)
 
-let map f (l:'a t) : 'b t = map_rec f l ()
-
-let rec map_s_rec (f:'a -> 'b Lwt.t) l () =
+let rec map_s (f:'a -> 'b Lwt.t) l =
   l >>= function
   | `Nil -> empty
   | `Cons (x, tl) ->
-      f x >|= fun y -> `Cons (y, map_s_rec f (tl ()))
+      f x >|= fun y -> `Cons (y, map_s f tl)
 
-let map_s f l = map_s_rec f l ()
-
-let rec append_rec l1 l2 () =
+let rec append l1 l2 =
   l1 >>= function
   | `Nil -> l2
-  | `Cons (x, tl1) -> Lwt.return (`Cons (x, append_rec (tl1 ()) l2))
-
-let append l1 l2 = append_rec l1 l2 ()
+  | `Cons (x, tl1) -> Lwt.return (`Cons (x, append tl1 l2))
 
 let rec flat_map f l =
   l >>= function
   | `Nil -> empty
-  | `Cons (x, tl) -> append (f x) (flat_map f (tl ()))
+  | `Cons (x, tl) -> append (f x) (flat_map f tl)
+
+let rec filter_map f l =
+  l >>= function
+  | `Nil -> empty
+  | `Cons (x, tl) ->
+    match f x with
+    | None -> filter_map f tl
+    | Some y -> Lwt.return (`Cons (y, filter_map f tl))
+
+let rec filter_map_s f l =
+  l >>= function
+  | `Nil -> empty
+  | `Cons (x, tl) ->
+    f x >>= function
+    | None -> filter_map_s f tl
+    | Some y -> Lwt.return (`Cons (y, filter_map_s f tl))
 
 let rec iter f l =
   l >>= function
   | `Nil -> Lwt.return_unit
-  | `Cons (x, tl) ->  f x; iter f (tl ())
+  | `Cons (x, tl) -> f x; iter f tl
 
 let rec iter_s f l =
   l >>= function
   | `Nil -> Lwt.return_unit
-  | `Cons (x, tl) ->  f x >>= fun () -> iter_s f (tl ())
+  | `Cons (x, tl) -> f x >>= fun () -> iter_s f tl
 
-module Queue = struct
-  type 'a t = {
-    bufsize : int;
-    cond : unit Lwt_condition.t;
-    q : 'a Queue.t;
-    mutable str : 'a stream;
-    mutable closed : bool;
-  }
+let rec fold f acc l =
+  l >>= function
+  | `Nil -> Lwt.return acc
+  | `Cons (x, tl) ->
+    let acc = f acc x in
+    fold f acc tl
 
-  (* function that waits for the next element, and recursively,
-    returning a stream of values *)
-  let rec make_stream_ t () : 'a stream =
-    if t.closed then empty
-    else if not (Queue.is_empty t.q)
-      then (
-        let x = Queue.pop t.q in
-        Lwt_condition.signal t.cond ();
-        Lwt.return (`Cons (x, make_stream_ t))
-      )
-    else
-      (* wait for something to happen *)
-      Lwt_condition.wait t.cond >>= make_stream_ t
+let rec fold_s f acc l =
+  l >>= function
+  | `Nil -> Lwt.return acc
+  | `Cons (x, tl) -> f acc x >>= fun acc -> fold_s f acc tl
 
-  let create ?(bufsize=128) () =
-    let t = {
-      bufsize;
-      q = Queue.create ();
-      str = empty;
-      cond = Lwt_condition.create ();
-      closed = false;
-    } in
-    t.str <- make_stream_ t ();
-    t
+let take n l = assert false
+let take_while f l = assert false
+let take_while_s f l = assert false
+let drop n l = assert false
+let drop_while f l = assert false
+let drop_while_s f l = assert false
+let merge a b = assert false
 
-  exception ClosedQueue
+(** {2 Conversions} *)
 
-  let close t =
-    if not t.closed then (
-      t.closed <- true;
-      Lwt_condition.signal t.cond ()
-    )
+type 'a gen = unit -> 'a option
 
-  let rec push_rec t x () =
-    if t.closed then raise ClosedQueue;
-    if Queue.length t.q = t.bufsize
-      then Lwt_condition.wait t.cond >>= push_rec t x
-    else (
-      Queue.push x t.q;
-      Lwt.return_unit
-    )
+let rec of_list l = match l with
+  | [] -> empty
+  | x :: tl -> Lwt.return (`Cons (x, of_list tl))
 
-  let push t x = push_rec t x ()
+let rec of_array_rec a i =
+  if i = Array.length a 
+  then empty
+  else Lwt.return (`Cons (a.(i), of_array_rec a (i+1)))
 
-  let to_stream t = t.str
+let of_array a = of_array_rec a 0
 
-  let take t = assert false
-  let take_exn t = assert false
+let rec of_gen g = match g () with
+  | None -> empty
+  | Some x -> Lwt.return (`Cons (x, of_gen g))
 
-end
+let rec of_gen_s g = match g() with
+  | None -> empty
+  | Some x ->
+    x >|= fun x -> `Cons (x, of_gen_s g)
 
-
+let of_string s = assert false
+let to_string l = assert false
+let to_list l = assert false
+let to_rev_list l = assert false

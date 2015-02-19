@@ -26,14 +26,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Functional streams for Lwt} *)
 
-type 'a t = [ `Nil | `Cons of 'a * (unit -> 'a t) ] Lwt.t
+type 'a t = [ `Nil | `Cons of 'a * 'a t ] Lwt.t
 type 'a stream = 'a t
 
 val empty : 'a t
 
 val cons : 'a -> 'a t -> 'a t
-
-val of_list : 'a list -> 'a t
 
 val create : (unit -> 'a option Lwt.t) -> 'a t
 (** Create from a function that returns the next element *)
@@ -43,46 +41,60 @@ val next : 'a t -> ('a * 'a t) option Lwt.t
 
 val next_exn : 'a t -> ('a * 'a t) Lwt.t
 (** Obtain the next element or fail
-    @raise Not_found if the stream is empty *)
+    @raise Not_found if the stream is empty (using {!Lwt.fail}) *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
+
 val map_s : ('a -> 'b Lwt.t) -> 'a t -> 'b t
 
 val append : 'a t -> 'a t -> 'a t
 
+val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+
+val filter_map_s : ('a -> 'b option Lwt.t) -> 'a t -> 'b t
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val iter : ('a -> unit) -> 'a t -> unit Lwt.t
+
 val iter_s : ('a -> unit Lwt.t) -> 'a t -> unit Lwt.t
 
-(** {2 Bounded Queue} *)
-module Queue : sig
-  type 'a t
+val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a Lwt.t
 
-  val create : ?bufsize:int -> unit -> 'a t
-  (** Create a new queue, with the given internal buffer size.
-      If [bufsize=0] the queue is fully blocking *)
+val fold_s : ('a -> 'b -> 'a Lwt.t) -> 'a -> 'b t -> 'a Lwt.t
 
-  exception ClosedQueue
+val take : int -> 'a t -> 'a t
 
-  val close : _ t -> unit
-  (** Close the queue. Elements remaining in the queue will be available for
-      consumption, say, by {!get}; pushing an element will raise {!ClosedQueue} *)
+val take_while : ('a -> bool) -> 'a t -> 'a t
 
-  val push : 'a t -> 'a -> unit Lwt.t
-  (** Push an element at the back of the queue. Returns immediately
-      if the queue isn't full, blocks until an element is consumed otherwise *)
+val take_while_s : ('a -> bool Lwt.t) -> 'a t -> 'a t
 
-  val take : 'a t -> 'a option Lwt.t
-  (** Take the next element. May block if no element is currently available. *)
+val drop : int -> 'a t -> 'a t
 
-  val take_exn : 'a t -> 'a Lwt.t
-  (** Same as {!get} but fails if the queue is closed.
-      @raise ClosedQueue if the queue gets closed before an element is pushed *)
+val drop_while : ('a -> bool) -> 'a t -> 'a t
 
-  val to_stream : 'a t -> 'a stream
-  (** Stream of elements pushed into the queue *)
+val drop_while_s : ('a -> bool Lwt.t) -> 'a t -> 'a t
 
-  (* TODO: fix semantics; e.g. notion of "cursor" with several cursors
-      on one queue *)
-end
+val merge : 'a t -> 'a t -> 'a t
+(** Non-deterministic merge *)
+
+(** {2 Conversions} *)
+
+type 'a gen = unit -> 'a option
+
+val of_list : 'a list -> 'a t
+
+val of_array : 'a array -> 'a t
+
+val of_gen : 'a gen -> 'a t
+
+val of_gen_s : 'a Lwt.t gen -> 'a t
+
+val of_string : string -> 'a t
+
+val to_list : 'a t -> 'a list Lwt.t
+
+val to_rev_list : 'a t -> 'a list Lwt.t
+
+val to_string : char t -> string Lwt.t
+
