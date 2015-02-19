@@ -44,22 +44,65 @@ module LwtErr : sig
   val fail : string -> 'a t
 end
 
+exception Closed
+
+module Pipe : sig
+  type ('a, +'perm) t constraint 'perm = [< `r | `w]
+  (** A pipe between producers of values of type 'a, and consumers of values
+      of type 'a. *)
+
+  val keep : _ t -> unit Lwt.t -> unit
+  (** [keep p fut] adds a pointer from [p] to [fut] so that [fut] is not
+      garbage-collected before [p] *)
+
+  val is_closed : _ t -> bool
+
+  val close : _ t -> unit Lwt.t
+  (** [close p] closes [p], which will not accept input anymore.
+      This sends [`End] to all readers connected to [p] *)
+
+  val close_async : _ t -> unit
+  (** Same as {!close} but closes in the background *)
+
+  val on_close : _ t -> unit Lwt.t
+  (** Evaluates once the pipe closes *)
+
+  val create : ?max_size:int -> unit -> ('a, 'perm) t
+  (** Create a new pipe.
+      @param max_size size of internal buffer. Default 0. *)
+
+  val connect : ('a, [>`r]) t -> ('a, [>`w]) t -> unit
+  (** [connect p1 p2] forwards every item output by [p1] into [p2]'s input
+      until [p1] is closed. *)
+end
+
 module Writer : sig
-  type -'a t
+  type 'a t = ('a, [`w]) Pipe.t
 
   val write : 'a t -> 'a -> unit Lwt.t
+  (** @raise Pipe.Closed if the writer is closed *)
 
   val write_list : 'a t -> 'a list -> unit Lwt.t
+  (** @raise Pipe.Closed if the writer is closed *)
 
   val write_error : _ t -> string -> unit Lwt.t
-
-  val write_end : _ t -> unit Lwt.t
+  (** @raise Pipe.Closed if the writer is closed *)
 
   val map : f:('a -> 'b) -> 'b t -> 'a t
+  (** Map values before writing them *)
+
+  val send_both : 'a t -> 'a t -> 'a t
+  (** [send_both a b] returns a writer [c] such that writing to [c]
+      writes to [a] and [b], and waits for those writes to succeed
+      before returning *)
+
+  val send_all : 'a t list -> 'a t
+  (** Generalized version of {!send_both}
+      @raise Invalid_argument if the list is empty *)
 end
 
 module Reader : sig
-  type +'a t
+  type 'a t = ('a, [`r]) Pipe.t
 
   val read : 'a t -> 'a step Lwt.t
 
@@ -75,37 +118,13 @@ module Reader : sig
 
   val iter_s : f:('a -> unit Lwt.t) -> 'a t -> unit LwtErr.t
 
-  val merge : 'a t -> 'a t -> 'a t
-  (** Merge the two input streams *)
+  val merge_both : 'a t -> 'a t -> 'a t
+  (** Merge the two input streams in a non-specified order *)
+
+  val merge_all : 'a t list -> 'a t
+  (** Merge all the input streams
+      @raise Invalid_argument if the list is empty *)
 end
-
-module Pipe : sig
-  type 'a t
-  (** A pipe between producers of values of type 'a, and consumers of values
-      of type 'a. *)
-
-  val reader : 'a t -> 'a Reader.t
-
-  val writer : 'a t -> 'a Writer.t
-
-  val keep : _ t -> unit Lwt.t -> unit
-  (** [keep p fut] adds a pointer from [p] to [fut] so that [fut] is not
-      garbage-collected before [p] *)
-
-  val create : ?max_size:int -> unit -> 'a t
-  (** Create a new pipe.
-      @param max_size size of internal buffer. Default 0. *)
-
-  val create_pair : ?max_size:int -> unit -> 'a Reader.t * 'a Writer.t
-  (** Create a pair [r, w] connect by a pipe *)
-
-  val pipe_into : 'a t -> 'a t -> unit Lwt.t
-  (** [connect p1 p2] forwards every item output by [p1] into [p2]'s input
-      until [`End] is reached. After [`End] is sent, the process stops. *)
-end
-
-val connect : 'a Reader.t -> 'a Writer.t -> unit Lwt.t
-(** [connect r w] sends every item read from [r] into [w] *)
 
 (** {2 Conversions} *)
 
