@@ -31,6 +31,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   {- Pipe: a possibly buffered channel through which readers and writer communicate}
   {- Reader: accepts values, produces effects}
   {- Writer: yield values}
+
+  @since NEXT_RELEASE
 *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]
@@ -64,7 +66,7 @@ module Pipe : sig
   val close_async : _ t -> unit
   (** Same as {!close} but closes in the background *)
 
-  val on_close : _ t -> unit Lwt.t
+  val wait : _ t -> unit Lwt.t
   (** Evaluates once the pipe closes *)
 
   val create : ?max_size:int -> unit -> ('a, 'perm) t
@@ -124,7 +126,12 @@ module Reader : sig
   val merge_all : 'a t list -> 'a t
   (** Merge all the input streams
       @raise Invalid_argument if the list is empty *)
+
+  val append : 'a t -> 'a t -> 'a t
 end
+
+val connect : 'a Reader.t -> 'a Writer.t -> unit
+(** Handy synonym to {!Pipe.connect} *)
 
 (** {2 Conversions} *)
 
@@ -134,7 +141,7 @@ val of_array : 'a array -> 'a Reader.t
 
 val of_string : string -> char Reader.t
 
-val to_rev_list : 'a Reader.t -> 'a list LwtErr.t
+val to_list_rev : 'a Reader.t -> 'a list LwtErr.t
 
 val to_list : 'a Reader.t -> 'a list LwtErr.t
 
