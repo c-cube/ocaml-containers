@@ -46,7 +46,7 @@ module Array : sig
   end
 
   module ByteArray :
-    S with type elt = char and type t = bytes
+		S with type elt = char and type t = bytes
 
   module FloatArray :
     S with type elt = float and type t = float array
@@ -168,7 +168,7 @@ end
 module Make_array : functor (Array:Array.S) -> S with module Array = Array
 
 (** An efficient byte based ring buffer *)
-module Bytes : S with module Array = Array.ByteArray
+module ByteBuffer : S with module Array = Array.ByteArray
 
 (** Makes a ring buffer module given the element type *)
 module Make: functor(Elt:sig type t end) -> S with module Array = Array.Make(Elt)

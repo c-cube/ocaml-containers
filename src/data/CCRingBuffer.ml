@@ -29,8 +29,10 @@ module Array = struct
     type t
 
     val empty : t
-    val make: int -> elt -> t
-    val length: t -> int
+		
+		val make: int -> elt -> t
+	
+		val length: t -> int
 
     val get: t -> int -> elt
 
@@ -39,12 +41,13 @@ module Array = struct
     val sub: t -> int -> int -> t
 
     val copy : t -> t
-    val blit : t -> int -> t -> int -> int -> unit
+	
+		val blit : t -> int -> t -> int -> int -> unit
 
     val iter : (elt -> unit) -> t -> unit
   end
 
-  module ByteArray :
+	module ByteArray :
     S with type elt = char and type t = bytes = struct
     type elt = char
     include Bytes
@@ -200,6 +203,14 @@ struct
   let copy b =
     { b with buf=Array.copy b.buf; }
 
+	(*$T
+	  let b = ByteBuffer.create 3 in \
+	  let s = Bytes.of_string "hello world" in \
+  	ByteBuffer.blit_from b s 0 (Bytes.length s); \
+    let b' = ByteBuffer.copy b in \
+    try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b' i <> c then raise Exit); true with Exit -> false
+  *)
+
 
   let capacity b = Array.length b.buf
 
@@ -300,15 +311,7 @@ struct
       end
     end
 
-  let add b s = blit_from b s 0 (Array.length s)
-
-  (*$Q
-    (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
-    let b = create 24 in add b s; add_string b s'; \
-    Array.length s + String.length s' = length b)
-  *)
-
-  let clear b =
+	let clear b =
     b.stop <- 0;
     b.start <- 0;
     ()
@@ -358,10 +361,11 @@ struct
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
-    let b = create 24 in add_string b s; add_string b s'; \
-    add_string b "hello world"; (* big enough *) \
-    let l = length b in let l' = l/2 in skip b l'; \
-    length b + l' = l)
+    (let b = ByteBuffer.create 24 in ByteBuffer.blit_from b s 0 (Bytes.length s);
+		ByteBuffer.blit_from b s' 0 (Bytes.length s'); \
+    ByteBuffer.blit_from b "hello world" 0 (Bytes.length "hello word"); (* big enough *) \
+    let l = ByteBuffer.length b in let l' = l/2 in ByteBuffer.skip b l'; \
+    ByteBuffer.length b + l' = l))
   *)
 
   let iteri b f =
@@ -411,7 +415,7 @@ struct
       build ((get_front b i)::l) (i-1) in
     build [] (len-1)
 
-  let push_back b e = add b (Array.make 1 e)
+  let push_back b e = blit_from b (Array.make 1 e) 0 1
 
   let peek_front b = if is_empty b then
       raise Empty else Array.get b.buf b.start
@@ -421,7 +425,7 @@ struct
                          (if b.stop = 0 then capacity b - 1 else b.stop-1)
 end
 
-module Bytes = Make_array(Array.ByteArray)
+module ByteBuffer = Make_array(Array.ByteArray)
 
 module Make(Elt:sig type t end) = Make_array(Array.Make(Elt))
 
