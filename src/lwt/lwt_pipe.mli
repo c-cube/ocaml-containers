@@ -28,11 +28,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   Stream processing using:
 
-  {- Pipe: a possibly buffered channel through which readers and writer communicate}
-  {- Reader: accepts values, produces effects}
-  {- Writer: yield values}
+  - Pipe: a possibly buffered channel through which readers and writer communicate
+  - Reader: accepts values, produces effects
+  - Writer: yield values
 
-  @since NEXT_RELEASE
+Examples:
+{[
+#require "containers.lwt";;
+
+module P = Containers_lwt.Lwt_pipe;;
+
+let p1 =
+  P.of_list CCList.(1 -- 100)
+  |> P.Reader.map ~f:string_of_int;;
+
+Lwt_io.with_file ~mode:Lwt_io.output "/tmp/foo"
+  (fun oc ->
+     let p2 = P.IO.write_lines oc in
+     P.connect ~ownership:`InOwnsOut p1 p2;
+     P.Pipe.wait p2
+  );;
+]}
+
+@since NEXT_RELEASE
 *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]
@@ -130,8 +148,10 @@ module Reader : sig
   val append : 'a t -> 'a t -> 'a t
 end
 
-val connect : 'a Reader.t -> 'a Writer.t -> unit
-(** Handy synonym to {!Pipe.connect} *)
+val connect : ?ownership:[`None | `InOwnsOut | `OutOwnsIn] ->
+              'a Reader.t -> 'a Writer.t -> unit
+(** Handy synonym to {!Pipe.connect}, with additional resource management.
+    @param own determines which pipes owns which *)
 
 (** {2 Conversions} *)
 
