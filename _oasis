@@ -132,7 +132,7 @@ Library "containers_thread"
 
 Library "containers_lwt"
   Path:             src/lwt
-  Modules:          Lwt_automaton, Lwt_actor, Lwt_klist
+  Modules:          Lwt_automaton, Lwt_actor, Lwt_klist, Lwt_pipe
   Pack:             true
   FindlibName:      lwt
   FindlibParent:    containers
