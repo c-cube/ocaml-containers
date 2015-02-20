@@ -361,7 +361,7 @@ struct
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
-    (let b = ByteBuffer.create 24 in ByteBuffer.blit_from b s 0 (Bytes.length s);
+    (let b = ByteBuffer.create 24 in ByteBuffer.blit_from b s 0 (Bytes.length s); \
     ByteBuffer.blit_from b s' 0 (Bytes.length s'); \
     ByteBuffer.blit_from b "hello world" 0 (Bytes.length "hello word"); (* big enough *) \
     let l = ByteBuffer.length b in let l' = l/2 in ByteBuffer.skip b l'; \
