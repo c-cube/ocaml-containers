@@ -94,6 +94,32 @@ val bfs : ?pset:'a pset -> 'a t -> 'a klist
 val find : ?pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
 (** Look for an element that maps to [Some _] *)
 
+(** {2 Pretty-printing}
+
+Example (tree of calls for naive Fibonacci function):
+{[
+  let mk_fib n =
+    let rec fib' l r i =
+      if i=n then r else fib' r (l+r) (i+1)
+    in fib' 1 1 1;;
+
+  let rec fib n = match n with
+    | 0 | 1 -> CCKTree.singleton (`Cst n)
+    | _ -> CCKTree.node2 (`Plus (mk_fib n)) (fib (n-1)) (fib (n-2));;
+
+  let pp_node fmt = function
+    | `Cst n -> Format.fprintf fmt "%d" n
+    | `Plus n -> Format.fprintf fmt "%d" n;;
+
+  Format.printf "%a@." (CCKTree.print pp_node) (fib 8);;
+]}
+*)
+
+val print : 'a formatter -> 'a t formatter
+(** A pretty-printer using indentation to render the tree. Empty nodes
+    are not rendered; sharing is ignored.
+    @since NEXT_RELEASE *)
+
 (** {2 Pretty printing in the DOT (graphviz) format} *)
 
 module Dot : sig
