@@ -184,52 +184,33 @@ let find ?pset f t =
 (** {2 Pretty-printing} *)
 
 let print pp_x fmt t =
-  let out_funs = Format.pp_get_formatter_out_functions fmt () in
-  let print_bar fmt () = Format.pp_print_string fmt "|  " in
-  let print_bars n fmt () =
-    for _i = 0 to n-1 do print_bar fmt () done
-  in
-  let print_node ~last fmt () =
-    if last
-    then Format.pp_print_string fmt "└──"
-    else Format.pp_print_string fmt "├──"
-  in
-  (* special printer for Format, handling indentation and all *)
-  let pp_functions =
-    {out_funs with
-     Format.out_spaces=(fun n -> print_bars n fmt ())
-    }
-  in
-  let set_printer () =
-    Format.pp_set_formatter_out_functions fmt pp_functions
-  in
   (* at depth [lvl] *)
-  let rec pp ~last lvl t = match t with
+  let rec pp fmt t = match t with
     | `Nil -> ()
     | `Node (x, children) ->
-      if lvl>0 then (
-        print_bars (lvl-1) fmt ();
-        print_node ~last fmt ()
-      );
-      pp_x fmt x;
-      Format.pp_print_newline fmt ();
-      (* remove empty children *)
-      let children = List.fold_left
-        (fun acc c -> match c() with
-          | `Nil -> acc
-          | `Node _ as sub -> sub :: acc
-        ) [] children
-      in
-      let children = List.rev children in
-      let n = List.length children in
-      List.iteri
-        (fun i c ->
-           pp ~last:(i+1=n) (lvl+1) c
-        ) children
+      let children = filter children in
+      match children with
+      | [] -> pp_x fmt x
+      | _::_ ->
+        Format.fprintf fmt "@[<v2>(@[<hov0>%a@]%a)@]"
+          pp_x x pp_children children
+  and filter l  =
+    let l = List.fold_left
+      (fun acc c -> match c() with
+        | `Nil -> acc
+        | `Node _ as sub -> sub :: acc
+      ) [] l
+    in
+    List.rev l
+  and pp_children fmt children =
+    (* remove empty children *)
+    List.iter
+      (fun c ->
+         Format.fprintf fmt "@,";
+         pp fmt c
+      ) children
   in
-  set_printer ();
-  pp ~last:false 0 (t ());
-  Format.pp_set_formatter_out_functions fmt out_funs; (* restore *)
+  pp fmt (t ());
   ()
 
 (** {2 Pretty printing in the DOT (graphviz) format} *)
