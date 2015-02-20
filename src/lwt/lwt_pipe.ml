@@ -53,6 +53,7 @@ module LwtErr = struct
       ) x
 end
 
+let (>>>=) = LwtErr.(>>=)
 let (>>|=) = LwtErr.(>|=)
 
 let ret_end = Lwt.return `End
@@ -341,21 +342,24 @@ let to_list_exn r =
   | `Error msg -> Lwt.fail (Failure msg)
   | `Ok x -> Lwt.return x
 
-let to_buffer buf =
-  let p = create () in
-  keep p (
-    Reader.iter ~f:(fun c -> Buffer.add_char buf c) p >>= fun _ ->
-    Lwt.return_unit
-  );
-  p
+let to_buffer buf r =
+  Reader.iter ~f:(fun c -> Buffer.add_char buf c) r
 
-let to_buffer_str buf =
-  let p = create () in
-  keep p (
-    Reader.iter ~f:(fun s -> Buffer.add_string buf s) p >>= fun _ ->
-    Lwt.return_unit
-  );
-  p
+let to_buffer_str ?(sep="") buf r =
+  let first = ref true in
+  Reader.iter r
+    ~f:(fun s ->
+        if !first then first:= false else Buffer.add_string buf sep;
+        Buffer.add_string buf s
+      )
+
+let to_string r =
+  let buf = Buffer.create 128 in
+  to_buffer buf r >>>= fun () -> LwtErr.return (Buffer.contents buf)
+
+let join_strings ?sep r =
+  let buf = Buffer.create 128 in
+  to_buffer_str ?sep buf r >>>= fun () -> LwtErr.return (Buffer.contents buf)
 
 (** {2 Basic IO wrappers} *)
 

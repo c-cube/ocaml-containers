@@ -170,17 +170,21 @@ val of_array : 'a array -> 'a Reader.t
 
 val of_string : string -> char Reader.t
 
-val to_list_rev : 'a Reader.t -> 'a list LwtErr.t
+val to_list_rev : ('a,[>`r]) t -> 'a list LwtErr.t
 
-val to_list : 'a Reader.t -> 'a list LwtErr.t
+val to_list : ('a,[>`r]) t -> 'a list LwtErr.t
 
-val to_list_exn : 'a Reader.t -> 'a list Lwt.t
+val to_list_exn : ('a,[>`r]) t -> 'a list Lwt.t
 (** Same as {!to_list}, but can fail with
     @raise Failure if some error is met *)
 
-val to_buffer : Buffer.t -> char Writer.t
+val to_buffer : Buffer.t -> (char ,[>`r]) t -> unit LwtErr.t
 
-val to_buffer_str : Buffer.t -> string Writer.t
+val to_buffer_str : ?sep:string -> Buffer.t -> (string, [>`r]) t -> unit LwtErr.t
+
+val to_string : (char, [>`r]) t -> string LwtErr.t
+
+val join_strings  : ?sep:string -> (string, [>`r]) t -> string LwtErr.t
 
 (** {2 Basic IO wrappers} *)
 
