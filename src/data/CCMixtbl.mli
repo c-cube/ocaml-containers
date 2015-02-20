@@ -82,8 +82,8 @@ val set : inj:'b injection -> 'a t -> 'a -> 'b -> unit
 
 val find : inj:'b injection -> 'a t -> 'a -> 'b
 (** Find the value for the given key, which must be of the right type.
-    raises Not_found if either the key is not found, or if its value
-    doesn't belong to the right type *)
+    @raise Not_found if either the key is not found, or if its value
+      doesn't belong to the right type *)
 
 val length : 'a t -> int
 (** Number of bindings *)

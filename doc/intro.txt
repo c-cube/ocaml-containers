@@ -68,6 +68,7 @@ CCBV
 CCCache
 CCFQueue
 CCFlatHashtbl
+CCMixmap
 CCMixtbl
 CCMultiMap
 CCMultiSet
@@ -129,6 +130,16 @@ RoseTree
 SmallSet
 UnionFind
 Univ
+}
+
+{4 Lwt}
+
+Utils for Lwt (including experimental stuff)
+
+{!modules:
+Lwt_actor
+Lwt_klist
+Lwt_pipe
 }
 
 {4 Others}

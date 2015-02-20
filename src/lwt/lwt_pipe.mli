@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   Stream processing using:
 
-  - Pipe: a possibly buffered channel through which readers and writer communicate
+  - Pipe: a possibly buffered channel that can act as a reader or as a writer
   - Reader: accepts values, produces effects
   - Writer: yield values
 
@@ -115,6 +115,8 @@ val write_list : ('a, [>`w]) t -> 'a list -> unit Lwt.t
 val write_error : (_, [>`w]) t -> string -> unit Lwt.t
 (** @raise Pipe.Closed if the writer is closed *)
 
+(** {2 Write-only Interface and Combinators} *)
+
 module Writer : sig
   type 'a t = ('a, [`w]) pipe
 
@@ -130,6 +132,8 @@ module Writer : sig
   (** Generalized version of {!send_both}
       @raise Invalid_argument if the list is empty *)
 end
+
+(** {2 Read-only Interface and Combinators} *)
 
 module Reader : sig
   type 'a t = ('a, [`r]) pipe
