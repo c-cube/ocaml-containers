@@ -46,7 +46,7 @@ Lwt_io.with_file ~mode:Lwt_io.output "/tmp/foo"
   (fun oc ->
      let p2 = P.IO.write_lines oc in
      P.connect ~ownership:`InOwnsOut p1 p2;
-     P.Pipe.wait p2
+     P.wait p2
   );;
 ]}
 
@@ -66,49 +66,59 @@ end
 
 exception Closed
 
-module Pipe : sig
-  type ('a, +'perm) t constraint 'perm = [< `r | `w]
-  (** A pipe between producers of values of type 'a, and consumers of values
-      of type 'a. *)
+type ('a, +'perm) t constraint 'perm = [< `r | `w]
+(** A pipe between producers of values of type 'a, and consumers of values
+    of type 'a. *)
 
-  val keep : _ t -> unit Lwt.t -> unit
-  (** [keep p fut] adds a pointer from [p] to [fut] so that [fut] is not
-      garbage-collected before [p] *)
+type ('a, 'perm) pipe = ('a, 'perm) t
 
-  val is_closed : _ t -> bool
+val keep : _ t -> unit Lwt.t -> unit
+(** [keep p fut] adds a pointer from [p] to [fut] so that [fut] is not
+    garbage-collected before [p] *)
 
-  val close : _ t -> unit Lwt.t
-  (** [close p] closes [p], which will not accept input anymore.
-      This sends [`End] to all readers connected to [p] *)
+val is_closed : _ t -> bool
 
-  val close_async : _ t -> unit
-  (** Same as {!close} but closes in the background *)
+val close : _ t -> unit Lwt.t
+(** [close p] closes [p], which will not accept input anymore.
+    This sends [`End] to all readers connected to [p] *)
 
-  val wait : _ t -> unit Lwt.t
-  (** Evaluates once the pipe closes *)
+val close_async : _ t -> unit
+(** Same as {!close} but closes in the background *)
 
-  val create : ?max_size:int -> unit -> ('a, 'perm) t
-  (** Create a new pipe.
-      @param max_size size of internal buffer. Default 0. *)
+val wait : _ t -> unit Lwt.t
+(** Evaluates once the pipe closes *)
 
-  val connect : ('a, [>`r]) t -> ('a, [>`w]) t -> unit
-  (** [connect p1 p2] forwards every item output by [p1] into [p2]'s input
-      until [p1] is closed. *)
-end
+val create : ?max_size:int -> unit -> ('a, 'perm) t
+(** Create a new pipe.
+    @param max_size size of internal buffer. Default 0. *)
+
+val connect : ?ownership:[`None | `InOwnsOut | `OutOwnsIn] ->
+              ('a, [>`r]) t -> ('a, [>`w]) t -> unit
+(** [connect p1 p2] forwards every item output by [p1] into [p2]'s input
+    until [p1] is closed.
+    @param own determines which pipes owns which (the owner, when it
+      closes, also closes the ownee) *)
+
+val link_close : _ t -> after:_ t -> unit
+(** [link_close p ~after] will close [p] when [after] closes.
+    if [after] is closed already, closes [p] immediately *)
+
+val read : ('a, [>`r]) t -> 'a step Lwt.t
+(** Read the next value from a Pipe *)
+
+val write : ('a, [>`w]) t -> 'a -> unit Lwt.t
+(** @raise Pipe.Closed if the writer is closed *)
+
+val write_list : ('a, [>`w]) t -> 'a list -> unit Lwt.t
+(** @raise Pipe.Closed if the writer is closed *)
+
+val write_error : (_, [>`w]) t -> string -> unit Lwt.t
+(** @raise Pipe.Closed if the writer is closed *)
 
 module Writer : sig
-  type 'a t = ('a, [`w]) Pipe.t
+  type 'a t = ('a, [`w]) pipe
 
-  val write : 'a t -> 'a -> unit Lwt.t
-  (** @raise Pipe.Closed if the writer is closed *)
-
-  val write_list : 'a t -> 'a list -> unit Lwt.t
-  (** @raise Pipe.Closed if the writer is closed *)
-
-  val write_error : _ t -> string -> unit Lwt.t
-  (** @raise Pipe.Closed if the writer is closed *)
-
-  val map : f:('a -> 'b) -> 'b t -> 'a t
+  val map : f:('a -> 'b) -> ('b, [>`w]) pipe -> 'a t
   (** Map values before writing them *)
 
   val send_both : 'a t -> 'a t -> 'a t
@@ -122,11 +132,9 @@ module Writer : sig
 end
 
 module Reader : sig
-  type 'a t = ('a, [`r]) Pipe.t
+  type 'a t = ('a, [`r]) pipe
 
-  val read : 'a t -> 'a step Lwt.t
-
-  val map : f:('a -> 'b) -> 'a t -> 'b t
+  val map : f:('a -> 'b) -> ('a, [>`r]) pipe -> 'b t
 
   val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 
@@ -146,12 +154,9 @@ module Reader : sig
       @raise Invalid_argument if the list is empty *)
 
   val append : 'a t -> 'a t -> 'a t
+  (** [append a b] reads from [a] until [a] closes, then reads from [b]
+      and closes when [b] closes *)
 end
-
-val connect : ?ownership:[`None | `InOwnsOut | `OutOwnsIn] ->
-              'a Reader.t -> 'a Writer.t -> unit
-(** Handy synonym to {!Pipe.connect}, with additional resource management.
-    @param own determines which pipes owns which *)
 
 (** {2 Conversions} *)
 
