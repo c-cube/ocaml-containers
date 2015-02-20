@@ -164,11 +164,15 @@ end
 
 (** {2 Conversions} *)
 
+type 'a lwt_klist = [ `Nil | `Cons of 'a * 'a lwt_klist ] Lwt.t
+
 val of_list : 'a list -> 'a Reader.t
 
 val of_array : 'a array -> 'a Reader.t
 
 val of_string : string -> char Reader.t
+
+val of_lwt_klist : 'a lwt_klist -> 'a Reader.t
 
 val to_list_rev : ('a,[>`r]) t -> 'a list LwtErr.t
 
@@ -185,6 +189,9 @@ val to_buffer_str : ?sep:string -> Buffer.t -> (string, [>`r]) t -> unit LwtErr.
 val to_string : (char, [>`r]) t -> string LwtErr.t
 
 val join_strings  : ?sep:string -> (string, [>`r]) t -> string LwtErr.t
+
+val to_lwt_klist : 'a Reader.t -> 'a lwt_klist
+(** Iterates on the reader. Errors are ignored (but stop the list). *)
 
 (** {2 Basic IO wrappers} *)
 

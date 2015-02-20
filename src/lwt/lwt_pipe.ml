@@ -303,6 +303,8 @@ end
 
 (** {2 Conversions} *)
 
+type 'a lwt_klist = [ `Nil | `Cons of 'a * 'a lwt_klist ] Lwt.t
+
 let of_list l : _ Reader.t =
   let p = create ~max_size:0 () in
   keep p (Lwt_list.iter_s (write p) l >>= fun () -> close p);
@@ -330,6 +332,17 @@ let of_string a =
     )
   in
   keep p (send 0);
+  p
+
+let of_lwt_klist l =
+  let p = create ~max_size:0 () in
+  let rec next l =
+    l >>= function
+    | `Nil -> close p
+    | `Cons (x, tl) ->
+      write p x >>= fun () -> next tl
+  in
+  keep p (next l);
   p
 
 let to_list_rev r =
@@ -360,6 +373,15 @@ let to_string r =
 let join_strings ?sep r =
   let buf = Buffer.create 128 in
   to_buffer_str ?sep buf r >>>= fun () -> LwtErr.return (Buffer.contents buf)
+
+let to_lwt_klist r =
+  let rec next () =
+    read r >>= function
+    | `End -> Lwt.return `Nil
+    | `Error _ -> Lwt.return `Nil
+    | `Ok x -> Lwt.return (`Cons (x, next ()))
+  in
+  next ()
 
 (** {2 Basic IO wrappers} *)
 
