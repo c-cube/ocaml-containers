@@ -182,16 +182,11 @@ branch `stable` it is not necessary.
 
     $ make
 
-To build and run tests (requires `oUnit` and `qtest`):
+To build and run tests (requires `oUnit`, `qtest`, and `check`):
 
-    $ opam install oUnit
-    $ make tests
-    $ ./tests.native
-
-and
-
-    $ opam install qtest
-    $ make qtest
+    $ opam install oUnit qtest qcheck
+    $ ./configure --enable-tests
+    $ make test
 
 To build the small benchmarking suite (requires `benchmark`):
 
