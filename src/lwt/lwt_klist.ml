@@ -37,11 +37,6 @@ let empty = Lwt.return `Nil
 let cons x l = Lwt.return (`Cons (x, l))
 
 let rec create f : 'a t =
-  let fut, wake = Lwt.wait () in
-  f () >|= function
-  | None -> `Nil
-  | Some x -> `Cons (x, create f)
-and create_rec f () =
   f () >|= function
   | None -> `Nil
   | Some x -> `Cons (x, create f)
@@ -115,13 +110,66 @@ let rec fold_s f acc l =
   | `Nil -> Lwt.return acc
   | `Cons (x, tl) -> f acc x >>= fun acc -> fold_s f acc tl
 
-let take n l = assert false
-let take_while f l = assert false
-let take_while_s f l = assert false
-let drop n l = assert false
-let drop_while f l = assert false
-let drop_while_s f l = assert false
-let merge a b = assert false
+let rec take n l = match n with
+  | 0 -> empty
+  | _ ->
+    l >>= function
+    | `Nil -> empty
+    | `Cons (x, tl) -> Lwt.return (`Cons (x, take (n-1) tl))
+
+let rec take_while f l =
+  l >>= function
+  | `Cons (x, tl) when f x -> Lwt.return (`Cons (x, take_while f  tl))
+  | `Nil
+  | `Cons _ -> empty
+
+let rec take_while_s f l =
+  l >>= function
+  | `Nil -> empty
+  | `Cons (x, tl) ->
+    f x >>= function
+    | true -> Lwt.return (`Cons (x, take_while_s f  tl))
+    | false -> empty
+
+let rec drop n l = match n with
+  | 0 -> l
+  | _ ->
+    l >>= function
+    | `Nil -> empty
+    | `Cons (_, tl) -> drop (n-1) tl
+
+let rec drop_while f l =
+  l >>= function
+  | `Nil -> empty
+  | `Cons (x, _) when f x -> l
+  | `Cons (_, tl) -> drop_while f tl
+
+let rec drop_while_s f l =
+  l >>= function
+  | `Nil -> empty
+  | `Cons (x, tl) ->
+    f x >>= function
+    | false -> drop_while_s f tl
+    | true -> l
+
+let merge a b =
+  let add_left = Lwt.map (fun y -> `Left y) in
+  let add_right = Lwt.map (fun y -> `Right y) in
+  let remove_side l =
+    l >|= function
+    | `Left x -> x
+    | `Right x -> x
+  in
+  let rec merge' l r =
+    Lwt.choose [l; r] >>= function
+    | `Left `Nil -> remove_side r
+    | `Left (`Cons (x, l')) ->
+      Lwt.return (`Cons (x, merge' (add_left l') r))
+    | `Right `Nil -> remove_side l
+    | `Right (`Cons (x, r')) ->
+      Lwt.return (`Cons (x, merge' l (add_right r')))
+  in
+  merge' (add_left a) (add_right b)
 
 (** {2 Conversions} *)
 
@@ -132,7 +180,7 @@ let rec of_list l = match l with
   | x :: tl -> Lwt.return (`Cons (x, of_list tl))
 
 let rec of_array_rec a i =
-  if i = Array.length a 
+  if i = Array.length a
   then empty
   else Lwt.return (`Cons (a.(i), of_array_rec a (i+1)))
 
@@ -147,7 +195,20 @@ let rec of_gen_s g = match g() with
   | Some x ->
     x >|= fun x -> `Cons (x, of_gen_s g)
 
-let of_string s = assert false
-let to_string l = assert false
-let to_list l = assert false
-let to_rev_list l = assert false
+let rec of_string_rec s i =
+  if i = String.length s
+  then empty
+  else Lwt.return (`Cons (String.get s i, of_string_rec s (i+1)))
+
+let of_string s : char t = of_string_rec s 0
+
+let to_string l =
+  let buf = Buffer.create 128 in
+  iter (fun c -> Buffer.add_char buf c) l >>= fun () ->
+  Lwt.return (Buffer.contents buf)
+
+let to_rev_list l =
+  fold (fun acc x -> x :: acc) [] l
+
+let to_list l = to_rev_list l >|= List.rev
+

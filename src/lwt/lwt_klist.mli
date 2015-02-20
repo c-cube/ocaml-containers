@@ -24,7 +24,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Functional streams for Lwt} *)
+(** {1 Functional streams for Lwt}
+
+Functional streams, that is, lazy lists whose nodes are behind a
+Lwt.t future. Such as list never mutates, it can be safely traversed
+several times, but might eat memory.
+
+@since NEXT_RELEASE *)
 
 type 'a t = [ `Nil | `Cons of 'a * 'a t ] Lwt.t
 type 'a stream = 'a t
@@ -90,7 +96,7 @@ val of_gen : 'a gen -> 'a t
 
 val of_gen_s : 'a Lwt.t gen -> 'a t
 
-val of_string : string -> 'a t
+val of_string : string -> char t
 
 val to_list : 'a t -> 'a list Lwt.t
 
