@@ -382,6 +382,16 @@ struct
 
   let is_empty b = b.start = b.stop
 
+(*$T
+ let s = Bytes.of_string "hello world" in \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ ByteBuffer.skip b s_len; \
+ ByteBuffer.is_empty b
+ *)
+
+
   let take_front b =
     if b.start = b.stop then raise Empty;
     let c = b.buf.(b.start) in
