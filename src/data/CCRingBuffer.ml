@@ -68,7 +68,6 @@ module Array = struct
     let empty = Array.of_list []
   end
 
-
   module IntArray :
     S with type elt = int and type t = int array = struct
     type t = int array
@@ -102,7 +101,7 @@ module Array = struct
 
 
   module Make(Elt:sig type t end) :
-      S with type elt = Elt.t and type t = Elt.t array = struct
+    S with type elt = Elt.t and type t = Elt.t array = struct
     type elt = Elt.t
     type t = Elt.t array
     let make = Array.make
@@ -204,15 +203,17 @@ struct
     { b with buf=Array.copy b.buf; }
 
 (*$T
-  let b = ByteBuffer.create 3 in \
   let s = Bytes.of_string "hello world" in \
-  ByteBuffer.blit_from b s 0 (Bytes.length s); \
-    let b' = ByteBuffer.copy b in \
-    try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b' i <> c then raise Exit); true with Exit -> false
+  let s_len = Bytes.length s in \
+  let b = ByteBuffer.create s_len in \
+  ByteBuffer.blit_from b s 0 s_len; \
+  let b' = ByteBuffer.copy b in \
+  try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b' i <> c then raise Exit); true with Exit -> false
 *)
 
-
-  let capacity b = Array.length b.buf
+  let capacity b =
+    let len = Array.length b.buf in
+    match len with 0 -> 0 | l -> l - 1
 
   let max_capacity b = if b.bounded then Some b.size else None
 
@@ -241,17 +242,23 @@ struct
     b.buf <- buf'
 
   let blit_from_bounded b from_buf o len =
-    let cap = capacity b - len in
+    let cap = capacity b - length b in
     (* resize if needed, with a constant to amortize *)
     if cap < len then begin
       let new_size =
         let desired = Array.length b.buf + len + 24 in
         min (b.size+1) desired in
-      resize b new_size from_buf.(0)
+      resize b new_size from_buf.(0);
+      let good = capacity b - length b >= len in 
+      if not good then begin 
+      print_endline ("capacity " ^ string_of_int (capacity b) ^ " and length " ^ 
+      string_of_int (length b) ^ " difference is less than " ^ 
+      string_of_int len ^ "!");assert(false) 
+      end;
     end;
     let sub = Array.sub from_buf o len in
     let iter x =
-      let capacity = capacity b in
+      let capacity = Array.length b.buf in
       Array.set b.buf b.stop x;
       if b.stop = capacity-1 then b.stop <- 0 else b.stop <- b.stop + 1;
       if b.start = b.stop then
@@ -263,10 +270,15 @@ struct
 
 
   let blit_from_unbounded b from_buf o len =
-    let cap = capacity b - len in
+    let cap = capacity b - length b in
     (* resize if needed, with a constant to amortize *)
-    if cap < len then resize b (max b.size (Array.length b.buf + len + 24)) from_buf.(0);
-    assert (capacity b - length b >= len);
+    if cap < len then resize b (max (b.size+1) (Array.length b.buf + len + 24)) from_buf.(0);
+    let good = capacity b - length b >= len in 
+    if not good then begin 
+      print_endline ("capacity " ^ string_of_int (capacity b) ^ " and length " ^ 
+      string_of_int (length b) ^ " difference is less than " ^ 
+      string_of_int len ^ "!");assert(false) 
+    end;
     if b.stop >= b.start
     then (*  [_______ start xxxxxxxxx stop ______] *)
       let len_end = Array.length b.buf - b.stop in
@@ -285,11 +297,29 @@ struct
     ()
 
   let blit_from b from_buf o len =
-    if (Array.length from_buf) = 0 then () else
+    if Array.length from_buf = 0 then () else
     if b.bounded then
       blit_from_bounded b from_buf o len
     else
       blit_from_unbounded b from_buf o len
+
+  (*$Q
+    (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    (let b = ByteBuffer.create 24 in \
+    ByteBuffer.blit_from b s 0 (Bytes.length s); \
+    ByteBuffer.blit_from b s' 0 (Bytes.length s'); \
+    ByteBuffer.length b = Bytes.length s + Bytes.length s'))
+  *)
+
+
+  (*$Q
+    (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    (let b = ByteBuffer.create ~bounded:true (Bytes.length s + Bytes.length s') in \
+    ByteBuffer.blit_from b s 0 (Bytes.length s); \
+    ByteBuffer.blit_from b s' 0 (Bytes.length s'); \
+    ByteBuffer.length b = Bytes.length s + Bytes.length s'))
+  *)
+
 
   let blit_into b to_buf o len =
     if o+len > Array.length to_buf
@@ -311,7 +341,7 @@ struct
       end
     end
 
-	let clear b =
+  let clear b =
     b.stop <- 0;
     b.start <- 0;
     ()
@@ -350,20 +380,22 @@ struct
     else b.stop <- b.stop - 1
 
   let skip b len =
-    if len > length b then raise (Invalid_argument "BufferIO.skip");
+    if len > length b then raise (Invalid_argument
+      ("CCRingBufferIO.skip: " ^ string_of_int len));
     if b.stop >= b.start
     then b.start <- b.start + len
     else
       let len_end = Array.length b.buf - b.start in
       if len > len_end
-      then b.start <- len-len_end  (* wrap to the beginning *)
-      else b.start <- b.start + len
+      then (print_endline "case B1"; b.start <- len-len_end)  (* wrap to the beginning *)
+      else (print_endline "case B2"; b.start <- b.start + len)
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
-    (let b = ByteBuffer.create 24 in ByteBuffer.blit_from b s 0 (Bytes.length s); \
+    (let b = ByteBuffer.create 24 in \
+    ByteBuffer.blit_from b s 0 (Bytes.length s); \
     ByteBuffer.blit_from b s' 0 (Bytes.length s'); \
-    ByteBuffer.blit_from b "hello world" 0 (Bytes.length "hello word"); (* big enough *) \
+    ByteBuffer.blit_from b "hello world" 0 (Bytes.length "hello world"); (* big enough *) \
     let l = ByteBuffer.length b in let l' = l/2 in ByteBuffer.skip b l'; \
     ByteBuffer.length b + l' = l))
   *)
@@ -376,36 +408,38 @@ struct
       for i = 0 to b.stop - 1 do f i b.buf.(i) done;
     )
 
-  (*$T
-    let s = "hello world" in \
-    let b = of_string s in \
-    try iteri b (fun i c -> if s.[i] <> c then raise Exit); true with Exit -> false
-  *)
+(*$T
+ let s = Bytes.of_string "hello world" in \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b i <> c then raise Exit); true with Exit -> false
+*)
 
   let get b i =
     if b.stop >= b.start
     then
       if i >= b.stop - b.start
-      then raise (Invalid_argument "CCRingBuffer.get")
+      then raise (Invalid_argument ("CCRingBuffer.get:" ^ string_of_int i))
       else b.buf.(b.start + i)
     else
       let len_end = Array.length b.buf - b.start in
       if i < len_end
       then b.buf.(b.start + i)
       else if i - len_end > b.stop
-      then raise (Invalid_argument "CCRingBuffer.get")
+      then raise (Invalid_argument ("CCRingBuffer.get: " ^ string_of_int i))
       else b.buf.(i - len_end)
 
   let get_front b i =
     if is_empty b then
-      raise (Invalid_argument "CCRingBuffer.get_front")
+      raise (Invalid_argument ("CCRingBuffer.get_front: " ^ string_of_int i))
     else
       get b i
 
   let get_back b i =
     let offset = ((length b) - i - 1) in
       if offset < 0 then
-        raise (Invalid_argument "CCRingBuffer.get_back")
+        raise (Invalid_argument ("CCRingBuffer.get_back:" ^ string_of_int i))
       else get b offset
 
   let to_list b =
@@ -428,4 +462,3 @@ end
 module ByteBuffer = Make_array(Array.ByteArray)
 
 module Make(Elt:sig type t end) = Make_array(Array.Make(Elt))
-
