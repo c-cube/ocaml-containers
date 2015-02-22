@@ -356,6 +356,16 @@ struct
     b.start <- 0;
     ()
 
+(*$T
+ let s = Bytes.of_string "hello world" in \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ ByteBuffer.clear b; \
+ ByteBuffer.length b = 0
+ *)
+
+
   let reset b =
     clear b;
     b.buf <- Array.empty
