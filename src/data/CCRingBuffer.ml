@@ -341,6 +341,16 @@ struct
       end
     end
 
+  (*$Q
+    Q.printable_string (fun s -> \
+    let b = ByteBuffer.create (Bytes.length s) in \
+    ByteBuffer.blit_from b s 0 (Bytes.length s); \
+    let to_buf = Bytes.create (Bytes.length s) in \
+    let len = ByteBuffer.blit_into b to_buf 0 (Bytes.length s) in \
+    to_buf = s && len = Bytes.length s)
+  *)
+
+
   let clear b =
     b.stop <- 0;
     b.start <- 0;
