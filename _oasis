@@ -70,7 +70,7 @@ Library "containers_data"
   Path:             src/data
   Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
-                    CCBufferIO
+                    CCRingBuffer
   FindlibParent:    containers
   FindlibName:      data
 
