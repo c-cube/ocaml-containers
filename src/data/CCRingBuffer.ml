@@ -284,7 +284,7 @@ struct
   let s_len = Bytes.length s in \
   let b = ByteBuffer.create ~bounded:true i in \
   ByteBuffer.blit_from b s 0 s_len; \
-  ByteBuffer.length b <= i)
+  ByteBuffer.length b >= 0 && ByteBuffer.length b <= i)
   *)
 
   (* resize [b] so that inner capacity is [cap] *)
