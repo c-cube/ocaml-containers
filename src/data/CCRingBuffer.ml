@@ -2,7 +2,7 @@
  * CCRingBuffer - Polymorphic circular buffer with
  * deque semantics for accessing both the head and tail.
  *
- * Copyright (C) 2014 Simon Cruanes
+ * Copyright (C) 2015 Simon Cruanes, Carmelo Piccione
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

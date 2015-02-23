@@ -1,6 +1,6 @@
 (**
  * CCRingBuffer - Polymorphic Circular Buffer
- * Copyright (C) 2014 Simon Cruanes
+ * Copyright (C) 2015 Simon Cruanes, Carmelo Piccione
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,53 +20,82 @@
 
 (** Circular Polymorphic Buffer for IO *)
 
+(** The array module, with optimized versions of [Byte], [Float], and
+    [Int], [Bool]. A [Make] functor is provided for polymorphic types. *)
 module Array : sig
 
+  (** The abstract type for arrays *)
   module type S = sig
+
+    (** The element type *)
     type elt
+
+    (** The type of an array instance *)
     type t
 
     val empty : t
+    (** The empty array *)
 
     val make: int -> elt -> t
+    (** [make s e] makes an array of size [s] with [e] elements *)
 
     val length: t -> int
+    (** [length t] gets the total number of elements currently in [t] *)
 
     val get: t -> int -> elt
+    (** [get t i] gets the element at position [i] *)
 
     val set: t -> int -> elt -> unit
+    (** [set t i e] sets the element at position [i] to [e] *)
 
     val sub: t -> int -> int -> t
+    (** [sub t i len] gets the subarray of [t] from
+        position [i] to [i + len] *)
 
     val copy : t -> t
+    (** [copy t] makes a fresh copy of the array [t] *)
 
     val blit : t -> int -> t -> int -> int -> unit
+    (** [blit t s arr i len] copies [len] elements from [arr] starting at [i]
+        to position [s] from [t] *)
 
     val iter : (elt -> unit) -> t -> unit
+    (** [iter f t] iterates over the array [t] invoking [f] with
+        the current element, in array order *)
   end
 
+  (** Efficient array version for the [char] type *)
   module ByteArray :
-		S with type elt = char and type t = bytes
+    S with type elt = char and type t = bytes
 
+  (** Efficient array version for the [float] type *)
   module FloatArray :
     S with type elt = float and type t = float array
 
+  (** Efficient array version for the [int] type *)
   module IntArray :
     S with type elt = int and type t = int array
 
+  (** Efficient array version for the [bool] type *)
   module BoolArray :
     S with type elt = bool and type t = bool array
 
+  (** Makes an array given an arbitrary element type *)
   module Make :
    functor (Elt:sig type t end) ->
       S with type elt = Elt.t and type t = Elt.t array
 end
 
+(** The abstract ring buffer type, made concrete by choice of
+    [Array] module implementation *)
 module type S =
 sig
 
+  (** The module type of Array for this ring buffer *)
   module Array : Array.S
 
+  (** Defines the ring buffer type, with both bounded and
+      unbounded flavors *)
   type t = private {
     mutable start : int;
     mutable stop : int; (* excluded *)
@@ -74,6 +103,8 @@ sig
     bounded: bool;
     size : int
   }
+
+  (** Raised in querying functions when the buffer is empty *)
   exception Empty
 
   val create : ?bounded:bool -> int -> t
