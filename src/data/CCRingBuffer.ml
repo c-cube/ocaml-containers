@@ -199,6 +199,22 @@ struct
       buf = Array.empty
     }
 
+(*$Q
+  Q.small_int (fun i -> \
+  let i = abs i in \
+  let b = ByteBuffer.create i in \
+  let open ByteBuffer in \
+  b.size = i && b.bounded = false)
+  *)
+
+(*$Q
+  Q.small_int (fun i -> \
+  let i = abs i in \
+  let b = ByteBuffer.create ~bounded:true i in \
+  let open ByteBuffer in \
+  b.size = i && b.bounded = true)
+  *)
+
   let copy b =
     { b with buf=Array.copy b.buf; }
 
