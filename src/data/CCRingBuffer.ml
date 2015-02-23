@@ -400,6 +400,15 @@ struct
     else b.start <- b.start + 1;
     c
 
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ try let front = ByteBuffer.take_front b in \
+ front = Bytes.get s 0 with ByteBuffer.Empty -> s_len = 0)
+ *)
+
   let take_back b =
     if b.start = b.stop then raise Empty;
     if b.stop - 1 = 0
@@ -407,17 +416,44 @@ struct
     else b.stop <- b.stop - 1;
     b.buf.(b.stop)
 
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ try let back = ByteBuffer.take_back b in \
+ back = Bytes.get s (Bytes.length s - 1) with ByteBuffer.Empty -> s_len = 0)
+ *)
+
   let junk_front b =
     if b.start = b.stop then raise Empty;
     if b.start + 1 = Array.length b.buf
     then b.start <- 0
     else b.start <- b.start + 1
 
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ try let () = ByteBuffer.junk_front b in \
+ s_len - 1 = ByteBuffer.length b with ByteBuffer.Empty -> s_len = 0)
+ *)
+
   let junk_back b =
     if b.start = b.stop then raise Empty;
-    if b.stop - 1 = 0
+    if b.stop = 0
     then b.stop <- Array.length b.buf - 1
     else b.stop <- b.stop - 1
+
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ try let () = ByteBuffer.junk_back b in \
+ s_len - 1 = ByteBuffer.length b with ByteBuffer.Empty -> s_len = 0)
+ *)
 
   let skip b len =
     if len > length b then raise (Invalid_argument
