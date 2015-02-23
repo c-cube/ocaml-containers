@@ -447,13 +447,13 @@ struct
 
   let is_empty b = b.start = b.stop
 
-(*$T
- let s = Bytes.of_string "hello world" in \
+(*$Q
+ Q.printable_string (fun s -> \
  let s_len = Bytes.length s in \
  let b = ByteBuffer.create s_len in \
  ByteBuffer.blit_from b s 0 s_len; \
  ByteBuffer.skip b s_len; \
- ByteBuffer.is_empty b
+ ByteBuffer.is_empty b)
  *)
 
 
@@ -528,8 +528,8 @@ struct
     else
       let len_end = Array.length b.buf - b.start in
       if len > len_end
-      then (print_endline "case B1"; b.start <- len-len_end)  (* wrap to the beginning *)
-      else (print_endline "case B2"; b.start <- b.start + len)
+      then b.start <- len-len_end  (* wrap to the beginning *)
+      else b.start <- b.start + len
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
