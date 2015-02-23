@@ -202,25 +202,74 @@ struct
   let copy b =
     { b with buf=Array.copy b.buf; }
 
-(*$T
-  let s = Bytes.of_string "hello world" in \
+(*$Q
+  Q.printable_string (fun s -> \
   let s_len = Bytes.length s in \
   let b = ByteBuffer.create s_len in \
   ByteBuffer.blit_from b s 0 s_len; \
   let b' = ByteBuffer.copy b in \
-  try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b' i <> c then raise Exit); true with Exit -> false
+  try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b' i <> c then raise Exit); true with Exit -> false)
 *)
 
   let capacity b =
     let len = Array.length b.buf in
     match len with 0 -> 0 | l -> l - 1
 
+(*$Q
+  Q.printable_string (fun s -> \
+  let s_len = Bytes.length s in \
+  let b = ByteBuffer.create s_len in \
+  ByteBuffer.blit_from b s 0 s_len; \
+  ByteBuffer.capacity b >= Bytes.length s)
+  *)
+
+(*$Q
+  (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+  let i = abs i in \
+  let s_len = Bytes.length s in \
+  let b = ByteBuffer.create ~bounded:true i in \
+  ByteBuffer.blit_from b s 0 s_len; \
+  ByteBuffer.capacity b <= i)
+  *)
+
   let max_capacity b = if b.bounded then Some b.size else None
+
+(*$Q
+  Q.small_int (fun i -> \
+  let i = abs i in \
+  let b = ByteBuffer.create i in \
+  ByteBuffer.max_capacity b = None)
+  *)
+
+(*$Q
+  Q.small_int (fun i -> \
+  let i = abs i in \
+  let b = ByteBuffer.create ~bounded:true i in \
+  ByteBuffer.max_capacity b = Some i)
+  *)
 
   let length b =
     if b.stop >= b.start
     then b.stop - b.start
     else (Array.length b.buf - b.start) + b.stop
+
+(*$Q
+  (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+  let i = abs i in \
+  let s_len = Bytes.length s in \
+  let b = ByteBuffer.create i in \
+  ByteBuffer.blit_from b s 0 s_len; \
+  ByteBuffer.length b = s_len)
+  *)
+
+(*$Q
+  (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+  let i = abs i in \
+  let s_len = Bytes.length s in \
+  let b = ByteBuffer.create ~bounded:true i in \
+  ByteBuffer.blit_from b s 0 s_len; \
+  ByteBuffer.length b <= i)
+  *)
 
   (* resize [b] so that inner capacity is [cap] *)
   let resize b cap elem =
@@ -249,7 +298,7 @@ struct
         let desired = Array.length b.buf + len + 24 in
         min (b.size+1) desired in
       resize b new_size from_buf.(0);
-      let good = capacity b - length b >= len in 
+      let good = capacity b = b.size || capacity b - length b >= len in
       if not good then begin 
       print_endline ("capacity " ^ string_of_int (capacity b) ^ " and length " ^ 
       string_of_int (length b) ^ " difference is less than " ^ 
@@ -273,7 +322,7 @@ struct
     let cap = capacity b - length b in
     (* resize if needed, with a constant to amortize *)
     if cap < len then resize b (max (b.size+1) (Array.length b.buf + len + 24)) from_buf.(0);
-    let good = capacity b - length b >= len in 
+    let good = capacity b - length b >= len in
     if not good then begin 
       print_endline ("capacity " ^ string_of_int (capacity b) ^ " and length " ^ 
       string_of_int (length b) ^ " difference is less than " ^ 
@@ -484,12 +533,12 @@ struct
       for i = 0 to b.stop - 1 do f i b.buf.(i) done;
     )
 
-(*$T
- let s = Bytes.of_string "hello world" in \
+(*$Q
+ Q.printable_string (fun s -> \
  let s_len = Bytes.length s in \
  let b = ByteBuffer.create s_len in \
  ByteBuffer.blit_from b s 0 s_len; \
- try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b i <> c then raise Exit); true with Exit -> false
+ try ByteBuffer.iteri b (fun i c -> if ByteBuffer.get_front b i <> c then raise Exit); true with Exit -> false)
 *)
 
   let get b i =
