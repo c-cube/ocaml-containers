@@ -577,11 +577,35 @@ struct
     else
       get b i
 
+(*$Q
+ (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+ let s = s ^ " " in \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ let index = abs (i mod ByteBuffer.length b) in \
+ let front = ByteBuffer.get_front b index in \
+ front = Bytes.get s index)
+ *)
+
   let get_back b i =
     let offset = ((length b) - i - 1) in
       if offset < 0 then
         raise (Invalid_argument ("CCRingBuffer.get_back:" ^ string_of_int i))
       else get b offset
+
+(*$Q
+ (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+ let s = s ^ " " in \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ let index = abs (i mod ByteBuffer.length b) in \
+ let back = ByteBuffer.get_back b index in \
+ back = Bytes.get s (s_len - index - 1))
+ *)
+
+
 
   let to_list b =
     let len = length b in
