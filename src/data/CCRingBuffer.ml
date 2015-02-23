@@ -421,13 +421,13 @@ struct
     b.start <- 0;
     ()
 
-(*$T
- let s = Bytes.of_string "hello world" in \
+(*$Q
+ Q.printable_string (fun s -> \
  let s_len = Bytes.length s in \
  let b = ByteBuffer.create s_len in \
  ByteBuffer.blit_from b s 0 s_len; \
  ByteBuffer.clear b; \
- ByteBuffer.length b = 0
+ ByteBuffer.length b = 0)
  *)
 
 
@@ -435,13 +435,13 @@ struct
     clear b;
     b.buf <- Array.empty
 
-(*$T
- let s = Bytes.of_string "hello world" in \
+(*$Q
+ Q.printable_string (fun s -> \
  let s_len = Bytes.length s in \
  let b = ByteBuffer.create s_len in \
  ByteBuffer.blit_from b s 0 s_len; \
  ByteBuffer.reset b; \
- ByteBuffer.length b = 0 && ByteBuffer.capacity b = 0
+ ByteBuffer.length b = 0 && ByteBuffer.capacity b = 0)
  *)
 
 
