@@ -606,7 +606,6 @@ struct
  *)
 
 
-
   let to_list b =
     let len = length b in
     let rec build l i =
@@ -614,14 +613,57 @@ struct
       build ((get_front b i)::l) (i-1) in
     build [] (len-1)
 
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ let l = ByteBuffer.to_list b in \
+ let explode s = let rec exp i l = \
+   if i < 0 then l else exp (i - 1) (s.[i] :: l) in \
+   exp (String.length s - 1) [] in \
+ explode s = l)
+ *)
+
   let push_back b e = blit_from b (Array.make 1 e) 0 1
+
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ ByteBuffer.push_back b 'X'; \
+ ByteBuffer.peek_back b = 'X')
+ *)
+
 
   let peek_front b = if is_empty b then
       raise Empty else Array.get b.buf b.start
 
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ try let back = ByteBuffer.peek_front b in \
+ back = Bytes.get s 0 with ByteBuffer.Empty -> s_len = 0)
+ *)
+
   let peek_back b = if is_empty b then
       raise Empty else Array.get b.buf
                          (if b.stop = 0 then capacity b - 1 else b.stop-1)
+
+(*$Q
+ Q.printable_string (fun s -> \
+ let s_len = Bytes.length s in \
+ let b = ByteBuffer.create s_len in \
+ ByteBuffer.blit_from b s 0 s_len; \
+ try let back = ByteBuffer.peek_back b in \
+ back = Bytes.get s (s_len - 1) with ByteBuffer.Empty -> s_len = 0)
+ *)
+
+
+
 end
 
 module ByteBuffer = Make_array(Array.ByteArray)
