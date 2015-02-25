@@ -26,13 +26,11 @@
     @since NEXT_RELEASE
 *)
 
-(** The array module, with optimized versions of [Byte], [Float], and
-    [Int], [Bool]. A [Make] functor is provided for polymorphic types. *)
+(** {2 Underlying Array} *)
+
+(** The abstract type for arrays *)
 module Array : sig
-
-  (** The abstract type for arrays *)
   module type S = sig
-
     (** The element type *)
     type elt
 
@@ -71,44 +69,25 @@ module Array : sig
   end
 
   (** Efficient array version for the [char] type *)
-  module ByteArray :
-    S with type elt = char and type t = bytes
-
-  (** Efficient array version for the [float] type *)
-  module FloatArray :
-    S with type elt = float and type t = float array
-
-  (** Efficient array version for the [int] type *)
-  module IntArray :
-    S with type elt = int and type t = int array
-
-  (** Efficient array version for the [bool] type *)
-  module BoolArray :
-    S with type elt = bool and type t = bool array
+  module Byte :
+    S with type elt = char and type t = Bytes.t
 
   (** Makes an array given an arbitrary element type *)
-  module Make :
-   functor (Elt:sig type t end) ->
-      S with type elt = Elt.t and type t = Elt.t array
+  module Make(Elt:sig type t end) :
+    S with type elt = Elt.t and type t = Elt.t array
 end
 
-(** The abstract ring buffer type, made concrete by choice of
-    [Array] module implementation *)
-module type S =
-sig
+(** {2 Ring Buffer}
 
+    The abstract ring buffer type, made concrete by choice of
+    [ARRAY] module implementation *)
+module type S = sig
   (** The module type of Array for this ring buffer *)
   module Array : Array.S
 
   (** Defines the ring buffer type, with both bounded and
       unbounded flavors *)
-  type t = private {
-    mutable start : int;
-    mutable stop : int; (* excluded *)
-    mutable buf : Array.t;
-    bounded: bool;
-    size : int
-  }
+  type t
 
   (** Raised in querying functions when the buffer is empty *)
   exception Empty
@@ -191,21 +170,26 @@ sig
   (** Get the last value from back of [t].
       @raise Empty if buffer is empty. *)
 
-  val take_back : t -> Array.elt
+  val take_back : t -> Array.elt option
+  (** Take the last value from back of [t], if any *)
+
+  val take_back_exn : t -> Array.elt
   (** Take the last value from back of [t].
       @raise Empty if buffer is already empty. *)
 
-  val take_front : t -> Array.elt
+  val take_front : t -> Array.elt option
+  (** Take the first value from front of [t], if any *)
+
+  val take_front_exn : t -> Array.elt
   (** Take the first value from front of [t].
       @raise Empty if buffer is already empty. *)
-
 end
 
-(** Makes a ring buffer module given array implementation *)
-module Make_array : functor (Array:Array.S) -> S with module Array = Array
-
 (** An efficient byte based ring buffer *)
-module ByteBuffer : S with module Array = Array.ByteArray
+module Byte : S with module Array = Array.Byte
 
-(** Makes a ring buffer module given the element type *)
-module Make: functor(Elt:sig type t end) -> S with module Array = Array.Make(Elt)
+(** Makes a ring buffer module with the given array type. *)
+module MakeFromArray(A : Array.S) : S with module Array = A
+
+(** Buffer using regular arrays *)
+module Make(X : sig type t end) : S with type Array.elt = X.t
