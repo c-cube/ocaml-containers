@@ -63,7 +63,7 @@ module Array = struct
   end
 
   module Byte :
-    S with type elt = char and type t = bytes = struct
+    S with type elt = char and type t = Bytes.t = struct
     type elt = char
     include Bytes
   end
@@ -286,18 +286,14 @@ module MakeFromArray(Array:Array.S) = struct
     assert (cap >= Array.length b.buf);
     let buf' = Array.make cap elem in
     (* copy into buf' *)
-    let _:int =
-      if b.stop >= b.start
-      then begin
-        Array.blit b.buf b.start buf' 0 (b.stop - b.start);
-        b.stop - b.start
-      end else begin
-        let len_end = Array.length b.buf - b.start in
-        Array.blit b.buf b.start buf' 0 len_end;
-        Array.blit b.buf 0 buf' len_end b.stop;
-        len_end + b.stop
-      end
-    in
+    if b.stop >= b.start
+    then
+      Array.blit b.buf b.start buf' 0 (b.stop - b.start)
+    else begin
+      let len_end = Array.length b.buf - b.start in
+      Array.blit b.buf b.start buf' 0 len_end;
+      Array.blit b.buf 0 buf' len_end b.stop;
+    end;
     b.buf <- buf'
 
   let blit_from_bounded b from_buf o len =
