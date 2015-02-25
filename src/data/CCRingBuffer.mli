@@ -119,6 +119,10 @@ module type S = sig
       @return the number of elements actually copied ([min len (length buf)]).
       @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
+  val append : t -> into:t -> unit
+  (** [append b ~into] copies all data from [b] and adds it at the
+      end of [into] *)
+
   val to_list : t -> Array.elt list
   (** Extract the current content into a list *)
 
@@ -143,8 +147,11 @@ module type S = sig
   (** [skip b len] removes [len] elements from the front of [b].
       @raise Invalid_argument if [len > length b]. *)
 
-  val iteri : t -> (int -> Array.elt -> unit) -> unit
-  (** [iteri b f] calls [f i t] for each element [t] in [buf], with [i]
+  val iter : t -> f:(Array.elt -> unit) -> unit
+  (** [iter b ~f] calls [f i t] for each element [t] in [buf] *)
+
+  val iteri : t -> f:(int -> Array.elt -> unit) -> unit
+  (** [iteri b ~f] calls [f i t] for each element [t] in [buf], with [i]
       being its relative index within [buf]. *)
 
   val get_front : t -> int -> Array.elt

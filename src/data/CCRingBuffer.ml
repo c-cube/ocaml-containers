@@ -122,6 +122,10 @@ module type S = sig
       @return the number of elements actually copied ([min len (length buf)]).
       @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
+  val append : t -> into:t -> unit
+  (** [append b ~into] copies all data from [b] and adds it at the
+      end of [into] *)
+
   val to_list : t -> Array.elt list
   (** Extract the current content into a list *)
 
@@ -146,8 +150,11 @@ module type S = sig
   (** [skip b len] removes [len] elements from the front of [b].
       @raise Invalid_argument if [len > length b]. *)
 
-  val iteri : t -> (int -> Array.elt -> unit) -> unit
-  (** [iteri b f] calls [f i t] for each element [t] in [buf], with [i]
+  val iter : t -> f:(Array.elt -> unit) -> unit
+  (** [iter b ~f] calls [f i t] for each element [t] in [buf] *)
+
+  val iteri : t -> f:(int -> Array.elt -> unit) -> unit
+  (** [iteri b ~f] calls [f i t] for each element [t] in [buf], with [i]
       being its relative index within [buf]. *)
 
   val get_front : t -> int -> Array.elt
@@ -395,7 +402,6 @@ module MakeFromArray(Array:Array.S) = struct
     to_buf = s && len = Bytes.length s)
   *)
 
-
   let clear b =
     b.stop <- 0;
     b.start <- 0;
@@ -524,7 +530,15 @@ module MakeFromArray(Array:Array.S) = struct
     Byte.length b + l' = l))
   *)
 
-  let iteri b f =
+  let iter b ~f =
+    if b.stop >= b.start
+    then for i = b.start to b.stop - 1 do f b.buf.(i) done
+    else (
+      for i = b.start to Array.length b.buf -1 do f b.buf.(i) done;
+      for i = 0 to b.stop - 1 do f b.buf.(i) done;
+    )
+
+  let iteri b ~f =
     if b.stop >= b.start
     then for i = b.start to b.stop - 1 do f i b.buf.(i) done
     else (
@@ -537,7 +551,8 @@ module MakeFromArray(Array:Array.S) = struct
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
-    try Byte.iteri b (fun i c -> if Byte.get_front b i <> c then raise Exit); true with Exit -> false)
+    try Byte.iteri b (fun i c -> if Byte.get_front b i <> c then raise Exit); \
+      true with Exit -> false)
   *)
 
   let get b i =
@@ -619,6 +634,9 @@ module MakeFromArray(Array:Array.S) = struct
     Byte.peek_back b = 'X')
   *)
 
+  (* TODO: more efficient version *)
+  let append b ~into =
+    iter b ~f:(push_back into)
 
   let peek_front b =
     if is_empty b then raise Empty
