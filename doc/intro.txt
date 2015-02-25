@@ -73,6 +73,7 @@ CCMixtbl
 CCMultiMap
 CCMultiSet
 CCPersistentHashtbl
+CCRingBuffer
 CCTrie
 }
 
