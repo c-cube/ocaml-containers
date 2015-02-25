@@ -212,3 +212,7 @@ let to_rev_list l =
 
 let to_list l = to_rev_list l >|= List.rev
 
+(*$Q
+  (Q.list Q.int) (fun l -> Lwt_main.run (of_list l |> to_list) = l)
+*)
+

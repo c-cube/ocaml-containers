@@ -199,6 +199,18 @@ Executable run_qtest
                     containers.bigarray,
                     sequence, gen, oUnit, QTest2Lib
 
+PreBuildCommand: make qtest-lwt-gen
+
+Executable run_qtest_lwt
+  Path:             qtest/lwt/
+  Install:          false
+  CompiledObject:   best
+  MainIs:           run_qtest_lwt.ml
+  Build$:           flag(tests) && flag(lwt)
+  BuildDepends:     containers, containers.lwt, lwt, lwt.unix,
+                    sequence, gen, oUnit, QTest2Lib
+
+
 Executable run_tests
   Path: tests/
   Install: false
@@ -212,6 +224,10 @@ Test all
   Command:      make test-all
   TestTools:    run_tests, run_qtest
   Run$:         flag(tests) && flag(misc)
+
+Test lwt
+  Command:      echo "test lwt"; ./run_qtest_lwt.native
+  Run$:         flag(tests) && flag(lwt)
 
 Executable lambda
   Path: examples/

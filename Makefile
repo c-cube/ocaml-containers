@@ -75,10 +75,16 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/bigarray/*.mli) \
 	)
 
+QTESTABLE_LWT=$(filter-out $(DONTTEST), \
+	$(wildcard src/lwt/*.ml) \
+	$(wildcard src/lwt/*.mli) \
+	)
+
 qtest-clean:
 	@rm -rf qtest/
 
 QTEST_PREAMBLE='open CCFun;; '
+QTEST_LWT_PREAMBLE=$(QTEST_PREAMBLE)
 
 #qtest-build: qtest-clean build
 #	@mkdir -p qtest
@@ -89,13 +95,22 @@ QTEST_PREAMBLE='open CCFun;; '
 #		-I core -I misc -I string \
 #		qtest/qtest_all.native
 
-qtest-gen: qtest-clean
+qtest-gen:
 	@mkdir -p qtest
 	@if which qtest > /dev/null ; then \
 		qtest extract --preamble $(QTEST_PREAMBLE) \
 			-o qtest/run_qtest.ml \
 			$(QTESTABLE) 2> /dev/null ; \
 	else touch qtest/run_qtest.ml ; \
+	fi
+
+qtest-lwt-gen:
+	@mkdir -p qtest/lwt/
+	@if which qtest > /dev/null ; then \
+		qtest extract --preamble $(QTEST_LWT_PREAMBLE) \
+			-o qtest/lwt/run_qtest_lwt.ml \
+			$(QTESTABLE_LWT) 2> /dev/null ; \
+	else touch qtest/lwt/run_qtest_lwt.ml ; \
 	fi
 
 push-stable:
