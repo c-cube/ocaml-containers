@@ -140,15 +140,21 @@ module Reader : sig
 
   val map : f:('a -> 'b) -> ('a, [>`r]) pipe -> 'b t
 
-  val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
+  val map_s : f:('a -> 'b Lwt.t) -> ('a, [>`r]) pipe -> 'b t
 
-  val fold : f:('acc -> 'a -> 'acc) -> x:'acc -> 'a t -> 'acc LwtErr.t
+  val filter : f:('a -> bool) -> ('a, [>`r]) pipe -> 'a t
 
-  val fold_s : f:('acc -> 'a -> 'acc Lwt.t) -> x:'acc -> 'a t -> 'acc LwtErr.t
+  val filter_map : f:('a -> 'b option) -> ('a, [>`r]) pipe -> 'b t
+
+  val fold : f:('acc -> 'a -> 'acc) -> x:'acc -> ('a, [>`r]) pipe -> 'acc LwtErr.t
+
+  val fold_s : f:('acc -> 'a -> 'acc Lwt.t) -> x:'acc -> ('a, [>`r]) pipe -> 'acc LwtErr.t
 
   val iter : f:('a -> unit) -> 'a t -> unit LwtErr.t
 
   val iter_s : f:('a -> unit Lwt.t) -> 'a t -> unit LwtErr.t
+
+  val iter_p : f:('a -> unit Lwt.t) -> 'a t -> unit LwtErr.t
 
   val merge_both : 'a t -> 'a t -> 'a t
   (** Merge the two input streams in a non-specified order *)

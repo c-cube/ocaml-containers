@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type 'a or_error = [`Ok of 'a | `Error of string]
 type 'a step = ['a or_error | `End]
 
+let (>|=) = Lwt.(>|=)
 let (>>=) = Lwt.(>>=)
 
 module LwtErr = struct
@@ -240,6 +241,28 @@ module Reader = struct
     keep b (fwd());
     b
 
+  let map_s ~f a =
+    let b = create () in
+    let rec fwd () =
+      read a >>= function
+      | `Ok x -> f x >>= fun y -> write_step b (`Ok y) >>= fwd
+      | (`Error _) as e -> write_step b e >>= fun _ -> close b
+      | `End -> close b
+    in
+    keep b (fwd());
+    b
+
+  let filter ~f a =
+    let b = create () in
+    let rec fwd () =
+      read a >>= function
+      | `Ok x -> if f x then write_step b (`Ok x) >>= fwd else fwd()
+      | (`Error _) as e -> write_step b e >>= fun _ -> close b
+      | `End -> close b
+    in
+    keep b (fwd());
+    b
+
   let filter_map ~f a =
     let b = create () in
     let rec fwd () =
@@ -279,6 +302,14 @@ module Reader = struct
     | `End -> LwtErr.return_unit
     | `Error msg -> LwtErr.fail msg
     | `Ok x -> f x >>= fun () -> iter_s ~f t
+
+  let iter_p ~f t =
+    let rec iter acc =
+      read t >>= function
+      | `End -> Lwt.join acc >|= fun () -> `Ok ()
+      | `Error msg -> LwtErr.fail msg
+      | `Ok x -> iter (f x :: acc)
+    in iter []
 
   let merge_all l =
     if l = [] then invalid_arg "merge_all";
