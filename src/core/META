@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 705ba14648d64b87e0e63d055ec5c801)
-version = "0.8"
+# DO NOT EDIT (digest: 71114627b2165c5eaff8d7c614d71974)
+version = "0.9"
 description = "A modular standard library focused on data structures."
 requires = "bytes"
 archive(byte) = "containers.cma"
@@ -9,7 +9,7 @@ archive(native) = "containers.cmxa"
 archive(native, plugin) = "containers.cmxs"
 exists_if = "containers.cma"
 package "thread" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "containers threads"
  archive(byte) = "containers_thread.cma"
@@ -20,7 +20,7 @@ package "thread" (
 )
 
 package "string" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  archive(byte) = "containers_string.cma"
  archive(byte, plugin) = "containers_string.cma"
@@ -30,7 +30,7 @@ package "string" (
 )
 
 package "sexp" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "bytes"
  archive(byte) = "containers_sexp.cma"
@@ -41,7 +41,7 @@ package "sexp" (
 )
 
 package "pervasives" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "containers"
  archive(byte) = "containers_pervasives.cma"
@@ -52,7 +52,7 @@ package "pervasives" (
 )
 
 package "misc" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "containers containers.data"
  archive(byte) = "containers_misc.cma"
@@ -63,7 +63,7 @@ package "misc" (
 )
 
 package "lwt" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "containers lwt containers.misc"
  archive(byte) = "containers_lwt.cma"
@@ -74,7 +74,7 @@ package "lwt" (
 )
 
 package "iter" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  archive(byte) = "containers_iter.cma"
  archive(byte, plugin) = "containers_iter.cma"
@@ -84,7 +84,7 @@ package "iter" (
 )
 
 package "io" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "bytes"
  archive(byte) = "containers_io.cma"
@@ -95,8 +95,9 @@ package "io" (
 )
 
 package "data" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
+ requires = "bytes"
  archive(byte) = "containers_data.cma"
  archive(byte, plugin) = "containers_data.cma"
  archive(native) = "containers_data.cmxa"
@@ -105,7 +106,7 @@ package "data" (
 )
 
 package "bigarray" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "containers bigarray bytes"
  archive(byte) = "containers_bigarray.cma"
@@ -116,7 +117,7 @@ package "bigarray" (
 )
 
 package "advanced" (
- version = "0.8"
+ version = "0.9"
  description = "A modular standard library focused on data structures."
  requires = "containers sequence"
  archive(byte) = "containers_advanced.cma"

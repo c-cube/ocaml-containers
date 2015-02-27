@@ -24,64 +24,37 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Drop-In replacement to Stdlib}
+(** {1 References}
+@since 0.9 *)
 
-This module is meant to be opened if one doesn't want to use both, say,
-[List] and [CCList]. Instead, [List] is now an alias to
-{[struct
-    include List
-    include CCList
-  end
-]}
+type 'a print = Format.formatter -> 'a -> unit
+type 'a pp = Buffer.t -> 'a -> unit
+type 'a ord = 'a -> 'a -> int
+type 'a eq = 'a -> 'a -> bool
+type 'a sequence = ('a -> unit) -> unit
 
-@since 0.4
+type 'a t = 'a ref
 
-Changed [Opt] to [Option] to better reflect that this module is about the
-['a option] type, with [module Option = CCOpt].
+val map : ('a -> 'b) -> 'a t -> 'b t
+(** Transform the value *)
 
-@since 0.5
-*)
+val create : 'a -> 'a t
+(** Alias to {!ref} *)
 
-module Array = struct
-  include Array
-  include CCArray
-end
-module Bool = CCBool
-module Error = CCError
-module Float = CCFloat
-module Format = struct
-  include Format
-  include CCFormat
-end
-module Fun = CCFun
-module Hash = CCHash
-module Int = CCInt
-(* FIXME
-module Hashtbl = struct
-  include (Hashtbl : module type of Hashtbl
-    with type statistics = Hashtbl.statistics
-    and module Make := Hashtbl.Make
-    and module type S := Hashtbl.S
-    and type ('a,'b) t := ('a,'b) Hashtbl.t
-  )
-  include CCHashtbl
-end
-*)
-module List = struct
-  include List
-  include CCList
-end
-module Map = CCMap
-module Option = CCOpt
-module Pair = CCPair
-module Random = struct
-  include Random
-  include CCRandom
-end
-module Ref = CCRef
-module Set = CCSet
-module String = struct
-  include String
-  include CCString
-end
-module Vector = CCVector
+val iter : ('a -> unit) -> 'a t -> unit
+(** Call the function on the content of the reference *)
+
+val update : ('a -> 'a) -> 'a t -> unit
+(** Update the reference's content with the given function *)
+
+val compare : 'a ord -> 'a t ord
+
+val equal : 'a eq -> 'a t eq
+
+val to_list : 'a t -> 'a list
+
+val to_seq : 'a t -> 'a sequence
+
+val print : 'a print -> 'a t print
+val pp : 'a pp -> 'a t pp
+

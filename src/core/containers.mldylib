@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3d72facd851c70180466c198284f087a)
+# DO NOT EDIT (digest: 5c58c781604360016ba544a7c9d0c597)
 CCVector
 CCPrint
 CCError
@@ -13,6 +13,8 @@ CCInt
 CCBool
 CCFloat
 CCArray
+CCRef
+CCSet
 CCOrd
 CCRandom
 CCString

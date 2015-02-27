@@ -2,13 +2,12 @@
 #use "tests/quick/.common.ml";;
 #load "containers.cma";;
 #load "containers_string.cma";;
+#load "containers_io.cma";;
 
 open Containers_string
 
-let words = CCIO.(
-  (with_in "/usr/share/dict/cracklib-small" >>>= read_lines)
-  |> run_exn
-  )
+let words =
+  CCIO.with_in "/usr/share/dict/words" CCIO.read_lines_l
 
 let idx = List.fold_left
   (fun idx s -> Levenshtein.Index.add idx s s)

@@ -18,9 +18,12 @@ let odoc_files =
   |> Gen.to_list
 ;;
 
+let out = "deps.dot";;
+
 let cmd =
-  "ocamldoc -dot -o deps.dot " ^ String.concat " " odoc_files
+  "ocamldoc -dot -o " ^ out ^ " " ^ String.concat " " odoc_files
 ;;
 
 print_endline ("run: " ^ cmd);;
 Unix.system cmd;;
+print_endline ("output in " ^ out);;

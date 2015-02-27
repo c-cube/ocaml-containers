@@ -40,6 +40,8 @@ CCOrd
 CCPair
 CCPrint
 CCRandom
+CCRef
+CCSet
 CCString
 CCVector
 }
@@ -66,10 +68,12 @@ CCBV
 CCCache
 CCFQueue
 CCFlatHashtbl
+CCMixmap
 CCMixtbl
 CCMultiMap
 CCMultiSet
 CCPersistentHashtbl
+CCRingBuffer
 CCTrie
 }
 
@@ -127,6 +131,16 @@ RoseTree
 SmallSet
 UnionFind
 Univ
+}
+
+{4 Lwt}
+
+Utils for Lwt (including experimental stuff)
+
+{!modules:
+Lwt_actor
+Lwt_klist
+Lwt_pipe
 }
 
 {4 Others}

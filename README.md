@@ -172,16 +172,11 @@ The `Bij` module requires OCaml `>= 4.00` because of GADTs. Type:
 
     $ make
 
-To build and run tests (requires `oUnit` and `qtest`):
+To build and run tests (requires `oUnit`, `qtest`, and `qcheck`):
 
-    $ opam install oUnit
-    $ make tests
-    $ ./tests.native
-
-and
-
-    $ opam install qtest
-    $ make qtest
+    $ opam install oUnit qtest qcheck
+    $ ./configure --enable-tests
+    $ make test
 
 To build the small benchmarking suite (requires `benchmark`):
 

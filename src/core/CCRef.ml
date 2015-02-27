@@ -24,64 +24,35 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Drop-In replacement to Stdlib}
+(** {1 References}
 
-This module is meant to be opened if one doesn't want to use both, say,
-[List] and [CCList]. Instead, [List] is now an alias to
-{[struct
-    include List
-    include CCList
-  end
-]}
+@since 0.9 *)
 
-@since 0.4
+type 'a print = Format.formatter -> 'a -> unit
+type 'a pp = Buffer.t -> 'a -> unit
+type 'a ord = 'a -> 'a -> int
+type 'a eq = 'a -> 'a -> bool
+type 'a sequence = ('a -> unit) -> unit
 
-Changed [Opt] to [Option] to better reflect that this module is about the
-['a option] type, with [module Option = CCOpt].
+type 'a t = 'a ref
 
-@since 0.5
-*)
+let create x = ref x
 
-module Array = struct
-  include Array
-  include CCArray
-end
-module Bool = CCBool
-module Error = CCError
-module Float = CCFloat
-module Format = struct
-  include Format
-  include CCFormat
-end
-module Fun = CCFun
-module Hash = CCHash
-module Int = CCInt
-(* FIXME
-module Hashtbl = struct
-  include (Hashtbl : module type of Hashtbl
-    with type statistics = Hashtbl.statistics
-    and module Make := Hashtbl.Make
-    and module type S := Hashtbl.S
-    and type ('a,'b) t := ('a,'b) Hashtbl.t
-  )
-  include CCHashtbl
-end
-*)
-module List = struct
-  include List
-  include CCList
-end
-module Map = CCMap
-module Option = CCOpt
-module Pair = CCPair
-module Random = struct
-  include Random
-  include CCRandom
-end
-module Ref = CCRef
-module Set = CCSet
-module String = struct
-  include String
-  include CCString
-end
-module Vector = CCVector
+let map f r = ref (f !r)
+
+let iter f r = f !r
+
+let update f r = r := (f !r)
+
+let compare f r1 r2 = f !r1 !r2
+
+let equal f r1 r2 = f !r1 !r2
+
+let to_list r = [!r]
+let to_seq r yield = yield !r
+
+let print pp_x fmt r = pp_x fmt !r
+
+let pp pp_x buf r = pp_x buf !r
+
+

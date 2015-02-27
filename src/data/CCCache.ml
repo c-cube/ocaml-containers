@@ -33,6 +33,13 @@ let default_hash_ = Hashtbl.hash
 
 (** {2 Value interface} *)
 
+(** Invariants:
+  - after [cache.set x y], [get cache x] must return [y] or raise [Not_found]
+  - [cache.set x y] is only called if [get cache x] fails, never if [x] is already bound
+  - [cache.size()] must be positive and correspond to the number of items in [cache.iter]
+  - [cache.iter f] calls [f x y] with every [x] such that [cache.get x = y]
+  - after [cache.clear()], [cache.get x] fails for every [x]
+*)
 type ('a,'b) t = {
   set : 'a -> 'b -> unit;
   get : 'a -> 'b;  (* or raise Not_found *)
@@ -293,6 +300,24 @@ let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
     iter=L.iter c;
   }
 
+(*$T
+  let eq (i1,_)(i2,_) = i1=i2 and hash (i,_) = CCInt.hash i in \
+  let c = lru ~eq ~hash 2 in \
+  ignore (with_cache c CCFun.id (1, true)); \
+  ignore (with_cache c CCFun.id (1, false)); \
+  with_cache c CCFun.id (1, false) = (1, true)
+*)
+
+(*$T
+  let f = (let r = ref 0 in fun _ -> incr r; !r) in \
+  let c = lru 2 in \
+  let res1 = with_cache c f 1 in \
+  let res2 = with_cache c f 2 in \
+  let res3 = with_cache c f 3 in \
+  let res1_bis = with_cache c f 1 in \
+  res1 <> res2 && res2 <> res3 && res3 <> res1_bis && res1_bis <> res1
+*)
+
 module UNBOUNDED(X:HASH) = struct
   module H = Hashtbl.Make(X)
 
@@ -305,7 +330,7 @@ module UNBOUNDED(X:HASH) = struct
   let get c x = H.find c x
 
   let set c x y = H.replace c x y
-  
+
   let size c () = H.length c
 
   let iter c f = H.iter f c

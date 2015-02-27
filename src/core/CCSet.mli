@@ -24,64 +24,32 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Drop-In replacement to Stdlib}
+(** {1 Wrapper around Set}
 
-This module is meant to be opened if one doesn't want to use both, say,
-[List] and [CCList]. Instead, [List] is now an alias to
-{[struct
-    include List
-    include CCList
-  end
-]}
+@since 0.9 *)
 
-@since 0.4
+type 'a sequence = ('a -> unit) -> unit
+type 'a printer = Buffer.t -> 'a -> unit
+type 'a formatter = Format.formatter -> 'a -> unit
 
-Changed [Opt] to [Option] to better reflect that this module is about the
-['a option] type, with [module Option = CCOpt].
+module type S = sig
+  include Set.S
 
-@since 0.5
-*)
+  val of_seq : elt sequence -> t
 
-module Array = struct
-  include Array
-  include CCArray
+  val to_seq : t -> elt sequence
+
+  val of_list : elt list -> t
+
+  val to_list : t -> elt list
+
+  val pp : ?start:string -> ?stop:string -> ?sep:string ->
+            elt printer -> t printer
+
+  val print : ?start:string -> ?stop:string -> ?sep:string ->
+              elt formatter -> t formatter
 end
-module Bool = CCBool
-module Error = CCError
-module Float = CCFloat
-module Format = struct
-  include Format
-  include CCFormat
-end
-module Fun = CCFun
-module Hash = CCHash
-module Int = CCInt
-(* FIXME
-module Hashtbl = struct
-  include (Hashtbl : module type of Hashtbl
-    with type statistics = Hashtbl.statistics
-    and module Make := Hashtbl.Make
-    and module type S := Hashtbl.S
-    and type ('a,'b) t := ('a,'b) Hashtbl.t
-  )
-  include CCHashtbl
-end
-*)
-module List = struct
-  include List
-  include CCList
-end
-module Map = CCMap
-module Option = CCOpt
-module Pair = CCPair
-module Random = struct
-  include Random
-  include CCRandom
-end
-module Ref = CCRef
-module Set = CCSet
-module String = struct
-  include String
-  include CCString
-end
-module Vector = CCVector
+
+module Make(O : Set.OrderedType) : S
+  with type t = Set.Make(O).t
+  and type elt = O.t

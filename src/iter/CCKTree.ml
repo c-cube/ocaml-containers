@@ -181,6 +181,38 @@ let find ?pset f t =
   in
   _find_kl f (bfs ?pset t)
 
+(** {2 Pretty-printing} *)
+
+let print pp_x fmt t =
+  (* at depth [lvl] *)
+  let rec pp fmt t = match t with
+    | `Nil -> ()
+    | `Node (x, children) ->
+      let children = filter children in
+      match children with
+      | [] -> pp_x fmt x
+      | _::_ ->
+        Format.fprintf fmt "@[<v2>(@[<hov0>%a@]%a)@]"
+          pp_x x pp_children children
+  and filter l  =
+    let l = List.fold_left
+      (fun acc c -> match c() with
+        | `Nil -> acc
+        | `Node _ as sub -> sub :: acc
+      ) [] l
+    in
+    List.rev l
+  and pp_children fmt children =
+    (* remove empty children *)
+    List.iter
+      (fun c ->
+         Format.fprintf fmt "@,";
+         pp fmt c
+      ) children
+  in
+  pp fmt (t ());
+  ()
+
 (** {2 Pretty printing in the DOT (graphviz) format} *)
 
 module Dot = struct
