@@ -25,7 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 (** {1 References}
-@since NEXT_RELEASE *)
+@since 0.9 *)
 
 type 'a print = Format.formatter -> 'a -> unit
 type 'a pp = Buffer.t -> 'a -> unit

@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {b status: experimental}
 
-@since NEXT_RELEASE *)
+@since 0.9 *)
 
 type 'a injection
 (** An accessor for values of type 'a in any map. Values put

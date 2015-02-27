@@ -52,7 +52,7 @@ Lwt_io.with_file ~mode:Lwt_io.output "/tmp/foo"
 
 {b status: experimental}
 
-@since NEXT_RELEASE
+@since 0.9
 *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]

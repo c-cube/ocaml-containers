@@ -118,7 +118,7 @@ Example (tree of calls for naive Fibonacci function):
 val print : 'a formatter -> 'a t formatter
 (** A pretty-printer using S-expressions and boxes to render the tree.
     Empty nodes are not rendered; sharing is ignored.
-    @since NEXT_RELEASE *)
+    @since 0.9 *)
 
 (** {2 Pretty printing in the DOT (graphviz) format} *)
 

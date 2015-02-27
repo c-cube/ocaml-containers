@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Wrapper around Set}
 
-@since NEXT_RELEASE *)
+@since 0.9 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Buffer.t -> 'a -> unit

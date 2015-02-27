@@ -25,7 +25,7 @@
 
     {b status: experimental}
 
-    @since NEXT_RELEASE
+    @since 0.9
 *)
 
 (** {2 Underlying Array} *)

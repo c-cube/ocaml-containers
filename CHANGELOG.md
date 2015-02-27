@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.9
+
+- add `Float`, `Ref`, `Set`, `Format` to `CCPervasives`
+- `CCRingBuffer.append` (simple implementation)
+- `containers.data` now depends on bytes
+- new `CCRingBuffer` module, imperative deque with batch (blit) operations,
+  mostly done by Carmelo Piccione
+- new `Lwt_pipe` and `Lwt_klist` streams for Lwt, respectively (un)bounded
+  synchronized queues and lazy lists
+- `CCKTree.print`, a simple S-expressions printer for generic trees
+- Add `CCMixmap` in containers.data (close #40), functional alternative to `CCMixtbl`
+- remove old META file
+- simplified `CCTrie` implementation
+- use "compiledObject: best" in `_oasis` for binaries
+- document some invariants in `CCCache` (see #38)
+- tests for `CCCache.lru`
+- fix `CCFormat.seq` combinator
+- add `CCSet` module in core/
+- add `CCRef` module in core/
+
 ## 0.8
 
 - add `@Emm` to authors

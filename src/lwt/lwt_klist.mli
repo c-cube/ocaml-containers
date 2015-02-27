@@ -32,7 +32,7 @@ several times, but might eat memory.
 
 {b status: experimental}
 
-@since NEXT_RELEASE *)
+@since 0.9 *)
 
 type 'a t = [ `Nil | `Cons of 'a * 'a t ] Lwt.t
 type 'a stream = 'a t
