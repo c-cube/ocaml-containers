@@ -30,6 +30,8 @@ Functional streams, that is, lazy lists whose nodes are behind a
 Lwt.t future. Such as list never mutates, it can be safely traversed
 several times, but might eat memory.
 
+{b status: experimental}
+
 @since NEXT_RELEASE *)
 
 type 'a t = [ `Nil | `Cons of 'a * 'a t ] Lwt.t

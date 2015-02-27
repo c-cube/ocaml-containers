@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Maps with Heterogeneous Values}
 
+{b status: experimental}
+
 @since NEXT_RELEASE *)
 
 type 'a injection

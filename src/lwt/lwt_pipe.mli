@@ -50,6 +50,8 @@ Lwt_io.with_file ~mode:Lwt_io.output "/tmp/foo"
   );;
 ]}
 
+{b status: experimental}
+
 @since NEXT_RELEASE
 *)
 

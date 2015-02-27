@@ -23,6 +23,8 @@
     Useful for IO, or as a general-purpose alternative to {!Queue} when
     batch operations are needed.
 
+    {b status: experimental}
+
     @since NEXT_RELEASE
 *)
 
