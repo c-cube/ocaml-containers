@@ -48,7 +48,13 @@ module Array = struct
 end
 module Bool = CCBool
 module Error = CCError
+module Float = CCFloat
+module Format = struct
+  include Format
+  include CCFormat
+end
 module Fun = CCFun
+module Hash = CCHash
 module Int = CCInt
 (* FIXME
 module Hashtbl = struct
@@ -72,6 +78,8 @@ module Random = struct
   include Random
   include CCRandom
 end
+module Ref = CCRef
+module Set = CCSet
 module String = struct
   include String
   include CCString
