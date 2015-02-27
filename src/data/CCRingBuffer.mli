@@ -1,4 +1,4 @@
-(**
+(*
  * CCRingBuffer - Polymorphic Circular Buffer
  * Copyright (C) 2015 Simon Cruanes, Carmelo Piccione
  *
