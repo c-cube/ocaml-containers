@@ -187,7 +187,7 @@ Test future
   TestTools:    run_test_future
   Run$:         flag(tests) && flag(thread)
 
-PreBuildCommand: make qtest-gen
+PreBuildCommand: make qtest-gen ; make qtest-lwt-gen
 
 Executable run_qtest
   Path:             qtest/
@@ -199,8 +199,6 @@ Executable run_qtest
                     containers.io, containers.advanced, containers.sexp,
                     containers.bigarray,
                     sequence, gen, oUnit, QTest2Lib
-
-PreBuildCommand: make qtest-lwt-gen
 
 Executable run_qtest_lwt
   Path:             qtest/lwt/
