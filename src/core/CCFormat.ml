@@ -134,6 +134,7 @@ let _with_file_out filename f =
   begin try
     let x = f fmt in
     Format.pp_print_flush fmt ();
+    close_out oc;
     x
   with e ->
     Format.pp_print_flush fmt ();
