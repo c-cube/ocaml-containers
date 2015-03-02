@@ -273,7 +273,7 @@ module Coll = struct
         S.cardinal set
 
   let choose_exn (type elt) c =
-    let fail () = _exit_with_error "choose: empty collection" in 
+    let fail () = _exit_with_error "choose: empty collection" in
     match c with
     | List [] -> fail ()
     | List (x::_) -> x

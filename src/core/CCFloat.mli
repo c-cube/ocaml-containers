@@ -39,11 +39,11 @@ val nan : t
 val max_value : t
 val min_value : t
 
-val max_finite_value : t 
+val max_finite_value : t
 
 val epsilon : float
 
-val is_nan : t -> bool 
+val is_nan : t -> bool
 
 val add : t -> t -> t
 
@@ -51,7 +51,7 @@ val sub : t -> t -> t
 
 val neg : t -> t
 
-val abs : t -> t 
+val abs : t -> t
 
 val scale : t -> t -> t
 
@@ -61,7 +61,7 @@ val max : t -> t -> t
 
 val equal : t -> t -> bool
 
-val compare : float -> float -> int 
+val compare : float -> float -> int
 
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
@@ -95,7 +95,7 @@ val sign_exn : t -> int
 val to_int : t -> int
 val of_int : int -> t
 
-val to_string : t -> string 
+val to_string : t -> string
 val of_string : string -> t
 
 

@@ -57,7 +57,7 @@ module type S = sig
 
   val find_all : pattern:pattern -> string -> int -> int gen
   (** Generator on all occurrences of the pattern *)
-  
+
   val seq : pattern:pattern -> string -> int -> int sequence
   (** iterate on matching positions *)
 

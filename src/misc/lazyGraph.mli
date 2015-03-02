@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** This module serves to represent directed graphs in a lazy fashion. Such
     a graph is always accessed from a given initial node (so only connected
     components can be represented by a single value of type ('v,'e) t).
-    
+
     The default equality considered here is [(=)], and the default hash
     function is {! Hashtbl.hash}. *)
 
@@ -168,8 +168,8 @@ val dijkstra : ('id, 'v, 'e) t ->
                'id -> 'id ->
                float * ('id, 'e) path
   (** Shortest path from the first node to the second one, according
-      to the given (positive!) distance function. 
-      [ignore] allows one to ignore some vertices during exploration. 
+      to the given (positive!) distance function.
+      [ignore] allows one to ignore some vertices during exploration.
       This raises Not_found if no path could be found. *)
 
 val is_dag : ('id, _, _) t -> 'id -> bool

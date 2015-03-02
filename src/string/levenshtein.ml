@@ -196,7 +196,7 @@ module Make(Str : STRING) = struct
           (* other transitions *)
           if j < limit then begin
             (* substitution *)
-            add_transition i j (Upon (Any, i+1, j+1)); 
+            add_transition i j (Upon (Any, i+1, j+1));
             (* deletion in indexed string *)
             add_transition i j (Upon (Any, i, j+1));
             (* addition to indexed string *)

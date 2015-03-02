@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     of the type ['a]. Combinators, listed in the next section (e.g., {!list_}
     or {!pair}), are used to describe complicated structures from simpler
     ones.
-    
+
     For instance, to serialize a value of type [(int * string) list]:
 
 {[let bij = Bij.(list_ (pair int_ string_));;

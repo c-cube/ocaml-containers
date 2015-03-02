@@ -133,7 +133,7 @@ module type S = sig
 
   val equal : 'a equal -> 'a t equal
 
-  val pp : key printer -> 'a printer -> 'a t printer  
+  val pp : key printer -> 'a printer -> 'a t printer
 
   val print : key formatter -> 'a formatter -> 'a t formatter
 end

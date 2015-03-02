@@ -197,7 +197,7 @@ module Instance = struct
     _schedule q (fun () -> O.send a.transitions (s, i, s', os));
     List.iter
       (fun o -> _schedule q (fun () -> O.send a.o o))
-      os 
+      os
 
   let _receive a i =
     let first = Queue.is_empty _q in

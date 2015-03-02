@@ -49,7 +49,7 @@ let iter f set = PHashtbl.iter (fun x () -> f x) set
 
 let fold f acc set = PHashtbl.fold (fun acc x () -> f acc x) acc set
 
-let filter p set = PHashtbl.filter (fun x () -> p x) set 
+let filter p set = PHashtbl.filter (fun x () -> p x) set
 
 let to_seq set k = iter k set
 

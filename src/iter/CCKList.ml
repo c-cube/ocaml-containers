@@ -32,7 +32,7 @@ type 'a ord = 'a -> 'a -> int
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 
-type + 'a t = unit -> 
+type + 'a t = unit ->
   [ `Nil
   | `Cons of 'a * 'a t
   ]
