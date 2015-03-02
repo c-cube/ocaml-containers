@@ -141,6 +141,7 @@ let _with_file_out filename f =
   let oc = open_out filename in
   begin try
     let x = f oc in
+    close_out oc;
     x
   with e ->
     close_out_noerr oc;
@@ -148,7 +149,7 @@ let _with_file_out filename f =
   end
 
 let to_file filename format =
-  _with_file_out filename (fun oc -> kfprintf (fun _ -> close_out oc) oc format)
+  _with_file_out filename (fun oc -> fprintf oc format)
 
 (** {2 Monadic IO} *)
 
