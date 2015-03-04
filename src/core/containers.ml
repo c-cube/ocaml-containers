@@ -40,6 +40,11 @@ Changed [Opt] to [Option] to better reflect that this module is about the
 ['a option] type, with [module Option = CCOpt].
 
 @since 0.5
+
+Renamed from [CCPervasives] in [containers.pervasives], to [Containers]
+in the core library [containers]
+
+@since NEXT_RELEASE
 *)
 
 module Array = struct
