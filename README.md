@@ -10,7 +10,10 @@ What is _containers_?
   are totally independent and are prefixed with `CC` (for "containers-core"
   or "companion-cube" because I'm megalomaniac). This part should be
   usable and should work. For instance, `CCList` contains functions and
-  lists including safe versions of `map` and `append`.
+  lists including safe versions of `map` and `append`. It also
+  provides a drop-in replacement to the standard library, in the module
+  `Containers` (intended to be opened, replaces some stdlib modules
+  with extended ones)
 - Several small additional libraries that complement it:
   * `containers.data` with additional data structures that don't have an
     equivalent in the standard library;
@@ -21,9 +24,6 @@ What is _containers_?
     KMP search algorithm, and a few naive utils). Again, modules are independent
     and sometimes parametric on the string and char types (so they should
     be able to deal with your favorite unicode library).
-- A drop-in replacement to the standard library, `containers.pervasives`,
-  that defined a `CCPervasives` module intented to be opened to extend some
-  modules of the stdlib.
 - A sub-library with complicated abstractions, `containers.advanced` (with
   a LINQ-like query module, batch operations using GADTs, and others).
 - A library using [Lwt](https://github.com/ocsigen/lwt/), `containers.lwt`.

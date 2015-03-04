@@ -49,7 +49,8 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat,
+                    Containers
   BuildDepends:     bytes
 
 Library "containers_io"
@@ -105,13 +106,6 @@ Library "containers_bigarray"
   FindlibParent:    containers
   BuildDepends:     containers, bigarray, bytes
 
-Library "containers_pervasives"
-  Path:             src/pervasives
-  Modules:          CCPervasives
-  BuildDepends:     containers
-  FindlibName:      pervasives
-  FindlibParent:    containers
-
 Library "containers_misc"
   Path:             src/misc
   Pack:             true
@@ -152,7 +146,7 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.misc, containers.iter, containers.data,
-    containers.string, containers.pervasives, containers.bigarray,
+    containers.string, containers.bigarray,
     containers.advanced, containers.io, containers.sexp,
     containers.lwt
 
