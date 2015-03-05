@@ -51,10 +51,26 @@ let print_char_map map =
       (fun c _ acc -> str "'%c'" c :: acc) map [] in
   String.concat ", " l
 
+let set_of_string s =
+  let set = ref CharSet.empty in
+  String.iter
+    (fun c ->
+       if CharSet.mem c !set
+       then invalid_arg (str "any_of: duplicate char %c" c);
+       set := CharSet.add c !set
+    ) s;
+  !set
+
+(* add [c -> p] to the map, for every [c] in [set] *)
+let map_add_set init set p =
+  CharSet.fold
+    (fun c map -> CharMap.add c p map)
+    set init
+
 (* function composition *)
 let compose f g x = f (g x)
 
-let string_of_list l =
+let str_of_l l =
   let b = Bytes.make (List.length l) ' ' in
   List.iteri (fun i c -> Bytes.set b i c) l;
   Bytes.unsafe_to_string b
@@ -73,36 +89,42 @@ type _ t =
   | Many : CharSet.t * 'a t * unit t * multiplicity -> 'a list t
   | Skip : CharSet.t * 'a t * multiplicity -> unit t (* same as Many, but ignores *)
   | SwitchC : 'a t CharMap.t * 'a t option -> 'a t
-  | SwitchS :'a trie -> 'a t
-  | Fix : ('a t -> 'a t) -> 'a t
+  | Lazy : 'a t Lazy.t -> 'a t
   | Eof : unit t
 
-(* a prefix trie *)
-and 'a trie =
-  | TrieEmpty
-  | TrieNode of 'a t option * 'a trie CharMap.t
-
 let return x = Return x
+let pure = return
 
 let success = Return ()
 
 let fail msg = Fail msg
 
-let app f x = App (f, x)
+let failf fmt = Printf.ksprintf (fun msg -> fail msg) fmt
 
 let map f x = match x with
   | Map (g, y) -> Map (compose f g, y)
   | Return x -> Return (f x)
   | _ -> Map (f,x)
 
-let filter f x = Filter (f, x)
+let app f x = match f with
+  | Return f -> map f x
+  | _ -> App (f, x)
+
+let filter f x = match x with
+  | Return y -> if f y then Return y else fail "filter failed"
+  | Filter (f', y) -> Filter ((fun x -> f' x && f x), y)
+  | _ -> Filter (f, x)
+
+let app_left a b = AppLeft (a, b)  (* return (fun x y -> x) <*> a <*> b *)
+
+let app_right a b = AppRight (a, b) (* return (fun x y -> y) <*> a <*> b *)
 
 let int = Int
 
 let float = Float
 
-let int_first_char =
-  lazy (CharSet.of_list ['-'; '0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'])
+let int_first_char = lazy (set_of_string "-0123456789")
+let float_first_char = lazy (set_of_string ".-0123456789")
 
 (* a set of characters that are valid as first characters of a parser *)
 type possible_first_chars =
@@ -110,6 +132,15 @@ type possible_first_chars =
   | AllChars
   | NoChar
   | IsFail of string
+
+let ret_set set =
+  if CharSet.cardinal set = 256 then AllChars else Set set
+
+let union_possible_first_chars a b = match a, b with
+  | Set a, Set b -> Set (CharSet.union a b)
+  | IsFail e, _ | _, IsFail e -> IsFail e
+  | AllChars, _ | _, AllChars -> AllChars
+  | NoChar, o | o, NoChar -> o
 
 (* set of possibilities for the first char of a parser *)
 let rec possible_first_chars
@@ -123,69 +154,46 @@ let rec possible_first_chars
   | AppRight (a, _) -> possible_first_chars a
   | Fail e -> IsFail e
   | Int -> Set (Lazy.force int_first_char)
-  | Float -> Set (Lazy.force int_first_char)
-  | AnyOf set -> Set set
-  | Many(set, _, _, _) -> Set set
-  | Skip (set, _, _) -> Set set
-  | SwitchC (map, None) -> Set (domain_of_char_map map)
+  | Float -> Set (Lazy.force float_first_char)
+  | AnyOf set -> ret_set set
+  | Many(set, p, _, (Question | Star)) ->
+    union_possible_first_chars (ret_set set) (possible_first_chars p)
+  | Skip (set, p, (Question | Star)) ->
+    union_possible_first_chars (ret_set set) (possible_first_chars p)
+  | Many (set, _, _, Plus) -> Set set
+  | Skip (set, _, Plus) -> ret_set set
+  | SwitchC (map, None) -> ret_set (domain_of_char_map map)
   | SwitchC (_, Some _) -> AllChars
-  | SwitchS TrieEmpty -> assert false
-  | SwitchS (TrieNode (_, m)) -> Set (domain_of_char_map m)
-  | Fix f ->
-    let p = f (Fix f) in
-    possible_first_chars p
+  | Lazy (lazy p) -> possible_first_chars p
   | Eof -> NoChar
 
-let many ?(sep=success) t =
-  match possible_first_chars t with
-  | Set set -> Many (set, t, sep, Star)
+let many_ ~sep ~mult ~p = match possible_first_chars p with
+  | Set set -> Many (set, p, sep, mult)
   | IsFail msg -> Fail msg
   | AllChars -> invalid_arg (str "many: invalid parser (always succeeds)")
   | NoChar -> invalid_arg (str "many: invalid parser (does not consume input)")
 
-let many1 ?(sep=success) t =
-  match possible_first_chars t with
-  | Set set -> Many (set, t, sep, Plus)
-  | IsFail msg -> Fail msg
-  | AllChars -> invalid_arg (str "many: invalid parser (always succeeds)")
-  | NoChar -> invalid_arg (str "many: invalid parser (does not consume input)")
+let many ?(sep=success) p = many_ ~sep ~mult:Star ~p
 
-let skip t =
-  match possible_first_chars t with
-  | Set set -> Skip (set, t, Star)
+let many1 ?(sep=success) p = many_ ~sep ~mult:Plus ~p
+
+let skip_ ~mult ~p = match possible_first_chars p with
+  | Set set -> Skip (set, p, mult)
   | IsFail msg -> Fail msg
   | AllChars -> invalid_arg (str "skip: invalid parser (always succeeds)")
   | NoChar -> invalid_arg (str "skip: invalid parser (does not consume input)")
 
-let skip1 t =
-  match possible_first_chars t with
-  | Set set -> Skip (set, t, Plus)
-  | IsFail msg -> Fail msg
-  | AllChars -> invalid_arg (str "skip: invalid parser (always succeeds)")
-  | NoChar -> invalid_arg (str "skip: invalid parser (does not consume input)")
+let skip p = skip_ ~mult:Star ~p
 
-let opt t =
-  match possible_first_chars t with
-  | Set set ->
+let skip1 p = skip_ ~mult:Plus ~p
+
+let opt p =
     map
       (function
         | [x] -> Some x
         | [] -> None
         | _ -> assert false
-      ) (Many (set, t, success, Question))
-  | IsFail msg -> Fail msg
-  | AllChars -> map (fun x -> Some x) t  (* always succeeds *)
-  | NoChar -> invalid_arg (str "opt: invalid parser (does not consume input)")
-
-let set_of_string s =
-  let set = ref CharSet.empty in
-  String.iter
-    (fun c ->
-       if CharSet.mem c !set
-       then invalid_arg (str "any_of: duplicate char %c" c);
-       set := CharSet.add c !set
-    ) s;
-  !set
+      ) (many_ ~sep:success ~mult:Question ~p)
 
 let any_of s = AnyOf (set_of_string s)
 
@@ -226,33 +234,85 @@ let switch_c ?default l =
 
 exception ExnIsFail of string
 
-let choice l =
-  if l = [] then invalid_arg "choice: empty list";
+(* binary choice *)
+let rec merge a b =
   (* build a switch by first char *)
   try
-    (* a map and possibly a default parser *)
-    let map, def = List.fold_left
-        (fun (map, def) p ->
-           match possible_first_chars p, def with
-           | AllChars, Some _ ->
-             invalid_arg "choice: ambiguous, several parsers accept any input"
-           | AllChars, None -> map, Some p
-           | NoChar, _ -> map, def
-           | IsFail msg, _ -> raise (ExnIsFail msg)
-           | Set set, def ->
-             if CharSet.exists (fun c -> CharMap.mem c map) set
-             then invalid_arg
-                 (str "choice: ambiguous parsers (overlap on {%s})"
-                    (print_char_set (CharSet.inter set (domain_of_char_map map))));
-             let map = CharSet.fold
-               (fun c map -> CharMap.add c p map)
-               set map
-             in map, def
-        ) (CharMap.empty, None) l
-    in
-    SwitchC (map, def)
+    begin match a, b with
+      | SwitchC (map_a, def_a), SwitchC (map_b, def_b) ->
+        (* merge jump tables *)
+        let def = match def_a, def_b with
+          | None, None -> None
+          | Some d, None
+          | None, Some d -> Some d
+          | Some _, Some _ ->
+          invalid_arg "choice: ambiguous, several parsers accept any input"
+        in
+        let map = CharMap.merge
+            (fun _ a b -> match a, b with
+              | Some a', Some b' -> Some (merge a' b')
+              | Some m, None
+              | None, Some m -> Some m
+              | None, None -> assert false
+            ) map_a map_b
+        in
+        SwitchC (map, def)
+      | SwitchC (map, def), other
+      | other, SwitchC (map, def) ->
+        let map', def' = match possible_first_chars other, def with
+          | AllChars, _ ->
+            invalid_arg "choice: ambiguous, several parsers accept any input"
+          | NoChar, None -> map, Some other
+          | NoChar, Some _ ->
+            invalid_arg "choice: ambiguous"
+          | IsFail msg, _ -> raise (ExnIsFail msg)
+          | Set set, def ->
+            if CharSet.exists (fun c -> CharMap.mem c map) set
+            then invalid_arg
+                (str "choice: ambiguous parsers (overlap on {%s})"
+                   (print_char_set (CharSet.inter set (domain_of_char_map map))));
+            (* else: merge jump tables *)
+            let map = map_add_set map set other in
+            map, def
+          in
+          SwitchC (map', def')
+      | _ ->
+        begin match possible_first_chars a, possible_first_chars b with
+          | Set set1, Set set2 ->
+            if CharSet.exists (fun c -> CharSet.mem c set2) set1
+            then invalid_arg
+                (str "choice: ambiguous parsers (overlap on {%s})"
+                   (print_char_set (CharSet.inter set1 set2)));
+            let map = map_add_set CharMap.empty set1 a in
+            let map = map_add_set map set2 b in
+            SwitchC (map, None)
+          | IsFail e, _ | _, IsFail e -> raise (ExnIsFail e)
+          | Set s, NoChar -> SwitchC (map_add_set CharMap.empty s a, Some b)
+          | NoChar, Set s -> SwitchC (map_add_set CharMap.empty s b, Some a)
+          | AllChars, _ | _, AllChars ->
+            invalid_arg "choice: ambiguous parsers (one accepts everything)"
+          | NoChar, NoChar ->
+            invalid_arg "choice: ambiguous parsers (both accept nothing)"
+        end
+    end
   with ExnIsFail msg ->
     fail msg
+
+let rec choice l = match l with
+  | [] -> invalid_arg "choice: empty list";
+  | [x] -> x
+  | a :: b :: tail -> choice (merge a b :: tail)
+
+(* temporary structure for buildings switches *)
+type 'a trie =
+  | TrieLeaf of 'a t
+  | TrieNode of 'a trie CharMap.t
+
+let trie_empty = TrieNode CharMap.empty
+
+let rec parser_of_trie : type a. a trie -> a t = function
+  | TrieLeaf p -> p
+  | TrieNode m -> SwitchC (CharMap.map parser_of_trie m, None)
 
 (* build prefix trie *)
 let switch_s l =
@@ -261,54 +321,64 @@ let switch_s l =
   let rec add_trie t s i p =
     if i = String.length s
     then match t with
-      | TrieEmpty -> TrieNode (Some p, CharMap.empty)
-      | TrieNode (Some _, _) -> invalid_arg (str "duplicate key \"%s\"" s)
-      | TrieNode (None, m) -> TrieNode (Some p, m)
+      | TrieNode m when CharMap.is_empty m -> TrieLeaf p
+      | TrieNode _ -> invalid_arg (str "key \"%s\" is prefix of another key" s)
+      | TrieLeaf _  -> invalid_arg (str "duplicate key \"%s\"" s)
     else
       let c = String.get s i in
       match t with
-      | TrieEmpty ->
-        let sub = add_trie TrieEmpty s (i+1) p in
-        TrieNode (None, CharMap.singleton c sub)
-      | TrieNode (opt, map) ->
+      | TrieLeaf _ ->
+        invalid_arg (str "key \"%s\" is prefixed by another key" s)
+      | TrieNode map ->
         try
           let sub = CharMap.find c map in
           let sub = add_trie sub s (i+1) p in
-          TrieNode (opt, CharMap.add c sub map)
+          TrieNode (CharMap.add c sub map)
         with Not_found ->
-          let sub = add_trie TrieEmpty s (i+1) p in
-          TrieNode (opt, CharMap.add c sub map)
+          let sub = add_trie trie_empty s (i+1) p in
+          TrieNode (CharMap.add c sub map)
   in
   let trie =
     List.fold_left
       (fun trie (s, p) ->
          if s = "" then invalid_arg "switch_s: empty string";
          add_trie trie s 0 p
-      ) TrieEmpty l
+      ) trie_empty l
   in
-  SwitchS trie
+  parser_of_trie trie
 
 let bool =
   switch_s
-    [ "true", Return true
-    ; "false", Return false
+    [ "true", return true
+    ; "false", return false
     ]
 
-let fix f = Fix f
+let delay p = Lazy p
+
+(* FIXME: does not work in practice. Must separate definition of combinators
+  from compilation to decision tree *)
+let fix f =
+  let rec r = lazy (f r) in
+  Lazy.force r
 
 module Infix = struct
   let (>|=) x f = map f x
   let (<*>) = app
-  let (<<) a b = AppLeft (a, b)  (* return (fun x y -> x) <*> a <*> b *)
-  let (>>) a b = AppRight (a, b) (* return (fun x y -> y) <*> a <*> b *)
-  let (<+>) a b = choice [a; b]
+  let (<<) = app_left
+  let (>>) = app_right
+  let (<+>) = merge
+  let (<::>) a b = pure (fun x l -> x::l) <*> a <*> b
 end
 
 include Infix
 
 (* TODO: more efficient version, with buffer *)
 let word =
-  return (fun c s -> string_of_list (c :: s)) <*> alpha <*> many alpha_num
+  pure (fun c s -> str_of_l (c :: s)) <*> alpha <*> many alpha_num
+
+(* TODO *)
+let quoted =
+  Lazy (lazy (failwith "quoted: not implemented"))
 
 (** {2 Signatures} *)
 
@@ -495,23 +565,7 @@ module MakeFromReader(R : READER) : S with type source = R.source = struct
                 | Some d -> parse_rec r d
             end
         end
-      | SwitchS TrieEmpty -> assert false
-      | SwitchS (TrieNode (Some p, _)) ->
-        parse_rec r p
-      | SwitchS (TrieNode (None, map)) ->
-        begin match R.next r with
-          | EOF -> errorf r "expected any of {%s}, got EOF" (print_char_map map)
-          | Yield c ->
-            begin try
-                let trie = CharMap.find c map in
-                parse_rec r (SwitchS trie) (* recurse in subtree *)
-              with Not_found ->
-                errorf r "expected any of {%s}, got %c" (print_char_map map) c
-            end
-        end
-      | Fix f ->
-        let p = f (Fix f) in
-        parse_rec r p
+      | Lazy (lazy p) -> parse_rec r p
       | Eof ->
         begin match R.next r with
           | EOF -> ()

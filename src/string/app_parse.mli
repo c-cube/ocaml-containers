@@ -26,6 +26,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Applicative Parser Combinators}
 
+    Example: basic S-expr parser
+
+{[
+  open Containers_string.App_parse;;
+
+  type sexp = Atom of string | List of sexp list;;
+
+  let mkatom a = Atom a;;
+  let mklist l = List l;;
+
+  let sexp = fix (fun sexp ->
+      spaces >>
+        ((word >|= mkatom) <+>
+         ((char '(' >> many (delay sexp) << char ')') >|= mklist)
+        )
+    );;
+
+]}
+
 {b status: experimental}
 @since NEXT_RELEASE
 *)
@@ -40,10 +59,13 @@ type 'a t
 val return : 'a -> 'a t
 (** Parser that succeeds with the given value *)
 
+val pure : 'a -> 'a t
+(** Synonym to {!return} *)
+
 val fail : string -> 'a t
 (** [fail msg] fails with the given error message *)
 
-(* TODO: a format version of fail *)
+val failf : ('a, unit, string, 'b t) format4 -> 'a
 
 val app : ('a -> 'b) t -> 'a t -> 'b t
 (** Applicative *)
@@ -80,6 +102,12 @@ val word : string t
 (** [word] parses any identifier not starting with an integer and
     not containing any whitespace nor delimiter
     TODO: specify *)
+
+val quoted : string t
+(** Quoted string, following OCaml conventions *)
+
+val str_of_l : char list -> string
+(** Helper to build strings from lists of chars *)
 
 val spaces : unit t
 (** Parse a sequence of ['\t'] and [' '] *)
@@ -132,11 +160,15 @@ val choice : 'a t list -> 'a t
     @raise Invalid_argument if the list is empty, or if some parsers
     overlap, making the choice ambiguous *)
 
-val fix : ('a t -> 'a t) -> 'a t
+val delay : 'a t Lazy.t -> 'a t
+(** delay evaluation. Useful in combination with {!fix} *)
+
+val fix : ('a t Lazy.t -> 'a t) -> 'a t
 (** [fix f] makes a fixpoint *)
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  (** Infix version of {!map} *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   (** Synonym to {!app} *)
@@ -149,6 +181,9 @@ module Infix : sig
 
   val (<+>) : 'a t -> 'a t -> 'a t
   (** [a <+> b] is [choice [a;b]], a binary choice *)
+
+  val (<::>) : 'a t -> 'a list t -> 'a list t
+  (** [a <::> b] is [app (fun x l -> x::l) a b] *)
 end
 
 include module type of Infix
