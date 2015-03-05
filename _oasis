@@ -85,7 +85,7 @@ Library "containers_iter"
 Library "containers_string"
   Path:             src/string
   Pack:             true
-  Modules:          KMP, Levenshtein
+  Modules:          KMP, Levenshtein, App_parse
   FindlibName:      string
   FindlibParent:    containers
 
