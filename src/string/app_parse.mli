@@ -37,11 +37,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   let mklist l = List l;;
 
   let sexp = fix (fun sexp ->
-      spaces >>
-        ((word >|= mkatom) <+>
-         ((char '(' >> many (delay sexp) << char ')') >|= mklist)
-        )
-    );;
+    spaces >>
+      ((word >|= mkatom) <+>
+       ((char '(' >> many sexp << char ')') >|= mklist)
+      )
+  );;
+
+  Str.parse_exn "(a (b c d) e)" sexp;;
 
 ]}
 
@@ -160,10 +162,7 @@ val choice : 'a t list -> 'a t
     @raise Invalid_argument if the list is empty, or if some parsers
     overlap, making the choice ambiguous *)
 
-val delay : 'a t Lazy.t -> 'a t
-(** delay evaluation. Useful in combination with {!fix} *)
-
-val fix : ('a t Lazy.t -> 'a t) -> 'a t
+val fix : ('a t -> 'a t) -> 'a t
 (** [fix f] makes a fixpoint *)
 
 module Infix : sig
@@ -228,6 +227,9 @@ end
 module Make(I : INPUT) : S with type source = I.t
 
 (** {2 Low-level interface} *)
+
+val print : Format.formatter -> _ t -> unit
+(** Print a parser structure, for debug purpose *)
 
 type token =
   | Yield of char

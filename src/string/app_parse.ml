@@ -38,18 +38,38 @@ let str fmt = Printf.sprintf fmt
 module CharSet = Set.Make(Char)
 module CharMap = Map.Make(Char)
 
+let print_char = function
+  | '\t' -> "\\t"
+  | '\n' -> "\\n"
+  | '\r' -> "\\r"
+  | c -> str "%c" c
+
 let print_char_set set =
-  let l = CharSet.fold
-      (fun c acc -> str "'%c'" c :: acc) set [] in
-  String.concat ", " l
+  let buf = Buffer.create 32 in
+  Buffer.add_char buf '"';
+  CharSet.iter (fun c -> Buffer.add_string buf (print_char c)) set;
+  Buffer.add_char buf '"';
+  Buffer.contents buf
 
 let domain_of_char_map m =
   CharMap.fold (fun c _ set -> CharSet.add c set) m CharSet.empty
 
 let print_char_map map =
   let l = CharMap.fold
-      (fun c _ acc -> str "'%c'" c :: acc) map [] in
+      (fun c _ acc -> print_char c :: acc) map [] in
   String.concat ", " l
+
+let ppmap ?(sep=", ") pp_k pp_v fmt m =
+  let first = ref true in
+  CharMap.iter
+    (fun k v ->
+      if !first then first := false else Format.pp_print_string fmt sep;
+      pp_k fmt k;
+      Format.pp_print_string fmt " → ";
+      pp_v fmt v;
+      Format.pp_print_cut fmt ()
+    ) m;
+  ()
 
 let set_of_string s =
   let set = ref CharSet.empty in
@@ -75,53 +95,91 @@ let str_of_l l =
   List.iteri (fun i c -> Bytes.set b i c) l;
   Bytes.unsafe_to_string b
 
-type _ t =
-  | Return : 'a -> 'a t
-  | Map : ('a -> 'b) * 'a t -> 'b t
-  | Filter: ('a -> bool) * 'a t -> 'a t
-  | App : ('a -> 'b) t * 'a t -> 'b t
-  | AppLeft : 'a t * 'b t -> 'a t
-  | AppRight : 'a t * 'b t -> 'b t
-  | Fail : string -> 'a t
-  | Int : int t
-  | Float : float t
-  | AnyOf : CharSet.t -> char t
-  | Many : CharSet.t * 'a t * unit t * multiplicity -> 'a list t
-  | Skip : CharSet.t * 'a t * multiplicity -> unit t (* same as Many, but ignores *)
-  | SwitchC : 'a t CharMap.t * 'a t option -> 'a t
-  | Lazy : 'a t Lazy.t -> 'a t
-  | Eof : unit t
+type 'a t = {
+  parse : 'a parse;
+  mutable compiled : 'a compiled;
+}
 
-let return x = Return x
-let pure = return
+(* syntactic version *)
+and _ parse =
+  | Return : 'a -> 'a parse
+  | Map : ('a -> 'b) * 'a t -> 'b parse
+  | Filter: ('a -> bool) * 'a t -> 'a parse
+  | App : ('a -> 'b) t * 'a t -> 'b parse
+  | AppLeft : 'a t * 'b t -> 'a parse
+  | AppRight : 'a t * 'b t -> 'b parse
+  | Fail : string -> 'a parse
+  | Int : int parse
+  | Float : float parse
+  | AnyOf : CharSet.t -> char parse
+  | Many : 'a t * unit t * multiplicity -> 'a list parse
+  | Skip : 'a t * multiplicity -> unit parse (* same as Many, but ignores *)
+  | SwitchC : 'a t CharMap.t * 'a t option -> 'a parse
+  | Lazy : 'a t lazy_t -> 'a parse
+  | Eof : unit parse
 
-let success = Return ()
+(* compiled version *)
+and 'a compiled =
+  | C_Return : 'a -> 'a compiled
+  | C_Map : ('a -> 'b) * 'a t -> 'b compiled
+  | C_Filter: ('a -> bool) * 'a t -> 'a compiled
+  | C_App : ('a -> 'b) t * 'a t -> 'b compiled
+  | C_AppLeft : 'a t * 'b t -> 'a compiled
+  | C_AppRight : 'a t * 'b t -> 'b compiled
+  | C_Fail : string -> 'a compiled
+  | C_Int : int compiled
+  | C_Float : float compiled
+  | C_AnyOf : CharSet.t -> char compiled
+  | C_SwitchC : 'a t CharMap.t * 'a t option -> 'a compiled
+  | C_Eof : unit compiled
+  | C_NotCompiled : 'a compiled (* to be compiled *)
 
-let fail msg = Fail msg
+(** {2 Helpers} *)
 
-let failf fmt = Printf.ksprintf (fun msg -> fail msg) fmt
+(* build a new parser *)
+let make parse = { parse; compiled=C_NotCompiled; }
 
-let map f x = match x with
-  | Map (g, y) -> Map (compose f g, y)
-  | Return x -> Return (f x)
-  | _ -> Map (f,x)
+let ppmult fmt = function
+  | Star -> Format.pp_print_string fmt "*"
+  | Plus -> Format.pp_print_string fmt "+"
+  | Question -> Format.pp_print_string fmt "?"
 
-let app f x = match f with
-  | Return f -> map f x
-  | _ -> App (f, x)
-
-let filter f x = match x with
-  | Return y -> if f y then Return y else fail "filter failed"
-  | Filter (f', y) -> Filter ((fun x -> f' x && f x), y)
-  | _ -> Filter (f, x)
-
-let app_left a b = AppLeft (a, b)  (* return (fun x y -> x) <*> a <*> b *)
-
-let app_right a b = AppRight (a, b) (* return (fun x y -> y) <*> a <*> b *)
-
-let int = Int
-
-let float = Float
+let print fmt p =
+  let depth = ref 0 in
+  (* print up to a given limit into lazy values *)
+  let rec print_aux
+    : type a. Format.formatter -> a t -> unit
+    = fun fmt p ->
+      let ppstr = Format.pp_print_string
+      and ppf fmt x = Format.fprintf fmt x in
+      let ppc fmt c = ppf fmt "'%s'" (print_char c) in
+      match p.parse with
+      | Return _ -> ppstr fmt "<ret>"
+      | Map (_, x) -> ppf fmt "@[(map@ %a)@]" print_aux x
+      | Filter (_, x) -> ppf fmt "@[(filter@ %a)@]" print_aux x
+      | App (f, x) -> ppf fmt "@[<2>@[%a@]@ <*>@ @[%a@]@]" print_aux f print_aux x
+      | AppLeft (a, b) -> ppf fmt "@[%a@ <<@ %a@]" print_aux a print_aux b
+      | AppRight (a, b) -> ppf fmt "@[%a@ >>@ %a@]" print_aux a print_aux b
+      | Fail _ -> ppf fmt "<fail>"
+      | Int -> ppstr fmt "<int>"
+      | Float -> ppstr fmt "<float>"
+      | AnyOf set -> ppf fmt "@[(any@ %s)@]" (print_char_set set)
+      | Many (p, sep, mult) ->
+        ppf fmt "@[<2>(@[%a@]@ sep:@[%a@])%a@]" print_aux p print_aux sep ppmult mult
+      | Skip (p, mult) ->
+        ppf fmt "@[<2>(skip @[%a@]%a)@]" print_aux p ppmult mult
+      | SwitchC (map, None) ->
+        ppf fmt "@[<hv2>(switch@ @[%a@])@]" (ppmap ppc print_aux) map
+      | SwitchC (map, Some o) ->
+        ppf fmt "@[<hv2>(switch@ @[%a@]@ or:%a)@]" (ppmap ppc print_aux) map print_aux o
+      | Lazy _ when !depth > 3 -> ppf fmt "<lazy>"
+      | Lazy (lazy p) ->
+        incr depth;
+        print_aux fmt p;
+        decr depth
+      | Eof -> ppstr fmt "<eof>"
+  in
+  print_aux fmt p
 
 let int_first_char = lazy (set_of_string "-0123456789")
 let float_first_char = lazy (set_of_string ".-0123456789")
@@ -136,56 +194,77 @@ type possible_first_chars =
 let ret_set set =
   if CharSet.cardinal set = 256 then AllChars else Set set
 
+(*
 let union_possible_first_chars a b = match a, b with
   | Set a, Set b -> Set (CharSet.union a b)
   | IsFail e, _ | _, IsFail e -> IsFail e
   | AllChars, _ | _, AllChars -> AllChars
   | NoChar, o | o, NoChar -> o
+ *)
+
+(* TODO: handle cases that can consume 0 or more chars (skip, many...) *)
 
 (* set of possibilities for the first char of a parser *)
 let rec possible_first_chars
-  : type a. a t -> possible_first_chars
+  : type a. a parse -> possible_first_chars
   = function
   | Return _ -> NoChar
-  | Map (_, x) -> possible_first_chars x
-  | Filter (_, x) -> possible_first_chars x
-  | App (f, _) -> possible_first_chars f
-  | AppLeft (a, _) -> possible_first_chars a
-  | AppRight (a, _) -> possible_first_chars a
+  | Map (_, x) -> possible_first_chars x.parse
+  | Filter (_, x) -> possible_first_chars x.parse
+  | App (f, _) -> possible_first_chars f.parse
+  | AppLeft (a, _) -> possible_first_chars a.parse (* TODO: handle NoChar *)
+  | AppRight (a, _) -> possible_first_chars a.parse
   | Fail e -> IsFail e
   | Int -> Set (Lazy.force int_first_char)
   | Float -> Set (Lazy.force float_first_char)
   | AnyOf set -> ret_set set
-  | Many(set, p, _, (Question | Star)) ->
-    union_possible_first_chars (ret_set set) (possible_first_chars p)
-  | Skip (set, p, (Question | Star)) ->
-    union_possible_first_chars (ret_set set) (possible_first_chars p)
-  | Many (set, _, _, Plus) -> Set set
-  | Skip (set, _, Plus) -> ret_set set
+  | Many (p, _, _) -> possible_first_chars p.parse
+  | Skip (p, _) -> possible_first_chars p.parse
   | SwitchC (map, None) -> ret_set (domain_of_char_map map)
   | SwitchC (_, Some _) -> AllChars
-  | Lazy (lazy p) -> possible_first_chars p
+  | Lazy (lazy p) -> possible_first_chars p.parse
   | Eof -> NoChar
 
-let many_ ~sep ~mult ~p = match possible_first_chars p with
-  | Set set -> Many (set, p, sep, mult)
-  | IsFail msg -> Fail msg
-  | AllChars -> invalid_arg (str "many: invalid parser (always succeeds)")
-  | NoChar -> invalid_arg (str "many: invalid parser (does not consume input)")
+(** {2 Combinators} *)
 
-let many ?(sep=success) p = many_ ~sep ~mult:Star ~p
+let return x = {parse=Return x; compiled=C_Return x}
+let pure = return
 
-let many1 ?(sep=success) p = many_ ~sep ~mult:Plus ~p
+let success = pure ()
 
-let skip_ ~mult ~p = match possible_first_chars p with
-  | Set set -> Skip (set, p, mult)
-  | IsFail msg -> Fail msg
-  | AllChars -> invalid_arg (str "skip: invalid parser (always succeeds)")
-  | NoChar -> invalid_arg (str "skip: invalid parser (does not consume input)")
+let fail msg = make (Fail msg)
 
-let skip p = skip_ ~mult:Star ~p
+let failf fmt = Printf.ksprintf (fun msg -> fail msg) fmt
 
-let skip1 p = skip_ ~mult:Plus ~p
+let map f x = match x.parse with
+  | Map (g, y) -> make (Map (compose f g, y))
+  | Return x -> pure (f x)
+  | _ -> make (Map (f, x))
+
+let app f x = match f.parse with
+  | Return f -> map f x
+  | _ -> make (App (f, x))
+
+let filter f x = match x.parse with
+  | Return y -> if f y then return y else fail "filter failed"
+  | Filter (f', y) -> make (Filter ((fun x -> f' x && f x), y))
+  | _ -> make (Filter (f, x))
+
+let app_left a b = make (AppLeft (a, b))  (* return (fun x y -> x) <*> a <*> b *)
+
+let app_right a b = make (AppRight (a, b)) (* return (fun x y -> y) <*> a <*> b *)
+
+let int = make Int
+
+let float = make Float
+
+let many ?(sep=success) p = make (Many (p, sep, Star))
+
+let many1 ?(sep=success) p = make (Many (p, sep, Plus))
+
+let skip p = make (Skip (p, Star))
+
+let skip1 p = make (Skip (p, Plus))
 
 let opt p =
     map
@@ -193,11 +272,12 @@ let opt p =
         | [x] -> Some x
         | [] -> None
         | _ -> assert false
-      ) (many_ ~sep:success ~mult:Question ~p)
+      ) (make (Many (p, success, Question)))
 
-let any_of s = AnyOf (set_of_string s)
+let any_of' s = make (AnyOf s)
+let any_of s = any_of' (set_of_string s)
 
-let char c = AnyOf (CharSet.singleton c)
+let char c = make (AnyOf (CharSet.singleton c))
 
 let spaces = skip (any_of " \t")
 let spaces1 = skip1 (any_of " \t")
@@ -210,13 +290,13 @@ let alpha_upper_ = set_of_string "ABCDEFGHIJKLMONPQRSTUVWXYZ"
 let num_ = set_of_string "0123456789"
 let alpha_ = CharSet.union alpha_lower_ alpha_upper_
 
-let alpha_lower = AnyOf alpha_lower_
-let alpha_upper = AnyOf alpha_upper_
-let num = AnyOf num_
-let alpha = AnyOf alpha_
-let alpha_num = AnyOf (CharSet.union num_ alpha_)
+let alpha_lower = any_of' alpha_lower_
+let alpha_upper = any_of' alpha_upper_
+let num = any_of' num_
+let alpha = any_of' alpha_
+let alpha_num = any_of' (CharSet.union num_ alpha_)
 
-let eof = Eof
+let eof = make Eof
 
 let switch_c ?default l =
   if l = [] then match default with
@@ -230,15 +310,15 @@ let switch_c ?default l =
          CharMap.add c t map
       ) CharMap.empty l
   in
-  SwitchC (map, default)
+  make (SwitchC (map, default))
 
 exception ExnIsFail of string
 
-(* binary choice *)
+(* binary choice: compiled into decision tree *)
 let rec merge a b =
   (* build a switch by first char *)
   try
-    begin match a, b with
+    begin match a.parse, b.parse with
       | SwitchC (map_a, def_a), SwitchC (map_b, def_b) ->
         (* merge jump tables *)
         let def = match def_a, def_b with
@@ -256,13 +336,13 @@ let rec merge a b =
               | None, None -> assert false
             ) map_a map_b
         in
-        SwitchC (map, def)
+        make (SwitchC (map, def))
       | SwitchC (map, def), other
       | other, SwitchC (map, def) ->
         let map', def' = match possible_first_chars other, def with
           | AllChars, _ ->
             invalid_arg "choice: ambiguous, several parsers accept any input"
-          | NoChar, None -> map, Some other
+          | NoChar, None -> map, Some (make other)
           | NoChar, Some _ ->
             invalid_arg "choice: ambiguous"
           | IsFail msg, _ -> raise (ExnIsFail msg)
@@ -272,12 +352,12 @@ let rec merge a b =
                 (str "choice: ambiguous parsers (overlap on {%s})"
                    (print_char_set (CharSet.inter set (domain_of_char_map map))));
             (* else: merge jump tables *)
-            let map = map_add_set map set other in
+            let map = map_add_set map set (make other) in
             map, def
-          in
-          SwitchC (map', def')
+        in
+        make (SwitchC (map', def'))
       | _ ->
-        begin match possible_first_chars a, possible_first_chars b with
+        begin match possible_first_chars a.parse, possible_first_chars b.parse with
           | Set set1, Set set2 ->
             if CharSet.exists (fun c -> CharSet.mem c set2) set1
             then invalid_arg
@@ -285,23 +365,22 @@ let rec merge a b =
                    (print_char_set (CharSet.inter set1 set2)));
             let map = map_add_set CharMap.empty set1 a in
             let map = map_add_set map set2 b in
-            SwitchC (map, None)
+            make (SwitchC (map, None))
           | IsFail e, _ | _, IsFail e -> raise (ExnIsFail e)
-          | Set s, NoChar -> SwitchC (map_add_set CharMap.empty s a, Some b)
-          | NoChar, Set s -> SwitchC (map_add_set CharMap.empty s b, Some a)
+          | Set s, NoChar -> make (SwitchC (map_add_set CharMap.empty s a, Some b))
+          | NoChar, Set s -> make (SwitchC (map_add_set CharMap.empty s b, Some a))
           | AllChars, _ | _, AllChars ->
             invalid_arg "choice: ambiguous parsers (one accepts everything)"
           | NoChar, NoChar ->
             invalid_arg "choice: ambiguous parsers (both accept nothing)"
         end
     end
-  with ExnIsFail msg ->
-    fail msg
+  with ExnIsFail msg -> make (Fail msg)
 
-let rec choice l = match l with
+let rec choice = function
   | [] -> invalid_arg "choice: empty list";
   | [x] -> x
-  | a :: b :: tail -> choice (merge a b :: tail)
+  | a :: tl -> merge a (choice tl)
 
 (* temporary structure for buildings switches *)
 type 'a trie =
@@ -312,7 +391,7 @@ let trie_empty = TrieNode CharMap.empty
 
 let rec parser_of_trie : type a. a trie -> a t = function
   | TrieLeaf p -> p
-  | TrieNode m -> SwitchC (CharMap.map parser_of_trie m, None)
+  | TrieNode m -> make (SwitchC (CharMap.map parser_of_trie m, None))
 
 (* build prefix trie *)
 let switch_s l =
@@ -353,20 +432,20 @@ let bool =
     ; "false", return false
     ]
 
-let delay p = Lazy p
-
-(* FIXME: does not work in practice. Must separate definition of combinators
-  from compilation to decision tree *)
 let fix f =
-  let rec r = lazy (f r) in
-  Lazy.force r
+  (* outermost lazy needed for the recursive definition *)
+  let rec r = {
+    parse=Lazy (lazy (f r));
+    compiled=C_NotCompiled;
+  } in
+  r
 
 module Infix = struct
   let (>|=) x f = map f x
   let (<*>) = app
   let (<<) = app_left
   let (>>) = app_right
-  let (<+>) = merge
+  let (<+>) a b = choice [a; b]
   let (<::>) a b = pure (fun x l -> x::l) <*> a <*> b
 end
 
@@ -378,7 +457,82 @@ let word =
 
 (* TODO *)
 let quoted =
-  Lazy (lazy (failwith "quoted: not implemented"))
+  make (Lazy (lazy (failwith "quoted: not implemented")))
+
+(** {2 Compilation} *)
+
+let encode_cons x sep tl = pure (fun x _sep tl -> x :: tl) <*> x <*> sep <*> tl
+
+let encode_many
+  : type a. set:CharSet.t -> p:a t -> self:a list t -> sep:unit t -> a list t
+  = fun ~set ~p ~self ~sep ->
+    let on_success = encode_cons p sep self
+    and on_fail = pure [] in
+    make (SwitchC (map_add_set CharMap.empty set on_success, Some on_fail))
+
+let encode_opt ~set x =
+  let mk_one x = [x] in
+  let on_success = make (Map (mk_one, x))
+  and on_fail = pure [] in
+  make (SwitchC (map_add_set CharMap.empty set on_success, Some on_fail))
+
+let encode_skip
+  : type a. set:CharSet.t -> p:a t -> self:unit t -> unit t
+  = fun ~set ~p ~self ->
+    let on_success = p >> self
+    and on_fail = pure () in
+    make (SwitchC (map_add_set CharMap.empty set on_success, Some on_fail))
+
+let many_
+  : type a. sep:unit t -> mult:multiplicity -> p:a t -> a list t
+  = fun ~sep ~mult ~p -> match possible_first_chars p.parse with
+  | Set set ->
+    begin match mult with
+      | Star -> fix (fun self -> encode_many ~set ~sep ~p ~self)
+      | Plus -> encode_cons p sep (fix (fun self -> encode_many ~set ~sep ~p ~self))
+      | Question -> encode_opt ~set p
+    end
+  | IsFail msg -> make (Fail msg)
+  | AllChars -> invalid_arg (str "many: invalid parser (always succeeds)")
+  | NoChar -> invalid_arg (str "many: invalid parser (does not consume input)")
+
+let skip_ : type a. mult:multiplicity -> p:a t -> unit t
+  = fun ~mult ~p -> match possible_first_chars p.parse with
+  | Set set ->
+    begin match mult with
+      | Star -> fix (fun self -> encode_skip ~set ~p ~self)
+      | Plus -> p >> fix (fun self -> encode_skip ~set ~p ~self)
+      | Question -> encode_opt ~set p >> pure () 
+    end
+  | IsFail msg -> make (Fail msg)
+  | AllChars -> invalid_arg (str "skip: invalid parser (always succeeds)")
+  | NoChar -> invalid_arg (str "skip: invalid parser (does not consume input)")
+
+let rec compile
+  : type a. a t -> a compiled
+  = fun t -> match t.compiled with
+  | C_NotCompiled ->
+    let c = match t.parse with
+      | Return x -> C_Return x
+      | Map (f, x) -> C_Map (f, x)
+      | Filter (f, x) -> C_Filter (f, x)
+      | App (f, x) -> C_App (f, x)
+      | AppLeft (a, b) -> C_AppLeft (a, b)
+      | AppRight (a, b) -> C_AppRight (a, b)
+      | Fail msg -> C_Fail msg
+      | Int -> C_Int
+      | Float -> C_Float
+      | AnyOf set -> C_AnyOf set
+      | Many (p, sep, mult) -> compile (many_ ~sep ~mult ~p)
+      | Skip (p, mult) -> compile (skip_ ~mult ~p)
+      | SwitchC (map, None) -> C_SwitchC (map, None)
+      | SwitchC (map, Some o) -> C_SwitchC (map, Some o)
+      | Eof -> C_Eof
+      | Lazy (lazy p) -> compile p
+    in
+    t.compiled <- c;
+    c
+  | c -> c  (* already compiled *)
 
 (** {2 Signatures} *)
 
@@ -505,107 +659,69 @@ module MakeFromReader(R : READER) : S with type source = R.source = struct
   let is_int c = Char.code c >= Char.code '0' && Char.code c <= Char.code '9'
   let to_int c = Char.code c - Char.code '0'
 
-  let rec parse_int r sign i = match R.peek r with
+  let rec parse_int r ~sign i = match R.peek r with
     | EOF -> i
     | Yield c when is_int c ->
       R.junk r;
-      parse_int r sign (10 * i + to_int c)
+      parse_int r ~sign (10 * i + to_int c)
     | Yield '-' when i = 0 && sign ->
       (* switch sign: only on first char *)
       R.junk r;
-      parse_int r false 0
+      parse_int r ~sign:false 0
     | _ -> if sign then i else -i
 
   let parse_float _r _buf = assert false
 
   let rec parse_rec : type a. R.t -> a t -> a =
-    fun r p -> match p with
-      | Return x -> x
-      | Map (f, x) ->
+    fun r p -> match compile p with
+      | C_Return x -> x
+      | C_Map (f, x) ->
         let y = parse_rec r x in
         f y
-      | Filter (f, x) ->
+      | C_Filter (f, x) ->
         let y = parse_rec r x in
         if f y then y else errorf r "filter failed"
-      | App (f, x) ->
+      | C_App (f, x) ->
         let f' = parse_rec r f in
         let x' = parse_rec r x in
         f' x'
-      | AppLeft (a, b) ->
+      | C_AppLeft (a, b) ->
         let a' = parse_rec r a in
         let _ = parse_rec r b in
         a'
-      | AppRight (a, b) ->
+      | C_AppRight (a, b) ->
         let _ = parse_rec r a in
         let b' = parse_rec r b in
         b'
-      | Fail msg -> error r msg
-      | Int -> parse_int r true 0
-      | Float -> parse_float r (Buffer.create 8)
-      | AnyOf set ->
+      | C_Fail msg -> error r msg
+      | C_Int -> parse_int r ~sign:true 0
+      | C_Float -> parse_float r (Buffer.create 8)
+      | C_AnyOf set ->
         begin match R.next r with
-          | EOF -> errorf r "expected any of {%s}, got EOF" (print_char_set set)
+          | EOF -> errorf r "expected any of %s, got EOF" (print_char_set set)
           | Yield c ->
             if CharSet.mem c set then c
-            else errorf r "expected any of {%s}, got %c" (print_char_set set) c
+            else errorf r "expected any of %s, got %c" (print_char_set set) c
         end
-      | Many (set, p, sep, mult) -> parse_many r ~set ~sep ~p ~mult []
-      | Skip (set, p, mult) -> parse_skip r ~set ~p ~mult
-      | SwitchC (map, def) ->
+      | C_SwitchC (map, def) ->
         begin match R.peek r with
-          | EOF -> errorf r "expected any of {%s}, got EOF" (print_char_map map)
+          | EOF -> errorf r "expected any of %s, got EOF" (print_char_map map)
           | Yield c ->
             begin try
-                let p' = CharMap.find c map in
-                parse_rec r p'
-              with Not_found ->
-                match def with
-                | None ->
-                  errorf r "expected any of {%s}, got %c" (print_char_map map) c
-                | Some d -> parse_rec r d
+              let p' = CharMap.find c map in
+              parse_rec r p'
+            with Not_found -> match def with
+              | None ->
+                errorf r "expected any of %s, got %c" (print_char_map map) c
+              | Some d -> parse_rec r d
             end
         end
-      | Lazy (lazy p) -> parse_rec r p
-      | Eof ->
+      | C_NotCompiled -> assert false
+      | C_Eof ->
         begin match R.next r with
           | EOF -> ()
           | Yield c -> errorf r "expected EOF, got %c" c
         end
-
-  and parse_many
-    : type a. R.t -> set:CharSet.t -> p:a t -> sep:unit t ->
-      mult:multiplicity -> a list -> a list
-    = fun r ~set ~p ~sep ~mult acc ->
-      match R.peek r with
-      | EOF -> List.rev acc
-      | Yield c ->
-        if CharSet.mem c set
-        then
-          let x = parse_rec r p in
-          match mult with
-          | Question -> assert (acc = []); [x]
-          | Plus | Star ->
-            let _ = parse_rec r sep in (* separator *)
-            parse_many r ~set ~p ~sep ~mult:Star (x::acc)
-        else if mult = Plus
-        then errorf r "expected {%s}, got %c" (print_char_set set) c
-        else List.rev acc
-
-  and parse_skip
-    : type a. R.t -> set:CharSet.t -> p:a t -> mult:multiplicity -> unit
-    = fun r ~set ~p ~mult ->
-      match R.peek r with
-      | EOF -> ()
-      | Yield c ->
-        if CharSet.mem c set
-        then
-          let _ = parse_rec r p in
-          match mult with
-          | Question -> ()
-          | Plus | Star -> parse_skip r ~set ~p ~mult:Star
-        else if mult = Plus
-        then errorf r "expected {%s}, got %c" (print_char_set set) c
-        else ()
 
   (* public functions *)
   let parse_exn src p =
