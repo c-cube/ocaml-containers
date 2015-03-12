@@ -113,8 +113,12 @@ val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> ('d, exn) t
 (** {2 Applicative} *)
 
 val pure : 'a -> ('a, 'err) t
+(** Synonym of {!return} *)
 
 val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
+(** [a <*> b] evaluates [a] and [b], and, in case of success, returns
+    [`Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
+    over the error of [b] if both fail *)
 
 (** {2 Collections} *)
 
