@@ -64,6 +64,9 @@ val return : 'a -> 'a t
 val pure : 'a -> 'a t
 (** Synonym to {!return} *)
 
+val junk : unit t
+(** Skip next char *)
+
 val fail : string -> 'a t
 (** [fail msg] fails with the given error message *)
 
