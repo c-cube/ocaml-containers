@@ -42,6 +42,7 @@ let print_char = function
   | '\t' -> "\\t"
   | '\n' -> "\\n"
   | '\r' -> "\\r"
+  | '"' -> "\\\""
   | c -> str "%c" c
 
 let print_char_set set =
@@ -332,10 +333,12 @@ let alpha_lower_ = set_of_string "abcdefghijklmonpqrstuvwxyz"
 let alpha_upper_ = set_of_string "ABCDEFGHIJKLMONPQRSTUVWXYZ"
 let num_ = set_of_string "0123456789"
 let alpha_ = CharSet.union alpha_lower_ alpha_upper_
+let symbols_ = set_of_string "|!;$#@%&-_/="
 
 let alpha_lower = any_of' alpha_lower_
 let alpha_upper = any_of' alpha_upper_
 let num = any_of' num_
+let symbols = any_of' symbols_
 let alpha = any_of' alpha_
 let alpha_num = any_of' (CharSet.union num_ alpha_)
 
@@ -502,13 +505,14 @@ end
 
 include Infix
 
-(* TODO: more efficient version, with buffer *)
 let word =
   pure (fun c s -> str_of_l (c :: s)) <*> alpha <*> many alpha_num
 
-(* TODO *)
 let quoted =
-  make (Lazy (lazy (failwith "quoted: not implemented")))
+  let q = char '"' in
+  let escaped = char '\\' >> char '"' in
+  let inner = choice [escaped; alpha_num; any_of "()' \t\n|!;$#@%&-_/=~.,:<>[]"] in
+  q >> (many inner >|= str_of_l) << q
 
 (** {2 Compilation} *)
 
@@ -644,7 +648,7 @@ module ReaderOfInput(I : INPUT) : READER with type source = I.t = struct
   let col t = t.rcol
 
   let create input = {
-    rline=0;
+    rline=1;
     rcol=0;
     input;
     buf = Bytes.make 1024 ' ';
@@ -746,7 +750,7 @@ module MakeFromReader(R : READER) : S with type source = R.source = struct
           | EOF -> errorf r "expected any of %s, got EOF" (print_char_set set)
           | Yield c ->
             if CharSet.mem c set then c
-            else errorf r "expected any of %s, got %c" (print_char_set set) c
+            else errorf r "expected any of %s, got '%s'" (print_char_set set) (print_char c)
         end
       | C_SwitchC (map, def) ->
         begin match R.peek r with

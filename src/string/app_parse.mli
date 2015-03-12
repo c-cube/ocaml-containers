@@ -36,9 +36,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   let mkatom a = Atom a;;
   let mklist l = List l;;
 
+  let ident_char = alpha_num <+> any_of "|!;$#@%&-_/=*.:~+[]<>'" ;;
+  let ident = many1 ident_char >|= str_of_l ;;
+  let atom = (ident <+> quoted) >|= mkatom ;;
+
   let sexp = fix (fun sexp ->
-    spaces >>
-      ((word >|= mkatom) <+>
+    white >>
+      (atom <+>
        ((char '(' >> many sexp << char ')') >|= mklist)
       )
   );;
@@ -99,6 +103,9 @@ val alpha_upper : char t
 
 val alpha : char t
 
+val symbols : char t
+(** symbols, such as "!-=_"... *)
+
 val num : char t
 
 val alpha_num : char t
@@ -146,6 +153,11 @@ val opt : 'a t -> 'a option t
 val filter : ('a -> bool) -> 'a t -> 'a t
 (** [filter f p] parses the same as [p], but fails if the returned value
     does not satisfy [f] *)
+
+
+(* TODO: complement operator any_but (all but \, for instance) *)
+(* TODO: a "if-then-else" combinator (assuming the test has a
+   set of possible first chars) *)
 
 val switch_c : ?default:'a t -> (char * 'a t) list -> 'a t
 (** [switch_c l] matches the next char and uses the corresponding parser.
