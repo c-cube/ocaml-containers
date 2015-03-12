@@ -96,30 +96,17 @@ let str_of_l l =
   Bytes.unsafe_to_string b
 
 type 'a t = {
-  parse : 'a parse;
-  mutable compiled : 'a compiled;
+  mutable st : 'a parse_or_compiled;
 }
 
 (* syntactic version *)
 and _ parse =
-  | Return : 'a -> 'a parse
-  | Map : ('a -> 'b) * 'a t -> 'b parse
-  | Filter: ('a -> bool) * 'a t -> 'a parse
-  | App : ('a -> 'b) t * 'a t -> 'b parse
-  | AppLeft : 'a t * 'b t -> 'a parse
-  | AppRight : 'a t * 'b t -> 'b parse
-  | Fail : string -> 'a parse
-  | Int : int parse
-  | Float : float parse
-  | AnyOf : CharSet.t -> char parse
   | Many : 'a t * unit t * multiplicity -> 'a list parse
   | Skip : 'a t * multiplicity -> unit parse (* same as Many, but ignores *)
-  | SwitchC : 'a t CharMap.t * 'a t option -> 'a parse
   | Lazy : 'a t lazy_t -> 'a parse
-  | Eof : unit parse
 
 (* compiled version *)
-and 'a compiled =
+and _ compiled =
   | C_Return : 'a -> 'a compiled
   | C_Map : ('a -> 'b) * 'a t -> 'b compiled
   | C_Filter: ('a -> bool) * 'a t -> 'a compiled
@@ -129,15 +116,21 @@ and 'a compiled =
   | C_Fail : string -> 'a compiled
   | C_Int : int compiled
   | C_Float : float compiled
+  | C_Junk : unit compiled (* ignore next char *)
   | C_AnyOf : CharSet.t -> char compiled
   | C_SwitchC : 'a t CharMap.t * 'a t option -> 'a compiled
   | C_Eof : unit compiled
-  | C_NotCompiled : 'a compiled (* to be compiled *)
+
+and 'a parse_or_compiled =
+  | Parse of 'a parse
+  | Compiled of 'a compiled
 
 (** {2 Helpers} *)
 
 (* build a new parser *)
-let make parse = { parse; compiled=C_NotCompiled; }
+let make p = {st=Parse p}
+let make_c c = {st=Compiled c}
+let make_pc st = {st}
 
 let ppmult fmt = function
   | Star -> Format.pp_print_string fmt "*"
@@ -153,31 +146,32 @@ let print fmt p =
       let ppstr = Format.pp_print_string
       and ppf fmt x = Format.fprintf fmt x in
       let ppc fmt c = ppf fmt "'%s'" (print_char c) in
-      match p.parse with
-      | Return _ -> ppstr fmt "<ret>"
-      | Map (_, x) -> ppf fmt "@[(map@ %a)@]" print_aux x
-      | Filter (_, x) -> ppf fmt "@[(filter@ %a)@]" print_aux x
-      | App (f, x) -> ppf fmt "@[<2>@[%a@]@ <*>@ @[%a@]@]" print_aux f print_aux x
-      | AppLeft (a, b) -> ppf fmt "@[%a@ <<@ %a@]" print_aux a print_aux b
-      | AppRight (a, b) -> ppf fmt "@[%a@ >>@ %a@]" print_aux a print_aux b
-      | Fail _ -> ppf fmt "<fail>"
-      | Int -> ppstr fmt "<int>"
-      | Float -> ppstr fmt "<float>"
-      | AnyOf set -> ppf fmt "@[(any@ %s)@]" (print_char_set set)
-      | Many (p, sep, mult) ->
+      match p.st with
+      | Compiled (C_Return _) -> ppstr fmt "<ret>"
+      | Compiled (C_Map (_, x)) -> ppf fmt "@[(map@ %a)@]" print_aux x
+      | Compiled (C_Filter (_, x)) -> ppf fmt "@[(filter@ %a)@]" print_aux x
+      | Compiled (C_App (f, x)) -> ppf fmt "@[<2>@[%a@]@ <*>@ @[%a@]@]" print_aux f print_aux x
+      | Compiled (C_AppLeft (a, b)) -> ppf fmt "@[%a@ <<@ %a@]" print_aux a print_aux b
+      | Compiled (C_AppRight (a, b)) -> ppf fmt "@[%a@ >>@ %a@]" print_aux a print_aux b
+      | Compiled (C_Fail _) -> ppf fmt "<fail>"
+      | Compiled C_Int -> ppstr fmt "<int>"
+      | Compiled C_Float -> ppstr fmt "<float>"
+      | Compiled C_Junk -> ppstr fmt "<junk>"
+      | Compiled (C_AnyOf set) -> ppf fmt "@[(any@ %s)@]" (print_char_set set)
+      | Parse (Many (p, sep, mult)) ->
         ppf fmt "@[<2>(@[%a@]@ sep:@[%a@])%a@]" print_aux p print_aux sep ppmult mult
-      | Skip (p, mult) ->
+      | Parse (Skip (p, mult)) ->
         ppf fmt "@[<2>(skip @[%a@]%a)@]" print_aux p ppmult mult
-      | SwitchC (map, None) ->
+      | Compiled (C_SwitchC (map, None)) ->
         ppf fmt "@[<hv2>(switch@ @[%a@])@]" (ppmap ppc print_aux) map
-      | SwitchC (map, Some o) ->
+      | Compiled (C_SwitchC (map, Some o)) ->
         ppf fmt "@[<hv2>(switch@ @[%a@]@ or:%a)@]" (ppmap ppc print_aux) map print_aux o
-      | Lazy _ when !depth > 3 -> ppf fmt "<lazy>"
-      | Lazy (lazy p) ->
+      | Parse (Lazy _) when !depth > 3 -> ppf fmt "<lazy>"
+      | Parse (Lazy (lazy p)) ->
         incr depth;
         print_aux fmt p;
         decr depth
-      | Eof -> ppstr fmt "<eof>"
+      | Compiled C_Eof -> ppstr fmt "<eof>"
   in
   print_aux fmt p
 
@@ -189,74 +183,123 @@ type possible_first_chars =
   | Set of CharSet.t
   | AllChars
   | NoChar
+  | NoCharOrSet of CharSet.t (* either no char, or something starting with set *)
   | IsFail of string
 
-let ret_set set =
-  if CharSet.cardinal set = 256 then AllChars else Set set
+let ret_set set = match CharSet.cardinal set with
+  | 0 -> NoChar
+  | 256 -> AllChars
+  | _ -> Set set
 
-(*
-let union_possible_first_chars a b = match a, b with
-  | Set a, Set b -> Set (CharSet.union a b)
+let ret_no_char_or set = match CharSet.cardinal set with
+  | 0 -> NoChar
+  | 256 -> AllChars
+  | _ -> NoCharOrSet set
+
+(* pfc of parsing a or b *)
+let union_pfc a b = match a, b with
+  | Set a, Set b -> ret_set (CharSet.union a b)
+  | NoCharOrSet s, Set s'
+  | Set s', NoCharOrSet s -> ret_no_char_or (CharSet.union s s')
+  | NoChar, Set s
+  | Set s, NoChar -> ret_no_char_or s
+  | NoCharOrSet s, NoCharOrSet s' -> ret_no_char_or (CharSet.union s s')
   | IsFail e, _ | _, IsFail e -> IsFail e
   | AllChars, _ | _, AllChars -> AllChars
   | NoChar, o | o, NoChar -> o
- *)
 
-(* TODO: handle cases that can consume 0 or more chars (skip, many...) *)
+(* pfc of parsing a then b *)
+let then_pfc a b = match a, b with
+  | Set a, Set b -> ret_set (CharSet.union a b)
+  | NoCharOrSet s, NoCharOrSet s' -> ret_no_char_or (CharSet.union s s')
+  | NoCharOrSet s, Set s' -> ret_set (CharSet.union s s')
+  | NoCharOrSet s, NoChar -> ret_no_char_or s
+  | Set s, _ -> ret_set s
+  | IsFail e, _ | _, IsFail e -> IsFail e
+  | AllChars, _ | _, AllChars -> AllChars
+  | NoChar, o -> o
+
+let (<|||>) a b = match a with
+  | NoChar -> Lazy.force b
+  | NoCharOrSet _ -> then_pfc a (Lazy.force b)
+  | _ -> a
 
 (* set of possibilities for the first char of a parser *)
-let rec possible_first_chars
+let rec pfc : type a. a t -> possible_first_chars = fun t -> pfc_pc t.st
+
+and pfc_pc
+  : type a. a parse_or_compiled -> possible_first_chars
+  = function
+  | Parse p -> pfc_p p
+  | Compiled c -> pfc_c c
+
+and pfc_p
   : type a. a parse -> possible_first_chars
   = function
-  | Return _ -> NoChar
-  | Map (_, x) -> possible_first_chars x.parse
-  | Filter (_, x) -> possible_first_chars x.parse
-  | App (f, _) -> possible_first_chars f.parse
-  | AppLeft (a, _) -> possible_first_chars a.parse (* TODO: handle NoChar *)
-  | AppRight (a, _) -> possible_first_chars a.parse
-  | Fail e -> IsFail e
-  | Int -> Set (Lazy.force int_first_char)
-  | Float -> Set (Lazy.force float_first_char)
-  | AnyOf set -> ret_set set
-  | Many (p, _, _) -> possible_first_chars p.parse
-  | Skip (p, _) -> possible_first_chars p.parse
-  | SwitchC (map, None) -> ret_set (domain_of_char_map map)
-  | SwitchC (_, Some _) -> AllChars
-  | Lazy (lazy p) -> possible_first_chars p.parse
-  | Eof -> NoChar
+  | Many (p, _, (Question | Star)) -> union_pfc (pfc p) NoChar
+  | Many (p, _, Plus) -> pfc p
+  | Skip (p, (Question | Star)) -> union_pfc (pfc p) NoChar
+  | Skip (p, Plus) -> pfc p
+  | Lazy (lazy p) -> pfc p
+
+and pfc_c
+  : type a. a compiled -> possible_first_chars
+  = function
+  | C_Return _ -> NoChar
+  | C_Map (_, x) -> pfc x
+  | C_Filter (_, x) -> pfc x
+  | C_App (f, x) -> pfc f <|||> lazy (pfc x)
+  | C_AppLeft (a, b) -> pfc a <|||> lazy (pfc b)
+  | C_AppRight (a, b) -> pfc a <|||> lazy (pfc b)
+  | C_Fail e -> IsFail e
+  | C_Int -> Set (Lazy.force int_first_char)
+  | C_Float -> Set (Lazy.force float_first_char)
+  | C_Junk -> AllChars
+  | C_AnyOf set -> ret_set set
+  | C_SwitchC (map, None) -> ret_set (domain_of_char_map map)
+  | C_SwitchC (map, Some o) ->
+    let s = domain_of_char_map map in
+    union_pfc (ret_set s) (pfc o)
+  | C_Eof -> NoChar
+
+let possible_first_chars = pfc
 
 (** {2 Combinators} *)
 
-let return x = {parse=Return x; compiled=C_Return x}
+let return x = make_c (C_Return x)
 let pure = return
 
 let success = pure ()
 
-let fail msg = make (Fail msg)
+let fail msg = make_c (C_Fail msg)
+
+let junk = make_c C_Junk
 
 let failf fmt = Printf.ksprintf (fun msg -> fail msg) fmt
 
-let map f x = match x.parse with
-  | Map (g, y) -> make (Map (compose f g, y))
-  | Return x -> pure (f x)
-  | _ -> make (Map (f, x))
+let map f x = match x.st with
+  | Compiled (C_Map (g, y)) -> make_c (C_Map (compose f g, y))
+  | Compiled (C_Return x) -> pure (f x)
+  | _ -> make_c (C_Map (f, x))
 
-let app f x = match f.parse with
-  | Return f -> map f x
-  | _ -> make (App (f, x))
+let app f x = match f.st with
+  | Compiled (C_Return f) -> map f x
+  | _ -> make_c (C_App (f, x))
 
-let filter f x = match x.parse with
-  | Return y -> if f y then return y else fail "filter failed"
-  | Filter (f', y) -> make (Filter ((fun x -> f' x && f x), y))
-  | _ -> make (Filter (f, x))
+let fun_and f f' x = f x && f' x
 
-let app_left a b = make (AppLeft (a, b))  (* return (fun x y -> x) <*> a <*> b *)
+let filter f x = match x.st with
+  | Compiled (C_Return y) -> if f y then return y else fail "filter failed"
+  | Compiled (C_Filter (f', y)) -> make_c (C_Filter (fun_and f f', y))
+  | _ -> make_c (C_Filter (f, x))
 
-let app_right a b = make (AppRight (a, b)) (* return (fun x y -> y) <*> a <*> b *)
+let app_left a b = make_c (C_AppLeft (a, b))  (* return (fun x y -> x) <*> a <*> b *)
 
-let int = make Int
+let app_right a b = make_c (C_AppRight (a, b)) (* return (fun x y -> y) <*> a <*> b *)
 
-let float = make Float
+let int = make_c C_Int
+
+let float = make_c C_Float
 
 let many ?(sep=success) p = make (Many (p, sep, Star))
 
@@ -274,10 +317,10 @@ let opt p =
         | _ -> assert false
       ) (make (Many (p, success, Question)))
 
-let any_of' s = make (AnyOf s)
+let any_of' s = make_c (C_AnyOf s)
 let any_of s = any_of' (set_of_string s)
 
-let char c = make (AnyOf (CharSet.singleton c))
+let char c = any_of' (CharSet.singleton c)
 
 let spaces = skip (any_of " \t")
 let spaces1 = skip1 (any_of " \t")
@@ -296,7 +339,7 @@ let num = any_of' num_
 let alpha = any_of' alpha_
 let alpha_num = any_of' (CharSet.union num_ alpha_)
 
-let eof = make Eof
+let eof = make_c C_Eof
 
 let switch_c ?default l =
   if l = [] then match default with
@@ -310,16 +353,19 @@ let switch_c ?default l =
          CharMap.add c t map
       ) CharMap.empty l
   in
-  make (SwitchC (map, default))
+  make_c (C_SwitchC (map, default))
 
 exception ExnIsFail of string
+
+let make_switch_c a b = make_c (C_SwitchC (a, b))
 
 (* binary choice: compiled into decision tree *)
 let rec merge a b =
   (* build a switch by first char *)
   try
-    begin match a.parse, b.parse with
-      | SwitchC (map_a, def_a), SwitchC (map_b, def_b) ->
+    begin match a.st, b.st with
+      | Compiled (C_SwitchC (map_a, def_a)),
+        Compiled (C_SwitchC (map_b, def_b)) ->
         (* merge jump tables *)
         let def = match def_a, def_b with
           | None, None -> None
@@ -336,46 +382,47 @@ let rec merge a b =
               | None, None -> assert false
             ) map_a map_b
         in
-        make (SwitchC (map, def))
-      | SwitchC (map, def), other
-      | other, SwitchC (map, def) ->
-        let map', def' = match possible_first_chars other, def with
+        make_switch_c map def
+      | Compiled (C_SwitchC (map, def)), other
+      | other, Compiled (C_SwitchC (map, def)) ->
+        let map', def' = match pfc_pc other, def with
           | AllChars, _ ->
             invalid_arg "choice: ambiguous, several parsers accept any input"
-          | NoChar, None -> map, Some (make other)
+          | NoChar, None -> map, Some (make_pc other)
           | NoChar, Some _ ->
             invalid_arg "choice: ambiguous"
           | IsFail msg, _ -> raise (ExnIsFail msg)
+          | NoCharOrSet set, def
           | Set set, def ->
             if CharSet.exists (fun c -> CharMap.mem c map) set
             then invalid_arg
                 (str "choice: ambiguous parsers (overlap on {%s})"
                    (print_char_set (CharSet.inter set (domain_of_char_map map))));
             (* else: merge jump tables *)
-            let map = map_add_set map set (make other) in
+            let map = map_add_set map set (make_pc other) in
             map, def
         in
-        make (SwitchC (map', def'))
+        make_switch_c map' def'
       | _ ->
-        begin match possible_first_chars a.parse, possible_first_chars b.parse with
-          | Set set1, Set set2 ->
+        begin match possible_first_chars a, possible_first_chars b with
+          | (Set set1 | NoCharOrSet set1), (Set set2 | NoCharOrSet set2) ->
             if CharSet.exists (fun c -> CharSet.mem c set2) set1
             then invalid_arg
                 (str "choice: ambiguous parsers (overlap on {%s})"
                    (print_char_set (CharSet.inter set1 set2)));
             let map = map_add_set CharMap.empty set1 a in
             let map = map_add_set map set2 b in
-            make (SwitchC (map, None))
+            make_switch_c map None
           | IsFail e, _ | _, IsFail e -> raise (ExnIsFail e)
-          | Set s, NoChar -> make (SwitchC (map_add_set CharMap.empty s a, Some b))
-          | NoChar, Set s -> make (SwitchC (map_add_set CharMap.empty s b, Some a))
+          | Set s, NoChar -> make_switch_c (map_add_set CharMap.empty s a) (Some b)
+          | NoChar, Set s -> make_switch_c (map_add_set CharMap.empty s b) (Some a)
           | AllChars, _ | _, AllChars ->
             invalid_arg "choice: ambiguous parsers (one accepts everything)"
-          | NoChar, NoChar ->
+          | (NoChar | NoCharOrSet _), (NoChar | NoCharOrSet _) ->
             invalid_arg "choice: ambiguous parsers (both accept nothing)"
         end
     end
-  with ExnIsFail msg -> make (Fail msg)
+  with ExnIsFail msg -> make_c (C_Fail msg)
 
 let rec choice = function
   | [] -> invalid_arg "choice: empty list";
@@ -391,7 +438,12 @@ let trie_empty = TrieNode CharMap.empty
 
 let rec parser_of_trie : type a. a trie -> a t = function
   | TrieLeaf p -> p
-  | TrieNode m -> make (SwitchC (CharMap.map parser_of_trie m, None))
+  | TrieNode m ->
+    make_switch_c (CharMap.map parser_of_trie' m) None
+(* consume next char, then build sub-trie *)
+and parser_of_trie'
+  : type a. a trie -> a t
+  = fun x -> app_right junk (parser_of_trie x)
 
 (* build prefix trie *)
 let switch_s l =
@@ -435,8 +487,7 @@ let bool =
 let fix f =
   (* outermost lazy needed for the recursive definition *)
   let rec r = {
-    parse=Lazy (lazy (f r));
-    compiled=C_NotCompiled;
+    st=Parse (Lazy (lazy (f r)));
   } in
   r
 
@@ -468,71 +519,64 @@ let encode_many
   = fun ~set ~p ~self ~sep ->
     let on_success = encode_cons p sep self
     and on_fail = pure [] in
-    make (SwitchC (map_add_set CharMap.empty set on_success, Some on_fail))
+    make_switch_c (map_add_set CharMap.empty set on_success) (Some on_fail)
 
 let encode_opt ~set x =
   let mk_one x = [x] in
-  let on_success = make (Map (mk_one, x))
+  let on_success = make_c (C_Map (mk_one, x))
   and on_fail = pure [] in
-  make (SwitchC (map_add_set CharMap.empty set on_success, Some on_fail))
+  make_switch_c (map_add_set CharMap.empty set on_success) (Some on_fail)
 
 let encode_skip
   : type a. set:CharSet.t -> p:a t -> self:unit t -> unit t
   = fun ~set ~p ~self ->
     let on_success = p >> self
     and on_fail = pure () in
-    make (SwitchC (map_add_set CharMap.empty set on_success, Some on_fail))
+    make_switch_c (map_add_set CharMap.empty set on_success) (Some on_fail)
 
 let many_
   : type a. sep:unit t -> mult:multiplicity -> p:a t -> a list t
-  = fun ~sep ~mult ~p -> match possible_first_chars p.parse with
+  = fun ~sep ~mult ~p -> match possible_first_chars p with
   | Set set ->
     begin match mult with
       | Star -> fix (fun self -> encode_many ~set ~sep ~p ~self)
       | Plus -> encode_cons p sep (fix (fun self -> encode_many ~set ~sep ~p ~self))
       | Question -> encode_opt ~set p
     end
-  | IsFail msg -> make (Fail msg)
+  | IsFail msg -> fail msg
+  | NoCharOrSet _ -> invalid_arg (str "many: invalid parser (might not consume input)")
   | AllChars -> invalid_arg (str "many: invalid parser (always succeeds)")
   | NoChar -> invalid_arg (str "many: invalid parser (does not consume input)")
 
 let skip_ : type a. mult:multiplicity -> p:a t -> unit t
-  = fun ~mult ~p -> match possible_first_chars p.parse with
+  = fun ~mult ~p -> match possible_first_chars p with
   | Set set ->
     begin match mult with
       | Star -> fix (fun self -> encode_skip ~set ~p ~self)
       | Plus -> p >> fix (fun self -> encode_skip ~set ~p ~self)
-      | Question -> encode_opt ~set p >> pure () 
+      | Question -> encode_opt ~set p >> pure ()
     end
-  | IsFail msg -> make (Fail msg)
+  | IsFail msg -> fail msg
+  | NoCharOrSet _ -> invalid_arg (str "many: invalid parser (might not consume input)")
   | AllChars -> invalid_arg (str "skip: invalid parser (always succeeds)")
   | NoChar -> invalid_arg (str "skip: invalid parser (does not consume input)")
 
 let rec compile
   : type a. a t -> a compiled
-  = fun t -> match t.compiled with
-  | C_NotCompiled ->
-    let c = match t.parse with
-      | Return x -> C_Return x
-      | Map (f, x) -> C_Map (f, x)
-      | Filter (f, x) -> C_Filter (f, x)
-      | App (f, x) -> C_App (f, x)
-      | AppLeft (a, b) -> C_AppLeft (a, b)
-      | AppRight (a, b) -> C_AppRight (a, b)
-      | Fail msg -> C_Fail msg
-      | Int -> C_Int
-      | Float -> C_Float
-      | AnyOf set -> C_AnyOf set
-      | Many (p, sep, mult) -> compile (many_ ~sep ~mult ~p)
-      | Skip (p, mult) -> compile (skip_ ~mult ~p)
-      | SwitchC (map, None) -> C_SwitchC (map, None)
-      | SwitchC (map, Some o) -> C_SwitchC (map, Some o)
-      | Eof -> C_Eof
-      | Lazy (lazy p) -> compile p
-    in
-    t.compiled <- c;
+  = fun t -> match t.st with
+  | Compiled c -> c (* already compiled *)
+  | Parse (Many (p, sep, mult)) ->
+      let c = compile (many_ ~sep ~mult ~p) in
+      t.st <- Compiled c;
+      c
+  | Parse (Skip (p, mult)) ->
+    let c = compile (skip_ ~mult ~p) in
+    t.st <- Compiled c;
     c
-  | c -> c  (* already compiled *)
+  | Parse (Lazy (lazy p)) ->
+    let c = compile p in
+    t.st <- Compiled c;
+    c
 
 (** {2 Signatures} *)
 
@@ -696,6 +740,7 @@ module MakeFromReader(R : READER) : S with type source = R.source = struct
       | C_Fail msg -> error r msg
       | C_Int -> parse_int r ~sign:true 0
       | C_Float -> parse_float r (Buffer.create 8)
+      | C_Junk -> R.junk r
       | C_AnyOf set ->
         begin match R.next r with
           | EOF -> errorf r "expected any of %s, got EOF" (print_char_set set)
@@ -716,7 +761,6 @@ module MakeFromReader(R : READER) : S with type source = R.source = struct
               | Some d -> parse_rec r d
             end
         end
-      | C_NotCompiled -> assert false
       | C_Eof ->
         begin match R.next r with
           | EOF -> ()
