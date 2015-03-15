@@ -232,9 +232,19 @@ let init q =
   try fst (take_back_exn q)
   with Empty -> q
 
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    l = [] || (of_list l |> init |> to_list = List.rev (List.tl (List.rev l))))
+*)
+
 let tail q =
   try snd (take_front_exn q)
   with Empty -> q
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    l = [] || (of_list l |> tail |> to_list = List.tl l))
+*)
 
 let add_seq_front seq q =
   let q = ref q in
@@ -259,6 +269,11 @@ let rec to_seq : 'a. 'a t -> 'a sequence
       _digit_to_seq hd k;
       to_seq q' (fun (x,y) -> k x; k y);
       _digit_to_seq tail k
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> to_seq |> Sequence.to_list = l)
+*)
 
 let append q1 q2 =
   match q1, q2 with
@@ -359,6 +374,11 @@ let rec _equal_klist eq l1 l2 = match l1(), l2() with
 
 let equal eq q1 q2 = _equal_klist eq (to_klist q1) (to_klist q2)
 
+(*$T
+  let q1 = 1 -- 10 and q2 = append (1 -- 5) (6 -- 10) in \
+  equal (=) q1 q2
+*)
+
 let (--) a b =
   let rec up_to q a b = if a = b
     then snoc q a
@@ -367,3 +387,10 @@ let (--) a b =
     else down_to (snoc q a) (a-1) b
   in
   if a <= b then up_to empty a b else down_to empty a b
+
+(*$T
+  1 -- 5 |> to_list = [1;2;3;4;5]
+  5 -- 1 |> to_list = [5;4;3;2;1]
+  0 -- 0 |> to_list = [0]
+*)
+
