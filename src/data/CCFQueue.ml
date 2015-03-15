@@ -74,6 +74,11 @@ let rec cons : 'a. 'a -> 'a t -> 'a t
   | Deep (n,Three (y,z,z'), lazy q', tail) ->
       _deep (n+1) (Two (x,y)) (lazy (cons (z,z') q')) tail
 
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    cons x (of_list l) |> to_list = x::l)
+  *)
+
 let rec snoc : 'a. 'a t -> 'a -> 'a t
   = fun q x -> match q with
   | Shallow Zero -> _single x
@@ -86,6 +91,11 @@ let rec snoc : 'a. 'a t -> 'a -> 'a t
   | Deep (n,hd, middle, Two (y,z)) -> _deep (n+1) hd middle (Three(y,z,x))
   | Deep (n,hd, lazy q', Three (y,z,z')) ->
       _deep (n+1) hd (lazy (snoc q' (y,z))) (Two(z',x))
+
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    snoc (of_list l) x |> to_list = l @ [x])
+  *)
 
 let rec take_front_exn : 'a. 'a t -> ('a *'a t)
   = fun q -> match q with
@@ -104,6 +114,12 @@ let rec take_front_exn : 'a. 'a t -> ('a *'a t)
       x, _deep (n-1) (One y) middle tail
   | Deep (n,Three (x,y,z), middle, tail) ->
       x, _deep (n-1) (Two(y,z)) middle tail
+
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    let x', q = cons x (of_list l) |> take_front_exn in \
+    x'=x && to_list q = l)
+  *)
 
 let take_front q =
   try Some (take_front_exn q)
@@ -140,6 +156,12 @@ let rec take_back_exn : 'a. 'a t -> 'a t * 'a
           _deep (n-1) hd (Lazy.from_val q'') (Two (y,z)), x
   | Deep (n, hd, middle, Two(x,y)) -> _deep (n-1) hd middle (One x), y
   | Deep (n, hd, middle, Three(x,y,z)) -> _deep (n-1) hd middle (Two (x,y)), z
+
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    let q,x' = snoc (of_list l) x |> take_back_exn in \
+    x'=x && to_list q = l)
+  *)
 
 let take_back q =
   try Some (take_back_exn q)
@@ -185,6 +207,11 @@ let size : 'a. 'a t -> int
   = function
   | Shallow d -> _size_digit d
   | Deep (n, _, _, _) -> n
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    size (of_list l) = List.length l)
+*)
 
 let _nth_digit i d = match i, d with
   | _, Zero -> raise Not_found
@@ -281,6 +308,11 @@ let append q1 q2 =
   | _, Shallow Zero -> q1
   | _ -> add_seq_back q1 (to_seq q2)
 
+(*$Q
+  (Q.pair (Q.list Q.int)(Q.list Q.int)) (fun (l1,l2) -> \
+    append (of_list l1) (of_list l2) |> to_list = l1 @ l2)
+*)
+
 let _map_digit f d = match d with
   | Zero -> Zero
   | One x -> One (f x)
@@ -293,6 +325,11 @@ let rec map : 'a 'b. ('a -> 'b) -> 'a t -> 'b t
   | Deep (size, hd, lazy q', tl) ->
       let q'' = map (fun (x,y) -> f x, f y) q' in
       _deep size (_map_digit f hd) (Lazy.from_val q'') (_map_digit f tl)
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> map string_of_int |> to_list = List.map string_of_int l)
+*)
 
 let (>|=) q f = map f q
 
@@ -309,6 +346,11 @@ let rec fold : 'a 'b. ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
       let acc = _fold_digit f acc hd in
       let acc = fold (fun acc (x,y) -> f (f acc x) y) acc q' in
       _fold_digit f acc tl
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> fold (fun acc x->x::acc) [] = List.rev l)
+*)
 
 let iter f q = to_seq q f
 
