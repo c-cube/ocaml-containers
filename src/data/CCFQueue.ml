@@ -358,3 +358,12 @@ let rec _equal_klist eq l1 l2 = match l1(), l2() with
       eq x1 x2 && _equal_klist eq l1' l2'
 
 let equal eq q1 q2 = _equal_klist eq (to_klist q1) (to_klist q2)
+
+let (--) a b =
+  let rec up_to q a b = if a = b
+    then snoc q a
+    else up_to (snoc q a) (a+1) b
+  and down_to q a b = if a = b then snoc q a
+    else down_to (snoc q a) (a-1) b
+  in
+  if a <= b then up_to empty a b else down_to empty a b
