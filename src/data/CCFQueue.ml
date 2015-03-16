@@ -371,6 +371,16 @@ let of_seq seq =
     Sequence.of_list l |> of_seq |> to_list = l)
 *)
 
+let rev q =
+  let q' = ref empty in
+  iter (fun x -> q' := cons x !q') q;
+  !q'
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> rev |> to_list = List.rev l)
+*)
+
 let _nil () = `Nil
 let _single x cont () = `Cons (x, cont)
 let _double x y cont () = `Cons (x, _single y cont)

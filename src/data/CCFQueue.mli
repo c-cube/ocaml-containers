@@ -110,6 +110,10 @@ val append : 'a t -> 'a t -> 'a t
       after elements of the first one.
       Linear in the size of the second queue. *)
 
+val rev : 'a t -> 'a t
+(** Reverse the queue, O(n) complexity
+    @since NEXT_RELEASE *)
+
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Map values *)
 
@@ -131,6 +135,7 @@ val of_list : 'a list -> 'a t
 val to_list : 'a t -> 'a list
 
 val add_seq_front : 'a sequence -> 'a t -> 'a t
+
 val add_seq_back : 'a t -> 'a sequence -> 'a t
 
 val to_seq : 'a t -> 'a sequence
