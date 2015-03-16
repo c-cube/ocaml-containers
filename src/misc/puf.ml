@@ -61,7 +61,7 @@ module PArray = struct
   let get t i =
     match !t with
     | Array a -> a.(i)
-    | Diff _ -> 
+    | Diff _ ->
       let a = reroot t in
       a.(i)
 
@@ -157,7 +157,7 @@ module PBitVector = struct
 
   (** Bitvector with all bits set to 0 *)
   let clear bv = make 5
-  
+
   let set_true bv i = set bv i true
   let set_false bv i = set bv i false
 end
@@ -361,7 +361,7 @@ module Make(X : ID) : S with type elt = X.t = struct
     and ib' = find_root uf ib in
     if ia' = ib'
       then uf  (* no change *)
-      else 
+      else
         (* data associated to both representatives *)
         let data_a = get_data uf ia' in
         let data_b = get_data uf ib' in

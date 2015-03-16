@@ -50,7 +50,7 @@ val b : Box.t = <abstr>
                           [|"c"; "hello world"|] |]])
   );;
 val b2 : PrintBox.Box.t = <abstr>
-# PrintBox.output stdout b2;; 
+# PrintBox.output stdout b2;;
 +--------------------+
 |I love|a|bbb        |
 |to    |-+-----------|

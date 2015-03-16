@@ -127,13 +127,6 @@ let fprintf oc format =
     buffer
     format
 
-let kfprintf k oc format =
-  let buffer = Buffer.create 64 in
-  Printf.kbprintf
-    (fun fmt -> Buffer.output_buffer oc buffer; k fmt)
-    buffer
-    format
-
 let printf format = fprintf stdout format
 let eprintf format = fprintf stderr format
 

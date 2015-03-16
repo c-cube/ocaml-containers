@@ -81,7 +81,7 @@ module PMap : sig
       @raise Not_found if the element is not present *)
 
   val size : (_,_) t -> int
-  
+
   val to_seq : ('a, 'b) t -> ('a * 'b) sequence
 
   val to_list : ('a, 'b) t -> ('a * 'b) list

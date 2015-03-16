@@ -415,7 +415,7 @@ let seq_head seq =
   try
     seq (fun x -> r := Some x; raise ExitHead); None
   with ExitHead -> !r
-    
+
 (** Shortest path from the first node to the second one, according
     to the given (positive!) distance function. The path is reversed,
     ie, from the destination to the source. The int is the distance. *)
@@ -555,7 +555,7 @@ let product g1 g2 =
       Node ((v1,v2), (l1,l2), edges)
   and eq (v1,v2) (v1',v2') =
     g1.eq v1 v1' && g2.eq v2 v2'
-  and hash (v1,v2) = ((g1.hash v1) * 65599) + g2.hash v2 
+  and hash (v1,v2) = ((g1.hash v1) * 65599) + g2.hash v2
   in
   { eq; hash; force; }
 

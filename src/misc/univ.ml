@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** This is largely inspired by https://ocaml.janestreet.com/?q=node/18 . *)
 
-type t = { 
+type t = {
   mutable id : unit ref;
   mutable store : unit -> unit;
 } (** The universal type *)
@@ -41,7 +41,7 @@ type 'a embedding = {
 
 (** Create a new embedding. Values packed by a given embedding can
     only be unpacked by the same embedding. *)
-let embed () = 
+let embed () =
   let id = ref () in  (* unique ID of the embedding *)
   let r = ref None in (* place to store values *)
   let pack a =        (* pack the 'a value into a new univ cell *)

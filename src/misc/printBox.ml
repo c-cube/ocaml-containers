@@ -208,7 +208,7 @@ module Box = struct
         w := max !w s.x;
         h := !h + s.y
       ) a;
-    {x= !w; y= !h;} 
+    {x= !w; y= !h;}
 
   (* from a matrix [m] (line,column), return two arrays [lines] and [columns],
     with [col.(i)] being the start offset of column [i] and
@@ -244,7 +244,7 @@ module Box = struct
     | Frame t ->
         let {x;y} = size t in
         { x=x+2; y=y+2; }
-    | Pad (dim, b') -> 
+    | Pad (dim, b') ->
         let {x;y} = size b' in
         { x=x+2*dim.x; y=y+2*dim.y; }
     | Grid (style,m) ->

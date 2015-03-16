@@ -34,7 +34,7 @@ type 'a formatter = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type + 'a t = unit -> 
+type + 'a t = unit ->
   [ `Nil
   | `Cons of 'a * 'a t
   ]

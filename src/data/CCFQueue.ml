@@ -264,7 +264,7 @@ let append q1 q2 =
   match q1, q2 with
   | Shallow Zero, _ -> q2
   | _, Shallow Zero -> q1
-  | _ -> add_seq_front (to_seq q1) q2
+  | _ -> add_seq_back q1 (to_seq q2)
 
 let _map_digit f d = match d with
   | Zero -> Zero
@@ -304,7 +304,15 @@ let to_list q =
   to_seq q (fun x -> l := x :: !l);
   List.rev !l
 
-let of_seq seq = add_seq_front seq empty
+let of_seq seq =
+  let l = ref [] in
+  seq (fun x -> l := x :: !l);
+  List.fold_left (fun q x -> cons x q) empty !l
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    Sequence.of_list l |> of_seq |> to_list = l)
+*)
 
 let _nil () = `Nil
 let _single x cont () = `Cons (x, cont)

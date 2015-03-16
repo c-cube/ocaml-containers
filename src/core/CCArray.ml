@@ -215,7 +215,7 @@ let rec _exists2 p a1 a2 i1 i2 ~len =
 
 (* shuffle a[i...j[ using the given int random generator
    See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
-let _shuffle _rand_int a i j = 
+let _shuffle _rand_int a i j =
   for k = j-1 downto i+1 do
     let l = _rand_int (k+1) in
     let tmp = a.(l) in

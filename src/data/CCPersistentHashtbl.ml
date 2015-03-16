@@ -126,7 +126,7 @@ module type S = sig
 
   val equal : 'a equal -> 'a t equal
 
-  val pp : key printer -> 'a printer -> 'a t printer  
+  val pp : key printer -> 'a printer -> 'a t printer
 
   val print : key formatter -> 'a formatter -> 'a t formatter
 end
@@ -237,7 +237,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
     (* no one will point to the new [t] *)
     let t = ref (Table (Table.copy tbl)) in
     t
-  
+
   let iter t f =
     let tbl = reroot t in
     Table.iter f tbl
@@ -337,7 +337,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
         Printf.bprintf buf "%a -> %a" pp_k k pp_v v
       );
     Buffer.add_string buf "}"
- 
+
   let print pp_k pp_v fmt t =
     Format.pp_print_string fmt "{";
     let first = ref true in

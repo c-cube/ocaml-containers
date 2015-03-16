@@ -71,7 +71,7 @@ val map_out : ('b -> 'b2) -> ('a, 's, 'b) t -> ('a, 's, 'b2) t
 
 val nest : ('a, 's, 'b) t list -> ('a, 's list, 'b list) t
 (** runs all automata in parallel on the input.
-    The state must be a list of the same length as the list of automata. 
+    The state must be a list of the same length as the list of automata.
     @raise Invalid_argument otherwise *)
 
 val split : ('a, 's, 'b) t -> ('a, 's, ('b * 'b)) t

@@ -61,7 +61,7 @@ let max (x : t) y =
 
 let equal (a:float) b = a=b
 
-let hash = Hashtbl.hash 
+let hash = Hashtbl.hash
 let compare (a:float) b = Pervasives.compare a b
 
 type 'a printer = Buffer.t -> 'a -> unit
@@ -71,9 +71,9 @@ type 'a random_gen = Random.State.t -> 'a
 let pp buf = Printf.bprintf buf "%f"
 let print fmt = Format.pp_print_float fmt
 
-let sign (a:float) = 
-  if a < 0.0 then -1 
-  else if a > 0.0 then 1 
+let sign (a:float) =
+  if a < 0.0 then -1
+  else if a > 0.0 then 1
   else 0
 
 let fsign a =

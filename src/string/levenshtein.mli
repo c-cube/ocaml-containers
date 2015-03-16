@@ -81,7 +81,7 @@ A possible use of the index could be:
 {[
 open Batteries;;
 
-let words = File.with_file_in "/usr/share/dict/english" 
+let words = File.with_file_in "/usr/share/dict/english"
   (fun i -> IO.read_all i |> String.nsplit ~by:"\\n");;
 
 let words = List.map (fun s->s,s) words;;

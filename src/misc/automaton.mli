@@ -122,7 +122,7 @@ module Instance : sig
   val create : f:('s, 'i, 'o) automaton -> 's -> ('s, 'i, 'o) t
   (** [create ~f init] creates an instance of [f] with initial state
       [init].
-      
+
       @param f the transition function
       @param init the initial state *)
 end
