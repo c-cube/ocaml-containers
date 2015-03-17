@@ -133,6 +133,11 @@ let take_front_l n q =
       aux (x::acc) q' (n-1)
   in aux [] q n
 
+(*$T
+  let l, q = take_front_l 5 (1 -- 10) in \
+  l = [1;2;3;4;5] && to_list q = [6;7;8;9;10]
+*)
+
 let take_front_while p q =
   let rec aux acc q =
     if is_empty q then List.rev acc, q
@@ -140,6 +145,10 @@ let take_front_while p q =
       let x,q' = take_front_exn q in
       if p x then aux (x::acc) q' else List.rev acc, q
   in aux [] q
+
+(*$T
+  take_front_while (fun x-> x<5) (1 -- 10) |> fst = [1;2;3;4]
+*)
 
 let rec take_back_exn : 'a. 'a t -> 'a t * 'a
   = fun q -> match q with
@@ -254,6 +263,13 @@ let rec nth_exn : 'a. int -> 'a t -> 'a
 let nth i q =
   try Some (nth_exn i q)
   with Failure _ -> None
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+   let len = List.length l in let idx = CCList.(0 -- (len - 1)) in \
+   let q = of_list l in \
+   l = [] || List.for_all (fun i -> nth i q = Some (List.nth l i)) idx)
+*)
 
 let init q =
   try fst (take_back_exn q)
