@@ -187,9 +187,48 @@ let choose t =
   try Some (choose_exn t)
   with Not_found -> None
 
-let union _ _ _ = assert false
+let rec union f a b = match a, b with
+  | E, o | o, E -> o
+  | L (k, v), o
+  | o, L (k, v) ->
+    (* insert k, v into o *)
+    insert_ (fun ~old v -> f k old v) k v o
+  | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
+    if p1 = p2 && m1 = m2
+    then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
+    else if m1 < m2 && is_prefix_ ~prefix:p2 p1 ~bit:m1
+      then if bit_is_0_ p2 ~bit:m1
+        then N (p1, m1, union f l1 b, r1)
+        else N (p1, m1, l1, union f r1 b)
+    else if m1 > m2 && is_prefix_ ~prefix:p1 p2 ~bit:m2
+      then if bit_is_0_ p1 ~bit:m2
+        then N (p2, m2, union f l2 a, r2)
+        else N (p2, m2, l2, union f r2 a)
+    else join_ a p1 b p2
 
-let inter _ _ _ = assert false
+let rec inter f a b = match a, b with
+  | E, _ | _, E -> E
+  | L (k, v), o
+  | o, L (k, v) ->
+    begin try
+      let v' = find_exn k o in
+      L (k, f k v v')
+    with Not_found -> E
+    end
+  | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
+    if p1 = p2 && m1 = m2
+    then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
+    else if m1 < m2 && is_prefix_ ~prefix:p2 p1 ~bit:m1
+      then if bit_is_0_ p2 ~bit:m1
+        then inter f l1 b
+        else inter f r1 b
+    else if m1 > m2 && is_prefix_ ~prefix:p1 p2 ~bit:m2
+      then if bit_is_0_ p1 ~bit:m2
+        then inter f l2 a
+        else inter f r2 a
+    else E
+
+(* TODO: write tests *)
 
 (** {2 Whole-collection operations} *)
 

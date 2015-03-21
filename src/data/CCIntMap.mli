@@ -58,9 +58,9 @@ val choose : 'a t -> (int * 'a) option
 
 val choose_exn : 'a t -> int * 'a
 
-val union : (int -> 'a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t
+val union : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
 
-val inter : (int -> 'a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t
+val inter : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
 
 (** {2 Whole-collection operations} *)
 
