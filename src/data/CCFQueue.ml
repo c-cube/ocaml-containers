@@ -290,9 +290,15 @@ let tail q =
 *)
 
 let add_seq_front seq q =
-  let q = ref q in
-  seq (fun x -> q := cons x !q);
-  !q
+  let l = ref [] in
+  (* reversed seq *)
+  seq (fun x -> l := x :: !l);
+  List.fold_left (fun q x -> cons x q) q !l
+
+(*$Q
+  Q.(pair (list int) (list int)) (fun (l1, l2) -> \
+    add_seq_front (Sequence.of_list l1) (of_list l2) |> to_list = l1 @ l2)
+  *)
 
 let add_seq_back q seq =
   let q = ref q in
@@ -377,10 +383,7 @@ let to_list q =
   to_seq q (fun x -> l := x :: !l);
   List.rev !l
 
-let of_seq seq =
-  let l = ref [] in
-  seq (fun x -> l := x :: !l);
-  List.fold_left (fun q x -> cons x q) empty !l
+let of_seq seq = add_seq_front seq empty
 
 (*$Q
   (Q.list Q.int) (fun l -> \
