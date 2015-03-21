@@ -66,6 +66,7 @@ CCBV
 CCCache
 CCFQueue
 CCFlatHashtbl
+CCIntMap
 CCMixmap
 CCMixtbl
 CCMultiMap
