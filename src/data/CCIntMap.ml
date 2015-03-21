@@ -82,10 +82,18 @@ let rec find_exn k t = match t with
   | E -> raise Not_found
   | L (k', v) when k = k' -> v
   | L _ -> raise Not_found
-  | N (prefix, _, l, r) ->
+  | N (prefix, m, l, r) ->
+    if is_prefix_ ~prefix k ~bit:m
+    then if bit_is_0_ k ~bit:m
+      then find_exn k l
+      else find_exn k r
+    else raise Not_found
+
+    (* FIXME: valid if k < 0?
     if k <= prefix (* search tree *)
     then find_exn k l
     else find_exn k r
+       *)
 
 let find k t =
   try Some (find_exn k t)
@@ -129,10 +137,8 @@ let add k v t = insert_ (fun ~old:_ v -> v) k v t
 (*$Q
   Q.(list (pair int int)) (fun l -> \
     let l = CCList.Set.uniq l in let m = of_list l in \
-    List.for_all (fun (k,v) -> k < 0 || find_exn k m = v) l)
+    List.for_all (fun (k,v) -> find_exn k m = v) l)
 *)
-
-(* TODO: fix the previous test *)
 
 let rec remove k t = match t with
   | E -> E
