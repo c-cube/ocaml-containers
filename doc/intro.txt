@@ -71,6 +71,7 @@ CCMixmap
 CCMixtbl
 CCMultiMap
 CCMultiSet
+CCPersistentArray
 CCPersistentHashtbl
 CCRingBuffer
 CCTrie
