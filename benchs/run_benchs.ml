@@ -353,6 +353,12 @@ module Tbl = struct
         ignore (Array.get a i);
       done
 
+  let persistent_array_find a =
+    fun n ->
+      for i = 0 to n-1 do
+        ignore (CCPersistentArray.get a i);
+      done
+
   let imap_find m =
     fun n ->
       for i = 0 to n-1 do
@@ -370,7 +376,8 @@ module Tbl = struct
     let h' = hashtbl_add n in
     let h'' = ihashtbl_add n in
     let h''''' = ipersistenthashtbl_add n in
-    let a = Array.init n (fun i -> string_of_int i) in
+    let a = Array.init n string_of_int in
+    let pa = CCPersistentArray.init n string_of_int in
     let m = imap_add n in
     let h'''''' = icchashtbl_add n in
     B.throughputN 3 [
@@ -379,6 +386,7 @@ module Tbl = struct
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
       "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n), ();
       "array_find", (fun () -> array_find a n), ();
+      "persistent_array_find", (fun () -> persistent_array_find pa n), ();
       "imap_find", (fun () -> imap_find m n), ();
       "cchashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
     ]
