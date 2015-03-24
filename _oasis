@@ -161,12 +161,12 @@ Executable run_benchs
                     containers.data, containers.string, containers.iter,
                     sequence, gen, benchmark
 
-Executable bench_hash
+Executable run_bench_hash
   Path: benchs/
   Install: false
   CompiledObject: best
   Build$: flag(bench) && flag(misc)
-  MainIs: bench_hash.ml
+  MainIs: run_bench_hash.ml
   BuildDepends: containers, containers.misc
 
 Executable run_test_future
