@@ -49,6 +49,8 @@ let reroot t = match !t with
   | Array a -> a
   | _ -> _reroot t (fun x -> x)
 
+let copy t = ref (Array(Array.copy (reroot t)))
+
 let get t i = match !t with
   | Array a -> a.(i)
   |  _ -> (reroot t).(i)
