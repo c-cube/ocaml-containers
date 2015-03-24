@@ -26,6 +26,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Persistent Arrays}
 
+From the paper by Jean-Christophe Filliâtre,
+"A persistent Union-Find data structure", see
+{{: https://www.lri.fr/~filliatr/ftp/publis/puf-wml07.ps} the ps version}
+
 @since NEXT_RELEASE *)
 
 type 'a t
