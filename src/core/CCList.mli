@@ -123,6 +123,18 @@ val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
 (** Sort the list and remove duplicate elements *)
 
+val sorted_merge_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
+(** [sorted_merge_uniq l1 l2] merges the sorted lists [l1] and [l2] and
+    removes duplicates
+    @since NEXT_RELEASE *)
+
+val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
+(** [uniq_succ l] removes duplicate elements that occur one next to the other.
+    Examples:
+    [uniq_succ [1;2;1] = [1;2;1]]
+    [uniq_succ [1;1;2] = [1;2]
+    @since NEXT_RELEASE *)
+
 (** {2 Indices} *)
 
 module Idx : sig
