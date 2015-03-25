@@ -118,7 +118,7 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
 
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
-(** merges elements from both sorted list, removing duplicates *)
+(** merges elements from both sorted list *)
 
 val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
 (** Sort the list and remove duplicate elements *)
