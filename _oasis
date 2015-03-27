@@ -25,6 +25,10 @@ Flag "misc"
   Description:  Build the misc library, with experimental modules still susceptible to change
   Default:      true
 
+Flag "unix"
+  Description:  Build the containers.unix library (depends on Unix)
+  Default:      false
+
 Flag "lwt"
   Description:  Build modules which depend on Lwt
   Default:      false
@@ -59,6 +63,13 @@ Library "containers_io"
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      io
+
+Library "containers_unix"
+  Path:             src/unix
+  Modules:          CCUnix
+  BuildDepends:     bytes, unix
+  FindlibParent:    containers
+  FindlibName:      unix
 
 Library "containers_sexp"
   Path:             src/sexp

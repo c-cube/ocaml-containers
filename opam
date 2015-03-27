@@ -12,6 +12,7 @@ build: [
         "--%{lwt:enable}%-lwt"
         "--%{base-bigarray:enable}%-bigarray"
         "--%{sequence:enable}%-advanced"
+        "--%{base-unix:enable}%-unix"
         "--enable-docs"
         "--enable-misc"]
     [make "build"]

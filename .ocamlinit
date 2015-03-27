@@ -1,11 +1,13 @@
 #use "topfind";;
 #thread
 #require "bigarray";;
+#require "unix";;
 #directory "_build/src/core";;
 #directory "_build/src/misc";;
 #directory "_build/src/pervasives/";;
 #directory "_build/src/string";;
 #directory "_build/src/io";;
+#directory "_build/src/unix";;
 #directory "_build/src/iter";;
 #directory "_build/src/data";;
 #directory "_build/src/sexp";;
@@ -16,6 +18,7 @@
 #load "containers_iter.cma";;
 #load "containers_data.cma";;
 #load "containers_io.cma";;
+#load "containers_unix.cma";;
 #load "containers_sexp.cma";;
 #load "containers_string.cma";;
 #load "containers_pervasives.cma";;
