@@ -65,6 +65,8 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/string/*.mli) \
 	$(wildcard src/io/*.ml) \
 	$(wildcard src/io/*.mli) \
+	$(wildcard src/unix/*.ml) \
+	$(wildcard src/unix/*.mli) \
 	$(wildcard src/sexp/*.ml) \
 	$(wildcard src/sexp/*.mli) \
 	$(wildcard src/advanced/*.ml) \

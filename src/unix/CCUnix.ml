@@ -27,18 +27,39 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 High-level Functions on top of Unix} *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]
+type 'a gen = unit -> 'a option
 
 (** {2 Calling Commands} *)
-
-type cmd = string * string array
-(** A command: program + arguments *)
-
-let cmd_of_sh s = "/bin/sh", [| "/bin/sh"; "-c"; s |]
 
 let int_of_process_status = function
   | Unix.WEXITED i
   | Unix.WSIGNALED i
   | Unix.WSTOPPED i -> i
+
+let str_exists s p =
+  let rec f s p i =
+    if i = String.length s then false
+    else p s.[i] || f s p (i+1)
+  in
+  f s p 0
+
+let rec iter_gen f g = match g() with
+  | None -> ()
+  | Some x -> f x; iter_gen f g
+
+(* print a string, but escaped if required *)
+let escape_str buf s =
+  if str_exists s
+      (function ' ' | '"' | '\'' -> true | _ -> false)
+  then (
+    Buffer.add_char buf '\'';
+    String.iter
+      (function
+        | '\'' -> Buffer.add_string buf "''"
+        | c -> Buffer.add_char buf c
+      ) s;
+    Buffer.add_char buf '\'';
+  ) else Buffer.add_string buf s
 
 let read_all ?(size=1024) ic =
   let buf = ref (Bytes.create size) in
@@ -58,24 +79,37 @@ let read_all ?(size=1024) ic =
   with Exit ->
     Bytes.sub_string !buf 0 !len
 
-let call ?(stdin="") cmd =
-  let cmd, args = match cmd with
-    | `Sh s -> cmd_of_sh s
-    | `Cmd (c, args) -> c, args
-  in
-  let oc, ic, errc = Unix.open_process_full cmd args in
-  (* send stdin *)
-  output_string ic stdin;
-  close_out ic;
-  (* read out and err *)
-  let out = read_all oc in
-  let err = read_all errc in
-  let status = Unix.close_process_full (oc, ic, errc) in
-  object
-    method stdout = out
-    method stderr = err
-    method status = status
-    method errcode = int_of_process_status status
-  end
+type call_result = 
+  < stdout:string;
+    stderr:string;
+    status:Unix.process_status;
+    errcode:int; (** extracted from status *)
+  >
 
+let kbprintf' buf fmt k = Printf.kbprintf k buf fmt
+
+let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=[||]) cmd =
+  (* render the command *)
+  let buf = Buffer.create 256 in
+  kbprintf' buf cmd
+    (fun buf ->
+       let cmd = Buffer.contents buf in
+        let oc, ic, errc = Unix.open_process_full cmd env in
+        (* send stdin *)
+        begin match stdin with
+          | `Str s -> output_string ic s
+          | `Gen g -> iter_gen (output_string ic) g
+        end;
+        close_out ic;
+        (* read out and err *)
+        let out = read_all ~size:bufsize oc in
+        let err = read_all ~size:bufsize errc in
+        let status = Unix.close_process_full (oc, ic, errc) in
+        object
+          method stdout = out
+          method stderr = err
+          method status = status
+          method errcode = int_of_process_status status
+        end
+    )
 

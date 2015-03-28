@@ -31,21 +31,46 @@ Some useful functions built on top of Unix.
 @since NEXT_RELEASE *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]
+type 'a gen = unit -> 'a option
 
 (** {2 Calling Commands} *)
 
-type cmd = string * string array
-(** A command: program + arguments *)
+val escape_str : Buffer.t -> string -> unit
+(** Escape a string so it can be a shell argument.
+*)
 
-val call :
-  ?stdin:string ->
-  [`Sh of string | `Cmd of cmd] ->
+(*$T
+  CCPrint.sprintf "%a" escape_str "foo" = "foo"
+  CCPrint.sprintf "%a" escape_str "foo bar" = "'foo bar'"
+  CCPrint.sprintf "%a" escape_str "fo'o b'ar" = "'fo''o b''ar'"
+*)
+
+type call_result = 
   < stdout:string;
     stderr:string;
     status:Unix.process_status;
     errcode:int; (** extracted from status *)
   >
 
+val call : ?bufsize:int ->
+           ?stdin:[`Gen of string gen | `Str of string] ->
+           ?env:string array ->
+           ('a, Buffer.t, unit, call_result) format4 ->
+           'a
+(** [call cmd] wraps the result of [Unix.open_process_full cmd] into an
+    object. It reads the full stdout and stderr of the subprocess before
+    returning.
+    @param stdin if provided, the generator or string is consumed and fed to
+      the subprocess input channel, which is then closed.
+    @param bufsize buffer size used to read stdout and stderr
+    @param env environment to run the command in
+*)
+
+(*$T
+  (call ~stdin:(`Str "abc") "cat")#stdout = "abc"
+  (call "echo %a" escape_str "a'b'c")#stdout = "abc\n"
+  (call "echo %s" "a'b'c")#stdout = "abc\n"
+*)
 
 
 

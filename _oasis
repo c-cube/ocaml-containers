@@ -203,8 +203,8 @@ Executable run_qtest
   Build$:           flag(tests) && flag(bigarray)
   BuildDepends:     containers, containers.misc, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
-                    containers.bigarray,
-                    sequence, gen, oUnit, QTest2Lib
+                    containers.bigarray, containers.unix,
+                    sequence, gen, unix, oUnit, QTest2Lib
 
 Executable run_qtest_lwt
   Path:             qtest/lwt/

@@ -134,7 +134,7 @@ let rec insert_ c k v t = match t with
 
 let add k v t = insert_ (fun ~old:_ v -> v) k v t
 
-(*$Q
+(*$Q & ~count:20
   Q.(list (pair int int)) (fun l -> \
     let l = CCList.Set.uniq l in let m = of_list l in \
     List.for_all (fun (k,v) -> find_exn k m = v) l)
