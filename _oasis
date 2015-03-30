@@ -122,7 +122,8 @@ Library "containers_misc"
   Path:             src/misc
   Pack:             true
   Modules:          AbsSet, Automaton, Bij, CSM, Hashset, LazyGraph, PHashtbl,
-                    PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ, Puf
+                    PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ, Puf,
+                    Backtrack
   BuildDepends:     containers, containers.data
   FindlibName:      misc
   FindlibParent:    containers
