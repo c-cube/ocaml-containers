@@ -4,6 +4,7 @@ module B = Benchmark
 let (@>) = B.Tree.(@>)
 let (@>>) = B.Tree.(@>>)
 let (@>>>) = B.Tree.(@>>>)
+let (|>) = CCFun.(|>)
 
 let app_int f n = string_of_int n @> lazy (f n)
 let app_ints f l = B.Tree.concat (List.map (app_int f) l)

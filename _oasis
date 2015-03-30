@@ -201,7 +201,7 @@ Executable run_qtest
   Install:          false
   CompiledObject:   best
   MainIs:           run_qtest.ml
-  Build$:           flag(tests) && flag(bigarray) && flag(unix)
+  Build$:           flag(tests) && flag(bigarray) && flag(unix) && flag(advanced)
   BuildDepends:     containers, containers.misc, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
                     containers.bigarray, containers.unix,

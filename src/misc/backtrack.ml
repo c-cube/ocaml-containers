@@ -88,6 +88,7 @@ module Logical (P:Param) = struct
     | Zero e -> f e
     | Plus (a1, f1) ->
       plus a1 (fun e -> plus (f1 e) f)
+    | _ -> Plus (a, f)
 
   let split x = Split x
 
