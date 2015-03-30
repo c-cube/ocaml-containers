@@ -113,6 +113,22 @@ val suffix : suf:string -> string -> bool
   not (suffix ~suf:"abcd" "cd")
 *)
 
+val lines : string -> string gen
+(** [lines s] returns a generator of the lines of [s] (splits along '\n')
+    @since NEXT_RELEASE *)
+
+val concat_gen : sep:string -> string gen -> string
+(** [concat_gen ~sep g] concatenates all strings of [g], separated with [sep].
+    @since NEXT_RELEASE *)
+
+val unlines : string gen -> string
+(** [unlines g] concatenates all strings of [g], separated with '\n'
+    @since NEXT_RELEASE *)
+
+(*$Q
+  Q.printable_string (fun s -> unlines (lines s) = s)
+*)
+
 include S with type t := string
 
 (** {2 Splitting} *)
