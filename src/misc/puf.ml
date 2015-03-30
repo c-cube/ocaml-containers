@@ -454,10 +454,11 @@ module Make(X : ID) : S with type elt = X.t = struct
 
   let iter uf f =
     PArray.iteri
-      (fun i e -> match e with
+      (fun i i' ->
+         if i = i' then match PArray.get uf.data i with
          | None -> ()
-         | Some d -> if d.next = i then f d.elt
-      ) uf.data
+         | Some d -> f d.elt
+      ) uf.parent
 
   let inconsistent uf = uf.inconsistent
 
