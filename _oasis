@@ -122,7 +122,7 @@ Library "containers_misc"
   Path:             src/misc
   Pack:             true
   Modules:          AbsSet, Automaton, Bij, CSM, Hashset, LazyGraph, PHashtbl,
-                    PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ
+                    PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ, Puf
   BuildDepends:     containers, containers.data
   FindlibName:      misc
   FindlibParent:    containers
@@ -200,7 +200,7 @@ Executable run_qtest
   Install:          false
   CompiledObject:   best
   MainIs:           run_qtest.ml
-  Build$:           flag(tests) && flag(bigarray)
+  Build$:           flag(tests) && flag(bigarray) && flag(unix)
   BuildDepends:     containers, containers.misc, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
                     containers.bigarray, containers.unix,
