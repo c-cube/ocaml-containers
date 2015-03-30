@@ -50,7 +50,7 @@ let rec iter_gen f g = match g() with
 (* print a string, but escaped if required *)
 let escape_str buf s =
   if str_exists s
-      (function ' ' | '"' | '\'' -> true | _ -> false)
+      (function ' ' | '"' | '\'' | '\n' | '\t'-> true | _ -> false)
   then (
     Buffer.add_char buf '\'';
     String.iter
@@ -79,7 +79,7 @@ let read_all ?(size=1024) ic =
   with Exit ->
     Bytes.sub_string !buf 0 !len
 
-type call_result = 
+type call_result =
   < stdout:string;
     stderr:string;
     status:Unix.process_status;

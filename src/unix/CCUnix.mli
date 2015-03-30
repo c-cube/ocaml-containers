@@ -45,7 +45,7 @@ val escape_str : Buffer.t -> string -> unit
   CCPrint.sprintf "%a" escape_str "fo'o b'ar" = "'fo''o b''ar'"
 *)
 
-type call_result = 
+type call_result =
   < stdout:string;
     stderr:string;
     status:Unix.process_status;
