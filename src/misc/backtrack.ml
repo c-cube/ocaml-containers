@@ -61,9 +61,19 @@ module Logical (P:Param) = struct
     | Break : (exn -> exn option) * 'a t -> 'a t
 
   let return x = Return x
+
   let (>>=) x f = Bind (x, f)
-  let map f x = Map (x, f)
-  let ignore x = Ignore x
+
+  let map f x = match x with
+    | Return x -> return (f x)
+    | Map (y, g) -> Map (y, fun x -> f (g x))
+    | _ -> Map (x, f)
+
+  let rec ignore : type a. a t -> unit t = function
+    | Return _ -> Return ()
+    | Map (x, _) -> ignore x
+    | x -> Ignore x
+
   let set x = Set x
   let get = Get
   let modify f = Modify f
@@ -73,9 +83,20 @@ module Logical (P:Param) = struct
   let update f = Update f
   let zero e = Zero e
   let with_state st x = WithState (st, x)
-  let plus a f = Plus (a, f)
+
+  let rec plus a f = match a with
+    | Zero e -> f e
+    | Plus (a1, f1) ->
+      plus a1 (fun e -> plus (f1 e) f)
+
   let split x = Split x
-  let once x = Once x
+
+  let rec once : type a. a t -> a t = function
+    | Zero e -> Zero e
+    | Return x -> Return x
+    | Map (x, f) -> map f (once x)
+    | x -> Once x
+
   let break f x = Break (f, x)
 
   type 'a reified =
