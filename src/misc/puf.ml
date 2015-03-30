@@ -58,6 +58,8 @@ module PArray = struct
         a
       end
 
+  let iteri f t = Array.iteri f (reroot t)
+
   let get t i =
     match !t with
     | Array a -> a.(i)
@@ -204,6 +206,9 @@ module type S = sig
     (** [iter_equiv_class uf a f] calls [f] on every element of [uf] that
         is congruent to [a], including [a] itself. *)
 
+  val iter : _ t -> (elt -> unit) -> unit
+    (** Iterate on all root values *)
+
   val inconsistent : _ t -> (elt * elt * elt * elt) option
     (** Check whether the UF is inconsistent. It returns [Some (a, b, a', b')]
         in case of inconsistency, where a = b, a = a' and b = b' by congruence,
@@ -222,7 +227,8 @@ module type S = sig
 
   val explain_distinct : 'e t -> elt -> elt -> elt * elt
     (** [explain_distinct uf a b] gives the original pair [a', b'] that
-        made [a] and [b] distinct by calling [distinct a' b'] *)
+        made [a] and [b] distinct by calling [distinct a' b']. The
+        terms must be distinct, otherwise Failure is raised. *)
 end
 
 module IH = Hashtbl.Make(struct type t = int let equal i j = i = j let hash i = i end)
@@ -445,6 +451,13 @@ module Make(X : ID) : S with type elt = X.t = struct
               else traverse id'
         in
         traverse ia
+
+  let iter uf f =
+    PArray.iteri
+      (fun i e -> match e with
+         | None -> ()
+         | Some d -> if d.next = i then f d.elt
+      ) uf.data
 
   let inconsistent uf = uf.inconsistent
 

@@ -113,6 +113,10 @@ module type S = sig
     (** [iter_equiv_class uf a f] calls [f] on every element of [uf] that
         is congruent to [a], including [a] itself. *)
 
+  val iter : _ t -> (elt -> unit) -> unit
+  (** Iterate on all root values
+      @since NExT_RELEASE *)
+
   val inconsistent : _ t -> (elt * elt * elt * elt) option
     (** Check whether the UF is inconsistent. It returns [Some (a, b, a', b')]
         in case of inconsistency, where a = b, a = a' and b = b' by congruence,
