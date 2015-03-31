@@ -263,7 +263,9 @@ let of_array a =
 let to_array s =
   Array.init (String.length s) (fun i -> s.[i])
 
-let lines s = Split.gen_cpy ~by:"\n" s
+let lines_gen s = Split.gen_cpy ~by:"\n" s
+
+let lines s = Split.list_cpy ~by:"\n" s
 
 let concat_gen ~sep g =
   let b = Buffer.create 256 in
@@ -275,7 +277,9 @@ let concat_gen ~sep g =
       aux ~first:false ()
   in aux ~first:true ()
 
-let unlines g = concat_gen ~sep:"\n" g
+let unlines l = String.concat "\n" l
+
+let unlines_gen g = concat_gen ~sep:"\n" g
 
 let pp buf s =
   Buffer.add_char buf '"';
