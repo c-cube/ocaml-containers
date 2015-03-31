@@ -45,7 +45,7 @@ See [this file](https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG
 ## Finding help
 
 - the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
-- the IRC channel (`##ocaml-containers` on Freenode)
+- on IRC, ask `companion_cube` on `#ocaml`
 
 ## Use
 
@@ -108,6 +108,10 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 ### Containers.io
 
 - `CCIO`, basic utilities for IO
+
+### Containers.unix
+
+- `CCUnix`, utils for `Unix`
 
 ### Containers.sexp
 

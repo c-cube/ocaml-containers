@@ -132,7 +132,7 @@ val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
 (** [uniq_succ l] removes duplicate elements that occur one next to the other.
     Examples:
     [uniq_succ [1;2;1] = [1;2;1]]
-    [uniq_succ [1;1;2] = [1;2]
+    [uniq_succ [1;1;2] = [1;2]]
     @since NEXT_RELEASE *)
 
 (** {2 Indices} *)

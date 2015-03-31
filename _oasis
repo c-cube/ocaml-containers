@@ -152,7 +152,7 @@ Document containers
   Title:                Containers docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Build$:               flag(docs) && flag(advanced) && flag(bigarray) && flag(lwt) && flag(misc)
+  Build$:               flag(docs) && flag(advanced) && flag(bigarray) && flag(lwt) && flag(misc) && flag(unix)
   Install:              true
   XOCamlbuildPath:      .
   XOCamlbuildExtraArgs:
@@ -160,7 +160,7 @@ Document containers
   XOCamlbuildLibraries:
     containers, containers.misc, containers.iter, containers.data,
     containers.string, containers.bigarray,
-    containers.advanced, containers.io, containers.sexp,
+    containers.advanced, containers.io, containers.unix, containers.sexp,
     containers.lwt
 
 Executable run_benchs

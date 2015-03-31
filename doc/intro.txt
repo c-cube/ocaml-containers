@@ -83,6 +83,12 @@ Helpers to perform simple IO (mostly on files) and iterate on channels.
 
 {!modules: CCIO}
 
+{4 Containers.unix}
+
+Helpers that depend on {!Unix}, e.g. to spawn sub-processes.
+
+{!modules: CCUnix}
+
 {4 Containers.sexp}
 
 A small S-expression library. The interface is relatively unstable, but
