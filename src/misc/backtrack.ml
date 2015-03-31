@@ -114,6 +114,8 @@ module Logical (P:Param) = struct
   let rcons x cont = RCons (x, cont)
   let rnil e = RNil e
 
+  (* TODO: maybe (('a * state), exn -> state -> 'a t) list_view is better
+      for bind and local? *)
   type 'a splitted = (('a * state), exn -> 'a t) list_view
 
   let rec run_rec
@@ -146,9 +148,14 @@ module Logical (P:Param) = struct
     | Put w -> cons ((), {st with w}) zero
     | Current -> cons (st.e, st) zero
     | Local (e,x) ->
-      (* bind [st.e = e] in [x] *)
+      (* bind [st.e = e] in [x], then restore old [e] in each result *)
+      let old_e = st.e in
       let st' = {st with e} in
-      run_rec st' x
+      begin match run_rec st' x with
+        | Nil e -> Nil e
+        | Cons ((x, st''), cont) ->
+          cons (x, {st'' with e=old_e}) (fun e -> assert false) (* TODO: restore old_e*)
+      end
     | Update f ->
       let st = {st with u=f st.u} in
       cons ((), st) zero
