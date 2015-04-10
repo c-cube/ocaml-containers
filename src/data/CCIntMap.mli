@@ -24,7 +24,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Map specialized for Int keys} *)
+(** {1 Map specialized for Int keys}
+
+{b status: unstable}
+@since NEXT_RELEASE *)
 
 type 'a t
 

@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Some useful functions built on top of Unix.
 
+{b status: unstable}
 @since NEXT_RELEASE *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]

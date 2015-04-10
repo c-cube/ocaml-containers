@@ -1,4 +1,12 @@
 
+(** {1 Experiment with Backtracking Monad}
+
+Playing stuff, don't use (yet?).
+
+{b status: experimental}
+@since NEXT_RELEASE
+*)
+
 module type MONAD = sig
   type 'a t
   val return : 'a -> 'a t
