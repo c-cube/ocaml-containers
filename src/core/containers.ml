@@ -44,7 +44,7 @@ Changed [Opt] to [Option] to better reflect that this module is about the
 Renamed from [CCPervasives] in [containers.pervasives], to [Containers]
 in the core library [containers]
 
-@since NEXT_RELEASE
+@since 0.10
 *)
 
 module Array = struct

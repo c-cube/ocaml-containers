@@ -4,7 +4,7 @@
 Playing stuff, don't use (yet?).
 
 {b status: experimental}
-@since NEXT_RELEASE
+@since 0.10
 *)
 
 module type MONAD = sig

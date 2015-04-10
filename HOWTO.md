@@ -1,7 +1,7 @@
 
 ## Make a release
 
-1. `make test-all`
+1. `make test`
 2. update version in `_oasis`
 3. `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
 4. update `CHANGELOG.md` (see its end to find the right git command)

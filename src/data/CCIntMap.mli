@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Map specialized for Int keys}
 
 {b status: unstable}
-@since NEXT_RELEASE *)
+@since 0.10 *)
 
 type 'a t
 

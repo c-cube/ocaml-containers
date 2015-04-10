@@ -30,7 +30,7 @@ From the paper by Jean-Christophe Filliâtre,
 "A persistent Union-Find data structure", see
 {{: https://www.lri.fr/~filliatr/ftp/publis/puf-wml07.ps} the ps version}
 
-@since NEXT_RELEASE *)
+@since 0.10 *)
 
 type 'a t
 (** The type of persistent arrays *)

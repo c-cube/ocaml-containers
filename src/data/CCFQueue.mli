@@ -112,7 +112,7 @@ val append : 'a t -> 'a t -> 'a t
 
 val rev : 'a t -> 'a t
 (** Reverse the queue, O(n) complexity
-    @since NEXT_RELEASE *)
+    @since 0.10 *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Map values *)
@@ -146,5 +146,5 @@ val of_klist : 'a klist -> 'a t
 
 val (--) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], both included.
-    @since NEXT_RELEASE *)
+    @since 0.10 *)
 
