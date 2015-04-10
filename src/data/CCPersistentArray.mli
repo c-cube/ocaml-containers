@@ -96,4 +96,10 @@ val to_list : 'a t -> 'a list
 val of_list : 'a list -> 'a t
 (** [of_list l] returns a fresh persistent array containing the elements of [l]. *)
 
+type 'a sequence = ('a -> unit) -> unit
+
+val to_seq : 'a t -> 'a sequence
+
+val of_seq : 'a sequence -> 'a t
+
 

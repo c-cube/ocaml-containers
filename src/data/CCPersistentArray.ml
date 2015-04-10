@@ -80,3 +80,13 @@ let of_array a = init (Array.length a) (fun i -> a.(i))
 let to_list t = Array.to_list (reroot t)
 let of_list l = ref (Array (Array.of_list l))
 
+type 'a sequence = ('a -> unit) -> unit
+
+let to_seq a yield = iter yield a
+
+let of_seq seq =
+  let l = ref [] in
+  seq (fun x -> l := x :: !l);
+  of_list (List.rev !l)
+
+
