@@ -2,7 +2,7 @@
 
 ## 0.10
 
-- add `containers_misc.Puf.iter`
+- add `containers.misc.Puf.iter`
 - add `CCString.{lines,unlines,concat_gen}`
 - `CCUnix` (with a small subprocess API)
 - add `CCList.{sorted_merge_uniq, uniq_succ}`
@@ -11,7 +11,7 @@
 - `CCIntMap` (big-endian patricia trees) in containers.data
 - bugfix in `CCFQueue.add_seq_front`
 - add `CCFQueue.{rev, --}`
-- add `App_parse` in `containers_string`, experimental applicative parser combinators
+- add `App_parse` in `containers.string`, experimental applicative parser combinators
 - remove `containers.pervasives`, add the module `Containers` to core
 - bugfix in `CCFormat.to_file`
 
