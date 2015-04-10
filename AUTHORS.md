@@ -10,3 +10,4 @@
 - Bernardo da Costa
 - Vincent Bernardoff (vbmithr)
 - Emmanuel Surleau (emm)
+- Guillaume Bury (guigui)

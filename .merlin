@@ -9,7 +9,6 @@ S src/threads/
 S src/misc
 S src/string
 S src/bigarray
-S src/pervasives
 S benchs
 S examples
 S tests
@@ -24,7 +23,6 @@ B _build/src/threads/
 B _build/src/misc
 B _build/src/string
 B _build/src/bigarray
-B _build/src/pervasives
 B _build/benchs
 B _build/examples
 B _build/tests

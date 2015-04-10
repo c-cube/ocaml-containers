@@ -74,6 +74,11 @@ let rec cons : 'a. 'a -> 'a t -> 'a t
   | Deep (n,Three (y,z,z'), lazy q', tail) ->
       _deep (n+1) (Two (x,y)) (lazy (cons (z,z') q')) tail
 
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    cons x (of_list l) |> to_list = x::l)
+  *)
+
 let rec snoc : 'a. 'a t -> 'a -> 'a t
   = fun q x -> match q with
   | Shallow Zero -> _single x
@@ -86,6 +91,11 @@ let rec snoc : 'a. 'a t -> 'a -> 'a t
   | Deep (n,hd, middle, Two (y,z)) -> _deep (n+1) hd middle (Three(y,z,x))
   | Deep (n,hd, lazy q', Three (y,z,z')) ->
       _deep (n+1) hd (lazy (snoc q' (y,z))) (Two(z',x))
+
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    snoc (of_list l) x |> to_list = l @ [x])
+  *)
 
 let rec take_front_exn : 'a. 'a t -> ('a *'a t)
   = fun q -> match q with
@@ -105,6 +115,12 @@ let rec take_front_exn : 'a. 'a t -> ('a *'a t)
   | Deep (n,Three (x,y,z), middle, tail) ->
       x, _deep (n-1) (Two(y,z)) middle tail
 
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    let x', q = cons x (of_list l) |> take_front_exn in \
+    x'=x && to_list q = l)
+  *)
+
 let take_front q =
   try Some (take_front_exn q)
   with Empty -> None
@@ -117,6 +133,11 @@ let take_front_l n q =
       aux (x::acc) q' (n-1)
   in aux [] q n
 
+(*$T
+  let l, q = take_front_l 5 (1 -- 10) in \
+  l = [1;2;3;4;5] && to_list q = [6;7;8;9;10]
+*)
+
 let take_front_while p q =
   let rec aux acc q =
     if is_empty q then List.rev acc, q
@@ -124,6 +145,10 @@ let take_front_while p q =
       let x,q' = take_front_exn q in
       if p x then aux (x::acc) q' else List.rev acc, q
   in aux [] q
+
+(*$T
+  take_front_while (fun x-> x<5) (1 -- 10) |> fst = [1;2;3;4]
+*)
 
 let rec take_back_exn : 'a. 'a t -> 'a t * 'a
   = fun q -> match q with
@@ -140,6 +165,12 @@ let rec take_back_exn : 'a. 'a t -> 'a t * 'a
           _deep (n-1) hd (Lazy.from_val q'') (Two (y,z)), x
   | Deep (n, hd, middle, Two(x,y)) -> _deep (n-1) hd middle (One x), y
   | Deep (n, hd, middle, Three(x,y,z)) -> _deep (n-1) hd middle (Two (x,y)), z
+
+(*$Q
+  (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
+    let q,x' = snoc (of_list l) x |> take_back_exn in \
+    x'=x && to_list q = l)
+  *)
 
 let take_back q =
   try Some (take_back_exn q)
@@ -186,6 +217,11 @@ let size : 'a. 'a t -> int
   | Shallow d -> _size_digit d
   | Deep (n, _, _, _) -> n
 
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    size (of_list l) = List.length l)
+*)
+
 let _nth_digit i d = match i, d with
   | _, Zero -> raise Not_found
   | 0, One x -> x
@@ -228,18 +264,41 @@ let nth i q =
   try Some (nth_exn i q)
   with Failure _ -> None
 
+(*$Q
+  (Q.list Q.int) (fun l -> \
+   let len = List.length l in let idx = CCList.(0 -- (len - 1)) in \
+   let q = of_list l in \
+   l = [] || List.for_all (fun i -> nth i q = Some (List.nth l i)) idx)
+*)
+
 let init q =
   try fst (take_back_exn q)
   with Empty -> q
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    l = [] || (of_list l |> init |> to_list = List.rev (List.tl (List.rev l))))
+*)
 
 let tail q =
   try snd (take_front_exn q)
   with Empty -> q
 
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    l = [] || (of_list l |> tail |> to_list = List.tl l))
+*)
+
 let add_seq_front seq q =
-  let q = ref q in
-  seq (fun x -> q := cons x !q);
-  !q
+  let l = ref [] in
+  (* reversed seq *)
+  seq (fun x -> l := x :: !l);
+  List.fold_left (fun q x -> cons x q) q !l
+
+(*$Q
+  Q.(pair (list int) (list int)) (fun (l1, l2) -> \
+    add_seq_front (Sequence.of_list l1) (of_list l2) |> to_list = l1 @ l2)
+  *)
 
 let add_seq_back q seq =
   let q = ref q in
@@ -260,11 +319,21 @@ let rec to_seq : 'a. 'a t -> 'a sequence
       to_seq q' (fun (x,y) -> k x; k y);
       _digit_to_seq tail k
 
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> to_seq |> Sequence.to_list = l)
+*)
+
 let append q1 q2 =
   match q1, q2 with
   | Shallow Zero, _ -> q2
   | _, Shallow Zero -> q1
   | _ -> add_seq_back q1 (to_seq q2)
+
+(*$Q
+  (Q.pair (Q.list Q.int)(Q.list Q.int)) (fun (l1,l2) -> \
+    append (of_list l1) (of_list l2) |> to_list = l1 @ l2)
+*)
 
 let _map_digit f d = match d with
   | Zero -> Zero
@@ -278,6 +347,11 @@ let rec map : 'a 'b. ('a -> 'b) -> 'a t -> 'b t
   | Deep (size, hd, lazy q', tl) ->
       let q'' = map (fun (x,y) -> f x, f y) q' in
       _deep size (_map_digit f hd) (Lazy.from_val q'') (_map_digit f tl)
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> map string_of_int |> to_list = List.map string_of_int l)
+*)
 
 let (>|=) q f = map f q
 
@@ -295,6 +369,11 @@ let rec fold : 'a 'b. ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
       let acc = fold (fun acc (x,y) -> f (f acc x) y) acc q' in
       _fold_digit f acc tl
 
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> fold (fun acc x->x::acc) [] = List.rev l)
+*)
+
 let iter f q = to_seq q f
 
 let of_list l = List.fold_left snoc empty l
@@ -304,14 +383,21 @@ let to_list q =
   to_seq q (fun x -> l := x :: !l);
   List.rev !l
 
-let of_seq seq =
-  let l = ref [] in
-  seq (fun x -> l := x :: !l);
-  List.fold_left (fun q x -> cons x q) empty !l
+let of_seq seq = add_seq_front seq empty
 
 (*$Q
   (Q.list Q.int) (fun l -> \
     Sequence.of_list l |> of_seq |> to_list = l)
+*)
+
+let rev q =
+  let q' = ref empty in
+  iter (fun x -> q' := cons x !q') q;
+  !q'
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> rev |> to_list = List.rev l)
 *)
 
 let _nil () = `Nil
@@ -358,3 +444,24 @@ let rec _equal_klist eq l1 l2 = match l1(), l2() with
       eq x1 x2 && _equal_klist eq l1' l2'
 
 let equal eq q1 q2 = _equal_klist eq (to_klist q1) (to_klist q2)
+
+(*$T
+  let q1 = 1 -- 10 and q2 = append (1 -- 5) (6 -- 10) in \
+  equal (=) q1 q2
+*)
+
+let (--) a b =
+  let rec up_to q a b = if a = b
+    then snoc q a
+    else up_to (snoc q a) (a+1) b
+  and down_to q a b = if a = b then snoc q a
+    else down_to (snoc q a) (a-1) b
+  in
+  if a <= b then up_to empty a b else down_to empty a b
+
+(*$T
+  1 -- 5 |> to_list = [1;2;3;4;5]
+  5 -- 1 |> to_list = [5;4;3;2;1]
+  0 -- 0 |> to_list = [0]
+*)
+

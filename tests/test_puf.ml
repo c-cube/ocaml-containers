@@ -1,6 +1,7 @@
 (** Tests for persistent union find *)
 
 open OUnit
+open Containers_misc
 
 module P = Puf.Make(struct type t = int let get_id i = i end)
 

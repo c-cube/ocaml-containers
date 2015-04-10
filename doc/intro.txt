@@ -44,11 +44,11 @@ CCRef
 CCSet
 CCString
 CCVector
+Containers
 }
 
-{4 Pervasives (aliases to Core Modules)}
-
-Contains aliases to most modules from {i containers core}, and mixins
+The module {!Containers} contains aliases to most other modules defined
+in {i containers core}, and mixins
 such as:
 
 {[ module List = struct
@@ -56,8 +56,6 @@ such as:
     include CCList
   end
 ]}
-
-{!modules: CCPervasives}
 
 {4 Containers.data}
 
@@ -68,10 +66,12 @@ CCBV
 CCCache
 CCFQueue
 CCFlatHashtbl
+CCIntMap
 CCMixmap
 CCMixtbl
 CCMultiMap
 CCMultiSet
+CCPersistentArray
 CCPersistentHashtbl
 CCRingBuffer
 CCTrie
@@ -82,6 +82,12 @@ CCTrie
 Helpers to perform simple IO (mostly on files) and iterate on channels.
 
 {!modules: CCIO}
+
+{4 Containers.unix}
+
+Helpers that depend on {!Unix}, e.g. to spawn sub-processes.
+
+{!modules: CCUnix}
 
 {4 Containers.sexp}
 

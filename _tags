@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 4bc9d475d595a814a666d126274b25b1)
+# DO NOT EDIT (digest: 2d4ff427096956a049556073cd9b4191)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -20,6 +20,10 @@ true: annot, bin_annot
 # Library containers_io
 "src/io/containers_io.cmxs": use_containers_io
 <src/io/*.ml{,i,y}>: package(bytes)
+# Library containers_unix
+"src/unix/containers_unix.cmxs": use_containers_unix
+<src/unix/*.ml{,i,y}>: package(bytes)
+<src/unix/*.ml{,i,y}>: package(unix)
 # Library containers_sexp
 "src/sexp/containers_sexp.cmxs": use_containers_sexp
 <src/sexp/*.ml{,i,y}>: package(bytes)
@@ -32,6 +36,8 @@ true: annot, bin_annot
 "src/string/containers_string.cmxs": use_containers_string
 "src/string/KMP.cmx": for-pack(Containers_string)
 "src/string/levenshtein.cmx": for-pack(Containers_string)
+"src/string/app_parse.cmx": for-pack(Containers_string)
+<src/string/*.ml{,i,y}>: package(bytes)
 # Library containers_advanced
 "src/advanced/containers_advanced.cmxs": use_containers_advanced
 "src/advanced/CCLinq.cmx": for-pack(Containers_advanced)
@@ -46,10 +52,6 @@ true: annot, bin_annot
 <src/bigarray/*.ml{,i,y}>: package(bigarray)
 <src/bigarray/*.ml{,i,y}>: package(bytes)
 <src/bigarray/*.ml{,i,y}>: use_containers
-# Library containers_pervasives
-"src/pervasives/containers_pervasives.cmxs": use_containers_pervasives
-<src/pervasives/*.ml{,i,y}>: package(bytes)
-<src/pervasives/*.ml{,i,y}>: use_containers
 # Library containers_misc
 "src/misc/containers_misc.cmxs": use_containers_misc
 "src/misc/absSet.cmx": for-pack(Containers_misc)
@@ -65,6 +67,8 @@ true: annot, bin_annot
 "src/misc/smallSet.cmx": for-pack(Containers_misc)
 "src/misc/unionFind.cmx": for-pack(Containers_misc)
 "src/misc/univ.cmx": for-pack(Containers_misc)
+"src/misc/puf.cmx": for-pack(Containers_misc)
+"src/misc/backtrack.cmx": for-pack(Containers_misc)
 <src/misc/*.ml{,i,y}>: package(bytes)
 <src/misc/*.ml{,i,y}>: use_containers
 <src/misc/*.ml{,i,y}>: use_containers_data
@@ -101,11 +105,11 @@ true: annot, bin_annot
 <benchs/*.ml{,i,y}>: use_containers_advanced
 <benchs/*.ml{,i,y}>: use_containers_iter
 <benchs/*.ml{,i,y}>: use_containers_string
-# Executable bench_hash
-<benchs/bench_hash.{native,byte}>: package(bytes)
-<benchs/bench_hash.{native,byte}>: use_containers
-<benchs/bench_hash.{native,byte}>: use_containers_data
-<benchs/bench_hash.{native,byte}>: use_containers_misc
+# Executable run_bench_hash
+<benchs/run_bench_hash.{native,byte}>: package(bytes)
+<benchs/run_bench_hash.{native,byte}>: use_containers
+<benchs/run_bench_hash.{native,byte}>: use_containers_data
+<benchs/run_bench_hash.{native,byte}>: use_containers_misc
 <benchs/*.ml{,i,y}>: package(bytes)
 <benchs/*.ml{,i,y}>: use_containers
 <benchs/*.ml{,i,y}>: use_containers_data
@@ -130,6 +134,7 @@ true: annot, bin_annot
 <qtest/run_qtest.{native,byte}>: package(gen)
 <qtest/run_qtest.{native,byte}>: package(oUnit)
 <qtest/run_qtest.{native,byte}>: package(sequence)
+<qtest/run_qtest.{native,byte}>: package(unix)
 <qtest/run_qtest.{native,byte}>: use_containers
 <qtest/run_qtest.{native,byte}>: use_containers_advanced
 <qtest/run_qtest.{native,byte}>: use_containers_bigarray
@@ -139,12 +144,14 @@ true: annot, bin_annot
 <qtest/run_qtest.{native,byte}>: use_containers_misc
 <qtest/run_qtest.{native,byte}>: use_containers_sexp
 <qtest/run_qtest.{native,byte}>: use_containers_string
+<qtest/run_qtest.{native,byte}>: use_containers_unix
 <qtest/*.ml{,i,y}>: package(QTest2Lib)
 <qtest/*.ml{,i,y}>: package(bigarray)
 <qtest/*.ml{,i,y}>: package(bytes)
 <qtest/*.ml{,i,y}>: package(gen)
 <qtest/*.ml{,i,y}>: package(oUnit)
 <qtest/*.ml{,i,y}>: package(sequence)
+<qtest/*.ml{,i,y}>: package(unix)
 <qtest/*.ml{,i,y}>: use_containers
 <qtest/*.ml{,i,y}>: use_containers_advanced
 <qtest/*.ml{,i,y}>: use_containers_bigarray
@@ -154,6 +161,7 @@ true: annot, bin_annot
 <qtest/*.ml{,i,y}>: use_containers_misc
 <qtest/*.ml{,i,y}>: use_containers_sexp
 <qtest/*.ml{,i,y}>: use_containers_string
+<qtest/*.ml{,i,y}>: use_containers_unix
 # Executable run_qtest_lwt
 <qtest/lwt/run_qtest_lwt.{native,byte}>: package(QTest2Lib)
 <qtest/lwt/run_qtest_lwt.{native,byte}>: package(bytes)

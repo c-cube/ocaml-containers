@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: fb8dea068c03b0d63bc05634c5db1689) *)
+(* DO NOT EDIT (digest: c0298c035a279ad3c641dc2bb1ecc03b) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -611,13 +611,13 @@ let package_default =
        [
           ("containers", ["src/core"], []);
           ("containers_io", ["src/io"], []);
+          ("containers_unix", ["src/unix"], []);
           ("containers_sexp", ["src/sexp"], []);
           ("containers_data", ["src/data"], []);
           ("containers_iter", ["src/iter"], []);
           ("containers_string", ["src/string"], []);
           ("containers_advanced", ["src/advanced"], []);
           ("containers_bigarray", ["src/bigarray"], []);
-          ("containers_pervasives", ["src/pervasives"], []);
           ("containers_misc", ["src/misc"], []);
           ("containers_thread", ["src/threads"], []);
           ("containers_lwt", ["src/lwt"], [])
@@ -629,7 +629,6 @@ let package_default =
           ("tests/threads", ["src/core"; "src/threads"]);
           ("tests", ["src/core"; "src/data"; "src/misc"; "src/string"]);
           ("src/threads", ["src/core"]);
-          ("src/pervasives", ["src/core"]);
           ("src/misc", ["src/core"; "src/data"]);
           ("src/lwt", ["src/core"; "src/misc"]);
           ("src/bigarray", ["src/core"]);
@@ -644,7 +643,8 @@ let package_default =
                "src/iter";
                "src/misc";
                "src/sexp";
-               "src/string"
+               "src/string";
+               "src/unix"
             ]);
           ("examples", ["src/core"; "src/misc"; "src/sexp"]);
           ("benchs",

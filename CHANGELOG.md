@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.10
+
+- add `containers_misc.Puf.iter`
+- add `CCString.{lines,unlines,concat_gen}`
+- `CCUnix` (with a small subprocess API)
+- add `CCList.{sorted_merge_uniq, uniq_succ}`
+- breaking: fix documentation of `CCList.sorted_merge` (different semantics)
+- `CCPersistentArray` (credit to @gbury and Jean-Christophe Filliâtre)
+- `CCIntMap` (big-endian patricia trees) in containers.data
+- bugfix in `CCFQueue.add_seq_front`
+- add `CCFQueue.{rev, --}`
+- add `App_parse` in `containers_string`, experimental applicative parser combinators
+- remove `containers.pervasives`, add the module `Containers` to core
+- bugfix in `CCFormat.to_file`
+
 ## 0.9
 
 - add `Float`, `Ref`, `Set`, `Format` to `CCPervasives`
@@ -178,7 +193,7 @@
 - renamed threads/future to threads/CCFuture
 - big upgrade of `RAL` (random access lists)
 - `CCList.Ref` to help use references on lists
-- `CCKList`: group,uniq,sort,sort_uniq,repeat and cycle, infix ops, applicative,product
+- `CCKList`: `group,uniq,sort,sort_uniq,repeat` and `cycle`, infix ops, applicative,product
 - `CCTrie.above/below`: ranges of items
 - more functions in `CCPair`
 - `CCCat`: funny (though useless) definitions inspired from Haskell
@@ -192,7 +207,7 @@
 - conversions for `CCString`
 - `CCHashtbl`: open-addressing table (Robin-Hood hashing)
 - registered printers for `CCError`.guard,wrap1,etc.
-- monadic operator in `CCList`: map_m_par
+- monadic operator in `CCList`: `map_m_par`
 - simple interface to `PrintBox` now more powerful
 - constructors for 1 or 2 elements fqueues
 - bugfixes in BTree (insertion should work now)
@@ -206,7 +221,7 @@
 - `CCopt.pure`
 - updated `CCPersistentHashtbl` with new functions; updated doc, simplified code
 - move `CCString` into core/, since it deals with a basic type; also add some features to `CCString` (Sub and Split modules to deal with slices and splitting by a string)
-- `CCArray.blit`, .Sub.to_slice; some bugfixes
+- `CCArray.blit`, `.Sub.to_slice`; some bugfixes
 - applicative and lifting operators for `CCError`
 - `CCError.map2`
 - more combinators in `CCError`
@@ -219,9 +234,9 @@
 - `CCOpt.sequence_l`
 - mplus instance for `CCOpt`
 - monad instance for `CCFun`
-- updated description in _oasis
+- updated description in `_oasis`
 - `CCTrie`, a compressed functorial persistent trie structure
 - fix `CCPrint.unit`, add `CCPrint.silent`
 - fix type mismatch
 
-note: git log --no-merges previous_version..HEAD --pretty=%s
+note: `git log --no-merges previous_version..HEAD --pretty=%s`

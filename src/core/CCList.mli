@@ -118,10 +118,22 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
 
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
-(** merges elements from both sorted list, removing duplicates *)
+(** merges elements from both sorted list *)
 
 val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
 (** Sort the list and remove duplicate elements *)
+
+val sorted_merge_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
+(** [sorted_merge_uniq l1 l2] merges the sorted lists [l1] and [l2] and
+    removes duplicates
+    @since 0.10 *)
+
+val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
+(** [uniq_succ l] removes duplicate elements that occur one next to the other.
+    Examples:
+    [uniq_succ [1;2;1] = [1;2;1]]
+    [uniq_succ [1;1;2] = [1;2]]
+    @since 0.10 *)
 
 (** {2 Indices} *)
 

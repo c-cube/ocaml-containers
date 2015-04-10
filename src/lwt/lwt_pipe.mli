@@ -74,20 +74,20 @@ type ('a, +'perm) t constraint 'perm = [< `r | `w]
 
 type ('a, 'perm) pipe = ('a, 'perm) t
 
-val keep : _ t -> unit Lwt.t -> unit
+val keep : (_,_) t -> unit Lwt.t -> unit
 (** [keep p fut] adds a pointer from [p] to [fut] so that [fut] is not
     garbage-collected before [p] *)
 
-val is_closed : _ t -> bool
+val is_closed : (_,_) t -> bool
 
-val close : _ t -> unit Lwt.t
+val close : (_,_) t -> unit Lwt.t
 (** [close p] closes [p], which will not accept input anymore.
     This sends [`End] to all readers connected to [p] *)
 
-val close_async : _ t -> unit
+val close_async : (_,_) t -> unit
 (** Same as {!close} but closes in the background *)
 
-val wait : _ t -> unit Lwt.t
+val wait : (_,_) t -> unit Lwt.t
 (** Evaluates once the pipe closes *)
 
 val create : ?max_size:int -> unit -> ('a, 'perm) t
@@ -101,7 +101,7 @@ val connect : ?ownership:[`None | `InOwnsOut | `OutOwnsIn] ->
     @param own determines which pipes owns which (the owner, when it
       closes, also closes the ownee) *)
 
-val link_close : _ t -> after:_ t -> unit
+val link_close : (_,_) t -> after:(_,_) t -> unit
 (** [link_close p ~after] will close [p] when [after] closes.
     if [after] is closed already, closes [p] immediately *)
 

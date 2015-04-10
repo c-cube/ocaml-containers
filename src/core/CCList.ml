@@ -231,6 +231,12 @@ let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
 (*$T
   List.sort Pervasives.compare ([(( * )2); ((+)1)] <*> [10;100]) \
     = [11; 20; 101; 200]
+  sorted_merge [1;1;2] [1;2;3] = [1;1;1;2;2;3]
+*)
+
+(*$Q
+  Q.(pair (list int) (list int)) (fun (l1,l2) -> \
+    List.length (sorted_merge l1 l2) = List.length l1 + List.length l2)
 *)
 
 let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
@@ -245,6 +251,56 @@ let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
   sort_uniq [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
   sort_uniq [] = []
   sort_uniq [10;10;10;10;1;10] = [1;10]
+*)
+
+let uniq_succ ?(eq=(=)) l =
+  let rec f acc l = match l with
+    | [] -> List.rev acc
+    | [x] -> List.rev (x::acc)
+    | x :: ((y :: _) as tail) when eq x y -> f acc tail
+    | x :: tail -> f (x::acc) tail
+  in
+  f [] l
+
+(*$T
+  uniq_succ [1;1;2;3;1;6;6;4;6;1] = [1;2;3;1;6;4;6;1]
+*)
+
+let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
+  let push ~cmp acc x = match acc with
+    | [] -> [x]
+    | y :: _ when cmp x y > 0 -> x :: acc
+    | _ -> acc (* duplicate, do not yield *)
+  in
+  let rec recurse ~cmp acc l1 l2 = match l1,l2 with
+    | [], l
+    | l, [] ->
+      let acc = List.fold_left (push ~cmp) acc l in
+      List.rev acc
+    | x1::l1', x2::l2' ->
+      let c = cmp x1 x2 in
+      if c < 0 then recurse ~cmp (push ~cmp acc x1) l1' l2
+      else if c > 0 then recurse ~cmp (push ~cmp acc x2) l1 l2'
+      else recurse ~cmp acc l1 l2' (* drop one of the [x] *)
+  in
+  recurse ~cmp [] l1 l2
+
+(*$T
+  sorted_merge_uniq [1; 1; 2; 3; 5; 8] [1; 2; 3; 4; 6; 8; 9; 9] = [1;2;3;4;5;6;8;9]
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    let l = List.sort Pervasives.compare l in \
+    sorted_merge_uniq l [] = uniq_succ l)
+  Q.(list int) (fun l -> \
+    let l = List.sort Pervasives.compare l in \
+    sorted_merge_uniq [] l = uniq_succ l)
+  Q.(pair (list int) (list int)) (fun (l1, l2) -> \
+    let l1 = List.sort Pervasives.compare l1 \
+    and l2 = List.sort Pervasives.compare l2 in \
+    let l3 = sorted_merge_uniq l1 l2 in \
+    uniq_succ l3 = l3)
 *)
 
 let take n l =

@@ -4,6 +4,7 @@ module B = Benchmark
 let (@>) = B.Tree.(@>)
 let (@>>) = B.Tree.(@>>)
 let (@>>>) = B.Tree.(@>>>)
+let (|>) = CCFun.(|>)
 
 let app_int f n = string_of_int n @> lazy (f n)
 let app_ints f l = B.Tree.concat (List.map (app_int f) l)
@@ -234,6 +235,13 @@ module Tbl = struct
     done;
     !h
 
+  let intmap_add n =
+    let h = ref CCIntMap.empty in
+    for i = n downto 0 do
+      h := CCIntMap.add i i !h;
+    done;
+    !h
+
   let icchashtbl_add n =
     let h = ICCHashtbl.create 50 in
     for i = n downto 0 do
@@ -248,6 +256,7 @@ module Tbl = struct
        "ihashtbl_add", (fun n -> ignore (ihashtbl_add n)), n;
        "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n)), n;
        "imap_add", (fun n -> ignore (imap_add n)), n;
+       "intmap_add", (fun n -> ignore (intmap_add n)), n;
        "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n)), n;
       ]
 
@@ -301,6 +310,16 @@ module Tbl = struct
     done;
     !h
 
+  let intmap_replace n =
+    let h = ref CCIntMap.empty in
+    for i = 0 to n do
+      h := CCIntMap.add i i !h;
+    done;
+    for i = n downto 0 do
+      h := CCIntMap.add i i !h;
+    done;
+    !h
+
   let icchashtbl_replace n =
     let h = ICCHashtbl.create 50 in
     for i = 0 to n do
@@ -318,10 +337,9 @@ module Tbl = struct
        "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n)), n;
        "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n)), n;
        "imap_replace", (fun n -> ignore (imap_replace n)), n;
+       "intmap_replace", (fun n -> ignore (intmap_replace n)), n;
        "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n)), n;
       ]
-
-  let my_len = 250
 
   let phashtbl_find h =
     fun n ->
@@ -353,10 +371,22 @@ module Tbl = struct
         ignore (Array.get a i);
       done
 
+  let persistent_array_find a =
+    fun n ->
+      for i = 0 to n-1 do
+        ignore (CCPersistentArray.get a i);
+      done
+
   let imap_find m =
     fun n ->
       for i = 0 to n-1 do
         ignore (IMap.find i m);
+      done
+
+  let intmap_find m =
+    fun n ->
+      for i = 0 to n-1 do
+        ignore (CCIntMap.find i m);
       done
 
   let icchashtbl_find m =
@@ -370,8 +400,10 @@ module Tbl = struct
     let h' = hashtbl_add n in
     let h'' = ihashtbl_add n in
     let h''''' = ipersistenthashtbl_add n in
-    let a = Array.init n (fun i -> string_of_int i) in
+    let a = Array.init n string_of_int in
+    let pa = CCPersistentArray.init n string_of_int in
     let m = imap_add n in
+    let m' = intmap_add n in
     let h'''''' = icchashtbl_add n in
     B.throughputN 3 [
       "phashtbl_find", (fun () -> phashtbl_find h n), ();
@@ -379,7 +411,9 @@ module Tbl = struct
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
       "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n), ();
       "array_find", (fun () -> array_find a n), ();
+      "persistent_array_find", (fun () -> persistent_array_find pa n), ();
       "imap_find", (fun () -> imap_find m n), ();
+      "intmap_find", (fun () -> intmap_find m' n), ();
       "cchashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
     ]
 

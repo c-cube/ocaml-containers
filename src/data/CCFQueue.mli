@@ -110,10 +110,15 @@ val append : 'a t -> 'a t -> 'a t
       after elements of the first one.
       Linear in the size of the second queue. *)
 
+val rev : 'a t -> 'a t
+(** Reverse the queue, O(n) complexity
+    @since 0.10 *)
+
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Map values *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+(** Synonym to {!map} *)
 
 val size : 'a t -> int
 (** Number of elements in the queue (constant time) *)
@@ -130,6 +135,7 @@ val of_list : 'a list -> 'a t
 val to_list : 'a t -> 'a list
 
 val add_seq_front : 'a sequence -> 'a t -> 'a t
+
 val add_seq_back : 'a t -> 'a sequence -> 'a t
 
 val to_seq : 'a t -> 'a sequence
@@ -137,4 +143,8 @@ val of_seq : 'a sequence -> 'a t
 
 val to_klist : 'a t -> 'a klist
 val of_klist : 'a klist -> 'a t
+
+val (--) : int -> int -> int t
+(** [a -- b] is the integer range from [a] to [b], both included.
+    @since 0.10 *)
 
