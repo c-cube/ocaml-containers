@@ -25,18 +25,12 @@ build-test: [ make "test" ]
 remove: [
     ["ocamlfind" "remove" "containers"]
 ]
-post-messages: [
-    "containers is now split into finer-grained sub-libraries, including
-    `containers.io`, `containers.iter`, `containers.sexp`, `containers.data`.
-    CCGen and CCSequence have been removed, consider using the libraries
-    `gen` and `sequence` on opam."
-]
 depends: [
     "ocamlfind" {build}
     "base-bytes"
     "cppo" {build}
 ]
-depopts: [ "lwt" "sequence" "base-bigarray" ]
+depopts: [ "lwt" "sequence" "base-bigarray" "base-unix" "base-threads" ]
 tags: [ "stdlib" "containers" "iterators" "list" "heap" "queue" ]
 homepage: "https://github.com/c-cube/ocaml-containers/"
 doc: "http://cedeela.fr/~simon/software/containers/"
