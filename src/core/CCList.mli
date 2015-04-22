@@ -167,6 +167,14 @@ end
 (** {2 Set Operators} *)
 
 module Set : sig
+  val add : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+  (** [add x set] adds [x] to [set] if it was not already present
+      @since NEXT_RELEASE *)
+
+  val remove : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+  (** [remove x set] removes one occurrence of [x] from [set]
+      @since NEXT_RELEASE *)
+
   val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
   (** membership to the list *)
 

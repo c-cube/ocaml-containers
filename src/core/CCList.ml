@@ -376,6 +376,26 @@ module Set = struct
       | y::l' -> eq x y || search eq x l'
     in search eq x l
 
+  let add ?(eq=(=)) x l =
+    if mem ~eq x l then l else x::l
+
+  let remove ?(eq=(=)) x l =
+    let rec remove_one ~eq x acc l = match l with
+      | [] -> assert false
+      | y :: tl when eq x y -> List.rev_append acc tl
+      | y :: tl -> remove_one ~eq x (y::acc) tl
+    in
+    if mem ~eq x l then remove_one ~eq x [] l else l
+
+  (*$Q
+    Q.(pair int (list int)) (fun (x,l) -> \
+      Set.remove x (Set.add x l) = l)
+    Q.(pair int (list int)) (fun (x,l) -> \
+      Set.mem x l || List.length (Set.add x l) = List.length l + 1)
+    Q.(pair int (list int)) (fun (x,l) -> \
+      not (Set.mem x l) || List.length (Set.remove x l) = List.length l - 1)
+  *)
+
   let subset ?(eq=(=)) l1 l2 =
     List.for_all
       (fun t -> mem ~eq t l2)
