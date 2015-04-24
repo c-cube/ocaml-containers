@@ -113,3 +113,36 @@ let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=[||]) cmd =
         end
     )
 
+type line = string
+
+type async_call_result =
+  < stdout:line gen;
+    stderr:line gen;
+    stdin:line -> unit; (* send a line *)
+    close_in:unit; (* close stdin *)
+    close_err:unit;
+    close_out:unit;
+    wait:Unix.process_status;  (* block until the process ends *)
+  >
+
+let async_call ?(env=[||]) cmd =
+  (* render the command *)
+  let buf = Buffer.create 256 in
+  kbprintf' buf cmd
+    (fun buf ->
+       let cmd = Buffer.contents buf in
+       let oc, ic, errc = Unix.open_process_full cmd env in
+       object
+         method stdout () =
+           try Some (input_line oc)
+           with End_of_file -> None
+         method stderr () =
+           try Some (input_line errc)
+           with End_of_file -> None
+         method stdin l = output_string ic l; output_char ic '\n'
+         method close_in = close_out ic
+         method close_out = close_in oc
+         method close_err = close_in errc
+         method wait = Unix.close_process_full (oc, ic, errc)
+       end
+    )

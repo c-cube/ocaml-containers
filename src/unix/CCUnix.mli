@@ -73,5 +73,27 @@ val call : ?bufsize:int ->
   (call "echo %s" "a'b'c")#stdout = "abc\n"
 *)
 
+type line = string
+
+type async_call_result =
+  < stdout:line gen;
+    stderr:line gen;
+    stdin:line -> unit; (* send a line *)
+    close_in:unit; (* close stdin *)
+    close_err:unit;
+    close_out:unit;
+    wait:Unix.process_status;  (* block until the process ends *)
+  >
+(** A subprocess for interactive usage (read/write channels line by line)
+    @since NEXT_RELEASE *)
+
+val async_call : ?env:string array ->
+                 ('a, Buffer.t, unit, async_call_result) format4 ->
+                 'a
+(** Spawns a subprocess, like {!call}, but the subprocess's channels are
+    line generators and line sinks (for stdin).
+    if [p] is [async_call "cmd"], then [p#wait] waits for the subprocess
+    to die. Channels can be closed independently.
+    @since NEXT_RELEASE *)
 
 
