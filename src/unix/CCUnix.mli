@@ -96,4 +96,16 @@ val async_call : ?env:string array ->
     to die. Channels can be closed independently.
     @since NEXT_RELEASE *)
 
+module Infix : sig
+  val (?|) : ('a, Buffer.t, unit, call_result) format4 -> 'a
+  (** Infix version of {!call}
+      @since NEXT_RELEASE *)
+
+  val (?|&) : ('a, Buffer.t, unit, async_call_result) format4 -> 'a
+  (** Infix version of {!async_call}
+      @since NEXT_RELEASE *)
+end
+
+include module type of Infix
+
 

@@ -146,3 +146,11 @@ let async_call ?(env=[||]) cmd =
          method wait = Unix.close_process_full (oc, ic, errc)
        end
     )
+
+module Infix = struct
+  let (?|) fmt = call fmt
+
+  let (?|&) fmt = async_call fmt
+end
+
+include Infix
