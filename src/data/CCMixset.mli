@@ -52,14 +52,26 @@ type 'a key
 
 val newkey : unit -> 'a key
 (** [newkey ()] creates a new unique key that can be used to access
-    a ['a] value in a set *)
+    a ['a] value in a set. Each key created with [newkey] is distinct
+    from any other key, even if they have the same type.
+
+    Not thread-safe. *)
 
 val empty : t
+(** Empty set *)
 
 val set : key:'a key -> 'a -> t -> t
+(** [set ~key v set] maps [key] to [v] in [set]. It means that
+    for every [set], [get ~key (set ~key v set) = Some v]. *)
 
 val get : key:'a key -> t -> 'a option
+(** [get ~key set] obtains the value for [key] in [set], if any. *)
 
 val get_exn : key:'a key -> t -> 'a
 (** Same as {!get}, but can fail
     @raise Not_found if the key is not present *)
+
+val cardinal : t -> int
+(** Number of mappings *)
+
+

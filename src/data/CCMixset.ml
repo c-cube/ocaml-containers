@@ -75,3 +75,5 @@ let get_exn ~key set = match get ~key set with
 
 let set ~key v set =
   IMap.add key.id (fun () -> key.opt <- Some v) set
+
+let cardinal set = IMap.cardinal set
