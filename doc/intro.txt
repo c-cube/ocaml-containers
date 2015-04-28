@@ -68,6 +68,7 @@ CCFQueue
 CCFlatHashtbl
 CCIntMap
 CCMixmap
+CCMixset
 CCMixtbl
 CCMultiMap
 CCMultiSet

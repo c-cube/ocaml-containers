@@ -104,6 +104,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCFQueue`, a purely functional double-ended queue structure
 - `CCBV`, mutable bitvectors
 - `CCPersistentHashtbl`, a semi-persistent hashtable (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
+- `CCMixmap`, `CCMixtbl`, `CCMixset`, containers of universal types (heterogenous containers)
 
 ### Containers.io
 
