@@ -266,6 +266,25 @@ let uniq_succ ?(eq=(=)) l =
   uniq_succ [1;1;2;3;1;6;6;4;6;1] = [1;2;3;1;6;4;6;1]
 *)
 
+let group_succ ?(eq=(=)) l =
+  let rec f ~eq acc cur l = match cur, l with
+    | [], [] -> List.rev acc
+    | _::_, [] -> List.rev (List.rev cur :: acc)
+    | [], x::tl -> f ~eq acc [x] tl
+    | (y :: _), x :: tl when eq x y -> f ~eq acc (x::cur) tl
+    | _, x :: tl -> f ~eq (List.rev cur :: acc) [x] tl
+  in
+  f ~eq [] [] l
+
+(*$T
+  group_succ [1;2;3;1;1;2;4] = [[1]; [2]; [3]; [1;1]; [2]; [4]]
+  group_succ [] = []
+  group_succ [1;1;1] = [[1;1;1]]
+  group_succ [1;2;2;2] = [[1]; [2;2;2]]
+  group_succ ~eq:(fun (x,_)(y,_)-> x=y) [1, 1; 1, 2; 1, 3; 2, 0] \
+    = [[1, 1; 1, 2; 1, 3]; [2, 0]]
+*)
+
 let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
   let push ~cmp acc x = match acc with
     | [] -> [x]

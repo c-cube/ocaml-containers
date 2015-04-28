@@ -54,7 +54,7 @@ val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
     @since 0.8 *)
 
 val init : int -> (int -> 'a) -> 'a t
-(** Same as [Array.init]
+(** Similar to {!Array.init}
     @since 0.6 *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
@@ -134,6 +134,11 @@ val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
     [uniq_succ [1;2;1] = [1;2;1]]
     [uniq_succ [1;1;2] = [1;2]]
     @since 0.10 *)
+
+val group_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list list
+(** [group_succ ~eq l] groups together consecutive elements that are equal
+    according to [eq]
+    @since NEXT_RELEASE *)
 
 (** {2 Indices} *)
 
