@@ -56,6 +56,8 @@ let pow a b =
   pow 2 10 = 1024
   pow 2 15 = 32768
   pow 10 5 = 100000
+  pow 1 0 = 1
+  pow 0 1 = 0
 *)
 
 type 'a printer = Buffer.t -> 'a -> unit
