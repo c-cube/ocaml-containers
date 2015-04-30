@@ -39,6 +39,25 @@ let sign i =
 
 let neg i = -i
 
+let pow a b =
+  let rec aux acc = function
+    | 1 -> acc
+    | n ->
+       if n mod 2 = 0
+       then aux (acc*acc) (n/2)
+       else acc * (aux (acc*acc) (n/2))
+  in
+  match b with
+  | 0 -> if a = 0 then raise (Invalid_argument "Undefined value 0^0") else 1
+  | b when b < 0 -> raise (Invalid_argument "pow: can't raise int to negative power")
+  | b -> aux a b
+
+(*$T
+  pow 2 10 = 1024
+  pow 2 15 = 32768
+  pow 10 5 = 100000
+*)
+
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a

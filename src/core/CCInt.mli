@@ -41,6 +41,11 @@ val neg : t -> t
 (** [neg i = - i]
     @since 0.5 *)
 
+val pow : t -> t -> t
+(** [pow a b = a^b] for positive integers [a] and [b].
+    raises [Invalid_argument] if [a = b = 0] or [b] < 0.
+    @since NEXT_RELEASE *)
+
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
