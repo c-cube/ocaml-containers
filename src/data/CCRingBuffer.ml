@@ -193,6 +193,14 @@ module type S = sig
   val take_front_exn : t -> Array.elt
   (** Take the first value from front of [t].
       @raise Empty if buffer is already empty. *)
+
+  val of_array : Array.t -> t
+  (** Create a buffer from an initial array, but doesn't take ownership
+      of it (stills allocates a new internal array) *)
+
+  val to_array : t -> Array.t
+  (** Create an array from the elements, in order.
+      @since NEXT_RELEASE *)
 end
 
 module MakeFromArray(Array:Array.S) = struct
@@ -226,6 +234,13 @@ module MakeFromArray(Array:Array.S) = struct
     Byte.blit_from b s 0 s_len; \
     let b' = Byte.copy b in \
     try Byte.iteri b (fun i c -> if Byte.get_front b' i <> c then raise Exit); true with Exit -> false)
+  *)
+
+  (*$T
+    let b = Byte.of_array "abc" in \
+    let b' = Byte.copy b in \
+    Byte.clear b; \
+    Byte.to_array b' = "abc" && Byte.to_array b = ""
   *)
 
   let capacity b =
@@ -663,6 +678,26 @@ module MakeFromArray(Array:Array.S) = struct
     Byte.blit_from b s 0 s_len; \
     try let back = Byte.peek_back b in \
     back = Bytes.get s (s_len - 1) with Byte.Empty -> s_len = 0)
+  *)
+
+  let of_array a =
+    let b = create (max (Array.length a) 16) in
+    blit_from b a 0 (Array.length a);
+    b
+
+  let to_array b =
+    if is_empty b then Array.empty
+    else (
+      let a = Array.make (length b) (peek_front b) in
+      let n = blit_into b a 0 (length b) in
+      assert (n = length b);
+      a
+    )
+
+  (*$Q
+    Q.printable_string (fun s -> \
+      let b = Byte.of_array s in let s' = Byte.to_array b in \
+      s = s')
   *)
 end
 
