@@ -77,6 +77,14 @@ val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
+val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
+                    'a list -> 'b list * 'c list
+(** [partition_map f l] maps [f] on [l] and gather results in lists:
+    - if [f x = `Left y], adds [y] to the first list
+    - if [f x = `Right z], adds [z] to the second list
+    - if [f x = `Drop], ignores [x]
+    @since NEXT_RELEASE *)
+
 val pure : 'a -> 'a t
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t

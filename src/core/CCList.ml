@@ -206,6 +206,29 @@ let diagonal l =
   in
   gen [] l
 
+let partition_map f l =
+  let rec iter f l1 l2 l = match l with
+  | [] -> List.rev l1, List.rev l2
+  | x :: tl ->
+    match f x with
+    | `Left y -> iter f (y :: l1) l2 tl
+    | `Right y -> iter f l1 (y :: l2) tl
+    | `Drop -> iter f l1 l2 tl
+  in
+  iter f [] [] l
+
+(*$R
+  let l1, l2 =
+    partition_map (function
+      | n when n = 0 -> `Drop
+      | n when n mod 2 = 0 -> `Left n
+      | n -> `Right n
+    ) [0;1;2;3;4]
+  in
+  assert_equal [2;4] l1;
+  assert_equal [1;3] l2
+*)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l
