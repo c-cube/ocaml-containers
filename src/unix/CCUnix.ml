@@ -88,7 +88,7 @@ type call_result =
 
 let kbprintf' buf fmt k = Printf.kbprintf k buf fmt
 
-let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=[||]) cmd =
+let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) cmd =
   (* render the command *)
   let buf = Buffer.create 256 in
   kbprintf' buf cmd
@@ -125,7 +125,7 @@ type async_call_result =
     wait:Unix.process_status;  (* block until the process ends *)
   >
 
-let async_call ?(env=[||]) cmd =
+let async_call ?(env=Unix.environment()) cmd =
   (* render the command *)
   let buf = Buffer.create 256 in
   kbprintf' buf cmd
