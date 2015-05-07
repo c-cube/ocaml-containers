@@ -82,7 +82,10 @@ type async_call_result =
     close_in:unit; (* close stdin *)
     close_err:unit;
     close_out:unit;
+    close_all:unit;  (* close all 3 channels *) (** @since NEXT_RELEASE *)
     wait:Unix.process_status;  (* block until the process ends *)
+    wait_errcode:int; (* block until the process ends, then extract errcode *)
+       (** @since NEXT_RELEASE *)
   >
 (** A subprocess for interactive usage (read/write channels line by line)
     @since NEXT_RELEASE *)
@@ -95,6 +98,17 @@ val async_call : ?env:string array ->
     if [p] is [async_call "cmd"], then [p#wait] waits for the subprocess
     to die. Channels can be closed independently.
     @since NEXT_RELEASE *)
+
+(** {2 Accessors}
+
+@since NEXT_RELEASE *)
+
+val stdout : < stdout : 'a; .. > -> 'a
+val stderr : < stderr : 'a; .. > -> 'a
+val status : < status : 'a; .. > -> 'a
+val errcode : < errcode : 'a; .. > -> 'a
+
+(** {2 Infix Functions} *)
 
 module Infix : sig
   val (?|) : ('a, Buffer.t, unit, call_result) format4 -> 'a

@@ -122,7 +122,9 @@ type async_call_result =
     close_in:unit; (* close stdin *)
     close_err:unit;
     close_out:unit;
+    close_all:unit;  (* close all 3 channels *)
     wait:Unix.process_status;  (* block until the process ends *)
+    wait_errcode:int; (* block until the process ends, then extract errcode *)
   >
 
 let async_call ?(env=Unix.environment()) cmd =
@@ -132,7 +134,7 @@ let async_call ?(env=Unix.environment()) cmd =
     (fun buf ->
        let cmd = Buffer.contents buf in
        let oc, ic, errc = Unix.open_process_full cmd env in
-       object
+       object (self)
          method stdout () =
            try Some (input_line oc)
            with End_of_file -> None
@@ -143,9 +145,16 @@ let async_call ?(env=Unix.environment()) cmd =
          method close_in = close_out ic
          method close_out = close_in oc
          method close_err = close_in errc
+         method close_all = close_out ic; close_in oc; close_in errc; ()
          method wait = Unix.close_process_full (oc, ic, errc)
+         method wait_errcode = int_of_process_status self#wait
        end
     )
+
+let stdout x = x#stdout
+let stderr x = x#stderr
+let status x = x#status
+let errcode x = x#errcode
 
 module Infix = struct
   let (?|) fmt = call fmt
