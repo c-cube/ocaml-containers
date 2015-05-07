@@ -43,7 +43,7 @@ val escape_str : Buffer.t -> string -> unit
 (*$T
   CCPrint.sprintf "%a" escape_str "foo" = "foo"
   CCPrint.sprintf "%a" escape_str "foo bar" = "'foo bar'"
-  CCPrint.sprintf "%a" escape_str "fo'o b'ar" = "'fo''o b''ar'"
+  CCPrint.sprintf "%a" escape_str "fo'o b'ar" = "'fo'\\''o b'\\''ar'"
 *)
 
 type call_result =
@@ -69,7 +69,7 @@ val call : ?bufsize:int ->
 
 (*$T
   (call ~stdin:(`Str "abc") "cat")#stdout = "abc"
-  (call "echo %a" escape_str "a'b'c")#stdout = "abc\n"
+  (call "echo %a" escape_str "a'b'c")#stdout = "a'b'c\n"
   (call "echo %s" "a'b'c")#stdout = "abc\n"
 *)
 

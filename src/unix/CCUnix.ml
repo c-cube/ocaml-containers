@@ -55,7 +55,7 @@ let escape_str buf s =
     Buffer.add_char buf '\'';
     String.iter
       (function
-        | '\'' -> Buffer.add_string buf "''"
+        | '\'' -> Buffer.add_string buf "'\\''"
         | c -> Buffer.add_char buf c
       ) s;
     Buffer.add_char buf '\'';
