@@ -109,6 +109,16 @@ val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)
 
+val find_pred : ('a -> bool) -> 'a t -> 'a option
+(** [find_pred p l] finds the first element of [l] that satisfies [p],
+    or returns [None] if no element satisfies [p]
+    @since NEXT_RELEASE *)
+
+val find_pred_exn : ('a -> bool) -> 'a t -> 'a
+(** Unsafe version of {!find_pred}
+    @raise Not_found if no such element is found
+    @since NEXT_RELEASE *)
+
 val find : ('a -> 'b option) -> 'a t -> 'b option
 (** [find f l] traverses [l], applying [f] to each element. If for
     some element [x], [f x = Some y], then [Some y] is returned. Otherwise

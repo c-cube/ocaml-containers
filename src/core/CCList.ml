@@ -385,6 +385,22 @@ let last n l =
   let len = List.length l in
   if len < n then l else drop (len-n) l
 
+let rec find_pred p l = match l with
+  | [] -> None
+  | x :: _ when p x -> Some x
+  | _ :: tl -> find_pred p tl
+
+let find_pred_exn p l = match find_pred p l with
+  | None -> raise Not_found
+  | Some x -> x
+
+(*$T
+  find_pred ((=) 4) [1;2;5;4;3;0] = Some 4
+  find_pred (fun _ -> true) [] = None
+  find_pred (fun _ -> false) (1 -- 10) = None
+  find_pred (fun x -> x < 10) (1 -- 9) = Some 1
+*)
+
 let findi f l =
   let rec aux f i = function
     | [] -> None
