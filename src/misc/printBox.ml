@@ -76,7 +76,7 @@ module Output = struct
     )
 
   let _ensure_line line i =
-    if i >= !_string_len line.bl_str
+    if i >= Bytes.length line.bl_str
     then (
       let str' = Bytes.make (2 * i + 5) ' ' in
       Bytes.blit line.bl_str 0 str' 0 line.bl_len;
@@ -119,7 +119,7 @@ module Output = struct
   let buf_to_lines ?(indent=0) buf =
     let buffer = Buffer.create (5 + buf.buf_len * 32) in
     for i = 0 to buf.buf_len - 1 do
-      for _ = 1 to indent do Buffer.add_char buffer ' ' done;
+      for _k = 1 to indent do Buffer.add_char buffer ' ' done;
       let line = buf.buf_lines.(i) in
       Buffer.add_substring buffer (Bytes.unsafe_to_string line.bl_str) 0 line.bl_len;
       Buffer.add_char buffer '\n';
@@ -128,7 +128,7 @@ module Output = struct
 
   let buf_output ?(indent=0) oc buf =
     for i = 0 to buf.buf_len - 1 do
-      for _ = 1 to indent do output_char oc ' '; done;
+      for _k = 1 to indent do output_char oc ' '; done;
       let line = buf.buf_lines.(i) in
       output oc line.bl_str 0 line.bl_len;
       output_char oc '\n';
