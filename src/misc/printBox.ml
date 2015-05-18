@@ -100,7 +100,7 @@ module Output = struct
     line.bl_len <- max line.bl_len (pos.x+s_len)
 
   let _buf_put_string buf pos s =
-    _buf_put_sub_string buf pos s 0 (!_string_len (Bytes.unsafe_of_string s))
+    _buf_put_sub_string buf pos s 0 (String.length s)
 
   (* create a new buffer *)
   let make_buffer () =
@@ -119,7 +119,7 @@ module Output = struct
   let buf_to_lines ?(indent=0) buf =
     let buffer = Buffer.create (5 + buf.buf_len * 32) in
     for i = 0 to buf.buf_len - 1 do
-      for k = 1 to indent do Buffer.add_char buffer ' ' done;
+      for _ = 1 to indent do Buffer.add_char buffer ' ' done;
       let line = buf.buf_lines.(i) in
       Buffer.add_substring buffer (Bytes.unsafe_to_string line.bl_str) 0 line.bl_len;
       Buffer.add_char buffer '\n';
@@ -128,7 +128,7 @@ module Output = struct
 
   let buf_output ?(indent=0) oc buf =
     for i = 0 to buf.buf_len - 1 do
-      for k = 1 to indent do output_char oc ' '; done;
+      for _ = 1 to indent do output_char oc ' '; done;
       let line = buf.buf_lines.(i) in
       output oc line.bl_str 0 line.bl_len;
       output_char oc '\n';
@@ -141,6 +141,7 @@ let rec _find s c i =
   else if s.[i] = c then Some i
   else _find s c (i+1)
 
+(* sequence of lines *)
 let rec _lines s i k = match _find s '\n' i with
   | None ->
       if i<String.length s then k (String.sub s i (String.length s-i))
