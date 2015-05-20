@@ -40,9 +40,10 @@ let mk_leaf x = L x
 let mk_node x y = N(x,y)
 
 let ptree = fix @@ fun self ->
-  (char '(' *> (pure mk_node <*> self <* skip_chars is_space <*> self) <* char ')')
-  <|>
-  (U.int >|= mk_leaf)
+  skip_space *>
+  ( (char '(' *> (pure mk_node <*> self <*> self) <* char ')')
+    <|>
+    (U.int >|= mk_leaf) )
 ;;
 
 parse_string_exn "(1 (2 3))" ptree;;
