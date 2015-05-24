@@ -40,6 +40,10 @@ let is_some = function
   | None -> false
   | Some _ -> true
 
+let is_none = function
+  | None -> true
+  | Some _ -> false
+
 let compare f o1 o2 = match o1, o2 with
   | None, None -> 0
   | Some _, None -> 1

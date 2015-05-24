@@ -36,6 +36,9 @@ val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
 
 val is_some : _ t -> bool
 
+val is_none : _ t -> bool
+(** @since NEXT_RELEASE *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
@@ -62,7 +65,6 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
 val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter on 0 or 1 elements
-
     @since 0.5 *)
 
 val get : 'a -> 'a t -> 'a
