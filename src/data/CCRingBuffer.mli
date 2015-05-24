@@ -199,7 +199,7 @@ module type S = sig
 
   val to_array : t -> Array.t
   (** Create an array from the elements, in order.
-      @since NEXT_RELEASE *)
+      @since 0.11 *)
 end
 
 (** An efficient byte based ring buffer *)

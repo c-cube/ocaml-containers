@@ -44,7 +44,7 @@ val neg : t -> t
 val pow : t -> t -> t
 (** [pow a b = a^b] for positive integers [a] and [b].
     raises [Invalid_argument] if [a = b = 0] or [b] < 0.
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit

@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.11
+
+- add `CCList.{remove,is_empty}`
+- add `CCOpt.is_none`
+- remove packs for `containers_string` and `containers_advanced`
+- add `Containers_string.Parse`, very simple monadic parser combinators
+- remove warning from `.merlin`
+- attempts of bugfix in PrintBox for unicode text (wip)
+- add `CCList.{find_pred,find_pred_exn}`
+- bugfix in `CCUnix.escape_str`
+- add methods and accessors to `CCUnix`
+- in `CCUnix`, use `Unix.environment` as the default environment
+- add `CCList.partition_map`
+- `RingBuffer.{of_array, to_array}` convenience functions
+- `containers.misc.RAL`: more efficient in memory (unfold list)
+- add `CCInt.pow` (thanks to bernardofpc)
+- add `CCList.group_succ`
+- `containers.data.CCMixset`, set of values indexed by poly keys
+- disable warning 32 (unused val) in .merlin
+- some infix operators for `CCUnix`
+- add `CCUnix.async_call` for spawning and communicating with subprocess
+- add `CCList.Set.{add,remove}`
+- fix doc of `CCstring.Split.list_`
+
 ## 0.10
 
 - add `containers.misc.Puf.iter`

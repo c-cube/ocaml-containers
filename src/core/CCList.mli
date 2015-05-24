@@ -32,7 +32,7 @@ val empty : 'a t
 
 val is_empty : _ t -> bool
 (** [is_empty l] returns [true] iff [l = []]
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Safe version of map *)
@@ -87,7 +87,7 @@ val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
     - if [f x = `Left y], adds [y] to the first list
     - if [f x = `Right z], adds [z] to the second list
     - if [f x = `Drop], ignores [x]
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val pure : 'a -> 'a t
 
@@ -116,25 +116,25 @@ val last : int -> 'a t -> 'a t
 val find_pred : ('a -> bool) -> 'a t -> 'a option
 (** [find_pred p l] finds the first element of [l] that satisfies [p],
     or returns [None] if no element satisfies [p]
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val find_pred_exn : ('a -> bool) -> 'a t -> 'a
 (** Unsafe version of {!find_pred}
     @raise Not_found if no such element is found
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val find_map : ('a -> 'b option) -> 'a t -> 'b option
 (** [find f l] traverses [l], applying [f] to each element. If for
     some element [x], [f x = Some y], then [Some y] is returned. Otherwise
     the call returns [None]
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val find : ('a -> 'b option) -> 'a list -> 'b option
 (** @deprecated in favor of {!find_map}, for the name is too confusing *)
 
 val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** @deprecated in favor of {!find_mapi}, name is too confusing
@@ -147,7 +147,7 @@ val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 val remove : ?eq:('a -> 'a -> bool) -> x:'a -> 'a t -> 'a t
 (** [remove ~x l] removes every instance of [x] from [l]. Tailrec.
     @param eq equality function
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
@@ -173,7 +173,7 @@ val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
 val group_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list list
 (** [group_succ ~eq l] groups together consecutive elements that are equal
     according to [eq]
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 (** {2 Indices} *)
 
@@ -209,11 +209,11 @@ end
 module Set : sig
   val add : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
   (** [add x set] adds [x] to [set] if it was not already present
-      @since NEXT_RELEASE *)
+      @since 0.11 *)
 
   val remove : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
   (** [remove x set] removes one occurrence of [x] from [set]
-      @since NEXT_RELEASE *)
+      @since 0.11 *)
 
   val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
   (** membership to the list *)

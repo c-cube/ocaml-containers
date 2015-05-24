@@ -37,7 +37,7 @@ val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
 val is_some : _ t -> bool
 
 val is_none : _ t -> bool
-(** @since NEXT_RELEASE *)
+(** @since 0.11 *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 

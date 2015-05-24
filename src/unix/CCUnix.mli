@@ -82,13 +82,13 @@ type async_call_result =
     close_in:unit; (* close stdin *)
     close_err:unit;
     close_out:unit;
-    close_all:unit;  (* close all 3 channels *) (** @since NEXT_RELEASE *)
+    close_all:unit;  (* close all 3 channels *) (** @since 0.11 *)
     wait:Unix.process_status;  (* block until the process ends *)
     wait_errcode:int; (* block until the process ends, then extract errcode *)
-       (** @since NEXT_RELEASE *)
+       (** @since 0.11 *)
   >
 (** A subprocess for interactive usage (read/write channels line by line)
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 val async_call : ?env:string array ->
                  ('a, Buffer.t, unit, async_call_result) format4 ->
@@ -97,11 +97,11 @@ val async_call : ?env:string array ->
     line generators and line sinks (for stdin).
     if [p] is [async_call "cmd"], then [p#wait] waits for the subprocess
     to die. Channels can be closed independently.
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 (** {2 Accessors}
 
-@since NEXT_RELEASE *)
+@since 0.11 *)
 
 val stdout : < stdout : 'a; .. > -> 'a
 val stderr : < stderr : 'a; .. > -> 'a
@@ -113,11 +113,11 @@ val errcode : < errcode : 'a; .. > -> 'a
 module Infix : sig
   val (?|) : ('a, Buffer.t, unit, call_result) format4 -> 'a
   (** Infix version of {!call}
-      @since NEXT_RELEASE *)
+      @since 0.11 *)
 
   val (?|&) : ('a, Buffer.t, unit, async_call_result) format4 -> 'a
   (** Infix version of {!async_call}
-      @since NEXT_RELEASE *)
+      @since 0.11 *)
 end
 
 include module type of Infix

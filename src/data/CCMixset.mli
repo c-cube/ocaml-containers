@@ -42,7 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       ()
     ]}
 
-    @since NEXT_RELEASE *)
+    @since 0.11 *)
 
 type t
 (** A set of values of heterogeneous types *)

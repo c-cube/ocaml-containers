@@ -59,7 +59,7 @@ let p = U.list ~sep:"," U.word;;
 parse_string_exn "[abc , de, hello ,world  ]" p;;
 ]}
 
-@since NEXT_RELEASE
+@since 0.11
 *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]
