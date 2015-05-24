@@ -137,6 +137,12 @@ val unlines_gen : string gen -> string
   Q.printable_string (fun s -> unlines (lines s) = s)
 *)
 
+val set : string -> int -> char -> string
+(** [set s i c] creates a new string which is a copy of [s], except
+    for index [i], which becomes [c].
+    @raise Invalid_argument if [i] is an invalid index
+    @since NEXT_RELEASE *)
+
 include S with type t := string
 
 (** {2 Splitting} *)

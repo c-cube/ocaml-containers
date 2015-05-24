@@ -281,6 +281,16 @@ let unlines l = String.concat "\n" l
 
 let unlines_gen g = concat_gen ~sep:"\n" g
 
+let set s i c =
+  if i<0 || i>= String.length s then invalid_arg "CCString.set";
+  init (String.length s) (fun j -> if i=j then c else s.[j])
+
+(*$T
+  set "abcd" 1 '_' = "a_cd"
+  set "abcd" 0 '-' = "-bcd"
+  (try set "abc" 5 '_'; false with Invalid_argument _ -> true)
+*)
+
 let pp buf s =
   Buffer.add_char buf '"';
   Buffer.add_string buf s;
