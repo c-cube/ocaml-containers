@@ -30,6 +30,10 @@ type 'a t = 'a list
 
 let empty = []
 
+let is_empty = function
+  | [] -> true
+  | _::_ -> false
+
 (* max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
@@ -206,6 +210,29 @@ let diagonal l =
   in
   gen [] l
 
+let partition_map f l =
+  let rec iter f l1 l2 l = match l with
+  | [] -> List.rev l1, List.rev l2
+  | x :: tl ->
+    match f x with
+    | `Left y -> iter f (y :: l1) l2 tl
+    | `Right y -> iter f l1 (y :: l2) tl
+    | `Drop -> iter f l1 l2 tl
+  in
+  iter f [] [] l
+
+(*$R
+  let l1, l2 =
+    partition_map (function
+      | n when n = 0 -> `Drop
+      | n when n mod 2 = 0 -> `Left n
+      | n -> `Right n
+    ) [0;1;2;3;4]
+  in
+  assert_equal [2;4] l1;
+  assert_equal [1;3] l2
+*)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l
@@ -264,6 +291,25 @@ let uniq_succ ?(eq=(=)) l =
 
 (*$T
   uniq_succ [1;1;2;3;1;6;6;4;6;1] = [1;2;3;1;6;4;6;1]
+*)
+
+let group_succ ?(eq=(=)) l =
+  let rec f ~eq acc cur l = match cur, l with
+    | [], [] -> List.rev acc
+    | _::_, [] -> List.rev (List.rev cur :: acc)
+    | [], x::tl -> f ~eq acc [x] tl
+    | (y :: _), x :: tl when eq x y -> f ~eq acc (x::cur) tl
+    | _, x :: tl -> f ~eq (List.rev cur :: acc) [x] tl
+  in
+  f ~eq [] [] l
+
+(*$T
+  group_succ [1;2;3;1;1;2;4] = [[1]; [2]; [3]; [1;1]; [2]; [4]]
+  group_succ [] = []
+  group_succ [1;1;1] = [[1;1;1]]
+  group_succ [1;2;2;2] = [[1]; [2;2;2]]
+  group_succ ~eq:(fun (x,_)(y,_)-> x=y) [1, 1; 1, 2; 1, 3; 2, 0] \
+    = [[1, 1; 1, 2; 1, 3]; [2, 0]]
 *)
 
 let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
@@ -343,7 +389,23 @@ let last n l =
   let len = List.length l in
   if len < n then l else drop (len-n) l
 
-let findi f l =
+let rec find_pred p l = match l with
+  | [] -> None
+  | x :: _ when p x -> Some x
+  | _ :: tl -> find_pred p tl
+
+let find_pred_exn p l = match find_pred p l with
+  | None -> raise Not_found
+  | Some x -> x
+
+(*$T
+  find_pred ((=) 4) [1;2;5;4;3;0] = Some 4
+  find_pred (fun _ -> true) [] = None
+  find_pred (fun _ -> false) (1 -- 10) = None
+  find_pred (fun x -> x < 10) (1 -- 9) = Some 1
+*)
+
+let find_mapi f l =
   let rec aux f i = function
     | [] -> None
     | x::l' ->
@@ -352,13 +414,29 @@ let findi f l =
           | None -> aux f (i+1) l'
   in aux f 0 l
 
-let find f l = findi (fun _ -> f) l
+let find_map f l = find_mapi (fun _ -> f) l
 
-let find_idx p l = findi (fun i x -> if p x then Some (i, x) else None) l
+let find = find_map
+let findi = find_mapi
+
+let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
 
 (*$T
   find (fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"
   find (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
+*)
+
+let remove ?(eq=(=)) ~x l =
+  let rec remove' eq x acc l = match l with
+    | [] -> List.rev acc
+    | y :: tail when eq x y -> remove' eq x acc tail
+    | y :: tail -> remove' eq x (y::acc) tail
+  in
+  remove' eq x [] l
+
+(*$T
+  remove ~x:1 [2;1;3;3;2;1] = [2;3;3;2]
+  remove ~x:10 [1;2;3] = [1;2;3]
 *)
 
 let filter_map f l =
@@ -375,6 +453,26 @@ module Set = struct
       | [] -> false
       | y::l' -> eq x y || search eq x l'
     in search eq x l
+
+  let add ?(eq=(=)) x l =
+    if mem ~eq x l then l else x::l
+
+  let remove ?(eq=(=)) x l =
+    let rec remove_one ~eq x acc l = match l with
+      | [] -> assert false
+      | y :: tl when eq x y -> List.rev_append acc tl
+      | y :: tl -> remove_one ~eq x (y::acc) tl
+    in
+    if mem ~eq x l then remove_one ~eq x [] l else l
+
+  (*$Q
+    Q.(pair int (list int)) (fun (x,l) -> \
+      Set.remove x (Set.add x l) = l)
+    Q.(pair int (list int)) (fun (x,l) -> \
+      Set.mem x l || List.length (Set.add x l) = List.length l + 1)
+    Q.(pair int (list int)) (fun (x,l) -> \
+      not (Set.mem x l) || List.length (Set.remove x l) = List.length l - 1)
+  *)
 
   let subset ?(eq=(=)) l1 l2 =
     List.for_all

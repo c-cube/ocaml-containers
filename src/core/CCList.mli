@@ -30,6 +30,10 @@ type 'a t = 'a list
 
 val empty : 'a t
 
+val is_empty : _ t -> bool
+(** [is_empty l] returns [true] iff [l = []]
+    @since 0.11 *)
+
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Safe version of map *)
 
@@ -54,7 +58,7 @@ val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
     @since 0.8 *)
 
 val init : int -> (int -> 'a) -> 'a t
-(** Same as [Array.init]
+(** Similar to {!Array.init}
     @since 0.6 *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
@@ -76,6 +80,14 @@ val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
+
+val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
+                    'a list -> 'b list * 'c list
+(** [partition_map f l] maps [f] on [l] and gather results in lists:
+    - if [f x = `Left y], adds [y] to the first list
+    - if [f x = `Right z], adds [z] to the second list
+    - if [f x = `Drop], ignores [x]
+    @since 0.11 *)
 
 val pure : 'a -> 'a t
 
@@ -101,18 +113,41 @@ val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)
 
-val find : ('a -> 'b option) -> 'a t -> 'b option
+val find_pred : ('a -> bool) -> 'a t -> 'a option
+(** [find_pred p l] finds the first element of [l] that satisfies [p],
+    or returns [None] if no element satisfies [p]
+    @since 0.11 *)
+
+val find_pred_exn : ('a -> bool) -> 'a t -> 'a
+(** Unsafe version of {!find_pred}
+    @raise Not_found if no such element is found
+    @since 0.11 *)
+
+val find_map : ('a -> 'b option) -> 'a t -> 'b option
 (** [find f l] traverses [l], applying [f] to each element. If for
     some element [x], [f x = Some y], then [Some y] is returned. Otherwise
-    the call returns [None] *)
+    the call returns [None]
+    @since 0.11 *)
+
+val find : ('a -> 'b option) -> 'a list -> 'b option
+(** @deprecated in favor of {!find_map}, for the name is too confusing *)
+
+val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+(** Like {!find_map}, but also pass the index to the predicate function.
+    @since 0.11 *)
 
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-(** Like {!find}, but also pass the index to the predicate function.
+(** @deprecated in favor of {!find_mapi}, name is too confusing
     @since 0.3.4 *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None] *)
+
+val remove : ?eq:('a -> 'a -> bool) -> x:'a -> 'a t -> 'a t
+(** [remove ~x l] removes every instance of [x] from [l]. Tailrec.
+    @param eq equality function
+    @since 0.11 *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
@@ -134,6 +169,11 @@ val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
     [uniq_succ [1;2;1] = [1;2;1]]
     [uniq_succ [1;1;2] = [1;2]]
     @since 0.10 *)
+
+val group_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list list
+(** [group_succ ~eq l] groups together consecutive elements that are equal
+    according to [eq]
+    @since 0.11 *)
 
 (** {2 Indices} *)
 
@@ -167,6 +207,14 @@ end
 (** {2 Set Operators} *)
 
 module Set : sig
+  val add : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+  (** [add x set] adds [x] to [set] if it was not already present
+      @since 0.11 *)
+
+  val remove : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+  (** [remove x set] removes one occurrence of [x] from [set]
+      @since 0.11 *)
+
   val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
   (** membership to the list *)
 

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2d4ff427096956a049556073cd9b4191)
+# DO NOT EDIT (digest: 8abfb70ea9625c4528141fdd459e8114)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -34,16 +34,9 @@ true: annot, bin_annot
 "src/iter/containers_iter.cmxs": use_containers_iter
 # Library containers_string
 "src/string/containers_string.cmxs": use_containers_string
-"src/string/KMP.cmx": for-pack(Containers_string)
-"src/string/levenshtein.cmx": for-pack(Containers_string)
-"src/string/app_parse.cmx": for-pack(Containers_string)
 <src/string/*.ml{,i,y}>: package(bytes)
 # Library containers_advanced
 "src/advanced/containers_advanced.cmxs": use_containers_advanced
-"src/advanced/CCLinq.cmx": for-pack(Containers_advanced)
-"src/advanced/CCBatch.cmx": for-pack(Containers_advanced)
-"src/advanced/CCCat.cmx": for-pack(Containers_advanced)
-"src/advanced/CCMonadIO.cmx": for-pack(Containers_advanced)
 <src/advanced/*.ml{,i,y}>: package(bytes)
 <src/advanced/*.ml{,i,y}>: package(sequence)
 <src/advanced/*.ml{,i,y}>: use_containers

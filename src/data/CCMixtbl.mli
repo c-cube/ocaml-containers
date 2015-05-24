@@ -25,7 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Hash Table with Heterogeneous Keys}
 
-From https://github.com/mjambon/mixtbl , thanks to him.
+From https://github.com/mjambon/mixtbl (thanks to him).
 Example:
 
 {[

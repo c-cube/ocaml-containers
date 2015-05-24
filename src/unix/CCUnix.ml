@@ -55,7 +55,7 @@ let escape_str buf s =
     Buffer.add_char buf '\'';
     String.iter
       (function
-        | '\'' -> Buffer.add_string buf "''"
+        | '\'' -> Buffer.add_string buf "'\\''"
         | c -> Buffer.add_char buf c
       ) s;
     Buffer.add_char buf '\'';
@@ -88,7 +88,7 @@ type call_result =
 
 let kbprintf' buf fmt k = Printf.kbprintf k buf fmt
 
-let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=[||]) cmd =
+let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) cmd =
   (* render the command *)
   let buf = Buffer.create 256 in
   kbprintf' buf cmd
@@ -113,3 +113,53 @@ let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=[||]) cmd =
         end
     )
 
+type line = string
+
+type async_call_result =
+  < stdout:line gen;
+    stderr:line gen;
+    stdin:line -> unit; (* send a line *)
+    close_in:unit; (* close stdin *)
+    close_err:unit;
+    close_out:unit;
+    close_all:unit;  (* close all 3 channels *)
+    wait:Unix.process_status;  (* block until the process ends *)
+    wait_errcode:int; (* block until the process ends, then extract errcode *)
+  >
+
+let async_call ?(env=Unix.environment()) cmd =
+  (* render the command *)
+  let buf = Buffer.create 256 in
+  kbprintf' buf cmd
+    (fun buf ->
+       let cmd = Buffer.contents buf in
+       let oc, ic, errc = Unix.open_process_full cmd env in
+       object (self)
+         method stdout () =
+           try Some (input_line oc)
+           with End_of_file -> None
+         method stderr () =
+           try Some (input_line errc)
+           with End_of_file -> None
+         method stdin l = output_string ic l; output_char ic '\n'
+         method close_in = close_out ic
+         method close_out = close_in oc
+         method close_err = close_in errc
+         method close_all = close_out ic; close_in oc; close_in errc; ()
+         method wait = Unix.close_process_full (oc, ic, errc)
+         method wait_errcode = int_of_process_status self#wait
+       end
+    )
+
+let stdout x = x#stdout
+let stderr x = x#stderr
+let status x = x#status
+let errcode x = x#errcode
+
+module Infix = struct
+  let (?|) fmt = call fmt
+
+  let (?|&) fmt = async_call fmt
+end
+
+include Infix

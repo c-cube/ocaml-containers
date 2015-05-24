@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b83e1a21d44ea00373b0dde5cda9eedd)
+# DO NOT EDIT (digest: 423faeb80b3829590072ca8f5414955c)
 CCMultiMap
 CCMultiSet
 CCTrie
@@ -14,4 +14,5 @@ CCMixmap
 CCRingBuffer
 CCIntMap
 CCPersistentArray
+CCMixset
 # OASIS_STOP

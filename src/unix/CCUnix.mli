@@ -43,7 +43,7 @@ val escape_str : Buffer.t -> string -> unit
 (*$T
   CCPrint.sprintf "%a" escape_str "foo" = "foo"
   CCPrint.sprintf "%a" escape_str "foo bar" = "'foo bar'"
-  CCPrint.sprintf "%a" escape_str "fo'o b'ar" = "'fo''o b''ar'"
+  CCPrint.sprintf "%a" escape_str "fo'o b'ar" = "'fo'\\''o b'\\''ar'"
 *)
 
 type call_result =
@@ -69,9 +69,57 @@ val call : ?bufsize:int ->
 
 (*$T
   (call ~stdin:(`Str "abc") "cat")#stdout = "abc"
-  (call "echo %a" escape_str "a'b'c")#stdout = "abc\n"
+  (call "echo %a" escape_str "a'b'c")#stdout = "a'b'c\n"
   (call "echo %s" "a'b'c")#stdout = "abc\n"
 *)
 
+type line = string
+
+type async_call_result =
+  < stdout:line gen;
+    stderr:line gen;
+    stdin:line -> unit; (* send a line *)
+    close_in:unit; (* close stdin *)
+    close_err:unit;
+    close_out:unit;
+    close_all:unit;  (* close all 3 channels *) (** @since 0.11 *)
+    wait:Unix.process_status;  (* block until the process ends *)
+    wait_errcode:int; (* block until the process ends, then extract errcode *)
+       (** @since 0.11 *)
+  >
+(** A subprocess for interactive usage (read/write channels line by line)
+    @since 0.11 *)
+
+val async_call : ?env:string array ->
+                 ('a, Buffer.t, unit, async_call_result) format4 ->
+                 'a
+(** Spawns a subprocess, like {!call}, but the subprocess's channels are
+    line generators and line sinks (for stdin).
+    if [p] is [async_call "cmd"], then [p#wait] waits for the subprocess
+    to die. Channels can be closed independently.
+    @since 0.11 *)
+
+(** {2 Accessors}
+
+@since 0.11 *)
+
+val stdout : < stdout : 'a; .. > -> 'a
+val stderr : < stderr : 'a; .. > -> 'a
+val status : < status : 'a; .. > -> 'a
+val errcode : < errcode : 'a; .. > -> 'a
+
+(** {2 Infix Functions} *)
+
+module Infix : sig
+  val (?|) : ('a, Buffer.t, unit, call_result) format4 -> 'a
+  (** Infix version of {!call}
+      @since 0.11 *)
+
+  val (?|&) : ('a, Buffer.t, unit, async_call_result) format4 -> 'a
+  (** Infix version of {!async_call}
+      @since 0.11 *)
+end
+
+include module type of Infix
 
 

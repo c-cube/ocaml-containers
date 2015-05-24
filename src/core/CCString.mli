@@ -146,9 +146,9 @@ module Split : sig
   (** split the given string along the given separator [by]. Should only
       be used with very small separators, otherwise
       use {!Containers_string.KMP}.
-      @return a list of (index,length) of substrings of [s] that are
+      @return a list of slices [(s,index,length)] that are
       separated by [by]. {!String.sub} can then be used to actually extract
-      the slice.
+      a string from the slice.
       @raise Failure if [by = ""] *)
 
   val gen : by:string -> string -> (string*int*int) gen

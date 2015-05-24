@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 463813d3e54d45bc5b6a9d7d4eb17cd0)
+# DO NOT EDIT (digest: 7f7259458c1636ee0279e4fb677f4e2b)
 src/core/CCVector
 src/core/CCPrint
 src/core/CCError
@@ -53,10 +53,14 @@ src/data/CCMixmap
 src/data/CCRingBuffer
 src/data/CCIntMap
 src/data/CCPersistentArray
-src/string/KMP
-src/string/Levenshtein
-src/string/App_parse
+src/data/CCMixset
+src/string/Containers_string
+src/string/CCKMP
+src/string/CCLevenshtein
+src/string/CCApp_parse
+src/string/CCParse
 src/bigarray/CCBigstring
+src/advanced/Containers_advanced
 src/advanced/CCLinq
 src/advanced/CCBatch
 src/advanced/CCCat

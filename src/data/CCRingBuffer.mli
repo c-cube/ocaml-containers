@@ -192,6 +192,14 @@ module type S = sig
   val take_front_exn : t -> Array.elt
   (** Take the first value from front of [t].
       @raise Empty if buffer is already empty. *)
+
+  val of_array : Array.t -> t
+  (** Create a buffer from an initial array, but doesn't take ownership
+      of it (stills allocates a new internal array) *)
+
+  val to_array : t -> Array.t
+  (** Create an array from the elements, in order.
+      @since 0.11 *)
 end
 
 (** An efficient byte based ring buffer *)
