@@ -96,16 +96,14 @@ Library "containers_iter"
 
 Library "containers_string"
   Path:             src/string
-  Pack:             true
-  Modules:          KMP, Levenshtein, App_parse, Parse
+  Modules:          Containers_string, CCKMP, CCLevenshtein, CCApp_parse, CCParse
   BuildDepends:     bytes
   FindlibName:      string
   FindlibParent:    containers
 
 Library "containers_advanced"
   Path:             src/advanced
-  Pack:             true
-  Modules:          CCLinq, CCBatch, CCCat, CCMonadIO
+  Modules:          Containers_advanced, CCLinq, CCBatch, CCCat, CCMonadIO
   Build$:           flag(advanced)
   Install$:         flag(advanced)
   FindlibName:      advanced
