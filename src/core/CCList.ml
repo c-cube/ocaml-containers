@@ -401,7 +401,7 @@ let find_pred_exn p l = match find_pred p l with
   find_pred (fun x -> x < 10) (1 -- 9) = Some 1
 *)
 
-let findi f l =
+let find_mapi f l =
   let rec aux f i = function
     | [] -> None
     | x::l' ->
@@ -410,9 +410,12 @@ let findi f l =
           | None -> aux f (i+1) l'
   in aux f 0 l
 
-let find f l = findi (fun _ -> f) l
+let find_map f l = find_mapi (fun _ -> f) l
 
-let find_idx p l = findi (fun i x -> if p x then Some (i, x) else None) l
+let find = find_map
+let findi = find_mapi
+
+let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
 
 (*$T
   find (fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"

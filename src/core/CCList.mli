@@ -119,13 +119,21 @@ val find_pred_exn : ('a -> bool) -> 'a t -> 'a
     @raise Not_found if no such element is found
     @since NEXT_RELEASE *)
 
-val find : ('a -> 'b option) -> 'a t -> 'b option
+val find_map : ('a -> 'b option) -> 'a t -> 'b option
 (** [find f l] traverses [l], applying [f] to each element. If for
     some element [x], [f x = Some y], then [Some y] is returned. Otherwise
-    the call returns [None] *)
+    the call returns [None]
+    @since NEXT_RELEASE *)
+
+val find : ('a -> 'b option) -> 'a list -> 'b option
+(** @deprecated in favor of {!find_map}, for the name is too confusing *)
+
+val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+(** Like {!find_map}, but also pass the index to the predicate function.
+    @since NEXT_RELEASE *)
 
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-(** Like {!find}, but also pass the index to the predicate function.
+(** @deprecated in favor of {!find_mapi}, name is too confusing
     @since 0.3.4 *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
