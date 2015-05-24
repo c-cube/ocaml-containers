@@ -30,6 +30,10 @@ type 'a t = 'a list
 
 let empty = []
 
+let is_empty = function
+  | [] -> true
+  | _::_ -> false
+
 (* max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
@@ -420,6 +424,19 @@ let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
 (*$T
   find (fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"
   find (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
+*)
+
+let remove ?(eq=(=)) ~x l =
+  let rec remove' eq x acc l = match l with
+    | [] -> List.rev acc
+    | y :: tail when eq x y -> remove' eq x acc tail
+    | y :: tail -> remove' eq x (y::acc) tail
+  in
+  remove' eq x [] l
+
+(*$T
+  remove ~x:1 [2;1;3;3;2;1] = [2;3;3;2]
+  remove ~x:10 [1;2;3] = [1;2;3]
 *)
 
 let filter_map f l =

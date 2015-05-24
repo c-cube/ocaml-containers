@@ -30,6 +30,10 @@ type 'a t = 'a list
 
 val empty : 'a t
 
+val is_empty : _ t -> bool
+(** [is_empty l] returns [true] iff [l = []]
+    @since NEXT_RELEASE *)
+
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Safe version of map *)
 
@@ -139,6 +143,11 @@ val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None] *)
+
+val remove : ?eq:('a -> 'a -> bool) -> x:'a -> 'a t -> 'a t
+(** [remove ~x l] removes every instance of [x] from [l]. Tailrec.
+    @param eq equality function
+    @since NEXT_RELEASE *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
