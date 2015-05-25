@@ -26,7 +26,7 @@ What is _containers_?
     be able to deal with your favorite unicode library).
 - A sub-library with complicated abstractions, `containers.advanced` (with
   a LINQ-like query module, batch operations using GADTs, and others).
-- Utilities aroud the `unix` library in `containers.unix` (mainly to spawn
+- Utilities around the `unix` library in `containers.unix` (mainly to spawn
   sub-processes)
 - A bigstring module using `bigarray` in `containers.bigarray`
 - A lightweight S-expression printer and streaming parser in `containers.sexp`
