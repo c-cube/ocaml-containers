@@ -43,15 +43,23 @@ let return x = `Ok x
 
 let fail s = `Error s
 
+(* TODO: optional argument for printing stacktrace? *)
 let fail_printf format =
   let buf = Buffer.create 16 in
   Printf.kbprintf
     (fun buf -> fail (Buffer.contents buf))
     buf format
 
+(* TODO: easy ways to print backtrace/stack *)
+
+(* TODO: something of type  [ ('a -> 'b) -> ('err -> 'b) -> ('a, 'err) t -> 'b]
+   to make it easier to switch into a regular variant if it happens *)
+
 let _printers = ref []
 
 let register_printer p = _printers := p :: !_printers
+
+(* FIXME: just use {!Printexc.register_printer} instead? *)
 
 let of_exn e =
   let buf = Buffer.create 15 in
