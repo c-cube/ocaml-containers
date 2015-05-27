@@ -6,8 +6,6 @@
 - add `CCOpt.is_none`
 - remove packs for `containers_string` and `containers_advanced`
 - add `Containers_string.Parse`, very simple monadic parser combinators
-- remove warning from `.merlin`
-- attempts of bugfix in PrintBox for unicode text (wip)
 - add `CCList.{find_pred,find_pred_exn}`
 - bugfix in `CCUnix.escape_str`
 - add methods and accessors to `CCUnix`
@@ -84,7 +82,7 @@
 
 ## 0.7
 
-### breaking
+#### breaking
 
 - remove `cgi`/
 - removed useless Lwt-related module
