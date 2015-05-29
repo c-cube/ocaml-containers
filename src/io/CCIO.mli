@@ -113,6 +113,14 @@ val write_lines : out_channel -> string gen -> unit
 
 val write_lines_l : out_channel -> string list -> unit
 
+(** {2 Both} *)
+
+val with_in_out : ?mode:int -> ?flags:open_flag list ->
+                  string -> (in_channel -> out_channel -> 'a) -> 'a
+(** Combines {!with_in} and {!with_out}.
+    @param flags opening flags (default [[Open_creat]])
+    @since NEXT_RELEASE *)
+
 (** {2 Misc for Generators} *)
 
 val tee : ('a -> unit) list -> 'a gen -> 'a gen

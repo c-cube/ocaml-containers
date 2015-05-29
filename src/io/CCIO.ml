@@ -173,6 +173,19 @@ let rec write_lines oc g = match g () with
 let write_lines_l oc l =
   List.iter (write_line oc) l
 
+let with_in_out ?(mode=0o644) ?(flags=[Open_creat]) filename f =
+  let ic = open_in_gen (Open_rdonly::flags) mode filename in
+  let oc = open_out_gen (Open_wronly::flags) mode filename in
+  try
+    let x = f ic oc in
+    close_out oc; (* must be first?! *)
+    close_in ic;
+    x
+  with e ->
+    close_out_noerr oc;
+    close_in_noerr ic;
+    raise e
+
 let tee funs g () = match g() with
   | None -> None
   | Some x as res ->
