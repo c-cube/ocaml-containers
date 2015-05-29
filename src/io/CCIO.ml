@@ -73,7 +73,7 @@ let gen_flat_map f next_elem =
   next
 
 let with_in ?(mode=0o644) ?(flags=[]) filename f =
-  let ic = open_in_gen flags mode filename in
+  let ic = open_in_gen (Open_rdonly::flags) mode filename in
   try
     let x = f ic in
     close_in ic;
@@ -134,8 +134,8 @@ let read_all ?(size=1024) ic =
   with Exit ->
     Bytes.sub_string !buf 0 !len
 
-let with_out ?(mode=0o644) ?(flags=[]) filename f =
-  let oc = open_out_gen flags mode filename in
+let with_out ?(mode=0o644) ?(flags=[Open_creat]) filename f =
+  let oc = open_out_gen (Open_wronly::flags) mode filename in
   try
     let x = f oc in
     close_out oc;
@@ -145,7 +145,7 @@ let with_out ?(mode=0o644) ?(flags=[]) filename f =
     raise e
 
 let with_out_a ?mode ?(flags=[]) filename f =
-  with_out ?mode ~flags:(Open_creat::Open_append::flags) filename f
+  with_out ?mode ~flags:(Open_wronly::Open_creat::Open_append::flags) filename f
 
 let write_line oc s =
   output_string oc s;

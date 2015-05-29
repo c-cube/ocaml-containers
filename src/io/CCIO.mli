@@ -69,7 +69,8 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
               string -> (in_channel -> 'a) -> 'a
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
-    channel is closed. *)
+    channel is closed.
+    @param flags opening flags (default [[Open_rdonly]]) *)
 
 val read_chunks : ?size:int -> in_channel -> string gen
 (** Read the channel's content into chunks of size [size] *)
@@ -92,12 +93,13 @@ val read_all : ?size:int -> in_channel -> string
 
 val with_out : ?mode:int -> ?flags:open_flag list ->
                string -> (out_channel -> 'a) -> 'a
-(** Same as {!with_in} but for an output channel *)
+(** Same as {!with_in} but for an output channel
+    @param flags opening flags (default [[Open_creat; Open_wronly]]) *)
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
                   string -> (out_channel -> 'a) -> 'a
-(** Similar to {!with_out} but with the [Open_append] and [Open_creat]
-    flags activated *)
+(** Similar to {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
+    flags activated, to append to the file *)
 
 val write_line : out_channel -> string -> unit
 (** Write the given string on the channel, followed by "\n" *)
