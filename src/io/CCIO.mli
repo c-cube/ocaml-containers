@@ -48,7 +48,7 @@ Examples:
   with_in "/tmp/input"
     (fun ic ->
       let chunks = read_chunks ic in
-      with_out ~flags:[Open_creat; Open_wronly] ~mode:0o644 "/tmp/output"
+      with_out ~flags:[Open_binary] ~mode:0o644 "/tmp/output"
         (fun oc ->
           write_gen oc chunks
         )
@@ -70,7 +70,7 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
-    @param flags opening flags (default [[Open_rdonly]]) *)
+    @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases *)
 
 val read_chunks : ?size:int -> in_channel -> string gen
 (** Read the channel's content into chunks of size [size] *)
@@ -94,7 +94,7 @@ val read_all : ?size:int -> in_channel -> string
 val with_out : ?mode:int -> ?flags:open_flag list ->
                string -> (out_channel -> 'a) -> 'a
 (** Same as {!with_in} but for an output channel
-    @param flags opening flags (default [[Open_creat; Open_wronly]]) *)
+    @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]). [Open_wronly] is used in any cases *)
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
                   string -> (out_channel -> 'a) -> 'a
