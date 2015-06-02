@@ -94,7 +94,8 @@ val read_all : ?size:int -> in_channel -> string
 val with_out : ?mode:int -> ?flags:open_flag list ->
                string -> (out_channel -> 'a) -> 'a
 (** Same as {!with_in} but for an output channel
-    @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]). [Open_wronly] is used in any cases *)
+    @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]).
+    [Open_wronly] is used in any cases *)
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
                   string -> (out_channel -> 'a) -> 'a
