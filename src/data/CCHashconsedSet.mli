@@ -62,6 +62,9 @@ module type S = sig
   val compare : t -> t -> int
   (** Fast (arbitrary) comparisontest [O(1)] *)
 
+  val hash : t -> int
+  (** Fast (arbitrary, deterministic) hash [O(1)] *)
+
   val add : elt -> t -> t
 
   val remove : elt -> t -> t

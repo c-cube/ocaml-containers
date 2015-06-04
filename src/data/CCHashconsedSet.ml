@@ -60,6 +60,9 @@ module type S = sig
   val compare : t -> t -> int
   (** Fast (arbitrary) comparisontest [O(1)] *)
 
+  val hash : t -> int
+  (** Fast (arbitrary, deterministic) hash [O(1)] *)
+
   val add : elt -> t -> t
 
   val remove : elt -> t -> t
@@ -206,6 +209,8 @@ module Make(E : ELT) : S with type elt = E.t = struct
   let equal t1 t2 = t1.id = t2.id
 
   let compare t1 t2 = Pervasives.compare t1.id t2.id
+
+  let hash t = t.id land max_int
 
   let mem x t = mem_rec_ (E.hash x) x t
 
