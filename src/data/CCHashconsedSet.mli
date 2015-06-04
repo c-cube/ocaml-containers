@@ -82,6 +82,8 @@ module type S = sig
 
   val inter : t -> t -> t
 
+  val diff : t -> t -> t
+
   (** {2 Whole-collection operations} *)
 
   type 'a sequence = ('a -> unit) -> unit

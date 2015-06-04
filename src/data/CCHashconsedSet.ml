@@ -80,6 +80,8 @@ module type S = sig
 
   val inter : t -> t -> t
 
+  val diff : t -> t -> t
+
   (** {2 Whole-collection operations} *)
 
   type 'a sequence = ('a -> unit) -> unit
@@ -351,6 +353,13 @@ module Make(E : ELT) : S with type elt = E.t = struct
       let s = S.of_list l in S.equal s (S.union s s))
   *)
 
+  (*$= & ~printer:(CCPrint.to_string (CCList.pp CCInt.pp))
+    [1;2;4;5;6;7;8;10] (let module S = Make(CCInt) in \
+    let s1 = S.of_list [1;2;4;5;  7;8   ] in \
+    let s2 = S.of_list [  2;4;  6;7;  10] in \
+    S.union s1 s2 |> S.to_list |> List.sort compare )
+  *)
+
   let rec inter_list_ l1 l2 = match l1, l2 with
     | [], _
     | _, [] -> []
@@ -364,8 +373,10 @@ module Make(E : ELT) : S with type elt = E.t = struct
     | E, _ | _, E -> empty
     | L (k1, l1), L (k2, l2) when k1==k2 ->
       mk_leaf_ k1 (inter_list_ l1 l2)
-    | L _, _
-    | _, L _ -> empty
+    | L (k,l), _ ->
+      mk_leaf_ k (List.filter (fun x -> mem_rec_ k x b) l)
+    | _, L (k,l) ->
+      mk_leaf_ k (List.filter (fun x -> mem_rec_ k x a) l)
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
       if p1 = p2 && m1 = m2
       then mk_node_ p1 m1 (inter l1 l2) (inter r1 r2)
@@ -375,8 +386,8 @@ module Make(E : ELT) : S with type elt = E.t = struct
         else inter r1 b
       else if m1 > m2 && is_prefix_ ~prefix:p1 p2 ~bit:m2
       then if bit_is_0_ p1 ~bit:m2
-        then inter l2 a
-        else inter r2 a
+        then inter a l2
+        else inter a r2
       else empty
 
   (*$Q
@@ -385,7 +396,55 @@ module Make(E : ELT) : S with type elt = E.t = struct
       let s = S.of_list l in S.equal s (S.inter s s))
   *)
 
-  (* TODO: difference *)
+  (*$= & ~printer:(CCPrint.to_string (CCList.pp CCInt.pp))
+    [2;4;7] (let module S = Make(CCInt) in \
+    let s1 = S.of_list [1;2;4;5;  7;8   ] in \
+    let s2 = S.of_list [  2;4;  6;7;  10] in \
+    S.inter s1 s2 |> S.to_list |> List.sort compare )
+  *)
+
+  (* remove elements of [l] from [t]; they all have hash [k] *)
+  let rec remove_list_ k l t = match l with
+    | [] -> t
+    | x :: tl ->
+      remove_list_ k tl (remove_rec_ k x t)
+
+  let rec diff_list_ l1 l2 = match l1, l2 with
+    | [], _ -> []
+    | _, [] -> l1
+    | x1 :: tl1, x2 :: tl2 ->
+      match E.compare x1 x2 with
+      | 0 -> diff_list_ tl1 tl2
+      | c when c<0 -> x1 :: diff_list_ tl1 l2
+      | _ -> diff_list_ l1 tl2
+
+  let rec diff a b = match a.cell, b.cell with
+    | E, _ -> empty
+    | _, E -> a
+    | L (k1, l1), L (k2, l2) when k1==k2 ->
+      mk_leaf_ k1 (diff_list_ l1 l2)
+    | L (k,l), _ ->
+      mk_leaf_ k (List.filter (fun x -> not (mem_rec_ k x b)) l)
+    | _, L (k,l) -> remove_list_ k l a
+    | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
+      if p1 = p2 && m1 = m2
+      then mk_node_ p1 m1 (diff l1 l2) (diff r1 r2)
+      else if m1 < m2 && is_prefix_ ~prefix:p2 p1 ~bit:m1
+      then if bit_is_0_ p2 ~bit:m1
+        then hashcons_ (N (p1, m1, diff l1 b, r1))
+        else hashcons_ (N (p1, m1, l1, diff r1 b))
+      else if m1 > m2 && is_prefix_ ~prefix:p1 p2 ~bit:m2
+      then if bit_is_0_ p1 ~bit:m2
+        then diff a l2
+        else diff a r2
+      else a
+
+  (*$= & ~printer:(CCPrint.to_string (CCList.pp CCInt.pp))
+    [1;5;8] (let module S = Make(CCInt) in \
+    let s1 = S.of_list [1;2;4;5;  7;8   ] in \
+    let s2 = S.of_list [  2;4;  6;7;  10] in \
+    S.diff s1 s2 |> S.to_list |> List.sort compare )
+  *)
 
   (** {2 Whole-collection operations} *)
 
