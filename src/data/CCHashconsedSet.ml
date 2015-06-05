@@ -409,10 +409,10 @@ module Make(E : ELT) : S with type elt = E.t = struct
   *)
 
   (* remove elements of [l] from [t]; they all have hash [k] *)
-  let rec remove_list_ k l t = match l with
+  let rec remove_list_hash_ k l t = match l with
     | [] -> t
     | x :: tl ->
-      remove_list_ k tl (remove_rec_ k x t)
+      remove_list_hash_ k tl (remove_rec_ k x t)
 
   let rec diff_list_ l1 l2 = match l1, l2 with
     | [], _ -> []
@@ -430,7 +430,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
       mk_leaf_ k1 (diff_list_ l1 l2)
     | L (k,l), _ ->
       mk_leaf_ k (List.filter (fun x -> not (mem_rec_ k x b)) l)
-    | _, L (k,l) -> remove_list_ k l a
+    | _, L (k,l) -> remove_list_hash_ k l a
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
       if p1 = p2 && m1 = m2
       then mk_node_ p1 m1 (diff l1 l2) (diff r1 r2)
