@@ -195,6 +195,14 @@ let retry n f =
       | `Error e -> retry (n-1) (e::acc)
   in retry n []
 
+(** {2 Infix} *)
+
+module Infix = struct
+  let (>>=) = (>>=)
+  let (>|=) = (>|=)
+  let (<*>) = (<*>)
+end
+
 (** {2 Monadic Operations} *)
 
 module type MONAD = sig

@@ -120,6 +120,16 @@ val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
     [`Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
     over the error of [b] if both fail *)
 
+(** {2 Infix}
+
+    @since NEXT_RELEASE *)
+
+module Infix : sig
+  val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
+  val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
+  val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
+end
+
 (** {2 Collections} *)
 
 val map_l : ('a -> ('b, 'err) t) -> 'a list -> ('b list, 'err) t
