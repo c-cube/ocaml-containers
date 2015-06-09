@@ -92,6 +92,10 @@ let get_exn = function
   | `Ok x -> x
   | `Error _ -> raise (Invalid_argument "CCError.get_exn")
 
+let catch e ~ok ~err = match e with
+  | `Ok x -> ok x
+  | `Error y -> err y
+
 let flat_map f e = match e with
   | `Ok x -> f x
   | `Error s -> `Error s

@@ -75,6 +75,14 @@ val get_exn : ('a, _) t -> 'a
     whenever possible.
     @raise Invalid_argument if the value is an error. *)
 
+val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
+(** [catch e ~ok ~err] calls either [ok] or [err] depending on
+    the value of [e].
+    This is useful for code that does not want to depend on the exact
+    definition of [('a, 'b) t] used, for instance once OCaml gets a
+    standard [Result.t] type.
+    @since NEXT_RELEASE *)
+
 val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
 
 val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
