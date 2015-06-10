@@ -30,6 +30,8 @@ type 'a sequence_once = 'a sequence
 
 exception Sequence_once
 
+let (|>) x f = f x
+
 module Seq = struct
   type 'a t = 'a sequence
   let return x k = k x
@@ -43,8 +45,6 @@ module Seq = struct
     !acc
   let to_list seq = fold (fun acc x->x::acc) [] seq |> List.rev
 end
-
-let (|>) x f = f x
 
 (** {2 Interfaces for graphs} *)
 
@@ -593,6 +593,38 @@ module Dot = struct
       close_out oc;
       raise e
 end
+
+(** {2 Mutable Graph} *)
+
+type ('v, 'e) mut_graph = <
+  graph: ('v, 'e) t;
+  add_edge: 'e -> unit;
+  remove : 'v -> unit;
+>
+
+let mk_mut_tbl (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
+  let module Tbl = Hashtbl.Make(struct
+    type t = k
+    let hash = hash
+    let equal = eq
+  end) in
+  let tbl = Tbl.create size in
+  object
+    method graph = {
+      origin=(fun (x,_,_) -> x);
+      dest=(fun (_,_,x) -> x);
+      children=(fun v k ->
+          try List.iter k (Tbl.find tbl v)
+         with Not_found -> ()
+        );
+    }
+    method add_edge (v1,e,v2) =
+      let l = try Tbl.find tbl v1 with Not_found -> [] in
+      Tbl.replace tbl v1 ((v1,e,v2)::l)
+    method remove v = Tbl.remove tbl v
+  end
+
+(** {2 Misc} *)
 
 let of_list ?(eq=(=)) l = {
   origin=fst;

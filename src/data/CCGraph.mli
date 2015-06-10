@@ -305,6 +305,20 @@ module Dot : sig
   (** Shortcut to open a file and write to it *)
 end
 
+(** {2 Mutable Graph} *)
+
+type ('v, 'e) mut_graph = <
+  graph: ('v, 'e) t;
+  add_edge: 'e -> unit;
+  remove : 'v -> unit;
+>
+
+val mk_mut_tbl : ?eq:('v -> 'v -> bool) ->
+                 ?hash:('v -> int) ->
+                int ->
+                ('v, ('v * 'a * 'v)) mut_graph
+(** make a new mutable graph from a Hashtbl. Edges are labelled with type ['a] *)
+
 (** {2 Misc} *)
 
 val of_list : ?eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, ('v * 'v)) t
