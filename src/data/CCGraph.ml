@@ -341,6 +341,44 @@ let topo_sort ?eq ?rev ?(tbl=mk_table 128) ~graph seq =
     [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
 *)
 
+(** {2 Lazy Spanning Tree} *)
+
+module LazyTree = struct
+  type ('v, 'e) t =
+    | Vertex of 'v * ('e * ('v, 'e) t) list Lazy.t
+
+  let rec map_v f (Vertex (v, l)) =
+    let l' = lazy (List.map (fun (e, child) -> e, map_v f child) (Lazy.force l)) in
+    Vertex (f v, l')
+
+  let rec fold_v f acc t = match t with
+    | Vertex (v, l) ->
+      let acc = f acc v in
+      List.fold_left
+        (fun acc (_, t') -> fold_v f acc t')
+        acc
+        (Lazy.force l)
+end
+
+let spanning_tree ?(tbl=mk_table 128) ~graph v =
+  let rec mk_node v =
+    let children = lazy (
+      Seq.fold
+        (fun acc e ->
+           let v' = graph.dest e in
+           if tbl.mem v'
+           then acc
+           else (
+             tbl.add v' ();
+             (e, mk_node v') :: acc
+           )
+        ) [] (graph.children v)
+      )
+    in
+    LazyTree.Vertex (v, children)
+  in
+  mk_node v
+
 (** {2 Strongly Connected Components} *)
 
 module SCC = struct

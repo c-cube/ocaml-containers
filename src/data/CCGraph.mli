@@ -217,6 +217,24 @@ val topo_sort_tag : ?eq:('v -> 'v -> bool) ->
                     'v list
 (** Same as {!topo_sort} *)
 
+(** {2 Lazy Spanning Tree} *)
+
+module LazyTree : sig
+  type ('v, 'e) t =
+    | Vertex of 'v * ('e * ('v, 'e) t) list Lazy.t
+
+  val map_v : ('a -> 'b) -> ('a, 'e) t -> ('b, 'e) t
+
+  val fold_v : ('acc -> 'v -> 'acc) -> 'acc -> ('v, _) t -> 'acc
+end
+
+val spanning_tree : ?tbl:'v set ->
+                    graph:('v, 'e) t ->
+                    'v ->
+                    ('v, 'e) LazyTree.t
+(** [spanning_tree ~graph v] computes a lazy spanning tree that has [v]
+    as a root. The table [tbl] is used for the memoization part *)
+
 (** {2 Strongly Connected Components} *)
 
 type 'v scc_state
