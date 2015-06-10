@@ -24,7 +24,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Simple Graph Interface} *)
+(** {1 Simple Graph Interface}
+
+    @since NEXT_RELEASE *)
 
 type 'a sequence = ('a -> unit) -> unit
 (** A sequence of items of type ['a], possibly infinite *)
@@ -98,6 +100,8 @@ val mk_heap: leq:('a -> 'a -> bool) -> 'a bag
 (** {2 Traversals} *)
 
 module Traverse : sig
+  type 'e path = 'e list
+
   val generic: ?tbl:'v set ->
                 bag:'v bag ->
                 graph:('v, 'e) t ->
@@ -138,7 +142,7 @@ module Traverse : sig
                   ?dist:('e -> int) ->
                   graph:('v, 'e) t ->
                   'v sequence ->
-                  ('v * int) sequence_once
+                  ('v * int * 'e path) sequence_once
   (** Dijkstra algorithm, traverses a graph in increasing distance order.
       Yields each vertex paired with its distance to the set of initial vertices
       (the smallest distance needed to reach the node from the initial vertices)
@@ -149,13 +153,11 @@ module Traverse : sig
                       tags:'v tag_set ->
                       graph:('v, 'e) t ->
                       'v sequence ->
-                      ('v * int) sequence_once
+                      ('v * int * 'e path) sequence_once
 
   (** {2 More detailed interface} *)
   module Event : sig
     type edge_kind = [`Forward | `Back | `Cross ]
-
-    type 'e path = 'e list
 
     (** A traversal is a sequence of such events *)
     type ('v,'e) t =
@@ -234,6 +236,11 @@ val spanning_tree : ?tbl:'v set ->
                     ('v, 'e) LazyTree.t
 (** [spanning_tree ~graph v] computes a lazy spanning tree that has [v]
     as a root. The table [tbl] is used for the memoization part *)
+
+val spanning_tree_tag : tags:'v tag_set ->
+                        graph:('v, 'e) t ->
+                        'v ->
+                        ('v, 'e) LazyTree.t
 
 (** {2 Strongly Connected Components} *)
 

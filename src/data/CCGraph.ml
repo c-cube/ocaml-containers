@@ -158,6 +158,8 @@ let mk_heap ~leq =
 (** {2 Traversals} *)
 
 module Traverse = struct
+  type 'e path = 'e list
+
   let generic_tag ~tags ~bag ~graph seq =
     let first = ref true in
     fun k ->
@@ -190,16 +192,16 @@ module Traverse = struct
 
   let dijkstra_tag ?(dist=fun _ -> 1) ~tags ~graph seq =
     let tags' = {
-      get_tag=(fun (v,_) -> tags.get_tag v);
-      set_tag=(fun (v,_) -> tags.set_tag v);
+      get_tag=(fun (v,_,_) -> tags.get_tag v);
+      set_tag=(fun (v,_,_) -> tags.set_tag v);
     }
-    and seq' = Seq.map (fun v -> v, 0) seq
+    and seq' = Seq.map (fun v -> v, 0, []) seq
     and graph' = {
-      children=(fun (v,d) -> Seq.map (fun e -> e, d) (graph.children v));
-      origin=(fun (e, d) -> graph.origin e, d);
-      dest=(fun (e, d) -> graph.dest e, d + dist e);
+      children=(fun (v,d,p) -> Seq.map (fun e -> e, d, p) (graph.children v));
+      origin=(fun (e, d, p) -> graph.origin e, d, p);
+      dest=(fun (e, d, p) -> graph.dest e, d + dist e, e :: p);
     } in
-    let bag = mk_heap ~leq:(fun (_, d1) (_, d2) -> d1 <= d2) in
+    let bag = mk_heap ~leq:(fun (_,d1,_) (_,d2,_) -> d1 <= d2) in
     generic_tag ~tags:tags' ~bag ~graph:graph' seq'
 
   let dijkstra ?(tbl=mk_table 128) ?dist ~graph seq =
@@ -217,8 +219,6 @@ module Traverse = struct
 
   module Event = struct
     type edge_kind = [`Forward | `Back | `Cross ]
-
-    type 'e path = 'e list
 
     (** A traversal is a sequence of such events *)
     type ('v,'e) t =
@@ -360,16 +360,16 @@ module LazyTree = struct
         (Lazy.force l)
 end
 
-let spanning_tree ?(tbl=mk_table 128) ~graph v =
+let spanning_tree_tag ~tags ~graph v =
   let rec mk_node v =
     let children = lazy (
       Seq.fold
         (fun acc e ->
            let v' = graph.dest e in
-           if tbl.mem v'
+           if tags.get_tag v'
            then acc
            else (
-             tbl.add v' ();
+             tags.set_tag v';
              (e, mk_node v') :: acc
            )
         ) [] (graph.children v)
@@ -378,6 +378,13 @@ let spanning_tree ?(tbl=mk_table 128) ~graph v =
     LazyTree.Vertex (v, children)
   in
   mk_node v
+
+let spanning_tree ?(tbl=mk_table 128) ~graph v =
+  let tags = {
+    get_tag=tbl.mem;
+    set_tag=(fun v -> tbl.add v ());
+  } in
+  spanning_tree_tag ~tags ~graph v
 
 (** {2 Strongly Connected Components} *)
 
