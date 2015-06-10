@@ -375,19 +375,21 @@ module Dot = struct
       | `Label l -> Format.fprintf out "label=\"%s\"" l
       | `Other (name, value) -> Format.fprintf out "%s=\"%s\"" name value
     (* map from vertices to integers *)
-    and get_id =
+    and get_node =
       let count = ref 0 in
       fun v ->
-        try (tbl.find v).id
+        try tbl.find v
         with Not_found ->
-          let n = !count in
+          let node = {id= !count; explored=false} in
           incr count;
-          tbl.add v {explored=false; id=n};
-          n
+          tbl.add v node;
+          node
     and vertex_explored v =
       try (tbl.find v).explored
       with Not_found -> false
     in
+    let set_explored v = (get_node v).explored <- true
+    and get_id v = (get_node v).id in
     (* the unique name of a vertex *)
     let pp_vertex out v = Format.fprintf out "vertex_%d" (get_id v) in
     (* print preamble *)
@@ -395,7 +397,7 @@ module Dot = struct
     (* traverse *)
     let tags = {
       get_tag=vertex_explored;
-      set_tag=(fun v -> ignore (get_id v)); (* allocate new ID *)
+      set_tag=set_explored; (* allocate new ID *)
     } in
     let events = Traverse.Event.dfs_tag ~tags ~graph seq in
     Seq.iter
@@ -445,6 +447,6 @@ let divisors_graph = {
         divisors (j+1) i yield
       )
     in
-    divisors 2 i
+    divisors 1 i
   );
 }
