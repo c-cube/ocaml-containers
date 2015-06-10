@@ -67,7 +67,6 @@ type ('k, 'a) table = {
   mem: 'k -> bool;
   find: 'k -> 'a;  (** @raise Not_found *)
   add: 'k -> 'a -> unit; (** Erases previous binding *)
-  size: unit -> int;
 }
 
 (** Mutable set *)
@@ -83,7 +82,6 @@ let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
   { mem=(fun k -> H.mem tbl k)
   ; find=(fun k -> H.find tbl k)
   ; add=(fun k v -> H.replace tbl k v)
-  ; size=(fun () -> H.length tbl)
   }
 
 let mk_map (type k) ?(cmp=Pervasives.compare) () =
@@ -95,7 +93,6 @@ let mk_map (type k) ?(cmp=Pervasives.compare) () =
   { mem=(fun k -> M.mem k !tbl)
   ; find=(fun k -> M.find k !tbl)
   ; add=(fun k v -> tbl := M.add k v !tbl)
-  ; size=(fun () -> M.cardinal !tbl)
   }
 
 (** {2 Bags} *)
