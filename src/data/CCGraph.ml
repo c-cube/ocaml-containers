@@ -43,6 +43,8 @@ module Seq = struct
     !acc
 end
 
+let (|>) x f = f x
+
 (** {2 Interfaces for graphs} *)
 
 (** Directed graph with vertices of type ['v] and edges of type [e'] *)
@@ -289,8 +291,10 @@ module Traverse = struct
                    then if list_mem_ ~eq ~graph v path
                      then `Back
                      else `Cross
-                   else `Forward
-                 in
+                   else (
+                     bag.push (`Enter (v, path));
+                     `Forward
+                   ) in
                  k (`Edge (e, edge_kind))
              done
           ) seq
@@ -303,6 +307,34 @@ module Traverse = struct
       dfs_tag ?eq ~tags ~graph seq
   end
 end
+
+(** {2 Topological Sort} *)
+
+exception Has_cycle
+
+let topo_sort_tag ?(eq=(=)) ?(rev=false) ~tags ~graph seq =
+  (* use DFS *)
+  let l =
+    Traverse.Event.dfs_tag ~eq ~tags ~graph seq
+    |> Seq.filter_map
+        (function
+          | `Exit v -> Some v
+          | `Edge (_, `Back) -> raise Has_cycle
+          | `Enter _
+          | `Edge _ -> None
+        )
+    |> Seq.fold (fun acc x -> x::acc) []
+  in
+  if rev then List.rev l else l
+
+let topo_sort ?eq ?rev ?(tbl=mk_table 128) ~graph seq =
+  let tags = {
+    get_tag=tbl.mem;
+    set_tag=(fun v -> tbl.add v ());
+  } in
+  topo_sort_tag ?eq ?rev ~tags ~graph seq
+
+(** {2 Pretty printing in the DOT (graphviz) format} *)
 
 module Dot = struct
   type attribute = [
@@ -321,6 +353,11 @@ module Dot = struct
         pp_x out x
       ) l;
     Format.pp_print_string out "]"
+
+  type vertex_state = {
+    mutable explored : bool;
+    id : int;
+  }
 
   (** Print an enum of Full.traverse_event *)
   let pp_seq
@@ -341,20 +378,23 @@ module Dot = struct
     and get_id =
       let count = ref 0 in
       fun v ->
-        try tbl.find v
+        try (tbl.find v).id
         with Not_found ->
           let n = !count in
           incr count;
-          tbl.add v n;
+          tbl.add v {explored=false; id=n};
           n
+    and vertex_explored v =
+      try (tbl.find v).explored
+      with Not_found -> false
     in
     (* the unique name of a vertex *)
     let pp_vertex out v = Format.fprintf out "vertex_%d" (get_id v) in
     (* print preamble *)
-    Format.fprintf out "@[<v2>digraph %s {@;" name;
+    Format.fprintf out "@[<v2>digraph \"%s\" {@;" name;
     (* traverse *)
     let tags = {
-      get_tag=tbl.mem;
+      get_tag=vertex_explored;
       set_tag=(fun v -> ignore (get_id v)); (* allocate new ID *)
     } in
     let events = Traverse.Event.dfs_tag ~tags ~graph seq in
@@ -393,5 +433,18 @@ module Dot = struct
       raise e
 end
 
-
-
+let divisors_graph = {
+  origin=fst;
+  dest=snd;
+  children=(fun i ->
+    (* divisors of [i] that are [>= j] *)
+    let rec divisors j i yield =
+      if j < i
+      then (
+        if (i mod j = 0) then yield (i,j);
+        divisors (j+1) i yield
+      )
+    in
+    divisors 2 i
+  );
+}

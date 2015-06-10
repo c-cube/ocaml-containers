@@ -188,8 +188,51 @@ module Traverse : sig
   end
 end
 
+(** {2 Topological Sort} *)
 
-(** {2 Pretty printing in the DOT (graphviz) format} *)
+exception Has_cycle
+
+val topo_sort : ?eq:('v -> 'v -> bool) ->
+                ?rev:bool ->
+                ?tbl:'v set ->
+                graph:('v, 'e) t ->
+                'v sequence ->
+                'v list
+(** [topo_sort ~graph seq] returns a list of vertices [l] where each
+    element of [l] is reachable from [seq].
+    The list is sorted in a way such that if [v -> v'] in the graph, then
+    [v] comes before [v'] in the list (i.e. has a smaller index).
+    Basically [v -> v'] means that [v] is smaller than [v']
+    see {{: https://en.wikipedia.org/wiki/Topological_sorting} wikipedia}
+    @param eq equality predicate on vertices (default [(=)])
+    @param rev if true, the dependency relation is inverted ([v -> v'] means
+      [v'] occurs before [v])
+    @raise Has_cycle if the graph is not a DAG *)
+
+val topo_sort_tag : ?eq:('v -> 'v -> bool) ->
+                    ?rev:bool ->
+                    tags:'v tag_set ->
+                    graph:('v, 'e) t ->
+                    'v sequence ->
+                    'v list
+(** Same as {!topo_sort} *)
+
+
+(** {2 Pretty printing in the DOT (graphviz) format}
+
+    Example (print divisors from [42]):
+
+    {[
+      let open CCGraph in
+      let open Dot in
+      with_out "/tmp/truc.dot"
+        (fun out ->
+           pp ~attrs_v:(fun i -> [`Label (string_of_int i)]) ~graph:divisors_graph out 42
+        )
+    ]}
+
+*)
+
 module Dot : sig
   type attribute = [
   | `Color of string
@@ -200,7 +243,10 @@ module Dot : sig
   | `Other of string * string
   ] (** Dot attribute *)
 
-  val pp : ?tbl:('v,int) table ->
+  type vertex_state
+  (** Hidden state associated to a vertex *)
+
+  val pp : ?tbl:('v,vertex_state) table ->
            ?attrs_v:('v -> attribute list) ->
            ?attrs_e:('e -> attribute list) ->
            ?name:string ->
@@ -208,8 +254,12 @@ module Dot : sig
            Format.formatter ->
            'v ->
            unit
+  (** Print the graph, starting from given vertex, on the formatter
+      @param attrs_v attributes for vertices
+      @param attrs_e attributes for edges
+      @param name name of the graph *)
 
-  val pp_seq : ?tbl:('v,int) table ->
+  val pp_seq : ?tbl:('v,vertex_state) table ->
                ?attrs_v:('v -> attribute list) ->
                ?attrs_e:('e -> attribute list) ->
                ?name:string ->
@@ -221,3 +271,8 @@ module Dot : sig
   val with_out : string -> (Format.formatter -> 'a) -> 'a
   (** Shortcut to open a file and write to it *)
 end
+
+(** {2 Misc} *)
+
+val divisors_graph : (int, (int * int)) t
+(** [n] points to all its strict divisors *)
