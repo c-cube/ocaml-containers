@@ -331,6 +331,128 @@ let topo_sort ?eq ?rev ?(tbl=mk_table 128) ~graph seq =
   } in
   topo_sort_tag ?eq ?rev ~tags ~graph seq
 
+(*$T
+  let l = topo_sort ~graph:divisors_graph (Seq.return 42) in \
+  List.for_all (fun (i,j) -> \
+    let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
+    let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
+    idx_i < idx_j) \
+    [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
+*)
+
+(** {2 Strongly Connected Components} *)
+
+module SCC = struct
+  type 'v state = {
+    mutable min_id: int; (* min ID of the vertex' scc *)
+    id: int;  (* ID of the vertex *)
+    mutable on_stack: bool;
+    mutable vertex: 'v;
+  }
+
+  let mk_cell v n = {
+    min_id=n;
+    id=n;
+    on_stack=false;
+    vertex=v;
+  }
+
+  (* pop elements of [stack] until we reach node with given [id] *)
+  let rec pop_down_to ~id acc stack =
+    assert (not(Stack.is_empty stack));
+    let cell = Stack.pop stack in
+    cell.on_stack <- false;
+    if cell.id = id then (
+      assert (cell.id = cell.min_id);
+      cell.vertex :: acc (* return SCC *)
+    ) else pop_down_to ~id (cell.vertex::acc) stack
+
+  let explore ~tbl ~graph seq =
+    (* stack of nodes being explored, for the DFS *)
+    let to_explore = Stack.create() in
+    (* stack for Tarjan's algorithm itself *)
+    let stack = Stack.create () in
+    (* unique ID *)
+    let n = ref 0 in
+    (* result *)
+    let res = ref [] in
+    (* exploration *)
+    Seq.iter
+      (fun v ->
+         Stack.push (`Enter v) to_explore;
+         while not (Stack.is_empty to_explore) do
+           match Stack.pop to_explore with
+           | `Enter v ->
+             if not (tbl.mem v) then (
+               (* remember unique ID for [v] *)
+               let id = !n in
+               incr n;
+               let cell = mk_cell v id in
+               cell.on_stack <- true;
+               tbl.add v cell;
+               Stack.push cell stack;
+               Stack.push (`Exit (v, cell)) to_explore;
+               (* explore children *)
+               Seq.iter
+                 (fun e -> Stack.push (`Enter (graph.dest e)) to_explore)
+                 (graph.children v)
+             )
+           | `Exit (v, cell) ->
+             (* update [min_id] *)
+             assert cell.on_stack;
+             Seq.iter
+               (fun e ->
+                  let dest = graph.dest e in
+                  (* must not fail, [dest] already explored *)
+                  let dest_cell = tbl.find dest in
+                  (* same SCC? yes if [dest] points to [cell.v] *)
+                  if dest_cell.on_stack
+                    then cell.min_id <- min cell.min_id dest_cell.min_id
+               ) (graph.children v);
+             (* pop from stack if SCC found *)
+             if cell.id = cell.min_id then (
+               let scc = pop_down_to ~id:cell.id [] stack in
+               res := scc :: !res
+             )
+         done
+      ) seq;
+    assert (Stack.is_empty stack);
+    !res
+end
+
+type 'v scc_state = 'v SCC.state
+
+let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
+
+(* example from https://en.wikipedia.org/wiki/Strongly_connected_component *)
+(*$R
+  let set_eq ?(eq=(=)) l1 l2 = CCList.Set.subset ~eq l1 l2 && CCList.Set.subset ~eq l2 l1 in
+  let graph = of_list
+    [ "a", "b"
+    ; "b", "e"
+    ; "e", "a"
+    ; "b", "f"
+    ; "e", "f"
+    ; "f", "g"
+    ; "g", "f"
+    ; "b", "c"
+    ; "c", "g"
+    ; "c", "d"
+    ; "d", "c"
+    ; "d", "h"
+    ; "h", "d"
+    ; "h", "g"
+  ] in
+  let res = scc ~graph (Seq.return "a") in
+  assert_bool "scc"
+    (set_eq ~eq:(set_eq ?eq:None) res
+      [ [ "a"; "b"; "e" ]
+      ; [ "f"; "g" ]
+      ; [ "c"; "d"; "h" ]
+      ]
+    )
+*)
+
 (** {2 Pretty printing in the DOT (graphviz) format} *)
 
 module Dot = struct
@@ -431,6 +553,21 @@ module Dot = struct
       close_out oc;
       raise e
 end
+
+let of_list ?(eq=(=)) l = {
+  origin=fst;
+  dest=snd;
+  children=(fun v yield -> List.iter (fun (a,b) -> if eq a v then yield (a,b)) l)
+}
+
+let of_hashtbl tbl = {
+  origin=fst;
+  dest=snd;
+  children=(fun v yield ->
+    try List.iter (fun b -> yield (v, b)) (Hashtbl.find tbl v)
+    with Not_found -> ()
+  )
+}
 
 let divisors_graph = {
   origin=fst;

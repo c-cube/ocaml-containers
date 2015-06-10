@@ -67,7 +67,6 @@ type ('k, 'a) table = {
   mem: 'k -> bool;
   find: 'k -> 'a;  (** @raise Not_found *)
   add: 'k -> 'a -> unit; (** Erases previous binding *)
-  size: unit -> int;
 }
 
 (** Mutable set *)
@@ -217,6 +216,21 @@ val topo_sort_tag : ?eq:('v -> 'v -> bool) ->
                     'v list
 (** Same as {!topo_sort} *)
 
+(** {2 Strongly Connected Components} *)
+
+type 'v scc_state
+(** Hidden state for {!scc} *)
+
+val scc : ?tbl:('v, 'v scc_state) table ->
+          graph:('v, 'e) t ->
+          'v sequence ->
+          'v list list
+(** Strongly connected components reachable from the given vertices.
+    Each component is a list of vertices that are all mutually reachable
+    in the graph.
+    Uses {{: https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm} Tarjan's algorithm}
+    @param tbl table used to map nodes to some hidden state
+    *)
 
 (** {2 Pretty printing in the DOT (graphviz) format}
 
@@ -273,6 +287,15 @@ module Dot : sig
 end
 
 (** {2 Misc} *)
+
+val of_list : ?eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, ('v * 'v)) t
+(** [of_list l] makes a graph from a list of pairs of vertices.
+    Each pair [(a,b)] is an edge from [a] to [b].
+    @param eq equality used to compare vertices *)
+
+val of_hashtbl : ('v, 'v list) Hashtbl.t -> ('v, ('v * 'v)) t
+(** [of_hashtbl tbl] makes a graph from a hashtable that maps vertices
+    to lists of children *)
 
 val divisors_graph : (int, (int * int)) t
 (** [n] points to all its strict divisors *)
