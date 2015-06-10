@@ -41,6 +41,7 @@ module Seq = struct
     let acc = ref acc in
     a (fun x -> acc := f !acc x);
     !acc
+  let to_list seq = fold (fun acc x->x::acc) [] seq |> List.rev
 end
 
 let (|>) x f = f x
@@ -368,56 +369,57 @@ module SCC = struct
     ) else pop_down_to ~id (cell.vertex::acc) stack
 
   let explore ~tbl ~graph seq =
-    (* stack of nodes being explored, for the DFS *)
-    let to_explore = Stack.create() in
-    (* stack for Tarjan's algorithm itself *)
-    let stack = Stack.create () in
-    (* unique ID *)
-    let n = ref 0 in
-    (* result *)
-    let res = ref [] in
-    (* exploration *)
-    Seq.iter
-      (fun v ->
-         Stack.push (`Enter v) to_explore;
-         while not (Stack.is_empty to_explore) do
-           match Stack.pop to_explore with
-           | `Enter v ->
-             if not (tbl.mem v) then (
-               (* remember unique ID for [v] *)
-               let id = !n in
-               incr n;
-               let cell = mk_cell v id in
-               cell.on_stack <- true;
-               tbl.add v cell;
-               Stack.push cell stack;
-               Stack.push (`Exit (v, cell)) to_explore;
-               (* explore children *)
+    let first = ref true in
+    fun k ->
+      if !first then first := false else raise Sequence_once;
+      (* stack of nodes being explored, for the DFS *)
+      let to_explore = Stack.create() in
+      (* stack for Tarjan's algorithm itself *)
+      let stack = Stack.create () in
+      (* unique ID *)
+      let n = ref 0 in
+      (* exploration *)
+      Seq.iter
+        (fun v ->
+           Stack.push (`Enter v) to_explore;
+           while not (Stack.is_empty to_explore) do
+             match Stack.pop to_explore with
+             | `Enter v ->
+               if not (tbl.mem v) then (
+                 (* remember unique ID for [v] *)
+                 let id = !n in
+                 incr n;
+                 let cell = mk_cell v id in
+                 cell.on_stack <- true;
+                 tbl.add v cell;
+                 Stack.push cell stack;
+                 Stack.push (`Exit (v, cell)) to_explore;
+                 (* explore children *)
+                 Seq.iter
+                   (fun e -> Stack.push (`Enter (graph.dest e)) to_explore)
+                   (graph.children v)
+               )
+             | `Exit (v, cell) ->
+               (* update [min_id] *)
+               assert cell.on_stack;
                Seq.iter
-                 (fun e -> Stack.push (`Enter (graph.dest e)) to_explore)
-                 (graph.children v)
-             )
-           | `Exit (v, cell) ->
-             (* update [min_id] *)
-             assert cell.on_stack;
-             Seq.iter
-               (fun e ->
-                  let dest = graph.dest e in
-                  (* must not fail, [dest] already explored *)
-                  let dest_cell = tbl.find dest in
-                  (* same SCC? yes if [dest] points to [cell.v] *)
-                  if dest_cell.on_stack
-                    then cell.min_id <- min cell.min_id dest_cell.min_id
-               ) (graph.children v);
-             (* pop from stack if SCC found *)
-             if cell.id = cell.min_id then (
-               let scc = pop_down_to ~id:cell.id [] stack in
-               res := scc :: !res
-             )
-         done
-      ) seq;
-    assert (Stack.is_empty stack);
-    !res
+                 (fun e ->
+                    let dest = graph.dest e in
+                    (* must not fail, [dest] already explored *)
+                    let dest_cell = tbl.find dest in
+                    (* same SCC? yes if [dest] points to [cell.v] *)
+                    if dest_cell.on_stack
+                      then cell.min_id <- min cell.min_id dest_cell.min_id
+                 ) (graph.children v);
+               (* pop from stack if SCC found *)
+               if cell.id = cell.min_id then (
+                 let scc = pop_down_to ~id:cell.id [] stack in
+                 k scc
+               )
+           done
+        ) seq;
+      assert (Stack.is_empty stack);
+      ()
 end
 
 type 'v scc_state = 'v SCC.state
@@ -443,7 +445,7 @@ let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
     ; "h", "d"
     ; "h", "g"
   ] in
-  let res = scc ~graph (Seq.return "a") in
+  let res = scc ~graph (Seq.return "a") |> Seq.to_list in
   assert_bool "scc"
     (set_eq ~eq:(set_eq ?eq:None) res
       [ [ "a"; "b"; "e" ]

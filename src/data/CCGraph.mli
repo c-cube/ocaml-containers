@@ -43,6 +43,7 @@ module Seq : sig
   val filter_map : ('a -> 'b option) -> 'a t -> 'b t
   val iter : ('a -> unit) -> 'a t -> unit
   val fold: ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val to_list : 'a t -> 'a list
 end
 
 (** {2 Interfaces for graphs} *)
@@ -224,7 +225,7 @@ type 'v scc_state
 val scc : ?tbl:('v, 'v scc_state) table ->
           graph:('v, 'e) t ->
           'v sequence ->
-          'v list list
+          'v list sequence_once
 (** Strongly connected components reachable from the given vertices.
     Each component is a list of vertices that are all mutually reachable
     in the graph.
