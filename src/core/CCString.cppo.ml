@@ -306,18 +306,26 @@ let iter = String.iter
 #if OCAML_MAJOR >= 4
 
 let map = String.map
-let mapi = String.mapi
 let iteri = String.iteri
 
 #else
 
 let map f s = init (length s) (fun i -> f s.[i])
-let mapi f s = init (length s) (fun i -> f i s.[i])
 
 let iteri f s =
   for i = 0 to String.length s - 1 do
     f i s.[i]
   done
+
+#endif
+
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+
+let mapi = String.mapi
+
+#else
+
+let mapi f s = init (length s) (fun i -> f i s.[i])
 
 #endif
 
