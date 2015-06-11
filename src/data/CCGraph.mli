@@ -326,6 +326,36 @@ val mk_mut_tbl : ?eq:('v -> 'v -> bool) ->
                 ('v, ('v * 'a * 'v)) mut_graph
 (** make a new mutable graph from a Hashtbl. Edges are labelled with type ['a] *)
 
+(** {2 Immutable Graph} *)
+
+module type MAP = sig
+  type vertex
+  type t
+
+  val as_graph : t -> (vertex, (vertex * vertex)) graph
+  (** Graph view of the map *)
+
+  val empty : t
+
+  val add_edge : vertex -> vertex -> t -> t
+
+  val remove_edge : vertex -> vertex -> t -> t
+
+  val remove : vertex -> t -> t
+
+  val union : t -> t -> t
+
+  val of_list : (vertex * vertex) list -> t
+
+  val to_list : t -> (vertex * vertex) list
+
+  val of_seq : (vertex * vertex) sequence -> t
+
+  val to_seq : t -> (vertex * vertex) sequence
+end
+
+module Map(O : Map.OrderedType) : MAP with type vertex = O.t
+
 (** {2 Misc} *)
 
 val of_list : ?eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, ('v * 'v)) t
@@ -336,6 +366,10 @@ val of_list : ?eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, ('v * 'v)) t
 val of_hashtbl : ('v, 'v list) Hashtbl.t -> ('v, ('v * 'v)) t
 (** [of_hashtbl tbl] makes a graph from a hashtable that maps vertices
     to lists of children *)
+
+val of_fun : ('v -> 'v list) -> ('v, ('v * 'v)) t
+(** [of_fun f] makes a graph out of a function that maps a vertex to
+    the list of its children. The function is assumed to be deterministic. *)
 
 val divisors_graph : (int, (int * int)) t
 (** [n] points to all its strict divisors *)

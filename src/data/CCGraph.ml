@@ -631,12 +631,102 @@ let mk_mut_tbl (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
     method remove v = Tbl.remove tbl v
   end
 
+(** {2 Immutable Graph} *)
+
+module type MAP = sig
+  type vertex
+  type t
+
+  val as_graph : t -> (vertex, (vertex * vertex)) graph
+  (** Graph view of the map *)
+
+  val empty : t
+
+  val add_edge : vertex -> vertex -> t -> t
+
+  val remove_edge : vertex -> vertex -> t -> t
+
+  val remove : vertex -> t -> t
+
+  val union : t -> t -> t
+
+  val of_list : (vertex * vertex) list -> t
+
+  val to_list : t -> (vertex * vertex) list
+
+  val of_seq : (vertex * vertex) sequence -> t
+
+  val to_seq : t -> (vertex * vertex) sequence
+end
+
+module Map(O : Map.OrderedType) = struct
+  module M = Map.Make(O)
+  module S = Set.Make(O)
+
+  type vertex = O.t
+  type t = S.t M.t
+
+  let as_graph m = {
+    origin=fst;
+    dest=snd;
+    children=(fun v yield ->
+      try
+        let set = M.find v m in
+        S.iter (fun v' -> yield (v, v')) set
+      with Not_found -> ()
+      );
+  }
+
+  let empty = M.empty
+
+  let add_edge v1 v2 m =
+    let set = try M.find v1 m with Not_found -> S.empty in
+    M.add v1 (S.add v2 set) m
+
+  let remove_edge v1 v2 m =
+    try
+      let set = S.remove v2 (M.find v1 m) in
+      if S.is_empty set then M.remove v1 m else M.add v1 set m
+    with Not_found -> m
+
+  let remove = M.remove
+
+  let union m1 m2 =
+    M.merge
+      (fun v s1 s2 -> match s1, s2 with
+         | Some s, None
+         | None, Some s -> Some s
+         | None, None -> assert false
+         | Some s1, Some s2 -> Some (S.union s1 s2)
+      ) m1 m2
+
+  let of_list l = List.fold_left (fun m (v1,v2) -> add_edge v1 v2 m) empty l
+
+  let to_list m =
+    M.fold
+      (fun v set acc -> S.fold (fun v' acc -> (v,v')::acc) set acc)
+      m []
+
+  let of_seq seq = Seq.fold (fun m (v1,v2) -> add_edge v1 v2 m) empty seq
+
+  let to_seq m k = M.iter (fun v set -> S.iter (fun v' -> k(v,v')) set) m
+end
+
 (** {2 Misc} *)
 
 let of_list ?(eq=(=)) l = {
   origin=fst;
   dest=snd;
   children=(fun v yield -> List.iter (fun (a,b) -> if eq a v then yield (a,b)) l)
+}
+
+let of_fun f = {
+  origin=fst;
+  dest=snd;
+  children=(fun v yield ->
+    let l = f v in
+    List.iter (fun v' -> yield (v,v')) l
+  );
 }
 
 let of_hashtbl tbl = {
