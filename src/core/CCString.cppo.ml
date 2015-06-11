@@ -87,6 +87,30 @@ let is_sub ~sub i s j ~len =
   if i+len > String.length sub then invalid_arg "String.is_sub";
   _is_sub ~sub i s j ~len
 
+(* note: inefficient *)
+let find ?(start=0) ~sub s =
+  let n = String.length sub in
+  let i = ref start in
+  try
+    while !i + n < String.length s do
+      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
+      incr i
+    done;
+    -1
+  with Exit ->
+    !i
+
+let rfind ~sub s =
+  let n = String.length sub in
+  let i = ref (String.length s - n) in
+  try
+    while !i >= 0 do
+      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
+      decr i
+    done;
+    ~-1
+  with Exit ->
+    !i
 
 module Split = struct
   type split_state =
@@ -158,20 +182,17 @@ module Split = struct
 
   let seq ~by s = _mkseq ~by s _tuple3
   let seq_cpy ~by s = _mkseq ~by s String.sub
-end
 
-(* note: inefficient *)
-let find ?(start=0) ~sub s =
-  let n = String.length sub in
-  let i = ref start in
-  try
-    while !i + n < String.length s do
-      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
-      incr i
-    done;
-    -1
-  with Exit ->
-    !i
+  let left ~by s =
+    let i = find ~sub:by s in
+    if i = ~-1 then None
+    else Some (String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1))
+
+  let right ~by s =
+    let i = rfind ~sub:by s in
+    if i = ~-1 then None
+    else Some (String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1))
+end
 
 let repeat s n =
   assert (n>=0);
@@ -252,11 +273,6 @@ let of_list l =
   List.iter (Buffer.add_char buf) l;
   Buffer.contents buf
 
-(*$T
-  of_list ['a'; 'b'; 'c'] = "abc"
-  of_list [] = ""
-*)
-
 let of_array a =
   init (Array.length a) (fun i -> a.(i))
 
@@ -285,11 +301,80 @@ let set s i c =
   if i<0 || i>= String.length s then invalid_arg "CCString.set";
   init (String.length s) (fun j -> if i=j then c else s.[j])
 
-(*$T
-  set "abcd" 1 '_' = "a_cd"
-  set "abcd" 0 '-' = "-bcd"
-  (try set "abc" 5 '_'; false with Invalid_argument _ -> true)
-*)
+let iter = String.iter
+
+#if OCAML_MAJOR >= 4
+
+let map = String.map
+let mapi = String.mapi
+let iteri = String.iteri
+
+#else
+
+let map f s = init (length s) (fun i -> f s.[i])
+let mapi f s = init (length s) (fun i -> f i s.[i])
+
+let iteri f s =
+  for i = 0 to String.length s - 1 do
+    f i s.[i]
+  done
+
+#endif
+
+let flat_map ?sep f s =
+  let buf = Buffer.create (String.length s) in
+  iteri
+    (fun i c ->
+       begin match sep with
+       | Some _ when i=0 -> ()
+       | None -> ()
+       | Some sep -> Buffer.add_string buf sep
+       end;
+       Buffer.add_string buf (f c)
+    ) s;
+  Buffer.contents buf
+
+exception MyExit
+
+let for_all p s =
+  try iter (fun c -> if not (p c) then raise MyExit) s; true
+  with MyExit -> false
+
+let exists p s =
+  try iter (fun c -> if p c then raise MyExit) s; false
+  with MyExit -> true
+
+let map2 f s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.map2";
+  init (String.length s1) (fun i -> f s1.[i] s2.[i])
+
+let iter2 f s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.iter2";
+  for i = 0 to String.length s1 - 1 do
+    f s1.[i] s2.[i]
+  done
+
+let iteri2 f s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.iteri2";
+  for i = 0 to String.length s1 - 1 do
+    f i s1.[i] s2.[i]
+  done
+
+let fold2 f acc s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.fold2";
+  let rec fold' acc s1 s2 i =
+    if i = String.length s1 then acc
+    else fold' (f acc s1.[i] s2.[i]) s1 s2 (i+1)
+  in
+  fold' acc s1 s2 0
+
+let for_all2 p s1 s2 =
+  try iter2 (fun c1 c2 -> if not (p c1 c2) then raise MyExit) s1 s2; true
+  with MyExit -> false
+
+let exists2 p s1 s2 =
+  try iter2 (fun c1 c2 -> if p c1 c2 then raise MyExit) s1 s2; false
+  with MyExit -> true
 
 let pp buf s =
   Buffer.add_char buf '"';
