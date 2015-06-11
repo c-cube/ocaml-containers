@@ -693,7 +693,7 @@ module Map(O : Map.OrderedType) = struct
 
   let union m1 m2 =
     M.merge
-      (fun v s1 s2 -> match s1, s2 with
+      (fun _ s1 s2 -> match s1, s2 with
          | Some s, None
          | None, Some s -> Some s
          | None, None -> assert false

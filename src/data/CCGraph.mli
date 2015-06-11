@@ -26,6 +26,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Simple Graph Interface}
 
+    A collections of algorithms on (mostly read-only) graph structures.
+    The user provides her own graph structure as a [('v, 'e) CCGraph.t],
+    where ['v] is the type of vertices and ['e] the type of edges
+    (for instance, ['e = ('v * 'v)] is perfectly fine in many cases).
+
+    Such a [('v, 'e) CCGraph.t] structure is a record containing
+    three functions: two relate edges to their origin and destination,
+    and one maps vertices to their outgoing edges.
+    This abstract notion of graph makes it possible to run the algorithms
+    on any user-specific type that happens to have a graph structure.
+
     @since NEXT_RELEASE *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -68,7 +79,7 @@ type 'v tag_set = {
 (** Mutable table with keys ['k] and values ['a] *)
 type ('k, 'a) table = {
   mem: 'k -> bool;
-  find: 'k -> 'a;  (** @raise Not_found *)
+  find: 'k -> 'a;  (** @raise Not_found if element not added before *)
   add: 'k -> 'a -> unit; (** Erases previous binding *)
 }
 
