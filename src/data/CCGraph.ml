@@ -646,7 +646,13 @@ module type MAP = sig
 
   val remove_edge : vertex -> vertex -> t -> t
 
+  val add : vertex -> t -> t
+  (** Add a vertex, possibly with no outgoing edge *)
+
   val remove : vertex -> t -> t
+  (** Remove the vertex and all its outgoing edges.
+      Edges that point to the vertex are {b NOT} removed, they must be
+      manually removed with {!remove_edge} *)
 
   val union : t -> t -> t
 
@@ -656,9 +662,13 @@ module type MAP = sig
 
   val of_list : (vertex * vertex) list -> t
 
+  val add_list : (vertex * vertex) list -> t -> t
+
   val to_list : t -> (vertex * vertex) list
 
   val of_seq : (vertex * vertex) sequence -> t
+
+  val add_seq : (vertex * vertex) sequence -> t -> t
 
   val to_seq : t -> (vertex * vertex) sequence
 end
@@ -700,6 +710,8 @@ module Map(O : Map.OrderedType) = struct
       else {m with edges=M.add v1 set m.edges}
     with Not_found -> m
 
+  let add v m = { m with vertices=S.add v m.vertices }
+
   let remove v m =
     { edges=M.remove v m.edges; vertices=S.remove v m.vertices }
 
@@ -718,14 +730,18 @@ module Map(O : Map.OrderedType) = struct
 
   let vertices_l m = S.fold (fun v acc -> v::acc) m.vertices []
 
-  let of_list l = List.fold_left (fun m (v1,v2) -> add_edge v1 v2 m) empty l
+  let add_list l m = List.fold_left (fun m (v1,v2) -> add_edge v1 v2 m) m l
+
+  let of_list l = add_list l empty
 
   let to_list m =
     M.fold
       (fun v set acc -> S.fold (fun v' acc -> (v,v')::acc) set acc)
       m.edges []
 
-  let of_seq seq = Seq.fold (fun m (v1,v2) -> add_edge v1 v2 m) empty seq
+  let add_seq seq m = Seq.fold (fun m (v1,v2) -> add_edge v1 v2 m) m seq
+
+  let of_seq seq = add_seq seq empty
 
   let to_seq m k = M.iter (fun v set -> S.iter (fun v' -> k(v,v')) set) m.edges
 end

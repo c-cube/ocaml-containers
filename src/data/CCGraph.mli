@@ -37,6 +37,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     This abstract notion of graph makes it possible to run the algorithms
     on any user-specific type that happens to have a graph structure.
 
+    Many graph algorithms here take a sequence of vertices as input.
+    If the user only has a single vertex (e.g., for a topological sort
+    from a given vertex), she can use [Seq.return x] to build a sequence
+    of one element.
+
     @since NEXT_RELEASE *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -337,7 +342,12 @@ val mk_mut_tbl : ?eq:('v -> 'v -> bool) ->
                 ('v, ('v * 'a * 'v)) mut_graph
 (** make a new mutable graph from a Hashtbl. Edges are labelled with type ['a] *)
 
-(** {2 Immutable Graph} *)
+(** {2 Immutable Graph}
+
+    A classic implementation of a graph structure on totally ordered vertices,
+    with unlabelled edges. The graph allows to add and remove edges and vertices,
+    and to iterate on edges and vertices.
+*)
 
 module type MAP = sig
   type vertex
@@ -352,7 +362,13 @@ module type MAP = sig
 
   val remove_edge : vertex -> vertex -> t -> t
 
+  val add : vertex -> t -> t
+  (** Add a vertex, possibly with no outgoing edge *)
+
   val remove : vertex -> t -> t
+  (** Remove the vertex and all its outgoing edges.
+      Edges that point to the vertex are {b NOT} removed, they must be
+      manually removed with {!remove_edge} *)
 
   val union : t -> t -> t
 
@@ -362,9 +378,13 @@ module type MAP = sig
 
   val of_list : (vertex * vertex) list -> t
 
+  val add_list : (vertex * vertex) list -> t -> t
+
   val to_list : t -> (vertex * vertex) list
 
   val of_seq : (vertex * vertex) sequence -> t
+
+  val add_seq : (vertex * vertex) sequence -> t -> t
 
   val to_seq : t -> (vertex * vertex) sequence
 end
