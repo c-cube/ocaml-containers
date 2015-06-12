@@ -650,6 +650,10 @@ module type MAP = sig
 
   val union : t -> t -> t
 
+  val vertices : t -> vertex sequence
+
+  val vertices_l : t -> vertex list
+
   val of_list : (vertex * vertex) list -> t
 
   val to_list : t -> (vertex * vertex) list
@@ -664,52 +668,66 @@ module Map(O : Map.OrderedType) = struct
   module S = Set.Make(O)
 
   type vertex = O.t
-  type t = S.t M.t
+  type t = {
+    edges: S.t M.t;
+    vertices: S.t;
+  }
 
   let as_graph m = {
     origin=fst;
     dest=snd;
     children=(fun v yield ->
       try
-        let set = M.find v m in
+        let set = M.find v m.edges in
         S.iter (fun v' -> yield (v, v')) set
       with Not_found -> ()
       );
   }
 
-  let empty = M.empty
+  let empty = {edges=M.empty; vertices=S.empty}
 
   let add_edge v1 v2 m =
-    let set = try M.find v1 m with Not_found -> S.empty in
-    M.add v1 (S.add v2 set) m
+    let set = try M.find v1 m.edges with Not_found -> S.empty in
+    let edges = M.add v1 (S.add v2 set) m.edges in
+    let vertices = S.add v1 (S.add v2 m.vertices) in
+    { edges; vertices; }
 
   let remove_edge v1 v2 m =
     try
-      let set = S.remove v2 (M.find v1 m) in
-      if S.is_empty set then M.remove v1 m else M.add v1 set m
+      let set = S.remove v2 (M.find v1 m.edges) in
+      if S.is_empty set
+      then {m with edges=M.remove v1 m.edges}
+      else {m with edges=M.add v1 set m.edges}
     with Not_found -> m
 
-  let remove = M.remove
+  let remove v m =
+    { edges=M.remove v m.edges; vertices=S.remove v m.vertices }
 
   let union m1 m2 =
-    M.merge
+    {edges=M.merge
       (fun _ s1 s2 -> match s1, s2 with
          | Some s, None
          | None, Some s -> Some s
          | None, None -> assert false
          | Some s1, Some s2 -> Some (S.union s1 s2)
-      ) m1 m2
+      ) m1.edges m2.edges;
+     vertices=S.union m1.vertices m2.vertices
+    }
+
+  let vertices m yield = S.iter yield m.vertices
+
+  let vertices_l m = S.fold (fun v acc -> v::acc) m.vertices []
 
   let of_list l = List.fold_left (fun m (v1,v2) -> add_edge v1 v2 m) empty l
 
   let to_list m =
     M.fold
       (fun v set acc -> S.fold (fun v' acc -> (v,v')::acc) set acc)
-      m []
+      m.edges []
 
   let of_seq seq = Seq.fold (fun m (v1,v2) -> add_edge v1 v2 m) empty seq
 
-  let to_seq m k = M.iter (fun v set -> S.iter (fun v' -> k(v,v')) set) m
+  let to_seq m k = M.iter (fun v set -> S.iter (fun v' -> k(v,v')) set) m.edges
 end
 
 (** {2 Misc} *)

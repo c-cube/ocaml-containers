@@ -356,6 +356,10 @@ module type MAP = sig
 
   val union : t -> t -> t
 
+  val vertices : t -> vertex sequence
+
+  val vertices_l : t -> vertex list
+
   val of_list : (vertex * vertex) list -> t
 
   val to_list : t -> (vertex * vertex) list
