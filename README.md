@@ -1,6 +1,8 @@
 ocaml-containers
 ================
 
+[![Join the chat at https://gitter.im/c-cube/ocaml-containers](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ![logo](media/logo.png)
 
 What is _containers_?
