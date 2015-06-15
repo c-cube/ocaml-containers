@@ -50,6 +50,7 @@ See [this file](https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG
 
 - the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
 - on IRC, ask `companion_cube` on `#ocaml`
+- [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) (experimental, might not exist forever)
 
 ## Use
 
@@ -107,8 +108,15 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
 - `CCFQueue`, a purely functional double-ended queue structure
 - `CCBV`, mutable bitvectors
-- `CCPersistentHashtbl`, a semi-persistent hashtable (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
+- `CCPersistentHashtbl` and `CCPersistentArray`, a semi-persistent array and hashtable
+  (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
 - `CCMixmap`, `CCMixtbl`, `CCMixset`, containers of universal types (heterogenous containers)
+- `CCRingBuffer`, a double-ended queue on top of an array-like structure,
+  with batch operations
+- `CCIntMap`, map specialized for integer keys based on Patricia Trees,
+  with fast merges
+- `CCHashconsedSet`, a set structure with sharing of sub-structures
+- `CCGraph`, a small collection of graph algorithms
 
 ### Containers.io
 
