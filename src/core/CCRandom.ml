@@ -70,8 +70,7 @@ let float f st = Random.State.float st f
 
 let small_float = float 100.0
 
-let float_range i j st = i +. Random.State.float st (j-.i+.1.)
-
+let float_range i j st = i +. Random.State.float st (j-.i)
 
 let replicate n g st =
   let rec aux acc n =

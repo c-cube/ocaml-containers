@@ -97,9 +97,8 @@ val float : float -> float t
     @since 0.6.1 *)
 
 val float_range : float -> float -> float t
-(** Inclusive range
+(** Inclusive range. [float_range a b] assumes [a < b].
     @since 0.6.1 *)
-
 
 val split : int -> (int * int) option t
 (** Split a positive value [n] into [n1,n2] where [n = n1 + n2].
