@@ -24,7 +24,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 Bigarrays of dimension 1 *)
+(** {1 Bigarrays of dimension 1}
+
+    @since NEXT_RELEASE *)
 
 (** {2 used types} *)
 
@@ -79,10 +81,10 @@ val make_complex64 : int -> (Complex.t, Bigarray.complex64_elt, 'perm) t
 val init : kind:('a, 'b) Bigarray.kind -> f:(int -> 'a) -> int -> ('a, 'b, 'perm) t
 (** Initialize with given size and initialization function *)
 
-val of_array : ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t -> ('a, 'b, 'perm) t
-(** Convert from an array *)
+val of_bigarray : ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t -> ('a, 'b, 'perm) t
+(** Convert from a big array *)
 
-val to_array : ('a, 'b, [`R | `W]) t -> ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t
+val to_bigarray : ('a, 'b, [`R | `W]) t -> ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t
 (** Obtain the underlying array *)
 
 val ro : ('a, 'b, [>`R]) t -> ('a, 'b, [`R]) t
@@ -274,6 +276,14 @@ module Int : S with type elt = int
 
 module Float : S with type elt = float
 
+(** {2 Conversions} *)
+
+val to_list : ('a, _, [>`R]) t -> 'a list
+val to_array : ('a, _, [>`R]) t -> 'a array
+val to_seq : ('a, _, [>`R]) t -> 'a sequence
+
+val of_array : kind:('a, 'b) Bigarray.kind -> 'a array -> ('a, 'b, 'perm) t
+
 (** {2 Serialization} *)
 
 val to_yojson : 'a to_json -> ('a, _, [>`R]) t to_json
@@ -317,7 +327,7 @@ module View : sig
   val select_view : idx:int t -> 'a t -> 'a t
   (** See {!select} *)
 
-  val fold : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** fold on values with their index *)
 
   val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
@@ -355,7 +365,6 @@ module View : sig
     ('a, 'b, 'perm) array_
   (** [to_array v] returns a fresh copy of the content of [v].
       Exactly one of [res] and [kind] must be provided *)
-
 end
 
 

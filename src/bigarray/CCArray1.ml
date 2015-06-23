@@ -81,8 +81,8 @@ let init ~kind ~f n =
   done;
   a
 
-let of_array a = a
-let to_array a = a
+let of_bigarray a = a
+let to_bigarray a = a
 
 let ro (t : ('a,'b,[>`R]) t) : ('a,'b,[`R]) t = t
 let wo (t : ('a,'b,[>`W]) t) : ('a,'b,[`W]) t = t
@@ -560,6 +560,24 @@ module Float = struct
   include Infix
 end
 
+let to_list a =
+  let l = foldi (fun acc _ x -> x::acc) [] a in
+  List.rev l
+
+let to_array a =
+  if A.dim a = 0 then [||]
+  else (
+    let b = Array.make (A.dim a) (A.get a 0) in
+    for i = 1 to A.dim a - 1 do
+      Array.unsafe_set b i (A.unsafe_get a i)
+    done;
+    b
+  )
+
+let to_seq a yield = iter a ~f:yield
+
+let of_array ~kind a = A.of_array kind Bigarray.c_layout a
+
 exception OfYojsonError of string
 
 let to_yojson (f:'a -> json) a : json =
@@ -672,7 +690,7 @@ module View = struct
   let select_a ~idx a = {len=Array.length idx; view=SelectA(idx,a)}
   let select_view ~idx a = {len=length idx; view=SelectV(idx,a)}
 
-  let fold f acc a =
+  let foldi f acc a =
     let acc = ref acc in
     iteri a ~f:(fun i x -> acc := f !acc i x);
     !acc
@@ -693,8 +711,8 @@ module View = struct
     type elt = int
     let add a b = map2 ~f:(+) a b
     let mult a b = map2 ~f:( * ) a b
-    let sum a = fold (fun acc _ x -> acc+x) 0 a
-    let prod a = fold (fun acc _ x -> acc*x) 1 a
+    let sum a = foldi (fun acc _ x -> acc+x) 0 a
+    let prod a = foldi (fun acc _ x -> acc*x) 1 a
     let add_scalar a ~x = map ~f:(fun y -> x+y) a
     let mult_scalar a ~x = map ~f:(fun y -> x*y) a
   end
@@ -703,8 +721,8 @@ module View = struct
     type elt = float
     let add a b = map2 ~f:(+.) a b
     let mult a b = map2 ~f:( *. ) a b
-    let sum a = fold (fun acc _ x -> acc+.x) 0. a
-    let prod a = fold (fun acc _ x -> acc*.x) 1. a
+    let sum a = foldi (fun acc _ x -> acc+.x) 0. a
+    let prod a = foldi (fun acc _ x -> acc*.x) 1. a
     let add_scalar a ~x = map ~f:(fun y -> x+.y) a
     let mult_scalar a ~x = map ~f:(fun y -> x*.y) a
   end
@@ -720,5 +738,4 @@ module View = struct
     in
     iteri a ~f:(fun i x -> A.unsafe_set res i x);
     res
-
 end
