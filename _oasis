@@ -112,7 +112,7 @@ Library "containers_advanced"
 
 Library "containers_bigarray"
   Path:             src/bigarray
-  Modules:          CCBigstring
+  Modules:          CCBigstring, CCArray1
   FindlibName:      bigarray
   FindlibParent:    containers
   BuildDepends:     containers, bigarray, bytes
