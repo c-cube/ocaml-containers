@@ -81,6 +81,11 @@ let init ~kind ~f n =
   done;
   a
 
+(*$T
+  let a = init ~kind:Bigarray.int 10 ~f:(fun x->x) in \
+  CCList.(0 -- 9) |> List.for_all (fun i -> get a i = i)
+*)
+
 let of_bigarray a = a
 let to_bigarray a = a
 
@@ -95,6 +100,10 @@ let copy a =
   b
 
 let length a = A.dim a
+
+(*$T
+  length (make_int 42) = 42
+*)
 
 let set = A.set
 
@@ -126,6 +135,11 @@ let exists ~f a =
     done;
     false
   with LocalExit -> true
+
+(*$T
+  init ~kind:Bigarray.int 10 ~f:(fun x->x) |> for_all ~f:(fun x -> x<10)
+  init ~kind:Bigarray.int 10 ~f:(fun x->x) |> exists ~f:(fun x -> x=5)
+*)
 
 let iteri ~f a =
   for i = 0 to A.dim a - 1 do
