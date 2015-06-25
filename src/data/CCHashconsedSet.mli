@@ -29,8 +29,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     Sets are hashconsed, so that set equality is physical equality. Some
     sub-structure that is common to several sets is also perfectly shared.
 
-{b status: unstable}
-@since NEXT_RELEASE *)
+    {b status: unstable}
+
+    @since NEXT_RELEASE
+*)
 
 module type ELT = sig
   type t

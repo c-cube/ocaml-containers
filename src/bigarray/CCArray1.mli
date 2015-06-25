@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Bigarrays of dimension 1}
 
+    {b status: unstable}
     @since NEXT_RELEASE *)
 
 (** {2 used types} *)

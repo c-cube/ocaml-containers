@@ -42,6 +42,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     from a given vertex), she can use [Seq.return x] to build a sequence
     of one element.
 
+    {b status: unstable}
+
     @since NEXT_RELEASE *)
 
 type 'a sequence = ('a -> unit) -> unit
