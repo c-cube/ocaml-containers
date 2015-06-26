@@ -30,9 +30,6 @@ Simple utilities to deal with basic Input/Output tasks in a resource-safe
 way. For advanced IO tasks, the user is advised to use something
 like Lwt or Async, that are far more comprehensive.
 
-{b NOTE} this was formerly a monadic IO module. The old module is now
-in [containers.advanced] under the name [CCMonadIO].
-
 Examples:
 
 - obtain the list of lines of a file:
@@ -57,6 +54,9 @@ Examples:
 ]}
 
 @since 0.6
+
+in 'containers' (rather than 'containers.io')
+@since NEXT_RELEASE 
 
 *)
 

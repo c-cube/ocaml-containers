@@ -53,13 +53,13 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat,
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
                     Containers
   BuildDepends:     bytes
 
 Library "containers_io"
   Path:             src/io
-  Modules:          CCIO
+  Modules:
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      io
