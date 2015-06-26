@@ -228,7 +228,7 @@ module MakeFromArray(A:Array.S) = struct
     { b with buf=A.copy b.buf; }
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -237,10 +237,10 @@ module MakeFromArray(A:Array.S) = struct
   *)
 
   (*$T
-    let b = Byte.of_array "abc" in \
+    let b = Byte.of_array (Bytes.of_string "abc") in \
     let b' = Byte.copy b in \
     Byte.clear b; \
-    Byte.to_array b' = "abc" && Byte.to_array b = ""
+    Byte.to_array b' = (Bytes.of_string "abc") && Byte.to_array b = Bytes.empty
   *)
 
   let capacity b =
@@ -248,7 +248,7 @@ module MakeFromArray(A:Array.S) = struct
     match len with 0 -> 0 | l -> l - 1
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -256,7 +256,7 @@ module MakeFromArray(A:Array.S) = struct
   *)
 
   (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> let s = Bytes.of_string s in \
     let i = abs i in \
     let s_len = Bytes.length s in \
     let b = Byte.create ~bounded:true i in \
@@ -286,7 +286,7 @@ module MakeFromArray(A:Array.S) = struct
     else (A.length b.buf - b.start) + b.stop
 
   (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> let s = Bytes.of_string s in \
     let i = abs i in \
     let s_len = Bytes.length s in \
     let b = Byte.create i in \
@@ -295,7 +295,7 @@ module MakeFromArray(A:Array.S) = struct
   *)
 
   (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> let s = Bytes.of_string s in \
     let i = abs i in \
     let s_len = Bytes.length s in \
     let b = Byte.create ~bounded:true i in \
@@ -373,6 +373,7 @@ module MakeFromArray(A:Array.S) = struct
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    let s = Bytes.of_string s in let s' = Bytes.of_string s' in  \
     (let b = Byte.create 24 in \
     Byte.blit_from b s 0 (Bytes.length s); \
     Byte.blit_from b s' 0 (Bytes.length s'); \
@@ -382,6 +383,7 @@ module MakeFromArray(A:Array.S) = struct
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    let s = Bytes.of_string s in let s' = Bytes.of_string s' in  \
     (let b = Byte.create ~bounded:true (Bytes.length s + Bytes.length s') in \
     Byte.blit_from b s 0 (Bytes.length s); \
     Byte.blit_from b s' 0 (Bytes.length s'); \
@@ -410,7 +412,7 @@ module MakeFromArray(A:Array.S) = struct
     end
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let b = Byte.create (Bytes.length s) in \
     Byte.blit_from b s 0 (Bytes.length s); \
     let to_buf = Bytes.create (Bytes.length s) in \
@@ -424,7 +426,7 @@ module MakeFromArray(A:Array.S) = struct
     ()
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -438,7 +440,7 @@ module MakeFromArray(A:Array.S) = struct
     b.buf <- A.empty
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -450,7 +452,7 @@ module MakeFromArray(A:Array.S) = struct
   let is_empty b = b.start = b.stop
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -469,7 +471,7 @@ module MakeFromArray(A:Array.S) = struct
   let take_front b = try Some (take_front_exn b) with Empty -> None
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -487,7 +489,7 @@ module MakeFromArray(A:Array.S) = struct
   let take_back b = try Some (take_back_exn b) with Empty -> None
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -502,7 +504,7 @@ module MakeFromArray(A:Array.S) = struct
     else b.start <- b.start + 1
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -517,7 +519,7 @@ module MakeFromArray(A:Array.S) = struct
     else b.stop <- b.stop - 1
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -538,10 +540,12 @@ module MakeFromArray(A:Array.S) = struct
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    let s = Bytes.of_string s in let s' = Bytes.of_string s' in  \
     (let b = Byte.create 24 in \
     Byte.blit_from b s 0 (Bytes.length s); \
     Byte.blit_from b s' 0 (Bytes.length s'); \
-    Byte.blit_from b "hello world" 0 (Bytes.length "hello world"); (* big enough *) \
+    let h = Bytes.of_string "hello world" in \
+    Byte.blit_from b h 0 (Bytes.length h); (* big enough *) \
     let l = Byte.length b in let l' = l/2 in Byte.skip b l'; \
     Byte.length b + l' = l))
   *)
@@ -563,7 +567,7 @@ module MakeFromArray(A:Array.S) = struct
     )
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -593,7 +597,7 @@ module MakeFromArray(A:Array.S) = struct
 
   (*$Q
     (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
-    let s = s ^ " " in \
+    let s = Bytes.of_string (s ^ " ") in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -610,7 +614,7 @@ module MakeFromArray(A:Array.S) = struct
 
   (*$Q
     (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
-    let s = s ^ " " in \
+    let s = Bytes.of_string (s ^ " ") in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -628,13 +632,13 @@ module MakeFromArray(A:Array.S) = struct
     build [] (len-1)
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
     let l = Byte.to_list b in \
     let explode s = let rec exp i l = \
-     if i < 0 then l else exp (i - 1) (s.[i] :: l) in \
+     if i < 0 then l else exp (i - 1) (Bytes.get s i :: l) in \
      exp (Bytes.length s - 1) [] in \
     explode s = l)
   *)
@@ -642,7 +646,7 @@ module MakeFromArray(A:Array.S) = struct
   let push_back b e = blit_from b (A.make 1 e) 0 1
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -659,7 +663,7 @@ module MakeFromArray(A:Array.S) = struct
     else A.get b.buf b.start
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -673,7 +677,7 @@ module MakeFromArray(A:Array.S) = struct
         (if b.stop = 0 then capacity b - 1 else b.stop-1)
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create s_len in \
     Byte.blit_from b s 0 s_len; \
@@ -696,7 +700,7 @@ module MakeFromArray(A:Array.S) = struct
     )
 
   (*$Q
-    Q.printable_string (fun s -> \
+    Q.printable_string (fun s -> let s = Bytes.of_string s in \
       let b = Byte.of_array s in let s' = Byte.to_array b in \
       s = s')
   *)

@@ -942,20 +942,7 @@ end
 
 module IO = struct
   let _slurp with_input =
-    let l = lazy (
-      with_input
-        (fun ic ->
-          let buf_size = 256 in
-          let content = Buffer.create 120
-          and buf = String.make buf_size 'a' in
-          let rec next () =
-            let num = input ic buf 0 buf_size in
-            if num = 0
-              then Buffer.contents content (* EOF *)
-              else (Buffer.add_substring content buf 0 num; next ())
-          in next ()
-        )
-    ) in
+    let l = lazy (with_input (fun ic -> CCIO.read_all ic)) in
     lazy_ (return l)
 
   let slurp ic = _slurp (fun f -> f ic)

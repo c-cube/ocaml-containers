@@ -190,16 +190,7 @@ let rec _read_lines ic acc =
 
 let read_lines ic = _read_lines ic []
 
-let _read_all ic () =
-  let buf = Buffer.create 128 in
-  try
-    while true do
-      Buffer.add_channel buf ic 1024
-    done;
-    ""  (* never returned *)
-  with End_of_file -> Buffer.contents buf
-
-let read_all ic = Wrap(_read_all ic)
+let read_all ic = Wrap(fun () -> CCIO.read_all ic)
 
 let _open_out mode flags filename () =
   open_out_gen flags mode filename
@@ -216,7 +207,19 @@ let with_out_a ?mode ?(flags=[]) filename =
 let _write oc s i len () = output oc s i len
 let write oc s i len = Wrap (_write oc s i len)
 
-let _write_str oc s () = output oc s 0 (String.length s)
+                            
+
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+
+let output_str_ = Pervasives.output_substring
+
+#else
+
+let output_str_ = Pervasives.output
+
+#endif
+
+let _write_str oc s () = output_str_ oc s 0 (String.length s)
 let write_str oc s = Wrap (_write_str oc s)
 
 let _write_line oc l () =
@@ -517,3 +520,5 @@ end
 module Raw = struct
   let wrap f = Wrap f
 end
+
+(* vim:ft=ocaml: *)

@@ -72,6 +72,8 @@ let small_float = float 100.0
 
 let float_range i j st = i +. Random.State.float st (j-.i)
 
+(* TODO: sample functions *)
+
 let replicate n g st =
   let rec aux acc n =
     if n = 0 then acc else aux (g st :: acc) (n-1)

@@ -359,19 +359,7 @@ let choose futures =
   Run cell
 
 (** slurp the entire state of the file_descr into a string *)
-let slurp i_chan =
-  let buf_size = 128 in
-  let state = Buffer.create 120
-  and buf = String.make 128 'a' in
-  let rec next () =
-    let num = input i_chan buf 0 buf_size in
-    if num = 0
-      then Buffer.contents state (* EOF *)
-      else (
-        Buffer.add_substring state buf 0 num;
-        next ()
-      )
-  in next ()
+let slurp ic = CCIO.read_all_bytes ic
 
 let read_chan ic = make1 slurp ic
 
@@ -451,7 +439,7 @@ module Timer = struct
 
   (** Wait for next event, run it, and loop *)
   let serve timer =
-    let buf = String.make 1 '_' in
+    let buf = Bytes.make 1 '_' in
     (* acquire lock, call [process_task] and do as it commands *)
     let rec next () = match with_lock_ timer process_task with
       | Loop -> next ()
@@ -492,6 +480,8 @@ module Timer = struct
     timer.thread <- Some t;
     timer
 
+  let underscore_ = Bytes.make 1 '_'
+
   (** [timerule_at s t act] will run [act] at the Unix echo [t] *)
   let at timer time =
     let now = Unix.gettimeofday () in
@@ -510,7 +500,7 @@ module Timer = struct
           timer.tasks <- TaskHeap.insert (time, cell) timer.tasks;
           (* see if the timer thread needs to be awaken earlier *)
           if time < next_time
-            then ignore (Unix.single_write timer.fifo_out "_" 0 1)
+            then ignore (Unix.single_write timer.fifo_out underscore_ 0 1)
         );
       Run cell
     )

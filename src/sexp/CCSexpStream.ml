@@ -184,7 +184,7 @@ module Source = struct
       )
 
   let of_chan ?(bufsize=1024) ic =
-    let buf = String.make bufsize ' ' in
+    let buf = Bytes.make bufsize ' ' in
     let i = ref 0 in
     let n = ref 0 in
     let stop = ref false in
@@ -196,7 +196,7 @@ module Source = struct
         n := input ic buf 0 bufsize;
         if !n = 0 then (stop := true; NC_end) else next()
       ) else (  (* yield *)
-        let c = String.get buf !i in
+        let c = Bytes.get buf !i in
         incr i;
         NC_yield c
       )

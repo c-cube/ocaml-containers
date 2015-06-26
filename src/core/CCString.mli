@@ -45,6 +45,14 @@ module type S = sig
       Compatible with the [-safe-string] option.
       @raise Invalid_argument if indices are not valid *)
 
+  (*
+  val blit_immut : t -> int -> t -> int -> int -> string
+  (** Immutable version of {!blit}, returning a new string.
+      [blit a i b j len] is the same as [b], but in which
+      the range [j, ..., j+len] is replaced by [a.[i], ..., a.[i + len]].
+      @raise Invalid_argument if indices are not valid *)
+     *)
+
   val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
   (** Fold on chars by increasing index.
       @since 0.7 *)

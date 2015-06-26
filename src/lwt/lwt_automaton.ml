@@ -60,7 +60,7 @@ module Unix = struct
           Lwt.ignore_result (Lwt_unix.close fd);
           `Stopped, [`Closed]
       | `Active, `Write s ->
-          let fut = Lwt_unix.write fd s 0 (String.length s) in
+          let fut = Lwt_unix.write fd s 0 (Bytes.length s) in
           (* propagate error *)
           Lwt.on_failure fut (fun e -> Lwt.wakeup err_send e);
           st, []
@@ -68,15 +68,15 @@ module Unix = struct
           st, [`Read s]
     in
     let a = Automaton.Instance.create ~f:transition `Active in
-    let buf = String.make 128 ' ' in
+    let buf = Bytes.make 128 ' ' in
     (* read a string from buffer *)
     let rec _read () =
       if Automaton.Instance.state a = `Active
-        then Lwt_unix.read fd buf 0 (String.length buf) >>= fun n ->
+        then Lwt_unix.read fd buf 0 (Bytes.length buf) >>= fun n ->
         begin if n = 0
           then Automaton.Instance.send a `Stop
           else
-            let s = String.sub buf 0 n in
+            let s = Bytes.sub_string buf 0 n in
             Automaton.Instance.send a (`JustRead s)
         end;
         _read ()
