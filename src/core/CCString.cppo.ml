@@ -35,8 +35,10 @@ module type S = sig
 
   val length : t -> int
 
-  val blit : t -> int -> t -> int -> int -> unit
-  (** See {!String.blit} *)
+  val blit : t -> int -> Bytes.t -> int -> int -> unit
+  (** Similar to {!String.blit}.
+      Compatible with the [-safe-string] option.
+      @raise Invalid_argument if indices are not valid *)
 
   val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
 
@@ -411,9 +413,9 @@ module Sub = struct
 
   let length (_,_,l) = l
 
-  let blit (a1,i1,len1) o1 (a2,i2,len2) o2 len =
-    if o1+len>len1 || o2+len>len2 then invalid_arg "CCString.Sub.blit";
-    String.blit a1 (i1+o1) a2 (i2+o2) len
+  let blit (a1,i1,len1) o1 a2 o2 len =
+    if o1+len>len1 then invalid_arg "CCString.Sub.blit";
+    blit a1 (i1+o1) a2 o2 len
 
   let fold f acc (s,i,len) =
     let rec fold_rec f acc s i j =

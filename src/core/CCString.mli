@@ -40,8 +40,10 @@ module type S = sig
 
   val length : t -> int
 
-  val blit : t -> int -> t -> int -> int -> unit
-  (** See {!String.blit} *)
+  val blit : t -> int -> Bytes.t -> int -> int -> unit
+  (** Similar to {!String.blit}.
+      Compatible with the [-safe-string] option.
+      @raise Invalid_argument if indices are not valid *)
 
   val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
   (** Fold on chars by increasing index.
