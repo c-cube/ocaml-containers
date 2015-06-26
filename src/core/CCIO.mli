@@ -56,7 +56,8 @@ Examples:
 @since 0.6
 
 in 'containers' (rather than 'containers.io')
-@since NEXT_RELEASE 
+
+@since NEXT_RELEASE
 
 *)
 
@@ -87,7 +88,13 @@ val read_lines_l : in_channel -> string list
 
 val read_all : ?size:int -> in_channel -> string
 (** Read the whole channel into a buffer, then converted into a string.
-    @param size the internal buffer size @since 0.7 *)
+    @param size the internal buffer size
+    @since 0.7 *)
+
+val read_all_bytes : ?size:int -> in_channel -> Bytes.t
+(** Read the whole channel into a mutable byte array
+    @param size the internal buffer size
+    @since NEXT_RELEASE *)
 
 (** {6 Output} *)
 

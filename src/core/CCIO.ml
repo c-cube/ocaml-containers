@@ -116,7 +116,14 @@ let read_lines_l ic =
   with End_of_file ->
     List.rev !l
 
-let read_all ?(size=1024) ic =
+(* thanks to nicoo for this trick *)
+type _ ret_type =
+  | Ret_string : string ret_type
+  | Ret_bytes : Bytes.t ret_type
+
+let read_all_
+: type a. op:a ret_type -> size:int -> in_channel -> a
+= fun ~op ~size ic ->
   let buf = ref (Bytes.create size) in
   let len = ref 0 in
   try
@@ -132,7 +139,13 @@ let read_all ?(size=1024) ic =
     done;
     assert false (* never reached*)
   with Exit ->
-    Bytes.sub_string !buf 0 !len
+    match op with
+    | Ret_string -> Bytes.sub_string !buf 0 !len
+    | Ret_bytes -> Bytes.sub !buf 0 !len
+
+let read_all_bytes ?(size=1024) ic = read_all_ ~op:Ret_bytes ~size ic
+
+let read_all ?(size=1024) ic = read_all_ ~op:Ret_string ~size ic
 
 let with_out ?(mode=0o644) ?(flags=[Open_creat; Open_trunc; Open_text]) filename f =
   let oc = open_out_gen (Open_wronly::flags) mode filename in
