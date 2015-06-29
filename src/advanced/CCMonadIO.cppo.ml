@@ -204,11 +204,6 @@ let with_out ?(mode=0o644) ?(flags=[]) filename =
 let with_out_a ?mode ?(flags=[]) filename =
   with_out ?mode ~flags:(Open_creat::Open_append::flags) filename
 
-let _write oc s i len () = output oc s i len
-let write oc s i len = Wrap (_write oc s i len)
-
-                            
-
 #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
 
 let output_str_ = Pervasives.output_substring
@@ -218,6 +213,9 @@ let output_str_ = Pervasives.output_substring
 let output_str_ = Pervasives.output
 
 #endif
+
+let _write oc s i len () = output_str_ oc s i len
+let write oc s i len = Wrap (_write oc s i len)
 
 let _write_str oc s () = output_str_ oc s 0 (String.length s)
 let write_str oc s = Wrap (_write_str oc s)
