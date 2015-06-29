@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 IO Utils} *)
 
-type 'a gen = unit -> 'a option  (** See {!CCGen} *)
+type 'a gen = unit -> 'a option
 
 let gen_singleton x =
   let done_ = ref false in

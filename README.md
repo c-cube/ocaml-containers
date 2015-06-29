@@ -17,7 +17,7 @@ What is _containers_?
 - Several small additional libraries that complement it:
   * `containers.data` with additional data structures that don't have an
     equivalent in the standard library;
-  * `containers.io` with utils to handle files and I/O streams;
+  * `containers.io` (deprecated)
   * `containers.iter` with list-like and tree-like iterators;
   * `containers.string` (in directory `string`) with
     a few packed modules that deal with strings (Levenshtein distance,
@@ -99,6 +99,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCPrint` (printing combinators)
 - `CCHash` (hashing combinators)
 - `CCError` (monadic error handling, very useful)
+- `CCIO`, basic utilities for IO (channels, files)
 
 ### Containers.data
 
@@ -120,7 +121,8 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 
 ### Containers.io
 
-- `CCIO`, basic utilities for IO
+*deprecated*, `CCIO` is now a core module. You can still install it and
+depend on it but it contains no useful module.
 
 ### Containers.unix
 

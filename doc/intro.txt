@@ -33,6 +33,7 @@ CCHash
 CCHashtbl
 CCHeap
 CCInt
+CCIO
 CCList
 CCMap
 CCOpt
@@ -80,9 +81,7 @@ CCTrie
 
 {4 Containers.io}
 
-Helpers to perform simple IO (mostly on files) and iterate on channels.
-
-{!modules: CCIO}
+{b deprecated} use {!CCIO} directly from the set of core modules.
 
 {4 Containers.unix}
 

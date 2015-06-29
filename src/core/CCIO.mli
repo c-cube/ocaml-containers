@@ -55,14 +55,12 @@ Examples:
 
 @since 0.6
 
-in 'containers' (rather than 'containers.io')
-
-@since NEXT_RELEASE
+@before NEXT_RELEASE was in 'containers.io', now moved into 'containers'
 
 *)
 
 
-type 'a gen = unit -> 'a option  (** See {!Gen} *)
+type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library *)
 
 (** {2 Input} *)
 
