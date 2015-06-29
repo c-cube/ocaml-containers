@@ -59,7 +59,7 @@ Library "containers"
 
 Library "containers_io"
   Path:             src/io
-  Modules:
+  Modules:          Containers_io_is_deprecated
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      io
