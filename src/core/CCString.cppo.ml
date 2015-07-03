@@ -102,6 +102,8 @@ let find ?(start=0) ~sub s =
   with Exit ->
     !i
 
+let mem ?start ~sub s = find ?start ~sub s >= 0
+
 let rfind ~sub s =
   let n = String.length sub in
   let i = ref (String.length s - n) in

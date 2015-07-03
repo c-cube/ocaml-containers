@@ -108,6 +108,15 @@ val find : ?start:int -> sub:string -> string -> int
   find ~sub:"a" "_a_a_a_" = 1
 *)
 
+val mem : ?start:int -> sub:string -> string -> bool
+(** [mem ~sub s] is true iff [sub] is a substring of [s]
+    @since NEXT_RELEASE *)
+
+(*$T
+   mem ~sub:"bc" "abcd"
+   not (mem ~sub:"a b" "abcd")
+*)
+
 val rfind : sub:string -> string -> int
 (** Find [sub] in string from the right, returns its first index or [-1].
     Should only be used with very small [sub]
