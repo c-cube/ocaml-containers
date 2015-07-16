@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     {b status: unstable}
 
-    @since NEXT_RELEASE
+    @since 0.12
 *)
 
 module type ELT = sig

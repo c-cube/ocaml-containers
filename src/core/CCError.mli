@@ -81,7 +81,7 @@ val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
     This is useful for code that does not want to depend on the exact
     definition of [('a, 'b) t] used, for instance once OCaml gets a
     standard [Result.t] type.
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
 
@@ -130,7 +130,7 @@ val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
 
 (** {2 Infix}
 
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 module Infix : sig
   val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t

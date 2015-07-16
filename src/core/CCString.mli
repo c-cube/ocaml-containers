@@ -110,7 +110,7 @@ val find : ?start:int -> sub:string -> string -> int
 
 val mem : ?start:int -> sub:string -> string -> bool
 (** [mem ~sub s] is true iff [sub] is a substring of [s]
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 (*$T
    mem ~sub:"bc" "abcd"
@@ -120,7 +120,7 @@ val mem : ?start:int -> sub:string -> string -> bool
 val rfind : sub:string -> string -> int
 (** Find [sub] in string from the right, returns its first index or [-1].
     Should only be used with very small [sub]
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 (*$T
   rfind ~sub:"bc" "abcd" = 1
@@ -183,7 +183,7 @@ val set : string -> int -> char -> string
 (** [set s i c] creates a new string which is a copy of [s], except
     for index [i], which becomes [c].
     @raise Invalid_argument if [i] is an invalid index
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 (*$T
   set "abcd" 1 '_' = "a_cd"
@@ -193,32 +193,32 @@ val set : string -> int -> char -> string
 
 val iter : (char -> unit) -> string -> unit
 (** Alias to {!String.iter}
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val iteri : (int -> char -> unit) -> string -> unit
 (** iter on chars with their index
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val map : (char -> char) -> string -> string
 (** map chars
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val mapi : (int -> char -> char) -> string -> string
 (** map chars with their index
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val flat_map : ?sep:string -> (char -> string) -> string -> string
 (** map each chars to a string, then concatenates them all
     @param sep optional separator between each generated string
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val for_all : (char -> bool) -> string -> bool
 (** true for all chars?
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val exists : (char -> bool) -> string -> bool
 (** true for some char?
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 include S with type t := string
 
@@ -227,32 +227,32 @@ include S with type t := string
 val map2 : (char -> char -> char) -> string -> string -> string
 (** map pairs of chars
     @raises Invalid_argument if the strings have not the same length
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val iter2: (char -> char -> unit) -> string -> string -> unit
 (** iterate on pairs of chars
     @raises Invalid_argument if the strings have not the same length
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val iteri2: (int -> char -> char -> unit) -> string -> string -> unit
 (** iterate on pairs of chars with their index
     @raises Invalid_argument if the strings have not the same length
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val fold2: ('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a
 (** fold on pairs of chars
     @raises Invalid_argument if the strings have not the same length
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val for_all2 : (char -> char -> bool) -> string -> string -> bool
 (** all pair of chars respect the predicate?
     @raises Invalid_argument if the strings have not the same length
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val exists2 : (char -> char -> bool) -> string -> string -> bool
 (** exists a pair of chars?
     @raises Invalid_argument if the strings have not the same length
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 (** {2 Splitting} *)
 
@@ -294,7 +294,7 @@ module Split : sig
   val left : by:string -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the left-most part of
       the string
-      @since NEXT_RELEASE *)
+      @since 0.12 *)
 
   (*$T
     Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ")
@@ -304,7 +304,7 @@ module Split : sig
   val right : by:string -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the rightmost part of
       the string
-      @since NEXT_RELEASE *)
+      @since 0.12 *)
 
   (*$T
     Split.right ~by:" " "ab cde f g" = Some ("ab cde f", "g")

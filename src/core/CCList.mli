@@ -43,7 +43,7 @@ val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
 val cons : 'a -> 'a t -> 'a t
 (** [cons x l] is [x::l]
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 val append : 'a t -> 'a t -> 'a t
 (** Safe version of append *)

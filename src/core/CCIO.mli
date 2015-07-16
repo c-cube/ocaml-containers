@@ -55,7 +55,7 @@ Examples:
 
 @since 0.6
 
-@before NEXT_RELEASE was in 'containers.io', now moved into 'containers'
+@before 0.12 was in 'containers.io', now moved into 'containers'
 
 *)
 
@@ -92,7 +92,7 @@ val read_all : ?size:int -> in_channel -> string
 val read_all_bytes : ?size:int -> in_channel -> Bytes.t
 (** Read the whole channel into a mutable byte array
     @param size the internal buffer size
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 (** {6 Output} *)
 
@@ -125,7 +125,7 @@ val with_in_out : ?mode:int -> ?flags:open_flag list ->
                   string -> (in_channel -> out_channel -> 'a) -> 'a
 (** Combines {!with_in} and {!with_out}.
     @param flags opening flags (default [[Open_creat]])
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 (** {2 Misc for Generators} *)
 

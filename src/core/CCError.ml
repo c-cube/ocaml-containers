@@ -52,9 +52,6 @@ let fail_printf format =
 
 (* TODO: easy ways to print backtrace/stack *)
 
-(* TODO: something of type  [ ('a -> 'b) -> ('err -> 'b) -> ('a, 'err) t -> 'b]
-   to make it easier to switch into a regular variant if it happens *)
-
 let _printers = ref []
 
 let register_printer p = _printers := p :: !_printers

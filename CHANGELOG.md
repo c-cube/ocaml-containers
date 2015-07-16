@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.12
+
+### breaking
+
+- change type of `CCString.blit` so it writes into `Bytes.t`
+- better default opening flags for `CCIO.with_{in, out}`
+
+### non-breaking
+
+note: use of `containers.io` is deprecated (its only module has moved to `containers`)
+
+- add `CCString.mem`
+- add `CCString.set` for updating immutable strings
+- add `CCList.cons` function
+- enable `-safe-string` on the project; fix `-safe-string` issues
+- move `CCIO` from `containers.io` to `containers`, add dummy module in `containers.io`
+- add `CCIO.read_all_bytes`, reading a whole file into a `Bytes.t`
+- add `CCIO.with_in_out` to read and write a file
+- add `CCArray1` in containers.bigarray, a module on 1-dim bigarrays (experimental)
+- add module `CCGraph` in `containers.data`, a simple graph abstraction similar to `LazyGraph`
+- add a lot of string functions in `CCString`
+- add `CCError.catch`, in prevision of the future standard `Result.t` type
+- add `CCError.Infix` module
+- add `CCHashconsedSet` in `containers.data` (set with maximal struct sharing)
+
+- fix: use the proper array module in `CCRingBuffer`
+- bugfix: `CCRandom.float_range`
+
 ## 0.11
 
 - add `CCList.{remove,is_empty}`

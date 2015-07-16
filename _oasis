@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.11
+Version:     0.12
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -18,8 +18,9 @@ Description:
     extend the stdlib (e.g. CCList provides safe map/fold_right/append, and
     additional functions on lists).
 
-    It also features an optional library for dealing with strings, and a `misc`
-    library full of experimental ideas (not stable, not necessarily usable).
+    It also features optional libraries for dealing with strings, helpers for unix,
+    threads, lwt and a `misc` library full of experimental ideas (not stable, not
+    necessarily usable).
 
 Flag "misc"
   Description:  Build the misc library, with experimental modules still susceptible to change

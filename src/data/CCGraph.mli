@@ -44,7 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     {b status: unstable}
 
-    @since NEXT_RELEASE *)
+    @since 0.12 *)
 
 type 'a sequence = ('a -> unit) -> unit
 (** A sequence of items of type ['a], possibly infinite *)
