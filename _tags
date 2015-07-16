@@ -218,4 +218,4 @@ true: annot, bin_annot
 <src/threads/*.ml{,i}>: thread
 <src/core/CCVector.cmx>: inline(25)
 <src/**/*.ml> and not <src/misc/*.ml>: warn_A, warn(-4), warn(-44)
-true: no_alias_deps
+true: no_alias_deps, safe_string

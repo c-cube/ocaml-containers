@@ -30,6 +30,7 @@ type 'a elt = {
   mutable prev : 'a elt;
   mutable next : 'a elt;
 } (** A cell holding a single element *)
+
 and 'a t = 'a elt option ref
   (** The deque, a double linked list of cells *)
 

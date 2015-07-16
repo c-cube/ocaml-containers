@@ -40,8 +40,18 @@ module type S = sig
 
   val length : t -> int
 
-  val blit : t -> int -> t -> int -> int -> unit
-  (** See {!String.blit} *)
+  val blit : t -> int -> Bytes.t -> int -> int -> unit
+  (** Similar to {!String.blit}.
+      Compatible with the [-safe-string] option.
+      @raise Invalid_argument if indices are not valid *)
+
+  (*
+  val blit_immut : t -> int -> t -> int -> int -> string
+  (** Immutable version of {!blit}, returning a new string.
+      [blit a i b j len] is the same as [b], but in which
+      the range [j, ..., j+len] is replaced by [a.[i], ..., a.[i + len]].
+      @raise Invalid_argument if indices are not valid *)
+     *)
 
   val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
   (** Fold on chars by increasing index.
@@ -81,11 +91,43 @@ val of_klist : char klist -> string
 val of_list : char list -> string
 val of_array : char array -> string
 
+(*$T
+  of_list ['a'; 'b'; 'c'] = "abc"
+  of_list [] = ""
+*)
+
 val to_array : string -> char array
 
 val find : ?start:int -> sub:string -> string -> int
 (** Find [sub] in string, returns its first index or [-1].
     Should only be used with very small [sub] *)
+
+(*$T
+  find ~sub:"bc" "abcd" = 1
+  find ~sub:"bc" "abd" = ~-1
+  find ~sub:"a" "_a_a_a_" = 1
+*)
+
+val mem : ?start:int -> sub:string -> string -> bool
+(** [mem ~sub s] is true iff [sub] is a substring of [s]
+    @since 0.12 *)
+
+(*$T
+   mem ~sub:"bc" "abcd"
+   not (mem ~sub:"a b" "abcd")
+*)
+
+val rfind : sub:string -> string -> int
+(** Find [sub] in string from the right, returns its first index or [-1].
+    Should only be used with very small [sub]
+    @since 0.12 *)
+
+(*$T
+  rfind ~sub:"bc" "abcd" = 1
+  rfind ~sub:"bc" "abd" = ~-1
+  rfind ~sub:"a" "_a_a_a_" = 5
+  rfind ~sub:"bc" "abcdbcd" = 4
+*)
 
 val is_sub : sub:string -> int -> string -> int -> len:int -> bool
 (** [is_sub ~sub i s j ~len] returns [true] iff the substring of
@@ -137,7 +179,80 @@ val unlines_gen : string gen -> string
   Q.printable_string (fun s -> unlines (lines s) = s)
 *)
 
+val set : string -> int -> char -> string
+(** [set s i c] creates a new string which is a copy of [s], except
+    for index [i], which becomes [c].
+    @raise Invalid_argument if [i] is an invalid index
+    @since 0.12 *)
+
+(*$T
+  set "abcd" 1 '_' = "a_cd"
+  set "abcd" 0 '-' = "-bcd"
+  (try ignore (set "abc" 5 '_'); false with Invalid_argument _ -> true)
+*)
+
+val iter : (char -> unit) -> string -> unit
+(** Alias to {!String.iter}
+    @since 0.12 *)
+
+val iteri : (int -> char -> unit) -> string -> unit
+(** iter on chars with their index
+    @since 0.12 *)
+
+val map : (char -> char) -> string -> string
+(** map chars
+    @since 0.12 *)
+
+val mapi : (int -> char -> char) -> string -> string
+(** map chars with their index
+    @since 0.12 *)
+
+val flat_map : ?sep:string -> (char -> string) -> string -> string
+(** map each chars to a string, then concatenates them all
+    @param sep optional separator between each generated string
+    @since 0.12 *)
+
+val for_all : (char -> bool) -> string -> bool
+(** true for all chars?
+    @since 0.12 *)
+
+val exists : (char -> bool) -> string -> bool
+(** true for some char?
+    @since 0.12 *)
+
 include S with type t := string
+
+(** {2 Operations on 2 strings} *)
+
+val map2 : (char -> char -> char) -> string -> string -> string
+(** map pairs of chars
+    @raises Invalid_argument if the strings have not the same length
+    @since 0.12 *)
+
+val iter2: (char -> char -> unit) -> string -> string -> unit
+(** iterate on pairs of chars
+    @raises Invalid_argument if the strings have not the same length
+    @since 0.12 *)
+
+val iteri2: (int -> char -> char -> unit) -> string -> string -> unit
+(** iterate on pairs of chars with their index
+    @raises Invalid_argument if the strings have not the same length
+    @since 0.12 *)
+
+val fold2: ('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a
+(** fold on pairs of chars
+    @raises Invalid_argument if the strings have not the same length
+    @since 0.12 *)
+
+val for_all2 : (char -> char -> bool) -> string -> string -> bool
+(** all pair of chars respect the predicate?
+    @raises Invalid_argument if the strings have not the same length
+    @since 0.12 *)
+
+val exists2 : (char -> char -> bool) -> string -> string -> bool
+(** exists a pair of chars?
+    @raises Invalid_argument if the strings have not the same length
+    @since 0.12 *)
 
 (** {2 Splitting} *)
 
@@ -175,6 +290,26 @@ module Split : sig
   val seq_cpy : by:string -> string -> string sequence
 
   val klist_cpy : by:string -> string -> string klist
+
+  val left : by:string -> string -> (string * string) option
+  (** Split on the first occurrence of [by] from the left-most part of
+      the string
+      @since 0.12 *)
+
+  (*$T
+    Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ")
+    Split.left ~by:"_" "abcde" = None
+  *)
+
+  val right : by:string -> string -> (string * string) option
+  (** Split on the first occurrence of [by] from the rightmost part of
+      the string
+      @since 0.12 *)
+
+  (*$T
+    Split.right ~by:" " "ab cde f g" = Some ("ab cde f", "g")
+    Split.right ~by:"_" "abcde" = None
+  *)
 end
 
 (** {2 Slices} A contiguous part of a string *)

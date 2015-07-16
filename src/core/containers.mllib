@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b1fae2373cf2a628a9465ba233f7c127)
+# DO NOT EDIT (digest: 724b9ea68be5bbd410c45a66cd7b6b97)
 CCVector
 CCPrint
 CCError
@@ -21,5 +21,6 @@ CCString
 CCHashtbl
 CCMap
 CCFormat
+CCIO
 Containers
 # OASIS_STOP

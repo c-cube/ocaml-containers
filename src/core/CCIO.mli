@@ -30,9 +30,6 @@ Simple utilities to deal with basic Input/Output tasks in a resource-safe
 way. For advanced IO tasks, the user is advised to use something
 like Lwt or Async, that are far more comprehensive.
 
-{b NOTE} this was formerly a monadic IO module. The old module is now
-in [containers.advanced] under the name [CCMonadIO].
-
 Examples:
 
 - obtain the list of lines of a file:
@@ -48,7 +45,7 @@ Examples:
   with_in "/tmp/input"
     (fun ic ->
       let chunks = read_chunks ic in
-      with_out ~flags:[Open_creat; Open_wronly] ~mode:0o644 "/tmp/output"
+      with_out ~flags:[Open_binary] ~mode:0o644 "/tmp/output"
         (fun oc ->
           write_gen oc chunks
         )
@@ -58,10 +55,12 @@ Examples:
 
 @since 0.6
 
+@before 0.12 was in 'containers.io', now moved into 'containers'
+
 *)
 
 
-type 'a gen = unit -> 'a option  (** See {!Gen} *)
+type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library *)
 
 (** {2 Input} *)
 
@@ -69,7 +68,8 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
               string -> (in_channel -> 'a) -> 'a
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
-    channel is closed. *)
+    channel is closed.
+    @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases *)
 
 val read_chunks : ?size:int -> in_channel -> string gen
 (** Read the channel's content into chunks of size [size] *)
@@ -86,18 +86,26 @@ val read_lines_l : in_channel -> string list
 
 val read_all : ?size:int -> in_channel -> string
 (** Read the whole channel into a buffer, then converted into a string.
-    @param size the internal buffer size @since 0.7 *)
+    @param size the internal buffer size
+    @since 0.7 *)
+
+val read_all_bytes : ?size:int -> in_channel -> Bytes.t
+(** Read the whole channel into a mutable byte array
+    @param size the internal buffer size
+    @since 0.12 *)
 
 (** {6 Output} *)
 
 val with_out : ?mode:int -> ?flags:open_flag list ->
                string -> (out_channel -> 'a) -> 'a
-(** Same as {!with_in} but for an output channel *)
+(** Same as {!with_in} but for an output channel
+    @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]).
+    [Open_wronly] is used in any cases *)
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
                   string -> (out_channel -> 'a) -> 'a
-(** Similar to {!with_out} but with the [Open_append] and [Open_creat]
-    flags activated *)
+(** Similar to {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
+    flags activated, to append to the file *)
 
 val write_line : out_channel -> string -> unit
 (** Write the given string on the channel, followed by "\n" *)
@@ -110,6 +118,14 @@ val write_lines : out_channel -> string gen -> unit
 (** Write every string on the output, followed by "\n". *)
 
 val write_lines_l : out_channel -> string list -> unit
+
+(** {2 Both} *)
+
+val with_in_out : ?mode:int -> ?flags:open_flag list ->
+                  string -> (in_channel -> out_channel -> 'a) -> 'a
+(** Combines {!with_in} and {!with_out}.
+    @param flags opening flags (default [[Open_creat]])
+    @since 0.12 *)
 
 (** {2 Misc for Generators} *)
 

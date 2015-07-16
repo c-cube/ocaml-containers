@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.11
+Version:     0.12
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -18,8 +18,9 @@ Description:
     extend the stdlib (e.g. CCList provides safe map/fold_right/append, and
     additional functions on lists).
 
-    It also features an optional library for dealing with strings, and a `misc`
-    library full of experimental ideas (not stable, not necessarily usable).
+    It also features optional libraries for dealing with strings, helpers for unix,
+    threads, lwt and a `misc` library full of experimental ideas (not stable, not
+    necessarily usable).
 
 Flag "misc"
   Description:  Build the misc library, with experimental modules still susceptible to change
@@ -53,13 +54,13 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat,
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
                     Containers
   BuildDepends:     bytes
 
 Library "containers_io"
   Path:             src/io
-  Modules:          CCIO
+  Modules:          Containers_io_is_deprecated
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      io
@@ -83,7 +84,7 @@ Library "containers_data"
   Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
-                    CCMixset
+                    CCMixset, CCHashconsedSet, CCGraph
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      data
@@ -112,7 +113,7 @@ Library "containers_advanced"
 
 Library "containers_bigarray"
   Path:             src/bigarray
-  Modules:          CCBigstring
+  Modules:          CCBigstring, CCArray1
   FindlibName:      bigarray
   FindlibParent:    containers
   BuildDepends:     containers, bigarray, bytes

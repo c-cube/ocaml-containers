@@ -35,8 +35,10 @@ module type S = sig
 
   val length : t -> int
 
-  val blit : t -> int -> t -> int -> int -> unit
-  (** See {!String.blit} *)
+  val blit : t -> int -> Bytes.t -> int -> int -> unit
+  (** Similar to {!String.blit}.
+      Compatible with the [-safe-string] option.
+      @raise Invalid_argument if indices are not valid *)
 
   val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
 
@@ -87,6 +89,32 @@ let is_sub ~sub i s j ~len =
   if i+len > String.length sub then invalid_arg "String.is_sub";
   _is_sub ~sub i s j ~len
 
+(* note: inefficient *)
+let find ?(start=0) ~sub s =
+  let n = String.length sub in
+  let i = ref start in
+  try
+    while !i + n < String.length s do
+      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
+      incr i
+    done;
+    -1
+  with Exit ->
+    !i
+
+let mem ?start ~sub s = find ?start ~sub s >= 0
+
+let rfind ~sub s =
+  let n = String.length sub in
+  let i = ref (String.length s - n) in
+  try
+    while !i >= 0 do
+      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
+      decr i
+    done;
+    ~-1
+  with Exit ->
+    !i
 
 module Split = struct
   type split_state =
@@ -158,20 +186,17 @@ module Split = struct
 
   let seq ~by s = _mkseq ~by s _tuple3
   let seq_cpy ~by s = _mkseq ~by s String.sub
-end
 
-(* note: inefficient *)
-let find ?(start=0) ~sub s =
-  let n = String.length sub in
-  let i = ref start in
-  try
-    while !i + n < String.length s do
-      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
-      incr i
-    done;
-    -1
-  with Exit ->
-    !i
+  let left ~by s =
+    let i = find ~sub:by s in
+    if i = ~-1 then None
+    else Some (String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1))
+
+  let right ~by s =
+    let i = rfind ~sub:by s in
+    if i = ~-1 then None
+    else Some (String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1))
+end
 
 let repeat s n =
   assert (n>=0);
@@ -252,11 +277,6 @@ let of_list l =
   List.iter (Buffer.add_char buf) l;
   Buffer.contents buf
 
-(*$T
-  of_list ['a'; 'b'; 'c'] = "abc"
-  of_list [] = ""
-*)
-
 let of_array a =
   init (Array.length a) (fun i -> a.(i))
 
@@ -280,6 +300,93 @@ let concat_gen ~sep g =
 let unlines l = String.concat "\n" l
 
 let unlines_gen g = concat_gen ~sep:"\n" g
+
+let set s i c =
+  if i<0 || i>= String.length s then invalid_arg "CCString.set";
+  init (String.length s) (fun j -> if i=j then c else s.[j])
+
+let iter = String.iter
+
+#if OCAML_MAJOR >= 4
+
+let map = String.map
+let iteri = String.iteri
+
+#else
+
+let map f s = init (length s) (fun i -> f s.[i])
+
+let iteri f s =
+  for i = 0 to String.length s - 1 do
+    f i s.[i]
+  done
+
+#endif
+
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+
+let mapi = String.mapi
+
+#else
+
+let mapi f s = init (length s) (fun i -> f i s.[i])
+
+#endif
+
+let flat_map ?sep f s =
+  let buf = Buffer.create (String.length s) in
+  iteri
+    (fun i c ->
+       begin match sep with
+       | Some _ when i=0 -> ()
+       | None -> ()
+       | Some sep -> Buffer.add_string buf sep
+       end;
+       Buffer.add_string buf (f c)
+    ) s;
+  Buffer.contents buf
+
+exception MyExit
+
+let for_all p s =
+  try iter (fun c -> if not (p c) then raise MyExit) s; true
+  with MyExit -> false
+
+let exists p s =
+  try iter (fun c -> if p c then raise MyExit) s; false
+  with MyExit -> true
+
+let map2 f s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.map2";
+  init (String.length s1) (fun i -> f s1.[i] s2.[i])
+
+let iter2 f s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.iter2";
+  for i = 0 to String.length s1 - 1 do
+    f s1.[i] s2.[i]
+  done
+
+let iteri2 f s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.iteri2";
+  for i = 0 to String.length s1 - 1 do
+    f i s1.[i] s2.[i]
+  done
+
+let fold2 f acc s1 s2 =
+  if length s1 <> length s2 then invalid_arg "String.fold2";
+  let rec fold' acc s1 s2 i =
+    if i = String.length s1 then acc
+    else fold' (f acc s1.[i] s2.[i]) s1 s2 (i+1)
+  in
+  fold' acc s1 s2 0
+
+let for_all2 p s1 s2 =
+  try iter2 (fun c1 c2 -> if not (p c1 c2) then raise MyExit) s1 s2; true
+  with MyExit -> false
+
+let exists2 p s1 s2 =
+  try iter2 (fun c1 c2 -> if p c1 c2 then raise MyExit) s1 s2; false
+  with MyExit -> true
 
 let pp buf s =
   Buffer.add_char buf '"';
@@ -308,9 +415,9 @@ module Sub = struct
 
   let length (_,_,l) = l
 
-  let blit (a1,i1,len1) o1 (a2,i2,len2) o2 len =
-    if o1+len>len1 || o2+len>len2 then invalid_arg "CCString.Sub.blit";
-    String.blit a1 (i1+o1) a2 (i2+o2) len
+  let blit (a1,i1,len1) o1 a2 o2 len =
+    if o1+len>len1 then invalid_arg "CCString.Sub.blit";
+    blit a1 (i1+o1) a2 o2 len
 
   let fold f acc (s,i,len) =
     let rec fold_rec f acc s i j =

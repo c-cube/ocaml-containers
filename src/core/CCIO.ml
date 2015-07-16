@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 IO Utils} *)
 
-type 'a gen = unit -> 'a option  (** See {!CCGen} *)
+type 'a gen = unit -> 'a option
 
 let gen_singleton x =
   let done_ = ref false in
@@ -72,8 +72,8 @@ let gen_flat_map f next_elem =
   in
   next
 
-let with_in ?(mode=0o644) ?(flags=[]) filename f =
-  let ic = open_in_gen flags mode filename in
+let with_in ?(mode=0o644) ?(flags=[Open_text]) filename f =
+  let ic = open_in_gen (Open_rdonly::flags) mode filename in
   try
     let x = f ic in
     close_in ic;
@@ -116,7 +116,14 @@ let read_lines_l ic =
   with End_of_file ->
     List.rev !l
 
-let read_all ?(size=1024) ic =
+(* thanks to nicoo for this trick *)
+type _ ret_type =
+  | Ret_string : string ret_type
+  | Ret_bytes : Bytes.t ret_type
+
+let read_all_
+: type a. op:a ret_type -> size:int -> in_channel -> a
+= fun ~op ~size ic ->
   let buf = ref (Bytes.create size) in
   let len = ref 0 in
   try
@@ -132,10 +139,16 @@ let read_all ?(size=1024) ic =
     done;
     assert false (* never reached*)
   with Exit ->
-    Bytes.sub_string !buf 0 !len
+    match op with
+    | Ret_string -> Bytes.sub_string !buf 0 !len
+    | Ret_bytes -> Bytes.sub !buf 0 !len
 
-let with_out ?(mode=0o644) ?(flags=[]) filename f =
-  let oc = open_out_gen flags mode filename in
+let read_all_bytes ?(size=1024) ic = read_all_ ~op:Ret_bytes ~size ic
+
+let read_all ?(size=1024) ic = read_all_ ~op:Ret_string ~size ic
+
+let with_out ?(mode=0o644) ?(flags=[Open_creat; Open_trunc; Open_text]) filename f =
+  let oc = open_out_gen (Open_wronly::flags) mode filename in
   try
     let x = f oc in
     close_out oc;
@@ -145,7 +158,7 @@ let with_out ?(mode=0o644) ?(flags=[]) filename f =
     raise e
 
 let with_out_a ?mode ?(flags=[]) filename f =
-  with_out ?mode ~flags:(Open_creat::Open_append::flags) filename f
+  with_out ?mode ~flags:(Open_wronly::Open_creat::Open_append::flags) filename f
 
 let write_line oc s =
   output_string oc s;
@@ -172,6 +185,19 @@ let rec write_lines oc g = match g () with
 
 let write_lines_l oc l =
   List.iter (write_line oc) l
+
+let with_in_out ?(mode=0o644) ?(flags=[Open_creat]) filename f =
+  let ic = open_in_gen (Open_rdonly::flags) mode filename in
+  let oc = open_out_gen (Open_wronly::flags) mode filename in
+  try
+    let x = f ic oc in
+    close_out oc; (* must be first?! *)
+    close_in ic;
+    x
+  with e ->
+    close_out_noerr oc;
+    close_in_noerr ic;
+    raise e
 
 let tee funs g () = match g() with
   | None -> None

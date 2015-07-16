@@ -17,7 +17,7 @@ What is _containers_?
 - Several small additional libraries that complement it:
   * `containers.data` with additional data structures that don't have an
     equivalent in the standard library;
-  * `containers.io` with utils to handle files and I/O streams;
+  * `containers.io` (deprecated)
   * `containers.iter` with list-like and tree-like iterators;
   * `containers.string` (in directory `string`) with
     a few packed modules that deal with strings (Levenshtein distance,
@@ -26,7 +26,7 @@ What is _containers_?
     be able to deal with your favorite unicode library).
 - A sub-library with complicated abstractions, `containers.advanced` (with
   a LINQ-like query module, batch operations using GADTs, and others).
-- Utilities aroud the `unix` library in `containers.unix` (mainly to spawn
+- Utilities around the `unix` library in `containers.unix` (mainly to spawn
   sub-processes)
 - A bigstring module using `bigarray` in `containers.bigarray`
 - A lightweight S-expression printer and streaming parser in `containers.sexp`
@@ -50,6 +50,7 @@ See [this file](https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG
 
 - the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
 - on IRC, ask `companion_cube` on `#ocaml`
+- [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) (experimental, might not exist forever)
 
 ## Use
 
@@ -98,6 +99,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCPrint` (printing combinators)
 - `CCHash` (hashing combinators)
 - `CCError` (monadic error handling, very useful)
+- `CCIO`, basic utilities for IO (channels, files)
 
 ### Containers.data
 
@@ -107,12 +109,20 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
 - `CCFQueue`, a purely functional double-ended queue structure
 - `CCBV`, mutable bitvectors
-- `CCPersistentHashtbl`, a semi-persistent hashtable (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
+- `CCPersistentHashtbl` and `CCPersistentArray`, a semi-persistent array and hashtable
+  (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
 - `CCMixmap`, `CCMixtbl`, `CCMixset`, containers of universal types (heterogenous containers)
+- `CCRingBuffer`, a double-ended queue on top of an array-like structure,
+  with batch operations
+- `CCIntMap`, map specialized for integer keys based on Patricia Trees,
+  with fast merges
+- `CCHashconsedSet`, a set structure with sharing of sub-structures
+- `CCGraph`, a small collection of graph algorithms
 
 ### Containers.io
 
-- `CCIO`, basic utilities for IO
+*deprecated*, `CCIO` is now a core module. You can still install it and
+depend on it but it contains no useful module.
 
 ### Containers.unix
 

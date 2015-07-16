@@ -50,7 +50,7 @@ val next_transition :
 module Unix : sig
   val read_write : Lwt_unix.file_descr ->
     ( [  `Active | `Stopped | `Error of exn ]
-    , [ `Stop | `Write of string | `JustRead of string | `Failwith of exn ]
+    , [ `Stop | `Write of Bytes.t | `JustRead of string | `Failwith of exn ]
     , [> `Read of string | `Closed | `Error of exn ]
     ) Automaton.Instance.t
   (** Read and write on the given filedescriptor *)

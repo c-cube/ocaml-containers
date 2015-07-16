@@ -195,7 +195,8 @@ module type S = sig
 
   val of_array : Array.t -> t
   (** Create a buffer from an initial array, but doesn't take ownership
-      of it (stills allocates a new internal array) *)
+      of it (stills allocates a new internal array)
+      @since 0.11 *)
 
   val to_array : t -> Array.t
   (** Create an array from the elements, in order.

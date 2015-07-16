@@ -145,7 +145,7 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
     It yields a [in_channel] with a finalizer attached. See {!(>>>=)} to
     use it. *)
 
-val read : in_channel -> string -> int -> int -> int t
+val read : in_channel -> Bytes.t -> int -> int -> int t
 (** Read a chunk into the given string *)
 
 val read_line : in_channel -> string option t

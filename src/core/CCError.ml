@@ -43,15 +43,20 @@ let return x = `Ok x
 
 let fail s = `Error s
 
+(* TODO: optional argument for printing stacktrace? *)
 let fail_printf format =
   let buf = Buffer.create 16 in
   Printf.kbprintf
     (fun buf -> fail (Buffer.contents buf))
     buf format
 
+(* TODO: easy ways to print backtrace/stack *)
+
 let _printers = ref []
 
 let register_printer p = _printers := p :: !_printers
+
+(* FIXME: just use {!Printexc.register_printer} instead? *)
 
 let of_exn e =
   let buf = Buffer.create 15 in
@@ -83,6 +88,10 @@ let iter f e = match e with
 let get_exn = function
   | `Ok x -> x
   | `Error _ -> raise (Invalid_argument "CCError.get_exn")
+
+let catch e ~ok ~err = match e with
+  | `Ok x -> ok x
+  | `Error y -> err y
 
 let flat_map f e = match e with
   | `Ok x -> f x
@@ -186,6 +195,14 @@ let retry n f =
       | `Ok _ as res -> res
       | `Error e -> retry (n-1) (e::acc)
   in retry n []
+
+(** {2 Infix} *)
+
+module Infix = struct
+  let (>>=) = (>>=)
+  let (>|=) = (>|=)
+  let (<*>) = (<*>)
+end
 
 (** {2 Monadic Operations} *)
 
