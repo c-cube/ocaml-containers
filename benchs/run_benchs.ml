@@ -23,24 +23,24 @@ module L = struct
     else [x;x+1;x+2;x+3]
 
   let bench_flat_map ?(time=2) n =
-    let l = lazy CCList.(1 -- n) in
+    let l = CCList.(1 -- n) in
     let flatten_map_ l = List.flatten (CCList.map f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
     B.throughputN time
-      [ "flat_map", CCList.flat_map f_ %% Lazy.force, l
-      ; "flatten o CCList.map", flatten_ccmap_ %% Lazy.force, l
-      ; "flatten o map", flatten_map_ %% Lazy.force, l
+      [ "flat_map", CCList.flat_map f_, l
+      ; "flatten o CCList.map", flatten_ccmap_, l
+      ; "flatten o map", flatten_map_, l
       ]
 
   (* APPEND *)
 
-  let append_ f (lazy l1, lazy l2, lazy l3) =
+  let append_ f (l1, l2, l3) =
     ignore (f (f l1 l2) l3)
 
   let bench_append ?(time=2) n =
-    let l1 = lazy CCList.(1 -- n) in
-    let l2 = lazy CCList.(n+1 -- 2*n) in
-    let l3 = lazy CCList.(2*n+1 -- 3*n) in
+    let l1 = CCList.(1 -- n) in
+    let l2 = CCList.(n+1 -- 2*n) in
+    let l3 = CCList.(2*n+1 -- 3*n) in
     let arg = l1, l2, l3 in
     B.throughputN time
       [ "CCList.append", append_ CCList.append, arg
@@ -55,16 +55,16 @@ module L = struct
     and cc_fold_right_append_ l =
       CCList.fold_right CCList.append l []
     in
-    let l = lazy (
+    let l =
       CCList.Idx.mapi
         (fun i x -> CCList.(x -- (x+ min i 100)))
-        CCList.(1 -- n))
+        CCList.(1 -- n)
     in
     B.throughputN time
-      [ "CCList.flatten", CCList.flatten %% Lazy.force, l
-      ; "List.flatten", List.flatten %% Lazy.force, l
-      ; "fold_right append", fold_right_append_ %% Lazy.force, l
-      ; "CCList.(fold_right append)", cc_fold_right_append_ %% Lazy.force, l
+      [ "CCList.flatten", CCList.flatten, l
+      ; "List.flatten", List.flatten, l
+      ; "fold_right append", fold_right_append_, l
+      ; "CCList.(fold_right append)", cc_fold_right_append_, l
       ]
 
   (* MAIN *)
@@ -104,16 +104,16 @@ module Vec = struct
     v'
 
   let bench_map n =
-    let v = lazy (CCVector.init n (fun x->x)) in
+    let v = CCVector.init n (fun x->x) in
     B.throughputN 2
-      [ "map", CCVector.map f %% Lazy.force, v
-      ; "map_push", map_push_ f %% Lazy.force, v
-      ; "map_push_cap", map_push_size_ f %% Lazy.force, v
+      [ "map", CCVector.map f, v
+      ; "map_push", map_push_ f, v
+      ; "map_push_cap", map_push_size_ f, v
       ]
 
   let try_append_ app n v2 () =
     let v1 = CCVector.init n (fun x->x) in
-    app v1 (Lazy.force v2);
+    app v1 v2;
     assert (CCVector.length v1 = 2*n);
     ()
 
@@ -121,7 +121,7 @@ module Vec = struct
     CCVector.iter (fun x -> CCVector.push v1 x) v2
 
   let bench_append n =
-    let v2 = lazy (CCVector.init n (fun x->n+x)) in
+    let v2 = CCVector.init n (fun x->n+x) in
     B.throughputN 2
       [ "append", try_append_ CCVector.append n v2, ()
       ; "append_naive", try_append_ append_naive_ n v2, ()
