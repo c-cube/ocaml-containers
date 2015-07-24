@@ -2,6 +2,7 @@
 #thread
 #require "bigarray";;
 #require "unix";;
+#require "sequence";;
 #directory "_build/src/core";;
 #directory "_build/src/misc";;
 #directory "_build/src/pervasives/";;
@@ -10,6 +11,7 @@
 #directory "_build/src/unix";;
 #directory "_build/src/iter";;
 #directory "_build/src/data";;
+#directory "_build/src/advanced/";;
 #directory "_build/src/sexp";;
 #directory "_build/src/bigarray/";;
 #directory "_build/src/threads";;
@@ -17,6 +19,7 @@
 #load "containers.cma";;
 #load "containers_iter.cma";;
 #load "containers_data.cma";;
+#load "containers_advanced.cma";;
 #load "containers_io.cma";;
 #load "containers_unix.cma";;
 #load "containers_sexp.cma";;
