@@ -236,29 +236,20 @@ type ('a,'b) group_join_descr = {
   gjoin_build : 'a PMap.build_method;
 }
 
-module Coll = struct
+module ImplemSetOps = struct
   let choose s = Sequence.take 1 s
 
-  exception MySurpriseExit
-
-  let distinct (type k) ~cmp s =
-    let module S = Sequence.Set.Make(struct type t = k let compare = cmp end) in
-    S.to_seq (S.of_seq s)
+  let distinct ~cmp s = Sequence.sort_uniq ~cmp s
 
   let search obj s =
-    let _search_seq obj seq =
-      let ret = ref None in
-      begin try
-        seq (fun x -> match obj#check x with
-          | SearchContinue -> ()
-          | SearchStop y -> ret := Some y; raise MySurpriseExit);
-      with MySurpriseExit -> ()
-      end;
-      match !ret with
-      | None -> obj#failure
-      | Some x -> x
-    in
-    _search_seq obj s
+    match
+      Sequence.find
+        (fun x -> match obj#check x with
+          | SearchContinue -> None
+          | SearchStop y -> Some y
+        ) s
+    with None -> obj#failure
+       | Some x -> x
 
   let do_join ~join c1 c2 =
     let build1 =
@@ -420,17 +411,22 @@ let rec _optimize : type a. a t -> a t
         _optimize_unary u (_optimize q)
     | Binary (b, q1, q2) ->
         _optimize_binary b (_optimize q1) (_optimize q2)
-    | Reflect _ -> q
+    | Reflect q -> Reflect (_optimize q)
     | OfSeq _ -> q
-    | Bind _ -> q  (* cannot optimize before execution *)
+    | Bind (f,q) -> Bind(f, _optimize q)  (* cannot optimize [f] before execution *)
 and _optimize_unary : type a b. (a,b) unary -> a t -> b t
   = fun u q -> match u, q with
+    | Size, Unary (Choose, _) -> Return 1
     | Map f, Unary (Map g, q') ->
         _optimize_unary (Map (fun x -> f (g x))) q'
     | Filter p, Unary (Map f, cont) ->
         _optimize_unary
           (FilterMap (fun x -> let y = f x in if p y then Some y else None))
           cont
+    | Filter p, Unary (Filter p', q) ->
+        _optimize_unary (Filter (fun x -> p x && p' x)) q
+    | FilterMap f, Unary (Map g, q') ->
+        _optimize_unary (FilterMap (fun x -> f (g x))) q'
     | Map f, Unary (Filter p, cont) ->
         _optimize_unary
           (FilterMap (fun x -> if p x then Some (f x) else None))
@@ -454,17 +450,19 @@ and _optimize_unary : type a b. (a,b) unary -> a t -> b t
         _optimize_unary Size cont  (* ignore the map! *)
     | Size, Unary (Sort _, cont) ->
         _optimize_unary Size cont
-    | _ -> Unary (u,q)
+    | _ -> Unary (u, _optimize q)
     (* TODO: other cases *)
 and _optimize_binary : type a b c. (a,b,c) binary -> a t -> b t -> c t
   = fun b q1 q2 -> match b, q1, q2 with
-    | App, Return f, x -> Unary (Map f, x)
-    | App, _, _ -> Binary (b, q1, q2)
-    | Join _, _, _ -> Binary (b, q1, q2)
-    | GroupJoin _, _, _ -> Binary (b, q1, q2)
-    | Product, _, _ -> Binary (b, q1, q2)
-    | Append, _, _ -> Binary (b, q1, q2)
-    | SetOp _, _, _ -> Binary (b, q1, q2)
+    | App, Return f, Return x -> Return (f x)
+    | App, Return f, x -> _optimize_unary (Map f) x
+    | App, f, Return x -> _optimize_unary (Map (fun f -> f x)) f
+    | App, _, _ -> Binary (b, _optimize q1, _optimize q2)
+    | Join _, _, _ -> Binary (b, _optimize q1, _optimize q2)
+    | GroupJoin _, _, _ -> Binary (b, _optimize q1, _optimize q2)
+    | Product, _, _ -> Binary (b, _optimize q1, _optimize q2)
+    | Append, _, _ -> Binary (b, _optimize q1, _optimize q2)
+    | SetOp _, _, _ -> Binary (b, _optimize q1, _optimize q2)
 
 (* apply a unary operator on a collection *)
 let _do_unary : type a b. (a,b) unary -> a sequence -> b sequence
@@ -484,14 +482,14 @@ let _do_unary : type a b. (a,b) unary -> a sequence -> b sequence
         | Some x -> Sequence.return (stop x)
       end
   | Size -> Sequence.return (Sequence.length c)
-  | Choose -> Coll.choose c
+  | Choose -> ImplemSetOps.choose c
   | FilterMap f -> Sequence.filter_map f c
   | FlatMap f -> Sequence.flat_map f c
   | Take n -> Sequence.take n c
   | TakeWhile p -> Sequence.take_while p c
   | Sort cmp -> Sequence.sort ~cmp c
-  | Distinct cmp -> Coll.distinct ~cmp c
-  | Search obj -> Sequence.return (Coll.search obj c)
+  | Distinct cmp -> ImplemSetOps.distinct ~cmp c
+  | Search obj -> Sequence.return (ImplemSetOps.search obj c)
   | GroupBy (build,f) ->
       let seq = Sequence.map (fun x -> f x, x) c in
       Sequence.return (PMap.multimap_of_seq ~build:(PMap.make ~build ()) seq)
@@ -502,14 +500,14 @@ let _do_unary : type a b. (a,b) unary -> a sequence -> b sequence
 
 let _do_binary : type a b c. (a, b, c) binary -> a sequence -> b sequence -> c sequence
 = fun b c1 c2 -> match b with
-  | Join join -> Coll.do_join ~join c1 c2
-  | GroupJoin gjoin -> Sequence.return (Coll.do_group_join ~gjoin c1 c2)
+  | Join join -> ImplemSetOps.do_join ~join c1 c2
+  | GroupJoin gjoin -> Sequence.return (ImplemSetOps.do_group_join ~gjoin c1 c2)
   | Product -> Sequence.product c1 c2
   | Append -> Sequence.append c1 c2
   | App -> Sequence.(c1 <*> c2)
-  | SetOp (Inter,build) -> Coll.do_inter ~build c1 c2
-  | SetOp (Union,build) -> Coll.do_union ~build c1 c2
-  | SetOp (Diff,build) -> Coll.do_diff ~build c1 c2
+  | SetOp (Inter,build) -> ImplemSetOps.do_inter ~build c1 c2
+  | SetOp (Union,build) -> ImplemSetOps.do_union ~build c1 c2
+  | SetOp (Diff,build) -> ImplemSetOps.do_diff ~build c1 c2
 
 let rec _run : type a. opt:bool -> a t -> a sequence
 = fun ~opt q -> match q with
@@ -736,8 +734,7 @@ end
 
 (** {6 Adapters} *)
 
-let to_seq q =
-  Unary (Map Sequence.persistent, Reflect q)
+let to_seq q = reflect q
 
 let to_hashtbl q =
   Unary (Map (fun c -> Sequence.to_hashtbl c), Reflect q)
