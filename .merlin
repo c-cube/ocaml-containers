@@ -32,4 +32,5 @@ PKG threads
 PKG threads.posix
 PKG lwt
 PKG bigarray
+PKG sequence
 FLG -w +a -w -4 -w -44 -w -32 -w -34
