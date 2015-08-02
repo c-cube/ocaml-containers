@@ -226,32 +226,32 @@ include S with type t := string
 
 val map2 : (char -> char -> char) -> string -> string -> string
 (** map pairs of chars
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val iter2: (char -> char -> unit) -> string -> string -> unit
 (** iterate on pairs of chars
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val iteri2: (int -> char -> char -> unit) -> string -> string -> unit
 (** iterate on pairs of chars with their index
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val fold2: ('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a
 (** fold on pairs of chars
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val for_all2 : (char -> char -> bool) -> string -> string -> bool
 (** all pair of chars respect the predicate?
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val exists2 : (char -> char -> bool) -> string -> string -> bool
 (** exists a pair of chars?
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 (** {2 Splitting} *)
