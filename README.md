@@ -60,6 +60,18 @@ don't have additional dependencies nor build complications (and it may enable
 more inlining). Since modules have a friendly license and are mostly
 independent, both options are easy.
 
+In a toplevel, using ocamlfind:
+
+```ocaml
+# #use "topfind";;
+# #require "containers";;
+# CCList.flat_map;;
+- : ('a -> 'b list) -> 'a list -> 'b list = <fun>
+# open Containers;;  (* optional *)
+# List.flat_map ;;
+- : ('a -> 'b list) -> 'a list -> 'b list = <fun>
+```
+
 If you have comments, requests, or bugfixes, please share them! :-)
 
 ## License
