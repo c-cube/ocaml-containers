@@ -121,6 +121,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
 - `CCFQueue`, a purely functional double-ended queue structure
 - `CCBV`, mutable bitvectors
+- `CCHashSet`, mutable set
 - `CCPersistentHashtbl` and `CCPersistentArray`, a semi-persistent array and hashtable
   (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
 - `CCMixmap`, `CCMixtbl`, `CCMixset`, containers of universal types (heterogenous containers)
