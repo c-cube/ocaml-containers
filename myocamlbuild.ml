@@ -46,10 +46,8 @@ dispatch
 
       (* Documentation index *)
       dep ["ocaml"; "doc"; "extension:html"] & [doc_intro] ;
-      flag ["ocaml"; "doc"; "extension:html"] &
-      (S[A"-t"; A"Containers doc";
-         A"-intro"; P doc_intro;
-        ]);
+      flag ["ocaml"; "doc"; "extension:html"]
+        & S[A"-t"; A"Containers doc"; A"-intro"; P doc_intro ];
 
     | _ -> ()
     end;
