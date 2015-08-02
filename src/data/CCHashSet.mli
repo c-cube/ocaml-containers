@@ -16,6 +16,9 @@ module type S = sig
   val create : int -> t
   (** [create n] makes a new set with the given capacity [n] *)
 
+  val singleton : elt -> t
+  (** [singleton x] is the singleton [{x}] *)
+
   val clear : t -> unit
   (** [clear s] removes all elements from [s] *)
 
@@ -61,6 +64,9 @@ module type S = sig
 
   val subset : t -> t -> bool
   (** [subset a b] returns [true] if all elements of [a] are in [b] *)
+
+  val equal : t -> t -> bool
+  (** [equal a b] is extensional equality ([a] and [b] have the same elements) *)
 
   val for_all : (elt -> bool) -> t -> bool
 

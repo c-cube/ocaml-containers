@@ -12,6 +12,9 @@ module type S = sig
   val create : int -> t
   (** [create n] makes a new set with the given capacity [n] *)
 
+  val singleton : elt -> t
+  (** [singleton x] is the singleton [{x}] *)
+
   val clear : t -> unit
   (** [clear s] removes all elements from [s] *)
 
@@ -58,6 +61,9 @@ module type S = sig
   val subset : t -> t -> bool
   (** [subset a b] returns [true] if all elements of [a] are in [b] *)
 
+  val equal : t -> t -> bool
+  (** [equal a b] is extensional equality ([a] and [b] have the same elements) *)
+
   val for_all : (elt -> bool) -> t -> bool
 
   val exists : (elt -> bool) -> t -> bool
@@ -99,6 +105,11 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
 
   let create = Tbl.create
 
+  let singleton x =
+    let s = create 8 in
+    Tbl.replace s x x;
+    s
+
   let clear = Tbl.clear
 
   let copy = Tbl.copy
@@ -112,6 +123,11 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
 
   let cardinal = Tbl.length
 
+  (*$T
+    let module IS = Make(CCInt) in \
+      IS.cardinal (IS.create 10) = 0
+  *)
+
   let mem = Tbl.mem
 
   let find_exn = Tbl.find
@@ -119,6 +135,11 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
   let find s x =
     try Some (Tbl.find s x)
     with Not_found -> None
+
+  (*$T
+    let module IS = Make(CCInt) in IS.find (IS.of_list [1;2;3]) 3 = Some 3
+    let module IS = Make(CCInt) in IS.find (IS.of_list [1;2;3]) 5 = None
+  *)
 
   let iter f s = Tbl.iter (fun x _ -> f x) s
 
@@ -128,6 +149,11 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     let res = create (min (cardinal a) (cardinal b)) in
     iter (fun x -> if mem a x then insert res x) b;
     res
+
+  (*$T
+    let module IS = Make(CCInt) in \
+      IS.(equal (inter (of_list [1;2;3]) (of_list [2;5;4])) (of_list [2]))
+  *)
 
   let inter_mut ~into a =
     iter
@@ -140,6 +166,11 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     copy_into ~into:res b;
     res
 
+  (*$T
+    let module IS = Make(CCInt) in \
+      IS.(equal (union (of_list [1;2;3]) (of_list [2;5;4])) (of_list [1;2;3;4;5]))
+  *)
+
   let union_mut ~into a =
     copy_into ~into a
 
@@ -148,6 +179,11 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     iter
       (fun x -> remove res x) b;
     res
+
+  (*$T
+    let module IS = Make(CCInt) in \
+      IS.(equal (diff (of_list [1;2;3]) (of_list [2;4;5])) (of_list [1;3]))
+  *)
 
   exception FastExit
 
@@ -165,6 +201,8 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
 
   let subset a b =
     for_all (fun x -> mem b x) a
+
+  let equal a b = subset a b && subset b a
 
   let elements s =
     Tbl.fold (fun x _ acc -> x::acc) s []
