@@ -186,15 +186,17 @@ module Make(X : EMPTY) : BITFIELD = struct
   let pp out x =
     let ppf = Format.fprintf in
     ppf out "{@[<hv>";
+    let first=ref true in
     Queue.iter
       (fun (AnyField f) ->
+        if !first then first := false else ppf out ",@ ";
         match f.kind with
         | Bool ->
             let b = get f x in
-            ppf out "%s: %b,@ " f.name b
+            ppf out "%s=%b" f.name b
         | Int ->
             let i = get f x in
-            ppf out "%s: %ui@, " f.name i
+            ppf out "%s=%u" f.name i
       ) fields_;
     ppf out "@]}"
 end
