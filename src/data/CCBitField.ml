@@ -73,6 +73,7 @@ module Make(X : EMPTY) : BITFIELD = struct
       width=2;
       get=(fun x -> (x land mask) lsr n);
       set=(fun v x ->
+        assert (x >= 0 && x < 4);
         let x = x land (lnot mask) in
         x lor (v lsl n)
       )

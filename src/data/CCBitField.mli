@@ -35,29 +35,29 @@ module type BITFIELD = sig
   (** New field of type 2-bits int *)
 end
 
-(** Create a new bitfield type
- 
-Example:
+(** Create a new bitfield type *)
+module Make(X : EMPTY) : BITFIELD
 
-{[
-  module B = CCBitField.Make(struct end);;
+(*$R
+  let module B = CCBitField.Make(struct end) in
 
-  let x = B.bool ();;
-  let y = B.int2 ();;
-  let z = B.bool ();;
+  let x = B.bool () in
+  let y = B.int2 () in
+  let z = B.bool () in
 
-  B.width y ;; (* = 2 *)
+  assert_equal 2 (B.width y) ;
 
   let f = B.empty
   |> B.set y 3
-  |> B.set z true ;;
-  (* = 14 *)
+  |> B.set z true
+  in
 
-  B.get x f ;; (* false *)
-  B.get y f ;; (* 3 *)
-  B.get z f ;; (* true *)
+  assert_equal 14 (f :> int) ;
 
-]}
- 
- *)
-module Make(X : EMPTY) : BITFIELD
+  assert_equal false (B.get x f) ;
+  assert_equal 3 (B.get y f) ;
+  assert_equal (B.get z f);
+
+  ()
+*)
+
