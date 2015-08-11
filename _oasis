@@ -148,6 +148,15 @@ Library "containers_lwt"
   Install$:         flag(lwt) && flag(misc)
   BuildDepends:     containers, lwt, containers.misc
 
+Library "containers_top"
+  Path:             src/top/
+  Modules:          Containers_top
+  FindlibName:      top
+  FindlibParent:    containers
+  BuildDepends:     compiler-libs.common, containers, containers.data,
+                    containers.misc, containers.bigarray, containers.string,
+                    containers.unix, containers.sexp, containers.iter
+
 Document containers
   Title:                Containers docs
   Type:                 ocamlbuild (0.3)

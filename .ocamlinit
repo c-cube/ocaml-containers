@@ -15,6 +15,7 @@
 #directory "_build/src/sexp";;
 #directory "_build/src/bigarray/";;
 #directory "_build/src/threads";;
+#directory "_build/src/top/";;
 #directory "_build/tests/";;
 #load "containers.cma";;
 #load "containers_iter.cma";;
@@ -27,6 +28,7 @@
 #load "containers_pervasives.cma";;
 #load "containers_bigarray.cma";;
 #load "containers_misc.cma";;
+#load "containers_top.cma";;
 #thread;;
 #load "containers_thread.cma";;
 open Containers_misc;;
