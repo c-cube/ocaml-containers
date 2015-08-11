@@ -131,6 +131,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
   with fast merges
 - `CCHashconsedSet`, a set structure with sharing of sub-structures
 - `CCGraph`, a small collection of graph algorithms
+- `CCBitField`, a type-safe implementation of bitfields that fit in `int`
 
 ### Containers.io
 

@@ -6,6 +6,23 @@
   up to 30 or 62 bits (depending on the architecture) in
   a relatively type-safe way.
 
+{[
+module B = CCBitField.Make(struct end);;
+
+#install_printer B.pp;;
+
+let x = B.int ~name:"x" ~width:3;;
+let y = B.int ~name:"y" ~width:2;;
+let z = B.bool ~name:"z" ();;
+
+let f = B.(empty |> set x 3 |> set y 1);;
+
+B.get z f ;;
+
+B.(f |> set z true |> get z) ;;
+
+]}
+
   {b status: experimental}
   @since NEXT_RELEASE *)
 
@@ -75,27 +92,7 @@ module type BITFIELD = sig
   (** Print the bitfield using the current list of fields *)
 end
 
-(** Create a new bitfield type,
-
-{[
-module B = CCBitField.Make(struct end);;
-
-#install_printer B.pp;;
-
-let x = B.int ~name:"x" ~width:3;;
-let y = B.int ~name:"y" ~width:2;;
-let z = B.bool ~name:"z" ();;
-
-let f = B.(empty |> set x 3 |> set y 1);;
-
-B.get z f ;;
-
-B.(f |> set z true |> get z) ;;
-
-]}
-
-
-*)
+(** Create a new bitfield type *)
 module Make(X : EMPTY) : BITFIELD
 
 (*$R

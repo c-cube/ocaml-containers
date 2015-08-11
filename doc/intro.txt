@@ -63,6 +63,7 @@ such as:
 Various data structures.
 
 {!modules:
+CCBitField
 CCBV
 CCCache
 CCFQueue
