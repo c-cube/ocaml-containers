@@ -25,11 +25,34 @@ module type BITFIELD = sig
   (** Number of bits of the field *)
 
   val bool : unit -> bool field
-  (** New field of type bool *)
+  (** New field of type boo
+      @raise TooManyFields if there is no room *)
 
   val int2 : unit -> int field
-  (** New field of type 2-bits int *)
+  (** New field of type 2-bits int
+      @raise TooManyFields if there is no room *)
+
+  val int3 : unit -> int field
+  (** New field for 3-bits int
+      @raise TooManyFields if there is no room *)
+
+  val int : width:int -> int field
+  (** New field for [width] bits.
+      @raise TooManyFields if there is no room *)
 end
+
+let rec all_bits_ acc w =
+  if w=0 then acc
+  else
+    let acc = acc lor (1 lsl w-1) in
+    all_bits_ acc (w-1)
+
+(*$T
+  all_bits_ 0 1 = 1
+  all_bits_ 0 2 = 3
+  all_bits_ 0 3 = 7
+  all_bits_ 0 4 = 15
+  *)
 
 module Make(X : EMPTY) : BITFIELD = struct
   type t = int
@@ -74,6 +97,39 @@ module Make(X : EMPTY) : BITFIELD = struct
       get=(fun x -> (x land mask) lsr n);
       set=(fun v x ->
         assert (x >= 0 && x < 4);
+        let x = x land (lnot mask) in
+        x lor (v lsl n)
+      )
+    }
+
+  let int3 () =
+    let n = !width_ in
+    width_ := n+3;
+    if !width_ > max_width then raise TooManyFields;
+    let mask = 7 lsl n in
+    {
+      start=n;
+      width=3;
+      get=(fun x -> (x land mask) lsr n);
+      set=(fun v x ->
+        assert (x >= 0 && x < 8);
+        let x = x land (lnot mask) in
+        x lor (v lsl n)
+      )
+    }
+
+  let int ~width:w =
+    let n = !width_ in
+    width_ := n+w;
+    if !width_ > max_width then raise TooManyFields;
+    let mask_unshifted = all_bits_ 0 w in
+    let mask = mask_unshifted lsl n in
+    {
+      start=n;
+      width=w;
+      get=(fun x -> (x land mask) lsr n);
+      set=(fun v x ->
+        assert (x >= 0 && x <= mask_unshifted);
         let x = x land (lnot mask) in
         x lor (v lsl n)
       )
