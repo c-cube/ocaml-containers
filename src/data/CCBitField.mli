@@ -12,7 +12,13 @@
 exception TooManyFields
 (** Raised when too many fields are packed into one bitfield *)
 
+exception Frozen
+(** Raised when a frozen bitfield is modified *)
+
 module type EMPTY = sig end
+
+val max_width : int
+(** System-dependent maximum width for a bitfield *)
 
 (** {2 Bitfield Signature} *)
 module type BITFIELD = sig
@@ -31,21 +37,42 @@ module type BITFIELD = sig
   val width : _ field -> int
   (** Number of bits of the field *)
 
-  val bool : unit -> bool field
+  val name : _ field -> string
+  (** Informal name of the field *)
+
+  val bool : ?name:string -> unit -> bool field
   (** New field of type boo
+      @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 
-  val int2 : unit -> int field
+  val int2 : ?name:string -> unit -> int field
   (** New field of type 2-bits int
+      @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 
-  val int3 : unit -> int field
+  val int3 : ?name:string -> unit -> int field
   (** New field for 3-bits int
+      @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 
-  val int : width:int -> int field
+  val int : ?name:string -> width:int -> int field
   (** New field for [width] bits.
+      @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
+
+  val freeze : unit -> unit
+  (** Prevent new fields from being added *)
+
+  val total_width : unit -> int
+  (** Current width of the bitfield *)
+
+  type any_field = AnyField : 'a field -> any_field
+
+  val iter_fields : (any_field -> unit) -> unit
+  (** Iterate on all currently present fields *)
+
+  val pp : Format.formatter -> t -> unit
+  (** Print the bitfield using the current list of fields *)
 end
 
 (** Create a new bitfield type *)
