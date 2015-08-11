@@ -143,7 +143,7 @@ update_next_tag:
 	zsh -c 'sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli'
 
 devel:
-	./configure --enable-bench --enable-tests --enable-misc \
+	./configure --enable-bench --enable-tests --enable-misc --enable-unix \
 		--enable-bigarray --enable-thread --enable-advanced
 	make all
 
