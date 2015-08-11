@@ -89,4 +89,14 @@ let of_seq seq =
   seq (fun x -> l := x :: !l);
   of_list (List.rev !l)
 
+type 'a printer = Format.formatter -> 'a -> unit
+
+let print pp_item out v =
+  Format.fprintf out "[|";
+  iteri
+    (fun i x ->
+      if i > 0 then Format.fprintf out ";@ ";
+      pp_item out x
+    ) v;
+  Format.fprintf out "|]"
 

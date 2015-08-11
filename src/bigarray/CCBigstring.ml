@@ -179,6 +179,7 @@ let blit_of_string a i b j len =
 
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 let to_seq a k = iter k a
 
@@ -202,6 +203,17 @@ let to_seq_slice a i len =
 
 let to_gen_slice a i len =
   to_gen (sub a i len)
+
+let print out s =
+  Format.pp_print_string out "bigstring \"";
+  iter
+    (function
+      | '\n' -> Format.pp_print_string out "\\n"
+      | '\t' -> Format.pp_print_string out "\\t"
+      | '\\' -> Format.pp_print_string out "\\\\"
+      | c -> Format.pp_print_char out c
+    ) s;
+  Format.pp_print_char out '"'
 
 (** {2 Memory-map} *)
 

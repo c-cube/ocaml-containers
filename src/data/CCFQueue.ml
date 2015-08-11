@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a equal = 'a -> 'a -> bool
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -465,3 +466,13 @@ let (--) a b =
   0 -- 0 |> to_list = [0]
 *)
 
+let print pp_x out d =
+  let first = ref true in
+  Format.fprintf out "@[<hov2>queue {";
+  iter
+    (fun x ->
+      if !first then first:= false else Format.fprintf out ";@ ";
+      pp_x out x
+    ) d;
+  Format.fprintf out "}@]"
+    

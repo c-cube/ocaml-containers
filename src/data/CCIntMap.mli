@@ -94,3 +94,9 @@ val highest_bit : int -> int
 type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 
 val as_tree : 'a t -> [`Node of int * int | `Leaf of int * 'a ] tree
+
+type 'a printer = Format.formatter -> 'a -> unit
+
+val print : 'a printer -> 'a t printer
+(** @since NEXT_RELEASE *)
+

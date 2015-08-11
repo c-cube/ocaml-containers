@@ -274,3 +274,17 @@ let rec as_tree t () = match t with
   | L (k, v) -> `Node (`Leaf (k, v), [])
   | N (prefix, switch, l, r) ->
     `Node (`Node (prefix, switch), [as_tree l; as_tree r])
+
+type 'a printer = Format.formatter -> 'a -> unit
+
+let print pp_x out m =
+  Format.fprintf out "@[<hov2>intmap {@,";
+  let first = ref true in
+  iter
+    (fun k v ->
+      if !first then first := false else Format.pp_print_string out ", ";
+      Format.fprintf out "%d -> " k;
+      pp_x out v;
+      Format.pp_print_cut out ()
+    ) m;
+  Format.fprintf out "}@]"

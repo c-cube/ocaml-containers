@@ -99,6 +99,7 @@ val blit_of_string : string -> int -> t -> int -> int -> unit
 
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 val to_seq : t -> char sequence
 
@@ -107,6 +108,9 @@ val to_gen : t -> char gen
 val to_seq_slice : t -> int -> int -> char sequence
 
 val to_gen_slice : t -> int -> int -> char gen
+
+val print : t printer
+(** @since NEXT_RELEASE *)
 
 (** {2 Memory-map} *)
 
