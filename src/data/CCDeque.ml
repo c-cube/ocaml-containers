@@ -134,3 +134,16 @@ let copy d =
   let d' = create () in
   iter (fun x -> push_back d' x) d;
   d'
+
+type 'a printer = Format.formatter -> 'a -> unit
+
+let print pp_x out d =
+  let first = ref true in
+  Format.fprintf out "@[<hov2>deque {";
+  iter
+    (fun x ->
+      if !first then first:= false else Format.fprintf out ";@ ";
+      pp_x out x
+    ) d;
+  Format.fprintf out "}@]"
+    

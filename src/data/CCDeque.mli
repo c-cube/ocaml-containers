@@ -66,3 +66,8 @@ val to_seq : 'a t -> 'a sequence
 
 val copy : 'a t -> 'a t
   (** Fresh copy *)
+
+type 'a printer = Format.formatter -> 'a -> unit
+
+val print : 'a printer -> 'a t printer
+  (** @since NEXT_RELEASE *)
