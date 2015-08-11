@@ -113,3 +113,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 val to_seq : t -> int sequence
 val of_seq : int sequence -> t
+
+val print : Format.formatter -> t -> unit
+(** Print the bitvector
+    @since NEXT_RELEASE *)

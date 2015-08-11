@@ -300,3 +300,10 @@ let of_seq seq =
     |> CCList.of_seq |> List.sort CCOrd.compare = CCList.range 0 10
 *)
 
+let print out bv =
+  Format.pp_print_string out "bv {";
+  iter bv
+    (fun _i b ->
+      Format.pp_print_char out (if b then '1' else '0')
+    );
+  Format.pp_print_string out "}"
