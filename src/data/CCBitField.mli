@@ -38,12 +38,17 @@ val max_width : int
 (** System-dependent maximum width for a bitfield *)
 
 (** {2 Bitfield Signature} *)
-module type BITFIELD = sig
+module type S = sig
   type t = private int
+  (** Generative type of bitfields. Each instantiation of the functor
+      should create a new, incompatible type *)
 
   val empty : t
+  (** Empty bitfields (all bits 0) *)
 
   type 'a field
+  (** Field of type ['a], with a given width and position within the
+      bitfield type *)
 
   val get : 'a field -> t -> 'a
   (** Get a field of type ['a] *)
@@ -58,17 +63,17 @@ module type BITFIELD = sig
   (** Informal name of the field *)
 
   val bool : ?name:string -> unit -> bool field
-  (** New field of type boo
+  (** New field of type bool
       @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 
   val int2 : ?name:string -> unit -> int field
-  (** New field of type 2-bits int
+  (** New field of type 2-bits int (same as [int ~width:2])
       @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 
   val int3 : ?name:string -> unit -> int field
-  (** New field for 3-bits int
+  (** New field for 3-bits int (same as [int ~width:3])
       @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 
@@ -78,7 +83,8 @@ module type BITFIELD = sig
       @raise TooManyFields if there is no room *)
 
   val freeze : unit -> unit
-  (** Prevent new fields from being added *)
+  (** Prevent new fields from being added. From now on, creating
+      a field will raise Frozen *)
 
   val total_width : unit -> int
   (** Current width of the bitfield *)
@@ -93,7 +99,7 @@ module type BITFIELD = sig
 end
 
 (** Create a new bitfield type *)
-module Make(X : EMPTY) : BITFIELD
+module Make(X : EMPTY) : S
 
 (*$R
   let module B = CCBitField.Make(struct end) in
