@@ -198,11 +198,6 @@ Executable run_test_future
   MainIs:       run_test_future.ml
   BuildDepends: containers, threads, sequence, oUnit, containers.thread
 
-Test future
-  Command:      echo "run test future" ; ./run_test_future.native
-  TestTools:    run_test_future
-  Run$:         flag(tests) && flag(thread)
-
 PreBuildCommand: make qtest-gen ; make qtest-lwt-gen
 
 Executable run_qtest
@@ -239,6 +234,11 @@ Test all
   Command:      make test-all
   TestTools:    run_tests, run_qtest
   Run$:         flag(tests) && flag(misc) && flag(unix) && flag(advanced) && flag(bigarray)
+
+Test future
+  Command:      echo "run test future" ; ./run_test_future.native
+  TestTools:    run_test_future
+  Run$:         flag(tests) && flag(thread)
 
 Test lwt
   Command:      echo "test lwt"; ./run_qtest_lwt.native
