@@ -39,6 +39,50 @@ type input = {
 
 exception ParseError of int * string (** position * message *)
 
+(*$R
+  let module T = struct
+    type tree = L of int | N of tree * tree
+  end in
+  let open T in
+
+  let mk_leaf x = L x in
+  let mk_node x y = N(x,y) in
+
+  let ptree = fix @@ fun self ->
+    skip_space *>
+    ( (char '(' *> (pure mk_node <*> self <*> self) <* char ')')
+      <|>
+      (U.int >|= mk_leaf) )
+  in
+
+  let rec pptree = function
+    | N (a,b) -> Printf.sprintf "N (%s, %s)" (pptree a) (pptree b)
+    | L x -> Printf.sprintf "L %d" x
+  in
+  let errpptree = function
+    | `Ok x -> "Ok " ^ pptree x
+    | `Error s -> "Error " ^ s
+  in
+
+  assert_equal ~printer:errpptree
+    (`Ok (N (L 1, N (L 2, L 3))))
+    (parse_string "(1 (2 3))" ptree);
+  assert_equal ~printer:errpptree
+    (`Ok (N (N (L 1, L 2), N (L 3, N (L 4, L 5)))))
+    (parse_string "((1 2) (3 (4 5)))" ptree);
+*)
+
+(*$R
+  let p = U.list ~sep:"," U.word in
+  let printer = function
+    | `Ok l -> "Ok " ^ CCPrint.to_string (CCList.pp CCString.pp) l
+    | `Error s -> "Error " ^ s
+  in
+  assert_equal ~printer
+    (`Ok ["abc"; "de"; "hello"; "world"])
+    (parse_string "[abc , de, hello ,world  ]" p);
+ *)
+
 let input_of_string s =
   let i = ref 0 in
   { is_done=(fun () -> !i = String.length s);
