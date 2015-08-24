@@ -199,9 +199,9 @@ module U = struct
   let sep_ = sep
 
   let list ?(start="[") ?(stop="]") ?(sep=";") p =
-    string start *> skip_space *>
-    sep_ ~by:(skip_space *> string sep *> skip_space) p <*
-    skip_space <* string stop
+    string start *> skip_white *>
+    sep_ ~by:(skip_white *> string sep *> skip_white) p <*
+    skip_white <* string stop
 
   let int =
     chars1_if (is_num ||| (=) '-')
