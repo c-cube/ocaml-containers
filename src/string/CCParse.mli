@@ -70,13 +70,24 @@ exception ParseError of int * string (** position * message *)
 type input = {
   is_done : unit -> bool; (** End of input? *)
   cur : unit -> char;  (** Current char *)
-  next : unit -> char; (** if not {!is_done}, move to next char *)
+  next : unit -> char;
+    (** Returns current char;
+        if not {!is_done}, move to next char,
+        otherwise throw ParseError *)
+
   pos : unit -> int;   (** Current pos *)
   backtrack : int -> unit;  (** Restore to previous pos *)
   sub : int -> int -> string; (** [sub pos len] extracts slice from [pos] with [len] *)
 }
 
 val input_of_string : string -> input
+(** Parse the string *)
+
+val input_of_chan : ?size:int -> in_channel -> input
+(** [input_of_chan ic] reads lazily the content of [ic] as parsing goes.
+    All content that is read is saved to an internal buffer for backtracking.
+    @param size number of bytes read at once from [ic]
+    @since NEXT_RELEASE *)
 
 (** {2 Combinators} *)
 
@@ -136,6 +147,15 @@ val parse_exn : input:input -> 'a t -> 'a (** @raise ParseError if it fails *)
 val parse_string : string -> 'a t -> 'a or_error
 val parse_string_exn : string -> 'a t -> 'a (** @raise ParseError if it fails *)
 
+val parse_file : ?size:int -> file:string -> 'a t -> 'a or_error
+(** [parse_file ~file p] parses [file] with [p] by opening the file
+    and using {!input_of_chan}.
+    @param size size of chunks read from file
+    @since NEXT_RELEASE *)
+
+val parse_file_exn : ?size:int -> file:string -> 'a t -> 'a
+(** Unsafe version of {!parse_file}
+    @since NEXT_RELEASE *)
 
 (** {2 Utils} *)
 

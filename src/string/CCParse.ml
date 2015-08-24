@@ -101,6 +101,48 @@ let input_of_string s =
     sub=(fun j len -> assert (j + len <= !i); String.sub s j len);
   }
 
+let input_of_chan ?(size=1024) ic =
+  assert (size > 0);
+  let b = ref (Bytes.make size ' ') in
+  let n = ref 0 in  (* length of buffer *)
+  let i = ref 0 in  (* current index in buffer *)
+  let exhausted = ref false in (* input fully read? *)
+  let eoi() = raise (ParseError (!i, "unexpected EOI")) in
+  (* read a chunk of input *)
+  let read_more () =
+    assert (not !exhausted);
+    (* resize *)
+    if Bytes.length !b - !n < size then (
+      let b' = Bytes.make (Bytes.length !b + 2 * size) ' ' in
+      Bytes.blit !b 0 b' 0 !n;
+      b := b';
+    );
+    let len = input ic !b !n size in
+    exhausted := len = 0;
+    n := !n + len
+  in
+  (* read next char *)
+  let next() =
+    if !exhausted && !i = !n then eoi();
+    let c = Bytes.get !b !i in
+    incr i;
+    if !i = !n then (
+      read_more();
+      if !exhausted then eoi();
+      assert (!i < !n);
+    );
+    c
+  and is_done () = !exhausted && !i = !n in
+  (* fetch first chars *)
+  read_more();
+  { is_done=(fun () -> !exhausted && !i = !n);
+    cur=(fun () -> assert (not (is_done())); Bytes.get !b !i);
+    next;
+    pos=(fun() -> !i);
+    backtrack=(fun j -> assert (0 <= j && j <= !i); i:=j);
+    sub=(fun j len -> assert (j + len <= !i); Bytes.sub_string !b j len);
+  }
+
 type 'a t = input -> 'a
 
 let return x _ = x
@@ -234,10 +276,30 @@ let parse_exn ~input p = p input
 let parse ~input p =
   try `Ok (parse_exn ~input p)
   with ParseError (i, msg) ->
-    `Error (Printf.sprintf "at position %d: error %s" i msg)
+    `Error (Printf.sprintf "at position %d: error, %s" i msg)
 
 let parse_string s p = parse ~input:(input_of_string s) p
 let parse_string_exn s p = parse_exn ~input:(input_of_string s) p
+
+let parse_file_exn ?size ~file p =
+  let ic = open_in file in
+  let input = input_of_chan ?size ic in
+  try
+    let res = parse_exn ~input p in
+    close_in ic;
+    res
+  with e ->
+    close_in ic;
+    raise e
+
+let parse_file ?size ~file p =
+  try
+    `Ok (parse_file_exn ?size ~file p)
+  with
+  | ParseError (i, msg) ->
+    `Error (Printf.sprintf "at position %d: error, %s" i msg)
+  | Sys_error s ->
+    `Error (Printf.sprintf "error while reading %s: %s" file s)
 
 module U = struct
   let sep_ = sep
