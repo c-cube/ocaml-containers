@@ -11,20 +11,24 @@ module B = CCBitField.Make(struct end);;
 
 #install_printer B.pp;;
 
-let x = B.int ~name:"x" ~width:3;;
-let y = B.int ~name:"y" ~width:2;;
-let z = B.bool ~name:"z" ();;
+module X = (val B.int ~name:"x" ~width:3 ());;
+module Y = (val B.int ~name:"y" ~width:2 ());;
+module Z = (val B.bool ~name:"z" ());;
 
-let f = B.(empty |> set x 3 |> set y 1);;
+let f = B.empty |> X.set 3 |> Y.set 1;;
 
-B.get z f ;;
+Z.get f ;;
 
-B.(f |> set z true |> get z) ;;
+f |> Z.set true |> Z.get ;;
+
+Format.printf "f: %a@." B.pp f;;
 
 ]}
 
-  {b status: experimental}
-  @since NEXT_RELEASE *)
+{b status: experimental}
+
+@since NEXT_RELEASE
+*)
 
 exception TooManyFields
 (** Raised when too many fields are packed into one bitfield *)
@@ -33,9 +37,10 @@ exception Frozen
 (** Raised when a frozen bitfield is modified *)
 
 module type EMPTY = sig end
+(** Used for generativity on versions of OCaml older than 4.02 *)
 
 val max_width : int
-(** System-dependent maximum width for a bitfield *)
+(** System-dependent maximum width for a bitfield, typically 30 or 62 *)
 
 (** {2 Bitfield Signature} *)
 module type S = sig
@@ -46,21 +51,28 @@ module type S = sig
   val empty : t
   (** Empty bitfields (all bits 0) *)
 
-  type 'a field
-  (** Field of type ['a], with a given width and position within the
+  type _ field_kind =
+    | Bool : bool field_kind
+    | Int : int field_kind
+
+  (** Field of type [value], with a given width and position within the
       bitfield type *)
+  module type FIELD = sig
+    type value
+    (** Values contained in the field *)
 
-  val get : 'a field -> t -> 'a
-  (** Get a field of type ['a] *)
+    val get : t -> value
 
-  val set : 'a field -> 'a -> t -> t
-  (** Set a field of type ['a] *)
+    val set : value -> t -> t
 
-  val width : _ field -> int
-  (** Number of bits of the field *)
+    val width : int
 
-  val name : _ field -> string
-  (** Informal name of the field *)
+    val name : string
+
+    val kind : value field_kind
+  end
+
+  type 'a field = (module FIELD with type value = 'a)
 
   val bool : ?name:string -> unit -> bool field
   (** New field of type bool
@@ -77,9 +89,10 @@ module type S = sig
       @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 
-  val int : ?name:string -> width:int -> int field
+  val int : ?name:string -> width:int -> unit -> int field
   (** New field for [width] bits.
       @raise Frozen if [freeze ()] was called
+      @raise Invalid_argument if width is not [<= 1]
       @raise TooManyFields if there is no room *)
 
   val freeze : unit -> unit
@@ -89,7 +102,7 @@ module type S = sig
   val total_width : unit -> int
   (** Current width of the bitfield *)
 
-  type any_field = AnyField : 'a field -> any_field
+  type any_field = AnyField : (module FIELD with type value = 'a) * 'a field_kind -> any_field
 
   val iter_fields : (any_field -> unit) -> unit
   (** Iterate on all currently present fields *)
@@ -104,31 +117,31 @@ module Make(X : EMPTY) : S
 (*$R
   let module B = CCBitField.Make(struct end) in
 
-  let x = B.bool () in
-  let y = B.int2 () in
-  let z = B.bool () in
-  let u = B.int 4 in
+  let module X = (val B.bool ()) in
+  let module Y = (val B.int2 ()) in
+  let module Z = (val B.bool ()) in
+  let module U = (val B.int ~width:4 ()) in
 
-  assert_equal 2 (B.width y) ;
-  assert_equal 4 (B.width u) ;
+  assert_equal 2 Y.width ;
+  assert_equal 4 U.width ;
 
   let f = B.empty
-  |> B.set y 3
-  |> B.set z true
+  |> Y.set 3
+  |> Z.set true
   in
 
   assert_equal 14 (f :> int) ;
 
-  assert_equal false (B.get x f) ;
-  assert_equal 3 (B.get y f) ;
-  assert_equal true (B.get z f);
+  assert_equal false (X.get f) ;
+  assert_equal 3 (Y.get f) ;
+  assert_equal true (Z.get f);
 
-  let f' = B.set u 13 f in
+  let f' = U.set 13 f in
 
-  assert_equal false (B.get x f') ;
-  assert_equal 3 (B.get y f') ;
-  assert_equal true (B.get z f');
-  assert_equal 13 (B.get u f');
+  assert_equal false (X.get f') ;
+  assert_equal 3 (Y.get f') ;
+  assert_equal true (Z.get f');
+  assert_equal 13 (U.get f');
 
   ()
 *)
