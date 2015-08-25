@@ -92,6 +92,7 @@ let test_filter () =
 let test_map () =
   let h = PHashtbl.create 5 in
   PHashtbl.of_seq h my_seq;
+  OUnit.assert_equal (PHashtbl.length h) 4;
   let h' = PHashtbl.map (fun k v -> String.uppercase v) h in
   OUnit.assert_equal (PHashtbl.length h') 4;
   OUnit.assert_equal (PHashtbl.find h' 1) "A";
@@ -109,4 +110,5 @@ let suite =
       "test_copy" >:: test_copy;
       "test_remove" >:: test_remove;
       "test_filter" >:: test_filter;
+      "test_map" >:: test_map;
     ]

@@ -93,5 +93,6 @@ let suite =
       "clear" >:: test_clear;
       "mem" >:: test_mem;
       "bindings" >:: test_bindings;
+      "keys" >:: test_keys;
     ]
 

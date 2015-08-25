@@ -46,4 +46,5 @@ let suite =
       "test_push" >:: test_push;
       "test_pop" >:: test_pop;
       "test_fold" >:: test_fold;
+      "test_append" >:: test_append;
     ]
