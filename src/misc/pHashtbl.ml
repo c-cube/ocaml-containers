@@ -204,6 +204,7 @@ let map f t =
     | Used (k, v, dist) ->
       t'.buckets.(i) <- Used (k, f k v, dist)
   done;
+  t'.size <- t.size;
   t'
 
 (** Destructive filter (remove bindings that do not satisfiy predicate) *)
