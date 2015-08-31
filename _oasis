@@ -208,7 +208,7 @@ Executable run_qtest
   Build$:           flag(tests) && flag(misc) && flag(bigarray) && flag(unix) && flag(advanced)
   BuildDepends:     containers, containers.misc, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
-                    containers.bigarray, containers.unix,
+                    containers.bigarray, containers.unix, containers.thread,
                     sequence, gen, unix, oUnit, QTest2Lib
 
 Executable run_qtest_lwt

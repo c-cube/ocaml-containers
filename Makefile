@@ -75,6 +75,8 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/iter/*.mli) \
 	$(wildcard src/bigarray/*.ml) \
 	$(wildcard src/bigarray/*.mli) \
+	$(wildcard src/threads/*.ml) \
+	$(wildcard src/threads/*.mli) \
 	)
 
 QTESTABLE_LWT=$(filter-out $(DONTTEST), \
