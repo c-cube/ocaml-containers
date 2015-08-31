@@ -172,6 +172,15 @@ In the module `Containers_advanced`:
 - `CCCat`, a few categorical structures
 - `CCBatch`, to combine operations on collections into one traversal
 
+### Thread
+
+In the library `containers.thread`, for preemptive system threads:
+
+- `CCFuture`, a set of tools for preemptive threading, including a thread pool,
+  monadic futures, and MVars (concurrent boxes)
+- `CCLock`, values protected by locks
+- `CCSemaphore`, a simple implementation of semaphores
+
 ### Misc
 
 See [doc](http://cedeela.fr/~simon/software/containers/misc). This list
@@ -190,9 +199,6 @@ is not necessarily up-to-date.
 - `Univ`, a universal type encoding with affectation
 
 ### Others
-
-- `Future`, a set of tools for preemptive threading, including a thread pool,
-monadic futures, and MVars (concurrent boxes)
 
 - `containers.lwt` contains [Lwt](http://ocsigen.org/lwt/)-related modules (experimental)
 

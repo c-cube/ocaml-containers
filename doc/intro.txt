@@ -156,6 +156,7 @@ Lwt_pipe
 {!modules:
 CCFuture
 CCLock
+CCSemaphore
 }
 
 
