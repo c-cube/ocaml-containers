@@ -12,8 +12,6 @@ let app_ints f l = B.Tree.concat (List.map (app_int f) l)
 (* composition *)
 let (%%) f g x = f (g x)
 
-(* FIXME: find out why -tree takes so long *)
-
 module L = struct
   (* FLAT MAP *)
 
@@ -580,7 +578,21 @@ module Batch = struct
 end
 
 module Deque = struct
-  module Base = struct
+  module type DEQUE = sig
+    type 'a t
+    val create : unit -> 'a t
+    val of_seq : 'a Sequence.t -> 'a t
+    val iter : ('a -> unit) -> 'a t -> unit
+    val push_front : 'a t -> 'a -> unit
+    val push_back : 'a t -> 'a -> unit
+    val is_empty : 'a t -> bool
+    val take_front : 'a t -> 'a
+    val take_back : 'a t -> 'a
+    val append_back : into:'a t -> 'a t -> unit
+    val length : _ t -> int
+  end
+
+  module Base : DEQUE = struct
     type 'a elt = {
       content : 'a;
       mutable prev : 'a elt;
@@ -670,22 +682,30 @@ module Deque = struct
       !n
   end
 
-  module type DEQUE = sig
-    type 'a t
-    val create : unit -> 'a t
-    val of_seq : 'a Sequence.t -> 'a t
-    val iter : ('a -> unit) -> 'a t -> unit
-    val push_front : 'a t -> 'a -> unit
-    val push_back : 'a t -> 'a -> unit
-    val is_empty : 'a t -> bool
-    val take_front : 'a t -> 'a
-    val take_back : 'a t -> 'a
-    val append_back : into:'a t -> 'a t -> unit
-    val length : _ t -> int
+  module FQueue : DEQUE = struct
+    type 'a t = 'a CCFQueue.t ref
+    let create () = ref CCFQueue.empty
+    let of_seq s = ref (CCFQueue.of_seq s)
+    let iter f q = CCFQueue.iter f !q
+    let push_front q x = q:= CCFQueue.cons x !q
+    let push_back q x = q:= CCFQueue.snoc !q x
+    let is_empty q = CCFQueue.is_empty !q
+    let take_front q =
+      let x, q' = CCFQueue.take_front_exn !q in
+      q := q';
+      x
+    let take_back q =
+      let q', x = CCFQueue.take_back_exn !q in
+      q := q';
+      x
+
+    let append_back ~into q = into := CCFQueue.append !into !q
+    let length q = CCFQueue.size !q
   end
 
   let base = (module Base : DEQUE)
   let cur = (module CCDeque : DEQUE)
+  let fqueue = (module FQueue : DEQUE)
 
   let bench_iter n =
     let seq = Sequence.(1 -- n) in
@@ -699,6 +719,7 @@ module Deque = struct
     B.throughputN 3
       [ "base", make base, ()
       ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
       ]
 
   let bench_push_front n =
@@ -709,6 +730,7 @@ module Deque = struct
     B.throughputN 3
       [ "base", make base, ()
       ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
       ]
 
   let bench_push_back n =
@@ -720,6 +742,7 @@ module Deque = struct
     B.throughputN 3
       [ "base", make base, ()
       ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
       ]
 
   let bench_append n =
@@ -732,6 +755,7 @@ module Deque = struct
     B.throughputN 3
       [ "base", make base, ()
       ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
       ]
 
   let bench_length n =
@@ -743,6 +767,7 @@ module Deque = struct
     B.throughputN 3
       [ "base", make base, ()
       ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
       ]
 
   let () = B.Tree.register (
