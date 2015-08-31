@@ -26,48 +26,51 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Imperative deque} *)
 
 type 'a t
-  (** Contains 'a elements, queue in both ways *)
+(** Contains 'a elements, queue in both ways *)
 
 exception Empty
 
 val create : unit -> 'a t
-  (** New deque *)
+(** New deque *)
 
 val is_empty : 'a t -> bool
-  (** Is the deque empty? *)
+(** Is the deque empty? *)
 
 val length : 'a t -> int
-  (** Number of elements (linear) *)
+(** Number of elements (linear) *)
 
 val push_front : 'a t -> 'a -> unit
-  (** Push value at the front *)
+(** Push value at the front *)
 
 val push_back : 'a t -> 'a -> unit
-  (** Push value at the back *)
+(** Push value at the back *)
 
 val peek_front : 'a t -> 'a
-  (** First value, or Empty *)
+(** First value, or Empty *)
 
 val peek_back : 'a t -> 'a
-  (** Last value, or Empty *)
+(** Last value, or Empty *)
 
 val take_back : 'a t -> 'a
-  (** Take last value, or raise Empty *)
+(** Take last value, or raise Empty *)
 
 val take_front : 'a t -> 'a
-  (** Take first value, or raise Empty *)
+(** Take first value, or raise Empty *)
 
 val iter : ('a -> unit) -> 'a t -> unit
-  (** Iterate on elements *)
+(** Iterate on elements *)
 
 type 'a sequence = ('a -> unit) -> unit
+
 val of_seq : ?deque:'a t -> 'a sequence -> 'a t
+
 val to_seq : 'a t -> 'a sequence
 
 val copy : 'a t -> 'a t
-  (** Fresh copy *)
+(** Fresh copy *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
 val print : 'a printer -> 'a t printer
-  (** @since NEXT_RELEASE *)
+(** Print the elements
+    @since NEXT_RELEASE *)
