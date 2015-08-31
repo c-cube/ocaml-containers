@@ -67,6 +67,10 @@ val mutex : _ t -> Mutex.t
 val get : 'a t -> 'a
 (** Get the value in the lock. The value that is returned isn't protected! *)
 
+val set : 'a t -> 'a -> unit
+(** Atomically set the value
+    @since NEXT_RELEASE *)
+
 val incr : int t -> unit
 (** Atomically increment the value
     @since NEXT_RELEASE *)

@@ -98,13 +98,39 @@ let mutex l = l.mutex
 let update l f =
   with_lock l (fun x -> l.content <- f x)
 
+(*$T
+  let l = create 5 in update l (fun x->x+1); get l = 6
+  *)
+
 let get l =
   Mutex.lock l.mutex;
   let x = l.content in
   Mutex.unlock l.mutex;
   x
 
+let set l x =
+  Mutex.lock l.mutex;
+  l.content <- x;
+  Mutex.unlock l.mutex
+
+(*$T
+  let l = create 0 in set l 4; get l = 4
+  let l = create 0 in set l 4; set l 5; get l = 5
+*)
+
 let incr l = update l (fun x -> x+1)
 
 let decr l = update l (fun x -> x-1)
 
+
+(*$R
+  let l = create 0 in
+  let a = Array.init 100 (fun _ -> Thread.create (fun _ -> incr l) ()) in
+  Array.iter Thread.join a;
+  assert_equal ~printer:CCInt.to_string 100 (get l)
+*)
+
+(*$T
+  let l = create 0 in incr l ; get l = 1
+  let l = create 0 in decr l ; get l = ~-1
+  *)
