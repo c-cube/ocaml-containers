@@ -56,6 +56,11 @@ val cycle : 'a t -> 'a t
 (** Cycle through the iterator infinitely. The iterator shouldn't be empty.
     @since 0.3.3 *)
 
+val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
+(** [unfold f acc] calls [f acc] and:
+    - if [f acc = Some (x, acc')], yield [x], continue with [unfold f acc']
+    - if [f acc = None], stops
+    @since NEXT_RELEASE *)
 
 val is_empty : 'a t -> bool
 
@@ -185,6 +190,9 @@ val to_seq : 'a t -> 'a sequence
 
 val to_gen : 'a t -> 'a gen
 
+val of_gen : 'a gen -> 'a t
+(** [of_gen g] consumes the generator and caches intermediate results
+    @since NEXT_RELEASE *)
 
 (** {2 IO} *)
 

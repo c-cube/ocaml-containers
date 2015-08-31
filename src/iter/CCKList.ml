@@ -151,6 +151,15 @@ let rec cycle l () = append l (cycle l) ()
   cycle (of_list [1;2]) |> take 5 |> to_list = [1;2;1;2;1]
 *)
 
+let rec unfold f acc () = match f acc with
+  | None -> `Nil
+  | Some (x, acc') -> `Cons (x, unfold f acc')
+
+(*$T
+  let f = function  10 -> None | x -> Some (x, x+1) in \
+  unfold f 0 |> to_list = [0;1;2;3;4;5;6;7;8;9]
+*)
+
 let rec flat_map f l () = match l () with
   | `Nil -> `Nil
   | `Cons (x, l') ->
@@ -310,6 +319,35 @@ let to_gen l =
     | `Cons (x,l') ->
         l := l';
         Some x
+
+type 'a of_gen_state =
+  | Of_gen_thunk of 'a gen
+  | Of_gen_saved of [`Nil | `Cons of 'a * 'a t]
+
+let of_gen g =
+  let rec consume r () = match !r with
+    | Of_gen_saved cons -> cons
+    | Of_gen_thunk g ->
+        begin match g() with
+        | None ->
+            r := Of_gen_saved `Nil;
+            `Nil
+        | Some x ->
+            let tl = consume (ref (Of_gen_thunk g)) in
+            let l = `Cons (x, tl) in
+            r := Of_gen_saved l;
+            l
+        end
+  in
+  consume (ref (Of_gen_thunk g))
+
+(*$R
+  let g = let n = ref 0 in fun () -> Some (incr n; !n) in
+  let l = of_gen g in
+  assert_equal [1;2;3;4;5;6;7;8;9;10] (take 10 l |> to_list);
+  assert_equal [1;2;3;4;5;6;7;8;9;10] (take 10 l |> to_list);
+  assert_equal [11;12] (drop 10 l |> take 2 |> to_list);
+*)
 
 let sort ?(cmp=Pervasives.compare) l =
   let l = to_list l in
