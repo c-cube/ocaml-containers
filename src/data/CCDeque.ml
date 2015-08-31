@@ -64,6 +64,12 @@ let create () =
   let rec cur = { cell=Zero; prev=cur; next=cur } in
   { cur; size=0 }
 
+let clear q =
+  let rec cur = { cell=Zero; prev=cur; next=cur } in
+  q.cur <- cur;
+  q.size <- 0;
+  ()
+
 let incr_size_ d = d.size <- d.size + 1
 let decr_size_ d = d.size <- d.size - 1
 

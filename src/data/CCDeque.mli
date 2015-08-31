@@ -33,6 +33,10 @@ exception Empty
 val create : unit -> 'a t
 (** New deque *)
 
+val clear : _ t -> unit
+(** Remove all elements
+    @since NEXT_RELEASE *)
+
 val is_empty : 'a t -> bool
 (** Is the deque empty? *)
 
