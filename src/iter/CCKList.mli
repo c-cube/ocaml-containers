@@ -64,6 +64,24 @@ val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
 
 val is_empty : 'a t -> bool
 
+val head : 'a t -> 'a option
+(** Head of the list
+    @since NEXT_RELEASE *)
+
+val head_exn : 'a t -> 'a
+(** Unsafe version of {!head}
+    @raise Not_found if the list is empty
+    @since NEXT_RELEASE *)
+
+val tail : 'a t -> 'a t option
+(** Tail of the list
+    @since NEXT_RELEASE *)
+
+val tail_exn : 'a t -> 'a t
+(** Unsafe version of {!tail}
+    @raise Not_found if the list is empty
+    @since NEXT_RELEASE *)
+
 val equal : 'a equal -> 'a t equal
 (** Equality step by step. Eager. *)
 
@@ -75,7 +93,14 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
 val iter : ('a -> unit) -> 'a t -> unit
 
+val iteri : (int -> 'a -> unit) -> 'a t -> unit
+(** Iterate with index (starts at 0)
+    @since NEXT_RELEASE *)
+
 val length : _ t -> int
+(** Number of elements in the list.
+    Will not terminate if the list if infinite:
+    use (for instance) {!take} to make the list finite if necessary. *)
 
 val take : int -> 'a t -> 'a t
 
@@ -86,6 +111,10 @@ val drop : int -> 'a t -> 'a t
 val drop_while : ('a -> bool) -> 'a t -> 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
+
+val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+(** Map with index (starts at 0)
+    @since NEXT_RELEASE *)
 
 val fmap : ('a -> 'b option) -> 'a t -> 'b t
 
@@ -197,5 +226,9 @@ val of_gen : 'a gen -> 'a t
 (** {2 IO} *)
 
 val pp : ?sep:string -> 'a printer -> 'a t printer
+(** Print the list with the given separator (default ",").
+    Does not print opening/closing delimiters *)
 
 val print : ?sep:string -> 'a formatter -> 'a t formatter
+(** Print the list with the given separator (default ",").
+    Does not print opening/closing delimiters *)

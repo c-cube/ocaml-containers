@@ -62,6 +62,11 @@ let is_empty l = match l () with
   | `Nil -> true
   | `Cons _ -> false
 
+let head_exn l = match l() with | `Nil -> raise Not_found | `Cons (x, _) -> x
+let head l = match l() with `Nil -> None | `Cons (x, _) -> Some x
+let tail_exn l = match l() with | `Nil -> raise Not_found | `Cons (_, l) -> l
+let tail l = match l() with | `Nil -> None | `Cons (_, l) -> Some l
+
 let rec equal eq l1 l2 = match l1(), l2() with
   | `Nil, `Nil -> true
   | `Nil, _
@@ -84,6 +89,15 @@ let rec fold f acc res = match res () with
 let rec iter f l = match l () with
   | `Nil -> ()
   | `Cons (x, l') -> f x; iter f l'
+
+let iteri f l =
+  let rec aux f l i = match l() with
+    | `Nil -> ()
+    | `Cons (x, l') ->
+        f i x;
+        aux f l' (i+1)
+  in
+  aux f l 0
 
 let length l = fold (fun acc _ -> acc+1) 0 l
 
@@ -121,6 +135,18 @@ let rec map f l () = match l () with
   (map ((+) 1) (1 -- 5) |> to_list) = (2 -- 6 |> to_list)
 *)
 
+let mapi f l =
+  let rec aux f l i () = match l() with
+    | `Nil -> `Nil
+    | `Cons (x, tl) ->
+        `Cons (f i x, aux f tl (i+1))
+  in
+  aux f l 0
+
+(*$T
+  mapi (fun i x -> i,x) (1 -- 3) |> to_list = [0, 1; 1, 2; 2, 3]
+*)
+
 let rec fmap f (l:'a t) () = match l() with
   | `Nil -> `Nil
   | `Cons (x, l') ->
@@ -149,6 +175,7 @@ let rec cycle l () = append l (cycle l) ()
 
 (*$T
   cycle (of_list [1;2]) |> take 5 |> to_list = [1;2;1;2;1]
+  cycle (of_list [1; ~-1]) |> take 100_000 |> fold (+) 0 = 0
 *)
 
 let rec unfold f acc () = match f acc with
