@@ -113,6 +113,29 @@ let iter f d =
     in
     iter first
 
+(*$T
+  let n = ref 0 in iter (fun _ -> incr n) (of_list [1;2;3]); !n = 3
+*)
+
+let append_front ~into q = iter (push_front into) q
+
+let append_back ~into q = iter (push_back into) q
+
+let fold f acc d =
+  match !d with
+  | None -> acc
+  | Some first ->
+    let rec aux acc elt =
+      let acc = f acc elt.content in
+      if elt.next != first then aux acc elt.next else acc
+    in
+    aux acc first
+
+(*$T
+  fold (+) 0 (of_list [1;2;3]) = 6
+  fold (fun acc x -> x::acc) [] (of_list [1;2;3]) = [3;2;1]
+*)
+
 let length (d : _ t) =
   match !d with
   | None -> 0
@@ -122,6 +145,19 @@ let length (d : _ t) =
     !r
 
 type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+
+let add_seq_back q seq = seq (fun x -> push_back q x)
+
+let add_seq_front q seq = seq (fun x -> push_front q x)
+
+(*$R
+  let q = of_list [4;5] in
+  add_seq_front q Sequence.(of_list [3;2;1]);
+  assert_equal [1;2;3;4;5] (to_list q);
+  add_seq_back q Sequence.(of_list [6;7]);
+  assert_equal [1;2;3;4;5;6;7] (to_list q);
+*)
 
 let of_seq ?(deque=create ()) seq =
   seq (fun x -> push_back deque x);
@@ -129,11 +165,71 @@ let of_seq ?(deque=create ()) seq =
 
 let to_seq d k = iter k d
 
+let of_list l =
+  let q = create() in
+  List.iter (push_back q) l;
+  q
+
+let to_rev_list q = fold (fun l x -> x::l) [] q
+
+let to_list q = List.rev (to_rev_list q)
+
+let gen_empty_ () = None
+let rec gen_iter_ f g = match g() with
+  | None -> ()
+  | Some x -> f x; gen_iter_ f g
+
+let of_gen g =
+  let q = create () in
+  gen_iter_ (fun x -> push_back q x) g;
+  q
+
+let to_gen q = match !q with
+  | None -> gen_empty_
+  | Some q ->
+      let cur = ref q in
+      let first = ref true in
+      fun () ->
+        let x = (!cur).content in
+        if !cur == q && not !first then None
+        else (
+          first := false;
+          cur := (!cur).next;
+          Some x
+        )
+
+(*$T
+  of_list [1;2;3] |> to_gen |> of_gen |> to_list = [1;2;3]
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    of_list l |> to_gen |> of_gen |> to_list = l)
+*)
+
 (* naive implem of copy, for now *)
 let copy d =
   let d' = create () in
   iter (fun x -> push_back d' x) d;
   d'
+
+let equal ?(eq=(=)) a b =
+  let rec aux eq a b = match a() , b() with
+    | None, None -> true
+    | None, Some _
+    | Some _, None -> false
+    | Some x, Some y -> eq x y && aux eq a b
+  in aux eq (to_gen a) (to_gen b)
+
+let compare ?(cmp=Pervasives.compare) a b =
+  let rec aux cmp a b = match a() , b() with
+    | None, None -> 0
+    | None, Some _ -> -1
+    | Some _, None -> 1
+    | Some x, Some y ->
+        let c = cmp x y in
+        if c=0 then aux cmp a b else c
+  in aux cmp (to_gen a) (to_gen b)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
