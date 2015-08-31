@@ -25,93 +25,157 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Imperative deque} *)
 
-type 'a elt = {
-  content : 'a;
-  mutable prev : 'a elt;
-  mutable next : 'a elt;
-} (** A cell holding a single element *)
+type 'a cell =
+  | Zero
+  | One of 'a
+  | Two of 'a * 'a
+  | Three of 'a * 'a * 'a
+(** A cell holding a small number of elements *)
 
-and 'a t = 'a elt option ref
-  (** The deque, a double linked list of cells *)
+type 'a node = {
+  mutable cell : 'a cell;
+  mutable next : 'a node;
+  mutable prev : 'a node;
+}
+(** Linked list of cells *)
+
+type 'a t = {
+  mutable cur : 'a node;
+  mutable size : int;
+}
+(** The deque, a double linked list of cells *)
+
+(*$R
+  let q = create () in
+  add_seq_back q Sequence.(3 -- 5);
+  assert_equal [3;4;5] (to_list q);
+  add_seq_front q Sequence.(of_list [2;1]);
+  assert_equal [1;2;3;4;5] (to_list q);
+  push_front q 0;
+  assert_equal [0;1;2;3;4;5] (to_list q);
+  assert_equal 5 (take_back q);
+  assert_equal 0 (take_front q);
+  assert_equal 4 (length q);
+*)
 
 exception Empty
 
-let create () = ref None
+let create () =
+  let rec cur = { cell=Zero; prev=cur; next=cur } in
+  { cur; size=0 }
+
+let incr_size_ d = d.size <- d.size + 1
+let decr_size_ d = d.size <- d.size - 1
+
+let is_zero_ n = match n.cell with
+  | Zero -> true
+  | One _
+  | Two _
+  | Three _ -> false
 
 let is_empty d =
-  match !d with
-  | None -> true
-  | Some _ -> false
+  let res = d.size = 0 in
+  assert (res = is_zero_ d.cur);
+  res
 
 let push_front d x =
-  match !d with
-  | None ->
-    let rec elt = {
-      content = x; prev = elt; next = elt;
-    } in
-    d := Some elt
-  | Some first ->
-    let elt = { content = x; prev = first.prev; next=first; } in
-    first.prev.next <- elt;
-    first.prev <- elt;
-    d := Some elt
+  incr_size_ d;
+  match d.cur.cell with
+  | Zero -> d.cur.cell <- One x
+  | One y -> d.cur.cell <- Two (x, y)
+  | Two (y, z) -> d.cur.cell <- Three (x,y,z)
+  | Three _ ->
+    let node = { cell = One x; prev = d.cur.prev; next=d.cur; } in
+    d.cur.prev.next <- node;
+    d.cur.prev <- node;
+    d.cur <- node (* always point to first node *)
 
 let push_back d x =
-  match !d with
-  | None ->
-    let rec elt = {
-      content = x; prev = elt; next = elt; } in
-    d := Some elt
-  | Some first ->
-    let elt = { content = x; next=first; prev=first.prev; } in
-    first.prev.next <- elt;
-    first.prev <- elt
+  incr_size_ d;
+  let n = d.cur.prev in (* last node *)
+  match n.cell with
+  | Zero -> n.cell <- One x
+  | One y -> n.cell <- Two (y, x)
+  | Two (y,z) -> n.cell <- Three (y, z, x)
+  | Three _ ->
+    let elt = { cell = One x; next=d.cur; prev=n; } in
+    n.next <- elt;
+    d.cur.prev <- elt
 
-let peek_front d =
-  match !d with
-  | None -> raise Empty
-  | Some first -> first.content
+let peek_front d = match d.cur.cell with
+  | Zero -> raise Empty
+  | One x -> x
+  | Two (x,_) -> x
+  | Three (x,_,_) -> x
 
 let peek_back d =
-  match !d with
-  | None -> raise Empty
-  | Some first -> first.prev.content
+  if is_empty d then raise Empty
+  else match d.cur.prev.cell with
+    | Zero -> assert false
+    | One x -> x
+    | Two (_,x) -> x
+    | Three (_,_,x) -> x
+
+let take_back_node_ n = match n.cell with
+  | Zero -> assert false
+  | One x -> n.cell <- Zero; x
+  | Two (x,y) -> n.cell <- One x; y
+  | Three (x,y,z) -> n.cell <- Two (x,y); z
 
 let take_back d =
-  match !d with
-  | None -> raise Empty
-  | Some first when first == first.prev ->
-    (* only one element *)
-    d := None;
-    first.content
-  | Some first ->
-    let elt = first.prev in
-    elt.prev.next <- first;
-    first.prev <- elt.prev;  (* remove [first.prev] from list *)
-    elt.content
+  if is_empty d then raise Empty
+  else if d.cur == d.cur.prev
+  then (
+    (* only one cell *)
+    decr_size_ d;
+    take_back_node_ d.cur
+  ) else (
+    let n = d.cur.prev in
+    let x = take_back_node_ n in
+    decr_size_ d;
+    if is_zero_ n
+    then (  (* remove previous node *)
+      d.cur.prev <- n.prev;
+      n.prev.next <- d.cur;
+    );
+    x
+  )
+
+let take_front_node_ n = match n.cell with
+  | Zero -> assert false
+  | One x -> n.cell <- Zero; x
+  | Two (x,y) -> n.cell <- One y; x
+  | Three (x,y,z) -> n.cell <- Two (y,z); x
 
 let take_front d =
-  match !d with
-  | None -> raise Empty
-  | Some first when first == first.prev ->
-    (* only one element *)
-    d := None;
-    first.content
-  | Some first ->
-    first.prev.next <- first.next; (* remove [first] from list *)
-    first.next.prev <- first.prev;
-    d := Some first.next;
-    first.content
+  if is_empty d then raise Empty
+  else if d.cur.prev == d.cur
+  then (
+    (* only one cell *)
+    decr_size_ d;
+    take_front_node_ d.cur
+  ) else (
+    decr_size_ d;
+    let x = take_front_node_ d.cur in
+    if is_zero_ d.cur then (
+      d.cur.prev.next <- d.cur.next;
+      d.cur.next.prev <- d.cur.prev;
+      d.cur <- d.cur.next;
+    );
+    x
+  )
 
 let iter f d =
-  match !d with
-  | None -> ()
-  | Some first ->
-    let rec iter elt =
-      f elt.content;
-      if elt.next != first then iter elt.next
-    in
-    iter first
+  let rec iter f ~first n =
+    begin match n.cell with
+    | Zero -> ()
+    | One x -> f x
+    | Two (x,y) -> f x; f y
+    | Three (x,y,z) -> f x; f y; f z
+    end;
+    if n.next != first then iter f ~first n.next
+  in
+  iter f ~first:d.cur d.cur
 
 (*$T
   let n = ref 0 in iter (fun _ -> incr n) (of_list [1;2;3]); !n = 3
@@ -130,27 +194,31 @@ let append_back ~into q = iter (push_back into) q
 *)
 
 let fold f acc d =
-  match !d with
-  | None -> acc
-  | Some first ->
-    let rec aux acc elt =
-      let acc = f acc elt.content in
-      if elt.next != first then aux acc elt.next else acc
+  let rec aux ~first f acc n =
+    let acc = match n.cell with
+      | Zero -> acc
+      | One x -> f acc x
+      | Two (x,y) -> f (f acc x) y
+      | Three (x,y,z) -> f (f (f acc x) y) z
     in
-    aux acc first
+    if n.next == first then acc else aux ~first f acc n.next
+  in
+  aux ~first:d.cur f acc d.cur
 
 (*$T
   fold (+) 0 (of_list [1;2;3]) = 6
   fold (fun acc x -> x::acc) [] (of_list [1;2;3]) = [3;2;1]
 *)
 
-let length (d : _ t) =
-  match !d with
-  | None -> 0
-  | Some _ ->
-    let r = ref 0 in
-    iter (fun _ -> incr r) d;
-    !r
+let length d = d.size
+
+(*$Q
+  Q.(list int) (fun l -> \
+    let q = of_list l in \
+    append_front ~into:q (of_list l); \
+    append_back ~into:q (of_list l); \
+    length q = 3 * List.length l)
+*)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -191,7 +259,6 @@ let to_rev_list q = fold (fun l x -> x::l) [] q
 
 let to_list q = List.rev (to_rev_list q)
 
-let gen_empty_ () = None
 let rec gen_iter_ f g = match g() with
   | None -> ()
   | Some x -> f x; gen_iter_ f g
@@ -201,19 +268,23 @@ let of_gen g =
   gen_iter_ (fun x -> push_back q x) g;
   q
 
-let to_gen q = match !q with
-  | None -> gen_empty_
-  | Some q ->
-      let cur = ref q in
-      let first = ref true in
-      fun () ->
-        let x = (!cur).content in
-        if !cur == q && not !first then None
-        else (
-          first := false;
-          cur := (!cur).next;
-          Some x
-        )
+let to_gen q =
+  let first = q.cur in
+  let cell = ref q.cur.cell in
+  let cur = ref q.cur in
+  let rec next () = match !cell with
+    | Zero when (!cur).next == first -> None
+    | Zero ->
+      (* go to next node *)
+      let n = !cur in
+      cur := n.next;
+      cell := n.next.cell;
+      next ()
+    | One x -> cell := Zero; Some x
+    | Two (x,y) -> cell := One y; Some x
+    | Three (x,y,z) -> cell := Two (y,z); Some x
+  in
+  next
 
 (*$T
   of_list [1;2;3] |> to_gen |> of_gen |> to_list = [1;2;3]
