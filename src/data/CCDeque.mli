@@ -48,7 +48,8 @@ val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
     @since NEXT_RELEASE *)
 
 val length : 'a t -> int
-(** Number of elements (linear) *)
+(** Number of elements
+    used to be linear time, now constant time *)
 
 val push_front : 'a t -> 'a -> unit
 (** Push value at the front *)
@@ -129,6 +130,8 @@ val to_list : 'a t -> 'a list
 val to_rev_list : 'a t -> 'a list
 (** Efficient conversion to list, in reverse order
     @since NEXT_RELEASE *)
+
+(** {2 print} *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 

@@ -108,6 +108,11 @@ let peek_front d = match d.cur.cell with
   | Two (x,_) -> x
   | Three (x,_,_) -> x
 
+(*$T
+  of_list [1;2;3] |> peek_front = 1
+  try (ignore (of_list [] |> peek_front); false) with Empty -> true
+  *)
+
 let peek_back d =
   if is_empty d then raise Empty
   else match d.cur.prev.cell with
@@ -115,6 +120,11 @@ let peek_back d =
     | One x -> x
     | Two (_,x) -> x
     | Three (_,_,x) -> x
+
+(*$T
+  of_list [1;2;3] |> peek_back = 3
+  try (ignore (of_list [] |> peek_back); false) with Empty -> true
+*)
 
 let take_back_node_ n = match n.cell with
   | Zero -> assert false
@@ -141,11 +151,19 @@ let take_back d =
     x
   )
 
+(*$T
+  let q = of_list [1;2;3] in take_back q = 3 && to_list q = [1;2]
+  *)
+
 let take_front_node_ n = match n.cell with
   | Zero -> assert false
   | One x -> n.cell <- Zero; x
   | Two (x,y) -> n.cell <- One y; x
   | Three (x,y,z) -> n.cell <- Two (y,z); x
+
+(*$T
+  let q = of_list [1;2;3] in take_front q = 1 && to_list q = [2;3]
+  *)
 
 let take_front d =
   if is_empty d then raise Empty
