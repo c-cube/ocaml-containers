@@ -579,5 +579,182 @@ module Batch = struct
       ])
 end
 
+module Deque = struct
+  module Base = struct
+    type 'a elt = {
+      content : 'a;
+      mutable prev : 'a elt;
+      mutable next : 'a elt;
+    } (** A cell holding a single element *)
+
+    and 'a t = 'a elt option ref
+      (** The deque, a double linked list of cells *)
+
+    exception Empty
+
+    let create () = ref None
+
+    let is_empty d =
+      match !d with
+      | None -> true
+      | Some _ -> false
+
+    let push_front d x =
+      match !d with
+      | None ->
+        let rec elt = {
+          content = x; prev = elt; next = elt;
+        } in
+        d := Some elt
+      | Some first ->
+        let elt = { content = x; prev = first.prev; next=first; } in
+        first.prev.next <- elt;
+        first.prev <- elt;
+        d := Some elt
+
+    let push_back d x =
+      match !d with
+      | None ->
+        let rec elt = {
+          content = x; prev = elt; next = elt; } in
+        d := Some elt
+      | Some first ->
+        let elt = { content = x; next=first; prev=first.prev; } in
+        first.prev.next <- elt;
+        first.prev <- elt
+
+    let take_back d =
+      match !d with
+      | None -> raise Empty
+      | Some first when first == first.prev ->
+        (* only one element *)
+        d := None;
+        first.content
+      | Some first ->
+        let elt = first.prev in
+        elt.prev.next <- first;
+        first.prev <- elt.prev;  (* remove [first.prev] from list *)
+        elt.content
+
+    let take_front d =
+      match !d with
+      | None -> raise Empty
+      | Some first when first == first.prev ->
+        (* only one element *)
+        d := None;
+        first.content
+      | Some first ->
+        first.prev.next <- first.next; (* remove [first] from list *)
+        first.next.prev <- first.prev;
+        d := Some first.next;
+        first.content
+
+    let iter f d =
+      match !d with
+      | None -> ()
+      | Some first ->
+        let rec iter elt =
+          f elt.content;
+          if elt.next != first then iter elt.next
+        in
+        iter first
+
+    let of_seq seq =
+      let q =create () in seq (push_back q); q
+
+    let append_back ~into q = iter (push_back into) q
+
+    let length q =
+      let n = ref 0 in
+      iter (fun _ -> incr n) q;
+      !n
+  end
+
+  module type DEQUE = sig
+    type 'a t
+    val create : unit -> 'a t
+    val of_seq : 'a Sequence.t -> 'a t
+    val iter : ('a -> unit) -> 'a t -> unit
+    val push_front : 'a t -> 'a -> unit
+    val push_back : 'a t -> 'a -> unit
+    val is_empty : 'a t -> bool
+    val take_front : 'a t -> 'a
+    val take_back : 'a t -> 'a
+    val append_back : into:'a t -> 'a t -> unit
+    val length : _ t -> int
+  end
+
+  let base = (module Base : DEQUE)
+  let cur = (module CCDeque : DEQUE)
+
+  let bench_iter n =
+    let seq = Sequence.(1 -- n) in
+    let make (module D : DEQUE) =
+      let q = D.of_seq seq in
+      fun () ->
+        let n = ref 0 in
+        D.iter (fun _ -> incr n) q;
+        ()
+    in
+    B.throughputN 3
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ]
+
+  let bench_push_front n =
+    let make (module D : DEQUE) () =
+      let q = D.create() in
+      for i=0 to n do D.push_front q i done
+    in
+    B.throughputN 3
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ]
+
+  let bench_push_back n =
+    let make (module D : DEQUE) =
+      let q = D.create() in
+      fun () ->
+        for i=0 to n do D.push_back q i done
+    in
+    B.throughputN 3
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ]
+
+  let bench_append n =
+    let seq = Sequence.(1 -- n) in
+    let make (module D :DEQUE) =
+      let q1 = D.of_seq seq in
+      let q2 = D.of_seq seq in
+      fun () -> D.append_back ~into:q1 q2
+    in
+    B.throughputN 3
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ]
+
+  let bench_length n =
+    let seq = Sequence.(1--n) in
+    let make (module D:DEQUE) =
+      let q = D.of_seq seq in
+      fun () -> ignore (D.length q)
+    in
+    B.throughputN 3
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ]
+
+  let () = B.Tree.register (
+    "deque" @>>>
+    [ "iter" @>> app_ints bench_iter [100; 1_000; 100_000]
+    ; "push_front" @>> app_ints bench_push_front [100; 1_000; 100_000]
+    ; "push_back" @>> app_ints bench_push_back [100; 1_000; 100_000]
+    ; "append_back" @>> app_ints bench_append [100; 1_000; 100_000]
+    ; "length" @>> app_ints bench_length [100; 1_000]
+    ]
+  )
+end
+
 let () =
   B.Tree.run_global ()
