@@ -130,7 +130,7 @@ Library "containers_misc"
 
 Library "containers_thread"
   Path:             src/threads/
-  Modules:          CCFuture, CCLock, CCSemaphore
+  Modules:          CCFuture, CCLock, CCSemaphore, CCThread
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)

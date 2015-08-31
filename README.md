@@ -180,6 +180,7 @@ In the library `containers.thread`, for preemptive system threads:
   monadic futures, and MVars (concurrent boxes)
 - `CCLock`, values protected by locks
 - `CCSemaphore`, a simple implementation of semaphores
+- `CCThread` basic wrappers for `Thread`
 
 ### Misc
 
