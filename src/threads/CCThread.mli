@@ -15,7 +15,7 @@ val detach : (unit -> 'a) -> unit
 (** [detach f] is the same as [ignore (spawn f)] *)
 
 (** {2 Array of threads} *)
-module Array : sig
+module Arr : sig
   val spawn : int -> (int -> 'a) -> t array
   (** [A.spawn n f] creates an array [res] of length [n], such that
       [res.(i) = spawn (fun () -> f i)] *)
