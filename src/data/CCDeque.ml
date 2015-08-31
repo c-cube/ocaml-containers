@@ -121,6 +121,14 @@ let append_front ~into q = iter (push_front into) q
 
 let append_back ~into q = iter (push_back into) q
 
+(*$R
+  let q = of_list [3;4] in
+  append_front ~into:q (of_list [2;1]);
+  assert_equal [1;2;3;4] (to_list q);
+  append_back ~into:q (of_list [5;6]);
+  assert_equal [1;2;3;4;5;6] (to_list q);
+*)
+
 let fold f acc d =
   match !d with
   | None -> acc
@@ -170,6 +178,14 @@ let of_list l =
   let q = create() in
   List.iter (push_back q) l;
   q
+
+(*$R
+  let q = of_list [1;2;3] in
+  assert_equal 1 (take_front q);
+  assert_equal 3 (take_back q);
+  assert_equal 2 (take_front q);
+  assert_equal true (is_empty q)
+*)
 
 let to_rev_list q = fold (fun l x -> x::l) [] q
 
