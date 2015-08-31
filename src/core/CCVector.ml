@@ -157,15 +157,15 @@ let append a b =
 *)
 
 let get v i =
-  if i < 0 || i >= v.size then failwith "Vector.get";
+  if i < 0 || i >= v.size then invalid_arg "Vector.get";
   Array.unsafe_get v.vec i
 
 let set v i x =
-  if i < 0 || i >= v.size then failwith "Vector.set";
+  if i < 0 || i >= v.size then invalid_arg "Vector.set";
   Array.unsafe_set v.vec i x
 
 let remove v i =
-  if i < 0 || i >= v.size then failwith "Vector.remove";
+  if i < 0 || i >= v.size then invalid_arg "Vector.remove";
   (* if v.(i) not the last element, then put last element at index i *)
   if i < v.size - 1
     then v.vec.(i) <- v.vec.(v.size - 1);
@@ -204,22 +204,23 @@ let compare cmp v1 v2 =
         if c = 0 then check (i+1) else c
   in check 0
 
+exception Empty
+
 let pop_exn v =
-  if v.size = 0
-    then failwith "Vector.pop on empty vector";
+  if v.size = 0 then raise Empty;
   v.size <- v.size - 1;
   let x = v.vec.(v.size) in
   x
 
 let pop v =
   try Some (pop_exn v)
-  with Failure _ -> None
+  with Empty -> None
 
 let top v =
   if v.size = 0 then None else Some v.vec.(v.size-1)
 
 let top_exn v =
-  if v.size = 0 then failwith "Vector.top";
+  if v.size = 0 then raise Empty;
   v.vec.(v.size-1)
 
 (*$T

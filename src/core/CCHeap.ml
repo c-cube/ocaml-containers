@@ -102,7 +102,7 @@ module type S = sig
   val to_tree : t -> elt ktree
 end
 
-module Make(E : PARTIAL_ORD) = struct
+module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   type elt = E.t
 
   type t =
