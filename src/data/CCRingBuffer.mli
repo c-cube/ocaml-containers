@@ -96,7 +96,9 @@ module type S = sig
 
   val create : ?bounded:bool -> int -> t
   (** [create ?bounded size] creates a new buffer with given size.
-      Defaults to [bounded=false]. *)
+      @param bounded if true, the buffer is never resized, and pushing
+        at the front (respectively end) might erase elements at the
+        end (respectively front). Default value is [false] *)
 
   val copy : t -> t
   (** Make a fresh copy of the buffer. *)

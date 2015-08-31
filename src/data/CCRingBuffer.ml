@@ -318,18 +318,26 @@ module MakeFromArray(A:Array.S) = struct
     end;
     b.buf <- buf'
 
-  let blit_from_bounded b from_buf o len =
+  let blit_into_bounded_from b from_arr o len =
+    assert b.bounded;
     let cap = capacity b - length b in
+    (* TODO: 3 cases:
+       - enough free room
+       - capacity is enough, but erase some present elements
+       - capacity not enough, blit the end of [from_arr] into full [b]
+    *)
+    (* do not resize, but erase some elements of [b] to make room for
+       elements of [from_arr] *)
     (* resize if needed, with a constant to amortize *)
     if cap < len then (
       let new_size =
         let desired = A.length b.buf + len + 24 in
         min (b.size+1) desired in
-      resize b new_size (A.get from_buf 0);
+      resize b new_size (A.get from_arr 0);
       let good = capacity b = b.size || capacity b - length b >= len in
       assert good;
     );
-    let sub = A.sub from_buf o len in
+    let sub = A.sub from_arr o len in
     let iter x =
       let capacity = A.length b.buf in
       A.set b.buf b.stop x;
@@ -340,26 +348,27 @@ module MakeFromArray(A:Array.S) = struct
     A.iter iter sub
 
 
-  let blit_from_unbounded b from_buf o len =
+  let blit_into_unbounded_from b from_arr o len =
+    assert (not b.bounded);
     let cap = capacity b - length b in
     (* resize if needed, with a constant to amortize *)
     if cap < len
-      then resize b (max (b.size+1) (A.length b.buf + len + 24)) (A.get from_buf 0);
+      then resize b (max (b.size+1) (A.length b.buf + len + 24)) (A.get from_arr 0);
     let good = capacity b - length b >= len in
     assert good;
     if b.stop >= b.start
     then (*  [_______ start xxxxxxxxx stop ______] *)
       let len_end = A.length b.buf - b.stop in
       if len_end >= len
-      then (A.blit from_buf o b.buf b.stop len;
+      then (A.blit from_arr o b.buf b.stop len;
             b.stop <- b.stop + len)
-      else (A.blit from_buf o b.buf b.stop len_end;
-            A.blit from_buf (o+len_end) b.buf 0 (len-len_end);
+      else (A.blit from_arr o b.buf b.stop len_end;
+            A.blit from_arr (o+len_end) b.buf 0 (len-len_end);
             b.stop <- len-len_end)
     else begin (* [xxxxx stop ____________ start xxxxxx] *)
       let len_middle = b.start - b.stop in
       assert (len_middle >= len);
-      A.blit from_buf o b.buf b.stop len;
+      A.blit from_arr o b.buf b.stop len;
       b.stop <- b.stop + len
     end;
     ()
@@ -367,9 +376,9 @@ module MakeFromArray(A:Array.S) = struct
   let blit_from b from_buf o len =
     if A.length from_buf = 0 then () else
     if b.bounded then
-      blit_from_bounded b from_buf o len
+      blit_into_bounded_from b from_buf o len
     else
-      blit_from_unbounded b from_buf o len
+      blit_into_unbounded_from b from_buf o len
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
@@ -390,6 +399,13 @@ module MakeFromArray(A:Array.S) = struct
     Byte.length b = Bytes.length s + Bytes.length s'))
   *)
 
+  (*$T
+    let s = Byte.create ~bounded:true 4 in \
+    let s' = Bytes.of_string "junk  abcd" in \
+    Byte.blit_from s s' 0 (Bytes.length s'); \
+    4 = (Byte.length s) && \
+    "abcd" = (Bytes.to_string (Byte.to_array s))
+  *)
 
   let blit_into b to_buf o len =
     if o+len > A.length to_buf
