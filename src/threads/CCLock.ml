@@ -32,6 +32,8 @@ type 'a t = {
   mutable content : 'a;
 }
 
+type 'a lock = 'a t
+
 let create content = {
   mutex = Mutex.create();
   content;
@@ -47,6 +49,50 @@ let with_lock l f =
     Mutex.unlock l.mutex;
     raise e
 
+(*$R
+  let l = create 0 in
+  let try_incr l =
+    update l (fun x -> Thread.yield(); x+1)
+  in
+  for i = 1 to 10 do ignore (Thread.create try_incr l) done;
+  Thread.delay 0.10 ;
+  assert_equal 10 (get l)
+*)
+
+module LockRef = struct
+  type 'a t = 'a lock
+  let get t = t.content
+  let set t x = t.content <- x
+  let update t f = t.content <- f t.content
+end
+
+let with_lock_as_ref l f =
+  Mutex.lock l.mutex;
+  try
+    let x = f l in
+    Mutex.unlock l.mutex;
+    x
+  with e ->
+    Mutex.unlock l.mutex;
+    raise e
+
+(*$R
+  let l = create 0 in
+  let test_it l =
+    with_lock_as_ref l
+      (fun r ->
+        let x = LockRef.get r in
+        LockRef.set r (x+10);
+        Thread.yield ();
+        let y = LockRef.get r in
+        LockRef.set r (y - 10);
+      )
+  in
+  for i = 1 to 100 do ignore (Thread.create test_it l) done;
+  Thread.delay 0.10;
+  assert_equal 0 (get l)
+*)
+
 let mutex l = l.mutex
 
 let update l f =
@@ -58,4 +104,7 @@ let get l =
   Mutex.unlock l.mutex;
   x
 
+let incr l = update l (fun x -> x+1)
+
+let decr l = update l (fun x -> x-1)
 
