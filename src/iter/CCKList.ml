@@ -334,6 +334,33 @@ let of_list l =
     | x::l' -> `Cons (x, aux l')
   in aux l
 
+let of_array a =
+  let rec aux a i () =
+    if i=Array.length a then `Nil
+    else `Cons (a.(i), aux a (i+1))
+  in
+  aux a 0
+
+let to_array l =
+  match l() with
+  | `Nil -> [| |]
+  | `Cons (x, _) ->
+    let n = length l in
+    let a = Array.make n x in (* need first elem to create [a] *)
+    iteri
+      (fun i x -> a.(i) <- x)
+      l;
+    a
+
+(*$Q
+   Q.(array int) (fun a -> of_array a |> to_array = a)
+*)
+
+(*$T
+  of_array [| 1; 2; 3 |] |> to_list = [1;2;3]
+  of_list [1;2;3] |> to_array = [| 1; 2; 3; |]
+*)
+
 let rec to_seq res k = match res () with
   | `Nil -> ()
   | `Cons (s, f) -> k s; to_seq f k

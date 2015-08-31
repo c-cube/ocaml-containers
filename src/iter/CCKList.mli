@@ -212,6 +212,14 @@ val of_list : 'a list -> 'a t
 val to_list : 'a t -> 'a list
 (** Gather all values into a list *)
 
+val of_array : 'a array -> 'a t
+(** Iterate on the array
+    @since NEXT_RELEASE *)
+
+val to_array : 'a t -> 'a array
+(** Convert into array. Iterates twice.
+    @since NEXT_RELEASE *)
+
 val to_rev_list : 'a t -> 'a list
 (** Convert to a list, in reverse order. More efficient than {!to_list} *)
 
