@@ -303,6 +303,26 @@ let rec merge cmp l1 l2 () = match l1(), l2() with
       then `Cons (x1, merge cmp l1' l2)
       else `Cons (x2, merge cmp l1 l2')
 
+let rec zip a b () = match a(), b() with
+  | `Nil, _
+  | _, `Nil -> `Nil
+  | `Cons (x, a'), `Cons (y, b') -> `Cons ((x,y), zip a' b')
+
+let unzip l =
+  let rec first l () = match l() with
+    | `Nil -> `Nil
+    | `Cons ((x,_), tl) -> `Cons (x, first tl)
+  and second l () = match l() with
+    | `Nil -> `Nil
+    | `Cons ((_, y), tl) -> `Cons (y, second tl)
+  in
+  first l, second l
+
+(*$Q
+  Q.(list (pair int int)) (fun l -> \
+    let l = CCKList.of_list l in let a, b = unzip l in equal (=) l (zip a b))
+*)
+
 (** {2 Implementations} *)
 
 let return x () = `Cons (x, nil)

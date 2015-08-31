@@ -171,6 +171,16 @@ val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator *)
 
+val zip : 'a t -> 'b t -> ('a * 'b) t
+(** Combine elements pairwise. Stops as soon as one of the lists stops.
+    @since NEXT_RELEASE *)
+
+val unzip : ('a * 'b) t -> 'a t * 'b t
+(** Splits each tuple in the list
+    @since NEXT_RELEASE *)
+
+(** {2 Misc} *)
+
 val sort : ?cmp:'a ord -> 'a t -> 'a t
 (** Eager sort. Requires the iterator to be finite. O(n ln(n)) time
     and space.
