@@ -412,7 +412,7 @@ module Tbl = struct
       "persistent_array_find", (fun () -> persistent_array_find pa n), ();
       "imap_find", (fun () -> imap_find m n), ();
       "intmap_find", (fun () -> intmap_find m' n), ();
-      "cchashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
+      "ccflathashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
     ]
 
   let () = B.Tree.register (
