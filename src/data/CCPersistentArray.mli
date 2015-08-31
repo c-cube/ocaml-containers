@@ -84,6 +84,18 @@ val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Fold on the elements of the array. *)
 
+val append : 'a t -> 'a t -> 'a t
+(** Append the two arrays
+    @since NEXT_RELEASE *)
+
+val flatten : 'a t t -> 'a t
+(** Concatenates all the sub-arrays
+    @since NEXT_RELEASE *)
+
+val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+(** Flat map (map + concatenation)
+    @since NEXT_RELEASE *)
+
 val to_array : 'a t -> 'a array
 (** [to_array t] returns a mutable copy of [t]. *)
 
@@ -96,11 +108,26 @@ val to_list : 'a t -> 'a list
 val of_list : 'a list -> 'a t
 (** [of_list l] returns a fresh persistent array containing the elements of [l]. *)
 
+val of_rev_list : 'a list -> 'a t
+(** [of_rev_list l] is the same as [of_list (List.rev l)] but more efficient
+    @since NEXT_RELEASE *)
+
+(** {2 Conversions} *)
+
 type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
 
 val to_seq : 'a t -> 'a sequence
 
 val of_seq : 'a sequence -> 'a t
+
+val of_gen : 'a gen -> 'a t
+(** @since NEXT_RELEASE *)
+
+val to_gen : 'a t -> 'a gen
+(** @since NEXT_RELEASE *)
+
+(** {2 IO} *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
