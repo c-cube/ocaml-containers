@@ -159,7 +159,8 @@ let add_seq_front q seq = seq (fun x -> push_front q x)
   assert_equal [1;2;3;4;5;6;7] (to_list q);
 *)
 
-let of_seq ?(deque=create ()) seq =
+let of_seq seq =
+  let deque = create () in
   seq (fun x -> push_back deque x);
   deque
 

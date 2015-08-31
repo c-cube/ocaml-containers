@@ -89,7 +89,10 @@ val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 
-val of_seq : ?deque:'a t -> 'a sequence -> 'a t
+val of_seq : 'a sequence -> 'a t
+(** Create a deque from the sequence.
+    @since NEXT_RELEASE optional argument [deque] disappears, use
+      {!add_seq_back} instead *)
 
 val to_seq : 'a t -> 'a sequence
 
