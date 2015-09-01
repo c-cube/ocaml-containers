@@ -33,7 +33,8 @@ module Queue : sig
   (** Safe-thread queue for values of type ['a] *)
 
   val create : int -> 'a t
-  (** Create a new queue of size [n]
+  (** Create a new queue of size [n]. Using [n=max_int] amounts to using
+      an infinite queue (2^61 items is a lot to fit in memory).
       @raise Invalid_argument if [n < 1] *)
 
   val push : 'a t -> 'a -> unit
