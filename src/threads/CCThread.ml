@@ -65,8 +65,8 @@ module Queue = struct
         done;
         assert (q.size < q.capacity);
         Queue.push x q.q;
-        (* if there are blocked receivers, awake them *)
-        if q.size = 0 then Condition.signal q.cond;
+        (* if there are blocked receivers, awake one of them *)
+        Condition.signal q.cond;
         incr_size_ q;
       )
 
@@ -77,8 +77,8 @@ module Queue = struct
           Condition.wait q.cond q.lock
         done;
         let x = Queue.take q.q in
-        (* if there are blocked senders, awake them *)
-        if q.size = q.capacity then Condition.broadcast q.cond;
+        (* if there are blocked senders, awake one of them *)
+        Condition.signal q.cond;
         decr_size_ q;
         x
       )
