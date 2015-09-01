@@ -24,6 +24,63 @@ end
   assert_equal ~printer:CCInt.to_string n (CCLock.get l)
 *)
 
+module Barrier = struct
+  type t = {
+    lock: Mutex.t;
+    cond: Condition.t;
+    mutable activated: bool;
+  }
+
+  let create () = {
+    lock=Mutex.create();
+    cond=Condition.create();
+    activated=false;
+  }
+
+  let with_lock_ b f =
+    Mutex.lock b.lock;
+    try
+      let x = f () in
+      Mutex.unlock b.lock;
+      x
+    with e ->
+      Mutex.unlock b.lock;
+      raise e
+
+  let reset b = with_lock_ b (fun () -> b.activated <- false)
+
+  let wait b =
+    with_lock_ b
+      (fun () ->
+        while not b.activated do
+          Condition.wait b.cond b.lock 
+        done
+      )
+
+  let activate b =
+    with_lock_ b
+      (fun () ->
+        if not b.activated then (
+          b.activated <- true;
+          Condition.broadcast b.cond
+        )
+      )
+
+  let activated b = with_lock_ b (fun () -> b.activated)
+end
+
+(*$R
+  let b = Barrier.create () in
+  let res = CCLock.create 0 in
+  let t1 = spawn (fun _ -> Barrier.wait b; CCLock.incr res)
+  and t2 = spawn (fun _ -> Barrier.wait b; CCLock.incr res) in
+  Thread.delay 0.2;
+  assert_equal 0 (CCLock.get res);
+  Barrier.activate b;
+  Thread.join t1; Thread.join t2;
+  assert_equal 2 (CCLock.get res)
+*)
+
 module Queue = struct
   type 'a t = {
     q : 'a Queue.t;

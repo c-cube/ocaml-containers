@@ -24,6 +24,32 @@ module Arr : sig
   (** [A.join a] joins every thread in [a] *)
 end
 
+(** {2 Single-Use Barrier} *)
+
+module Barrier : sig
+  type t
+  (** Barrier, used to synchronize threads *)
+
+  val create : unit -> t
+  (** Create a barrier *)
+
+  val reset : t -> unit
+  (** Reset to initial (non-triggered) state *)
+
+  val wait : t -> unit
+  (** [wait b] waits for barrier [b] to be activated by [activate b].
+      All threads calling this wait until [activate b] is called.
+      If [b] is already activated, [wait b] does nothing *)
+
+  val activate : t -> unit
+  (** [activate b] unblocks all threads that were waiting on [b] *)
+
+  val activated : t -> bool
+  (** [activated b] returns [true] iff [activate b] was called, and [reset b]
+      was not called since. In other words, [activated b = true] means
+      [wait b] will not block. *)
+end
+
 (** {2 Blocking Queue}
 
     This queue has a limited size. Pushing a value on the queue when it
