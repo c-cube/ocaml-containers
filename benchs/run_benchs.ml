@@ -781,5 +781,84 @@ module Deque = struct
   )
 end
 
+module Thread = struct
+  module Q = CCThread.Queue
+
+  module type TAKE_PUSH = sig
+    val take : 'a Q.t -> 'a
+    val push : 'a Q.t -> 'a -> unit
+    val take_list: 'a Q.t -> int -> 'a list
+    val push_list : 'a Q.t -> 'a list -> unit
+  end
+
+  let cur = (module Q : TAKE_PUSH)
+  let naive =
+    let module Q = struct
+      let take = Q.take
+      let push = Q.push
+      let push_list q l = List.iter (push q) l
+      let rec take_list q n =
+        if n=0 then []
+        else
+          let x = take q in
+          x :: take_list q (n-1)
+    end in
+    (module Q : TAKE_PUSH)
+
+  (* n senders, n receivers *)
+  let bench_queue ~size ~senders ~receivers n =
+    let make (module TP : TAKE_PUSH) =
+      let l = CCList.(1 -- n) in
+      fun () ->
+        let q = Q.create size in
+        let res = CCLock.create 0 in
+        let expected_res = 2 * senders * Sequence.(1 -- n |> fold (+) 0) in
+        let a_senders = CCThread.Arr.spawn senders
+          (fun _ ->
+            TP.push_list q l;
+            TP.push_list q l
+          )
+        and a_receivers = CCThread.Arr.spawn receivers
+          (fun _ ->
+            let l1 = TP.take_list q n in
+            let l2 = TP.take_list q n in
+            let n = List.fold_left (+) 0 l1 + List.fold_left (+) 0 l2 in
+            CCLock.update res ((+) n);
+            ()
+          )
+        in
+        CCThread.Arr.join a_senders;
+        CCThread.Arr.join a_receivers;
+        assert (expected_res = CCLock.get res);
+        ()
+    in
+    B.throughputN 3
+      [ "cur", make cur, ()
+      ; "naive", make naive, ()
+      ]
+
+  let () = B.Tree.register (
+    let take_push = CCList.map
+      (fun (size,senders,receivers) ->
+        Printf.sprintf "queue.take/push (size=%d,senders=%d,receivers=%d)"
+          size senders receivers
+        @>>
+        app_ints (bench_queue ~size ~senders ~receivers)
+          [100; 1_000]
+      ) [ 2, 3, 3
+        ; 5, 3, 3
+        ; 2, 10, 10
+        ; 5, 10, 10
+        ; 20, 10, 10
+      ]
+    in
+
+    "thread" @>>>
+      ( take_push @
+      []
+      )
+  )
+end
+
 let () =
   B.Tree.run_global ()
