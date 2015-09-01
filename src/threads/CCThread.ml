@@ -43,7 +43,7 @@ module Queue = struct
       size=0;
     } in
     q
-      
+
   let incr_size_ q = assert(q.size < q.capacity); q.size <- q.size + 1
   let decr_size_ q = assert(q.size > 0); q.size <- q.size - 1
 
@@ -112,7 +112,9 @@ module Queue = struct
     let q = Queue.create 2 in
     let senders = Arr.spawn 3
       (fun i ->
-        List.iter (Queue.push q) lists.(i)
+        if i=1
+        then Queue.push_list q lists.(i)  (* test push_list *)
+        else List.iter (Queue.push q) lists.(i)
       )
     in
     let l = CCLock.create [] in
