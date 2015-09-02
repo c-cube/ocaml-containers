@@ -153,6 +153,25 @@ type 'a random_gen = Random.State.t -> 'a
 let random g st =
   if Random.State.bool st then Some (g st) else None
 
+exception ExitChoice
+
+let choice_seq s =
+  let r = ref None in
+  begin try
+    s (function
+    | None -> ()
+    | (Some _) as o -> r := o; raise ExitChoice
+    )
+  with ExitChoice -> ()
+  end;
+  !r
+
+(*$T
+  choice_seq (Sequence.of_list [None; Some 1; Some 2]) = Some 1
+  choice_seq Sequence.empty = None
+  choice_seq (Sequence.repeat None |> Sequence.take 100) = None
+*)
+
 let to_gen o =
   match o with
   | None -> (fun () -> None)
