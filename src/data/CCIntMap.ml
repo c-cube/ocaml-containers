@@ -164,6 +164,20 @@ let update k f t =
 
 let doubleton k1 v1 k2 v2 = add k1 v1 (singleton k2 v2)
 
+let rec equal ~eq a b = match a, b with
+  | E, E -> true
+  | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
+  | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
+      pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
+  | E, _
+  | N _, _
+  | L _, _ -> false
+
+(*$Q
+  Q.(list (pair int bool)) ( fun l -> \
+    equal ~eq:(=) (of_list l) (of_list (List.rev l)))
+*)
+
 let rec iter f t = match t with
   | E -> ()
   | L (k, v) -> f k v
@@ -234,6 +248,7 @@ let rec inter f a b = match a, b with
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 let add_list t l = List.fold_left (fun t (k,v) -> add k v t) t l
 
@@ -267,6 +282,93 @@ let keys t yield = iter (fun k _ -> yield k) t
 
 let values t yield = iter (fun _ v -> yield v) t
 
+let rec add_gen m g =  match g() with
+  | None -> m
+  | Some (k,v) -> add_gen (add k v m) g
+
+let of_gen g = add_gen empty g
+
+let to_gen m =
+  let st = Stack.create () in
+  Stack.push m st;
+  let rec next() =
+    if Stack.is_empty st then None
+    else explore (Stack.pop st)
+  and explore n = match n with
+    | E -> next()  (* backtrack *)
+    | L (k,v) -> Some (k,v)
+    | N (_, _, l, r) ->
+        Stack.push r st;
+        explore l
+  in
+  next
+
+(*$T
+  doubleton 1 "a" 2 "b" |> to_gen |> of_gen |> to_list \
+    |> List.sort Pervasives.compare = [1, "a"; 2, "b"]
+*)
+
+(*$Q
+  Q.(list (pair int bool)) (fun l -> \
+    let m = of_list l in equal ~eq:(=) m (m |> to_gen |> of_gen))
+*)
+
+(* E < L < N; arbitrary order for switches *)
+let compare ~cmp a b =
+  let rec cmp_gen cmp a b = match a(), b() with
+    | None, None -> 0
+    | Some _, None -> 1
+    | None, Some _ -> -1
+    | Some (ka, va), Some (kb, vb) ->
+        if ka=kb
+          then
+            let c = cmp va vb in
+            if c=0 then cmp_gen cmp a b else c
+          else Pervasives.compare ka kb
+  in
+  cmp_gen cmp (to_gen a) (to_gen b)
+
+(*$Q
+  Q.(list (pair int bool)) ( fun l -> \
+    let m1 = of_list l and m2 = of_list (List.rev l) in \
+    compare ~cmp:Pervasives.compare m1 m2 = 0)
+  Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1, l2) -> \
+    let l1 = List.map (fun (k,v) -> abs k,v) l1 in \
+    let l2 = List.map (fun (k,v) -> abs k,v) l2 in \
+    let m1 = of_list l1 and m2 = of_list l2 in \
+    let c = compare ~cmp:Pervasives.compare m1 m2 \
+    and c' = compare ~cmp:Pervasives.compare m2 m1 in \
+    (c = 0) = (c' = 0) && (c < 0) = (c' > 0) && (c > 0) = (c' < 0))
+  Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1, l2) -> \
+    let l1 = List.map (fun (k,v) -> abs k,v) l1 in \
+    let l2 = List.map (fun (k,v) -> abs k,v) l2 in \
+    let m1 = of_list l1 and m2 = of_list l2 in \
+    (compare ~cmp:Pervasives.compare m1 m2 = 0) = equal ~eq:(=) m1 m2)
+*)
+
+let rec add_klist m l = match l() with
+  | `Nil -> m
+  | `Cons ((k,v), tl) -> add_klist (add k v m) tl
+
+let of_klist l = add_klist empty l
+
+let to_klist m =
+  (* [st]: stack of alternatives *)
+  let rec explore st m () = match m with
+    | E -> next st ()
+    | L (k,v) -> `Cons ((k, v), next st)
+    | N (_, _, l, r) -> explore (r::st) l ()
+  and next st () = match st with
+    | [] -> `Nil
+    | x :: st' -> explore st' x ()
+  in
+  next [m]
+
+(*$Q
+  Q.(list (pair int bool)) (fun l -> \
+    let m = of_list l in equal ~eq:(=) m (m |> to_klist |> of_klist))
+*)
+
 type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 
 let rec as_tree t () = match t with
@@ -274,6 +376,8 @@ let rec as_tree t () = match t with
   | L (k, v) -> `Node (`Leaf (k, v), [])
   | N (prefix, switch, l, r) ->
     `Node (`Node (prefix, switch), [as_tree l; as_tree r])
+
+(** {2 IO} *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
