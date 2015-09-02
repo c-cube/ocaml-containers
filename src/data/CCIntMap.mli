@@ -61,6 +61,7 @@ val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
 val update : int -> ('a option -> 'a option) -> 'a t -> 'a t
 
 val cardinal : _ t -> int
+(** Number of bindings in the map. Linear time *)
 
 val iter : (int -> 'a -> unit) -> 'a t -> unit
 
@@ -114,10 +115,6 @@ val of_klist : (int * 'a) klist -> 'a t
 val to_klist : 'a t -> (int * 'a) klist
 (** @since NEXT_RELEASE *)
 
-(** Helpers *)
-
-val highest_bit : int -> int
-
 type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 
 val as_tree : 'a t -> [`Node of int * int | `Leaf of int * 'a ] tree
@@ -129,3 +126,15 @@ type 'a printer = Format.formatter -> 'a -> unit
 val print : 'a printer -> 'a t printer
 (** @since NEXT_RELEASE *)
 
+(** Helpers *)
+
+(**/**)
+
+module Bit : sig
+  type t = private int
+  val min_int : t
+  val highest : int -> t
+end
+val check_invariants : _ t -> bool
+
+(**/**)
