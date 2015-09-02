@@ -94,6 +94,19 @@ val bfs : ?pset:'a pset -> 'a t -> 'a klist
 val find : ?pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
 (** Look for an element that maps to [Some _] *)
 
+(** {2 Non-lazy tree} *)
+
+(** Non-lazy version of {!'a t} *)
+type 'a tree =
+  [ `Nil
+  | `Node of 'a * 'a tree list
+  ]
+
+val force : 'a t -> 'a tree
+(** Evaluate the whole tree (if finite). Useful for displaying in
+    toplevel.
+    @since NEXT_RELEASE *)
+
 (** {2 Pretty-printing}
 
 Example (tree of calls for naive Fibonacci function):

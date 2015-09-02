@@ -140,28 +140,43 @@ end
 
 (** {2 Functors} *)
 
+let rec highest_bit_naive x m =
+  if x=m then m
+  else highest_bit_naive (x land (lnot m)) (2*m)
+
+let mask_20_ = 1 lsl 20
+let mask_40_ = 1 lsl 40
+
+let highest x =
+  if x<0 then min_int
+  else if Sys.word_size > 40 && x > mask_40_
+  then (* remove least significant 40 bits *)
+    let x' = x land (lnot (mask_40_ -1)) in
+    highest_bit_naive x' mask_40_
+  else if x> mask_20_
+  then (* small shortcut: remove least significant 20 bits *)
+    let x' = x land (lnot (mask_20_ -1)) in
+    highest_bit_naive x' mask_20_
+  else highest_bit_naive x 1
+
 module Hash : sig
   type t = private int
   val make_unsafe : int -> t
-  val rem : t -> int (* 3 last bits *)
-  val quotient : t -> t (* remove 3 last bits *)
-  val combine : t -> int -> t (* add 3 last bits *)
+  val split : t -> int * t  (* 3 highest bits of h / h without those 3 bits *)
 end = struct
   type t = int
   let make_unsafe i = i
-  let rem h = h land 7
-  let quotient h = h lsr 3
-  let combine h r = h lsl 3 lor r
-
-  (* safety checks *)
-  let () =
-    assert (
-      List.for_all
-        (fun n ->
-          let q = quotient n and r = rem n in
-          n = combine q r
-        ) [1;2;3;4;10;205;295;4262;1515;67;8;99;224;]
-    )
+  let split h =
+    let m = highest h in
+    let m1 = m lsr 1 in
+    let m2 = m lsr 2 in
+    (* 3 bit mask of [h], shifted to [0...7] *)
+    let r =
+      (if h land m = 0 then 0 else 4) lor
+      (if h land m1 = 0 then 0 else 2) lor
+      (if h land m2 = 0 then 0 else 1)
+    and h' = h land (lnot (m lor m1 lor m2)) in
+    r, h'
 end
 
 module Make(Key : KEY)
@@ -211,8 +226,7 @@ module Make(Key : KEY)
     | E -> raise Not_found
     | L (_, l) -> get_exn_list_ k l
     | N a ->
-        let i = Hash.rem h in
-        let h' = Hash.quotient h in
+        let i, h' = Hash.split h in
         get_exn_ k ~h:h' (A.get a i)
 
   let get_exn k m = get_exn_ k ~h:(hash_ k) m
@@ -232,8 +246,7 @@ module Make(Key : KEY)
         else (* split into N *)
           let a = A.create E in
           (* put leaf in the right bucket *)
-          let i = Hash.rem h' in
-          let h'' = Hash.quotient h' in
+          let i, h'' = Hash.split h' in
           let a = A.set a i (L (h'', l)) in
           (* then add new node *)
           let a = add_to_array_ k v ~h a in
@@ -251,8 +264,7 @@ module Make(Key : KEY)
   (* add k->v to [a] *)
   and add_to_array_ k v ~h a =
     (* insert in a bucket *)
-    let i = Hash.rem h in
-    let h' = Hash.quotient h in
+    let i, h' = Hash.split h in
     A.set a i (add_ k v ~h:h' (A.get a i))
 
   let add k v m = add_ k v ~h:(hash_ k) m
@@ -274,8 +286,7 @@ module Make(Key : KEY)
         | Cons _ as res -> L (h, res)
         end
     | N a ->
-        let i = Hash.rem h in
-        let h' = Hash.quotient h in
+        let i, h' = Hash.split h in
         let a' = A.set a i (remove_rec_ k ~h:h' (A.get a i)) in
         if is_empty_arr_ a'
           then E

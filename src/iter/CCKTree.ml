@@ -181,6 +181,18 @@ let find ?pset f t =
   in
   _find_kl f (bfs ?pset t)
 
+(** {2 Non-lazy tree} *)
+
+(** Non-lazy version of {!'a t} *)
+type 'a tree =
+  [ `Nil
+  | `Node of 'a * 'a tree list
+  ]
+
+let rec force t = match t() with
+  | `Nil -> `Nil
+  | `Node (x, l) -> `Node (x, List.map force l)
+
 (** {2 Pretty-printing} *)
 
 let print pp_x fmt t =
