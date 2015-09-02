@@ -145,23 +145,11 @@ module Hash : sig
   val make_unsafe : int -> t
   val rem : t -> int (* 3 last bits *)
   val quotient : t -> t (* remove 3 last bits *)
-  val combine : t -> int -> t (* add 3 last bits *)
 end = struct
   type t = int
   let make_unsafe i = i
   let rem h = h land 7
   let quotient h = h lsr 3
-  let combine h r = h lsl 3 lor r
-
-  (* safety checks *)
-  let () =
-    assert (
-      List.for_all
-        (fun n ->
-          let q = quotient n and r = rem n in
-          n = combine q r
-        ) [1;2;3;4;10;205;295;4262;1515;67;8;99;224;]
-    )
 end
 
 module Make(Key : KEY)
