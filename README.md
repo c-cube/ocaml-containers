@@ -115,9 +115,11 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 
 ### Containers.data
 
+- `CCBitField`, bitfields embedded in integers
 - `CCCache`, memoization caches, LRU, etc.
 - `CCFlatHashtbl`, a flat (open-addressing) hashtable functorial implementation
 - `CCTrie`, a prefix tree
+- `CCHashTrie`, a map where keys are hashed and put in a trie by hash
 - `CCMultimap` and `CCMultiset`, functors defining persistent structures
 - `CCFQueue`, a purely functional double-ended queue structure
 - `CCBV`, mutable bitvectors

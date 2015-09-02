@@ -198,6 +198,12 @@ module Tbl = struct
     let hash i = i
   end)
 
+  module IHashTrie = CCHashTrie.Make(struct
+    type t = int
+    let equal (i:int) j = i=j
+    let hash i = i land max_int
+  end)
+
   let phashtbl_add n =
     let h = PHashtbl.create 50 in
     for i = n downto 0 do
@@ -240,6 +246,13 @@ module Tbl = struct
     done;
     !h
 
+  let hashtrie_add n =
+    let h = ref IHashTrie.empty in
+    for i = n downto 0 do
+      h := IHashTrie.add i i !h;
+    done;
+    !h
+
   let icchashtbl_add n =
     let h = ICCHashtbl.create 50 in
     for i = n downto 0 do
@@ -256,6 +269,7 @@ module Tbl = struct
        "imap_add", (fun n -> ignore (imap_add n)), n;
        "intmap_add", (fun n -> ignore (intmap_add n)), n;
        "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n)), n;
+       "cchashtrie_add", (fun n -> ignore (hashtrie_add n)), n;
       ]
 
   let phashtbl_replace n =
@@ -318,6 +332,16 @@ module Tbl = struct
     done;
     !h
 
+  let hashtrie_replace n =
+    let h = ref IHashTrie.empty in
+    for i = 0 to n do
+      h := IHashTrie.add i i !h;
+    done;
+    for i = n downto 0 do
+      h := IHashTrie.add i i !h;
+    done;
+    !h
+
   let icchashtbl_replace n =
     let h = ICCHashtbl.create 50 in
     for i = 0 to n do
@@ -337,6 +361,7 @@ module Tbl = struct
        "imap_replace", (fun n -> ignore (imap_replace n)), n;
        "intmap_replace", (fun n -> ignore (intmap_replace n)), n;
        "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n)), n;
+       "hashtrie_replace", (fun n -> ignore (hashtrie_replace n)), n;
       ]
 
   let phashtbl_find h =
@@ -387,6 +412,12 @@ module Tbl = struct
         ignore (CCIntMap.find i m);
       done
 
+  let hashtrie_find m =
+    fun n ->
+      for i = 0 to n-1 do
+        ignore (IHashTrie.get_exn i m);
+      done
+
   let icchashtbl_find m =
     fun n ->
       for i = 0 to n-1 do
@@ -403,6 +434,7 @@ module Tbl = struct
     let m = imap_add n in
     let m' = intmap_add n in
     let h'''''' = icchashtbl_add n in
+    let ht = hashtrie_add n in
     B.throughputN 3 [
       "phashtbl_find", (fun () -> phashtbl_find h n), ();
       "hashtbl_find", (fun () -> hashtbl_find h' n), ();
@@ -413,6 +445,7 @@ module Tbl = struct
       "imap_find", (fun () -> imap_find m n), ();
       "intmap_find", (fun () -> intmap_find m' n), ();
       "ccflathashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
+      "hashtrie_find", (fun () -> hashtrie_find ht n), ();
     ]
 
   let () = B.Tree.register (

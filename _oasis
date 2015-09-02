@@ -84,7 +84,8 @@ Library "containers_data"
   Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
-                    CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField
+                    CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
+                    CCHashTrie
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      data

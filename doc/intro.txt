@@ -69,6 +69,7 @@ CCCache
 CCFQueue
 CCFlatHashtbl
 CCHashSet
+CCHashTrie
 CCIntMap
 CCMixmap
 CCMixset
