@@ -47,6 +47,8 @@ module type S = sig
 
   val add : key -> 'a -> 'a t -> 'a t
 
+  val mem : key -> _ t -> bool
+
   val get : key -> 'a t -> 'a option
 
   val get_exn : key -> 'a t -> 'a
