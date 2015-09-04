@@ -113,6 +113,8 @@ val split : int -> 'a t -> 'a t * 'a t
 (** [split n l] returns [l1, l2] such that [l1 @ l2 = l] and
     [length l1 = min (length l) n] *)
 
+(* TODO: deprecate and rename split, it already exists in stdlib *)
+
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)

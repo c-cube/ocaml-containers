@@ -209,6 +209,23 @@ is not necessarily up-to-date.
 
 There is a QuickCheck-like library called `QCheck` (now in its own repo).
 
+## Incoming (Breaking) Changes
+
+the following breaking changes are likely to occur for the next release (they
+can still be discussed, of course):
+
+- moving `containers.lwt` into its own repository and opam package
+- moving `containers.misc` into its own repository and opam package (improving the average quality of containers!)
+- aliasing and deprecating `CCList.split` (confusion with `List.split`)
+
+already in git (but can be reverted if needed):
+
+- change exceptions in `CCVector`
+- change signature of `CCDeque.of_seq` (remove optional argument)
+- heavily refactor `CCLinq` in `containers.advanced`. If you use this module,
+  you will most likely have to change your code (into simpler code, hopefully).
+
+
 ## Build
 
 You will need OCaml >= 4.01.0.
