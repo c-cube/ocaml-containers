@@ -11,15 +11,14 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 module type FIXED_ARRAY = sig
   type 'a t
   val create : 'a -> 'a t
-  val length : int
+  val length_log : int
+  val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
+  val update : 'a t -> int -> ('a -> 'a) -> 'a t
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  val for_all : ('a -> bool) -> 'a t -> bool
 end
-
-(* TODO: add an "update" function? *)
 
 module type S = sig
   module A : FIXED_ARRAY
@@ -67,99 +66,55 @@ module type KEY = sig
 end
 
 (** {2 Arrays} *)
-module A8 : FIXED_ARRAY = struct
-  type 'a t = {
-    a0 : 'a;
-    a1 : 'a;
-    a2 : 'a;
-    a3 : 'a;
-    a4 : 'a;
-    a5 : 'a;
-    a6 : 'a;
-    a7 : 'a;
-  }
 
-  let create x = {a0=x; a1=x; a2=x; a3=x; a4=x; a5=x; a6=x;a7=x}
+module A32 : FIXED_ARRAY = struct
+  type 'a t = 'a array
 
-  let length = 8
+  let length_log = 5
 
-  let get a i = match i with
-    | 0 -> a.a0
-    | 1 -> a.a1
-    | 2 -> a.a2
-    | 3 -> a.a3
-    | 4 -> a.a4
-    | 5 -> a.a5
-    | 6 -> a.a6
-    | 7 -> a.a7
-    | _ -> invalid_arg "A8.get"
+  let length = 1 lsl length_log  (* 32 *)
 
-  let set a i x = match i with
-    | 0 -> {a with a0=x}
-    | 1 -> {a with a1=x}
-    | 2 -> {a with a2=x}
-    | 3 -> {a with a3=x}
-    | 4 -> {a with a4=x}
-    | 5 -> {a with a5=x}
-    | 6 -> {a with a6=x}
-    | 7 -> {a with a7=x}
-    | _ -> invalid_arg "A8.set"
+  let create x = Array.make length x
 
-  let iter f a =
-    f a.a0;
-    f a.a1;
-    f a.a2;
-    f a.a3;
-    f a.a4;
-    f a.a5;
-    f a.a6;
-    f a.a7;
-    ()
+  let get a i = a.(i)
 
-  let fold f acc a =
-    let acc = f acc a.a0 in
-    let acc = f acc a.a1 in
-    let acc = f acc a.a2 in
-    let acc = f acc a.a3 in
-    let acc = f acc a.a4 in
-    let acc = f acc a.a5 in
-    let acc = f acc a.a6 in
-    let acc = f acc a.a7 in
-    acc
+  let set a i x =
+    let a' = Array.copy a in
+    a'.(i) <- x;
+    a'
 
-  let for_all p a =
-    p a.a0 &&
-    p a.a1 &&
-    p a.a2 &&
-    p a.a3 &&
-    p a.a4 &&
-    p a.a5 &&
-    p a.a6 &&
-    p a.a7
+  let update a i f =
+    let x = a.(i) in
+    let y = f a.(i) in
+    if x==y then a else set a i y
+
+  let iter = Array.iter
+
+  let fold = Array.fold_left
 end
 
 (** {2 Functors} *)
 
-module Hash : sig
-  type t = private int
-  val make_unsafe : int -> t
-  val rem : t -> int (* 3 last bits *)
-  val quotient : t -> t (* remove 3 last bits *)
-end = struct
-  type t = int
-  let make_unsafe i = i
-  let rem h = h land 7
-  let quotient h = h lsr 3
-end
-
 module Make(Key : KEY)
-: S with module A = A8 and type key = Key.t
+: S with type key = Key.t
 = struct
-  module A = A8
+  module A = A32
 
-  let () = assert (A.length = 8)
+  let () = assert (A.length = 1 lsl A.length_log)
 
-  let hash_ x = Hash.make_unsafe (Key.hash x)
+  module Hash : sig
+    type t = private int
+    val make : Key.t -> t
+    val rem : t -> int (* [A.length_log] last bits *)
+    val quotient : t -> t (* remove [A.length_log] last bits *)
+  end = struct
+    type t = int
+    let make = Key.hash
+    let rem h = h land (A.length - 1)
+    let quotient h = h lsr A.length_log
+  end
+
+  let hash_ = Hash.make
 
   type key = Key.t
 
@@ -209,7 +164,7 @@ module Make(Key : KEY)
     try Some (get_exn_ k ~h:(hash_ k) m)
     with Not_found -> None
 
-  (* TODO: use Hash.combine if array only has one non-empty element *)
+  (* TODO: use Hash.combine if array only has one non-empty LEAF element? *)
 
   (* [h]: hash, with the part required to reach this leaf removed *)
   let rec add_ k v ~h m = match m with
@@ -241,11 +196,17 @@ module Make(Key : KEY)
     (* insert in a bucket *)
     let i = Hash.rem h in
     let h' = Hash.quotient h in
-    A.set a i (add_ k v ~h:h' (A.get a i))
+    A.update a i (fun x -> add_ k v ~h:h' x)
 
   let add k v m = add_ k v ~h:(hash_ k) m
 
-  let is_empty_arr_ a = A.for_all is_empty a
+  exception LocalExit
+
+  let is_empty_arr_ a =
+    try
+      A.iter (fun t -> if not (is_empty t) then raise LocalExit) a;
+      true
+    with LocalExit -> false
 
   let rec remove_list_ k l = match l with
     | Nil -> Nil

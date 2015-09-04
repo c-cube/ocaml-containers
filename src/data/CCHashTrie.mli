@@ -21,12 +21,13 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 module type FIXED_ARRAY = sig
   type 'a t
   val create : 'a -> 'a t
-  val length : int
+  val length_log : int
+  val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
+  val update : 'a t -> int -> ('a -> 'a) -> 'a t
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  val for_all : ('a -> bool) -> 'a t -> bool
 end
 
 (** {2 Signature} *)
