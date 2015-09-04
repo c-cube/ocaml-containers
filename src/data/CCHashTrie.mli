@@ -19,12 +19,14 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (** {2 Fixed-Size Arrays} *)
 module type FIXED_ARRAY = sig
-  type +'a t
-  val create : 'a -> 'a t
+  type 'a t
+  val create : empty:'a -> 'a t
   val length_log : int
   val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
+  val update : 'a t -> int -> ('a -> 'a) -> 'a t
+  val remove : empty:'a -> 'a t -> int -> 'a t (* put back [empty] there *)
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 end
@@ -91,3 +93,8 @@ end
 
 (** {2 Functors} *)
 module Make(K : KEY) : S with type key = K.t
+
+(**/**)
+val popcount64 : int64 -> int
+module A_SPARSE : FIXED_ARRAY
+(**/**)

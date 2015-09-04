@@ -9,15 +9,19 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (** {2 Fixed-Size Arrays} *)
 module type FIXED_ARRAY = sig
-  type +'a t
-  val create : 'a -> 'a t
+  type 'a t
+  val create : empty:'a -> 'a t
   val length_log : int
   val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
+  val update : 'a t -> int -> ('a -> 'a) -> 'a t
+  val remove : empty:'a -> 'a t -> int -> 'a t (* put back [empty] there *)
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 end
+
+(* TODO: add update again, to call popcount only once *)
 
 module type S = sig
   module A : FIXED_ARRAY
@@ -79,37 +83,161 @@ end
 
 (** {2 Arrays} *)
 
+(* regular array of 32 elements *)
 module A32 : FIXED_ARRAY = struct
-  type +'a t = { dummy1: 'a; dummy2 : 'a }  (* used for variance only *)
-
-  (* NOTE for safety:
-    
-    the array and the record are both boxed types, in the heap
-    (since it has two fields it should not change in the future).
-
-    using an array as covariant is safe because we ALWAYS copy before writing,
-    so we cannot put a wrong value in [a] by upcasting it and writing.
-  *)
-
-  external hide_array_ : 'a array -> 'a t = "%identity"
-  external get_array_ : 'a t -> 'a array = "%identity"
+  type 'a t = 'a array
 
   let length_log = 5
 
   let length = 1 lsl length_log  (* 32 *)
 
-  let create x = hide_array_ (Array.make length x)
+  let create ~empty:x = Array.make length x
 
-  let get a i = Array.get (get_array_ a) i
+  let get a i = Array.get a i
 
   let set a i x =
-    let a' = Array.copy (get_array_ a) in
+    let a' = Array.copy a in
     a'.(i) <- x;
-    hide_array_ a'
+    a'
 
-  let iter f a = Array.iter f (get_array_ a)
+  let update a i f = set a i (f (get a i))
 
-  let fold f acc a = Array.fold_left f acc (get_array_ a)
+  let remove ~empty a i =
+    let a' = Array.copy a in
+    a'.(i) <- empty;
+    a'
+
+  let iter = Array.iter
+
+  let fold = Array.fold_left
+end
+
+  (*
+  from https://en.wikipedia.org/wiki/Hamming_weight
+
+  //This uses fewer arithmetic operations than any other known  
+  //implementation on machines with fast multiplication.
+  //It uses 12 arithmetic operations, one of which is a multiply.
+  int popcount_3(uint64_t x) {
+    x -= (x >> 1) & m1;             //put count of each 2 bits into those 2 bits
+    x = (x & m2) + ((x >> 2) & m2); //put count of each 4 bits into those 4 bits 
+    x = (x + (x >> 4)) & m4;        //put count of each 8 bits into those 8 bits 
+    return (x * h01)>>56;  //returns left 8 bits of x + (x<<8) + (x<<16) + (x<<24) + ... 
+  }
+*)
+
+let popcount64 (b:int64) =
+  let open Int64 in
+  let b = sub b (logand (shift_right_logical b 1) 0x5555555555555555L) in
+  let b = add (logand b 0x3333333333333333L)
+    (logand (shift_right_logical b 2) 0x3333333333333333L) in
+  let b = logand (add b (shift_right_logical b 4)) 0x0F0F0F0F0F0F0F0FL in
+  let b = shift_right_logical (mul b 0x0101010101010101L) 56 in
+  Int64.to_int b
+
+(*$T
+  popcount64 5L = 2
+  popcount64 256L = 1
+  popcount64 255L = 8
+  popcount64 0xFFFFFFFFL = 32
+  popcount64 0xFFFFFFFFFFFFFFFFL = 64
+*)
+
+(*$Q
+  Q.int (fun i -> \
+    let i = Int64.of_int i in popcount64 i <= 64)
+  *)
+
+(* sparse array, using a bitfield and POPCOUNT *)
+module A_SPARSE : FIXED_ARRAY = struct
+  type 'a t = {
+    bits: int64;
+    arr: 'a array;
+    empty: 'a;
+  }
+
+  let length_log = 6
+  let length = 1 lsl length_log
+
+  let popcount = popcount64
+
+  let create ~empty = { bits=0L; arr= [| |]; empty; }
+
+  let get a i =
+    let open Int64 in
+    let idx = shift_left 1L i in
+    if logand a.bits idx = 0L
+    then a.empty
+    else
+      let real_idx =popcount (logand a.bits (sub idx 1L)) in
+      a.arr.(real_idx)
+
+  let set a i x =
+    let open Int64 in
+    let idx = shift_left 1L i in
+    let real_idx = popcount (logand a.bits (sub idx 1L)) in
+    if logand a.bits idx = 0L
+    then (
+      (* insert at [real_idx] in a new array *)
+      let bits = logor a.bits idx in
+      let arr = Array.init (Array.length a.arr + 1)
+        (fun j ->
+          if j<real_idx then a.arr.(j)
+          else if j=real_idx then x
+          else a.arr.(j-1)
+        ) in
+      {a with bits; arr}
+    ) else (
+      (* replace element at [real_idx] *)
+      let arr = Array.copy a.arr in
+      arr.(real_idx) <- x;
+      {a with arr}
+    )
+
+  let update a i f =
+    let open Int64 in
+    let idx = shift_left 1L i in
+    let real_idx = popcount (logand a.bits (sub idx 1L)) in
+    if logand a.bits idx = 0L
+    then (
+      (* not present *)
+      let x = f a.empty in
+      (* insert at [real_idx] in a new array *)
+      let bits = logor a.bits idx in
+      let arr = Array.init (Array.length a.arr + 1)
+        (fun j ->
+          if j<real_idx then a.arr.(j)
+          else if j=real_idx then x
+          else a.arr.(j-1)
+        ) in
+      {a with bits; arr}
+    ) else (
+      let x = f a.arr.(real_idx) in
+      (* replace element at [real_idx] *)
+      let arr = Array.copy a.arr in
+      arr.(real_idx) <- x;
+      {a with arr}
+    )
+
+  let remove ~empty:_ a i =
+    let open Int64 in
+    let idx = shift_left 1L i in
+    let real_idx = popcount (logand a.bits (sub idx 1L)) in
+    if logand a.bits idx = 0L
+    then a (* not present *)
+    else (
+      (* remove at [real_idx] *)
+      let bits = logand a.bits (lognot idx) in
+      let arr = Array.init (Array.length a.arr - 1)
+        (fun j ->
+          if j>= real_idx then a.arr.(j+1) else a.arr.(j)
+        ) in
+      {a with bits; arr}
+    )
+
+  let iter f a = Array.iter f a.arr
+
+  let fold f acc a = Array.fold_left f acc a.arr
 end
 
 (** {2 Functors} *)
@@ -117,7 +245,7 @@ end
 module Make(Key : KEY)
 : S with type key = Key.t
 = struct
-  module A = A32
+  module A = A_SPARSE
 
   let () = assert (A.length = 1 lsl A.length_log)
 
@@ -155,13 +283,6 @@ module Make(Key : KEY)
       L [] --> E
       N [E, E,...., E] -> E
   *)
-
-  (* NOTE for safety:
-    
-    only allocate one empty array. It will contain only [E] for every
-    different value type
-  *)
-  let empty_arr_ = A.create E
 
   let empty = E
 
@@ -213,7 +334,7 @@ module Make(Key : KEY)
         if h=h'
         then L (h, add_list_ k v l)
         else (* split into N *)
-          let a = empty_arr_ in
+          let a = A.create ~empty:E in
           let a, leaf =
             if Hash.is_0 h' then a, l
             else
@@ -238,7 +359,7 @@ module Make(Key : KEY)
     (* insert in a bucket *)
     let i = Hash.rem h in
     let h' = Hash.quotient h in
-    A.set a i (add_ k v ~h:h' (A.get a i))
+    A.update a i (fun x -> add_ k v ~h:h' x)
 
   let add k v m = add_ k v ~h:(hash_ k) m
 
@@ -273,7 +394,10 @@ module Make(Key : KEY)
             else
               let i = Hash.rem h in
               let h' = Hash.quotient h in
-              leaf, A.set a i (remove_rec_ k ~h:h' (A.get a i))
+              let new_t = remove_rec_ k ~h:h' (A.get a i) in
+              if is_empty new_t
+              then leaf, A.remove ~empty:E a i (* remove sub-tree *)
+              else leaf, A.set a i new_t
         in
         if is_empty_list_ leaf && is_empty_arr_ a
           then E
@@ -339,3 +463,18 @@ module Make(Key : KEY)
     | Cons (k, v, tail) -> (k,v) :: list_as_tree_ tail
   and array_as_tree_ a = A.fold (fun acc t -> as_tree t :: acc) [] a
 end
+
+(*$R
+  let module M = Make(CCInt) in
+  let m = M.of_list CCList.(1 -- 1000 |> map (fun i->i,i)) in
+  assert_equal ~printer:CCInt.to_string 1000 (M.cardinal m);
+  assert_bool "check all get"
+    (Sequence.for_all (fun i -> i = M.get_exn i m) Sequence.(1 -- 1000));
+  let m = Sequence.(501 -- 1000 |> fold (fun m i -> M.remove i m) m) in
+  assert_equal ~printer:CCInt.to_string 500 (M.cardinal m);
+  assert_bool "check all get after remove"
+    (Sequence.for_all (fun i -> i = M.get_exn i m) Sequence.(1 -- 500));
+  assert_bool "check all get after remove"
+    (Sequence.for_all (fun i -> None = M.get i m) Sequence.(501 -- 1000));
+*)
+
