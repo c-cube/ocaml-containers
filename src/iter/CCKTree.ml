@@ -171,6 +171,10 @@ let bfs ?(pset=set_of_cmp ()) t =
   in
   bfs pset (FQ.push FQ.empty t)
 
+let rec force t : ([`Nil | `Node of 'a * 'b list] as 'b) = match t() with
+  | `Nil -> `Nil
+  | `Node (x, l) -> `Node (x, List.map force l)
+
 let find ?pset f t =
   let rec _find_kl f l = match l() with
     | `Nil -> None
