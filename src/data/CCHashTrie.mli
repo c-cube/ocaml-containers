@@ -19,7 +19,7 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (** {2 Fixed-Size Arrays} *)
 module type FIXED_ARRAY = sig
-  type 'a t
+  type +'a t
   val create : 'a -> 'a t
   val length_log : int
   val length : int  (* 2 power length_log *)
