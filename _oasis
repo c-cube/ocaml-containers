@@ -181,7 +181,7 @@ Executable run_benchs
   MainIs:           run_benchs.ml
   BuildDepends:     containers, containers.misc, containers.advanced,
                     containers.data, containers.string, containers.iter,
-                    containers.thread, sequence, gen, benchmark
+                    containers.thread, sequence, gen, benchmark, hamt
 
 Executable run_bench_hash
   Path: benchs/
