@@ -48,6 +48,11 @@ val cons : 'a -> 'a t -> 'a t
 val append : 'a t -> 'a t -> 'a t
 (** Safe version of append *)
 
+val cons_maybe : 'a option -> 'a t -> 'a t
+(** [cons_maybe (Some x) l] is [x :: l]
+    [cons_maybe None l] is [l]
+    @since NEXT_RELEASE *)
+
 val (@) : 'a t -> 'a t -> 'a t
 
 val filter : ('a -> bool) -> 'a t -> 'a t

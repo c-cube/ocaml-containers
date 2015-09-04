@@ -82,6 +82,15 @@ let (@) = append
   (1-- 10_000) @ (10_001 -- 20_000) = 1 -- 20_000
 *)
 
+let cons_maybe o l = match o with
+  | Some x -> x :: l
+  | None -> l
+
+(*$T
+  cons_maybe (Some 1) [2;3] = [1;2;3]
+  cons_maybe None [2;3] = [2;3]
+*)
+
 let direct_depth_filter_ = 10_000
 
 let filter p l =
