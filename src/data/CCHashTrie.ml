@@ -48,15 +48,28 @@ module type S = sig
 
   val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
 
+  (** {6 Conversions} *)
+
   val to_list : 'a t -> (key * 'a) list
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
 
   val of_list : (key * 'a) list -> 'a t
 
+  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+
+  val of_seq : (key * 'a) sequence -> 'a t
+
+  val to_seq : 'a t -> (key * 'a) sequence
+
+  (** {6 IO} *)
+
   val print : key printer -> 'a printer -> 'a t printer
 
   val as_tree : 'a t -> [`L of int * (key * 'a) list | `N ] ktree
+  (** For debugging purpose: explore the structure of the tree,
+      with [`L (h,l)] being a leaf (with shared hash [h])
+      and [`N] an inner node *)
 end
 
 module type KEY = sig
@@ -307,6 +320,15 @@ module Make(Key : KEY)
   let add_list m l = List.fold_left (fun acc (k,v) -> add k v acc) m l
 
   let of_list l = add_list empty l
+
+  let add_seq m s =
+    let m = ref m in
+    s (fun (k,v) -> m := add k v !m);
+    !m
+
+  let of_seq s = add_seq empty s
+
+  let to_seq m yield = iter (fun k v -> yield (k,v)) m
 
   let print ppk ppv out m =
     let first = ref true in

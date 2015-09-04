@@ -59,11 +59,21 @@ module type S = sig
 
   val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
 
+  (** {6 Conversions} *)
+
   val to_list : 'a t -> (key * 'a) list
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
 
   val of_list : (key * 'a) list -> 'a t
+
+  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+
+  val of_seq : (key * 'a) sequence -> 'a t
+
+  val to_seq : 'a t -> (key * 'a) sequence
+
+  (** {6 IO} *)
 
   val print : key printer -> 'a printer -> 'a t printer
 
