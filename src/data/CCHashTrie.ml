@@ -15,7 +15,6 @@ module type FIXED_ARRAY = sig
   val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
-  val update : 'a t -> int -> ('a -> 'a) -> 'a t
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 end
@@ -108,16 +107,6 @@ module A32 : FIXED_ARRAY = struct
     a'.(i) <- x;
     hide_array_ a'
 
-  let update a i f =
-    let x = Array.get (get_array_ a) i in
-    let y = f x in
-    if x==y then a
-    else (
-      let a' = Array.copy (get_array_ a) in
-      a'.(i) <- y;
-      hide_array_ a'
-    )
-
   let iter f a = Array.iter f (get_array_ a)
 
   let fold f acc a = Array.fold_left f acc (get_array_ a)
@@ -209,12 +198,20 @@ module Make(Key : KEY)
 
   (* TODO: use Hash.combine if array only has one non-empty LEAF element? *)
 
+  (* [left] list nodes already visited *)
+  let rec add_list_ k v l = match l with
+    | Nil -> Cons (k, v, Nil)
+    | Cons (k', v', tail) ->
+        if Key.equal k k'
+        then Cons (k, v, tail) (* replace *)
+        else Cons (k', v', add_list_ k v tail)
+
   (* [h]: hash, with the part required to reach this leaf removed *)
   let rec add_ k v ~h m = match m with
     | E -> leaf_ k v ~h
     | L (h', l) ->
         if h=h'
-        then L (h, add_list_ k v ~h l)
+        then L (h, add_list_ k v l)
         else (* split into N *)
           let a = empty_arr_ in
           let a, leaf =
@@ -227,28 +224,21 @@ module Make(Key : KEY)
           in
           (* then add new node *)
           let a, leaf =
-            if Hash.is_0 h then a, add_list_ k v ~h leaf
+            if Hash.is_0 h then a, add_list_ k v leaf
             else add_to_array_ k v ~h a, leaf
           in
           N (leaf, a)
     | N (leaf, a) ->
-        if Hash.is_0 h then N (add_list_ k v ~h leaf, a)
+        if Hash.is_0 h
+        then N (add_list_ k v leaf, a)
         else N (leaf, add_to_array_ k v ~h a)
-
-  (* [left] list nodes already visited *)
-  and add_list_ k v ~h l = match l with
-    | Nil -> Cons (k, v, Nil)
-    | Cons (k', v', tail) ->
-        if Key.equal k k'
-        then Cons (k, v, tail) (* replace *)
-        else Cons (k', v', add_list_ k v ~h tail)
 
   (* add k->v to [a] *)
   and add_to_array_ k v ~h a =
     (* insert in a bucket *)
     let i = Hash.rem h in
     let h' = Hash.quotient h in
-    A.update a i (fun x -> add_ k v ~h:h' x)
+    A.set a i (add_ k v ~h:h' (A.get a i))
 
   let add k v m = add_ k v ~h:(hash_ k) m
 
