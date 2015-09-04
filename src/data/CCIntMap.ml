@@ -315,6 +315,14 @@ let rec union f t1 t2 = match t1, t2 with
     check_invariants (inter (fun _ _ x -> x) (of_list l1) (of_list l2)))
 *)
 
+(* associativity of union *)
+(*$Q & ~small:(fun (a,b,c) -> List.(length a + length b + length c))
+  Q.(let p = list (pair int int) in triple p p p) (fun (l1,l2,l3) -> \
+    let m1 = of_list l1 and m2 = of_list l2 and m3 = of_list l3 in \
+    let f _ x y = max x y in \
+    equal ~eq:(=) (union f (union f m1 m2) m3) (union f m1 (union f m2 m3)))
+*)
+
 (*$R
   assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (print CCString.print))
     (of_list [1, "1"; 2, "2"; 3, "3"; 4, "4"])
@@ -334,7 +342,6 @@ let rec union f t1 t2 = match t1, t2 with
     equal ~eq:(=) (of_list l) (union (fun _ a _ -> a) (of_list l)(of_list l)))
 *)
 
-(* TODO fix *)
 let rec inter f a b = match a, b with
   | E, _ | _, E -> E
   | L (k, v), o
@@ -368,6 +375,15 @@ let rec inter f a b = match a, b with
    Q.(list (pair int bool)) (fun l -> \
     equal ~eq:(=) (of_list l) (inter (fun _ a _ -> a) (of_list l)(of_list l)))
 *)
+
+(* associativity of inter *)
+(*$Q & ~small:(fun (a,b,c) -> List.(length a + length b + length c))
+  Q.(let p = list (pair int int) in triple p p p) (fun (l1,l2,l3) -> \
+    let m1 = of_list l1 and m2 = of_list l2 and m3 = of_list l3 in \
+    let f _ x y = max x y in \
+    equal ~eq:(=) (inter f (inter f m1 m2) m3) (inter f m1 (inter f m2 m3)))
+*)
+
 
 (* TODO: write tests *)
 
