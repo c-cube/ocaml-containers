@@ -25,9 +25,15 @@ module type FIXED_ARRAY = sig
   val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
-  val update : 'a t -> int -> ('a -> 'a) -> 'a t
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+
+  (* temporary constructor *)
+  type 'a mut
+  val create_mut : 'a -> 'a mut
+  val freeze_mut : 'a mut -> 'a t (** do not use afterwards! *)
+  val set_mut : 'a mut -> int -> 'a -> unit
+  val get_mut : 'a mut -> int -> 'a
 end
 
 (** {2 Signature} *)

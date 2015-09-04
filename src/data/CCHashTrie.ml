@@ -15,9 +15,15 @@ module type FIXED_ARRAY = sig
   val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
-  val update : 'a t -> int -> ('a -> 'a) -> 'a t
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+
+  (* temporary constructor *)
+  type 'a mut
+  val create_mut : 'a -> 'a mut
+  val freeze_mut : 'a mut -> 'a t
+  val set_mut : 'a mut -> int -> 'a -> unit
+  val get_mut : 'a mut -> int -> 'a
 end
 
 module type S = sig
@@ -83,8 +89,10 @@ end
 module A32 : FIXED_ARRAY = struct
   type +'a t = { dummy1: 'a; dummy2 : 'a }  (* used for variance only *)
 
+  type 'a mut = 'a array
+
   (* NOTE for safety:
-    
+
     the array and the record are both boxed types, in the heap
     (since it has two fields it should not change in the future).
 
@@ -108,19 +116,17 @@ module A32 : FIXED_ARRAY = struct
     a'.(i) <- x;
     hide_array_ a'
 
-  let update a i f =
-    let x = Array.get (get_array_ a) i in
-    let y = f x in
-    if x==y then a
-    else (
-      let a' = Array.copy (get_array_ a) in
-      a'.(i) <- y;
-      hide_array_ a'
-    )
-
   let iter f a = Array.iter f (get_array_ a)
 
   let fold f acc a = Array.fold_left f acc (get_array_ a)
+
+  let create_mut x = Array.make length x
+
+  let freeze_mut a = hide_array_ a
+
+  let set_mut a i x = a.(i) <- x
+
+  let get_mut a i = a.(i)
 end
 
 (** {2 Functors} *)
@@ -167,13 +173,6 @@ module Make(Key : KEY)
       N [E, E,...., E] -> E
   *)
 
-  (* NOTE for safety:
-    
-    only allocate one empty array. It will contain only [E] for every
-    different value type
-  *)
-  let empty_arr_ = A.create E
-
   let empty = E
 
   let is_empty = function
@@ -209,46 +208,55 @@ module Make(Key : KEY)
 
   (* TODO: use Hash.combine if array only has one non-empty LEAF element? *)
 
+  (* [left] list nodes already visited *)
+  let rec add_list_ k v l = match l with
+    | Nil -> Cons (k, v, Nil)
+    | Cons (k', v', tail) ->
+        if Key.equal k k'
+        then Cons (k, v, tail) (* replace *)
+        else Cons (k', v', add_list_ k v tail)
+
   (* [h]: hash, with the part required to reach this leaf removed *)
   let rec add_ k v ~h m = match m with
     | E -> leaf_ k v ~h
     | L (h', l) ->
         if h=h'
-        then L (h, add_list_ k v ~h l)
+        then L (h, add_list_ k v l)
         else (* split into N *)
-          let a = empty_arr_ in
-          let a, leaf =
-            if Hash.is_0 h' then a, l
-            else
+          let a = A.create_mut E in
+          let leaf =
+            if Hash.is_0 h' then l
+            else (
               (* put leaf in the right bucket *)
               let i = Hash.rem h' in
               let h'' = Hash.quotient h' in
-              A.set a i (L (h'', l)), Nil
+              A.set_mut a i (L (h'', l));
+              Nil
+            )
           in
           (* then add new node *)
-          let a, leaf =
-            if Hash.is_0 h then a, add_list_ k v ~h leaf
-            else add_to_array_ k v ~h a, leaf
+          let leaf =
+            if Hash.is_0 h then add_list_ k v leaf
+            else (
+              let i = Hash.rem h in
+              let h' = Hash.quotient h in
+              A.set_mut a i (add_ k v ~h:h' (A.get_mut a i));
+              leaf
+            )
           in
-          N (leaf, a)
+          N (leaf, A.freeze_mut a)
     | N (leaf, a) ->
-        if Hash.is_0 h then N (add_list_ k v ~h leaf, a)
+        if Hash.is_0 h
+        then N (add_list_ k v leaf, a)
         else N (leaf, add_to_array_ k v ~h a)
-
-  (* [left] list nodes already visited *)
-  and add_list_ k v ~h l = match l with
-    | Nil -> Cons (k, v, Nil)
-    | Cons (k', v', tail) ->
-        if Key.equal k k'
-        then Cons (k, v, tail) (* replace *)
-        else Cons (k', v', add_list_ k v ~h tail)
 
   (* add k->v to [a] *)
   and add_to_array_ k v ~h a =
     (* insert in a bucket *)
     let i = Hash.rem h in
     let h' = Hash.quotient h in
-    A.update a i (fun x -> add_ k v ~h:h' x)
+    let new_t = add_ k v ~h:h' (A.get a i) in
+    A.set a i new_t
 
   let add k v m = add_ k v ~h:(hash_ k) m
 
