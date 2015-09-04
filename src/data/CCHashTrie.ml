@@ -11,12 +11,13 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 module type FIXED_ARRAY = sig
   type 'a t
   val create : 'a -> 'a t
-  val length : int
+  val length_log : int
+  val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
   val set : 'a t -> int -> 'a -> 'a t
+  val update : 'a t -> int -> ('a -> 'a) -> 'a t
   val iter : ('a -> unit) -> 'a t -> unit
-  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  val for_all : ('a -> bool) -> 'a t -> bool
+  val foldi : (int -> 'b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 end
 
 (* TODO: add an "update" function? *)
@@ -67,99 +68,64 @@ module type KEY = sig
 end
 
 (** {2 Arrays} *)
-module A8 : FIXED_ARRAY = struct
-  type 'a t = {
-    a0 : 'a;
-    a1 : 'a;
-    a2 : 'a;
-    a3 : 'a;
-    a4 : 'a;
-    a5 : 'a;
-    a6 : 'a;
-    a7 : 'a;
-  }
 
-  let create x = {a0=x; a1=x; a2=x; a3=x; a4=x; a5=x; a6=x;a7=x}
+module A32 : FIXED_ARRAY = struct
+  type 'a t = 'a array
 
-  let length = 8
+  let length_log = 5
 
-  let get a i = match i with
-    | 0 -> a.a0
-    | 1 -> a.a1
-    | 2 -> a.a2
-    | 3 -> a.a3
-    | 4 -> a.a4
-    | 5 -> a.a5
-    | 6 -> a.a6
-    | 7 -> a.a7
-    | _ -> invalid_arg "A8.get"
+  let length = 32
 
-  let set a i x = match i with
-    | 0 -> {a with a0=x}
-    | 1 -> {a with a1=x}
-    | 2 -> {a with a2=x}
-    | 3 -> {a with a3=x}
-    | 4 -> {a with a4=x}
-    | 5 -> {a with a5=x}
-    | 6 -> {a with a6=x}
-    | 7 -> {a with a7=x}
-    | _ -> invalid_arg "A8.set"
+  let create x = Array.make length x
 
-  let iter f a =
-    f a.a0;
-    f a.a1;
-    f a.a2;
-    f a.a3;
-    f a.a4;
-    f a.a5;
-    f a.a6;
-    f a.a7;
-    ()
+  let get a i = a.(i)
 
-  let fold f acc a =
-    let acc = f acc a.a0 in
-    let acc = f acc a.a1 in
-    let acc = f acc a.a2 in
-    let acc = f acc a.a3 in
-    let acc = f acc a.a4 in
-    let acc = f acc a.a5 in
-    let acc = f acc a.a6 in
-    let acc = f acc a.a7 in
-    acc
+  let set a i x =
+    let a' = Array.copy a in
+    a'.(i) <- x;
+    a'
 
-  let for_all p a =
-    p a.a0 &&
-    p a.a1 &&
-    p a.a2 &&
-    p a.a3 &&
-    p a.a4 &&
-    p a.a5 &&
-    p a.a6 &&
-    p a.a7
+  let update a i f =
+    let x = a.(i) in
+    let y = f a.(i) in
+    if x==y then a else set a i x
+
+  let iter = Array.iter
+
+  let foldi f acc a =
+    let rec aux f acc a i =
+      if i = length then acc
+      else
+        let acc = f i acc (Array.unsafe_get a i) in
+        aux f acc a (i+1)
+    in
+    aux f acc a 0
 end
 
 (** {2 Functors} *)
 
-module Hash : sig
-  type t = private int
-  val make_unsafe : int -> t
-  val rem : t -> int (* 3 last bits *)
-  val quotient : t -> t (* remove 3 last bits *)
-end = struct
-  type t = int
-  let make_unsafe i = i
-  let rem h = h land 7
-  let quotient h = h lsr 3
-end
-
 module Make(Key : KEY)
-: S with module A = A8 and type key = Key.t
+: S with type key = Key.t
 = struct
-  module A = A8
+  module A = A32
 
-  let () = assert (A.length = 8)
+  let () = assert (A.length = 1 lsl A.length_log)
 
-  let hash_ x = Hash.make_unsafe (Key.hash x)
+  module Hash : sig
+    type t = private int
+    val make : Key.t -> t
+    val rem : t -> int (* [A.length_log] last bits *)
+    val quotient : t -> t (* remove [A.length_log] last bits *)
+    val combine : t -> int -> t
+  end = struct
+    type t = int
+    let make = Key.hash
+    let rem h = h land (A.length - 1)
+    let quotient h = h lsr A.length_log
+    let combine q r = (q lsl A.length_log) lor r
+  end
+
+  let hash_ = Hash.make
 
   type key = Key.t
 
@@ -209,8 +175,6 @@ module Make(Key : KEY)
     try Some (get_exn_ k ~h:(hash_ k) m)
     with Not_found -> None
 
-  (* TODO: use Hash.combine if array only has one non-empty element *)
-
   (* [h]: hash, with the part required to reach this leaf removed *)
   let rec add_ k v ~h m = match m with
     | E -> leaf_ k v ~h
@@ -241,11 +205,22 @@ module Make(Key : KEY)
     (* insert in a bucket *)
     let i = Hash.rem h in
     let h' = Hash.quotient h in
-    A.set a i (add_ k v ~h:h' (A.get a i))
+    A.update a i (fun x -> add_ k v ~h:h' x)
 
   let add k v m = add_ k v ~h:(hash_ k) m
 
-  let is_empty_arr_ a = A.for_all is_empty a
+  type count_array = {
+    num_non_empty : int;  (* number of non empty slots *)
+    idx_non_empty : int;  (* the index of a non-empty element, if any *)
+  }
+
+  let count_arr_ a =
+    A.foldi
+      (fun i acc t ->
+        if is_empty t
+          then acc
+          else {num_non_empty=acc.num_non_empty+1; idx_non_empty=i}
+      ) {num_non_empty=0; idx_non_empty=0} a
 
   let rec remove_list_ k l = match l with
     | Nil -> Nil
@@ -265,9 +240,12 @@ module Make(Key : KEY)
         let i = Hash.rem h in
         let h' = Hash.quotient h in
         let a' = A.set a i (remove_rec_ k ~h:h' (A.get a i)) in
-        if is_empty_arr_ a'
-          then E
-          else N a'
+        match count_arr_ a' with
+        | {num_non_empty=0; _} -> E
+        | {num_non_empty=1; idx_non_empty=j} ->
+            (* remove array since it has only one bucket *)
+            A.get a' j
+        | _ -> N a'
 
   let remove k m = remove_rec_ k ~h:(hash_ k) m
 
@@ -283,15 +261,15 @@ module Make(Key : KEY)
     aux t
 
   let fold f acc t =
-    let rec aux acc t = match t with
+    let rec aux _ acc t = match t with
       | E -> acc
       | L (_,l) -> aux_list acc l
-      | N a -> A.fold aux acc a
+      | N a -> A.foldi aux acc a
     and aux_list acc l = match l with
       | Nil -> acc
       | Cons (k, v, tl) -> let acc = f acc k v in aux_list acc tl
     in
-    aux acc t
+    aux 0 (* any int *) acc t
 
   let cardinal m = fold (fun n _ _ -> n+1) 0 m
 
@@ -318,5 +296,5 @@ module Make(Key : KEY)
   and list_as_tree_ l = match l with
     | Nil -> []
     | Cons (k, v, tail) -> (k,v) :: list_as_tree_ tail
-  and array_as_tree_ a = A.fold (fun acc t -> as_tree t :: acc) [] a
+  and array_as_tree_ a = A.foldi (fun _ acc t -> as_tree t :: acc) [] a
 end
