@@ -118,76 +118,78 @@ end
   from https://en.wikipedia.org/wiki/Hamming_weight
 
   //This uses fewer arithmetic operations than any other known
-  //implementation on machines with fast multiplication.
-  //It uses 12 arithmetic operations, one of which is a multiply.
-  int popcount_3(uint64_t x) {
+  //implementation on machines with slow multiplication.
+  //It uses 17 arithmetic operations.
+  int popcount_2(uint64_t x) {
     x -= (x >> 1) & m1;             //put count of each 2 bits into those 2 bits
     x = (x & m2) + ((x >> 2) & m2); //put count of each 4 bits into those 4 bits
     x = (x + (x >> 4)) & m4;        //put count of each 8 bits into those 8 bits
-    return (x * h01)>>56;  //returns left 8 bits of x + (x<<8) + (x<<16) + (x<<24) + ...
+    x += x >>  8;  //put count of each 16 bits into their lowest 8 bits
+    x += x >> 16;  //put count of each 32 bits into their lowest 8 bits
+    x += x >> 32;  //put count of each 64 bits into their lowest 8 bits
+    return x & 0x7f;
   }
-*)
 
-let popcount64 (b:int64) =
-  let open Int64 in
-  let b = sub b (logand (shift_right_logical b 1) 0x5555555555555555L) in
-  let b = add (logand b 0x3333333333333333L)
-    (logand (shift_right_logical b 2) 0x3333333333333333L) in
-  let b = logand (add b (shift_right_logical b 4)) 0x0F0F0F0F0F0F0F0FL in
-  let b = shift_right_logical (mul b 0x0101010101010101L) 56 in
-  Int64.to_int b
+  32-bits popcount. int64 is too slow, and there is not use trying to deal
+  with 32 bit platforms by defining popcount-16, as there are integer literals
+  here that will not compile on 32-bits.
+*)
+let popcount b =
+  let b = b - ((b lsr 1) land 0x55555555) in
+  let b = (b land 0x33333333) + ((b lsr 2) land 0x33333333) in
+  let b = (b + (b lsr 4)) land 0x0f0f0f0f in
+  let b = b + (b lsr 8) in
+  let b = b + (b lsr 16) in
+  b land 0x3f
 
 (*$T
-  popcount64 5L = 2
-  popcount64 256L = 1
-  popcount64 255L = 8
-  popcount64 0xFFFFFFFFL = 32
-  popcount64 0xFFFFFFFFFFFFFFFFL = 64
+  popcount 5 = 2
+  popcount 256 = 1
+  popcount 255 = 8
+  popcount 0xFFFF = 16
+  popcount 0xFF1F = 13
+  popcount 0xFFFFFFFF = 32
 *)
 
 (*$Q
-  Q.int (fun i -> \
-    let i = Int64.of_int i in popcount64 i <= 64)
+  Q.int (fun i -> let i = i land (1 lsl 32) in popcount i <= 32)
   *)
 
 (* sparse array, using a bitfield and POPCOUNT *)
 module A_SPARSE : FIXED_ARRAY = struct
   type 'a t = {
-    bits: int64;
+    bits: int;
     arr: 'a array;
     empty: 'a;
   }
 
-  let length_log = 6
+  let length_log = 5
   let length = 1 lsl length_log
 
-  let popcount = popcount64
-
-  let create ~empty = { bits=0L; arr= [| |]; empty; }
+  let create ~empty = { bits=0; arr= [| |]; empty; }
 
   let get a i =
-    let open Int64 in
-    let idx = shift_left 1L i in
-    if logand a.bits idx = 0L
+    let idx = 1 lsl i in
+    if a.bits land idx = 0
     then a.empty
     else
-      let real_idx =popcount (logand a.bits (sub idx 1L)) in
+      let real_idx = popcount (a.bits land (idx- 1)) in
       a.arr.(real_idx)
 
   let set a i x =
-    let open Int64 in
-    let idx = shift_left 1L i in
-    let real_idx = popcount (logand a.bits (sub idx 1L)) in
-    if logand a.bits idx = 0L
+    let idx = 1 lsl i in
+    let real_idx = popcount (a.bits land (idx -1)) in
+    if a.bits land idx = 0
     then (
       (* insert at [real_idx] in a new array *)
-      let bits = logor a.bits idx in
-      let arr = Array.init (Array.length a.arr + 1)
-        (fun j ->
-          if j<real_idx then a.arr.(j)
-          else if j=real_idx then x
-          else a.arr.(j-1)
-        ) in
+      let bits = a.bits lor idx in
+      let n = Array.length a.arr in
+      let arr = Array.make (n+1) a.empty in
+      arr.(real_idx) <- x;
+      if real_idx>0
+        then Array.blit a.arr 0 arr 0 real_idx;
+      if real_idx<n
+        then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
       {a with bits; arr}
     ) else (
       (* replace element at [real_idx] *)
@@ -197,21 +199,21 @@ module A_SPARSE : FIXED_ARRAY = struct
     )
 
   let update a i f =
-    let open Int64 in
-    let idx = shift_left 1L i in
-    let real_idx = popcount (logand a.bits (sub idx 1L)) in
-    if logand a.bits idx = 0L
+    let idx = 1 lsl i in
+    let real_idx = popcount (a.bits land (idx -1)) in
+    if a.bits land idx = 0
     then (
       (* not present *)
       let x = f a.empty in
       (* insert at [real_idx] in a new array *)
-      let bits = logor a.bits idx in
-      let arr = Array.init (Array.length a.arr + 1)
-        (fun j ->
-          if j<real_idx then a.arr.(j)
-          else if j=real_idx then x
-          else a.arr.(j-1)
-        ) in
+      let bits = a.bits lor idx in
+      let n = Array.length a.arr in
+      let arr = Array.make (n+1) a.empty in
+      arr.(real_idx) <- x;
+      if real_idx>0
+        then Array.blit a.arr 0 arr 0 real_idx;
+      if real_idx<n
+        then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
       {a with bits; arr}
     ) else (
       let x = f a.arr.(real_idx) in
@@ -222,18 +224,19 @@ module A_SPARSE : FIXED_ARRAY = struct
     )
 
   let remove ~empty:_ a i =
-    let open Int64 in
-    let idx = shift_left 1L i in
-    let real_idx = popcount (logand a.bits (sub idx 1L)) in
-    if logand a.bits idx = 0L
+    let idx = 1 lsl i in
+    let real_idx = popcount (a.bits land (idx -1)) in
+    if a.bits land idx = 0
     then a (* not present *)
     else (
       (* remove at [real_idx] *)
-      let bits = logand a.bits (lognot idx) in
-      let arr = Array.init (Array.length a.arr - 1)
-        (fun j ->
-          if j>= real_idx then a.arr.(j+1) else a.arr.(j)
-        ) in
+      let bits = a.bits land (lnot idx) in
+      let n = Array.length a.arr in
+      let arr = Array.make (n-1) a.empty in
+      if real_idx > 0
+        then Array.blit a.arr 0 arr 0 real_idx;
+      if real_idx+1 < n
+        then Array.blit a.arr (real_idx+1) arr real_idx (n-real_idx-1);
       {a with bits; arr}
     )
 
@@ -278,6 +281,7 @@ module Make(Key : KEY)
 
   type 'a t =
     | E
+    | S of Hash.t * key * 'a  (* single pair *)
     | L of Hash.t * 'a leaf (* same hash for all elements *)
     | N of 'a leaf * 'a t A.t  (* leaf for hash=0, subnodes *)
 
@@ -291,6 +295,7 @@ module Make(Key : KEY)
   let is_empty = function
     | E -> true
     | L (_, Nil) -> assert false
+    | S _
     | L _
     | N _ -> false
 
@@ -305,6 +310,7 @@ module Make(Key : KEY)
 
   let rec get_exn_ k ~h m = match m with
     | E -> raise Not_found
+    | S (_, k', v') -> if Key.equal k k' then v' else raise Not_found
     | L (_, l) -> get_exn_list_ k l
     | N (leaf, a) ->
         if Hash.is_0 h then get_exn_list_ k leaf
@@ -335,30 +341,41 @@ module Make(Key : KEY)
 
   (* [h]: hash, with the part required to reach this leaf removed *)
   let rec add_ k v ~h m = match m with
-    | E -> leaf_ k v ~h
+    | E -> S (h, k, v)
+    | S (h', k', v') ->
+        if h=h'
+        then if Key.equal k k'
+          then S (h, k, v)  (* replace *)
+          else L (h, Cons (k, v, Cons (k', v', Nil)))
+        else
+          make_array_ ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
     | L (h', l) ->
         if h=h'
         then L (h, add_list_ k v l)
         else (* split into N *)
-          let a = A.create ~empty:E in
-          let a, leaf =
-            if Hash.is_0 h' then a, l
-            else
-              (* put leaf in the right bucket *)
-              let i = Hash.rem h' in
-              let h'' = Hash.quotient h' in
-              A.set a i (L (h'', l)), Nil
-          in
-          (* then add new node *)
-          let a, leaf =
-            if Hash.is_0 h then a, add_list_ k v leaf
-            else add_to_array_ k v ~h a, leaf
-          in
-          N (leaf, a)
+          make_array_ ~leaf:l ~h_leaf:h' k v ~h
     | N (leaf, a) ->
         if Hash.is_0 h
         then N (add_list_ k v leaf, a)
         else N (leaf, add_to_array_ k v ~h a)
+
+  (* make an array containing a leaf, and insert (k,v) in it *)
+  and make_array_ ~leaf ~h_leaf:h' k v ~h =
+    let a = A.create ~empty:E in
+    let a, leaf =
+      if Hash.is_0 h' then a, leaf
+      else
+        (* put leaf in the right bucket *)
+        let i = Hash.rem h' in
+        let h'' = Hash.quotient h' in
+        A.set a i (L (h'', leaf)), Nil
+    in
+    (* then add new node *)
+    let a, leaf =
+      if Hash.is_0 h then a, add_list_ k v leaf
+      else add_to_array_ k v ~h a, leaf
+    in
+    N (leaf, a)
 
   (* add k->v to [a] *)
   and add_to_array_ k v ~h a =
@@ -390,6 +407,8 @@ module Make(Key : KEY)
 
   let rec remove_rec_ k ~h m = match m with
     | E -> E
+    | S (_, k', _) ->
+        if Key.equal k k' then E else m
     | L (h, l) ->
         let l = remove_list_ k l in
         if is_empty_list_ l then E else L (h, l)
@@ -414,6 +433,7 @@ module Make(Key : KEY)
   let iter f t =
     let rec aux = function
       | E -> ()
+      | S (_, k, v) -> f k v
       | L (_,l) -> aux_list l
       | N (l,a) -> aux_list l; A.iter aux a
     and aux_list = function
@@ -425,6 +445,7 @@ module Make(Key : KEY)
   let fold f acc t =
     let rec aux acc t = match t with
       | E -> acc
+      | S (_,k,v) -> f acc k v
       | L (_,l) -> aux_list acc l
       | N (l,a) -> let acc = aux_list acc l in A.fold aux acc a
     and aux_list acc l = match l with
@@ -462,6 +483,7 @@ module Make(Key : KEY)
 
   let rec as_tree m () = match m with
     | E -> `Nil
+    | S (h,k,v) -> `Node (`L ((h:>int), [k,v]), [])
     | L (h,l) -> `Node (`L ((h:>int), list_as_tree_ l), [])
     | N (l,a) -> `Node (`N, as_tree (L (Hash.zero, l)) :: array_as_tree_ a)
   and list_as_tree_ l = match l with
@@ -472,7 +494,7 @@ end
 
 (*$R
   let module M = Make(CCInt) in
-  let m = M.of_list CCList.(1 -- 1000 |> map (fun i->i,i)) in
+  let m = M.of_list CCList.( (501 -- 1000) @ (500 -- 1) |> map (fun i->i,i)) in
   assert_equal ~printer:CCInt.to_string 1000 (M.cardinal m);
   assert_bool "check all get"
     (Sequence.for_all (fun i -> i = M.get_exn i m) Sequence.(1 -- 1000));

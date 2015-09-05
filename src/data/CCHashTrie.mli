@@ -8,6 +8,9 @@
   update and access {b if} the hash function is good.
   The trie is not binary, to improve cache locality and decrease depth.
 
+  Preliminary benchmarks (see the "tbl" section of benchmarks) tend to show
+  that this type is quite efficient for small data sets.
+
   {b status: experimental}
 
   @since NEXT_RELEASE
@@ -97,6 +100,6 @@ end
 module Make(K : KEY) : S with type key = K.t
 
 (**/**)
-val popcount64 : int64 -> int
+val popcount : int -> int
 module A_SPARSE : FIXED_ARRAY
 (**/**)
