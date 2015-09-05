@@ -178,32 +178,34 @@ module Cache = struct
 end
 
 module Tbl = struct
-  module type INT_FIND = sig
+  (** Signature for mutable map *)
+  module type MUT = sig
+    type key
     type 'a t
     val name : string
-    val init : int -> (int -> 'a) -> 'a t
-    val find : 'a t -> int -> 'a
-  end
-
-  (** Signature for mutable int map *)
-  module type INT_MUT = sig
-    type 'a t
-    val name : string
-    val find : 'a t -> int -> 'a
+    val find : 'a t -> key -> 'a
     val create : int -> 'a t
-    val add : 'a t -> int -> 'a -> unit
-    val replace : 'a t -> int -> 'a -> unit
+    val add : 'a t -> key -> 'a -> unit
+    val replace : 'a t -> key -> 'a -> unit
   end
 
-  module type INT_IMMUT = sig
+  module type INT_MUT = MUT with type key = int
+  module type STRING_MUT = MUT with type key = string
+
+  module type IMMUT = sig
+    type key
     type 'a t
     val name : string
     val empty : 'a t
-    val find : int -> 'a t -> 'a
-    val add : int -> 'a -> 'a t -> 'a t
+    val find : key -> 'a t -> 'a
+    val add : key -> 'a -> 'a t -> 'a t
   end
 
-  module MUT_OF_IMMUT(T : INT_IMMUT) : INT_MUT with type 'a t = 'a T.t ref = struct
+  module type INT_IMMUT = IMMUT with type key = int
+
+  module MUT_OF_IMMUT(T : IMMUT)
+  : MUT with type key = T.key and type 'a t = 'a T.t ref = struct
+    type key = T.key
     type 'a t = 'a T.t ref
     let name = T.name
     let create _ = ref T.empty
@@ -212,13 +214,39 @@ module Tbl = struct
     let replace = add
   end
 
-  let hashtbl_make_int =
-    let module T = struct let name = "hashtbl.make(int)" include Hashtbl.Make(CCInt) end in
-    (module T : INT_MUT)
+  module type KEY = sig
+    type t
+    val equal : t -> t -> bool
+    val hash : t -> int
+    val compare : t -> t -> int
+  end
+
+  type _ key_type =
+    | Int : int key_type
+    | Str : string key_type
+
+  let arg_make : type a. a key_type -> (module KEY with type t = a) * string
+  = function
+    | Int -> (module CCInt), "int"
+    | Str ->
+        let module S = struct type t = string include CCString end in
+        (module S : KEY with type t = string), "string"
+
+  let sprintf = Printf.sprintf
+
+  let hashtbl_make : type a. a key_type -> (module MUT with type key = a)
+  = fun key ->
+    let (module Key), name = arg_make key in
+    let module T = struct
+      let name = sprintf "hashtbl.make(%s)" name
+      include Hashtbl.Make(Key)
+    end in
+    (module T)
 
   let persistent_hashtbl =
     let module T = CCPersistentHashtbl.Make(CCInt) in
     let module U = struct
+      type key = int
       type 'a t = 'a T.t ref
       let name = "persistent_hashtbl"
       let create _ = ref (T.empty ())
@@ -230,6 +258,7 @@ module Tbl = struct
 
   let hashtbl =
     let module T = struct
+      type key = int
       type 'a t = (int, 'a) Hashtbl.t
       let name = "hashtbl"
       let create i = Hashtbl.create i
@@ -241,6 +270,7 @@ module Tbl = struct
 
   let poly_hashtbl =
     let module T = struct
+      type key = int
       type 'a t = (int, 'a) PHashtbl.t
       let name = "phashtbl"
       let create i = PHashtbl.create ~hash:CCInt.hash ~eq:CCInt.equal i
@@ -250,14 +280,17 @@ module Tbl = struct
     end in
     (module T : INT_MUT)
 
-  let map =
-    let module T = struct let name = "map" include Map.Make(CCInt) end in
+  let map : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct let name = sprintf "map(%s)" name include Map.Make(K) end in
     let module U = MUT_OF_IMMUT(T) in
-    (module U : INT_MUT)
+    (module U : MUT with type key = a)
 
   let flat_hashtbl =
     let module T = CCFlatHashtbl.Make(CCInt) in
     let module U = struct
+      type key = int
       type 'a t = 'a T.t
       let name = "ccflat_hashtbl"
       let create = T.create
@@ -267,33 +300,44 @@ module Tbl = struct
     end in
     (module U : INT_MUT)
 
-  let hashtrie =
+  let hashtrie : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
     let module T = struct
-      let name = "cchashtrie"
-      include CCHashTrie.Make(CCInt)
+      let name = sprintf "cchashtrie(%s)" name
+      include CCHashTrie.Make(K)
       let find = get_exn
     end in
     let module U = MUT_OF_IMMUT(T) in
-    (module U : INT_MUT)
+    (module U)
 
-  let hamt =
+  let hamt : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
     let module T = struct
-      let name = "hamt"
-      include Hamt.Make(Hamt.StdConfig)(CCInt)
+      let name = sprintf "hamt(%s)" name
+      include Hamt.Make(Hamt.StdConfig)(K)
       let find = find_exn
     end in
     let module U = MUT_OF_IMMUT(T) in
-    (module U : INT_MUT)
+    (module U)
 
-  let modules =
-    [ hashtbl_make_int
+  let modules_int =
+    [ hashtbl_make Int
     ; hashtbl
     ; persistent_hashtbl
     ; poly_hashtbl
-    ; map
+    ; map Int
     ; flat_hashtbl
-    ; hashtrie
-    ; hamt
+    ; hashtrie Int
+    ; hamt Int
+    ]
+
+  let modules_string =
+    [ hashtbl_make Str
+    ; map Str
+    ; hashtrie Str
+    ; hamt Str
     ]
 
   let bench_add n =
@@ -306,7 +350,20 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    B.throughputN 3 ~repeat (List.map make modules)
+    B.throughputN 3 ~repeat (List.map make modules_int)
+
+  let bench_add_string n =
+    let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
+    let make (module T : STRING_MUT) =
+      let run() =
+        let t = T.create 50 in
+        List.iter
+          (fun (k,v) -> T.add t k v)
+          keys
+      in
+      T.name, run, ()
+    in
+    B.throughputN 3 ~repeat (List.map make modules_string)
 
   let bench_replace n =
     let make (module T : INT_MUT) =
@@ -322,7 +379,14 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    B.throughputN 3 ~repeat (List.map make modules)
+    B.throughputN 3 ~repeat (List.map make modules_int)
+
+  module type INT_FIND = sig
+    type 'a t
+    val name : string
+    val init : int -> (int -> 'a) -> 'a t
+    val find : 'a t -> int -> 'a
+  end
 
   let find_of_mut (module T : INT_MUT) : (module INT_FIND) =
     let module U = struct
@@ -353,10 +417,10 @@ module Tbl = struct
     end in
     (module T : INT_FIND)
 
-  let modules' =
+  let modules_int_find =
     [ array
     ; persistent_array ] @
-    List.map find_of_mut modules
+    List.map find_of_mut modules_int
 
   let bench_find n =
     let make (module T : INT_FIND) =
@@ -368,13 +432,29 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    Benchmark.throughputN 3 ~repeat (List.map make modules')
+    Benchmark.throughputN 3 ~repeat (List.map make modules_int_find)
+
+  let bench_find_string n =
+    let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
+    let make (module T : STRING_MUT) =
+      let m = T.create n in
+      List.iter (fun (k,v) -> T.add m k v) keys;
+      let run() =
+        List.iter
+          (fun (k,_) -> ignore (T.find m k))
+          keys
+      in
+      T.name, run, ()
+    in
+    Benchmark.throughputN 3 ~repeat (List.map make modules_string)
 
   let () = B.Tree.register (
     "tbl" @>>>
-      [ "add" @>> app_ints bench_add [10; 100; 1_000; 10_000;]
+      [ "add_int" @>> app_ints bench_add [10; 100; 1_000; 10_000;]
+      ; "add_string" @>> app_ints bench_add_string [10; 100; 1_000; 10_000;]
       ; "replace" @>> app_ints bench_replace [10; 100; 1_000; 10_000]
       ; "find" @>> app_ints bench_find [10; 20; 100; 1_000; 10_000]
+      ; "find_string" @>> app_ints bench_find_string [10; 20; 100; 1_000; 10_000]
       ])
 end
 
@@ -442,8 +522,6 @@ end
 module Batch = struct
   (** benchmark CCBatch *)
 
-  open Containers_advanced
-
   module type COLL = sig
     val name : string
     include CCBatch.COLLECTION
@@ -493,12 +571,12 @@ module Batch = struct
         ; C.name ^ "_batch", batch, a
         ]
 
-    let bench = B.(
+    let bench =
       C.name @>> B.Tree.concat
       [ app_int (bench_for ~time:1) 100
       ; app_int (bench_for ~time:4) 100_000
       ; app_int (bench_for ~time:4) 1_000_000
-      ])
+      ]
   end
 
   module BenchArray = Make(struct
