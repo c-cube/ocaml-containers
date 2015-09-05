@@ -70,6 +70,7 @@ val fold : (int -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 val choose : 'a t -> (int * 'a) option
 
 val choose_exn : 'a t -> int * 'a
+(** @raise Not_found if not pair was found *)
 
 val union : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
 

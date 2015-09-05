@@ -17,6 +17,7 @@
 *)
 
 type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
@@ -27,8 +28,8 @@ module type FIXED_ARRAY = sig
   val length_log : int
   val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
-  val set : 'a t -> int -> 'a -> 'a t
-  val update : 'a t -> int -> ('a -> 'a) -> 'a t
+  val set : mut:bool -> 'a t -> int -> 'a -> 'a t
+  val update : mut:bool -> 'a t -> int -> ('a -> 'a) -> 'a t
   val remove : empty:'a -> 'a t -> int -> 'a t (* put back [empty] there *)
   val iter : ('a -> unit) -> 'a t -> unit
   val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
@@ -59,7 +60,17 @@ module type S = sig
 
   val remove : key -> 'a t -> 'a t
 
+  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
+  (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
+      otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
+      if [f] returns [None] it removes [k] *)
+
   val cardinal : _ t -> int
+
+  val choose : 'a t -> (key * 'a) option
+
+  val choose_exn : 'a t -> key * 'a
+  (** @raise Not_found if not pair was found *)
 
   val iter : (key -> 'a -> unit) -> 'a t -> unit
 
@@ -78,6 +89,12 @@ module type S = sig
   val of_seq : (key * 'a) sequence -> 'a t
 
   val to_seq : 'a t -> (key * 'a) sequence
+
+  val add_gen : 'a t -> (key * 'a) gen -> 'a t
+
+  val of_gen : (key * 'a) gen -> 'a t
+
+  val to_gen : 'a t -> (key * 'a) gen
 
   (** {6 IO} *)
 
