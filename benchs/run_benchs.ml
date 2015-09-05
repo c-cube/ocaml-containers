@@ -178,313 +178,203 @@ module Cache = struct
 end
 
 module Tbl = struct
-  module IHashtbl = Hashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
+  module type INT_FIND = sig
+    type 'a t
+    val name : string
+    val init : int -> (int -> 'a) -> 'a t
+    val find : 'a t -> int -> 'a
+  end
 
-  module IPersistentHashtbl = CCPersistentHashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
+  (** Signature for mutable int map *)
+  module type INT_MUT = sig
+    type 'a t
+    val name : string
+    val find : 'a t -> int -> 'a
+    val create : int -> 'a t
+    val add : 'a t -> int -> 'a -> unit
+    val replace : 'a t -> int -> 'a -> unit
+  end
 
-  module IMap = Map.Make(struct
-    type t = int
-    let compare i j = i - j
-  end)
+  module type INT_IMMUT = sig
+    type 'a t
+    val name : string
+    val empty : 'a t
+    val find : int -> 'a t -> 'a
+    val add : int -> 'a -> 'a t -> 'a t
+  end
 
-  module ICCHashtbl = CCFlatHashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
+  module MUT_OF_IMMUT(T : INT_IMMUT) : INT_MUT with type 'a t = 'a T.t ref = struct
+    type 'a t = 'a T.t ref
+    let name = T.name
+    let create _ = ref T.empty
+    let find m k = T.find k !m
+    let add m k v = m := T.add k v !m
+    let replace = add
+  end
 
-  module IHashTrie = CCHashTrie.Make(struct
-    type t = int
-    let equal (i:int) j = i=j
-    let hash i = i land max_int
-  end)
+  let hashtbl_make_int =
+    let module T = struct let name = "hashtbl.make(int)" include Hashtbl.Make(CCInt) end in
+    (module T : INT_MUT)
 
-  module IHAMT = Hamt.Make(Hamt.StdConfig)(CCInt)
+  let persistent_hashtbl =
+    let module T = CCPersistentHashtbl.Make(CCInt) in
+    let module U = struct
+      type 'a t = 'a T.t ref
+      let name = "persistent_hashtbl"
+      let create _ = ref (T.empty ())
+      let find m k = T.find !m k
+      let add m k v = m := T.replace !m k v
+      let replace = add
+    end in
+    (module U : INT_MUT)
 
-  let phashtbl_add n =
-    let h = PHashtbl.create 50 in
-    for i = n downto 0 do
-      PHashtbl.add h i i;
-    done;
-    h
+  let hashtbl =
+    let module T = struct
+      type 'a t = (int, 'a) Hashtbl.t
+      let name = "hashtbl"
+      let create i = Hashtbl.create i
+      let find = Hashtbl.find
+      let add = Hashtbl.add
+      let replace = Hashtbl.replace
+    end in
+    (module T : INT_MUT)
 
-  let hashtbl_add n =
-    let h = Hashtbl.create 50 in
-    for i = n downto 0 do
-      Hashtbl.add h i i;
-    done;
-    h
+  let poly_hashtbl =
+    let module T = struct
+      type 'a t = (int, 'a) PHashtbl.t
+      let name = "phashtbl"
+      let create i = PHashtbl.create ~hash:CCInt.hash ~eq:CCInt.equal i
+      let find = PHashtbl.find
+      let add = PHashtbl.add
+      let replace = PHashtbl.replace
+    end in
+    (module T : INT_MUT)
 
-  let ihashtbl_add n =
-    let h = IHashtbl.create 50 in
-    for i = n downto 0 do
-      IHashtbl.add h i i;
-    done;
-    h
+  let map =
+    let module T = struct let name = "map" include Map.Make(CCInt) end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U : INT_MUT)
 
-  let ipersistenthashtbl_add n =
-    let h = ref (IPersistentHashtbl.create 32) in
-    for i = n downto 0 do
-      h := IPersistentHashtbl.replace !h i i;
-    done;
-    !h
+  let flat_hashtbl =
+    let module T = CCFlatHashtbl.Make(CCInt) in
+    let module U = struct
+      type 'a t = 'a T.t
+      let name = "ccflat_hashtbl"
+      let create = T.create
+      let find = T.find_exn
+      let add = T.add
+      let replace = T.add
+    end in
+    (module U : INT_MUT)
 
-  let imap_add n =
-    let h = ref IMap.empty in
-    for i = n downto 0 do
-      h := IMap.add i i !h;
-    done;
-    !h
+  let hashtrie =
+    let module T = struct
+      let name = "cchashtrie"
+      include CCHashTrie.Make(CCInt)
+      let find = get_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U : INT_MUT)
 
-  let intmap_add n =
-    let h = ref CCIntMap.empty in
-    for i = n downto 0 do
-      h := CCIntMap.add i i !h;
-    done;
-    !h
+  let hamt =
+    let module T = struct
+      let name = "hamt"
+      include Hamt.Make(Hamt.StdConfig)(CCInt)
+      let find = find_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U : INT_MUT)
 
-  let hashtrie_add n =
-    let h = ref IHashTrie.empty in
-    for i = n downto 0 do
-      h := IHashTrie.add i i !h;
-    done;
-    !h
-
-  let hamt_add n =
-    let h = ref IHAMT.empty in
-    for i = n downto 0 do
-      h := IHAMT.add i i !h;
-    done;
-    !h
-
-  let icchashtbl_add n =
-    let h = ICCHashtbl.create 50 in
-    for i = n downto 0 do
-      ICCHashtbl.add h i i;
-    done;
-    h
-
-  let bench_maps1 n =
-    B.throughputN 3 ~repeat
-      ["phashtbl_add", (fun n -> ignore (phashtbl_add n)), n;
-       "hashtbl_add", (fun n -> ignore (hashtbl_add n)), n;
-       "ihashtbl_add", (fun n -> ignore (ihashtbl_add n)), n;
-       "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n)), n;
-       "imap_add", (fun n -> ignore (imap_add n)), n;
-       "intmap_add", (fun n -> ignore (intmap_add n)), n;
-       "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n)), n;
-       "cchashtrie_add", (fun n -> ignore (hashtrie_add n)), n;
-       "hamt_add", (fun n -> ignore (hamt_add n)), n;
-      ]
-
-  let phashtbl_replace n =
-    let h = PHashtbl.create 50 in
-    for i = 0 to n do
-      PHashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      PHashtbl.replace h i i;
-    done;
-    h
-
-  let hashtbl_replace n =
-    let h = Hashtbl.create 50 in
-    for i = 0 to n do
-      Hashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      Hashtbl.replace h i i;
-    done;
-    h
-
-  let ihashtbl_replace n =
-    let h = IHashtbl.create 50 in
-    for i = 0 to n do
-      IHashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      IHashtbl.replace h i i;
-    done;
-    h
-
-  let ipersistenthashtbl_replace n =
-    let h = ref (IPersistentHashtbl.create 32) in
-    for i = 0 to n do
-      h := IPersistentHashtbl.replace !h i i;
-    done;
-    for i = n downto 0 do
-      h := IPersistentHashtbl.replace !h i i;
-    done;
-    !h
-
-  let imap_replace n =
-    let h = ref IMap.empty in
-    for i = 0 to n do
-      h := IMap.add i i !h;
-    done;
-    for i = n downto 0 do
-      h := IMap.add i i !h;
-    done;
-    !h
-
-  let intmap_replace n =
-    let h = ref CCIntMap.empty in
-    for i = 0 to n do
-      h := CCIntMap.add i i !h;
-    done;
-    for i = n downto 0 do
-      h := CCIntMap.add i i !h;
-    done;
-    !h
-
-  let hashtrie_replace n =
-    let h = ref IHashTrie.empty in
-    for i = 0 to n do
-      h := IHashTrie.add i i !h;
-    done;
-    for i = n downto 0 do
-      h := IHashTrie.add i i !h;
-    done;
-    !h
-
-  let hamt_replace n =
-    let h = ref IHAMT.empty in
-    for i = 0 to n do
-      h := IHAMT.add i i !h;
-    done;
-    for i = n downto 0 do
-      h := IHAMT.add i i !h;
-    done;
-    !h
-
-  let icchashtbl_replace n =
-    let h = ICCHashtbl.create 50 in
-    for i = 0 to n do
-      ICCHashtbl.add h i i;
-    done;
-    for i = n downto 0 do
-      ICCHashtbl.add h i i;
-    done;
-    h
-
-  let bench_maps2 n =
-    B.throughputN 3 ~repeat
-      ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n)), n;
-       "hashtbl_replace", (fun n -> ignore (hashtbl_replace n)), n;
-       "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n)), n;
-       "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n)), n;
-       "imap_replace", (fun n -> ignore (imap_replace n)), n;
-       "intmap_replace", (fun n -> ignore (intmap_replace n)), n;
-       "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n)), n;
-       "hashtrie_replace", (fun n -> ignore (hashtrie_replace n)), n;
-       "hamt_replace", (fun n -> ignore (hamt_replace n)), n;
-      ]
-
-  let phashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (PHashtbl.find h i);
-      done
-
-  let hashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (Hashtbl.find h i);
-      done
-
-  let ihashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IHashtbl.find h i);
-      done
-
-  let ipersistenthashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IPersistentHashtbl.find h i);
-      done
-
-  let array_find a =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (Array.get a i);
-      done
-
-  let persistent_array_find a =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (CCPersistentArray.get a i);
-      done
-
-  let imap_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IMap.find i m);
-      done
-
-  let intmap_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (CCIntMap.find i m);
-      done
-
-  let hashtrie_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IHashTrie.get_exn i m);
-      done
-
-  let hamt_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IHAMT.find_exn i m);
-      done
-
-  let icchashtbl_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (ICCHashtbl.get_exn i m);
-      done
-
-  let bench_maps3 n =
-    let h = phashtbl_add n in
-    let h' = hashtbl_add n in
-    let h'' = ihashtbl_add n in
-    let h''''' = ipersistenthashtbl_add n in
-    let a = Array.init n string_of_int in
-    let pa = CCPersistentArray.init n string_of_int in
-    let m = imap_add n in
-    let m' = intmap_add n in
-    let h'''''' = icchashtbl_add n in
-    let ht = hashtrie_add n in
-    let hamt = hamt_add n in
-    B.throughputN 3 ~repeat [
-      "phashtbl_find", (fun () -> phashtbl_find h n), ();
-      "hashtbl_find", (fun () -> hashtbl_find h' n), ();
-      "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
-      "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n), ();
-      "array_find", (fun () -> array_find a n), ();
-      "persistent_array_find", (fun () -> persistent_array_find pa n), ();
-      "imap_find", (fun () -> imap_find m n), ();
-      "intmap_find", (fun () -> intmap_find m' n), ();
-      "ccflathashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
-      "hashtrie_find", (fun () -> hashtrie_find ht n), ();
-      "hamt_find", (fun () -> hamt_find hamt n), ();
+  let modules =
+    [ hashtbl_make_int
+    ; hashtbl
+    ; persistent_hashtbl
+    ; poly_hashtbl
+    ; map
+    ; flat_hashtbl
+    ; hashtrie
+    ; hamt
     ]
+
+  let bench_add n =
+    let make (module T : INT_MUT) =
+      let run() =
+        let t = T.create 50 in
+        for i = n downto 0 do
+          T.add t i i;
+        done
+      in
+      T.name, run, ()
+    in
+    B.throughputN 3 ~repeat (List.map make modules)
+
+  let bench_replace n =
+    let make (module T : INT_MUT) =
+      let run() =
+        let t = T.create 50 in
+        for i = 0 to n do
+          T.replace t i i;
+        done;
+        for i = n downto 0 do
+          T.replace t i i;
+        done;
+        ()
+      in
+      T.name, run, ()
+    in
+    B.throughputN 3 ~repeat (List.map make modules)
+
+  let find_of_mut (module T : INT_MUT) : (module INT_FIND) =
+    let module U = struct
+      include T
+      let init n f =
+        let t = T.create n in
+        for i=0 to n-1 do T.add t i (f i) done;
+        t
+    end in
+    (module U)
+
+  let array =
+    let module T = struct
+      type 'a t = 'a array
+      let name = "array"
+      let init = Array.init
+      let find a i = a.(i)
+    end in
+    (module T : INT_FIND)
+
+  let persistent_array =
+    let module A = CCPersistentArray in
+    let module T = struct
+      type 'a t = 'a A.t
+      let name = "persistent_array"
+      let init = A.init
+      let find = A.get
+    end in
+    (module T : INT_FIND)
+
+  let modules' =
+    [ array
+    ; persistent_array ] @
+    List.map find_of_mut modules
+
+  let bench_find n =
+    let make (module T : INT_FIND) =
+      let m = T.init n (fun i -> i) in
+      let run() =
+        for i = 0 to n-1 do
+          ignore (T.find m i)
+        done
+      in
+      T.name, run, ()
+    in
+    Benchmark.throughputN 3 ~repeat (List.map make modules')
 
   let () = B.Tree.register (
     "tbl" @>>>
-      [ "add" @>> app_ints bench_maps1 [10; 100; 1_000; 10_000;]
-      ; "replace" @>> app_ints bench_maps2 [10; 100; 1_000; 10_000]
-      ; "find" @>> app_ints bench_maps3 [10; 20; 100; 1_000; 10_000]
+      [ "add" @>> app_ints bench_add [10; 100; 1_000; 10_000;]
+      ; "replace" @>> app_ints bench_replace [10; 100; 1_000; 10_000]
+      ; "find" @>> app_ints bench_find [10; 20; 100; 1_000; 10_000]
       ])
 end
 
