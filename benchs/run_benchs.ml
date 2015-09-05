@@ -9,6 +9,9 @@ let (|>) = CCFun.(|>)
 let app_int f n = string_of_int n @> lazy (f n)
 let app_ints f l = B.Tree.concat (List.map (app_int f) l)
 
+(* for benchmark *)
+let repeat = 3
+
 (* composition *)
 let (%%) f g x = f (g x)
 
@@ -24,7 +27,7 @@ module L = struct
     let l = CCList.(1 -- n) in
     let flatten_map_ l = List.flatten (CCList.map f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
-    B.throughputN time
+    B.throughputN time ~repeat
       [ "flat_map", CCList.flat_map f_, l
       ; "flatten o CCList.map", flatten_ccmap_, l
       ; "flatten o map", flatten_map_, l
@@ -40,7 +43,7 @@ module L = struct
     let l2 = CCList.(n+1 -- 2*n) in
     let l3 = CCList.(2*n+1 -- 3*n) in
     let arg = l1, l2, l3 in
-    B.throughputN time
+    B.throughputN time ~repeat
       [ "CCList.append", append_ CCList.append, arg
       ; "List.append", append_ List.append, arg
       ]
@@ -58,7 +61,7 @@ module L = struct
         (fun i x -> CCList.(x -- (x+ min i 100)))
         CCList.(1 -- n)
     in
-    B.throughputN time
+    B.throughputN time ~repeat
       [ "CCList.flatten", CCList.flatten, l
       ; "List.flatten", List.flatten, l
       ; "fold_right append", fold_right_append_, l
@@ -103,7 +106,7 @@ module Vec = struct
 
   let bench_map n =
     let v = CCVector.init n (fun x->x) in
-    B.throughputN 2
+    B.throughputN 2 ~repeat
       [ "map", CCVector.map f, v
       ; "map_push", map_push_ f, v
       ; "map_push_cap", map_push_size_ f, v
@@ -120,7 +123,7 @@ module Vec = struct
 
   let bench_append n =
     let v2 = CCVector.init n (fun x->n+x) in
-    B.throughputN 2
+    B.throughputN 2 ~repeat
       [ "append", try_append_ CCVector.append n v2, ()
       ; "append_naive", try_append_ append_naive_ n v2, ()
       ]
@@ -165,7 +168,7 @@ module Cache = struct
             ] @ l
       else l
     in
-    B.throughputN 3 l
+    B.throughputN 3 l ~repeat
 
   let () = B.Tree.register (
     "cache" @>>>
@@ -270,7 +273,7 @@ module Tbl = struct
     h
 
   let bench_maps1 n =
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       ["phashtbl_add", (fun n -> ignore (phashtbl_add n)), n;
        "hashtbl_add", (fun n -> ignore (hashtbl_add n)), n;
        "ihashtbl_add", (fun n -> ignore (ihashtbl_add n)), n;
@@ -373,7 +376,7 @@ module Tbl = struct
     h
 
   let bench_maps2 n =
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n)), n;
        "hashtbl_replace", (fun n -> ignore (hashtbl_replace n)), n;
        "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n)), n;
@@ -463,7 +466,7 @@ module Tbl = struct
     let h'''''' = icchashtbl_add n in
     let ht = hashtrie_add n in
     let hamt = hamt_add n in
-    B.throughputN 3 [
+    B.throughputN 3 ~repeat [
       "phashtbl_find", (fun () -> phashtbl_find h n), ();
       "hashtbl_find", (fun () -> hashtbl_find h' n), ();
       "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
@@ -492,7 +495,7 @@ module Iter = struct
     let seq () = Sequence.fold (+) 0 Sequence.(0 --n) in
     let gen () = Gen.fold (+) 0 Gen.(0 -- n) in
     let klist () = CCKList.fold (+) 0 CCKList.(0 -- n) in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "sequence.fold", seq, ();
         "gen.fold", gen, ();
         "klist.fold", klist, ();
@@ -509,7 +512,7 @@ module Iter = struct
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "sequence.flat_map", seq, ();
         "gen.flat_map", gen, ();
         "klist.flat_map", klist, ();
@@ -532,7 +535,7 @@ module Iter = struct
         1 -- n |> iter (fun x -> i := !i * x)
       )
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "sequence.iter", seq, ();
         "gen.iter", gen, ();
         "klist.iter", klist, ();
@@ -595,7 +598,7 @@ module Batch = struct
       CCPrint.printf "batch: %a\n" (CCArray.pp CCInt.pp) (batch a);
       *)
       assert (C.equal (batch a) (naive a));
-      B.throughputN time
+      B.throughputN time ~repeat
         [ C.name ^ "_naive", naive, a
         ; C.name ^ "_batch", batch, a
         ]
@@ -778,7 +781,7 @@ module Deque = struct
         D.iter (fun _ -> incr n) q;
         ()
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "base", make base, ()
       ; "cur", make cur, ()
       ; "fqueue", make fqueue, ()
@@ -789,7 +792,7 @@ module Deque = struct
       let q = D.create() in
       for i=0 to n do D.push_front q i done
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "base", make base, ()
       ; "cur", make cur, ()
       ; "fqueue", make fqueue, ()
@@ -801,7 +804,7 @@ module Deque = struct
       fun () ->
         for i=0 to n do D.push_back q i done
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "base", make base, ()
       ; "cur", make cur, ()
       ; "fqueue", make fqueue, ()
@@ -814,7 +817,7 @@ module Deque = struct
       let q2 = D.of_seq seq in
       fun () -> D.append_back ~into:q1 q2
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "base", make base, ()
       ; "cur", make cur, ()
       ; "fqueue", make fqueue, ()
@@ -826,7 +829,7 @@ module Deque = struct
       let q = D.of_seq seq in
       fun () -> ignore (D.length q)
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "base", make base, ()
       ; "cur", make cur, ()
       ; "fqueue", make fqueue, ()
@@ -894,7 +897,7 @@ module Thread = struct
         assert (expected_res = CCLock.get res);
         ()
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "cur", make cur, ()
       ; "naive", make naive, ()
       ]
