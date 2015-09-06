@@ -64,6 +64,7 @@ Various data structures.
 
 {!modules:
 CCBitField
+CCBloom
 CCBV
 CCCache
 CCFQueue

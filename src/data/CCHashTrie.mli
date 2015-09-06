@@ -11,7 +11,7 @@
   Preliminary benchmarks (see the "tbl" section of benchmarks) tend to show
   that this type is quite efficient for small data sets.
 
-  {b status: experimental}
+  {b status: unstable}
 
   @since NEXT_RELEASE
 *)

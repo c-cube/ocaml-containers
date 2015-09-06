@@ -118,6 +118,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 ### Containers.data
 
 - `CCBitField`, bitfields embedded in integers
+- `CCBloom`, a bloom filter
 - `CCCache`, memoization caches, LRU, etc.
 - `CCFlatHashtbl`, a flat (open-addressing) hashtable functorial implementation
 - `CCTrie`, a prefix tree
