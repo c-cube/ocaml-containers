@@ -81,6 +81,7 @@ CCPersistentArray
 CCPersistentHashtbl
 CCRingBuffer
 CCTrie
+CCWBTree
 }
 
 {4 Containers.io}

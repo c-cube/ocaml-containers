@@ -287,6 +287,17 @@ module Tbl = struct
     let module U = MUT_OF_IMMUT(T) in
     (module U : MUT with type key = a)
 
+  let wbt : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct
+      let name = sprintf "wbt(%s)" name
+      include CCWBTree.Make(K)
+      let find = get_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U : MUT with type key = a)
+
   let flat_hashtbl =
     let module T = CCFlatHashtbl.Make(CCInt) in
     let module U = struct
@@ -328,6 +339,7 @@ module Tbl = struct
     ; persistent_hashtbl
     ; poly_hashtbl
     ; map Int
+    ; wbt Int
     ; flat_hashtbl
     ; hashtrie Int
     ; hamt Int
@@ -336,6 +348,7 @@ module Tbl = struct
   let modules_string =
     [ hashtbl_make Str
     ; map Str
+    ; wbt Str
     ; hashtrie Str
     ; hamt Str
     ]

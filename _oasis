@@ -85,7 +85,7 @@ Library "containers_data"
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
-                    CCHashTrie, CCBloom
+                    CCHashTrie, CCBloom, CCWBTree
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      data

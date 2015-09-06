@@ -137,6 +137,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCHashconsedSet`, a set structure with sharing of sub-structures
 - `CCGraph`, a small collection of graph algorithms
 - `CCBitField`, a type-safe implementation of bitfields that fit in `int`
+- `CCWBTree`, a weight-balanced tree, implementing a map interface
 
 ### Containers.io
 
