@@ -30,6 +30,8 @@ module type S = sig
 
   val empty : 'a t
 
+  val is_empty : _ t -> bool
+
   val mem : key -> _ t -> bool
 
   val get : key -> 'a t -> 'a option
