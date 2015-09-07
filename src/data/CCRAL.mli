@@ -72,6 +72,8 @@ val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val flatten : 'a t t -> 'a t
 
+val app : ('a -> 'b) t -> 'a t -> 'b t
+
 val iter : ('a -> unit) -> 'a t -> unit
 (** Iterate on the list's elements *)
 
@@ -80,6 +82,9 @@ val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 
 val fold_rev : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** Fold on the list's elements, in reverse order (starting from the tail) *)
+
+val rev : 'a t -> 'a t
+(** Reverse the list *)
 
 (** {2 Conversions} *)
 
@@ -107,6 +112,16 @@ val add_gen : 'a t -> 'a gen -> 'a t
 val of_gen : 'a gen -> 'a t
 
 val to_gen : 'a t -> 'a gen
+
+(** {2 Infix} *)
+
+module Infix : sig
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+end
+
+include module type of Infix
 
 (** {2 IO} *)
 

@@ -157,6 +157,15 @@ and fold_tree_rev t acc f = match t with
     let acc = fold_tree_rev t1 acc f in
     f acc x
 
+let rev l = fold (fun acc x -> cons x acc) empty l
+
+(*$Q
+  Q.(list small_int) (fun l -> \
+    let l = of_list l in rev (rev l) = l)
+  Q.(list small_int) (fun l -> \
+    let l1 = of_list l in length l1 = List.length l)
+*)
+
 let append l1 l2 = fold_rev (fun l2 x -> cons x l2) l2 l1
 
 (*$Q & ~small:(CCPair.merge (CCFun.compose_binop List.length (+)))
@@ -191,6 +200,19 @@ let flatten l = fold_rev (fun acc l -> append l acc) empty l
     of_list [1;2;3;]
 *)
 
+let app funs l =
+  fold_rev
+    (fun acc f ->
+      fold_rev
+        (fun acc x -> cons (f x) acc)
+        acc l
+    ) empty funs
+
+(*$T
+  app (of_list [(+) 2; ( * ) 10]) (of_list [1;10]) |> to_list = \
+    [3; 12; 10; 100]
+*)
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -211,14 +233,28 @@ let to_list l = fold_rev (fun acc x -> x :: acc) [] l
   Q.(list int) (fun l -> to_list (of_list l) = l)
   *)
 
+let of_seq s =
+  let l = ref empty in
+  s (fun x -> l := cons x !l);
+  rev !l
+
 let add_seq l s =
   let l1 = ref empty in
   s (fun x -> l1 := cons x !l1);
-  fold_rev (fun acc x -> cons x acc) l !l1
-
-let of_seq s = add_seq empty s
+  fold (fun acc x -> cons x acc) l !l1
 
 let to_seq l yield = iter yield l
+
+(*$Q & ~small:List.length
+  Q.(list small_int) (fun l -> \
+    of_list l |> to_seq |> Sequence.to_list = l)
+  Q.(list small_int) (fun l -> \
+    Sequence.of_list l |> of_seq |> to_list = l)
+*)
+
+(*$T
+  add_seq (of_list [3;4]) (Sequence.of_list [1;2]) |> to_list = [1;2;3;4]
+*)
 
 let rec gen_iter_ f g = match g() with
   | None -> ()
@@ -227,7 +263,7 @@ let rec gen_iter_ f g = match g() with
 let add_gen l g =
   let l1 = ref empty in
   gen_iter_ (fun x -> l1 := cons x !l1) g;
-  fold_rev (fun acc x -> cons x acc) l !l1
+  fold (fun acc x -> cons x acc) l !l1
 
 let of_gen g = add_gen empty g
 
@@ -251,8 +287,10 @@ let to_gen l =
   in
   next
 
-(*$Q
-  Q.(list int) (fun l -> of_list l |> to_gen |> Gen.to_list = l)
+(*$Q & ~small:List.length
+  Q.(list small_int) (fun l -> of_list l |> to_gen |> Gen.to_list = l)
+  Q.(list small_int) (fun l -> \
+    Gen.of_list l |> of_gen |> to_list = l)
 *)
 
 let rec of_list_map f l = match l with
@@ -260,6 +298,16 @@ let rec of_list_map f l = match l with
   | x::l' ->
       let y = f x in
       cons y (of_list_map f l')
+
+(** {2 Infix} *)
+
+module Infix = struct
+  let (>>=) l f = flat_map f l
+  let (>|=) l f = map f l
+  let (<*>) = app
+end
+
+include Infix
 
 (** {2 IO} *)
 
