@@ -1,27 +1,5 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Random-Access Lists} *)
 
@@ -79,10 +57,12 @@ let rec set l i v = match l with
   | Cons (size,t, l') when i < size -> Cons (size, tree_update size t i v, l')
   | Cons (size,t, l') -> Cons (size, t, set l' (i - size) v)
 
-(*$Q
-   Q.(pair (pair int int) (list int)) (fun ((i,v),l) -> \
-    let ral = of_list l in let ral = set ral i v in \
-    get ral i = v)
+(*$Q & ~small:(CCFun.compose snd List.length)
+   Q.(pair (pair small_int int) (list int)) (fun ((i,v),l) -> \
+    l=[] ||  \
+      (let i = (abs i) mod (List.length l) in \
+      let ral = of_list l in let ral = set ral i v in \
+      get ral i = v))
 *)
 
 let cons x l = match l with
@@ -166,7 +146,7 @@ and fold_tree t acc f = match t with
 
 let rec fold_rev f acc l = match l with
   | Nil -> acc
-  | Cons (_, Leaf x, l') -> f (fold f acc l') x
+  | Cons (_, Leaf x, l') -> f (fold_rev f acc l') x
   | Cons (_, t, l') ->
     let acc = fold_rev f acc l' in
     fold_tree_rev t acc f
@@ -179,7 +159,101 @@ and fold_tree_rev t acc f = match t with
 
 let append l1 l2 = fold_rev (fun l2 x -> cons x l2) l2 l1
 
-let of_list l = List.fold_right cons l empty
+(*$Q & ~small:(CCPair.merge (CCFun.compose_binop List.length (+)))
+  Q.(pair (list int) (list int)) (fun (l1,l2) -> \
+    append (of_list l1) (of_list l2) = of_list (l1 @ l2))
+*)
+
+let filter p l = fold_rev (fun acc x -> if p x then cons x acc else acc) empty l
+
+let filter_map f l =
+  fold_rev
+    (fun acc x -> match f x with
+      | None -> acc
+      | Some y -> cons y acc
+    ) empty l
+
+(*$T
+  of_list [1;2;3;4;5;6] |> filter (fun x -> x mod 2=0) |> to_list = [2;4;6]
+*)
+
+let flat_map f l =
+  fold_rev
+    (fun acc x ->
+      let l = f x in
+      append l acc
+    ) empty l
+
+let flatten l = fold_rev (fun acc l -> append l acc) empty l
+
+(*$T
+  flatten (of_list [of_list [1]; of_list []; of_list [2;3]]) = \
+    of_list [1;2;3;]
+*)
+
+(** {2 Conversions} *)
+
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+
+let add_list l l2 = List.fold_left (fun acc x -> cons x acc) l (List.rev l2)
+
+(*$Q & ~small:(CCPair.merge (CCFun.compose_binop List.length (+)))
+  Q.(pair (list small_int) (list small_int)) (fun (l1,l2) -> \
+    add_list (of_list l2) l1 |> to_list = l1 @ l2)
+*)
+
+let of_list l = add_list empty l
+
+let to_list l = fold_rev (fun acc x -> x :: acc) [] l
+
+(*$Q
+  Q.(list int) (fun l -> to_list (of_list l) = l)
+  *)
+
+let add_seq l s =
+  let l1 = ref empty in
+  s (fun x -> l1 := cons x !l1);
+  fold_rev (fun acc x -> cons x acc) l !l1
+
+let of_seq s = add_seq empty s
+
+let to_seq l yield = iter yield l
+
+let rec gen_iter_ f g = match g() with
+  | None -> ()
+  | Some x -> f x; gen_iter_ f g
+
+let add_gen l g =
+  let l1 = ref empty in
+  gen_iter_ (fun x -> l1 := cons x !l1) g;
+  fold_rev (fun acc x -> cons x acc) l !l1
+
+let of_gen g = add_gen empty g
+
+let to_gen l =
+  let st = Stack.create() in (* stack for tree *)
+  let l = ref l in (* tail of list *)
+  let rec next () =
+    if Stack.is_empty st
+    then match !l with
+    | Nil -> None
+    | Cons (_, t, tl) ->
+        l := tl;
+        Stack.push t st;
+        next()
+    else match Stack.pop st with
+      | Leaf x -> Some x
+      | Node (x, l, r) ->
+          Stack.push r st;
+          Stack.push l st;
+          Some x
+  in
+  next
+
+(*$Q
+  Q.(list int) (fun l -> of_list l |> to_gen |> Gen.to_list = l)
+*)
 
 let rec of_list_map f l = match l with
   | [] -> empty
@@ -187,4 +261,19 @@ let rec of_list_map f l = match l with
       let y = f x in
       cons y (of_list_map f l')
 
-let to_list l = List.rev (fold (fun l x -> x :: l) [] l)
+(** {2 IO} *)
+
+type 'a printer = Format.formatter -> 'a -> unit
+
+let print ?(sep=", ") pp_item fmt l =
+  let first = ref true in
+  iter
+    (fun x ->
+      if !first then first := false else (
+        Format.pp_print_string fmt sep;
+        Format.pp_print_cut fmt ();
+      );
+      pp_item fmt x
+    ) l;
+  ()
+

@@ -288,7 +288,6 @@ let choose t =
   try Some (choose_exn t)
   with Not_found -> None
 
-(* TODO fix *)
 let rec union f t1 t2 = match t1, t2 with
   | E, o | o, E -> o
   | L (k, v), o
@@ -384,8 +383,6 @@ let rec inter f a b = match a, b with
     equal ~eq:(=) (inter f (inter f m1 m2) m3) (inter f m1 (inter f m2 m3)))
 *)
 
-
-(* TODO: write tests *)
 
 (** {2 Whole-collection operations} *)
 
