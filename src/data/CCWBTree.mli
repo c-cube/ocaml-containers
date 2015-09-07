@@ -32,6 +32,8 @@ module type S = sig
 
   val is_empty : _ t -> bool
 
+  val singleton : key -> 'a -> 'a t
+
   val mem : key -> _ t -> bool
 
   val get : key -> 'a t -> 'a option
@@ -49,6 +51,11 @@ module type S = sig
   val add : key -> 'a -> 'a t -> 'a t
 
   val remove : key -> 'a t -> 'a t
+
+  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
+  (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
+      otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
+      if [f] returns [None] it removes [k] *)
 
   val cardinal : _ t -> int
 

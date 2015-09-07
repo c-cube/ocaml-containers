@@ -27,6 +27,8 @@ module type S = sig
 
   val is_empty : _ t -> bool
 
+  val singleton : key -> 'a -> 'a t
+
   val mem : key -> _ t -> bool
 
   val get : key -> 'a t -> 'a option
@@ -44,6 +46,11 @@ module type S = sig
   val add : key -> 'a -> 'a t -> 'a t
 
   val remove : key -> 'a t -> 'a t
+
+  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
+  (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
+      otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
+      if [f] returns [None] it removes [k] *)
 
   val cardinal : _ t -> int
 
@@ -272,6 +279,13 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       let m = M.of_list l in \
       List.for_all (fun (k,_) -> let m' = M.remove k m in M.balanced m') l)
   *)
+
+  let update k f m =
+    let maybe_v = get k m in
+    match maybe_v, f maybe_v with
+    | None, None -> m
+    | Some _, None -> remove k m
+    | _, Some v -> add k v m
 
   (* TODO union, intersection *)
 
