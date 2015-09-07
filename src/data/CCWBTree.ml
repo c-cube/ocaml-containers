@@ -133,7 +133,10 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     | E -> 0
     | N (_, _, _, _, w) -> w
 
-  (* balancing parameters *)
+  (* balancing parameters.
+
+     We take the parameters from "Balancing weight-balanced trees", as they
+     are rational and efficient. *)
 
   (* delta=5/2
      delta × (weight l + 1) ≥ weight r + 1
