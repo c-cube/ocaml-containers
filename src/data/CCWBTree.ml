@@ -221,6 +221,14 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       M.cardinal m = List.length l)
   *)
 
+  (* extract min binding of the tree *)
+  let rec extract_min_ m = match m with
+    | E -> assert false
+    | N (k, v, E, r, _) -> k, v, r
+    | N (k, v, l, r, _) ->
+        let k', v', l' = extract_min_ l in
+        k', v', balance_l k v l' r
+
   (* extract max binding of the tree *)
   let rec extract_max_ m = match m with
     | E -> assert false
@@ -239,10 +247,16 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
             | E, o
             | o, E -> o
             | _, _ ->
-                (* remove max element of [l] and put it at the root,
-                   then rebalance towards the left if needed *)
-                let k', v', l' = extract_max_ l in
-                balance_l k' v' l' r
+                if weight l > weight r
+                then
+                  (* remove max element of [l] and put it at the root,
+                     then rebalance towards the left if needed *)
+                  let k', v', l' = extract_max_ l in
+                  balance_l k' v' l' r
+                else
+                  (* remove min element of [r] and rebalance *)
+                  let k', v', r' = extract_min_ r in
+                  balance_r k' v' l r'
             end
         | n when n<0 -> balance_l k' v' (remove k l) r
         | _ -> balance_r k' v' l (remove k r)
