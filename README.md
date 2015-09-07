@@ -138,6 +138,8 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCGraph`, a small collection of graph algorithms
 - `CCBitField`, a type-safe implementation of bitfields that fit in `int`
 - `CCWBTree`, a weight-balanced tree, implementing a map interface
+- `CCRAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
+  access to elements by their index.
 
 ### Containers.io
 
@@ -199,7 +201,6 @@ is not necessarily up-to-date.
 - `Hashset`, a polymorphic imperative set on top of `PHashtbl`
 - `LazyGraph`, a lazy graph structure on arbitrary (hashable+eq) types, with basic graph functions that work even on infinite graphs, and printing to DOT.
 - `PHashtbl`, a polymorphic hashtable (with open addressing)
-- `RAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))` access to elements by their index.
 - `RoseTree`, a tree with an arbitrary number of children and its associated zipper
 - `SmallSet`, a sorted list implementation behaving like a set.
 - `UnionFind`, a functorial imperative Union-Find structure

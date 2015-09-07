@@ -85,7 +85,7 @@ Library "containers_data"
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
-                    CCHashTrie, CCBloom, CCWBTree
+                    CCHashTrie, CCBloom, CCWBTree, CCRAL
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      data
@@ -123,7 +123,7 @@ Library "containers_misc"
   Path:             src/misc
   Pack:             true
   Modules:          AbsSet, Automaton, Bij, CSM, Hashset, LazyGraph, PHashtbl,
-                    PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ, Puf,
+                    PrintBox, RoseTree, SmallSet, UnionFind, Univ, Puf,
                     Backtrack
   BuildDepends:     containers, containers.data
   FindlibName:      misc

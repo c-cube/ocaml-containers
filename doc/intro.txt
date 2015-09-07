@@ -79,6 +79,7 @@ CCMultiMap
 CCMultiSet
 CCPersistentArray
 CCPersistentHashtbl
+CCRAL
 CCRingBuffer
 CCTrie
 CCWBTree
