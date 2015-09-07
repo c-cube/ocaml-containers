@@ -65,6 +65,13 @@ let rec set l i v = match l with
       get ral i = v))
 *)
 
+(*$Q & ~small:List.length
+   Q.(list small_int) (fun l -> \
+    let l1 = of_list l in \
+    CCList.Idx.mapi (fun i x -> i,x) l \
+      |> List.for_all (fun (i,x) -> get l1 i = x))
+*)
+
 let cons x l = match l with
   | Cons (size1, t1, Cons (size2, t2, l')) ->
     if size1 = size2

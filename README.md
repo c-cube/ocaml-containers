@@ -227,6 +227,8 @@ already in git (but can be reverted if needed):
 - change signature of `CCDeque.of_seq` (remove optional argument)
 - heavily refactor `CCLinq` in `containers.advanced`. If you use this module,
   you will most likely have to change your code (into simpler code, hopefully).
+- `RAL` in `containers.misc` moved to `containers.data` as `CCRAL`, and is
+  getting improved on the way
 
 
 ## Build
