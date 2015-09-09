@@ -191,6 +191,14 @@ Executable run_bench_hash
   MainIs: run_bench_hash.ml
   BuildDepends: containers, containers.misc
 
+Executable run_bench_io
+  Path: benchs/
+  Install: false
+  CompiledObject: best
+  Build$: flag(bench) && flag(unix) && flag(lwt)
+  MainIs: run_bench_io.ml
+  BuildDepends: containers, unix, lwt.unix, benchmark
+
 Executable run_test_future
   Path:         tests/threads/
   Install:      false
