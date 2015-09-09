@@ -73,7 +73,15 @@ module type S = sig
   val merge : (key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
   (** Similar to {!Map.S.merge} *)
 
-  (* TODO: compare, equal *)
+  val extract_min : 'a t -> key * 'a * 'a t
+  (** [extract_min m] returns [k, v, m'] where [k,v] is the pair with the
+      smaller key in [m], and [m'] does not contain [k].
+      @raise Not_found if the map is empty *)
+
+  val extract_max : 'a t -> key * 'a * 'a t
+  (** [extract_max m] returns [k, v, m'] where [k,v] is the pair with the
+      highest key in [m], and [m'] does not contain [k].
+      @raise Not_found if the map is empty *)
 
   val choose : 'a t -> (key * 'a) option
 
@@ -106,6 +114,7 @@ module type S = sig
   val print : key printer -> 'a printer -> 'a t printer
 
   (**/**)
+  val node_ : key -> 'a -> 'a t -> 'a t -> 'a t
   val balanced : _ t -> bool
   (**/**)
 end
