@@ -65,6 +65,16 @@ module type S = sig
 
   val iter : (key -> 'a -> unit) -> 'a t -> unit
 
+  val split : key -> 'a t -> 'a t * 'a option * 'a t
+  (** [split k t] returns [l, o, r] where [l] is the part of the map
+      with keys smaller than [k], [r] has keys bigger than [k],
+      and [o = Some v] if [k, v] belonged to the map *)
+
+  val merge : (key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
+  (** Similar to {!Map.S.merge} *)
+
+  (* TODO: compare, equal *)
+
   val choose : 'a t -> (key * 'a) option
 
   val choose_exn : 'a t -> key * 'a
