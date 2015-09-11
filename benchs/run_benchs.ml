@@ -248,7 +248,7 @@ module Tbl = struct
     let module U = struct
       type key = int
       type 'a t = 'a T.t ref
-      let name = "persistent_hashtbl"
+      let name = "ccpersistent_hashtbl"
       let create _ = ref (T.empty ())
       let find m k = T.find !m k
       let add m k v = m := T.replace !m k v
@@ -272,7 +272,7 @@ module Tbl = struct
     let module T = struct
       type key = int
       type 'a t = (int, 'a) PHashtbl.t
-      let name = "phashtbl"
+      let name = "cc_phashtbl"
       let create i = PHashtbl.create ~hash:CCInt.hash ~eq:CCInt.equal i
       let find = PHashtbl.find
       let add = PHashtbl.add
@@ -291,7 +291,7 @@ module Tbl = struct
   = fun k ->
     let (module K), name = arg_make k in
     let module T = struct
-      let name = sprintf "wbt(%s)" name
+      let name = sprintf "ccwbt(%s)" name
       include CCWBTree.Make(K)
       let find = get_exn
     end in
