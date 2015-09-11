@@ -143,14 +143,14 @@ val find_map : ('a -> 'b option) -> 'a t -> 'b option
     @since 0.11 *)
 
 val find : ('a -> 'b option) -> 'a list -> 'b option
-(** @deprecated in favor of {!find_map}, for the name is too confusing *)
+(** @deprecated since 0.11 in favor of {!find_map}, for the name is too confusing *)
 
 val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
     @since 0.11 *)
 
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-(** @deprecated in favor of {!find_mapi}, name is too confusing
+(** @deprecated since 0.11 in favor of {!find_mapi}, name is too confusing
     @since 0.3.4 *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option

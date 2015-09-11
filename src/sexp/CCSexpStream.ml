@@ -23,10 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(** {1 S-expressions Parser}
-
-@since 0.4
-@deprecated consider using {!CCSexpM} *)
+(** {1 S-expressions Parser} *)
 
 type 'a or_error = [ `Ok of 'a | `Error of string ]
 type 'a sequence = ('a -> unit) -> unit
