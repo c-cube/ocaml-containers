@@ -371,10 +371,10 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
      but do not assume anything about weights.
      returns a tree with l, r, and (k,v) *)
   let rec node_ k v l r = match l, r with
-    | E, E -> mk_node_ k v E E
+    | E, E -> singleton k v
     | E, o
     | o, E -> add k v o
-    | N (kl, vl, ll, lr, wl), N (kr, vr, rl, rr, wr) ->
+    | N (kl, vl, ll, lr, _), N (kr, vr, rl, rr, _) ->
       let left = is_balanced l r in
       if left && is_balanced r l
         then mk_node_ k v l r
@@ -384,17 +384,17 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   (* join two trees, assuming all keys of [l] are smaller than keys of [r] *)
   let join_ l r = match l, r with
-  | E, E -> E
-  | E, o -> o
-  | o, E -> o
-  | N _, N _ ->
-      if weight l <= weight r
-      then
-        let k, v, r' = extract_min r in
-        node_ k v l r'
-      else
-        let k, v, l' = extract_max l in
-        node_ k v l' r
+    | E, E -> E
+    | E, o
+    | o, E -> o
+    | N _, N _ ->
+        if weight l <= weight r
+        then
+          let k, v, r' = extract_min r in
+          node_ k v l r'
+        else
+          let k, v, l' = extract_max l in
+          node_ k v l' r
 
   (* if [o_v = Some v], behave like [mk_node k v l r]
       else behave like [join_ l r] *)
@@ -409,10 +409,10 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
         | 0 -> l, Some v', r
         | n when n<0 ->
             let ll, o, lr = split k l in
-            ll, o, join_ lr r
+            ll, o, node_ k' v' lr r
         | _ ->
             let rl, o, rr = split k r in
-            join_ l rl, o, rr
+            node_ k' v' l rl, o, rr
 
   (*$Q & ~small:List.length
      Q.(list (pair small_int small_int)) ( fun lst -> \
@@ -421,12 +421,12 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       let m = M.of_list lst in \
       List.for_all (fun (k,v) -> \
         let l, v', r = M.split k m in \
-        v' = Some v && \
-        (M.to_seq l |> Sequence.for_all (fun (k',_) -> k' < k)) &&\
-        (M.to_seq r |> Sequence.for_all (fun (k',_) -> k' > k)) &&\
-        M.balanced m && \
-        M.cardinal l + M.cardinal r + 1 = List.length lst) \
-      lst)
+        v' = Some v \
+        && (M.to_seq l |> Sequence.for_all (fun (k',_) -> k' < k)) \
+        && (M.to_seq r |> Sequence.for_all (fun (k',_) -> k' > k)) \
+        && M.balanced m \
+        && M.cardinal l + M.cardinal r + 1 = List.length lst \
+      ) lst)
   *)
 
   let rec merge f a b = match a, b with
@@ -439,16 +439,15 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
         mk_node_or_join_ k v' (merge f l E) (merge f r E)
     | N (k1, v1, l1, r1, w1), N (k2, v2, l2, r2, w2) ->
         if K.compare k1 k2 = 0
-        then
-          (* easy case *)
+        then (* easy case *)
           mk_node_or_join_ k1 (f k1 (Some v1) (Some v2))
             (merge f l1 l2) (merge f r1 r2)
         else if w1 <= w2
-          then
+          then (* split left tree *)
             let l1', v1', r1' = split k2 a in
             mk_node_or_join_ k2 (f k2 v1' (Some v2))
               (merge f l1' l2) (merge f r1' r2)
-          else
+          else (* split right tree *)
             let l2', v2', r2' = split k1 b in
             mk_node_or_join_ k1 (f k1 (Some v1) v2')
               (merge f l1 l2') (merge f r1 r2')
