@@ -387,12 +387,14 @@ let rec drop n l = match l with
   | _ when n=0 -> l
   | _::l' -> drop (n-1) l'
 
-let split n l = take n l, drop n l
+let take_drop n l = take n l, drop n l
+
+let split = take_drop
 
 (*$Q
   (Q.pair (Q.list Q.small_int) Q.int) (fun (l,i) -> \
     let i = abs i in \
-    let l1, l2 = split i l in \
+    let l1, l2 = take_drop i l in \
     l1 @ l2 = l )
 *)
 

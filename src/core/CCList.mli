@@ -114,11 +114,13 @@ val take : int -> 'a t -> 'a t
 val drop : int -> 'a t -> 'a t
 (** drop the [n] first elements, keep the rest *)
 
-val split : int -> 'a t -> 'a t * 'a t
-(** [split n l] returns [l1, l2] such that [l1 @ l2 = l] and
+val take_drop : int -> 'a t -> 'a t * 'a t
+(** [take_drop n l] returns [l1, l2] such that [l1 @ l2 = l] and
     [length l1 = min (length l) n] *)
 
-(* TODO: deprecate and rename split, it already exists in stdlib *)
+val split : int -> 'a t -> 'a t * 'a t
+(** synonym to {!take_drop}
+    @deprecated since NEXT_RELEASE: conflict with the {!List.split} standard function *)
 
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
