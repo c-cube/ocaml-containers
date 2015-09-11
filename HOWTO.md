@@ -1,6 +1,9 @@
 
 ## Make a release
 
+Beforehand, check `grep deprecated -r src` to see whether some functions
+can be removed.
+
 1. `make test`
 2. update version in `_oasis`
 3. `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
