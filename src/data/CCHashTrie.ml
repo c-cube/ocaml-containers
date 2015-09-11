@@ -15,7 +15,6 @@ module type FIXED_ARRAY = sig
   val length_log : int
   val length : int  (* 2 power length_log *)
   val get : 'a t -> int -> 'a
-  val set : 'a t -> int -> 'a -> 'a t
   val set : mut:bool -> 'a t -> int -> 'a -> 'a t
   val update : mut:bool -> 'a t -> int -> ('a -> 'a) -> 'a t
   val remove : empty:'a -> 'a t -> int -> 'a t (* put back [empty] there *)

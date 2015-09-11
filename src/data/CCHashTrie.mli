@@ -21,7 +21,10 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
-(** {2 Fixed-Size Arrays} *)
+(** {2 Fixed-Size Arrays}
+
+Mostly an internal implementation detail *)
+
 module type FIXED_ARRAY = sig
   type 'a t
   val create : empty:'a -> 'a t

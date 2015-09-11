@@ -35,4 +35,4 @@ PKG bigarray
 PKG sequence
 PKG hamt
 PKG gen
-FLG -w +a -w -4 -w -44 -w -32 -w -34
+FLG -w +a -w -4 -w -44
