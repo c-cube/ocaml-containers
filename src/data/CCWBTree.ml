@@ -1,6 +1,12 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Weight-Balanced Tree} *)
+(** {1 Weight-Balanced Tree}
+
+ Most of this comes from "implementing sets efficiently in a functional language",
+ Stephen Adams.
+
+ The coefficients 5/2, 3/2 for balancing come from "balancing weight-balanced trees"
+*)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
