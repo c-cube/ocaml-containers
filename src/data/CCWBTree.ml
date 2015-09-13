@@ -8,6 +8,11 @@
  The coefficients 5/2, 3/2 for balancing come from "balancing weight-balanced trees"
 *)
 
+(*$inject
+  module M = Make(CCInt)
+
+*)
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
@@ -241,17 +246,14 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   (*$Q & ~small:List.length
     Q.(list (pair small_int bool)) (fun l -> \
-      let module M = Make(CCInt) in \
       let m = M.of_list l in \
       M.balanced m)
     Q.(list (pair small_int small_int)) (fun l -> \
       let l = CCList.Set.uniq ~eq:(CCFun.compose_binop fst (=)) l in \
-      let module M = Make(CCInt) in \
       let m = M.of_list l in \
       List.for_all (fun (k,v) -> M.get_exn k m = v) l)
     Q.(list (pair small_int small_int)) (fun l -> \
       let l = CCList.Set.uniq ~eq:(CCFun.compose_binop fst (=)) l in \
-      let module M = Make(CCInt) in \
       let m = M.of_list l in \
       M.cardinal m = List.length l)
   *)
@@ -298,12 +300,10 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   (*$Q & ~small:List.length
     Q.(list (pair small_int small_int)) (fun l -> \
-      let module M = Make(CCInt) in \
       let m = M.of_list l in \
       List.for_all (fun (k,_) -> \
         M.mem k m && (let m' = M.remove k m in  not (M.mem k m'))) l)
     Q.(list (pair small_int small_int)) (fun l -> \
-      let module M = Make(CCInt) in \
       let m = M.of_list l in \
       List.for_all (fun (k,_) -> let m' = M.remove k m in M.balanced m') l)
   *)
@@ -331,7 +331,6 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     with Not_found -> None
 
   (*$T
-    let module M = Make(CCInt) in \
     let m = CCList.(0 -- 1000 |> map (fun i->i,i) |> M.of_list) in \
     List.for_all (fun i -> M.nth_exn i m = (i,i)) CCList.(0--1000)
   *)
@@ -422,7 +421,6 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   (*$Q & ~small:List.length
      Q.(list (pair small_int small_int)) ( fun lst -> \
-      let module M = Make(CCInt) in \
       let lst = CCList.Set.uniq ~eq:(CCFun.compose_binop fst (=)) lst in \
       let m = M.of_list lst in \
       List.for_all (fun (k,v) -> \
@@ -459,7 +457,6 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
               (merge f l1 l2') (merge f r1 r2')
 
   (*$R
-    let module M = Make(CCInt) in
     let m1 = M.of_list [1, 1; 2, 2; 4, 4] in
     let m2 = M.of_list [1, 1; 3, 3; 4, 4; 7, 7] in
     let m = M.merge (fun k -> CCOpt.map2 (+)) m1 m2 in
@@ -473,7 +470,6 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   (*$Q & ~small:(fun (l1,l2) -> List.length l1 + List.length l2)
      Q.(let p = list (pair small_int small_int) in pair p p) (fun (l1, l2) -> \
-        let module M = Make(CCInt) in \
         let eq x y = fst x = fst y in \
         let l1 = CCList.Set.uniq ~eq l1 and l2 = CCList.Set.uniq ~eq l2 in \
         let m1 = M.of_list l1 and m2 = M.of_list l2  in \

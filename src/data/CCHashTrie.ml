@@ -1,6 +1,19 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
+(*$inject
+  module M = Make(CCInt) ;;
+
+  let _listuniq =
+    let g, p = Q.(list (pair small_int small_int)) in
+    let g' st =
+      let l = g st in
+      CCList.Set.uniq ~eq:(fun a b -> fst a=fst b) l
+    in
+    g', p
+  ;;
+*)
+
 (** {1 Hash Tries} *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -336,6 +349,12 @@ module Make(Key : KEY)
 
   let get_exn k m = get_exn_ k ~h:(hash_ k) m
 
+  (*$Q
+     _listuniq (fun l -> \
+      let m = M.of_list l in \
+      List.for_all (fun (x,y) -> M.get_exn x m = y) l)
+  *)
+
   let get k m =
     try Some (get_exn_ k ~h:(hash_ k) m)
     with Not_found -> None
@@ -401,6 +420,12 @@ module Make(Key : KEY)
 
   let add k v m = add_ k v ~h:(hash_ k) m
 
+  (*$Q
+     _listuniq (fun l -> \
+      let m = List.fold_left (fun m (x,y) -> M.add x y m) M.empty l in \
+      List.for_all (fun (x,y) -> M.get_exn x m = y) l)
+  *)
+
   exception LocalExit
 
   let is_empty_arr_ a =
@@ -444,6 +469,13 @@ module Make(Key : KEY)
           else N (leaf, a)
 
   let remove k m = remove_rec_ k ~h:(hash_ k) m
+
+  (*$Q
+    Q.(list (pair small_int small_int)) (fun l -> \
+      let m = M.of_list l in \
+      List.for_all \
+        (fun (x,_) -> let m' = M.remove x m in not (M.mem x m')) l)
+  *)
 
   let update k f m =
     let h = hash_ k in
@@ -553,7 +585,6 @@ module Make(Key : KEY)
 end
 
 (*$R
-  let module M = Make(CCInt) in
   let m = M.of_list CCList.( (501 -- 1000) @ (500 -- 1) |> map (fun i->i,i)) in
   assert_equal ~printer:CCInt.to_string 1000 (M.cardinal m);
   assert_bool "check all get"
