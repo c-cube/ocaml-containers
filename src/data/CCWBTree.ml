@@ -11,6 +11,34 @@
 (*$inject
   module M = Make(CCInt)
 
+  type op =
+    | Add of int * int
+    | Remove of int
+    | Remove_min
+
+  let gen_op () = CCRandom.(run ?st:None @@ choose_exn
+    [ return Remove_min
+    ; map (fun x->Remove x) small_int
+    ; pure (fun x y->Add (x,y)) <*> small_int <*> small_int])
+  and pp_op =let open Printf in
+  function Add (x,y) -> sprintf "Add %d %d" x y
+    | Remove x -> sprintf "Remove %d" x | Remove_min -> "Remove_min"
+
+  let apply_ops l m = List.fold_left
+    (fun m  -> function
+      | Add (i,b) -> M.add i b m
+      | Remove i -> M.remove i m
+      | Remove_min ->
+          try let _, _, m' = M.extract_min m in m' with Not_found -> m
+    ) m l
+
+  let op = gen_op, pp_op
+
+*)
+
+(*$Q & ~small:List.length ~count:200
+  Q.(list op) (fun l -> \
+    let m = apply_ops l M.empty in M.balanced m)
 *)
 
 type 'a sequence = ('a -> unit) -> unit
