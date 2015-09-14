@@ -260,7 +260,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   (* extract min binding of the tree *)
   let rec extract_min m = match m with
-    | E -> assert false
+    | E -> raise Not_found
     | N (k, v, E, r, _) -> k, v, r
     | N (k, v, l, r, _) ->
         let k', v', l' = extract_min l in
@@ -268,7 +268,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   (* extract max binding of the tree *)
   let rec extract_max m = match m with
-    | E -> assert false
+    | E -> raise Not_found
     | N (k, v, l, E, _) -> k, v, l
     | N (k, v, l, r, _) ->
         let k', v', r' = extract_max r in
