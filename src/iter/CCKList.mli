@@ -191,6 +191,20 @@ val sort_uniq : ?cmp:'a ord -> 'a t -> 'a t
     finite. O(n ln(n)) time and space.
     @since 0.3.3 *)
 
+(** {2 Fair Combinations} *)
+
+val interleave : 'a t -> 'a t -> 'a t
+(** Fair interleaving of both streams.
+    @since NEXT_RELEASE *)
+
+val fair_flat_map : ('a -> 'b t) -> 'a t -> 'b t
+(** Fair version of {!flat_map}.
+    @since NEXT_RELEASE *)
+
+val fair_app : ('a -> 'b) t -> 'a t -> 'b t
+(** Fair version of {!(<*>)}
+    @since NEXT_RELEASE *)
+
 (** {2 Implementations}
     @since 0.3.3 *)
 
@@ -199,6 +213,14 @@ val pure : 'a -> 'a t
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
+val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
+(** Infix version of {! fair_flat_map}
+    @since NEXT_RELEASE *)
+
+val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
+(** Infix version of {!fair_app}
+    @since NEXT_RELEASE *)
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig

@@ -108,8 +108,12 @@ let rec take n (l:'a t) () = match l () with
 
 let rec take_while p l () = match l () with
   | `Nil -> `Nil
-  | `Cons (x,l') when p x -> `Cons (x, take_while p l')
-  | `Cons (_,l') -> take_while p l' ()
+  | `Cons (x,l') ->
+      if p x then `Cons (x, take_while p l') else `Nil
+
+(*$T
+  of_list [1;2;3;4] |> take_while (fun x->x < 4) |> to_list = [1;2;3]
+*)
 
 let rec drop n (l:'a t) () = match l () with
   | l' when n=0 -> l'
@@ -228,6 +232,11 @@ let rec group eq l () = match l() with
   | `Nil -> `Nil
   | `Cons (x, l') ->
       `Cons (cons x (take_while (eq x) l'), group eq (drop_while (eq x) l'))
+
+(*$T
+  of_list [1;1;1;2;2;3;3;1] |> group (=) |> map to_list |> to_list = \
+    [[1;1;1]; [2;2]; [3;3]; [1]]
+*)
 
 let rec _uniq eq prev l () = match prev, l() with
   | _, `Nil -> `Nil
@@ -431,6 +440,31 @@ let sort_uniq ?(cmp=Pervasives.compare) l =
   let l = to_list l in
   uniq (fun x y -> cmp x y = 0) (of_list (List.sort cmp l))
 
+(** {2 Fair Combinations} *)
+
+let rec interleave a b () = match a() with
+  | `Nil -> b ()
+  | `Cons (x, tail) -> `Cons (x, interleave b tail)
+
+let rec fair_flat_map f a () = match a() with
+  | `Nil -> `Nil
+  | `Cons (x, tail) ->
+      let y = f x in
+      interleave y (fair_flat_map f tail) ()
+
+let rec fair_app f a () = match f() with
+  | `Nil -> `Nil
+  | `Cons (f1, fs) ->
+      interleave (map f1 a) (fair_app fs a) ()
+
+let (>>-) a f = fair_flat_map f a
+let (<.>) f a = fair_app f a
+
+(*$T
+  interleave (of_list [1;3;5]) (of_list [2;4;6]) |> to_list = [1;2;3;4;5;6]
+  fair_app (of_list [(+)1; ( * ) 3]) (of_list [1; 10]) \
+    |> to_list |> List.sort Pervasives.compare = [2; 3; 11; 30]
+*)
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig
