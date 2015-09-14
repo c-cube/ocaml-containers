@@ -48,8 +48,8 @@ See [this file](https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG
 
 ## Finding help
 
-- *new*: [Mailing List on the forge](https://forge.ocamlcore.org/mail/?group_id=359);
-  the address is `containers-users@lists.forge.ocamlcore.org`
+- *new*: [Mailing List](http://lists.ocaml.org/listinfo/containers-users)
+  the address is `containers-users@lists.ocaml.org`
 - the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
 - on IRC, ask `companion_cube` on `#ocaml`
 - [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) (experimental, might not exist forever)
