@@ -16,7 +16,7 @@
     | Remove of int
     | Remove_min
 
-  let gen_op () = CCRandom.(run ?st:None @@ choose_exn
+  let gen_op = CCRandom.(choose_exn
     [ return Remove_min
     ; map (fun x->Remove x) small_int
     ; pure (fun x y->Add (x,y)) <*> small_int <*> small_int])
@@ -32,7 +32,7 @@
           try let _, _, m' = M.extract_min m in m' with Not_found -> m
     ) m l
 
-  let op = gen_op, pp_op
+  let op = Q.make ~print:pp_op gen_op
 
 *)
 

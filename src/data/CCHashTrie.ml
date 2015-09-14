@@ -5,12 +5,11 @@
   module M = Make(CCInt) ;;
 
   let _listuniq =
-    let g, p = Q.(list (pair small_int small_int)) in
-    let g' st =
-      let l = g st in
-      CCList.Set.uniq ~eq:(fun a b -> fst a=fst b) l
-    in
-    g', p
+    let g = Q.(list (pair small_int small_int)) in
+    Q.map_same_type
+      (fun l ->
+        CCList.Set.uniq ~eq:(fun a b -> fst a=fst b) l
+      ) g
   ;;
 *)
 
