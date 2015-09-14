@@ -60,7 +60,7 @@ end
 module type S = sig
   type key
 
-  type 'a t
+  type +'a t
 
   val empty : 'a t
 
@@ -158,7 +158,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   type weight = int
 
-  type 'a t =
+  type +'a t =
     | E
     | N of key * 'a * 'a t * 'a t * weight
 

@@ -26,7 +26,7 @@ end
 module type S = sig
   type key
 
-  type 'a t
+  type +'a t
 
   val empty : 'a t
 
