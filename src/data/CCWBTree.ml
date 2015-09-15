@@ -447,17 +447,17 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
             let rl, o, rr = split k r in
             node_ k' v' l rl, o, rr
 
-  (*$Q & ~small:List.length
-     Q.(list (pair small_int small_int)) ( fun lst -> \
-      let lst = CCList.Set.uniq ~eq:(CCFun.compose_binop fst (=)) lst in \
-      let m = M.of_list lst in \
-      List.for_all (fun (k,v) -> \
-        let l, v', r = M.split k m in \
-        v' = Some v \
-        && (M.to_seq l |> Sequence.for_all (fun (k',_) -> k' < k)) \
-        && (M.to_seq r |> Sequence.for_all (fun (k',_) -> k' > k)) \
-        && M.balanced m \
-        && M.cardinal l + M.cardinal r + 1 = List.length lst \
+  (*$QR & ~small:List.length ~count:20
+     Q.(list (pair small_int small_int)) ( fun lst ->
+      let lst = CCList.sort_uniq ~cmp:(CCFun.compose_binop fst CCInt.compare) lst in
+      let m = M.of_list lst in
+      List.for_all (fun (k,v) ->
+        let l, v', r = M.split k m in
+        v' = Some v
+        && (M.to_seq l |> Sequence.for_all (fun (k',_) -> k' < k))
+        && (M.to_seq r |> Sequence.for_all (fun (k',_) -> k' > k))
+        && M.balanced m
+        && M.cardinal l + M.cardinal r + 1 = List.length lst
       ) lst)
   *)
 
