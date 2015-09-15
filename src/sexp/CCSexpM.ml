@@ -332,6 +332,38 @@ let parse_string s : t or_error =
   CCError.to_opt (parse_string "(abc ( d e ffff   ) \"hello/world\")") <> None
 *)
 
+(*$inject
+  let sexp_gen =
+    let mkatom a = `Atom a and mklist l = `List l in
+    let atom = Q.Gen.(map mkatom (string_size (int_range 1 30))) in
+    let gen = Q.Gen.(
+      sized (fix
+        (fun self n st -> match n with
+        | 0 -> atom st
+        | _ ->
+          frequency
+            [ 1, atom
+            ; 2, map mklist (list_size (int_bound 10) (self (n/10)))
+            ] st
+        )
+    )) in
+    let rec small = function
+      | `Atom s -> String.length s
+      |  `List l -> List.fold_left (fun n x->n+small x) 0 l
+    and print = function
+      | `Atom s -> Printf.sprintf "`Atom \"%s\"" s
+      | `List l -> "`List " ^ Q.Print.list print l
+    and shrink = function
+      | `Atom s -> Q.Iter.map mkatom (Q.Shrink.string s)
+      | `List l -> Q.Iter.map mklist (Q.Shrink.list ~shrink l)
+    in
+    Q.make ~print ~small ~shrink gen
+*)
+
+(*$Q & ~count:30
+    sexp_gen (fun s -> to_string s |> parse_string = `Ok s)
+*)
+
 let parse_chan ?bufsize ic =
   let d = D.make ?bufsize (input ic) in
   match D.next d with
