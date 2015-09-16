@@ -63,7 +63,7 @@ let _must_escape s =
     for i = 0 to String.length s - 1 do
       let c = String.unsafe_get s i in
       match c with
-      | ' ' | ';' | ')' | '(' | '"' | '\n' | '\t' -> raise Exit
+      | ' ' | ';' | ')' | '(' | '"' | '\\' | '\n' | '\t' -> raise Exit
       | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
       | _ -> ()
     done;
