@@ -451,12 +451,13 @@ let sleep time = make (fun () -> Thread.delay time)
 
 (*$R
   let start = Unix.gettimeofday () in
-  let l = CCList.(1 -- 10)
-    |> List.map (fun _ -> make (fun () -> Thread.delay 0.5))
+  let pause = 0.2 and n = 10 in
+  let l = CCList.(1 -- n)
+    |> List.map (fun _ -> make (fun () -> Thread.delay pause))
   in
   List.iter get l;
   let stop = Unix.gettimeofday () in
-  OUnit.assert_bool "some_parallelism" (stop -. start < 10. *. 0.5);
+  OUnit.assert_bool "some_parallelism" (stop -. start < float_of_int n *. pause);
 *)
 
 (** {2 Event timer} *)

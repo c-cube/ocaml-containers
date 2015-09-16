@@ -292,7 +292,7 @@ let nth i q =
   try Some (nth_exn i q)
   with Failure _ -> None
 
-(*$Q
+(*$Q & ~count:30
   (Q.list Q.int) (fun l -> \
    let len = List.length l in let idx = CCList.(0 -- (len - 1)) in \
    let q = of_list l in \

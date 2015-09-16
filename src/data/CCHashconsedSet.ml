@@ -352,7 +352,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
         else hashcons_ (N (p2, m2, l2, union r2 a))
       else join_ a p1 b p2
 
-  (*$Q
+  (*$Q & ~count:50
     Q.(list int) (fun l -> \
       let module S = Make(CCInt) in \
       let s = S.of_list l in S.equal s (S.union s s))
@@ -462,7 +462,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
 
   let to_list t = fold (fun x l -> x:: l) t []
 
-  (*$Q
+  (*$Q & ~count:50
     Q.(list int) (fun l -> \
       let module S = Make(CCInt) in \
       S.of_list l |> S.cardinal = List.length l)
