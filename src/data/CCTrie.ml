@@ -559,6 +559,19 @@ module Make(W : WORD) = struct
       let t = S.of_list l in \
       S.check_invariants t)
   *)
+
+  (*$Q & ~small:List.length ~count:30
+    Q.(list_of_size Gen.(1 -- 20) (pair printable_string small_int)) \
+      (fun l -> let t = String.of_list l in \
+        List.for_all (fun (k,_) -> \
+          String.above k t |> Sequence.for_all (fun (k',v) -> k' >= k)) \
+          l)
+    Q.(list_of_size Gen.(1 -- 20) (pair printable_string small_int)) \
+      (fun l -> let t = String.of_list l in \
+        List.for_all (fun (k,_) -> \
+          String.below k t |> Sequence.for_all (fun (k',v) -> k' <= k)) \
+          l)
+  *)
 end
 
 module type ORDERED = sig

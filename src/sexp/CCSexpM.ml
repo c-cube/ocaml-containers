@@ -335,7 +335,7 @@ let parse_string s : t or_error =
 (*$inject
   let sexp_gen =
     let mkatom a = `Atom a and mklist l = `List l in
-    let atom = Q.Gen.(map mkatom (string_size (int_range 1 30))) in
+    let atom = Q.Gen.(map mkatom (string_size ~gen:printable (1 -- 30))) in
     let gen = Q.Gen.(
       sized (fix
         (fun self n st -> match n with
@@ -343,7 +343,7 @@ let parse_string s : t or_error =
         | _ ->
           frequency
             [ 1, atom
-            ; 2, map mklist (list_size (int_bound 10) (self (n/10)))
+            ; 2, map mklist (list_size (0 -- 10) (self (n/10)))
             ] st
         )
     )) in
@@ -365,7 +365,7 @@ let parse_string s : t or_error =
     | `List l -> List.for_all sexp_valid l
 *)
 
-(*$Q & ~count:30
+(*$Q & ~count:100
     sexp_gen (fun s -> sexp_valid s ==> (to_string s |> parse_string = `Ok s))
 *)
 
