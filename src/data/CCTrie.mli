@@ -112,6 +112,10 @@ module type S = sig
 
   val below : key -> 'a t -> (key * 'a) sequence
   (** All bindings whose key is smaller or equal to the given key *)
+
+  (**/**)
+  val check_invariants: _ t -> bool
+  (**/**)
 end
 
 (** {2 Implementation} *)
