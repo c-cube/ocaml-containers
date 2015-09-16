@@ -93,6 +93,25 @@ module type S = sig
   (** Same as {!lookup_exn}, but
       @raise Not_found if the key is not present *)
 
+  val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+    [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
+  (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
+      provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
+      the result is not specified (may raise Invalid_argument).
+
+      Complexity: O(log n) where n is the length of the array
+      (dichotomic search).
+
+      @return
+      - [`At i] if [cmp arr.(i) x = 0] (for some i)
+      - [`All_lower] if all elements of [arr] are lower than [x]
+      - [`All_bigger] if all elements of [arr] are bigger than [x]
+      - [`Just_after i] if [arr.(i) < x < arr.(i+1)]
+      - [`Empty] if the array is empty
+
+      @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp]
+      @since NEXT_RELEASE *)
+
   val for_all : ('a -> bool) -> 'a t -> bool
 
   val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
