@@ -34,11 +34,11 @@
 
   let op = Q.make ~print:pp_op gen_op
 
+  let _list_uniq = CCList.sort_uniq ~cmp:(CCFun.compose_binop fst Pervasives.compare)
 *)
 
-(*$Q & ~small:List.length ~count:200
-  Q.(list op) (fun l -> \
-    let m = apply_ops l M.empty in M.balanced m)
+(*$Q & ~count:200
+  Q.(list op) (fun l -> let m = apply_ops l M.empty in M.balanced m)
 *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -272,17 +272,15 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
         | n when n<0 -> balance_r k' v' (add k v l) r
         | _ -> balance_l k' v' l (add k v r)
 
-  (*$Q & ~small:List.length
+  (*$Q
     Q.(list (pair small_int bool)) (fun l -> \
       let m = M.of_list l in \
       M.balanced m)
     Q.(list (pair small_int small_int)) (fun l -> \
-      let l = CCList.Set.uniq ~eq:(CCFun.compose_binop fst (=)) l in \
-      let m = M.of_list l in \
+      let l = _list_uniq l in let m = M.of_list l in \
       List.for_all (fun (k,v) -> M.get_exn k m = v) l)
     Q.(list (pair small_int small_int)) (fun l -> \
-      let l = CCList.Set.uniq ~eq:(CCFun.compose_binop fst (=)) l in \
-      let m = M.of_list l in \
+      let l = _list_uniq l in let m = M.of_list l in \
       M.cardinal m = List.length l)
   *)
 
@@ -326,12 +324,12 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
         | n when n<0 -> balance_l k' v' (remove k l) r
         | _ -> balance_r k' v' l (remove k r)
 
-  (*$Q & ~small:List.length
-    Q.(list (pair small_int small_int)) (fun l -> \
+  (*$Q
+    Q.(list_of_size Gen.(0 -- 30) (pair small_int small_int)) (fun l -> \
       let m = M.of_list l in \
       List.for_all (fun (k,_) -> \
         M.mem k m && (let m' = M.remove k m in  not (M.mem k m'))) l)
-    Q.(list (pair small_int small_int)) (fun l -> \
+    Q.(list_of_size Gen.(0 -- 30) (pair small_int small_int)) (fun l -> \
       let m = M.of_list l in \
       List.for_all (fun (k,_) -> let m' = M.remove k m in M.balanced m') l)
   *)
@@ -447,9 +445,9 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
             let rl, o, rr = split k r in
             node_ k' v' l rl, o, rr
 
-  (*$QR & ~small:List.length ~count:20
-     Q.(list (pair small_int small_int)) ( fun lst ->
-      let lst = CCList.sort_uniq ~cmp:(CCFun.compose_binop fst CCInt.compare) lst in
+  (*$QR & ~count:20
+     Q.(list_of_size Gen.(1 -- 100) (pair small_int small_int)) ( fun lst ->
+      let lst = _list_uniq lst in
       let m = M.of_list lst in
       List.for_all (fun (k,v) ->
         let l, v', r = M.split k m in
@@ -496,14 +494,13 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       (M.to_list m |> List.sort Pervasives.compare)
   *)
 
-  (*$Q & ~small:(fun (l1,l2) -> List.length l1 + List.length l2)
-     Q.(let p = list (pair small_int small_int) in pair p p) (fun (l1, l2) -> \
-        let eq x y = fst x = fst y in \
-        let l1 = CCList.Set.uniq ~eq l1 and l2 = CCList.Set.uniq ~eq l2 in \
-        let m1 = M.of_list l1 and m2 = M.of_list l2  in \
-        let m = M.merge (fun _ v1 v2 -> match v1 with \
-          | None -> v2 | Some _ as r -> r) m1 m2 in \
-        List.for_all (fun (k,v) -> M.get_exn k m = v) l1  && \
+  (*$QR
+    Q.(let p = list (pair small_int small_int) in pair p p) (fun (l1, l2) ->
+        let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
+        let m1 = M.of_list l1 and m2 = M.of_list l2  in
+        let m = M.merge (fun _ v1 v2 -> match v1 with
+          | None -> v2 | Some _ as r -> r) m1 m2 in
+        List.for_all (fun (k,v) -> M.get_exn k m = v) l1  &&
         List.for_all (fun (k,v) -> M.mem k m1 || M.get_exn k m = v) l2)
   *)
 

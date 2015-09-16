@@ -82,6 +82,10 @@ let empty = E
 
 let is_prefix_ ~prefix y ~bit = prefix = Bit.mask y ~mask:bit
 
+(*$inject
+  let _list_uniq = CCList.sort_uniq ~cmp:(fun a b-> Pervasives.compare (fst a)(fst b))
+ *)
+
 (*$Q
   Q.int (fun i -> \
     let b = Bit.highest i in \
@@ -162,7 +166,7 @@ let find k t =
 
 (*$Q
   Q.(list (pair int int)) (fun l -> \
-    let l = CCList.Set.uniq ~eq:(CCFun.compose_binop fst (=)) l in \
+    let l = _list_uniq l in \
     let m = of_list l in \
     List.for_all (fun (k,v) -> find k m = Some v) l)
 *)
@@ -215,7 +219,7 @@ let add k v t = insert_ (fun ~old:_ v -> v) k v t
 
 (*$Q & ~count:20
   Q.(list (pair int int)) (fun l -> \
-    let l = CCList.Set.uniq l in let m = of_list l in \
+    let l = _list_uniq l in let m = of_list l in \
     List.for_all (fun (k,v) -> find_exn k m = v) l)
 *)
 
@@ -231,7 +235,7 @@ let rec remove k t = match t with
 
 (*$Q & ~count:20
   Q.(list (pair int int)) (fun l -> \
-    let l = CCList.Set.uniq l in let m = of_list l in \
+    let l =  _list_uniq l in let m = of_list l in \
     List.for_all (fun (k,_) -> mem k m && not (mem k (remove k m))) l)
 *)
 
@@ -472,17 +476,24 @@ let compare ~cmp a b =
   Q.(list (pair int bool)) ( fun l -> \
     let m1 = of_list l and m2 = of_list (List.rev l) in \
     compare ~cmp:Pervasives.compare m1 m2 = 0)
-  Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1, l2) -> \
-    let l1 = List.map (fun (k,v) -> abs k,v) l1 in \
-    let l2 = List.map (fun (k,v) -> abs k,v) l2 in \
-    let m1 = of_list l1 and m2 = of_list l2 in \
-    let c = compare ~cmp:Pervasives.compare m1 m2 \
-    and c' = compare ~cmp:Pervasives.compare m2 m1 in \
+
+*)
+
+(*$QR
+  Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1, l2) ->
+    let l1 = List.map (fun (k,v) -> abs k,v) l1 in
+    let l2 = List.map (fun (k,v) -> abs k,v) l2 in
+    let m1 = of_list l1 and m2 = of_list l2 in
+    let c = compare ~cmp:Pervasives.compare m1 m2
+    and c' = compare ~cmp:Pervasives.compare m2 m1 in
     (c = 0) = (c' = 0) && (c < 0) = (c' > 0) && (c > 0) = (c' < 0))
-  Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1, l2) -> \
-    let l1 = List.map (fun (k,v) -> abs k,v) l1 in \
-    let l2 = List.map (fun (k,v) -> abs k,v) l2 in \
-    let m1 = of_list l1 and m2 = of_list l2 in \
+*)
+
+(*$QR
+  Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1, l2) ->
+    let l1 = List.map (fun (k,v) -> abs k,v) l1 in
+    let l2 = List.map (fun (k,v) -> abs k,v) l2 in
+    let m1 = of_list l1 and m2 = of_list l2 in
     (compare ~cmp:Pervasives.compare m1 m2 = 0) = equal ~eq:(=) m1 m2)
 *)
 

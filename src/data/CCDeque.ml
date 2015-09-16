@@ -45,6 +45,11 @@ type 'a t = {
 }
 (** The deque, a double linked list of cells *)
 
+(*$inject
+  let plist l = CCPrint.to_string (CCList.pp CCInt.pp) l
+  let pint i = string_of_int i
+*)
+
 (*$R
   let q = create () in
   add_seq_back q Sequence.(3 -- 5);
@@ -119,6 +124,19 @@ let peek_front d = match d.cur.cell with
   try (ignore (of_list [] |> peek_front); false) with Empty -> true
   *)
 
+(*$R
+  let d = of_seq Sequence.(1 -- 10) in
+  let printer = pint in
+  OUnit.assert_equal ~printer 1 (peek_front d);
+  push_front d 42;
+  OUnit.assert_equal ~printer 42 (peek_front d);
+  OUnit.assert_equal ~printer 42 (take_front d);
+  OUnit.assert_equal ~printer 1 (take_front d);
+  OUnit.assert_equal ~printer 2 (take_front d);
+  OUnit.assert_equal ~printer 3 (take_front d);
+  OUnit.assert_equal ~printer 10 (peek_back d);
+*)
+
 let peek_back d =
   if is_empty d then raise Empty
   else match d.cur.prev.cell with
@@ -130,6 +148,19 @@ let peek_back d =
 (*$T
   of_list [1;2;3] |> peek_back = 3
   try (ignore (of_list [] |> peek_back); false) with Empty -> true
+*)
+
+(*$R
+  let d = of_seq Sequence.(1 -- 10) in
+  let printer = pint in
+  OUnit.assert_equal ~printer 1 (peek_front d);
+  push_back d 42;
+  OUnit.assert_equal ~printer 42 (peek_back d);
+  OUnit.assert_equal ~printer 42 (take_back d);
+  OUnit.assert_equal ~printer 10 (take_back d);
+  OUnit.assert_equal ~printer 9 (take_back d);
+  OUnit.assert_equal ~printer 8 (take_back d);
+  OUnit.assert_equal ~printer 1 (peek_front d);
 *)
 
 let take_back_node_ n = match n.cell with
@@ -205,6 +236,13 @@ let iter f d =
   let n = ref 0 in iter (fun _ -> incr n) (of_list [1;2;3]); !n = 3
 *)
 
+(*$R
+  let d = of_seq Sequence.(1 -- 5) in
+  let s = Sequence.from_iter (fun k -> iter k d) in
+  let l = Sequence.to_list s in
+  OUnit.assert_equal ~printer:plist [1;2;3;4;5] l;
+*)
+
 let append_front ~into q = iter (push_front into) q
 
 let append_back ~into q = iter (push_back into) q
@@ -242,6 +280,11 @@ let length d = d.size
     append_front ~into:q (of_list l); \
     append_back ~into:q (of_list l); \
     length q = 3 * List.length l)
+*)
+
+(*$R
+  let d = of_seq Sequence.(1 -- 10) in
+  OUnit.assert_equal ~printer:pint 10 (length d)
 *)
 
 type 'a sequence = ('a -> unit) -> unit

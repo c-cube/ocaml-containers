@@ -429,14 +429,14 @@ module Make(W : WORD) = struct
         in
         _mk_node v map'
 
-  (*$Q & ~small:(fun (a,b) -> List.length a + List.length b) ~count:30
-    Q.(let p = list (pair printable_string small_int) in pair p p) \
-      (fun (l1,l2) -> \
-        let t1 = S.of_list l1 and t2 = S.of_list l2 in \
-        let t = S.merge (fun a _ -> Some a) t1 t2 in \
-        S.to_seq t |> Sequence.for_all \
-          (fun (k,v) -> S.find k t1 = Some v || S.find k t2 = Some v) && \
-        S.to_seq t1 |> Sequence.for_all (fun (k,v) -> S.find k t <> None) && \
+  (*$QR & ~count:30
+    Q.(let p = list_of_size Gen.(0--100) (pair printable_string small_int) in pair p p)
+      (fun (l1,l2) ->
+        let t1 = S.of_list l1 and t2 = S.of_list l2 in
+        let t = S.merge (fun a _ -> Some a) t1 t2 in
+        S.to_seq t |> Sequence.for_all
+          (fun (k,v) -> S.find k t1 = Some v || S.find k t2 = Some v) &&
+        S.to_seq t1 |> Sequence.for_all (fun (k,v) -> S.find k t <> None) &&
         S.to_seq t2 |> Sequence.for_all (fun (k,v) -> S.find k t <> None))
   *)
 
@@ -554,13 +554,13 @@ module Make(W : WORD) = struct
       (T.below [1;1] t1 |> Sequence.sort |> Sequence.to_list)
   *)
 
-  (*$Q & ~small:List.length
-    Q.(list (pair printable_string small_int)) (fun l -> \
+  (*$Q & ~count:30
+    Q.(list_of_size Gen.(0--100) (pair printable_string small_int)) (fun l -> \
       let t = S.of_list l in \
       S.check_invariants t)
   *)
 
-  (*$Q & ~small:List.length ~count:30
+  (*$Q & ~count:20
     Q.(list_of_size Gen.(1 -- 20) (pair printable_string small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \

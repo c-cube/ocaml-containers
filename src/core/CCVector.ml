@@ -124,6 +124,14 @@ let ensure v size =
 let clear v =
   v.size <- 0
 
+(*$R
+  let v = of_seq Sequence.(1 -- 10) in
+  OUnit.assert_equal 10 (size v);
+  clear v;
+  OUnit.assert_equal 0 (size v);
+  OUnit.assert_bool "empty_after_clear" (Sequence.is_empty (to_seq v));
+*)
+
 let is_empty v = v.size = 0
 
 let push_unsafe v x =
@@ -156,6 +164,15 @@ let append a b =
   append v1 v2; to_list v1 = CCList.(0--9)
 *)
 
+(*$R
+  let a = of_seq Sequence.(1 -- 5) in
+  let b = of_seq Sequence.(6 -- 10) in
+  append a b;
+  OUnit.assert_equal 10 (size a);
+  OUnit.assert_equal (Sequence.to_array Sequence.(1 -- 10)) (to_array a);
+  OUnit.assert_equal (Sequence.to_array Sequence.(6 -- 10)) (to_array b);
+*)
+
 let get v i =
   if i < 0 || i >= v.size then invalid_arg "Vector.get";
   Array.unsafe_get v.vec i
@@ -184,6 +201,22 @@ let append_array a b =
 (*$T
   let v1 = init 5 (fun i->i) and v2 = Array.init 5 (fun i->i+5) in \
   append_array v1 v2; to_list v1 = CCList.(0--9)
+*)
+
+(*$inject
+  let gen x =
+    let small = length in
+    let print = CCOpt.map (fun p x -> Q.Print.list p (CCVector.to_list x)) x.Q.print in
+    Q.make ?print ~small Q.Gen.(list x.Q.gen >|= of_list)
+*)
+
+(*$QR
+  (Q.pair (gen Q.int) (gen Q.int)) (fun (v1,v2) ->
+    let l1 = to_list v1 in
+    append v1 v2;
+    Sequence.to_list (to_seq v1) =
+      Sequence.(to_list (append (of_list l1) (to_seq v2)))
+  )
 *)
 
 let equal eq v1 v2 =
@@ -240,8 +273,35 @@ let copy v = {
   create () |> copy |> is_empty
 *)
 
+(*$R
+  let v = of_seq Sequence.(1 -- 100) in
+  OUnit.assert_equal 100 (size v);
+  let v' = copy v in
+  OUnit.assert_equal 100 (size v');
+  clear v';
+  OUnit.assert_bool "empty" (is_empty v');
+  OUnit.assert_bool "not_empty" (not (is_empty v));
+*)
+
 let shrink v n =
   if n < v.size then v.size <- n
+
+(*$R
+  let v = of_seq Sequence.(1 -- 10) in
+  shrink v 5;
+  OUnit.assert_equal [1;2;3;4;5] (to_list v);
+*)
+
+(*$QR
+  (gen Q.small_int) (fun v ->
+    let n = size v / 2 in
+    let l = to_list v in
+    let h = Sequence.(to_list (take n (of_list l))) in
+    let v' = copy v in
+    shrink v' n;
+    h = to_list v'
+  )
+*)
 
 let sort' cmp v =
   (* possibly copy array (to avoid junk at its end), then sort the array *)
@@ -259,6 +319,15 @@ let sort cmp v =
   } in
   Array.sort cmp v'.vec;
   v'
+
+(*$QR
+  (gen Q.small_int) (fun v ->
+    let v' = copy v in
+    sort' Pervasives.compare v';
+    let l = to_list v' in
+    List.sort Pervasives.compare l = l
+  )
+*)
 
 let uniq_sort cmp v =
   sort' cmp v;

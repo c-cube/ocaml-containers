@@ -47,6 +47,71 @@ let rec klist_to_list l = match l () with
   | `Nil -> []
   | `Cons (x,k) -> x :: klist_to_list k
 
+(*$inject
+  open CCFun
+
+*)
+
+(*$Q
+  Q.(string_of_size Gen.(0 -- 30)) (fun s -> \
+    let a = of_string ~limit:1 s in \
+    match_with a s)
+*)
+
+(* test that building a from s, and mutating one char of s, yields
+   a string s' that is accepted by a.
+
+   --> generate triples (s, i, c) where c is a char, s a non empty string
+   and i a valid index in s
+*)
+
+(*$QR
+  (
+    let gen = Q.Gen.(
+      3 -- 10 >>= fun len ->
+      0 -- (len-1) >>= fun i ->
+      string_size (return len) >>= fun s ->
+      char >|= fun c -> (s,i,c)
+    ) in
+    let small (s,_,_) = String.length s in
+    Q.make ~small gen
+  )
+  (fun (s,i,c) ->
+    let s' = Bytes.of_string s in
+    Bytes.set s' i c;
+    let a = of_string ~limit:1 s in
+    match_with a (Bytes.to_string s')
+  )
+*)
+
+(* test that, for an index, all retrieved strings are at a distance to
+   the key that is not too high *)
+(*$QR & ~count:30
+  (
+    let mklist l =
+      let l' = List.map (fun s->s,s) l in
+      l, Index.of_list l'
+    in
+    let gen = Q.Gen.(
+      list_size (3 -- 15) (string_size (0 -- 10)) >|= mklist
+    ) in
+    let small (l,_) = List.length l in
+    let print (l,_) = Q.Print.(list string) l in
+    let shrink (l,_) = Sequence.map mklist (Q.Shrink.list l) in
+    Q.make ~small ~print ~shrink gen
+  )
+  (fun (l,idx) ->
+    List.for_all
+      (fun s ->
+        let retrieved = Index.retrieve ~limit:2 idx s
+          |> klist_to_list in
+        List.for_all
+          (fun s' -> edit_distance s s' <= 2) retrieved
+      ) l
+  )
+
+*)
+
 module type S = sig
   type char_
   type string_
