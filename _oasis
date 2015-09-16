@@ -48,6 +48,7 @@ Library "containers"
                     CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
                     Containers
   BuildDepends:     bytes
+  # BuildDepends:     bytes, bisect_ppx
 
 Library "containers_io"
   Path:             src/io
@@ -78,6 +79,7 @@ Library "containers_data"
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
                     CCHashTrie, CCBloom, CCWBTree, CCRAL
   BuildDepends:     bytes
+  # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
   FindlibName:      data
 

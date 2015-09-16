@@ -170,6 +170,21 @@ let flip bv i =
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) lxor (1 lsl i)
 
+(*$R
+  let bv = of_list [1;10; 11; 30] in
+  flip bv 10;
+  assert_equal [1;11;30] (to_sorted_list bv);
+  assert_equal false (get bv 10);
+  flip bv 10;
+  assert_equal true (get bv 10);
+  flip bv 5;
+  assert_equal [1;5;10;11;30] (to_sorted_list bv);
+  assert_equal true (get bv 5);
+  flip bv 100;
+  assert_equal [1;5;10;11;30;100] (to_sorted_list bv);
+  assert_equal true (get bv 100);
+*)
+
 let clear bv =
   Array.iteri (fun i _ -> bv.a.(i) <- 0) bv.a
 
@@ -193,6 +208,14 @@ let iter bv f =
       f (j+i) (bv.a.(n) land (1 lsl i) <> 0)
     done
   done
+
+(*$R
+  let bv = create ~size:30 false in
+  set bv 5;
+  let n = ref 0 in
+  iter bv (fun i b -> incr n; assert_equal b (i=5));
+  assert_bool "at least 30" (!n >= 30)
+*)
 
 let iter_true bv f =
   let len = Array.length bv.a in
@@ -346,8 +369,8 @@ let select bv arr =
 (*$R
   let bv = CCBV.of_list [1;2;5;400] in
   let arr = [|"a"; "b"; "c"; "d"; "e"; "f"|] in
-  let l = List.sort compare (CCBV.selecti bv arr) in
-  assert_equal [("b",1); ("c",2); ("f",5)] l;
+  let l = List.sort compare (CCBV.select bv arr) in
+  assert_equal ["b"; "c"; "f"] l;
 *)
 
 let selecti bv arr =
@@ -361,6 +384,13 @@ let selecti bv arr =
   with Exit -> ()
   end;
   !l
+
+(*$R
+  let bv = CCBV.of_list [1;2;5;400] in
+  let arr = [|"a"; "b"; "c"; "d"; "e"; "f"|] in
+  let l = List.sort compare (CCBV.selecti bv arr) in
+  assert_equal [("b",1); ("c",2); ("f",5)] l;
+*)
 
 (*$T
   selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \

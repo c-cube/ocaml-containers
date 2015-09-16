@@ -48,13 +48,13 @@ module type S = sig
 
   val length : _ t -> int
 
-  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
-  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** fold left on array, with index *)
+  val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  (** Fold left on array, with index *)
 
   val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
-  (** fold left on array until a stop condition via [('a, `Stop)] is
+  (** Fold left on array until a stop condition via [('a, `Stop)] is
       indicated by the accumulator
       @since 0.8 *)
 
@@ -74,11 +74,13 @@ module type S = sig
       that [f x = Some y], else it returns [None] *)
 
   val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-  (** Like {!find}, but also pass the index to the predicate function. *)
+  (** Like {!find}, but also pass the index to the predicate function.
+      @since 0.3.4 *)
 
   val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
   (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
-    and [p x] holds. Otherwise returns [None] *)
+      and [p x] holds. Otherwise returns [None]
+      @since 0.3.4 *)
 
   val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
   (** Lookup the index of some value in a sorted array.

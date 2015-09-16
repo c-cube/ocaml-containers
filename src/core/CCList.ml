@@ -106,6 +106,12 @@ let filter p l =
   in
   direct direct_depth_filter_ p l
 
+(*$= & ~printer:CCInt.to_string
+  500 (filter (fun x->x mod 2 = 0) (1 -- 1000) |> List.length)
+  50_000 (filter (fun x->x mod 2 = 0) (1 -- 100_000) |> List.length)
+  500_000 (filter (fun x->x mod 2 = 0) (1 -- 1_000_000) |> List.length)
+*)
+
 let fold_right f l acc =
   let rec direct i f l acc = match l with
     | [] -> acc
@@ -221,6 +227,13 @@ let diagonal l =
   in
   gen [] l
 
+(*$T
+  diagonal [] = []
+  diagonal [1] = []
+  diagonal [1;2] = [1,2]
+  diagonal [1;2;3] |> List.sort Pervasives.compare = [1, 2; 1, 3; 2, 3]
+*)
+
 let partition_map f l =
   let rec iter f l1 l2 l = match l with
   | [] -> List.rev l1, List.rev l2
@@ -250,7 +263,7 @@ let (>>=) l f = flat_map f l
 
 let (<$>) = map
 
-let pure f = [f]
+let pure = return
 
 let (<*>) funs l = product (fun f x -> f x) funs l
 
@@ -459,6 +472,15 @@ let filter_map f l =
     let acc' = match f x with | None -> acc | Some y -> y::acc in
     recurse acc' l'
   in recurse [] l
+
+(*$=
+  ["2"; "4"] \
+    (filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+      [1;2;3;4;5])
+  [ "2"; "4"; "6" ] \
+    (filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+      [ 1; 2; 3; 4; 5; 6 ])
+*)
 
 module Set = struct
   let mem ?(eq=(=)) x l =

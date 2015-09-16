@@ -283,6 +283,15 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
             Some x
     in next
 
+  (*$Q
+    Q.(list int) (fun l -> \
+      extract_list (H.of_list l) = extract_list (H.of_gen H.empty (CCList.to_gen l)))
+    Q.(list int) (fun l -> \
+      let h = H.of_list l in \
+      (H.to_gen h |> CCList.of_gen |> List.sort Pervasives.compare) \
+        = (H.to_list h |> List.sort Pervasives.compare))
+  *)
+
   let rec to_tree h () = match h with
     | E -> `Nil
     | N (_, x, l, r) -> `Node(x, [to_tree l; to_tree r])

@@ -75,6 +75,15 @@ let clear q =
   q.size <- 0;
   ()
 
+(*$R
+  let q = of_seq Sequence.(1 -- 100) in
+  assert_equal 100 (length q);
+  clear q;
+  assert_equal 0 (length q);
+  assert_raises Empty (fun () -> peek_front q);
+  assert_raises Empty (fun () -> peek_back q);
+*)
+
 let incr_size_ d = d.size <- d.size + 1
 let decr_size_ d = d.size <- d.size - 1
 
@@ -309,6 +318,11 @@ let of_seq seq =
 
 let to_seq d k = iter k d
 
+(*$Q
+  Q.(list int) (fun l -> \
+    Sequence.of_list l |> of_seq |> to_seq |> Sequence.to_list = l)
+  *)
+
 let of_list l =
   let q = create() in
   List.iter (push_back q) l;
@@ -368,6 +382,20 @@ let copy d =
   iter (fun x -> push_back d' x) d;
   d'
 
+(*$R
+  let q = of_list [1;2;3;4] in
+  assert_equal 4 (length q);
+  let q' = copy q in
+  let cmp = equal ?eq:None in
+  assert_equal 4 (length q');
+  assert_equal ~cmp q q';
+  push_front q 0;
+  assert_bool "not equal" (not (cmp q q'));
+  assert_equal 5 (length q);
+  push_front q' 0;
+  assert_equal ~cmp q q'
+*)
+
 let equal ?(eq=(=)) a b =
   let rec aux eq a b = match a() , b() with
     | None, None -> true
@@ -385,6 +413,12 @@ let compare ?(cmp=Pervasives.compare) a b =
         let c = cmp x y in
         if c=0 then aux cmp a b else c
   in aux cmp (to_gen a) (to_gen b)
+
+(*$Q
+   Q.(pair (list int) (list int)) (fun (l1,l2) -> \
+    CCOrd.equiv (compare (of_list l1) (of_list l2)) \
+      (CCList.compare Pervasives.compare l1 l2))
+  *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
