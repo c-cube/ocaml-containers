@@ -358,10 +358,15 @@ let parse_string s : t or_error =
       | `List l -> Q.Iter.map mklist (Q.Shrink.list ~shrink l)
     in
     Q.make ~print ~small ~shrink gen
+
+  let rec sexp_valid  = function
+    | `Atom "" -> false
+    | `Atom _ -> true
+    | `List l -> List.for_all sexp_valid l
 *)
 
 (*$Q & ~count:30
-    sexp_gen (fun s -> to_string s |> parse_string = `Ok s)
+    sexp_gen (fun s -> sexp_valid s ==> (to_string s |> parse_string = `Ok s))
 *)
 
 let parse_chan ?bufsize ic =
