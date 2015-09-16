@@ -79,16 +79,10 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/threads/*.mli) \
 	)
 
-QTESTABLE_LWT=$(filter-out $(DONTTEST), \
-	$(wildcard src/lwt/*.ml) \
-	$(wildcard src/lwt/*.mli) \
-	)
-
 qtest-clean:
 	@rm -rf qtest/
 
 QTEST_PREAMBLE='open CCFun;; '
-QTEST_LWT_PREAMBLE=$(QTEST_PREAMBLE)
 
 #qtest-build: qtest-clean build
 #	@mkdir -p qtest
@@ -108,15 +102,6 @@ qtest-gen:
 	else touch qtest/run_qtest.ml ; \
 	fi
 
-qtest-lwt-gen:
-	@mkdir -p qtest/lwt/
-	@if which qtest > /dev/null ; then \
-		qtest extract --preamble $(QTEST_LWT_PREAMBLE) \
-			-o qtest/lwt/run_qtest_lwt.ml \
-			$(QTESTABLE_LWT) 2> /dev/null ; \
-	else touch qtest/lwt/run_qtest_lwt.ml ; \
-	fi
-
 push-stable:
 	git checkout stable
 	git merge master -m 'merge from master'
@@ -127,11 +112,6 @@ push-stable:
 
 clean-generated:
 	rm **/*.{mldylib,mlpack,mllib} myocamlbuild.ml -f
-
-run-test: build
-	./run_qtest.native
-
-test-all: run-test
 
 tags:
 	otags *.ml *.mli

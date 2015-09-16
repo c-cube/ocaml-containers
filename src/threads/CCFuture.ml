@@ -127,6 +127,10 @@ module Pool = struct
       )
 end
 
+(*$inject
+  open Infix
+*)
+
 let pool = Pool.create ~max_size:50 ()
 (** Default pool of threads, should be ok for most uses. *)
 
@@ -214,6 +218,22 @@ let make1 f x =
 
 let make f = make1 f ()
 
+(*$R
+  List.iter
+    (fun n ->
+      let l = Sequence.(1 -- n) |> Sequence.to_list in
+      let l = List.map (fun i ->
+        make
+          (fun () ->
+            Thread.delay 0.1;
+            1
+        )) l in
+      let l' = List.map get l in
+      OUnit.assert_equal n (List.fold_left (+) 0 l');
+    )
+    [ 10; 300 ]
+*)
+
 let make2 f x y =
   let cell = create_cell() in
   Pool.run pool (run_and_set2 cell f x) y;
@@ -286,6 +306,13 @@ let map f fut = match fut with
         );
       Run cell'
 
+(*$R
+  let a = make (fun () -> 1) in
+  let b = map (fun x -> x+1) a in
+  let c = map (fun x -> x-1) b in
+  OUnit.assert_equal 1 (get c)
+*)
+
 let flat_map f fut = match fut with
   | Return x -> f x
   | FailNow e -> FailNow e
@@ -341,6 +368,29 @@ let sequence futures =
         )
     ) futures;
   Run cell
+
+(*$R
+  let l = CCList.(1 -- 10) in
+  let l' = l
+    |> List.map
+      (fun x -> make (fun () -> Thread.delay 0.2; x*10))
+    |> sequence
+    |> map (List.fold_left (+) 0)
+  in
+  let expected = List.fold_left (fun acc x -> acc + 10 * x) 0 l in
+  OUnit.assert_equal expected (get l')
+*)
+
+(*$R
+  let l = CCList.(1 -- 10) in
+  let l' = l
+    |> List.map
+      (fun x -> make (fun () -> Thread.delay 0.2; if x = 5 then raise Exit; x))
+    |> sequence
+    |> map (List.fold_left (+) 0)
+  in
+  OUnit.assert_raises Exit (fun () -> get l')
+*)
 
 let choose futures =
   let cell = create_cell() in
@@ -398,6 +448,16 @@ let spawn_process ?(stdin="") cmd : subprocess_res t =
     )
 
 let sleep time = make (fun () -> Thread.delay time)
+
+(*$R
+  let start = Unix.gettimeofday () in
+  let l = CCList.(1 -- 10)
+    |> List.map (fun _ -> make (fun () -> Thread.delay 0.5))
+  in
+  List.iter get l;
+  let stop = Unix.gettimeofday () in
+  OUnit.assert_bool "some_parallelism" (stop -. start < 10. *. 0.5);
+*)
 
 (** {2 Event timer} *)
 
@@ -527,6 +587,21 @@ module Timer = struct
         )
       )
 end
+
+(*$R
+  let timer = Timer.create () in
+  let n = CCLock.create 1 in
+  let getter = make (fun () -> Thread.delay 0.8; CCLock.get n) in
+  let _ =
+    Timer.after timer 0.6
+    >>= fun () -> CCLock.update n (fun x -> x+2); return()
+  in
+  let _ =
+    Timer.after timer 0.4
+    >>= fun () -> CCLock.update n (fun x -> x * 4); return()
+  in
+  OUnit.assert_equal 6 (get getter);
+*)
 
 module Infix = struct
   let (>>=) x f = flat_map f x

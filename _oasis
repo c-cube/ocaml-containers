@@ -161,22 +161,6 @@ Executable run_bench_hash
   MainIs: run_bench_hash.ml
   BuildDepends: containers
 
-Executable run_bench_io
-  Path: benchs/
-  Install: false
-  CompiledObject: best
-  Build$: flag(bench) && flag(unix)
-  MainIs: run_bench_io.ml
-  BuildDepends: containers, containers_lwt, unix, lwt.unix, benchmark
-
-Executable run_test_future
-  Path:         tests/threads/
-  Install:      false
-  CompiledObject: best
-  Build$:       flag(tests) && flag(thread)
-  MainIs:       run_test_future.ml
-  BuildDepends: containers, threads, sequence, oUnit, containers.thread
-
 PreBuildCommand: make qtest-gen
 
 Executable run_qtest
@@ -192,14 +176,9 @@ Executable run_qtest
                     sequence, gen, unix, oUnit, QTest2Lib
 
 Test all
-  Command:      make test-all
+  Command:      ./run_qtest.native
   TestTools:    run_qtest
   Run$:         flag(tests) && flag(unix) && flag(advanced) && flag(bigarray)
-
-Test future
-  Command:      echo "run test future" ; ./run_test_future.native
-  TestTools:    run_test_future
-  Run$:         flag(tests) && flag(thread)
 
 Executable id_sexp
   Path:             examples/
