@@ -1,7 +1,6 @@
 
 (** Example of printing trees: lambda-term evaluation *)
 
-open Containers_misc
 
 type term =
   | Lambda of string * term

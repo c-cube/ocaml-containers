@@ -192,36 +192,13 @@ In the library `containers.thread`, for preemptive system threads:
 
 ### Misc
 
-See [doc](http://cedeela.fr/~simon/software/containers/misc). This list
-is not necessarily up-to-date.
-
-- `AbsSet`, an abstract Set data structure, a bit like `LazyGraph`.
-- `Automaton`, `CSM`, state machine abstractions
-- `Bij`, a GADT-based bijection language used to serialize/deserialize your data structures
-- `Hashset`, a polymorphic imperative set on top of `PHashtbl`
-- `LazyGraph`, a lazy graph structure on arbitrary (hashable+eq) types, with basic graph functions that work even on infinite graphs, and printing to DOT.
-- `PHashtbl`, a polymorphic hashtable (with open addressing)
-- `RoseTree`, a tree with an arbitrary number of children and its associated zipper
-- `SmallSet`, a sorted list implementation behaving like a set.
-- `UnionFind`, a functorial imperative Union-Find structure
-- `Univ`, a universal type encoding with affectation
+The library has moved to https://github.com/c-cube/containers-misc .
 
 ### Others
 
-- `containers.lwt` contains [Lwt](http://ocsigen.org/lwt/)-related modules (experimental)
-
-There is a QuickCheck-like library called `QCheck` (now in its own repo).
+`containers.lwt` has moved to https://github.com/c-cube/containers-lwt .
 
 ## Incoming (Breaking) Changes
-
-the following breaking changes are likely to occur for the next release (they
-can still be discussed, of course):
-
-- moving `containers.lwt` into its own repository and opam package
-- moving `containers.misc` into its own repository and opam package (improving the average quality of containers!)
-- aliasing and deprecating `CCList.split` (confusion with `List.split`)
-
-already in git (but can be reverted if needed):
 
 - change exceptions in `CCVector`
 - change signature of `CCDeque.of_seq` (remove optional argument)
@@ -229,6 +206,9 @@ already in git (but can be reverted if needed):
   you will most likely have to change your code (into simpler code, hopefully).
 - `RAL` in `containers.misc` moved to `containers.data` as `CCRAL`, and is
   getting improved on the way
+- moving `containers.lwt` into its own repository and opam package
+- moving `containers.misc` into its own repository and opam package (improving the average quality of containers!)
+- aliasing and deprecating `CCList.split` (confusion with `List.split`)
 
 
 ## Build

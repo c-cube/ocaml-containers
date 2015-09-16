@@ -268,18 +268,6 @@ module Tbl = struct
     end in
     (module T : INT_MUT)
 
-  let poly_hashtbl =
-    let module T = struct
-      type key = int
-      type 'a t = (int, 'a) PHashtbl.t
-      let name = "cc_phashtbl"
-      let create i = PHashtbl.create ~hash:CCInt.hash ~eq:CCInt.equal i
-      let find = PHashtbl.find
-      let add = PHashtbl.add
-      let replace = PHashtbl.replace
-    end in
-    (module T : INT_MUT)
-
   let map : type a. a key_type -> (module MUT with type key = a)
   = fun k ->
     let (module K), name = arg_make k in
@@ -346,7 +334,7 @@ module Tbl = struct
     [ hashtbl_make Int
     ; hashtbl
     ; persistent_hashtbl
-    ; poly_hashtbl
+    (* ; poly_hashtbl *)
     ; map Int
     ; wbt Int
     ; flat_hashtbl
