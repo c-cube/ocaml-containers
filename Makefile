@@ -130,7 +130,6 @@ clean-generated:
 
 run-test: build
 	./run_qtest.native
-	./run_tests.native
 
 test-all: run-test
 
@@ -145,7 +144,7 @@ update_next_tag:
 	zsh -c 'sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli'
 
 devel:
-	./configure --enable-bench --enable-tests --enable-misc --enable-unix \
+	./configure --enable-bench --enable-tests --enable-unix \
 		--enable-bigarray --enable-thread --enable-advanced
 	make all
 
