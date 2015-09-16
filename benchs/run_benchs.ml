@@ -311,6 +311,15 @@ module Tbl = struct
     end in
     (module U : INT_MUT)
 
+  let trie : (module MUT with type key = string) =
+    let module T = struct
+      let name = "trie(string)"
+      include CCTrie.String
+      let find = find_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U)
+
   let hashtrie : type a. a key_type -> (module MUT with type key = a)
   = fun k ->
     let (module K), name = arg_make k in
@@ -351,6 +360,7 @@ module Tbl = struct
     ; wbt Str
     ; hashtrie Str
     ; hamt Str
+    ; trie
     ]
 
   let bench_add n =
