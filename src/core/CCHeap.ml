@@ -75,7 +75,7 @@ end
   OUnit.assert_raises H.Empty (fun () -> H.take_exn h);
 *)
 
-(*$QR
+(*$QR & ~count:30
   Q.(list_of_size Gen.(return 10_000) int) (fun l ->
     (* put elements into a heap *)
     let h = H.of_seq H.empty (Sequence.of_list l) in
