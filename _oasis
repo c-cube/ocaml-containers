@@ -189,6 +189,14 @@ Executable id_sexp
   MainIs:           id_sexp.ml
   BuildDepends:     containers.sexp
 
+Executable mem_measure
+  Path:             benchs/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           mem_measure.ml
+  Build$:           flag(bench)
+  BuildDepends:     sequence, unix, containers, containers.data, hamt
+
 Executable id_sexp2
   Path:             examples/
   Install:          false
