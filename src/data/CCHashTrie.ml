@@ -8,7 +8,7 @@
     let g = Q.(list (pair small_int small_int)) in
     Q.map_same_type
       (fun l ->
-        CCList.Set.uniq ~eq:(fun a b -> fst a=fst b) l
+        CCList.sort_uniq ~cmp:(fun a b -> Pervasives.compare (fst a)(fst b)) l
       ) g
   ;;
 *)
@@ -326,9 +326,18 @@ module Make(Key : KEY)
     | L _
     | N _ -> false
 
+  (*$T
+    M.is_empty M.empty
+  *)
+
   let leaf_ k v ~h = L (h, Cons(k,v,Nil))
 
   let singleton k v = leaf_ k v ~h:(hash_ k)
+
+  (*$T
+    not (M.is_empty (M.singleton 1 2))
+    M.cardinal (M.singleton 1 2) = 1
+  *)
 
   let rec get_exn_list_ k l = match l with
     | Nil -> raise Not_found
@@ -364,7 +373,7 @@ module Make(Key : KEY)
 
   (* TODO: use Hash.combine if array only has one non-empty LEAF element? *)
 
-  (* [left] list nodes already visited *)
+  (* add [k,v] to the list [l], removing old binding if any *)
   let rec add_list_ k v l = match l with
     | Nil -> Cons (k, v, Nil)
     | Cons (k', v', tail) ->
@@ -421,8 +430,8 @@ module Make(Key : KEY)
 
   (*$Q
      _listuniq (fun l -> \
-      let m = List.fold_left (fun m (x,y) -> M.add x y m) M.empty l in \
-      List.for_all (fun (x,y) -> M.get_exn x m = y) l)
+        let m = List.fold_left (fun m (x,y) -> M.add x y m) M.empty l in \
+        List.for_all (fun (x,y) -> M.get_exn x m = y) l)
   *)
 
   exception LocalExit
@@ -469,11 +478,19 @@ module Make(Key : KEY)
 
   let remove k m = remove_rec_ k ~h:(hash_ k) m
 
-  (*$Q
-    Q.(list (pair small_int small_int)) (fun l -> \
-      let m = M.of_list l in \
-      List.for_all \
-        (fun (x,_) -> let m' = M.remove x m in not (M.mem x m')) l)
+  (*$QR
+    _listuniq (fun l ->
+      let m = M.of_list l in
+      List.for_all
+        (fun (x,_) ->
+          let m' = M.remove x m in
+          not (M.mem x m') &&
+          M.cardinal m' = M.cardinal m - 1 &&
+          List.for_all
+            (fun (y,v) -> y = x || M.get_exn y m' = v)
+            l
+      ) l
+    )
   *)
 
   let update k f m =
@@ -484,6 +501,17 @@ module Make(Key : KEY)
     | Some _, Some v
     | None, Some v -> add_ k v ~h m
     | Some _, None -> remove_rec_ k ~h m
+
+  (*$R
+    let m = M.of_list [1, 1; 2, 2; 5, 5] in
+    let m' = M.update 4
+      (function
+      | None -> Some 4
+      | Some _ -> Some 0
+      ) m
+    in
+    assert_equal [1,1; 2,2; 4,4; 5,5] (M.to_list m' |> List.sort Pervasives.compare);
+  *)
 
   let iter f t =
     let rec aux = function
@@ -509,6 +537,13 @@ module Make(Key : KEY)
     in
     aux acc t
 
+  (*$T
+    let l = CCList.(1 -- 10 |> map (fun x->x,x)) in  \
+    M.of_list l \
+      |> M.fold (fun acc x y -> (x,y)::acc) [] \
+      |> List.sort Pervasives.compare = l
+  *)
+
   let cardinal m = fold (fun n _ _ -> n+1) 0 m
 
   let to_list m = fold (fun acc k v -> (k,v)::acc) [] m
@@ -525,6 +560,13 @@ module Make(Key : KEY)
   let of_seq s = add_seq empty s
 
   let to_seq m yield = iter (fun k v -> yield (k,v)) m
+
+  (*$Q
+    _listuniq (fun l -> \
+      (List.sort Pervasives.compare l) = \
+        (l |> Sequence.of_list |> M.of_seq |> M.to_seq |> Sequence.to_list \
+          |> List.sort Pervasives.compare) )
+  *)
 
   let rec add_gen m g = match g() with
     | None -> m
@@ -556,7 +598,19 @@ module Make(Key : KEY)
     in
     next
 
+  (*$Q
+    _listuniq (fun l -> \
+      (List.sort Pervasives.compare l) = \
+        (l |> Gen.of_list |> M.of_gen |> M.to_gen |> Gen.to_list \
+          |> List.sort Pervasives.compare) )
+  *)
+
   let choose m = to_gen m ()
+
+  (*$T
+    M.choose M.empty = None
+    M.choose M.(of_list [1,1; 2,2]) <> None
+  *)
 
   let choose_exn m = match choose m with
     | None -> raise Not_found
