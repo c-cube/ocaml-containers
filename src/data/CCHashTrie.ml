@@ -311,6 +311,8 @@ module Make(Key : KEY)
   (* association list, without duplicates *)
   type 'a leaf =
     | Nil
+    | One of key * 'a
+    | Two of key * 'a * key * 'a
     | Cons of key * 'a * 'a leaf
 
   type 'a t =
@@ -348,6 +350,11 @@ module Make(Key : KEY)
 
   let rec get_exn_list_ k l = match l with
     | Nil -> raise Not_found
+    | One (k', v') -> if Key.equal k k' then v' else raise Not_found
+    | Two (k1, v1, k2, v2) ->
+        if Key.equal k k1 then v1
+        else if Key.equal k k2 then v2
+        else raise Not_found
     | Cons (k', v', tail) ->
         if Key.equal k k' then v' else get_exn_list_ k tail
 
@@ -382,7 +389,13 @@ module Make(Key : KEY)
 
   (* add [k,v] to the list [l], removing old binding if any *)
   let rec add_list_ k v l = match l with
-    | Nil -> Cons (k, v, Nil)
+    | Nil -> One (k,v)
+    | One (k1, v1) ->
+        if Key.equal k k1 then One (k, v) else Two (k,v,k1,v1)
+    | Two (k1, v1, k2, v2) ->
+        if Key.equal k k1 then Two (k, v, k2, v2)
+        else if Key.equal k k2 then Two (k, v, k1, v1)
+        else Cons (k, v, l)
     | Cons (k', v', tail) ->
         if Key.equal k k'
         then Cons (k, v, tail) (* replace *)
@@ -474,10 +487,18 @@ module Make(Key : KEY)
 
   let is_empty_list_ = function
     | Nil -> true
+    | One _
+    | Two _
     | Cons _ -> false
 
   let rec remove_list_ k l = match l with
     | Nil -> Nil
+    | One (k', _) ->
+        if Key.equal k k' then Nil else l
+    | Two (k1, v1, k2, v2) ->
+        if Key.equal k k1 then One (k2, v2)
+        else if Key.equal k k2 then One (k1, v1)
+        else l
     | Cons (k', v', tail) ->
         if Key.equal k k'
           then tail
@@ -563,6 +584,8 @@ module Make(Key : KEY)
       | N (l,a) -> aux_list l; A.iter aux a
     and aux_list = function
       | Nil -> ()
+      | One (k,v) -> f k v
+      | Two (k1,v1,k2,v2) -> f k1 v1; f k2 v2
       | Cons (k, v, tl) -> f k v; aux_list tl
     in
     aux t
@@ -575,6 +598,8 @@ module Make(Key : KEY)
       | N (l,a) -> let acc = aux_list acc l in A.fold aux acc a
     and aux_list acc l = match l with
       | Nil -> acc
+      | One (k,v) -> f acc k v
+      | Two (k1,v1,k2,v2) -> f (f acc k1 v1) k2 v2
       | Cons (k, v, tl) -> let acc = f acc k v in aux_list acc tl
     in
     aux acc t
@@ -638,6 +663,10 @@ module Make(Key : KEY)
         | E -> next ()
         | S (_,k,v) -> Some (k,v)
         | L (_, Nil) -> next()
+        | L (_, One (k,v)) -> Some (k,v)
+        | L (h, Two (k1,v1,k2,v2)) ->
+            Stack.push (L (h, One (k2,v2))) st;
+            Some (k1,v1)
         | L (h, Cons(k,v,tl)) ->
             Stack.push (L (h, tl)) st;  (* tail *)
             Some (k,v)
@@ -685,6 +714,8 @@ module Make(Key : KEY)
     | N (l,a) -> `Node (`N, as_tree (L (Hash.zero, l)) :: array_as_tree_ a)
   and list_as_tree_ l = match l with
     | Nil -> []
+    | One (k,v) -> [k,v]
+    | Two (k1,v1,k2,v2) -> [k1,v1; k2,v2]
     | Cons (k, v, tail) -> (k,v) :: list_as_tree_ tail
   and array_as_tree_ a = A.fold (fun acc t -> as_tree t :: acc) [] a
 end
