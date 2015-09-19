@@ -118,6 +118,12 @@ val take_drop : int -> 'a t -> 'a t * 'a t
 (** [take_drop n l] returns [l1, l2] such that [l1 @ l2 = l] and
     [length l1 = min (length l) n] *)
 
+val take_while : ('a -> bool) -> 'a t -> 'a t
+(** @since NEXT_RELEASE *)
+
+val drop_while : ('a -> bool) -> 'a t -> 'a t
+(** @since NEXT_RELEASE *)
+
 val split : int -> 'a t -> 'a t * 'a t
 (** synonym to {!take_drop}
     @deprecated since NEXT_RELEASE: conflict with the {!List.split} standard function *)
