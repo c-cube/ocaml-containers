@@ -319,6 +319,24 @@ module Tbl = struct
     let module U = MUT_OF_IMMUT(T) in
     (module U)
 
+  let hashtrie_mut : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct
+      let name = sprintf "cchashtrie_mut(%s)" name
+      type key = K.t
+      module M = CCHashTrie.Make(K)
+      type 'a t = {
+        id: CCHashTrie.Transient.t;
+        mutable map: 'a M.t;
+      }
+      let create _ = { id=CCHashTrie.Transient.create(); map=M.empty}
+      let find m k = M.get_exn k m.map
+      let add m k v = m.map <- M.add_mut ~id:m.id k v m.map
+      let replace = add
+    end in
+    (module T)
+
   let hamt : type a. a key_type -> (module MUT with type key = a)
   = fun k ->
     let (module K), name = arg_make k in
@@ -339,6 +357,7 @@ module Tbl = struct
     ; wbt Int
     ; flat_hashtbl
     ; hashtrie Int
+    ; hashtrie_mut Int
     ; hamt Int
     ]
 
