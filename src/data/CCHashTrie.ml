@@ -440,15 +440,29 @@ module Make(Key : KEY)
 
   let add k v m = add_ ~id:Transient.empty k v ~h:(hash_ k) m
 
-  let add_mut ~id k v m =
-    if Transient.frozen id then raise Transient.Frozen;
-    add_ ~id k v ~h:(hash_ k) m
-
   (*$Q
      _listuniq (fun l -> \
         let m = List.fold_left (fun m (x,y) -> M.add x y m) M.empty l in \
         List.for_all (fun (x,y) -> M.get_exn x m = y) l)
   *)
+
+  let add_mut ~id k v m =
+    if Transient.frozen id then raise Transient.Frozen;
+    add_ ~id k v ~h:(hash_ k) m
+
+  (*$R
+    let lsort = List.sort Pervasives.compare in
+    let m = M.of_list [1, 1; 2, 2] in
+    let id = Transient.create() in
+    let m' = M.add_mut ~id 3 3 m in
+    let m' = M.add_mut ~id 4 4 m' in
+    assert_equal [1, 1; 2, 2] (M.to_list m |> lsort);
+    assert_equal [1, 1; 2, 2; 3,3; 4,4] (M.to_list m' |> lsort);
+    Transient.freeze id;
+    assert_bool "must raise"
+      (try ignore(M.add_mut ~id 5 5 m'); false with Transient.Frozen -> true)
+  *)
+
 
   exception LocalExit
 
