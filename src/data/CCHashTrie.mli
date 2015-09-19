@@ -21,27 +21,40 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
-(** {2 Fixed-Size Arrays}
+(** {2 Transient Identifiers} *)
+module Transient : sig
+  type t
+  (** Identifiers for transient modifications. A transient modification
+      is uniquely identified by a [Transient.t]. Once [Transient.freeze r]
+      is called, [r] cannot be used to modify the structure again. *)
 
-Mostly an internal implementation detail *)
+  val create : unit -> t
+  (** Create a new, active ID *)
 
-module type FIXED_ARRAY = sig
-  type 'a t
-  val create : empty:'a -> 'a t
-  val length_log : int
-  val length : int  (* 2 power length_log *)
-  val get : 'a t -> int -> 'a
-  val set : mut:bool -> 'a t -> int -> 'a -> 'a t
-  val update : mut:bool -> 'a t -> int -> ('a -> 'a) -> 'a t
-  val remove : empty:'a -> 'a t -> int -> 'a t (* put back [empty] there *)
-  val iter : ('a -> unit) -> 'a t -> unit
-  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val equal : t -> t -> bool
+  (** Equality between IDs *)
+
+  val frozen : t -> bool
+  (** [frozen i] returns [true] if [freeze i] was called before. In this case,
+      the ID cannot be used for modifications again. *)
+
+  val active : t -> bool
+  (** [active i] is [not (frozen i)] *)
+
+  val freeze : t -> unit
+  (** [freeze i] makes [i] unusable for new modifications. The values
+      created with [i] will now be immutable. *)
+
+  val with_ : (t -> 'a) -> 'a
+  (** [Transient.with_ f] creates a transient ID [i], calls [f i],
+      freezes the ID [i] and returns the result of [f i]. *)
+
+  exception Frozen
+  (** Raised when a frozen ID is used *)
 end
 
 (** {2 Signature} *)
 module type S = sig
-  module A : FIXED_ARRAY
-
   type key
 
   type 'a t
@@ -62,11 +75,27 @@ module type S = sig
   (** @raise Not_found if key not present *)
 
   val remove : key -> 'a t -> 'a t
+  (** Remove the key, if present. *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
       otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
       if [f] returns [None] it removes [k] *)
+
+  val add_mut : id:Transient.t -> key -> 'a -> 'a t -> 'a t
+  (** [add_mut ~id k v m] behaves like [add k v m], except it will mutate
+      in place whenever possible. Changes done with an [id] might affect all
+      versions of the structure obtained with the same [id] (but not
+      other versions).
+      @raise Transient.Frozen if [id] is frozen *)
+
+  val remove_mut : id:Transient.t -> key -> 'a t -> 'a t
+  (** Same as {!remove}, but modifies in place whenever possible
+      @raise Transient.Frozen if [id] is frozen *)
+
+  val update_mut : id:Transient.t -> key -> ('a option -> 'a option) -> 'a t -> 'a t
+  (** Same as {!update} but with mutability
+      @raise Transient.Frozen if [id] is frozen *)
 
   val cardinal : _ t -> int
 
@@ -85,15 +114,24 @@ module type S = sig
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
 
+  val add_list_mut : id:Transient.t -> 'a t -> (key * 'a) list -> 'a t
+  (** @raise Frozen if the ID is frozen *)
+
   val of_list : (key * 'a) list -> 'a t
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+
+  val add_seq_mut : id:Transient.t -> 'a t -> (key * 'a) sequence -> 'a t
+  (** @raise Frozen if the ID is frozen *)
 
   val of_seq : (key * 'a) sequence -> 'a t
 
   val to_seq : 'a t -> (key * 'a) sequence
 
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
+
+  val add_gen_mut : id:Transient.t -> 'a t -> (key * 'a) gen -> 'a t
+  (** @raise Frozen if the ID is frozen *)
 
   val of_gen : (key * 'a) gen -> 'a t
 
@@ -121,5 +159,4 @@ module Make(K : KEY) : S with type key = K.t
 
 (**/**)
 val popcount : int -> int
-module A_SPARSE : FIXED_ARRAY
 (**/**)

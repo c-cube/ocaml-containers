@@ -20,23 +20,29 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
-(** {2 Fixed-Size Arrays} *)
-module type FIXED_ARRAY = sig
-  type 'a t
-  val create : empty:'a -> 'a t
-  val length_log : int
-  val length : int  (* 2 power length_log *)
-  val get : 'a t -> int -> 'a
-  val set : mut:bool -> 'a t -> int -> 'a -> 'a t
-  val update : mut:bool -> 'a t -> int -> ('a -> 'a) -> 'a t
-  val remove : empty:'a -> 'a t -> int -> 'a t (* put back [empty] there *)
-  val iter : ('a -> unit) -> 'a t -> unit
-  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+(** {2 Transient IDs} *)
+module Transient = struct
+  type state = { mutable frozen: bool }
+  type t = Nil | St of state
+  let empty = Nil
+  let equal a b = a==b
+  let create () = St {frozen=false}
+  let active = function Nil -> false | St st -> not st.frozen
+  let frozen = function Nil -> true | St st -> st.frozen
+  let freeze = function Nil -> () | St st -> st.frozen <- true
+  let with_ f =
+    let r = create() in
+    try
+      let x = f r in
+      freeze r;
+      x
+    with e ->
+      freeze r;
+      raise e
+  exception Frozen
 end
 
 module type S = sig
-  module A : FIXED_ARRAY
-
   type key
 
   type 'a t
@@ -57,11 +63,27 @@ module type S = sig
   (** @raise Not_found if key not present *)
 
   val remove : key -> 'a t -> 'a t
+  (** Remove the key, if present. *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
       otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
       if [f] returns [None] it removes [k] *)
+
+  val add_mut : id:Transient.t -> key -> 'a -> 'a t -> 'a t
+  (** [add_mut ~id k v m] behaves like [add k v m], except it will mutate
+      in place whenever possible. Changes done with an [id] might affect all
+      versions of the structure obtained with the same [id] (but not
+      other versions).
+      @raise Transient.Frozen if [id] is frozen *)
+
+  val remove_mut : id:Transient.t -> key -> 'a t -> 'a t
+  (** Same as {!remove}, but modifies in place whenever possible
+      @raise Transient.Frozen if [id] is frozen *)
+
+  val update_mut : id:Transient.t -> key -> ('a option -> 'a option) -> 'a t -> 'a t
+  (** Same as {!update} but with mutability
+      @raise Transient.Frozen if [id] is frozen *)
 
   val cardinal : _ t -> int
 
@@ -80,15 +102,24 @@ module type S = sig
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
 
+  val add_list_mut : id:Transient.t -> 'a t -> (key * 'a) list -> 'a t
+  (** @raise Frozen if the ID is frozen *)
+
   val of_list : (key * 'a) list -> 'a t
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+
+  val add_seq_mut : id:Transient.t -> 'a t -> (key * 'a) sequence -> 'a t
+  (** @raise Frozen if the ID is frozen *)
 
   val of_seq : (key * 'a) sequence -> 'a t
 
   val to_seq : 'a t -> (key * 'a) sequence
 
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
+
+  val add_gen_mut : id:Transient.t -> 'a t -> (key * 'a) gen -> 'a t
+  (** @raise Frozen if the ID is frozen *)
 
   val of_gen : (key * 'a) gen -> 'a t
 
@@ -108,37 +139,6 @@ module type KEY = sig
   type t
   val equal : t -> t -> bool
   val hash : t -> int
-end
-
-(** {2 Arrays} *)
-
-(* regular array of 32 elements *)
-module A32 : FIXED_ARRAY = struct
-  type 'a t = 'a array
-
-  let length_log = 5
-
-  let length = 1 lsl length_log  (* 32 *)
-
-  let create ~empty:x = Array.make length x
-
-  let get a i = Array.get a i
-
-  let set ~mut a i x =
-    let a' = if mut then a else Array.copy a in
-    a'.(i) <- x;
-    a'
-
-  let update ~mut a i f = set ~mut a i (f (get a i))
-
-  let remove ~empty a i =
-    let a' = Array.copy a in
-    a'.(i) <- empty;
-    a'
-
-  let iter = Array.iter
-
-  let fold = Array.fold_left
 end
 
   (*
@@ -183,22 +183,25 @@ let popcount b =
   *)
 
 (* sparse array, using a bitfield and POPCOUNT *)
-module A_SPARSE : FIXED_ARRAY = struct
+module A_SPARSE = struct
   type 'a t = {
     bits: int;
     arr: 'a array;
-    empty: 'a;
+    id: Transient.t;
   }
 
   let length_log = 5
   let length = 1 lsl length_log
 
-  let create ~empty = { bits=0; arr= [| |]; empty; }
+  let create ~id = { bits=0; arr= [| |]; id; }
 
-  let get a i =
+  let owns ~id a =
+    Transient.active id && Transient.equal id a.id
+
+  let get ~default a i =
     let idx = 1 lsl i in
     if a.bits land idx = 0
-    then a.empty
+    then default
     else
       let real_idx = popcount (a.bits land (idx- 1)) in
       a.arr.(real_idx)
@@ -211,7 +214,7 @@ module A_SPARSE : FIXED_ARRAY = struct
       (* insert at [real_idx] in a new array *)
       let bits = a.bits lor idx in
       let n = Array.length a.arr in
-      let arr = Array.make (n+1) a.empty in
+      let arr = Array.make (n+1) x in
       arr.(real_idx) <- x;
       if real_idx>0
         then Array.blit a.arr 0 arr 0 real_idx;
@@ -220,23 +223,27 @@ module A_SPARSE : FIXED_ARRAY = struct
       {a with bits; arr}
     ) else (
       (* replace element at [real_idx] *)
-      let arr = if mut then a.arr else Array.copy a.arr in
-      arr.(real_idx) <- x;
-      {a with arr}
+      if mut then (
+        a.arr.(real_idx) <- x;
+        a
+      ) else (
+        let arr = if mut then a.arr else Array.copy a.arr in
+        arr.(real_idx) <- x;
+        {a with arr}
+      )
     )
 
-  let update ~mut a i f =
+  let update ~mut ~default a i f =
     let idx = 1 lsl i in
     let real_idx = popcount (a.bits land (idx -1)) in
     if a.bits land idx = 0
     then (
       (* not present *)
-      let x = f a.empty in
+      let x = f default in
       (* insert at [real_idx] in a new array *)
       let bits = a.bits lor idx in
       let n = Array.length a.arr in
-      let arr = Array.make (n+1) a.empty in
-      arr.(real_idx) <- x;
+      let arr = Array.make (n+1) x in
       if real_idx>0
         then Array.blit a.arr 0 arr 0 real_idx;
       if real_idx<n
@@ -250,7 +257,7 @@ module A_SPARSE : FIXED_ARRAY = struct
       {a with arr}
     )
 
-  let remove ~empty:_ a i =
+  let remove a i =
     let idx = 1 lsl i in
     let real_idx = popcount (a.bits land (idx -1)) in
     if a.bits land idx = 0
@@ -259,7 +266,7 @@ module A_SPARSE : FIXED_ARRAY = struct
       (* remove at [real_idx] *)
       let bits = a.bits land (lnot idx) in
       let n = Array.length a.arr in
-      let arr = Array.make (n-1) a.empty in
+      let arr = if n=1 then [||] else Array.make (n-1) a.arr.(0) in
       if real_idx > 0
         then Array.blit a.arr 0 arr 0 real_idx;
       if real_idx+1 < n
@@ -353,7 +360,7 @@ module Make(Key : KEY)
         else
           let i = Hash.rem h in
           let h' = Hash.quotient h in
-          get_exn_ k ~h:h' (A.get a i)
+          get_exn_ k ~h:h' (A.get ~default:E a i)
 
   let get_exn k m = get_exn_ k ~h:(hash_ k) m
 
@@ -381,8 +388,11 @@ module Make(Key : KEY)
         then Cons (k, v, tail) (* replace *)
         else Cons (k', v', add_list_ k v tail)
 
-  (* [h]: hash, with the part required to reach this leaf removed *)
-  let rec add_ k v ~h m = match m with
+  let node_ leaf a = N (leaf, a)
+
+  (* [h]: hash, with the part required to reach this leaf removed
+      [id] is the transient ID used for mutability *)
+  let rec add_ ~id k v ~h m = match m with
     | E -> S (h, k, v)
     | S (h', k', v') ->
         if h=h'
@@ -390,20 +400,22 @@ module Make(Key : KEY)
           then S (h, k, v)  (* replace *)
           else L (h, Cons (k, v, Cons (k', v', Nil)))
         else
-          make_array_ ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
+          make_array_ ~id ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
     | L (h', l) ->
         if h=h'
         then L (h, add_list_ k v l)
         else (* split into N *)
-          make_array_ ~leaf:l ~h_leaf:h' k v ~h
+          make_array_ ~id ~leaf:l ~h_leaf:h' k v ~h
     | N (leaf, a) ->
         if Hash.is_0 h
-        then N (add_list_ k v leaf, a)
-        else N (leaf, add_to_array_ ~mut:false k v ~h a)
+        then node_ (add_list_ k v leaf) a
+        else
+          let mut = A.owns ~id a in (* can we modify [a] in place? *)
+          node_ leaf (add_to_array_ ~id ~mut k v ~h a)
 
   (* make an array containing a leaf, and insert (k,v) in it *)
-  and make_array_ ~leaf ~h_leaf:h' k v ~h =
-    let a = A.create ~empty:E in
+  and make_array_ ~id ~leaf ~h_leaf:h' k v ~h =
+    let a = A.create ~id in
     let a, leaf =
       if Hash.is_0 h' then a, leaf
       else
@@ -415,18 +427,22 @@ module Make(Key : KEY)
     (* then add new node *)
     let a, leaf =
       if Hash.is_0 h then a, add_list_ k v leaf
-      else add_to_array_ ~mut:true k v ~h a, leaf
+      else add_to_array_ ~id ~mut:true k v ~h a, leaf
     in
     N (leaf, a)
 
   (* add k->v to [a] *)
-  and add_to_array_ ~mut k v ~h a =
+  and add_to_array_ ~id ~mut k v ~h a =
     (* insert in a bucket *)
     let i = Hash.rem h in
     let h' = Hash.quotient h in
-    A.update ~mut a i (fun x -> add_ k v ~h:h' x)
+    A.update ~default:E ~mut a i (fun x -> add_ ~id k v ~h:h' x)
 
-  let add k v m = add_ k v ~h:(hash_ k) m
+  let add k v m = add_ ~id:Transient.empty k v ~h:(hash_ k) m
+
+  let add_mut ~id k v m =
+    if Transient.frozen id then raise Transient.Frozen;
+    add_ ~id k v ~h:(hash_ k) m
 
   (*$Q
      _listuniq (fun l -> \
@@ -453,7 +469,7 @@ module Make(Key : KEY)
           then tail
           else Cons (k', v', remove_list_ k tail)
 
-  let rec remove_rec_ k ~h m = match m with
+  let rec remove_rec_ ~id k ~h m = match m with
     | E -> E
     | S (_, k', _) ->
         if Key.equal k k' then E else m
@@ -467,16 +483,22 @@ module Make(Key : KEY)
             else
               let i = Hash.rem h in
               let h' = Hash.quotient h in
-              let new_t = remove_rec_ k ~h:h' (A.get a i) in
+              let new_t = remove_rec_ ~id k ~h:h' (A.get ~default:E a i) in
               if is_empty new_t
-              then leaf, A.remove ~empty:E a i (* remove sub-tree *)
-              else leaf, A.set ~mut:false a i new_t
+              then leaf, A.remove a i (* remove sub-tree *)
+              else
+                let mut = A.owns ~id a in
+                leaf, A.set ~mut a i new_t
         in
         if is_empty_list_ leaf && is_empty_arr_ a
           then E
           else N (leaf, a)
 
-  let remove k m = remove_rec_ k ~h:(hash_ k) m
+  let remove k m = remove_rec_ ~id:Transient.empty k ~h:(hash_ k) m
+
+  let remove_mut ~id k m =
+    if Transient.frozen id then raise Transient.Frozen;
+    remove_rec_ ~id k ~h:(hash_ k) m
 
   (*$QR
     _listuniq (fun l ->
@@ -493,14 +515,20 @@ module Make(Key : KEY)
     )
   *)
 
-  let update k f m =
+  let update_ ~id k f m =
     let h = hash_ k in
     let opt_v = try Some (get_exn_ k ~h m) with Not_found -> None in
     match opt_v, f opt_v with
     | None, None -> m
     | Some _, Some v
-    | None, Some v -> add_ k v ~h m
-    | Some _, None -> remove_rec_ k ~h m
+    | None, Some v -> add_ ~id k v ~h m
+    | Some _, None -> remove_rec_ ~id k ~h m
+
+  let update k f m = update_ ~id:Transient.empty k f m
+
+  let update_mut ~id k v m =
+    if Transient.frozen id then raise Transient.Frozen;
+    update_ ~id k v m
 
   (*$R
     let m = M.of_list [1, 1; 2, 2; 5, 5] in
@@ -548,14 +576,21 @@ module Make(Key : KEY)
 
   let to_list m = fold (fun acc k v -> (k,v)::acc) [] m
 
-  let add_list m l = List.fold_left (fun acc (k,v) -> add k v acc) m l
+  let add_list_mut ~id m l =
+    List.fold_left (fun acc (k,v) -> add_mut ~id k v acc) m l
+
+  let add_list m l =
+    Transient.with_ (fun id -> add_list_mut ~id m l)
 
   let of_list l = add_list empty l
 
-  let add_seq m s =
+  let add_seq_mut ~id m seq =
     let m = ref m in
-    s (fun (k,v) -> m := add k v !m);
+    seq (fun (k,v) -> m := add_mut ~id k v !m);
     !m
+
+  let add_seq m seq =
+    Transient.with_ (fun id -> add_seq_mut ~id m seq)
 
   let of_seq s = add_seq empty s
 
@@ -568,9 +603,12 @@ module Make(Key : KEY)
           |> List.sort Pervasives.compare) )
   *)
 
-  let rec add_gen m g = match g() with
+  let rec add_gen_mut~id m g = match g() with
     | None -> m
-    | Some (k,v) -> add_gen (add k v m) g
+    | Some (k,v) -> add_gen_mut ~id (add_mut ~id k v m) g
+
+  let add_gen m g =
+    Transient.with_ (fun id -> add_gen_mut ~id m g)
 
   let of_gen g = add_gen empty g
 
