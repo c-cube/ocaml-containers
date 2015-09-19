@@ -16,6 +16,25 @@ let repeat = 3
 let (%%) f g x = f (g x)
 
 module L = struct
+  (* MAP *)
+
+  let f_ x = x+1
+
+  let bench_map ?(time=2) n =
+    let l = CCList.(1 -- n) in
+    let ral = CCRAL.of_list l in
+    let map_naive () = ignore (try  List.map f_ l with Stack_overflow -> [])
+    and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
+    and ccmap () = ignore (CCList.map f_ l)
+    and ralmap () = ignore (CCRAL.map f_ ral)
+    in
+    B.throughputN time ~repeat
+      [ "List.map", map_naive, ()
+      ; "List.rev_map o rev", map_tailrec, ()
+      ; "CCList.map", ccmap, ()
+      ; "CCRAL.map", ralmap, ()
+      ]
+
   (* FLAT MAP *)
 
   let f_ x =
@@ -72,7 +91,13 @@ module L = struct
 
   let () = B.Tree.register (
     "list" @>>>
-      [ "flat_map" @>>
+      [ "map" @>>
+        B.Tree.concat
+          [ app_int (bench_map ~time:2) 100
+          ; app_int (bench_map ~time:2) 10_000
+          ; app_int (bench_map ~time:4) 100_000
+          ; app_int (bench_map ~time:4) 500_000 ]
+      ; "flat_map" @>>
         B.Tree.concat
           [ app_int (bench_flat_map ~time:2) 100
           ; app_int (bench_flat_map ~time:2) 10_000
