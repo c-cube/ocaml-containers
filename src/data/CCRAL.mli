@@ -32,6 +32,9 @@ val return : 'a -> 'a t
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Map on elements *)
 
+val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+(** Map with index *)
+
 val hd : 'a t -> 'a
 (** First element of the list, or
     @raise Invalid_argument if the list is empty *)
@@ -50,8 +53,11 @@ val front_exn : 'a t -> 'a * 'a t
 val length : 'a t -> int
 (** Number of elements *)
 
-val get : 'a t -> int -> 'a
-(** [get l i] accesses the [i]-th element of the list. O(log(n)).
+val get : 'a t -> int -> 'a option
+(** [get l i] accesses the [i]-th element of the list. O(log(n)). *)
+
+val get_exn : 'a t -> int -> 'a
+(** Unsafe version of {!get}
     @raise Invalid_argument if the list has less than [i+1] elements. *)
 
 val set : 'a t -> int -> 'a -> 'a t
@@ -74,6 +80,18 @@ val flatten : 'a t t -> 'a t
 
 val app : ('a -> 'b) t -> 'a t -> 'b t
 
+val take : int -> 'a t -> 'a t
+
+val take_while : ('a -> bool) -> 'a t -> 'a t
+
+val drop : int -> 'a t -> 'a t
+
+val drop_while : ('a -> bool) -> 'a t -> 'a t
+
+val take_drop : int -> 'a t -> 'a t * 'a t
+(** [take_drop n l] splits [l] into [a, b] such that [length a = n]
+    if [length l >= n], and such that [append a b = l] *)
+
 val iter : ('a -> unit) -> 'a t -> unit
 (** Iterate on the list's elements *)
 
@@ -83,8 +101,15 @@ val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 val fold_rev : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** Fold on the list's elements, in reverse order (starting from the tail) *)
 
+val rev_map : ('a -> 'b) -> 'a t -> 'b t
+(** [rev_map f l] is the same as [map f (rev l)] *)
+
 val rev : 'a t -> 'a t
 (** Reverse the list *)
+
+val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+
+val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 (** {2 Conversions} *)
 
@@ -116,6 +141,10 @@ val to_gen : 'a t -> 'a gen
 (** {2 Infix} *)
 
 module Infix : sig
+  val (@+) : 'a -> 'a t -> 'a t
+  (** Cons (alias to {!cons})
+      @since NEXT_RELEASE *)
+
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
