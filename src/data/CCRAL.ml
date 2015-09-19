@@ -15,28 +15,6 @@ and +'a t =
 
 (** {2 Functions on trees} *)
 
-(* lookup [i]-th element in the tree [t], which has size [size] *)
-let rec tree_lookup size t i = match t, i with
-  | Leaf x, 0 -> x
-  | Leaf _, _ -> raise (Invalid_argument "RAL.get: wrong index")
-  | Node (x, _, _), 0 -> x
-  | Node (_, t1, t2), _ ->
-    let size' = size / 2 in
-    if i <= size'
-      then tree_lookup size' t1 (i-1)
-      else tree_lookup size' t2 (i-1-size')
-
-(* replaces [i]-th element by [v] *)
-let rec tree_update size t i v =match t, i with
-  | Leaf _, 0 -> Leaf v
-  | Leaf _, _ -> raise (Invalid_argument "RAL.set: wrong index")
-  | Node (_, t1, t2), 0 -> Node (v, t1, t2)
-  | Node (x, t1, t2), _ ->
-    let size' = size / 2 in
-    if i <= size'
-      then Node (x, tree_update size' t1 (i-1) v, t2)
-      else Node (x, t1, tree_update size' t2 (i-1-size') v)
-
 (** {2 Functions on lists of trees} *)
 
 let empty = Nil
@@ -48,16 +26,34 @@ let is_empty = function
   | Cons _ -> false
 
 let rec get_exn l i = match l with
-  | Nil -> raise (Invalid_argument "RAL.get: wrong index")
-  | Cons (size,t, _) when i < size -> tree_lookup size t i
+  | Nil -> invalid_arg "RAL.get"
+  | Cons (size,t, _) when i < size -> tree_lookup_ size t i
   | Cons (size,_, l') -> get_exn l' (i - size)
+and tree_lookup_ size t i = match t, i with
+  | Leaf x, 0 -> x
+  | Leaf _, _ -> invalid_arg "RAL.get"
+  | Node (x, _, _), 0 -> x
+  | Node (_, t1, t2), _ ->
+    let size' = size / 2 in
+    if i <= size'
+      then tree_lookup_ size' t1 (i-1)
+      else tree_lookup_ size' t2 (i-1-size')
 
 let get l i = try Some (get_exn l i) with Invalid_argument _ -> None
 
 let rec set l i v = match l with
-  | Nil -> raise (Invalid_argument "RAL.set: wrong index")
-  | Cons (size,t, l') when i < size -> Cons (size, tree_update size t i v, l')
+  | Nil -> invalid_arg "RAL.set"
+  | Cons (size,t, l') when i < size -> Cons (size, tree_update_ size t i v, l')
   | Cons (size,t, l') -> Cons (size, t, set l' (i - size) v)
+  and tree_update_ size t i v =match t, i with
+  | Leaf _, 0 -> Leaf v
+  | Leaf _, _ -> invalid_arg "RAL.set"
+  | Node (_, t1, t2), 0 -> Node (v, t1, t2)
+  | Node (x, t1, t2), _ ->
+    let size' = size / 2 in
+    if i <= size'
+      then Node (x, tree_update_ size' t1 (i-1) v, t2)
+      else Node (x, t1, tree_update_ size' t2 (i-1-size') v)
 
 (*$Q & ~small:(CCFun.compose snd List.length)
    Q.(pair (pair small_int int) (list int)) (fun ((i,v),l) -> \
@@ -75,21 +71,19 @@ let rec set l i v = match l with
 *)
 
 let cons x l = match l with
-  | Cons (size1, t1, Cons (size2, t2, l')) ->
-    if size1 = size2
-      then Cons (1 + size1 + size2, Node (x, t1, t2), l')
-      else Cons (1, Leaf x, l)
+  | Cons (size1, t1, Cons (size2, t2, l')) when size1=size2 ->
+      Cons (1 + size1 + size2, Node (x, t1, t2), l')
   | _ -> Cons (1, Leaf x, l)
 
 let cons' l x = cons x l
 
 let hd l = match l with
-  | Nil -> raise (Invalid_argument "RAL.hd: empty list")
+  | Nil -> invalid_arg "RAL.hd"
   | Cons (_, Leaf x, _) -> x
   | Cons (_, Node (x, _, _), _) -> x
 
 let tl l = match l with
-  | Nil -> raise (Invalid_argument "RAL.tl: empty list")
+  | Nil -> invalid_arg "RAL.tl"
   | Cons (_, Leaf _, l') -> l'
   | Cons (size, Node (_, t1, t2), l') ->
     let size' = size / 2 in
@@ -100,6 +94,12 @@ let tl l = match l with
   let l = of_list[1;2;3] in tl l |> to_list = [2;3]
 *)
 
+(*$Q
+  Q.(list_of_size Gen.(1--100) int) (fun l -> \
+    let l' =  of_list l in \
+    (not (is_empty l')) ==> (equal l' (cons (hd l') (tl l'))) )
+*)
+
 let front l = match l with
   | Nil -> None
   | Cons (_, Leaf x, tl) -> Some (x, tl)
@@ -108,7 +108,7 @@ let front l = match l with
     Some (x, Cons (size', t1, Cons (size', t2, l')))
 
 let front_exn l = match l with
-  | Nil -> raise (Invalid_argument "RAL.front")
+  | Nil -> invalid_arg "RAL.front"
   | Cons (_, Leaf x, tl) -> x, tl
   | Cons (size, Node (x, t1, t2), l') ->
     let size' = size / 2 in
@@ -151,6 +151,11 @@ let mapi f l =
   )
 *)
 
+(*$Q
+  Q.(pair (list small_int)(fun2 int int bool)) (fun (l,f) -> \
+    mapi f (of_list l) |> to_list = List.mapi f l )
+*)
+
 let rec length l = match l with
   | Nil -> 0
   | Cons (size,_, l') -> size + length l'
@@ -162,6 +167,22 @@ let rec iter f l = match l with
 and iter_tree t f = match t with
   | Leaf x -> f x
   | Node (x, t1, t2) -> f x; iter_tree t1 f; iter_tree t2 f
+
+let iteri f l =
+  let rec aux f i l = match l with
+    | Nil -> ()
+    | Cons (size, t, l') ->
+        aux_t ~size f i t;
+        aux f (i+size) l'
+  and aux_t f ~size i t = match t with
+    | Leaf x -> f i x
+    | Node (x, l, r) ->
+        f i x;
+        let size' = size/2 in
+        aux_t ~size:size' f (i+1) l;
+        aux_t ~size:size' f (i+1+size') r
+  in
+  aux f 0 l
 
 let rec fold f acc l = match l with
   | Nil -> acc
@@ -390,6 +411,24 @@ let to_list l = fold_rev (fun acc x -> x :: acc) [] l
 (*$Q
   Q.(list int) (fun l -> to_list (of_list l) = l)
   *)
+
+let add_array l a = Array.fold_right cons a l
+
+let of_array a = add_array empty a
+
+let to_array l = match l with
+  | Nil -> [||]
+  | Cons (_, Leaf x, _)
+  | Cons (_, Node (x, _,_), _) ->
+      let len = length l in
+      let arr = Array.make len x in
+      iteri (fun i x -> Array.set arr i x) l;
+      arr
+
+(*$Q
+  Q.(array int) (fun a -> \
+    of_array a |> to_array = a)
+*)
 
 let of_seq s =
   let l = ref empty in

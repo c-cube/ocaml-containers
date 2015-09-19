@@ -28,6 +28,7 @@ val cons : 'a -> 'a t -> 'a t
 (** Add an element at the front of the list *)
 
 val return : 'a -> 'a t
+(** Singleton *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Map on elements *)
@@ -51,7 +52,7 @@ val front_exn : 'a t -> 'a * 'a t
     @raise Invalid_argument if the list is empty *)
 
 val length : 'a t -> int
-(** Number of elements *)
+(** Number of elements. Complexity O(ln n) where n=number of elements *)
 
 val get : 'a t -> int -> 'a option
 (** [get l i] accesses the [i]-th element of the list. O(log(n)). *)
@@ -95,6 +96,8 @@ val take_drop : int -> 'a t -> 'a t * 'a t
 val iter : ('a -> unit) -> 'a t -> unit
 (** Iterate on the list's elements *)
 
+val iteri : (int -> 'a -> unit) -> 'a t -> unit
+
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** Fold on the list's elements *)
 
@@ -110,6 +113,7 @@ val rev : 'a t -> 'a t
 val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
+(** Lexicographic comparison *)
 
 (** {2 Conversions} *)
 
@@ -125,6 +129,13 @@ val to_list : 'a t -> 'a list
 
 val of_list_map : ('a -> 'b) -> 'a list -> 'b t
 (** Combination of {!of_list} and {!map} *)
+
+val of_array : 'a array -> 'a t
+
+val add_array : 'a t -> 'a array -> 'a t
+
+val to_array : 'a t -> 'a array
+(** More efficient than on usual lists *)
 
 val add_seq : 'a t -> 'a sequence -> 'a t
 
@@ -146,8 +157,13 @@ module Infix : sig
       @since NEXT_RELEASE *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  (** Alias to {!flat_map} *)
+
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  (** Alias to {!map} *)
+
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  (** Alias to {!app} *)
 end
 
 include module type of Infix
