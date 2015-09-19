@@ -392,6 +392,41 @@ let equal ?(eq=(=)) l1 l2 =
     equal (of_list l1) (of_list l2) = (l1=l2))
 *)
 
+(** {2 Utils} *)
+
+let make n x =
+  let rec aux n acc x =
+    if n<=0 then acc else aux (n-1) (cons x acc) x
+  in
+  aux n empty x
+
+let repeat n l =
+  let rec aux n l acc =
+    if n<=0 then acc else aux (n-1) l (append l acc)
+  in
+  aux n l empty
+
+let range i j =
+  let rec aux i j acc =
+    if i=j then cons i acc
+    else if i<j
+      then aux i (j-1) (cons j acc)
+    else
+      aux i (j+1) (cons j acc)
+  in
+  aux i j empty
+
+(*$T
+  range 0 3 |> to_list = [0;1;2;3]
+  range 3 0 |> to_list = [3;2;1;0]
+  range 17 17 |> to_list = [17]
+*)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (i,j) -> \
+    range i j |> to_list = CCList.(i -- j) )
+*)
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -516,10 +551,10 @@ let compare ?(cmp=Pervasives.compare) l1 l2 =
 
 module Infix = struct
   let (@+) = cons
-
   let (>>=) l f = flat_map f l
   let (>|=) l f = map f l
   let (<*>) = app
+  let (--) = range
 end
 
 include Infix

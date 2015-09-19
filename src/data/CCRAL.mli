@@ -115,6 +115,16 @@ val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
 (** Lexicographic comparison *)
 
+(** {2 Utils} *)
+
+val make : int -> 'a -> 'a t
+
+val repeat : int -> 'a t -> 'a t
+(** [repeat n l] is [append l (append l ... l)] [n] times *)
+
+val range : int -> int -> int t
+(** [range i j] is [i; i+1; ... ; j] or [j; j-1; ...; i] *)
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -164,6 +174,9 @@ module Infix : sig
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   (** Alias to {!app} *)
+
+  val (--) : int -> int -> int t
+  (** Alias to {!range} *)
 end
 
 include module type of Infix
