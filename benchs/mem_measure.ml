@@ -39,7 +39,7 @@ let do_test ~name f =
     res.occ
     res.time
 
-let test_hashtrie n () =
+let test_hashtrie n =
   let module M = CCHashTrie.Make(CCInt) in
   do_test ~name:(spf "hashtrie(%d)" n)
     (fun () ->
@@ -47,7 +47,7 @@ let test_hashtrie n () =
       m
     )
 
-let test_hamt n () =
+let test_hamt n =
   let module M = Hamt.Make'(CCInt) in
   do_test ~name:(spf "hamt(%d)" n)
     (fun () ->
@@ -58,7 +58,7 @@ let test_hamt n () =
       m
     )
 
-let test_map n () =
+let test_map n =
   let module M = CCMap.Make(CCInt) in
   do_test ~name:(spf "map(%d)" n)
     (fun () ->
@@ -66,7 +66,7 @@ let test_map n () =
       m
     )
 
-let test_wbt n () =
+let test_wbt n =
   let module M = CCWBTree.Make(CCInt) in
   do_test ~name:(spf "wbt(%d)" n)
     (fun () ->
@@ -74,7 +74,7 @@ let test_wbt n () =
       m
     )
 
-let test_hashtbl n () =
+let test_hashtbl n =
   let module H = CCHashtbl.Make(CCInt) in
   do_test ~name:(spf "hashtbl(%d)" n)
     (fun () ->
@@ -82,18 +82,24 @@ let test_hashtbl n () =
       m
     )
 
-let tests_ =
-  CCList.flat_map
-    (fun n ->
-      [ spf "hashtrie_%d" n, test_hashtrie n
-      ; spf "map_%d" n, test_map n
-      ; spf "hamt_%d" n, test_hamt n
-      ; spf "wbt_%d" n, test_wbt n
-      ; spf "hashtbl_%d" n, test_hashtbl n
-      ]
-    ) [ 1_000; 100_000; 30_000_000 ]
+let test_intmap n =
+  let module M = CCIntMap in
+  do_test ~name:(spf "intmap(%d)" n)
+    (fun () ->
+      let m = M.of_seq Sequence.(1 -- n |> map (fun x-> x,x)) in
+      m
+    )
 
-let run_test name = List.assoc name tests_ ()
+let tests_ =
+  [ "hashtrie", test_hashtrie
+  ; "map", test_map
+  ; "hamt", test_hamt
+  ; "wbt", test_wbt
+  ; "hashtbl", test_hashtbl
+  ; "intmap", test_intmap
+  ]
+
+let run_test ~n name = List.assoc name tests_ n
 
 let print_list () =
   Format.printf "@[<v2>tests:@ %a@]@."
@@ -101,12 +107,13 @@ let print_list () =
 
 let () =
   let to_test = ref [] in
+  let n = ref 1_000_000 in
   let options = Arg.align
-    [
+    [ "-n", Arg.Set_int n, " size of the collection"
   ] in
   Arg.parse options (CCList.Ref.push to_test) "usage: mem_measure [name*]";
   match !to_test with
     | [] ->
         print_list ();
         exit 0
-    | _ -> List.iter run_test (List.rev !to_test)
+    | _ -> List.iter (run_test ~n:!n) (List.rev !to_test)
