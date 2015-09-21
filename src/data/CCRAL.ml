@@ -126,11 +126,11 @@ let rec _map_tree f t = match t with
   | Leaf x -> Leaf (f x)
   | Node (x, l, r) -> Node (f x, _map_tree f l, _map_tree f r)
 
-let rec map f l = match l with
+let rec map ~f l = match l with
   | Nil -> Nil
-  | Cons (i, t, tl) -> Cons (i, _map_tree f t, map f tl)
+  | Cons (i, t, tl) -> Cons (i, _map_tree f t, map ~f tl)
 
-let mapi f l =
+let mapi ~f l =
   let rec aux f i l = match l with
     | Nil -> Nil
     | Cons (size, t, tl) -> Cons (size, aux_t f ~size i t, aux f (i+size) tl)
@@ -146,29 +146,29 @@ let mapi f l =
 (*$QR
   Q.small_int (fun n ->
     let l = CCList.(0 -- n) in
-    let l' = of_list l |> mapi (fun i x ->i,x) in
+    let l' = of_list l |> mapi ~f:(fun i x ->i,x) in
     List.mapi (fun i x->i,x) l = to_list l'
   )
 *)
 
 (*$Q
   Q.(pair (list small_int)(fun2 int int bool)) (fun (l,f) -> \
-    mapi f (of_list l) |> to_list = List.mapi f l )
+    mapi ~f (of_list l) |> to_list = List.mapi f l )
 *)
 
 let rec length l = match l with
   | Nil -> 0
   | Cons (size,_, l') -> size + length l'
 
-let rec iter f l = match l with
+let rec iter ~f l = match l with
   | Nil -> ()
-  | Cons (_, Leaf x, l') -> f x; iter f l'
-  | Cons (_, t, l') -> iter_tree t f; iter f l'
+  | Cons (_, Leaf x, l') -> f x; iter ~f l'
+  | Cons (_, t, l') -> iter_tree t f; iter ~f l'
 and iter_tree t f = match t with
   | Leaf x -> f x
   | Node (x, t1, t2) -> f x; iter_tree t1 f; iter_tree t2 f
 
-let iteri f l =
+let iteri ~f l =
   let rec aux f i l = match l with
     | Nil -> ()
     | Cons (size, t, l') ->
@@ -184,12 +184,12 @@ let iteri f l =
   in
   aux f 0 l
 
-let rec fold f acc l = match l with
+let rec fold ~f ~x:acc l = match l with
   | Nil -> acc
-  | Cons (_, Leaf x, l') -> fold f (f acc x) l'
+  | Cons (_, Leaf x, l') -> fold ~f ~x:(f acc x) l'
   | Cons (_, t, l') ->
     let acc' = fold_tree t acc f in
-    fold f acc' l'
+    fold ~f ~x:acc' l'
 and fold_tree t acc f = match t with
   | Leaf x -> f acc x
   | Node (x, t1, t2) ->
@@ -197,11 +197,11 @@ and fold_tree t acc f = match t with
     let acc = fold_tree t1 acc f in
     fold_tree t2 acc f
 
-let rec fold_rev f acc l = match l with
+let rec fold_rev ~f ~x:acc l = match l with
   | Nil -> acc
-  | Cons (_, Leaf x, l') -> f (fold_rev f acc l') x
+  | Cons (_, Leaf x, l') -> f (fold_rev ~f ~x:acc l') x
   | Cons (_, t, l') ->
-    let acc = fold_rev f acc l' in
+    let acc = fold_rev ~f ~x:acc l' in
     fold_tree_rev t acc f
 and fold_tree_rev t acc f = match t with
   | Leaf x -> f acc x
@@ -210,15 +210,15 @@ and fold_tree_rev t acc f = match t with
     let acc = fold_tree_rev t1 acc f in
     f acc x
 
-let rev_map f l = fold (fun acc x -> cons (f x) acc) empty l
+let rev_map ~f l = fold ~f:(fun acc x -> cons (f x) acc) ~x:empty l
 
 (*$Q
    Q.(list int) (fun l -> \
     let f x = x+1 in \
-    of_list l |> rev_map f |> to_list = List.rev_map f l)
+    of_list l |> rev_map ~f |> to_list = List.rev_map f l)
 *)
 
-let rev l = fold cons' empty l
+let rev l = fold ~f:cons' ~x:empty l
 
 (*$Q
   Q.(list small_int) (fun l -> \
@@ -227,7 +227,7 @@ let rev l = fold cons' empty l
     let l1 = of_list l in length l1 = List.length l)
 *)
 
-let append l1 l2 = fold_rev (fun l2 x -> cons x l2) l2 l1
+let append l1 l2 = fold_rev ~f:(fun l2 x -> cons x l2) ~x:l2 l1
 
 (*$Q & ~small:(CCPair.merge (CCFun.compose_binop List.length (+)))
   Q.(pair (list int) (list int)) (fun (l1,l2) -> \
@@ -236,27 +236,28 @@ let append l1 l2 = fold_rev (fun l2 x -> cons x l2) l2 l1
 
 let append_tree_ t l = fold_tree_rev t l cons'
 
-let filter p l = fold_rev (fun acc x -> if p x then cons x acc else acc) empty l
+let filter ~f l =
+  fold_rev ~f:(fun acc x -> if f x then cons x acc else acc) ~x:empty l
 
-let filter_map f l =
-  fold_rev
-    (fun acc x -> match f x with
+let filter_map ~f l =
+  fold_rev ~x:empty l
+    ~f:(fun acc x -> match f x with
       | None -> acc
       | Some y -> cons y acc
-    ) empty l
+    )
 
 (*$T
-  of_list [1;2;3;4;5;6] |> filter (fun x -> x mod 2=0) |> to_list = [2;4;6]
+  of_list [1;2;3;4;5;6] |> filter ~f:(fun x -> x mod 2=0) |> to_list = [2;4;6]
 *)
 
 let flat_map f l =
-  fold_rev
-    (fun acc x ->
+  fold_rev ~x:empty l
+    ~f:(fun acc x ->
       let l = f x in
       append l acc
-    ) empty l
+    )
 
-let flatten l = fold_rev (fun acc l -> append l acc) empty l
+let flatten l = fold_rev ~f:(fun acc l -> append l acc) ~x:empty l
 
 (*$T
   flatten (of_list [of_list [1]; of_list []; of_list [2;3]]) = \
@@ -264,12 +265,11 @@ let flatten l = fold_rev (fun acc l -> append l acc) empty l
 *)
 
 let app funs l =
-  fold_rev
-    (fun acc f ->
-      fold_rev
-        (fun acc x -> cons (f x) acc)
-        acc l
-    ) empty funs
+  fold_rev ~x:empty funs
+    ~f:(fun acc f ->
+      fold_rev ~x:acc l
+        ~f:(fun acc x -> cons (f x) acc)
+    )
 
 (*$T
   app (of_list [(+) 2; ( * ) 10]) (of_list [1;10]) |> to_list = \
@@ -307,7 +307,7 @@ and take_tree_ ~size n t = match t with
   take 0 (of_list CCList.(1--10)) |> to_list = []
 *)
 
-let take_while p l =
+let take_while ~f l =
   (* st: stack of subtrees *)
   let rec aux p st = match st with
     | St_nil -> Nil
@@ -317,12 +317,12 @@ let take_while p l =
         if p x then cons x (aux p st') else Nil
     | St_tree (Node (x,l,r), st') ->
         if p x then cons x (aux p (St_tree (l, St_tree (r, st')))) else Nil
-  in aux p (St_list (l, St_nil))
+  in aux f (St_list (l, St_nil))
 
 (*$Q
   Q.(list int) (fun l -> \
     let f x = x mod 7 <> 0 in \
-    of_list l |> take_while f |> to_list = CCList.take_while f l)
+    of_list l |> take_while ~f |> to_list = CCList.take_while f l)
 *)
 
 let rec drop n l = match l with
@@ -342,7 +342,7 @@ and drop_tree_ ~size n t tail = match t with
           then drop_tree_ ~size:size' (n-1) l (append_tree_ r tail)
           else drop_tree_ ~size:size' (n-1-size') r tail
 
-let drop_while p l =
+let drop_while ~f l =
   let rec aux p st = match st with
     | St_nil -> Nil
     | St_list (Nil, st') -> aux p st'
@@ -354,7 +354,7 @@ let drop_while p l =
         if p x
         then aux p (St_tree (l, St_tree (r, st')))
         else append_tree_ tree (stack_to_list st')
-  in aux p (St_list (l, St_nil))
+  in aux f (St_list (l, St_nil))
 
 (*$T
   drop 3 (of_list CCList.(1--10)) |> to_list = CCList.(4--10)
@@ -366,7 +366,7 @@ let drop_while p l =
 (*$Q
   Q.(list_of_size Gen.(0 -- 200) int) (fun l -> \
     let f x = x mod 10 <> 0 in \
-    of_list l |> drop_while f |> to_list = CCList.drop_while f l)
+    of_list l |> drop_while ~f |> to_list = CCList.drop_while f l)
 *)
 
 let take_drop n l = take n l, drop n l
@@ -441,7 +441,7 @@ let add_list l l2 = List.fold_left (fun acc x -> cons x acc) l (List.rev l2)
 
 let of_list l = add_list empty l
 
-let to_list l = fold_rev (fun acc x -> x :: acc) [] l
+let to_list l = fold_rev ~f:(fun acc x -> x :: acc) ~x:[] l
 
 (*$Q
   Q.(list int) (fun l -> to_list (of_list l) = l)
@@ -457,7 +457,7 @@ let to_array l = match l with
   | Cons (_, Node (x, _,_), _) ->
       let len = length l in
       let arr = Array.make len x in
-      iteri (fun i x -> Array.set arr i x) l;
+      iteri ~f:(fun i x -> Array.set arr i x) l;
       arr
 
 (*$Q
@@ -473,9 +473,9 @@ let of_seq s =
 let add_seq l s =
   let l1 = ref empty in
   s (fun x -> l1 := cons x !l1);
-  fold (fun acc x -> cons x acc) l !l1
+  fold ~f:(fun acc x -> cons x acc) ~x:l !l1
 
-let to_seq l yield = iter yield l
+let to_seq l yield = iter ~f:yield l
 
 (*$Q & ~small:List.length
   Q.(list small_int) (fun l -> \
@@ -495,7 +495,7 @@ let rec gen_iter_ f g = match g() with
 let add_gen l g =
   let l1 = ref empty in
   gen_iter_ (fun x -> l1 := cons x !l1) g;
-  fold (fun acc x -> cons x acc) l !l1
+  fold ~f:(fun acc x -> cons x acc) ~x:l !l1
 
 let of_gen g = add_gen empty g
 
@@ -525,11 +525,11 @@ let to_gen l =
     Gen.of_list l |> of_gen |> to_list = l)
 *)
 
-let rec of_list_map f l = match l with
+let rec of_list_map ~f l = match l with
   | [] -> empty
   | x::l' ->
       let y = f x in
-      cons y (of_list_map f l')
+      cons y (of_list_map ~f l')
 
 let compare ?(cmp=Pervasives.compare) l1 l2 =
   let rec cmp_gen ~cmp g1 g2 = match g1(), g2() with
@@ -552,7 +552,7 @@ let compare ?(cmp=Pervasives.compare) l1 l2 =
 module Infix = struct
   let (@+) = cons
   let (>>=) l f = flat_map f l
-  let (>|=) l f = map f l
+  let (>|=) l f = map ~f l
   let (<*>) = app
   let (--) = range
 end
@@ -565,13 +565,13 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 let print ?(sep=", ") pp_item fmt l =
   let first = ref true in
-  iter
-    (fun x ->
+  iter l
+    ~f:(fun x ->
       if !first then first := false else (
         Format.pp_print_string fmt sep;
         Format.pp_print_cut fmt ();
       );
       pp_item fmt x
-    ) l;
+    );
   ()
 

@@ -95,16 +95,16 @@ module type S = sig
 
   val weight : _ t -> int
 
-  val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
-  val iter : (key -> 'a -> unit) -> 'a t -> unit
+  val iter : f:(key -> 'a -> unit) -> 'a t -> unit
 
   val split : key -> 'a t -> 'a t * 'a option * 'a t
   (** [split k t] returns [l, o, r] where [l] is the part of the map
       with keys smaller than [k], [r] has keys bigger than [k],
       and [o = Some v] if [k, v] belonged to the map *)
 
-  val merge : (key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
+  val merge : f:(key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
   (** Similar to {!Map.S.merge} *)
 
   val extract_min : 'a t -> key * 'a * 'a t
@@ -361,19 +361,19 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     List.for_all (fun i -> M.nth_exn i m = (i,i)) CCList.(0--1000)
   *)
 
-  let rec fold f acc m = match m with
+  let rec fold ~f ~x:acc m = match m with
     | E -> acc
     | N (k, v, l, r, _) ->
-        let acc = fold f acc l in
+        let acc = fold ~f ~x:acc l in
         let acc = f acc k v in
-        fold f acc r
+        fold ~f ~x:acc r
 
-  let rec iter f m = match m with
+  let rec iter ~f m = match m with
     | E -> ()
     | N (k, v, l, r, _) ->
-        iter f l;
+        iter ~f l;
         f k v;
-        iter f r
+        iter ~f r
 
   let choose_exn = function
     | E -> raise Not_found
@@ -459,28 +459,28 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       ) lst)
   *)
 
-  let rec merge f a b = match a, b with
+  let rec merge ~f a b = match a, b with
     | E, E -> E
     | E, N (k, v, l, r, _) ->
         let v' = f k None (Some v) in
-        mk_node_or_join_ k v' (merge f E l) (merge f E r)
+        mk_node_or_join_ k v' (merge ~f E l) (merge ~f E r)
     | N (k, v, l, r, _), E ->
         let v' = f k (Some v) None in
-        mk_node_or_join_ k v' (merge f l E) (merge f r E)
+        mk_node_or_join_ k v' (merge ~f l E) (merge ~f r E)
     | N (k1, v1, l1, r1, w1), N (k2, v2, l2, r2, w2) ->
         if K.compare k1 k2 = 0
         then (* easy case *)
           mk_node_or_join_ k1 (f k1 (Some v1) (Some v2))
-            (merge f l1 l2) (merge f r1 r2)
+            (merge ~f l1 l2) (merge ~f r1 r2)
         else if w1 <= w2
           then (* split left tree *)
             let l1', v1', r1' = split k2 a in
             mk_node_or_join_ k2 (f k2 v1' (Some v2))
-              (merge f l1' l2) (merge f r1' r2)
+              (merge ~f l1' l2) (merge ~f r1' r2)
           else (* split right tree *)
             let l2', v2', r2' = split k1 b in
             mk_node_or_join_ k1 (f k1 (Some v1) v2')
-              (merge f l1 l2') (merge f r1 r2')
+              (merge ~f l1 l2') (merge ~f r1 r2')
 
   (*$R
     let m1 = M.of_list [1, 1; 2, 2; 4, 4] in
@@ -504,13 +504,13 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
         List.for_all (fun (k,v) -> M.mem k m1 || M.get_exn k m = v) l2)
   *)
 
-  let cardinal m = fold (fun acc _ _ -> acc+1) 0 m
+  let cardinal m = fold ~f:(fun acc _ _ -> acc+1) ~x:0 m
 
   let add_list m l = List.fold_left (fun acc (k,v) -> add k v acc) m l
 
   let of_list l = add_list empty l
 
-  let to_list m = fold (fun acc k v -> (k,v) :: acc) [] m
+  let to_list m = fold ~f:(fun acc k v -> (k,v) :: acc) ~x:[] m
 
   let add_seq m seq =
     let m = ref m in
@@ -519,7 +519,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   let of_seq s = add_seq empty s
 
-  let to_seq m yield = iter (fun k v -> yield (k,v)) m
+  let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
 
   let rec add_gen m g = match g() with
     | None -> m
@@ -544,14 +544,14 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     let start = "[" and stop = "]" and arrow = "->" and sep = ","in
     Format.pp_print_string fmt start;
     let first = ref true in
-    iter
-      (fun k v ->
+    iter m
+      ~f:(fun k v ->
         if !first then first := false else Format.pp_print_string fmt sep;
         pp_k fmt k;
         Format.pp_print_string fmt arrow;
         pp_v fmt v;
         Format.pp_print_cut fmt ()
-      ) m;
+      );
     Format.pp_print_string fmt stop
 end
 

@@ -30,10 +30,10 @@ val cons : 'a -> 'a t -> 'a t
 val return : 'a -> 'a t
 (** Singleton *)
 
-val map : ('a -> 'b) -> 'a t -> 'b t
+val map : f:('a -> 'b) -> 'a t -> 'b t
 (** Map on elements *)
 
-val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+val mapi : f:(int -> 'a -> 'b) -> 'a t -> 'b t
 (** Map with index *)
 
 val hd : 'a t -> 'a
@@ -71,9 +71,9 @@ val remove : 'a t -> int -> 'a t
 
 val append : 'a t -> 'a t -> 'a t
 
-val filter : ('a -> bool) -> 'a t -> 'a t
+val filter : f:('a -> bool) -> 'a t -> 'a t
 
-val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
@@ -83,28 +83,28 @@ val app : ('a -> 'b) t -> 'a t -> 'b t
 
 val take : int -> 'a t -> 'a t
 
-val take_while : ('a -> bool) -> 'a t -> 'a t
+val take_while : f:('a -> bool) -> 'a t -> 'a t
 
 val drop : int -> 'a t -> 'a t
 
-val drop_while : ('a -> bool) -> 'a t -> 'a t
+val drop_while : f:('a -> bool) -> 'a t -> 'a t
 
 val take_drop : int -> 'a t -> 'a t * 'a t
 (** [take_drop n l] splits [l] into [a, b] such that [length a = n]
     if [length l >= n], and such that [append a b = l] *)
 
-val iter : ('a -> unit) -> 'a t -> unit
+val iter : f:('a -> unit) -> 'a t -> unit
 (** Iterate on the list's elements *)
 
-val iteri : (int -> 'a -> unit) -> 'a t -> unit
+val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 
-val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+val fold : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 (** Fold on the list's elements *)
 
-val fold_rev : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+val fold_rev : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 (** Fold on the list's elements, in reverse order (starting from the tail) *)
 
-val rev_map : ('a -> 'b) -> 'a t -> 'b t
+val rev_map : f:('a -> 'b) -> 'a t -> 'b t
 (** [rev_map f l] is the same as [map f (rev l)] *)
 
 val rev : 'a t -> 'a t
@@ -137,7 +137,7 @@ val of_list : 'a list -> 'a t
 
 val to_list : 'a t -> 'a list
 
-val of_list_map : ('a -> 'b) -> 'a list -> 'b t
+val of_list_map : f:('a -> 'b) -> 'a list -> 'b t
 (** Combination of {!of_list} and {!map} *)
 
 val of_array : 'a array -> 'a t
@@ -163,8 +163,7 @@ val to_gen : 'a t -> 'a gen
 
 module Infix : sig
   val (@+) : 'a -> 'a t -> 'a t
-  (** Cons (alias to {!cons})
-      @since NEXT_RELEASE *)
+  (** Cons (alias to {!cons}) *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   (** Alias to {!flat_map} *)

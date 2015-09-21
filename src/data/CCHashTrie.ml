@@ -65,8 +65,8 @@ module type S = sig
   val remove : key -> 'a t -> 'a t
   (** Remove the key, if present. *)
 
-  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
-  (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
+  val update : key -> f:('a option -> 'a option) -> 'a t -> 'a t
+  (** [update k ~f m] calls [f (Some v)] if [get k m = Some v], [f None]
       otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
       if [f] returns [None] it removes [k] *)
 
@@ -81,7 +81,7 @@ module type S = sig
   (** Same as {!remove}, but modifies in place whenever possible
       @raise Transient.Frozen if [id] is frozen *)
 
-  val update_mut : id:Transient.t -> key -> ('a option -> 'a option) -> 'a t -> 'a t
+  val update_mut : id:Transient.t -> key -> f:('a option -> 'a option) -> 'a t -> 'a t
   (** Same as {!update} but with mutability
       @raise Transient.Frozen if [id] is frozen *)
 
@@ -92,9 +92,9 @@ module type S = sig
   val choose_exn : 'a t -> key * 'a
   (** @raise Not_found if not pair was found *)
 
-  val iter : (key -> 'a -> unit) -> 'a t -> unit
+  val iter : f:(key -> 'a -> unit) -> 'a t -> unit
 
-  val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
   (** {6 Conversions} *)
 
@@ -559,11 +559,11 @@ module Make(Key : KEY)
     | None, Some v -> add_ ~id k v ~h m
     | Some _, None -> remove_rec_ ~id k ~h m
 
-  let update k f m = update_ ~id:Transient.empty k f m
+  let update k ~f m = update_ ~id:Transient.empty k f m
 
-  let update_mut ~id k v m =
+  let update_mut ~id k ~f m =
     if Transient.frozen id then raise Transient.Frozen;
-    update_ ~id k v m
+    update_ ~id k f m
 
   (*$R
     let m = M.of_list [1, 1; 2, 2; 5, 5] in
@@ -576,7 +576,7 @@ module Make(Key : KEY)
     assert_equal [1,1; 2,2; 4,4; 5,5] (M.to_list m' |> List.sort Pervasives.compare);
   *)
 
-  let iter f t =
+  let iter ~f t =
     let rec aux = function
       | E -> ()
       | S (_, k, v) -> f k v
@@ -590,7 +590,7 @@ module Make(Key : KEY)
     in
     aux t
 
-  let fold f acc t =
+  let fold ~f ~x:acc t =
     let rec aux acc t = match t with
       | E -> acc
       | S (_,k,v) -> f acc k v
@@ -607,13 +607,13 @@ module Make(Key : KEY)
   (*$T
     let l = CCList.(1 -- 10 |> map (fun x->x,x)) in  \
     M.of_list l \
-      |> M.fold (fun acc x y -> (x,y)::acc) [] \
+      |> M.fold ~f:(fun acc x y -> (x,y)::acc) ~x:[] \
       |> List.sort Pervasives.compare = l
   *)
 
-  let cardinal m = fold (fun n _ _ -> n+1) 0 m
+  let cardinal m = fold ~f:(fun n _ _ -> n+1) ~x:0 m
 
-  let to_list m = fold (fun acc k v -> (k,v)::acc) [] m
+  let to_list m = fold ~f:(fun acc k v -> (k,v)::acc) ~x:[] m
 
   let add_list_mut ~id m l =
     List.fold_left (fun acc (k,v) -> add_mut ~id k v acc) m l
@@ -633,7 +633,7 @@ module Make(Key : KEY)
 
   let of_seq s = add_seq empty s
 
-  let to_seq m yield = iter (fun k v -> yield (k,v)) m
+  let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
 
   (*$Q
     _listuniq (fun l -> \
@@ -699,13 +699,13 @@ module Make(Key : KEY)
 
   let print ppk ppv out m =
     let first = ref true in
-    iter
-      (fun k v ->
+    iter m
+      ~f:(fun k v ->
         if !first then first := false else Format.fprintf out ";@ ";
         ppk out k;
         Format.pp_print_string out " -> ";
         ppv out v
-      ) m
+      )
 
   let rec as_tree m () = match m with
     | E -> `Nil

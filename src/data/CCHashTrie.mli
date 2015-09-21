@@ -77,8 +77,8 @@ module type S = sig
   val remove : key -> 'a t -> 'a t
   (** Remove the key, if present. *)
 
-  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
-  (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
+  val update : key -> f:('a option -> 'a option) -> 'a t -> 'a t
+  (** [update k ~f m] calls [f (Some v)] if [get k m = Some v], [f None]
       otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
       if [f] returns [None] it removes [k] *)
 
@@ -93,7 +93,7 @@ module type S = sig
   (** Same as {!remove}, but modifies in place whenever possible
       @raise Transient.Frozen if [id] is frozen *)
 
-  val update_mut : id:Transient.t -> key -> ('a option -> 'a option) -> 'a t -> 'a t
+  val update_mut : id:Transient.t -> key -> f:('a option -> 'a option) -> 'a t -> 'a t
   (** Same as {!update} but with mutability
       @raise Transient.Frozen if [id] is frozen *)
 
@@ -104,9 +104,9 @@ module type S = sig
   val choose_exn : 'a t -> key * 'a
   (** @raise Not_found if not pair was found *)
 
-  val iter : (key -> 'a -> unit) -> 'a t -> unit
+  val iter : f:(key -> 'a -> unit) -> 'a t -> unit
 
-  val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
   (** {6 Conversions} *)
 
