@@ -66,7 +66,7 @@ module LockRef = struct
   let update t f = t.content <- f t.content
 end
 
-let with_lock_as_ref l f =
+let with_lock_as_ref l ~f =
   Mutex.lock l.mutex;
   try
     let x = f l in
@@ -80,7 +80,7 @@ let with_lock_as_ref l f =
   let l = create 0 in
   let test_it l =
     with_lock_as_ref l
-      (fun r ->
+      ~f:(fun r ->
         let x = LockRef.get r in
         LockRef.set r (x+10);
         Thread.yield ();

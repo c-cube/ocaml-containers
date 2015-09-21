@@ -52,7 +52,7 @@ module LockRef : sig
   val update : 'a t -> ('a -> 'a) -> unit
 end
 
-val with_lock_as_ref : 'a t -> ('a LockRef.t -> 'b) -> 'b
+val with_lock_as_ref : 'a t -> f:('a LockRef.t -> 'b) -> 'b
 (** [with_lock_as_ref l f] calls [f] with a reference-like object
     that allows to manipulate the value of [l] safely.
     The object passed to [f] must not escape the function call
