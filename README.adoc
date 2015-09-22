@@ -1,4 +1,4 @@
-= ocaml-containers =
+= OCaml-containers =
 :toc: macro
 :source-highlighter: pygments
 
@@ -7,21 +7,21 @@ image::media/logo.png[logo]
 What is _containers_?
 
 - A usable, reasonably well-designed library that extends OCaml's standard
-  library (in `core/`, packaged under `containers` in ocamlfind. Modules
+  library (in 'src/core/', packaged under `containers` in ocamlfind. Modules
   are totally independent and are prefixed with `CC` (for "containers-core"
   or "companion-cube" because I'm megalomaniac). This part should be
   usable and should work. For instance, `CCList` contains functions and
   lists including safe versions of `map` and `append`. It also
   provides a drop-in replacement to the standard library, in the module
   `Containers` (intended to be opened, replaces some stdlib modules
-  with extended ones)
+  with extended ones).
 - Several small additional libraries that complement it:
 
-  * `containers.data` with additional data structures that don't have an
+  containers.data:: with additional data structures that don't have an
     equivalent in the standard library;
-  * `containers.io` (deprecated)
-  * `containers.iter` with list-like and tree-like iterators;
-  * `containers.string` (in directory `string`) with
+  containers.io:: (deprecated)
+  containers.iter:: with list-like and tree-like iterators;
+  containers.string:: (in directory `string`) with
     a few packed modules that deal with strings (Levenshtein distance,
     KMP search algorithm, and a few naive utils). Again, modules are independent
     and sometimes parametric on the string and char types (so they should
@@ -33,12 +33,6 @@ What is _containers_?
   sub-processes)
 - A bigstring module using `bigarray` in `containers.bigarray`
 - A lightweight S-expression printer and streaming parser in `containers.sexp`
-- A library using [Lwt](https://github.com/ocsigen/lwt/), `containers.lwt`.
-  Currently only contains experimental, unstable stuff.
-- Random stuff, with *NO* *GUARANTEE* of even being barely usable or tested,
-  in other dirs (mostly `misc` but also `lwt` and `threads`). It's where I
-  tend to write code when I want to test some idea, so half the modules (at
-  least) are unfinished or don't really work.
 
 Some of the modules have been moved to their own repository (e.g. `sequence`,
 `gen`, `qcheck`) and are on opam for great fun and profit.
@@ -49,7 +43,7 @@ toc::[]
 
 == Change Log
 
-See https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md[this file].
+See link:CHANGELOG.md[this file].
 
 == Finding help
 
@@ -91,8 +85,9 @@ CC-SA3 http://en.wikipedia.org/wiki/File:Hypercube.svg[wikimedia].
 
 == Contents
 
-The design is mostly centered around polymorphism rather than functors. Such
-structures comprise (some modules in 'misc/', some other in 'core/'):
+The library contains a <<core,Core part>> that mostly extends the stdlib
+and adds a few very common structures (heap, vector), and sub-libraries
+that deal with either more specific things, or require additional dependencies.
 
 [[core]]
 === Core Modules (extension of the standard library)
@@ -220,7 +215,7 @@ The library has moved to https://github.com/c-cube/containers-misc .
 
 == Build
 
-You will need OCaml `>=` 4.01.0.
+You will need OCaml `>=` 4.00.0.
 
 === Via opam
 
@@ -235,13 +230,13 @@ branch `stable` it is not necessary.
 
     $ make
 
-To build and run tests (requires `oUnit`, `qtest`, and `qcheck`):
+To build and run tests (requires `oUnit` and https://github.com/vincent-hugot/iTeML[qtest]):
 
-    $ opam install oUnit qtest qcheck
-    $ ./configure --enable-tests
+    $ opam install oUnit qtest
+    $ ./configure --enable-tests --enable-unix --enable-bigarray
     $ make test
 
-To build the small benchmarking suite (requires `benchmark`):
+To build the small benchmarking suite (requires https://github.com/chris00/ocaml-benchmark[benchmark]):
 
     $ opam install benchmark
     $ make bench
@@ -258,3 +253,4 @@ A few guidelines:
 - add tests if possible (using `qtest`).
 
 Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
+
