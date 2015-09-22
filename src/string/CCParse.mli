@@ -68,9 +68,17 @@ type line_num = int (** @since NEXT_RELEASE *)
 type col_num = int (** @since NEXT_RELEASE *)
 
 exception ParseError of line_num * col_num * (unit -> string)
-(** position * message *)
+(** position * message
+
+ This type changed at NEXT_RELEASE *)
 
 (** {2 Input} *)
+
+(** @since NEXT_RELEASE *)
+module MemoTbl : sig
+  type t
+  val create: int -> t (** New memoization table *)
+end
 
 type input = {
   is_done : unit -> bool; (** End of input? *)
@@ -83,6 +91,7 @@ type input = {
   pos : unit -> int;   (** Current pos *)
   lnum : unit -> line_num; (** Line number @since NEXT_RELEASE *)
   cnum : unit -> col_num;  (** column number @since NEXT_RELEASE *)
+  memo : MemoTbl.t; (** memoization table, if any *)
   backtrack : int -> unit;  (** Restore to previous pos *)
   sub : int -> int -> string; (** [sub pos len] extracts slice from [pos] with [len] *)
 }
@@ -213,6 +222,21 @@ val sep1 : by:_ t -> 'a t -> 'a list t
 
 val fix : ('a t -> 'a t) -> 'a t
 (** Fixpoint combinator *)
+
+val memo : 'a t -> 'a t
+(** Memoize the parser. [memo p] will behave like [p], but when called
+    in a state (read: position in input) it has already processed, [memo p]
+    returns a result directly. The implementation uses an underlying
+    hashtable.
+    This can be costly in memory, but improve the run time a lot if there
+    is a lot of backtracking involving [p].
+
+    This function is not thread-safe.
+    @since NEXT_RELEASE *)
+
+val fix_memo : ('a t -> 'a t) -> 'a t
+(** Same as {!fix}, but the fixpoint is memoized.
+    @since NEXT_RELEASE *)
 
 (** {2 Parse} *)
 
