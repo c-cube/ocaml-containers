@@ -63,7 +63,12 @@ parse_string_exn "[abc , de, hello ,world  ]" p;;
 *)
 
 type 'a or_error = [`Ok of 'a | `Error of string]
-exception ParseError of int * string (** position * message *)
+
+type line_num = int (** @since NEXT_RELEASE *)
+type col_num = int (** @since NEXT_RELEASE *)
+
+exception ParseError of line_num * col_num * (unit -> string)
+(** position * message *)
 
 (** {2 Input} *)
 
@@ -76,9 +81,13 @@ type input = {
         otherwise throw ParseError *)
 
   pos : unit -> int;   (** Current pos *)
+  lnum : unit -> line_num; (** Line number @since NEXT_RELEASE *)
+  cnum : unit -> col_num;  (** column number @since NEXT_RELEASE *)
   backtrack : int -> unit;  (** Restore to previous pos *)
   sub : int -> int -> string; (** [sub pos len] extracts slice from [pos] with [len] *)
 }
+(** The type of input, which must allow for backtracking somehow.
+    This type is {b unstable} and its details might change. *)
 
 val input_of_string : string -> input
 (** Parse the string *)
@@ -91,7 +100,8 @@ val input_of_chan : ?size:int -> in_channel -> input
 
 (** {2 Combinators} *)
 
-type 'a t = input -> 'a (** @raise ParseError in case of failure *)
+type 'a t = input -> 'a
+(** @raise ParseError in case of failure *)
 
 val return : 'a -> 'a t
 (** Always succeeds, without consuming its input *)

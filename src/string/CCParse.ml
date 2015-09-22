@@ -28,16 +28,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type 'a or_error = [`Ok of 'a | `Error of string]
 
+type line_num = int
+type col_num = int
+
 type input = {
   is_done : unit -> bool; (** End of input? *)
   cur : unit -> char;  (** Current char *)
   next : unit -> char; (** if not {!is_done}, move to next char *)
   pos : unit -> int;   (** Current pos *)
+  lnum : unit -> line_num; (** Line number @since NEXT_RELEASE *)
+  cnum : unit -> col_num;  (** column number @since NEXT_RELEASE *)
   backtrack : int -> unit;  (** Restore to previous pos *)
   sub : int -> int -> string; (** Extract slice from [pos] with [len] *)
 }
 
-exception ParseError of int * string (** position * message *)
+exception ParseError of line_num * col_num * (unit -> string)
 
 (*$R
   let module T = struct
@@ -83,19 +88,26 @@ exception ParseError of int * string (** position * message *)
     (parse_string "[abc , de, hello ,world  ]" p);
  *)
 
+let const_ x () = x
+
 let input_of_string s =
   let i = ref 0 in
+  let line = ref 1 in (* line *)
+  let col = ref 1 in (* column *)
   { is_done=(fun () -> !i = String.length s);
     cur=(fun () -> s.[!i]);
     next=(fun () ->
         if !i = String.length s
-        then raise (ParseError (!i, "unexpected EOI"))
+        then raise (ParseError (!line, !col, const_ "unexpected EOI"))
         else (
           let c = s.[!i] in
           incr i;
+          if c='\n' then (incr line; col:=1) else incr col;
           c
         )
     );
+    lnum=(fun () -> !line);
+    cnum=(fun () -> !col);
     pos=(fun () -> !i);
     backtrack=(fun j -> assert (0 <= j && j <= !i); i := j);
     sub=(fun j len -> assert (j + len <= !i); String.sub s j len);
@@ -106,8 +118,10 @@ let input_of_chan ?(size=1024) ic =
   let b = ref (Bytes.make size ' ') in
   let n = ref 0 in  (* length of buffer *)
   let i = ref 0 in  (* current index in buffer *)
+  let line = ref 1 in
+  let col = ref 1 in
   let exhausted = ref false in (* input fully read? *)
-  let eoi() = raise (ParseError (!i, "unexpected EOI")) in
+  let eoi() = raise (ParseError (!line, !col, const_ "unexpected EOI")) in
   (* read a chunk of input *)
   let read_more () =
     assert (not !exhausted);
@@ -126,6 +140,7 @@ let input_of_chan ?(size=1024) ic =
     if !exhausted && !i = !n then eoi();
     let c = Bytes.get !b !i in
     incr i;
+    if c='\n' then (incr line; col := 1) else incr col;
     if !i = !n then (
       read_more();
       if !exhausted then eoi();
@@ -139,6 +154,8 @@ let input_of_chan ?(size=1024) ic =
     cur=(fun () -> assert (not (is_done())); Bytes.get !b !i);
     next;
     pos=(fun() -> !i);
+    lnum=(fun () -> !line);
+    cnum=(fun () -> !col);
     backtrack=(fun j -> assert (0 <= j && j <= !i); i:=j);
     sub=(fun j len -> assert (j + len <= !i); Bytes.sub_string !b j len);
   }
@@ -165,20 +182,20 @@ let ( *>) x y st =
   res
 
 let junk_ st = ignore (st.next ())
-let fail_ st fmt =
-  Printf.ksprintf
-    (fun msg -> raise (ParseError (st.pos (), msg))) fmt
+let pf = Printf.sprintf
+let fail_ st msg = raise (ParseError (st.lnum(), st.cnum(), msg))
 
-let eoi st = if st.is_done() then () else fail_ st "expected EOI"
-let fail msg st = fail_ st "%s" msg
+let eoi st = if st.is_done() then () else fail_ st (const_ "expected EOI")
+let fail msg st = fail_ st (const_ msg)
 let nop _ = ()
 
-let char c st =
-  if st.next () = c then c else fail_ st "expected '%c'" c
+let char c =
+  let msg = pf "expected '%c'" c in
+  fun st -> if st.next () = c then c else fail_ st (const_ msg)
 
 let char_if p st =
   let c = st.next () in
-  if p c then c else fail_ st "unexpected char '%c'" c
+  if p c then c else fail_ st (fun () -> pf "unexpected char '%c'" c)
 
 let chars_if p st =
   let i = st.pos () in
@@ -188,7 +205,7 @@ let chars_if p st =
 
 let chars1_if p st =
   let s = chars_if p st in
-  if s = "" then fail_ st "unexpected sequence of chars";
+  if s = "" then fail_ st (const_ "unexpected sequence of chars");
   s
 
 let rec skip_chars p st =
@@ -217,6 +234,8 @@ let white = char_if is_white
 let skip_space = skip_chars is_space
 let skip_white = skip_chars is_white
 
+(* XXX: combine errors? *)
+
 let (<|>) x y st =
   let i = st.pos () in
   try
@@ -230,7 +249,7 @@ let string s st =
     i = String.length s ||
     (s.[i] = st.next () && check (i+1))
   in
-  if check 0 then s else fail_ st "expected \"%s\"" s
+  if check 0 then s else fail_ st (fun () -> pf "expected \"%s\"" s)
 
 let rec many_rec p st acc =
   if st.is_done () then List.rev acc
@@ -275,8 +294,8 @@ let parse_exn ~input p = p input
 
 let parse ~input p =
   try `Ok (parse_exn ~input p)
-  with ParseError (i, msg) ->
-    `Error (Printf.sprintf "at position %d: error, %s" i msg)
+  with ParseError (lnum, cnum, msg) ->
+    `Error (Printf.sprintf "at line %d, column %d: error, %s" lnum cnum (msg ()))
 
 let parse_string s p = parse ~input:(input_of_string s) p
 let parse_string_exn s p = parse_exn ~input:(input_of_string s) p
@@ -296,8 +315,8 @@ let parse_file ?size ~file p =
   try
     `Ok (parse_file_exn ?size ~file p)
   with
-  | ParseError (i, msg) ->
-    `Error (Printf.sprintf "at position %d: error, %s" i msg)
+  | ParseError (lnum, cnum, msg) ->
+    `Error (Printf.sprintf "at line %d, column %d: error, %s" lnum cnum (msg ()))
   | Sys_error s ->
     `Error (Printf.sprintf "error while reading %s: %s" file s)
 
