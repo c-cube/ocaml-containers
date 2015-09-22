@@ -50,12 +50,12 @@ See link:CHANGELOG.md[this file].
 - *new*: http://lists.ocaml.org/listinfo/containers-users[Mailing List]
   the address is mailto:containers-users@lists.ocaml.org[]
 - the https://github.com/c-cube/ocaml-containers/wiki[github wiki]
-- on IRC, ask `companion_cube` on `#ocaml`
+- on IRC, ask `companion_cube` on `#ocaml@freenode.net`
 - image:https://badges.gitter.im/Join%20Chat.svg[alt="Gitter", link="https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge"]
 
 == Use
 
-You can either build and install the library (see `Build`), or just copy
+You can either build and install the library (see <<build>>), or just copy
 files to your own project. The last solution has the benefits that you
 don't have additional dependencies nor build complications (and it may enable
 more inlining). Since modules have a friendly license and are mostly
@@ -145,7 +145,7 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 
 === Containers.io
 
-*deprecated*, `CCIO` is now a <<core>> module. You can still install it and
+*deprecated*, `CCIO` is now a <<core,core>> module. You can still install it and
 depend on it but it contains no useful module.
 
 === Containers.unix
@@ -213,6 +213,7 @@ The library has moved to https://github.com/c-cube/containers-misc .
 - aliasing and deprecating `CCList.split` (confusion with `List.split`)
 
 
+[[build]]
 == Build
 
 You will need OCaml `>=` 4.00.0.
