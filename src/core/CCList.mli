@@ -227,27 +227,30 @@ end
 
 module Set : sig
   val add : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [add x set] adds [x] to [set] if it was not already present
+  (** [add x set] adds [x] to [set] if it was not already present. Linear time.
       @since 0.11 *)
 
   val remove : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [remove x set] removes one occurrence of [x] from [set]
+  (** [remove x set] removes one occurrence of [x] from [set]. Linear time.
       @since 0.11 *)
 
   val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
-  (** membership to the list *)
+  (** membership to the list. Linear time *)
 
   val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   (** test for inclusion *)
 
   val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
-  (** list uniq: remove duplicates w.r.t the equality predicate *)
+  (** list uniq: remove duplicates w.r.t the equality predicate.
+      Complexity is quadratic in the length of the list, but the order
+      of elements is preserved. If you wish for a faster de-duplication
+      but do not care about the order, use {!sort_uniq}*)
 
   val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** list union *)
+  (** list union. Complexity is product of length of inputs. *)
 
   val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** list intersection *)
+  (** list intersection. Complexity is product of length of inputs., *)
 end
 
 (** {2 Other Constructors} *)

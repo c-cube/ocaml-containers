@@ -337,6 +337,6 @@ module File = struct
   let show_walk_item (i,f) =
     (match i with
       | `File -> "file:"
-      | `Dir -> "dir: "
+      | `Dir -> "dir:"
     ) ^ f
 end

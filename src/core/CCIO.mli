@@ -94,7 +94,7 @@ val read_all_bytes : ?size:int -> in_channel -> Bytes.t
     @param size the internal buffer size
     @since 0.12 *)
 
-(** {6 Output} *)
+(** {2 Output} *)
 
 val with_out : ?mode:int -> ?flags:open_flag list ->
                string -> (out_channel -> 'a) -> 'a
@@ -133,7 +133,7 @@ val tee : ('a -> unit) list -> 'a gen -> 'a gen
 (** [tee funs gen] behaves like [gen], but each element is given to
     every function [f] in [funs] at the time the element is produced. *)
 
-(** {6 File and file names}
+(** {2 File and file names}
 
 How to list recursively files in a directory:
 {[
