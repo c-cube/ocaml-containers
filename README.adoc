@@ -1,7 +1,8 @@
-ocaml-containers
-================
+= ocaml-containers =
+:toc: macro
+:source-highlighter: pygments
 
-![logo](media/logo.png)
+image::media/logo.png[logo]
 
 What is _containers_?
 
@@ -15,6 +16,7 @@ What is _containers_?
   `Containers` (intended to be opened, replaces some stdlib modules
   with extended ones)
 - Several small additional libraries that complement it:
+
   * `containers.data` with additional data structures that don't have an
     equivalent in the standard library;
   * `containers.io` (deprecated)
@@ -24,6 +26,7 @@ What is _containers_?
     KMP search algorithm, and a few naive utils). Again, modules are independent
     and sometimes parametric on the string and char types (so they should
     be able to deal with your favorite unicode library).
+
 - A sub-library with complicated abstractions, `containers.advanced` (with
   a LINQ-like query module, batch operations using GADTs, and others).
 - Utilities around the `unix` library in `containers.unix` (mainly to spawn
@@ -40,21 +43,23 @@ What is _containers_?
 Some of the modules have been moved to their own repository (e.g. `sequence`,
 `gen`, `qcheck`) and are on opam for great fun and profit.
 
-[![Build Status](http://ci.cedeela.fr/buildStatus/icon?job=containers)](http://ci.cedeela.fr/job/containers/)
+image::http://ci.cedeela.fr/buildStatus/icon?job=containers[alt="Build Status", link="http://ci.cedeela.fr/job/containers/"]
 
-## Change Log
+toc::[]
 
-See [this file](https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md).
+== Change Log
 
-## Finding help
+See https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md[this file].
 
-- *new*: [Mailing List](http://lists.ocaml.org/listinfo/containers-users)
-  the address is `containers-users@lists.ocaml.org`
-- the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
+== Finding help
+
+- *new*: http://lists.ocaml.org/listinfo/containers-users[Mailing List]
+  the address is mailto:containers-users@lists.ocaml.org[]
+- the https://github.com/c-cube/ocaml-containers/wiki[github wiki]
 - on IRC, ask `companion_cube` on `#ocaml`
-- [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) (experimental, might not exist forever)
+- image:https://badges.gitter.im/Join%20Chat.svg[alt="Gitter", link="https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge"]
 
-## Use
+== Use
 
 You can either build and install the library (see `Build`), or just copy
 files to your own project. The last solution has the benefits that you
@@ -64,7 +69,8 @@ independent, both options are easy.
 
 In a toplevel, using ocamlfind:
 
-```ocaml
+[source,OCaml]
+----
 # #use "topfind";;
 # #require "containers";;
 # CCList.flat_map;;
@@ -72,29 +78,30 @@ In a toplevel, using ocamlfind:
 # open Containers;;  (* optional *)
 # List.flat_map ;;
 - : ('a -> 'b list) -> 'a list -> 'b list = <fun>
-```
+----
 
 If you have comments, requests, or bugfixes, please share them! :-)
 
-## License
+== License
 
 This code is free, under the BSD license.
 
 The logo (`media/logo.png`) is
-CC-SA3 [wikimedia](http://en.wikipedia.org/wiki/File:Hypercube.svg).
+CC-SA3 http://en.wikipedia.org/wiki/File:Hypercube.svg[wikimedia].
 
-## Contents
+== Contents
 
 The design is mostly centered around polymorphism rather than functors. Such
-structures comprise (some modules in `misc/`, some other in `core/`):
+structures comprise (some modules in 'misc/', some other in 'core/'):
 
-### Core Modules (extension of the standard library)
+[[core]]
+=== Core Modules (extension of the standard library)
 
 the core library, `containers`, now depends on
-[cppo](https://github.com/mjambon/cppo) and `base-bytes` (provided
+https://github.com/mjambon/cppo[cppo] and `base-bytes` (provided
 by ocamlfind).
 
-Documentation [here](http://cedeela.fr/~simon/software/containers).
+Documentation http://cedeela.fr/~simon/software/containers[here].
 
 - `CCHeap`, a purely functional heap structure
 - `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
@@ -115,7 +122,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCError` (monadic error handling, very useful)
 - `CCIO`, basic utilities for IO (channels, files)
 
-### Containers.data
+=== Containers.data
 
 - `CCBitField`, bitfields embedded in integers
 - `CCBloom`, a bloom filter
@@ -128,7 +135,7 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCBV`, mutable bitvectors
 - `CCHashSet`, mutable set
 - `CCPersistentHashtbl` and `CCPersistentArray`, a semi-persistent array and hashtable
-  (similar to [persistent arrays](https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html))
+  (similar to https://www.lri.fr/~filliatr/ftp/ocaml/ds/parray.ml.html[persistent arrays])
 - `CCMixmap`, `CCMixtbl`, `CCMixset`, containers of universal types (heterogenous containers)
 - `CCRingBuffer`, a double-ended queue on top of an array-like structure,
   with batch operations
@@ -141,46 +148,46 @@ Documentation [here](http://cedeela.fr/~simon/software/containers).
 - `CCRAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
   access to elements by their index.
 
-### Containers.io
+=== Containers.io
 
-*deprecated*, `CCIO` is now a core module. You can still install it and
+*deprecated*, `CCIO` is now a <<core>> module. You can still install it and
 depend on it but it contains no useful module.
 
-### Containers.unix
+=== Containers.unix
 
 - `CCUnix`, utils for `Unix`
 
-### Containers.sexp
+=== Containers.sexp
 
 A small S-expression library.
 
 - `CCSexp`, a small S-expression library
 
-### Containers.iter
+=== Containers.iter
 
 Iterators:
 
 - `CCKList`, a persistent iterator structure (akin to a lazy list, without memoization)
 - `CCKTree`, an abstract lazy tree structure
 
-### String
+=== String
 
-See [doc](http://cedeela.fr/~simon/software/containers/string).
+See http://cedeela.fr/~simon/software/containers/string[doc].
 
 In the module `Containers_string`:
 - `Levenshtein`: edition distance between two strings
 - `KMP`: Knuth-Morris-Pratt substring algorithm
 
-### Advanced
+=== Advanced
 
-See [doc](http://cedeela.fr/~simon/software/containers/advanced).
+See http://cedeela.fr/~simon/software/containers/advanced[doc].
 
 In the module `Containers_advanced`:
 - `CCLinq`, high-level query language over collections
 - `CCCat`, a few categorical structures
 - `CCBatch`, to combine operations on collections into one traversal
 
-### Thread
+=== Thread
 
 In the library `containers.thread`, for preemptive system threads:
 
@@ -190,15 +197,15 @@ In the library `containers.thread`, for preemptive system threads:
 - `CCSemaphore`, a simple implementation of semaphores
 - `CCThread` basic wrappers for `Thread`
 
-### Misc
+=== Misc
 
 The library has moved to https://github.com/c-cube/containers-misc .
 
-### Others
+=== Others
 
 `containers.lwt` has moved to https://github.com/c-cube/containers-lwt .
 
-## Incoming (Breaking) Changes
+== Incoming (Breaking) Changes
 
 - change exceptions in `CCVector`
 - change signature of `CCDeque.of_seq` (remove optional argument)
@@ -211,17 +218,17 @@ The library has moved to https://github.com/c-cube/containers-misc .
 - aliasing and deprecating `CCList.split` (confusion with `List.split`)
 
 
-## Build
+== Build
 
-You will need OCaml >= 4.01.0.
+You will need OCaml `>=` 4.01.0.
 
-### Via opam
+=== Via opam
 
-The prefered way to install is through [opam](http://opam.ocaml.org/).
+The prefered way to install is through http://opam.ocaml.org/[opam].
 
     $ opam install containers
 
-### From Sources
+=== From Sources
 
 On the branch `master` you will need `oasis` to build the library. On the
 branch `stable` it is not necessary.
@@ -240,7 +247,7 @@ To build the small benchmarking suite (requires `benchmark`):
     $ make bench
     $ ./benchs.native
 
-## Contributing
+== Contributing
 
 PRs on github are welcome (patches by email too, if you prefer so).
 
@@ -250,7 +257,4 @@ A few guidelines:
 - add `@since` tags for new functions;
 - add tests if possible (using `qtest`).
 
-Powered by <a href="http://oasis.forge.ocamlcore.org/">
-<img src="http://oasis.forge.ocamlcore.org/oasis-badge.png"
-     alt="OASIS" style="border: none;" />
-</a>
+Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
