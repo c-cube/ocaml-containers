@@ -116,6 +116,7 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCHash` (hashing combinators)
 - `CCError` (monadic error handling, very useful)
 - `CCIO`, basic utilities for IO (channels, files)
+- `CCInt64,` utils for `int64`
 
 === Containers.data
 

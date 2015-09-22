@@ -33,6 +33,7 @@ CCHash
 CCHashtbl
 CCHeap
 CCInt
+CCInt64
 CCIO
 CCList
 CCMap
