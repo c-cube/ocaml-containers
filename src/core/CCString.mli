@@ -312,6 +312,22 @@ module Split : sig
   *)
 end
 
+(** {2 Utils} *)
+
+val compare_versions : string -> string -> int
+(** [compare_versions a b] compares {i version strings} [a] and [b],
+    considering that numbers are above text.
+    @since NEXT_RELEASE *)
+
+(*$T
+  compare_versions "0.1.3" "0.1" > 0
+  compare_versions "10.1" "2.0" > 0
+  compare_versions "0.1.alpha" "0.1" > 0
+  compare_versions "0.3.dev" "0.4" < 0
+  compare_versions "0.foo" "0.0" < 0
+  compare_versions "1.2.3.4" "01.2.4.3" < 0
+*)
+
 (** {2 Slices} A contiguous part of a string *)
 
 module Sub : sig
