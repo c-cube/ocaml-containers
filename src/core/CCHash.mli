@@ -124,7 +124,7 @@ module type HASH = sig
   val int64 : int64 -> state -> state
   val nativeint : nativeint -> state -> state
   val slice : string -> int -> int -> state -> state
-  (** [slice s i len state] hashes the slice [[i, ... i+len)] of [s]
+  (** [slice s i len state] hashes the slice [i, ... i+len-1] of [s]
       into [state] *)
 end
 
