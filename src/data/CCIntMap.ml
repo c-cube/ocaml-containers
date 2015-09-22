@@ -152,9 +152,9 @@ let rec find_exn k t = match t with
       else find_exn k r
     else raise Not_found
 
-    (* TODO test with lt_unsigned_ *)
+    (* XXX could test with lt_unsigned_? *)
 
-    (* FIXME: valid if k < 0?
+    (*
     if k <= prefix (* search tree *)
     then find_exn k l
     else find_exn k r
@@ -251,7 +251,12 @@ let update k f t =
     | None -> t
     | Some v -> add k v t
 
-(* TODO test *)
+(*$= & ~printer:Q.Print.(list (pair int int))
+  [1,1; 2, 22; 3, 3] \
+  (of_list [1,1;2,2;3,3] \
+    |> update 2 (function None -> assert false | Some _ -> Some 22) \
+    |> to_list |> List.sort Pervasives.compare)
+*)
 
 let doubleton k1 v1 k2 v2 = add k1 v1 (singleton k2 v2)
 
