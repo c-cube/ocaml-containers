@@ -121,12 +121,21 @@ val of_list : 'a list -> 'a t
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a fmt = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val random : 'a random_gen -> 'a t random_gen
+
+val choice_seq : 'a t sequence -> 'a t
+(** [choice_seq s] is similar to {!choice}, but works on sequences.
+    It returns the first [Some x] occurring in [s], or [None] otherwise.
+    @since 0.13 *)
 
 val to_gen : 'a t -> 'a gen
 val to_seq : 'a t -> 'a sequence
 
 val pp : 'a printer -> 'a t printer
+
+val print : 'a fmt -> 'a t fmt
+(** @since 0.13 *)
 

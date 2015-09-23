@@ -32,6 +32,8 @@ type 'a t = {
   mutable content : 'a;
 }
 
+type 'a lock = 'a t
+
 let create content = {
   mutex = Mutex.create();
   content;
@@ -47,10 +49,58 @@ let with_lock l f =
     Mutex.unlock l.mutex;
     raise e
 
+(*$R
+  let l = create 0 in
+  let try_incr l =
+    update l (fun x -> Thread.yield(); x+1)
+  in
+  for i = 1 to 10 do ignore (Thread.create try_incr l) done;
+  Thread.delay 0.10 ;
+  assert_equal 10 (get l)
+*)
+
+module LockRef = struct
+  type 'a t = 'a lock
+  let get t = t.content
+  let set t x = t.content <- x
+  let update t f = t.content <- f t.content
+end
+
+let with_lock_as_ref l ~f =
+  Mutex.lock l.mutex;
+  try
+    let x = f l in
+    Mutex.unlock l.mutex;
+    x
+  with e ->
+    Mutex.unlock l.mutex;
+    raise e
+
+(*$R
+  let l = create 0 in
+  let test_it l =
+    with_lock_as_ref l
+      ~f:(fun r ->
+        let x = LockRef.get r in
+        LockRef.set r (x+10);
+        Thread.yield ();
+        let y = LockRef.get r in
+        LockRef.set r (y - 10);
+      )
+  in
+  for i = 1 to 100 do ignore (Thread.create test_it l) done;
+  Thread.delay 0.10;
+  assert_equal 0 (get l)
+*)
+
 let mutex l = l.mutex
 
 let update l f =
   with_lock l (fun x -> l.content <- f x)
+
+(*$T
+  let l = create 5 in update l (fun x->x+1); get l = 6
+  *)
 
 let get l =
   Mutex.lock l.mutex;
@@ -58,4 +108,29 @@ let get l =
   Mutex.unlock l.mutex;
   x
 
+let set l x =
+  Mutex.lock l.mutex;
+  l.content <- x;
+  Mutex.unlock l.mutex
 
+(*$T
+  let l = create 0 in set l 4; get l = 4
+  let l = create 0 in set l 4; set l 5; get l = 5
+*)
+
+let incr l = update l (fun x -> x+1)
+
+let decr l = update l (fun x -> x-1)
+
+
+(*$R
+  let l = create 0 in
+  let a = Array.init 100 (fun _ -> Thread.create (fun _ -> incr l) ()) in
+  Array.iter Thread.join a;
+  assert_equal ~printer:CCInt.to_string 100 (get l)
+*)
+
+(*$T
+  let l = create 0 in incr l ; get l = 1
+  let l = create 0 in decr l ; get l = ~-1
+  *)

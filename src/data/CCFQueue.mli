@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a equal = 'a -> 'a -> bool
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -148,3 +149,5 @@ val (--) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], both included.
     @since 0.10 *)
 
+val print : 'a printer -> 'a t printer
+(** @since 0.13 *)

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: eb3c5babbb4a2d9bd921bfaf77125f8f)
+# DO NOT EDIT (digest: 69220d33fe7db598cd4d72fc5d813a8f)
 CCMultiMap
 CCMultiSet
 CCTrie
@@ -17,4 +17,10 @@ CCPersistentArray
 CCMixset
 CCHashconsedSet
 CCGraph
+CCHashSet
+CCBitField
+CCHashTrie
+CCBloom
+CCWBTree
+CCRAL
 # OASIS_STOP

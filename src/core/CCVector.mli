@@ -92,12 +92,15 @@ val equal : 'a equal -> ('a,_) t equal
 val compare : 'a ord -> ('a,_) t ord
 (** Total ordering on vectors: Lexicographic comparison. *)
 
+exception Empty
+(** Raised on empty stack *)
+
 val pop : ('a, rw) t -> 'a option
 (** Remove last element, or [None] *)
 
 val pop_exn : ('a, rw) t -> 'a
 (** remove last element, or raise a Failure if empty
-    @raise Failure on an empty vector *)
+    @raise Empty on an empty vector *)
 
 val top : ('a, _) t -> 'a option
 (** Top element, if present
@@ -105,7 +108,7 @@ val top : ('a, _) t -> 'a option
 
 val top_exn : ('a, _) t -> 'a
 (** Top element, if present
-    @raise Failure on an empty vector
+    @raise Empty on an empty vector
     @since 0.6 *)
 
 val copy : ('a,_) t -> ('a,'mut) t
@@ -178,11 +181,11 @@ val (>|=) : ('a,_) t -> ('a -> 'b) -> ('b, 'mut) t
 
 val get : ('a,_) t -> int -> 'a
 (** access element by its index, or
-    @raise Failure if bad index *)
+    @raise Invalid_argument if bad index *)
 
 val set : ('a, rw) t -> int -> 'a -> unit
 (** modify element at given index, or
-    @raise Failure if bad index *)
+    @raise Invalid_argument if bad index *)
 
 val remove : ('a, rw) t -> int -> unit
 (** Remove the [n-th] element of the vector. Does {b NOT} preserve the order

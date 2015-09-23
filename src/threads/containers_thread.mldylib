@@ -1,5 +1,7 @@
 # OASIS_START
-# DO NOT EDIT (digest: 37a56731fc4d5295c3da2b9353ef82ed)
+# DO NOT EDIT (digest: 5a6b0b500f96e1bf483c59a5b5b8c034)
 CCFuture
 CCLock
+CCSemaphore
+CCThread
 # OASIS_STOP

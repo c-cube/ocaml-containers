@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 8abfb70ea9625c4528141fdd459e8114)
+# DO NOT EDIT (digest: 0e7b7eeffb179d552ac9c060b7ab3be9)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -45,81 +45,47 @@ true: annot, bin_annot
 <src/bigarray/*.ml{,i,y}>: package(bigarray)
 <src/bigarray/*.ml{,i,y}>: package(bytes)
 <src/bigarray/*.ml{,i,y}>: use_containers
-# Library containers_misc
-"src/misc/containers_misc.cmxs": use_containers_misc
-"src/misc/absSet.cmx": for-pack(Containers_misc)
-"src/misc/automaton.cmx": for-pack(Containers_misc)
-"src/misc/bij.cmx": for-pack(Containers_misc)
-"src/misc/CSM.cmx": for-pack(Containers_misc)
-"src/misc/hashset.cmx": for-pack(Containers_misc)
-"src/misc/lazyGraph.cmx": for-pack(Containers_misc)
-"src/misc/pHashtbl.cmx": for-pack(Containers_misc)
-"src/misc/printBox.cmx": for-pack(Containers_misc)
-"src/misc/RAL.cmx": for-pack(Containers_misc)
-"src/misc/roseTree.cmx": for-pack(Containers_misc)
-"src/misc/smallSet.cmx": for-pack(Containers_misc)
-"src/misc/unionFind.cmx": for-pack(Containers_misc)
-"src/misc/univ.cmx": for-pack(Containers_misc)
-"src/misc/puf.cmx": for-pack(Containers_misc)
-"src/misc/backtrack.cmx": for-pack(Containers_misc)
-<src/misc/*.ml{,i,y}>: package(bytes)
-<src/misc/*.ml{,i,y}>: use_containers
-<src/misc/*.ml{,i,y}>: use_containers_data
 # Library containers_thread
 "src/threads/containers_thread.cmxs": use_containers_thread
 <src/threads/*.ml{,i,y}>: package(bytes)
 <src/threads/*.ml{,i,y}>: package(threads)
 <src/threads/*.ml{,i,y}>: use_containers
-# Library containers_lwt
-"src/lwt/containers_lwt.cmxs": use_containers_lwt
-"src/lwt/lwt_automaton.cmx": for-pack(Containers_lwt)
-"src/lwt/lwt_actor.cmx": for-pack(Containers_lwt)
-"src/lwt/lwt_klist.cmx": for-pack(Containers_lwt)
-"src/lwt/lwt_pipe.cmx": for-pack(Containers_lwt)
-<src/lwt/*.ml{,i,y}>: package(bytes)
-<src/lwt/*.ml{,i,y}>: package(lwt)
-<src/lwt/*.ml{,i,y}>: use_containers
-<src/lwt/*.ml{,i,y}>: use_containers_data
-<src/lwt/*.ml{,i,y}>: use_containers_misc
+# Library containers_top
+"src/top/containers_top.cmxs": use_containers_top
+<src/top/*.ml{,i,y}>: package(bigarray)
+<src/top/*.ml{,i,y}>: package(bytes)
+<src/top/*.ml{,i,y}>: package(compiler-libs.common)
+<src/top/*.ml{,i,y}>: package(unix)
+<src/top/*.ml{,i,y}>: use_containers
+<src/top/*.ml{,i,y}>: use_containers_bigarray
+<src/top/*.ml{,i,y}>: use_containers_data
+<src/top/*.ml{,i,y}>: use_containers_iter
+<src/top/*.ml{,i,y}>: use_containers_sexp
+<src/top/*.ml{,i,y}>: use_containers_string
+<src/top/*.ml{,i,y}>: use_containers_unix
 # Executable run_benchs
 <benchs/run_benchs.{native,byte}>: package(benchmark)
 <benchs/run_benchs.{native,byte}>: package(bytes)
 <benchs/run_benchs.{native,byte}>: package(gen)
+<benchs/run_benchs.{native,byte}>: package(hamt)
 <benchs/run_benchs.{native,byte}>: package(sequence)
+<benchs/run_benchs.{native,byte}>: package(threads)
 <benchs/run_benchs.{native,byte}>: use_containers
 <benchs/run_benchs.{native,byte}>: use_containers_advanced
 <benchs/run_benchs.{native,byte}>: use_containers_data
 <benchs/run_benchs.{native,byte}>: use_containers_iter
-<benchs/run_benchs.{native,byte}>: use_containers_misc
 <benchs/run_benchs.{native,byte}>: use_containers_string
+<benchs/run_benchs.{native,byte}>: use_containers_thread
 <benchs/*.ml{,i,y}>: package(benchmark)
 <benchs/*.ml{,i,y}>: package(gen)
-<benchs/*.ml{,i,y}>: package(sequence)
+<benchs/*.ml{,i,y}>: package(threads)
 <benchs/*.ml{,i,y}>: use_containers_advanced
 <benchs/*.ml{,i,y}>: use_containers_iter
 <benchs/*.ml{,i,y}>: use_containers_string
+<benchs/*.ml{,i,y}>: use_containers_thread
 # Executable run_bench_hash
 <benchs/run_bench_hash.{native,byte}>: package(bytes)
 <benchs/run_bench_hash.{native,byte}>: use_containers
-<benchs/run_bench_hash.{native,byte}>: use_containers_data
-<benchs/run_bench_hash.{native,byte}>: use_containers_misc
-<benchs/*.ml{,i,y}>: package(bytes)
-<benchs/*.ml{,i,y}>: use_containers
-<benchs/*.ml{,i,y}>: use_containers_data
-<benchs/*.ml{,i,y}>: use_containers_misc
-# Executable run_test_future
-<tests/threads/run_test_future.{native,byte}>: package(bytes)
-<tests/threads/run_test_future.{native,byte}>: package(oUnit)
-<tests/threads/run_test_future.{native,byte}>: package(sequence)
-<tests/threads/run_test_future.{native,byte}>: package(threads)
-<tests/threads/run_test_future.{native,byte}>: use_containers
-<tests/threads/run_test_future.{native,byte}>: use_containers_thread
-<tests/threads/*.ml{,i,y}>: package(bytes)
-<tests/threads/*.ml{,i,y}>: package(oUnit)
-<tests/threads/*.ml{,i,y}>: package(sequence)
-<tests/threads/*.ml{,i,y}>: package(threads)
-<tests/threads/*.ml{,i,y}>: use_containers
-<tests/threads/*.ml{,i,y}>: use_containers_thread
 # Executable run_qtest
 <qtest/run_qtest.{native,byte}>: package(QTest2Lib)
 <qtest/run_qtest.{native,byte}>: package(bigarray)
@@ -127,6 +93,7 @@ true: annot, bin_annot
 <qtest/run_qtest.{native,byte}>: package(gen)
 <qtest/run_qtest.{native,byte}>: package(oUnit)
 <qtest/run_qtest.{native,byte}>: package(sequence)
+<qtest/run_qtest.{native,byte}>: package(threads)
 <qtest/run_qtest.{native,byte}>: package(unix)
 <qtest/run_qtest.{native,byte}>: use_containers
 <qtest/run_qtest.{native,byte}>: use_containers_advanced
@@ -134,9 +101,9 @@ true: annot, bin_annot
 <qtest/run_qtest.{native,byte}>: use_containers_data
 <qtest/run_qtest.{native,byte}>: use_containers_io
 <qtest/run_qtest.{native,byte}>: use_containers_iter
-<qtest/run_qtest.{native,byte}>: use_containers_misc
 <qtest/run_qtest.{native,byte}>: use_containers_sexp
 <qtest/run_qtest.{native,byte}>: use_containers_string
+<qtest/run_qtest.{native,byte}>: use_containers_thread
 <qtest/run_qtest.{native,byte}>: use_containers_unix
 <qtest/*.ml{,i,y}>: package(QTest2Lib)
 <qtest/*.ml{,i,y}>: package(bigarray)
@@ -144,6 +111,7 @@ true: annot, bin_annot
 <qtest/*.ml{,i,y}>: package(gen)
 <qtest/*.ml{,i,y}>: package(oUnit)
 <qtest/*.ml{,i,y}>: package(sequence)
+<qtest/*.ml{,i,y}>: package(threads)
 <qtest/*.ml{,i,y}>: package(unix)
 <qtest/*.ml{,i,y}>: use_containers
 <qtest/*.ml{,i,y}>: use_containers_advanced
@@ -151,63 +119,26 @@ true: annot, bin_annot
 <qtest/*.ml{,i,y}>: use_containers_data
 <qtest/*.ml{,i,y}>: use_containers_io
 <qtest/*.ml{,i,y}>: use_containers_iter
-<qtest/*.ml{,i,y}>: use_containers_misc
 <qtest/*.ml{,i,y}>: use_containers_sexp
 <qtest/*.ml{,i,y}>: use_containers_string
+<qtest/*.ml{,i,y}>: use_containers_thread
 <qtest/*.ml{,i,y}>: use_containers_unix
-# Executable run_qtest_lwt
-<qtest/lwt/run_qtest_lwt.{native,byte}>: package(QTest2Lib)
-<qtest/lwt/run_qtest_lwt.{native,byte}>: package(bytes)
-<qtest/lwt/run_qtest_lwt.{native,byte}>: package(gen)
-<qtest/lwt/run_qtest_lwt.{native,byte}>: package(lwt)
-<qtest/lwt/run_qtest_lwt.{native,byte}>: package(lwt.unix)
-<qtest/lwt/run_qtest_lwt.{native,byte}>: package(oUnit)
-<qtest/lwt/run_qtest_lwt.{native,byte}>: package(sequence)
-<qtest/lwt/run_qtest_lwt.{native,byte}>: use_containers
-<qtest/lwt/run_qtest_lwt.{native,byte}>: use_containers_data
-<qtest/lwt/run_qtest_lwt.{native,byte}>: use_containers_lwt
-<qtest/lwt/run_qtest_lwt.{native,byte}>: use_containers_misc
-<qtest/lwt/*.ml{,i,y}>: package(QTest2Lib)
-<qtest/lwt/*.ml{,i,y}>: package(bytes)
-<qtest/lwt/*.ml{,i,y}>: package(gen)
-<qtest/lwt/*.ml{,i,y}>: package(lwt)
-<qtest/lwt/*.ml{,i,y}>: package(lwt.unix)
-<qtest/lwt/*.ml{,i,y}>: package(oUnit)
-<qtest/lwt/*.ml{,i,y}>: package(sequence)
-<qtest/lwt/*.ml{,i,y}>: use_containers
-<qtest/lwt/*.ml{,i,y}>: use_containers_data
-<qtest/lwt/*.ml{,i,y}>: use_containers_lwt
-<qtest/lwt/*.ml{,i,y}>: use_containers_misc
-# Executable run_tests
-<tests/run_tests.{native,byte}>: package(bytes)
-<tests/run_tests.{native,byte}>: package(gen)
-<tests/run_tests.{native,byte}>: package(oUnit)
-<tests/run_tests.{native,byte}>: package(qcheck)
-<tests/run_tests.{native,byte}>: package(sequence)
-<tests/run_tests.{native,byte}>: use_containers
-<tests/run_tests.{native,byte}>: use_containers_data
-<tests/run_tests.{native,byte}>: use_containers_misc
-<tests/run_tests.{native,byte}>: use_containers_string
-<tests/*.ml{,i,y}>: package(bytes)
-<tests/*.ml{,i,y}>: package(gen)
-<tests/*.ml{,i,y}>: package(oUnit)
-<tests/*.ml{,i,y}>: package(qcheck)
-<tests/*.ml{,i,y}>: package(sequence)
-<tests/*.ml{,i,y}>: use_containers
-<tests/*.ml{,i,y}>: use_containers_data
-<tests/*.ml{,i,y}>: use_containers_misc
-<tests/*.ml{,i,y}>: use_containers_string
-# Executable lambda
-<examples/lambda.{native,byte}>: package(bytes)
-<examples/lambda.{native,byte}>: use_containers
-<examples/lambda.{native,byte}>: use_containers_data
-<examples/lambda.{native,byte}>: use_containers_misc
-<examples/*.ml{,i,y}>: use_containers
-<examples/*.ml{,i,y}>: use_containers_data
-<examples/*.ml{,i,y}>: use_containers_misc
 # Executable id_sexp
 <examples/id_sexp.{native,byte}>: package(bytes)
 <examples/id_sexp.{native,byte}>: use_containers_sexp
+# Executable mem_measure
+"benchs/mem_measure.native": package(bytes)
+"benchs/mem_measure.native": package(hamt)
+"benchs/mem_measure.native": package(sequence)
+"benchs/mem_measure.native": package(unix)
+"benchs/mem_measure.native": use_containers
+"benchs/mem_measure.native": use_containers_data
+<benchs/*.ml{,i,y}>: package(bytes)
+<benchs/*.ml{,i,y}>: package(hamt)
+<benchs/*.ml{,i,y}>: package(sequence)
+<benchs/*.ml{,i,y}>: package(unix)
+<benchs/*.ml{,i,y}>: use_containers
+<benchs/*.ml{,i,y}>: use_containers_data
 # Executable id_sexp2
 <examples/id_sexp2.{native,byte}>: package(bytes)
 <examples/id_sexp2.{native,byte}>: use_containers_sexp
@@ -217,5 +148,6 @@ true: annot, bin_annot
 <tests/*.ml{,i}>: thread
 <src/threads/*.ml{,i}>: thread
 <src/core/CCVector.cmx>: inline(25)
+<src/data/CCFlatHashtbl.cm*> or <src/data/CCHashTrie.cm*>: inline(15)
 <src/**/*.ml> and not <src/misc/*.ml>: warn_A, warn(-4), warn(-44)
 true: no_alias_deps, safe_string

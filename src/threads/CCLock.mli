@@ -40,6 +40,24 @@ val with_lock : 'a t -> ('a -> 'b) -> 'b
     the lock [l], in a critical section. If [f x] fails, [with_lock l f]
     fails too but the lock is released *)
 
+(** Type allowing to manipulate the lock as a reference
+    @since 0.13 *)
+module LockRef : sig
+  type 'a t
+
+  val get : 'a t -> 'a
+
+  val set : 'a t -> 'a -> unit
+
+  val update : 'a t -> ('a -> 'a) -> unit
+end
+
+val with_lock_as_ref : 'a t -> f:('a LockRef.t -> 'b) -> 'b
+(** [with_lock_as_ref l f] calls [f] with a reference-like object
+    that allows to manipulate the value of [l] safely.
+    The object passed to [f] must not escape the function call
+    @since 0.13 *)
+
 val update : 'a t -> ('a -> 'a) -> unit
 (** [update l f] replaces the content [x] of [l] with [f x], atomically *)
 
@@ -48,4 +66,16 @@ val mutex : _ t -> Mutex.t
 
 val get : 'a t -> 'a
 (** Get the value in the lock. The value that is returned isn't protected! *)
+
+val set : 'a t -> 'a -> unit
+(** Atomically set the value
+    @since 0.13 *)
+
+val incr : int t -> unit
+(** Atomically increment the value
+    @since 0.13 *)
+
+val decr : int t -> unit
+(** Atomically decrement the value
+    @since 0.13 *)
 

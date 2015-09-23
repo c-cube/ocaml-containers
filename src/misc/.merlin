@@ -1,6 +1,0 @@
-REC
-S ../core
-S .
-B ../_build/core/
-B ../_build/misc/
-PKG core

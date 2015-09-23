@@ -36,6 +36,55 @@ module type PARTIAL_ORD = sig
   (** [leq x y] shall return [true] iff [x] is lower or equal to [y] *)
 end
 
+(*$inject
+  module H = CCHeap.Make(struct
+    type t = int
+    let leq x y = x<=y
+  end)
+
+  let rec is_sorted l = match l with
+    | [_]
+    | [] -> true
+    | x::((y::_) as l') -> x <= y && is_sorted l'
+
+  let extract_list heap =
+    let rec recurse acc h =
+      if H.is_empty h
+        then List.rev acc
+        else
+          let h', x = H.take_exn h in
+          recurse (x::acc) h'
+    in
+    recurse [] heap
+*)
+
+(*$R
+  let h = H.of_list [5;3;4;1;42;0] in
+  let h, x = H.take_exn h in
+  OUnit.assert_equal ~printer:string_of_int 0 x;
+  let h, x = H.take_exn h in
+  OUnit.assert_equal ~printer:string_of_int 1 x;
+  let h, x = H.take_exn h in
+  OUnit.assert_equal ~printer:string_of_int 3 x;
+  let h, x = H.take_exn h in
+  OUnit.assert_equal ~printer:string_of_int 4 x;
+  let h, x = H.take_exn h in
+  OUnit.assert_equal ~printer:string_of_int 5 x;
+  let h, x = H.take_exn h in
+  OUnit.assert_equal ~printer:string_of_int 42 x;
+  OUnit.assert_raises H.Empty (fun () -> H.take_exn h);
+*)
+
+(*$QR & ~count:30
+  Q.(list_of_size Gen.(return 10_000) int) (fun l ->
+    (* put elements into a heap *)
+    let h = H.of_seq H.empty (Sequence.of_list l) in
+    OUnit.assert_equal 10_000 (H.size h);
+    let l' = extract_list h in
+    is_sorted l'
+  )
+*)
+
 module type S = sig
   type elt
   type t
@@ -102,7 +151,7 @@ module type S = sig
   val to_tree : t -> elt ktree
 end
 
-module Make(E : PARTIAL_ORD) = struct
+module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   type elt = E.t
 
   type t =
@@ -233,6 +282,15 @@ module Make(E : PARTIAL_ORD) = struct
             Stack.push b stack;
             Some x
     in next
+
+  (*$Q
+    Q.(list int) (fun l -> \
+      extract_list (H.of_list l) = extract_list (H.of_gen H.empty (CCList.to_gen l)))
+    Q.(list int) (fun l -> \
+      let h = H.of_list l in \
+      (H.to_gen h |> CCList.of_gen |> List.sort Pervasives.compare) \
+        = (H.to_list h |> List.sort Pervasives.compare))
+  *)
 
   let rec to_tree h () = match h with
     | E -> `Nil

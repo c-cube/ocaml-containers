@@ -9,12 +9,11 @@ build: [
         "--%{base-threads:enable}%-thread"
         "--disable-bench"
         "--disable-tests"
-        "--%{lwt:enable}%-lwt"
         "--%{base-bigarray:enable}%-bigarray"
         "--%{sequence:enable}%-advanced"
         "--%{base-unix:enable}%-unix"
         "--enable-docs"
-        "--enable-misc"]
+    ]
     [make "build"]
 ]
 install: [
@@ -30,7 +29,7 @@ depends: [
     "base-bytes"
     "cppo" {build}
 ]
-depopts: [ "lwt" "sequence" "base-bigarray" "base-unix" "base-threads" ]
+depopts: [ "sequence" "base-bigarray" "base-unix" "base-threads" ]
 tags: [ "stdlib" "containers" "iterators" "list" "heap" "queue" ]
 homepage: "https://github.com/c-cube/ocaml-containers/"
 doc: "http://cedeela.fr/~simon/software/containers/"

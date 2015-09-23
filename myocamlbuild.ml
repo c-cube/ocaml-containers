@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: c0298c035a279ad3c641dc2bb1ecc03b) *)
+(* DO NOT EDIT (digest: b119194f5742ac2f3cdceac9a223dda7) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -618,43 +618,48 @@ let package_default =
           ("containers_string", ["src/string"], []);
           ("containers_advanced", ["src/advanced"], []);
           ("containers_bigarray", ["src/bigarray"], []);
-          ("containers_misc", ["src/misc"], []);
           ("containers_thread", ["src/threads"], []);
-          ("containers_lwt", ["src/lwt"], [])
+          ("containers_top", ["src/top"], [])
        ];
      lib_c = [];
      flags = [];
      includes =
        [
-          ("tests/threads", ["src/core"; "src/threads"]);
-          ("tests", ["src/core"; "src/data"; "src/misc"; "src/string"]);
+          ("src/top",
+            [
+               "src/bigarray";
+               "src/core";
+               "src/data";
+               "src/iter";
+               "src/sexp";
+               "src/string";
+               "src/unix"
+            ]);
           ("src/threads", ["src/core"]);
-          ("src/misc", ["src/core"; "src/data"]);
-          ("src/lwt", ["src/core"; "src/misc"]);
           ("src/bigarray", ["src/core"]);
           ("src/advanced", ["src/core"]);
-          ("qtest/lwt", ["src/core"; "src/lwt"]);
           ("qtest",
             [
                "src/advanced";
                "src/bigarray";
                "src/core";
+               "src/data";
                "src/io";
                "src/iter";
-               "src/misc";
                "src/sexp";
                "src/string";
+               "src/threads";
                "src/unix"
             ]);
-          ("examples", ["src/core"; "src/misc"; "src/sexp"]);
+          ("examples", ["src/sexp"]);
           ("benchs",
             [
                "src/advanced";
                "src/core";
                "src/data";
                "src/iter";
-               "src/misc";
-               "src/string"
+               "src/string";
+               "src/threads"
             ])
        ]
   }
@@ -664,7 +669,7 @@ let conf = {MyOCamlbuildFindlib.no_automatic_syntax = false}
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 
-# 668 "myocamlbuild.ml"
+# 673 "myocamlbuild.ml"
 (* OASIS_STOP *)
 
 let doc_intro = "doc/intro.txt" ;;
@@ -712,10 +717,8 @@ dispatch
 
       (* Documentation index *)
       dep ["ocaml"; "doc"; "extension:html"] & [doc_intro] ;
-      flag ["ocaml"; "doc"; "extension:html"] &
-      (S[A"-t"; A"Containers doc";
-         A"-intro"; P doc_intro;
-        ]);
+      flag ["ocaml"; "doc"; "extension:html"]
+        & S[A"-t"; A"Containers doc"; A"-intro"; P doc_intro ];
 
     | _ -> ()
     end;

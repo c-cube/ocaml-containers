@@ -62,6 +62,20 @@ let with_cache_rec c f =
   let rec f' x = with_cache c (f f') x in
   f'
 
+(*$R
+  let c = unbounded 256 in
+  let fib = with_cache_rec c
+    (fun self n -> match n with
+      | 1 | 2 -> 1
+      | _ -> self (n-1) + self (n-2)
+    )
+  in
+  assert_equal 55 (fib 10);
+  assert_equal 832040 (fib 30);
+  assert_equal 12586269025 (fib 50);
+  assert_equal 190392490709135 (fib 70)
+*)
+
 let size c = c.size ()
 
 let iter c f = c.iter f
@@ -316,6 +330,18 @@ let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
   let res3 = with_cache c f 3 in \
   let res1_bis = with_cache c f 1 in \
   res1 <> res2 && res2 <> res3 && res3 <> res1_bis && res1_bis <> res1
+*)
+
+(*$R
+  let f = (let r = ref 0 in fun _ -> incr r; !r) in
+  let c = lru 2 in
+  let x = with_cache c f () in
+  assert_equal 1 x;
+  assert_equal 1 (size c);
+  clear c ;
+  assert_equal 0 (size c);
+  let y = with_cache c f () in
+  assert_equal 2 y ;
 *)
 
 module UNBOUNDED(X:HASH) = struct

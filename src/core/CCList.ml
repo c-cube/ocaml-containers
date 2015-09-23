@@ -40,12 +40,16 @@ let direct_depth_default_ = 1000
 let map f l =
   let rec direct f i l = match l with
     | [] -> []
-    | _ when i=0 -> safe f l
-    | x::l' ->
-        let y = f x in
-        y :: direct f (i-1) l'
-  and safe f l =
-    List.rev (List.rev_map f l)
+    | [x] -> [f x]
+    | [x1;x2] -> let y1 = f x1 in [y1; f x2]
+    | [x1;x2;x3] -> let y1 = f x1 in let y2 = f x2 in [y1; y2; f x3]
+    | _ when i=0 -> List.rev (List.rev_map f l)
+    | x1::x2::x3::x4::l' ->
+        let y1 = f x1 in
+        let y2 = f x2 in
+        let y3 = f x3 in
+        let y4 = f x4 in
+        y1 :: y2 :: y3 :: y4 :: direct f (i-1) l'
   in
   direct f direct_depth_default_ l
 
@@ -82,6 +86,15 @@ let (@) = append
   (1-- 10_000) @ (10_001 -- 20_000) = 1 -- 20_000
 *)
 
+let cons_maybe o l = match o with
+  | Some x -> x :: l
+  | None -> l
+
+(*$T
+  cons_maybe (Some 1) [2;3] = [1;2;3]
+  cons_maybe None [2;3] = [2;3]
+*)
+
 let direct_depth_filter_ = 10_000
 
 let filter p l =
@@ -96,6 +109,12 @@ let filter p l =
     | x::l' -> safe p l' (x::acc)
   in
   direct direct_depth_filter_ p l
+
+(*$= & ~printer:CCInt.to_string
+  500 (filter (fun x->x mod 2 = 0) (1 -- 1000) |> List.length)
+  50_000 (filter (fun x->x mod 2 = 0) (1 -- 100_000) |> List.length)
+  500_000 (filter (fun x->x mod 2 = 0) (1 -- 1_000_000) |> List.length)
+*)
 
 let fold_right f l acc =
   let rec direct i f l acc = match l with
@@ -212,6 +231,13 @@ let diagonal l =
   in
   gen [] l
 
+(*$T
+  diagonal [] = []
+  diagonal [1] = []
+  diagonal [1;2] = [1,2]
+  diagonal [1;2;3] |> List.sort Pervasives.compare = [1, 2; 1, 3; 2, 3]
+*)
+
 let partition_map f l =
   let rec iter f l1 l2 l = match l with
   | [] -> List.rev l1, List.rev l2
@@ -241,7 +267,7 @@ let (>>=) l f = flat_map f l
 
 let (<$>) = map
 
-let pure f = [f]
+let pure = return
 
 let (<*>) funs l = product (fun f x -> f x) funs l
 
@@ -373,18 +399,62 @@ let take n l =
   take 300_000 (1 -- 400_000) = 1 -- 300_000
 *)
 
+(*$Q
+  (Q.pair (Q.list Q.small_int) Q.int) (fun (l,i) -> \
+    let i = abs i in \
+    let l1 = take i l in \
+    List.length l1 <= i && ((List.length l1 = i) = (List.length l >= i)))
+*)
+
 let rec drop n l = match l with
   | [] -> []
   | _ when n=0 -> l
   | _::l' -> drop (n-1) l'
 
-let split n l = take n l, drop n l
+let take_drop n l = take n l, drop n l
+
+let split = take_drop
 
 (*$Q
   (Q.pair (Q.list Q.small_int) Q.int) (fun (l,i) -> \
     let i = abs i in \
-    let l1, l2 = split i l in \
+    let l1, l2 = take_drop i l in \
     l1 @ l2 = l )
+*)
+
+let take_while p l =
+  let rec direct i p l = match l with
+    | [] -> []
+    | _ when i=0 -> safe p [] l
+    | x :: l' ->
+        if p x then x :: direct (i-1) p l' else []
+  and safe p acc l = match l with
+    | [] -> List.rev acc
+    | x :: l' ->
+        if p x then safe p (x::acc) l' else List.rev acc
+  in
+  direct direct_depth_default_ p l
+
+(*$T
+  take_while (fun x->x<10) (1 -- 20) = (1--9)
+  take_while (fun x->x <> 0) [0;1;2;3] = []
+  take_while (fun _ -> true) [] = []
+  take_while (fun _ -> true) (1--10) = (1--10)
+*)
+
+(*$Q
+  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
+    let l1 = take_while f l in \
+    List.for_all f l1)
+*)
+
+let rec drop_while p l = match l with
+  | [] -> []
+  | x :: l' -> if p x then drop_while p l' else l
+
+(*$Q
+  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
+    take_while f l @ drop_while f l = l)
 *)
 
 let last n l =
@@ -448,6 +518,15 @@ let filter_map f l =
     let acc' = match f x with | None -> acc | Some y -> y::acc in
     recurse acc' l'
   in recurse [] l
+
+(*$=
+  ["2"; "4"] \
+    (filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+      [1;2;3;4;5])
+  [ "2"; "4"; "6" ] \
+    (filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+      [ 1; 2; 3; 4; 5; 6 ])
+*)
 
 module Set = struct
   let mem ?(eq=(=)) x l =

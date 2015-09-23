@@ -98,6 +98,15 @@ let cardinal bv =
   done;
   !n
 
+(*$R
+  let bv1 = CCBV.create ~size:87 true in
+  assert_equal ~printer:string_of_int 87 (CCBV.cardinal bv1);
+  *)
+
+(*$Q
+  Q.small_int (fun n -> CCBV.cardinal (CCBV.create ~size:n true) = n)
+  *)
+
 let is_empty bv =
   try
     for i = 0 to Array.length bv.a - 1 do
@@ -114,6 +123,22 @@ let get bv i =
       let i = i - n * __width in
       bv.a.(n) land (1 lsl i) <> 0
     else false
+
+(*$R
+  let bv = CCBV.create ~size:99 false in
+  assert_bool "32 must be false" (not (CCBV.get bv 32));
+  assert_bool "88 must be false" (not (CCBV.get bv 88));
+  assert_bool "5 must be false" (not (CCBV.get bv 5));
+  CCBV.set bv 32;
+  CCBV.set bv 88;
+  CCBV.set bv 5;
+  assert_bool "32 must be true" (CCBV.get bv 32);
+  assert_bool "88 must be true" (CCBV.get bv 88);
+  assert_bool "5 must be true" (CCBV.get bv 5);
+  assert_bool "33 must be false" (not (CCBV.get bv 33));
+  assert_bool "44 must be false" (not (CCBV.get bv 44));
+  assert_bool "1 must be false" (not (CCBV.get bv 1));
+*)
 
 let set bv i =
   let n = i / __width in
@@ -145,11 +170,34 @@ let flip bv i =
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) lxor (1 lsl i)
 
+(*$R
+  let bv = of_list [1;10; 11; 30] in
+  flip bv 10;
+  assert_equal [1;11;30] (to_sorted_list bv);
+  assert_equal false (get bv 10);
+  flip bv 10;
+  assert_equal true (get bv 10);
+  flip bv 5;
+  assert_equal [1;5;10;11;30] (to_sorted_list bv);
+  assert_equal true (get bv 5);
+  flip bv 100;
+  assert_equal [1;5;10;11;30;100] (to_sorted_list bv);
+  assert_equal true (get bv 100);
+*)
+
 let clear bv =
   Array.iteri (fun i _ -> bv.a.(i) <- 0) bv.a
 
 (*$T
 let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
+*)
+
+(*$R
+  let bv = CCBV.of_list [1; 5; 200] in
+  assert_equal ~printer:string_of_int 3 (CCBV.cardinal bv);
+  CCBV.clear bv;
+  assert_equal ~printer:string_of_int 0 (CCBV.cardinal bv);
+  assert_bool "must be empty" (CCBV.is_empty bv);
 *)
 
 let iter bv f =
@@ -160,6 +208,14 @@ let iter bv f =
       f (j+i) (bv.a.(n) land (1 lsl i) <> 0)
     done
   done
+
+(*$R
+  let bv = create ~size:30 false in
+  set bv 5;
+  let n = ref 0 in
+  iter bv (fun i b -> incr n; assert_equal b (i=5));
+  assert_bool "at least 30" (!n >= 30)
+*)
 
 let iter_true bv f =
   let len = Array.length bv.a in
@@ -175,10 +231,36 @@ let iter_true bv f =
   of_list [1;5;7] |> iter_true |> Sequence.to_list |> List.sort CCOrd.compare = [1;5;7]
 *)
 
+(*$inject
+  let _gen = Q.Gen.(map of_list (list nat))
+  let _pp bv = Q.Print.(list string) (List.map string_of_int (to_list bv))
+  let _small bv = length bv
+
+  let gen_bv = Q.make ~small:_small ~print:_pp _gen
+*)
+
+(*$QR
+  gen_bv (fun bv ->
+    let l' = Sequence.to_rev_list (CCBV.iter_true bv) in
+    let bv' = CCBV.of_list l' in
+    CCBV.cardinal bv = CCBV.cardinal bv'
+  )
+*)
+
 let to_list bv =
   let l = ref [] in
   iter_true bv (fun i -> l := i :: !l);
   !l
+
+(*$R
+  let bv = CCBV.of_list [1; 5; 156; 0; 222] in
+  assert_equal ~printer:string_of_int 5 (CCBV.cardinal bv);
+  CCBV.set bv 201;
+  assert_equal ~printer:string_of_int 6 (CCBV.cardinal bv);
+  let l = CCBV.to_list bv in
+  let l = List.sort compare l in
+  assert_equal [0;1;5;156;201;222] l;
+*)
 
 let to_sorted_list bv =
   List.rev (to_list bv)
@@ -230,6 +312,15 @@ let union bv1 bv2 =
   union_into ~into:bv bv2;
   bv
 
+(*$R
+  let bv1 = CCBV.of_list [1;2;3;4] in
+  let bv2 = CCBV.of_list [4;200;3] in
+  let bv = CCBV.union bv1 bv2 in
+  let l = List.sort compare (CCBV.to_list bv) in
+  assert_equal [1;2;3;4;200] l;
+  ()
+*)
+
 (*$T
 union (of_list [1;2;3;4;5]) (of_list [7;3;5;6]) |> to_sorted_list = CCList.range 1 7
 *)
@@ -255,6 +346,14 @@ let inter bv1 bv2 =
   inter (of_list [1;2;3;4]) (of_list [2;4;6;1]) |> to_sorted_list = [1;2;4]
 *)
 
+(*$R
+  let bv1 = CCBV.of_list [1;2;3;4] in
+  let bv2 = CCBV.of_list [4;200;3] in
+  CCBV.inter_into ~into:bv1 bv2;
+  let l = List.sort compare (CCBV.to_list bv1) in
+  assert_equal [3;4] l;
+*)
+
 let select bv arr =
   let l = ref [] in
   begin try
@@ -267,6 +366,13 @@ let select bv arr =
   end;
   !l
 
+(*$R
+  let bv = CCBV.of_list [1;2;5;400] in
+  let arr = [|"a"; "b"; "c"; "d"; "e"; "f"|] in
+  let l = List.sort compare (CCBV.select bv arr) in
+  assert_equal ["b"; "c"; "f"] l;
+*)
+
 let selecti bv arr =
   let l = ref [] in
   begin try
@@ -278,6 +384,13 @@ let selecti bv arr =
   with Exit -> ()
   end;
   !l
+
+(*$R
+  let bv = CCBV.of_list [1;2;5;400] in
+  let arr = [|"a"; "b"; "c"; "d"; "e"; "f"|] in
+  let l = List.sort compare (CCBV.selecti bv arr) in
+  assert_equal [("b",1); ("c",2); ("f",5)] l;
+*)
 
 (*$T
   selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
@@ -300,3 +413,10 @@ let of_seq seq =
     |> CCList.of_seq |> List.sort CCOrd.compare = CCList.range 0 10
 *)
 
+let print out bv =
+  Format.pp_print_string out "bv {";
+  iter bv
+    (fun _i b ->
+      Format.pp_print_char out (if b then '1' else '0')
+    );
+  Format.pp_print_string out "}"

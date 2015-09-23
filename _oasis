@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.12
+Version:     0.13
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -18,20 +18,11 @@ Description:
     extend the stdlib (e.g. CCList provides safe map/fold_right/append, and
     additional functions on lists).
 
-    It also features optional libraries for dealing with strings, helpers for unix,
-    threads, lwt and a `misc` library full of experimental ideas (not stable, not
-    necessarily usable).
-
-Flag "misc"
-  Description:  Build the misc library, with experimental modules still susceptible to change
-  Default:      true
+    It also features optional libraries for dealing with strings, and
+    helpers for unix and threads.
 
 Flag "unix"
   Description:  Build the containers.unix library (depends on Unix)
-  Default:      false
-
-Flag "lwt"
-  Description:  Build modules which depend on Lwt
   Default:      false
 
 Flag "thread"
@@ -54,9 +45,10 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO, CCInt64,
                     Containers
   BuildDepends:     bytes
+  # BuildDepends:     bytes, bisect_ppx
 
 Library "containers_io"
   Path:             src/io
@@ -84,8 +76,10 @@ Library "containers_data"
   Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
-                    CCMixset, CCHashconsedSet, CCGraph
+                    CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
+                    CCHashTrie, CCBloom, CCWBTree, CCRAL
   BuildDepends:     bytes
+  # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
   FindlibName:      data
 
@@ -118,19 +112,9 @@ Library "containers_bigarray"
   FindlibParent:    containers
   BuildDepends:     containers, bigarray, bytes
 
-Library "containers_misc"
-  Path:             src/misc
-  Pack:             true
-  Modules:          AbsSet, Automaton, Bij, CSM, Hashset, LazyGraph, PHashtbl,
-                    PrintBox, RAL, RoseTree, SmallSet, UnionFind, Univ, Puf,
-                    Backtrack
-  BuildDepends:     containers, containers.data
-  FindlibName:      misc
-  FindlibParent:    containers
-
 Library "containers_thread"
   Path:             src/threads/
-  Modules:          CCFuture, CCLock
+  Modules:          CCFuture, CCLock, CCSemaphore, CCThread
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)
@@ -138,125 +122,86 @@ Library "containers_thread"
   BuildDepends:     containers, threads
   XMETARequires:    containers, threads
 
-Library "containers_lwt"
-  Path:             src/lwt
-  Modules:          Lwt_automaton, Lwt_actor, Lwt_klist, Lwt_pipe
-  Pack:             true
-  FindlibName:      lwt
+Library "containers_top"
+  Path:             src/top/
+  Modules:          Containers_top
+  FindlibName:      top
   FindlibParent:    containers
-  Build$:           flag(lwt) && flag(misc)
-  Install$:         flag(lwt) && flag(misc)
-  BuildDepends:     containers, lwt, containers.misc
+  BuildDepends:     compiler-libs.common, containers, containers.data,
+                    containers.bigarray, containers.string,
+                    containers.unix, containers.sexp, containers.iter
 
 Document containers
   Title:                Containers docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Build$:               flag(docs) && flag(advanced) && flag(bigarray) && flag(lwt) && flag(misc) && flag(unix)
+  Build$:               flag(docs) && flag(advanced) && flag(bigarray) && flag(unix)
   Install:              true
   XOCamlbuildPath:      .
   XOCamlbuildExtraArgs:
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
-    containers, containers.misc, containers.iter, containers.data,
+    containers, containers.iter, containers.data,
     containers.string, containers.bigarray,
-    containers.advanced, containers.io, containers.unix, containers.sexp,
-    containers.lwt
+    containers.advanced, containers.io, containers.unix, containers.sexp
 
 Executable run_benchs
   Path:             benchs/
   Install:          false
   CompiledObject:   best
-  Build$:           flag(bench) && flag(misc)
+  Build$:           flag(bench)
   MainIs:           run_benchs.ml
-  BuildDepends:     containers, containers.misc, containers.advanced,
+  BuildDepends:     containers, containers.advanced,
                     containers.data, containers.string, containers.iter,
-                    sequence, gen, benchmark
+                    containers.thread, sequence, gen, benchmark, hamt
 
 Executable run_bench_hash
   Path: benchs/
   Install: false
   CompiledObject: best
-  Build$: flag(bench) && flag(misc)
+  Build$: flag(bench)
   MainIs: run_bench_hash.ml
-  BuildDepends: containers, containers.misc
+  BuildDepends: containers
 
-Executable run_test_future
-  Path:         tests/threads/
-  Install:      false
-  CompiledObject: best
-  Build$:       flag(tests) && flag(thread)
-  MainIs:       run_test_future.ml
-  BuildDepends: containers, threads, sequence, oUnit, containers.thread
-
-Test future
-  Command:      echo "run test future" ; ./run_test_future.native
-  TestTools:    run_test_future
-  Run$:         flag(tests) && flag(thread)
-
-PreBuildCommand: make qtest-gen ; make qtest-lwt-gen
+PreBuildCommand: make qtest-gen
 
 Executable run_qtest
   Path:             qtest/
   Install:          false
   CompiledObject:   best
   MainIs:           run_qtest.ml
-  Build$:           flag(tests) && flag(misc) && flag(bigarray) && flag(unix) && flag(advanced)
-  BuildDepends:     containers, containers.misc, containers.string, containers.iter,
+  Build$:           flag(tests) && flag(bigarray) && flag(unix) && flag(advanced)
+  BuildDepends:     containers, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
-                    containers.bigarray, containers.unix,
+                    containers.bigarray, containers.unix, containers.thread,
+                    containers.data,
                     sequence, gen, unix, oUnit, QTest2Lib
 
-Executable run_qtest_lwt
-  Path:             qtest/lwt/
-  Install:          false
-  CompiledObject:   best
-  MainIs:           run_qtest_lwt.ml
-  Build$:           flag(tests) && flag(lwt)
-  BuildDepends:     containers, containers.lwt, lwt, lwt.unix,
-                    sequence, gen, oUnit, QTest2Lib
-
-
-Executable run_tests
-  Path: tests/
-  Install: false
-  CompiledObject: best
-  MainIs: run_tests.ml
-  Build$: flag(tests) && flag(misc)
-  BuildDepends: containers, containers.data, oUnit, sequence, gen,
-                qcheck, containers.misc, containers.string
-
 Test all
-  Command:      make test-all
-  TestTools:    run_tests, run_qtest
-  Run$:         flag(tests) && flag(misc) && flag(unix) && flag(advanced) && flag(bigarray)
-
-Test lwt
-  Command:      echo "test lwt"; ./run_qtest_lwt.native
-  Run$:         flag(tests) && flag(lwt)
-
-Executable lambda
-  Path: examples/
-  Install: false
-  CompiledObject: best
-  MainIs: lambda.ml
-  Build$: flag(misc)
-  BuildDepends: containers, containers.misc
+  Command:      ./run_qtest.native
+  TestTools:    run_qtest
+  Run$:         flag(tests) && flag(unix) && flag(advanced) && flag(bigarray)
 
 Executable id_sexp
   Path:             examples/
   Install:          false
   CompiledObject:   best
   MainIs:           id_sexp.ml
-  Build$:           flag(misc)
   BuildDepends:     containers.sexp
+
+Executable mem_measure
+  Path:             benchs/
+  Install:          false
+  CompiledObject:   native
+  MainIs:           mem_measure.ml
+  Build$:           flag(bench)
+  BuildDepends:     sequence, unix, containers, containers.data, hamt
 
 Executable id_sexp2
   Path:             examples/
   Install:          false
   CompiledObject:   best
   MainIs:           id_sexp2.ml
-  Build$:           flag(misc)
   BuildDepends:     containers.sexp
 
 SourceRepository head

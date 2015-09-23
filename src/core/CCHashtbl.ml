@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type 'a sequence = ('a -> unit) -> unit
 type 'a eq = 'a -> 'a -> bool
 type 'a hash = 'a -> int
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Polymorphic tables} *)
 
@@ -70,6 +71,19 @@ let of_list l =
   List.iter (fun (k,v) -> Hashtbl.add tbl k v) l;
   tbl
 
+let print pp_k pp_v fmt m =
+  Format.fprintf fmt "@[<hov2>tbl {@,";
+  let first = ref true in
+  Hashtbl.iter
+    (fun k v ->
+      if !first then first := false else Format.pp_print_string fmt ", ";
+      pp_k fmt k;
+      Format.pp_print_string fmt " -> ";
+      pp_v fmt v;
+      Format.pp_print_cut fmt ()
+    ) m;
+  Format.fprintf fmt "}@]"
+
 (** {2 Functor} *)
 
 module type S = sig
@@ -106,6 +120,8 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
   (** From the given list of bindings, added in order *)
+
+  val print : key printer -> 'a printer -> 'a t printer
 end
 
 module Make(X : Hashtbl.HashedType) = struct
@@ -143,6 +159,19 @@ module Make(X : Hashtbl.HashedType) = struct
     let tbl = create 32 in
     List.iter (fun (k,v) -> add tbl k v) l;
     tbl
+
+  let print pp_k pp_v fmt m =
+    Format.pp_print_string fmt "@[<hov2>tbl {@,";
+    let first = ref true in
+    iter
+      (fun k v ->
+        if !first then first := false else Format.pp_print_string fmt ", ";
+        pp_k fmt k;
+        Format.pp_print_string fmt " -> ";
+        pp_v fmt v;
+        Format.pp_print_cut fmt ()
+      ) m;
+    Format.pp_print_string fmt "}@]"
 end
 
 (** {2 Default Table} *)

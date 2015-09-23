@@ -147,10 +147,30 @@ let of_list = function
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Buffer.t -> 'a -> unit
+type 'a fmt = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 let random g st =
   if Random.State.bool st then Some (g st) else None
+
+exception ExitChoice
+
+let choice_seq s =
+  let r = ref None in
+  begin try
+    s (function
+    | None -> ()
+    | (Some _) as o -> r := o; raise ExitChoice
+    )
+  with ExitChoice -> ()
+  end;
+  !r
+
+(*$T
+  choice_seq (Sequence.of_list [None; Some 1; Some 2]) = Some 1
+  choice_seq Sequence.empty = None
+  choice_seq (Sequence.repeat None |> Sequence.take 100) = None
+*)
 
 let to_gen o =
   match o with
@@ -166,3 +186,8 @@ let to_seq o k = match o with
 let pp ppx buf o = match o with
   | None -> Buffer.add_string buf "None"
   | Some x -> Buffer.add_string buf "Some "; ppx buf x
+
+let print ppx out = function
+  | None -> Format.pp_print_string out "None"
+  | Some x -> Format.fprintf out "@[Some %a@]" ppx x
+

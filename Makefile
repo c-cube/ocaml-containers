@@ -70,18 +70,14 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/iter/*.mli) \
 	$(wildcard src/bigarray/*.ml) \
 	$(wildcard src/bigarray/*.mli) \
-	)
-
-QTESTABLE_LWT=$(filter-out $(DONTTEST), \
-	$(wildcard src/lwt/*.ml) \
-	$(wildcard src/lwt/*.mli) \
+	$(wildcard src/threads/*.ml) \
+	$(wildcard src/threads/*.mli) \
 	)
 
 qtest-clean:
 	@rm -rf qtest/
 
 QTEST_PREAMBLE='open CCFun;; '
-QTEST_LWT_PREAMBLE=$(QTEST_PREAMBLE)
 
 #qtest-build: qtest-clean build
 #	@mkdir -p qtest
@@ -101,15 +97,6 @@ qtest-gen:
 	else touch qtest/run_qtest.ml ; \
 	fi
 
-qtest-lwt-gen:
-	@mkdir -p qtest/lwt/
-	@if which qtest > /dev/null ; then \
-		qtest extract --preamble $(QTEST_LWT_PREAMBLE) \
-			-o qtest/lwt/run_qtest_lwt.ml \
-			$(QTESTABLE_LWT) 2> /dev/null ; \
-	else touch qtest/lwt/run_qtest_lwt.ml ; \
-	fi
-
 push-stable:
 	git checkout stable
 	git merge master -m 'merge from master'
@@ -120,12 +107,6 @@ push-stable:
 
 clean-generated:
 	rm **/*.{mldylib,mlpack,mllib} myocamlbuild.ml -f
-
-run-test: build
-	./run_qtest.native
-	./run_tests.native
-
-test-all: run-test
 
 tags:
 	otags *.ml *.mli
@@ -138,7 +119,7 @@ update_next_tag:
 	zsh -c 'sed -i "s/NEXT_RELEASE/$(VERSION)/g" **/*.ml **/*.mli'
 
 devel:
-	./configure --enable-bench --enable-tests --enable-misc \
+	./configure --enable-bench --enable-tests --enable-unix \
 		--enable-bigarray --enable-thread --enable-advanced
 	make all
 

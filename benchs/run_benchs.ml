@@ -9,12 +9,32 @@ let (|>) = CCFun.(|>)
 let app_int f n = string_of_int n @> lazy (f n)
 let app_ints f l = B.Tree.concat (List.map (app_int f) l)
 
+(* for benchmark *)
+let repeat = 3
+
 (* composition *)
 let (%%) f g x = f (g x)
 
-(* FIXME: find out why -tree takes so long *)
-
 module L = struct
+  (* MAP *)
+
+  let f_ x = x+1
+
+  let bench_map ?(time=2) n =
+    let l = CCList.(1 -- n) in
+    let ral = CCRAL.of_list l in
+    let map_naive () = ignore (try  List.map f_ l with Stack_overflow -> [])
+    and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
+    and ccmap () = ignore (CCList.map f_ l)
+    and ralmap () = ignore (CCRAL.map f_ ral)
+    in
+    B.throughputN time ~repeat
+      [ "List.map", map_naive, ()
+      ; "List.rev_map o rev", map_tailrec, ()
+      ; "CCList.map", ccmap, ()
+      ; "CCRAL.map", ralmap, ()
+      ]
+
   (* FLAT MAP *)
 
   let f_ x =
@@ -23,26 +43,26 @@ module L = struct
     else [x;x+1;x+2;x+3]
 
   let bench_flat_map ?(time=2) n =
-    let l = lazy CCList.(1 -- n) in
+    let l = CCList.(1 -- n) in
     let flatten_map_ l = List.flatten (CCList.map f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
-    B.throughputN time
-      [ "flat_map", CCList.flat_map f_ %% Lazy.force, l
-      ; "flatten o CCList.map", flatten_ccmap_ %% Lazy.force, l
-      ; "flatten o map", flatten_map_ %% Lazy.force, l
+    B.throughputN time ~repeat
+      [ "flat_map", CCList.flat_map f_, l
+      ; "flatten o CCList.map", flatten_ccmap_, l
+      ; "flatten o map", flatten_map_, l
       ]
 
   (* APPEND *)
 
-  let append_ f (lazy l1, lazy l2, lazy l3) =
+  let append_ f (l1, l2, l3) =
     ignore (f (f l1 l2) l3)
 
   let bench_append ?(time=2) n =
-    let l1 = lazy CCList.(1 -- n) in
-    let l2 = lazy CCList.(n+1 -- 2*n) in
-    let l3 = lazy CCList.(2*n+1 -- 3*n) in
+    let l1 = CCList.(1 -- n) in
+    let l2 = CCList.(n+1 -- 2*n) in
+    let l3 = CCList.(2*n+1 -- 3*n) in
     let arg = l1, l2, l3 in
-    B.throughputN time
+    B.throughputN time ~repeat
       [ "CCList.append", append_ CCList.append, arg
       ; "List.append", append_ List.append, arg
       ]
@@ -55,23 +75,29 @@ module L = struct
     and cc_fold_right_append_ l =
       CCList.fold_right CCList.append l []
     in
-    let l = lazy (
+    let l =
       CCList.Idx.mapi
         (fun i x -> CCList.(x -- (x+ min i 100)))
-        CCList.(1 -- n))
+        CCList.(1 -- n)
     in
-    B.throughputN time
-      [ "CCList.flatten", CCList.flatten %% Lazy.force, l
-      ; "List.flatten", List.flatten %% Lazy.force, l
-      ; "fold_right append", fold_right_append_ %% Lazy.force, l
-      ; "CCList.(fold_right append)", cc_fold_right_append_ %% Lazy.force, l
+    B.throughputN time ~repeat
+      [ "CCList.flatten", CCList.flatten, l
+      ; "List.flatten", List.flatten, l
+      ; "fold_right append", fold_right_append_, l
+      ; "CCList.(fold_right append)", cc_fold_right_append_, l
       ]
 
   (* MAIN *)
 
   let () = B.Tree.register (
     "list" @>>>
-      [ "flat_map" @>>
+      [ "map" @>>
+        B.Tree.concat
+          [ app_int (bench_map ~time:2) 100
+          ; app_int (bench_map ~time:2) 10_000
+          ; app_int (bench_map ~time:4) 100_000
+          ; app_int (bench_map ~time:4) 500_000 ]
+      ; "flat_map" @>>
         B.Tree.concat
           [ app_int (bench_flat_map ~time:2) 100
           ; app_int (bench_flat_map ~time:2) 10_000
@@ -104,16 +130,16 @@ module Vec = struct
     v'
 
   let bench_map n =
-    let v = lazy (CCVector.init n (fun x->x)) in
-    B.throughputN 2
-      [ "map", CCVector.map f %% Lazy.force, v
-      ; "map_push", map_push_ f %% Lazy.force, v
-      ; "map_push_cap", map_push_size_ f %% Lazy.force, v
+    let v = CCVector.init n (fun x->x) in
+    B.throughputN 2 ~repeat
+      [ "map", CCVector.map f, v
+      ; "map_push", map_push_ f, v
+      ; "map_push_cap", map_push_size_ f, v
       ]
 
   let try_append_ app n v2 () =
     let v1 = CCVector.init n (fun x->x) in
-    app v1 (Lazy.force v2);
+    app v1 v2;
     assert (CCVector.length v1 = 2*n);
     ()
 
@@ -121,8 +147,8 @@ module Vec = struct
     CCVector.iter (fun x -> CCVector.push v1 x) v2
 
   let bench_append n =
-    let v2 = lazy (CCVector.init n (fun x->n+x)) in
-    B.throughputN 2
+    let v2 = CCVector.init n (fun x->n+x) in
+    B.throughputN 2 ~repeat
       [ "append", try_append_ CCVector.append n v2, ()
       ; "append_naive", try_append_ append_naive_ n v2, ()
       ]
@@ -167,7 +193,7 @@ module Cache = struct
             ] @ l
       else l
     in
-    B.throughputN 3 l
+    B.throughputN 3 l ~repeat
 
   let () = B.Tree.register (
     "cache" @>>>
@@ -177,251 +203,313 @@ module Cache = struct
 end
 
 module Tbl = struct
-  module IHashtbl = Hashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
+  (** Signature for mutable map *)
+  module type MUT = sig
+    type key
+    type 'a t
+    val name : string
+    val find : 'a t -> key -> 'a
+    val create : int -> 'a t
+    val add : 'a t -> key -> 'a -> unit
+    val replace : 'a t -> key -> 'a -> unit
+  end
 
-  module IPersistentHashtbl = CCPersistentHashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
+  module type INT_MUT = MUT with type key = int
+  module type STRING_MUT = MUT with type key = string
 
-  module IMap = Map.Make(struct
-    type t = int
-    let compare i j = i - j
-  end)
+  module type IMMUT = sig
+    type key
+    type 'a t
+    val name : string
+    val empty : 'a t
+    val find : key -> 'a t -> 'a
+    val add : key -> 'a -> 'a t -> 'a t
+  end
 
-  module ICCHashtbl = CCFlatHashtbl.Make(struct
-    type t = int
-    let equal i j = i = j
-    let hash i = i
-  end)
+  module type INT_IMMUT = IMMUT with type key = int
 
-  let phashtbl_add n =
-    let h = PHashtbl.create 50 in
-    for i = n downto 0 do
-      PHashtbl.add h i i;
-    done;
-    h
+  module MUT_OF_IMMUT(T : IMMUT)
+  : MUT with type key = T.key and type 'a t = 'a T.t ref = struct
+    type key = T.key
+    type 'a t = 'a T.t ref
+    let name = T.name
+    let create _ = ref T.empty
+    let find m k = T.find k !m
+    let add m k v = m := T.add k v !m
+    let replace = add
+  end
 
-  let hashtbl_add n =
-    let h = Hashtbl.create 50 in
-    for i = n downto 0 do
-      Hashtbl.add h i i;
-    done;
-    h
+  module type KEY = sig
+    type t
+    val equal : t -> t -> bool
+    val hash : t -> int
+    val compare : t -> t -> int
+  end
 
-  let ihashtbl_add n =
-    let h = IHashtbl.create 50 in
-    for i = n downto 0 do
-      IHashtbl.add h i i;
-    done;
-    h
+  type _ key_type =
+    | Int : int key_type
+    | Str : string key_type
 
-  let ipersistenthashtbl_add n =
-    let h = ref (IPersistentHashtbl.create 32) in
-    for i = n downto 0 do
-      h := IPersistentHashtbl.replace !h i i;
-    done;
-    !h
+  let arg_make : type a. a key_type -> (module KEY with type t = a) * string
+  = function
+    | Int -> (module CCInt), "int"
+    | Str ->
+        let module S = struct type t = string include CCString end in
+        (module S : KEY with type t = string), "string"
 
-  let imap_add n =
-    let h = ref IMap.empty in
-    for i = n downto 0 do
-      h := IMap.add i i !h;
-    done;
-    !h
+  let sprintf = Printf.sprintf
 
-  let intmap_add n =
-    let h = ref CCIntMap.empty in
-    for i = n downto 0 do
-      h := CCIntMap.add i i !h;
-    done;
-    !h
+  let hashtbl_make : type a. a key_type -> (module MUT with type key = a)
+  = fun key ->
+    let (module Key), name = arg_make key in
+    let module T = struct
+      let name = sprintf "hashtbl.make(%s)" name
+      include Hashtbl.Make(Key)
+    end in
+    (module T)
 
-  let icchashtbl_add n =
-    let h = ICCHashtbl.create 50 in
-    for i = n downto 0 do
-      ICCHashtbl.add h i i;
-    done;
-    h
+  let persistent_hashtbl =
+    let module T = CCPersistentHashtbl.Make(CCInt) in
+    let module U = struct
+      type key = int
+      type 'a t = 'a T.t ref
+      let name = "ccpersistent_hashtbl"
+      let create _ = ref (T.empty ())
+      let find m k = T.find !m k
+      let add m k v = m := T.replace !m k v
+      let replace = add
+    end in
+    (module U : INT_MUT)
 
-  let bench_maps1 n =
-    B.throughputN 3
-      ["phashtbl_add", (fun n -> ignore (phashtbl_add n)), n;
-       "hashtbl_add", (fun n -> ignore (hashtbl_add n)), n;
-       "ihashtbl_add", (fun n -> ignore (ihashtbl_add n)), n;
-       "ipersistenthashtbl_add", (fun n -> ignore (ipersistenthashtbl_add n)), n;
-       "imap_add", (fun n -> ignore (imap_add n)), n;
-       "intmap_add", (fun n -> ignore (intmap_add n)), n;
-       "ccflathashtbl_add", (fun n -> ignore (icchashtbl_add n)), n;
-      ]
+  let hashtbl =
+    let module T = struct
+      type key = int
+      type 'a t = (int, 'a) Hashtbl.t
+      let name = "hashtbl"
+      let create i = Hashtbl.create i
+      let find = Hashtbl.find
+      let add = Hashtbl.add
+      let replace = Hashtbl.replace
+    end in
+    (module T : INT_MUT)
 
-  let phashtbl_replace n =
-    let h = PHashtbl.create 50 in
-    for i = 0 to n do
-      PHashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      PHashtbl.replace h i i;
-    done;
-    h
+  let map : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct let name = sprintf "map(%s)" name include Map.Make(K) end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U : MUT with type key = a)
 
-  let hashtbl_replace n =
-    let h = Hashtbl.create 50 in
-    for i = 0 to n do
-      Hashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      Hashtbl.replace h i i;
-    done;
-    h
+  let wbt : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct
+      let name = sprintf "ccwbt(%s)" name
+      include CCWBTree.Make(K)
+      let find = get_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U : MUT with type key = a)
 
-  let ihashtbl_replace n =
-    let h = IHashtbl.create 50 in
-    for i = 0 to n do
-      IHashtbl.replace h i i;
-    done;
-    for i = n downto 0 do
-      IHashtbl.replace h i i;
-    done;
-    h
+  let flat_hashtbl =
+    let module T = CCFlatHashtbl.Make(CCInt) in
+    let module U = struct
+      type key = int
+      type 'a t = 'a T.t
+      let name = "ccflat_hashtbl"
+      let create = T.create
+      let find = T.find_exn
+      let add = T.add
+      let replace = T.add
+    end in
+    (module U : INT_MUT)
 
-  let ipersistenthashtbl_replace n =
-    let h = ref (IPersistentHashtbl.create 32) in
-    for i = 0 to n do
-      h := IPersistentHashtbl.replace !h i i;
-    done;
-    for i = n downto 0 do
-      h := IPersistentHashtbl.replace !h i i;
-    done;
-    !h
+  let trie : (module MUT with type key = string) =
+    let module T = struct
+      let name = "trie(string)"
+      include CCTrie.String
+      let find = find_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U)
 
-  let imap_replace n =
-    let h = ref IMap.empty in
-    for i = 0 to n do
-      h := IMap.add i i !h;
-    done;
-    for i = n downto 0 do
-      h := IMap.add i i !h;
-    done;
-    !h
+  let hashtrie : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct
+      let name = sprintf "cchashtrie(%s)" name
+      include CCHashTrie.Make(K)
+      let find = get_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U)
 
-  let intmap_replace n =
-    let h = ref CCIntMap.empty in
-    for i = 0 to n do
-      h := CCIntMap.add i i !h;
-    done;
-    for i = n downto 0 do
-      h := CCIntMap.add i i !h;
-    done;
-    !h
+  let hashtrie_mut : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct
+      let name = sprintf "cchashtrie_mut(%s)" name
+      type key = K.t
+      module M = CCHashTrie.Make(K)
+      type 'a t = {
+        id: CCHashTrie.Transient.t;
+        mutable map: 'a M.t;
+      }
+      let create _ = { id=CCHashTrie.Transient.create(); map=M.empty}
+      let find m k = M.get_exn k m.map
+      let add m k v = m.map <- M.add_mut ~id:m.id k v m.map
+      let replace = add
+    end in
+    (module T)
 
-  let icchashtbl_replace n =
-    let h = ICCHashtbl.create 50 in
-    for i = 0 to n do
-      ICCHashtbl.add h i i;
-    done;
-    for i = n downto 0 do
-      ICCHashtbl.add h i i;
-    done;
-    h
+  let hamt : type a. a key_type -> (module MUT with type key = a)
+  = fun k ->
+    let (module K), name = arg_make k in
+    let module T = struct
+      let name = sprintf "hamt(%s)" name
+      include Hamt.Make(Hamt.StdConfig)(K)
+      let find = find_exn
+    end in
+    let module U = MUT_OF_IMMUT(T) in
+    (module U)
 
-  let bench_maps2 n =
-    B.throughputN 3
-      ["phashtbl_replace", (fun n -> ignore (phashtbl_replace n)), n;
-       "hashtbl_replace", (fun n -> ignore (hashtbl_replace n)), n;
-       "ihashtbl_replace", (fun n -> ignore (ihashtbl_replace n)), n;
-       "ipersistenthashtbl_replace", (fun n -> ignore (ipersistenthashtbl_replace n)), n;
-       "imap_replace", (fun n -> ignore (imap_replace n)), n;
-       "intmap_replace", (fun n -> ignore (intmap_replace n)), n;
-       "ccflathashtbl_replace", (fun n -> ignore (icchashtbl_replace n)), n;
-      ]
-
-  let phashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (PHashtbl.find h i);
-      done
-
-  let hashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (Hashtbl.find h i);
-      done
-
-  let ihashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IHashtbl.find h i);
-      done
-
-  let ipersistenthashtbl_find h =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IPersistentHashtbl.find h i);
-      done
-
-  let array_find a =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (Array.get a i);
-      done
-
-  let persistent_array_find a =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (CCPersistentArray.get a i);
-      done
-
-  let imap_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (IMap.find i m);
-      done
-
-  let intmap_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (CCIntMap.find i m);
-      done
-
-  let icchashtbl_find m =
-    fun n ->
-      for i = 0 to n-1 do
-        ignore (ICCHashtbl.get_exn i m);
-      done
-
-  let bench_maps3 n =
-    let h = phashtbl_add n in
-    let h' = hashtbl_add n in
-    let h'' = ihashtbl_add n in
-    let h''''' = ipersistenthashtbl_add n in
-    let a = Array.init n string_of_int in
-    let pa = CCPersistentArray.init n string_of_int in
-    let m = imap_add n in
-    let m' = intmap_add n in
-    let h'''''' = icchashtbl_add n in
-    B.throughputN 3 [
-      "phashtbl_find", (fun () -> phashtbl_find h n), ();
-      "hashtbl_find", (fun () -> hashtbl_find h' n), ();
-      "ihashtbl_find", (fun () -> ihashtbl_find h'' n), ();
-      "ipersistenthashtbl_find", (fun () -> ipersistenthashtbl_find h''''' n), ();
-      "array_find", (fun () -> array_find a n), ();
-      "persistent_array_find", (fun () -> persistent_array_find pa n), ();
-      "imap_find", (fun () -> imap_find m n), ();
-      "intmap_find", (fun () -> intmap_find m' n), ();
-      "cchashtbl_find", (fun () -> icchashtbl_find h'''''' n), ();
+  let modules_int =
+    [ hashtbl_make Int
+    ; hashtbl
+    ; persistent_hashtbl
+    (* ; poly_hashtbl *)
+    ; map Int
+    ; wbt Int
+    ; flat_hashtbl
+    ; hashtrie Int
+    ; hashtrie_mut Int
+    ; hamt Int
     ]
+
+  let modules_string =
+    [ hashtbl_make Str
+    ; map Str
+    ; wbt Str
+    ; hashtrie Str
+    ; hamt Str
+    ; trie
+    ]
+
+  let bench_add n =
+    let make (module T : INT_MUT) =
+      let run() =
+        let t = T.create 50 in
+        for i = n downto 0 do
+          T.add t i i;
+        done
+      in
+      T.name, run, ()
+    in
+    B.throughputN 3 ~repeat (List.map make modules_int)
+
+  let bench_add_string n =
+    let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
+    let make (module T : STRING_MUT) =
+      let run() =
+        let t = T.create 50 in
+        List.iter
+          (fun (k,v) -> T.add t k v)
+          keys
+      in
+      T.name, run, ()
+    in
+    B.throughputN 3 ~repeat (List.map make modules_string)
+
+  let bench_replace n =
+    let make (module T : INT_MUT) =
+      let run() =
+        let t = T.create 50 in
+        for i = 0 to n do
+          T.replace t i i;
+        done;
+        for i = n downto 0 do
+          T.replace t i i;
+        done;
+        ()
+      in
+      T.name, run, ()
+    in
+    B.throughputN 3 ~repeat (List.map make modules_int)
+
+  module type INT_FIND = sig
+    type 'a t
+    val name : string
+    val init : int -> (int -> 'a) -> 'a t
+    val find : 'a t -> int -> 'a
+  end
+
+  let find_of_mut (module T : INT_MUT) : (module INT_FIND) =
+    let module U = struct
+      include T
+      let init n f =
+        let t = T.create n in
+        for i=0 to n-1 do T.add t i (f i) done;
+        t
+    end in
+    (module U)
+
+  let array =
+    let module T = struct
+      type 'a t = 'a array
+      let name = "array"
+      let init = Array.init
+      let find a i = a.(i)
+    end in
+    (module T : INT_FIND)
+
+  let persistent_array =
+    let module A = CCPersistentArray in
+    let module T = struct
+      type 'a t = 'a A.t
+      let name = "persistent_array"
+      let init = A.init
+      let find = A.get
+    end in
+    (module T : INT_FIND)
+
+  let modules_int_find =
+    [ array
+    ; persistent_array ] @
+    List.map find_of_mut modules_int
+
+  let bench_find n =
+    let make (module T : INT_FIND) =
+      let m = T.init n (fun i -> i) in
+      let run() =
+        for i = 0 to n-1 do
+          ignore (T.find m i)
+        done
+      in
+      T.name, run, ()
+    in
+    Benchmark.throughputN 3 ~repeat (List.map make modules_int_find)
+
+  let bench_find_string n =
+    let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
+    let make (module T : STRING_MUT) =
+      let m = T.create n in
+      List.iter (fun (k,v) -> T.add m k v) keys;
+      let run() =
+        List.iter
+          (fun (k,_) -> ignore (T.find m k))
+          keys
+      in
+      T.name, run, ()
+    in
+    Benchmark.throughputN 3 ~repeat (List.map make modules_string)
 
   let () = B.Tree.register (
     "tbl" @>>>
-      [ "add" @>> app_ints bench_maps1 [10; 100; 1_000; 10_000;]
-      ; "replace" @>> app_ints bench_maps2 [10; 100; 1_000; 10_000]
-      ; "find" @>> app_ints bench_maps3 [10; 20; 100; 1_000; 10_000]
+      [ "add_int" @>> app_ints bench_add [10; 100; 1_000; 10_000;]
+      ; "add_string" @>> app_ints bench_add_string [10; 100; 1_000; 10_000;]
+      ; "replace" @>> app_ints bench_replace [10; 100; 1_000; 10_000]
+      ; "find" @>> app_ints bench_find [10; 20; 100; 1_000; 10_000]
+      ; "find_string" @>> app_ints bench_find_string [10; 20; 100; 1_000; 10_000]
       ])
 end
 
@@ -432,7 +520,7 @@ module Iter = struct
     let seq () = Sequence.fold (+) 0 Sequence.(0 --n) in
     let gen () = Gen.fold (+) 0 Gen.(0 -- n) in
     let klist () = CCKList.fold (+) 0 CCKList.(0 -- n) in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "sequence.fold", seq, ();
         "gen.fold", gen, ();
         "klist.fold", klist, ();
@@ -449,7 +537,7 @@ module Iter = struct
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "sequence.flat_map", seq, ();
         "gen.flat_map", gen, ();
         "klist.flat_map", klist, ();
@@ -472,7 +560,7 @@ module Iter = struct
         1 -- n |> iter (fun x -> i := !i * x)
       )
     in
-    B.throughputN 3
+    B.throughputN 3 ~repeat
       [ "sequence.iter", seq, ();
         "gen.iter", gen, ();
         "klist.iter", klist, ();
@@ -488,8 +576,6 @@ end
 
 module Batch = struct
   (** benchmark CCBatch *)
-
-  open Containers_advanced
 
   module type COLL = sig
     val name : string
@@ -535,17 +621,17 @@ module Batch = struct
       CCPrint.printf "batch: %a\n" (CCArray.pp CCInt.pp) (batch a);
       *)
       assert (C.equal (batch a) (naive a));
-      B.throughputN time
+      B.throughputN time ~repeat
         [ C.name ^ "_naive", naive, a
         ; C.name ^ "_batch", batch, a
         ]
 
-    let bench = B.(
+    let bench =
       C.name @>> B.Tree.concat
       [ app_int (bench_for ~time:1) 100
       ; app_int (bench_for ~time:4) 100_000
       ; app_int (bench_for ~time:4) 1_000_000
-      ])
+      ]
   end
 
   module BenchArray = Make(struct
@@ -577,6 +663,289 @@ module Batch = struct
       ; BenchArray.bench
       ; BenchList.bench
       ])
+end
+
+module Deque = struct
+  module type DEQUE = sig
+    type 'a t
+    val create : unit -> 'a t
+    val of_seq : 'a Sequence.t -> 'a t
+    val iter : ('a -> unit) -> 'a t -> unit
+    val push_front : 'a t -> 'a -> unit
+    val push_back : 'a t -> 'a -> unit
+    val is_empty : 'a t -> bool
+    val take_front : 'a t -> 'a
+    val take_back : 'a t -> 'a
+    val append_back : into:'a t -> 'a t -> unit
+    val length : _ t -> int
+  end
+
+  module Base : DEQUE = struct
+    type 'a elt = {
+      content : 'a;
+      mutable prev : 'a elt;
+      mutable next : 'a elt;
+    } (** A cell holding a single element *)
+
+    and 'a t = 'a elt option ref
+      (** The deque, a double linked list of cells *)
+
+    exception Empty
+
+    let create () = ref None
+
+    let is_empty d =
+      match !d with
+      | None -> true
+      | Some _ -> false
+
+    let push_front d x =
+      match !d with
+      | None ->
+        let rec elt = {
+          content = x; prev = elt; next = elt;
+        } in
+        d := Some elt
+      | Some first ->
+        let elt = { content = x; prev = first.prev; next=first; } in
+        first.prev.next <- elt;
+        first.prev <- elt;
+        d := Some elt
+
+    let push_back d x =
+      match !d with
+      | None ->
+        let rec elt = {
+          content = x; prev = elt; next = elt; } in
+        d := Some elt
+      | Some first ->
+        let elt = { content = x; next=first; prev=first.prev; } in
+        first.prev.next <- elt;
+        first.prev <- elt
+
+    let take_back d =
+      match !d with
+      | None -> raise Empty
+      | Some first when first == first.prev ->
+        (* only one element *)
+        d := None;
+        first.content
+      | Some first ->
+        let elt = first.prev in
+        elt.prev.next <- first;
+        first.prev <- elt.prev;  (* remove [first.prev] from list *)
+        elt.content
+
+    let take_front d =
+      match !d with
+      | None -> raise Empty
+      | Some first when first == first.prev ->
+        (* only one element *)
+        d := None;
+        first.content
+      | Some first ->
+        first.prev.next <- first.next; (* remove [first] from list *)
+        first.next.prev <- first.prev;
+        d := Some first.next;
+        first.content
+
+    let iter f d =
+      match !d with
+      | None -> ()
+      | Some first ->
+        let rec iter elt =
+          f elt.content;
+          if elt.next != first then iter elt.next
+        in
+        iter first
+
+    let of_seq seq =
+      let q =create () in seq (push_back q); q
+
+    let append_back ~into q = iter (push_back into) q
+
+    let length q =
+      let n = ref 0 in
+      iter (fun _ -> incr n) q;
+      !n
+  end
+
+  module FQueue : DEQUE = struct
+    type 'a t = 'a CCFQueue.t ref
+    let create () = ref CCFQueue.empty
+    let of_seq s = ref (CCFQueue.of_seq s)
+    let iter f q = CCFQueue.iter f !q
+    let push_front q x = q:= CCFQueue.cons x !q
+    let push_back q x = q:= CCFQueue.snoc !q x
+    let is_empty q = CCFQueue.is_empty !q
+    let take_front q =
+      let x, q' = CCFQueue.take_front_exn !q in
+      q := q';
+      x
+    let take_back q =
+      let q', x = CCFQueue.take_back_exn !q in
+      q := q';
+      x
+
+    let append_back ~into q = into := CCFQueue.append !into !q
+    let length q = CCFQueue.size !q
+  end
+
+  let base = (module Base : DEQUE)
+  let cur = (module CCDeque : DEQUE)
+  let fqueue = (module FQueue : DEQUE)
+
+  let bench_iter n =
+    let seq = Sequence.(1 -- n) in
+    let make (module D : DEQUE) =
+      let q = D.of_seq seq in
+      fun () ->
+        let n = ref 0 in
+        D.iter (fun _ -> incr n) q;
+        ()
+    in
+    B.throughputN 3 ~repeat
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
+      ]
+
+  let bench_push_front n =
+    let make (module D : DEQUE) () =
+      let q = D.create() in
+      for i=0 to n do D.push_front q i done
+    in
+    B.throughputN 3 ~repeat
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
+      ]
+
+  let bench_push_back n =
+    let make (module D : DEQUE) =
+      let q = D.create() in
+      fun () ->
+        for i=0 to n do D.push_back q i done
+    in
+    B.throughputN 3 ~repeat
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
+      ]
+
+  let bench_append n =
+    let seq = Sequence.(1 -- n) in
+    let make (module D :DEQUE) =
+      let q1 = D.of_seq seq in
+      let q2 = D.of_seq seq in
+      fun () -> D.append_back ~into:q1 q2
+    in
+    B.throughputN 3 ~repeat
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
+      ]
+
+  let bench_length n =
+    let seq = Sequence.(1--n) in
+    let make (module D:DEQUE) =
+      let q = D.of_seq seq in
+      fun () -> ignore (D.length q)
+    in
+    B.throughputN 3 ~repeat
+      [ "base", make base, ()
+      ; "cur", make cur, ()
+      ; "fqueue", make fqueue, ()
+      ]
+
+  let () = B.Tree.register (
+    "deque" @>>>
+    [ "iter" @>> app_ints bench_iter [100; 1_000; 100_000]
+    ; "push_front" @>> app_ints bench_push_front [100; 1_000; 100_000]
+    ; "push_back" @>> app_ints bench_push_back [100; 1_000; 100_000]
+    ; "append_back" @>> app_ints bench_append [100; 1_000; 100_000]
+    ; "length" @>> app_ints bench_length [100; 1_000]
+    ]
+  )
+end
+
+module Thread = struct
+  module Q = CCThread.Queue
+
+  module type TAKE_PUSH = sig
+    val take : 'a Q.t -> 'a
+    val push : 'a Q.t -> 'a -> unit
+    val take_list: 'a Q.t -> int -> 'a list
+    val push_list : 'a Q.t -> 'a list -> unit
+  end
+
+  let cur = (module Q : TAKE_PUSH)
+  let naive =
+    let module Q = struct
+      let take = Q.take
+      let push = Q.push
+      let push_list q l = List.iter (push q) l
+      let rec take_list q n =
+        if n=0 then []
+        else
+          let x = take q in
+          x :: take_list q (n-1)
+    end in
+    (module Q : TAKE_PUSH)
+
+  (* n senders, n receivers *)
+  let bench_queue ~size ~senders ~receivers n =
+    let make (module TP : TAKE_PUSH) =
+      let l = CCList.(1 -- n) in
+      fun () ->
+        let q = Q.create size in
+        let res = CCLock.create 0 in
+        let expected_res = 2 * senders * Sequence.(1 -- n |> fold (+) 0) in
+        let a_senders = CCThread.Arr.spawn senders
+          (fun _ ->
+            TP.push_list q l;
+            TP.push_list q l
+          )
+        and a_receivers = CCThread.Arr.spawn receivers
+          (fun _ ->
+            let l1 = TP.take_list q n in
+            let l2 = TP.take_list q n in
+            let n = List.fold_left (+) 0 l1 + List.fold_left (+) 0 l2 in
+            CCLock.update res ((+) n);
+            ()
+          )
+        in
+        CCThread.Arr.join a_senders;
+        CCThread.Arr.join a_receivers;
+        assert (expected_res = CCLock.get res);
+        ()
+    in
+    B.throughputN 3 ~repeat
+      [ "cur", make cur, ()
+      ; "naive", make naive, ()
+      ]
+
+  let () = B.Tree.register (
+    let take_push = CCList.map
+      (fun (size,senders,receivers) ->
+        Printf.sprintf "queue.take/push (size=%d,senders=%d,receivers=%d)"
+          size senders receivers
+        @>>
+        app_ints (bench_queue ~size ~senders ~receivers)
+          [100; 1_000]
+      ) [ 2, 3, 3
+        ; 5, 3, 3
+        ; 2, 10, 10
+        ; 5, 10, 10
+        ; 20, 10, 10
+      ]
+    in
+
+    "thread" @>>>
+      ( take_push @
+      []
+      )
+  )
 end
 
 let () =

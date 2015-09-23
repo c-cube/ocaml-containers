@@ -147,6 +147,19 @@ let read_all_bytes ?(size=1024) ic = read_all_ ~op:Ret_bytes ~size ic
 
 let read_all ?(size=1024) ic = read_all_ ~op:Ret_string ~size ic
 
+(*$R
+  let s = String.make 200 'y' in
+  let s = Printf.sprintf "a\nb\n %s\nlast line\n" s in
+  OUnit.bracket_tmpfile ~prefix:"test_containers" ~mode:[Open_creat; Open_trunc]
+    (fun (name, oc) ->
+      output_string oc s;
+      flush oc;
+      let s' = with_in name read_all in
+      OUnit.assert_equal ~printer:(fun s->s) s s'
+    ) ()
+*)
+
+
 let with_out ?(mode=0o644) ?(flags=[Open_creat; Open_trunc; Open_text]) filename f =
   let oc = open_out_gen (Open_wronly::flags) mode filename in
   try
@@ -185,6 +198,35 @@ let rec write_lines oc g = match g () with
 
 let write_lines_l oc l =
   List.iter (write_line oc) l
+
+(* test {read,write}_lines. Need to concatenate the lists because some
+   strings in the random input might contain '\n' themselves *)
+
+(*$QR
+   Q.(list_of_size Gen.(0 -- 40) printable_string) (fun l ->
+     let l' = ref [] in
+     OUnit.bracket_tmpfile ~prefix:"test_containers" ~mode:[Open_creat; Open_trunc]
+      (fun (name, oc) ->
+        write_lines_l oc l;
+        flush oc;
+        l' := with_in name read_lines_l;
+      ) ();
+     String.concat "\n" l = String.concat "\n" !l'
+    )
+*)
+
+(*$QR
+   Q.(list_of_size Gen.(0 -- 40) printable_string) (fun l ->
+     let l' = ref [] in
+     OUnit.bracket_tmpfile ~prefix:"test_containers" ~mode:[Open_creat; Open_trunc]
+      (fun (name, oc) ->
+        write_lines oc (Gen.of_list l);
+        flush oc;
+        l' := with_in name (fun ic -> read_lines ic |> Gen.to_list);
+      ) ();
+     String.concat "\n" l = String.concat "\n" !l'
+    )
+*)
 
 let with_in_out ?(mode=0o644) ?(flags=[Open_creat]) filename f =
   let ic = open_in_gen (Open_rdonly::flags) mode filename in
@@ -269,6 +311,17 @@ module File = struct
       in cons_ (`Dir,d) tail
     else gen_singleton (`File, d)
 
+  (*$R
+    OUnit.assert_bool "walk categorizes files"
+      (File.walk "."
+        |> Gen.for_all
+          (function
+            | `File, f -> not (Sys.is_directory f)
+            | `Dir, f -> Sys.is_directory f
+          )
+      )
+   *)
+
   type walk_item = [`File | `Dir] * t
 
   let read_dir ?(recurse=false) d =
@@ -284,6 +337,6 @@ module File = struct
   let show_walk_item (i,f) =
     (match i with
       | `File -> "file:"
-      | `Dir -> "dir: "
+      | `Dir -> "dir:"
     ) ^ f
 end

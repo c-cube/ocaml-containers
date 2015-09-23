@@ -70,3 +70,9 @@ let random_range i j st = i + random (j-i) st
 
 let pp buf = Printf.bprintf buf "%d"
 let print fmt = Format.pp_print_int fmt
+
+let to_string = string_of_int
+
+let of_string s =
+  try Some (int_of_string s)
+  with _ -> None

@@ -28,6 +28,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a equal = 'a -> 'a -> bool
+type 'a printer = Format.formatter -> 'a -> unit
+
+(*$inject
+  let pp_ilist = CCPrint.(to_string (list int))
+*)
 
 (** {2 Basics} *)
 
@@ -43,6 +48,11 @@ type 'a t =
   | Deep of int * 'a digit * ('a * 'a) t lazy_t * 'a digit
 
 let empty = Shallow Zero
+
+(*$R
+  let q = empty in
+  OUnit.assert_bool "is_empty" (is_empty q)
+*)
 
 exception Empty
 
@@ -97,6 +107,14 @@ let rec snoc : 'a. 'a t -> 'a -> 'a t
     snoc (of_list l) x |> to_list = l @ [x])
   *)
 
+(*$R
+  let q = List.fold_left snoc empty [1;2;3;4;5] in
+  let q = tail q in
+  let q = List.fold_left snoc q [6;7;8] in
+  let l = Sequence.to_list (to_seq q) in
+  OUnit.assert_equal ~printer:pp_ilist [2;3;4;5;6;7;8] l
+*)
+
 let rec take_front_exn : 'a. 'a t -> ('a *'a t)
   = fun q -> match q with
   | Shallow Zero -> raise Empty
@@ -120,6 +138,16 @@ let rec take_front_exn : 'a. 'a t -> ('a *'a t)
     let x', q = cons x (of_list l) |> take_front_exn in \
     x'=x && to_list q = l)
   *)
+
+(*$R
+  let q = of_list [1;2;3;4] in
+  let x, q = take_front_exn q in
+  OUnit.assert_equal 1 x;
+  let q = List.fold_left snoc q [5;6;7] in
+  OUnit.assert_equal 2 (first_exn q);
+  let x, q = take_front_exn q in
+  OUnit.assert_equal 2 x;
+*)
 
 let take_front q =
   try Some (take_front_exn q)
@@ -264,7 +292,7 @@ let nth i q =
   try Some (nth_exn i q)
   with Failure _ -> None
 
-(*$Q
+(*$Q & ~count:30
   (Q.list Q.int) (fun l -> \
    let len = List.length l in let idx = CCList.(0 -- (len - 1)) in \
    let q = of_list l in \
@@ -335,6 +363,14 @@ let append q1 q2 =
     append (of_list l1) (of_list l2) |> to_list = l1 @ l2)
 *)
 
+(*$R
+  let q1 = of_seq (Sequence.of_list [1;2;3;4]) in 
+  let q2 = of_seq (Sequence.of_list [5;6;7;8]) in 
+  let q = append q1 q2 in
+  let l = Sequence.to_list (to_seq q) in
+  OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5;6;7;8] l
+*)
+
 let _map_digit f d = match d with
   | Zero -> Zero
   | One x -> One (f x)
@@ -372,6 +408,12 @@ let rec fold : 'a 'b. ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (*$Q
   (Q.list Q.int) (fun l -> \
     of_list l |> fold (fun acc x->x::acc) [] = List.rev l)
+*)
+
+(*$R
+  let q = of_seq (Sequence.of_list [1;2;3;4]) in
+  let n = fold (+) 0 q in
+  OUnit.assert_equal 10 n;
 *)
 
 let iter f q = to_seq q f
@@ -464,4 +506,14 @@ let (--) a b =
   5 -- 1 |> to_list = [5;4;3;2;1]
   0 -- 0 |> to_list = [0]
 *)
+
+let print pp_x out d =
+  let first = ref true in
+  Format.fprintf out "@[<hov2>queue {";
+  iter
+    (fun x ->
+      if !first then first:= false else Format.fprintf out ";@ ";
+      pp_x out x
+    ) d;
+  Format.fprintf out "}@]"
 

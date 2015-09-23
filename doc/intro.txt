@@ -33,6 +33,7 @@ CCHash
 CCHashtbl
 CCHeap
 CCInt
+CCInt64
 CCIO
 CCList
 CCMap
@@ -63,10 +64,14 @@ such as:
 Various data structures.
 
 {!modules:
+CCBitField
+CCBloom
 CCBV
 CCCache
 CCFQueue
 CCFlatHashtbl
+CCHashSet
+CCHashTrie
 CCIntMap
 CCMixmap
 CCMixset
@@ -75,8 +80,10 @@ CCMultiMap
 CCMultiSet
 CCPersistentArray
 CCPersistentHashtbl
+CCRAL
 CCRingBuffer
 CCTrie
+CCWBTree
 }
 
 {4 Containers.io}
@@ -154,6 +161,7 @@ Lwt_pipe
 {!modules:
 CCFuture
 CCLock
+CCSemaphore
 }
 
 

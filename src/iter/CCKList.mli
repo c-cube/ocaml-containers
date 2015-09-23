@@ -56,8 +56,31 @@ val cycle : 'a t -> 'a t
 (** Cycle through the iterator infinitely. The iterator shouldn't be empty.
     @since 0.3.3 *)
 
+val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
+(** [unfold f acc] calls [f acc] and:
+    - if [f acc = Some (x, acc')], yield [x], continue with [unfold f acc']
+    - if [f acc = None], stops
+    @since 0.13 *)
 
 val is_empty : 'a t -> bool
+
+val head : 'a t -> 'a option
+(** Head of the list
+    @since 0.13 *)
+
+val head_exn : 'a t -> 'a
+(** Unsafe version of {!head}
+    @raise Not_found if the list is empty
+    @since 0.13 *)
+
+val tail : 'a t -> 'a t option
+(** Tail of the list
+    @since 0.13 *)
+
+val tail_exn : 'a t -> 'a t
+(** Unsafe version of {!tail}
+    @raise Not_found if the list is empty
+    @since 0.13 *)
 
 val equal : 'a equal -> 'a t equal
 (** Equality step by step. Eager. *)
@@ -70,7 +93,14 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
 val iter : ('a -> unit) -> 'a t -> unit
 
+val iteri : (int -> 'a -> unit) -> 'a t -> unit
+(** Iterate with index (starts at 0)
+    @since 0.13 *)
+
 val length : _ t -> int
+(** Number of elements in the list.
+    Will not terminate if the list if infinite:
+    use (for instance) {!take} to make the list finite if necessary. *)
 
 val take : int -> 'a t -> 'a t
 
@@ -81,6 +111,10 @@ val drop : int -> 'a t -> 'a t
 val drop_while : ('a -> bool) -> 'a t -> 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
+
+val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+(** Map with index (starts at 0)
+    @since 0.13 *)
 
 val fmap : ('a -> 'b option) -> 'a t -> 'b t
 
@@ -137,6 +171,16 @@ val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator *)
 
+val zip : 'a t -> 'b t -> ('a * 'b) t
+(** Combine elements pairwise. Stops as soon as one of the lists stops.
+    @since 0.13 *)
+
+val unzip : ('a * 'b) t -> 'a t * 'b t
+(** Splits each tuple in the list
+    @since 0.13 *)
+
+(** {2 Misc} *)
+
 val sort : ?cmp:'a ord -> 'a t -> 'a t
 (** Eager sort. Requires the iterator to be finite. O(n ln(n)) time
     and space.
@@ -147,6 +191,20 @@ val sort_uniq : ?cmp:'a ord -> 'a t -> 'a t
     finite. O(n ln(n)) time and space.
     @since 0.3.3 *)
 
+(** {2 Fair Combinations} *)
+
+val interleave : 'a t -> 'a t -> 'a t
+(** Fair interleaving of both streams.
+    @since 0.13 *)
+
+val fair_flat_map : ('a -> 'b t) -> 'a t -> 'b t
+(** Fair version of {!flat_map}.
+    @since 0.13 *)
+
+val fair_app : ('a -> 'b) t -> 'a t -> 'b t
+(** Fair version of {!(<*>)}
+    @since 0.13 *)
+
 (** {2 Implementations}
     @since 0.3.3 *)
 
@@ -155,6 +213,14 @@ val pure : 'a -> 'a t
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
+val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
+(** Infix version of {! fair_flat_map}
+    @since 0.13 *)
+
+val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
+(** Infix version of {!fair_app}
+    @since 0.13 *)
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig
@@ -178,6 +244,14 @@ val of_list : 'a list -> 'a t
 val to_list : 'a t -> 'a list
 (** Gather all values into a list *)
 
+val of_array : 'a array -> 'a t
+(** Iterate on the array
+    @since 0.13 *)
+
+val to_array : 'a t -> 'a array
+(** Convert into array. Iterates twice.
+    @since 0.13 *)
+
 val to_rev_list : 'a t -> 'a list
 (** Convert to a list, in reverse order. More efficient than {!to_list} *)
 
@@ -185,9 +259,16 @@ val to_seq : 'a t -> 'a sequence
 
 val to_gen : 'a t -> 'a gen
 
+val of_gen : 'a gen -> 'a t
+(** [of_gen g] consumes the generator and caches intermediate results
+    @since 0.13 *)
 
 (** {2 IO} *)
 
 val pp : ?sep:string -> 'a printer -> 'a t printer
+(** Print the list with the given separator (default ",").
+    Does not print opening/closing delimiters *)
 
 val print : ?sep:string -> 'a formatter -> 'a t formatter
+(** Print the list with the given separator (default ",").
+    Does not print opening/closing delimiters *)

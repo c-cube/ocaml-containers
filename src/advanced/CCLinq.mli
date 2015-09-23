@@ -38,11 +38,11 @@ the order of execution.
 
 CCLinq.(
   of_list [1;2;3]
-  |> flat_map_l (fun x -> CCList.(x -- (x+10)))
+  |> flat_map (fun x -> Sequence.(x -- (x+10)))
   |> sort ()
   |> count ()
-  |> M.to_list
-  |> run_exn
+  |> flat_map PMap.to_seq
+  |> List.run
 );;
 - : (int * int) list = [(13, 1); (12, 2); (11, 3); (10, 3); (9, 3);
     (8, 3); (7, 3); (6, 3); (5, 3); (4, 3); (3, 3); (2, 2); (1, 1)]
@@ -57,6 +57,8 @@ CCLinq.(
 - :  `Ok ()
 ]}
 
+{b status: experimental}
+
 *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -65,20 +67,11 @@ type 'a ord = 'a -> 'a -> int
 type 'a hash = 'a -> int
 type 'a with_err = [`Ok of 'a | `Error of string ]
 
-type 'a collection
-(** Abstract type of collections of objects of type 'a. Those cannot
-    be used directly, they are to be processed using a query (type {!'a t})
-    and converted to some list/sequence/array *)
-
 (** {2 Polymorphic Maps} *)
 module PMap : sig
   type ('a, 'b) t
 
   val get : ('a,'b) t -> 'a -> 'b option
-
-  val get_exn : ('a,'b) t -> 'a -> 'b
-  (** Unsafe version of {!get}.
-      @raise Not_found if the element is not present *)
 
   val size : (_,_) t -> int
 
@@ -86,193 +79,188 @@ module PMap : sig
 
   val to_list : ('a, 'b) t -> ('a * 'b) list
 
-  val to_coll : ('a, 'b) t -> ('a * 'b) collection
+  val map : ('b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
+  (** Transform values *)
+
+  val to_list : ('a,'b) t -> ('a*'b) list
+
+  val reverse : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash -> unit ->
+                ('a,'b) t -> ('b,'a list) t
+  (** Reverse relation of the map, as a multimap *)
+
+  val reverse_multimap : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash -> unit ->
+                          ('a,'b list) t -> ('b,'a list) t
+  (** Reverse relation of the multimap *)
+
+  val fold : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> ('a,'b) t -> 'acc
+  (** Fold on the items of the map *)
+
+  val fold_multimap : ('acc -> 'a -> 'b -> 'acc) -> 'acc ->
+                      ('a,'b list) t -> 'acc
+  (** Fold on the items of the multimap *)
+
+  val get_seq : 'a -> ('a, 'b) t -> 'b sequence
+  (** Select a key from a map and wrap into sequence *)
+
+  val iter : ('a,'b) t -> ('a*'b) sequence
+  (** View a multimap as a proper collection *)
+
+  val flatten : ('a,'b sequence) t -> ('a*'b) sequence
+  (** View a multimap as a collection of individual key/value pairs *)
+
+  val flatten_l : ('a,'b list) t -> ('a*'b) sequence
+  (** View a multimap as a collection of individual key/value pairs *)
 end
 
 (** {2 Query operators} *)
 
 type 'a t
-(** Type of a query that returns some value of type 'a *)
+(** Type of a query that returns zero, one or more values of type 'a *)
 
 (** {6 Initial values} *)
 
-val start : 'a -> 'a t
-(** Start with a single value *)
+val empty : 'a t
+(** Empty collection *)
 
-val of_list : 'a list -> 'a collection t
+val start : 'a -> 'a t
+(** Start with a single value
+    @deprecated since 0.13, use {!return} instead *)
+
+val return : 'a -> 'a t
+(** Return one value *)
+
+val of_list : 'a list -> 'a t
 (** Query that just returns the elements of the list *)
 
-val of_array : 'a array -> 'a collection t
-val of_array_i : 'a array -> (int * 'a) collection t
+val of_array : 'a array -> 'a t
+val of_array_i : 'a array -> (int * 'a) t
 
-val of_hashtbl : ('a,'b) Hashtbl.t -> ('a * 'b) collection t
+val range : int -> int -> int t
+(** [range i j] goes from [i] up to [j] included *)
 
-val of_seq : 'a sequence -> 'a collection t
+val (--) : int -> int -> int t
+(** Synonym to {!range} *)
+
+val of_hashtbl : ('a,'b) Hashtbl.t -> ('a * 'b) t
+
+val of_seq : 'a sequence -> 'a t
 (** Query that returns the elements of the given sequence. *)
 
-val of_queue : 'a Queue.t -> 'a collection t
+val of_queue : 'a Queue.t -> 'a t
 
-val of_stack : 'a Stack.t -> 'a collection t
+val of_stack : 'a Stack.t -> 'a t
 
-val of_string : string -> char collection t
+val of_string : string -> char t
 (** Traverse the characters of the string *)
 
 (** {6 Execution} *)
 
-val run : 'a t -> 'a with_err
-(** Execute the query, possibly returning an error if things go wrong *)
+val run : ?limit:int -> 'a t -> 'a sequence
+(** Execute the query, possibly returning an error if things go wrong
+    @param limit max number of values to return *)
 
-val run_exn : 'a t -> 'a
-(** Execute the query, ignoring errors. Can raise an exception
-    if some execution step does.
-    @raise Failure if the query fails (or returns [`Error s]) *)
+val run1 : 'a t -> 'a
+(** Run the query and return the first value
+    @raise Not_found if the query succeeds with 0 elements *)
 
-val run_no_optim : 'a t -> 'a with_err
+val run_no_optim : ?limit:int -> 'a t -> 'a sequence
 (** Run without any optimization *)
 
-(** {6 Basics on Collections} *)
+(** {6 Basics} *)
 
-val map : ('a -> 'b) -> 'a collection t -> 'b collection t
+val map : ('a -> 'b) -> 'a t -> 'b t
+(** map each value *)
 
-val filter : ('a -> bool) -> 'a collection t -> 'a collection t
+val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+(** Infix synonym of {!map} *)
 
-val size : _ collection t -> int t
+val filter : ('a -> bool) -> 'a t -> 'a t
+(** Filter out values that do not satisfy predicate *)
 
-val choose : 'a collection t -> 'a t
-(** Choose one element (if any) in the collection. Fails
-    if the collections is empty *)
+val size : _ t -> int t
+(** [size t] returns one value, the number of items returned by [t] *)
 
-val choose_err : 'a collection t -> 'a with_err t
-(** Choose one element or fail explicitely *)
+val choose : 'a t -> 'a t
+(** Choose one element (if any, otherwise empty) in the collection.
+    This is like a "cut" in prolog. *)
 
-val filter_map : ('a -> 'b option) -> 'a collection t -> 'b collection t
+val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Filter and map elements at once *)
 
-val flat_map : ('a -> 'b collection) -> 'a collection t -> 'b collection t
-(** Monadic "bind", maps each element to a collection
-    and flatten the result *)
-
-val flat_map_seq : ('a -> 'b sequence) -> 'a collection t -> 'b collection t
+val flat_map : ('a -> 'b sequence) -> 'a t -> 'b t
 (** Same as {!flat_map} but using sequences *)
 
-val flat_map_l : ('a -> 'b list) -> 'a collection t -> 'b collection t
+val flat_map_l : ('a -> 'b list) -> 'a t -> 'b t
+(** map each element to a collection and flatten the result *)
 
-val flatten : 'a collection collection t -> 'a collection t
+val flat_map_l : ('a -> 'b list) -> 'a t -> 'b t
 
-val flatten_l : 'a list collection t -> 'a collection t
+val flatten : 'a list t -> 'a t
 
-val take : int -> 'a collection t -> 'a collection t
+val flatten_seq : 'a sequence t -> 'a t
+
+val take : int -> 'a t -> 'a t
 (** take at most [n] elements *)
 
-val take_while : ('a -> bool) -> 'a collection t -> 'a collection t
+val take_while : ('a -> bool) -> 'a t -> 'a t
 (** take elements while they satisfy a predicate *)
 
-val sort : ?cmp:'a ord -> unit -> 'a collection t -> 'a collection t
+val sort : ?cmp:'a ord -> unit -> 'a t -> 'a t
 (** Sort items by the given comparison function *)
 
-val distinct : ?cmp:'a ord -> unit -> 'a collection t -> 'a collection t
+val distinct : ?cmp:'a ord -> unit -> 'a t -> 'a t
 (** Remove duplicate elements from the input collection.
     All elements in the result are distinct. *)
-
-(** {6 Queries on Maps} *)
-
-module M : sig
-  val get : 'a -> ('a, 'b) PMap.t t -> 'b t
-  (** Select a key from a map *)
-
-  val get_err : 'a -> ('a, 'b) PMap.t t -> 'b with_err t
-  (** Explicit version of {!get}, with [`Error] if the key is not present *)
-
-  val iter : ('a,'b) PMap.t t -> ('a*'b) collection t
-  (** View a multimap as a proper collection *)
-
-  val flatten : ('a,'b collection) PMap.t t -> ('a*'b) collection t
-  (** View a multimap as a collection of individual key/value pairs *)
-
-  val flatten' : ('a,'b list) PMap.t t -> ('a*'b) collection t
-  (** View a multimap as a collection of individual key/value pairs *)
-
-  val map : ('b -> 'c) -> ('a, 'b) PMap.t t -> ('a, 'c) PMap.t t
-  (** Transform values *)
-
-  val to_list : ('a,'b) PMap.t t -> ('a*'b) list t
-
-  val reverse : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash -> unit ->
-                ('a,'b) PMap.t t -> ('b,'a list) PMap.t t
-  (** Reverse relation of the map, as a multimap *)
-
-  val reverse_multimap : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash -> unit ->
-                          ('a,'b list) PMap.t t -> ('b,'a list) PMap.t t
-  (** Reverse relation of the multimap *)
-
-  val fold : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> ('a,'b) PMap.t t -> 'acc t
-  (** Fold on the items of the map *)
-
-  val fold_multimap : ('acc -> 'a -> 'b -> 'acc) -> 'acc ->
-                      ('a,'b list) PMap.t t -> 'acc t
-  (** Fold on the items of the multimap *)
-end
 
 (** {6 Aggregation} *)
 
 val group_by : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash ->
-               ('a -> 'b) -> 'a collection t -> ('b,'a list) PMap.t t
+               ('a -> 'b) -> 'a t -> ('b,'a list) PMap.t t
 (** [group_by f] takes a collection [c] as input, and returns
     a multimap [m] such that for each [x] in [c],
     [x] occurs in [m] under the key [f x]. In other words, [f] is used
     to obtain a key from [x], and [x] is added to the multimap using this key. *)
 
 val group_by' : ?cmp:'b ord -> ?eq:'b equal -> ?hash:'b hash ->
-                ('a -> 'b) -> 'a collection t -> ('b * 'a list) collection t
+                ('a -> 'b) -> 'a t -> ('b * 'a list) t
 
 val count : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash ->
-             unit -> 'a collection t -> ('a, int) PMap.t t
+             unit -> 'a t -> ('a, int) PMap.t t
 (** [count c] returns a map from elements of [c] to the number
     of time those elements occur. *)
 
-val count' : ?cmp:'a ord -> unit -> 'a collection t -> ('a * int) collection t
+val count' : ?cmp:'a ord -> unit -> 'a t -> ('a * int) t
 
-val fold : ('b -> 'a -> 'b) -> 'b -> 'a collection t -> 'b t
+val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b t
 (** Fold over the collection *)
 
-val size : _ collection t -> int t
-(** Count how many elements the collection contains *)
-
 val reduce : ('a -> 'b) -> ('a -> 'b -> 'b) -> ('b -> 'c) ->
-             'a collection t -> 'c t
+             'a t -> 'c t
 (** [reduce start mix stop q] uses [start] on the first element of [q],
     and combine the result with following elements using [mix]. The final
     value is transformed using [stop]. *)
 
-val reduce_err : ('a -> 'b) -> ('a -> 'b -> 'b) -> ('b -> 'c) ->
-                 'a collection t -> 'c with_err t
-(** Same as {!reduce} but fails explicitely on empty collections. *)
+val is_empty : 'a t -> bool t
 
-val is_empty : 'a collection t -> bool t
+val sum : int t -> int t
 
-val sum : int collection t -> int t
+val contains : ?eq:'a equal -> 'a -> 'a t -> bool t
 
-val contains : ?eq:'a equal -> 'a -> 'a collection t -> bool t
+val average : int t -> int t
+val max : int t -> int t
+val min : int t -> int t
 
-val average : int collection t -> int t
-val max : int collection t -> int t
-val min : int collection t -> int t
-
-val average_err : int collection t -> int with_err t
-val max_err : int collection t -> int with_err t
-val min_err : int collection t -> int with_err t
-
-val for_all : ('a -> bool) -> 'a collection t -> bool t
-val exists : ('a -> bool) -> 'a collection t -> bool t
-val find : ('a -> bool) -> 'a collection t -> 'a option t
-val find_map : ('a -> 'b option) -> 'a collection t -> 'b option t
+val for_all : ('a -> bool) -> 'a t -> bool t
+val exists : ('a -> bool) -> 'a t -> bool t
+val find : ('a -> bool) -> 'a t -> 'a option t
+val find_map : ('a -> 'b option) -> 'a t -> 'b option t
 
 (** {6 Binary Operators} *)
 
 val join : ?cmp:'key ord -> ?eq:'key equal -> ?hash:'key hash ->
             ('a -> 'key) -> ('b -> 'key) ->
             merge:('key -> 'a -> 'b -> 'c option) ->
-            'a collection t -> 'b collection t -> 'c collection t
+            'a t -> 'b t -> 'c t
 (** [join key1 key2 ~merge] is a binary operation
     that takes two collections [a] and [b], projects their
     elements resp. with [key1] and [key2], and combine
@@ -281,49 +269,57 @@ val join : ?cmp:'key ord -> ?eq:'key equal -> ?hash:'key hash ->
     of values is discarded. *)
 
 val group_join : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash ->
-                  ('b -> 'a) -> 'a collection t -> 'b collection t ->
+                  ('b -> 'a) -> 'a t -> 'b t ->
                   ('a, 'b list) PMap.t t
 (** [group_join key2] associates to every element [x] of
     the first collection, all the elements [y] of the second
     collection such that [eq x (key y)] *)
 
-val product : 'a collection t -> 'b collection t -> ('a * 'b) collection t
+val product : 'a t -> 'b t -> ('a * 'b) t
 (** Cartesian product *)
 
-val append : 'a collection t -> 'a collection t -> 'a collection t
+val append : 'a t -> 'a t -> 'a t
 (** Append two collections together *)
 
 val inter : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash -> unit ->
-            'a collection t -> 'a collection t -> 'a collection t
+            'a t -> 'a t -> 'a t
 (** Intersection of two collections. Each element will occur at most once
     in the result *)
 
 val union : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash -> unit ->
-            'a collection t -> 'a collection t -> 'a collection t
+            'a t -> 'a t -> 'a t
 (** Union of two collections. Each element will occur at most once
     in the result *)
 
 val diff : ?cmp:'a ord -> ?eq:'a equal -> ?hash:'a hash -> unit ->
-            'a collection t -> 'a collection t -> 'a collection t
+            'a t -> 'a t -> 'a t
 (** Set difference *)
 
 (** {6 Tuple and Options} *)
 
 (** Specialized projection operators *)
 
-val fst : ('a * 'b) collection t -> 'a collection t
+val fst : ('a * 'b) t -> 'a t
 
-val snd : ('a * 'b) collection t -> 'b collection t
+val snd : ('a * 'b) t -> 'b t
 
-val map1 : ('a -> 'b) -> ('a * 'c) collection t -> ('b * 'c) collection t
+val map1 : ('a -> 'b) -> ('a * 'c) t -> ('b * 'c) t
 
-val map2 : ('a -> 'b) -> ('c * 'a) collection t -> ('c * 'b) collection t
+val map2 : ('a -> 'b) -> ('c * 'a) t -> ('c * 'b) t
 
-val flatten_opt : 'a option collection t -> 'a collection t
+val flatten_opt : 'a option t -> 'a t
 (** Flatten the collection by removing options *)
 
-val opt_unwrap : 'a option t -> 'a t
-(** unwrap an option type. Fails if the option value is [None] *)
+(** {6 Applicative} *)
+
+val pure : 'a -> 'a t
+(** Synonym to {!return} *)
+
+val app : ('a -> 'b) t -> 'a t -> 'b t
+(** Apply each function to each value *)
+
+val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+(** Infix synonym to {!app} *)
 
 (** {6 Monad}
 
@@ -336,57 +332,61 @@ val bind : ('a -> 'b t) -> 'a t -> 'b t
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** Infix version of {!bind} *)
 
-val return : 'a -> 'a t
-(** Synonym to {!start} *)
-
-val query_map : ('a -> 'b) -> 'a t -> 'b t
-(** PMap results directly, rather than collections of elements *)
-
 (** {6 Misc} *)
-
-val catch : 'a with_err t -> 'a t
-(** Catch errors within the execution itself. In other words, [run (catch q)]
-    with succeed with [x] if [q] succeeds with [`Ok x], and fail if [q]
-    succeeds with [`Error s] or if [q] fails *)
 
 val lazy_ : 'a lazy_t t -> 'a t
 
+val opt_unwrap : 'a option t -> 'a t
+
+val reflect : 'a t -> 'a sequence t
+(** [reflect q] evaluates all values in [q] and returns a sequence
+    of all those values. Also blocks optimizations *)
+
+(** {6 Infix} *)
+
+module Infix : sig
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (--) : int -> int -> int t
+end
+
 (** {6 Adapters} *)
 
-val to_array : 'a collection t -> 'a array t
-(** Build an array of results *)
-
-val to_seq : 'a collection t  -> 'a sequence t
+val to_seq : 'a t  -> 'a sequence t
 (** Build a (re-usable) sequence of elements, which can then be
     converted into other structures *)
 
-val to_hashtbl : ('a * 'b) collection t -> ('a, 'b) Hashtbl.t t
+val to_hashtbl : ('a * 'b) t -> ('a, 'b) Hashtbl.t t
 (** Build a hashtable from the collection *)
 
-val to_queue : 'a collection t -> ('a Queue.t -> unit) t
+val to_queue : 'a t -> 'a Queue.t t
 
-val to_stack : 'a collection t -> ('a Stack.t -> unit) t
+val to_stack : 'a t -> 'a Stack.t t
 
-module L : sig
-  val of_list : 'a list -> 'a collection t
-  val to_list : 'a collection t -> 'a list t
-  val run : 'a collection t -> 'a list with_err
-  val run_exn : 'a collection t -> 'a list
+module List : sig
+  val of_list : 'a list -> 'a t
+  val to_list : 'a t -> 'a list t
+  val run : 'a t -> 'a list
+end
+
+module Array : sig
+  val of_array : 'a array -> 'a t
+  val to_array : 'a t -> 'a array t
+  val run : 'a t -> 'a array
 end
 
 module AdaptSet(S : Set.S) : sig
-  val of_set : S.t -> S.elt collection t
-  val to_set : S.elt collection t -> S.t t
-  val run : S.elt collection t -> S.t with_err
-  val run_exn : S.elt collection t -> S.t
+  val of_set : S.t -> S.elt t
+  val to_set : S.elt t -> S.t t
+  val run : S.elt t -> S.t
 end
 
 module AdaptMap(M : Map.S) : sig
-  val of_map : 'a M.t -> (M.key * 'a) collection t
+  val of_map : 'a M.t -> (M.key * 'a) t
   val to_pmap : 'a M.t -> (M.key, 'a) PMap.t
-  val to_map : (M.key * 'a) collection t -> 'a M.t t
-  val run : (M.key * 'a) collection t -> 'a M.t with_err
-  val run_exn : (M.key * 'a) collection t -> 'a M.t
+  val to_map : (M.key * 'a) t -> 'a M.t t
+  val run : (M.key * 'a) t -> 'a M.t
 end
 
 module IO : sig
@@ -400,19 +400,19 @@ module IO : sig
   (** Read a whole file (given by name) and return its content as
       a string *)
 
-  val lines : string t -> string collection t
+  val lines : string t -> string t
   (** Convert a string into a collection of lines *)
 
   val lines' : string t -> string list t
   (** Convert a string into a list of lines *)
 
-  val join : string -> string collection t -> string t
+  val join : string -> string t -> string t
 
-  val unlines : string collection t -> string t
+  val unlines : string t -> string t
   (** Join lines together *)
 
   val out : out_channel -> string t -> unit
-  val out_lines : out_channel -> string collection t -> unit
+  val out_lines : out_channel -> string t -> unit
   (** Evaluate the query and print it line by line on the output *)
 
   (** {8 Run methods} *)
@@ -420,6 +420,6 @@ module IO : sig
   val to_file : string -> string t -> unit with_err
   val to_file_exn : string -> string t -> unit
 
-  val to_file_lines : string -> string collection t -> unit with_err
-  val to_file_lines_exn : string -> string collection t -> unit
+  val to_file_lines : string -> string t -> unit with_err
+  val to_file_lines_exn : string -> string t -> unit
 end

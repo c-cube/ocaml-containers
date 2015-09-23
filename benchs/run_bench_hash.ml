@@ -30,26 +30,6 @@ let rec hash_tree t h = match t with
   | Node (i, l) ->
       CCHash.list_ hash_tree l (CCHash.int_ i (CCHash.string_ "node" h))
 
-module Box = Containers_misc.PrintBox
-
-let tree2box = Box.mk_tree
-  (function
-    | Empty -> Box.empty, []
-    | Node (i,l) -> Box.line (CCPrint.sprintf "node %d" i), l
-  )
-
-let l = CCRandom.(run (CCList.random random_list))
-
-let pp_list buf l =
-  let box = Box.(frame (vlist ~bars:true (List.map tree2box l))) in
-  CCPrint.string buf (Box.to_string box)
-
-(* print some terms *)
-let () =
-  List.iter
-    (fun l -> CCPrint.printf "%a\n" pp_list l) l
-
-
 module H = Hashtbl.Make(struct
   type t = tree
   let equal = eq

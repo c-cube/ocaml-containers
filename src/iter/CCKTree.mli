@@ -91,6 +91,11 @@ val dfs : ?pset:'a pset -> 'a t -> [ `Enter of 'a | `Exit of 'a ] klist
 val bfs : ?pset:'a pset -> 'a t -> 'a klist
 (** Breadth first traversal of the tree *)
 
+val force : 'a t -> ([ `Nil | `Node of 'a * 'b list ] as 'b)
+(** [force t] evaluates [t] completely and returns a regular tree
+    structure
+    @since 0.13 *)
+
 val find : ?pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
 (** Look for an element that maps to [Some _] *)
 

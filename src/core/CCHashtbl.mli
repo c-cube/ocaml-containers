@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 type 'a sequence = ('a -> unit) -> unit
 type 'a eq = 'a -> 'a -> bool
 type 'a hash = 'a -> int
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Polymorphic tables} *)
 
@@ -66,6 +67,10 @@ val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
 
 val of_list : ('a * 'b) list -> ('a,'b) Hashtbl.t
 (** From the given list of bindings, added in order *)
+
+val print : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
+(** Printer for table
+    @since 0.13 *)
 
 (** {2 Functor} *)
 
@@ -103,6 +108,10 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
   (** From the given list of bindings, added in order *)
+
+  val print : key printer -> 'a printer -> 'a t printer
+  (** Printer for tables
+      @since 0.13 *)
 end
 
 module Make(X : Hashtbl.HashedType) :

@@ -198,6 +198,30 @@ module Split = struct
     else Some (String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1))
 end
 
+let compare_versions a b =
+  let of_int s = try Some (int_of_string s) with _ -> None in
+  let rec cmp_rec a b = match a(), b() with
+    | None, None -> 0
+    | Some _, None -> 1
+    | None, Some _ -> -1
+    | Some x, Some y ->
+        match of_int x, of_int y with
+        | None, None ->
+            let c = String.compare x y in
+            if c<>0 then c else cmp_rec a b
+        | Some _, None -> 1
+        | None, Some _ -> -1
+        | Some x, Some y ->
+            let c = Pervasives.compare x y in
+            if c<>0 then c else cmp_rec a b
+  in
+  cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
+
+(*$Q
+  Q.(pair printable_string printable_string) (fun (a,b) -> \
+    CCOrd.equiv (compare_versions a b) (CCOrd.opp (compare_versions b a)))
+*)
+
 let repeat s n =
   assert (n>=0);
   let len = String.length s in

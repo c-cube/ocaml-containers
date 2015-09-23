@@ -48,13 +48,13 @@ module type S = sig
 
   val length : _ t -> int
 
-  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
-  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** fold left on array, with index *)
+  val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  (** Fold left on array, with index *)
 
   val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
-  (** fold left on array until a stop condition via [('a, `Stop)] is
+  (** Fold left on array until a stop condition via [('a, `Stop)] is
       indicated by the accumulator
       @since 0.8 *)
 
@@ -74,11 +74,13 @@ module type S = sig
       that [f x = Some y], else it returns [None] *)
 
   val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-  (** Like {!find}, but also pass the index to the predicate function. *)
+  (** Like {!find}, but also pass the index to the predicate function.
+      @since 0.3.4 *)
 
   val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
   (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
-    and [p x] holds. Otherwise returns [None] *)
+      and [p x] holds. Otherwise returns [None]
+      @since 0.3.4 *)
 
   val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
   (** Lookup the index of some value in a sorted array.
@@ -88,6 +90,25 @@ module type S = sig
   val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
   (** Same as {!lookup_exn}, but
       @raise Not_found if the key is not present *)
+
+  val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+    [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
+  (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
+      provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
+      the result is not specified (may raise Invalid_argument).
+
+      Complexity: O(log n) where n is the length of the array
+      (dichotomic search).
+
+      @return
+      - [`At i] if [cmp arr.(i) x = 0] (for some i)
+      - [`All_lower] if all elements of [arr] are lower than [x]
+      - [`All_bigger] if all elements of [arr] are bigger than [x]
+      - [`Just_after i] if [arr.(i) < x < arr.(i+1)]
+      - [`Empty] if the array is empty
+
+      @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp]
+      @since 0.13 *)
 
   val for_all : ('a -> bool) -> 'a t -> bool
 
@@ -200,6 +221,23 @@ let _lookup_exn ~cmp k a i j =
       | 0 -> j
       | n when n<0 -> _lookup_rec ~cmp k a (i+1) (j-1)
       | _ -> raise Not_found  (* too high *)
+
+let bsearch_ ~cmp x arr i j =
+  let rec aux i j =
+    if i > j
+      then `Just_after j
+      else
+        let middle = i + (j - i) / 2 in (* avoid overflow *)
+        match cmp x arr.(middle) with
+        | 0 -> `At middle
+        | n when n<0 -> aux i (middle - 1)
+        | _ -> aux (middle + 1) j
+  in
+  if i>=j then `Empty
+  else match cmp arr.(i) x, cmp arr.(j) x with
+  | n, _ when n>0 -> `All_bigger
+  | _, n when n<0 -> `All_lower
+  | _ -> aux i j
 
 let rec _for_all p a i j =
   i = j || (p a.(i) && _for_all p a (i+1) j)
@@ -390,6 +428,18 @@ let lookup ?(cmp=Pervasives.compare) k a =
   lookup 2 [| 1 |] = None
 *)
 
+let bsearch ?(cmp=Pervasives.compare) k a = bsearch_ ~cmp k a 0 (Array.length a-1)
+
+(*$T bsearch
+  bsearch 3 [|1; 2; 2; 3; 4; 10|] = `At 3
+  bsearch 5 [|1; 2; 2; 3; 4; 10|] = `Just_after 4
+  bsearch 1 [|1; 2; 5; 5; 11; 12|] = `At 0
+  bsearch 12 [|1; 2; 5; 5; 11; 12|] = `At 5
+  bsearch 10 [|1; 2; 2; 3; 4; 9|] = `All_lower
+  bsearch 0 [|1; 2; 2; 3; 4; 9|] = `All_bigger
+  bsearch 3 [| |] = `Empty
+*)
+
 let (>>=) a f = flat_map f a
 
 let (>>|) a f = map f a
@@ -553,6 +603,9 @@ module Sub = struct
   let lookup ?(cmp=Pervasives.compare) k a =
     try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1))
     with Not_found -> None
+
+  let bsearch ?(cmp=Pervasives.compare) k a =
+    bsearch_ ~cmp k a.arr a.i (a.j - 1)
 
   let for_all p a = _for_all p a.arr a.i a.j
 

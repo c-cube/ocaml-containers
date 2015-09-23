@@ -226,32 +226,32 @@ include S with type t := string
 
 val map2 : (char -> char -> char) -> string -> string -> string
 (** map pairs of chars
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val iter2: (char -> char -> unit) -> string -> string -> unit
 (** iterate on pairs of chars
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val iteri2: (int -> char -> char -> unit) -> string -> string -> unit
 (** iterate on pairs of chars with their index
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val fold2: ('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a
 (** fold on pairs of chars
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val for_all2 : (char -> char -> bool) -> string -> string -> bool
 (** all pair of chars respect the predicate?
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val exists2 : (char -> char -> bool) -> string -> string -> bool
 (** exists a pair of chars?
-    @raises Invalid_argument if the strings have not the same length
+    @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 (** {2 Splitting} *)
@@ -311,6 +311,22 @@ module Split : sig
     Split.right ~by:"_" "abcde" = None
   *)
 end
+
+(** {2 Utils} *)
+
+val compare_versions : string -> string -> int
+(** [compare_versions a b] compares {i version strings} [a] and [b],
+    considering that numbers are above text.
+    @since 0.13 *)
+
+(*$T
+  compare_versions "0.1.3" "0.1" > 0
+  compare_versions "10.1" "2.0" > 0
+  compare_versions "0.1.alpha" "0.1" > 0
+  compare_versions "0.3.dev" "0.4" < 0
+  compare_versions "0.foo" "0.0" < 0
+  compare_versions "1.2.3.4" "01.2.4.3" < 0
+*)
 
 (** {2 Slices} A contiguous part of a string *)
 

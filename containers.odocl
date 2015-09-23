@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f6b14d1de025e74a6698a2eae3486204)
+# DO NOT EDIT (digest: a900d68fa0b4b050dbefd78b29de4a01)
 src/core/CCVector
 src/core/CCPrint
 src/core/CCError
@@ -22,22 +22,8 @@ src/core/CCHashtbl
 src/core/CCMap
 src/core/CCFormat
 src/core/CCIO
+src/core/CCInt64
 src/core/Containers
-src/misc/AbsSet
-src/misc/Automaton
-src/misc/Bij
-src/misc/CSM
-src/misc/Hashset
-src/misc/LazyGraph
-src/misc/PHashtbl
-src/misc/PrintBox
-src/misc/RAL
-src/misc/RoseTree
-src/misc/SmallSet
-src/misc/UnionFind
-src/misc/Univ
-src/misc/Puf
-src/misc/Backtrack
 src/iter/CCKTree
 src/iter/CCKList
 src/data/CCMultiMap
@@ -57,6 +43,12 @@ src/data/CCPersistentArray
 src/data/CCMixset
 src/data/CCHashconsedSet
 src/data/CCGraph
+src/data/CCHashSet
+src/data/CCBitField
+src/data/CCHashTrie
+src/data/CCBloom
+src/data/CCWBTree
+src/data/CCRAL
 src/string/Containers_string
 src/string/CCKMP
 src/string/CCLevenshtein
@@ -74,8 +66,4 @@ src/unix/CCUnix
 src/sexp/CCSexp
 src/sexp/CCSexpStream
 src/sexp/CCSexpM
-src/lwt/Lwt_automaton
-src/lwt/Lwt_actor
-src/lwt/Lwt_klist
-src/lwt/Lwt_pipe
 # OASIS_STOP

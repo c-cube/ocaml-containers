@@ -131,6 +131,27 @@ module type S = sig
   val print : key formatter -> 'a formatter -> 'a t formatter
 end
 
+(*$inject
+  module H = Make(CCInt)
+
+  let my_list =
+    [ 1, "a";
+      2, "b";
+      3, "c";
+      4, "d";
+    ]
+
+  let my_seq = Sequence.of_list my_list
+
+  let _list_uniq = CCList.sort_uniq
+    ~cmp:(fun a b -> Pervasives.compare (fst a) (fst b))
+
+  let _list_int_int = Q.(
+    map_same_type _list_uniq
+      (list_of_size Gen.(0 -- 40) (pair small_int small_int))
+  )
+ *)
+
 (** {2 Implementation} *)
 
 module Make(H : HashedType) : S with type key = H.t = struct
@@ -187,6 +208,41 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   let find t k = Table.find (reroot t) k
 
+  (*$R
+    let h = H.of_seq my_seq in
+    OUnit.assert_equal "a" (H.find h 1);
+    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+    let h' = H.replace h 5 "e" in
+    OUnit.assert_equal "a" (H.find h' 1);
+    OUnit.assert_equal "e" (H.find h' 5);
+    OUnit.assert_equal "a" (H.find h 1);
+    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+  *)
+
+  (*$R
+    let n = 10000 in
+    let seq = Sequence.map (fun i -> i, string_of_int i) Sequence.(0--n) in
+    let h = H.of_seq seq in
+    Sequence.iter
+      (fun (k,v) ->
+        OUnit.assert_equal ~printer:(fun x -> x) v (H.find h k))
+      seq;
+    OUnit.assert_raises Not_found (fun () -> H.find h (n+1));
+  *)
+
+  (*$QR
+    _list_int_int
+      (fun l ->
+        let h = H.of_list l in
+        List.for_all
+          (fun (k,v) ->
+            try
+              H.find h k = v
+            with Not_found -> false)
+          l
+      )
+  *)
+
   let get_exn k t = find t k
 
   let get k t =
@@ -196,6 +252,20 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let mem t k = Table.mem (reroot t) k
 
   let length t = Table.length (reroot t)
+
+  (*$R
+    let h = H.of_seq
+      Sequence.(map (fun i -> i, string_of_int i)
+        (0 -- 200)) in
+    OUnit.assert_equal 201 (H.length h);
+  *)
+
+  (*$QR
+    _list_int_int (fun l ->
+      let h = H.of_list l in
+      H.length h = List.length l
+    )
+  *)
 
   let replace t k v =
     let tbl = reroot t in
@@ -224,6 +294,36 @@ module Make(H : HashedType) : S with type key = H.t = struct
     with Not_found ->
       (* not member, nothing to do *)
       t
+
+  (*$R
+    let h = H.of_seq my_seq in
+    OUnit.assert_equal (H.find h 2) "b";
+    OUnit.assert_equal (H.find h 3) "c";
+    OUnit.assert_equal (H.find h 4) "d";
+    OUnit.assert_equal (H.length h) 4;
+    let h = H.remove h 2 in
+    OUnit.assert_equal (H.find h 3) "c";
+    OUnit.assert_equal (H.length h) 3;
+    OUnit.assert_raises Not_found (fun () -> H.find h 2)
+  *)
+
+  (*$R
+    let open Sequence.Infix in
+    let n = 10000 in
+    let seq = Sequence.map (fun i -> i, string_of_int i) (0 -- n) in
+    let h = H.of_seq seq in
+    OUnit.assert_equal (n+1) (H.length h);
+    let h = Sequence.fold (fun h i -> H.remove h i) h (0 -- 500) in
+    OUnit.assert_equal (n-500) (H.length h);
+    OUnit.assert_bool "is_empty" (H.is_empty (H.create 16));
+  *)
+
+  (*$QR
+    _list_int_int (fun l ->
+      let h = H.of_list l in
+      let h = List.fold_left (fun h (k,_) -> H.remove h k) h l in
+      H.is_empty h)
+    *)
 
   let update t k f =
     let v = get k t in
@@ -297,6 +397,22 @@ module Make(H : HashedType) : S with type key = H.t = struct
           | Some _ -> Table.replace tbl k v2);
     ref (Table tbl)
 
+  (*$R
+    let t1 = H.of_list [1, "a"; 2, "b1"] in
+    let t2 = H.of_list [2, "b2"; 3, "c"] in
+    let t = H.merge
+      (fun _ v1 v2 -> match v1, v2 with
+        | None, _ -> v2
+        | _ , None -> v1
+        | Some s1, Some s2 -> if s1 < s2 then Some s1 else Some s2)
+      t1 t2
+    in
+    OUnit.assert_equal ~printer:string_of_int 3 (H.length t);
+    OUnit.assert_equal "a" (H.find t 1);
+    OUnit.assert_equal "b1" (H.find t 2);
+    OUnit.assert_equal "c" (H.find t 3);
+  *)
+
   let add_seq init seq =
     let tbl = ref init in
     seq (fun (k,v) -> tbl := replace !tbl k v);
@@ -307,6 +423,25 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let add_list init l =
     add_seq init (fun k -> List.iter k l)
 
+  (*$QR
+    _list_int_int (fun l ->
+      let l1, l2 = List.partition (fun (x,_) -> x mod 2 = 0) l in
+      let h1 = H.of_list l1 in
+      let h2 = H.add_list h1 l2 in
+      List.for_all
+        (fun (k,v) -> H.find h2 k = v)
+        l
+      &&
+      List.for_all
+        (fun (k,v) -> H.find h1 k = v)
+        l1
+      &&
+      List.length l1 = H.length h1
+      &&
+      List.length l = H.length h2
+      )
+  *)
+
   let of_list l = add_list (empty ()) l
 
   let to_list t =
@@ -314,10 +449,23 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let bindings = Table.fold (fun k v acc -> (k,v)::acc) tbl [] in
     bindings
 
+  (*$R
+    let h = H.of_seq my_seq in
+    let l = Sequence.to_list (H.to_seq h) in
+    OUnit.assert_equal my_list (List.sort compare l)
+  *)
+
   let to_seq t =
     fun k ->
       let tbl = reroot t in
       Table.iter (fun x y -> k (x,y)) tbl
+
+  (*$R
+    let h = H.of_seq my_seq in
+    OUnit.assert_equal "b" (H.find h 2);
+    OUnit.assert_equal "a" (H.find h 1);
+    OUnit.assert_raises Not_found (fun () -> H.find h 42);
+  *)
 
   let equal eq t1 t2 =
     length t1 = length t2

@@ -56,3 +56,10 @@ val random_range : int -> int -> t random_gen
 
 val pp : t printer
 val print : t formatter
+
+val to_string : t -> string
+(** @since 0.13 *)
+
+val of_string : string -> t option
+(** @since 0.13 *)
+

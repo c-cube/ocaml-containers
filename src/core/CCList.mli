@@ -48,6 +48,11 @@ val cons : 'a -> 'a t -> 'a t
 val append : 'a t -> 'a t -> 'a t
 (** Safe version of append *)
 
+val cons_maybe : 'a option -> 'a t -> 'a t
+(** [cons_maybe (Some x) l] is [x :: l]
+    [cons_maybe None l] is [l]
+    @since 0.13 *)
+
 val (@) : 'a t -> 'a t -> 'a t
 
 val filter : ('a -> bool) -> 'a t -> 'a t
@@ -109,9 +114,19 @@ val take : int -> 'a t -> 'a t
 val drop : int -> 'a t -> 'a t
 (** drop the [n] first elements, keep the rest *)
 
-val split : int -> 'a t -> 'a t * 'a t
-(** [split n l] returns [l1, l2] such that [l1 @ l2 = l] and
+val take_drop : int -> 'a t -> 'a t * 'a t
+(** [take_drop n l] returns [l1, l2] such that [l1 @ l2 = l] and
     [length l1 = min (length l) n] *)
+
+val take_while : ('a -> bool) -> 'a t -> 'a t
+(** @since 0.13 *)
+
+val drop_while : ('a -> bool) -> 'a t -> 'a t
+(** @since 0.13 *)
+
+val split : int -> 'a t -> 'a t * 'a t
+(** synonym to {!take_drop}
+    @deprecated since 0.13: conflict with the {!List.split} standard function *)
 
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
@@ -134,14 +149,14 @@ val find_map : ('a -> 'b option) -> 'a t -> 'b option
     @since 0.11 *)
 
 val find : ('a -> 'b option) -> 'a list -> 'b option
-(** @deprecated in favor of {!find_map}, for the name is too confusing *)
+(** @deprecated since 0.11 in favor of {!find_map}, for the name is too confusing *)
 
 val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
     @since 0.11 *)
 
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-(** @deprecated in favor of {!find_mapi}, name is too confusing
+(** @deprecated since 0.11 in favor of {!find_mapi}, name is too confusing
     @since 0.3.4 *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
@@ -212,27 +227,30 @@ end
 
 module Set : sig
   val add : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [add x set] adds [x] to [set] if it was not already present
+  (** [add x set] adds [x] to [set] if it was not already present. Linear time.
       @since 0.11 *)
 
   val remove : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [remove x set] removes one occurrence of [x] from [set]
+  (** [remove x set] removes one occurrence of [x] from [set]. Linear time.
       @since 0.11 *)
 
   val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
-  (** membership to the list *)
+  (** membership to the list. Linear time *)
 
   val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   (** test for inclusion *)
 
   val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
-  (** list uniq: remove duplicates w.r.t the equality predicate *)
+  (** list uniq: remove duplicates w.r.t the equality predicate.
+      Complexity is quadratic in the length of the list, but the order
+      of elements is preserved. If you wish for a faster de-duplication
+      but do not care about the order, use {!sort_uniq}*)
 
   val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** list union *)
+  (** list union. Complexity is product of length of inputs. *)
 
   val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** list intersection *)
+  (** list intersection. Complexity is product of length of inputs., *)
 end
 
 (** {2 Other Constructors} *)

@@ -90,3 +90,6 @@ module String = struct
   include CCString
 end
 module Vector = CCVector
+
+module Int64 = CCInt64
+(** @since 0.13 *)
