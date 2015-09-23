@@ -1,15 +1,15 @@
-# Changelog
+= Changelog
 
-## 0.12
+== 0.12
 
-### breaking
+=== breaking
 
 - change type of `CCString.blit` so it writes into `Bytes.t`
 - better default opening flags for `CCIO.with_{in, out}`
 
-### non-breaking
+=== non-breaking
 
-note: use of `containers.io` is deprecated (its only module has moved to `containers`)
+NOTE: use of `containers.io` is deprecated (its only module has moved to `containers`)
 
 - add `CCString.mem`
 - add `CCString.set` for updating immutable strings
@@ -28,7 +28,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - fix: use the proper array module in `CCRingBuffer`
 - bugfix: `CCRandom.float_range`
 
-## 0.11
+== 0.11
 
 - add `CCList.{remove,is_empty}`
 - add `CCOpt.is_none`
@@ -50,7 +50,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - add `CCList.Set.{add,remove}`
 - fix doc of `CCstring.Split.list_`
 
-## 0.10
+== 0.10
 
 - add `containers.misc.Puf.iter`
 - add `CCString.{lines,unlines,concat_gen}`
@@ -65,7 +65,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - remove `containers.pervasives`, add the module `Containers` to core
 - bugfix in `CCFormat.to_file`
 
-## 0.9
+== 0.9
 
 - add `Float`, `Ref`, `Set`, `Format` to `CCPervasives`
 - `CCRingBuffer.append` (simple implementation)
@@ -85,7 +85,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - add `CCSet` module in core/
 - add `CCRef` module in core/
 
-## 0.8
+== 0.8
 
 - add `@Emm` to authors
 - refactored heavily `CCFuture` (much simpler, cleaner, basic API and thread pool)
@@ -108,9 +108,9 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCHashtbl.{keys,values}_list`
 - more accurate type for `CCHashtbl.Make`
 
-## 0.7
+== 0.7
 
-#### breaking
+=== breaking
 
 - remove `cgi`/
 - removed useless Lwt-related module
@@ -118,7 +118,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - split the library into smaller pieces (with `containers.io`, `containers.iter`,
     `containers.sexp`, `containers.data`)
 
-#### other changes
+=== other changes
 
 - cleanup: move sub-libraries to their own subdir each; mv everything into `src/`
 - `sexp`:
@@ -138,7 +138,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
     * bugfix in `CCIO.read_all` and `CCIO.read_chunks`
 - use `-no-alias-deps`
 
-## 0.6.1
+== 0.6.1
 
 - use subtree `gen/` for `CCGen` (symlink) rather than a copy.
 - Add benchmarks for the function `iter` of iterators.
@@ -146,14 +146,14 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCOpt.get_lazy` convenience function
 - introduce `CCFloat`, add float functions to `CCRandom` (thanks to @struktured)
 
-## 0.6
+== 0.6
 
-#### breaking changes
+=== breaking changes
 
 - new `CCIO` module, much simpler, but incompatible interface
 - renamed `CCIO` to `advanced.CCMonadIO`
 
-#### other changes
+=== other changes
 
 - `CCMultiSet.{add_mult,remove_mult,update}`
 - `CCVector.{top,top_exn}`
@@ -171,9 +171,9 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
   are now tailrec
 
 
-## 0.5
+== 0.5
 
-#### breaking changes
+=== breaking changes
 
 - dependency on `cppo` (thanks to @whitequark, see `AUTHORS.md`) and `bytes`
 - `CCError`:
@@ -182,7 +182,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCPervasives.Opt` -> `CCPervasives.Option`
 - `Levenshtein.Index.remove` changed signature (useless param removed)
 
-#### other changes
+=== other changes
 
 - stronger inlining for `CCVector` (so that e.g. push is inline)
 - more tests for `CCVector`
@@ -197,7 +197,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - add Format printers to `CCString`
 - `AUTHORS.md`
 
-## 0.4.1
+== 0.4.1
 
 - `CCOpt.get`
 - new functions in `CCSexp.Traverse`
@@ -206,7 +206,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - update of readme
 - generate doc for `containers.advanced`
 
-## 0.4
+== 0.4
 
 - `core/CCSexp` for fast and lightweight S-expressions parsing/printing
 - moved `CCLinq`, `CCBatch` and `CCat` from core/ to advanced/
@@ -221,7 +221,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCPervasives` module, replacing modules of the standard library
 - removed type alias `CCString.t` (duplicate of String.t which already exists)
 
-## 0.3.4
+== 0.3.4
 
 - subtree for `sequence` repo
 - `CCSequence` is now a copy of `sequence`
@@ -231,7 +231,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - specialize some comparison functions
 - `CCOrd.map`
 
-## 0.3.3
+== 0.3.3
 
 - readme: add ci hook (to http://ci.cedeela.fr)
 - `CCIO`: monad for IO actions-as-values
@@ -251,7 +251,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCString.init`
 - `CCError.fail_printf`
 
-## 0.3.2
+== 0.3.2
 
 - small change in makefile
 - conversions for `CCString`
@@ -276,7 +276,7 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCError.map2`
 - more combinators in `CCError`
 
-## 0.3.1
+== 0.3.1
 
 - test for `CCArray.shuffle`
 - bugfix in `CCArray.shuffle`
@@ -289,4 +289,4 @@ note: use of `containers.io` is deprecated (its only module has moved to `contai
 - fix `CCPrint.unit`, add `CCPrint.silent`
 - fix type mismatch
 
-note: `git log --no-merges previous_version..HEAD --pretty=%s`
+NOTE: `git log --no-merges previous_version..HEAD --pretty=%s`

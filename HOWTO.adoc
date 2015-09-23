@@ -1,5 +1,6 @@
+= HOWTO
 
-## Make a release
+== Make a release
 
 Beforehand, check `grep deprecated -r src` to see whether some functions
 can be removed.
@@ -16,11 +17,12 @@ can be removed.
 9. tag, and push both to github
 10. new opam package
 
-## List Authors
+== List Authors
 
-`git log --format='%aN' | sort -u`
+  `git log --format='%aN' | sort -u`
 
-## Subtree
+== Subtree
 
-If gen is [this remote](https://github.com/c-cube/gen.git):
-`git subtree pull --prefix gen gen master --squash`
+If gen is https://github.com/c-cube/gen.git[this remote]:
+
+  git subtree pull --prefix gen gen master --squash

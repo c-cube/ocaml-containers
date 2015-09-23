@@ -1,4 +1,4 @@
-# Authors and contributors
+= Authors and contributors
 
 - Simon Cruanes (`companion_cube`)
 - Drup (Gabriel Radanne)
