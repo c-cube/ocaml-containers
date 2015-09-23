@@ -53,7 +53,7 @@ examples: all
 	ocamlbuild $(OPTIONS) -package unix -I . $(EXAMPLES)
 
 push_doc: doc
-	scp -r containers.docdir/* cedeela.fr:~/simon/root/software/containers/
+	rsync -tavu containers.docdir/* cedeela.fr:~/simon/root/software/containers/
 
 DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*)
 QTESTABLE=$(filter-out $(DONTTEST), \

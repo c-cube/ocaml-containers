@@ -2,7 +2,7 @@
 
 {2 Change Log}
 
-See {{: https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md } this file}
+See {{: https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.adoc } this file}
 
 {2 License}
 
