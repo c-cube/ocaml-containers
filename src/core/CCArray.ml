@@ -108,7 +108,7 @@ module type S = sig
       - [`Empty] if the array is empty
 
       @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp]
-      @since NEXT_RELEASE *)
+      @since 0.13 *)
 
   val for_all : ('a -> bool) -> 'a t -> bool
 

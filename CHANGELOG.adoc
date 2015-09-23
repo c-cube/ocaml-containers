@@ -1,5 +1,67 @@
 = Changelog
 
+== 0.13
+
+=== Breaking changes
+
+- big refactoring of `CCLinq` (now simpler and cleaner)
+- changed the types `input` and `ParseError`  in `CCParse`
+- move `containers.misc` and `containers.lwt` into their own repo
+- change the exceptions in `CCVector`
+- change signature of `CCDeque.of_seq`
+
+=== Other changes
+
+- add module `CCWBTree`, a weight-balanced tree, in `containers.data`.
+- add module `CCBloom` in `containers.data`, a bloom filter
+- new module `CCHashTrie` in `containers.data`, HAMT-like associative map
+- add module `CCBitField` in `containers.data`, a safe abstraction for bitfields of < 62 bits
+- add module `CCHashSet` into `containers.data`, a mutable set
+- add module `CCInt64`
+- move module `RAL` into `containers.data` as `CCRAL`
+- new module `CCThread` in `containers.thread`, utils for threading (+ blocking queue)
+- new module `CCSemaphore` in `containers.thread`, with simple semaphore
+- add `containers.top`, a small library that installs printers
+
+- add `CCParse.memo` for memoization (changes `CCParse.input`)
+- add `CCString.compare_versions`
+- update `CCHash` with a functor and module type for generic hashing
+- add `CCList.{take,drop}_while`; improve map performance
+- add `CCList.cons_maybe`
+- add `CCArray.bsearch` (back from batteries)
+- add fair functions to `CCKList`
+- deprecate `CCList.split`, introduce `CCList.take_drop` instead.
+- add `CCKtree.force`
+- add tests to `CCIntMap`; now flagged "stable" (for the API)
+- add `CCOpt.choice_seq`
+- add `CCOpt.print`
+- add `CCIntMap.{equal,compare,{of,to,add}_{gen,klist}}`
+- add `CCThread.Barrier` for simple synchronization
+- add `CCPersistentArray.{append,flatten,flat_map,of_gen,to_gen}`
+- add `CCDeque.clear`
+- add `CCDeque.{fold,append_{front,back},{of,to}_{gen,list}}` and others
+- add `CCKList.{zip, unzip}`
+- add `CCKList.{of_array,to_array}`
+- add `CCKList.{head,tail,mapi,iteri}`
+- add `CCKList.{unfold,of_gen}`
+- add `CCParse.{input_of_chan,parse_file,parse_file_exn}`
+- modify `CCParse.U.list` to skip newlines
+- add `CCDeque.print`
+- add `CCBV.print`
+- add printer to `CCHashtbl`
+
+- bugfix in `CCSexpM`
+- new tests in `CCTrie`; bugfix in `CCTrie.below`
+- lots of new tests
+- more benchmarks; cleanup of benchmarks
+- migration of tests to 100% qtest
+- migration markdown to asciidoc for doc (readme, etc.)
+- add tests to `CCIntMap`, add type safety, and fix various bugs in `{union,inter}`
+- more efficient `CCThread.Queue.{push,take}_list`
+- slightly different implem for `CCThread.Queue.{take,push}`
+- new implementation for `CCDeque`, more efficient
+- update makefile (target devel)
+
 == 0.12
 
 === breaking

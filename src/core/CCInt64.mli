@@ -5,7 +5,7 @@
 
  Helpers for in64.
 
- @since NEXT_RELEASE *)
+ @since 0.13 *)
 
 type t = int64
 

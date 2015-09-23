@@ -110,7 +110,7 @@ val to_seq_slice : t -> int -> int -> char sequence
 val to_gen_slice : t -> int -> int -> char gen
 
 val print : t printer
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 (** {2 Memory-map} *)
 

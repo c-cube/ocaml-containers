@@ -12,7 +12,7 @@
 
     {b status: stable}
 
-    @since NEXT_RELEASE
+    @since 0.13
 *)
 
 type +'a t

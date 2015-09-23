@@ -3,7 +3,7 @@
 
 (** {1 Semaphores}
 
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 type t
 (** A semaphore *)

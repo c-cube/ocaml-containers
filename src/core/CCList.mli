@@ -51,7 +51,7 @@ val append : 'a t -> 'a t -> 'a t
 val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l]
     [cons_maybe None l] is [l]
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val (@) : 'a t -> 'a t -> 'a t
 
@@ -119,14 +119,14 @@ val take_drop : int -> 'a t -> 'a t * 'a t
     [length l1 = min (length l) n] *)
 
 val take_while : ('a -> bool) -> 'a t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val drop_while : ('a -> bool) -> 'a t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val split : int -> 'a t -> 'a t * 'a t
 (** synonym to {!take_drop}
-    @deprecated since NEXT_RELEASE: conflict with the {!List.split} standard function *)
+    @deprecated since 0.13: conflict with the {!List.split} standard function *)
 
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if

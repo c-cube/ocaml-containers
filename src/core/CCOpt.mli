@@ -129,7 +129,7 @@ val random : 'a random_gen -> 'a t random_gen
 val choice_seq : 'a t sequence -> 'a t
 (** [choice_seq s] is similar to {!choice}, but works on sequences.
     It returns the first [Some x] occurring in [s], or [None] otherwise.
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val to_gen : 'a t -> 'a gen
 val to_seq : 'a t -> 'a sequence
@@ -137,5 +137,5 @@ val to_seq : 'a t -> 'a sequence
 val pp : 'a printer -> 'a t printer
 
 val print : 'a fmt -> 'a t fmt
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 

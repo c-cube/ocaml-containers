@@ -55,7 +55,7 @@ val apply : 'a hash_fun -> 'a -> int
 
 (** {2 Basic Combinators}
 
- Those combinators have been renamed in NEXT_RELEASE, so as to
+ Those combinators have been renamed in 0.13, so as to
  remove the trailing "_".
  They are now defined by the application of {!Make}
 
@@ -112,7 +112,7 @@ val klist : 'a hash_fun -> 'a klist hash_fun
   This can for instance be used for cryptographic hashing or
   checksums such as MD5.
 
-  @since NEXT_RELEASE *)
+  @since 0.13 *)
 
 module type HASH = sig
   type state

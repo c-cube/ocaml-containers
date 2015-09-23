@@ -92,4 +92,4 @@ end
 module Vector = CCVector
 
 module Int64 = CCInt64
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)

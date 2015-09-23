@@ -41,7 +41,7 @@ val with_lock : 'a t -> ('a -> 'b) -> 'b
     fails too but the lock is released *)
 
 (** Type allowing to manipulate the lock as a reference
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 module LockRef : sig
   type 'a t
 
@@ -56,7 +56,7 @@ val with_lock_as_ref : 'a t -> f:('a LockRef.t -> 'b) -> 'b
 (** [with_lock_as_ref l f] calls [f] with a reference-like object
     that allows to manipulate the value of [l] safely.
     The object passed to [f] must not escape the function call
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val update : 'a t -> ('a -> 'a) -> unit
 (** [update l f] replaces the content [x] of [l] with [f x], atomically *)
@@ -69,13 +69,13 @@ val get : 'a t -> 'a
 
 val set : 'a t -> 'a -> unit
 (** Atomically set the value
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val incr : int t -> unit
 (** Atomically increment the value
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val decr : int t -> unit
 (** Atomically decrement the value
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 

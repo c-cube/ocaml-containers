@@ -27,7 +27,7 @@ Format.printf "f: %a@." B.pp f;;
 
 {b status: experimental}
 
-@since NEXT_RELEASE
+@since 0.13
 *)
 
 exception TooManyFields

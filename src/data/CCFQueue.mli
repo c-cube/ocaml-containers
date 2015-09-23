@@ -150,4 +150,4 @@ val (--) : int -> int -> int t
     @since 0.10 *)
 
 val print : 'a printer -> 'a t printer
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)

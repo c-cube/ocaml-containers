@@ -52,11 +52,11 @@ val remove : int -> 'a t -> 'a t
 val equal : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 (** [equal ~eq a b] checks whether [a] and [b] have the same set of pairs
     (key, value), comparing values with [eq]
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
 (** Total order between maps; the precise order is unspecified .
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val update : int -> ('a option -> 'a option) -> 'a t -> 'a t
 
@@ -99,22 +99,22 @@ val keys : _ t -> int sequence
 val values : 'a t -> 'a sequence
 
 val add_gen : 'a t -> (int * 'a) gen -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val of_gen : (int * 'a) gen -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val to_gen : 'a t -> (int * 'a) gen
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val add_klist : 'a t -> (int * 'a) klist -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val of_klist : (int * 'a) klist -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val to_klist : 'a t -> (int * 'a) klist
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 
@@ -125,7 +125,7 @@ val as_tree : 'a t -> [`Node of int * int | `Leaf of int * 'a ] tree
 type 'a printer = Format.formatter -> 'a -> unit
 
 val print : 'a printer -> 'a t printer
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 (** Helpers *)
 

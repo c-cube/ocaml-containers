@@ -4,7 +4,7 @@
 
     {b status: unstable}
 
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit

@@ -94,7 +94,7 @@ val bfs : ?pset:'a pset -> 'a t -> 'a klist
 val force : 'a t -> ([ `Nil | `Node of 'a * 'b list ] as 'b)
 (** [force t] evaluates [t] completely and returns a regular tree
     structure
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val find : ?pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
 (** Look for an element that maps to [Some _] *)

@@ -58,8 +58,8 @@ val pp : t printer
 val print : t formatter
 
 val to_string : t -> string
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 
 val of_string : string -> t option
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 

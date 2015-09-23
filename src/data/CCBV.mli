@@ -123,4 +123,4 @@ val of_seq : int sequence -> t
 
 val print : Format.formatter -> t -> unit
 (** Print the bitvector as a string of bits
-    @since NEXT_RELEASE *)
+    @since 0.13 *)

@@ -4,7 +4,7 @@
 (** {1 Threads}
 
     {b status: unstable}
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 type t = Thread.t
 

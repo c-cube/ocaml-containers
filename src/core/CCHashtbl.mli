@@ -70,7 +70,7 @@ val of_list : ('a * 'b) list -> ('a,'b) Hashtbl.t
 
 val print : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
 (** Printer for table
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 (** {2 Functor} *)
 
@@ -111,7 +111,7 @@ module type S = sig
 
   val print : key printer -> 'a printer -> 'a t printer
   (** Printer for tables
-      @since NEXT_RELEASE *)
+      @since 0.13 *)
 end
 
 module Make(X : Hashtbl.HashedType) :

@@ -124,7 +124,7 @@ val empty : 'a t
 
 val start : 'a -> 'a t
 (** Start with a single value
-    @deprecated since NEXT_RELEASE, use {!return} instead *)
+    @deprecated since 0.13, use {!return} instead *)
 
 val return : 'a -> 'a t
 (** Return one value *)

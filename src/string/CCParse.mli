@@ -64,17 +64,17 @@ parse_string_exn "[abc , de, hello ,world  ]" p;;
 
 type 'a or_error = [`Ok of 'a | `Error of string]
 
-type line_num = int (** @since NEXT_RELEASE *)
-type col_num = int (** @since NEXT_RELEASE *)
+type line_num = int (** @since 0.13 *)
+type col_num = int (** @since 0.13 *)
 
 exception ParseError of line_num * col_num * (unit -> string)
 (** position * message
 
- This type changed at NEXT_RELEASE *)
+ This type changed at 0.13 *)
 
 (** {2 Input} *)
 
-(** @since NEXT_RELEASE *)
+(** @since 0.13 *)
 module MemoTbl : sig
   type t
   val create: int -> t (** New memoization table *)
@@ -89,8 +89,8 @@ type input = {
         otherwise throw ParseError *)
 
   pos : unit -> int;   (** Current pos *)
-  lnum : unit -> line_num; (** Line number @since NEXT_RELEASE *)
-  cnum : unit -> col_num;  (** column number @since NEXT_RELEASE *)
+  lnum : unit -> line_num; (** Line number @since 0.13 *)
+  cnum : unit -> col_num;  (** column number @since 0.13 *)
   memo : MemoTbl.t; (** memoization table, if any *)
   backtrack : int -> unit;  (** Restore to previous pos *)
   sub : int -> int -> string; (** [sub pos len] extracts slice from [pos] with [len] *)
@@ -105,7 +105,7 @@ val input_of_chan : ?size:int -> in_channel -> input
 (** [input_of_chan ic] reads lazily the content of [ic] as parsing goes.
     All content that is read is saved to an internal buffer for backtracking.
     @param size number of bytes read at once from [ic]
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 (** {2 Combinators} *)
 
@@ -187,7 +187,7 @@ val is_space : char -> bool
 
 val is_white : char -> bool
 (** True on ' ' and '\t' and '\n'
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val (~~~) : (char -> bool) -> char -> bool
 (** Negation on predicates *)
@@ -232,11 +232,11 @@ val memo : 'a t -> 'a t
     is a lot of backtracking involving [p].
 
     This function is not thread-safe.
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val fix_memo : ('a t -> 'a t) -> 'a t
 (** Same as {!fix}, but the fixpoint is memoized.
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 (** {2 Parse} *)
 
@@ -257,11 +257,11 @@ val parse_file : ?size:int -> file:string -> 'a t -> 'a or_error
 (** [parse_file ~file p] parses [file] with [p] by opening the file
     and using {!input_of_chan}.
     @param size size of chunks read from file
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 val parse_file_exn : ?size:int -> file:string -> 'a t -> 'a
 (** Unsafe version of {!parse_file}
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 (** {2 Utils} *)
 

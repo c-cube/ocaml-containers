@@ -5,7 +5,7 @@
 
     {b status: experimental}
 
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option

@@ -317,7 +317,7 @@ end
 val compare_versions : string -> string -> int
 (** [compare_versions a b] compares {i version strings} [a] and [b],
     considering that numbers are above text.
-    @since NEXT_RELEASE *)
+    @since 0.13 *)
 
 (*$T
   compare_versions "0.1.3" "0.1" > 0
