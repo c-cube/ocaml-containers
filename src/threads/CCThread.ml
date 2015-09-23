@@ -53,7 +53,7 @@ module Barrier = struct
     with_lock_ b
       (fun () ->
         while not b.activated do
-          Condition.wait b.cond b.lock 
+          Condition.wait b.cond b.lock
         done
       )
 
