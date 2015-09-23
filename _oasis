@@ -142,7 +142,7 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.iter, containers.data,
-    containers.string, containers.bigarray,
+    containers.string, containers.bigarray, containers.thread,
     containers.advanced, containers.io, containers.unix, containers.sexp
 
 Executable run_benchs
