@@ -133,9 +133,9 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
 (** [replace ~sub ~by s] replaces some occurrences of [sub] by [by] in [s]
     @param which decides whether the occurrences to replace are:
       {ul
-        {il [`Left] first occurrence from the left (beginning)}
-        {il [`Right] first occurrence from the right (end)}
-        {il [`All] all occurrences (default)}
+        {- [`Left] first occurrence from the left (beginning)}
+        {- [`Right] first occurrence from the right (end)}
+        {- [`All] all occurrences (default)}
       }
     @since NEXT_RELEASE *)
 
