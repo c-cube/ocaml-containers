@@ -152,7 +152,8 @@ See {!File.walk} if you also need to list directories:
 module File : sig
   type 'a or_error = [`Ok of 'a | `Error of string]
   type t = string
-  (** A file is always represented by its absolute path *)
+  (** A file should be represented by its absolute path, but currently
+      this is not enforced. *)
 
   val to_string : t -> string
 
