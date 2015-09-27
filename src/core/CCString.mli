@@ -145,11 +145,13 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
   (replace ~which:`Right ~sub:"a" ~by:"b" "abcdabcd") "abcdbbcd"
   (replace ~which:`All ~sub:"ab" ~by:"hello" "  abab cdabb a") \
     "  hellohello cdhellob a"
+  (replace ~which:`Left ~sub:"ab" ~by:"nope" " a b c d ") " a b c d "
 *)
 
 val is_sub : sub:string -> int -> string -> int -> len:int -> bool
 (** [is_sub ~sub i s j ~len] returns [true] iff the substring of
-    [sub] starting at position [i] and of length [len] *)
+    [sub] starting at position [i] and of length [len] is a substring
+    of [s] starting at position [j] *)
 
 val repeat : string -> int -> string
 (** The same string, repeated n times *)
