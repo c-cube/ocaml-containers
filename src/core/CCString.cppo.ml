@@ -94,7 +94,7 @@ let find ?(start=0) ~sub s =
   let n = String.length sub in
   let i = ref start in
   try
-    while !i + n < String.length s do
+    while !i + n <= String.length s do
       if _is_sub ~sub 0 s !i ~len:n then raise Exit;
       incr i
     done;
