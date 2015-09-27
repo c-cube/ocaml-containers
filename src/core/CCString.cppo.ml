@@ -81,7 +81,7 @@ let _is_sub ~sub i s j ~len =
   let rec check k =
     if k = len
       then true
-      else sub.[i + k] = s.[j+k] && check (k+1)
+      else sub.[i+k] = s.[j+k] && check (k+1)
   in
   j+len <= String.length s && check 0
 
@@ -124,7 +124,9 @@ let replace_at_ ~pos ~len ~by s =
   Buffer.add_substring b s (pos+len) (String.length s - pos - len);
   Buffer.contents b
 
-let replace ?(which=`All) ~sub ~by s = match which with
+let replace ?(which=`All) ~sub ~by s =
+  if sub="" then invalid_arg "CCstring.replace";
+  match which with
   | `Left ->
       let i = find ~sub s in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
