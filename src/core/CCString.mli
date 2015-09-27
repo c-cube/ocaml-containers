@@ -129,6 +129,24 @@ val rfind : sub:string -> string -> int
   rfind ~sub:"bc" "abcdbcd" = 4
 *)
 
+val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string -> string
+(** [replace ~sub ~by s] replaces some occurrences of [sub] by [by] in [s]
+    @param which decides whether the occurrences to replace are:
+      {ul
+        {il [`Left] first occurrence from the left (beginning)}
+        {il [`Right] first occurrence from the right (end)}
+        {il [`All] all occurrences (default)}
+      }
+    @since NEXT_RELEASE *)
+
+(*$= & ~printer:CCFun.id
+  (replace ~which:`All ~sub:"a" ~by:"b" "abcdabcd") "bbcdbbcd"
+  (replace ~which:`Left ~sub:"a" ~by:"b" "abcdabcd") "bbcdabcd"
+  (replace ~which:`Right ~sub:"a" ~by:"b" "abcdabcd") "abcdbbcd"
+  (replace ~which:`All ~sub:"ab" ~by:"hello" "  abab cdabb a") \
+    "  hellohello cdhellob a"
+*)
+
 val is_sub : sub:string -> int -> string -> int -> len:int -> bool
 (** [is_sub ~sub i s j ~len] returns [true] iff the substring of
     [sub] starting at position [i] and of length [len] *)

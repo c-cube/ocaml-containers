@@ -116,6 +116,39 @@ let rfind ~sub s =
   with Exit ->
     !i
 
+(* replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
+let replace_at_ ~pos ~len ~by s =
+  let b = Buffer.create (length s + length by - len) in
+  Buffer.add_substring b s 0 pos;
+  Buffer.add_string b by;
+  Buffer.add_substring b s (pos+len) (String.length s - pos - len);
+  Buffer.contents b
+
+let replace ?(which=`All) ~sub ~by s = match which with
+  | `Left ->
+      let i = find ~sub s in
+      if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
+  | `Right ->
+      let i = rfind ~sub s in
+      if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
+  | `All ->
+      let b = Buffer.create (String.length s) in
+      let start = ref 0 in
+      while !start < String.length s do
+        let i = find ~start:!start ~sub s in
+        if i>=0 then (
+          (* between last and cur occurrences *)
+          Buffer.add_substring b s !start (i- !start);
+          Buffer.add_string b by;
+          start := i + String.length sub
+        ) else (
+          (* add remainder *)
+          Buffer.add_substring b s !start (String.length s - !start);
+          start := String.length s (* stop *)
+        )
+      done;
+      Buffer.contents b
+
 module Split = struct
   type split_state =
     | SplitStop
