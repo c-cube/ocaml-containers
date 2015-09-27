@@ -27,11 +27,9 @@
 #load "containers_string.cma";;
 #load "containers_pervasives.cma";;
 #load "containers_bigarray.cma";;
-#load "containers_misc.cma";;
 #load "containers_top.cma";;
 #thread;;
 #load "containers_thread.cma";;
-open Containers_misc;;
 #install_printer CCSexp.print;;
 (* vim:syntax=ocaml:
 *)
