@@ -263,7 +263,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
   let add x t = add_rec_ (E.hash x) x t
 
   (*$Q & ~count:20
-    Q.(list int) (fun l -> \
+    Q.(list_of_size Gen.(0 -- 300) int) (fun l -> \
       let module S = Make(CCInt) in \
       let m = S.of_list l in \
       List.for_all (fun x -> S.mem x m) l)
@@ -396,7 +396,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
       else empty
 
   (*$Q
-    Q.(list int) (fun l -> \
+    Q.(list_of_size Gen.(0 -- 300) int) (fun l -> \
       let module S = Make(CCInt) in \
       let s = S.of_list l in S.equal s (S.inter s s))
   *)
