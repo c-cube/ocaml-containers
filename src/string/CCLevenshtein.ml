@@ -93,7 +93,7 @@ let rec klist_to_list l = match l () with
       l, Index.of_list l'
     in
     let gen = Q.Gen.(
-      list_size (3 -- 15) (string_size (0 -- 10)) >|= mklist
+      list_size (3 -- 15) (string_size (1 -- 10)) >|= mklist
     ) in
     let small (l,_) = List.length l in
     let print (l,_) = Q.Print.(list string) l in
@@ -106,10 +106,21 @@ let rec klist_to_list l = match l () with
         let retrieved = Index.retrieve ~limit:2 idx s
           |> klist_to_list in
         List.for_all
-          (fun s' -> edit_distance s s' <= 2) retrieved
+          (fun s' -> edit_distance s s' <= 2) retrieved &&
+        List.for_all
+          (fun s' -> not (edit_distance s s' <= 2) || List.mem s' retrieved)
+          l
       ) l
   )
 
+*)
+
+(*$R
+let idx = Index.of_list ["aa", "aa"; "ab", "ab"; "cd", "cd"; "a'c", "a'c"] in
+  assert_equal ~printer:Q.Print.(list string)
+    ["a'c"; "aa"; "ab"]
+    (Index.retrieve ~limit:1 idx "ac" |> CCKList.to_list
+      |> List.sort Pervasives.compare)
 *)
 
 module type S = sig

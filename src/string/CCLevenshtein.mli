@@ -79,15 +79,14 @@ The signature for a given string representation provides 3 main things:
 
 A possible use of the index could be:
 {[
-open Batteries;;
 
-let words = File.with_file_in "/usr/share/dict/english"
-  (fun i -> IO.read_all i |> String.nsplit ~by:"\\n");;
+let words = CCIO.with_in "/usr/share/dict/words"
+  (fun i -> CCIO.read_all i |> CCString.Split.list_cpy ~by:"\n");;
 
 let words = List.map (fun s->s,s) words;;
-let idx = Levenshtein.Index.of_list words;;
+let idx = CCLevenshtein.Index.of_list words;;
 
-Levenshtein.Index.retrieve ~limit:1 idx "hell" |> Levenshtein.klist_to_list;;
+CCLevenshtein.Index.retrieve ~limit:1 idx "hell" |> CCLevenshtein.klist_to_list;;
 ]}
 *)
 
