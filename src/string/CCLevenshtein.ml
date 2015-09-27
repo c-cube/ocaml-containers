@@ -26,6 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Levenshtein distance} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+
 module type STRING = sig
   type char_
   type t
@@ -50,6 +53,15 @@ let rec klist_to_list l = match l () with
 (*$inject
   open CCFun
 
+  let list_uniq_ = Q.(
+    let gen = Gen.(list_size (0 -- 100) (string_size ~gen:printable (1 -- 10))
+      >|= CCList.sort_uniq ~cmp:String.compare
+      >|= List.map (fun s->s,s)
+    ) in
+    let print = Print.(list (pair string string)) in
+    let shrink = Shrink.(list ~shrink:(pair string string)) in
+    make ~small:List.length ~print ~shrink gen
+  )
 *)
 
 (*$Q
@@ -174,6 +186,9 @@ module type S = sig
     (** Add a pair string/value to the index. If a value was already present
        for this string it is replaced. *)
 
+    val cardinal : _ t -> int
+    (** Number of bindings *)
+
     val remove : 'b t -> string_ -> 'b t
     (** Remove a string (and its associated value, if any) from the index. *)
 
@@ -186,6 +201,24 @@ module type S = sig
     val to_list : 'b t -> (string_ * 'b) list
     (** Extract a list of pairs from an index *)
 
+    val add_seq : 'a t -> (string_ * 'a) sequence -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val of_seq : (string_ * 'a) sequence -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val to_seq : 'a t -> (string_ * 'a) sequence
+    (** @since NEXT_RELEASE *)
+
+    val add_gen : 'a t -> (string_ * 'a) gen -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val of_gen : (string_ * 'a) gen -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val to_gen : 'a t -> (string_ * 'a) gen
+    (** @since NEXT_RELEASE *)
+
     val fold : ('a -> string_ -> 'b -> 'a) -> 'a -> 'b t -> 'a
     (** Fold over the stored pairs string/value *)
 
@@ -197,7 +230,8 @@ module type S = sig
   end
 end
 
-module Make(Str : STRING) = struct
+module Make(Str : STRING)
+: S with type char_ = Str.char_ and type string_ = Str.t = struct
   type string_ = Str.t
   type char_ = Str.char_
 
@@ -689,24 +723,73 @@ module Make(Str : STRING) = struct
     let iter f idx =
       fold (fun () str v -> f str v) () idx
 
+    let cardinal idx = fold (fun n _ _ -> n+1) 0 idx
+
     let to_list idx =
       fold (fun acc str v -> (str,v) :: acc) [] idx
 
+    let add_seq i s =
+      let i = ref i in
+      s (fun (arr,v) -> i := add !i arr v);
+      !i
+
+    let of_seq s = add_seq empty s
+
+    let to_seq i yield = iter (fun x y -> yield (x,y)) i
+
+    (*$Q
+      list_uniq_ (fun l -> \
+        Sequence.of_list l |> Index.of_seq |> Index.to_seq \
+          |> Sequence.to_list |> List.sort Pervasives.compare \
+          = List.sort Pervasives.compare l)
+    *)
+
+    let rec add_gen i g = match g() with
+    | None -> i
+    | Some (arr,v) -> add_gen (add i arr v) g
+
+    let of_gen g = add_gen empty g
+
+    let to_gen s =
+      let st = Stack.create () in
+      Stack.push ([],s) st;
+      let rec next () =
+        if Stack.is_empty st then None
+        else
+          let trail, Node (opt, m) = Stack.pop st in
+          (* explore children *)
+          M.iter
+            (fun c node' -> Stack.push (c::trail, node') st)
+            m;
+          match opt with
+          | None -> next()
+          | Some v ->
+            let str = Str.of_list (List.rev trail) in
+            Some (str,v)
+      in
+      next
+
+    (*$Q
+      list_uniq_ (fun l -> \
+        Gen.of_list l |> Index.of_gen |> Index.to_gen \
+          |> Gen.to_list |> List.sort Pervasives.compare \
+          = List.sort Pervasives.compare l)
+    *)
+
     let to_klist idx =
       let rec traverse node trail ~(fk:(string_*'a) klist) () =
-        match node with
-        | Node (opt, m) ->
-            (* all alternatives: continue exploring [m], or call [fk] *)
-            let fk =
-              M.fold
-                (fun c node' fk -> traverse node' (c::trail) ~fk)
-                m fk
-            in
-            match opt with
-            | Some v ->
-                let str = Str.of_list (List.rev trail) in
-                `Cons ((str,v), fk)
-            | _ -> fk ()   (* fail... or explore subtrees *)
+        let Node (opt, m) = node in
+        (* all alternatives: continue exploring [m], or call [fk] *)
+        let fk =
+          M.fold
+            (fun c node' fk -> traverse node' (c::trail) ~fk)
+            m fk
+        in
+        match opt with
+        | Some v ->
+            let str = Str.of_list (List.rev trail) in
+            `Cons ((str,v), fk)
+        | _ -> fk ()   (* fail... or explore subtrees *)
       in
       traverse idx [] ~fk:(fun () -> `Nil)
   end

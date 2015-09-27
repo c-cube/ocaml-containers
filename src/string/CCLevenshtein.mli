@@ -31,6 +31,9 @@ We take inspiration from
 http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata
 for the main algorithm and ideas. However some parts are adapted *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+
 (** {2 Abstraction over Strings}
 Due to the existence of several encodings and string representations we
 abstract over the type of strings. A string is a finite array of characters
@@ -141,6 +144,9 @@ module type S = sig
     (** Add a pair string/value to the index. If a value was already present
        for this string it is replaced. *)
 
+    val cardinal : _ t -> int
+    (** Number of bindings *)
+
     val remove : 'b t -> string_ -> 'b t
     (** Remove a string (and its associated value, if any) from the index. *)
 
@@ -152,6 +158,24 @@ module type S = sig
 
     val to_list : 'b t -> (string_ * 'b) list
     (** Extract a list of pairs from an index *)
+
+    val add_seq : 'a t -> (string_ * 'a) sequence -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val of_seq : (string_ * 'a) sequence -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val to_seq : 'a t -> (string_ * 'a) sequence
+    (** @since NEXT_RELEASE *)
+
+    val add_gen : 'a t -> (string_ * 'a) gen -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val of_gen : (string_ * 'a) gen -> 'a t
+    (** @since NEXT_RELEASE *)
+
+    val to_gen : 'a t -> (string_ * 'a) gen
+    (** @since NEXT_RELEASE *)
 
     val fold : ('a -> string_ -> 'b -> 'a) -> 'a -> 'b t -> 'a
     (** Fold over the stored pairs string/value *)
