@@ -201,6 +201,7 @@ val unlines_gen : string gen -> string
 
 (*$Q
   Q.printable_string (fun s -> unlines (lines s) = s)
+  Q.printable_string (fun s -> unlines_gen (lines_gen s) = s)
 *)
 
 val set : string -> int -> char -> string
