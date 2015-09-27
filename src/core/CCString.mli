@@ -102,10 +102,11 @@ val find : ?start:int -> sub:string -> string -> int
 (** Find [sub] in string, returns its first index or [-1].
     Should only be used with very small [sub] *)
 
-(*$T
-  find ~sub:"bc" "abcd" = 1
-  find ~sub:"bc" "abd" = ~-1
-  find ~sub:"a" "_a_a_a_" = 1
+(*$= & ~printer:string_of_int
+  (find ~sub:"bc" "abcd") 1
+  (find ~sub:"bc" "abd") ~-1
+  (find ~sub:"a" "_a_a_a_") 1
+  (find ~sub:"a" ~start:5 "a1a234a") 6
 *)
 
 val mem : ?start:int -> sub:string -> string -> bool
@@ -122,11 +123,12 @@ val rfind : sub:string -> string -> int
     Should only be used with very small [sub]
     @since 0.12 *)
 
-(*$T
-  rfind ~sub:"bc" "abcd" = 1
-  rfind ~sub:"bc" "abd" = ~-1
-  rfind ~sub:"a" "_a_a_a_" = 5
-  rfind ~sub:"bc" "abcdbcd" = 4
+(*$= & ~printer:string_of_int
+  (rfind ~sub:"bc" "abcd") 1
+  (rfind ~sub:"bc" "abd") ~-1
+  (rfind ~sub:"a" "_a_a_a_") 5
+  (rfind ~sub:"bc" "abcdbcd") 4
+  (rfind ~sub:"a" "a1a234a") 6
 *)
 
 val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string -> string
@@ -137,6 +139,7 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
         {- [`Right] first occurrence from the right (end)}
         {- [`All] all occurrences (default)}
       }
+    @raise Invalid_argument if [sub = ""]
     @since NEXT_RELEASE *)
 
 (*$= & ~printer:CCFun.id
@@ -146,6 +149,7 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
   (replace ~which:`All ~sub:"ab" ~by:"hello" "  abab cdabb a") \
     "  hellohello cdhellob a"
   (replace ~which:`Left ~sub:"ab" ~by:"nope" " a b c d ") " a b c d "
+  (replace ~sub:"a" ~by:"b" "1aa234a") "1bb234b"
 *)
 
 val is_sub : sub:string -> int -> string -> int -> len:int -> bool
