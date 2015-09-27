@@ -130,70 +130,70 @@ module type S = sig
   (** {6 Edit Distance} *)
 
   val edit_distance : string_ -> string_ -> int
-    (** Edition distance between two strings. This satisfies the classical
-       distance axioms: it is always positive, symmetric, and satisfies
-       the formula [distance a b + distance b c >= distance a c] *)
+  (** Edition distance between two strings. This satisfies the classical
+     distance axioms: it is always positive, symmetric, and satisfies
+     the formula [distance a b + distance b c >= distance a c] *)
 
   (** {6 Automaton}
   An automaton, built from a string [s] and a limit [n], that accepts
   every string that is at distance at most [n] from [s]. *)
 
   type automaton
-    (** Levenshtein automaton *)
+  (** Levenshtein automaton *)
 
   val of_string : limit:int -> string_ -> automaton
-    (** Build an automaton from a string, with a maximal distance [limit].
-        The automaton will accept strings whose {!edit_distance} to the
-        parameter is at most [limit]. *)
+  (** Build an automaton from a string, with a maximal distance [limit].
+      The automaton will accept strings whose {!edit_distance} to the
+      parameter is at most [limit]. *)
 
   val of_list : limit:int -> char_ list -> automaton
-    (** Build an automaton from a list, with a maximal distance [limit] *)
+  (** Build an automaton from a list, with a maximal distance [limit] *)
 
   val debug_print : (out_channel -> char_ -> unit) ->
                     out_channel -> automaton -> unit
-    (** Output the automaton's structure on the given channel. *)
+  (** Output the automaton's structure on the given channel. *)
 
   val match_with : automaton -> string_ -> bool
-    (** [match_with a s] matches the string [s] against [a], and returns
-        [true] if the distance from [s] to the word represented by [a] is smaller
-        than the limit used to build [a] *)
+  (** [match_with a s] matches the string [s] against [a], and returns
+      [true] if the distance from [s] to the word represented by [a] is smaller
+      than the limit used to build [a] *)
 
   (** {6 Index for one-to-many matching} *)
 
   module Index : sig
     type 'b t
-      (** Index that maps strings to values of type 'b. Internally it is
-         based on a trie. A string can only map to one value. *)
+    (** Index that maps strings to values of type 'b. Internally it is
+       based on a trie. A string can only map to one value. *)
 
     val empty : 'b t
-      (** Empty index *)
+    (** Empty index *)
 
     val is_empty : _ t -> bool
 
     val add : 'b t -> string_ -> 'b -> 'b t
-      (** Add a pair string/value to the index. If a value was already present
-         for this string it is replaced. *)
+    (** Add a pair string/value to the index. If a value was already present
+       for this string it is replaced. *)
 
     val remove : 'b t -> string_ -> 'b t
-      (** Remove a string (and its associated value, if any) from the index. *)
+    (** Remove a string (and its associated value, if any) from the index. *)
 
     val retrieve : limit:int -> 'b t -> string_ -> 'b klist
-      (** Lazy list of objects associated to strings close to the query string *)
+    (** Lazy list of objects associated to strings close to the query string *)
 
     val of_list : (string_ * 'b) list -> 'b t
-      (** Build an index from a list of pairs of strings and values *)
+    (** Build an index from a list of pairs of strings and values *)
 
     val to_list : 'b t -> (string_ * 'b) list
-      (** Extract a list of pairs from an index *)
+    (** Extract a list of pairs from an index *)
 
     val fold : ('a -> string_ -> 'b -> 'a) -> 'a -> 'b t -> 'a
-      (** Fold over the stored pairs string/value *)
+    (** Fold over the stored pairs string/value *)
 
     val iter : (string_ -> 'b -> unit) -> 'b t -> unit
-      (** Iterate on the pairs *)
+    (** Iterate on the pairs *)
 
     val to_klist : 'b t -> (string_ * 'b) klist
-      (** Conversion to an iterator *)
+    (** Conversion to an iterator *)
   end
 end
 
