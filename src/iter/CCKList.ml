@@ -101,10 +101,11 @@ let iteri f l =
 
 let length l = fold (fun acc _ -> acc+1) 0 l
 
-let rec take n (l:'a t) () = match l () with
-  | _ when n=0 -> `Nil
-  | `Nil -> `Nil
-  | `Cons (x,l') -> `Cons (x, take (n-1) l')
+let rec take n (l:'a t) () =
+  if n=0 then `Nil
+  else match l () with
+    | `Nil -> `Nil
+    | `Cons (x,l') -> `Cons (x, take (n-1) l')
 
 let rec take_while p l () = match l () with
   | `Nil -> `Nil
