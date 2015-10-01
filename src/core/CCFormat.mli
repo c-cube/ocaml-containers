@@ -67,7 +67,7 @@ val stdout : t
 val stderr : t
 
 val sprintf : ('a, t, unit, string) format4 -> 'a
-  (** print into a string *)
+(** print into a string *)
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
-  (** Print to the given file *)
+(** Print to the given file *)
