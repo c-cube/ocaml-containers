@@ -50,6 +50,11 @@ val fail : 'err -> ('a,'err) t
 val of_exn : exn -> ('a, string) t
 (** [of_exn e] uses {!Printexc} to print the exception as a string *)
 
+val of_exn_trace : exn -> ('a, string) t
+(** [of_exn_trace e] is similar to [of_exn e], but it adds the stacktrace
+    to the error message
+    @since NEXT_RELEASE *)
+
 val fail_printf : ('a, Buffer.t, unit, ('a,string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
     and then returns [`Error msg]
@@ -205,3 +210,5 @@ This way a printer that doesn't know how to deal with an exception will
 let other printers do it. *)
 
 val register_printer : exn printer -> unit
+
+(* TODO: deprecate, should use {!Printexc} *)
