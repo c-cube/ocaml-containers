@@ -66,6 +66,11 @@ val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
     indicated by the accumulator
     @since 0.8 *)
 
+val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
+(** [fold_map f acc l] is a [fold_left]-like function, but it also maps the
+    list to another list.
+    @since NEXT_RELEASE *)
+
 val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
     @since 0.6 *)

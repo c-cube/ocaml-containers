@@ -152,6 +152,25 @@ let rec fold_while f acc = function
   fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 [true;true;false;true] = 2
 *)
 
+let fold_map f acc l =
+  let rec aux f acc map_acc l = match l with
+    | [] -> acc, List.rev map_acc
+    | x :: l' ->
+        let acc, y = f acc x in
+        aux f acc (y :: map_acc) l'
+  in
+  aux f acc [] l
+
+(*$=
+  (6, ["1"; "2"; "3"]) \
+    (fold_map (fun acc x->acc+x, string_of_int x) 0 [1;2;3])
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
+*)
+
 let init len f =
   let rec init_rec acc i f =
     if i=0 then f i :: acc
