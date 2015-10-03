@@ -139,6 +139,10 @@ let guard_str f =
   try `Ok (f())
   with e -> of_exn e
 
+let guard_str_trace f =
+  try `Ok (f())
+  with e -> of_exn_trace e
+
 let wrap1 f x =
   try return (f x)
   with e -> `Error e

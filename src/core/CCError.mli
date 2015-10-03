@@ -118,6 +118,11 @@ val guard_str : (unit -> 'a) -> ('a, string) t
 (** Same as {!guard} but uses {!of_exn} to print the exception.
     See {!register_printer} *)
 
+val guard_str_trace : (unit -> 'a) -> ('a, string) t
+(** Same as {!guard_str} but uses {!of_exn_trace} instead of {!of_exn} so
+    that the stack trace is printed.
+    @since NEXT_RELEASE *)
+
 val wrap1 : ('a -> 'b) -> 'a -> ('b, exn) t
 (** Same as {!guard} but gives the function one argument. *)
 
