@@ -78,7 +78,7 @@ let of_exn_trace e =
         with _ -> try_printers l'
   in
   try_printers !_printers;
-  Buffer.add_string buf "\nstack trace:\n";
+  Buffer.add_char buf '\n';
   Buffer.add_string buf (Printexc.get_backtrace ());
   `Error (Buffer.contents buf)
 

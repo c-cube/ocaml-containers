@@ -52,7 +52,10 @@ val of_exn : exn -> ('a, string) t
 
 val of_exn_trace : exn -> ('a, string) t
 (** [of_exn_trace e] is similar to [of_exn e], but it adds the stacktrace
-    to the error message
+    to the error message.
+
+    Remember to call [Printexc.record_backtrace true] and compile with the
+    debug flag for this to work.
     @since NEXT_RELEASE *)
 
 val fail_printf : ('a, Buffer.t, unit, ('a,string) t) format4 -> 'a
