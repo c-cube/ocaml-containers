@@ -79,8 +79,7 @@ let of_exn_trace e =
   in
   try_printers !_printers;
   Buffer.add_string buf "\nstack trace:\n";
-  Buffer.add_string buf
-    (Printexc.raw_backtrace_to_string (Printexc.get_raw_backtrace ()));
+  Buffer.add_string buf (Printexc.get_backtrace ());
   `Error (Buffer.contents buf)
 
 let map f e = match e with
