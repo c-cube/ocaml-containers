@@ -309,11 +309,13 @@ module MakeDecode(M : MONAD) = struct
     expr_or_end (fun _ x -> M.return (`Ok x)) t
 end
 
-module D = MakeDecode(struct
+module ID_MONAD = struct
   type 'a t = 'a
   let return x = x
   let (>>=) x f = f x
-end)
+end
+
+module D = MakeDecode(ID_MONAD)
 
 let parse_string s : t or_error =
   let n = String.length s in
