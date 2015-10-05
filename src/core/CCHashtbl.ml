@@ -161,7 +161,7 @@ module Make(X : Hashtbl.HashedType) = struct
     tbl
 
   let print pp_k pp_v fmt m =
-    Format.pp_print_string fmt "@[<hov2>tbl {@,";
+    Format.fprintf fmt "@[<hov2>tbl {@,";
     let first = ref true in
     iter
       (fun k v ->
@@ -171,7 +171,7 @@ module Make(X : Hashtbl.HashedType) = struct
         pp_v fmt v;
         Format.pp_print_cut fmt ()
       ) m;
-    Format.pp_print_string fmt "}@]"
+    Format.fprintf fmt "}@]"
 end
 
 (** {2 Default Table} *)
