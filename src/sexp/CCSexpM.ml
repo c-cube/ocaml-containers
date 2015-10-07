@@ -93,7 +93,7 @@ let rec print fmt t = match t with
   | `List [] -> Format.pp_print_string fmt "()"
   | `List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" print x
   | `List l ->
-      Format.fprintf fmt "@[<hov2>(";
+      Format.fprintf fmt "@[<hov1>(";
       List.iteri
         (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; print fmt t'))
         l;
