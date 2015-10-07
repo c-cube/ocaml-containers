@@ -93,13 +93,11 @@ let rec print fmt t = match t with
   | `List [] -> Format.pp_print_string fmt "()"
   | `List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" print x
   | `List l ->
-      Format.open_hovbox 2;
-      Format.pp_print_char fmt '(';
+      Format.fprintf fmt "@[<hov2>(";
       List.iteri
         (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; print fmt t'))
         l;
-      Format.pp_print_char fmt ')';
-      Format.close_box ()
+      Format.fprintf fmt ")@]"
 
 let rec print_noindent fmt t = match t with
   | `Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
