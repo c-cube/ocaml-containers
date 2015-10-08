@@ -531,6 +531,16 @@ let of_seq ?(init=create ()) seq =
 
 let to_seq v k = iter k v
 
+let to_seq_rev v k =
+  for i = v.size - 1 downto 0 do
+    k (Array.unsafe_get v.vec i)
+  done
+
+(*$Q
+  Q.(list int) (fun l -> \
+    let v= of_list l in v |> to_seq_rev |> Sequence.to_rev_list = l)
+*)
+
 let slice_seq v start len =
   assert (start >= 0 && len >= 0);
   fun k ->

@@ -225,6 +225,11 @@ val of_seq : ?init:('a,rw) t -> 'a sequence -> ('a, rw) t
 
 val to_seq : ('a,_) t -> 'a sequence
 
+val to_seq_rev : ('a, _) t -> 'a sequence
+(** [to_seq_rev v] returns the sequence of elements of [v] in reverse order,
+    that is, the last elements of [v] are iterated on first.
+    @since NEXT_RELEASE *)
+
 val slice : ('a,rw) t -> ('a array * int * int)
 (** Vector as an array slice. By doing it we expose the internal array, so
     be careful! *)
