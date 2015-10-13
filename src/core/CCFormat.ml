@@ -37,10 +37,15 @@ let silent _fmt _ = ()
 
 let unit fmt () = Format.pp_print_string fmt "()"
 let int fmt i = Format.pp_print_string fmt (string_of_int i)
-let string fmt s = Format.pp_print_string fmt s
-let bool fmt b = Format.fprintf fmt "%B" b
+let string = Format.pp_print_string
+let bool = Format.pp_print_bool
 let float3 fmt f = Format.fprintf fmt "%.3f" f
 let float fmt f = Format.pp_print_string fmt (string_of_float f)
+
+let char = Format.pp_print_char
+let int32 fmt n = Format.fprintf fmt "%ld" n
+let int64 fmt n = Format.fprintf fmt "%Ld" n
+let nativeint fmt n = Format.fprintf fmt "%nd" n
 
 let list ?(start="[") ?(stop="]") ?(sep=", ") pp fmt l =
   let rec pp_list l = match l with
@@ -124,6 +129,8 @@ let sprintf format =
     (fun _fmt -> Format.pp_print_flush fmt (); Buffer.contents buf)
     fmt
     format
+
+let fprintf = Format.fprintf
 
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter

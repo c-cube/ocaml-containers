@@ -44,6 +44,12 @@ val bool : bool printer
 val float3 : float printer (* 3 digits after . *)
 val float : float printer
 
+val char : char printer (** @since NEXT_RELEASE *)
+val int32 : int32 printer (** @since NEXT_RELEASE *)
+val int64 : int64 printer (** @since NEXT_RELEASE *)
+val nativeint : nativeint printer (** @since NEXT_RELEASE *)
+
+
 val list : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a list printer
 val array : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a array printer
 val arrayi : ?start:string -> ?stop:string -> ?sep:string ->
@@ -68,6 +74,10 @@ val stderr : t
 
 val sprintf : ('a, t, unit, string) format4 -> 'a
 (** print into a string *)
+
+val fprintf : t -> ('a, t, unit ) format -> 'a
+(** Alias to {!Format.fprintf}
+    @since NEXT_RELEASE *)
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
 (** Print to the given file *)
