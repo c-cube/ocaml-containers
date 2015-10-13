@@ -45,8 +45,8 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO, CCInt64,
-                    Containers
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
+                    CCInt64, CCChar, Containers
   BuildDepends:     bytes
   # BuildDepends:     bytes, bisect_ppx
 

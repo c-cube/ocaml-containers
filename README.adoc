@@ -117,6 +117,8 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCError` (monadic error handling, very useful)
 - `CCIO`, basic utilities for IO (channels, files)
 - `CCInt64,` utils for `int64`
+- `CCChar`, utils for `char`
+- `CCFormat`, pretty-printing utils around `Format`
 
 === Containers.data
 

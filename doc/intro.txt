@@ -25,6 +25,7 @@ by ocamlfind).
 {!modules:
 CCArray
 CCBool
+CCChar
 CCError
 CCFloat
 CCFun
