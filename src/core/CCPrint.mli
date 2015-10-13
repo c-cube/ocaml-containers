@@ -69,6 +69,7 @@ val string : string t
 val bool : bool t
 val float3 : float t (* 3 digits after . *)
 val float : float t
+val char : char t
 
 val list : ?start:string -> ?stop:string -> ?sep:string -> 'a t -> 'a list t
 val array : ?start:string -> ?stop:string -> ?sep:string -> 'a t -> 'a array t
