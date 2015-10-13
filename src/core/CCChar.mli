@@ -10,5 +10,6 @@ type t = char
 val equal : t -> t -> bool
 val compare : t -> t -> int
 
+val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 
