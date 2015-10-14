@@ -149,6 +149,7 @@ let to_file filename format =
 
 module type MONAD_IO = sig
   type 'a t     (** the IO monad *)
+
   type output   (** Output channels *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t

@@ -171,6 +171,27 @@ let fold_map f acc l =
     fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
 *)
 
+let fold_flat_map f acc l =
+  let rec aux f acc map_acc l = match l with
+    | [] -> acc, List.rev map_acc
+    | x :: l' ->
+        let acc, y = f acc x in
+        aux f acc (List.rev_append y map_acc) l'
+  in
+  aux f acc [] l
+
+(*$=
+  (6, ["1"; "a1"; "2"; "a2"; "3"; "a3"]) \
+    (let pf = Printf.sprintf in \
+      fold_flat_map (fun acc x->acc+x, [pf "%d" x; pf "a%d" x]) 0 [1;2;3])
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    fold_flat_map (fun acc x -> x::acc, [x;x+10]) [] l = \
+      (List.rev l, flat_map (fun x->[x;x+10]) l) )
+*)
+
 let init len f =
   let rec init_rec acc i f =
     if i=0 then f i :: acc
