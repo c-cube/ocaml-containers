@@ -71,6 +71,25 @@ let of_list l =
   List.iter (fun (k,v) -> Hashtbl.add tbl k v) l;
   tbl
 
+let update tbl ~f ~k =
+  let v = get tbl k in
+  match v, f k v with
+  | None, None -> ()
+  | None, Some v' -> Hashtbl.add tbl k v'
+  | Some _, Some v' -> Hashtbl.replace tbl k v'
+  | Some _, None -> Hashtbl.remove tbl k
+
+(*$R
+  let tbl = Hashtbl.create 32 in
+  update tbl ~k:1 ~f:(fun _ _ -> Some "1");
+  assert_equal (Some "1") (get tbl 1);
+  update tbl ~k:2 ~f:(fun _ v->match v with Some _ -> assert false | None -> Some "2");
+  assert_equal (Some "2") (get tbl 2);
+  assert_equal 2 (Hashtbl.length tbl);
+  update tbl ~k:1 ~f:(fun _ _ -> None);
+  assert_equal None (get tbl 1);
+*)
+
 let print pp_k pp_v fmt m =
   Format.fprintf fmt "@[<hov2>tbl {@,";
   let first = ref true in
@@ -121,10 +140,22 @@ module type S = sig
   val of_list : (key * 'a) list -> 'a t
   (** From the given list of bindings, added in order *)
 
+  val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
+  (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
+      [k] was mapped to [v], or [f k None] otherwise; if the call
+      returns [None] then [k] is removed/stays removed, if the call
+      returns [Some v'] then the binding [k -> v'] is inserted
+      using {!Hashtbl.replace}
+      @since NEXT_RELEASE *)
+
   val print : key printer -> 'a printer -> 'a t printer
+  (** Printer for tables
+      @since 0.13 *)
 end
 
-module Make(X : Hashtbl.HashedType) = struct
+module Make(X : Hashtbl.HashedType)
+  : S with type key = X.t and type 'a t = 'a Hashtbl.Make(X).t
+= struct
   include Hashtbl.Make(X)
 
   let get tbl x =
@@ -142,6 +173,14 @@ module Make(X : Hashtbl.HashedType) = struct
     fold
       (fun x y acc -> f x y :: acc)
       h []
+
+  let update tbl ~f ~k =
+    let v = get tbl k in
+    match v, f k v with
+    | None, None -> ()
+    | None, Some v' -> add tbl k v'
+    | Some _, Some v' -> replace tbl k v'
+    | Some _, None -> remove tbl k
 
   let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 

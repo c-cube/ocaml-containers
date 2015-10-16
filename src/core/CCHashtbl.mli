@@ -68,6 +68,14 @@ val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
 val of_list : ('a * 'b) list -> ('a,'b) Hashtbl.t
 (** From the given list of bindings, added in order *)
 
+val update : ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> unit
+(** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
+    [k] was mapped to [v], or [f k None] otherwise; if the call
+    returns [None] then [k] is removed/stays removed, if the call
+    returns [Some v'] then the binding [k -> v'] is inserted
+    using {!Hashtbl.replace}
+    @since NEXT_RELEASE *)
+
 val print : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
 (** Printer for table
     @since 0.13 *)
@@ -108,6 +116,14 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
   (** From the given list of bindings, added in order *)
+
+  val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
+  (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
+      [k] was mapped to [v], or [f k None] otherwise; if the call
+      returns [None] then [k] is removed/stays removed, if the call
+      returns [Some v'] then the binding [k -> v'] is inserted
+      using {!Hashtbl.replace}
+      @since NEXT_RELEASE *)
 
   val print : key printer -> 'a printer -> 'a t printer
   (** Printer for tables
