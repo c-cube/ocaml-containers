@@ -815,14 +815,17 @@ module Zipper = struct
   let empty = [], []
 
   let is_empty = function
-    | _, [] -> true
-    | _, _::_ -> false
+    | [], [] -> true
+    | _ -> false
 
-  let to_list (l,r) =
-    let rec append l acc = match l with
-      | [] -> acc
-      | x::l' -> append l' (x::acc)
-    in append l r
+  let to_list (l,r) = List.rev_append l r
+
+  let to_rev_list (l,r) = List.rev_append r l
+
+  (*$Q
+    Q.(pair (list small_int)(list small_int)) (fun z -> \
+      Zipper.to_list z = List.rev (Zipper.to_rev_list z))
+  *)
 
   let make l = [], l
 
@@ -846,6 +849,10 @@ module Zipper = struct
         | Some _ -> l, x::r
         end
 
+  let is_focused = function
+    | _, [] -> true
+    | _ -> false
+
   let focused = function
     | _, x::_ -> Some x
     | _, [] -> None
@@ -853,6 +860,21 @@ module Zipper = struct
   let focused_exn = function
     | _, x::_ -> x
     | _, [] -> raise Not_found
+
+  let insert x (l,r) = l, x::r
+
+  let remove (l,r) = match r with
+    | [] -> l, []
+    | _ :: r' -> l, r'
+
+  (*$Q
+    Q.(triple int (list small_int)(list small_int)) (fun (x,l,r) -> \
+      Zipper.insert x (l,r) |> Zipper.remove = (l,r))
+  *)
+
+  let drop_before (_, r) = [], r
+
+  let drop_after (l, _) = l, []
 end
 
 (** {2 References on Lists} *)

@@ -302,15 +302,28 @@ end
 
 module Zipper : sig
   type 'a t = 'a list * 'a list
+  (** The pair [l, r] represents the list [List.rev_append l r], but
+      with the focus on [r]. *)
 
   val empty : 'a t
   (** Empty zipper *)
 
   val is_empty : _ t -> bool
-  (** Empty zipper, or at the end of the zipper? *)
+  (** Empty zipper? Returns true iff the two lists are empty. *)
+
+  (*$T
+    Zipper.(is_empty empty)
+    not ([42] |> Zipper.make |> Zipper.right |> Zipper.is_empty)
+  *)
 
   val to_list : 'a t -> 'a list
-  (** Convert the zipper back to a list *)
+  (** Convert the zipper back to a list.
+      [to_list (l,r)] is [List.rev_append l r] *)
+
+  val to_rev_list : 'a t -> 'a list
+  (** Convert the zipper back to a {i reversed} list.
+      In other words, [to_list (l,r)] is [List.rev_append r l]
+      @since NEXT_RELEASE *)
 
   val make : 'a list -> 'a t
   (** Create a zipper pointing at the first element of the list *)
@@ -325,6 +338,20 @@ module Zipper : sig
   (** Modify the current element, if any, by returning a new element, or
       returning [None] if the element is to be deleted *)
 
+  val insert : 'a -> 'a t -> 'a t
+  (** Insert an element at the current position. If an element was focused,
+      [insert x l] adds [x] just before it, and focuses on [x]
+      @since NEXT_RELEASE *)
+
+  val remove : 'a t -> 'a t
+  (** [remove l] removes the current element, if any.
+      @since NEXT_RELEASE *)
+
+  val is_focused : _ t -> bool
+  (** Is the zipper focused on some element? That is, will {!focused}
+      return a [Some v]?
+      @since NEXT_RELEASE *)
+
   val focused : 'a t -> 'a option
   (** Returns the focused element, if any. [focused zip = Some _] iff
       [empty zip = false] *)
@@ -332,6 +359,14 @@ module Zipper : sig
   val focused_exn : 'a t -> 'a
   (** Returns the focused element, or
       @raise Not_found if the zipper is at an end *)
+
+  val drop_before : 'a t -> 'a t
+  (** Drop every element on the "left" (calling {!left} then will do nothing).
+      @since NEXT_RELEASE *)
+
+  val drop_after : 'a t -> 'a t
+  (** Drop every element on the "right" (calling {!right} then will do nothing).
+      @since NEXT_RELEASE *)
 end
 
 (** {2 References on Lists}
