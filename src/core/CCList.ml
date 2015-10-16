@@ -833,9 +833,17 @@ module Zipper = struct
     | x::l, r -> l, x::r
     | [], r -> [], r
 
+  let left_exn = function
+    | x::l, r -> l, x::r
+    | [], _ -> invalid_arg "zipper.left_exn"
+
   let right = function
     | l, x::r -> x::l, r
     | l, [] -> l, []
+
+  let right_exn = function
+    | l, x::r -> x::l, r
+    | _, [] -> invalid_arg "zipper.right_exn"
 
   let modify f z = match z with
     | l, [] ->
@@ -874,7 +882,11 @@ module Zipper = struct
 
   let drop_before (_, r) = [], r
 
-  let drop_after (l, _) = l, []
+  let drop_after (l, r) = match r with
+    | [] -> l, []
+    | x :: _ -> l, [x]
+
+  let drop_after_and_focused (l, _) = l, []
 end
 
 (** {2 References on Lists} *)

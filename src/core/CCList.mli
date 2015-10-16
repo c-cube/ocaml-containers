@@ -331,8 +331,18 @@ module Zipper : sig
   val left : 'a t -> 'a t
   (** Go to the left, or do nothing if the zipper is already at leftmost pos *)
 
+  val left_exn : 'a t -> 'a t
+  (** Go to the left, or
+      @raise Invalid_argument if the zipper is already at leftmost pos
+      @since NEXT_RELEASE *)
+
   val right : 'a t -> 'a t
   (** Go to the right, or do nothing if the zipper is already at rightmost pos *)
+
+  val right_exn : 'a t -> 'a t
+  (** Go to the right, or
+      @raise Invalid_argument if the zipper is already at rightmost position
+      @since NEXT_RELEASE *)
 
   val modify : ('a option -> 'a option) -> 'a t -> 'a t
   (** Modify the current element, if any, by returning a new element, or
@@ -365,8 +375,20 @@ module Zipper : sig
       @since NEXT_RELEASE *)
 
   val drop_after : 'a t -> 'a t
-  (** Drop every element on the "right" (calling {!right} then will do nothing).
+  (** Drop every element on the "right" (calling {!right} then will do nothing),
+      keeping the focused element, if any.
       @since NEXT_RELEASE *)
+
+  val drop_after_and_focused : 'a t -> 'a t
+  (** Drop every element on the "right" (calling {!right} then will do nothing),
+      {i including} the focused element if it is present.
+      @since NEXT_RELEASE *)
+
+  (*$=
+    ([1], [2]) (Zipper.drop_after ([1], [2;3]))
+    ([1], []) (Zipper.drop_after ([1], []))
+    ([1], []) (Zipper.drop_after_and_focused ([1], [2;3]))
+  *)
 end
 
 (** {2 References on Lists}
