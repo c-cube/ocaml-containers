@@ -249,19 +249,48 @@ module type COUNTER = sig
   (** Increment the counter for the given element *)
 
   val incr_by : t -> int -> elt -> unit
-  (** Add several occurrences at once *)
+  (** Add or remove several occurrences at once. [incr_by c x n]
+      will add [n] occurrences of [x] if [n>0],
+      and remove [abs n] occurrences if [n<0]. *)
 
   val get : t -> elt -> int
   (** Number of occurrences for this element *)
+
+  val decr : t -> elt -> unit
+  (** Remove one occurrence of the element
+      @since NEXT_RELEASE *)
+
+  val length : t -> int
+  (** Number of distinct elements
+      @since NEXT_RELEASE *)
 
   val add_seq : t -> elt sequence -> unit
   (** Increment each element of the sequence *)
 
   val of_seq : elt sequence -> t
   (** [of_seq s] is the same as [add_seq (create ())] *)
+
+  val to_seq : t -> (elt * int) sequence
+  (** [to_seq tbl] returns elements of [tbl] along with their multiplicity
+      @since NEXT_RELEASE *)
+
+  val add_list : t -> (elt * int) list -> unit
+  (** Similar to {!add_seq}
+      @since NEXT_RELEASE *)
+
+  val of_list : (elt * int) list -> t
+  (** Similar to {!of_seq}
+      @since NEXT_RELEASE *)
+
+  val to_list : t -> (elt * int) list
+  (** @since NEXT_RELEASE *)
 end
 
-module MakeCounter(X : Hashtbl.HashedType) = struct
+module MakeCounter(X : Hashtbl.HashedType)
+  : COUNTER
+  with type elt = X.t
+  and type t = int Hashtbl.Make(X).t
+= struct
   type elt = X.t
 
   module T = Hashtbl.Make(X)
@@ -271,6 +300,8 @@ module MakeCounter(X : Hashtbl.HashedType) = struct
   let create size = T.create size
 
   let get tbl x = try T.find tbl x with Not_found -> 0
+
+  let length = T.length
 
   let incr tbl x =
     let n = get tbl x in
@@ -282,10 +313,46 @@ module MakeCounter(X : Hashtbl.HashedType) = struct
     then T.remove tbl x
     else T.replace tbl x (n+n')
 
+  let decr tbl x = incr_by tbl 1 x
+
   let add_seq tbl seq = seq (incr tbl)
 
   let of_seq seq =
     let tbl = create 32 in
     add_seq tbl seq;
     tbl
+
+  let to_seq tbl yield = T.iter (fun x i -> yield (x,i)) tbl
+
+  let add_list tbl l =
+    List.iter (fun (x,i) -> incr_by tbl i x) l
+
+  let of_list l =
+    let tbl = create 32 in
+    add_list tbl l;
+    tbl
+
+  let to_list tbl =
+    T.fold (fun x i acc -> (x,i) :: acc) tbl []
 end
+
+(*$inject
+  module C = MakeCounter(CCInt)
+
+  let list_int = Q.(make
+    ~print:Print.(list (pair int int))
+    ~small:List.length
+    ~shrink:Shrink.(list ?shrink:None)
+    Gen.(list small_int >|= List.map (fun i->i,1))
+  )
+
+  *)
+
+(*$Q
+  list_int (fun l -> \
+    l |> C.of_list |> C.to_list |> List.length = \
+      (l |> CCList.sort_uniq |> List.length))
+  list_int (fun l -> \
+    l |> C.of_list |> C.to_seq |> Sequence.fold (fun n(_,i)->i+n) 0 = \
+      List.fold_left (fun n (_,_) ->n+1) 0 l)
+*)

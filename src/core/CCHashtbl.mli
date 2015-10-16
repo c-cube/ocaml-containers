@@ -169,16 +169,46 @@ module type COUNTER = sig
   (** Increment the counter for the given element *)
 
   val incr_by : t -> int -> elt -> unit
-  (** Add several occurrences at once *)
+  (** Add or remove several occurrences at once. [incr_by c x n]
+      will add [n] occurrences of [x] if [n>0],
+      and remove [abs n] occurrences if [n<0]. *)
 
   val get : t -> elt -> int
   (** Number of occurrences for this element *)
+
+  val decr : t -> elt -> unit
+  (** Remove one occurrence of the element
+      @since NEXT_RELEASE *)
+
+  val length : t -> int
+  (** Number of distinct elements
+      @since NEXT_RELEASE *)
 
   val add_seq : t -> elt sequence -> unit
   (** Increment each element of the sequence *)
 
   val of_seq : elt sequence -> t
   (** [of_seq s] is the same as [add_seq (create ())] *)
+
+  val to_seq : t -> (elt * int) sequence
+  (** [to_seq tbl] returns elements of [tbl] along with their multiplicity
+      @since NEXT_RELEASE *)
+
+  val add_list : t -> (elt * int) list -> unit
+  (** Similar to {!add_seq}
+      @since NEXT_RELEASE *)
+
+  val of_list : (elt * int) list -> t
+  (** Similar to {!of_seq}
+      @since NEXT_RELEASE *)
+
+  val to_list : t -> (elt * int) list
+  (** @since NEXT_RELEASE *)
 end
 
-module MakeCounter(X : Hashtbl.HashedType) : COUNTER with type elt = X.t
+module MakeCounter(X : Hashtbl.HashedType)
+  : COUNTER
+  with type elt = X.t
+  and type t = int Hashtbl.Make(X).t
+(** Create a new counter type
+    The type [t] is exposed @since NEXT_RELEASE *)
