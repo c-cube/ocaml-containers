@@ -89,6 +89,24 @@ The library contains a <<core,Core part>> that mostly extends the stdlib
 and adds a few very common structures (heap, vector), and sub-libraries
 that deal with either more specific things, or require additional dependencies.
 
+Some structural types are used throughout the library:
+
+gen:: `'a gen = unit -> 'a option` is an iterator type. Many combinators
+  are defined in the opam library called "gen"
+sequence:: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
+  It is easier to define on data structures than `gen`, but it a bit less
+  powerful.  The opam library `sequence` can be used to consume and produce
+  values of this type.
+error:: `'a or_error = [`Error of string | `Ok of 'a]` is a error type
+  that is used in other libraries, too. The reference module in containers
+  is `CCError`.
+klist:: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
+  without memoization, used as a persistent iterator. The reference
+  module is `CCKList` (in `containers.iter`).
+printer:: `'a printer = Format.formatter -> 'a -> unit` is a pretty-printer
+  to be used with the standard module `Format`. In particular, in many cases,
+  `"foo: %a" Foo.print foo` will type-check.
+
 [[core]]
 === Core Modules (extension of the standard library)
 
