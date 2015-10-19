@@ -203,19 +203,6 @@ The library has moved to https://github.com/c-cube/containers-misc .
 
 `containers.lwt` has moved to https://github.com/c-cube/containers-lwt .
 
-== Incoming (Breaking) Changes
-
-- change exceptions in `CCVector`
-- change signature of `CCDeque.of_seq` (remove optional argument)
-- heavily refactor `CCLinq` in `containers.advanced`. If you use this module,
-  you will most likely have to change your code (into simpler code, hopefully).
-- `RAL` in `containers.misc` moved to `containers.data` as `CCRAL`, and is
-  getting improved on the way
-- moving `containers.lwt` into its own repository and opam package
-- moving `containers.misc` into its own repository and opam package (improving the average quality of containers!)
-- aliasing and deprecating `CCList.split` (confusion with `List.split`)
-
-
 [[build]]
 == Build
 
