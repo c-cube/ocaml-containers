@@ -92,11 +92,11 @@ that deal with either more specific things, or require additional dependencies.
 Some structural types are used throughout the library:
 
 gen:: `'a gen = unit -> 'a option` is an iterator type. Many combinators
-  are defined in the opam library called "gen"
+  are defined in the opam library https://github.com/c-cube/gen[gen]
 sequence:: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
   It is easier to define on data structures than `gen`, but it a bit less
-  powerful.  The opam library `sequence` can be used to consume and produce
-  values of this type.
+  powerful.  The opam library https://github.com/c-cube/sequence[sequence]
+  can be used to consume and produce values of this type.
 error:: `'a or_error = [`Error of string | `Ok of 'a]` is a error type
   that is used in other libraries, too. The reference module in containers
   is `CCError`.
