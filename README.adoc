@@ -43,7 +43,7 @@ toc::[]
 
 == Change Log
 
-See link:CHANGELOG.md[this file].
+See link:CHANGELOG.adoc[this file].
 
 == Finding help
 
