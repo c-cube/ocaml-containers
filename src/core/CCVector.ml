@@ -454,13 +454,32 @@ let find_exn p v =
   let n = v.size in
   let rec check i =
     if i = n then raise Not_found
-    else if p v.vec.(i) then v.vec.(i)
+    else
+      let x = v.vec.(i) in
+      if p x then x
     else check (i+1)
   in check 0
 
 let find p v =
   try Some (find_exn p v)
   with Not_found -> None
+
+let find_map f v =
+  let n = v.size in
+  let rec search i =
+    if i=n then None
+    else match f v.vec.(i) with
+      | None -> search (i+1)
+      | Some _ as res -> res
+  in
+  search 0
+
+(*$Q
+  Q.(list small_int) (fun l -> \
+    let v = of_list l in \
+    let f x = x>30 && x < 35 in \
+    find_map (fun x -> if f x then Some x else None) v = find f v)
+*)
 
 let filter_map f v =
   let v' = create () in

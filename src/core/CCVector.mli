@@ -164,6 +164,11 @@ val find_exn  : ('a -> bool) -> ('a,_) t -> 'a
 (** find an element that satisfies the predicate, or
     @raise Not_found if no element does *)
 
+val find_map : ('a -> 'b option) -> ('a,_) t -> 'b option
+(** [find_map f v] returns the first [Some y = f x] for [x] in [v],
+    or [None] if [f x = None] for each [x] in [v]
+    @since NEXT_RELEASE *)
+
 val filter_map : ('a -> 'b option) -> ('a,_) t -> ('b, 'mut) t
 (** Map elements with a function, possibly filtering some of them out *)
 
