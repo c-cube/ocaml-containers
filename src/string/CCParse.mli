@@ -307,4 +307,16 @@ module U : sig
   val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 
   val map3 : ('a -> 'b -> 'c -> 'd) -> 'a t -> 'b t -> 'c t -> 'd t
+
+  val pair : ?start:string -> ?stop:string -> ?sep:string ->
+             'a t -> 'b t -> ('a * 'b) t
+  (** Parse a pair using OCaml whitespace conventions.
+      The default is "(a, b)".
+      @since NEXT_RELEASE *)
+
+  val triple : ?start:string -> ?stop:string -> ?sep:string ->
+               'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+  (** Parse a triple using OCaml whitespace conventions.
+      The default is "(a, b, c)".
+      @since NEXT_RELEASE *)
 end

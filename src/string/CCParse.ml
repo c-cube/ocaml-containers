@@ -85,13 +85,13 @@ exception ParseError of line_num * col_num * (unit -> string)
 
 (*$= & ~printer:errpptree
   (`Ok (N (L 1, N (L 2, L 3)))) \
-    (parse_string "(1 (2 3))" ptree)
+    (parse_string ~p:ptree "(1 (2 3))" )
   (`Ok (N (N (L 1, L 2), N (L 3, N (L 4, L 5))))) \
-    (parse_string "((1 2) (3 (4 5)))" ptree)
+    (parse_string ~p:ptree "((1 2) (3 (4 5)))" )
   (`Ok (N (L 1, N (L 2, L 3)))) \
-    (parse_string "(1 (2 3))" ptree' )
+    (parse_string ~p:ptree' "(1 (2 3))" )
   (`Ok (N (N (L 1, L 2), N (L 3, N (L 4, L 5))))) \
-    (parse_string "((1 2) (3 (4 5)))" ptree' )
+    (parse_string ~p:ptree' "((1 2) (3 (4 5)))" )
 *)
 
 (*$R
@@ -102,7 +102,7 @@ exception ParseError of line_num * col_num * (unit -> string)
   in
   assert_equal ~printer
     (`Ok ["abc"; "de"; "hello"; "world"])
-    (parse_string "[abc , de, hello ,world  ]" p);
+    (parse_string ~p "[abc , de, hello ,world  ]");
  *)
 
 (*$R
@@ -342,14 +342,14 @@ module MemoTbl = struct
 end
 
 let fix f =
-  let rec p st = f p st in
+  let rec p st ~ok ~err = f p st ~ok ~err in
   p
 
-let memo p =
+let memo (type a) (p:a t):a t =
   let id = !MemoTbl.id_ in
   incr MemoTbl.id_;
   let r = ref None in (* used for universal encoding *)
-  fun input ->
+  fun input ~ok ~err ->
     let i = input.pos () in
     let (lazy tbl) = input.memo in
     try
@@ -359,23 +359,25 @@ let memo p =
       f ();
       begin match !r with
         | None -> assert false
-        | Some (MemoTbl.Ok x) -> x
-        | Some (MemoTbl.Fail e) -> raise e
+        | Some (MemoTbl.Ok x) -> ok x
+        | Some (MemoTbl.Fail e) -> err e
       end
     with Not_found ->
       (* parse, and save *)
-      try
-        let x = p input in
-        H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Ok x));
-        x
-      with (ParseError _) as e ->
-        H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Fail e));
-        raise e
+      p input
+        ~err:(fun e ->
+          H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Fail e));
+          err e
+        )
+        ~ok:(fun x ->
+          H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Ok x));
+          ok x
+        )
 
 let fix_memo f =
   let rec p =
     let p' = lazy (memo p) in
-    fun st -> f (Lazy.force p') st
+    fun st ~ok ~err -> f (Lazy.force p') st ~ok ~err
   in
   p
 
@@ -436,4 +438,21 @@ module U = struct
 
   let word =
     map2 prepend_str (char_if is_alpha) (chars_if is_alpha_num)
+
+  let pair ?(start="(") ?(stop=")") ?(sep=",") p1 p2 =
+    string start *> skip_white *>
+    p1 >>= fun x1 ->
+    skip_white *> string sep *> skip_white *>
+    p2 >>= fun x2 ->
+    string stop *> return (x1,x2)
+
+  let triple ?(start="(") ?(stop=")") ?(sep=",") p1 p2 p3 =
+    string start *> skip_white *>
+    p1 >>= fun x1 ->
+    skip_white *> string sep *> skip_white *>
+    p2 >>= fun x2 ->
+    skip_white *> string sep *> skip_white *>
+    p3 >>= fun x3 ->
+    string stop *> return (x1,x2,x3)
+
 end
