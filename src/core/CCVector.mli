@@ -72,9 +72,16 @@ val init : int -> (int -> 'a) -> ('a, 'mut) t
 val clear : ('a, rw) t -> unit
 (** clear the content of the vector *)
 
+val ensure_with : init:'a -> ('a, rw) t -> int -> unit
+(** Hint to the vector that it should have at least the given capacity.
+    @param init if [capacity v = 0], used as a filler
+      element for the underlying array (see {!create_with})
+    @since NEXT_RELEASE *)
+
 val ensure : ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
-    Just a hint, will not be enforced if the vector is empty. *)
+    Just a hint, will not be enforced if the vector is empty and [init]
+      is not provided. *)
 
 val is_empty : ('a, _) t -> bool
 (** is the vector empty? *)

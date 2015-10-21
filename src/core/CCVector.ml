@@ -117,19 +117,28 @@ let _grow v x =
       _resize v size
     )
 
-(* resize so that capacity is at least size. Use a doubling-size
-  strategy so that calling many times [ensure] will
+(* v is not empty; ensure it has at least [size] slots.
+
+  Use a doubling-size strategy so that calling many times [ensure] will
   behave well *)
-let ensure v size =
-  if Array.length v.vec = 0
-    then ()
-  else if size > Sys.max_array_length
+let ensure_not_empty_ v size =
+  if size > Sys.max_array_length
     then failwith "vec.ensure: size too big"
   else (
     let n = ref (max 16 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;
     _resize v !n
   )
+
+let ensure_with ~init v size =
+  if Array.length v.vec = 0
+  then v.vec <- Array.make size init
+  else ensure_not_empty_ v size
+
+let ensure v size =
+  if Array.length v.vec = 0
+  then ()
+  else ensure_not_empty_  v size
 
 let clear v =
   v.size <- 0
