@@ -113,7 +113,12 @@ Iterators:
 
 {4 String}
 
-{!modules: Levenshtein KMP}
+{!modules:
+CCApp_parse
+CCKMP
+CCLevenshtein
+CCParse
+}
 
 {4 Bigarrays}
 
