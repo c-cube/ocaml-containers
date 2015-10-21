@@ -533,14 +533,25 @@ let flat_map f v =
   iter (fun x -> iter (push v') (f x)) v;
   v'
 
-let flat_map' f v =
+let flat_map_seq f v =
   let v' = create () in
   iter
     (fun x ->
       let seq = f x in
-      seq (fun y -> push v' y)
+      append_seq v' seq;
     ) v;
   v'
+
+let flat_map_list f v =
+  let v' = create () in
+  iter
+    (fun x ->
+      let l = f x in
+      append_list v' l;
+    ) v;
+  v'
+
+let flat_map' = flat_map_seq
 
 let (>>=) x f = flat_map f x
 

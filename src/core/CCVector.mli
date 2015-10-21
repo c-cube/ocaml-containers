@@ -190,8 +190,19 @@ val filter_map : ('a -> 'b option) -> ('a,_) t -> ('b, 'mut) t
 val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 (** Map each element to a sub-vector *)
 
+val flat_map_seq : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
+(** Like {!flat_map}, but using {!sequence} for
+    intermediate collections.
+    @since NEXT_RELEASE *)
+
+val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
+(** Like {!flat_map}, but using {!list} for
+    intermediate collections.
+    @since NEXT_RELEASE *)
+
 val flat_map' : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
-(** Like {!flat_map}, but using {!sequence} for intermediate collections *)
+(** Alias to {!flat_map_seq}
+   @deprecated since NEXT_RELEASE , use {!flat_map_seq} *)
 
 val (>>=) : ('a,_) t -> ('a -> ('b,_) t) -> ('b, 'mut) t
 (** Infix version of {!flat_map} *)
