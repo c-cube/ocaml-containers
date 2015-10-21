@@ -162,6 +162,11 @@ let push v x =
     then _grow v x;
   push_unsafe_ v x
 
+(*$T
+  let v = create () in push v 1; to_list v = [1]
+  let v = of_list [1;2;3] in push v 4; to_list v = [1;2;3;4]
+*)
+
 (** add all elements of b to a *)
 let append a b =
   if _empty_array a
