@@ -357,30 +357,30 @@ let fix_memo f =
   in
   p
 
-let parse_exn ~input p = p input
+let parse_exn ~input ~p = p input
 
-let parse ~input p =
-  try `Ok (parse_exn ~input p)
+let parse ~input ~p =
+  try `Ok (parse_exn ~input ~p)
   with ParseError (lnum, cnum, msg) ->
     `Error (Printf.sprintf "at line %d, column %d: error, %s" lnum cnum (msg ()))
 
-let parse_string s p = parse ~input:(input_of_string s) p
-let parse_string_exn s p = parse_exn ~input:(input_of_string s) p
+let parse_string s ~p = parse ~input:(input_of_string s) ~p
+let parse_string_exn s ~p = parse_exn ~input:(input_of_string s) ~p
 
-let parse_file_exn ?size ~file p =
+let parse_file_exn ?size ~file ~p =
   let ic = open_in file in
   let input = input_of_chan ?size ic in
   try
-    let res = parse_exn ~input p in
+    let res = parse_exn ~input ~p in
     close_in ic;
     res
   with e ->
     close_in ic;
     raise e
 
-let parse_file ?size ~file p =
+let parse_file ?size ~file ~p =
   try
-    `Ok (parse_file_exn ?size ~file p)
+    `Ok (parse_file_exn ?size ~file ~p)
   with
   | ParseError (lnum, cnum, msg) ->
     `Error (Printf.sprintf "at line %d, column %d: error, %s" lnum cnum (msg ()))

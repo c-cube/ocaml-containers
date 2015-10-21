@@ -27,6 +27,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (**
 {1 Very Simple Parser Combinators}
 
+{b status} still a bit unstable, the type {!'a t} might still change.
+
 Examples:
 
 {6 parse recursive structures}
@@ -238,28 +240,31 @@ val fix_memo : ('a t -> 'a t) -> 'a t
 (** Same as {!fix}, but the fixpoint is memoized.
     @since 0.13 *)
 
-(** {2 Parse} *)
+(** {2 Parse}
 
-val parse : input:input -> 'a t -> 'a or_error
+  Those functions have a label [~p] on the parser, since NEXT_RELEASE.
+*)
+
+val parse : input:input -> p:'a t -> 'a or_error
 (** [parse ~input p] applies [p] on the input, and returns [`Ok x] if
     [p] succeeds with [x], or [`Error s] otherwise *)
 
-val parse_exn : input:input -> 'a t -> 'a
+val parse_exn : input:input -> p:'a t -> 'a
 (** @raise ParseError if it fails *)
 
-val parse_string : string -> 'a t -> 'a or_error
+val parse_string : string -> p:'a t -> 'a or_error
 (** Specialization of {!parse} for string inputs *)
 
-val parse_string_exn : string -> 'a t -> 'a
+val parse_string_exn : string -> p:'a t -> 'a
 (** @raise ParseError if it fails *)
 
-val parse_file : ?size:int -> file:string -> 'a t -> 'a or_error
+val parse_file : ?size:int -> file:string -> p:'a t -> 'a or_error
 (** [parse_file ~file p] parses [file] with [p] by opening the file
     and using {!input_of_chan}.
     @param size size of chunks read from file
     @since 0.13 *)
 
-val parse_file_exn : ?size:int -> file:string -> 'a t -> 'a
+val parse_file_exn : ?size:int -> file:string -> p:'a t -> 'a
 (** Unsafe version of {!parse_file}
     @since 0.13 *)
 
