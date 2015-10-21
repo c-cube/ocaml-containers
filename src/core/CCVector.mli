@@ -59,6 +59,10 @@ val create_with : ?capacity:int -> 'a -> ('a, rw) t
     @param capacity the size of the underlying array
     {b caution}: the value will likely not be GC'd before the vector is. *)
 
+val return : 'a -> ('a, 'mut) t
+(** Singleton vector
+    @since NEXT_RELEASE *)
+
 val make : int -> 'a -> ('a, 'mut) t
 (** [make n x] makes a vector of size [n], filled with [x] *)
 

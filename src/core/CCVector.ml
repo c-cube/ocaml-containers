@@ -68,6 +68,16 @@ let create_with ?(capacity=128) x = {
   (create_with ~capacity:200 1 |> capacity) >= 200
 *)
 
+let return x = {
+  size=1;
+  vec= [| x |];
+}
+
+(*$T
+  return 42 |> to_list = [42]
+  return 42 |> length = 1
+*)
+
 let make n x = {
   size=n;
   vec=Array.make n x;
@@ -134,14 +144,14 @@ let clear v =
 
 let is_empty v = v.size = 0
 
-let push_unsafe v x =
+let push_unsafe_ v x =
   Array.unsafe_set v.vec v.size x;
   v.size <- v.size + 1
 
 let push v x =
   if v.size = Array.length v.vec
     then _grow v x;
-  push_unsafe v x
+  push_unsafe_ v x
 
 (** add all elements of b to a *)
 let append a b =
@@ -410,7 +420,7 @@ let filter p v =
   else (
     let v' = create_with ~capacity:v.size v.vec.(0) in
     Array.iter
-      (fun x -> if p x then push_unsafe v' x)
+      (fun x -> if p x then push_unsafe_ v' x)
       v.vec;
     v'
   )
@@ -598,7 +608,7 @@ let of_list l = match l with
   | [] -> create()
   | x::_ ->
       let v = create_with ~capacity:(List.length l + 5) x in
-      List.iter (push_unsafe v) l;
+      List.iter (push_unsafe_ v) l;
       v
 
 (*$T
