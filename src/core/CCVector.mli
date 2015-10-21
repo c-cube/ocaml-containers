@@ -225,8 +225,12 @@ val remove : ('a, rw) t -> int -> unit
 val rev : ('a,_) t -> ('a, 'mut) t
 (** Reverse the vector *)
 
+val rev_in_place : ('a, rw) t -> unit
+(** Reverse the vector in place
+    @since NEXT_RELEASE *)
+
 val rev' : ('a, rw) t -> unit
-(** Reverse the vector in place *)
+(** @deprecated old name for {!rev_in_place} *)
 
 val rev_iter : ('a -> unit) -> ('a,_) t -> unit
 (** [rev_iter f a] is the same as [iter f (rev a)], only more efficient.

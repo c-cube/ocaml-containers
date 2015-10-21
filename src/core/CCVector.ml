@@ -562,7 +562,7 @@ let (>>=) x f = flat_map f x
 
 let (>|=) x f = map f x
 
-let rev' v =
+let rev_in_place v =
   if v.size > 0
   then (
     let n = v.size in
@@ -575,9 +575,11 @@ let rev' v =
     done
   )
 
+let rev' = rev_in_place
+
 let rev v =
   let v' = copy v in
-  rev' v';
+  rev_in_place v';
   v'
 
 (*$T
