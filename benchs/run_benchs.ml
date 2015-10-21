@@ -268,12 +268,25 @@ module Tbl = struct
     end in
     (module T)
 
+  let persistent_hashtbl_ref =
+    let module T = Ref_impl.PersistentHashtbl(CCInt) in
+    let module U = struct
+      type key = int
+      type 'a t = 'a T.t ref
+      let name = "persistent_tbl_old"
+      let create _ = ref (T.empty ())
+      let find m k = T.find !m k
+      let add m k v = m := T.replace !m k v
+      let replace = add
+    end in
+    (module U : INT_MUT)
+
   let persistent_hashtbl =
     let module T = CCPersistentHashtbl.Make(CCInt) in
     let module U = struct
       type key = int
       type 'a t = 'a T.t ref
-      let name = "ccpersistent_hashtbl"
+      let name = "persistent_tbl"
       let create _ = ref (T.empty ())
       let find m k = T.find !m k
       let add m k v = m := T.replace !m k v
@@ -395,7 +408,7 @@ module Tbl = struct
     ; trie
     ]
 
-  let bench_add n =
+  let bench_add_to which n =
     let make (module T : INT_MUT) =
       let run() =
         let t = T.create 50 in
@@ -405,7 +418,9 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    B.throughputN 3 ~repeat (List.map make modules_int)
+    B.throughputN 3 ~repeat (List.map make which)
+
+  let bench_add = bench_add_to modules_int
 
   let bench_add_string n =
     let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
@@ -477,7 +492,7 @@ module Tbl = struct
     ; persistent_array ] @
     List.map find_of_mut modules_int
 
-  let bench_find n =
+  let bench_find_to which n =
     let make (module T : INT_FIND) =
       let m = T.init n (fun i -> i) in
       let run() =
@@ -487,7 +502,9 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    Benchmark.throughputN 3 ~repeat (List.map make modules_int_find)
+    Benchmark.throughputN 3 ~repeat (List.map make which)
+
+  let bench_find = bench_find_to modules_int_find
 
   let bench_find_string n =
     let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
@@ -503,14 +520,23 @@ module Tbl = struct
     in
     Benchmark.throughputN 3 ~repeat (List.map make modules_string)
 
-  let () = B.Tree.register (
-    "tbl" @>>>
+  let () =
+    B.Tree.register ("tbl" @>>>
       [ "add_int" @>> app_ints bench_add [10; 100; 1_000; 10_000;]
       ; "add_string" @>> app_ints bench_add_string [10; 100; 1_000; 10_000;]
       ; "replace" @>> app_ints bench_replace [10; 100; 1_000; 10_000]
       ; "find" @>> app_ints bench_find [10; 20; 100; 1_000; 10_000]
       ; "find_string" @>> app_ints bench_find_string [10; 20; 100; 1_000; 10_000]
-      ])
+      ]);
+    B.Tree.register ("tbl_persistent" @>>>
+      [ "add_int" @>> app_ints
+          (bench_add_to [persistent_hashtbl; persistent_hashtbl_ref]) [10; 100; 1_000; 10_000;]
+      ; "find_int" @>> app_ints
+          (bench_find_to
+            (List.map find_of_mut [persistent_hashtbl; persistent_hashtbl_ref]))
+          [10; 20; 100; 1_000; 10_000]
+      ]);
+    ()
 end
 
 module Iter = struct
