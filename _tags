@@ -3,6 +3,6 @@
 <tests/*.ml{,i}>: thread
 <src/threads/*.ml{,i}>: thread
 <src/core/CCVector.cmx>: inline(25)
-<src/data/CCFlatHashtbl.cm*> or <src/data/CCHashTrie.cm*>: inline(15)
+<src/data/CCFlatHashtbl.cm*> or <src/data/CCHashTrie.cm*> or <src/data/CCPersistent*>: inline(15)
 <src/**/*.ml> and not <src/misc/*.ml>: warn_A, warn(-4), warn(-44)
 true: no_alias_deps, safe_string

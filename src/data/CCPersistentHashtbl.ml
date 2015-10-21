@@ -155,58 +155,85 @@ end
 (** {2 Implementation} *)
 
 module Make(H : HashedType) : S with type key = H.t = struct
-  module Table = Hashtbl.Make(H)
-    (** Imperative hashtable *)
-
   type key = H.t
-  type 'a t = 'a zipper ref
-  and 'a zipper =
-    | Table of 'a Table.t         (** Concrete table *)
-    | Add of key * 'a * 'a t      (** Add key *)
-    | Replace of key * 'a * 'a t  (** Replace key by value *)
-    | Remove of key * 'a t        (** As the table, but without given key *)
+
+  (* main hashtable *)
+  type 'a t = {
+    mutable arr: 'a p_array; (* invariant: length is a power of 2 *)
+    length: int;
+  }
+
+  (* piece of a persistent array *)
+  and 'a p_array =
+    | Arr of 'a bucket array
+    | Set of int * 'a bucket * 'a t
+
+  (* bucket of the hashtbl *)
+  and 'a bucket =
+    | Nil
+    | Cons of key * 'a * 'a bucket
+
+  (* first power of two that is bigger than [than], starting from [n] *)
+  let rec power_two_larger ~than n =
+    if n>= than then n else power_two_larger ~than (2*n)
 
   let create i =
-    ref (Table (Table.create i))
+    let i = power_two_larger ~than:i 16 in
+    { length=0;
+      arr=Arr (Array.make i Nil)
+    }
 
-  let empty () = create 11
+  let empty () = create 16
 
-  (* pass continuation to get a tailrec rerooting *)
-  let rec _reroot t k = match !t with
-  | Table tbl -> k tbl  (* done *)
-  | Add (key, v, t') ->
-    _reroot t'
-      (fun tbl ->
-        t' := Remove (key, t);
-        Table.add tbl key v;
-        t := Table tbl;
-        k tbl)
-  | Replace (key, v, t') ->
-    _reroot t'
-      (fun tbl ->
-        let v' = Table.find tbl key in
-        t' := Replace (key, v', t);
-        t := Table tbl;
-        Table.replace tbl key v;
-        k tbl)
-  | Remove (key, t') ->
-    _reroot t'
-      (fun tbl ->
-        let v = Table.find tbl key in
-        t' := Add (key, v, t);
-        t := Table tbl;
-        Table.remove tbl key;
-        k tbl)
+  let rec reroot_rec_ t k = match t.arr with
+    | Arr a -> k a
+    | Set (i, v, t') ->
+      reroot_rec_ t' (fun a ->
+          let v' = a.(i) in
+          a.(i) <- v;
+          t.arr <- Arr a;
+          t'.arr <- Set (i, v', t);
+          k a
+        )
 
-  (* Reroot: modify the zipper so that the current node is a proper
-     hashtable, and return the hashtable *)
-  let reroot t = match !t with
-    | Table tbl -> tbl
-    | _ -> _reroot t (fun x -> x)
+  (* obtain the array *)
+  let reroot_ t = match t.arr with
+    | Arr a -> a
+    | _ -> reroot_rec_ t (fun x -> x)
 
-  let is_empty t = Table.length (reroot t) = 0
+  let is_empty t = t.length = 0
 
-  let find t k = Table.find (reroot t) k
+  let length t = t.length
+
+  (* find index of [h] in [a] *)
+  let find_idx_ a ~h =
+    (* bitmask 00001111 if length(a) = 10000 *)
+    h land (Array.length a - 1)
+
+  let rec find_rec_ k l = match l with
+    | Nil -> raise Not_found
+    | Cons (k', v', l') ->
+        if H.equal k k' then v' else find_rec_ k l'
+
+  let find t k =
+    let a = reroot_ t in
+    (* unroll like crazy *)
+    match a.(find_idx_ ~h:(H.hash k) a) with
+    | Nil -> raise Not_found
+    | Cons (k1, v1, l1) ->
+        if H.equal k k1 then v1
+        else match l1 with
+        | Nil -> raise Not_found
+        | Cons (k2,v2,l2) ->
+            if H.equal k k2 then v2
+            else match l2 with
+            | Nil -> raise Not_found
+            | Cons (k3,v3,l3) ->
+                if H.equal k k3 then v3
+                else match l3 with
+                | Nil -> raise Not_found
+                | Cons (k4,v4,l4) ->
+                    if H.equal k k4 then v4 else find_rec_ k l4
 
   (*$R
     let h = H.of_seq my_seq in
@@ -249,9 +276,9 @@ module Make(H : HashedType) : S with type key = H.t = struct
     try Some (find t k)
     with Not_found -> None
 
-  let mem t k = Table.mem (reroot t) k
-
-  let length t = Table.length (reroot t)
+  let mem t k =
+    try ignore (find t k); true
+    with Not_found -> false
 
   (*$R
     let h = H.of_seq
@@ -267,33 +294,98 @@ module Make(H : HashedType) : S with type key = H.t = struct
     )
   *)
 
+  let rec buck_rev_iter_ ~f l = match l with
+    | Nil -> ()
+    | Cons (k,v,l') -> buck_rev_iter_ ~f l'; f k v
+
+  (* resize [a] so it has capacity [new_size], and insert [k,v] in it *)
+  let resize_ k v h a new_size =
+    assert (new_size > Array.length a);
+    let a' = Array.make new_size Nil in
+    (* preserve order of elements by iterating on each bucket in rev order *)
+    Array.iter
+      (buck_rev_iter_
+          ~f:(fun k v ->
+            let i = find_idx_ ~h:(H.hash k) a' in
+            a'.(i) <- Cons (k,v,a'.(i))
+          )
+      )
+      a;
+    let i = find_idx_ ~h a' in
+    a'.(i) <- Cons (k,v,a'.(i));
+    a'
+
+  (* insert [k,v] in [l] and returns new list and boolean flag indicating
+     whether it's a new element *)
+  let rec replace_rec_ k v l = match l with
+    | Nil -> Cons (k,v,Nil), true
+    | Cons (k',v',l') ->
+        if H.equal k k'
+        then Cons (k,v,l'), false
+        else
+          let l', is_new = replace_rec_ k v l' in
+          Cons (k',v',l'), is_new
+
   let replace t k v =
-    let tbl = reroot t in
-    (* create the new hashtable *)
-    let t' = ref (Table tbl) in
-    (* update [t] to point to the new hashtable *)
-    (try
-      let v' = Table.find tbl k in
-      t := Replace (k, v', t')
-    with Not_found ->
-      t := Remove (k, t')
-    );
-    (* modify the underlying hashtable *)
-    Table.replace tbl k v;
-    t'
+    let a = reroot_ t in
+    let h = H.hash k in
+    let i = find_idx_ ~h a in
+    match a.(i) with
+    | Nil ->
+        if t.length > (Array.length a) lsl 1
+        then (
+          (* resize *)
+          let new_size = min (2 * (Array.length a)) Sys.max_array_length in
+          let a = resize_ k v h a new_size in
+          {length=t.length+1; arr=Arr a}
+        ) else (
+          a.(i) <- Cons (k, v, Nil);
+          let t' = {length=t.length + 1; arr=Arr a} in
+          t.arr <- Set (i,Nil,t');
+          t'
+        )
+    | Cons _ as l ->
+        let l', is_new = replace_rec_ k v l in
+        if is_new && t.length > (Array.length a) lsl 1
+        then (
+          (* resize and insert [k,v] (again, it's new anyway) *)
+          let new_size = min (2 * (Array.length a)) Sys.max_array_length in
+          let a = resize_ k v h a new_size in
+          {length=t.length+1; arr=Arr a}
+        ) else (
+          (* no resize *)
+          a.(i) <- l';
+          let t' = {
+            length=if is_new then t.length+1 else t.length;
+            arr=Arr a;
+          } in
+          t.arr <- Set (i,l,t');
+          t'
+        )
+
+  (* return [Some l'] if [l] changed into [l'] by removing [k] *)
+  let rec remove_rec_ k l = match l with
+    | Nil -> None
+    | Cons (k', v', l') ->
+        if H.equal k k'
+        then Some l'
+        else match remove_rec_ k l' with
+          | None -> None
+          | Some l' -> Some (Cons (k', v', l'))
 
   let remove t k =
-    let tbl = reroot t in
-    try
-      let v' = Table.find tbl k in
-      (* value present, make a new hashtable without this value *)
-      let t' = ref (Table tbl) in
-      t := Add (k, v', t');
-      Table.remove tbl k;
-      t'
-    with Not_found ->
-      (* not member, nothing to do *)
-      t
+    let a = reroot_ t in
+    let i = find_idx_ ~h:(H.hash k) a in
+    match a.(i) with
+    | Nil -> t
+    | Cons _ as l ->
+        match remove_rec_ k l with
+        | None -> t
+        | Some l' ->
+            a.(i) <- l';
+            let t' = {length=t.length-1; arr=Arr a} in
+            t.arr <- Set (i,l,t');
+            t'
 
   (*$R
     let h = H.of_seq my_seq in
@@ -333,40 +425,78 @@ module Make(H : HashedType) : S with type key = H.t = struct
     | _, Some v' -> replace t k v'
 
   let copy t =
-    let tbl = reroot t in
-    (* no one will point to the new [t] *)
-    let t = ref (Table (Table.copy tbl)) in
-    t
+    let a = Array.copy (reroot_ t) in
+    {t with arr=Arr a}
+
+  let rec buck_iter_ ~f l = match l with
+    | Nil -> ()
+    | Cons (k,v,l') -> f k v; buck_iter_ ~f l'
 
   let iter t f =
-    let tbl = reroot t in
-    Table.iter f tbl
+    let a = reroot_ t in
+    Array.iter (buck_iter_ ~f) a
+
+  let rec buck_fold_ f acc l = match l with
+    | Nil -> acc
+    | Cons (k,v,l') ->
+        let acc = f acc k v in
+        buck_fold_ f acc l'
 
   let fold f acc t =
-    let tbl = reroot t in
-    Table.fold (fun k v acc -> f acc k v) tbl acc
+    let a = reroot_ t in
+    Array.fold_left (buck_fold_ f) acc a
 
   let map f t =
-    let tbl = reroot t in
-    let res = Table.create (Table.length tbl) in
-    Table.iter (fun k v -> Table.replace res k (f k v)) tbl;
-    ref (Table res)
+    let rec buck_map_ f l = match l with
+      | Nil -> Nil
+      | Cons (k,v,l') ->
+          let v' = f k v in
+          Cons (k,v', buck_map_ f l')
+    in
+    let a = reroot_ t in
+    let a' = Array.map (buck_map_ f) a in
+    {length=t.length; arr=Arr a'}
+
+  let rec buck_filter_ ~f l = match l with
+    | Nil -> Nil
+    | Cons (k,v,l') ->
+        let l' = buck_filter_ ~f l' in
+        if f k v then Cons (k,v,l') else l'
+
+  let buck_length_ b = buck_fold_ (fun n _ _ -> n+1) 0 b
 
   let filter p t =
-    let tbl = reroot t in
-    let res = Table.create (Table.length tbl) in
-    Table.iter (fun k v -> if p k v then Table.replace res k v) tbl;
-    ref (Table res)
+    let a = reroot_ t in
+    let length = ref 0 in
+    let a' = Array.map
+      (fun b ->
+        let b' = buck_filter_ ~f:p b in
+        length := !length + (buck_length_ b');
+        b'
+      ) a
+    in
+    {length= !length; arr=Arr a'}
+
+  let rec buck_filter_map_ ~f l = match l with
+    | Nil -> Nil
+    | Cons (k,v,l') ->
+        let l' = buck_filter_map_ ~f l' in
+        match f k v with
+        | None -> l'
+        | Some v' ->
+            Cons (k,v',l')
 
   let filter_map f t =
-    let tbl = reroot t in
-    let res = Table.create (Table.length tbl) in
-    Table.iter
-      (fun k v -> match f k v with
-        | None -> ()
-        | Some v' -> Table.replace res k v'
-      ) tbl;
-    ref (Table res)
+    let a = reroot_ t in
+    let length = ref 0 in
+    let a' = Array.map
+      (fun b ->
+        let b' = buck_filter_map_ ~f b in
+        length := !length + (buck_length_ b');
+        b'
+      ) a
+    in
+    {length= !length; arr=Arr a'}
 
   exception ExitPTbl
 
@@ -383,19 +513,22 @@ module Make(H : HashedType) : S with type key = H.t = struct
     with ExitPTbl -> true
 
   let merge f t1 t2 =
-    let tbl = Table.create (max (length t1) (length t2)) in
-    iter t1
-      (fun k v1 ->
+    let tbl = create (max (length t1) (length t2)) in
+    let tbl = fold
+      (fun tbl k v1 ->
         let v2 = try Some (find t2 k) with Not_found -> None in
         match f k (Some v1) v2 with
-        | None -> ()
-        | Some v' -> Table.replace tbl k v');
-    iter t2
-      (fun k v2 ->
-        if not (mem t1 k) then match f k None (Some v2) with
-          | None -> ()
-          | Some _ -> Table.replace tbl k v2);
-    ref (Table tbl)
+        | None -> tbl
+        | Some v' -> replace tbl k v')
+      tbl t1
+    in
+    fold
+      (fun tbl k v2 ->
+        if mem t1 k then tbl
+        else match f k None (Some v2) with
+          | None -> tbl
+          | Some _ -> replace tbl k v2
+      ) tbl t2
 
   (*$R
     let t1 = H.of_list [1, "a"; 2, "b1"] in
@@ -444,10 +577,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   let of_list l = add_list (empty ()) l
 
-  let to_list t =
-    let tbl = reroot t in
-    let bindings = Table.fold (fun k v acc -> (k,v)::acc) tbl [] in
-    bindings
+  let to_list t = fold (fun acc k v -> (k,v)::acc) [] t
 
   (*$R
     let h = H.of_seq my_seq in
@@ -457,8 +587,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   let to_seq t =
     fun k ->
-      let tbl = reroot t in
-      Table.iter (fun x y -> k (x,y)) tbl
+      iter t (fun x y -> k (x,y))
 
   (*$R
     let h = H.of_seq my_seq in
