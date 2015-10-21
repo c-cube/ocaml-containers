@@ -222,6 +222,25 @@ let append_array a b =
   append_array v1 v2; to_list v1 = CCList.(0--9)
 *)
 
+let append_list a b = match b with
+  | [] -> ()
+  | x :: _ ->
+      (* need to push at least one elem *)
+      let len_a = a.size in
+      let len_b = List.length b in
+      ensure_with ~init:x a (len_a + len_b);
+      List.iter (push_unsafe_ a) b;
+      ()
+
+(*$Q
+  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
+    let v = of_list l1 in append_list v l2; \
+    to_list v = (l1 @ l2))
+  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
+    let v = of_list l1 in append_list v l2; \
+    length v = List.length l1 + List.length l2)
+*)
+
 (*$inject
   let gen x =
     let small = length in

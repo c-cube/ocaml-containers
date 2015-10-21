@@ -98,6 +98,10 @@ val append_array : ('a, rw) t -> 'a array -> unit
 val append_seq : ('a, rw) t -> 'a sequence -> unit
 (** Append content of sequence *)
 
+val append_list : ('a, rw) t -> 'a list -> unit
+(** Append content of list
+    @since NEXT_RELEASE *)
+
 val equal : 'a equal -> ('a,_) t equal
 
 val compare : 'a ord -> ('a,_) t ord
