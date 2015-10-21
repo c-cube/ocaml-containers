@@ -61,6 +61,21 @@ let p = U.list ~sep:"," U.word;;
 parse_string_exn "[abc , de, hello ,world  ]" p;;
 ]}
 
+{6 Stress Test}
+This makes a list of 100_000 integers, prints it and parses it back.
+
+{[
+let p = CCParse.(U.list ~sep:"," U.int);;
+
+let l = CCList.(1 -- 100_000);;
+let l_printed =
+  CCFormat.to_string (CCList.print ~sep:"," ~start:"[" ~stop:"]" CCInt.print) l;;
+
+let l' = CCParse.parse_string_exn ~p l_printed;;
+
+assert (l=l');;
+]}
+
 @since 0.11
 *)
 
@@ -111,8 +126,14 @@ val input_of_chan : ?size:int -> in_channel -> input
 
 (** {2 Combinators} *)
 
-type 'a t = input -> 'a
-(** @raise ParseError in case of failure *)
+type 'a t = input -> ok:('a -> unit) -> err:(exn -> unit) -> unit
+(** Takes the input and two continuations:
+    {ul
+      {- [ok] to call with the result when it's done}
+      {- [err] to call when the parser met an error}
+    }
+    The type definition changed since NEXT_RELEASE to avoid stack overflows
+    @raise ParseError in case of failure *)
 
 val return : 'a -> 'a t
 (** Always succeeds, without consuming its input *)

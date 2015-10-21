@@ -105,6 +105,23 @@ exception ParseError of line_num * col_num * (unit -> string)
     (parse_string "[abc , de, hello ,world  ]" p);
  *)
 
+(*$R
+  let test n =
+    let p = CCParse.(U.list ~sep:"," U.int) in
+
+    let l = CCList.(1 -- n) in
+    let l_printed =
+      CCFormat.to_string (CCList.print ~sep:"," ~start:"[" ~stop:"]" CCInt.print) l in
+
+    let l' = CCParse.parse_string_exn ~p l_printed in
+
+    assert_equal ~printer:Q.Print.(list int) l l'
+  in
+  test 100_000;
+  test 400_000;
+
+*)
+
 let const_ x () = x
 
 let input_of_string s =
@@ -179,59 +196,62 @@ let input_of_chan ?(size=1024) ic =
     sub=(fun j len -> assert (j + len <= !i); Bytes.sub_string !b j len);
   }
 
-type 'a t = input -> 'a
+type 'a t = input -> ok:('a -> unit) -> err:(exn -> unit) -> unit
 
-let return x _ = x
+let return : 'a -> 'a t = fun x _st ~ok ~err:_ -> ok x
 let pure = return
-let (>|=) p f st = f (p st)
-let (>>=) p f st =
-  let x = p st in
-  f x st
-let (<*>) x y st =
-  let f = x st in
-  let g = y st in
-  f g
-let (<* ) x y st =
-  let res = x st in
-  let _ = y st in
-  res
-let ( *>) x y st =
-  let _ = x st in
-  let res = y st in
-  res
+let (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  = fun p f st ~ok ~err -> p st ~err ~ok:(fun x -> ok (f x))
+let (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  = fun p f st ~ok ~err -> p st ~err ~ok:(fun x -> f x st ~err ~ok)
+let (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  = fun f x st ~ok ~err ->
+      f st ~err ~ok:(fun f' -> x st ~err ~ok:(fun x' -> ok (f' x')))
+let (<* ) : 'a t -> _ t -> 'a t
+  = fun x y st ~ok ~err ->
+    x st ~err ~ok:(fun res -> y st ~err ~ok:(fun _ -> ok res))
+let ( *>) : _ t -> 'a t -> 'a t
+  = fun x y st ~ok ~err ->
+    x st ~err ~ok:(fun _ -> y st ~err ~ok)
 
 let junk_ st = ignore (st.next ())
 let pf = Printf.sprintf
-let fail_ st msg = raise (ParseError (st.lnum(), st.cnum(), msg))
+let fail_ ~err st msg = err (ParseError (st.lnum(), st.cnum(), msg))
 
-let eoi st = if st.is_done() then () else fail_ st (const_ "expected EOI")
-let fail msg st = fail_ st (const_ msg)
-let nop _ = ()
+let eoi st ~ok ~err =
+  if st.is_done()
+  then ok ()
+  else fail_ ~err st (const_ "expected EOI")
+
+let fail msg st ~ok:_ ~err = fail_ ~err st (const_ msg)
+let nop _ ~ok ~err:_ = ok()
 
 let char c =
   let msg = pf "expected '%c'" c in
-  fun st -> if st.next () = c then c else fail_ st (const_ msg)
+  fun st ~ok ~err -> if st.next () = c then ok c else fail_ ~err st (const_ msg)
 
-let char_if p st =
+let char_if p st ~ok ~err =
   let c = st.next () in
-  if p c then c else fail_ st (fun () -> pf "unexpected char '%c'" c)
+  if p c then ok c else fail_ ~err st (fun () -> pf "unexpected char '%c'" c)
 
-let chars_if p st =
+let chars_if p st ~ok ~err:_ =
   let i = st.pos () in
   let len = ref 0 in
   while not (st.is_done ()) && p (st.cur ()) do junk_ st; incr len done;
-  st.sub i !len
+  ok (st.sub i !len)
 
-let chars1_if p st =
-  let s = chars_if p st in
-  if s = "" then fail_ st (const_ "unexpected sequence of chars");
-  s
+let chars1_if p st ~ok ~err =
+  chars_if p st ~err
+    ~ok:(fun s ->
+      if s = "" then fail_ ~err st (const_ "unexpected sequence of chars");
+      ok s
+    )
 
-let rec skip_chars p st =
+let rec skip_chars p st ~ok ~err =
   if not (st.is_done ()) && p (st.cur ()) then (
     junk_ st;
-    skip_chars p st
-  )
+    skip_chars p st ~ok ~err
+  ) else ok()
 
 let is_alpha = function
   | 'a' .. 'z' | 'A' .. 'Z' -> true
@@ -255,48 +275,50 @@ let skip_white = skip_chars is_white
 
 (* XXX: combine errors? *)
 
-let (<|>) x y st =
-  let i = st.pos () in
-  try
-    x st
-  with ParseError _ ->
-    st.backtrack i; (* restore pos *)
-    y st
+let (<|>) : 'a t -> 'a t -> 'a t
+  = fun x y st ~ok ~err ->
+    let i = st.pos () in
+    x st ~ok
+      ~err:(fun _ ->
+        st.backtrack i; (* restore pos *)
+        y st ~ok ~err
+      )
 
-let string s st =
+let string s st ~ok ~err =
   let rec check i =
     i = String.length s ||
     (s.[i] = st.next () && check (i+1))
   in
-  if check 0 then s else fail_ st (fun () -> pf "expected \"%s\"" s)
+  if check 0 then ok s else fail_ ~err st (fun () -> pf "expected \"%s\"" s)
 
-let rec many_rec p st acc =
-  if st.is_done () then List.rev acc
+let rec many_rec : 'a t -> 'a list -> 'a list t = fun p acc st ~ok ~err ->
+  if st.is_done () then ok(List.rev acc)
   else
     let i = st.pos () in
-    try
-      let x = p st in
-      many_rec p st (x :: acc)
-    with ParseError _ ->
-      st.backtrack i;
-      List.rev acc
+    p st ~err
+      ~ok:(fun x ->
+        many_rec p (x :: acc) st ~ok
+          ~err:(fun _ ->
+            st.backtrack i;
+            ok(List.rev acc)
+          )
+      )
 
-let many p st = many_rec p st []
+let many : 'a t -> 'a list t
+  = fun p st ~ok ~err -> many_rec p [] st ~ok ~err
 
-let many1 p st =
-  let x = p st in
-  many_rec p st [x]
+let many1 : 'a t -> 'a list t =
+  fun p st ~ok ~err ->
+    p st ~err ~ok:(fun x -> many_rec p [x] st ~err ~ok)
 
-let rec skip p st =
+let rec skip p st ~ok ~err =
   let i = st.pos () in
-  let matched =
-    try
-      let _ = p st in
-      true
-    with ParseError _ ->
-      false
-  in
-  if matched then skip p st else st.backtrack i
+  p st
+    ~ok:(fun _ -> skip p st ~ok ~err)
+    ~err:(fun _ ->
+      st.backtrack i;
+      ok()
+    )
 
 let rec sep1 ~by p =
   p >>= fun x ->
@@ -357,7 +379,12 @@ let fix_memo f =
   in
   p
 
-let parse_exn ~input ~p = p input
+let parse_exn ~input ~p =
+  let res = ref None in
+  p input ~ok:(fun x -> res := Some x) ~err:(fun e -> raise e);
+  match !res with
+    | None -> failwith "no input returned by parser"
+    | Some x -> x
 
 let parse ~input ~p =
   try `Ok (parse_exn ~input ~p)
