@@ -228,6 +228,10 @@ val rev : ('a,_) t -> ('a, 'mut) t
 val rev' : ('a, rw) t -> unit
 (** Reverse the vector in place *)
 
+val rev_iter : ('a -> unit) -> ('a,_) t -> unit
+(** [rev_iter f a] is the same as [iter f (rev a)], only more efficient.
+    @since NEXT_RELEASE *)
+
 val size : ('a,_) t -> int
 (** number of elements in vector *)
 

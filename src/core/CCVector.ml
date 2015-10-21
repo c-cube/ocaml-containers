@@ -586,6 +586,21 @@ let rev v =
   rev (create ()) |> to_list = []
 *)
 
+let rev_iter f v =
+  for i = v.size-1 downto 0 do
+    f v.vec.(i)
+  done
+
+(*$T
+  let v = of_list [1;2;3] in (fun f->rev_iter f v) |> Sequence.to_list = [3;2;1]
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    let v = of_list l in \
+    (fun f->rev_iter f v) |> Sequence.to_list = List.rev l)
+*)
+
 let size v = v.size
 
 let length v = v.size
