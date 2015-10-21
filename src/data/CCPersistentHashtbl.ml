@@ -129,6 +129,10 @@ module type S = sig
   val pp : key printer -> 'a printer -> 'a t printer
 
   val print : key formatter -> 'a formatter -> 'a t formatter
+
+  val stats : _ t -> Hashtbl.statistics
+  (** Statistics on the internal table.
+      @since NEXT_RELEASE *)
 end
 
 (*$inject
@@ -625,5 +629,22 @@ module Make(H : HashedType) : S with type key = H.t = struct
         Format.fprintf fmt "%a -> %a" pp_k k pp_v v
       );
     Format.pp_print_string fmt "}"
+
+  let stats t =
+    let a = reroot_ t in
+    let max_bucket_length =
+      Array.fold_left (fun n b -> max n (buck_length_ b)) 0 a in
+    let bucket_histogram = Array.make (max_bucket_length+1) 0 in
+    Array.iter
+      (fun b ->
+        let l = buck_length_ b in
+        bucket_histogram.(l) <- bucket_histogram.(l) + 1
+      ) a;
+    {Hashtbl.
+      num_bindings=t.length;
+      num_buckets=Array.length a;
+      max_bucket_length;
+      bucket_histogram;
+    }
 end
 

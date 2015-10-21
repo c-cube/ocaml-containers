@@ -136,6 +136,10 @@ module type S = sig
   val pp : key printer -> 'a printer -> 'a t printer
 
   val print : key formatter -> 'a formatter -> 'a t formatter
+
+  val stats : _ t -> Hashtbl.statistics
+  (** Statistics on the internal table.
+      @since NEXT_RELEASE *)
 end
 
 (** {2 Implementation} *)
