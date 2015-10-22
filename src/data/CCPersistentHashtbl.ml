@@ -67,6 +67,12 @@ module type S = sig
   val length : _ t -> int
   (** Number of bindings *)
 
+  val add : 'a t -> key -> 'a -> 'a t
+  (** Add the binding to the table, returning a new table. The old binding
+      for this key, if it exists, is shadowed and will be restored upon
+      [remove tbl k].
+      @since NEXT_RELEASE *)
+
   val replace : 'a t -> key -> 'a -> 'a t
   (** Add the binding to the table, returning a new table. This erases
       the current binding for [key], if any. *)
@@ -366,6 +372,45 @@ module Make(H : HashedType) : S with type key = H.t = struct
           t.arr <- Set (i,l,t');
           t'
         )
+
+  let add t k v =
+    let a = reroot_ t in
+    let h = H.hash k in
+    let i = find_idx_ ~h a in
+    if t.length > (Array.length a) lsl 1
+    then (
+      (* resize *)
+      let new_size = min (2 * (Array.length a)) Sys.max_array_length in
+      let a = resize_ k v h a new_size in
+      {length=t.length+1; arr=Arr a}
+    ) else (
+      (* prepend *)
+      let old = a.(i) in
+      a.(i) <- Cons (k, v, old);
+      let t' = {length=t.length + 1; arr=Arr a} in
+      t.arr <- Set (i,old,t');
+      t'
+    )
+
+  (*$R
+    let h = H.of_seq my_seq in
+    OUnit.assert_equal "a" (H.find h 1);
+    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+    let h1 = H.add h 5 "e" in
+    OUnit.assert_equal "a" (H.find h1 1);
+    OUnit.assert_equal "e" (H.find h1 5);
+    OUnit.assert_equal "a" (H.find h 1);
+    let h2 = H.add h1 5 "ee" in
+    OUnit.assert_equal "ee" (H.find h2 5);
+    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+    let h3 = H.remove h2 1 in
+    OUnit.assert_equal "ee" (H.find h3 5);
+    OUnit.assert_raises Not_found (fun () -> H.find h3 1);
+    let h4 = H.remove h3 5 in
+    OUnit.assert_equal "e" (H.find h4 5);
+    OUnit.assert_equal "ee" (H.find h3 5);
+  *)
+
 
   (* return [Some l'] if [l] changed into [l'] by removing [k] *)
   let rec remove_rec_ k l = match l with
