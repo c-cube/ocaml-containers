@@ -26,7 +26,7 @@ module L = struct
     let map_naive () = ignore (try  List.map f_ l with Stack_overflow -> [])
     and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
     and ccmap () = ignore (CCList.map f_ l)
-    and ralmap () = ignore (CCRAL.map f_ ral)
+    and ralmap () = ignore (CCRAL.map ~f:f_ ral)
     in
     B.throughputN time ~repeat
       [ "List.map", map_naive, ()
@@ -112,6 +112,50 @@ module L = struct
           [ app_int (bench_append ~time:2) 100
           ; app_int (bench_append ~time:2) 10_000
           ; app_int (bench_append ~time:4) 100_000]
+      ]
+    )
+end
+
+module Arr = struct
+  let rand = Random.State.make [| 1;2;3;4 |]
+
+  let mk_arr n =
+    Array.init n (fun _ -> Random.State.int rand 5_000)
+
+  module IntArr = struct
+    type elt=int
+    type t = int array
+    let get = Array.get
+    let set = Array.set
+    let length = Array.length
+  end
+
+  let sort_ccarray a =
+    CCArray.sort_generic (module IntArr) ~cmp:CCInt.compare a
+
+  let sort_std a = Array.sort CCInt.compare a
+
+  (* helper, to apply a sort function over a list of arrays *)
+  let app_list sort l =
+    List.iter
+      (fun a ->
+        let a = Array.copy a in
+        sort a
+      ) l
+
+  let bench_sort ?(time=2) n =
+    let a1 = mk_arr n in
+    let a2 = mk_arr n in
+    let a3 = mk_arr n in
+    B.throughputN time ~repeat
+      [ "std", app_list sort_std, [a1;a2;a3]
+      ; "ccarray.sort_gen", app_list sort_ccarray, [a1;a2;a3]
+      ]
+
+  let () =
+    B.Tree.register ("array" @>>>
+      [ "sort" @>>
+        app_ints (bench_sort ?time:None) [100; 1000; 10_000; 50_000; 100_000; 500_000]
       ]
     )
 end
