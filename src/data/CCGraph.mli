@@ -235,7 +235,7 @@ val topo_sort_tag : ?eq:('v -> 'v -> bool) ->
                     graph:('v, 'e) t ->
                     'v sequence ->
                     'v list
-(** Same as {!topo_sort} *)
+(** Same as {!topo_sort} but uses an explicit tag set *)
 
 (** {2 Lazy Spanning Tree} *)
 
