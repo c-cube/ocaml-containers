@@ -989,4 +989,5 @@ module Thread = struct
 end
 
 let () =
-  B.Tree.run_global ()
+  try B.Tree.run_global ()
+  with Arg.Help msg -> print_endline msg
