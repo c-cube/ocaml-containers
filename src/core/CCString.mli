@@ -66,6 +66,7 @@ module type S = sig
 
   val pp : Buffer.t -> t -> unit
   val print : Format.formatter -> t -> unit
+  (** Print the string within quotes *)
 end
 
 (** {2 Strings} *)
@@ -379,5 +380,10 @@ module Sub : sig
       Sub.fold (fun acc x -> x::acc) [] s = ['d'; 'c'; 'b']
     Sub.make "abcde" 1 3 |> Sub.copy = "bcd"
     Sub.full "abcde" |> Sub.copy = "abcde"
+  *)
+
+  (*$T
+    let sub = Sub.make " abc " 1 ~len:3 in \
+    "\"abc\"" = (CCFormat.to_string Sub.print sub)
   *)
 end
