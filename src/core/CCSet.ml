@@ -77,9 +77,11 @@ module Make(O : Map.OrderedType) = struct
     let first = ref true in
     iter
       (fun x ->
-        if !first then first := false else Format.pp_print_string fmt sep;
+        if !first then first := false else (
+          Format.pp_print_string fmt sep;
+          Format.pp_print_cut fmt ()
+        );
         pp_x fmt x;
-        Format.pp_print_cut fmt ()
       ) m;
     Format.pp_print_string fmt stop
 end
