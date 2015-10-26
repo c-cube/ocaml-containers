@@ -46,6 +46,7 @@ let char = Format.pp_print_char
 let int32 fmt n = Format.fprintf fmt "%ld" n
 let int64 fmt n = Format.fprintf fmt "%Ld" n
 let nativeint fmt n = Format.fprintf fmt "%nd" n
+let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 
 let list ?(start="[") ?(stop="]") ?(sep=", ") pp fmt l =
   let rec pp_list l = match l with
@@ -131,6 +132,14 @@ let sprintf format =
     format
 
 let fprintf = Format.fprintf
+
+
+let ksprintf ~f fmt =
+  let buf = Buffer.create 32 in
+  let out = Format.formatter_of_buffer buf in
+  Format.kfprintf
+    (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
+    out fmt
 
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter
