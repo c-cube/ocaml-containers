@@ -37,9 +37,15 @@ module type S = sig
 
   val of_seq : elt sequence -> t
 
+  val add_seq : t -> elt sequence -> t
+  (** @since NEXT_RELEASE *)
+
   val to_seq : t -> elt sequence
 
   val of_list : elt list -> t
+
+  val add_list : t -> elt list -> t
+  (** @since NEXT_RELEASE *)
 
   val to_list : t -> elt list
 
