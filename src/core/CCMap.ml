@@ -44,9 +44,15 @@ module type S = sig
 
   val of_seq : (key * 'a) sequence -> 'a t
 
+  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+  (** @since NEXT_RELEASE *)
+
   val to_seq : 'a t -> (key * 'a) sequence
 
   val of_list : (key * 'a) list -> 'a t
+
+  val add_list : 'a t -> (key * 'a) list -> 'a t
+  (** @since NEXT_RELEASE *)
 
   val to_list : 'a t -> (key * 'a) list
 
@@ -73,17 +79,19 @@ module Make(O : Map.OrderedType) = struct
       | None -> remove k m
       | Some v' -> add k v' m
 
-  let of_seq s =
-    let m = ref empty in
+  let add_seq m s =
+    let m = ref m in
     s (fun (k,v) -> m := add k v !m);
     !m
+
+  let of_seq s = add_seq empty s
 
   let to_seq m yield =
     iter (fun k v -> yield (k,v)) m
 
-  let of_list l =
-    List.fold_left
-      (fun m (k,v) -> add k v m) empty l
+  let add_list m l = List.fold_left (fun m (k,v) -> add k v m) m l
+
+  let of_list l = add_list empty l
 
   let to_list m =
     fold (fun k v acc -> (k,v)::acc) m []
