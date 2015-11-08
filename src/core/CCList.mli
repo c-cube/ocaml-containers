@@ -69,12 +69,12 @@ val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
 val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_map f acc l] is a [fold_left]-like function, but it also maps the
     list to another list.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_map f acc l] is a [fold_left]-like function, but it also maps the
     list to a list of list that is then [flatten]'d..
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
@@ -323,7 +323,7 @@ module Zipper : sig
   val to_rev_list : 'a t -> 'a list
   (** Convert the zipper back to a {i reversed} list.
       In other words, [to_list (l,r)] is [List.rev_append r l]
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val make : 'a list -> 'a t
   (** Create a zipper pointing at the first element of the list *)
@@ -334,7 +334,7 @@ module Zipper : sig
   val left_exn : 'a t -> 'a t
   (** Go to the left, or
       @raise Invalid_argument if the zipper is already at leftmost pos
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val right : 'a t -> 'a t
   (** Go to the right, or do nothing if the zipper is already at rightmost pos *)
@@ -342,7 +342,7 @@ module Zipper : sig
   val right_exn : 'a t -> 'a t
   (** Go to the right, or
       @raise Invalid_argument if the zipper is already at rightmost position
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val modify : ('a option -> 'a option) -> 'a t -> 'a t
   (** Modify the current element, if any, by returning a new element, or
@@ -351,16 +351,16 @@ module Zipper : sig
   val insert : 'a -> 'a t -> 'a t
   (** Insert an element at the current position. If an element was focused,
       [insert x l] adds [x] just before it, and focuses on [x]
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val remove : 'a t -> 'a t
   (** [remove l] removes the current element, if any.
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val is_focused : _ t -> bool
   (** Is the zipper focused on some element? That is, will {!focused}
       return a [Some v]?
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val focused : 'a t -> 'a option
   (** Returns the focused element, if any. [focused zip = Some _] iff
@@ -372,17 +372,17 @@ module Zipper : sig
 
   val drop_before : 'a t -> 'a t
   (** Drop every element on the "left" (calling {!left} then will do nothing).
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val drop_after : 'a t -> 'a t
   (** Drop every element on the "right" (calling {!right} then will do nothing),
       keeping the focused element, if any.
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val drop_after_and_focused : 'a t -> 'a t
   (** Drop every element on the "right" (calling {!right} then will do nothing),
       {i including} the focused element if it is present.
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   (*$=
     ([1], [2]) (Zipper.drop_after ([1], [2;3]))

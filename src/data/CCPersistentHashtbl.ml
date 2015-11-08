@@ -71,7 +71,7 @@ module type S = sig
   (** Add the binding to the table, returning a new table. The old binding
       for this key, if it exists, is shadowed and will be restored upon
       [remove tbl k].
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val replace : 'a t -> key -> 'a -> 'a t
   (** Add the binding to the table, returning a new table. This erases
@@ -138,7 +138,7 @@ module type S = sig
 
   val stats : _ t -> Hashtbl.statistics
   (** Statistics on the internal table.
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 end
 
 (*$inject

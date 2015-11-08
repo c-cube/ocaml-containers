@@ -193,7 +193,7 @@ val sort_uniq : ?cmp:'a ord -> 'a t -> 'a t
 
 val memoize : 'a t -> 'a t
 (** Avoid recomputations by caching intermediate results
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 (** {2 Fair Combinations} *)
 

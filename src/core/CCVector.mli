@@ -61,7 +61,7 @@ val create_with : ?capacity:int -> 'a -> ('a, rw) t
 
 val return : 'a -> ('a, 'mut) t
 (** Singleton vector
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val make : int -> 'a -> ('a, 'mut) t
 (** [make n x] makes a vector of size [n], filled with [x] *)
@@ -76,7 +76,7 @@ val ensure_with : init:'a -> ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
     @param init if [capacity v = 0], used as a filler
       element for the underlying array (see {!create_with})
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val ensure : ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
@@ -100,7 +100,7 @@ val append_seq : ('a, rw) t -> 'a sequence -> unit
 
 val append_list : ('a, rw) t -> 'a list -> unit
 (** Append content of list
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val equal : 'a equal -> ('a,_) t equal
 
@@ -182,7 +182,7 @@ val find_exn  : ('a -> bool) -> ('a,_) t -> 'a
 val find_map : ('a -> 'b option) -> ('a,_) t -> 'b option
 (** [find_map f v] returns the first [Some y = f x] for [x] in [v],
     or [None] if [f x = None] for each [x] in [v]
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val filter_map : ('a -> 'b option) -> ('a,_) t -> ('b, 'mut) t
 (** Map elements with a function, possibly filtering some of them out *)
@@ -193,16 +193,16 @@ val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 val flat_map_seq : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!sequence} for
     intermediate collections.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!list} for
     intermediate collections.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val flat_map' : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
 (** Alias to {!flat_map_seq}
-   @deprecated since NEXT_RELEASE , use {!flat_map_seq} *)
+   @deprecated since 0.14 , use {!flat_map_seq} *)
 
 val (>>=) : ('a,_) t -> ('a -> ('b,_) t) -> ('b, 'mut) t
 (** Infix version of {!flat_map} *)
@@ -227,14 +227,14 @@ val rev : ('a,_) t -> ('a, 'mut) t
 
 val rev_in_place : ('a, rw) t -> unit
 (** Reverse the vector in place
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val rev' : ('a, rw) t -> unit
-(** @deprecated old name for {!rev_in_place} *)
+(** @deprecated since 0.14 old name for {!rev_in_place} *)
 
 val rev_iter : ('a -> unit) -> ('a,_) t -> unit
 (** [rev_iter f a] is the same as [iter f (rev a)], only more efficient.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val size : ('a,_) t -> int
 (** number of elements in vector *)
@@ -267,7 +267,7 @@ val to_seq : ('a,_) t -> 'a sequence
 val to_seq_rev : ('a, _) t -> 'a sequence
 (** [to_seq_rev v] returns the sequence of elements of [v] in reverse order,
     that is, the last elements of [v] are iterated on first.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val slice : ('a,rw) t -> ('a array * int * int)
 (** Vector as an array slice. By doing it we expose the internal array, so

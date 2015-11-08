@@ -74,7 +74,7 @@ val update : ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> u
     returns [None] then [k] is removed/stays removed, if the call
     returns [Some v'] then the binding [k -> v'] is inserted
     using {!Hashtbl.replace}
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val print : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
 (** Printer for table
@@ -123,7 +123,7 @@ module type S = sig
       returns [None] then [k] is removed/stays removed, if the call
       returns [Some v'] then the binding [k -> v'] is inserted
       using {!Hashtbl.replace}
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val print : key printer -> 'a printer -> 'a t printer
   (** Printer for tables
@@ -194,11 +194,11 @@ module type COUNTER = sig
 
   val decr : t -> elt -> unit
   (** Remove one occurrence of the element
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val length : t -> int
   (** Number of distinct elements
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val add_seq : t -> elt sequence -> unit
   (** Increment each element of the sequence *)
@@ -208,18 +208,18 @@ module type COUNTER = sig
 
   val to_seq : t -> (elt * int) sequence
   (** [to_seq tbl] returns elements of [tbl] along with their multiplicity
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val add_list : t -> (elt * int) list -> unit
   (** Similar to {!add_seq}
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val of_list : (elt * int) list -> t
   (** Similar to {!of_seq}
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val to_list : t -> (elt * int) list
-  (** @since NEXT_RELEASE *)
+  (** @since 0.14 *)
 end
 
 module MakeCounter(X : Hashtbl.HashedType)
@@ -227,4 +227,4 @@ module MakeCounter(X : Hashtbl.HashedType)
   with type elt = X.t
   and type t = int Hashtbl.Make(X).t
 (** Create a new counter type
-    The type [t] is exposed @since NEXT_RELEASE *)
+    The type [t] is exposed @since 0.14 *)

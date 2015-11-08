@@ -141,7 +141,7 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
         {- [`All] all occurrences (default)}
       }
     @raise Invalid_argument if [sub = ""]
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 (*$= & ~printer:CCFun.id
   (replace ~which:`All ~sub:"a" ~by:"b" "abcdabcd") "bbcdbbcd"

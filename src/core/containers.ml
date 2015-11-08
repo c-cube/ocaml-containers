@@ -62,7 +62,7 @@ module Fun = CCFun
 module Hash = CCHash
 module Int = CCInt
 
-(** @since NEXT_RELEASE *)
+(** @since 0.14 *)
 module Hashtbl = struct
   include (Hashtbl : module type of Hashtbl
     with type statistics = Hashtbl.statistics

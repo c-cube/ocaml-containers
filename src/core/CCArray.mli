@@ -250,5 +250,5 @@ val sort_generic :
   ?cmp:('elt -> 'elt -> int) -> 'arr -> unit
 (** Sort the array, without allocating (eats stack space though). Performance
     might be lower than {!Array.sort}.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 

@@ -1,5 +1,60 @@
 = Changelog
 
+== 0.14
+
+=== breaking changes
+
+- change the type `'a CCParse.t` with continuations
+- add labels on `CCParse.parse_*` functions
+- change semantics of `CCList.Zipper.is_empty`
+
+=== other changes
+
+- deprecate `CCVector.rev'`, renamed into `CCVector.rev_in_place`
+- deprecate `CCVector.flat_map'`, renamed `flat_map_seq`
+
+- add `CCMap.add_{list,seq}`
+- add `CCSet.add_{list,seq}`
+- fix small uglyness in `Map.print` and `Set.print`
+- add `CCFormat.{ksprintf,string_quoted}`
+- add `CCArray.sort_generic` for sorting over array-like structures in place
+- add `CCHashtbl.add` mimicking the stdlib `Hashtbl.add`
+- add `CCString.replace` and tests
+- add `CCPersistentHashtbl.stats`
+- reimplementation of `CCPersistentHashtbl`
+- add `make watch` target
+- add `CCVector.rev_iter`
+- add `CCVector.append_list`
+- add `CCVector.ensure_with`
+- add `CCVector.return`
+- add `CCVector.find_map`
+- add `CCVector.flat_map_list`
+- add `Containers.Hashtbl` with most combinators of `CCHashtbl`
+- many more functions in `CCList.Zipper`
+- large update of `CCList.Zipper`
+- add `CCHashtbl.update`
+- improve `CCHashtbl.MakeCounter`
+- add `CCList.fold_flat_map`
+- add module `CCChar`
+- add functions in `CCFormat`
+- add `CCPrint.char`
+- add `CCVector.to_seq_rev`
+- doc and tests for `CCLevenshtein`
+- expose blocking decoder in `CCSexpM`
+- add `CCList.fold_map`
+- add `CCError.guard_str_trace`
+- add `CCError.of_exn_trace`
+- add `CCKlist.memoize` for costly computations
+- add `CCLevenshtein.Index.{of,to}_{gen,seq}` and `cardinal`
+
+- small bugfix in `CCSexpM.print`
+- fix broken link to changelog (fix #51)
+- fix doc generation for `containers.string`
+- bugfix in `CCString.find`
+- raise exception in `CCString.replace` if `sub=""`
+- bugfix in hashtable printing
+- bugfix in `CCKList.take`, it was slightly too eager
+
 == 0.13
 
 === Breaking changes

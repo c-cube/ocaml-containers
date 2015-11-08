@@ -56,7 +56,7 @@ val of_exn_trace : exn -> ('a, string) t
 
     Remember to call [Printexc.record_backtrace true] and compile with the
     debug flag for this to work.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val fail_printf : ('a, Buffer.t, unit, ('a,string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
@@ -121,7 +121,7 @@ val guard_str : (unit -> 'a) -> ('a, string) t
 val guard_str_trace : (unit -> 'a) -> ('a, string) t
 (** Same as {!guard_str} but uses {!of_exn_trace} instead of {!of_exn} so
     that the stack trace is printed.
-    @since NEXT_RELEASE *)
+    @since 0.14 *)
 
 val wrap1 : ('a -> 'b) -> 'a -> ('b, exn) t
 (** Same as {!guard} but gives the function one argument. *)

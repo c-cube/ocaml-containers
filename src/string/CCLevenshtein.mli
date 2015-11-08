@@ -160,22 +160,22 @@ module type S = sig
     (** Extract a list of pairs from an index *)
 
     val add_seq : 'a t -> (string_ * 'a) sequence -> 'a t
-    (** @since NEXT_RELEASE *)
+    (** @since 0.14 *)
 
     val of_seq : (string_ * 'a) sequence -> 'a t
-    (** @since NEXT_RELEASE *)
+    (** @since 0.14 *)
 
     val to_seq : 'a t -> (string_ * 'a) sequence
-    (** @since NEXT_RELEASE *)
+    (** @since 0.14 *)
 
     val add_gen : 'a t -> (string_ * 'a) gen -> 'a t
-    (** @since NEXT_RELEASE *)
+    (** @since 0.14 *)
 
     val of_gen : (string_ * 'a) gen -> 'a t
-    (** @since NEXT_RELEASE *)
+    (** @since 0.14 *)
 
     val to_gen : 'a t -> (string_ * 'a) gen
-    (** @since NEXT_RELEASE *)
+    (** @since 0.14 *)
 
     val fold : ('a -> string_ -> 'b -> 'a) -> 'a -> 'b t -> 'a
     (** Fold over the stored pairs string/value *)

@@ -132,7 +132,7 @@ type 'a t = input -> ok:('a -> unit) -> err:(exn -> unit) -> unit
       {- [ok] to call with the result when it's done}
       {- [err] to call when the parser met an error}
     }
-    The type definition changed since NEXT_RELEASE to avoid stack overflows
+    The type definition changed since 0.14 to avoid stack overflows
     @raise ParseError in case of failure *)
 
 val return : 'a -> 'a t
@@ -263,7 +263,7 @@ val fix_memo : ('a t -> 'a t) -> 'a t
 
 (** {2 Parse}
 
-  Those functions have a label [~p] on the parser, since NEXT_RELEASE.
+  Those functions have a label [~p] on the parser, since 0.14.
 *)
 
 val parse : input:input -> p:'a t -> 'a or_error
@@ -312,11 +312,11 @@ module U : sig
              'a t -> 'b t -> ('a * 'b) t
   (** Parse a pair using OCaml whitespace conventions.
       The default is "(a, b)".
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 
   val triple : ?start:string -> ?stop:string -> ?sep:string ->
                'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   (** Parse a triple using OCaml whitespace conventions.
       The default is "(a, b, c)".
-      @since NEXT_RELEASE *)
+      @since 0.14 *)
 end
