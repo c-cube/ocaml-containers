@@ -12,10 +12,11 @@ can be removed.
    removed deprecated functions, etc.
 5. update `CHANGELOG.md` (see its end to find the right git command)
 6. commit the changes
-7. `git checkout stable;  oasis setup`
+7. `git checkout stable`
 8. `git merge master`
-9. tag, and push both to github
-10. new opam package
+9. `oasis setup; make tests doc`
+10. tag, and push both to github
+11. new opam package
 
 == List Authors
 
