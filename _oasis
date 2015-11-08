@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.13
+Version:     0.14
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -45,8 +45,8 @@ Library "containers"
   Path:             src/core
   Modules:          CCVector, CCPrint, CCError, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
-                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO, CCInt64,
-                    Containers
+                    CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
+                    CCInt64, CCChar, Containers
   BuildDepends:     bytes
   # BuildDepends:     bytes, bisect_ppx
 
@@ -142,7 +142,7 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.iter, containers.data,
-    containers.string, containers.bigarray,
+    containers.string, containers.bigarray, containers.thread,
     containers.advanced, containers.io, containers.unix, containers.sexp
 
 Executable run_benchs

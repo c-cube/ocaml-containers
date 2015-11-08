@@ -61,17 +61,21 @@ end
 module Fun = CCFun
 module Hash = CCHash
 module Int = CCInt
-(* FIXME
+
+(** @since 0.14 *)
 module Hashtbl = struct
   include (Hashtbl : module type of Hashtbl
     with type statistics = Hashtbl.statistics
-    and module Make := Hashtbl.Make
-    and module type S := Hashtbl.S
+    and module Make = Hashtbl.Make
     and type ('a,'b) t := ('a,'b) Hashtbl.t
   )
-  include CCHashtbl
+  (* still unable to include CCHashtbl itself, for the polymorphic functions *)
+  module type S' = CCHashtbl.S
+  module Make' = CCHashtbl.Make
+  module Counter = CCHashtbl.MakeCounter
+  module MakeDefault = CCHashtbl.MakeDefault
 end
-*)
+
 module List = struct
   include List
   include CCList

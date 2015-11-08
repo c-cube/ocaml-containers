@@ -47,9 +47,15 @@ module type S = sig
 
   val of_seq : (key * 'a) sequence -> 'a t
 
+  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+  (** @since 0.14 *)
+
   val to_seq : 'a t -> (key * 'a) sequence
 
   val of_list : (key * 'a) list -> 'a t
+
+  val add_list : 'a t -> (key * 'a) list -> 'a t
+  (** @since 0.14 *)
 
   val to_list : 'a t -> (key * 'a) list
 

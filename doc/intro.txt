@@ -2,7 +2,7 @@
 
 {2 Change Log}
 
-See {{: https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.md } this file}
+See {{: https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.adoc } this file}
 
 {2 License}
 
@@ -25,6 +25,7 @@ by ocamlfind).
 {!modules:
 CCArray
 CCBool
+CCChar
 CCError
 CCFloat
 CCFun
@@ -72,6 +73,7 @@ CCFQueue
 CCFlatHashtbl
 CCHashSet
 CCHashTrie
+CCImmutArray
 CCIntMap
 CCMixmap
 CCMixset
@@ -111,7 +113,12 @@ Iterators:
 
 {4 String}
 
-{!modules: Levenshtein KMP}
+{!modules:
+CCApp_parse
+CCKMP
+CCLevenshtein
+CCParse
+}
 
 {4 Bigarrays}
 
@@ -128,33 +135,11 @@ requires {{:https://github.com/c-cube/sequence} Sequence}.
 
 {4 Misc}
 
-This list is not necessarily up-to-date.
-
-{!modules:
-AbsSet
-Automaton
-Bij
-CSM
-Hashset
-LazyGraph
-PHashtbl
-PrintBox
-RAL
-RoseTree
-SmallSet
-UnionFind
-Univ
-}
+Moved to its own repository.
 
 {4 Lwt}
 
-Utils for Lwt (including experimental stuff)
-
-{!modules:
-Lwt_actor
-Lwt_klist
-Lwt_pipe
-}
+Moved to its own repository
 
 {4 Others}
 
@@ -162,6 +147,7 @@ Lwt_pipe
 CCFuture
 CCLock
 CCSemaphore
+CCThread
 }
 
 

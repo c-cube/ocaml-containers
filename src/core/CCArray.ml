@@ -641,3 +641,137 @@ module Sub = struct
 
   let to_klist a = _to_klist a.arr a.i a.j
 end
+
+(** {2 Generic Functions} *)
+
+module type MONO_ARRAY = sig
+  type elt
+  type t
+
+  val length : t -> int
+
+  val get : t -> int -> elt
+
+  val set : t -> int -> elt -> unit
+end
+
+(* Dual Pivot Quicksort (YaroslavSkiy)
+   from "average case analysis of Java 7's Dual Pivot Quicksort" *)
+module SortGeneric(A : MONO_ARRAY) = struct
+  module Rand = Random.State
+
+  let seed_ = [|123456|]
+
+  type state = {
+    mutable l: int; (* left pointer *)
+    mutable g: int; (* right pointer *)
+    mutable k: int;
+  }
+
+  let rand_idx_ rand i j = i + Rand.int rand (j-i)
+
+  let swap_ a i j =
+    if i=j then ()
+    else (
+      let tmp = A.get a i in
+      A.set a i (A.get a j);
+      A.set a j tmp
+    )
+
+  let sort ~cmp a =
+    let rec insert_ a i k =
+      if k<i then ()
+      else if cmp (A.get a k) (A.get a (k+1)) > 0 then (
+        swap_ a k (k+1);
+        insert_ a i (k-1)
+      )
+    in
+    (* recursive part of insertion sort *)
+    let rec sort_insertion_rec a i j k =
+      if k<j then (
+        insert_ a i (k-1);
+        sort_insertion_rec a i j (k+1)
+      )
+    in
+    (* insertion sort, for small slices *)
+    let sort_insertion a i j =
+      if j-i > 1 then sort_insertion_rec a i j (i+1)
+    in
+    let rand = Rand.make seed_ in
+    (* sort slice.
+      There is a chance that the two pivots are equal, but it's unlikely. *)
+    let rec sort_slice_ ~st a i j =
+      if j-i>10 then (
+        st.l <- i;
+        st.g <- j-1;
+        st.k <- i;
+        (* choose pivots *)
+        let p = A.get a (rand_idx_ rand i j) in
+        let q = A.get a (rand_idx_ rand i j) in
+        (* invariant: st.p <= st.q, swap them otherwise *)
+        let p, q = if cmp p q > 0 then q, p else p, q in
+        while st.k <= st.g do
+          let cur = A.get a st.k in
+          if cmp cur p < 0 then (
+            (* insert in leftmost band *)
+            if st.k <> st.l then swap_ a st.k st.l;
+            st.l <- st.l + 1
+          ) else if cmp cur q > 0 then (
+            (* insert in rightmost band *)
+            while st.k < st.g && cmp (A.get a st.g) q > 0 do
+              st.g <- st.g - 1
+            done;
+            swap_ a st.k st.g;
+            st.g <- st.g - 1;
+            (* the element swapped from the right might be in the first situation.
+              that is, < p  (we know it's <= q already) *)
+            if cmp (A.get a st.k) p < 0 then (
+              if st.k <> st.l then swap_ a st.k st.l;
+              st.l <- st.l + 1
+            )
+          );
+          st.k <- st.k + 1
+        done;
+        (* save values before recursing *)
+        let l = st.l and g = st.g and sort_middle = cmp p q < 0 in
+        sort_slice_ ~st a i l;
+        if sort_middle then sort_slice_ ~st a l (g+1);
+        sort_slice_ ~st a (g+1) j;
+      ) else sort_insertion a i j
+    in
+    if A.length a > 0 then (
+      let st = { l=0; g=A.length a; k=0; } in
+      sort_slice_ ~st a 0 (A.length a)
+    )
+end
+
+
+let sort_generic (type arr)(type elt)
+(module A : MONO_ARRAY with type t = arr and type elt = elt)
+?(cmp=Pervasives.compare) a
+=
+  let module S = SortGeneric(A) in
+  S.sort ~cmp a
+
+(*$inject
+  module IA = struct
+    type elt = int
+    type t = int array
+    include Array
+  end
+
+  let gen_arr = Q.Gen.(array_size (1--100) small_int)
+  let arr_arbitrary = Q.make
+    ~print:Q.Print.(array int)
+    ~small:Array.length
+    ~shrink:Q.Shrink.(array ?shrink:None)
+    gen_arr
+*)
+
+(*$Q & ~count:300
+  arr_arbitrary (fun a -> \
+    let a1 = Array.copy a and a2 = Array.copy a in \
+    Array.sort CCInt.compare a1; sort_generic ~cmp:CCInt.compare (module IA) a2; \
+    a1 = a2 )
+*)
+

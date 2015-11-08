@@ -55,7 +55,7 @@ val make2 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c t
 val get : 'a t -> 'a
 (** Blocking get: wait for the future to be evaluated, and get the value,
     or the exception that failed the future is returned.
-    @raise e if the exception failed with e *)
+    raise e if the future failed with e *)
 
 val state : 'a t -> 'a state
 (** State of the future *)

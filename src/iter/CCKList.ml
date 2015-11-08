@@ -101,10 +101,11 @@ let iteri f l =
 
 let length l = fold (fun acc _ -> acc+1) 0 l
 
-let rec take n (l:'a t) () = match l () with
-  | _ when n=0 -> `Nil
-  | `Nil -> `Nil
-  | `Cons (x,l') -> `Cons (x, take (n-1) l')
+let rec take n (l:'a t) () =
+  if n=0 then `Nil
+  else match l () with
+    | `Nil -> `Nil
+    | `Cons (x,l') -> `Cons (x, take (n-1) l')
 
 let rec take_while p l () = match l () with
   | `Nil -> `Nil
@@ -439,6 +440,36 @@ let sort ?(cmp=Pervasives.compare) l =
 let sort_uniq ?(cmp=Pervasives.compare) l =
   let l = to_list l in
   uniq (fun x y -> cmp x y = 0) (of_list (List.sort cmp l))
+
+type 'a memoize =
+  | MemoThunk
+  | MemoSave of [`Nil | `Cons of 'a * 'a t]
+
+let rec memoize f =
+  let r = ref MemoThunk in
+  fun () -> match !r with
+    | MemoSave l -> l
+    | MemoThunk ->
+        let l = match f() with
+          | `Nil -> `Nil
+          | `Cons (x, tail) -> `Cons (x, memoize tail)
+        in
+        r := MemoSave l;
+        l
+
+(*$R
+  let printer = Q.Print.(list int) in
+  let gen () =
+    let rec l = let r = ref 0 in fun () -> incr r; `Cons (!r, l) in l
+  in
+  let l1 = gen () in
+  assert_equal ~printer [1;2;3;4] (take 4 l1 |> to_list);
+  assert_equal ~printer [5;6;7;8] (take 4 l1 |> to_list);
+  let l2 = gen () |> memoize in
+  assert_equal ~printer [1;2;3;4] (take 4 l2 |> to_list);
+  assert_equal ~printer [1;2;3;4] (take 4 l2 |> to_list);
+*)
+
 
 (** {2 Fair Combinations} *)
 

@@ -48,7 +48,7 @@ examples: all
 	ocamlbuild $(OPTIONS) -package unix -I . $(EXAMPLES)
 
 push_doc: doc
-	scp -r containers.docdir/* cedeela.fr:~/simon/root/software/containers/
+	rsync -tavu containers.docdir/* cedeela.fr:~/simon/root/software/containers/
 
 DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*)
 QTESTABLE=$(filter-out $(DONTTEST), \
@@ -122,5 +122,11 @@ devel:
 	./configure --enable-bench --enable-tests --enable-unix \
 		--enable-bigarray --enable-thread --enable-advanced
 	make all
+
+watch:
+	while find src/ -print0 | xargs -0 inotifywait -e delete_self -e modify ; do \
+		echo "============ at `date` ==========" ; \
+		make ; \
+	done
 
 .PHONY: examples push_doc tags qtest-gen qtest-clean devel update_next_tag

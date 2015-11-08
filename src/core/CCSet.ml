@@ -35,9 +35,15 @@ module type S = sig
 
   val of_seq : elt sequence -> t
 
+  val add_seq : t -> elt sequence -> t
+  (** @since 0.14 *)
+
   val to_seq : t -> elt sequence
 
   val of_list : elt list -> t
+
+  val add_list : t -> elt list -> t
+  (** @since 0.14 *)
 
   val to_list : t -> elt list
 
@@ -51,14 +57,18 @@ end
 module Make(O : Map.OrderedType) = struct
   include Set.Make(O)
 
-  let of_seq s =
-    let set = ref empty  in
-    s (fun x -> set := add x !set);
+  let add_seq set seq =
+    let set = ref set in
+    seq (fun x -> set := add x !set);
     !set
+
+  let of_seq s = add_seq empty s
 
   let to_seq s yield = iter yield s
 
-  let of_list l = List.fold_left (fun set x -> add x set) empty l
+  let add_list = List.fold_left (fun set x -> add x set)
+
+  let of_list l = add_list empty l
 
   let to_list = elements
 
@@ -77,9 +87,11 @@ module Make(O : Map.OrderedType) = struct
     let first = ref true in
     iter
       (fun x ->
-        if !first then first := false else Format.pp_print_string fmt sep;
+        if !first then first := false else (
+          Format.pp_print_string fmt sep;
+          Format.pp_print_cut fmt ()
+        );
         pp_x fmt x;
-        Format.pp_print_cut fmt ()
       ) m;
     Format.pp_print_string fmt stop
 end

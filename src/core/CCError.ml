@@ -59,7 +59,7 @@ let register_printer p = _printers := p :: !_printers
 (* FIXME: just use {!Printexc.register_printer} instead? *)
 
 let of_exn e =
-  let buf = Buffer.create 15 in
+  let buf = Buffer.create 32 in
   let rec try_printers l = match l with
     | [] -> Buffer.add_string buf (Printexc.to_string e)
     | p :: l' ->
@@ -67,6 +67,19 @@ let of_exn e =
         with _ -> try_printers l'
   in
   try_printers !_printers;
+  `Error (Buffer.contents buf)
+
+let of_exn_trace e =
+  let buf = Buffer.create 128 in
+  let rec try_printers l = match l with
+    | [] -> Buffer.add_string buf (Printexc.to_string e)
+    | p :: l' ->
+        try p buf e
+        with _ -> try_printers l'
+  in
+  try_printers !_printers;
+  Buffer.add_char buf '\n';
+  Buffer.add_string buf (Printexc.get_backtrace ());
   `Error (Buffer.contents buf)
 
 let map f e = match e with
@@ -125,6 +138,10 @@ let guard f =
 let guard_str f =
   try `Ok (f())
   with e -> of_exn e
+
+let guard_str_trace f =
+  try `Ok (f())
+  with e -> of_exn_trace e
 
 let wrap1 f x =
   try return (f x)

@@ -26,6 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Levenshtein distance} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+
 module type STRING = sig
   type char_
   type t
@@ -50,6 +53,15 @@ let rec klist_to_list l = match l () with
 (*$inject
   open CCFun
 
+  let list_uniq_ = Q.(
+    let gen = Gen.(list_size (0 -- 100) (string_size ~gen:printable (1 -- 10))
+      >|= CCList.sort_uniq ~cmp:String.compare
+      >|= List.map (fun s->s,s)
+    ) in
+    let print = Print.(list (pair string string)) in
+    let shrink = Shrink.(list ~shrink:(pair string string)) in
+    make ~small:List.length ~print ~shrink gen
+  )
 *)
 
 (*$Q
@@ -93,7 +105,7 @@ let rec klist_to_list l = match l () with
       l, Index.of_list l'
     in
     let gen = Q.Gen.(
-      list_size (3 -- 15) (string_size (0 -- 10)) >|= mklist
+      list_size (3 -- 15) (string_size (1 -- 10)) >|= mklist
     ) in
     let small (l,_) = List.length l in
     let print (l,_) = Q.Print.(list string) l in
@@ -106,10 +118,21 @@ let rec klist_to_list l = match l () with
         let retrieved = Index.retrieve ~limit:2 idx s
           |> klist_to_list in
         List.for_all
-          (fun s' -> edit_distance s s' <= 2) retrieved
+          (fun s' -> edit_distance s s' <= 2) retrieved &&
+        List.for_all
+          (fun s' -> not (edit_distance s s' <= 2) || List.mem s' retrieved)
+          l
       ) l
   )
 
+*)
+
+(*$R
+let idx = Index.of_list ["aa", "aa"; "ab", "ab"; "cd", "cd"; "a'c", "a'c"] in
+  assert_equal ~printer:Q.Print.(list string)
+    ["a'c"; "aa"; "ab"]
+    (Index.retrieve ~limit:1 idx "ac" |> CCKList.to_list
+      |> List.sort Pervasives.compare)
 *)
 
 module type S = sig
@@ -119,74 +142,96 @@ module type S = sig
   (** {6 Edit Distance} *)
 
   val edit_distance : string_ -> string_ -> int
-    (** Edition distance between two strings. This satisfies the classical
-       distance axioms: it is always positive, symmetric, and satisfies
-       the formula [distance a b + distance b c >= distance a c] *)
+  (** Edition distance between two strings. This satisfies the classical
+     distance axioms: it is always positive, symmetric, and satisfies
+     the formula [distance a b + distance b c >= distance a c] *)
 
   (** {6 Automaton}
   An automaton, built from a string [s] and a limit [n], that accepts
   every string that is at distance at most [n] from [s]. *)
 
   type automaton
-    (** Levenshtein automaton *)
+  (** Levenshtein automaton *)
 
   val of_string : limit:int -> string_ -> automaton
-    (** Build an automaton from a string, with a maximal distance [limit].
-        The automaton will accept strings whose {!edit_distance} to the
-        parameter is at most [limit]. *)
+  (** Build an automaton from a string, with a maximal distance [limit].
+      The automaton will accept strings whose {!edit_distance} to the
+      parameter is at most [limit]. *)
 
   val of_list : limit:int -> char_ list -> automaton
-    (** Build an automaton from a list, with a maximal distance [limit] *)
+  (** Build an automaton from a list, with a maximal distance [limit] *)
 
   val debug_print : (out_channel -> char_ -> unit) ->
                     out_channel -> automaton -> unit
-    (** Output the automaton's structure on the given channel. *)
+  (** Output the automaton's structure on the given channel. *)
 
   val match_with : automaton -> string_ -> bool
-    (** [match_with a s] matches the string [s] against [a], and returns
-        [true] if the distance from [s] to the word represented by [a] is smaller
-        than the limit used to build [a] *)
+  (** [match_with a s] matches the string [s] against [a], and returns
+      [true] if the distance from [s] to the word represented by [a] is smaller
+      than the limit used to build [a] *)
 
   (** {6 Index for one-to-many matching} *)
 
   module Index : sig
     type 'b t
-      (** Index that maps strings to values of type 'b. Internally it is
-         based on a trie. A string can only map to one value. *)
+    (** Index that maps strings to values of type 'b. Internally it is
+       based on a trie. A string can only map to one value. *)
 
     val empty : 'b t
-      (** Empty index *)
+    (** Empty index *)
 
     val is_empty : _ t -> bool
 
     val add : 'b t -> string_ -> 'b -> 'b t
-      (** Add a pair string/value to the index. If a value was already present
-         for this string it is replaced. *)
+    (** Add a pair string/value to the index. If a value was already present
+       for this string it is replaced. *)
+
+    val cardinal : _ t -> int
+    (** Number of bindings *)
 
     val remove : 'b t -> string_ -> 'b t
-      (** Remove a string (and its associated value, if any) from the index. *)
+    (** Remove a string (and its associated value, if any) from the index. *)
 
     val retrieve : limit:int -> 'b t -> string_ -> 'b klist
-      (** Lazy list of objects associated to strings close to the query string *)
+    (** Lazy list of objects associated to strings close to the query string *)
 
     val of_list : (string_ * 'b) list -> 'b t
-      (** Build an index from a list of pairs of strings and values *)
+    (** Build an index from a list of pairs of strings and values *)
 
     val to_list : 'b t -> (string_ * 'b) list
-      (** Extract a list of pairs from an index *)
+    (** Extract a list of pairs from an index *)
+
+    val add_seq : 'a t -> (string_ * 'a) sequence -> 'a t
+    (** @since 0.14 *)
+
+    val of_seq : (string_ * 'a) sequence -> 'a t
+    (** @since 0.14 *)
+
+    val to_seq : 'a t -> (string_ * 'a) sequence
+    (** @since 0.14 *)
+
+    val add_gen : 'a t -> (string_ * 'a) gen -> 'a t
+    (** @since 0.14 *)
+
+    val of_gen : (string_ * 'a) gen -> 'a t
+    (** @since 0.14 *)
+
+    val to_gen : 'a t -> (string_ * 'a) gen
+    (** @since 0.14 *)
 
     val fold : ('a -> string_ -> 'b -> 'a) -> 'a -> 'b t -> 'a
-      (** Fold over the stored pairs string/value *)
+    (** Fold over the stored pairs string/value *)
 
     val iter : (string_ -> 'b -> unit) -> 'b t -> unit
-      (** Iterate on the pairs *)
+    (** Iterate on the pairs *)
 
     val to_klist : 'b t -> (string_ * 'b) klist
-      (** Conversion to an iterator *)
+    (** Conversion to an iterator *)
   end
 end
 
-module Make(Str : STRING) = struct
+module Make(Str : STRING)
+: S with type char_ = Str.char_ and type string_ = Str.t = struct
   type string_ = Str.t
   type char_ = Str.char_
 
@@ -678,24 +723,73 @@ module Make(Str : STRING) = struct
     let iter f idx =
       fold (fun () str v -> f str v) () idx
 
+    let cardinal idx = fold (fun n _ _ -> n+1) 0 idx
+
     let to_list idx =
       fold (fun acc str v -> (str,v) :: acc) [] idx
 
+    let add_seq i s =
+      let i = ref i in
+      s (fun (arr,v) -> i := add !i arr v);
+      !i
+
+    let of_seq s = add_seq empty s
+
+    let to_seq i yield = iter (fun x y -> yield (x,y)) i
+
+    (*$Q
+      list_uniq_ (fun l -> \
+        Sequence.of_list l |> Index.of_seq |> Index.to_seq \
+          |> Sequence.to_list |> List.sort Pervasives.compare \
+          = List.sort Pervasives.compare l)
+    *)
+
+    let rec add_gen i g = match g() with
+    | None -> i
+    | Some (arr,v) -> add_gen (add i arr v) g
+
+    let of_gen g = add_gen empty g
+
+    let to_gen s =
+      let st = Stack.create () in
+      Stack.push ([],s) st;
+      let rec next () =
+        if Stack.is_empty st then None
+        else
+          let trail, Node (opt, m) = Stack.pop st in
+          (* explore children *)
+          M.iter
+            (fun c node' -> Stack.push (c::trail, node') st)
+            m;
+          match opt with
+          | None -> next()
+          | Some v ->
+            let str = Str.of_list (List.rev trail) in
+            Some (str,v)
+      in
+      next
+
+    (*$Q
+      list_uniq_ (fun l -> \
+        Gen.of_list l |> Index.of_gen |> Index.to_gen \
+          |> Gen.to_list |> List.sort Pervasives.compare \
+          = List.sort Pervasives.compare l)
+    *)
+
     let to_klist idx =
       let rec traverse node trail ~(fk:(string_*'a) klist) () =
-        match node with
-        | Node (opt, m) ->
-            (* all alternatives: continue exploring [m], or call [fk] *)
-            let fk =
-              M.fold
-                (fun c node' fk -> traverse node' (c::trail) ~fk)
-                m fk
-            in
-            match opt with
-            | Some v ->
-                let str = Str.of_list (List.rev trail) in
-                `Cons ((str,v), fk)
-            | _ -> fk ()   (* fail... or explore subtrees *)
+        let Node (opt, m) = node in
+        (* all alternatives: continue exploring [m], or call [fk] *)
+        let fk =
+          M.fold
+            (fun c node' fk -> traverse node' (c::trail) ~fk)
+            m fk
+        in
+        match opt with
+        | Some v ->
+            let str = Str.of_list (List.rev trail) in
+            `Cons ((str,v), fk)
+        | _ -> fk ()   (* fail... or explore subtrees *)
       in
       traverse idx [] ~fk:(fun () -> `Nil)
   end

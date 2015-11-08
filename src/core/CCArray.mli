@@ -232,3 +232,23 @@ module Sub : sig
   include S with type 'a t := 'a t
 end
 
+(** {2 Generic Functions} *)
+
+module type MONO_ARRAY = sig
+  type elt
+  type t
+
+  val length : t -> int
+
+  val get : t -> int -> elt
+
+  val set : t -> int -> elt -> unit
+end
+
+val sort_generic :
+  (module MONO_ARRAY with type t = 'arr and type elt = 'elt) ->
+  ?cmp:('elt -> 'elt -> int) -> 'arr -> unit
+(** Sort the array, without allocating (eats stack space though). Performance
+    might be lower than {!Array.sort}.
+    @since 0.14 *)
+

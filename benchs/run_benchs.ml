@@ -26,7 +26,7 @@ module L = struct
     let map_naive () = ignore (try  List.map f_ l with Stack_overflow -> [])
     and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
     and ccmap () = ignore (CCList.map f_ l)
-    and ralmap () = ignore (CCRAL.map f_ ral)
+    and ralmap () = ignore (CCRAL.map ~f:f_ ral)
     in
     B.throughputN time ~repeat
       [ "List.map", map_naive, ()
@@ -112,6 +112,50 @@ module L = struct
           [ app_int (bench_append ~time:2) 100
           ; app_int (bench_append ~time:2) 10_000
           ; app_int (bench_append ~time:4) 100_000]
+      ]
+    )
+end
+
+module Arr = struct
+  let rand = Random.State.make [| 1;2;3;4 |]
+
+  let mk_arr n =
+    Array.init n (fun _ -> Random.State.int rand 5_000)
+
+  module IntArr = struct
+    type elt=int
+    type t = int array
+    let get = Array.get
+    let set = Array.set
+    let length = Array.length
+  end
+
+  let sort_ccarray a =
+    CCArray.sort_generic (module IntArr) ~cmp:CCInt.compare a
+
+  let sort_std a = Array.sort CCInt.compare a
+
+  (* helper, to apply a sort function over a list of arrays *)
+  let app_list sort l =
+    List.iter
+      (fun a ->
+        let a = Array.copy a in
+        sort a
+      ) l
+
+  let bench_sort ?(time=2) n =
+    let a1 = mk_arr n in
+    let a2 = mk_arr n in
+    let a3 = mk_arr n in
+    B.throughputN time ~repeat
+      [ "std", app_list sort_std, [a1;a2;a3]
+      ; "ccarray.sort_gen", app_list sort_ccarray, [a1;a2;a3]
+      ]
+
+  let () =
+    B.Tree.register ("array" @>>>
+      [ "sort" @>>
+        app_ints (bench_sort ?time:None) [100; 1000; 10_000; 50_000; 100_000; 500_000]
       ]
     )
 end
@@ -263,23 +307,40 @@ module Tbl = struct
   = fun key ->
     let (module Key), name = arg_make key in
     let module T = struct
-      let name = sprintf "hashtbl.make(%s)" name
+      let name = sprintf "hashtbl(%s)" name
       include Hashtbl.Make(Key)
     end in
     (module T)
 
-  let persistent_hashtbl =
-    let module T = CCPersistentHashtbl.Make(CCInt) in
+  let persistent_hashtbl_ref : type a. a key_type -> (module MUT with type key = a)
+  = fun key ->
+    let (module Key), name = arg_make key  in
+    let module T = Ref_impl.PersistentHashtbl(Key) in
     let module U = struct
-      type key = int
+      type key = a
       type 'a t = 'a T.t ref
-      let name = "ccpersistent_hashtbl"
+      let name = sprintf "persistent_tbl_old(%s)" name
       let create _ = ref (T.empty ())
       let find m k = T.find !m k
       let add m k v = m := T.replace !m k v
       let replace = add
     end in
-    (module U : INT_MUT)
+    (module U)
+
+  let persistent_hashtbl : type a. a key_type -> (module MUT with type key = a)
+  = fun key ->
+    let (module Key), name = arg_make key  in
+    let module T = CCPersistentHashtbl.Make(Key) in
+    let module U = struct
+      type key = a
+      type 'a t = 'a T.t ref
+      let name = sprintf "persistent_tbl(%s)" name
+      let create _ = ref (T.empty ())
+      let find m k = T.find !m k
+      let add m k v = m := T.replace !m k v
+      let replace = add
+    end in
+    (module U)
 
   let hashtbl =
     let module T = struct
@@ -376,7 +437,7 @@ module Tbl = struct
   let modules_int =
     [ hashtbl_make Int
     ; hashtbl
-    ; persistent_hashtbl
+    ; persistent_hashtbl Int
     (* ; poly_hashtbl *)
     ; map Int
     ; wbt Int
@@ -391,11 +452,12 @@ module Tbl = struct
     ; map Str
     ; wbt Str
     ; hashtrie Str
+    ; persistent_hashtbl Str
     ; hamt Str
     ; trie
     ]
 
-  let bench_add n =
+  let bench_add_to which n =
     let make (module T : INT_MUT) =
       let run() =
         let t = T.create 50 in
@@ -405,9 +467,11 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    B.throughputN 3 ~repeat (List.map make modules_int)
+    B.throughputN 3 ~repeat (List.map make which)
 
-  let bench_add_string n =
+  let bench_add = bench_add_to modules_int
+
+  let bench_add_string_to l n =
     let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
     let make (module T : STRING_MUT) =
       let run() =
@@ -418,7 +482,9 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    B.throughputN 3 ~repeat (List.map make modules_string)
+    B.throughputN 3 ~repeat (List.map make l)
+
+  let bench_add_string = bench_add_string_to modules_string
 
   let bench_replace n =
     let make (module T : INT_MUT) =
@@ -477,7 +543,7 @@ module Tbl = struct
     ; persistent_array ] @
     List.map find_of_mut modules_int
 
-  let bench_find n =
+  let bench_find_to which n =
     let make (module T : INT_FIND) =
       let m = T.init n (fun i -> i) in
       let run() =
@@ -487,9 +553,11 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    Benchmark.throughputN 3 ~repeat (List.map make modules_int_find)
+    Benchmark.throughputN 3 ~repeat (List.map make which)
 
-  let bench_find_string n =
+  let bench_find = bench_find_to modules_int_find
+
+  let bench_find_string_to l n =
     let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
     let make (module T : STRING_MUT) =
       let m = T.create n in
@@ -501,16 +569,31 @@ module Tbl = struct
       in
       T.name, run, ()
     in
-    Benchmark.throughputN 3 ~repeat (List.map make modules_string)
+    Benchmark.throughputN 3 ~repeat (List.map make l)
 
-  let () = B.Tree.register (
-    "tbl" @>>>
+  let bench_find_string = bench_find_string_to modules_string
+
+  let () =
+    B.Tree.register ("tbl" @>>>
       [ "add_int" @>> app_ints bench_add [10; 100; 1_000; 10_000;]
       ; "add_string" @>> app_ints bench_add_string [10; 100; 1_000; 10_000;]
       ; "replace" @>> app_ints bench_replace [10; 100; 1_000; 10_000]
       ; "find" @>> app_ints bench_find [10; 20; 100; 1_000; 10_000]
       ; "find_string" @>> app_ints bench_find_string [10; 20; 100; 1_000; 10_000]
-      ])
+      ]);
+    B.Tree.register ("tbl_persistent" @>>>
+      let l_int = [persistent_hashtbl Int; persistent_hashtbl_ref Int] in
+      let l_str = [persistent_hashtbl Str; persistent_hashtbl_ref Str] in
+      [ "add_int" @>> app_ints (bench_add_to l_int) [10; 100; 1_000; 10_000;]
+      ; "find_int" @>> app_ints
+          (bench_find_to (List.map find_of_mut l_int))
+          [10; 20; 100; 1_000; 10_000]
+      ; "add_string" @>> app_ints
+          (bench_add_string_to l_str) [10; 100; 1_000; 10_000;]
+      ; "find_string" @>> app_ints
+          (bench_find_string_to l_str) [10; 20; 100; 1_000; 10_000]
+      ]);
+    ()
 end
 
 module Iter = struct
@@ -935,6 +1018,7 @@ module Thread = struct
           [100; 1_000]
       ) [ 2, 3, 3
         ; 5, 3, 3
+        ; 1, 5, 5
         ; 2, 10, 10
         ; 5, 10, 10
         ; 20, 10, 10
@@ -949,4 +1033,5 @@ module Thread = struct
 end
 
 let () =
-  B.Tree.run_global ()
+  try B.Tree.run_global ()
+  with Arg.Help msg -> print_endline msg

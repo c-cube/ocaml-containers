@@ -191,6 +191,10 @@ val sort_uniq : ?cmp:'a ord -> 'a t -> 'a t
     finite. O(n ln(n)) time and space.
     @since 0.3.3 *)
 
+val memoize : 'a t -> 'a t
+(** Avoid recomputations by caching intermediate results
+    @since 0.14 *)
+
 (** {2 Fair Combinations} *)
 
 val interleave : 'a t -> 'a t -> 'a t

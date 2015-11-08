@@ -68,6 +68,16 @@ let create_with ?(capacity=128) x = {
   (create_with ~capacity:200 1 |> capacity) >= 200
 *)
 
+let return x = {
+  size=1;
+  vec= [| x |];
+}
+
+(*$T
+  return 42 |> to_list = [42]
+  return 42 |> length = 1
+*)
+
 let make n x = {
   size=n;
   vec=Array.make n x;
@@ -107,19 +117,28 @@ let _grow v x =
       _resize v size
     )
 
-(* resize so that capacity is at least size. Use a doubling-size
-  strategy so that calling many times [ensure] will
+(* v is not empty; ensure it has at least [size] slots.
+
+  Use a doubling-size strategy so that calling many times [ensure] will
   behave well *)
-let ensure v size =
-  if Array.length v.vec = 0
-    then ()
-  else if size > Sys.max_array_length
+let ensure_not_empty_ v size =
+  if size > Sys.max_array_length
     then failwith "vec.ensure: size too big"
   else (
     let n = ref (max 16 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;
     _resize v !n
   )
+
+let ensure_with ~init v size =
+  if Array.length v.vec = 0
+  then v.vec <- Array.make size init
+  else ensure_not_empty_ v size
+
+let ensure v size =
+  if Array.length v.vec = 0
+  then ()
+  else ensure_not_empty_  v size
 
 let clear v =
   v.size <- 0
@@ -134,14 +153,19 @@ let clear v =
 
 let is_empty v = v.size = 0
 
-let push_unsafe v x =
+let push_unsafe_ v x =
   Array.unsafe_set v.vec v.size x;
   v.size <- v.size + 1
 
 let push v x =
   if v.size = Array.length v.vec
     then _grow v x;
-  push_unsafe v x
+  push_unsafe_ v x
+
+(*$T
+  let v = create () in push v 1; to_list v = [1]
+  let v = of_list [1;2;3] in push v 4; to_list v = [1;2;3;4]
+*)
 
 (** add all elements of b to a *)
 let append a b =
@@ -201,6 +225,25 @@ let append_array a b =
 (*$T
   let v1 = init 5 (fun i->i) and v2 = Array.init 5 (fun i->i+5) in \
   append_array v1 v2; to_list v1 = CCList.(0--9)
+*)
+
+let append_list a b = match b with
+  | [] -> ()
+  | x :: _ ->
+      (* need to push at least one elem *)
+      let len_a = a.size in
+      let len_b = List.length b in
+      ensure_with ~init:x a (len_a + len_b);
+      List.iter (push_unsafe_ a) b;
+      ()
+
+(*$Q
+  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
+    let v = of_list l1 in append_list v l2; \
+    to_list v = (l1 @ l2))
+  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
+    let v = of_list l1 in append_list v l2; \
+    length v = List.length l1 + List.length l2)
 *)
 
 (*$inject
@@ -410,7 +453,7 @@ let filter p v =
   else (
     let v' = create_with ~capacity:v.size v.vec.(0) in
     Array.iter
-      (fun x -> if p x then push_unsafe v' x)
+      (fun x -> if p x then push_unsafe_ v' x)
       v.vec;
     v'
   )
@@ -454,13 +497,32 @@ let find_exn p v =
   let n = v.size in
   let rec check i =
     if i = n then raise Not_found
-    else if p v.vec.(i) then v.vec.(i)
+    else
+      let x = v.vec.(i) in
+      if p x then x
     else check (i+1)
   in check 0
 
 let find p v =
   try Some (find_exn p v)
   with Not_found -> None
+
+let find_map f v =
+  let n = v.size in
+  let rec search i =
+    if i=n then None
+    else match f v.vec.(i) with
+      | None -> search (i+1)
+      | Some _ as res -> res
+  in
+  search 0
+
+(*$Q
+  Q.(list small_int) (fun l -> \
+    let v = of_list l in \
+    let f x = x>30 && x < 35 in \
+    find_map (fun x -> if f x then Some x else None) v = find f v)
+*)
 
 let filter_map f v =
   let v' = create () in
@@ -476,20 +538,31 @@ let flat_map f v =
   iter (fun x -> iter (push v') (f x)) v;
   v'
 
-let flat_map' f v =
+let flat_map_seq f v =
   let v' = create () in
   iter
     (fun x ->
       let seq = f x in
-      seq (fun y -> push v' y)
+      append_seq v' seq;
     ) v;
   v'
+
+let flat_map_list f v =
+  let v' = create () in
+  iter
+    (fun x ->
+      let l = f x in
+      append_list v' l;
+    ) v;
+  v'
+
+let flat_map' = flat_map_seq
 
 let (>>=) x f = flat_map f x
 
 let (>|=) x f = map f x
 
-let rev' v =
+let rev_in_place v =
   if v.size > 0
   then (
     let n = v.size in
@@ -502,15 +575,32 @@ let rev' v =
     done
   )
 
+let rev' = rev_in_place
+
 let rev v =
   let v' = copy v in
-  rev' v';
+  rev_in_place v';
   v'
 
 (*$T
   rev (of_list [1;2;3;4]) |> to_list = [4;3;2;1]
   rev (of_list [1;2;3;4;5]) |> to_list = [5;4;3;2;1]
   rev (create ()) |> to_list = []
+*)
+
+let rev_iter f v =
+  for i = v.size-1 downto 0 do
+    f v.vec.(i)
+  done
+
+(*$T
+  let v = of_list [1;2;3] in (fun f->rev_iter f v) |> Sequence.to_list = [3;2;1]
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    let v = of_list l in \
+    (fun f->rev_iter f v) |> Sequence.to_list = List.rev l)
 *)
 
 let size v = v.size
@@ -530,6 +620,16 @@ let of_seq ?(init=create ()) seq =
 *)
 
 let to_seq v k = iter k v
+
+let to_seq_rev v k =
+  for i = v.size - 1 downto 0 do
+    k (Array.unsafe_get v.vec i)
+  done
+
+(*$Q
+  Q.(list int) (fun l -> \
+    let v= of_list l in v |> to_seq_rev |> Sequence.to_rev_list = l)
+*)
 
 let slice_seq v start len =
   assert (start >= 0 && len >= 0);
@@ -569,7 +669,7 @@ let of_list l = match l with
   | [] -> create()
   | x::_ ->
       let v = create_with ~capacity:(List.length l + 5) x in
-      List.iter (push_unsafe v) l;
+      List.iter (push_unsafe_ v) l;
       v
 
 (*$T

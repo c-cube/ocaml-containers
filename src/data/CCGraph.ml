@@ -339,6 +339,12 @@ let topo_sort ?eq ?rev ?(tbl=mk_table 128) ~graph seq =
     let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
     idx_i < idx_j) \
     [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
+  let l = topo_sort ~rev:true ~graph:divisors_graph (Seq.return 42) in \
+  List.for_all (fun (i,j) -> \
+    let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
+    let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
+    idx_i > idx_j) \
+    [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
 *)
 
 (** {2 Lazy Spanning Tree} *)

@@ -27,6 +27,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (**
 {1 Very Simple Parser Combinators}
 
+{b status} still a bit unstable, the type {!'a t} might still change.
+
 Examples:
 
 {6 parse recursive structures}
@@ -57,6 +59,21 @@ parse_string_exn "((1 2) (3 (4 5)))" ptree;;
 open Containers_string.Parse;;
 let p = U.list ~sep:"," U.word;;
 parse_string_exn "[abc , de, hello ,world  ]" p;;
+]}
+
+{6 Stress Test}
+This makes a list of 100_000 integers, prints it and parses it back.
+
+{[
+let p = CCParse.(U.list ~sep:"," U.int);;
+
+let l = CCList.(1 -- 100_000);;
+let l_printed =
+  CCFormat.to_string (CCList.print ~sep:"," ~start:"[" ~stop:"]" CCInt.print) l;;
+
+let l' = CCParse.parse_string_exn ~p l_printed;;
+
+assert (l=l');;
 ]}
 
 @since 0.11
@@ -109,8 +126,14 @@ val input_of_chan : ?size:int -> in_channel -> input
 
 (** {2 Combinators} *)
 
-type 'a t = input -> 'a
-(** @raise ParseError in case of failure *)
+type 'a t = input -> ok:('a -> unit) -> err:(exn -> unit) -> unit
+(** Takes the input and two continuations:
+    {ul
+      {- [ok] to call with the result when it's done}
+      {- [err] to call when the parser met an error}
+    }
+    The type definition changed since 0.14 to avoid stack overflows
+    @raise ParseError in case of failure *)
 
 val return : 'a -> 'a t
 (** Always succeeds, without consuming its input *)
@@ -238,28 +261,31 @@ val fix_memo : ('a t -> 'a t) -> 'a t
 (** Same as {!fix}, but the fixpoint is memoized.
     @since 0.13 *)
 
-(** {2 Parse} *)
+(** {2 Parse}
 
-val parse : input:input -> 'a t -> 'a or_error
+  Those functions have a label [~p] on the parser, since 0.14.
+*)
+
+val parse : input:input -> p:'a t -> 'a or_error
 (** [parse ~input p] applies [p] on the input, and returns [`Ok x] if
     [p] succeeds with [x], or [`Error s] otherwise *)
 
-val parse_exn : input:input -> 'a t -> 'a
+val parse_exn : input:input -> p:'a t -> 'a
 (** @raise ParseError if it fails *)
 
-val parse_string : string -> 'a t -> 'a or_error
+val parse_string : string -> p:'a t -> 'a or_error
 (** Specialization of {!parse} for string inputs *)
 
-val parse_string_exn : string -> 'a t -> 'a
+val parse_string_exn : string -> p:'a t -> 'a
 (** @raise ParseError if it fails *)
 
-val parse_file : ?size:int -> file:string -> 'a t -> 'a or_error
+val parse_file : ?size:int -> file:string -> p:'a t -> 'a or_error
 (** [parse_file ~file p] parses [file] with [p] by opening the file
     and using {!input_of_chan}.
     @param size size of chunks read from file
     @since 0.13 *)
 
-val parse_file_exn : ?size:int -> file:string -> 'a t -> 'a
+val parse_file_exn : ?size:int -> file:string -> p:'a t -> 'a
 (** Unsafe version of {!parse_file}
     @since 0.13 *)
 
@@ -281,4 +307,16 @@ module U : sig
   val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 
   val map3 : ('a -> 'b -> 'c -> 'd) -> 'a t -> 'b t -> 'c t -> 'd t
+
+  val pair : ?start:string -> ?stop:string -> ?sep:string ->
+             'a t -> 'b t -> ('a * 'b) t
+  (** Parse a pair using OCaml whitespace conventions.
+      The default is "(a, b)".
+      @since 0.14 *)
+
+  val triple : ?start:string -> ?stop:string -> ?sep:string ->
+               'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+  (** Parse a triple using OCaml whitespace conventions.
+      The default is "(a, b, c)".
+      @since 0.14 *)
 end

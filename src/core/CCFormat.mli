@@ -44,6 +44,15 @@ val bool : bool printer
 val float3 : float printer (* 3 digits after . *)
 val float : float printer
 
+val char : char printer (** @since 0.14 *)
+val int32 : int32 printer (** @since 0.14 *)
+val int64 : int64 printer (** @since 0.14 *)
+val nativeint : nativeint printer (** @since 0.14 *)
+
+val string_quoted : string printer
+(** Similar to {!CCString.print}.
+    @since 0.14 *)
+
 val list : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a list printer
 val array : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a array printer
 val arrayi : ?start:string -> ?stop:string -> ?sep:string ->
@@ -67,7 +76,25 @@ val stdout : t
 val stderr : t
 
 val sprintf : ('a, t, unit, string) format4 -> 'a
-  (** print into a string *)
+(** Print into a string any format string that would usually be compatible
+    with {!fprintf}. Similar to {!Format.asprintf}. *)
+
+val fprintf : t -> ('a, t, unit ) format -> 'a
+(** Alias to {!Format.fprintf}
+    @since 0.14 *)
+
+val ksprintf :
+  f:(string -> 'b) ->
+  ('a, Format.formatter, unit, 'b) format4 ->
+  'a
+(** [ksprintf fmt ~f] formats using [fmt], in a way similar to {!sprintf},
+    and then calls [f] on the resulting string.
+    @since 0.14 *)
+
+(*$= & ~printer:CCFormat.(to_string (opt string))
+  (Some "hello world") \
+    (ksprintf "hello %a" CCFormat.string "world" ~f:(fun s -> Some s))
+*)
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
-  (** Print to the given file *)
+(** Print to the given file *)

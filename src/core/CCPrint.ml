@@ -46,6 +46,7 @@ let string buf s = Buffer.add_string buf s
 let bool buf b = Printf.bprintf buf "%B" b
 let float3 buf f = Printf.bprintf buf "%.3f" f
 let float buf f = Buffer.add_string buf (string_of_float f)
+let char buf c = Buffer.add_char buf c
 
 let list ?(start="[") ?(stop="]") ?(sep=", ") pp buf l =
   let rec pp_list l = match l with
@@ -148,6 +149,7 @@ let to_file filename format =
 
 module type MONAD_IO = sig
   type 'a t     (** the IO monad *)
+
   type output   (** Output channels *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t

@@ -71,6 +71,25 @@ let of_list l =
   List.iter (fun (k,v) -> Hashtbl.add tbl k v) l;
   tbl
 
+let update tbl ~f ~k =
+  let v = get tbl k in
+  match v, f k v with
+  | None, None -> ()
+  | None, Some v' -> Hashtbl.add tbl k v'
+  | Some _, Some v' -> Hashtbl.replace tbl k v'
+  | Some _, None -> Hashtbl.remove tbl k
+
+(*$R
+  let tbl = Hashtbl.create 32 in
+  update tbl ~k:1 ~f:(fun _ _ -> Some "1");
+  assert_equal (Some "1") (get tbl 1);
+  update tbl ~k:2 ~f:(fun _ v->match v with Some _ -> assert false | None -> Some "2");
+  assert_equal (Some "2") (get tbl 2);
+  assert_equal 2 (Hashtbl.length tbl);
+  update tbl ~k:1 ~f:(fun _ _ -> None);
+  assert_equal None (get tbl 1);
+*)
+
 let print pp_k pp_v fmt m =
   Format.fprintf fmt "@[<hov2>tbl {@,";
   let first = ref true in
@@ -121,10 +140,22 @@ module type S = sig
   val of_list : (key * 'a) list -> 'a t
   (** From the given list of bindings, added in order *)
 
+  val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
+  (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
+      [k] was mapped to [v], or [f k None] otherwise; if the call
+      returns [None] then [k] is removed/stays removed, if the call
+      returns [Some v'] then the binding [k -> v'] is inserted
+      using {!Hashtbl.replace}
+      @since 0.14 *)
+
   val print : key printer -> 'a printer -> 'a t printer
+  (** Printer for tables
+      @since 0.13 *)
 end
 
-module Make(X : Hashtbl.HashedType) = struct
+module Make(X : Hashtbl.HashedType)
+  : S with type key = X.t and type 'a t = 'a Hashtbl.Make(X).t
+= struct
   include Hashtbl.Make(X)
 
   let get tbl x =
@@ -142,6 +173,14 @@ module Make(X : Hashtbl.HashedType) = struct
     fold
       (fun x y acc -> f x y :: acc)
       h []
+
+  let update tbl ~f ~k =
+    let v = get tbl k in
+    match v, f k v with
+    | None, None -> ()
+    | None, Some v' -> add tbl k v'
+    | Some _, Some v' -> replace tbl k v'
+    | Some _, None -> remove tbl k
 
   let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 
@@ -161,7 +200,7 @@ module Make(X : Hashtbl.HashedType) = struct
     tbl
 
   let print pp_k pp_v fmt m =
-    Format.pp_print_string fmt "@[<hov2>tbl {@,";
+    Format.fprintf fmt "@[<hov2>tbl {@,";
     let first = ref true in
     iter
       (fun k v ->
@@ -171,7 +210,7 @@ module Make(X : Hashtbl.HashedType) = struct
         pp_v fmt v;
         Format.pp_print_cut fmt ()
       ) m;
-    Format.pp_print_string fmt "}@]"
+    Format.fprintf fmt "}@]"
 end
 
 (** {2 Default Table} *)
@@ -249,19 +288,48 @@ module type COUNTER = sig
   (** Increment the counter for the given element *)
 
   val incr_by : t -> int -> elt -> unit
-  (** Add several occurrences at once *)
+  (** Add or remove several occurrences at once. [incr_by c x n]
+      will add [n] occurrences of [x] if [n>0],
+      and remove [abs n] occurrences if [n<0]. *)
 
   val get : t -> elt -> int
   (** Number of occurrences for this element *)
+
+  val decr : t -> elt -> unit
+  (** Remove one occurrence of the element
+      @since 0.14 *)
+
+  val length : t -> int
+  (** Number of distinct elements
+      @since 0.14 *)
 
   val add_seq : t -> elt sequence -> unit
   (** Increment each element of the sequence *)
 
   val of_seq : elt sequence -> t
   (** [of_seq s] is the same as [add_seq (create ())] *)
+
+  val to_seq : t -> (elt * int) sequence
+  (** [to_seq tbl] returns elements of [tbl] along with their multiplicity
+      @since 0.14 *)
+
+  val add_list : t -> (elt * int) list -> unit
+  (** Similar to {!add_seq}
+      @since 0.14 *)
+
+  val of_list : (elt * int) list -> t
+  (** Similar to {!of_seq}
+      @since 0.14 *)
+
+  val to_list : t -> (elt * int) list
+  (** @since 0.14 *)
 end
 
-module MakeCounter(X : Hashtbl.HashedType) = struct
+module MakeCounter(X : Hashtbl.HashedType)
+  : COUNTER
+  with type elt = X.t
+  and type t = int Hashtbl.Make(X).t
+= struct
   type elt = X.t
 
   module T = Hashtbl.Make(X)
@@ -271,6 +339,8 @@ module MakeCounter(X : Hashtbl.HashedType) = struct
   let create size = T.create size
 
   let get tbl x = try T.find tbl x with Not_found -> 0
+
+  let length = T.length
 
   let incr tbl x =
     let n = get tbl x in
@@ -282,10 +352,46 @@ module MakeCounter(X : Hashtbl.HashedType) = struct
     then T.remove tbl x
     else T.replace tbl x (n+n')
 
+  let decr tbl x = incr_by tbl 1 x
+
   let add_seq tbl seq = seq (incr tbl)
 
   let of_seq seq =
     let tbl = create 32 in
     add_seq tbl seq;
     tbl
+
+  let to_seq tbl yield = T.iter (fun x i -> yield (x,i)) tbl
+
+  let add_list tbl l =
+    List.iter (fun (x,i) -> incr_by tbl i x) l
+
+  let of_list l =
+    let tbl = create 32 in
+    add_list tbl l;
+    tbl
+
+  let to_list tbl =
+    T.fold (fun x i acc -> (x,i) :: acc) tbl []
 end
+
+(*$inject
+  module C = MakeCounter(CCInt)
+
+  let list_int = Q.(make
+    ~print:Print.(list (pair int int))
+    ~small:List.length
+    ~shrink:Shrink.(list ?shrink:None)
+    Gen.(list small_int >|= List.map (fun i->i,1))
+  )
+
+  *)
+
+(*$Q
+  list_int (fun l -> \
+    l |> C.of_list |> C.to_list |> List.length = \
+      (l |> CCList.sort_uniq |> List.length))
+  list_int (fun l -> \
+    l |> C.of_list |> C.to_seq |> Sequence.fold (fun n(_,i)->i+n) 0 = \
+      List.fold_left (fun n (_,_) ->n+1) 0 l)
+*)

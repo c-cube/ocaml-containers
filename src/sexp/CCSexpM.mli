@@ -86,6 +86,14 @@ module MakeDecode(M : MONAD) : sig
       long enough or isn't a proper S-expression *)
 end
 
+module ID_MONAD : MONAD
+(** The monad that just uses blocking calls as bind
+    @since 0.14 *)
+
+module D : module type of MakeDecode(ID_MONAD)
+(** Decoder that just blocks when input is not available
+    @since 0.14 *)
+
 val parse_string : string -> t or_error
 (** Parse a string *)
 

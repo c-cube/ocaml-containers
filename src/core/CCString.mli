@@ -66,6 +66,7 @@ module type S = sig
 
   val pp : Buffer.t -> t -> unit
   val print : Format.formatter -> t -> unit
+  (** Print the string within quotes *)
 end
 
 (** {2 Strings} *)
@@ -102,10 +103,11 @@ val find : ?start:int -> sub:string -> string -> int
 (** Find [sub] in string, returns its first index or [-1].
     Should only be used with very small [sub] *)
 
-(*$T
-  find ~sub:"bc" "abcd" = 1
-  find ~sub:"bc" "abd" = ~-1
-  find ~sub:"a" "_a_a_a_" = 1
+(*$= & ~printer:string_of_int
+  (find ~sub:"bc" "abcd") 1
+  (find ~sub:"bc" "abd") ~-1
+  (find ~sub:"a" "_a_a_a_") 1
+  (find ~sub:"a" ~start:5 "a1a234a") 6
 *)
 
 val mem : ?start:int -> sub:string -> string -> bool
@@ -122,16 +124,39 @@ val rfind : sub:string -> string -> int
     Should only be used with very small [sub]
     @since 0.12 *)
 
-(*$T
-  rfind ~sub:"bc" "abcd" = 1
-  rfind ~sub:"bc" "abd" = ~-1
-  rfind ~sub:"a" "_a_a_a_" = 5
-  rfind ~sub:"bc" "abcdbcd" = 4
+(*$= & ~printer:string_of_int
+  (rfind ~sub:"bc" "abcd") 1
+  (rfind ~sub:"bc" "abd") ~-1
+  (rfind ~sub:"a" "_a_a_a_") 5
+  (rfind ~sub:"bc" "abcdbcd") 4
+  (rfind ~sub:"a" "a1a234a") 6
+*)
+
+val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string -> string
+(** [replace ~sub ~by s] replaces some occurrences of [sub] by [by] in [s]
+    @param which decides whether the occurrences to replace are:
+      {ul
+        {- [`Left] first occurrence from the left (beginning)}
+        {- [`Right] first occurrence from the right (end)}
+        {- [`All] all occurrences (default)}
+      }
+    @raise Invalid_argument if [sub = ""]
+    @since 0.14 *)
+
+(*$= & ~printer:CCFun.id
+  (replace ~which:`All ~sub:"a" ~by:"b" "abcdabcd") "bbcdbbcd"
+  (replace ~which:`Left ~sub:"a" ~by:"b" "abcdabcd") "bbcdabcd"
+  (replace ~which:`Right ~sub:"a" ~by:"b" "abcdabcd") "abcdbbcd"
+  (replace ~which:`All ~sub:"ab" ~by:"hello" "  abab cdabb a") \
+    "  hellohello cdhellob a"
+  (replace ~which:`Left ~sub:"ab" ~by:"nope" " a b c d ") " a b c d "
+  (replace ~sub:"a" ~by:"b" "1aa234a") "1bb234b"
 *)
 
 val is_sub : sub:string -> int -> string -> int -> len:int -> bool
 (** [is_sub ~sub i s j ~len] returns [true] iff the substring of
-    [sub] starting at position [i] and of length [len] *)
+    [sub] starting at position [i] and of length [len] is a substring
+    of [s] starting at position [j] *)
 
 val repeat : string -> int -> string
 (** The same string, repeated n times *)
@@ -177,6 +202,7 @@ val unlines_gen : string gen -> string
 
 (*$Q
   Q.printable_string (fun s -> unlines (lines s) = s)
+  Q.printable_string (fun s -> unlines_gen (lines_gen s) = s)
 *)
 
 val set : string -> int -> char -> string
@@ -354,5 +380,10 @@ module Sub : sig
       Sub.fold (fun acc x -> x::acc) [] s = ['d'; 'c'; 'b']
     Sub.make "abcde" 1 3 |> Sub.copy = "bcd"
     Sub.full "abcde" |> Sub.copy = "abcde"
+  *)
+
+  (*$T
+    let sub = Sub.make " abc " 1 ~len:3 in \
+    "\"abc\"" = (CCFormat.to_string Sub.print sub)
   *)
 end

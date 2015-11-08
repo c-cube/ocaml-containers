@@ -68,6 +68,14 @@ val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
 val of_list : ('a * 'b) list -> ('a,'b) Hashtbl.t
 (** From the given list of bindings, added in order *)
 
+val update : ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> unit
+(** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
+    [k] was mapped to [v], or [f k None] otherwise; if the call
+    returns [None] then [k] is removed/stays removed, if the call
+    returns [Some v'] then the binding [k -> v'] is inserted
+    using {!Hashtbl.replace}
+    @since 0.14 *)
+
 val print : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
 (** Printer for table
     @since 0.13 *)
@@ -108,6 +116,14 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
   (** From the given list of bindings, added in order *)
+
+  val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
+  (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
+      [k] was mapped to [v], or [f k None] otherwise; if the call
+      returns [None] then [k] is removed/stays removed, if the call
+      returns [Some v'] then the binding [k -> v'] is inserted
+      using {!Hashtbl.replace}
+      @since 0.14 *)
 
   val print : key printer -> 'a printer -> 'a t printer
   (** Printer for tables
@@ -169,16 +185,46 @@ module type COUNTER = sig
   (** Increment the counter for the given element *)
 
   val incr_by : t -> int -> elt -> unit
-  (** Add several occurrences at once *)
+  (** Add or remove several occurrences at once. [incr_by c x n]
+      will add [n] occurrences of [x] if [n>0],
+      and remove [abs n] occurrences if [n<0]. *)
 
   val get : t -> elt -> int
   (** Number of occurrences for this element *)
+
+  val decr : t -> elt -> unit
+  (** Remove one occurrence of the element
+      @since 0.14 *)
+
+  val length : t -> int
+  (** Number of distinct elements
+      @since 0.14 *)
 
   val add_seq : t -> elt sequence -> unit
   (** Increment each element of the sequence *)
 
   val of_seq : elt sequence -> t
   (** [of_seq s] is the same as [add_seq (create ())] *)
+
+  val to_seq : t -> (elt * int) sequence
+  (** [to_seq tbl] returns elements of [tbl] along with their multiplicity
+      @since 0.14 *)
+
+  val add_list : t -> (elt * int) list -> unit
+  (** Similar to {!add_seq}
+      @since 0.14 *)
+
+  val of_list : (elt * int) list -> t
+  (** Similar to {!of_seq}
+      @since 0.14 *)
+
+  val to_list : t -> (elt * int) list
+  (** @since 0.14 *)
 end
 
-module MakeCounter(X : Hashtbl.HashedType) : COUNTER with type elt = X.t
+module MakeCounter(X : Hashtbl.HashedType)
+  : COUNTER
+  with type elt = X.t
+  and type t = int Hashtbl.Make(X).t
+(** Create a new counter type
+    The type [t] is exposed @since 0.14 *)

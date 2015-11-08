@@ -74,6 +74,12 @@ module type S = sig
   val length : _ t -> int
   (** Number of bindings *)
 
+  val add : 'a t -> key -> 'a -> 'a t
+  (** Add the binding to the table, returning a new table. The old binding
+      for this key, if it exists, is shadowed and will be restored upon
+      [remove tbl k].
+      @since 0.14 *)
+
   val replace : 'a t -> key -> 'a -> 'a t
   (** Add the binding to the table, returning a new table. This erases
       the current binding for [key], if any. *)
@@ -136,6 +142,10 @@ module type S = sig
   val pp : key printer -> 'a printer -> 'a t printer
 
   val print : key formatter -> 'a formatter -> 'a t formatter
+
+  val stats : _ t -> Hashtbl.statistics
+  (** Statistics on the internal table.
+      @since 0.14 *)
 end
 
 (** {2 Implementation} *)
