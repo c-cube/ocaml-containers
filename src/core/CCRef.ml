@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -54,5 +53,3 @@ let to_seq r yield = yield !r
 let print pp_x fmt r = pp_x fmt !r
 
 let pp pp_x buf r = pp_x buf !r
-
-

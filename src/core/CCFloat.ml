@@ -84,7 +84,7 @@ let fsign a =
 exception TrapNaN of string
 
 let sign_exn (a:float) =
-  if is_nan a then raise (TrapNaN "sign")
+  if is_nan a then raise (TrapNaN "sign_exn")
   else compare a 0.
 
 let to_int (a:float) = Pervasives.int_of_float a
@@ -101,4 +101,3 @@ let random_range i j st = i +. random (j-.i) st
 let equal_precision ~epsilon a b = abs_float (a-.b) < epsilon
 
 let classify = Pervasives.classify_float
-

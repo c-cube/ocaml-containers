@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -58,7 +57,7 @@ module type S = sig
   (** Fast equality test [O(1)] *)
 
   val compare : t -> t -> int
-  (** Fast (arbitrary) comparisontest [O(1)] *)
+  (** Fast (arbitrary) comparison test [O(1)] *)
 
   val hash : t -> int
   (** Fast (arbitrary, deterministic) hash [O(1)] *)

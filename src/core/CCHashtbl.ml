@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -118,11 +117,11 @@ module type S = sig
   (** Iterate on values in the table *)
 
   val keys_list : ('a, 'b) Hashtbl.t -> 'a list
-  (** [keys t] is the list of keys in [t].
+  (** [keys_list t] is the list of keys in [t].
       @since 0.8 *)
 
   val values_list : ('a, 'b) Hashtbl.t -> 'b list
-  (** [values t] is the list of values in [t].
+  (** [values_list t] is the list of values in [t].
       @since 0.8 *)
 
   val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list

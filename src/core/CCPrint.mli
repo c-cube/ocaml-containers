@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013, simon cruanes
 all rights reserved.
@@ -91,7 +90,7 @@ val output : out_channel -> 'a t -> 'a -> unit
 val to_string : 'a t -> 'a -> string
 
 val sprintf : ('a, Buffer.t, unit, string) format4 -> 'a
-  (** print into a string *)
+  (** Print into a string *)
 
 val fprintf : out_channel -> ('a, Buffer.t, unit, unit) format4 -> 'a
   (** Print on a channel *)

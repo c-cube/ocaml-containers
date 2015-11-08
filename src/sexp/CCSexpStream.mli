@@ -76,7 +76,7 @@ module Source : sig
   type source = t
 
   (** A manual source of individual characters. When it has exhausted its
-      own input, it asks its caller to provide more or signal that none remains
+      own input, it asks its caller to provide more or signal that none remains.
       This is especially useful when the source of data is monadic IO *)
   module Manual : sig
     type t
@@ -106,7 +106,8 @@ module Source : sig
 end
 
 (** {6 Streaming Lexer}
-splits the input into opening parenthesis, closing ones, and atoms *)
+Splits the input into opening parenthesis, closing ones, and atoms *)
+
 module Lexer : sig
   type t
   (** A streaming lexer, that parses atomic chunks of S-expressions (atoms
@@ -196,4 +197,3 @@ module L : sig
 
   val of_seq : string sequence -> t list or_error
 end
-

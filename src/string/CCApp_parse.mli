@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -104,7 +103,7 @@ val alpha_upper : char t
 val alpha : char t
 
 val symbols : char t
-(** symbols, such as "!-=_"... *)
+(** Symbols, such as "!-=_"... *)
 
 val num : char t
 

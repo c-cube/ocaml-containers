@@ -168,6 +168,6 @@ module Traverse = struct
     | `Atom s -> _get_variant s [] l
 
   let get_exn e = match e with
-    | None -> failwith "Sexp.Traverse.get_exn"
+    | None -> failwith "CCSexp.Traverse.get_exn"
     | Some x -> x
 end

@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 type 'a printer = Format.formatter -> 'a -> unit
@@ -33,4 +32,3 @@ let () =
     ; "CCKTree.print"
     ; "CCSexpM.print"
     ]
-

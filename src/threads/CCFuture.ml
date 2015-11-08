@@ -62,7 +62,7 @@ module Pool = struct
     pool.cur_size <- pool.cur_size - 1;
     Die
 
-  (** thread: entry point. They seek jobs in the queue *)
+  (** Thread: entry point. They seek jobs in the queue *)
   let rec serve pool =
     match with_lock_ pool get_next with
     | Die -> ()
@@ -115,10 +115,10 @@ module Pool = struct
         )
       )
 
-  (* Run the function on the argument in the given pool *)
+  (* run the function on the argument in the given pool *)
   let run pool f x = run_job pool (Job (f, x))
 
-  (* Kill threads in the pool *)
+  (* kill threads in the pool *)
   let stop pool =
     with_lock_ pool
       (fun p ->

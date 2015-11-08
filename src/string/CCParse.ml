@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -45,8 +44,8 @@ type input = {
   next : unit -> char; (** if not {!is_done}, move to next char *)
   pos : unit -> int;   (** Current pos *)
   lnum : unit -> line_num; (** Line number @since 0.13 *)
-  cnum : unit -> col_num;  (** column number @since 0.13 *)
-  memo : memo_; (** memoization table, if any *)
+  cnum : unit -> col_num;  (** Column number @since 0.13 *)
+  memo : memo_; (** Memoization table, if any *)
   backtrack : int -> unit;  (** Restore to previous pos *)
   sub : int -> int -> string; (** Extract slice from [pos] with [len] *)
 }

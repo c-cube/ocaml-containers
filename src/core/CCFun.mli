@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -52,7 +51,7 @@ val const : 'a -> 'b -> 'a
 (** [const x y = x] for any [y] *)
 
 val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
-(** flip arguments *)
+(** Flip arguments *)
 
 val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
 
@@ -80,7 +79,7 @@ val finally : h:(unit -> unit) -> f:(unit -> 'a) -> 'a
 
 (** {2 Monad}
 
-functions with a fixed domain are monads in their codomain *)
+Functions with a fixed domain are monads in their codomain *)
 
 module Monad(X : sig type t end) : sig
   type 'a t = X.t -> 'a

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -66,7 +65,7 @@ type 'a with_finalizer
 type 'a or_error = [ `Ok of 'a | `Error of string ]
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** wait for the result of an action, then use a function to build a
+(** Wait for the result of an action, then use a function to build a
     new action and execute it *)
 
 val return : 'a -> 'a t
@@ -309,7 +308,7 @@ module File : sig
         explored *)
 
   val walk : t -> ([`File | `Dir] * t) Seq.t io
-  (** similar to {!read_dir} (with [recurse=true]), this function walks
+  (** Similar to {!read_dir} (with [recurse=true]), this function walks
       a directory recursively and yields either files or directories.
       Is a file anything that doesn't satisfy {!is_directory} (including
       symlinks, etc.) *)

@@ -1,4 +1,4 @@
-(* This file is free softwarem part of containers. See file "license" for more details. *)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Mutable Set} *)
 
@@ -37,7 +37,7 @@ module type S = sig
   (** [mem s x] returns [true] iff [x] is in [s] *)
 
   val find_exn : t -> elt -> elt
-  (** [find s x] returns [y] if [x] and [y] are equal, and [mem s y].
+  (** [find_exn s x] returns [y] if [x] and [y] are equal, and [mem s y].
       @raise Not_found if [x] not in [s] *)
 
   val find : t -> elt -> elt option

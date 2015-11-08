@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -101,7 +100,7 @@ val set : ('a, _, [>`W]) t -> int -> 'a -> unit
 (** set n-th element *)
 
 val get : ('a, _, [>`R]) t -> int -> 'a
-(** get n-th element *)
+(** Get n-th element *)
 
 val fill : ('a, _, [>`W]) t -> 'a -> unit
 (** [fill a x] fills [a] with [x] *)
@@ -329,7 +328,7 @@ module View : sig
   (** See {!select} *)
 
   val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** fold on values with their index *)
+  (** Fold on values with their index *)
 
   val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
   (** [iteri ~f v] iterates on elements of [v] with their index *)
@@ -367,5 +366,3 @@ module View : sig
   (** [to_array v] returns a fresh copy of the content of [v].
       Exactly one of [res] and [kind] must be provided *)
 end
-
-

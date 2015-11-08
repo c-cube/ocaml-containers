@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Threads}
@@ -94,4 +93,3 @@ module Queue : sig
   val capacity : _ t -> int
   (** Number of values the queue can hold *)
 end
-

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -83,7 +82,7 @@ type call_result =
   < stdout:string;
     stderr:string;
     status:Unix.process_status;
-    errcode:int; (** extracted from status *)
+    errcode:int; (** Extracted from status *)
   >
 
 let kbprintf' buf fmt k = Printf.kbprintf k buf fmt

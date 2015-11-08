@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -269,4 +268,3 @@ module Make(X : HASHABLE) = struct
       (function Empty -> () | Key (_, v, _) -> yield v)
       tbl.arr
 end
-

@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type 'a injection
 (** An accessor for values of type 'a in any map. Values put
-    in the map using an key can only be retrieved using this
+    in the map using a key can only be retrieved using this
     very same key. *)
 
 val create_inj : unit -> 'a injection

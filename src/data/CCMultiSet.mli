@@ -66,6 +66,7 @@ module type S = sig
   (** Minimal element w.r.t the total ordering on elements *)
 
   val max : t -> elt
+  (** Maximal element w.r.t the total ordering on elements *)
 
   val union : t -> t -> t
   (** [union a b] contains as many occurrences of an element [x]

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -43,4 +42,3 @@ val pp : t printer
 (** Printer for booleans *)
 
 val print : t formatter
-

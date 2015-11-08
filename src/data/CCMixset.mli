@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -73,5 +72,3 @@ val get_exn : key:'a key -> t -> 'a
 
 val cardinal : t -> int
 (** Number of mappings *)
-
-

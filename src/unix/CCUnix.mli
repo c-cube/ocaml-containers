@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -50,7 +49,7 @@ type call_result =
   < stdout:string;
     stderr:string;
     status:Unix.process_status;
-    errcode:int; (** extracted from status *)
+    errcode:int; (** Extracted from status *)
   >
 
 val call : ?bufsize:int ->
@@ -121,5 +120,3 @@ module Infix : sig
 end
 
 include module type of Infix
-
-

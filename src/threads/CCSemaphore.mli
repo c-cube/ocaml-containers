@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Semaphores}
@@ -30,4 +29,3 @@ val with_acquire : n:int -> t -> f:(unit -> 'a) -> 'a
 val wait_until_at_least : n:int -> t -> f:(unit -> 'a) -> 'a
 (** [wait_until_at_least ~n s ~f] waits until [get s >= n], then calls [f ()]
     and returns its result. Doesn't modify the semaphore. *)
-

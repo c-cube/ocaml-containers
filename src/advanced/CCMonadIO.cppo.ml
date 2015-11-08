@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -518,5 +517,3 @@ end
 module Raw = struct
   let wrap f = Wrap f
 end
-
-(* vim:ft=ocaml: *)

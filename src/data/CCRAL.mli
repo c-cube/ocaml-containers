@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Random-Access Lists}
@@ -185,5 +184,3 @@ include module type of Infix
 type 'a printer = Format.formatter -> 'a -> unit
 
 val print : ?sep:string -> 'a printer -> 'a t printer
-
-

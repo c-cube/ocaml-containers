@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -190,4 +189,3 @@ let pp ppx buf o = match o with
 let print ppx out = function
   | None -> Format.pp_print_string out "None"
   | Some x -> Format.fprintf out "@[Some %a@]" ppx x
-

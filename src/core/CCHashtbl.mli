@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -46,11 +45,11 @@ val values : ('a,'b) Hashtbl.t -> 'b sequence
 (** Iterate on values in the table *)
 
 val keys_list : ('a, 'b) Hashtbl.t -> 'a list
-(** [keys t] is the list of keys in [t].
+(** [keys_list t] is the list of keys in [t].
     @since 0.8 *)
 
 val values_list : ('a, 'b) Hashtbl.t -> 'b list
-(** [values t] is the list of values in [t].
+(** [values_list t] is the list of values in [t].
     @since 0.8 *)
 
 val map_list : ('a -> 'b -> 'c) -> ('a, 'b) Hashtbl.t -> 'c list
@@ -227,4 +226,5 @@ module MakeCounter(X : Hashtbl.HashedType)
   with type elt = X.t
   and type t = int Hashtbl.Make(X).t
 (** Create a new counter type
-    The type [t] is exposed @since 0.14 *)
+    The type [t] is exposed
+    @since 0.14 *)

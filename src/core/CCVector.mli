@@ -31,7 +31,7 @@ type rw = [`RW]
 (** Mutability is [rw] (read-write) or [ro] (read-only) *)
 
 type ('a, 'mut) t
-(** the type of a vector of elements of type ['a], with
+(** The type of a vector of elements of type ['a], with
     a mutability flat ['mut] *)
 
 type 'a vector = ('a, rw) t
@@ -70,7 +70,7 @@ val init : int -> (int -> 'a) -> ('a, 'mut) t
 (** Init the vector with the given function and size *)
 
 val clear : ('a, rw) t -> unit
-(** clear the content of the vector *)
+(** Clear the content of the vector *)
 
 val ensure_with : init:'a -> ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
@@ -84,16 +84,16 @@ val ensure : ('a, rw) t -> int -> unit
       is not provided. *)
 
 val is_empty : ('a, _) t -> bool
-(** is the vector empty? *)
+(** Is the vector empty? *)
 
 val push : ('a, rw) t -> 'a -> unit
-(** add an element at the end of the vector *)
+(** Add an element at the end of the vector *)
 
 val append : ('a, rw) t -> ('a, _) t -> unit
 (** [append a b] adds all elements of b to a *)
 
 val append_array : ('a, rw) t -> 'a array -> unit
-(** same as append, with an array *)
+(** Same as append, with an array *)
 
 val append_seq : ('a, rw) t -> 'a sequence -> unit
 (** Append content of sequence *)
@@ -105,7 +105,7 @@ val append_list : ('a, rw) t -> 'a list -> unit
 val equal : 'a equal -> ('a,_) t equal
 
 val compare : 'a ord -> ('a,_) t ord
-(** Total ordering on vectors: Lexicographic comparison. *)
+(** Total ordering on vectors. Lexicographic comparison. *)
 
 exception Empty
 (** Raised on empty stack *)
@@ -114,7 +114,7 @@ val pop : ('a, rw) t -> 'a option
 (** Remove last element, or [None] *)
 
 val pop_exn : ('a, rw) t -> 'a
-(** remove last element, or raise a Failure if empty
+(** Remove last element, or raise a Failure if empty
     @raise Empty on an empty vector *)
 
 val top : ('a, _) t -> 'a option
@@ -130,11 +130,11 @@ val copy : ('a,_) t -> ('a,'mut) t
 (** Shallow copy (may give an immutable or mutable vector) *)
 
 val shrink : ('a, rw) t -> int -> unit
-(** shrink to the given size (remove elements above this size).
+(** Shrink to the given size (remove elements above this size).
     Does nothing if the parameter is bigger than the current size. *)
 
 val member : ?eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
-(** is the element a member of the vector? *)
+(** Is the element a member of the vector? *)
 
 val sort : ('a -> 'a -> int) -> ('a, _) t -> ('a, 'mut) t
 (** Sort the vector, returning a copy of it that is sorted
@@ -144,39 +144,39 @@ val sort' : ('a -> 'a -> int) -> ('a, rw) t -> unit
 (** Sort the vector in place (modifying it). *)
 
 val uniq_sort : ('a -> 'a -> int) -> ('a, rw) t -> unit
-(** Sort the array and remove duplicates, in place (e.e. modifying
+(** Sort the array and remove duplicates, in place (e.g. modifying
     the vector itself) *)
 
 val iter : ('a -> unit) -> ('a,_) t -> unit
-(** iterate on the vector's content *)
+(** Iterate on the vector's content *)
 
 val iteri : (int -> 'a -> unit) -> ('a,_) t -> unit
-(** iterate on the vector, with indexes *)
+(** Iterate on the vector, with indexes *)
 
 val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
-(** map elements of the vector, yielding a new vector *)
+(** Map elements of the vector, yielding a new vector *)
 
 val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
-(** filter elements from the vector. [filter p v] leaves [v] unchanged but
+(** Filter elements from the vector. [filter p v] leaves [v] unchanged but
     returns a new vector that only contains elements of [v] satisfying [p]. *)
 
 val filter' : ('a -> bool) -> ('a, rw) t -> unit
 (** Filter elements in place.  *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
-(** fold on elements of the vector *)
+(** Fold on elements of the vector *)
 
 val exists : ('a -> bool) -> ('a,_) t -> bool
-(** existential test (is there an element that satisfies the predicate?) *)
+(** Existential test (is there an element that satisfies the predicate?) *)
 
 val for_all : ('a -> bool) -> ('a,_) t -> bool
-(** universal test (do all the elements satisfy the predicate?) *)
+(** Universal test (do all the elements satisfy the predicate?) *)
 
 val find : ('a -> bool) -> ('a,_) t -> 'a option
 (** Find an element that satisfies the predicate *)
 
 val find_exn  : ('a -> bool) -> ('a,_) t -> 'a
-(** find an element that satisfies the predicate, or
+(** Find an element that satisfies the predicate, or
     @raise Not_found if no element does *)
 
 val find_map : ('a -> 'b option) -> ('a,_) t -> 'b option
@@ -211,11 +211,11 @@ val (>|=) : ('a,_) t -> ('a -> 'b) -> ('b, 'mut) t
 (** Infix version of {!map} *)
 
 val get : ('a,_) t -> int -> 'a
-(** access element by its index, or
+(** Access element by its index, or
     @raise Invalid_argument if bad index *)
 
 val set : ('a, rw) t -> int -> 'a -> unit
-(** modify element at given index, or
+(** Modify element at given index, or
     @raise Invalid_argument if bad index *)
 
 val remove : ('a, rw) t -> int -> unit
@@ -237,7 +237,7 @@ val rev_iter : ('a -> unit) -> ('a,_) t -> unit
     @since 0.14 *)
 
 val size : ('a,_) t -> int
-(** number of elements in vector *)
+(** Number of elements in vector *)
 
 val length : (_,_) t -> int
 (** Synonym for {! size} *)
