@@ -38,9 +38,9 @@ module type S = sig
 
   val empty : 'a t
 
-  val equal : 'a equal -> 'a t equal
+  val equal : ?eq:'a equal -> 'a t equal
 
-  val compare : 'a ord -> 'a t ord
+  val compare : ?cmp:'a ord -> 'a t ord
 
   val get : 'a t -> int -> 'a
 
@@ -48,52 +48,55 @@ module type S = sig
 
   val length : _ t -> int
 
-  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  val fold : f:('a -> 'b -> 'a) -> x:'a -> 'b t -> 'a
 
-  val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  val foldi : f:('a -> int -> 'b -> 'a) -> x:'a -> 'b t -> 'a
   (** Fold left on array, with index *)
 
-  val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+  val fold_while :
+    f:('a -> 'b -> 'a * [`Stop | `Continue]) ->
+    x:'a -> 'b t -> 'a
   (** Fold left on array until a stop condition via [('a, `Stop)] is
       indicated by the accumulator
       @since 0.8 *)
 
-  val iter : ('a -> unit) -> 'a t -> unit
+  val iter : f:('a -> unit) -> 'a t -> unit
 
-  val iteri : (int -> 'a -> unit) -> 'a t -> unit
+  val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 
-  val blit : 'a t -> int -> 'a t -> int -> int -> unit
+  val blit : from:'a t -> i:int -> into:'a t -> j:int -> len:int -> unit
   (** [blit from i into j len] copies [len] elements from the first array
       to the second. See {!Array.blit}. *)
 
   val reverse_in_place : 'a t -> unit
   (** Reverse the array in place *)
 
-  val find : ('a -> 'b option) -> 'a t -> 'b option
+  val find : f:('a -> 'b option) -> 'a t -> 'b option
   (** [find f a] returns [Some y] if there is an element [x] such
       that [f x = Some y], else it returns [None] *)
 
-  val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+  val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
   (** Like {!find}, but also pass the index to the predicate function.
       @since 0.3.4 *)
 
-  val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
+  val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
   (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
       and [p x] holds. Otherwise returns [None]
       @since 0.3.4 *)
 
-  val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
+  val lookup : ?cmp:'a ord -> x:'a -> 'a t -> int option
   (** Lookup the index of some value in a sorted array.
+      @param x the value that is looked up
       @return [None] if the key is not present, or
         [Some i] ([i] the index of the key) otherwise *)
 
-  val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
+  val lookup_exn : ?cmp:'a ord -> x:'a -> 'a t -> int
   (** Same as {!lookup_exn}, but
       @raise Not_found if the key is not present *)
 
-  val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+  val bsearch : ?cmp:('a -> 'a -> int) -> x:'a -> 'a t ->
     [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
-  (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
+  (** [bsearch ?cmp ~x arr] finds the index of the object [x] in the array [arr],
       provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
       the result is not specified (may raise Invalid_argument).
 
@@ -110,22 +113,22 @@ module type S = sig
       @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp]
       @since 0.13 *)
 
-  val for_all : ('a -> bool) -> 'a t -> bool
+  val for_all : f:('a -> bool) -> 'a t -> bool
 
-  val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val for_all2 : f:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   (** Forall on pairs of arrays.
       @raise Invalid_argument if they have distinct lengths *)
 
-  val exists : ('a -> bool) -> 'a t -> bool
+  val exists : f:('a -> bool) -> 'a t -> bool
 
-  val exists2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val exists2 : f:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   (** Exists on pairs of arrays.
       @raise Invalid_argument if they have distinct lengths *)
 
   val shuffle : 'a t -> unit
-  (** shuffle randomly the array, in place *)
+  (** Shuffle randomly the array, in place *)
 
-  val shuffle_with : Random.State.t -> 'a t -> unit
+  val shuffle_with : st:Random.State.t -> 'a t -> unit
   (** Like shuffle but using a specialized random state *)
 
   val random_choose : 'a t -> 'a random_gen
@@ -140,15 +143,15 @@ module type S = sig
 
   val pp: ?sep:string -> (Buffer.t -> 'a -> unit) ->
           Buffer.t -> 'a t -> unit
-  (** print an array of items with printing function *)
+  (** Print an array of items with printing function *)
 
   val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit) ->
             Buffer.t -> 'a t -> unit
-  (** print an array, giving the printing function both index and item *)
+  (** Print an array, giving the printing function both index and item *)
 
   val print : ?sep:string -> (Format.formatter -> 'a -> unit) ->
               Format.formatter -> 'a t -> unit
-  (** print an array of items with printing function *)
+  (** Print an array of items with printing function *)
 end
 
 (** {2 General Implementation}
@@ -185,10 +188,10 @@ let rec _compare cmp a1 i1 j1 a2 i2 j2 =
         else c
 
 (*$T
-  compare CCOrd.compare [| 1; 2; 3 |] [| 1; 2; 3 |] = 0
-  compare CCOrd.compare [| 1; 2; 3 |] [| 2; 2; 3 |] < 0
-  compare CCOrd.compare [| 1; 2; |] [| 1; 2; 3 |] < 0
-  compare CCOrd.compare [| 1; 2; 3 |] [| 1; 2; |] > 0
+  compare ~cmp:CCOrd.compare [| 1; 2; 3 |] [| 1; 2; 3 |] = 0
+  compare ~cmp:CCOrd.compare [| 1; 2; 3 |] [| 2; 2; 3 |] < 0
+  compare ~cmp:CCOrd.compare [| 1; 2; |] [| 1; 2; 3 |] < 0
+  compare ~cmp:CCOrd.compare [| 1; 2; 3 |] [| 1; 2; |] > 0
 *)
 
 let rec _find f a i j =
@@ -307,7 +310,7 @@ type 'a t = 'a array
 
 let empty = [| |]
 
-let map = Array.map
+let map ~f a = Array.map f a
 
 let length = Array.length
 
@@ -315,11 +318,11 @@ let get = Array.get
 
 let set = Array.set
 
-let fold = Array.fold_left
+let fold ~f ~x a = Array.fold_left f x a
 
-let foldi f acc a = _foldi f acc a 0 (Array.length a)
+let foldi ~f ~x:acc a = _foldi f acc a 0 (Array.length a)
 
-let fold_while f acc a =
+let fold_while ~f ~x:acc a =
   let rec fold_while_i f acc i =
     if i < Array.length a then
       let acc, cont = f acc a.(i) in
@@ -330,14 +333,16 @@ let fold_while f acc a =
   in fold_while_i f acc 0
 
 (*$T
-  fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 (Array.of_list [true;true;false;true]) = 2
+  fold_while \
+    ~f:(fun acc b -> if b then acc+1, `Continue else acc, `Stop) \
+    ~x:0 (Array.of_list [true;true;false;true]) = 2
 *)
 
-let iter = Array.iter
+let iter ~f a = Array.iter f a
 
-let iteri = Array.iteri
+let iteri ~f a = Array.iteri f a
 
-let blit = Array.blit
+let blit ~from ~i ~into ~j ~len = Array.blit from i into j len
 
 let reverse_in_place a =
   _reverse_in_place a 0 ~len:(Array.length a)
@@ -353,16 +358,16 @@ let reverse_in_place a =
     a = [| 6;5;4;3;2;1 |]
 *)
 
-let find f a =
+let find ~f a =
   _find (fun _ -> f ) a 0 (Array.length a)
 
-let findi f a =
+let findi ~f a =
   _find f a 0 (Array.length a)
 
-let find_idx p a =
-  _find (fun i x -> if p x then Some (i,x) else None) a 0 (Array.length a)
+let find_idx ~f a =
+  _find (fun i x -> if f x then Some (i,x) else None) a 0 (Array.length a)
 
-let filter_map f a =
+let filter_map ~f a =
   let rec aux acc i =
     if i = Array.length a
     then (
@@ -382,8 +387,8 @@ let filter_map f a =
     = [| "2"; "4"; "6" |]
 *)
 
-let filter p a =
-  filter_map (fun x -> if p x then Some x else None) a
+let filter ~f a =
+  filter_map ~f:(fun x -> if f x then Some x else None) a
 
 (* append [rev a] in front of [acc] *)
 let rec __rev_append_list a acc i =
@@ -392,7 +397,7 @@ let rec __rev_append_list a acc i =
   else
     __rev_append_list a (a.(i) :: acc) (i+1)
 
-let flat_map f a =
+let flat_map ~f a =
   let rec aux acc i =
     if i = Array.length a
     then (
@@ -411,11 +416,11 @@ let flat_map f a =
   a' = [| 1; 2; 3; 4; 5; 6 |]
 *)
 
-let lookup_exn ?(cmp=Pervasives.compare) k a =
-  _lookup_exn ~cmp k a 0 (Array.length a-1)
+let lookup_exn ?(cmp=Pervasives.compare) ~x a =
+  _lookup_exn ~cmp x a 0 (Array.length a-1)
 
-let lookup ?(cmp=Pervasives.compare) k a =
-  try Some (_lookup_exn ~cmp k a 0 (Array.length a-1))
+let lookup ?(cmp=Pervasives.compare) ~x a =
+  try Some (_lookup_exn ~cmp x a 0 (Array.length a-1))
   with Not_found -> None
 
 (*$T
@@ -428,7 +433,8 @@ let lookup ?(cmp=Pervasives.compare) k a =
   lookup 2 [| 1 |] = None
 *)
 
-let bsearch ?(cmp=Pervasives.compare) k a = bsearch_ ~cmp k a 0 (Array.length a-1)
+let bsearch ?(cmp=Pervasives.compare) ~x a =
+  bsearch_ ~cmp x a 0 (Array.length a-1)
 
 (*$T bsearch
   bsearch 3 [|1; 2; 2; 3; 4; 10|] = `At 3
@@ -440,23 +446,23 @@ let bsearch ?(cmp=Pervasives.compare) k a = bsearch_ ~cmp k a 0 (Array.length a-
   bsearch 3 [| |] = `Empty
 *)
 
-let (>>=) a f = flat_map f a
+let (>>=) a f = flat_map ~f a
 
-let (>>|) a f = map f a
+let (>>|) a f = map ~f a
 
-let (>|=) a f = map f a
+let (>|=) a f = map ~f a
 
-let for_all p a = _for_all p a 0 (Array.length a)
+let for_all ~f a = _for_all f a 0 (Array.length a)
 
-let exists p a = _exists p a 0 (Array.length a)
+let exists ~f a = _exists f a 0 (Array.length a)
 
-let for_all2 p a b =
+let for_all2 ~f a b =
   Array.length a = Array.length b
   &&
-  _for_all2 p a b 0 0 ~len:(Array.length a)
+  _for_all2 f a b 0 0 ~len:(Array.length a)
 
-let exists2 p a b =
-  _exists2 p a b 0 0 ~len:(min (Array.length a) (Array.length b))
+let exists2 ~f a b =
+  _exists2 f a b 0 0 ~len:(min (Array.length a) (Array.length b))
 
 let (--) i j =
   if i<=j
@@ -466,22 +472,22 @@ let (--) i j =
     Array.init (i-j+1) (fun k -> i-k)
 
 (** all the elements of a, but the i-th, into a list *)
-let except_idx a i =
+let except_idx a ~i =
   foldi
-    (fun acc j elt -> if i = j then acc else elt::acc)
-    [] a
+    ~f:(fun acc j elt -> if i = j then acc else elt::acc)
+    ~x:[] a
 
-let equal eq a b =
+let equal ?(eq=(=)) a b =
   Array.length a = Array.length b
   &&
   _equal eq a 0 (Array.length a) b 0 (Array.length b)
 
-let compare cmp a b =
+let compare ?(cmp=Pervasives.compare) a b =
   _compare cmp a 0 (Array.length a) b 0 (Array.length b)
 
 let shuffle a = _shuffle Random.int a 0 (Array.length a)
 
-let shuffle_with st a = _shuffle (Random.State.int st) a 0 (Array.length a)
+let shuffle_with ~st a = _shuffle (Random.State.int st) a 0 (Array.length a)
 
 let random_choose a st = _choose a 0 (Array.length a) st
 
@@ -502,7 +508,7 @@ let pp_i ?(sep=", ") pp_item buf a = _pp_i ~sep pp_item buf a 0 (Array.length a)
 
 let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a 0 (Array.length a)
 
-let to_seq a k = iter k a
+let to_seq a k = iter ~f:k a
 
 let to_gen a = _to_gen a 0 (Array.length a)
 
@@ -539,21 +545,21 @@ module Sub = struct
 
   let sub a i len = make a.arr ~len:(a.i + i) len
 
-  let equal eq a b =
+  let equal ?(eq=(=)) a b =
     length a = length b && _equal eq a.arr a.i a.j b.arr b.i b.j
 
-  let compare cmp a b =
+  let compare ?(cmp=Pervasives.compare) a b =
     _compare cmp a.arr a.i a.j b.arr b.i b.j
 
-  let fold f acc a =
+  let fold ~f ~x a =
     let rec _fold acc i j =
       if i=j then acc
       else _fold (f acc a.arr.(i)) (i+1) j
-    in _fold acc a.i a.j
+    in _fold x a.i a.j
 
-  let foldi f acc a = _foldi f acc a.arr a.i a.j
+  let foldi ~f ~x a = _foldi f x a.arr a.i a.j
 
-  let fold_while f acc a =
+  let fold_while ~f ~x:acc a =
     let rec fold_while_i f acc i =
       if i < Array.length a.arr && i < a.j then
         let acc, cont = f acc a.arr.(i) in
@@ -573,15 +579,16 @@ module Sub = struct
     if i<0 || j>=a.j then invalid_arg "Array.Sub.set";
     a.arr.(j) <- x
 
-  let iter f a =
+  let iter ~f a =
     for k=a.i to a.j-1 do f a.arr.(k) done
 
-  let iteri f a =
+  let iteri ~f a =
     for k=0 to length a-1 do f k a.arr.(a.i + k) done
 
-  let blit a i b j len =
-    if i+len>length a || j+len>length b then invalid_arg "Array.Sub.blit";
-    Array.blit a.arr (a.i+i) b.arr (b.i+j) len
+  let blit ~from ~i ~into ~j ~len =
+    if i+len>length from || j+len>length into
+      then invalid_arg "Array.Sub.blit";
+    Array.blit from.arr (from.i+i) into.arr (into.i+j) len
 
   let reverse_in_place a = _reverse_in_place a.arr a.i ~len:(length a)
 
@@ -590,32 +597,32 @@ module Sub = struct
     Sub.reverse_in_place s; a = [| 1; 2; 5; 4; 3; 6 |]
   *)
 
-  let find f a = _find (fun _ -> f) a.arr a.i a.j
+  let find ~f a = _find (fun _ -> f) a.arr a.i a.j
 
-  let findi f a = _find (fun i -> f (i-a.i)) a.arr a.i a.j
+  let findi ~f a = _find (fun i -> f (i-a.i)) a.arr a.i a.j
 
-  let find_idx p a =
-    _find (fun i x -> if p x then Some (i,x) else None) a.arr a.i a.j
+  let find_idx ~f a =
+    _find (fun i x -> if f x then Some (i,x) else None) a.arr a.i a.j
 
-  let lookup_exn ?(cmp=Pervasives.compare) k a =
-    _lookup_exn ~cmp k a.arr a.i (a.j-1)
+  let lookup_exn ?(cmp=Pervasives.compare) ~x a =
+    _lookup_exn ~cmp x a.arr a.i (a.j-1)
 
-  let lookup ?(cmp=Pervasives.compare) k a =
-    try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1))
+  let lookup ?(cmp=Pervasives.compare) ~x a =
+    try Some (_lookup_exn ~cmp x a.arr a.i (a.j-1))
     with Not_found -> None
 
-  let bsearch ?(cmp=Pervasives.compare) k a =
-    bsearch_ ~cmp k a.arr a.i (a.j - 1)
+  let bsearch ?(cmp=Pervasives.compare) ~x a =
+    bsearch_ ~cmp x a.arr a.i (a.j - 1)
 
-  let for_all p a = _for_all p a.arr a.i a.j
+  let for_all ~f a = _for_all f a.arr a.i a.j
 
-  let exists p a = _exists p a.arr a.i a.j
+  let exists ~f a = _exists f a.arr a.i a.j
 
-  let for_all2 p a b =
-    length a = length b && _for_all2 p a.arr b.arr a.i b.i ~len:(length a)
+  let for_all2 ~f a b =
+    length a = length b && _for_all2 f a.arr b.arr a.i b.i ~len:(length a)
 
-  let exists2 p a b =
-    _exists2 p a.arr b.arr a.i b.i ~len:(min (length a) (length b))
+  let exists2 ~f a b =
+    _exists2 f a.arr b.arr a.i b.i ~len:(min (length a) (length b))
 
   (*$T
   Sub.exists2 (=) (Sub.make [| 1;2;3;4 |] 1 ~len:2) (Sub.make [| 0;1;3;4 |] 1 ~len:3)
@@ -624,7 +631,7 @@ module Sub = struct
   let shuffle a =
     _shuffle Random.int a.arr a.i a.j
 
-  let shuffle_with st a =
+  let shuffle_with ~st a =
     _shuffle (Random.State.int st) a.arr a.i a.j
 
   let random_choose a st = _choose a.arr a.i a.j st
@@ -635,7 +642,7 @@ module Sub = struct
 
   let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a.arr a.i a.j
 
-  let to_seq a k = iter k a
+  let to_seq a k = iter ~f:k a
 
   let to_gen a = _to_gen a.arr a.i a.j
 

@@ -718,8 +718,14 @@ module Batch = struct
   end
 
   module BenchArray = Make(struct
-    include CCArray
+    type 'a t = 'a array
     let name = "array"
+    let empty = CCArray.empty
+    let (--) = CCArray.(--)
+    let flat_map f a = CCArray.flat_map ~f a
+    let filter_map f a = CCArray.filter_map ~f a
+    let filter f a = CCArray.filter ~f a
+    let map = Array.map
     let equal a b = a=b
     let doubleton x y = [| x; y |]
     let fold = Array.fold_left

@@ -40,9 +40,9 @@ module type S = sig
 
   val empty : 'a t
 
-  val equal : 'a equal -> 'a t equal
+  val equal : ?eq:'a equal -> 'a t equal
 
-  val compare : 'a ord -> 'a t ord
+  val compare : ?cmp:'a ord -> 'a t ord
 
   val get : 'a t -> int -> 'a
 
@@ -50,52 +50,55 @@ module type S = sig
 
   val length : _ t -> int
 
-  val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  val fold : f:('a -> 'b -> 'a) -> x:'a -> 'b t -> 'a
 
-  val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+  val foldi : f:('a -> int -> 'b -> 'a) -> x:'a -> 'b t -> 'a
   (** Fold left on array, with index *)
 
-  val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+  val fold_while :
+    f:('a -> 'b -> 'a * [`Stop | `Continue]) ->
+    x:'a -> 'b t -> 'a
   (** Fold left on array until a stop condition via [('a, `Stop)] is
       indicated by the accumulator
       @since 0.8 *)
 
-  val iter : ('a -> unit) -> 'a t -> unit
+  val iter : f:('a -> unit) -> 'a t -> unit
 
-  val iteri : (int -> 'a -> unit) -> 'a t -> unit
+  val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 
-  val blit : 'a t -> int -> 'a t -> int -> int -> unit
+  val blit : from:'a t -> i:int -> into:'a t -> j:int -> len:int -> unit
   (** [blit from i into j len] copies [len] elements from the first array
       to the second. See {!Array.blit}. *)
 
   val reverse_in_place : 'a t -> unit
   (** Reverse the array in place *)
 
-  val find : ('a -> 'b option) -> 'a t -> 'b option
+  val find : f:('a -> 'b option) -> 'a t -> 'b option
   (** [find f a] returns [Some y] if there is an element [x] such
       that [f x = Some y], else it returns [None] *)
 
-  val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+  val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
   (** Like {!find}, but also pass the index to the predicate function.
       @since 0.3.4 *)
 
-  val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
+  val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
   (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
       and [p x] holds. Otherwise returns [None]
       @since 0.3.4 *)
 
-  val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
+  val lookup : ?cmp:'a ord -> x:'a -> 'a t -> int option
   (** Lookup the index of some value in a sorted array.
+      @param x the value that is looked up
       @return [None] if the key is not present, or
         [Some i] ([i] the index of the key) otherwise *)
 
-  val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
+  val lookup_exn : ?cmp:'a ord -> x:'a -> 'a t -> int
   (** Same as {!lookup_exn}, but
       @raise Not_found if the key is not present *)
 
-  val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+  val bsearch : ?cmp:('a -> 'a -> int) -> x:'a -> 'a t ->
     [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
-  (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
+  (** [bsearch ?cmp ~x arr] finds the index of the object [x] in the array [arr],
       provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
       the result is not specified (may raise Invalid_argument).
 
@@ -112,22 +115,22 @@ module type S = sig
       @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp]
       @since 0.13 *)
 
-  val for_all : ('a -> bool) -> 'a t -> bool
+  val for_all : f:('a -> bool) -> 'a t -> bool
 
-  val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val for_all2 : f:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   (** Forall on pairs of arrays.
       @raise Invalid_argument if they have distinct lengths *)
 
-  val exists : ('a -> bool) -> 'a t -> bool
+  val exists : f:('a -> bool) -> 'a t -> bool
 
-  val exists2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val exists2 : f:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   (** Exists on pairs of arrays.
       @raise Invalid_argument if they have distinct lengths *)
 
   val shuffle : 'a t -> unit
   (** Shuffle randomly the array, in place *)
 
-  val shuffle_with : Random.State.t -> 'a t -> unit
+  val shuffle_with : st:Random.State.t -> 'a t -> unit
   (** Like shuffle but using a specialized random state *)
 
   val random_choose : 'a t -> 'a random_gen
@@ -159,16 +162,16 @@ type 'a t = 'a array
 
 include S with type 'a t := 'a t
 
-val map : ('a -> 'b) -> 'a t -> 'b t
+val map : f:('a -> 'b) -> 'a t -> 'b t
 
-val filter : ('a -> bool) -> 'a t -> 'a t
+val filter : f:('a -> bool) -> 'a t -> 'a t
 (** Filter elements out of the array. Only the elements satisfying
     the given predicate will be kept. *)
 
-val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 (** Map each element into another value, or discard it *)
 
-val flat_map : ('a -> 'b t) -> 'a t -> 'b array
+val flat_map :  f:('a -> 'b t) -> 'a t -> 'b array
 (** Transform each element into an array, then flatten *)
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
@@ -182,7 +185,7 @@ val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix version of {!map}
     @since 0.8 *)
 
-val except_idx : 'a t -> int -> 'a list
+val except_idx : 'a t -> i:int -> 'a list
 (** Remove given index, obtaining the list of the other elements *)
 
 val (--) : int -> int -> int t
