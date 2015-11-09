@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -108,7 +107,7 @@ module type S = sig
   (** {6 Ranges} *)
 
   val above : key -> 'a t -> (key * 'a) sequence
-  (** All bindings whose key is bigger than (or equal to) the given key *)
+  (** All bindings whose key is bigger or equal to the given key *)
 
   val below : key -> 'a t -> (key * 'a) sequence
   (** All bindings whose key is smaller or equal to the given key *)

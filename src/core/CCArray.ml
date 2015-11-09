@@ -78,7 +78,7 @@ module type S = sig
       @since 0.3.4 *)
 
   val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
-  (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
+  (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
       and [p x] holds. Otherwise returns [None]
       @since 0.3.4 *)
 
@@ -152,7 +152,7 @@ module type S = sig
 end
 
 (** {2 General Implementation}
-Most of those functions that a range [(i,j)] with
+Most of those functions use a range [(i,j)] with
 [i] included and [j] excluded *)
 
 let rec _foldi f acc a i j =
@@ -570,7 +570,7 @@ module Sub = struct
 
   let set a i x =
     let j = a.i + i in
-    if i<0 || j>=a.j then invalid_arg "Array.Sub.get";
+    if i<0 || j>=a.j then invalid_arg "Array.Sub.set";
     a.arr.(j) <- x
 
   let iter f a =
@@ -655,7 +655,7 @@ module type MONO_ARRAY = sig
   val set : t -> int -> elt -> unit
 end
 
-(* Dual Pivot Quicksort (YaroslavSkiy)
+(* Dual Pivot Quicksort (Yaroslavskiy)
    from "average case analysis of Java 7's Dual Pivot Quicksort" *)
 module SortGeneric(A : MONO_ARRAY) = struct
   module Rand = Random.State
@@ -774,4 +774,3 @@ let sort_generic (type arr)(type elt)
     Array.sort CCInt.compare a1; sort_generic ~cmp:CCInt.compare (module IA) a2; \
     a1 = a2 )
 *)
-

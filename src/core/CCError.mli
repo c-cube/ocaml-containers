@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -26,7 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Error Monad}
 
-The variant is polymorphic in the error type since 0.5 *)
+The variant is polymorphic in the error type
+@since 0.5 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
@@ -108,7 +108,8 @@ val fold : success:('a -> 'b) -> failure:('err -> 'b) -> ('a, 'err) t -> 'b
 (** {2 Wrappers}
 
 The functions {!guard}, {!wrap1}, {!wrap2} and {!wrap3} now return
-exceptions in case of failure, @since 0.5 *)
+exceptions in case of failure,
+@since 0.5 *)
 
 val guard : (unit -> 'a) -> ('a, exn) t
 (** [guard f] runs [f ()] and returns its result wrapped in [`Ok]. If
@@ -130,6 +131,7 @@ val wrap2 : ('a -> 'b -> 'c) -> 'a -> 'b -> ('c, exn) t
 (** Same as {!guard} but gives the function two arguments. *)
 
 val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> ('d, exn) t
+(** Same as {!guard} but gives the function three arguments. *)
 
 (** {2 Applicative} *)
 

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, Simon Cruanes, Gabriel Radanne
 all rights reserved.
@@ -41,7 +40,7 @@ module type S = sig
   type 'a t
 
   type ('a,'b) op
-  (** Operation that converts an ['a t] into a ['b t] *)
+  (** Operation that converts a ['a t] into a ['b t] *)
 
   val apply : ('a,'b) op -> 'a t -> 'b t
   (** Apply the operation to the collection. *)
@@ -170,7 +169,7 @@ module Make(C : COLLECTION) = struct
     | OptExtern  _ -> OptFlatMap (f, op)
     | OptBase _ -> OptFlatMap (f, op)
 
-  (* optimize a batch operation by fusion *)
+  (* Optimize a batch operation by fusion *)
   let optimize : type a b. (a,b) op -> (a,b) optimized_op
   = fun op -> match op with
     | Compose (a, b) -> optimize_compose a b
@@ -213,7 +212,7 @@ module Make(C : COLLECTION) = struct
     | OptExtern (f,c) -> apply_optimized_with_fold c fold z (f a)
     | OptFlatMap (f,c) -> apply_optimized_with_fold c fold z (C.flat_map f a)
 
-  (* optimize and run *)
+  (* Optimize and run *)
   let apply op a =
     let op' = optimize op in
     apply_optimized op' a

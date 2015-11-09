@@ -11,5 +11,3 @@ let compare = Char.compare
 
 let pp = Buffer.add_char
 let print = Format.pp_print_char
-
-

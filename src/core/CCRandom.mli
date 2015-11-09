@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -74,7 +73,7 @@ val choose_return : 'a list -> 'a t
     @raise Invalid_argument if the list is empty *)
 
 val replicate : int -> 'a t -> 'a list t
-(** [replace n g] makes a list of [n] elements which are all generated
+(** [replicate n g] makes a list of [n] elements which are all generated
     randomly using [g] *)
 
 val list_seq : 'a t list -> 'a list t
@@ -146,5 +145,3 @@ val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val run : ?st:state -> 'a t -> 'a
 (** Using a random state (possibly the one in argument) run a generator *)
-
-

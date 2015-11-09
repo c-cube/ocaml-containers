@@ -85,7 +85,7 @@ module type S = sig
       @raise TooManyFields if there is no room *)
 
   val int3 : ?name:string -> unit -> int field
-  (** New field for 3-bits int (same as [int ~width:3])
+  (** New field of type 3-bits int (same as [int ~width:3])
       @raise Frozen if [freeze ()] was called
       @raise TooManyFields if there is no room *)
 

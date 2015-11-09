@@ -53,7 +53,7 @@ val init : int -> (int -> 'a) -> 'a t
     only [Sys.max_array_length / 2].*)
 
 val get  : 'a t -> int -> 'a
-(** [get a i] Returns the element with index [i] from the array [a].
+(** [get a i] returns the element with index [i] from the array [a].
     @raise Invalid_argument "index out of bounds" if [n] is outside the
     range [0] to [Array.length a - 1].*)
 
@@ -133,4 +133,3 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 val print : 'a printer -> 'a t printer
 (** @since 0.13 *)
-

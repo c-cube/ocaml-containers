@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -57,4 +56,3 @@ val to_seq : 'a t -> 'a sequence
 
 val print : 'a print -> 'a t print
 val pp : 'a pp -> 'a t pp
-

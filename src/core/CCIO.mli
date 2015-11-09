@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -112,7 +111,7 @@ val write_line : out_channel -> string -> unit
 
 val write_gen : ?sep:string -> out_channel -> string gen -> unit
 (** Write the given strings on the output. If provided, add [sep] between
-    every two string (but not at the end) *)
+    every two strings (but not at the end) *)
 
 val write_lines : out_channel -> string gen -> unit
 (** Write every string on the output, followed by "\n". *)
@@ -188,7 +187,7 @@ module File : sig
   type walk_item = [`File | `Dir] * t
 
   val walk : t -> walk_item gen
-  (** similar to {!read_dir} (with [recurse=true]), this function walks
+  (** Similar to {!read_dir} (with [recurse=true]), this function walks
       a directory recursively and yields either files or directories.
       Is a file anything that doesn't satisfy {!is_directory} (including
       symlinks, etc.) *)

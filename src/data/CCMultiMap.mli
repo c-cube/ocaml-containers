@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013, simon cruanes
 all rights reserved.
@@ -127,10 +126,10 @@ module type BIDIR = sig
   (** Remove a specific binding *)
 
   val cardinal_left : t -> int
-  (** number of distinct left keys *)
+  (** Number of distinct left keys *)
 
   val cardinal_right : t -> int
-  (** number of distinct right keys *)
+  (** Number of distinct right keys *)
 
   val remove_left : t -> left -> t
   (** Remove all bindings for the left key *)

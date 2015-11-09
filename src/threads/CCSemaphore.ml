@@ -1,4 +1,3 @@
-
 (** {1 Semaphores} *)
 
 type t = {
@@ -115,5 +114,3 @@ let wait_until_at_least ~n t ~f =
   output "check";
   assert_bool "after release 1" (CCLock.get res)
 *)
-
-

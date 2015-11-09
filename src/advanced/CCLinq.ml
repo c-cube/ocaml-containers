@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -41,7 +40,7 @@ let _error_of_exn f = try `Ok (f ()) with ExitWithError s -> `Error s
 module PMap = struct
   type ('a, 'b) t = {
     is_empty : unit -> bool;
-    size : unit -> int; (** Number of keys *)
+    size : unit -> int; (* Number of keys *)
     get : 'a -> 'b option;
     fold : 'c. ('c -> 'a -> 'b -> 'c) -> 'c -> 'c;
     to_seq : ('a * 'b) sequence;

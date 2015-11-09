@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -43,7 +42,7 @@ val neg : t -> t
 
 val pow : t -> t -> t
 (** [pow a b = a^b] for positive integers [a] and [b].
-    raises [Invalid_argument] if [a = b = 0] or [b] < 0.
+    Raises [Invalid_argument] if [a = b = 0] or [b] < 0.
     @since 0.11 *)
 
 type 'a printer = Buffer.t -> 'a -> unit
@@ -62,4 +61,3 @@ val to_string : t -> string
 
 val of_string : string -> t option
 (** @since 0.13 *)
-

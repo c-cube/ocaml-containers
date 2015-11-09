@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -28,4 +27,3 @@ module App_parse = CCApp_parse
 module Parse = CCParse
 module KMP = CCKMP
 module Levenshtein = CCLevenshtein
-

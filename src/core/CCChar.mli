@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Utils around char}
@@ -12,4 +11,3 @@ val compare : t -> t -> int
 
 val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
-

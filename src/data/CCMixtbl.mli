@@ -29,7 +29,7 @@ From https://github.com/mjambon/mixtbl (thanks to him).
 Example:
 
 {[
-let inj_int = CCMixtbl.access () ;;
+let inj_int = CCMixtbl.create_inj () ;;
 
 let tbl = CCMixtbl.create 10 ;;
 
@@ -39,7 +39,7 @@ CCMixtbl.set inj_int tbl "a" 1;;
 
 OUnit.assert_equal (Some 1) (CCMixtbl.get ~inj:inj_int tbl "a");;
 
-let inj_string = CCMixtbl.access () ;;
+let inj_string = CCMixtbl.create_inj () ;;
 
 CCMixtbl.set inj_string tbl "b" "Hello";
 
@@ -60,7 +60,7 @@ type 'a t
 
 type 'b injection
 (** An accessor for values of type 'b in any table. Values put
-    in the table using an key can only be retrieved using this
+    in the table using a key can only be retrieved using this
     very same key. *)
 
 val create : int -> 'a t

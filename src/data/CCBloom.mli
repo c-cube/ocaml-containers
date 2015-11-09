@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Bloom Filter}
@@ -46,7 +45,7 @@ val load : _ t -> float
     accurate {!mem} is *)
 
 val mem : 'a t -> 'a -> bool
-(** [mem f x] tests whether [x] (probably) belongs in [f] *)
+(** [mem f x] tests whether [x] (probably) belongs to [f] *)
 
 val add : 'a t -> 'a -> unit
 (** [add f x] adds [x] into [f] *)
@@ -57,7 +56,7 @@ val union_mut : into:'a t -> 'a t -> unit
     @raise Invalid_argument if the two sets do not have the same size *)
 
 val union : 'a t -> 'a t -> 'a t
-(** the sets MUST have the same set of hash functions
+(** The sets MUST have the same set of hash functions
     @raise Invalid_argument if the two sets do not have the same size *)
 
 val inter_mut : into:'a t -> 'a t -> unit
@@ -66,7 +65,7 @@ val inter_mut : into:'a t -> 'a t -> unit
     @raise Invalid_argument if the two sets do not have the same size *)
 
 val inter : 'a t -> 'a t -> 'a t
-(** the sets MUST have the same set of hash functions
+(** The sets MUST have the same set of hash functions
     @raise Invalid_argument if the two sets do not have the same size *)
 
 (** {2 Conversions} *)
@@ -76,4 +75,3 @@ val add_list : 'a t -> 'a list -> unit
 val add_seq : 'a t -> 'a sequence -> unit
 
 val add_gen : 'a t -> 'a gen -> unit
-

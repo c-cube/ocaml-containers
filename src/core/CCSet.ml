@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -95,4 +94,3 @@ module Make(O : Map.OrderedType) = struct
       ) m;
     Format.pp_print_string fmt stop
 end
-

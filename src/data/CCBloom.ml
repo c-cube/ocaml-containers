@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Bloom Filter} *)
@@ -163,4 +162,3 @@ let add_seq f seq = seq (add f)
 let rec add_gen f g = match g() with
   | None -> ()
   | Some x -> add f x; add_gen f g
-

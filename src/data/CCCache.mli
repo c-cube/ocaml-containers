@@ -64,7 +64,7 @@ val with_cache_rec : ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
     some [f' = fix f], such that recursive calls to [f'] are cached in [c].
     It is similar to {!with_cache} but with a function that takes as
     first argument its own recursive version.
-    Examples (memoized Fibonacci function):
+    Example (memoized Fibonacci function):
 {[
 let fib = with_cache_rec (lru 256)
   (fun fib' n -> match n with
@@ -84,7 +84,7 @@ val iter : ('a,'b) t -> ('a -> 'b -> unit) -> unit
 (** Iterate on cached values. Should yield [size cache] pairs. *)
 
 val dummy : ('a,'b) t
-(** dummy cache, never stores any value *)
+(** Dummy cache, never stores any value *)
 
 val linear : ?eq:'a equal -> int -> ('a, 'b) t
 (** Linear cache with the given size. It stores key/value pairs in

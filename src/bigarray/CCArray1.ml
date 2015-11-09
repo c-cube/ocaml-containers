@@ -1,5 +1,3 @@
-
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.

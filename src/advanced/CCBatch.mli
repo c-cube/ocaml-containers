@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -47,7 +46,7 @@ module type S = sig
   type 'a t
 
   type ('a,'b) op
-  (** Operation that converts an ['a t] into a ['b t] *)
+  (** Operation that converts a ['a t] into a ['b t] *)
 
   val apply : ('a,'b) op -> 'a t -> 'b t
   (** Apply the operation to the collection. *)

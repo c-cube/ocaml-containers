@@ -151,4 +151,3 @@ end
 (** {2 Implementation} *)
 
 module Make(H : HashedType) : S with type key = H.t
-

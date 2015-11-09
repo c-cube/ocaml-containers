@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -346,4 +345,3 @@ module Dot = struct
     let g = make ~name trees in
     print_to_file filename g
 end
-
