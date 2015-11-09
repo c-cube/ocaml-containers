@@ -111,7 +111,8 @@ let () =
   let options = Arg.align
     [ "-n", Arg.Set_int n, " size of the collection"
   ] in
-  Arg.parse options (CCList.Ref.push to_test) "usage: mem_measure [name*]";
+  Arg.parse options (CCList.Ref.push ~into:to_test)
+    "usage: mem_measure [name*]";
   match !to_test with
     | [] ->
         print_list ();

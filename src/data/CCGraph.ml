@@ -478,7 +478,8 @@ let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
 
 (* example from https://en.wikipedia.org/wiki/Strongly_connected_component *)
 (*$R
-  let set_eq ?(eq=(=)) l1 l2 = CCList.Set.subset ~eq l1 l2 && CCList.Set.subset ~eq l2 l1 in
+  let set_eq ?(eq=(=)) l1 l2 =
+    CCList.Set.subset ~eq l1 ~of_:l2 && CCList.Set.subset ~eq l2 ~of_:l1 in
   let graph = of_list
     [ "a", "b"
     ; "b", "e"

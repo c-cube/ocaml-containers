@@ -36,7 +36,7 @@ let is_empty = function
 (* max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
-let map f l =
+let map ~f l =
   let rec direct f i l = match l with
     | [] -> []
     | [x] -> [f x]
@@ -58,7 +58,7 @@ let map f l =
     List.rev (List.rev_map f l) = map f l)
 *)
 
-let (>|=) l f = map f l
+let (>|=) l f = map ~f l
 
 let direct_depth_append_ = 10_000
 
@@ -96,7 +96,7 @@ let cons_maybe o l = match o with
 
 let direct_depth_filter_ = 10_000
 
-let filter p l =
+let filter ~f l =
   let rec direct i p l = match l with
     | [] -> []
     | _ when i=0 -> safe p l []
@@ -107,7 +107,7 @@ let filter p l =
     | x::l' when not (p x) -> safe p l' acc
     | x::l' -> safe p l' (x::acc)
   in
-  direct direct_depth_filter_ p l
+  direct direct_depth_filter_ f l
 
 (*$= & ~printer:CCInt.to_string
   500 (filter (fun x->x mod 2 = 0) (1 -- 1000) |> List.length)
@@ -115,7 +115,7 @@ let filter p l =
   500_000 (filter (fun x->x mod 2 = 0) (1 -- 1_000_000) |> List.length)
 *)
 
-let fold_right f l acc =
+let fold_right ~f l ~x =
   let rec direct i f l acc = match l with
     | [] -> acc
     | _ when i=0 -> safe f (List.rev l) acc
@@ -128,30 +128,32 @@ let fold_right f l acc =
         let acc = f x acc in
         safe f l' acc
   in
-  direct direct_depth_default_ f l acc
+  direct direct_depth_default_ f l x
 
 (*$T
-  fold_right (+) (1 -- 1_000_000) 0 = \
+  fold_right ~f:(+) (1 -- 1_000_000) ~x:0 = \
     List.fold_left (+) 0 (1 -- 1_000_000)
 *)
 
 (*$Q
   (Q.list Q.small_int) (fun l -> \
-    l = fold_right (fun x y->x::y) l [])
+    l = fold_right ~f:(fun x y->x::y) l ~x:[])
 *)
 
-let rec fold_while f acc = function
-  | [] -> acc
-  | e::l -> let acc, cont = f acc e in
+let rec fold_while ~f ~x = function
+  | [] -> x
+  | e::l -> let x, cont = f x e in
     match cont with
-    | `Stop -> acc
-    | `Continue -> fold_while f acc l
+    | `Stop -> x
+    | `Continue -> fold_while ~f ~x l
 
 (*$T
-  fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 [true;true;false;true] = 2
+  fold_while \
+    ~f:(fun acc b -> if b then acc+1, `Continue else acc, `Stop) \
+    ~x:0 [true;true;false;true] = 2
 *)
 
-let fold_map f acc l =
+let fold_map ~f ~x:acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
     | x :: l' ->
@@ -170,7 +172,7 @@ let fold_map f acc l =
     fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
 *)
 
-let fold_flat_map f acc l =
+let fold_flat_map ~f ~x:acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
     | x :: l' ->
@@ -206,24 +208,30 @@ let init len f =
   init 1000 (fun x->x) = 0--999
 *)
 
-let rec compare f l1 l2 = match l1, l2 with
+let compare ?(cmp=Pervasives.compare) l1 l2 =
+  let rec aux cmp l1 l2 = match l1, l2 with
   | [], [] -> 0
   | _, [] -> 1
   | [], _ -> -1
   | x1::l1', x2::l2' ->
-      let c = f x1 x2 in
-      if c <> 0 then c else compare f l1' l2'
+      let c = cmp x1 x2 in
+      if c <> 0 then c else aux cmp l1' l2'
+  in
+  aux cmp l1 l2
 
-let rec equal f l1 l2 = match l1, l2 with
-  | [], [] -> true
-  | [], _ | _, [] -> false
-  | x1::l1', x2::l2' -> f x1 x2 && equal f l1' l2'
+let equal ?(eq=(=)) l1 l2 =
+  let rec aux eq l1 l2 = match l1, l2 with
+    | [], [] -> true
+    | [], _ | _, [] -> false
+    | x1::l1', x2::l2' -> eq x1 x2 && aux eq l1' l2'
+  in
+  aux eq l1 l2
 
 (*$T
-  equal CCInt.equal (1--1_000_000) (1--1_000_000)
+  equal ~eq:CCInt.equal (1--1_000_000) (1--1_000_000)
 *)
 
-let flat_map f l =
+let flat_map ~f l =
   let rec aux f l kont = match l with
     | [] -> kont []
     | x::l' ->
@@ -243,23 +251,23 @@ let flat_map f l =
   List.length (flat_map (fun x->[x]) (1--300_000)) = 300_000
 *)
 
-let flatten l = fold_right append l []
+let flatten l = fold_right ~f:append l ~x:[]
 
 (*$T
   flatten [[1]; [2;3;4]; []; []; [5;6]] = 1--6
   flatten (init 300_001 (fun x->[x])) = 0--300_000
 *)
 
-let product f l1 l2 =
-  flat_map (fun x -> map (fun y -> f x y) l2) l1
+let product ~f l1 l2 =
+  flat_map ~f:(fun x -> map ~f:(fun y -> f x y) l2) l1
 
-let fold_product f acc l1 l2 =
+let fold_product ~f ~x l1 l2 =
   List.fold_left
     (fun acc x1 ->
       List.fold_left
         (fun acc x2 -> f acc x1 x2)
         acc l2
-    ) acc l1
+    ) x l1
 
 let diagonal l =
   let rec gen acc l = match l with
@@ -277,7 +285,7 @@ let diagonal l =
   diagonal [1;2;3] |> List.sort Pervasives.compare = [1, 2; 1, 3; 2, 3]
 *)
 
-let partition_map f l =
+let partition_map ~f l =
   let rec iter f l1 l2 l = match l with
   | [] -> List.rev l1, List.rev l2
   | x :: tl ->
@@ -302,13 +310,13 @@ let partition_map f l =
 
 let return x = [x]
 
-let (>>=) l f = flat_map f l
+let (>>=) l f = flat_map ~f l
 
-let (<$>) = map
+let (<$>) f l = map ~f l
 
 let pure = return
 
-let (<*>) funs l = product (fun f x -> f x) funs l
+let (<*>) funs l = product ~f:(fun f x -> f x) funs l
 
 let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
   let rec recurse cmp acc l1 l2 = match l1,l2 with
@@ -338,7 +346,7 @@ let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
     type t = elt
     let compare = cmp
   end) in
-  let set = fold_right S.add l S.empty in
+  let set = fold_right ~f:S.add l ~x:S.empty in
   S.elements set
 
 (*$T
@@ -416,7 +424,7 @@ let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
     uniq_succ l3 = l3)
 *)
 
-let take n l =
+let take ~n l =
   let rec direct i n l = match l with
     | [] -> []
     | _ when i=0 -> safe n [] l
@@ -432,10 +440,10 @@ let take n l =
   direct direct_depth_default_ n l
 
 (*$T
-  take 2 [1;2;3;4;5] = [1;2]
-  take 10_000 (range 0 100_000) |> List.length = 10_000
-  take 10_000 (range 0 2_000) = range 0 2_000
-  take 300_000 (1 -- 400_000) = 1 -- 300_000
+  take ~n:2 [1;2;3;4;5] = [1;2]
+  take ~n:10_000 (range 0 100_000) |> List.length = 10_000
+  take ~n:10_000 (range 0 2_000) = range 0 2_000
+  take ~n:300_000 (1 -- 400_000) = 1 -- 300_000
 *)
 
 (*$Q
@@ -445,12 +453,12 @@ let take n l =
     List.length l1 <= i && ((List.length l1 = i) = (List.length l >= i)))
 *)
 
-let rec drop n l = match l with
+let rec drop ~n l = match l with
   | [] -> []
   | _ when n=0 -> l
-  | _::l' -> drop (n-1) l'
+  | _::l' -> drop ~n:(n-1) l'
 
-let take_drop n l = take n l, drop n l
+let take_drop ~n l = take ~n l, drop ~n l
 
 let split = take_drop
 
@@ -461,7 +469,7 @@ let split = take_drop
     l1 @ l2 = l )
 *)
 
-let take_while p l =
+let take_while ~f l =
   let rec direct i p l = match l with
     | [] -> []
     | _ when i=0 -> safe p [] l
@@ -472,13 +480,13 @@ let take_while p l =
     | x :: l' ->
         if p x then safe p (x::acc) l' else List.rev acc
   in
-  direct direct_depth_default_ p l
+  direct direct_depth_default_ f l
 
 (*$T
-  take_while (fun x->x<10) (1 -- 20) = (1--9)
-  take_while (fun x->x <> 0) [0;1;2;3] = []
-  take_while (fun _ -> true) [] = []
-  take_while (fun _ -> true) (1--10) = (1--10)
+  take_while ~f:(fun x->x<10) (1 -- 20) = (1--9)
+  take_while ~f:(fun x->x <> 0) [0;1;2;3] = []
+  take_while ~f:(fun _ -> true) [] = []
+  take_while ~f:(fun _ -> true) (1--10) = (1--10)
 *)
 
 (*$Q
@@ -487,25 +495,25 @@ let take_while p l =
     List.for_all f l1)
 *)
 
-let rec drop_while p l = match l with
+let rec drop_while ~f l = match l with
   | [] -> []
-  | x :: l' -> if p x then drop_while p l' else l
+  | x :: l' -> if f x then drop_while ~f l' else l
 
 (*$Q
   Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
     take_while f l @ drop_while f l = l)
 *)
 
-let last n l =
+let last ~n l =
   let len = List.length l in
-  if len < n then l else drop (len-n) l
+  if len < n then l else drop ~n:(len-n) l
 
-let rec find_pred p l = match l with
+let rec find_pred ~f l = match l with
   | [] -> None
-  | x :: _ when p x -> Some x
-  | _ :: tl -> find_pred p tl
+  | x :: _ when f x -> Some x
+  | _ :: tl -> find_pred ~f tl
 
-let find_pred_exn p l = match find_pred p l with
+let find_pred_exn ~f l = match find_pred ~f l with
   | None -> raise Not_found
   | Some x -> x
 
@@ -516,7 +524,7 @@ let find_pred_exn p l = match find_pred p l with
   find_pred (fun x -> x < 10) (1 -- 9) = Some 1
 *)
 
-let find_mapi f l =
+let find_mapi ~f l =
   let rec aux f i = function
     | [] -> None
     | x::l' ->
@@ -525,16 +533,17 @@ let find_mapi f l =
           | None -> aux f (i+1) l'
   in aux f 0 l
 
-let find_map f l = find_mapi (fun _ -> f) l
+let find_map ~f l = find_mapi ~f:(fun _ -> f) l
 
 let find = find_map
 let findi = find_mapi
 
-let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
+let find_idx ~f l =
+  find_mapi ~f:(fun i x -> if f x then Some (i, x) else None) l
 
 (*$T
-  find (fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"
-  find (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
+  find ~f:(fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"
+  find ~f:(fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
 *)
 
 let remove ?(eq=(=)) ~x l =
@@ -550,7 +559,7 @@ let remove ?(eq=(=)) ~x l =
   remove ~x:10 [1;2;3] = [1;2;3]
 *)
 
-let filter_map f l =
+let filter_map ~f l =
   let rec recurse acc l = match l with
   | [] -> List.rev acc
   | x::l' ->
@@ -560,30 +569,30 @@ let filter_map f l =
 
 (*$=
   ["2"; "4"] \
-    (filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+    (filter_map ~f:(fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
       [1;2;3;4;5])
   [ "2"; "4"; "6" ] \
-    (filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
+    (filter_map ~f:(fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
       [ 1; 2; 3; 4; 5; 6 ])
 *)
 
 module Set = struct
-  let mem ?(eq=(=)) x l =
+  let mem ?(eq=(=)) ~x l =
     let rec search eq x l = match l with
       | [] -> false
       | y::l' -> eq x y || search eq x l'
     in search eq x l
 
-  let add ?(eq=(=)) x l =
-    if mem ~eq x l then l else x::l
+  let add ?(eq=(=)) ~x l =
+    if mem ~eq ~x l then l else x::l
 
-  let remove ?(eq=(=)) x l =
-    let rec remove_one ~eq x acc l = match l with
+  let remove ?(eq=(=)) ~x l =
+    let rec remove_one eq x acc l = match l with
       | [] -> assert false
       | y :: tl when eq x y -> List.rev_append acc tl
-      | y :: tl -> remove_one ~eq x (y::acc) tl
+      | y :: tl -> remove_one eq x (y::acc) tl
     in
-    if mem ~eq x l then remove_one ~eq x [] l else l
+    if mem ~eq ~x l then remove_one eq x [] l else l
 
   (*$Q
     Q.(pair int (list int)) (fun (x,l) -> \
@@ -594,9 +603,9 @@ module Set = struct
       not (Set.mem x l) || List.length (Set.remove x l) = List.length l - 1)
   *)
 
-  let subset ?(eq=(=)) l1 l2 =
+  let subset ?(eq=(=)) l1 ~of_:l2 =
     List.for_all
-      (fun t -> mem ~eq t l2)
+      (fun t -> mem ~eq ~x:t l2)
       l1
 
   let uniq ?(eq=(=)) l =
@@ -613,7 +622,7 @@ module Set = struct
   let union ?(eq=(=)) l1 l2 =
     let rec union eq acc l1 l2 = match l1 with
       | [] -> List.rev_append acc l2
-      | x::xs when mem ~eq x l2 -> union eq acc xs l2
+      | x::xs when mem ~eq ~x l2 -> union eq acc xs l2
       | x::xs -> union eq (x::acc) xs l2
     in union eq [] l1 l2
 
@@ -624,7 +633,7 @@ module Set = struct
   let inter ?(eq=(=)) l1 l2 =
     let rec inter eq acc l1 l2 = match l1 with
       | [] -> List.rev acc
-      | x::xs when mem ~eq x l2 -> inter eq (x::acc) xs l2
+      | x::xs when mem ~eq ~x l2 -> inter eq (x::acc) xs l2
       | _::xs -> inter eq acc xs l2
     in inter eq [] l1 l2
 
@@ -634,40 +643,40 @@ module Set = struct
 end
 
 module Idx = struct
-  let mapi f l =
+  let mapi ~f l =
     let r = ref 0 in
-    map
-      (fun x ->
+    map l
+     ~f:(fun x ->
         let y = f !r x in
         incr r; y
-      ) l
+      )
 
   (*$T
     Idx.mapi (fun i x -> i*x) [10;10;10] = [0;10;20]
   *)
 
-  let iteri f l =
+  let iteri ~f l =
     let rec aux f i l = match l with
       | [] -> ()
       | x::l' -> f i x; aux f (i+1) l'
     in aux f 0 l
 
-  let foldi f acc l =
+  let foldi ~f ~x l =
     let rec foldi f acc i l = match l with
     | [] -> acc
     | x::l' ->
       let acc = f acc i x in
       foldi f acc (i+1) l'
     in
-    foldi f acc 0 l
+    foldi f x 0 l
 
-  let rec get_exn l i = match l with
+  let rec get_exn l ~k = match l with
     | [] -> raise Not_found
-    | x::_ when i=0 -> x
-    | _::l' -> get_exn l' (i-1)
+    | x::_ when k=0 -> x
+    | _::l' -> get_exn l' ~k:(k-1)
 
-  let get l i =
-    try Some (get_exn l i)
+  let get l ~k =
+    try Some (get_exn l ~k)
     with Not_found -> None
 
   (*$T
@@ -677,14 +686,14 @@ module Idx = struct
     Idx.get [] 0 = None
   *)
 
-  let set l0 i x =
+  let set l0 ~k ~v =
     let rec aux l acc i = match l with
       | [] -> l0
-      | _::l' when i=0 -> List.rev_append acc (x::l')
+      | _::l' when i=0 -> List.rev_append acc (v::l')
       | y::l' ->
           aux l' (y::acc) (i-1)
     in
-    aux l0 [] i
+    aux l0 [] k
 
   (*$T
     Idx.set [1;2;3] 0 10 = [10;2;3]
@@ -692,29 +701,29 @@ module Idx = struct
     Idx.set [1;2;3] 1 10 = [1;10;3]
    *)
 
-  let insert l i x =
+  let insert l ~k ~v =
     let rec aux l acc i x = match l with
       | [] -> List.rev_append acc [x]
       | y::l' when i=0 -> List.rev_append acc (x::y::l')
       | y::l' ->
           aux l' (y::acc) (i-1) x
     in
-    aux l [] i x
+    aux l [] k v
 
   (*$T
-    Idx.insert [1;2;3] 0 10 = [10;1;2;3]
-    Idx.insert [1;2;3] 4 10 = [1;2;3;10]
-    Idx.insert [1;2;3] 1 10 = [1;10;2;3]
+    Idx.insert [1;2;3] ~k:0 ~v:10 = [10;1;2;3]
+    Idx.insert [1;2;3] ~k:4 ~v:10 = [1;2;3;10]
+    Idx.insert [1;2;3] ~k:1 ~v:10 = [1;10;2;3]
    *)
 
-  let remove l0 i =
+  let remove l0 ~k =
     let rec aux l acc i = match l with
       | [] -> l0
       | _::l' when i=0 -> List.rev_append acc l'
       | y::l' ->
           aux l' (y::acc) (i-1)
     in
-    aux l0 [] i
+    aux l0 [] k
 
   (*$T
     Idx.remove [1;2;3;4] 0 = [2;3;4]
@@ -755,48 +764,48 @@ let (--) = range
   append (range 1000 501) (range 500 0) = range 1000 0
 *)
 
-let replicate i x =
+let replicate ~n x =
   let rec aux acc i =
     if i = 0 then acc
     else aux (x::acc) (i-1)
-  in aux [] i
+  in aux [] n
 
-let repeat i l =
+let repeat ~n l =
   let l' = List.rev l in
   let rec aux acc i =
     if i = 0 then List.rev acc
     else aux (List.rev_append l' acc) (i-1)
-  in aux [] i
+  in aux [] n
 
 module Assoc = struct
   type ('a, 'b) t = ('a*'b) list
 
-  let get_exn ?(eq=(=)) l x =
+  let get_exn ?(eq=(=)) l ~k =
     let rec search eq l x = match l with
       | [] -> raise Not_found
       | (y,z)::l' ->
           if eq x y then z else search eq l' x
-    in search eq l x
+    in search eq l k
 
-  let get ?eq l x =
-    try Some (get_exn ?eq l x)
+  let get ?eq l ~k =
+    try Some (get_exn ?eq l ~k)
     with Not_found -> None
 
   (*$T
-    Assoc.get [1, "1"; 2, "2"] 1 = Some "1"
-    Assoc.get [1, "1"; 2, "2"] 2 = Some "2"
-    Assoc.get [1, "1"; 2, "2"] 3 = None
-    Assoc.get [] 42 = None
+    Assoc.get [1, "1"; 2, "2"] ~k:1 = Some "1"
+    Assoc.get [1, "1"; 2, "2"] ~k:2 = Some "2"
+    Assoc.get [1, "1"; 2, "2"] ~k:3 = None
+    Assoc.get [] ~k:42 = None
   *)
 
-  let set ?(eq=(=)) l x y =
+  let set ?(eq=(=)) l ~k ~v =
     let rec search eq acc l x y = match l with
       | [] -> (x,y)::acc
       | (x',y')::l' ->
           if eq x x'
             then (x,y)::List.rev_append acc l'
             else search eq ((x',y')::acc) l' x y
-    in search eq [] l x y
+    in search eq [] l k v
 
   (*$T
     Assoc.set [1,"1"; 2, "2"] 2 "two" |> List.sort Pervasives.compare \
@@ -844,7 +853,7 @@ module Zipper = struct
     | l, x::r -> x::l, r
     | _, [] -> invalid_arg "zipper.right_exn"
 
-  let modify f z = match z with
+  let modify ~f z = match z with
     | l, [] ->
         begin match f None with
         | None -> z
@@ -868,7 +877,7 @@ module Zipper = struct
     | _, x::_ -> x
     | _, [] -> raise Not_found
 
-  let insert x (l,r) = l, x::r
+  let insert ~x (l,r) = l, x::r
 
   let remove (l,r) = match r with
     | [] -> l, []
@@ -893,7 +902,7 @@ end
 module Ref = struct
   type 'a t = 'a list ref
 
-  let push l x = l := x :: !l
+  let push ~into:l x = l := x :: !l
 
   let pop l = match !l with
     | [] -> None
@@ -911,13 +920,16 @@ module Ref = struct
 
   let clear l = l := []
 
-  let lift f l = f !l
+  let lift ~f l = f !l
 
-  let push_list r l =
+  let push_list ~into:r l =
     r := List.rev_append l !r
 
   (*$T
-    let l = Ref.create() in Ref.push l 1; Ref.push_list l [2;3]; !l = [3;2;1]
+    let l = Ref.create() in \
+      Ref.push ~into:l 1; \
+      Ref.push_list ~into:l [2;3]; \
+      !l = [3;2;1]
   *)
 end
 
@@ -931,7 +943,7 @@ end
 module Traverse(M : MONAD) = struct
   open M
 
-  let map_m f l =
+  let map_m ~f l =
     let rec aux f acc l = match l with
       | [] -> return (List.rev acc)
       | x::tail ->
@@ -939,23 +951,23 @@ module Traverse(M : MONAD) = struct
           aux f (x' :: acc) tail
     in aux f [] l
 
-  let rec map_m_par f l = match l with
+  let rec map_m_par ~f l = match l with
     | [] -> M.return []
     | x::tl ->
         let x' = f x in
-        let tl' = map_m_par f tl in
+        let tl' = map_m_par ~f tl in
         x' >>= fun x' ->
         tl' >>= fun tl' ->
         M.return (x'::tl')
 
-  let sequence_m l = map_m (fun x->x) l
+  let sequence_m l = map_m ~f:(fun x->x) l
 
-  let rec fold_m f acc l = match l with
+  let rec fold_m ~f ~x:acc l = match l with
     | [] -> return acc
     | x :: l' ->
         f acc x
         >>= fun acc' ->
-        fold_m f acc' l'
+        fold_m ~f ~x:acc' l'
 end
 
 (** {2 Conversions} *)
@@ -990,7 +1002,7 @@ let random_choose l = match l with
         let i = Random.State.int st len in
         List.nth l i
 
-let random_sequence l st = map (fun g -> g st) l
+let random_sequence l st = map ~f:(fun g -> g st) l
 
 let to_seq l k = List.iter k l
 let of_seq seq =

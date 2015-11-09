@@ -21,7 +21,7 @@ let random_list =
 
 let rec eq t1 t2 = match t1, t2 with
   | Empty, Empty -> true
-  | Node(i1,l1), Node (i2,l2) -> i1=i2 && CCList.equal eq l1 l2
+  | Node(i1,l1), Node (i2,l2) -> i1=i2 && CCList.equal ~eq l1 l2
   | Node _, _
   | _, Node _ -> false
 

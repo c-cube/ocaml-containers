@@ -417,7 +417,7 @@ let compare ?(cmp=Pervasives.compare) a b =
 (*$Q
    Q.(pair (list int) (list int)) (fun (l1,l2) -> \
     CCOrd.equiv (compare (of_list l1) (of_list l2)) \
-      (CCList.compare Pervasives.compare l1 l2))
+      (CCList.compare l1 l2))
   *)
 
 type 'a printer = Format.formatter -> 'a -> unit

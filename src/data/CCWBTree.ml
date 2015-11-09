@@ -357,7 +357,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     with Not_found -> None
 
   (*$T
-    let m = CCList.(0 -- 1000 |> map (fun i->i,i) |> M.of_list) in \
+    let m = CCList.(0 -- 1000 |> map ~f:(fun i->i,i) |> M.of_list) in \
     List.for_all (fun i -> M.nth_exn i m = (i,i)) CCList.(0--1000)
   *)
 
@@ -488,7 +488,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     let m = M.merge (fun k -> CCOpt.map2 (+)) m1 m2 in
     assert_bool "balanced" (M.balanced m);
     assert_equal
-      ~cmp:(CCList.equal (CCPair.equal CCInt.equal CCInt.equal))
+      ~cmp:(CCList.equal ?eq:None)
       ~printer:CCFormat.(to_string (list (pair int int)))
       [1, 2; 4, 8]
       (M.to_list m |> List.sort Pervasives.compare)

@@ -25,7 +25,7 @@ module L = struct
     let ral = CCRAL.of_list l in
     let map_naive () = ignore (try  List.map f_ l with Stack_overflow -> [])
     and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
-    and ccmap () = ignore (CCList.map f_ l)
+    and ccmap () = ignore (CCList.map ~f:f_ l)
     and ralmap () = ignore (CCRAL.map ~f:f_ ral)
     in
     B.throughputN time ~repeat
@@ -44,10 +44,10 @@ module L = struct
 
   let bench_flat_map ?(time=2) n =
     let l = CCList.(1 -- n) in
-    let flatten_map_ l = List.flatten (CCList.map f_ l)
+    let flatten_map_ l = List.flatten (CCList.map ~f:f_ l)
     and flatten_ccmap_ l = List.flatten (List.map f_ l) in
     B.throughputN time ~repeat
-      [ "flat_map", CCList.flat_map f_, l
+      [ "flat_map", CCList.flat_map ~f:f_, l
       ; "flatten o CCList.map", flatten_ccmap_, l
       ; "flatten o map", flatten_map_, l
       ]
@@ -73,11 +73,11 @@ module L = struct
     let fold_right_append_ l =
       List.fold_right List.append l []
     and cc_fold_right_append_ l =
-      CCList.fold_right CCList.append l []
+      CCList.fold_right ~f:CCList.append l ~x:[]
     in
     let l =
       CCList.Idx.mapi
-        (fun i x -> CCList.(x -- (x+ min i 100)))
+        ~f:(fun i x -> CCList.(x -- (x+ min i 100)))
         CCList.(1 -- n)
     in
     B.throughputN time ~repeat
@@ -472,7 +472,7 @@ module Tbl = struct
   let bench_add = bench_add_to modules_int
 
   let bench_add_string_to l n =
-    let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
+    let keys = CCList.( 1 -- n |> map ~f:(fun i->string_of_int i,i)) in
     let make (module T : STRING_MUT) =
       let run() =
         let t = T.create 50 in
@@ -558,7 +558,7 @@ module Tbl = struct
   let bench_find = bench_find_to modules_int_find
 
   let bench_find_string_to l n =
-    let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
+    let keys = CCList.( 1 -- n |> map ~f:(fun i->string_of_int i,i)) in
     let make (module T : STRING_MUT) =
       let m = T.create n in
       List.iter (fun (k,v) -> T.add m k v) keys;
@@ -732,8 +732,14 @@ module Batch = struct
   end)
 
   module BenchList = Make(struct
-    include CCList
+    type 'a t = 'a list
+    let empty = []
     let name = "list"
+    let (--) = CCList.(--)
+    let map f l = CCList.map ~f l
+    let filter_map f l = CCList.filter_map ~f l
+    let flat_map f l = CCList.flat_map ~f l
+    let filter f l = CCList.filter ~f l
     let equal a b = a=b
     let doubleton x y = [ x; y ]
     let fold = List.fold_left
