@@ -94,33 +94,34 @@ let sample_without_replacement (type elt)  ?(compare=compare) k (rng:elt t) st=
 
 let list_seq l st = List.map (fun f -> f st) l
 
-exception SplitFail
-
-let _split i st =
-  if i < 2 then raise SplitFail
+let split i st =
+  if i < 2 then None
   else
     let j = 1 + Random.State.int st (i-1) in
-    (j, i-j)
+    Some (j, i-j)
 
-let split i st = try Some (_split i st) with SplitFail -> None
-
-(* Partition of an int into [len] integers. We divide-and-conquer on
-  the expected length, until it reaches 1. *)
-let split_list i ~len st =
-  let rec aux i ~len acc =
-    if i < len then raise SplitFail
-    else if len = 1 then i::acc
-    else
-      (* split somewhere in the middle *)
-      let len1, len2 = _split len st in
-      assert (len = len1+len2);
-      if i = len
-      then aux len1 ~len:len1 (aux len2 ~len:len2 acc)
-      else
-        let i1, i2 = _split (i-len) st in
-        aux (i1+len1) ~len:len1 (aux (i2+len2) ~len:len2 acc)
+let _diff_list l =
+  let rec diff_list acc = function
+    | [a;b] -> Some ( (b - a)::acc )
+    | a::( b::_ as r ) -> diff_list ( (b-a)::acc ) r
+    | [_] | [] -> None
   in
-  try Some (aux i ~len []) with SplitFail -> None
+  diff_list [] l
+
+
+(* Partition of an int into [len] integers uniformly.
+   We first sample (len-1) points from the set {1,..i-1} without replacement.
+   We sort these points and add back 0 and i, we have thus
+   x_0 = 0 < x_1 < x_2 < ... < x_{len-1} < i = x_{len}.
+   If we define, y_k = x_{k+1} - x_{k} for k in 0..(len-1), then by construction
+   ∑_k y_k = ∑_k (x_{k+1} - x_k ) = x_{len} - x_0 = i. *)
+let split_list i ~len st =
+  if i >= len then
+    let xs = sample_without_replacement (len-1) (int_range 1 @@ i-1) st in
+    let ordered_xs = List.sort compare (i::0::xs) in
+    _diff_list ordered_xs
+  else
+    None
 
 let retry ?(max=10) g st =
   let rec aux n =
