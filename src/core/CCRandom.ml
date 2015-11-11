@@ -78,6 +78,20 @@ let replicate n g st =
     if n = 0 then acc else aux (g st :: acc) (n-1)
   in aux [] n
 
+(* Sample without replacement using rejection sampling. *)
+let sample_without_replacement (type elt)  ?(compare=compare) k (rng:elt t) st=
+  let module S = Set.Make(struct type t=elt let compare = compare end) in
+  let rec aux s k =
+    if k <= 0 then
+      S.elements s
+    else
+      let x = rng st in
+      if S.mem x s then
+        aux s k
+      else
+        aux (S.add x s) (k-1) in
+  aux S.empty k
+
 let list_seq l st = List.map (fun f -> f st) l
 
 exception SplitFail
