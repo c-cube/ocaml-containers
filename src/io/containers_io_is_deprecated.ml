@@ -1,5 +1,5 @@
 (** {!CCIO} has moved into {!Containers}, the main library.
- 
+
   The reason is that it has no additional dependency and is arguably a
   useful completement to parts of {!Pervasives} (the channel management)
 

@@ -47,7 +47,7 @@ val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
     @since 0.13 *)
 
 val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
-(** [equal a b] compares lexicographically [a] and [b]
+(** [compare a b] compares lexicographically [a] and [b]
     @param cmp comparison function for elements
     @since 0.13 *)
 

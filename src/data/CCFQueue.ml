@@ -364,8 +364,8 @@ let append q1 q2 =
 *)
 
 (*$R
-  let q1 = of_seq (Sequence.of_list [1;2;3;4]) in 
-  let q2 = of_seq (Sequence.of_list [5;6;7;8]) in 
+  let q1 = of_seq (Sequence.of_list [1;2;3;4]) in
+  let q2 = of_seq (Sequence.of_list [5;6;7;8]) in
   let q = append q1 q2 in
   let l = Sequence.to_list (to_seq q) in
   OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5;6;7;8] l
@@ -516,4 +516,3 @@ let print pp_x out d =
       pp_x out x
     ) d;
   Format.fprintf out "}@]"
-

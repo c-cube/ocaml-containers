@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -91,7 +90,7 @@ let _split i st =
 
 let split i st = try Some (_split i st) with SplitFail -> None
 
-(* partition of an int into [len] integers. We divide-and-conquer on
+(* Partition of an int into [len] integers. We divide-and-conquer on
   the expected length, until it reaches 1. *)
 let split_list i ~len st =
   let rec aux i ~len acc =
@@ -178,4 +177,3 @@ let (<*>) f g st = f st (g st)
 let __default_state = Random.State.make_self_init ()
 
 let run ?(st=__default_state) g = g st
-

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -48,7 +47,7 @@ let pow a b =
        else acc * (aux (acc*acc) (n/2))
   in
   match b with
-  | 0 -> if a = 0 then raise (Invalid_argument "Undefined value 0^0") else 1
+  | 0 -> if a = 0 then raise (Invalid_argument "pow: undefined value 0^0") else 1
   | b when b < 0 -> raise (Invalid_argument "pow: can't raise int to negative power")
   | b -> aux a b
 

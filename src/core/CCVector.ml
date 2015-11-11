@@ -36,7 +36,7 @@ type 'a ord = 'a -> 'a -> int
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
 
-(** a vector of 'a. *)
+(** A vector of 'a. *)
 type ('a,'mut) t = {
   mutable size : int;
   mutable vec : 'a array;
@@ -167,7 +167,7 @@ let push v x =
   let v = of_list [1;2;3] in push v 4; to_list v = [1;2;3;4]
 *)
 
-(** add all elements of b to a *)
+(** Add all elements of b to a *)
 let append a b =
   if _empty_array a
   then if _empty_array b
@@ -198,15 +198,15 @@ let append a b =
 *)
 
 let get v i =
-  if i < 0 || i >= v.size then invalid_arg "Vector.get";
+  if i < 0 || i >= v.size then invalid_arg "CCVector.get";
   Array.unsafe_get v.vec i
 
 let set v i x =
-  if i < 0 || i >= v.size then invalid_arg "Vector.set";
+  if i < 0 || i >= v.size then invalid_arg "CCVector.set";
   Array.unsafe_set v.vec i x
 
 let remove v i =
-  if i < 0 || i >= v.size then invalid_arg "Vector.remove";
+  if i < 0 || i >= v.size then invalid_arg "CCVector.remove";
   (* if v.(i) not the last element, then put last element at index i *)
   if i < v.size - 1
     then v.vec.(i) <- v.vec.(v.size - 1);

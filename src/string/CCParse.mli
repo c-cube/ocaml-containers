@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -107,8 +106,8 @@ type input = {
 
   pos : unit -> int;   (** Current pos *)
   lnum : unit -> line_num; (** Line number @since 0.13 *)
-  cnum : unit -> col_num;  (** column number @since 0.13 *)
-  memo : MemoTbl.t; (** memoization table, if any *)
+  cnum : unit -> col_num;  (** Column number @since 0.13 *)
+  memo : MemoTbl.t; (** Memoization table, if any *)
   backtrack : int -> unit;  (** Restore to previous pos *)
   sub : int -> int -> string; (** [sub pos len] extracts slice from [pos] with [len] *)
 }
@@ -139,7 +138,7 @@ val return : 'a -> 'a t
 (** Always succeeds, without consuming its input *)
 
 val pure : 'a -> 'a t
-(** synonym to {!return} *)
+(** Synonym to {!return} *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Map *)
@@ -183,10 +182,10 @@ val endline : char t
 (** Parses '\n' *)
 
 val space : char t
-(** tab or space *)
+(** Tab or space *)
 
 val white : char t
-(** tab or space or newline *)
+(** Tab or space or newline *)
 
 val skip_chars : (char -> bool) -> unit t
 (** Skip 0 or more chars satisfying the predicate *)

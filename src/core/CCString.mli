@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -222,28 +221,28 @@ val iter : (char -> unit) -> string -> unit
     @since 0.12 *)
 
 val iteri : (int -> char -> unit) -> string -> unit
-(** iter on chars with their index
+(** Iter on chars with their index
     @since 0.12 *)
 
 val map : (char -> char) -> string -> string
-(** map chars
+(** Map chars
     @since 0.12 *)
 
 val mapi : (int -> char -> char) -> string -> string
-(** map chars with their index
+(** Map chars with their index
     @since 0.12 *)
 
 val flat_map : ?sep:string -> (char -> string) -> string -> string
-(** map each chars to a string, then concatenates them all
+(** Map each chars to a string, then concatenates them all
     @param sep optional separator between each generated string
     @since 0.12 *)
 
 val for_all : (char -> bool) -> string -> bool
-(** true for all chars?
+(** True for all chars?
     @since 0.12 *)
 
 val exists : (char -> bool) -> string -> bool
-(** true for some char?
+(** True for some char?
     @since 0.12 *)
 
 include S with type t := string
@@ -251,32 +250,32 @@ include S with type t := string
 (** {2 Operations on 2 strings} *)
 
 val map2 : (char -> char -> char) -> string -> string -> string
-(** map pairs of chars
+(** Map pairs of chars
     @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val iter2: (char -> char -> unit) -> string -> string -> unit
-(** iterate on pairs of chars
+(** Iterate on pairs of chars
     @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val iteri2: (int -> char -> char -> unit) -> string -> string -> unit
-(** iterate on pairs of chars with their index
+(** Iterate on pairs of chars with their index
     @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val fold2: ('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a
-(** fold on pairs of chars
+(** Fold on pairs of chars
     @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val for_all2 : (char -> char -> bool) -> string -> string -> bool
-(** all pair of chars respect the predicate?
+(** All pairs of chars respect the predicate?
     @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
 val exists2 : (char -> char -> bool) -> string -> string -> bool
-(** exists a pair of chars?
+(** Exists a pair of chars?
     @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
@@ -284,7 +283,7 @@ val exists2 : (char -> char -> bool) -> string -> string -> bool
 
 module Split : sig
   val list_ : by:string -> string -> (string*int*int) list
-  (** split the given string along the given separator [by]. Should only
+  (** Eplit the given string along the given separator [by]. Should only
       be used with very small separators, otherwise
       use {!Containers_string.KMP}.
       @return a list of slices [(s,index,length)] that are
@@ -318,7 +317,7 @@ module Split : sig
   val klist_cpy : by:string -> string -> string klist
 
   val left : by:string -> string -> (string * string) option
-  (** Split on the first occurrence of [by] from the left-most part of
+  (** Split on the first occurrence of [by] from the leftmost part of
       the string
       @since 0.12 *)
 

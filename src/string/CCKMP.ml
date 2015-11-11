@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -59,7 +58,7 @@ module type S = sig
   (** Generator on all occurrences of the pattern *)
 
   val seq : pattern:pattern -> string -> int -> int sequence
-  (** iterate on matching positions *)
+  (** Iterate on matching positions *)
 
   (** {6 One-shot functions that compile the pattern on-the-fly} *)
 

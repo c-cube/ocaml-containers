@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -78,4 +77,3 @@ val incr : int t -> unit
 val decr : int t -> unit
 (** Atomically decrement the value
     @since 0.13 *)
-

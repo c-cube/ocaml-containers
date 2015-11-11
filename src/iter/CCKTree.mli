@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -89,7 +88,7 @@ val dfs : ?pset:'a pset -> 'a t -> [ `Enter of 'a | `Exit of 'a ] klist
 (** Depth-first traversal of the tree *)
 
 val bfs : ?pset:'a pset -> 'a t -> 'a klist
-(** Breadth first traversal of the tree *)
+(** Breadth-first traversal of the tree *)
 
 val force : 'a t -> ([ `Nil | `Node of 'a * 'b list ] as 'b)
 (** [force t] evaluates [t] completely and returns a regular tree
@@ -171,4 +170,3 @@ module Dot : sig
       @param name name of the graph
       @since 0.6.1 *)
 end
-

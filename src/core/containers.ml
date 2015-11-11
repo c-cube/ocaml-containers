@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -67,7 +66,7 @@ module Hashtbl = struct
   include (Hashtbl : module type of Hashtbl
     with type statistics = Hashtbl.statistics
     and module Make = Hashtbl.Make
-    and type ('a,'b) t := ('a,'b) Hashtbl.t
+    and type ('a,'b) t = ('a,'b) Hashtbl.t
   )
   (* still unable to include CCHashtbl itself, for the polymorphic functions *)
   module type S' = CCHashtbl.S

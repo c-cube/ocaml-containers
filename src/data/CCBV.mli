@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013, simon cruanes
 all rights reserved.
@@ -99,17 +98,17 @@ val union_into : into:t -> t -> unit
 (** [union ~into bv] sets [into] to the union of itself and [bv]. *)
 
 val inter_into : into:t -> t -> unit
-(** [union ~into bv] sets [into] to the intersection of itself and [bv] *)
+(** [inter ~into bv] sets [into] to the intersection of itself and [bv] *)
 
 val union : t -> t -> t
 (** [union bv1 bv2] returns the union of the two sets *)
 
 val inter : t -> t -> t
-(** Intersection of bitvectors *)
+(** [inter bv1 bv2] returns the intersection of the two sets *)
 
 val select : t -> 'a array -> 'a list
 (** [select arr bv] selects the elements of [arr] whose index
-    correspond to a true bit in [bv]. If [bv] is too short, elements of [arr]
+    corresponds to a true bit in [bv]. If [bv] is too short, elements of [arr]
     with too high an index cannot be selected and are therefore not
     selected. *)
 

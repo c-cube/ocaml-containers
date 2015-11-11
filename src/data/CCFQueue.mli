@@ -86,7 +86,7 @@ val last : 'a t -> 'a option
 (** Last element of the queue *)
 
 val first_exn : 'a t -> 'a
-(** Same as {!peek} but
+(** Same as {!first} but
     @raise Empty if the queue is empty *)
 
 val last_exn : 'a t -> 'a

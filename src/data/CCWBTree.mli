@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Weight-Balanced Tree}
@@ -75,7 +74,7 @@ module type S = sig
 
   val extract_min : 'a t -> key * 'a * 'a t
   (** [extract_min m] returns [k, v, m'] where [k,v] is the pair with the
-      smaller key in [m], and [m'] does not contain [k].
+      smallest key in [m], and [m'] does not contain [k].
       @raise Not_found if the map is empty *)
 
   val extract_max : 'a t -> key * 'a * 'a t

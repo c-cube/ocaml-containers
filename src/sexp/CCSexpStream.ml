@@ -163,7 +163,7 @@ module Source = struct
         )
 
     let feed d s i len =
-      if d.stop then failwith "Sexp.Streaming.Manual.feed: reached EOI";
+      if d.stop then failwith "CCSexpStream.Source.Manual.feed: reached EOI";
       Buffer.add_substring d.buf s i len
 
     let reached_end d = d.stop <- true
@@ -300,7 +300,7 @@ module Lexer = struct
         d.st <- st;
         _process_next d st
 
-  (* read and proces the next character *)
+  (* read and process the next character *)
   and _process_next d st =
     match d.src () with
     | Source.NC_end ->
@@ -557,4 +557,3 @@ module L = struct
     | OhNoes msg -> `Error msg
     | StopNaow -> `Ok (List.rev !l)
 end
-

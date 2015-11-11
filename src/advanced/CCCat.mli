@@ -111,4 +111,3 @@ module MakeFree(F : FUNCTOR) : FREE_MONAD with module F = F
 
 module MakeFreeFold(FM : FREE_MONAD)(Fold : FOLDABLE with type 'a t = 'a FM.F.t)
   : FOLDABLE with type 'a t = 'a FM.t
-

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2015, simon cruanes
 all rights reserved.
@@ -53,7 +52,7 @@ type 'a sequence_once = 'a sequence
 (** Sequence that should be used only once *)
 
 exception Sequence_once
-(** raised when a sequence meant to be used once is used several times *)
+(** Raised when a sequence meant to be used once is used several times *)
 
 module Seq : sig
   type 'a t = 'a sequence
@@ -342,7 +341,7 @@ val mk_mut_tbl : ?eq:('v -> 'v -> bool) ->
                  ?hash:('v -> int) ->
                 int ->
                 ('v, ('v * 'a * 'v)) mut_graph
-(** make a new mutable graph from a Hashtbl. Edges are labelled with type ['a] *)
+(** Make a new mutable graph from a Hashtbl. Edges are labelled with type ['a] *)
 
 (** {2 Immutable Graph}
 

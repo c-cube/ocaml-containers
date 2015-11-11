@@ -131,7 +131,7 @@ module Make(O : Set.OrderedType) = struct
         if n=0 then ms else M.remove x ms
     | n' ->
         if n' < 0
-          then invalid_arg "CCMultiSet.udpate"
+          then invalid_arg "CCMultiSet.update"
           else M.add x n' ms
 
   let min ms =
@@ -150,12 +150,12 @@ module Make(O : Set.OrderedType) = struct
       m1 m2
 
   let meet m1 m2 =
-	M.merge
-	  (fun _ n1 n2 -> match n1, n2 with
-		| None, None -> assert false
-		| Some n, None | None, Some n -> Some n
-		| Some n1, Some n2 -> Some (Pervasives.max n1 n2))
-	  m1 m2
+        M.merge
+          (fun _ n1 n2 -> match n1, n2 with
+                | None, None -> assert false
+                | Some n, None | None, Some n -> Some n
+                | Some n1, Some n2 -> Some (Pervasives.max n1 n2))
+          m1 m2
 
   let intersection m1 m2 =
     M.merge

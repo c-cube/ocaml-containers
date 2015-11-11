@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (*$inject
@@ -642,7 +641,7 @@ module Make(Key : KEY)
           |> List.sort Pervasives.compare) )
   *)
 
-  let rec add_gen_mut~id m g = match g() with
+  let rec add_gen_mut ~id m g = match g() with
     | None -> m
     | Some (k,v) -> add_gen_mut ~id (add_mut ~id k v m) g
 
@@ -732,4 +731,3 @@ end
   assert_bool "check all get after remove"
     (Sequence.for_all (fun i -> None = M.get i m) Sequence.(501 -- 1000));
 *)
-

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -72,8 +71,8 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
     @since 0.14 *)
 
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
-(** [fold_map f acc l] is a [fold_left]-like function, but it also maps the
-    list to a list of list that is then [flatten]'d..
+(** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
+    list to a list of lists that is then [flatten]'d..
     @since 0.14 *)
 
 val init : int -> (int -> 'a) -> 'a t
@@ -85,13 +84,13 @@ val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** map and flatten at the same time (safe). Evaluation order is not guaranteed. *)
+(** Map and flatten at the same time (safe). Evaluation order is not guaranteed. *)
 
 val flatten : 'a t t -> 'a t
 (** Safe flatten *)
 
 val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** cartesian product of the two lists, with the given combinator *)
+(** Cartesian product of the two lists, with the given combinator *)
 
 val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 (** Fold on the cartesian product *)
@@ -119,10 +118,10 @@ val return : 'a -> 'a t
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 
 val take : int -> 'a t -> 'a t
-(** take the [n] first elements, drop the rest *)
+(** Take the [n] first elements, drop the rest *)
 
 val drop : int -> 'a t -> 'a t
-(** drop the [n] first elements, keep the rest *)
+(** Drop the [n] first elements, keep the rest *)
 
 val take_drop : int -> 'a t -> 'a t * 'a t
 (** [take_drop n l] returns [l1, l2] such that [l1 @ l2 = l] and
@@ -135,7 +134,7 @@ val drop_while : ('a -> bool) -> 'a t -> 'a t
 (** @since 0.13 *)
 
 val split : int -> 'a t -> 'a t * 'a t
-(** synonym to {!take_drop}
+(** Synonym to {!take_drop}
     @deprecated since 0.13: conflict with the {!List.split} standard function *)
 
 val last : int -> 'a t -> 'a t
@@ -153,7 +152,7 @@ val find_pred_exn : ('a -> bool) -> 'a t -> 'a
     @since 0.11 *)
 
 val find_map : ('a -> 'b option) -> 'a t -> 'b option
-(** [find f l] traverses [l], applying [f] to each element. If for
+(** [find_map f l] traverses [l], applying [f] to each element. If for
     some element [x], [f x = Some y], then [Some y] is returned. Otherwise
     the call returns [None]
     @since 0.11 *)
@@ -170,7 +169,7 @@ val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
     @since 0.3.4 *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
-(** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
+(** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None] *)
 
 val remove : ?eq:('a -> 'a -> bool) -> x:'a -> 'a t -> 'a t
@@ -182,7 +181,7 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
 
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
-(** merges elements from both sorted list *)
+(** Merges elements from both sorted list *)
 
 val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
 (** Sort the list and remove duplicate elements *)
@@ -212,20 +211,20 @@ module Idx : sig
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
   val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** fold on list, with index *)
+  (** Fold on list, with index *)
 
   val get : 'a t -> int -> 'a option
 
   val get_exn : 'a t -> int -> 'a
-  (** get the i-th element, or
+  (** Get the i-th element, or
       @raise Not_found if the index is invalid *)
 
   val set : 'a t -> int -> 'a -> 'a t
-  (** set i-th element (removes the old one), or does nothing if
-      index too high *)
+  (** Set i-th element (removes the old one), or does nothing if
+      index is too high *)
 
   val insert : 'a t -> int -> 'a -> 'a t
-  (** insert at i-th position, between the two existing elements. If the
+  (** Insert at i-th position, between the two existing elements. If the
       index is too high, append at the end of the list *)
 
   val remove : 'a t -> int -> 'a t
@@ -245,22 +244,22 @@ module Set : sig
       @since 0.11 *)
 
   val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
-  (** membership to the list. Linear time *)
+  (** Membership to the list. Linear time *)
 
   val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-  (** test for inclusion *)
+  (** Test for inclusion *)
 
   val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
-  (** list uniq: remove duplicates w.r.t the equality predicate.
+  (** List uniq. Remove duplicates w.r.t the equality predicate.
       Complexity is quadratic in the length of the list, but the order
       of elements is preserved. If you wish for a faster de-duplication
       but do not care about the order, use {!sort_uniq}*)
 
   val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** list union. Complexity is product of length of inputs. *)
+  (** List union. Complexity is product of length of inputs. *)
 
   val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** list intersection. Complexity is product of length of inputs., *)
+  (** List intersection. Complexity is product of length of inputs. *)
 end
 
 (** {2 Other Constructors} *)
@@ -277,10 +276,10 @@ val (--) : int -> int -> int t
 (** Infix alias for [range] *)
 
 val replicate : int -> 'a -> 'a t
-(** replicate the given element [n] times *)
+(** Replicate the given element [n] times *)
 
 val repeat : int -> 'a t -> 'a t
-(** concatenate the list with itself [n] times *)
+(** Concatenate the list with itself [n] times *)
 
 (** {2 Association Lists} *)
 
@@ -341,7 +340,7 @@ module Zipper : sig
 
   val right_exn : 'a t -> 'a t
   (** Go to the right, or
-      @raise Invalid_argument if the zipper is already at rightmost position
+      @raise Invalid_argument if the zipper is already at rightmost pos
       @since 0.14 *)
 
   val modify : ('a option -> 'a option) -> 'a t -> 'a t

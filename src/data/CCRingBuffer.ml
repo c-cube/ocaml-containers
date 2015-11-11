@@ -393,7 +393,7 @@ module MakeFromArray(A:Array.S) = struct
 
   let blit_into b to_buf o len =
     if o+len > A.length to_buf
-    then invalid_arg "RingBuffer.blit_into";
+    then invalid_arg "CCRingBuffer.blit_into";
     if b.stop >= b.start
     then
       let n = min (b.stop - b.start) len in
@@ -529,7 +529,7 @@ module MakeFromArray(A:Array.S) = struct
 
   let skip b len =
     if len > length b then
-      invalid_arg ("CCRingRingBuffer.skip: " ^ string_of_int len);
+      invalid_arg ("CCRingBuffer.skip: " ^ string_of_int len);
     if b.stop >= b.start
     then b.start <- b.start + len
     else

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -26,7 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 LINQ-like operations on collections}
 
-The purpose it to provide powerful combinators to express iteration,
+The purpose is to provide powerful combinators to express iteration,
 transformation and combination of collections of items. This module depends
 on several other modules, including {!CCList} and {!CCSequence}.
 
@@ -109,7 +108,7 @@ module PMap : sig
   (** View a multimap as a collection of individual key/value pairs *)
 
   val flatten_l : ('a,'b list) t -> ('a*'b) sequence
-  (** View a multimap as a collection of individual key/value pairs *)
+  (** View a multimap as a list of individual key/value pairs *)
 end
 
 (** {2 Query operators} *)
@@ -161,7 +160,7 @@ val run : ?limit:int -> 'a t -> 'a sequence
 
 val run1 : 'a t -> 'a
 (** Run the query and return the first value
-    @raise Not_found if the query succeeds with 0 elements *)
+    @raise Not_found if the query succeeds with 0 element *)
 
 val run_no_optim : ?limit:int -> 'a t -> 'a sequence
 (** Run without any optimization *)
@@ -169,7 +168,7 @@ val run_no_optim : ?limit:int -> 'a t -> 'a sequence
 (** {6 Basics} *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-(** map each value *)
+(** Map each value *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix synonym of {!map} *)
@@ -193,17 +192,15 @@ val flat_map : ('a -> 'b sequence) -> 'a t -> 'b t
 val flat_map_l : ('a -> 'b list) -> 'a t -> 'b t
 (** map each element to a collection and flatten the result *)
 
-val flat_map_l : ('a -> 'b list) -> 'a t -> 'b t
-
 val flatten : 'a list t -> 'a t
 
 val flatten_seq : 'a sequence t -> 'a t
 
 val take : int -> 'a t -> 'a t
-(** take at most [n] elements *)
+(** Take at most [n] elements *)
 
 val take_while : ('a -> bool) -> 'a t -> 'a t
-(** take elements while they satisfy a predicate *)
+(** Take elements while they satisfy a predicate *)
 
 val sort : ?cmp:'a ord -> unit -> 'a t -> 'a t
 (** Sort items by the given comparison function *)
@@ -327,7 +324,7 @@ Careful, those operators do not allow any optimization before running the
 query, they might therefore be pretty slow. *)
 
 val bind : ('a -> 'b t) -> 'a t -> 'b t
-(** Use the result of a query to build another query and imediately run it. *)
+(** Use the result of a query to build another query and immediately run it. *)
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** Infix version of {!bind} *)

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -58,13 +57,13 @@ val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 
 val iter : ('a -> unit) -> 'a t -> unit
-(** Iterate on 0 or 1 elements *)
+(** Iterate on 0 or 1 element *)
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
-(** Fold on 0 or 1 elements *)
+(** Fold on 0 or 1 element *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
-(** Filter on 0 or 1 elements
+(** Filter on 0 or 1 element
     @since 0.5 *)
 
 val get : 'a -> 'a t -> 'a
@@ -138,4 +137,3 @@ val pp : 'a printer -> 'a t printer
 
 val print : 'a fmt -> 'a t fmt
 (** @since 0.13 *)
-

@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013, simon cruanes
 all rights reserved.
@@ -35,7 +34,7 @@ type 'a printer = t -> 'a -> unit
 
 (** {2 Combinators} *)
 
-val silent : 'a printer (** prints nothing *)
+val silent : 'a printer (** Prints nothing *)
 
 val unit : unit printer
 val int : int printer

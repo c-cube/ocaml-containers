@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Random-Access Lists} *)
@@ -108,7 +107,7 @@ let front l = match l with
     Some (x, Cons (size', t1, Cons (size', t2, l')))
 
 let front_exn l = match l with
-  | Nil -> invalid_arg "RAL.front"
+  | Nil -> invalid_arg "RAL.front_exn"
   | Cons (_, Leaf x, tl) -> x, tl
   | Cons (size, Node (x, t1, t2), l') ->
     let size' = size / 2 in
@@ -574,4 +573,3 @@ let print ?(sep=", ") pp_item fmt l =
       pp_item fmt x
     );
   ()
-

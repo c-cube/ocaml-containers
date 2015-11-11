@@ -80,7 +80,7 @@ module type S = sig
       @since 0.3.4 *)
 
   val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
-  (** [find p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
+  (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
       and [p x] holds. Otherwise returns [None]
       @since 0.3.4 *)
 
@@ -125,7 +125,7 @@ module type S = sig
       @raise Invalid_argument if they have distinct lengths *)
 
   val shuffle : 'a t -> unit
-  (** shuffle randomly the array, in place *)
+  (** Shuffle randomly the array, in place *)
 
   val shuffle_with : Random.State.t -> 'a t -> unit
   (** Like shuffle but using a specialized random state *)
@@ -142,15 +142,15 @@ module type S = sig
 
   val pp: ?sep:string -> (Buffer.t -> 'a -> unit) ->
           Buffer.t -> 'a t -> unit
-  (** print an array of items with printing function *)
+  (** Print an array of items with printing function *)
 
   val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit) ->
             Buffer.t -> 'a t -> unit
-  (** print an array, giving the printing function both index and item *)
+  (** Print an array, giving the printing function both index and item *)
 
   val print : ?sep:string -> (Format.formatter -> 'a -> unit) ->
               Format.formatter -> 'a t -> unit
-  (** print an array of items with printing function *)
+  (** Print an array of items with printing function *)
 end
 
 (** {2 Arrays} *)
@@ -169,7 +169,7 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map each element into another value, or discard it *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b array
-(** transform each element into an array, then flatten *)
+(** Transform each element into an array, then flatten *)
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** Infix version of {!flat_map} *)
@@ -251,4 +251,3 @@ val sort_generic :
 (** Sort the array, without allocating (eats stack space though). Performance
     might be lower than {!Array.sort}.
     @since 0.14 *)
-

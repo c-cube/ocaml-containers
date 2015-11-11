@@ -1,4 +1,3 @@
-
 (*
 copyright (c) 2013-2014, simon cruanes
 all rights reserved.
@@ -86,7 +85,7 @@ let _is_sub ~sub i s j ~len =
   j+len <= String.length s && check 0
 
 let is_sub ~sub i s j ~len =
-  if i+len > String.length sub then invalid_arg "String.is_sub";
+  if i+len > String.length sub then invalid_arg "CCString.is_sub";
   _is_sub ~sub i s j ~len
 
 (* note: inefficient *)
@@ -116,7 +115,7 @@ let rfind ~sub s =
   with Exit ->
     !i
 
-(* replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
+(* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
   let b = Buffer.create (length s + length by - len) in
   Buffer.add_substring b s 0 pos;
@@ -125,7 +124,7 @@ let replace_at_ ~pos ~len ~by s =
   Buffer.contents b
 
 let replace ?(which=`All) ~sub ~by s =
-  if sub="" then invalid_arg "CCstring.replace";
+  if sub="" then invalid_arg "CCString.replace";
   match which with
   | `Left ->
       let i = find ~sub s in
@@ -416,23 +415,23 @@ let exists p s =
   with MyExit -> true
 
 let map2 f s1 s2 =
-  if length s1 <> length s2 then invalid_arg "String.map2";
+  if length s1 <> length s2 then invalid_arg "CCString.map2";
   init (String.length s1) (fun i -> f s1.[i] s2.[i])
 
 let iter2 f s1 s2 =
-  if length s1 <> length s2 then invalid_arg "String.iter2";
+  if length s1 <> length s2 then invalid_arg "CCString.iter2";
   for i = 0 to String.length s1 - 1 do
     f s1.[i] s2.[i]
   done
 
 let iteri2 f s1 s2 =
-  if length s1 <> length s2 then invalid_arg "String.iteri2";
+  if length s1 <> length s2 then invalid_arg "CCString.iteri2";
   for i = 0 to String.length s1 - 1 do
     f i s1.[i] s2.[i]
   done
 
 let fold2 f acc s1 s2 =
-  if length s1 <> length s2 then invalid_arg "String.fold2";
+  if length s1 <> length s2 then invalid_arg "CCString.fold2";
   let rec fold' acc s1 s2 i =
     if i = String.length s1 then acc
     else fold' (f acc s1.[i] s2.[i]) s1 s2 (i+1)
