@@ -154,7 +154,7 @@ val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 val run : ?st:state -> 'a t -> 'a
 (** Using a random state (possibly the one in argument) run a generator *)
 
-(** {6 Random generator testing } *)
+(**/**)
 
 val uniformity_test : ?size_hint:int -> int -> 'a t -> bool t
 (** [uniformity_test k rng] tests the uniformity of the random generator [rng] using
