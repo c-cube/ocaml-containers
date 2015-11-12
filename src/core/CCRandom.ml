@@ -100,11 +100,11 @@ let split i st =
     let j = 1 + Random.State.int st (i-1) in
     Some (j, i-j)
 
-let _diff_list l =
+let _diff_list ~last l =
   let rec diff_list acc = function
-    | [a;b] -> Some ( (b - a)::acc )
+    | [a] -> Some ( (last - a)::acc )
     | a::( b::_ as r ) -> diff_list ( (b-a)::acc ) r
-    | [_] | [] -> None
+    | [] -> None
   in
   diff_list [] l
 
@@ -118,8 +118,7 @@ let _diff_list l =
 let split_list i ~len st =
   if i >= len then
     let xs = sample_without_replacement (len-1) (int_range 1 @@ i-1) st in
-    let ordered_xs = List.sort compare (i::0::xs) in
-    _diff_list ordered_xs
+    _diff_list ( 0::xs ) ~last:i
   else
     None
 
