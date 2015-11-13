@@ -12,3 +12,4 @@
 - Emmanuel Surleau (emm)
 - Guillaume Bury (guigui)
 - JP Rodi
+- octachron (Florian Angeletti)

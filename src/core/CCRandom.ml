@@ -78,35 +78,49 @@ let replicate n g st =
     if n = 0 then acc else aux (g st :: acc) (n-1)
   in aux [] n
 
+(* Sample without replacement using rejection sampling. *)
+let sample_without_replacement (type elt)  ?(compare=compare) k (rng:elt t) st=
+  let module S = Set.Make(struct type t=elt let compare = compare end) in
+  let rec aux s k =
+    if k <= 0 then
+      S.elements s
+    else
+      let x = rng st in
+      if S.mem x s then
+        aux s k
+      else
+        aux (S.add x s) (k-1) in
+  aux S.empty k
+
 let list_seq l st = List.map (fun f -> f st) l
 
-exception SplitFail
-
-let _split i st =
-  if i < 2 then raise SplitFail
+let split i st =
+  if i < 2 then None
   else
     let j = 1 + Random.State.int st (i-1) in
-    (j, i-j)
+    Some (j, i-j)
 
-let split i st = try Some (_split i st) with SplitFail -> None
-
-(* Partition of an int into [len] integers. We divide-and-conquer on
-  the expected length, until it reaches 1. *)
-let split_list i ~len st =
-  let rec aux i ~len acc =
-    if i < len then raise SplitFail
-    else if len = 1 then i::acc
-    else
-      (* split somewhere in the middle *)
-      let len1, len2 = _split len st in
-      assert (len = len1+len2);
-      if i = len
-      then aux len1 ~len:len1 (aux len2 ~len:len2 acc)
-      else
-        let i1, i2 = _split (i-len) st in
-        aux (i1+len1) ~len:len1 (aux (i2+len2) ~len:len2 acc)
+let _diff_list ~last l =
+  let rec diff_list acc = function
+    | [a] -> Some ( (last - a)::acc )
+    | a::( b::_ as r ) -> diff_list ( (b-a)::acc ) r
+    | [] -> None
   in
-  try Some (aux i ~len []) with SplitFail -> None
+  diff_list [] l
+
+
+(* Partition of an int into [len] integers uniformly.
+   We first sample (len-1) points from the set {1,..i-1} without replacement.
+   We sort these points and add back 0 and i, we have thus
+   x_0 = 0 < x_1 < x_2 < ... < x_{len-1} < i = x_{len}.
+   If we define, y_k = x_{k+1} - x_{k} for k in 0..(len-1), then by construction
+   ∑_k y_k = ∑_k (x_{k+1} - x_k ) = x_{len} - x_0 = i. *)
+let split_list i ~len st =
+  if i >= len then
+    let xs = sample_without_replacement (len-1) (int_range 1 @@ i-1) st in
+    _diff_list ( 0::xs ) ~last:i
+  else
+    None
 
 let retry ?(max=10) g st =
   let rec aux n =
@@ -177,3 +191,31 @@ let (<*>) f g st = f st (g st)
 let __default_state = Random.State.make_self_init ()
 
 let run ?(st=__default_state) g = g st
+
+let uniformity_test ?(size_hint=10) k rng st =
+  let histogram = Hashtbl.create size_hint in
+  let add x = let n = try Hashtbl.find histogram x with Not_found -> 0 in
+    Hashtbl.replace histogram x (n + 1) in
+  let () =
+    for _i = 0 to ( k - 1 ) do
+      add @@ rng st
+    done in
+  let cardinal = float_of_int @@ Hashtbl.length histogram in
+  let kf = float_of_int k in
+  (* average number of points assuming an uniform distribution *)
+  let average = kf /. cardinal in
+  (* The number of points is a sum of random variables with binomial distribution *)
+  let p = 1. /. cardinal in
+  (* The variance of a binomial distribution with average p is *)
+  let variance = p *. (1. -. p ) in
+  (* Central limit theorem: a confidence interval of 4σ provides a false positive rate
+     of 0.00634% *)
+  let confidence = 4. in
+  let std = confidence *. ( sqrt @@ kf *. variance ) in
+  let predicate _key n acc =
+    acc && abs_float (average -. float_of_int n) < std in
+  Hashtbl.fold predicate histogram true
+
+(*$T split_list
+  run ( uniformity_test 50_000 (split_list 10 ~len:3) )
+*)
