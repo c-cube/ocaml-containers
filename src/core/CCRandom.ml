@@ -117,7 +117,7 @@ let _diff_list ~last l =
    ∑_k y_k = ∑_k (x_{k+1} - x_k ) = x_{len} - x_0 = i. *)
 let split_list i ~len st =
   if i >= len then
-    let xs = sample_without_replacement (len-1) (int_range 1 @@ i-1) st in
+    let xs = sample_without_replacement (len-1) (int_range 1 (i-1)) st in
     _diff_list ( 0::xs ) ~last:i
   else
     None
@@ -198,9 +198,9 @@ let uniformity_test ?(size_hint=10) k rng st =
     Hashtbl.replace histogram x (n + 1) in
   let () =
     for _i = 0 to ( k - 1 ) do
-      add @@ rng st
+      add (rng st)
     done in
-  let cardinal = float_of_int @@ Hashtbl.length histogram in
+  let cardinal = float_of_int (Hashtbl.length histogram) in
   let kf = float_of_int k in
   (* average number of points assuming an uniform distribution *)
   let average = kf /. cardinal in
@@ -211,7 +211,7 @@ let uniformity_test ?(size_hint=10) k rng st =
   (* Central limit theorem: a confidence interval of 4σ provides a false positive rate
      of 0.00634% *)
   let confidence = 4. in
-  let std = confidence *. ( sqrt @@ kf *. variance ) in
+  let std = confidence *. (sqrt (kf *. variance)) in
   let predicate _key n acc =
     acc && abs_float (average -. float_of_int n) < std in
   Hashtbl.fold predicate histogram true
