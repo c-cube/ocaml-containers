@@ -141,7 +141,18 @@ val pure : 'a -> ('a, 'err) t
 val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
 (** [a <*> b] evaluates [a] and [b], and, in case of success, returns
     [`Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
-    over the error of [b] if both fail *)
+    over the error of [b] if both fail. *)
+
+val join : (('a, 'err) t, 'err) t -> ('a, 'err) t
+(** [join t], in case of success, returns [`Ok o] from [`Ok (`Ok o)]. Otherwise,
+    it fails with [`Error e] where [e] is the unwrapped error of [t]. 
+    @since NEXT_RELEASE *)
+
+val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
+(** [both a b], in case of success, returns [`Ok (o, o')] with the ok values
+    of [a] and [b]. Otherwise, it fails, and the error of [a] is chosen over the
+    error of [b] if both fail. 
+    @since NEXT_RELEASE *)
 
 (** {2 Infix}
 
