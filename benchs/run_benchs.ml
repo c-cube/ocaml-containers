@@ -1032,6 +1032,72 @@ module Thread = struct
   )
 end
 
+module Alloc = struct
+  module type ALLOC_ARR = sig
+    type 'a t
+    val name : string
+    val create : int -> 'a t
+    val make : 'a t -> int -> 'a -> 'a array
+    val free : 'a t -> 'a array -> unit
+  end
+
+  let dummy =
+    let module A = struct
+      type _ t = unit
+      let name = "dummy"
+      let create _ = ()
+      let make _ i x = Array.make i x
+      let free _ _ = ()
+    end in
+    (module A : ALLOC_ARR)
+
+  let alloc_cache ~buck_size =
+    let module A = struct
+      type 'a t = 'a CCAllocCache.Arr.t
+      let name = Printf.sprintf "alloc_cache(%d)" buck_size
+      let create n = CCAllocCache.Arr.create ~buck_size n
+      let make = CCAllocCache.Arr.make
+      let free = CCAllocCache.Arr.free
+    end in
+    (module A : ALLOC_ARR)
+
+  (* repeat [n] times:
+    - repeat [batch] times:
+      - allocate [batch] arrays of size from 1 to batch+1
+    - free those arrays
+  *)
+  let bench1 ~batch n =
+    let make (module C : ALLOC_ARR) () =
+      let c = C.create (batch*2) in
+      let tmp = Array.make (batch * batch) [||] in (* temporary storage *)
+      for _ = 1 to n do
+        for j = 0 to batch-1 do
+          for k = 0 to batch-1 do
+            tmp.(j*batch + k) <- C.make c (k+1) '_';
+          done;
+        done;
+        Array.iter (C.free c) tmp (* free the whole array *)
+      done
+    in
+    B.throughputN 3 ~repeat
+      [ "dummy", make dummy, ()
+      ; "cache(5)", make (alloc_cache ~buck_size:5), ()
+      ; "cache(20)", make (alloc_cache ~buck_size:20), ()
+      ; "cache(50)", make (alloc_cache ~buck_size:50), ()
+      ]
+
+  let () = B.Tree.register (
+    "alloc" @>>>
+      [ "bench1(batch=5)" @>>
+          app_ints (bench1 ~batch:5) [100; 1_000]
+      ; "bench1(batch=15)" @>>
+          app_ints (bench1 ~batch:15) [100; 1_000]
+      ; "bench1(batch=50)" @>>
+          app_ints (bench1 ~batch:50) [100; 1_000]
+      ]
+    )
+end
+
 let () =
   try B.Tree.run_global ()
   with Arg.Help msg -> print_endline msg

@@ -65,6 +65,7 @@ such as:
 Various data structures.
 
 {!modules:
+CCAllocCache
 CCBitField
 CCBloom
 CCBV
