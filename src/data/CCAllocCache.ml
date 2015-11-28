@@ -5,17 +5,20 @@
 
 module Arr = struct
   type 'a t = {
-    caches: 'a array array array;
-      (* array of buckets, where each bucket is an array of arrays *)
+    caches: 'a array array;
+      (* 2-dim array of cached arrays. The 2-dim array is flattened into
+         one dimension *)
     max_buck_size: int;
-    sizes: int array; (* number of cached arrays in each bucket *)
+      (* number of cached arrays per length *)
+    sizes: int array;
+      (* number of cached arrays in each bucket *)
   }
 
   let create ?(buck_size=16) n =
     if n<1 then invalid_arg "AllocCache.Arr.create";
     { max_buck_size=buck_size;
       sizes=Array.make n 0;
-      caches=Array.init n (fun _ -> Array.make buck_size [||]);
+      caches=Array.make (n * buck_size) [||];
     }
 
   let make c i x =
@@ -25,7 +28,7 @@ module Arr = struct
       if bs = 0 then Array.make i x
       else (
         (* remove last array *)
-        let ret = c.caches.(i).(bs-1) in
+        let ret = c.caches.(i * c.max_buck_size + bs-1) in
         c.sizes.(i) <- bs - 1;
         ret
       )
@@ -37,7 +40,7 @@ module Arr = struct
       let bs = c.sizes.(n) in
       if bs < c.max_buck_size then (
         (* store [a] *)
-        c.caches.(n).(bs) <- a;
+        c.caches.(n * c.max_buck_size + bs) <- a;
         c.sizes.(n) <- bs + 1
       )
     )
