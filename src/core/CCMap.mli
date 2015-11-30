@@ -56,6 +56,14 @@ module type S = sig
   val add_list : 'a t -> (key * 'a) list -> 'a t
   (** @since 0.14 *)
 
+  val keys : _ t -> key sequence
+  (** Iterate on keys only
+      @since NEXT_RELEASE *)
+
+  val values : 'a t -> 'a sequence
+  (** Iterate on values only
+      @since NEXT_RELEASE *)
+
   val to_list : 'a t -> (key * 'a) list
 
   val pp : ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
