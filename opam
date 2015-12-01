@@ -28,6 +28,7 @@ depends: [
     "ocamlfind" {build}
     "base-bytes"
     "cppo" {build}
+    "ocamlbuild" {build}
 ]
 depopts: [ "sequence" "base-bigarray" "base-unix" "base-threads" ]
 tags: [ "stdlib" "containers" "iterators" "list" "heap" "queue" ]
