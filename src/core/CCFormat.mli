@@ -66,6 +66,30 @@ val quad : 'a printer -> 'b printer -> 'c printer -> 'd printer -> ('a * 'b * 'c
 
 val map : ('a -> 'b) -> 'b printer -> 'a printer
 
+(** {2 ASCII codes}
+
+  Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
+  to put some colors on the terminal.
+  We only allow styling of constant strings, because nesting is almost
+  impossible with ANSI codes (unless we maintain a stack of codes explicitely).
+
+  @since NEXT_RELEASE *)
+
+type color =
+  [ `Black
+  | `Red
+  | `Yellow
+  | `Green
+  | `Blue
+  | `Magenta
+  | `Cyan
+  | `White
+  ]
+
+val color_str : color -> string printer
+
+val bold_str : color -> string printer
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit

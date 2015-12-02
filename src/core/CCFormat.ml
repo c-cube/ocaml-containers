@@ -159,3 +159,34 @@ let _with_file_out filename f =
 
 let to_file filename format =
   _with_file_out filename (fun fmt -> Format.fprintf fmt format)
+
+type color =
+  [ `Black
+  | `Red
+  | `Yellow
+  | `Green
+  | `Blue
+  | `Magenta
+  | `Cyan
+  | `White
+  ]
+
+let int_of_color_ = function
+  | `Black -> 0
+  | `Red -> 1
+  | `Green -> 2
+  | `Yellow -> 3
+  | `Blue -> 4
+  | `Magenta -> 5
+  | `Cyan -> 6
+  | `White -> 7
+
+(* same as [pp], but in color [c] *)
+let color_str c out s =
+  let n = int_of_color_ c in
+  Format.fprintf out "\x1b[3%dm%s\x1b[0m" n s
+
+(* same as [pp], but in bold color [c] *)
+let bold_str c out s =
+  let n = int_of_color_ c in
+  Format.fprintf out "\x1b[3%d;1m%s\x1b[0m" n s
