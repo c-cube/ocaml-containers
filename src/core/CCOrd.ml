@@ -59,6 +59,16 @@ let (<?>) c (ord,x,y) =
     then ord x y
     else c
 
+let option c o1 o2 = match o1, o2 with
+  | None, None -> 0
+  | None, Some _ -> -1
+  | Some _, None -> 1
+  | Some x1, Some x2 -> c x1 x2
+
+(*$Q
+  Q.(option int) (fun o -> option int_ None o <= 0)
+  *)
+
 let pair o_x o_y (x1,y1) (x2,y2) =
   let c = o_x x1 x2 in
   if c = 0

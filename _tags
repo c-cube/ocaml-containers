@@ -1,4 +1,149 @@
 # OASIS_START
+# DO NOT EDIT (digest: 0e7b7eeffb179d552ac9c060b7ab3be9)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library containers
+"src/core/containers.cmxs": use_containers
+<src/core/*.ml{,i,y}>: package(bytes)
+# Library containers_io
+"src/io/containers_io.cmxs": use_containers_io
+<src/io/*.ml{,i,y}>: package(bytes)
+# Library containers_unix
+"src/unix/containers_unix.cmxs": use_containers_unix
+<src/unix/*.ml{,i,y}>: package(bytes)
+<src/unix/*.ml{,i,y}>: package(unix)
+# Library containers_sexp
+"src/sexp/containers_sexp.cmxs": use_containers_sexp
+<src/sexp/*.ml{,i,y}>: package(bytes)
+# Library containers_data
+"src/data/containers_data.cmxs": use_containers_data
+<src/data/*.ml{,i,y}>: package(bytes)
+# Library containers_iter
+"src/iter/containers_iter.cmxs": use_containers_iter
+# Library containers_string
+"src/string/containers_string.cmxs": use_containers_string
+<src/string/*.ml{,i,y}>: package(bytes)
+# Library containers_advanced
+"src/advanced/containers_advanced.cmxs": use_containers_advanced
+<src/advanced/*.ml{,i,y}>: package(bytes)
+<src/advanced/*.ml{,i,y}>: package(sequence)
+<src/advanced/*.ml{,i,y}>: use_containers
+# Library containers_bigarray
+"src/bigarray/containers_bigarray.cmxs": use_containers_bigarray
+<src/bigarray/*.ml{,i,y}>: package(bigarray)
+<src/bigarray/*.ml{,i,y}>: package(bytes)
+<src/bigarray/*.ml{,i,y}>: use_containers
+# Library containers_thread
+"src/threads/containers_thread.cmxs": use_containers_thread
+<src/threads/*.ml{,i,y}>: package(bytes)
+<src/threads/*.ml{,i,y}>: package(threads)
+<src/threads/*.ml{,i,y}>: use_containers
+# Library containers_top
+"src/top/containers_top.cmxs": use_containers_top
+<src/top/*.ml{,i,y}>: package(bigarray)
+<src/top/*.ml{,i,y}>: package(bytes)
+<src/top/*.ml{,i,y}>: package(compiler-libs.common)
+<src/top/*.ml{,i,y}>: package(unix)
+<src/top/*.ml{,i,y}>: use_containers
+<src/top/*.ml{,i,y}>: use_containers_bigarray
+<src/top/*.ml{,i,y}>: use_containers_data
+<src/top/*.ml{,i,y}>: use_containers_iter
+<src/top/*.ml{,i,y}>: use_containers_sexp
+<src/top/*.ml{,i,y}>: use_containers_string
+<src/top/*.ml{,i,y}>: use_containers_unix
+# Executable run_benchs
+<benchs/run_benchs.{native,byte}>: package(benchmark)
+<benchs/run_benchs.{native,byte}>: package(bytes)
+<benchs/run_benchs.{native,byte}>: package(gen)
+<benchs/run_benchs.{native,byte}>: package(hamt)
+<benchs/run_benchs.{native,byte}>: package(sequence)
+<benchs/run_benchs.{native,byte}>: package(threads)
+<benchs/run_benchs.{native,byte}>: use_containers
+<benchs/run_benchs.{native,byte}>: use_containers_advanced
+<benchs/run_benchs.{native,byte}>: use_containers_data
+<benchs/run_benchs.{native,byte}>: use_containers_iter
+<benchs/run_benchs.{native,byte}>: use_containers_string
+<benchs/run_benchs.{native,byte}>: use_containers_thread
+<benchs/*.ml{,i,y}>: package(benchmark)
+<benchs/*.ml{,i,y}>: package(gen)
+<benchs/*.ml{,i,y}>: package(threads)
+<benchs/*.ml{,i,y}>: use_containers_advanced
+<benchs/*.ml{,i,y}>: use_containers_iter
+<benchs/*.ml{,i,y}>: use_containers_string
+<benchs/*.ml{,i,y}>: use_containers_thread
+# Executable run_bench_hash
+<benchs/run_bench_hash.{native,byte}>: package(bytes)
+<benchs/run_bench_hash.{native,byte}>: use_containers
+# Executable run_qtest
+<qtest/run_qtest.{native,byte}>: package(QTest2Lib)
+<qtest/run_qtest.{native,byte}>: package(bigarray)
+<qtest/run_qtest.{native,byte}>: package(bytes)
+<qtest/run_qtest.{native,byte}>: package(gen)
+<qtest/run_qtest.{native,byte}>: package(oUnit)
+<qtest/run_qtest.{native,byte}>: package(sequence)
+<qtest/run_qtest.{native,byte}>: package(threads)
+<qtest/run_qtest.{native,byte}>: package(unix)
+<qtest/run_qtest.{native,byte}>: use_containers
+<qtest/run_qtest.{native,byte}>: use_containers_advanced
+<qtest/run_qtest.{native,byte}>: use_containers_bigarray
+<qtest/run_qtest.{native,byte}>: use_containers_data
+<qtest/run_qtest.{native,byte}>: use_containers_io
+<qtest/run_qtest.{native,byte}>: use_containers_iter
+<qtest/run_qtest.{native,byte}>: use_containers_sexp
+<qtest/run_qtest.{native,byte}>: use_containers_string
+<qtest/run_qtest.{native,byte}>: use_containers_thread
+<qtest/run_qtest.{native,byte}>: use_containers_unix
+<qtest/*.ml{,i,y}>: package(QTest2Lib)
+<qtest/*.ml{,i,y}>: package(bigarray)
+<qtest/*.ml{,i,y}>: package(bytes)
+<qtest/*.ml{,i,y}>: package(gen)
+<qtest/*.ml{,i,y}>: package(oUnit)
+<qtest/*.ml{,i,y}>: package(sequence)
+<qtest/*.ml{,i,y}>: package(threads)
+<qtest/*.ml{,i,y}>: package(unix)
+<qtest/*.ml{,i,y}>: use_containers
+<qtest/*.ml{,i,y}>: use_containers_advanced
+<qtest/*.ml{,i,y}>: use_containers_bigarray
+<qtest/*.ml{,i,y}>: use_containers_data
+<qtest/*.ml{,i,y}>: use_containers_io
+<qtest/*.ml{,i,y}>: use_containers_iter
+<qtest/*.ml{,i,y}>: use_containers_sexp
+<qtest/*.ml{,i,y}>: use_containers_string
+<qtest/*.ml{,i,y}>: use_containers_thread
+<qtest/*.ml{,i,y}>: use_containers_unix
+# Executable id_sexp
+<examples/id_sexp.{native,byte}>: package(bytes)
+<examples/id_sexp.{native,byte}>: use_containers_sexp
+# Executable mem_measure
+"benchs/mem_measure.native": package(bytes)
+"benchs/mem_measure.native": package(hamt)
+"benchs/mem_measure.native": package(sequence)
+"benchs/mem_measure.native": package(unix)
+"benchs/mem_measure.native": use_containers
+"benchs/mem_measure.native": use_containers_data
+<benchs/*.ml{,i,y}>: package(bytes)
+<benchs/*.ml{,i,y}>: package(hamt)
+<benchs/*.ml{,i,y}>: package(sequence)
+<benchs/*.ml{,i,y}>: package(unix)
+<benchs/*.ml{,i,y}>: use_containers
+<benchs/*.ml{,i,y}>: use_containers_data
+# Executable id_sexp2
+<examples/id_sexp2.{native,byte}>: package(bytes)
+<examples/id_sexp2.{native,byte}>: use_containers_sexp
+<examples/*.ml{,i,y}>: package(bytes)
+<examples/*.ml{,i,y}>: use_containers_sexp
 # OASIS_STOP
 <tests/*.ml{,i}>: thread
 <src/threads/*.ml{,i}>: thread

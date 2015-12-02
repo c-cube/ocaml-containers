@@ -55,6 +55,10 @@ val (<?>) : int -> ('a t * 'a * 'a) -> int
       <?> (CCBool.compare, true, false)]}
 *)
 
+val option : 'a t -> 'a option t
+(** Comparison of optional values. [None] is smaller than any [Some _].
+    @since NEXT_RELEASE *)
+
 val pair : 'a t -> 'b t -> ('a * 'b) t
 
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
