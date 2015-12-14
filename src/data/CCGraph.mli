@@ -273,6 +273,7 @@ val scc : ?tbl:('v, 'v scc_state) table ->
     in the graph.
     Uses {{: https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm} Tarjan's algorithm}
     @param tbl table used to map nodes to some hidden state
+    @raise Sequence_once if the result is iterated on more than once.
     *)
 
 (** {2 Pretty printing in the DOT (graphviz) format}

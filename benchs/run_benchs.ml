@@ -1032,6 +1032,81 @@ module Thread = struct
   )
 end
 
+module Graph = struct
+
+  (* divisors graph *)
+  let div_children_ i =
+    (* divisors of [i] that are [>= j] *)
+    let rec aux j i yield =
+      if j < i
+      then (
+        if (i mod j = 0) then yield (i,j);
+        aux (j+1) i yield
+      )
+    in
+    aux 1 i
+
+  let div_graph_ = {CCGraph.
+    origin=fst;
+    dest=snd;
+    children=div_children_
+  }
+
+  module H = Hashtbl.Make(CCInt)
+
+  let dfs_raw n () =
+    let explored = H.create (n+10) in
+    let st = Stack.create() in
+    let res = ref 0 in
+    Stack.push n st;
+    while not (Stack.is_empty st) do
+      let i = Stack.pop st in
+      if not (H.mem explored i) then (
+        H.add explored i ();
+        incr res;
+        div_children_ i (fun (_,j) -> Stack.push j st);
+      )
+      done;
+    !res
+
+  let dfs_ n () =
+    let tbl = CCGraph.mk_table ~eq:CCInt.equal ~hash:CCInt.hash (n+10) in
+    CCGraph.Traverse.dfs ~tbl ~graph:div_graph_
+      (Sequence.return n)
+    |> Sequence.fold (fun acc _ -> acc+1) 0
+
+  let dfs_event n () =
+    let tbl = CCGraph.mk_table ~eq:CCInt.equal ~hash:CCInt.hash (n+10) in
+    CCGraph.Traverse.Event.dfs ~tbl ~graph:div_graph_
+      (Sequence.return n)
+    |> Sequence.fold
+      (fun acc -> function
+        | `Enter _ -> acc+1
+        | `Exit _
+        | `Edge _ -> acc)
+      0
+
+  let bench_dfs n =
+    assert (
+      let n1 = dfs_raw n () in
+      let n2 = dfs_ n ()  in
+      let n3 = dfs_event n () in
+      n1 = n2 &&
+      n2 = n3);
+    B.throughputN 2 ~repeat
+      [ "raw", dfs_raw n, ()
+      ; "ccgraph", dfs_ n, ()
+      ; "ccgraph_event", dfs_event n, ()
+      ]
+
+  let () =
+    B.Tree.register ("graph" @>>>
+      [ "dfs" @>>
+        app_ints bench_dfs [100; 1000; 10_000; 50_000; 100_000; 500_000]
+      ]
+    )
+end
+
 module Alloc = struct
   module type ALLOC_ARR = sig
     type 'a t
