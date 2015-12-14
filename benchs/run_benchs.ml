@@ -582,8 +582,9 @@ module Tbl = struct
       ; "find_string" @>> app_ints bench_find_string [10; 20; 100; 1_000; 10_000]
       ]);
     B.Tree.register ("tbl_persistent" @>>>
-      let l_int = [persistent_hashtbl Int; persistent_hashtbl_ref Int] in
-      let l_str = [persistent_hashtbl Str; persistent_hashtbl_ref Str] in
+      (* we also compare to the regular Hashtbl, as a frame of reference *)
+      let l_int = [persistent_hashtbl Int; persistent_hashtbl_ref Int; hashtbl_make Int ] in
+      let l_str = [persistent_hashtbl Str; persistent_hashtbl_ref Str; hashtbl_make Str ] in
       [ "add_int" @>> app_ints (bench_add_to l_int) [10; 100; 1_000; 10_000;]
       ; "find_int" @>> app_ints
           (bench_find_to (List.map find_of_mut l_int))
