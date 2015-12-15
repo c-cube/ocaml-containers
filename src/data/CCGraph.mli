@@ -271,6 +271,8 @@ val scc : ?tbl:('v, 'v scc_state) table ->
 (** Strongly connected components reachable from the given vertices.
     Each component is a list of vertices that are all mutually reachable
     in the graph.
+    The components are explored in a topological order (if C1 and C2 are
+    components, and C1 points to C2, then C2 will be yielded before C1).
     Uses {{: https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm} Tarjan's algorithm}
     @param tbl table used to map nodes to some hidden state
     @raise Sequence_once if the result is iterated on more than once.
