@@ -210,25 +210,34 @@ let style_of_tag_ s = match String.trim s with
 let color_enabled = ref false
 
 (* either prints the tag of [s] or delegate to [or_else] *)
-let mark_open_tag ~or_else s =
+let mark_open_tag st ~or_else s =
   try
     let style = style_of_tag_ s in
+    Stack.push style st;
     if !color_enabled then ansi_l_to_str_ style else ""
   with Not_found -> or_else s
 
-let mark_close_tag ~or_else s =
+let mark_close_tag st ~or_else s =
   try
     let _ = style_of_tag_ s in (* check if it's indeed about color *)
-    if !color_enabled then ansi_l_to_str_ [`Reset] else ""
+    let style =
+      try
+        ignore (Stack.pop st); (* pop current style (if well-scoped...) *)
+        Stack.top st (* look at previous style *)
+      with Stack.Empty ->
+        [`Reset]
+    in
+    if !color_enabled then ansi_l_to_str_ style else ""
   with Not_found -> or_else s
 
 (* add color handling to formatter [ppf] *)
 let set_color_tag_handling ppf =
   let open Format in
   let functions = pp_get_formatter_tag_functions ppf () in
+  let st = Stack.create () in (* stack of styles *)
   let functions' = {functions with
-    mark_open_tag=(mark_open_tag ~or_else:functions.mark_open_tag);
-    mark_close_tag=(mark_close_tag ~or_else:functions.mark_close_tag);
+    mark_open_tag=(mark_open_tag st ~or_else:functions.mark_open_tag);
+    mark_close_tag=(mark_close_tag st ~or_else:functions.mark_close_tag);
   } in
   pp_set_mark_tags ppf true; (* enable tags *)
   pp_set_formatter_tag_functions ppf functions'

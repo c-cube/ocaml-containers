@@ -71,7 +71,7 @@ val map : ('a -> 'b) -> 'b printer -> 'a printer
   Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
   to put some colors on the terminal.
 
-  This uses {b tags} in format strings to specify  the style. Current styles
+  This uses {b tags} in format strings to specify the style. Current styles
   are the following:
 
   {ul
