@@ -70,25 +70,50 @@ val map : ('a -> 'b) -> 'b printer -> 'a printer
 
   Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
   to put some colors on the terminal.
-  We only allow styling of constant strings, because nesting is almost
-  impossible with ANSI codes (unless we maintain a stack of codes explicitely).
 
+  This uses {b tags} in format strings to specify  the style. Current styles
+  are the following:
+
+  {ul
+    {- "reset" resets style}
+    {- "black" }
+    {- "red" }
+    {- "green" }
+    {- "yellow" }
+    {- "blue" }
+    {- "magenta" }
+    {- "cyan" }
+    {- "white" }
+    {- "Black" bold black}
+    {- "Red" bold red }
+    {- "Green" bold green }
+    {- "Yellow" bold yellow }
+    {- "Blue" bold blue }
+    {- "Magenta" bold magenta }
+    {- "Cyan" bold cyan }
+    {- "White" bold white }
+  }
+
+  Example:
+
+  {[
+    set_color_default true;;
+
+    Format.printf
+      "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@.";;
+   ]}
+
+  {b status: experimental}
   @since NEXT_RELEASE *)
 
-type color =
-  [ `Black
-  | `Red
-  | `Yellow
-  | `Green
-  | `Blue
-  | `Magenta
-  | `Cyan
-  | `White
-  ]
+val set_color_tag_handling : t -> unit
+(** adds functions to support color tags to the given formatter.
+    @since NEXT_RELEASE *)
 
-val color_str : color -> string printer
-
-val bold_str : color -> string printer
+val set_color_default : bool -> unit
+(** [set_color_default b] enables color handling on the standard formatters
+    (stdout, stderr) if [b = true] as well as on {!sprintf} formatters;
+    it disables the color handling if [b = false]. *)
 
 (** {2 IO} *)
 
