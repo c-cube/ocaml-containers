@@ -79,7 +79,10 @@ module List = struct
   include List
   include CCList
 end
-module Map = CCMap
+module Map = struct
+  module type OrderedType = Map.OrderedType
+  include CCMap
+end
 module Option = CCOpt
 module Pair = CCPair
 module Random = struct
@@ -87,7 +90,10 @@ module Random = struct
   include CCRandom
 end
 module Ref = CCRef
-module Set = CCSet
+module Set = struct
+  module type OrderedType = Set.OrderedType
+  include CCSet
+end
 module String = struct
   include String
   include CCString

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 0e7b7eeffb179d552ac9c060b7ab3be9)
+# DO NOT EDIT (digest: 1dc452faf114e2c3c507c622ca14c960)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -123,9 +123,6 @@ true: annot, bin_annot
 <qtest/*.ml{,i,y}>: use_containers_string
 <qtest/*.ml{,i,y}>: use_containers_thread
 <qtest/*.ml{,i,y}>: use_containers_unix
-# Executable id_sexp
-<examples/id_sexp.{native,byte}>: package(bytes)
-<examples/id_sexp.{native,byte}>: use_containers_sexp
 # Executable mem_measure
 "benchs/mem_measure.native": package(bytes)
 "benchs/mem_measure.native": package(hamt)
@@ -139,9 +136,9 @@ true: annot, bin_annot
 <benchs/*.ml{,i,y}>: package(unix)
 <benchs/*.ml{,i,y}>: use_containers
 <benchs/*.ml{,i,y}>: use_containers_data
-# Executable id_sexp2
-<examples/id_sexp2.{native,byte}>: package(bytes)
-<examples/id_sexp2.{native,byte}>: use_containers_sexp
+# Executable id_sexp
+<examples/id_sexp.{native,byte}>: package(bytes)
+<examples/id_sexp.{native,byte}>: use_containers_sexp
 <examples/*.ml{,i,y}>: package(bytes)
 <examples/*.ml{,i,y}>: use_containers_sexp
 # OASIS_STOP
@@ -150,4 +147,4 @@ true: annot, bin_annot
 <src/core/CCVector.cmx>: inline(25)
 <src/data/CCFlatHashtbl.cm*> or <src/data/CCHashTrie.cm*> or <src/data/CCPersistent*>: inline(15)
 <src/**/*.ml> and not <src/misc/*.ml>: warn_A, warn(-4), warn(-44)
-true: no_alias_deps, safe_string
+true: no_alias_deps, safe_string, short_paths

@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.14
+Version:     0.15
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -66,7 +66,7 @@ Library "containers_unix"
 
 Library "containers_sexp"
   Path:             src/sexp
-  Modules:          CCSexp, CCSexpStream, CCSexpM
+  Modules:          CCSexp, CCSexpM
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      sexp
@@ -77,7 +77,7 @@ Library "containers_data"
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
-                    CCHashTrie, CCBloom, CCWBTree, CCRAL
+                    CCHashTrie, CCBloom, CCWBTree, CCRAL, CCAllocCache
   BuildDepends:     bytes
   # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
@@ -182,13 +182,6 @@ Test all
   TestTools:    run_qtest
   Run$:         flag(tests) && flag(unix) && flag(advanced) && flag(bigarray)
 
-Executable id_sexp
-  Path:             examples/
-  Install:          false
-  CompiledObject:   best
-  MainIs:           id_sexp.ml
-  BuildDepends:     containers.sexp
-
 Executable mem_measure
   Path:             benchs/
   Install:          false
@@ -197,11 +190,11 @@ Executable mem_measure
   Build$:           flag(bench)
   BuildDepends:     sequence, unix, containers, containers.data, hamt
 
-Executable id_sexp2
+Executable id_sexp
   Path:             examples/
   Install:          false
   CompiledObject:   best
-  MainIs:           id_sexp2.ml
+  MainIs:           id_sexp.ml
   BuildDepends:     containers.sexp
 
 SourceRepository head

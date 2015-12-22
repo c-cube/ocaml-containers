@@ -37,6 +37,10 @@ type ('a, 'mut) t
 type 'a vector = ('a, rw) t
 (** Type synonym: a ['a vector] is mutable. *)
 
+type 'a ro_vector = ('a, ro) t
+(** Alias for immutable vectors.
+    @since 0.15 *)
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option

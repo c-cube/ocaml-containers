@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 69220d33fe7db598cd4d72fc5d813a8f)
+# DO NOT EDIT (digest: f1eb737bc11930f88f05f61212c0f303)
 CCMultiMap
 CCMultiSet
 CCTrie
@@ -23,4 +23,5 @@ CCHashTrie
 CCBloom
 CCWBTree
 CCRAL
+CCAllocCache
 # OASIS_STOP

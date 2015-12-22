@@ -44,6 +44,8 @@ type ('a,'mut) t = {
 
 type 'a vector = ('a, rw) t
 
+type 'a ro_vector = ('a, ro) t
+
 let freeze v = {
   size=v.size;
   vec=v.vec;

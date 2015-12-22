@@ -122,23 +122,7 @@ let to_string pp x =
   Format.pp_print_flush fmt ();
   Buffer.contents buf
 
-let sprintf format =
-  let buf = Buffer.create 64 in
-  let fmt = Format.formatter_of_buffer buf in
-  Format.kfprintf
-    (fun _fmt -> Format.pp_print_flush fmt (); Buffer.contents buf)
-    fmt
-    format
-
 let fprintf = Format.fprintf
-
-
-let ksprintf ~f fmt =
-  let buf = Buffer.create 32 in
-  let out = Format.formatter_of_buffer buf in
-  Format.kfprintf
-    (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
-    out fmt
 
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter
@@ -159,3 +143,136 @@ let _with_file_out filename f =
 
 let to_file filename format =
   _with_file_out filename (fun fmt -> Format.fprintf fmt format)
+
+type color =
+  [ `Black
+  | `Red
+  | `Yellow
+  | `Green
+  | `Blue
+  | `Magenta
+  | `Cyan
+  | `White
+  ]
+
+let int_of_color_ = function
+  | `Black -> 0
+  | `Red -> 1
+  | `Green -> 2
+  | `Yellow -> 3
+  | `Blue -> 4
+  | `Magenta -> 5
+  | `Cyan -> 6
+  | `White -> 7
+
+type style =
+  [ `FG of color (* foreground *)
+  | `BG of color (* background *)
+  | `Bold
+  | `Reset
+  ]
+
+let code_of_style : style -> int = function
+  | `FG c -> 30 + int_of_color_ c
+  | `BG c -> 40 + int_of_color_ c
+  | `Bold -> 1
+  | `Reset -> 0
+
+let ansi_l_to_str_ = function
+  | [] -> "\x1b[0m"
+  | [a] -> Format.sprintf "\x1b[%dm" (code_of_style a)
+  | [a;b] -> Format.sprintf "\x1b[%d;%dm" (code_of_style a) (code_of_style b)
+  | l ->
+      let pp_num out c = int out (code_of_style c) in
+      to_string (list ~start:"\x1b[" ~stop:"m" ~sep:";" pp_num) l
+
+(* parse a tag *)
+let style_of_tag_ s = match String.trim s with
+  | "reset" -> [`Reset]
+  | "black" -> [`FG `Black]
+  | "red" -> [`FG `Red]
+  | "green" -> [`FG `Green]
+  | "yellow" -> [`FG `Yellow]
+  | "blue" -> [`FG `Blue]
+  | "magenta" -> [`FG `Magenta]
+  | "cyan" -> [`FG `Cyan]
+  | "white" -> [`FG `White]
+  | "Black" -> [`FG `Black]
+  | "Red" -> [`FG `Red; `Bold]
+  | "Green" -> [`FG `Green; `Bold]
+  | "Yellow" -> [`FG `Yellow; `Bold]
+  | "Blue" -> [`FG `Blue; `Bold]
+  | "Magenta" -> [`FG `Magenta; `Bold]
+  | "Cyan" -> [`FG `Cyan; `Bold]
+  | "White" -> [`FG `White; `Bold]
+  | s -> failwith ("unknown style: " ^ s)
+
+let color_enabled = ref false
+
+(* either prints the tag of [s] or delegate to [or_else] *)
+let mark_open_tag ~or_else s =
+  try
+    let style = style_of_tag_ s in
+    if !color_enabled then ansi_l_to_str_ style else ""
+  with Not_found -> or_else s
+
+let mark_close_tag ~or_else s =
+  try
+    let _ = style_of_tag_ s in (* check if it's indeed about color *)
+    if !color_enabled then ansi_l_to_str_ [`Reset] else ""
+  with Not_found -> or_else s
+
+(* add color handling to formatter [ppf] *)
+let set_color_tag_handling ppf =
+  let open Format in
+  let functions = pp_get_formatter_tag_functions ppf () in
+  let functions' = {functions with
+    mark_open_tag=(mark_open_tag ~or_else:functions.mark_open_tag);
+    mark_close_tag=(mark_close_tag ~or_else:functions.mark_close_tag);
+  } in
+  pp_set_mark_tags ppf true; (* enable tags *)
+  pp_set_formatter_tag_functions ppf functions'
+
+let set_color_default =
+  let first = ref true in
+  fun b ->
+    if b && not !color_enabled then (
+      color_enabled := true;
+      if !first then (
+        first := false;
+        set_color_tag_handling stdout;
+        set_color_tag_handling stderr;
+      );
+    ) else if not b && !color_enabled then color_enabled := false
+
+(*$R
+  set_color_default true;
+  let s = sprintf
+    "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@."
+  in
+  assert_equal ~printer:CCFun.id
+    "what is your \027[37;1mfavorite color\027[0m? \027[34mblue\027[0m! No, \027[31mred\027[0m! Ahhhhhhh\n"
+    s
+*)
+
+let sprintf format =
+  let buf = Buffer.create 64 in
+  let fmt = Format.formatter_of_buffer buf in
+  if !color_enabled then set_color_tag_handling fmt;
+  Format.kfprintf
+    (fun _fmt -> Format.pp_print_flush fmt (); Buffer.contents buf)
+    fmt
+    format
+
+(*$T
+  sprintf "yolo %s %d" "a b" 42 = "yolo a b 42"
+  sprintf "%d " 0 = "0 "
+*)
+
+let ksprintf ~f fmt =
+  let buf = Buffer.create 32 in
+  let out = Format.formatter_of_buffer buf in
+  if !color_enabled then set_color_tag_handling out;
+  Format.kfprintf
+    (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
+    out fmt

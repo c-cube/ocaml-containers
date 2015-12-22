@@ -76,11 +76,6 @@ val random : t -> t random_gen
 val random_small : t random_gen
 val random_range : t -> t -> t random_gen
 
-val sign : t -> int
-(** [sign t] is one of [-1, 0, 1], depending on how the float
-    compares to [0.]
-    @deprecated since 0.7 use {! fsign} or {!sign_exn} since it's more accurate *)
-
 val fsign : t -> float
 (** [fsign x] is one of [-1., -0., +0., +1.], or [nan] if [x] is NaN.
     @since 0.7 *)

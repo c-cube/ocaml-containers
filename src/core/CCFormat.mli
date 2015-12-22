@@ -66,6 +66,55 @@ val quad : 'a printer -> 'b printer -> 'c printer -> 'd printer -> ('a * 'b * 'c
 
 val map : ('a -> 'b) -> 'b printer -> 'a printer
 
+(** {2 ASCII codes}
+
+  Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
+  to put some colors on the terminal.
+
+  This uses {b tags} in format strings to specify  the style. Current styles
+  are the following:
+
+  {ul
+    {- "reset" resets style}
+    {- "black" }
+    {- "red" }
+    {- "green" }
+    {- "yellow" }
+    {- "blue" }
+    {- "magenta" }
+    {- "cyan" }
+    {- "white" }
+    {- "Black" bold black}
+    {- "Red" bold red }
+    {- "Green" bold green }
+    {- "Yellow" bold yellow }
+    {- "Blue" bold blue }
+    {- "Magenta" bold magenta }
+    {- "Cyan" bold cyan }
+    {- "White" bold white }
+  }
+
+  Example:
+
+  {[
+    set_color_default true;;
+
+    Format.printf
+      "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@.";;
+   ]}
+
+  {b status: experimental}
+  @since 0.15 *)
+
+val set_color_tag_handling : t -> unit
+(** adds functions to support color tags to the given formatter.
+    @since 0.15 *)
+
+val set_color_default : bool -> unit
+(** [set_color_default b] enables color handling on the standard formatters
+    (stdout, stderr) if [b = true] as well as on {!sprintf} formatters;
+    it disables the color handling if [b = false]. *)
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit

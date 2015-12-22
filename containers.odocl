@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a679876a4dd37916033589f8650bb4b2)
+# DO NOT EDIT (digest: e5c366e1cd8e09a92eff04bbdc3ad4f9)
 src/core/CCVector
 src/core/CCPrint
 src/core/CCError
@@ -50,6 +50,7 @@ src/data/CCHashTrie
 src/data/CCBloom
 src/data/CCWBTree
 src/data/CCRAL
+src/data/CCAllocCache
 src/string/Containers_string
 src/string/CCKMP
 src/string/CCLevenshtein
@@ -69,6 +70,5 @@ src/advanced/CCMonadIO
 src/io/Containers_io_is_deprecated
 src/unix/CCUnix
 src/sexp/CCSexp
-src/sexp/CCSexpStream
 src/sexp/CCSexpM
 # OASIS_STOP

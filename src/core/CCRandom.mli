@@ -76,6 +76,14 @@ val replicate : int -> 'a t -> 'a list t
 (** [replicate n g] makes a list of [n] elements which are all generated
     randomly using [g] *)
 
+val sample_without_replacement:
+  ?compare:('a -> 'a -> int) -> int -> 'a t -> 'a list t
+(** [sample_without_replacement n g] makes a list of [n] elements which are all
+    generated randomly using [g] with the added constraint that none of the generated
+    random values are equal
+    @since 0.15
+ *)
+
 val list_seq : 'a t list -> 'a list t
 (** Build random lists from lists of random generators
     @since 0.4 *)
@@ -145,3 +153,11 @@ val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val run : ?st:state -> 'a t -> 'a
 (** Using a random state (possibly the one in argument) run a generator *)
+
+(**/**)
+
+val uniformity_test : ?size_hint:int -> int -> 'a t -> bool t
+(** [uniformity_test k rng] tests the uniformity of the random generator [rng] using
+    [k] samples.
+    @since 0.15
+*)

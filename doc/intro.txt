@@ -65,6 +65,7 @@ such as:
 Various data structures.
 
 {!modules:
+CCAllocCache
 CCBitField
 CCBloom
 CCBV
@@ -73,7 +74,6 @@ CCFQueue
 CCFlatHashtbl
 CCHashSet
 CCHashTrie
-CCImmutArray
 CCIntMap
 CCMixmap
 CCMixset
@@ -105,7 +105,6 @@ the main type ([CCSexp.t]) isn't.
 
 {!modules:
 CCSexp
-CCSexpStream
 CCSexpM
 }
 

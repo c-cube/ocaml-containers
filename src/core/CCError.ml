@@ -162,6 +162,17 @@ let (<*>) f x = match f with
   | `Error s -> fail s
   | `Ok f -> map f x
 
+let join t = match t with
+  | `Ok (`Ok o) -> `Ok o
+  | `Ok (`Error e) -> `Error e
+  | (`Error _) as e -> e
+
+let both x y =
+  match x,y with
+   | `Ok o, `Ok o' -> `Ok (o, o')
+   | `Ok _, `Error e -> `Error e
+   | `Error e, _  -> `Error e
+
 (** {2 Collections} *)
 
 let map_l f l =

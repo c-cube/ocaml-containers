@@ -671,7 +671,6 @@ let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 
 # 673 "myocamlbuild.ml"
 (* OASIS_STOP *)
-
 let doc_intro = "doc/intro.txt" ;;
 
 Ocamlbuild_plugin.dispatch dispatch_default;;

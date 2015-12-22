@@ -53,6 +53,14 @@ module type S = sig
   val add_list : 'a t -> (key * 'a) list -> 'a t
   (** @since 0.14 *)
 
+  val keys : _ t -> key sequence
+  (** Iterate on keys only
+      @since 0.15 *)
+
+  val values : 'a t -> 'a sequence
+  (** Iterate on values only
+      @since 0.15 *)
+
   val to_list : 'a t -> (key * 'a) list
 
   val pp : ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
@@ -87,6 +95,12 @@ module Make(O : Map.OrderedType) = struct
 
   let to_seq m yield =
     iter (fun k v -> yield (k,v)) m
+
+  let keys m yield =
+    iter (fun k _ -> yield k) m
+
+  let values m yield =
+    iter (fun _ v -> yield v) m
 
   let add_list m l = List.fold_left (fun m (k,v) -> add k v m) m l
 
