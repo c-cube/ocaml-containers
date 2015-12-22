@@ -71,11 +71,6 @@ type 'a random_gen = Random.State.t -> 'a
 let pp buf = Printf.bprintf buf "%f"
 let print fmt = Format.pp_print_float fmt
 
-let sign (a:float) =
-  if a < 0.0 then -1
-  else if a > 0.0 then 1
-  else 0
-
 let fsign a =
   if is_nan a then nan
   else if a = 0. then a
