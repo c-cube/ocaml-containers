@@ -55,11 +55,11 @@ module type S = sig
 
   val keys : _ t -> key sequence
   (** Iterate on keys only
-      @since NEXT_RELEASE *)
+      @since 0.15 *)
 
   val values : 'a t -> 'a sequence
   (** Iterate on values only
-      @since NEXT_RELEASE *)
+      @since 0.15 *)
 
   val to_list : 'a t -> (key * 'a) list
 

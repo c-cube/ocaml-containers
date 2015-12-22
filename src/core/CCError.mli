@@ -146,13 +146,13 @@ val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
 val join : (('a, 'err) t, 'err) t -> ('a, 'err) t
 (** [join t], in case of success, returns [`Ok o] from [`Ok (`Ok o)]. Otherwise,
     it fails with [`Error e] where [e] is the unwrapped error of [t].
-    @since NEXT_RELEASE *)
+    @since 0.15 *)
 
 val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
 (** [both a b], in case of success, returns [`Ok (o, o')] with the ok values
     of [a] and [b]. Otherwise, it fails, and the error of [a] is chosen over the
     error of [b] if both fail.
-    @since NEXT_RELEASE *)
+    @since 0.15 *)
 
 (** {2 Infix}
 

@@ -81,7 +81,7 @@ val sample_without_replacement:
 (** [sample_without_replacement n g] makes a list of [n] elements which are all
     generated randomly using [g] with the added constraint that none of the generated
     random values are equal
-    @since NEXT_RELEASE
+    @since 0.15
  *)
 
 val list_seq : 'a t list -> 'a list t
@@ -159,5 +159,5 @@ val run : ?st:state -> 'a t -> 'a
 val uniformity_test : ?size_hint:int -> int -> 'a t -> bool t
 (** [uniformity_test k rng] tests the uniformity of the random generator [rng] using
     [k] samples.
-    @since NEXT_RELEASE
+    @since 0.15
 *)

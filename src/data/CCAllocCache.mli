@@ -8,7 +8,7 @@
   {b NOT THREAD SAFE}
   {b status: experimental}
 
-  @since NEXT_RELEASE
+  @since 0.15
 
 *)
 

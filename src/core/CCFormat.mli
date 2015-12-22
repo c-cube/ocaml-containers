@@ -104,11 +104,11 @@ val map : ('a -> 'b) -> 'b printer -> 'a printer
    ]}
 
   {b status: experimental}
-  @since NEXT_RELEASE *)
+  @since 0.15 *)
 
 val set_color_tag_handling : t -> unit
 (** adds functions to support color tags to the given formatter.
-    @since NEXT_RELEASE *)
+    @since 0.15 *)
 
 val set_color_default : bool -> unit
 (** [set_color_default b] enables color handling on the standard formatters

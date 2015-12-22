@@ -57,7 +57,7 @@ val (<?>) : int -> ('a t * 'a * 'a) -> int
 
 val option : 'a t -> 'a option t
 (** Comparison of optional values. [None] is smaller than any [Some _].
-    @since NEXT_RELEASE *)
+    @since 0.15 *)
 
 val pair : 'a t -> 'b t -> ('a * 'b) t
 

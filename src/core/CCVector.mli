@@ -39,7 +39,7 @@ type 'a vector = ('a, rw) t
 
 type 'a ro_vector = ('a, ro) t
 (** Alias for immutable vectors.
-    @since NEXT_RELEASE *)
+    @since 0.15 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]

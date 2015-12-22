@@ -1,5 +1,28 @@
 = Changelog
 
+== 0.15
+
+=== breaking changes
+
+- remove deprecated `CCFloat.sign`
+- remove deprecated `CCSexpStream`
+
+=== other changes
+
+- basic color handling in `CCFormat`, using tags and ANSI codes
+- add `CCVector.ro_vector` as a convenience alias
+- add `CCOrd.option`
+- add `CCMap.{keys,values}`
+- add wip `CCAllocCache`, an allocation cache for short-lived arrays
+- add `CCError.{join,both}` applicative functions for CCError
+- opam: depend on ocamlbuild
+- work on `CCRandom` by octachron:
+  * add an uniformity test
+  * Make `split_list` uniform
+  * Add sample_without_replacement
+
+- bugfix: forgot to export `{Set.Map}.OrderedType` in `Containers`
+
 == 0.14
 
 === breaking changes
@@ -13,7 +36,7 @@
 - deprecate `CCVector.rev'`, renamed into `CCVector.rev_in_place`
 - deprecate `CCVector.flat_map'`, renamed `flat_map_seq`
 
-- add `CCMap.add_{list,seq}`
+- add `CCMap.add_{list,seqe`
 - add `CCSet.add_{list,seq}`
 - fix small uglyness in `Map.print` and `Set.print`
 - add `CCFormat.{ksprintf,string_quoted}`
