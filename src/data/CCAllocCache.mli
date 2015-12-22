@@ -6,6 +6,7 @@
   Be very careful not to use-after-free or double-free.
 
   {b NOT THREAD SAFE}
+  {b status: experimental}
 
   @since NEXT_RELEASE
 
