@@ -66,7 +66,7 @@ Library "containers_unix"
 
 Library "containers_sexp"
   Path:             src/sexp
-  Modules:          CCSexp, CCSexpStream, CCSexpM
+  Modules:          CCSexp, CCSexpM
   BuildDepends:     bytes
   FindlibParent:    containers
   FindlibName:      sexp
@@ -182,13 +182,6 @@ Test all
   TestTools:    run_qtest
   Run$:         flag(tests) && flag(unix) && flag(advanced) && flag(bigarray)
 
-Executable id_sexp
-  Path:             examples/
-  Install:          false
-  CompiledObject:   best
-  MainIs:           id_sexp.ml
-  BuildDepends:     containers.sexp
-
 Executable mem_measure
   Path:             benchs/
   Install:          false
@@ -197,11 +190,11 @@ Executable mem_measure
   Build$:           flag(bench)
   BuildDepends:     sequence, unix, containers, containers.data, hamt
 
-Executable id_sexp2
+Executable id_sexp
   Path:             examples/
   Install:          false
   CompiledObject:   best
-  MainIs:           id_sexp2.ml
+  MainIs:           id_sexp.ml
   BuildDepends:     containers.sexp
 
 SourceRepository head

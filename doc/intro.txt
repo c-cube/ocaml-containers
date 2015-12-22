@@ -106,7 +106,6 @@ the main type ([CCSexp.t]) isn't.
 
 {!modules:
 CCSexp
-CCSexpStream
 CCSexpM
 }
 
