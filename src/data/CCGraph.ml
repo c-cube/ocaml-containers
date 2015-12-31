@@ -519,10 +519,11 @@ module Dot = struct
 
   let pp_list pp_x out l =
     Format.pp_print_string out "[";
-    List.iteri (fun i x ->
+    List.iteri
+      (fun i x ->
         if i > 0 then Format.fprintf out ",@;";
-        pp_x out x
-      ) l;
+        pp_x out x)
+      l;
     Format.pp_print_string out "]"
 
   type vertex_state = {
@@ -533,6 +534,7 @@ module Dot = struct
   (** Print an enum of Full.traverse_event *)
   let pp_seq
       ?(tbl=mk_table 128)
+      ?(eq=(=))
       ?(attrs_v=fun _ -> [])
       ?(attrs_e=fun _ -> [])
       ?(name="graph")
@@ -570,18 +572,18 @@ module Dot = struct
       get_tag=vertex_explored;
       set_tag=set_explored; (* allocate new ID *)
     } in
-    let events = Traverse.Event.dfs_tag ~tags ~graph seq in
+    let events = Traverse.Event.dfs_tag ~eq ~tags ~graph seq in
     Seq.iter
       (function
         | `Enter (v, _n, _path) ->
           let attrs = attrs_v v in
-          Format.fprintf out "  @[<h>%a %a;@]@." pp_vertex v (pp_list pp_attr) attrs
+          Format.fprintf out "@[<h>%a %a;@]@," pp_vertex v (pp_list pp_attr) attrs
         | `Exit _ -> ()
         | `Edge (e, _) ->
           let v1 = graph.origin e in
           let v2 = graph.dest e in
           let attrs = attrs_e e in
-          Format.fprintf out "  @[<h>%a -> %a %a;@]@."
+          Format.fprintf out "@[<h>%a -> %a %a;@]@,"
             pp_vertex v1 pp_vertex v2
             (pp_list pp_attr)
             attrs
@@ -590,8 +592,8 @@ module Dot = struct
     Format.fprintf out "}@]@;@?";
     ()
 
-  let pp ?tbl ?attrs_v ?attrs_e ?name ~graph fmt v =
-    pp_seq ?tbl ?attrs_v ?attrs_e ?name ~graph fmt (Seq.return v)
+  let pp ?tbl ?eq ?attrs_v ?attrs_e ?name ~graph fmt v =
+    pp_seq ?tbl ?eq ?attrs_v ?attrs_e ?name ~graph fmt (Seq.return v)
 
   let with_out filename f =
     let oc = open_out filename in

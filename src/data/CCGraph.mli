@@ -307,6 +307,7 @@ module Dot : sig
   (** Hidden state associated to a vertex *)
 
   val pp : ?tbl:('v,vertex_state) table ->
+           ?eq:('v -> 'v -> bool) ->
            ?attrs_v:('v -> attribute list) ->
            ?attrs_e:('e -> attribute list) ->
            ?name:string ->
@@ -320,6 +321,7 @@ module Dot : sig
       @param name name of the graph *)
 
   val pp_seq : ?tbl:('v,vertex_state) table ->
+               ?eq:('v -> 'v -> bool) ->
                ?attrs_v:('v -> attribute list) ->
                ?attrs_e:('e -> attribute list) ->
                ?name:string ->
