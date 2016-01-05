@@ -70,6 +70,11 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
     list to another list.
     @since 0.14 *)
 
+val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
+(** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
+    @raise Invalid_argument if the lists do not have the same length
+    @since NEXT_RELEASE *)
+
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d..

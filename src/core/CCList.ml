@@ -170,6 +170,28 @@ let fold_map f acc l =
     fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
 *)
 
+let fold_map2 f acc l1 l2 =
+  let rec aux f acc map_acc l1 l2 = match l1, l2 with
+    | [], [] -> acc, List.rev map_acc
+    | [], _
+    | _, [] -> invalid_arg "fold_map2"
+    | x1 :: l1', x2 :: l2' ->
+        let acc, y = f acc x1 x2 in
+        aux f acc (y :: map_acc) l1' l2'
+  in
+  aux f acc [] l1 l2
+
+(*$=
+  (310, ["1 10"; "2 0"; "3 100"]) \
+    (fold_map2 (fun acc x y->acc+x*y, string_of_int x ^ " " ^ string_of_int y) \
+    0 [1;2;3] [10;0;100])
+*)
+
+(*$T
+  (try ignore (fold_map2 (fun _ _ _ -> assert false) 42 [] [1]); false \
+   with Invalid_argument _ -> true)
+*)
+
 let fold_flat_map f acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
