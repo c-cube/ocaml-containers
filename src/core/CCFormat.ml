@@ -99,13 +99,13 @@ let opt pp fmt x = match x with
   | Some x -> Format.fprintf fmt "some %a" pp x
 
 let pair ppa ppb fmt (a, b) =
-  Format.fprintf fmt "(%a, %a)" ppa a ppb b
+  Format.fprintf fmt "(%a,@ %a)" ppa a ppb b
 
 let triple ppa ppb ppc fmt (a, b, c) =
-  Format.fprintf fmt "(%a, %a, %a)" ppa a ppb b ppc c
+  Format.fprintf fmt "(%a,@ %a,@ %a)" ppa a ppb b ppc c
 
 let quad ppa ppb ppc ppd fmt (a, b, c, d) =
-  Format.fprintf fmt "(%a, %a, %a, %a)" ppa a ppb b ppc c ppd d
+  Format.fprintf fmt "(%a,@ %a,@ %a,@ %a)" ppa a ppb b ppc c ppd d
 
 let map f pp fmt x =
   pp fmt (f x);
