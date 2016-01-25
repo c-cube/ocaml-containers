@@ -115,6 +115,18 @@ val set_color_default : bool -> unit
     (stdout, stderr) if [b = true] as well as on {!sprintf} formatters;
     it disables the color handling if [b = false]. *)
 
+val with_color : string -> 'a printer -> 'a printer
+(** [with_color "Blue" pp] behaves like the printer [pp], but with the given
+    style.
+    {b status: experimental}
+    @since NEXT_RELEASE *)
+
+val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
+(** [with_colorf "Blue" out "%s %d" "yolo" 42] will behave like {!Format.fprintf},
+    but wrapping the content with the given style
+    {b status: experimental}
+    @since NEXT_RELEASE *)
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit
