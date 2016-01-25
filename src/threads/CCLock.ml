@@ -80,11 +80,14 @@ let with_lock_as_ref l ~f =
   let test_it l =
     with_lock_as_ref l
       ~f:(fun r ->
-        let x = LockRef.get r in
-        LockRef.set r (x+10);
-        Thread.yield ();
-        let y = LockRef.get r in
-        LockRef.set r (y - 10);
+        (* increment and decrement *)
+        for j = 0 to 100 do
+          let x = LockRef.get r in
+          LockRef.set r (x+10);
+          if j mod 5=0 then Thread.yield ();
+          let y = LockRef.get r in
+          LockRef.set r (y - 10);
+        done
       )
   in
   for i = 1 to 100 do ignore (Thread.create test_it l) done;
@@ -117,9 +120,9 @@ let set l x =
   let l = create 0 in set l 4; set l 5; get l = 5
 *)
 
-let incr l = update l (fun x -> x+1)
+let incr l = update l Pervasives.succ
 
-let decr l = update l (fun x -> x-1)
+let decr l = update l Pervasives.pred
 
 
 (*$R
@@ -133,3 +136,22 @@ let decr l = update l (fun x -> x-1)
   let l = create 0 in incr l ; get l = 1
   let l = create 0 in decr l ; get l = ~-1
   *)
+
+let incr_then_get l =
+  Mutex.lock l.mutex;
+  l.content <- l.content + 1;
+  let x = l.content in
+  Mutex.unlock l.mutex;
+  x
+
+let get_then_incr l =
+  Mutex.lock l.mutex;
+  let x = l.content in
+  l.content <- l.content + 1;
+  Mutex.unlock l.mutex;
+  x
+
+(*$T
+  let l = create 0 in 1 = incr_then_get l && 1 = get l
+  let l = create 0 in 0 = get_then_incr l && 1 = get l
+*)

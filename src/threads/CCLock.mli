@@ -77,3 +77,12 @@ val incr : int t -> unit
 val decr : int t -> unit
 (** Atomically decrement the value
     @since 0.13 *)
+
+val incr_then_get : int t -> int
+(** [incr_then_get x] increments [x], and return its new value
+    @since NEXT_RELEASE *)
+
+val get_then_incr : int t -> int
+(** [incr_then_get x] increments [x], and return its previous value
+    @since NEXT_RELEASE *)
+
