@@ -33,7 +33,10 @@ type 'a state =
 (** {2 Thread pool} *)
 module Pool = struct
   type job =
-    | Job : ('a -> unit) * 'a -> job
+    | Job1 : ('a -> unit) * 'a -> job
+    | Job2 : ('a -> 'b -> unit) * 'a * 'b -> job
+    | Job3 : ('a -> 'b -> 'c -> unit) * 'a * 'b * 'c -> job
+    | Job4 : ('a -> 'b -> 'c -> 'd -> unit) * 'a * 'b * 'c * 'd -> job
 
   type t = {
     mutable stop : bool;  (* indicate that threads should stop *)
@@ -63,12 +66,12 @@ module Pool = struct
     Die
 
   (** Thread: entry point. They seek jobs in the queue *)
-  let rec serve pool =
-    match with_lock_ pool get_next with
+  let rec serve pool = match with_lock_ pool get_next with
     | Die -> ()
-    | Process (Job (f, x)) ->
-        f x;
-        serve pool
+    | Process (Job1 (f, x)) -> ignore (f x); serve pool
+    | Process (Job2 (f, x, y)) -> ignore (f x y); serve pool
+    | Process (Job3 (f, x, y, z)) -> ignore (f x y z); serve pool
+    | Process (Job4 (f, x, y, z, w)) -> ignore (f x y z w); serve pool
 
   (* thread: seek what to do next (including dying) *)
   and get_next pool =
@@ -112,19 +115,23 @@ module Pool = struct
         if should_start_thread pool then (
           pool.cur_size <- pool.cur_size + 1;
           ignore (Thread.create serve pool)
-        )
-      )
+        ))
 
   (* run the function on the argument in the given pool *)
-  let run pool f x = run_job pool (Job (f, x))
+  let run1 pool f x = run_job pool (Job1 (f, x))
+
+  let run2 pool f x y = run_job pool (Job2 (f, x, y))
+
+  let run3 pool f x y z = run_job pool (Job3 (f, x, y, z))
+
+  let run4 pool f x y z w = run_job pool (Job4 (f, x, y, z, w))
 
   (* kill threads in the pool *)
   let stop pool =
     with_lock_ pool
       (fun p ->
         p.stop <- true;
-        Queue.clear p.jobs
-      )
+        Queue.clear p.jobs)
 end
 
 (*$inject
@@ -184,8 +191,7 @@ let set_done_ cell x =
         cell.state <- Done x;
         Condition.broadcast cell.condition;
         List.iter (fun f -> f cell.state) cell.handlers
-    | _ -> assert false
-    )
+    | _ -> assert false)
 
 let set_fail_ cell e =
   with_lock_ cell
@@ -194,8 +200,7 @@ let set_fail_ cell e =
         cell.state <- Failed e;
         Condition.broadcast cell.condition;
         List.iter (fun f -> f cell.state) cell.handlers
-    | _ -> assert false
-    )
+    | _ -> assert false)
 
 let run_and_set1 cell f x =
   try
@@ -213,7 +218,7 @@ let run_and_set2 cell f x y =
 
 let make1 f x =
   let cell = create_cell() in
-  Pool.run pool (run_and_set1 cell f) x;
+  Pool.run3 pool run_and_set1 cell f x;
   Run cell
 
 let make f = make1 f ()
@@ -236,7 +241,7 @@ let make f = make1 f ()
 
 let make2 f x y =
   let cell = create_cell() in
-  Pool.run pool (run_and_set2 cell f x) y;
+  Pool.run4 pool run_and_set2 cell f x y;
   Run cell
 
 let get = function
