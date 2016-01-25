@@ -6,6 +6,10 @@ type t = Thread.t
 
 let spawn f = Thread.create f ()
 
+let spawn1 f x = Thread.create f x
+
+let spawn2 f x y = Thread.create (fun () -> f x y) ()
+
 let detach f = ignore (Thread.create f ())
 
 module Arr = struct

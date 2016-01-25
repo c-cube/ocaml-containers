@@ -7,8 +7,16 @@
 
 type t = Thread.t
 
-val spawn : (unit -> 'a) -> t
+val spawn : (unit -> _) -> t
 (** [spawn f] creates a new thread that runs [f ()] *)
+
+val spawn1 : ('a -> _) -> 'a -> t
+(** [spawn1 f x] is like [spawn (fun () -> f x)].
+    @since NEXT_RELEASE *)
+
+val spawn2 : ('a -> 'b -> _) -> 'a -> 'b -> t
+(** [spawn2 f x y] is like [spawn (fun () -> f x y)].
+    @since NEXT_RELEASE *)
 
 val detach : (unit -> 'a) -> unit
 (** [detach f] is the same as [ignore (spawn f)] *)
