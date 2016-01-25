@@ -6,11 +6,12 @@ type t = {
   cond : Condition.t;
 }
 
-let create n = {
-  n;
-  mutex=Mutex.create();
-  cond=Condition.create();
-}
+let create n =
+  if n <= 0 then invalid_arg "Semaphore.create";
+  { n;
+    mutex=Mutex.create();
+    cond=Condition.create();
+  }
 
 let get t = t.n
 

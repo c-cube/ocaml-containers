@@ -9,13 +9,13 @@ type t
 
 val create : int -> t
 (** [create n] creates a semaphore with initial value [n]
-    @raise Invalid_argument if [n < 0] *)
+    @raise Invalid_argument if [n <= 0] *)
 
 val get : t -> int
 (** Current value *)
 
 val acquire : int -> t -> unit
-(** [acquire n s] blocks until [get s > n], then atomically
+(** [acquire n s] blocks until [get s >= n], then atomically
     sets [s := !s - n] *)
 
 val release : int -> t -> unit
