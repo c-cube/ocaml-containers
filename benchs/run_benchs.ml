@@ -954,7 +954,7 @@ module Deque = struct
 end
 
 module Thread = struct
-  module Q = CCThread.Queue
+  module Q = CCBlockingQueue
 
   module type TAKE_PUSH = sig
     val take : 'a Q.t -> 'a

@@ -114,7 +114,7 @@ Library "containers_bigarray"
 
 Library "containers_thread"
   Path:             src/threads/
-  Modules:          CCFuture, CCLock, CCSemaphore, CCThread
+  Modules:          CCFuture, CCLock, CCSemaphore, CCThread, CCBlockingQueue
   FindlibName:      thread
   FindlibParent:    containers
   Build$:           flag(thread)

@@ -148,6 +148,7 @@ Moved to its own repository
 {4 Others}
 
 {!modules:
+CCBlockingQueue
 CCFuture
 CCLock
 CCSemaphore
