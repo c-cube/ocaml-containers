@@ -46,6 +46,15 @@ let rec iter_gen f g = match g() with
   | None -> ()
   | Some x -> f x; iter_gen f g
 
+let finally_ f x ~h =
+  try
+    let y = f x in
+    ignore (h());
+    y
+  with e ->
+    ignore (h ());
+    raise e
+
 (* print a string, but escaped if required *)
 let escape_str buf s =
   if str_exists s
@@ -154,6 +163,71 @@ let stdout x = x#stdout
 let stderr x = x#stderr
 let status x = x#status
 let errcode x = x#errcode
+
+let with_in ?(mode=0o644) ?(flags=[]) file ~f =
+  let fd = Unix.openfile file (Unix.O_RDONLY::flags) mode in
+  let ic = Unix.in_channel_of_descr fd in
+  finally_ f ic
+    ~h:(fun () -> Unix.close fd)
+
+let with_out ?(mode=0o644) ?(flags=[Unix.O_CREAT; Unix.O_TRUNC]) file ~f =
+  let fd = Unix.openfile file (Unix.O_WRONLY::flags) mode in
+  let oc = Unix.out_channel_of_descr fd in
+  finally_ f oc
+    ~h:(fun () -> flush oc; Unix.close fd)
+
+let with_process_in cmd ~f =
+  let ic = Unix.open_process_in cmd in
+  finally_ f ic
+    ~h:(fun () -> ignore (Unix.close_process_in ic))
+
+let with_process_out cmd ~f =
+  let oc = Unix.open_process_out cmd in
+  finally_ f oc
+    ~h:(fun () -> ignore (Unix.close_process_out oc))
+
+type process_full = <
+  stdin: out_channel;
+  stdout: in_channel;
+  stderr: in_channel;
+  close: Unix.process_status;
+>
+
+let with_process_full ?env cmd ~f =
+  let env = match env with None -> Unix.environment () | Some e -> e in
+  let oc, ic, err = Unix.open_process_full cmd env in
+  let p = object
+    method stdin = ic
+    method stdout = oc
+    method stderr = err
+    method close = Unix.close_process_full (oc,ic,err)
+  end in
+  finally_ f p ~h:(fun () -> p#close)
+
+let with_connection addr ~f =
+  let ic, oc = Unix.open_connection addr in
+  finally_ (fun () -> f ic oc) ()
+    ~h:(fun () -> Unix.shutdown_connection ic)
+
+exception ExitServer
+
+(* version of {!Unix.establish_server} that doesn't fork *)
+let establish_server sockaddr ~f =
+  let sock =
+    Unix.socket (Unix.domain_of_sockaddr sockaddr) Unix.SOCK_STREAM 0 in
+  Unix.setsockopt sock Unix.SO_REUSEADDR true;
+  Unix.bind sock sockaddr;
+  Unix.listen sock 5;
+  let continue = ref true in
+  while !continue do
+    try
+      let s, _ = Unix.accept sock in
+      let ic = Unix.in_channel_of_descr s in
+      let oc = Unix.out_channel_of_descr s in
+      ignore (f ic oc)
+    with ExitServer ->
+      continue := false
+  done
 
 module Infix = struct
   let (?|) fmt = call fmt
