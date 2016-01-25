@@ -104,6 +104,17 @@ let update l f =
   let l = create 5 in update l (fun x->x+1); get l = 6
   *)
 
+let update_map l f =
+  with_lock l
+    (fun x ->
+      let x', y = f x in
+      l.content <- x';
+      y)
+
+(*$T
+  let l = create 5 in update_map l (fun x->x+1, string_of_int x) = "5" && get l = 6
+  *)
+
 let get l =
   Mutex.lock l.mutex;
   let x = l.content in
