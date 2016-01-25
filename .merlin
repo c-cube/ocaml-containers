@@ -28,6 +28,7 @@ B _build/examples
 B _build/tests
 PKG oUnit
 PKG benchmark
+PKG result
 PKG threads
 PKG threads.posix
 PKG lwt

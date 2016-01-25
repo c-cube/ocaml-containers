@@ -27,6 +27,7 @@ remove: [
 depends: [
     "ocamlfind" {build}
     "base-bytes"
+    "result"
     "cppo" {build}
     "oasis" {build}
     "ocamlbuild" {build}
