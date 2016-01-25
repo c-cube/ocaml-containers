@@ -12,6 +12,15 @@ let spawn2 f x y = Thread.create (fun () -> f x y) ()
 
 let detach f = ignore (Thread.create f ())
 
+let finally_ f x ~h =
+  try
+    let res = f x in
+    ignore (h ());
+    res
+  with e ->
+    ignore (h());
+    raise e
+
 module Arr = struct
   let spawn n f =
     Array.init n (fun i -> Thread.create f i)
@@ -42,13 +51,7 @@ module Barrier = struct
 
   let with_lock_ b f =
     Mutex.lock b.lock;
-    try
-      let x = f () in
-      Mutex.unlock b.lock;
-      x
-    with e ->
-      Mutex.unlock b.lock;
-      raise e
+    finally_ f () ~h:(fun () -> Mutex.unlock b.lock)
 
   let reset b = with_lock_ b (fun () -> b.activated <- false)
 
@@ -57,17 +60,14 @@ module Barrier = struct
       (fun () ->
         while not b.activated do
           Condition.wait b.cond b.lock
-        done
-      )
+        done)
 
   let activate b =
     with_lock_ b
       (fun () ->
         if not b.activated then (
           b.activated <- true;
-          Condition.broadcast b.cond
-        )
-      )
+          Condition.broadcast b.cond))
 
   let activated b = with_lock_ b (fun () -> b.activated)
 end
@@ -109,13 +109,7 @@ module Queue = struct
 
   let with_lock_ q f =
     Mutex.lock q.lock;
-    try
-      let x = f () in
-      Mutex.unlock q.lock;
-      x
-    with e ->
-      Mutex.unlock q.lock;
-      raise e
+    finally_ f () ~h:(fun () -> Mutex.unlock q.lock)
 
   let push q x =
     with_lock_ q
@@ -127,8 +121,7 @@ module Queue = struct
         Queue.push x q.q;
         (* if there are blocked receivers, awake one of them *)
         incr_size_ q;
-        Condition.broadcast q.cond;
-      )
+        Condition.broadcast q.cond)
 
   let take q =
     with_lock_ q
@@ -140,8 +133,7 @@ module Queue = struct
         (* if there are blocked senders, awake one of them *)
         decr_size_ q;
         Condition.broadcast q.cond;
-        x
-      )
+        x)
 
   (*$R
     let q = Queue.create 1 in
@@ -179,8 +171,7 @@ module Queue = struct
             done;
             let l = push_ q l in
             Condition.broadcast q.cond;
-            l
-          )
+            l)
         in
         aux q l
     in aux q l
@@ -266,9 +257,7 @@ module Queue = struct
 
   let peek q =
     with_lock_ q
-      (fun () ->
-         try Some (Queue.peek q.q) with Queue.Empty -> None
-      )
+      (fun () -> try Some (Queue.peek q.q) with Queue.Empty -> None)
 
   let size q = with_lock_ q (fun () -> q.size)
 
