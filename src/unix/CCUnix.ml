@@ -196,11 +196,12 @@ type process_full = <
 let with_process_full ?env cmd ~f =
   let env = match env with None -> Unix.environment () | Some e -> e in
   let oc, ic, err = Unix.open_process_full cmd env in
+  let close = lazy (Unix.close_process_full (oc,ic,err)) in
   let p = object
     method stdin = ic
     method stdout = oc
     method stderr = err
-    method close = Unix.close_process_full (oc,ic,err)
+    method close = Lazy.force close
   end in
   finally_ f p ~h:(fun () -> p#close)
 
