@@ -64,10 +64,28 @@ let lexicographic f1 f2 x y =
 let finally ~h ~f =
   try
     let x = f () in
-    h ();
+    ignore (h ());
     x
   with e ->
-    h ();
+    ignore (h ());
+    raise e
+
+let finally1 ~h f x =
+  try
+    let res = f x in
+    ignore (h ());
+    res
+  with e ->
+    ignore (h ());
+    raise e
+
+let finally2 ~h f x y =
+  try
+    let res = f x y in
+    ignore (h ());
+    res
+  with e ->
+    ignore (h ());
     raise e
 
 module Monad(X : sig type t end) = struct

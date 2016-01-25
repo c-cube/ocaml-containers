@@ -57,7 +57,7 @@ val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
 
 val uncurry : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
 
-val tap : ('a -> 'b) -> 'a -> 'a
+val tap : ('a -> _) -> 'a -> 'a
 (** [tap f x] evaluates [f x], discards it, then returns [x]. Useful
     in a pipeline, for instance:
     {[CCArray.(1 -- 10)
@@ -72,10 +72,20 @@ val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
 val lexicographic : ('a -> 'a -> int) -> ('a -> 'a -> int) -> 'a -> 'a -> int
 (** Lexicographic combination of comparison functions *)
 
-val finally : h:(unit -> unit) -> f:(unit -> 'a) -> 'a
+val finally : h:(unit -> _) -> f:(unit -> 'a) -> 'a
 (** [finally h f] calls [f ()] and returns its result. If it raises, the
     same exception is raised; in {b any} case, [h ()] is called after
     [f ()] terminates. *)
+
+val finally1 : h:(unit -> _) -> ('a -> 'b) -> 'a -> 'b
+(** [finally1 ~h f x] is the same as [f x], but after the computation,
+    [h ()] is called whether [f x] rose an exception or not.
+    @since NEXT_RELEASE *)
+
+val finally2 : h:(unit -> _) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+(** [finally2 ~h f x y] is the same as [f x y], but after the computation,
+    [h ()] is called whether [f x y] rose an exception or not.
+    @since NEXT_RELEASE *)
 
 (** {2 Monad}
 
