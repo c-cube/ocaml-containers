@@ -149,10 +149,11 @@ Moved to its own repository
 
 {!modules:
 CCBlockingQueue
-CCFuture
 CCLock
+CCPool
 CCSemaphore
 CCThread
+CCTimer
 }
 
 
