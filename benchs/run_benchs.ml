@@ -1010,7 +1010,7 @@ module Thread = struct
       ]
 
   let fib_pool_ ~size n =
-    let module P = CCPool.Make(struct let max_size = size end) in
+    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
     let open P.Fut.Infix in
     let rec fib n =
       if n<=1 then P.Fut.return 1
@@ -1037,7 +1037,7 @@ module Thread = struct
       ]
 
   let bench_sequence ~size n =
-    let module P = CCPool.Make(struct let max_size = size end) in
+    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
     let id_ x = Thread.delay 0.0001; x in
     let mk_list() = CCList.init n (P.Fut.make1 id_) in
     let mk_sequence () =
