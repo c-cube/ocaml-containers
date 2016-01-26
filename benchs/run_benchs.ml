@@ -1009,6 +1009,33 @@ module Thread = struct
       ; "naive", make naive, ()
       ]
 
+  let fib_pool_ ~size n =
+    let module P = CCPool.Make(struct let max_size = size end) in
+    let open P.Fut.Infix in
+    let rec fib n =
+      if n<=1 then P.Fut.return 1
+      else
+        let f1 = fib (n-1)
+        and f2 = fib (n-2) in
+        P.Fut.return (+) <*> f1 <*> f2
+    in
+    P.Fut.get (fib n)
+
+  let fib_manual n =
+    let rec fib n =
+      if n<= 1  then 1
+      else fib (n-1) + fib (n-2)
+    in
+    fib n
+
+  (* pool of size [size] *)
+  let bench_pool ~size n =
+    assert (fib_manual n = fib_pool_ ~size n);
+    B.throughputN 3 ~repeat
+      [ "sequential", fib_manual, n
+      ; "pool", fib_pool_ ~size, n
+      ]
+
   let () = B.Tree.register (
     let take_push = CCList.map
       (fun (size,senders,receivers) ->
@@ -1028,7 +1055,9 @@ module Thread = struct
 
     "thread" @>>>
       ( take_push @
-      []
+      [ "fib_size5" @>> app_ints (bench_pool ~size:5) [10; 15; 30; 35]
+      ; "fib_size15" @>> app_ints (bench_pool ~size:15) [10; 15; 30; 35]
+      ]
       )
   )
 end
