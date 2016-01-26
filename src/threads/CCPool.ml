@@ -309,17 +309,28 @@ module Make(P : PARAM) = struct
           | Failed e -> k e
           | _ -> ())
 
-    let map f fut = match fut with
-      | Return x -> Return (f x)
+    let map_cell_ ~async f cell ~into:cell' =
+      add_handler_ cell
+        (function
+          | Done x ->
+              if async
+              then run3 run_and_set1 cell' f x
+              else run_and_set1 cell' f x
+          | Failed e -> set_fail_ cell' e
+          | Waiting -> assert false);
+      Run cell'
+
+    let map_ ~async f fut = match fut with
+      | Return x ->
+          if async
+          then make1 f x
+          else Return (f x)
       | FailNow e -> FailNow e
-      | Run cell ->
-          let cell' = create_cell() in
-          add_handler_ cell
-            (function
-              | Done x -> run_and_set1 cell' f x
-              | Failed e -> set_fail_ cell' e
-              | Waiting -> assert false);
-          Run cell'
+      | Run cell -> map_cell_ ~async f cell ~into:(create_cell())
+
+    let map f fut = map_ ~async:false f fut
+
+    let map_async f fut = map_ ~async:true f fut
 
     (*$R
       let a = Fut.make (fun () -> 1) in
@@ -328,18 +339,29 @@ module Make(P : PARAM) = struct
       OUnit.assert_equal 1 (Fut.get c)
     *)
 
-    (* same as {!map}, but schedules the computation of [f] in the pool *)
-    let map_async f fut = match fut with
-      | Return x -> make1 f x
-      | FailNow e -> FailNow e
-      | Run cell ->
-          let cell' = create_cell() in
-          add_handler_ cell
+    let app_ ~async f x = match f, x with
+      | Return f, Return x ->
+          if async
+          then make1 f x
+          else Return (f x)
+      | FailNow e, _
+      | _, FailNow e -> FailNow e
+      | Return f, Run x ->
+          map_cell_ ~async (fun x -> f x) x ~into:(create_cell())
+      | Run f, Return x ->
+          map_cell_ ~async (fun f -> f x) f ~into:(create_cell())
+      | Run f, Run x ->
+          let cell' = create_cell () in
+          add_handler_ f
             (function
-              | Done x -> run3 run_and_set1 cell' f x
+              | Done f -> ignore (map_cell_ ~async f x ~into:cell')
               | Failed e -> set_fail_ cell' e
               | Waiting -> assert false);
           Run cell'
+
+    let app f x = app_ ~async:false f x
+
+    let app_async f x = app_ ~async:true f x
 
     let flat_map f fut = match fut with
       | Return x -> f x
@@ -489,6 +511,7 @@ module Make(P : PARAM) = struct
       let (>>=) x f = flat_map f x
       let (>>) a f = and_then a f
       let (>|=) a f = map f a
+      let (<*>) = app
     end
 
     include Infix

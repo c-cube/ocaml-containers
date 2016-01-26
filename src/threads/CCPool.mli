@@ -132,6 +132,13 @@ module Make(P : PARAM) : sig
     val map_async : ('a -> 'b) -> 'a t -> 'b t
     (** Maps the value inside the future, to be computed in a separated job. *)
 
+    val app : ('a -> 'b) t -> 'a t -> 'b t
+    (** [app f x] applies the result of [f] to the result of [x] *)
+
+    val app_async : ('a -> 'b) t -> 'a t -> 'b t
+    (** [app f x] applies the result of [f] to the result of [x], in
+        a separated job scheduled in the pool *)
+
     val sleep : float -> unit t
     (** Future that returns with success in the given amount of seconds. Blocks
         the thread! If you need to wait on many events, consider
@@ -141,10 +148,17 @@ module Make(P : PARAM) : sig
       val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
       val (>>) : 'a t -> (unit -> 'b t) -> 'b t
       val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+      val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
     end
 
     val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+
     val (>>) : 'a t -> (unit -> 'b t) -> 'b t
+
     val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+    (** Alias to {!map} *)
+
+    val (<*>): ('a -> 'b) t -> 'a t -> 'b t
+    (** Alias to {!app} *)
   end
 end
