@@ -1036,6 +1036,23 @@ module Thread = struct
       ; "pool", fib_pool_ ~size, n
       ]
 
+  let bench_sequence ~size n =
+    let module P = CCPool.Make(struct let max_size = size end) in
+    let id_ x = Thread.delay 0.0001; x in
+    let mk_list() = CCList.init n (P.Fut.make1 id_) in
+    let mk_sequence () =
+      let l = mk_list() in
+      P.Fut.sequence_l l |> P.Fut.get
+    (* reserves a thread for the computation *)
+    and mk_blocking () =
+      let l = mk_list() in
+      P.Fut.make (fun () -> List.map P.Fut.get l) |> P.Fut.get
+    in
+    B.throughputN 3 ~repeat
+      [ "sequence", mk_sequence, ()
+      ; "blocking", mk_blocking, ()
+      ]
+
   let () = B.Tree.register (
     let take_push = CCList.map
       (fun (size,senders,receivers) ->
@@ -1057,6 +1074,7 @@ module Thread = struct
       ( take_push @
       [ "fib_size5" @>> app_ints (bench_pool ~size:5) [10; 15; 30; 35]
       ; "fib_size15" @>> app_ints (bench_pool ~size:15) [10; 15; 30; 35]
+      ; "sequence" @>> app_ints (bench_sequence ~size:15) [100; 500; 10_000; 100_000]
       ]
       )
   )
