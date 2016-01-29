@@ -1,47 +1,22 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+(* This file is free software, part of containers. See file "license" for more details. *)
 
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
-
-(** {1 Hash combinators}
-
-Combination of hashes based on the Murmur Hash (64 bits). See
-{{: https://sites.google.com/site/murmurhash/MurmurHash2_64.cpp?attredirects=0} this page}
-*)
+(** {1 Hash combinators} *)
 
 (** {2 Definitions} *)
 
 type t = int
 (** A hash value is a positive integer *)
 
-type state = int64
-(** State required by the hash function *)
+type state
+(** State required by the hash function.
+    @since NEXT_RELEASE the state is abstract, for more flexibility *)
 
 type 'a hash_fun = 'a -> state -> state
 (** Hash function for values of type ['a], merging a fingerprint of the
     value into the state of type [t] *)
 
-(** {2 Applying Murmur Hash} *)
+(** {2 Applying Hash} *)
 
 val init : state
 (** Initial value *)
@@ -55,11 +30,11 @@ val apply : 'a hash_fun -> 'a -> int
 
 (** {2 Basic Combinators}
 
- Those combinators have been renamed in 0.13, so as to
- remove the trailing "_".
- They are now defined by the application of {!Make}
+    Those combinators have been renamed in 0.13, so as to
+    remove the trailing "_".
+    They are now defined by the application of {!Make}
 
- *)
+*)
 
 val bool_ : bool hash_fun
 (** @deprecated use {!bool} *)
@@ -108,11 +83,11 @@ val klist : 'a hash_fun -> 'a klist hash_fun
 
 (** {2 Generic Hashing}
 
-  Parametrize over the state, and some primitives to hash basic types.
-  This can for instance be used for cryptographic hashing or
-  checksums such as MD5.
+    Parametrize over the state, and some primitives to hash basic types.
+    This can for instance be used for cryptographic hashing or
+    checksums such as MD5.
 
-  @since 0.13 *)
+    @since 0.13 *)
 
 module type HASH = sig
   type state
