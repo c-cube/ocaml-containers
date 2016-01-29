@@ -56,7 +56,9 @@ CCLinq.(
 - :  `Ok ()
 ]}
 
-{b status: experimental}
+{b DEPRECATED, use "OLinq" (standalone library) instead}
+
+{b status: deprecated}
 
 *)
 
@@ -75,8 +77,6 @@ module PMap : sig
   val size : (_,_) t -> int
 
   val to_seq : ('a, 'b) t -> ('a * 'b) sequence
-
-  val to_list : ('a, 'b) t -> ('a * 'b) list
 
   val map : ('b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
   (** Transform values *)
