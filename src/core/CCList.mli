@@ -300,6 +300,10 @@ module Assoc : sig
 
   val set : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b -> ('a,'b) t
   (** Add the binding into the list (erase it if already present) *)
+
+  val mem : ?eq:('a->'a->bool) -> ('a,_) t -> 'a -> bool
+  (** [mem l x] returns [true] iff [x] is a key in [l]
+      @since NEXT_RELEASE *)
 end
 
 (** {2 Zipper} *)

@@ -793,15 +793,15 @@ let repeat i l =
 module Assoc = struct
   type ('a, 'b) t = ('a*'b) list
 
-  let get_exn ?(eq=(=)) l x =
-    let rec search eq l x = match l with
-      | [] -> raise Not_found
-      | (y,z)::l' ->
-          if eq x y then z else search eq l' x
-    in search eq l x
+  let rec search_exn eq l x = match l with
+    | [] -> raise Not_found
+    | (y,z)::l' ->
+        if eq x y then z else search_exn eq l' x
 
-  let get ?eq l x =
-    try Some (get_exn ?eq l x)
+  let get_exn ?(eq=(=)) l x = search_exn eq l x
+
+  let get ?(eq=(=)) l x =
+    try Some (search_exn eq l x)
     with Not_found -> None
 
   (*$T
@@ -825,6 +825,15 @@ module Assoc = struct
       = [1, "1"; 2, "two"]
     Assoc.set [1,"1"; 2, "2"] 3 "3" |> List.sort Pervasives.compare \
       = [1, "1"; 2, "2"; 3, "3"]
+  *)
+
+  let mem ?(eq=(=)) l x =
+    try ignore (search_exn eq l x); true
+    with Not_found -> false
+
+  (*$T
+    Assoc.mem [1,"1"; 2,"2"; 3, "3"] 1
+    not (Assoc.mem [1,"1"; 2,"2"; 3, "3"] 4)
   *)
 end
 
