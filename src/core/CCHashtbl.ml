@@ -1,7 +1,6 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-
 (** {1 Extension to the standard Hashtbl}  *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -14,6 +13,15 @@ type 'a printer = Format.formatter -> 'a -> unit
 let get tbl x =
   try Some (Hashtbl.find tbl x)
   with Not_found -> None
+
+let get_or tbl x ~or_ =
+  try Hashtbl.find tbl x
+  with Not_found -> or_
+
+(*$=
+  "c" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 3 ~or_:"c")
+  "b" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 2 ~or_:"c")
+*)
 
 let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
 
@@ -89,6 +97,11 @@ module type S = sig
   val get : 'a t -> key -> 'a option
   (** Safe version of {!Hashtbl.find} *)
 
+  val get_or : 'a t -> key -> or_:'a -> 'a
+  (** [get_or tbl k ~or_] returns the value associated to [k] if present,
+      and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+      @since NEXT_RELEASE *)
+
   val keys : 'a t -> key sequence
   (** Iterate on keys (similar order as {!Hashtbl.iter}) *)
 
@@ -96,11 +109,11 @@ module type S = sig
   (** Iterate on values in the table *)
 
   val keys_list : ('a, 'b) Hashtbl.t -> 'a list
-  (** [keys_list t] is the list of keys in [t].
+  (** [keys t] is the list of keys in [t].
       @since 0.8 *)
 
   val values_list : ('a, 'b) Hashtbl.t -> 'b list
-  (** [values_list t] is the list of values in [t].
+  (** [values t] is the list of values in [t].
       @since 0.8 *)
 
   val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list
@@ -131,6 +144,10 @@ module type S = sig
       @since 0.13 *)
 end
 
+(*$inject
+  module T = Make(CCInt)
+*)
+
 module Make(X : Hashtbl.HashedType)
   : S with type key = X.t and type 'a t = 'a Hashtbl.Make(X).t
 = struct
@@ -139,6 +156,15 @@ module Make(X : Hashtbl.HashedType)
   let get tbl x =
     try Some (find tbl x)
     with Not_found -> None
+
+  let get_or tbl x ~or_ =
+    try find tbl x
+    with Not_found -> or_
+
+  (*$=
+    "c" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 3 ~or_:"c")
+    "b" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 2 ~or_:"c")
+  *)
 
   let keys tbl k = iter (fun key _ -> k key) tbl
 

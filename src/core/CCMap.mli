@@ -16,6 +16,11 @@ module type S = sig
   val get : key -> 'a t -> 'a option
   (** Safe version of {!find} *)
 
+  val get_or : key -> 'a t -> or_:'a -> 'a
+  (** [get_or k m ~or_] returns the value associated to [k] if present,
+      and returns [or_] otherwise (if [k] doesn't belong in [m])
+      @since NEXT_RELEASE *)
+
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** [update k f m] calls [f (Some v)] if [find k m = v],
       otherwise it calls [f None]. In any case, if the result is [None]
