@@ -304,6 +304,13 @@ module Assoc : sig
   val mem : ?eq:('a->'a->bool) -> ('a,_) t -> 'a -> bool
   (** [mem l x] returns [true] iff [x] is a key in [l]
       @since NEXT_RELEASE *)
+
+  val update :
+    ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> f:('b option -> 'b option) -> ('a,'b) t
+  (** [update l k ~f] updates [l] on the key [k], by calling [f (get l k)]
+      and removing [k] if it returns [None], mapping [k] to [v'] if it
+      returns [Some v']
+      @since NEXT_RELEASE *)
 end
 
 (** {2 Zipper} *)

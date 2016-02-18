@@ -25,6 +25,10 @@ of this software, even if advised of the possibility of such damage.
 
 (** {1 complements to list} *)
 
+(*$inject
+  let lsort l = List.sort Pervasives.compare l
+*)
+
 type 'a t = 'a list
 
 let empty = []
@@ -811,14 +815,19 @@ module Assoc = struct
     Assoc.get [] 42 = None
   *)
 
+  (* search for a binding for [x] in [l], and calls [f x (Some v) rest]
+     or [f x None rest] depending on whether it finds the binding.
+     [rest] is the list of the other bindings *)
+  let rec search_set eq acc l x ~f = match l with
+    | [] -> f x None acc
+    | (x',y')::l' ->
+        if eq x x'
+          then f x (Some y') (List.rev_append acc l')
+          else search_set eq ((x',y')::acc) l' x ~f
+
   let set ?(eq=(=)) l x y =
-    let rec search eq acc l x y = match l with
-      | [] -> (x,y)::acc
-      | (x',y')::l' ->
-          if eq x x'
-            then (x,y)::List.rev_append acc l'
-            else search eq ((x',y')::acc) l' x y
-    in search eq [] l x y
+    search_set eq [] l x
+      ~f:(fun x _ l -> (x,y)::l)
 
   (*$T
     Assoc.set [1,"1"; 2, "2"] 2 "two" |> List.sort Pervasives.compare \
@@ -834,6 +843,24 @@ module Assoc = struct
   (*$T
     Assoc.mem [1,"1"; 2,"2"; 3, "3"] 1
     not (Assoc.mem [1,"1"; 2,"2"; 3, "3"] 4)
+  *)
+
+  let update ?(eq=(=)) l x ~f =
+    search_set eq [] l x
+      ~f:(fun x opt_y rest ->
+        match f opt_y with
+        | None -> rest (* drop *)
+        | Some y' -> (x,y') :: rest)
+  (*$=
+    [1,"1"; 2,"22"] \
+      (Assoc.update [1,"1"; 2,"2"] 2 \
+        ~f:(function Some "2" -> Some "22" | _ -> assert false) |> lsort)
+    [1,"1"; 3,"3"] \
+      (Assoc.update [1,"1"; 2,"2"; 3,"3"] 2 \
+        ~f:(function Some "2" -> None | _ -> assert false) |> lsort)
+    [1,"1"; 2,"2"; 3,"3"] \
+      (Assoc.update [1,"1"; 2,"2"] 3 \
+        ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
   *)
 end
 
