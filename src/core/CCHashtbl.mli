@@ -121,7 +121,9 @@ module Make(X : Hashtbl.HashedType) :
 
 (** {2 Default Table}
 
-A table with a default element for keys that were never added. *)
+    A table with a default element for keys that were never added.
+
+    @deprecated since NEXT_RELEASE, should be merged into [Make] itself *)
 
 module type DEFAULT = sig
   type key
@@ -155,7 +157,9 @@ end
 
 module MakeDefault(X : Hashtbl.HashedType) : DEFAULT with type key = X.t
 
-(** {2 Count occurrences using a Hashtbl} *)
+(** {2 Count occurrences using a Hashtbl}
+
+    @deprecated since NEXT_RELEASE, should be merged into [Make] itself *)
 
 module type COUNTER = sig
   type elt
