@@ -3,9 +3,32 @@
 
 (** {1 Maps with Heterogeneous Values}
 
-{b status: experimental}
+    {b status: experimental}
 
-@since 0.9 *)
+    {[
+      module M = CCMixmap.Make(CCInt)
+
+      let inj_int = CCMixmap.create_inj()
+      let inj_str = CCMixmap.create_inj()
+      let inj_list_int = CCMixmap.create_inj()
+
+      let m =
+        M.empty
+        |> M.add ~inj:inj_int 1 1
+        |> M.add ~inj:inj_str 2 "2"
+        |> M.add ~inj:inj_list_int 3 [3;3;3]
+
+      assert (M.get ~inj:inj_int 1 m = Some 1)
+      assert (M.get ~inj:inj_str 1 m = None)
+      assert (M.get ~inj:inj_str 2 m = Some "2")
+      assert (M.get ~inj:inj_int 2 m = None)
+      assert (M.get ~inj:inj_list_int 3 m = Some [3;3;3])
+      assert (M.get ~inj:inj_str 3 m = None)
+    ]}
+
+    @since 0.9
+    @since NEXT_RELEASE change of API, the map is last argument to
+      make piping with [|>] easier. *)
 
 type 'a injection
 (** An accessor for values of type 'a in any map. Values put
@@ -28,14 +51,14 @@ module type S = sig
   val empty : t
   (** Empty map *)
 
-  val get : inj:'a injection -> t  -> key -> 'a option
+  val get : inj:'a injection -> key -> t -> 'a option
   (** Get the value corresponding to this key, if it exists and
       belongs to the same key *)
 
-  val add : inj:'a injection -> t -> key -> 'a -> t
+  val add : inj:'a injection -> key -> 'a -> t -> t
   (** Bind the key to the value, using [inj] *)
 
-  val find : inj:'a injection -> t -> key -> 'a
+  val find : inj:'a injection -> key -> t -> 'a
   (** Find the value for the given key, which must be of the right type.
       @raise Not_found if either the key is not found, or if its value
         doesn't belong to the right type *)
@@ -43,10 +66,10 @@ module type S = sig
   val cardinal : t -> int
   (** Number of bindings *)
 
-  val remove : t -> key -> t
+  val remove : key -> t -> t
   (** Remove the binding for this key *)
 
-  val mem : inj:_ injection-> t -> key -> bool
+  val mem : inj:_ injection-> key -> t -> bool
   (** Is the given key in the map, with the right type? *)
 
   val iter_keys : f:(key -> unit) -> t -> unit
