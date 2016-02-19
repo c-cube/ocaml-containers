@@ -84,6 +84,7 @@ val map : ('a -> 'b) -> 'b printer -> 'a printer
     {- "magenta" }
     {- "cyan" }
     {- "white" }
+    {- "bold" bold font}
     {- "Black" bold black}
     {- "Red" bold red }
     {- "Green" bold green }
