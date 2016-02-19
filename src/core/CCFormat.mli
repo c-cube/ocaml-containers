@@ -140,6 +140,10 @@ val sprintf : ('a, t, unit, string) format4 -> 'a
 (** Print into a string any format string that would usually be compatible
     with {!fprintf}. Similar to {!Format.asprintf}. *)
 
+val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
+(** Similar to {!sprintf} but never prints colors
+    @since NEXT_RELEASE *)
+
 val fprintf : t -> ('a, t, unit ) format -> 'a
 (** Alias to {!Format.fprintf}
     @since 0.14 *)

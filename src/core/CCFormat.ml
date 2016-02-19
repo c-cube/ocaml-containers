@@ -276,18 +276,29 @@ let with_colorf s out fmt =
     (fun out -> Format.pp_close_tag out ())
     out fmt
 
-let sprintf format =
+(* c: whether colors are enabled *)
+let sprintf_ c format =
   let buf = Buffer.create 64 in
   let fmt = Format.formatter_of_buffer buf in
-  if !color_enabled then set_color_tag_handling fmt;
+  if c && !color_enabled then set_color_tag_handling fmt;
   Format.kfprintf
     (fun _fmt -> Format.pp_print_flush fmt (); Buffer.contents buf)
     fmt
     format
 
+let sprintf fmt = sprintf_ true fmt
+let sprintf_no_color fmt = sprintf_ false fmt
+
 (*$T
   sprintf "yolo %s %d" "a b" 42 = "yolo a b 42"
   sprintf "%d " 0 = "0 "
+  sprintf_no_color "%d " 0 = "0 "
+*)
+
+(*$R
+  set_color_default true;
+  assert_equal "\027[31myolo\027[0m" (sprintf "@{<red>yolo@}");
+  assert_equal "yolo" (sprintf_no_color "@{<red>yolo@}");
 *)
 
 let ksprintf ~f fmt =
