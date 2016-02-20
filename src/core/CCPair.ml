@@ -5,6 +5,8 @@
 
 type ('a,'b) t = ('a * 'b)
 
+let make x y = x,y
+
 let map1 f (x,y) = f x,y
 
 let map2 f (x,y) = x,f y

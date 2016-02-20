@@ -5,6 +5,10 @@
 
 type ('a,'b) t = ('a * 'b)
 
+val make : 'a -> 'b -> ('a, 'b) t
+(** Make a tuple from its components
+    @since NEXT_RELEASE *)
+
 val map1 : ('a -> 'b) -> ('a * 'c) -> ('b * 'c)
 
 val map2 : ('a -> 'b) -> ('c * 'a) -> ('c * 'b)
