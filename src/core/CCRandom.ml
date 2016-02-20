@@ -37,6 +37,24 @@ let choose_exn l =
 
 let choose_return l = _choose_array (Array.of_list l)
 
+exception Pick_from_empty
+
+let pick_list l =
+  let n = List.length l in
+  if n=0 then raise Pick_from_empty;
+  fun st ->
+    List.nth l (Random.State.int st n)
+
+(*$Q
+  Q.(list small_int) (fun l -> \
+    List.mem (run (pick_list l)) l)
+*)
+
+let pick_array a =
+  let n = Array.length a in
+  if n=0 then raise Pick_from_empty;
+  fun st -> Array.get a (Random.State.int st n)
+
 let int i st = Random.State.int st i
 
 let small_int = int 100

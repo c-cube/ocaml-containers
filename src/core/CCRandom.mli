@@ -1,27 +1,5 @@
-(*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Random Generators} *)
 
@@ -56,8 +34,7 @@ val delay : (unit -> 'a t) -> 'a t
       small_int >>= fun i -> return (name,i)
     )
     ]}
-    @since 0.4
-*)
+    @since 0.4 *)
 
 val choose : 'a t list -> 'a option t
 (** Choose a generator within the list. *)
@@ -81,12 +58,24 @@ val sample_without_replacement:
 (** [sample_without_replacement n g] makes a list of [n] elements which are all
     generated randomly using [g] with the added constraint that none of the generated
     random values are equal
-    @since 0.15
- *)
+    @since 0.15 *)
 
 val list_seq : 'a t list -> 'a list t
 (** Build random lists from lists of random generators
     @since 0.4 *)
+
+exception Pick_from_empty
+(** @since NEXT_RELEASE *)
+
+val pick_list : 'a list -> 'a t
+(** Pick an element at random from the list
+    @raise Pick_from_empty if the list is empty
+    @since NEXT_RELEASE *)
+
+val pick_array : 'a array -> 'a t
+(** Pick an element at random from the array
+    @raise Pick_from_empty if the array is empty
+    @since NEXT_RELEASE *)
 
 val small_int : int t
 
