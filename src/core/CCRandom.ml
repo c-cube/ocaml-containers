@@ -47,7 +47,7 @@ let pick_list l =
 
 (*$Q
   Q.(list small_int) (fun l -> \
-    List.mem (run (pick_list l)) l)
+    l=[] || List.mem (run (pick_list l)) l)
 *)
 
 let pick_array a =
