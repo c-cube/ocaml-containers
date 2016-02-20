@@ -260,6 +260,22 @@ module File = struct
     with exn ->
       `Error (Printexc.to_string exn)
 
+  let read_exn f = with_in f (read_all_ ~op:Ret_string ~size:4096)
+
+  let read f = try `Ok (read_exn f) with e -> `Error (Printexc.to_string e)
+
+  let append_exn f x =
+    with_out ~flags:[Open_append; Open_creat; Open_text] f
+      (fun oc -> output_string oc x; flush oc)
+
+  let append f x = try `Ok (append_exn f x) with e -> `Error (Printexc.to_string e)
+
+  let write_exn f x =
+    with_out f
+      (fun oc -> output_string oc x; flush oc)
+
+  let write f x = try `Ok (write_exn f x) with e -> `Error (Printexc.to_string e)
+
   let remove_noerr f = try Sys.remove f with _ -> ()
 
   let read_dir_base d =

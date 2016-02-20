@@ -162,6 +162,30 @@ module File : sig
       @param recurse if true (default [false]), sub-directories are also
         explored *)
 
+  val read_exn : t -> string
+  (** Read the content of the given file, or raises some exception
+      @since NEXT_RELEASE *)
+
+  val read : t -> string or_error
+  (** Read the content of the given file
+      @since NEXT_RELEASE *)
+
+  val append_exn : t -> string -> unit
+  (** Append the given string into the given file, possibly raising
+      @since NEXT_RELEASE *)
+
+  val append : t -> string -> unit or_error
+  (** Append the given string into the given file
+      @since NEXT_RELEASE *)
+
+  val write_exn : t -> string -> unit
+  (** Write the given string into the given file, possibly raising
+      @since NEXT_RELEASE *)
+
+  val write : t -> string -> unit or_error
+  (** Write the given string into the given file
+      @since NEXT_RELEASE *)
+
   type walk_item = [`File | `Dir] * t
 
   val walk : t -> walk_item gen
