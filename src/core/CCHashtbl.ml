@@ -30,6 +30,20 @@ let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
 let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
 let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
 
+let incr ?(by=1) tbl x =
+  let n = get_or tbl x ~or_:0 in
+  if n+by <= 0
+  then Hashtbl.remove tbl x
+  else Hashtbl.replace tbl x (n+by)
+
+let decr ?(by=1) tbl x =
+  try
+    let n = Hashtbl.find tbl x in
+    if n-by <= 0
+    then Hashtbl.remove tbl x
+    else Hashtbl.replace tbl x (n-by)
+  with Not_found -> ()
+
 let map_list f h =
   Hashtbl.fold
     (fun x y acc -> f x y :: acc)
@@ -42,9 +56,18 @@ let map_list f h =
 
 let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
 
+let add_seq tbl seq = seq (fun (k,v) -> Hashtbl.add tbl k v)
+
 let of_seq seq =
   let tbl = Hashtbl.create 32 in
-  seq (fun (k,v) -> Hashtbl.add tbl k v);
+  add_seq tbl seq;
+  tbl
+
+let add_seq_count tbl seq = seq (fun k -> incr tbl k)
+
+let of_seq_count seq =
+  let tbl = Hashtbl.create 32 in
+  add_seq_count tbl seq;
   tbl
 
 let to_list tbl =
@@ -102,6 +125,19 @@ module type S = sig
       and returns [or_] otherwise (if [k] doesn't belong in [tbl])
       @since NEXT_RELEASE *)
 
+  val incr : ?by:int -> int t -> key -> unit
+  (** [incr ?by tbl x] increments or initializes the counter associated with [x].
+      If [get tbl x = None], then after update, [get tbl x = Some 1];
+      otherwise, if [get tbl x = Some n], now [get tbl x = Some (n+1)].
+      @param by if specified, the int value is incremented by [by] rather than 1
+      @since NEXT_RELEASE *)
+
+  val decr : ?by:int -> int t -> key -> unit
+  (** Same as {!incr} but substract 1 (or the value of [by]).
+      If the value reaches 0, the key is removed from the table.
+      This does nothing if the key is not already present in the table.
+      @since NEXT_RELEASE *)
+
   val keys : 'a t -> key sequence
   (** Iterate on keys (similar order as {!Hashtbl.iter}) *)
 
@@ -124,6 +160,20 @@ module type S = sig
 
   val of_seq : (key * 'a) sequence -> 'a t
   (** From the given bindings, added in order *)
+
+  val add_seq : 'a t -> (key * 'a) sequence -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      @since NEXT_RELEASE *)
+
+  val add_seq_count : int t -> key sequence -> unit
+  (** [add_seq_count tbl seq] increments the count of each element of [seq]
+      by calling {!incr}. This is useful for counting how many times each
+      element of [seq] occurs.
+      @since NEXT_RELEASE *)
+
+  val of_seq_count : key sequence -> int t
+  (** Similar to {!add_seq_count}, but allocates a new table and returns it
+      @since NEXT_RELEASE *)
 
   val to_list : 'a t -> (key * 'a) list
   (** List of bindings (order unspecified)  *)
@@ -166,6 +216,20 @@ module Make(X : Hashtbl.HashedType)
     "b" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 2 ~or_:"c")
   *)
 
+  let incr ?(by=1) tbl x =
+    let n = get_or tbl x ~or_:0 in
+    if n+by <= 0
+    then remove tbl x
+    else replace tbl x (n+by)
+
+  let decr ?(by=1) tbl x =
+    try
+      let n = find tbl x in
+      if n-by <= 0
+      then remove tbl x
+      else replace tbl x (n-by)
+    with Not_found -> ()
+
   let keys tbl k = iter (fun key _ -> k key) tbl
 
   let values tbl k = iter (fun _ v -> k v) tbl
@@ -188,9 +252,18 @@ module Make(X : Hashtbl.HashedType)
 
   let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 
+  let add_seq tbl seq = seq (fun (k,v) -> add tbl k v)
+
   let of_seq seq =
     let tbl = create 32 in
-    seq (fun (k,v) -> add tbl k v);
+    add_seq tbl seq;
+    tbl
+
+  let add_seq_count tbl seq = seq (fun k -> incr tbl k)
+
+  let of_seq_count seq =
+    let tbl = create 32 in
+    add_seq_count tbl seq;
     tbl
 
   let to_list tbl =
