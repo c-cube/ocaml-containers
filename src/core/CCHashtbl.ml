@@ -144,11 +144,11 @@ module type S = sig
   val values : 'a t -> 'a sequence
   (** Iterate on values in the table *)
 
-  val keys_list : ('a, 'b) Hashtbl.t -> 'a list
+  val keys_list : _ t -> key list
   (** [keys t] is the list of keys in [t].
       @since 0.8 *)
 
-  val values_list : ('a, 'b) Hashtbl.t -> 'b list
+  val values_list : 'a t -> 'a list
   (** [values t] is the list of values in [t].
       @since 0.8 *)
 
@@ -234,8 +234,8 @@ module Make(X : Hashtbl.HashedType)
 
   let values tbl k = iter (fun _ v -> k v) tbl
 
-  let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
-  let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
+  let keys_list tbl = fold (fun k _ a -> k::a) tbl []
+  let values_list tbl = fold (fun _ v a -> v::a) tbl []
 
   let map_list f h =
     fold

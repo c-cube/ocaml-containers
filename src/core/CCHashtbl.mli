@@ -120,11 +120,11 @@ module type S = sig
   val values : 'a t -> 'a sequence
   (** Iterate on values in the table *)
 
-  val keys_list : ('a, 'b) Hashtbl.t -> 'a list
+  val keys_list : _ t -> key list
   (** [keys t] is the list of keys in [t].
       @since 0.8 *)
 
-  val values_list : ('a, 'b) Hashtbl.t -> 'b list
+  val values_list : 'a t -> 'a list
   (** [values t] is the list of values in [t].
       @since 0.8 *)
 
