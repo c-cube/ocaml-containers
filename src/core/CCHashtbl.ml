@@ -30,6 +30,10 @@ let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
 let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
 let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
 
+let add_list tbl k v =
+  let l = try Hashtbl.find tbl k with Not_found -> [] in
+  Hashtbl.replace tbl k (v::l)
+
 let incr ?(by=1) tbl x =
   let n = get_or tbl x ~or_:0 in
   if n+by <= 0
@@ -123,6 +127,11 @@ module type S = sig
   val get_or : 'a t -> key -> or_:'a -> 'a
   (** [get_or tbl k ~or_] returns the value associated to [k] if present,
       and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+      @since NEXT_RELEASE *)
+
+  val add_list : 'a list t -> key -> 'a -> unit
+  (** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
+      not bound, it becomes bound to [[y]].
       @since NEXT_RELEASE *)
 
   val incr : ?by:int -> int t -> key -> unit
@@ -235,6 +244,10 @@ module Make(X : Hashtbl.HashedType)
     assert_equal 1 (T.length tbl);
     assert_bool "2 removed" (not (T.mem tbl 2));
   *)
+
+  let add_list tbl k v =
+    let l = try find tbl k with Not_found -> [] in
+    replace tbl k (v::l)
 
   let decr ?(by=1) tbl x =
     try

@@ -53,6 +53,11 @@ val decr : ?by:int -> ('a, int) Hashtbl.t -> 'a -> unit
 val to_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence
 (** Iterate on bindings in the table *)
 
+val add_list : ('a, 'b list) Hashtbl.t -> 'a -> 'b -> unit
+(** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
+    not bound, it becomes bound to [[y]].
+    @since NEXT_RELEASE *)
+
 val add_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence -> unit
 (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
     @since NEXT_RELEASE *)
@@ -99,6 +104,11 @@ module type S = sig
   val get_or : 'a t -> key -> or_:'a -> 'a
   (** [get_or tbl k ~or_] returns the value associated to [k] if present,
       and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+      @since NEXT_RELEASE *)
+
+  val add_list : 'a list t -> key -> 'a -> unit
+  (** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
+      not bound, it becomes bound to [[y]].
       @since NEXT_RELEASE *)
 
   val incr : ?by:int -> int t -> key -> unit
