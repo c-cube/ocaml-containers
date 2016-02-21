@@ -222,6 +222,20 @@ module Make(X : Hashtbl.HashedType)
     then remove tbl x
     else replace tbl x (n+by)
 
+  (*$R
+    let tbl = T.create 32 in
+    T.incr tbl 1 ;
+    T.incr tbl 2;
+    T.incr tbl 1;
+    assert_equal 2 (T.find tbl 1);
+    assert_equal 1 (T.find tbl 2);
+    assert_equal 2 (T.length tbl);
+    T.decr tbl 2;
+    assert_equal 0 (T.get_or tbl 2 ~or_:0);
+    assert_equal 1 (T.length tbl);
+    assert_bool "2 removed" (not (T.mem tbl 2));
+  *)
+
   let decr ?(by=1) tbl x =
     try
       let n = find tbl x in
