@@ -56,6 +56,16 @@ type ('v, 'e) t = {
 
 type ('v, 'e) graph = ('v, 'e) t
 
+let make ~origin ~dest f = {origin; dest; children=f; }
+
+let make_labelled_tuple f =
+  make ~origin:(fun (x,_,_) -> x) ~dest:(fun (_,_,x) -> x)
+    (fun v yield -> f v (fun (l,v') -> yield (v,l,v')))
+
+let make_tuple f =
+  make ~origin:fst ~dest:snd
+    (fun v yield -> f v (fun v' -> yield (v,v')))
+
 (** Mutable bitset for values of type ['v] *)
 type 'v tag_set = {
   get_tag: 'v -> bool;
