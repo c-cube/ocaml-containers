@@ -64,6 +64,14 @@ let get_exn = function
   | Ok x -> x
   | Error _ -> raise Get_error
 
+let get_or e ~default = match e with
+  | Ok x -> x
+  | Error _ -> default
+
+let map_or f e ~default = match e with
+  | Ok x -> f x
+  | Error _ -> default
+
 let catch e ~ok ~err = match e with
   | Ok x -> ok x
   | Error y -> err y

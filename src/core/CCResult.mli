@@ -64,6 +64,12 @@ val get_exn : ('a, _) t -> 'a
     whenever possible.
     @raise Get_error if the value is an error. *)
 
+val get_or : ('a, _) t -> default:'a -> 'a
+(** [get_or e ~default] returns [x] if [e = Ok x], [default] otherwise *)
+
+val map_or : ('a -> 'b) ->  ('a, 'b) t -> default:'b -> 'b
+(** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise *)
+
 val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
 (** [catch e ~ok ~err] calls either [ok] or [err] depending on
     the value of [e]. *)
