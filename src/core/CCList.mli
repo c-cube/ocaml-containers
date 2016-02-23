@@ -106,6 +106,11 @@ val take : int -> 'a t -> 'a t
 val drop : int -> 'a t -> 'a t
 (** Drop the [n] first elements, keep the rest *)
 
+val hd_tl : 'a t -> 'a * 'a t
+(** [hd_tl (x :: l)] returns [hd, l].
+    @raise Failure if the list is empty
+    @since NEXT_RELEASE *)
+
 val take_drop : int -> 'a t -> 'a t * 'a t
 (** [take_drop n l] returns [l1, l2] such that [l1 @ l2 = l] and
     [length l1 = min (length l) n] *)

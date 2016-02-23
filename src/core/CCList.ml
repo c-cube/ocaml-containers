@@ -454,6 +454,15 @@ let rec drop n l = match l with
   | _ when n=0 -> l
   | _::l' -> drop (n-1) l'
 
+let hd_tl = function
+  | [] -> failwith "hd_tl"
+  | x :: l -> x, l
+
+(*$T
+  try ignore (hd_tl []); false with Failure _ -> true
+  hd_tl [1;2;3] = (1, [2;3])
+*)
+
 let take_drop n l = take n l, drop n l
 
 let split = take_drop
