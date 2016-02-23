@@ -56,13 +56,13 @@ val map2 : ('a -> 'b) -> ('err1 -> 'err2) -> ('a, 'err1) t -> ('b, 'err2) t
 val iter : ('a -> unit) -> ('a, _) t -> unit
 (** Apply the function only in case of Ok *)
 
-exception GetOnError
+exception Get_error
 
 val get_exn : ('a, _) t -> 'a
 (** Extract the value [x] from [Ok x], fails otherwise.
     You should be careful with this function, and favor other combinators
     whenever possible.
-    @raise GetOnError if the value is an error. *)
+    @raise Get_error if the value is an error. *)
 
 val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
 (** [catch e ~ok ~err] calls either [ok] or [err] depending on

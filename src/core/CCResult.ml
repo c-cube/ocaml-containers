@@ -58,11 +58,11 @@ let iter f e = match e with
   | Ok x -> f x
   | Error _ -> ()
 
-exception GetOnError
+exception Get_error
 
 let get_exn = function
   | Ok x -> x
-  | Error _ -> raise GetOnError
+  | Error _ -> raise Get_error
 
 let catch e ~ok ~err = match e with
   | Ok x -> ok x
