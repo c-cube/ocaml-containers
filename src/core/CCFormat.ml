@@ -89,6 +89,26 @@ let map f pp fmt x =
   pp fmt (f x);
   ()
 
+let vbox ?(i=0) pp out x =
+  Format.pp_open_vbox out i;
+  pp out x;
+  Format.pp_close_box out ()
+
+let hovbox ?(i=0) pp out x =
+  Format.pp_open_hovbox out i;
+  pp out x;
+  Format.pp_close_box out ()
+
+let hvbox ?(i=0) pp out x =
+  Format.pp_open_hvbox out i;
+  pp out x;
+  Format.pp_close_box out ()
+
+let hbox pp out x =
+  Format.pp_open_hbox out ();
+  pp out x;
+  Format.pp_close_box out ()
+
 (** {2 IO} *)
 
 let output fmt pp x = pp fmt x

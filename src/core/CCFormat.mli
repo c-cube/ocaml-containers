@@ -44,7 +44,26 @@ val quad : 'a printer -> 'b printer -> 'c printer -> 'd printer -> ('a * 'b * 'c
 
 val map : ('a -> 'b) -> 'b printer -> 'a printer
 
-(** {2 ASCII codes}
+val vbox : ?i:int -> 'a printer -> 'a printer
+(** Wrap the printer in a vertical box
+    @param i level of indentation within the box (default 0)
+    @since NEXT_RELEASE *)
+
+val hvbox : ?i:int -> 'a printer -> 'a printer
+(** Wrap the printer in a horizontal/vertical box
+    @param i level of indentation within the box (default 0)
+    @since NEXT_RELEASE *)
+
+val hovbox : ?i:int -> 'a printer -> 'a printer
+(** Wrap the printer in a horizontal or vertical box
+    @param i level of indentation within the box (default 0)
+    @since NEXT_RELEASE *)
+
+val hbox : 'a printer -> 'a printer
+(** Wrap the printer in an horizontal box
+    @since NEXT_RELEASE *)
+
+(** {2 ANSI codes}
 
   Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
   to put some colors on the terminal.
