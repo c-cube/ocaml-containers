@@ -166,6 +166,76 @@ val x : int = 2
 
 ----
 
+== IO helpers
+
+The core library contains a module called `CCIO` that provides useful
+functions for reading and writing files. It provides functions that
+make resource handling easy, following
+the pattern `with_resource : resource -> (access -> 'a) -> 'a` where
+the type `access` is a temporary handle to the resource (e.g.,
+imagine `resource` is a file name and `access` a file descriptor).
+Calling `with_resource r f` will access `r`, give the  result to `f`,
+compute the result of `f` and, whether `f` succeeds or raises an
+error, it will free the resource.
+
+Consider for instance:
+
+[source,OCaml]
+----
+# CCIO.with_out "/tmp/foobar"
+    (fun out_channel ->
+      CCIO.write_lines_l out_channel ["hello"; "world"]);;
+- : unit = ()
+----
+
+This just opened the file '/tmp/foobar', creating it if it didn't exist,
+and wrote two lines in it. We did not have to close the file descriptor
+because `with_out` took care of it. By the way, the type signatures are:
+
+[source,OCaml]
+----
+val with_out :
+  ?mode:int -> ?flags:open_flag list ->
+  string -> (out_channel -> 'a) -> 'a
+
+val write_lines_l : out_channel -> string list -> unit
+----
+
+So we see the pattern for `with_out` (which opens a function in write
+mode and gives its functional argument the corresponding file descriptor).
+
+NOTE: you should never let the resource escape the
+scope of the `with_resource` call, because it will not be valid outside.
+OCaml's type system doesn't make it easy to forbid that so we rely
+on convention here (it would be possible, but cumbersome, using
+a record with an explicitely quantified function type).
+
+Now we can read the file again:
+
+[source,OCaml]
+----
+# let lines = CCIO.with_in "/tmp/foobar" CCIO.read_lines_l ;;
+val lines : string list = ["hello"; "world"]
+----
+
+There are some other functions in `CCIO` that return _generators_
+instead of lists. The type of generators in containers
+is `type 'a gen = unit -> 'a option` (combinators can be
+found in the opam library called "gen"). A generator is to be called
+to obtain successive values, until it returns `None` (which means it
+has been exhausted). In particular, python users might recognize
+the function
+
+[source,OCaml]
+----
+# CCIO.File.walk ;;
+- : string -> walk_item gen = <fun>;;
+----
+
+where `type walk_item = [ `Dir | `File ] * string` is a path
+paired with a flag distinguishing files from directories.
+
+
 == To go further: containers.data
 
 There is also a sub-library called `containers.data`, with lots of
