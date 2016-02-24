@@ -64,18 +64,34 @@ module type S = sig
   val size : t -> int
   (** Number of elements (linear complexity) *)
 
-  (** {2 Conversions} *)
+  (** {2 Conversions}
+      
+      The interface of [of_gen], [of_seq], [of_klist]
+      has changed @since NEXT_RELEASE (the old signatures
+      are now [add_seq], [add_gen], [add_klist]) *)
 
   val to_list : t -> elt list
+
+  val add_list : t -> elt list -> t (** @since NEXT_RELEASE *)
+
   val of_list : elt list -> t
 
-  val of_seq : t -> elt sequence -> t
+  val add_seq : t -> elt sequence -> t (** @since NEXT_RELEASE *)
+
+  val of_seq : elt sequence -> t
+
   val to_seq : t -> elt sequence
 
-  val of_klist : t -> elt klist -> t
+  val add_klist : t -> elt klist -> t (** @since NEXT_RELEASE *)
+
+  val of_klist : elt klist -> t
+
   val to_klist : t -> elt klist
 
-  val of_gen : t -> elt gen -> t
+  val add_gen : t -> elt gen -> t (** @since NEXT_RELEASE *)
+
+  val of_gen : elt gen -> t
+
   val to_gen : t -> elt gen
 
   val to_tree : t -> elt ktree

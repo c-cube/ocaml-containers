@@ -57,7 +57,7 @@ end
 (*$QR & ~count:30
   Q.(list_of_size Gen.(return 1_000) int) (fun l ->
     (* put elements into a heap *)
-    let h = H.of_seq H.empty (Sequence.of_list l) in
+    let h = H.of_seq (Sequence.of_list l) in
     OUnit.assert_equal 1_000 (H.size h);
     let l' = extract_list h in
     is_sorted l'
@@ -113,18 +113,34 @@ module type S = sig
   val size : t -> int
   (** Number of elements (linear complexity) *)
 
-  (** {2 Conversions} *)
+  (** {2 Conversions}
+      
+      The interface of [of_gen], [of_seq], [of_klist]
+      has changed @since NEXT_RELEASE (the old signatures
+      are now [add_seq], [add_gen], [add_klist]) *)
 
   val to_list : t -> elt list
+
+  val add_list : t -> elt list -> t (** @since NEXT_RELEASE *)
+
   val of_list : elt list -> t
 
-  val of_seq : t -> elt sequence -> t
+  val add_seq : t -> elt sequence -> t (** @since NEXT_RELEASE *)
+
+  val of_seq : elt sequence -> t
+
   val to_seq : t -> elt sequence
 
-  val of_klist : t -> elt klist -> t
+  val add_klist : t -> elt klist -> t (** @since NEXT_RELEASE *)
+
+  val of_klist : elt klist -> t
+
   val to_klist : t -> elt klist
 
-  val of_gen : t -> elt gen -> t
+  val add_gen : t -> elt gen -> t (** @since NEXT_RELEASE *)
+
+  val of_gen : elt gen -> t
+
   val to_gen : t -> elt gen
 
   val to_tree : t -> elt ktree
@@ -222,20 +238,26 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
           x::aux (aux acc l) r
     in aux [] h
 
-  let of_list l = List.fold_left add empty l
+  let add_list h l = List.fold_left add h l
 
-  let of_seq h seq =
+  let of_list l = add_list empty l
+
+  let add_seq h seq =
     let h = ref h in
     seq (fun x -> h := insert x !h);
     !h
 
+  let of_seq seq = add_seq empty seq
+
   let to_seq h k = iter k h
 
-  let rec of_klist h l = match l() with
+  let rec add_klist h l = match l() with
     | `Nil -> h
     | `Cons (x, l') ->
         let h' = add h x in
-        of_klist h' l'
+        add_klist h' l'
+
+  let of_klist l = add_klist empty l
 
   let to_klist h =
     let rec next stack () = match stack with
@@ -246,10 +268,12 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     in
     next [h]
 
-  let rec of_gen h g = match g () with
+  let rec add_gen h g = match g () with
     | None -> h
     | Some x ->
-        of_gen (add h x) g
+        add_gen (add h x) g
+
+  let of_gen g = add_gen empty g
 
   let to_gen h =
     let stack = Stack.create () in
@@ -267,7 +291,8 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
 
   (*$Q
     Q.(list int) (fun l -> \
-      extract_list (H.of_list l) = extract_list (H.of_gen H.empty (CCList.to_gen l)))
+      extract_list (H.of_list l) = \
+        extract_list (H.of_gen (CCList.to_gen l)))
     Q.(list int) (fun l -> \
       let h = H.of_list l in \
       (H.to_gen h |> CCList.of_gen |> List.sort Pervasives.compare) \
