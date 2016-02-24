@@ -9,7 +9,13 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 (** Transform the element inside, if any *)
 
 val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
-(** [maybe f x o] is [x] if [o] is [None], otherwise it's [f y] if [o = Some y] *)
+(** [maybe f x o] is [x] if [o] is [None],
+    otherwise it's [f y] if [o = Some y]
+    @deprecated, use {!map_or} *)
+
+val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
+(** [map_or ~default f o] is [f x] if [o = Some x], [default otherwise]
+    @since NEXT_RELEASE *)
 
 val is_some : _ t -> bool
 

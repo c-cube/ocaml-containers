@@ -9,9 +9,11 @@ let map f = function
   | None -> None
   | Some x -> Some (f x)
 
-let maybe f d = function
-  | None -> d
+let map_or ~default f = function
+  | None -> default
   | Some x -> f x
+
+let maybe f default = map_or ~default f
 
 let is_some = function
   | None -> false
