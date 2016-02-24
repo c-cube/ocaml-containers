@@ -5,6 +5,7 @@
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
@@ -127,6 +128,9 @@ module type S = sig
   val to_gen : t -> elt gen
 
   val to_tree : t -> elt ktree
+
+  val print : ?sep:string -> elt printer -> t printer
+  (** @since NEXT_RELEASE *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
@@ -273,4 +277,12 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let rec to_tree h () = match h with
     | E -> `Nil
     | N (_, x, l, r) -> `Node(x, [to_tree l; to_tree r])
+
+  let print ?(sep=",") pp_elt out h =
+    let first=ref true in
+    iter
+      (fun x ->
+        if !first then first := false else Format.fprintf out "%s@," sep;
+        pp_elt out x)
+      h
 end

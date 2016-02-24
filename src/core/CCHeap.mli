@@ -7,6 +7,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type PARTIAL_ORD = sig
   type t
@@ -78,6 +79,9 @@ module type S = sig
   val to_gen : t -> elt gen
 
   val to_tree : t -> elt ktree
+
+  val print : ?sep:string -> elt printer -> t printer
+  (** @since NEXT_RELEASE *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t
