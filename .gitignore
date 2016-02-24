@@ -8,3 +8,4 @@ TAGS
 *.docdir
 setup.*
 qtest*
+*.html
