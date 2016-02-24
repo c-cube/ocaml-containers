@@ -465,6 +465,21 @@ val of_gen : 'a gen -> 'a t
 val to_klist : 'a t -> 'a klist
 val of_klist : 'a klist -> 'a t
 
+(** {2 Infix Operators}
+    It is convenient to {!open CCList.Infix} to access the infix operators
+    without cluttering  the scope too much.
+
+    @since NEXT_RELEASE *)
+
+module Infix : sig
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val (@) : 'a t -> 'a t -> 'a t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (--) : int -> int -> int t
+end
+
 (** {2 IO} *)
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->

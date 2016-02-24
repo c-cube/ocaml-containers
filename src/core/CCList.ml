@@ -1081,6 +1081,15 @@ let of_klist l =
   in
   direct direct_depth_default_ l
 
+module Infix = struct
+  let (>|=) = (>|=)
+  let (@) = (@)
+  let (<*>) = (<*>)
+  let (<$>) = (<$>)
+  let (>>=) = (>>=)
+  let (--) = (--)
+end
+
 (** {2 IO} *)
 
 let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf l =

@@ -93,6 +93,16 @@ val (<+>) : 'a t -> 'a t -> 'a t
 
 val choice : 'a t list -> 'a t
 (** [choice] returns the first non-[None] element of the list, or [None] *)
+(** {2 Infix Operators}
+    @since NEXT_RELEASE *)
+
+module Infix : sig
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val (<+>) : 'a t -> 'a t -> 'a t
+end
 
 (** {2 Conversion and IO} *)
 

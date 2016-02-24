@@ -123,6 +123,14 @@ let of_list = function
   | x::_ -> Some x
   | [] -> None
 
+module Infix = struct
+  let (>|=) = (>|=)
+  let (>>=) = (>>=)
+  let (<*>) = (<*>)
+  let (<$>) = (<$>)
+  let (<+>) = (<+>)
+end
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Buffer.t -> 'a -> unit
