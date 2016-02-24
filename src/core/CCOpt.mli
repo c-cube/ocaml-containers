@@ -15,7 +15,7 @@ val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
 
 val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
 (** [map_or ~default f o] is [f x] if [o = Some x], [default otherwise]
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val is_some : _ t -> bool
 
@@ -94,7 +94,7 @@ val (<+>) : 'a t -> 'a t -> 'a t
 val choice : 'a t list -> 'a t
 (** [choice] returns the first non-[None] element of the list, or [None] *)
 (** {2 Infix Operators}
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t

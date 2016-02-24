@@ -51,7 +51,7 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
 val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
 (** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
@@ -109,7 +109,7 @@ val drop : int -> 'a t -> 'a t
 val hd_tl : 'a t -> 'a * 'a t
 (** [hd_tl (x :: l)] returns [hd, l].
     @raise Failure if the list is empty
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val take_drop : int -> 'a t -> 'a t * 'a t
 (** [take_drop n l] returns [l1, l2] such that [l1 @ l2 = l] and
@@ -286,14 +286,14 @@ module Assoc : sig
 
   val mem : ?eq:('a->'a->bool) -> ('a,_) t -> 'a -> bool
   (** [mem l x] returns [true] iff [x] is a key in [l]
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   val update :
     ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> f:('b option -> 'b option) -> ('a,'b) t
   (** [update l k ~f] updates [l] on the key [k], by calling [f (get l k)]
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v']
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 end
 
 (** {2 Zipper} *)
@@ -469,7 +469,7 @@ val of_klist : 'a klist -> 'a t
     It is convenient to {!open CCList.Infix} to access the infix operators
     without cluttering  the scope too much.
 
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t

@@ -116,28 +116,28 @@ module type S = sig
   (** {2 Conversions}
       
       The interface of [of_gen], [of_seq], [of_klist]
-      has changed @since NEXT_RELEASE (the old signatures
+      has changed @since 0.16 (the old signatures
       are now [add_seq], [add_gen], [add_klist]) *)
 
   val to_list : t -> elt list
 
-  val add_list : t -> elt list -> t (** @since NEXT_RELEASE *)
+  val add_list : t -> elt list -> t (** @since 0.16 *)
 
   val of_list : elt list -> t
 
-  val add_seq : t -> elt sequence -> t (** @since NEXT_RELEASE *)
+  val add_seq : t -> elt sequence -> t (** @since 0.16 *)
 
   val of_seq : elt sequence -> t
 
   val to_seq : t -> elt sequence
 
-  val add_klist : t -> elt klist -> t (** @since NEXT_RELEASE *)
+  val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
   val of_klist : elt klist -> t
 
   val to_klist : t -> elt klist
 
-  val add_gen : t -> elt gen -> t (** @since NEXT_RELEASE *)
+  val add_gen : t -> elt gen -> t (** @since 0.16 *)
 
   val of_gen : elt gen -> t
 
@@ -146,7 +146,7 @@ module type S = sig
   val to_tree : t -> elt ktree
 
   val print : ?sep:string -> elt printer -> t printer
-  (** @since NEXT_RELEASE *)
+  (** @since 0.16 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct

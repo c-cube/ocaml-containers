@@ -164,27 +164,27 @@ module File : sig
 
   val read_exn : t -> string
   (** Read the content of the given file, or raises some exception
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   val read : t -> string or_error
   (** Read the content of the given file
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   val append_exn : t -> string -> unit
   (** Append the given string into the given file, possibly raising
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   val append : t -> string -> unit or_error
   (** Append the given string into the given file
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   val write_exn : t -> string -> unit
   (** Write the given string into the given file, possibly raising
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   val write : t -> string -> unit or_error
   (** Write the given string into the given file
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   type walk_item = [`File | `Dir] * t
 

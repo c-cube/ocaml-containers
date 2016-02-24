@@ -58,12 +58,12 @@ val finally : h:(unit -> _) -> f:(unit -> 'a) -> 'a
 val finally1 : h:(unit -> _) -> ('a -> 'b) -> 'a -> 'b
 (** [finally1 ~h f x] is the same as [f x], but after the computation,
     [h ()] is called whether [f x] rose an exception or not.
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val finally2 : h:(unit -> _) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (** [finally2 ~h f x y] is the same as [f x y], but after the computation,
     [h ()] is called whether [f x y] rose an exception or not.
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 (** {2 Monad}
 

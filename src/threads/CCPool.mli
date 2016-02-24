@@ -4,7 +4,7 @@
 (** {1 Thread Pool, and Futures}
 
     Renamed and heavily updated from [CCFuture]
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 type +'a state =
   | Done of 'a

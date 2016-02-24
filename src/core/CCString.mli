@@ -302,7 +302,7 @@ module Split : sig
   val left_exn : by:string -> string -> string * string
   (** Split on the first occurrence of [by] from the leftmost part of the string
       @raise Not_found if [by] is not part of the string
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   (*$T
     Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ")
@@ -317,7 +317,7 @@ module Split : sig
   val right_exn : by:string -> string -> string * string
   (** Split on the first occurrence of [by] from the rightmost part of the string
       @raise Not_found if [by] is not part of the string
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   (*$T
     Split.right ~by:" " "ab cde f g" = Some ("ab cde f", "g")

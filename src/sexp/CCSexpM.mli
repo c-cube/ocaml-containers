@@ -89,7 +89,7 @@ end
 module ID_MONAD : MONAD with type 'a t = 'a
 (** The monad that just uses blocking calls as bind
     @since 0.14
-    ['a t = 'a] contraint is @since NEXT_RELEASE *)
+    ['a t = 'a] contraint is @since 0.16 *)
 
 module D : module type of MakeDecode(ID_MONAD)
 (** Decoder that just blocks when input is not available

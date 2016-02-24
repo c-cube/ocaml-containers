@@ -114,25 +114,25 @@ val with_in : ?mode:int -> ?flags:Unix.open_flag list ->
     on the input channel. When the function raises or returns, the
     channel is closed.
     @param flags opening flags. [Unix.O_RDONLY] is used in any cases
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val with_out : ?mode:int -> ?flags:Unix.open_flag list ->
                string -> f:(out_channel -> 'a) -> 'a
 (** Same as {!with_in} but for an output channel
     @param flags opening flags (default [[Unix.O_CREAT; Unix.O_TRUNC]])
       [Unix.O_WRONLY] is used in any cases.
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val with_process_in : string -> f:(in_channel -> 'a) -> 'a
 (** Open a subprocess and obtain a handle to its stdout
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val with_process_out : string -> f:(out_channel -> 'a) -> 'a
 (** Open a subprocess and obtain a handle to its stdin
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 (** Handle to a subprocess.
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 type process_full = <
   stdin: out_channel;
   stdout: in_channel;
@@ -143,11 +143,11 @@ type process_full = <
 val with_process_full : ?env:string array -> string -> f:(process_full -> 'a) -> 'a
 (** Open a subprocess and obtain a handle to its channels.
     @param env environment to pass to the subprocess.
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val with_connection : Unix.sockaddr -> f:(in_channel -> out_channel -> 'a) -> 'a
 (** Wrap {!Unix.open_connection} with a handler
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 exception ExitServer
 
@@ -155,7 +155,7 @@ val establish_server : Unix.sockaddr -> f:(in_channel -> out_channel -> _) -> un
 (** Listen on the address and calls the handler in a blocking fashion.
     Using {!Thread} is recommended if handlers might take time.
     The callback should raise {!ExitServer} to stop the loop.
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 (** {2 Infix Functions} *)
 

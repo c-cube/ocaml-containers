@@ -5,7 +5,7 @@
 
     Uses the new "result" type from OCaml 4.03.
 
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool

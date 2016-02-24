@@ -7,7 +7,7 @@ type ('a,'b) t = ('a * 'b)
 
 val make : 'a -> 'b -> ('a, 'b) t
 (** Make a tuple from its components
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val map1 : ('a -> 'b) -> ('a * 'c) -> ('b * 'c)
 

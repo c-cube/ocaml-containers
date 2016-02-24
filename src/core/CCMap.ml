@@ -16,7 +16,7 @@ module type S = sig
   val get_or : key -> 'a t -> or_:'a -> 'a
   (** [get_or k m ~or_] returns the value associated to [k] if present,
       and returns [or_] otherwise (if [k] doesn't belong in [m])
-      @since NEXT_RELEASE *)
+      @since 0.16 *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** [update k f m] calls [f (Some v)] if [find k m = v],

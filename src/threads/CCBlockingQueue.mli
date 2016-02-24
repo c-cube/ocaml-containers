@@ -6,7 +6,7 @@
     This queue has a limited size. Pushing a value on the queue when it
     is full will block.
 
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 type 'a t
 (** Safe-thread queue for values of type ['a] *)

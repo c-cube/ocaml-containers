@@ -27,7 +27,7 @@
     ]}
 
     @since 0.9
-    @since NEXT_RELEASE change of API, the map is last argument to
+    @since 0.16 change of API, the map is last argument to
       make piping with [|>] easier. *)
 
 type 'a injection

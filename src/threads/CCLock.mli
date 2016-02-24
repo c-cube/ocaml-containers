@@ -42,7 +42,7 @@ val update : 'a t -> ('a -> 'a) -> unit
 val update_map : 'a t -> ('a -> 'a * 'b) -> 'b
 (** [update_map l f] computes [x', y = f (get l)], then puts [x'] in [l]
     and returns [y]
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val mutex : _ t -> Mutex.t
 (** Underlying mutex *)
@@ -64,24 +64,24 @@ val decr : int t -> unit
 
 val incr_then_get : int t -> int
 (** [incr_then_get x] increments [x], and return its new value
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val get_then_incr : int t -> int
 (** [get_then_incr x] increments [x], and return its previous value
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val decr_then_get : int t -> int
 (** [decr_then_get x] decrements [x], and return its new value
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val get_then_decr : int t -> int
 (** [get_then_decr x] decrements [x], and return its previous value
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val get_then_set : bool t -> bool
 (** [get_then_set b] sets [b] to [true], and return the old value
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val get_then_clear : bool t -> bool
 (** [get_then_clear b] sets [b] to [false], and return the old value
-    @since NEXT_RELEASE *)
+    @since 0.16 *)

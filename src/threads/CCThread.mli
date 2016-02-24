@@ -12,11 +12,11 @@ val spawn : (unit -> _) -> t
 
 val spawn1 : ('a -> _) -> 'a -> t
 (** [spawn1 f x] is like [spawn (fun () -> f x)].
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val spawn2 : ('a -> 'b -> _) -> 'a -> 'b -> t
 (** [spawn2 f x y] is like [spawn (fun () -> f x y)].
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val detach : (unit -> 'a) -> unit
 (** [detach f] is the same as [ignore (spawn f)] *)

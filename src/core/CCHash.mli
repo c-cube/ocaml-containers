@@ -10,7 +10,7 @@ type t = int
 
 type state
 (** State required by the hash function.
-    @since NEXT_RELEASE the state is abstract, for more flexibility *)
+    @since 0.16 the state is abstract, for more flexibility *)
 
 type 'a hash_fun = 'a -> state -> state
 (** Hash function for values of type ['a], merging a fingerprint of the

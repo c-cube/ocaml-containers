@@ -47,21 +47,21 @@ val map : ('a -> 'b) -> 'b printer -> 'a printer
 val vbox : ?i:int -> 'a printer -> 'a printer
 (** Wrap the printer in a vertical box
     @param i level of indentation within the box (default 0)
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val hvbox : ?i:int -> 'a printer -> 'a printer
 (** Wrap the printer in a horizontal/vertical box
     @param i level of indentation within the box (default 0)
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val hovbox : ?i:int -> 'a printer -> 'a printer
 (** Wrap the printer in a horizontal or vertical box
     @param i level of indentation within the box (default 0)
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val hbox : 'a printer -> 'a printer
 (** Wrap the printer in an horizontal box
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 (** {2 ANSI codes}
 
@@ -117,13 +117,13 @@ val with_color : string -> 'a printer -> 'a printer
 (** [with_color "Blue" pp] behaves like the printer [pp], but with the given
     style.
     {b status: experimental}
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
 (** [with_colorf "Blue" out "%s %d" "yolo" 42] will behave like {!Format.fprintf},
     but wrapping the content with the given style
     {b status: experimental}
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 (** {2 IO} *)
 
@@ -139,7 +139,7 @@ val sprintf : ('a, t, unit, string) format4 -> 'a
 
 val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
 (** Similar to {!sprintf} but never prints colors
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val fprintf : t -> ('a, t, unit ) format -> 'a
 (** Alias to {!Format.fprintf}

@@ -81,17 +81,17 @@ val make :
   dest:('e -> 'v) ->
   ('v -> 'e sequence) -> ('v, 'e) t
 (** Make a graph by providing its fields
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val make_labelled_tuple :
   ('v -> ('a * 'v) sequence) -> ('v, ('v * 'a * 'v)) t
 (** Make a graph with edges being triples [(origin,label,dest)]
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val make_tuple :
   ('v -> 'v sequence) -> ('v, ('v * 'v)) t
 (** Make a graph with edges being pairs [(origin,dest)]
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 (** Mutable tags from values of type ['v] to tags of type [bool] *)
 type 'v tag_set = {

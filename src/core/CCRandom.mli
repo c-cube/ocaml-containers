@@ -65,17 +65,17 @@ val list_seq : 'a t list -> 'a list t
     @since 0.4 *)
 
 exception Pick_from_empty
-(** @since NEXT_RELEASE *)
+(** @since 0.16 *)
 
 val pick_list : 'a list -> 'a t
 (** Pick an element at random from the list
     @raise Pick_from_empty if the list is empty
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val pick_array : 'a array -> 'a t
 (** Pick an element at random from the array
     @raise Pick_from_empty if the array is empty
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 val small_int : int t
 

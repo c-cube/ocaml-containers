@@ -4,7 +4,7 @@
 (** {1 Event timer}
 
     Used to be part of [CCFuture]
-    @since NEXT_RELEASE *)
+    @since 0.16 *)
 
 type t
 (** A scheduler for events. It runs in its own thread. *)
