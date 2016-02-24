@@ -10,6 +10,8 @@ the library is loaded, e.g. with:
 #require "containers";;
 ----
 
+== Basics
+
 We will start with a few list helpers, then look at other parts of
 the library, including printers, maps, etc.
 
@@ -164,7 +166,7 @@ val x : int = 2
 
 ----
 
-=== To go further: containers.data
+== To go further: containers.data
 
 There is also a sub-library called `containers.data`, with lots of
 more specialized data-structures.
