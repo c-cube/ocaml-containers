@@ -1,27 +1,5 @@
-(*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 IO Utils} *)
 
@@ -281,6 +259,22 @@ module File = struct
     try `Ok (Sys.remove f)
     with exn ->
       `Error (Printexc.to_string exn)
+
+  let read_exn f = with_in f (read_all_ ~op:Ret_string ~size:4096)
+
+  let read f = try `Ok (read_exn f) with e -> `Error (Printexc.to_string e)
+
+  let append_exn f x =
+    with_out ~flags:[Open_append; Open_creat; Open_text] f
+      (fun oc -> output_string oc x; flush oc)
+
+  let append f x = try `Ok (append_exn f x) with e -> `Error (Printexc.to_string e)
+
+  let write_exn f x =
+    with_out f
+      (fun oc -> output_string oc x; flush oc)
+
+  let write f x = try `Ok (write_exn f x) with e -> `Error (Printexc.to_string e)
 
   let remove_noerr f = try Sys.remove f with _ -> ()
 

@@ -86,9 +86,10 @@ module MakeDecode(M : MONAD) : sig
       long enough or isn't a proper S-expression *)
 end
 
-module ID_MONAD : MONAD
+module ID_MONAD : MONAD with type 'a t = 'a
 (** The monad that just uses blocking calls as bind
-    @since 0.14 *)
+    @since 0.14
+    ['a t = 'a] contraint is @since 0.16 *)
 
 module D : module type of MakeDecode(ID_MONAD)
 (** Decoder that just blocks when input is not available

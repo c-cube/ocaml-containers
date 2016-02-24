@@ -1,28 +1,5 @@
-(*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
-
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Extension to the standard Hashtbl}
 
@@ -37,6 +14,11 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 val get : ('a,'b) Hashtbl.t -> 'a -> 'b option
 (** Safe version of {!Hashtbl.find} *)
+
+val get_or : ('a,'b) Hashtbl.t -> 'a -> or_:'b -> 'b
+(** [get_or tbl k ~or_] returns the value associated to [k] if present,
+    and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+    @since 0.16 *)
 
 val keys : ('a,'b) Hashtbl.t -> 'a sequence
 (** Iterate on keys (similar order as {!Hashtbl.iter}) *)
@@ -55,11 +37,43 @@ val values_list : ('a, 'b) Hashtbl.t -> 'b list
 val map_list : ('a -> 'b -> 'c) -> ('a, 'b) Hashtbl.t -> 'c list
 (** Map on a hashtable's items, collect into a list *)
 
+val incr : ?by:int -> ('a, int) Hashtbl.t -> 'a -> unit
+(** [incr ?by tbl x] increments or initializes the counter associated with [x].
+    If [get tbl x = None], then after update, [get tbl x = Some 1];
+    otherwise, if [get tbl x = Some n], now [get tbl x = Some (n+1)].
+    @param by if specified, the int value is incremented by [by] rather than 1
+    @since 0.16 *)
+
+val decr : ?by:int -> ('a, int) Hashtbl.t -> 'a -> unit
+(** Same as {!incr} but substract 1 (or the value of [by]).
+    If the value reaches 0, the key is removed from the table.
+    This does nothing if the key is not already present in the table.
+    @since 0.16 *)
+
 val to_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence
 (** Iterate on bindings in the table *)
 
+val add_list : ('a, 'b list) Hashtbl.t -> 'a -> 'b -> unit
+(** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
+    not bound, it becomes bound to [[y]].
+    @since 0.16 *)
+
+val add_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence -> unit
+(** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+    @since 0.16 *)
+
 val of_seq : ('a * 'b) sequence -> ('a,'b) Hashtbl.t
 (** From the given bindings, added in order *)
+
+val add_seq_count : ('a, int) Hashtbl.t -> 'a sequence -> unit
+(** [add_seq_count tbl seq] increments the count of each element of [seq]
+    by calling {!incr}. This is useful for counting how many times each
+    element of [seq] occurs.
+    @since 0.16 *)
+
+val of_seq_count : 'a sequence -> ('a, int) Hashtbl.t
+(** Similar to {!add_seq_count}, but allocates a new table and returns it
+    @since 0.16 *)
 
 val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
 (** List of bindings (order unspecified)  *)
@@ -87,17 +101,40 @@ module type S = sig
   val get : 'a t -> key -> 'a option
   (** Safe version of {!Hashtbl.find} *)
 
+  val get_or : 'a t -> key -> or_:'a -> 'a
+  (** [get_or tbl k ~or_] returns the value associated to [k] if present,
+      and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+      @since 0.16 *)
+
+  val add_list : 'a list t -> key -> 'a -> unit
+  (** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
+      not bound, it becomes bound to [[y]].
+      @since 0.16 *)
+
+  val incr : ?by:int -> int t -> key -> unit
+  (** [incr ?by tbl x] increments or initializes the counter associated with [x].
+      If [get tbl x = None], then after update, [get tbl x = Some 1];
+      otherwise, if [get tbl x = Some n], now [get tbl x = Some (n+1)].
+      @param by if specified, the int value is incremented by [by] rather than 1
+      @since 0.16 *)
+
+  val decr : ?by:int -> int t -> key -> unit
+  (** Same as {!incr} but substract 1 (or the value of [by]).
+      If the value reaches 0, the key is removed from the table.
+      This does nothing if the key is not already present in the table.
+      @since 0.16 *)
+
   val keys : 'a t -> key sequence
   (** Iterate on keys (similar order as {!Hashtbl.iter}) *)
 
   val values : 'a t -> 'a sequence
   (** Iterate on values in the table *)
 
-  val keys_list : ('a, 'b) Hashtbl.t -> 'a list
+  val keys_list : _ t -> key list
   (** [keys t] is the list of keys in [t].
       @since 0.8 *)
 
-  val values_list : ('a, 'b) Hashtbl.t -> 'b list
+  val values_list : 'a t -> 'a list
   (** [values t] is the list of values in [t].
       @since 0.8 *)
 
@@ -109,6 +146,20 @@ module type S = sig
 
   val of_seq : (key * 'a) sequence -> 'a t
   (** From the given bindings, added in order *)
+
+  val add_seq : 'a t -> (key * 'a) sequence -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      @since 0.16 *)
+
+  val add_seq_count : int t -> key sequence -> unit
+  (** [add_seq_count tbl seq] increments the count of each element of [seq]
+      by calling {!incr}. This is useful for counting how many times each
+      element of [seq] occurs.
+      @since 0.16 *)
+
+  val of_seq_count : key sequence -> int t
+  (** Similar to {!add_seq_count}, but allocates a new table and returns it
+      @since 0.16 *)
 
   val to_list : 'a t -> (key * 'a) list
   (** List of bindings (order unspecified)  *)
@@ -134,7 +185,9 @@ module Make(X : Hashtbl.HashedType) :
 
 (** {2 Default Table}
 
-A table with a default element for keys that were never added. *)
+    A table with a default element for keys that were never added.
+
+    @deprecated since 0.16, should be merged into [Make] itself *)
 
 module type DEFAULT = sig
   type key
@@ -168,7 +221,9 @@ end
 
 module MakeDefault(X : Hashtbl.HashedType) : DEFAULT with type key = X.t
 
-(** {2 Count occurrences using a Hashtbl} *)
+(** {2 Count occurrences using a Hashtbl}
+
+    @deprecated since 0.16, should be merged into [Make] itself *)
 
 module type COUNTER = sig
   type elt

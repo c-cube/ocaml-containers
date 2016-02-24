@@ -1,32 +1,11 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Leftist Heaps} *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
@@ -78,7 +57,7 @@ end
 (*$QR & ~count:30
   Q.(list_of_size Gen.(return 1_000) int) (fun l ->
     (* put elements into a heap *)
-    let h = H.of_seq H.empty (Sequence.of_list l) in
+    let h = H.of_seq (Sequence.of_list l) in
     OUnit.assert_equal 1_000 (H.size h);
     let l' = extract_list h in
     is_sorted l'
@@ -134,21 +113,40 @@ module type S = sig
   val size : t -> int
   (** Number of elements (linear complexity) *)
 
-  (** {2 Conversions} *)
+  (** {2 Conversions}
+      
+      The interface of [of_gen], [of_seq], [of_klist]
+      has changed @since 0.16 (the old signatures
+      are now [add_seq], [add_gen], [add_klist]) *)
 
   val to_list : t -> elt list
+
+  val add_list : t -> elt list -> t (** @since 0.16 *)
+
   val of_list : elt list -> t
 
-  val of_seq : t -> elt sequence -> t
+  val add_seq : t -> elt sequence -> t (** @since 0.16 *)
+
+  val of_seq : elt sequence -> t
+
   val to_seq : t -> elt sequence
 
-  val of_klist : t -> elt klist -> t
+  val add_klist : t -> elt klist -> t (** @since 0.16 *)
+
+  val of_klist : elt klist -> t
+
   val to_klist : t -> elt klist
 
-  val of_gen : t -> elt gen -> t
+  val add_gen : t -> elt gen -> t (** @since 0.16 *)
+
+  val of_gen : elt gen -> t
+
   val to_gen : t -> elt gen
 
   val to_tree : t -> elt ktree
+
+  val print : ?sep:string -> elt printer -> t printer
+  (** @since 0.16 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
@@ -240,20 +238,26 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
           x::aux (aux acc l) r
     in aux [] h
 
-  let of_list l = List.fold_left add empty l
+  let add_list h l = List.fold_left add h l
 
-  let of_seq h seq =
+  let of_list l = add_list empty l
+
+  let add_seq h seq =
     let h = ref h in
     seq (fun x -> h := insert x !h);
     !h
 
+  let of_seq seq = add_seq empty seq
+
   let to_seq h k = iter k h
 
-  let rec of_klist h l = match l() with
+  let rec add_klist h l = match l() with
     | `Nil -> h
     | `Cons (x, l') ->
         let h' = add h x in
-        of_klist h' l'
+        add_klist h' l'
+
+  let of_klist l = add_klist empty l
 
   let to_klist h =
     let rec next stack () = match stack with
@@ -264,10 +268,12 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     in
     next [h]
 
-  let rec of_gen h g = match g () with
+  let rec add_gen h g = match g () with
     | None -> h
     | Some x ->
-        of_gen (add h x) g
+        add_gen (add h x) g
+
+  let of_gen g = add_gen empty g
 
   let to_gen h =
     let stack = Stack.create () in
@@ -285,7 +291,8 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
 
   (*$Q
     Q.(list int) (fun l -> \
-      extract_list (H.of_list l) = extract_list (H.of_gen H.empty (CCList.to_gen l)))
+      extract_list (H.of_list l) = \
+        extract_list (H.of_gen (CCList.to_gen l)))
     Q.(list int) (fun l -> \
       let h = H.of_list l in \
       (H.to_gen h |> CCList.of_gen |> List.sort Pervasives.compare) \
@@ -295,4 +302,12 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let rec to_tree h () = match h with
     | E -> `Nil
     | N (_, x, l, r) -> `Node(x, [to_tree l; to_tree r])
+
+  let print ?(sep=",") pp_elt out h =
+    let first=ref true in
+    iter
+      (fun x ->
+        if !first then first := false else Format.fprintf out "%s@," sep;
+        pp_elt out x)
+      h
 end

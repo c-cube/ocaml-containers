@@ -4,7 +4,7 @@
 
 image::media/logo.png[logo]
 
-What is _containers_?
+What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!)
 
 - A usable, reasonably well-designed library that extends OCaml's standard
   library (in 'src/core/', packaged under `containers` in ocamlfind. Modules
@@ -31,7 +31,7 @@ What is _containers_?
   a LINQ-like query module, batch operations using GADTs, and others).
 - Utilities around the `unix` library in `containers.unix` (mainly to spawn
   sub-processes)
-- A bigstring module using `bigarray` in `containers.bigarray`
+- A bigstring module using `bigarray` in `containers.bigarray` (*deprecated*)
 - A lightweight S-expression printer and streaming parser in `containers.sexp`
 
 Some of the modules have been moved to their own repository (e.g. `sequence`,
@@ -54,6 +54,8 @@ See link:CHANGELOG.adoc[this file].
 - image:https://badges.gitter.im/Join%20Chat.svg[alt="Gitter", link="https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge"]
 
 == Use
+
+Start with the link:TUTORIAL.adoc[tutorial]
 
 You can either build and install the library (see <<build>>), or just copy
 files to your own project. The last solution has the benefits that you

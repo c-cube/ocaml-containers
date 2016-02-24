@@ -1,27 +1,5 @@
-(*
-copyright (c) 2013, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Helpers for Format}
 
@@ -66,12 +44,31 @@ val quad : 'a printer -> 'b printer -> 'c printer -> 'd printer -> ('a * 'b * 'c
 
 val map : ('a -> 'b) -> 'b printer -> 'a printer
 
-(** {2 ASCII codes}
+val vbox : ?i:int -> 'a printer -> 'a printer
+(** Wrap the printer in a vertical box
+    @param i level of indentation within the box (default 0)
+    @since 0.16 *)
+
+val hvbox : ?i:int -> 'a printer -> 'a printer
+(** Wrap the printer in a horizontal/vertical box
+    @param i level of indentation within the box (default 0)
+    @since 0.16 *)
+
+val hovbox : ?i:int -> 'a printer -> 'a printer
+(** Wrap the printer in a horizontal or vertical box
+    @param i level of indentation within the box (default 0)
+    @since 0.16 *)
+
+val hbox : 'a printer -> 'a printer
+(** Wrap the printer in an horizontal box
+    @since 0.16 *)
+
+(** {2 ANSI codes}
 
   Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
   to put some colors on the terminal.
 
-  This uses {b tags} in format strings to specify  the style. Current styles
+  This uses {b tags} in format strings to specify the style. Current styles
   are the following:
 
   {ul
@@ -84,6 +81,7 @@ val map : ('a -> 'b) -> 'b printer -> 'a printer
     {- "magenta" }
     {- "cyan" }
     {- "white" }
+    {- "bold" bold font}
     {- "Black" bold black}
     {- "Red" bold red }
     {- "Green" bold green }
@@ -115,6 +113,18 @@ val set_color_default : bool -> unit
     (stdout, stderr) if [b = true] as well as on {!sprintf} formatters;
     it disables the color handling if [b = false]. *)
 
+val with_color : string -> 'a printer -> 'a printer
+(** [with_color "Blue" pp] behaves like the printer [pp], but with the given
+    style.
+    {b status: experimental}
+    @since 0.16 *)
+
+val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
+(** [with_colorf "Blue" out "%s %d" "yolo" 42] will behave like {!Format.fprintf},
+    but wrapping the content with the given style
+    {b status: experimental}
+    @since 0.16 *)
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit
@@ -126,6 +136,10 @@ val stderr : t
 val sprintf : ('a, t, unit, string) format4 -> 'a
 (** Print into a string any format string that would usually be compatible
     with {!fprintf}. Similar to {!Format.asprintf}. *)
+
+val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
+(** Similar to {!sprintf} but never prints colors
+    @since 0.16 *)
 
 val fprintf : t -> ('a, t, unit ) format -> 'a
 (** Alias to {!Format.fprintf}

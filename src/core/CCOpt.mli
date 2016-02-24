@@ -1,27 +1,5 @@
-(*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Options} *)
 
@@ -31,7 +9,13 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 (** Transform the element inside, if any *)
 
 val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
-(** [maybe f x o] is [x] if [o] is [None], otherwise it's [f y] if [o = Some y] *)
+(** [maybe f x o] is [x] if [o] is [None],
+    otherwise it's [f y] if [o = Some y]
+    @deprecated, use {!map_or} *)
+
+val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
+(** [map_or ~default f o] is [f x] if [o = Some x], [default otherwise]
+    @since 0.16 *)
 
 val is_some : _ t -> bool
 
@@ -109,6 +93,16 @@ val (<+>) : 'a t -> 'a t -> 'a t
 
 val choice : 'a t list -> 'a t
 (** [choice] returns the first non-[None] element of the list, or [None] *)
+(** {2 Infix Operators}
+    @since 0.16 *)
+
+module Infix : sig
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val (<+>) : 'a t -> 'a t -> 'a t
+end
 
 (** {2 Conversion and IO} *)
 

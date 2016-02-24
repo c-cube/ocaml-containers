@@ -1,29 +1,29 @@
-(*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Maps with Heterogeneous Values} *)
+
+(*$R
+  let module M = CCMixmap.Make(CCInt) in
+
+  let inj_int = CCMixmap.create_inj() in
+  let inj_str = CCMixmap.create_inj() in
+  let inj_list_int = CCMixmap.create_inj() in
+
+  let m =
+    M.empty
+    |> M.add ~inj:inj_int 1 1
+    |> M.add ~inj:inj_str 2 "2"
+    |> M.add ~inj:inj_list_int 3 [3;3;3]
+  in
+
+  assert_equal (M.get ~inj:inj_int 1 m) (Some 1) ;
+  assert_equal (M.get ~inj:inj_str 1 m) None ;
+  assert_equal (M.get ~inj:inj_str 2 m) (Some "2") ;
+  assert_equal (M.get ~inj:inj_int 2 m) None ;
+  assert_equal (M.get ~inj:inj_list_int 3 m) (Some [3;3;3]) ;
+  assert_equal (M.get ~inj:inj_str 3 m) None ;
+*)
 
 type 'b injection = {
   get : (unit -> unit) -> 'b option;
@@ -50,14 +50,14 @@ module type S = sig
   val empty : t
   (** Empty map *)
 
-  val get : inj:'a injection -> t  -> key -> 'a option
+  val get : inj:'a injection -> key -> t -> 'a option
   (** Get the value corresponding to this key, if it exists and
       belongs to the same key *)
 
-  val add : inj:'a injection -> t -> key -> 'a -> t
+  val add : inj:'a injection -> key -> 'a -> t -> t
   (** Bind the key to the value, using [inj] *)
 
-  val find : inj:'a injection -> t -> key -> 'a
+  val find : inj:'a injection -> key -> t -> 'a
   (** Find the value for the given key, which must be of the right type.
       @raise Not_found if either the key is not found, or if its value
         doesn't belong to the right type *)
@@ -65,10 +65,10 @@ module type S = sig
   val cardinal : t -> int
   (** Number of bindings *)
 
-  val remove : t -> key -> t
+  val remove : key -> t -> t
   (** Remove the binding for this key *)
 
-  val mem : inj:_ injection-> t -> key -> bool
+  val mem : inj:_ injection-> key -> t -> bool
   (** Is the given key in the map, with the right type? *)
 
   val iter_keys : f:(key -> unit) -> t -> unit
@@ -107,23 +107,23 @@ module Make(X : ORD) : S with type key = X.t = struct
 
   let empty = M.empty
 
-  let find ~inj map x =
+  let find ~inj x map =
     match inj.get (M.find x map) with
       | None -> raise Not_found
       | Some v -> v
 
-  let get ~inj map x =
+  let get ~inj x map =
     try inj.get (M.find x map)
     with Not_found -> None
 
-  let add ~inj map x y =
+  let add ~inj x y map =
     M.add x (inj.set y) map
 
   let cardinal = M.cardinal
 
-  let remove map x = M.remove x map
+  let remove = M.remove
 
-  let mem ~inj map x =
+  let mem ~inj x map =
     try
       inj.get (M.find x map) <> None
     with Not_found -> false

@@ -954,7 +954,7 @@ module Deque = struct
 end
 
 module Thread = struct
-  module Q = CCThread.Queue
+  module Q = CCBlockingQueue
 
   module type TAKE_PUSH = sig
     val take : 'a Q.t -> 'a
@@ -1009,6 +1009,50 @@ module Thread = struct
       ; "naive", make naive, ()
       ]
 
+  let fib_pool_ ~size n =
+    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
+    let open P.Fut.Infix in
+    let rec fib n =
+      if n<=1 then P.Fut.return 1
+      else
+        let f1 = fib (n-1)
+        and f2 = fib (n-2) in
+        P.Fut.return (+) <*> f1 <*> f2
+    in
+    P.Fut.get (fib n)
+
+  let fib_manual n =
+    let rec fib n =
+      if n<= 1  then 1
+      else fib (n-1) + fib (n-2)
+    in
+    fib n
+
+  (* pool of size [size] *)
+  let bench_pool ~size n =
+    assert (fib_manual n = fib_pool_ ~size n);
+    B.throughputN 3 ~repeat
+      [ "sequential", fib_manual, n
+      ; "pool", fib_pool_ ~size, n
+      ]
+
+  let bench_sequence ~size n =
+    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
+    let id_ x = Thread.delay 0.0001; x in
+    let mk_list() = CCList.init n (P.Fut.make1 id_) in
+    let mk_sequence () =
+      let l = mk_list() in
+      P.Fut.sequence_l l |> P.Fut.get
+    (* reserves a thread for the computation *)
+    and mk_blocking () =
+      let l = mk_list() in
+      P.Fut.make (fun () -> List.map P.Fut.get l) |> P.Fut.get
+    in
+    B.throughputN 3 ~repeat
+      [ "sequence", mk_sequence, ()
+      ; "blocking", mk_blocking, ()
+      ]
+
   let () = B.Tree.register (
     let take_push = CCList.map
       (fun (size,senders,receivers) ->
@@ -1028,7 +1072,10 @@ module Thread = struct
 
     "thread" @>>>
       ( take_push @
-      []
+      [ "fib_size5" @>> app_ints (bench_pool ~size:5) [10; 15; 30; 35]
+      ; "fib_size15" @>> app_ints (bench_pool ~size:15) [10; 15; 30; 35]
+      ; "sequence" @>> app_ints (bench_sequence ~size:15) [100; 500; 10_000; 100_000]
+      ]
       )
   )
 end

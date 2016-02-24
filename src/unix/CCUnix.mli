@@ -36,8 +36,7 @@ type 'a gen = unit -> 'a option
 (** {2 Calling Commands} *)
 
 val escape_str : Buffer.t -> string -> unit
-(** Escape a string so it can be a shell argument.
-*)
+(** Escape a string so it can be a shell argument. *)
 
 (*$T
   CCPrint.sprintf "%a" escape_str "foo" = "foo"
@@ -106,6 +105,57 @@ val stdout : < stdout : 'a; .. > -> 'a
 val stderr : < stderr : 'a; .. > -> 'a
 val status : < status : 'a; .. > -> 'a
 val errcode : < errcode : 'a; .. > -> 'a
+
+(** {2 Simple IO} *)
+
+val with_in : ?mode:int -> ?flags:Unix.open_flag list ->
+              string -> f:(in_channel -> 'a) -> 'a
+(** Open an input file with the given optional flag list, calls the function
+    on the input channel. When the function raises or returns, the
+    channel is closed.
+    @param flags opening flags. [Unix.O_RDONLY] is used in any cases
+    @since 0.16 *)
+
+val with_out : ?mode:int -> ?flags:Unix.open_flag list ->
+               string -> f:(out_channel -> 'a) -> 'a
+(** Same as {!with_in} but for an output channel
+    @param flags opening flags (default [[Unix.O_CREAT; Unix.O_TRUNC]])
+      [Unix.O_WRONLY] is used in any cases.
+    @since 0.16 *)
+
+val with_process_in : string -> f:(in_channel -> 'a) -> 'a
+(** Open a subprocess and obtain a handle to its stdout
+    @since 0.16 *)
+
+val with_process_out : string -> f:(out_channel -> 'a) -> 'a
+(** Open a subprocess and obtain a handle to its stdin
+    @since 0.16 *)
+
+(** Handle to a subprocess.
+    @since 0.16 *)
+type process_full = <
+  stdin: out_channel;
+  stdout: in_channel;
+  stderr: in_channel;
+  close: Unix.process_status;
+>
+
+val with_process_full : ?env:string array -> string -> f:(process_full -> 'a) -> 'a
+(** Open a subprocess and obtain a handle to its channels.
+    @param env environment to pass to the subprocess.
+    @since 0.16 *)
+
+val with_connection : Unix.sockaddr -> f:(in_channel -> out_channel -> 'a) -> 'a
+(** Wrap {!Unix.open_connection} with a handler
+    @since 0.16 *)
+
+exception ExitServer
+
+val establish_server : Unix.sockaddr -> f:(in_channel -> out_channel -> _) -> unit
+(** Listen on the address and calls the handler in a blocking fashion.
+    Using {!Thread} is recommended if handlers might take time.
+    The callback should raise {!ExitServer} to stop the loop.
+    @since 0.16 *)
 
 (** {2 Infix Functions} *)
 

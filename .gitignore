@@ -6,6 +6,6 @@ _build
 .session
 TAGS
 *.docdir
-setup.log
-setup.data
+setup.*
 qtest*
+*.html

@@ -1,5 +1,61 @@
 = Changelog
 
+== 0.16
+
+=== breaking
+
+- change the signature of `CCHeap.{of_gen,of_seq,of_klist}`
+- change the API of `CCMixmap`
+- make type `CCHash.state` abstract (used to be `int64`)
+- optional argument `~eq` to `CCGraph.Dot.pp`
+- rename `CCFuture` into `CCPool`
+
+=== deprecations
+
+- deprecate `containers.bigarray`
+- deprecate `CCHashtbl.{Counter,Default}` tables
+- deprecate `CCLinq` in favor of standalone `OLinq` (to be released)
+
+=== bugfixes
+
+- fix wrong signature of `CCHashtbl.Make.{keys,values}_list`
+- missing constraint in `CCSexpM.ID_MONAD`
+
+=== new features
+
+- add a tutorial file
+- add a printer into CCHeap
+- add `{CCList,CCOpt}.Infix` modules
+- add `CCOpt.map_or`, deprecating `CCopt.maybe`
+- add `CCFormat.sprintf_no_color`
+- add `CCFormat.{h,v,hov,hv}box` printer combinators
+- add `CCFormat.{with_color, with_colorf}`
+- add `CCList.hd_tl`
+- add `CCResult.{map_or,get_or}`
+- add `CCGraph.make` and utils
+- add `CCHashtbl.add_list`
+- add counter function in `CCHashtbl`, to replace `CCHashtbl.Counter`
+- add `CCPair.make`
+- add `CCString.Split.{left,right}_exn`
+- add `CCIO.File.{read,write,append}` for quickly handling files
+- add `CCRandom.pick_{list,array}`
+- add `CCList.Assoc.update`
+- add `CCList.Assoc.mem`
+- add `{CCMap,CCHashtbl}.get_or` for lookup with default value
+- add `CCLock.{decr_then_get, get_then_{decr,set,clear}}`
+- rename `CCFuture` into `CCPool`, expose the thread pool
+- split `CCTimer` out of `CCFuture`, a standalone 1-thread timer
+- move `CCThread.Queue` into `CCBlockingQueue`
+- add `CCResult`, with dependency on `result` for retrocompat
+- add `CCThread.spawn{1,2}`
+- add many helpers in `CCUnix` (for sockets, files, and processes)
+- add `CCFun.finally{1,2}`, convenience around `finally`
+- add `CCLock.update_map`
+- add `CCLock.{incr_then_get,get_then_incr}`
+- add breaking space in `CCFormat.{pair,triple,quad}`
+- update `examples/id_sexp` so it can read on stdin
+- add `CCList.fold_map2`
+
 == 0.15
 
 === breaking changes
@@ -15,7 +71,7 @@
 - add `CCMap.{keys,values}`
 - add wip `CCAllocCache`, an allocation cache for short-lived arrays
 - add `CCError.{join,both}` applicative functions for CCError
-- opam: depend on ocamlbuild
+- opam: depend on ecamlbuild
 - work on `CCRandom` by octachron:
   * add an uniformity test
   * Make `split_list` uniform

@@ -1,27 +1,5 @@
-(*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Extension to the standard Hashtbl}  *)
 
@@ -36,12 +14,39 @@ let get tbl x =
   try Some (Hashtbl.find tbl x)
   with Not_found -> None
 
+let get_or tbl x ~or_ =
+  try Hashtbl.find tbl x
+  with Not_found -> or_
+
+(*$=
+  "c" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 3 ~or_:"c")
+  "b" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 2 ~or_:"c")
+*)
+
 let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
 
 let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
 
 let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
 let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
+
+let add_list tbl k v =
+  let l = try Hashtbl.find tbl k with Not_found -> [] in
+  Hashtbl.replace tbl k (v::l)
+
+let incr ?(by=1) tbl x =
+  let n = get_or tbl x ~or_:0 in
+  if n+by <= 0
+  then Hashtbl.remove tbl x
+  else Hashtbl.replace tbl x (n+by)
+
+let decr ?(by=1) tbl x =
+  try
+    let n = Hashtbl.find tbl x in
+    if n-by <= 0
+    then Hashtbl.remove tbl x
+    else Hashtbl.replace tbl x (n-by)
+  with Not_found -> ()
 
 let map_list f h =
   Hashtbl.fold
@@ -55,9 +60,18 @@ let map_list f h =
 
 let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
 
+let add_seq tbl seq = seq (fun (k,v) -> Hashtbl.add tbl k v)
+
 let of_seq seq =
   let tbl = Hashtbl.create 32 in
-  seq (fun (k,v) -> Hashtbl.add tbl k v);
+  add_seq tbl seq;
+  tbl
+
+let add_seq_count tbl seq = seq (fun k -> incr tbl k)
+
+let of_seq_count seq =
+  let tbl = Hashtbl.create 32 in
+  add_seq_count tbl seq;
   tbl
 
 let to_list tbl =
@@ -110,18 +124,41 @@ module type S = sig
   val get : 'a t -> key -> 'a option
   (** Safe version of {!Hashtbl.find} *)
 
+  val get_or : 'a t -> key -> or_:'a -> 'a
+  (** [get_or tbl k ~or_] returns the value associated to [k] if present,
+      and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+      @since 0.16 *)
+
+  val add_list : 'a list t -> key -> 'a -> unit
+  (** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
+      not bound, it becomes bound to [[y]].
+      @since 0.16 *)
+
+  val incr : ?by:int -> int t -> key -> unit
+  (** [incr ?by tbl x] increments or initializes the counter associated with [x].
+      If [get tbl x = None], then after update, [get tbl x = Some 1];
+      otherwise, if [get tbl x = Some n], now [get tbl x = Some (n+1)].
+      @param by if specified, the int value is incremented by [by] rather than 1
+      @since 0.16 *)
+
+  val decr : ?by:int -> int t -> key -> unit
+  (** Same as {!incr} but substract 1 (or the value of [by]).
+      If the value reaches 0, the key is removed from the table.
+      This does nothing if the key is not already present in the table.
+      @since 0.16 *)
+
   val keys : 'a t -> key sequence
   (** Iterate on keys (similar order as {!Hashtbl.iter}) *)
 
   val values : 'a t -> 'a sequence
   (** Iterate on values in the table *)
 
-  val keys_list : ('a, 'b) Hashtbl.t -> 'a list
-  (** [keys_list t] is the list of keys in [t].
+  val keys_list : _ t -> key list
+  (** [keys t] is the list of keys in [t].
       @since 0.8 *)
 
-  val values_list : ('a, 'b) Hashtbl.t -> 'b list
-  (** [values_list t] is the list of values in [t].
+  val values_list : 'a t -> 'a list
+  (** [values t] is the list of values in [t].
       @since 0.8 *)
 
   val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list
@@ -132,6 +169,20 @@ module type S = sig
 
   val of_seq : (key * 'a) sequence -> 'a t
   (** From the given bindings, added in order *)
+
+  val add_seq : 'a t -> (key * 'a) sequence -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      @since 0.16 *)
+
+  val add_seq_count : int t -> key sequence -> unit
+  (** [add_seq_count tbl seq] increments the count of each element of [seq]
+      by calling {!incr}. This is useful for counting how many times each
+      element of [seq] occurs.
+      @since 0.16 *)
+
+  val of_seq_count : key sequence -> int t
+  (** Similar to {!add_seq_count}, but allocates a new table and returns it
+      @since 0.16 *)
 
   val to_list : 'a t -> (key * 'a) list
   (** List of bindings (order unspecified)  *)
@@ -152,6 +203,10 @@ module type S = sig
       @since 0.13 *)
 end
 
+(*$inject
+  module T = Make(CCInt)
+*)
+
 module Make(X : Hashtbl.HashedType)
   : S with type key = X.t and type 'a t = 'a Hashtbl.Make(X).t
 = struct
@@ -161,12 +216,53 @@ module Make(X : Hashtbl.HashedType)
     try Some (find tbl x)
     with Not_found -> None
 
+  let get_or tbl x ~or_ =
+    try find tbl x
+    with Not_found -> or_
+
+  (*$=
+    "c" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 3 ~or_:"c")
+    "b" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 2 ~or_:"c")
+  *)
+
+  let incr ?(by=1) tbl x =
+    let n = get_or tbl x ~or_:0 in
+    if n+by <= 0
+    then remove tbl x
+    else replace tbl x (n+by)
+
+  (*$R
+    let tbl = T.create 32 in
+    T.incr tbl 1 ;
+    T.incr tbl 2;
+    T.incr tbl 1;
+    assert_equal 2 (T.find tbl 1);
+    assert_equal 1 (T.find tbl 2);
+    assert_equal 2 (T.length tbl);
+    T.decr tbl 2;
+    assert_equal 0 (T.get_or tbl 2 ~or_:0);
+    assert_equal 1 (T.length tbl);
+    assert_bool "2 removed" (not (T.mem tbl 2));
+  *)
+
+  let add_list tbl k v =
+    let l = try find tbl k with Not_found -> [] in
+    replace tbl k (v::l)
+
+  let decr ?(by=1) tbl x =
+    try
+      let n = find tbl x in
+      if n-by <= 0
+      then remove tbl x
+      else replace tbl x (n-by)
+    with Not_found -> ()
+
   let keys tbl k = iter (fun key _ -> k key) tbl
 
   let values tbl k = iter (fun _ v -> k v) tbl
 
-  let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
-  let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
+  let keys_list tbl = fold (fun k _ a -> k::a) tbl []
+  let values_list tbl = fold (fun _ v a -> v::a) tbl []
 
   let map_list f h =
     fold
@@ -183,9 +279,18 @@ module Make(X : Hashtbl.HashedType)
 
   let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 
+  let add_seq tbl seq = seq (fun (k,v) -> add tbl k v)
+
   let of_seq seq =
     let tbl = create 32 in
-    seq (fun (k,v) -> add tbl k v);
+    add_seq tbl seq;
+    tbl
+
+  let add_seq_count tbl seq = seq (fun k -> incr tbl k)
+
+  let of_seq_count seq =
+    let tbl = create 32 in
+    add_seq_count tbl seq;
     tbl
 
   let to_list tbl =

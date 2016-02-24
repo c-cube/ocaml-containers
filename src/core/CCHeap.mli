@@ -1,27 +1,5 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Leftist Heaps} following Okasaki *)
 
@@ -29,6 +7,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type PARTIAL_ORD = sig
   type t
@@ -85,21 +64,40 @@ module type S = sig
   val size : t -> int
   (** Number of elements (linear complexity) *)
 
-  (** {2 Conversions} *)
+  (** {2 Conversions}
+      
+      The interface of [of_gen], [of_seq], [of_klist]
+      has changed @since 0.16 (the old signatures
+      are now [add_seq], [add_gen], [add_klist]) *)
 
   val to_list : t -> elt list
+
+  val add_list : t -> elt list -> t (** @since 0.16 *)
+
   val of_list : elt list -> t
 
-  val of_seq : t -> elt sequence -> t
+  val add_seq : t -> elt sequence -> t (** @since 0.16 *)
+
+  val of_seq : elt sequence -> t
+
   val to_seq : t -> elt sequence
 
-  val of_klist : t -> elt klist -> t
+  val add_klist : t -> elt klist -> t (** @since 0.16 *)
+
+  val of_klist : elt klist -> t
+
   val to_klist : t -> elt klist
 
-  val of_gen : t -> elt gen -> t
+  val add_gen : t -> elt gen -> t (** @since 0.16 *)
+
+  val of_gen : elt gen -> t
+
   val to_gen : t -> elt gen
 
   val to_tree : t -> elt ktree
+
+  val print : ?sep:string -> elt printer -> t printer
+  (** @since 0.16 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t

@@ -1,29 +1,11 @@
-(*
-copyright (c) 2013-2014, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-this software is provided by the copyright holders and contributors "as is" and
-any express or implied warranties, including, but not limited to, the implied
-warranties of merchantability and fitness for a particular purpose are
-disclaimed. in no event shall the copyright holder or contributors be liable
-for any direct, indirect, incidental, special, exemplary, or consequential
-damages (including, but not limited to, procurement of substitute goods or
-services; loss of use, data, or profits; or business interruption) however
-caused and on any theory of liability, whether in contract, strict liability,
-or tort (including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 complements to list} *)
+
+(*$inject
+  let lsort l = List.sort Pervasives.compare l
+*)
 
 type 'a t = 'a list
 
@@ -168,6 +150,28 @@ let fold_map f acc l =
 (*$Q
   Q.(list int) (fun l -> \
     fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
+*)
+
+let fold_map2 f acc l1 l2 =
+  let rec aux f acc map_acc l1 l2 = match l1, l2 with
+    | [], [] -> acc, List.rev map_acc
+    | [], _
+    | _, [] -> invalid_arg "fold_map2"
+    | x1 :: l1', x2 :: l2' ->
+        let acc, y = f acc x1 x2 in
+        aux f acc (y :: map_acc) l1' l2'
+  in
+  aux f acc [] l1 l2
+
+(*$=
+  (310, ["1 10"; "2 0"; "3 100"]) \
+    (fold_map2 (fun acc x y->acc+x*y, string_of_int x ^ " " ^ string_of_int y) \
+    0 [1;2;3] [10;0;100])
+*)
+
+(*$T
+  (try ignore (fold_map2 (fun _ _ _ -> assert false) 42 [] [1]); false \
+   with Invalid_argument _ -> true)
 *)
 
 let fold_flat_map f acc l =
@@ -449,6 +453,15 @@ let rec drop n l = match l with
   | [] -> []
   | _ when n=0 -> l
   | _::l' -> drop (n-1) l'
+
+let hd_tl = function
+  | [] -> failwith "hd_tl"
+  | x :: l -> x, l
+
+(*$T
+  try ignore (hd_tl []); false with Failure _ -> true
+  hd_tl [1;2;3] = (1, [2;3])
+*)
 
 let take_drop n l = take n l, drop n l
 
@@ -771,15 +784,15 @@ let repeat i l =
 module Assoc = struct
   type ('a, 'b) t = ('a*'b) list
 
-  let get_exn ?(eq=(=)) l x =
-    let rec search eq l x = match l with
-      | [] -> raise Not_found
-      | (y,z)::l' ->
-          if eq x y then z else search eq l' x
-    in search eq l x
+  let rec search_exn eq l x = match l with
+    | [] -> raise Not_found
+    | (y,z)::l' ->
+        if eq x y then z else search_exn eq l' x
 
-  let get ?eq l x =
-    try Some (get_exn ?eq l x)
+  let get_exn ?(eq=(=)) l x = search_exn eq l x
+
+  let get ?(eq=(=)) l x =
+    try Some (search_exn eq l x)
     with Not_found -> None
 
   (*$T
@@ -789,20 +802,52 @@ module Assoc = struct
     Assoc.get [] 42 = None
   *)
 
+  (* search for a binding for [x] in [l], and calls [f x (Some v) rest]
+     or [f x None rest] depending on whether it finds the binding.
+     [rest] is the list of the other bindings *)
+  let rec search_set eq acc l x ~f = match l with
+    | [] -> f x None acc
+    | (x',y')::l' ->
+        if eq x x'
+          then f x (Some y') (List.rev_append acc l')
+          else search_set eq ((x',y')::acc) l' x ~f
+
   let set ?(eq=(=)) l x y =
-    let rec search eq acc l x y = match l with
-      | [] -> (x,y)::acc
-      | (x',y')::l' ->
-          if eq x x'
-            then (x,y)::List.rev_append acc l'
-            else search eq ((x',y')::acc) l' x y
-    in search eq [] l x y
+    search_set eq [] l x
+      ~f:(fun x _ l -> (x,y)::l)
 
   (*$T
     Assoc.set [1,"1"; 2, "2"] 2 "two" |> List.sort Pervasives.compare \
       = [1, "1"; 2, "two"]
     Assoc.set [1,"1"; 2, "2"] 3 "3" |> List.sort Pervasives.compare \
       = [1, "1"; 2, "2"; 3, "3"]
+  *)
+
+  let mem ?(eq=(=)) l x =
+    try ignore (search_exn eq l x); true
+    with Not_found -> false
+
+  (*$T
+    Assoc.mem [1,"1"; 2,"2"; 3, "3"] 1
+    not (Assoc.mem [1,"1"; 2,"2"; 3, "3"] 4)
+  *)
+
+  let update ?(eq=(=)) l x ~f =
+    search_set eq [] l x
+      ~f:(fun x opt_y rest ->
+        match f opt_y with
+        | None -> rest (* drop *)
+        | Some y' -> (x,y') :: rest)
+  (*$=
+    [1,"1"; 2,"22"] \
+      (Assoc.update [1,"1"; 2,"2"] 2 \
+        ~f:(function Some "2" -> Some "22" | _ -> assert false) |> lsort)
+    [1,"1"; 3,"3"] \
+      (Assoc.update [1,"1"; 2,"2"; 3,"3"] 2 \
+        ~f:(function Some "2" -> None | _ -> assert false) |> lsort)
+    [1,"1"; 2,"2"; 3,"3"] \
+      (Assoc.update [1,"1"; 2,"2"] 3 \
+        ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
   *)
 end
 
@@ -1035,6 +1080,15 @@ let of_klist l =
     | `Cons (x,l') -> safe (x::acc) l'
   in
   direct direct_depth_default_ l
+
+module Infix = struct
+  let (>|=) = (>|=)
+  let (@) = (@)
+  let (<*>) = (<*>)
+  let (<$>) = (<$>)
+  let (>>=) = (>>=)
+  let (--) = (--)
+end
 
 (** {2 IO} *)
 

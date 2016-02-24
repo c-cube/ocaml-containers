@@ -25,7 +25,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Bigarrays of dimension 1}
 
-    {b status: experimental}
+    {b NOTE this module will be removed soon and should not be depended upon}
+
+    {b status: deprecated}
     @since 0.12 *)
 
 (** {2 used types} *)

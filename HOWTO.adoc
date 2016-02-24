@@ -14,7 +14,7 @@ can be removed.
 6. commit the changes
 7. `git checkout stable`
 8. `git merge master`
-9. `oasis setup; make tests doc`
+9. `oasis setup; make test doc`
 10. tag, and push both to github
 11. new opam package
 

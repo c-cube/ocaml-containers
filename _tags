@@ -17,6 +17,7 @@ true: annot, bin_annot
 # Library containers
 "src/core/containers.cmxs": use_containers
 <src/core/*.ml{,i,y}>: package(bytes)
+<src/core/*.ml{,i,y}>: package(result)
 # Library containers_io
 "src/io/containers_io.cmxs": use_containers_io
 <src/io/*.ml{,i,y}>: package(bytes)
@@ -38,16 +39,19 @@ true: annot, bin_annot
 # Library containers_advanced
 "src/advanced/containers_advanced.cmxs": use_containers_advanced
 <src/advanced/*.ml{,i,y}>: package(bytes)
+<src/advanced/*.ml{,i,y}>: package(result)
 <src/advanced/*.ml{,i,y}>: package(sequence)
 <src/advanced/*.ml{,i,y}>: use_containers
 # Library containers_bigarray
 "src/bigarray/containers_bigarray.cmxs": use_containers_bigarray
 <src/bigarray/*.ml{,i,y}>: package(bigarray)
 <src/bigarray/*.ml{,i,y}>: package(bytes)
+<src/bigarray/*.ml{,i,y}>: package(result)
 <src/bigarray/*.ml{,i,y}>: use_containers
 # Library containers_thread
 "src/threads/containers_thread.cmxs": use_containers_thread
 <src/threads/*.ml{,i,y}>: package(bytes)
+<src/threads/*.ml{,i,y}>: package(result)
 <src/threads/*.ml{,i,y}>: package(threads)
 <src/threads/*.ml{,i,y}>: use_containers
 # Library containers_top
@@ -55,6 +59,7 @@ true: annot, bin_annot
 <src/top/*.ml{,i,y}>: package(bigarray)
 <src/top/*.ml{,i,y}>: package(bytes)
 <src/top/*.ml{,i,y}>: package(compiler-libs.common)
+<src/top/*.ml{,i,y}>: package(result)
 <src/top/*.ml{,i,y}>: package(unix)
 <src/top/*.ml{,i,y}>: use_containers
 <src/top/*.ml{,i,y}>: use_containers_bigarray
@@ -68,6 +73,7 @@ true: annot, bin_annot
 <benchs/run_benchs.{native,byte}>: package(bytes)
 <benchs/run_benchs.{native,byte}>: package(gen)
 <benchs/run_benchs.{native,byte}>: package(hamt)
+<benchs/run_benchs.{native,byte}>: package(result)
 <benchs/run_benchs.{native,byte}>: package(sequence)
 <benchs/run_benchs.{native,byte}>: package(threads)
 <benchs/run_benchs.{native,byte}>: use_containers
@@ -85,6 +91,7 @@ true: annot, bin_annot
 <benchs/*.ml{,i,y}>: use_containers_thread
 # Executable run_bench_hash
 <benchs/run_bench_hash.{native,byte}>: package(bytes)
+<benchs/run_bench_hash.{native,byte}>: package(result)
 <benchs/run_bench_hash.{native,byte}>: use_containers
 # Executable run_qtest
 <qtest/run_qtest.{native,byte}>: package(QTest2Lib)
@@ -92,6 +99,7 @@ true: annot, bin_annot
 <qtest/run_qtest.{native,byte}>: package(bytes)
 <qtest/run_qtest.{native,byte}>: package(gen)
 <qtest/run_qtest.{native,byte}>: package(oUnit)
+<qtest/run_qtest.{native,byte}>: package(result)
 <qtest/run_qtest.{native,byte}>: package(sequence)
 <qtest/run_qtest.{native,byte}>: package(threads)
 <qtest/run_qtest.{native,byte}>: package(unix)
@@ -110,6 +118,7 @@ true: annot, bin_annot
 <qtest/*.ml{,i,y}>: package(bytes)
 <qtest/*.ml{,i,y}>: package(gen)
 <qtest/*.ml{,i,y}>: package(oUnit)
+<qtest/*.ml{,i,y}>: package(result)
 <qtest/*.ml{,i,y}>: package(sequence)
 <qtest/*.ml{,i,y}>: package(threads)
 <qtest/*.ml{,i,y}>: package(unix)
@@ -126,12 +135,14 @@ true: annot, bin_annot
 # Executable mem_measure
 "benchs/mem_measure.native": package(bytes)
 "benchs/mem_measure.native": package(hamt)
+"benchs/mem_measure.native": package(result)
 "benchs/mem_measure.native": package(sequence)
 "benchs/mem_measure.native": package(unix)
 "benchs/mem_measure.native": use_containers
 "benchs/mem_measure.native": use_containers_data
 <benchs/*.ml{,i,y}>: package(bytes)
 <benchs/*.ml{,i,y}>: package(hamt)
+<benchs/*.ml{,i,y}>: package(result)
 <benchs/*.ml{,i,y}>: package(sequence)
 <benchs/*.ml{,i,y}>: package(unix)
 <benchs/*.ml{,i,y}>: use_containers

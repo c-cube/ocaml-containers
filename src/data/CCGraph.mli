@@ -76,6 +76,23 @@ type ('v, 'e) t = {
 
 type ('v, 'e) graph = ('v, 'e) t
 
+val make :
+  origin:('e -> 'v) ->
+  dest:('e -> 'v) ->
+  ('v -> 'e sequence) -> ('v, 'e) t
+(** Make a graph by providing its fields
+    @since 0.16 *)
+
+val make_labelled_tuple :
+  ('v -> ('a * 'v) sequence) -> ('v, ('v * 'a * 'v)) t
+(** Make a graph with edges being triples [(origin,label,dest)]
+    @since 0.16 *)
+
+val make_tuple :
+  ('v -> 'v sequence) -> ('v, ('v * 'v)) t
+(** Make a graph with edges being pairs [(origin,dest)]
+    @since 0.16 *)
+
 (** Mutable tags from values of type ['v] to tags of type [bool] *)
 type 'v tag_set = {
   get_tag: 'v -> bool;
@@ -307,6 +324,7 @@ module Dot : sig
   (** Hidden state associated to a vertex *)
 
   val pp : ?tbl:('v,vertex_state) table ->
+           ?eq:('v -> 'v -> bool) ->
            ?attrs_v:('v -> attribute list) ->
            ?attrs_e:('e -> attribute list) ->
            ?name:string ->
@@ -320,6 +338,7 @@ module Dot : sig
       @param name name of the graph *)
 
   val pp_seq : ?tbl:('v,vertex_state) table ->
+               ?eq:('v -> 'v -> bool) ->
                ?attrs_v:('v -> attribute list) ->
                ?attrs_e:('e -> attribute list) ->
                ?name:string ->

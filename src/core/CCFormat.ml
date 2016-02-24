@@ -1,27 +1,5 @@
-(*
-copyright (c) 2013, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Helpers for Format} *)
 
@@ -99,17 +77,37 @@ let opt pp fmt x = match x with
   | Some x -> Format.fprintf fmt "some %a" pp x
 
 let pair ppa ppb fmt (a, b) =
-  Format.fprintf fmt "(%a, %a)" ppa a ppb b
+  Format.fprintf fmt "(%a,@ %a)" ppa a ppb b
 
 let triple ppa ppb ppc fmt (a, b, c) =
-  Format.fprintf fmt "(%a, %a, %a)" ppa a ppb b ppc c
+  Format.fprintf fmt "(%a,@ %a,@ %a)" ppa a ppb b ppc c
 
 let quad ppa ppb ppc ppd fmt (a, b, c, d) =
-  Format.fprintf fmt "(%a, %a, %a, %a)" ppa a ppb b ppc c ppd d
+  Format.fprintf fmt "(%a,@ %a,@ %a,@ %a)" ppa a ppb b ppc c ppd d
 
 let map f pp fmt x =
   pp fmt (f x);
   ()
+
+let vbox ?(i=0) pp out x =
+  Format.pp_open_vbox out i;
+  pp out x;
+  Format.pp_close_box out ()
+
+let hovbox ?(i=0) pp out x =
+  Format.pp_open_hovbox out i;
+  pp out x;
+  Format.pp_close_box out ()
+
+let hvbox ?(i=0) pp out x =
+  Format.pp_open_hvbox out i;
+  pp out x;
+  Format.pp_close_box out ()
+
+let hbox pp out x =
+  Format.pp_open_hbox out ();
+  pp out x;
+  Format.pp_close_box out ()
 
 (** {2 IO} *)
 
@@ -197,7 +195,8 @@ let style_of_tag_ s = match String.trim s with
   | "magenta" -> [`FG `Magenta]
   | "cyan" -> [`FG `Cyan]
   | "white" -> [`FG `White]
-  | "Black" -> [`FG `Black]
+  | "bold" -> [`Bold]
+  | "Black" -> [`FG `Black; `Bold]
   | "Red" -> [`FG `Red; `Bold]
   | "Green" -> [`FG `Green; `Bold]
   | "Yellow" -> [`FG `Yellow; `Bold]
@@ -210,25 +209,34 @@ let style_of_tag_ s = match String.trim s with
 let color_enabled = ref false
 
 (* either prints the tag of [s] or delegate to [or_else] *)
-let mark_open_tag ~or_else s =
+let mark_open_tag st ~or_else s =
   try
     let style = style_of_tag_ s in
+    Stack.push style st;
     if !color_enabled then ansi_l_to_str_ style else ""
   with Not_found -> or_else s
 
-let mark_close_tag ~or_else s =
+let mark_close_tag st ~or_else s =
   try
     let _ = style_of_tag_ s in (* check if it's indeed about color *)
-    if !color_enabled then ansi_l_to_str_ [`Reset] else ""
+    let style =
+      try
+        ignore (Stack.pop st); (* pop current style (if well-scoped...) *)
+        Stack.top st (* look at previous style *)
+      with Stack.Empty ->
+        [`Reset]
+    in
+    if !color_enabled then ansi_l_to_str_ style else ""
   with Not_found -> or_else s
 
 (* add color handling to formatter [ppf] *)
 let set_color_tag_handling ppf =
   let open Format in
   let functions = pp_get_formatter_tag_functions ppf () in
+  let st = Stack.create () in (* stack of styles *)
   let functions' = {functions with
-    mark_open_tag=(mark_open_tag ~or_else:functions.mark_open_tag);
-    mark_close_tag=(mark_close_tag ~or_else:functions.mark_close_tag);
+    mark_open_tag=(mark_open_tag st ~or_else:functions.mark_open_tag);
+    mark_close_tag=(mark_close_tag st ~or_else:functions.mark_close_tag);
   } in
   pp_set_mark_tags ppf true; (* enable tags *)
   pp_set_formatter_tag_functions ppf functions'
@@ -255,18 +263,40 @@ let set_color_default =
     s
 *)
 
-let sprintf format =
+let with_color s pp out x =
+  Format.pp_open_tag out s;
+  pp out x;
+  Format.pp_close_tag out ()
+
+let with_colorf s out fmt =
+  Format.pp_open_tag out s;
+  Format.kfprintf
+    (fun out -> Format.pp_close_tag out ())
+    out fmt
+
+(* c: whether colors are enabled *)
+let sprintf_ c format =
   let buf = Buffer.create 64 in
   let fmt = Format.formatter_of_buffer buf in
-  if !color_enabled then set_color_tag_handling fmt;
+  if c && !color_enabled then set_color_tag_handling fmt;
   Format.kfprintf
     (fun _fmt -> Format.pp_print_flush fmt (); Buffer.contents buf)
     fmt
     format
 
+let sprintf fmt = sprintf_ true fmt
+let sprintf_no_color fmt = sprintf_ false fmt
+
 (*$T
   sprintf "yolo %s %d" "a b" 42 = "yolo a b 42"
   sprintf "%d " 0 = "0 "
+  sprintf_no_color "%d " 0 = "0 "
+*)
+
+(*$R
+  set_color_default true;
+  assert_equal "\027[31myolo\027[0m" (sprintf "@{<red>yolo@}");
+  assert_equal "yolo" (sprintf_no_color "@{<red>yolo@}");
 *)
 
 let ksprintf ~f fmt =
