@@ -50,7 +50,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]}
 
-{b status: experimental}
+@deprecated CCParse is more expressive and stable
+
+{b status: deprecated}
 @since 0.10
 *)
 
