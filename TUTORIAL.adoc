@@ -243,5 +243,33 @@ more specialized data-structures.
 The documentation contains the API for all the modules
 (see link:README.adoc[the readme]); they also provide
 interface to `sequence` and, as the rest of containers, minimize
-dependencies over other modules.
+dependencies over other modules. To use `containers.data` you need to link it,
+either in your build system or by `#require containers.data;;`
+
+A quick example based on purely functional double-ended queues:
+
+[source,OCaml]
+----
+# #require "containers.data";;
+# #install_printer CCFQueue.print;;  (* better printing of queues! *)
+
+# let q = CCFQueue.of_list [2;3;4] ;;
+val q : int CCFQueue.t = queue {2; 3; 4}
+
+# let q2 = q |> CCFQueue.cons 1 |> CCFQueue.cons 0 ;;
+val q2 : int CCFQueue.t = queue {0; 1; 2; 3; 4}
+
+(* remove first element *)
+# CCFQueue.take_front q2;;
+- : (int * int CCFQueue.t) option = Some (0, queue {1; 2; 3; 4})
+
+(* q was not changed *)
+# CCFQueue.take_front q;;
+- : (int * int CCFQueue.t) option = Some (2, queue {3; 4})
+
+(* take works on both ends of the queue *)
+# CCFQueue.take_back_l 2 q2;;
+- : int CCFQueue.t * int list = (queue {0; 1; 2}, [3; 4])
+
+----
 
