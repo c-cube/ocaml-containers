@@ -165,6 +165,7 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCWBTree`, a weight-balanced tree, implementing a map interface
 - `CCRAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
   access to elements by their index.
+- `CCImmutArray`, immutable interface to arrays
 
 === Containers.io
 
