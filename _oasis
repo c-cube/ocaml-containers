@@ -10,6 +10,8 @@ OCamlVersion: >= 4.00.1
 BuildTools:  ocamlbuild
 AlphaFeatures: compiled_setup_ml, ocamlbuild_more_args
 
+XOCamlbuildExtraArgs: "-j 0"
+
 Synopsis:    A modular standard library focused on data structures.
 Description:
     Containers is a standard library (BSD license) focused on data structures,
