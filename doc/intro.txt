@@ -71,8 +71,10 @@ CCBitField
 CCBloom
 CCBV
 CCCache
+CCDeque
 CCFQueue
 CCFlatHashtbl
+CCGraph
 CCHashSet
 CCHashTrie
 CCImmutArray
