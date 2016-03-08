@@ -849,6 +849,21 @@ module Assoc = struct
       (Assoc.update [1,"1"; 2,"2"] 3 \
         ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
   *)
+
+  let remove ?(eq=(=)) l x =
+    search_set eq [] l x
+      ~f:(fun _ opt_y rest -> match opt_y with
+          | None -> l  (* keep as is *)
+          | Some _ -> rest)
+
+  (*$=
+    [1,"1"] \
+      (Assoc.remove [1,"1"; 2,"2"] 2 |> lsort)
+    [1,"1"; 3,"3"] \
+      (Assoc.remove [1,"1"; 2,"2"; 3,"3"] 2  |> lsort)
+    [1,"1"; 2,"2"] \
+      (Assoc.remove [1,"1"; 2,"2"] 3 |> lsort)
+  *)
 end
 
 (** {2 Zipper} *)

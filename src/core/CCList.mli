@@ -294,6 +294,10 @@ module Assoc : sig
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v']
       @since 0.16 *)
+
+  val remove : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> ('a,'b) t
+  (** [remove l k] removes the first occurrence of [k] from [l].
+      @since NEXT_RELEASE *)
 end
 
 (** {2 Zipper} *)
