@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: e5c366e1cd8e09a92eff04bbdc3ad4f9)
+# DO NOT EDIT (digest: 0670f1d87f40756af3f470a0fbb07a1b)
 src/core/CCVector
 src/core/CCPrint
 src/core/CCError
@@ -24,6 +24,7 @@ src/core/CCFormat
 src/core/CCIO
 src/core/CCInt64
 src/core/CCChar
+src/core/CCResult
 src/core/Containers
 src/iter/CCKTree
 src/iter/CCKList
@@ -58,10 +59,12 @@ src/string/CCApp_parse
 src/string/CCParse
 src/bigarray/CCBigstring
 src/bigarray/CCArray1
-src/threads/CCFuture
+src/threads/CCPool
 src/threads/CCLock
 src/threads/CCSemaphore
 src/threads/CCThread
+src/threads/CCBlockingQueue
+src/threads/CCTimer
 src/advanced/Containers_advanced
 src/advanced/CCLinq
 src/advanced/CCBatch
