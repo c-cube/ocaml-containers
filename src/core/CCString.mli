@@ -63,6 +63,21 @@ val init : int -> (int -> char) -> string
   init 0 (fun _ -> assert false) = ""
 *)
 
+val rev : string -> string
+(** [rev s] returns the reverse of [s]
+    @since NEXT_RELEASE *)
+
+(*$Q
+  Q.printable_string (fun s -> s = rev (rev s))
+  Q.printable_string (fun s -> length s = length (rev s))
+*)
+
+(*$=
+  "abc" (rev "cba")
+  "" (rev "")
+  " " (rev " ")
+*)
+
 val of_gen : char gen -> string
 val of_seq : char sequence -> string
 val of_klist : char klist -> string

@@ -50,6 +50,10 @@ let init n f =
 
 let length = String.length
 
+let rev s =
+  let n = length s in
+  init n (fun i -> s.[n-i-1])
+
 let rec _to_list s acc i len =
   if len=0 then List.rev acc
   else _to_list s (s.[i]::acc) (i+1) (len-1)
