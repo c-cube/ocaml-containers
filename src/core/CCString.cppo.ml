@@ -74,6 +74,7 @@ type _ direction =
   | Direct : [`Direct] direction
   | Reverse : [`Reverse] direction
 
+(* we follow https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm *)
 module KMP = struct
   type 'a pattern = {
     failure : int array;
@@ -88,7 +89,7 @@ module KMP = struct
   let get_
     : type a. dir:a direction -> string -> int -> char
     = fun ~dir -> match dir with
-    | Direct -> (fun s i -> s.[i])
+    | Direct -> String.get
     | Reverse -> (fun s i -> s.[String.length s - i - 1])
 
   let compile_
@@ -102,26 +103,28 @@ module KMP = struct
     | _ ->
       (* at least 2 elements, the algorithm can work *)
       let failure = Array.make len 0 in
+      failure.(0) <- -1;
       (* i: current index in str *)
-      let i = ref 1 in
+      let i = ref 2 in
       (* j: index of candidate substring *)
       let j = ref 0 in
-      while !i < len-1 do
+      while !i < len do
         match !j with
-        | _ when get str !i = get str !j ->
+        | _ when get str (!i-1) = get str !j ->
           (* substring starting at !j continues matching current char *)
-          i := !i+1;
-          j := !j+1;
+          incr j;
           failure.(!i) <- !j;
+          incr i;
         | 0 ->
           (* back to the beginning *)
-          i := !i+1;
           failure.(!i) <- 0;
+          incr i;
         | _ ->
           (* fallback for the prefix string *)
           assert (!j > 0);
           j := failure.(!j)
       done;
+      (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
       { failure; str; }
 
   let compile s = compile_ ~dir:Direct s
@@ -139,23 +142,30 @@ module KMP = struct
     let i = ref idx in
     let j = ref 0 in
     let pat_len = pattern_length pattern in
-    while !i < len && !j < pat_len do
-      let c = get s !i in
+    while !j < pat_len && !i + !j < len do
+      let c = get s (!i + !j) in
       let expected = get pattern.str !j in
       if c = expected
       then (
         (* char matches *)
-        i := !i + 1; j := !j + 1
+        incr j;
       ) else (
-        if !j=0
-          then (* beginning of the pattern *)
-            i := !i + 1
-          else (* follow the failure link *)
-            j := pattern.failure.(!j)
+        let fail_offset = pattern.failure.(!j) in
+        if fail_offset >= 0
+        then (
+          assert (fail_offset < !j);
+          (* follow the failure link *)
+          i := !i + !j - fail_offset;
+          j := fail_offset
+        ) else (
+          (* beginning of pattern *)
+          j := 0;
+          incr i
+        )
       )
     done;
     if !j = pat_len
-    then !i - pat_len
+    then !i
     else -1
 
   let find ~pattern s i = find_ ~dir:Direct ~pattern s i
@@ -242,29 +252,20 @@ module Split = struct
     | SplitStop
     | SplitAt of int (* previous *)
 
-  (* [by_j... prefix of s_i...] ? *)
-  let rec _is_prefix ~by s i j =
-    j = String.length by
-    ||
-    ( i < String.length s &&
-      s.[i] = by.[j] &&
-      _is_prefix ~by s (i+1) (j+1)
-    )
-
   let rec _split ~by s state = match state with
     | SplitStop -> None
-    | SplitAt prev -> _split_search ~by s prev prev
-  and _split_search ~by s prev i =
-    if i >= String.length s
+    | SplitAt prev -> _split_search ~by s prev
+  and _split_search ~by s prev =
+    let j = KMP.find ~pattern:by s prev in
+    if j < 0
       then Some (SplitStop, prev, String.length s - prev)
-      else if _is_prefix ~by s i 0
-        then Some (SplitAt (i+String.length by), prev, i-prev)
-      else _split_search ~by s prev (i+1)
+      else Some (SplitAt (j+KMP.pattern_length by), prev, j-prev)
 
   let _tuple3 x y z = x,y,z
 
   let _mkgen ~by s k =
     let state = ref (SplitAt 0) in
+    let by = KMP.compile by in
     fun () ->
       match _split ~by s !state with
         | None -> None
@@ -277,6 +278,7 @@ module Split = struct
   let gen_cpy ~by s = _mkgen ~by s String.sub
 
   let _mklist ~by s k =
+    let by = KMP.compile by in
     let rec build acc state = match _split ~by s state with
       | None -> List.rev acc
       | Some (state', i, len) ->
@@ -289,6 +291,7 @@ module Split = struct
   let list_cpy ~by s = _mklist ~by s String.sub
 
   let _mkklist ~by s k =
+    let by = KMP.compile by in
     let rec make state () = match _split ~by s state with
       | None -> `Nil
       | Some (state', i, len) ->
@@ -300,6 +303,7 @@ module Split = struct
   let klist_cpy ~by s = _mkklist ~by s String.sub
 
   let _mkseq ~by s f k =
+    let by = KMP.compile by in
     let rec aux state = match _split ~by s state with
       | None -> ()
       | Some (state', i, len) -> k (f s i len); aux state'

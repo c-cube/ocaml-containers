@@ -122,6 +122,8 @@ val find_all_l : ?start:int -> sub:string -> string -> int list
 (*$= & ~printer:Q.Print.(list int)
   [1; 6] (find_all_l ~sub:"bc" "abc aabc  aab")
   [] (find_all_l ~sub:"bc" "abd")
+  [76] (find_all_l ~sub:"aaaaaa" \
+    "aabbaabbaaaaabbbbabababababbbbabbbabbaaababbbaaabaabbaabbaaaabbababaaaabbaabaaaaaabbbaaaabababaabaaabbaabaaaabbababbaabbaaabaabbabababbbaabababaaabaaababbbaaaabbbaabaaababbabaababbaabbaaaaabababbabaababbbaaabbabbabababaaaabaaababaaaaabbabbaabbabbbbbbbbbbbbbbaabbabbbbbabbaaabbabbbbabaaaaabbababbbaaaa")
 *)
 
 val mem : ?start:int -> sub:string -> string -> bool

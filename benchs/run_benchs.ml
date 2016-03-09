@@ -1156,13 +1156,12 @@ end
 
 module Str = struct
   (* random string, but always returns the same for a given size *)
-  let rand_str_  n =
+  let rand_str_ ?(among="abcdefgh") n =
     let module Q = Quickcheck in
     let st = Random.State.make [| n |] in
-    let gen_c = Q.Gen.oneofl (CCString.to_list "abcdefghijkl") in
+    let gen_c = Q.Gen.oneofl (CCString.to_list among) in
     Q.Gen.string_size ~gen:gen_c (Q.Gen.return n) st
 
-  (* note: inefficient *)
   let find ?(start=0) ~sub s =
     let n = String.length sub in
     let i = ref start in
@@ -1175,7 +1174,6 @@ module Str = struct
     with Exit ->
       !i
 
-  (* note: inefficient *)
   let rfind ~sub s =
     let n = String.length sub in
     let i = ref (String.length s - n) in
@@ -1235,6 +1233,19 @@ module Str = struct
       ; "current", mk_current, ()
       ]
 
+  (* benchmark String.find_all on constant strings *)
+  let bench_find_all_special ~size n =
+    let needle = CCString.repeat "a" (size-1) ^ "b" in
+    let haystack = rand_str_ ~among:"ab" n in
+    pp_pb needle haystack;
+    let mk_naive () = find_all_l ~sub:needle haystack
+    and mk_current () = CCString.find_all_l ~sub:needle haystack in
+    assert (mk_naive () = mk_current ());
+    B.throughputN 3 ~repeat
+      [ "naive", mk_naive, ()
+      ; "current", mk_current, ()
+      ]
+
   let bench_find  = bench_find_ ~dir:`Direct
   let bench_rfind  = bench_find_ ~dir:`Reverse
 
@@ -1242,6 +1253,7 @@ module Str = struct
     "string" @>>>
       [ "find" @>>>
           [ "1" @>> app_ints (bench_find ~size:1) [100; 100_000; 500_000]
+          ; "3" @>> app_ints (bench_find ~size:3) [100; 100_000; 500_000]
           ; "5" @>> app_ints (bench_find ~size:5) [100; 100_000; 500_000]
           ; "15" @>> app_ints (bench_find ~size:15) [100; 100_000; 500_000]
           ; "50" @>> app_ints (bench_find ~size:50) [100; 100_000; 500_000]
@@ -1249,13 +1261,16 @@ module Str = struct
           ];
         "find_all" @>>>
           [ "1" @>> app_ints (bench_find_all ~size:1) [100; 100_000; 500_000]
+          ; "3" @>> app_ints (bench_find_all ~size:3) [100; 100_000; 500_000]
           ; "5" @>> app_ints (bench_find_all ~size:5) [100; 100_000; 500_000]
           ; "15" @>> app_ints (bench_find_all ~size:15) [100; 100_000; 500_000]
           ; "50" @>> app_ints (bench_find_all ~size:50) [100; 100_000; 500_000]
           ; "500" @>> app_ints (bench_find_all ~size:500) [100_000; 500_000]
+          ; "special" @>> app_ints (bench_find_all_special ~size:6) [100_000; 500_000]
           ];
         "rfind" @>>>
-          [ "15" @>> app_ints (bench_rfind ~size:15) [100; 100_000; 500_000]
+          [ "3" @>> app_ints (bench_rfind ~size:3) [100; 100_000; 500_000]
+          ; "15" @>> app_ints (bench_rfind ~size:15) [100; 100_000; 500_000]
           ; "50" @>> app_ints (bench_rfind ~size:50) [100; 100_000; 500_000]
           ; "500" @>> app_ints (bench_rfind ~size:500) [100_000; 500_000]
           ];
