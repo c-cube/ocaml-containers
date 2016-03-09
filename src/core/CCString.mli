@@ -96,10 +96,32 @@ val find : ?start:int -> sub:string -> string -> int
     Should only be used with very small [sub] *)
 
 (*$= & ~printer:string_of_int
-  (find ~sub:"bc" "abcd") 1
-  (find ~sub:"bc" "abd") ~-1
-  (find ~sub:"a" "_a_a_a_") 1
-  (find ~sub:"a" ~start:5 "a1a234a") 6
+  1 (find ~sub:"bc" "abcd")
+  ~-1 (find ~sub:"bc" "abd")
+  1 (find ~sub:"a" "_a_a_a_")
+  6 (find ~sub:"a" ~start:5 "a1a234a")
+*)
+
+(*$Q & ~count:300
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    let i = find ~sub:s2 s1 in \
+    i < 0 || String.sub s1 i (length s2) = s2)
+*)
+
+val find_all : ?start:int -> sub:string -> string -> int gen
+(** [find_all ~sub s] finds all occurrences of [sub] in [s]
+    @param start starting position in [s]
+    @since NEXT_RELEASE *)
+
+val find_all_l : ?start:int -> sub:string -> string -> int list
+(** [find_all ~sub s] finds all occurrences of [sub] in [s] and returns
+    them in a list
+    @param start starting position in [s]
+    @since NEXT_RELEASE *)
+
+(*$= & ~printer:Q.Print.(list int)
+  [1; 6] (find_all_l ~sub:"bc" "abc aabc  aab")
+  [] (find_all_l ~sub:"bc" "abd")
 *)
 
 val mem : ?start:int -> sub:string -> string -> bool
@@ -117,11 +139,17 @@ val rfind : sub:string -> string -> int
     @since 0.12 *)
 
 (*$= & ~printer:string_of_int
-  (rfind ~sub:"bc" "abcd") 1
-  (rfind ~sub:"bc" "abd") ~-1
-  (rfind ~sub:"a" "_a_a_a_") 5
-  (rfind ~sub:"bc" "abcdbcd") 4
-  (rfind ~sub:"a" "a1a234a") 6
+  1 (rfind ~sub:"bc" "abcd")
+  ~-1 (rfind ~sub:"bc" "abd")
+  5 (rfind ~sub:"a" "_a_a_a_")
+  4 (rfind ~sub:"bc" "abcdbcd")
+  6 (rfind ~sub:"a" "a1a234a")
+*)
+
+(*$Q & ~count:300
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    let i = rfind ~sub:s2 s1 in \
+    i < 0 || String.sub s1 i (length s2) = s2)
 *)
 
 val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string -> string

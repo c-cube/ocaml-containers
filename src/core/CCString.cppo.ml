@@ -70,32 +70,135 @@ let is_sub ~sub i s j ~len =
   if i+len > String.length sub then invalid_arg "CCString.is_sub";
   _is_sub ~sub i s j ~len
 
-(* note: inefficient *)
-let find ?(start=0) ~sub s =
-  let n = String.length sub in
-  let i = ref start in
-  try
-    while !i + n <= String.length s do
-      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
-      incr i
+type _ direction =
+  | Direct : [`Direct] direction
+  | Reverse : [`Reverse] direction
+
+module KMP = struct
+  type 'a pattern = {
+    failure : int array;
+    str : string;
+  }
+  (* invariant: [length failure = length str].
+   We use a phantom type to avoid mixing the directions. *)
+
+  let pattern_length p = String.length p.str
+
+  (* access the [i]-th element of [s] according to direction [dir] *)
+  let get_
+    : type a. dir:a direction -> string -> int -> char
+    = fun ~dir -> match dir with
+    | Direct -> (fun s i -> s.[i])
+    | Reverse -> (fun s i -> s.[String.length s - i - 1])
+
+  let compile_
+  : type a. dir:a direction -> string -> a pattern
+  = fun ~dir str ->
+    let len = length str in
+    let get = get_ ~dir in (* how to read elements of the string *)
+    match len with
+    | 0 -> {failure=[| |]; str;}
+    | 1 -> {failure=[| -1 |]; str;}
+    | _ ->
+      (* at least 2 elements, the algorithm can work *)
+      let failure = Array.make len 0 in
+      (* i: current index in str *)
+      let i = ref 1 in
+      (* j: index of candidate substring *)
+      let j = ref 0 in
+      while !i < len-1 do
+        match !j with
+        | _ when get str !i = get str !j ->
+          (* substring starting at !j continues matching current char *)
+          i := !i+1;
+          j := !j+1;
+          failure.(!i) <- !j;
+        | 0 ->
+          (* back to the beginning *)
+          i := !i+1;
+          failure.(!i) <- 0;
+        | _ ->
+          (* fallback for the prefix string *)
+          assert (!j > 0);
+          j := failure.(!j)
+      done;
+      { failure; str; }
+
+  let compile s = compile_ ~dir:Direct s
+  let rcompile s = compile_ ~dir:Reverse s
+
+  (* proper search function.
+    [i] index in [s]
+    [j] index in [pattern]
+    [len] length of [s] *)
+  let find_
+  : type a. dir:a direction -> pattern:a pattern -> string -> int -> int
+  = fun ~dir ~pattern s idx ->
+    let len = length s in
+    let get = get_ ~dir in
+    let i = ref idx in
+    let j = ref 0 in
+    let pat_len = pattern_length pattern in
+    while !i < len && !j < pat_len do
+      let c = get s !i in
+      let expected = get pattern.str !j in
+      if c = expected
+      then (
+        (* char matches *)
+        i := !i + 1; j := !j + 1
+      ) else (
+        if !j=0
+          then (* beginning of the pattern *)
+            i := !i + 1
+          else (* follow the failure link *)
+            j := pattern.failure.(!j)
+      )
     done;
-    -1
-  with Exit ->
-    !i
+    if !j = pat_len
+    then !i - pat_len
+    else -1
+
+  let find ~pattern s i = find_ ~dir:Direct ~pattern s i
+
+  let rfind ~pattern s i =
+    let i = String.length s - i - 1 in
+    let res = find_ ~dir:Reverse ~pattern s i in
+    (* adjust result: first, [res = string.length s - res -1] to convert
+       back to real indices; then, what we got is actually the position
+       of the end of the pattern, so we subtract the [length of the pattern -1]
+       to obtain the real result. *)
+    if res = ~-1
+    then res
+    else (String.length s - res) - pattern_length pattern
+end
+
+let find ?(start=0) ~sub s =
+  let pattern = KMP.compile sub in
+  KMP.find ~pattern s start
+
+let find_all ?(start=0) ~sub s =
+  let pattern = KMP.compile sub in
+  let i = ref start in
+  fun () ->
+    let res = KMP.find ~pattern s !i in
+    if res = ~-1 then None
+    else (
+      i := res + KMP.pattern_length pattern;
+      Some res
+    )
+
+let find_all_l ?start ~sub s =
+  let rec aux acc g = match g () with
+    | None -> List.rev acc
+    | Some i -> aux (i::acc) g
+  in
+  aux [] (find_all ?start ~sub s)
 
 let mem ?start ~sub s = find ?start ~sub s >= 0
 
 let rfind ~sub s =
-  let n = String.length sub in
-  let i = ref (String.length s - n) in
-  try
-    while !i >= 0 do
-      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
-      decr i
-    done;
-    ~-1
-  with Exit ->
-    !i
+  let pattern = KMP.rcompile sub in
+  KMP.rfind ~pattern s (String.length s-1)
 
 (* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -109,16 +212,18 @@ let replace ?(which=`All) ~sub ~by s =
   if sub="" then invalid_arg "CCString.replace";
   match which with
   | `Left ->
-      let i = find ~sub s in
+      let i = find ~sub s ~start:0 in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
   | `Right ->
       let i = rfind ~sub s in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
   | `All ->
+      (* compile search pattern only once *)
+      let pattern = KMP.compile sub in
       let b = Buffer.create (String.length s) in
       let start = ref 0 in
       while !start < String.length s do
-        let i = find ~start:!start ~sub s in
+        let i = KMP.find ~pattern s !start in
         if i>=0 then (
           (* between last and cur occurrences *)
           Buffer.add_substring b s !start (i- !start);
