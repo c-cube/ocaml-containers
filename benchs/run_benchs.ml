@@ -1158,7 +1158,7 @@ module Str = struct
   (* random string, but always returns the same for a given size *)
   let rand_str_ ?(among="abcdefgh") n =
     let module Q = Quickcheck in
-    let st = Random.State.make [| n |] in
+    let st = Random.State.make [| n + 17 |] in
     let gen_c = Q.Gen.oneofl (CCString.to_list among) in
     Q.Gen.string_size ~gen:gen_c (Q.Gen.return n) st
 
@@ -1213,11 +1213,15 @@ module Str = struct
     and mk_current = match dir with
       | `Direct -> fun () -> CCString.find ~sub:needle haystack
       | `Reverse -> fun () -> CCString.rfind ~sub:needle haystack
+    and mk_current_compiled = match dir with
+      | `Direct -> let f = CCString.find ~start:0 ~sub:needle in fun () -> f haystack
+      | `Reverse -> let f = CCString.rfind ~sub:needle in fun () -> f haystack
     in
     assert (mk_naive () = mk_current ());
     B.throughputN 3 ~repeat
       [ "naive", mk_naive, ()
       ; "current", mk_current, ()
+      ; "current_compiled", mk_current_compiled, ()
       ]
 
   (* benchmark String.find_all *)
@@ -1226,11 +1230,14 @@ module Str = struct
     let haystack = rand_str_ n in
     pp_pb needle haystack;
     let mk_naive () = find_all_l ~sub:needle haystack
-    and mk_current () = CCString.find_all_l ~sub:needle haystack in
+    and mk_current () = CCString.find_all_l ~sub:needle haystack
+    and mk_current_compiled =
+      let f = CCString.find_all_l ~start:0 ~sub:needle in fun () -> f haystack in
     assert (mk_naive () = mk_current ());
     B.throughputN 3 ~repeat
       [ "naive", mk_naive, ()
       ; "current", mk_current, ()
+      ; "current_compiled", mk_current_compiled, ()
       ]
 
   (* benchmark String.find_all on constant strings *)
@@ -1252,8 +1259,7 @@ module Str = struct
   let () = B.Tree.register (
     "string" @>>>
       [ "find" @>>>
-          [ "1" @>> app_ints (bench_find ~size:1) [100; 100_000; 500_000]
-          ; "3" @>> app_ints (bench_find ~size:3) [100; 100_000; 500_000]
+          [ "3" @>> app_ints (bench_find ~size:3) [100; 100_000; 500_000]
           ; "5" @>> app_ints (bench_find ~size:5) [100; 100_000; 500_000]
           ; "15" @>> app_ints (bench_find ~size:15) [100; 100_000; 500_000]
           ; "50" @>> app_ints (bench_find ~size:50) [100; 100_000; 500_000]
