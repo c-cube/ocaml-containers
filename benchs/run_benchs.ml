@@ -1081,7 +1081,6 @@ module Thread = struct
 end
 
 module Graph = struct
-
   (* divisors graph *)
   let div_children_ i =
     (* divisors of [i] that are [>= j] *)
@@ -1153,6 +1152,115 @@ module Graph = struct
         app_ints bench_dfs [100; 1000; 10_000; 50_000; 100_000; 500_000]
       ]
     )
+end
+
+module Str = struct
+  (* random string, but always returns the same for a given size *)
+  let rand_str_  n =
+    let module Q = Quickcheck in
+    let st = Random.State.make [| n |] in
+    let gen_c = Q.Gen.oneofl (CCString.to_list "abcdefghijkl") in
+    Q.Gen.string_size ~gen:gen_c (Q.Gen.return n) st
+
+  (* note: inefficient *)
+  let find ?(start=0) ~sub s =
+    let n = String.length sub in
+    let i = ref start in
+    try
+      while !i + n <= String.length s do
+        if CCString.is_sub ~sub 0 s !i ~len:n then raise Exit;
+        incr i
+      done;
+      -1
+    with Exit ->
+      !i
+
+  (* note: inefficient *)
+  let rfind ~sub s =
+    let n = String.length sub in
+    let i = ref (String.length s - n) in
+    try
+      while !i >= 0 do
+        if CCString.is_sub ~sub 0 s !i ~len:n then raise Exit;
+        decr i
+      done;
+      ~-1
+    with Exit ->
+      !i
+
+  let find_all ?(start=0) ~sub s =
+    let i = ref start in
+    fun () ->
+      let res = find ~sub s ~start:!i in
+      if res = ~-1 then None
+      else (
+        i := res + String.length sub;
+        Some res
+      )
+
+  let find_all_l ?start ~sub s = find_all ?start ~sub s |> Gen.to_list
+
+  let pp_pb needle haystack =
+    Format.printf "search needle `%s` in `%s`...@."
+      needle (String.sub haystack 0 (min 300 (String.length haystack)))
+
+  (* benchmark String.{,r}find *)
+  let bench_find_ ~dir ~size n =
+    let needle = rand_str_ size in
+    let haystack = rand_str_ n in
+    pp_pb needle haystack;
+    let mk_naive = match dir with
+      | `Direct -> fun () -> find ~sub:needle haystack
+      | `Reverse -> fun () -> rfind ~sub:needle haystack
+    and mk_current = match dir with
+      | `Direct -> fun () -> CCString.find ~sub:needle haystack
+      | `Reverse -> fun () -> CCString.rfind ~sub:needle haystack
+    in
+    assert (mk_naive () = mk_current ());
+    B.throughputN 3 ~repeat
+      [ "naive", mk_naive, ()
+      ; "current", mk_current, ()
+      ]
+
+  (* benchmark String.find_all *)
+  let bench_find_all ~size n =
+    let needle = rand_str_ size in
+    let haystack = rand_str_ n in
+    pp_pb needle haystack;
+    let mk_naive () = find_all_l ~sub:needle haystack
+    and mk_current () = CCString.find_all_l ~sub:needle haystack in
+    assert (mk_naive () = mk_current ());
+    B.throughputN 3 ~repeat
+      [ "naive", mk_naive, ()
+      ; "current", mk_current, ()
+      ]
+
+  let bench_find  = bench_find_ ~dir:`Direct
+  let bench_rfind  = bench_find_ ~dir:`Reverse
+
+  let () = B.Tree.register (
+    "string" @>>>
+      [ "find" @>>>
+          [ "1" @>> app_ints (bench_find ~size:1) [100; 100_000; 500_000]
+          ; "5" @>> app_ints (bench_find ~size:5) [100; 100_000; 500_000]
+          ; "15" @>> app_ints (bench_find ~size:15) [100; 100_000; 500_000]
+          ; "50" @>> app_ints (bench_find ~size:50) [100; 100_000; 500_000]
+          ; "500" @>> app_ints (bench_find ~size:500) [100_000; 500_000]
+          ];
+        "find_all" @>>>
+          [ "1" @>> app_ints (bench_find_all ~size:1) [100; 100_000; 500_000]
+          ; "5" @>> app_ints (bench_find_all ~size:5) [100; 100_000; 500_000]
+          ; "15" @>> app_ints (bench_find_all ~size:15) [100; 100_000; 500_000]
+          ; "50" @>> app_ints (bench_find_all ~size:50) [100; 100_000; 500_000]
+          ; "500" @>> app_ints (bench_find_all ~size:500) [100_000; 500_000]
+          ];
+        "rfind" @>>>
+          [ "15" @>> app_ints (bench_rfind ~size:15) [100; 100_000; 500_000]
+          ; "50" @>> app_ints (bench_rfind ~size:50) [100; 100_000; 500_000]
+          ; "500" @>> app_ints (bench_rfind ~size:500) [100_000; 500_000]
+          ];
+      ])
+
 end
 
 module Alloc = struct

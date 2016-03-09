@@ -155,7 +155,7 @@ Executable run_benchs
   CompiledObject:   best
   Build$:           flag(bench)
   MainIs:           run_benchs.ml
-  BuildDepends:     containers, containers.advanced,
+  BuildDepends:     containers, containers.advanced, QTest2Lib,
                     containers.data, containers.string, containers.iter,
                     containers.thread, sequence, gen, benchmark, hamt
 
