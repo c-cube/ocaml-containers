@@ -109,7 +109,8 @@ val find : ?start:int -> sub:string -> string -> int
 *)
 
 val find_all : ?start:int -> sub:string -> string -> int gen
-(** [find_all ~sub s] finds all occurrences of [sub] in [s]
+(** [find_all ~sub s] finds all occurrences of [sub] in [s], even overlapping
+    instances.
     @param start starting position in [s]
     @since NEXT_RELEASE *)
 

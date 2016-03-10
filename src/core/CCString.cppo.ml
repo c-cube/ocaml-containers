@@ -222,7 +222,7 @@ let find_all ?(start=0) ~sub =
       let res = Find.find ~pattern s !i in
       if res = ~-1 then None
       else (
-        i := res + Find.pattern_length pattern;
+        i := res + 1; (* possible overlap *)
         Some res
       )
 
