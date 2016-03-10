@@ -13,3 +13,4 @@
 - Guillaume Bury (guigui)
 - JP Rodi
 - octachron (Florian Angeletti)
+- Johannes Kloos
