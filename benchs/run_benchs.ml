@@ -1192,7 +1192,7 @@ module Str = struct
       let res = find ~sub s ~start:!i in
       if res = ~-1 then None
       else (
-        i := res + String.length sub;
+        i := res + 1;
         Some res
       )
 
@@ -1243,7 +1243,7 @@ module Str = struct
   (* benchmark String.find_all on constant strings *)
   let bench_find_all_special ~size n =
     let needle = CCString.repeat "a" (size-1) ^ "b" in
-    let haystack = rand_str_ ~among:"ab" n in
+    let haystack = CCString.repeat "a" n in
     pp_pb needle haystack;
     let mk_naive () = find_all_l ~sub:needle haystack
     and mk_current () = CCString.find_all_l ~sub:needle haystack in
@@ -1272,7 +1272,11 @@ module Str = struct
           ; "15" @>> app_ints (bench_find_all ~size:15) [100; 100_000; 500_000]
           ; "50" @>> app_ints (bench_find_all ~size:50) [100; 100_000; 500_000]
           ; "500" @>> app_ints (bench_find_all ~size:500) [100_000; 500_000]
-          ; "special" @>> app_ints (bench_find_all_special ~size:6) [100_000; 500_000]
+          ; "special" @>>>
+            [ "6" @>> app_ints (bench_find_all_special ~size:6) [100_000; 500_000]
+            ; "30" @>> app_ints (bench_find_all_special ~size:30) [100_000; 500_000]
+            ; "100" @>> app_ints (bench_find_all_special ~size:100) [100_000; 500_000]
+            ]
           ];
         "rfind" @>>>
           [ "3" @>> app_ints (bench_rfind ~size:3) [100; 100_000; 500_000]
