@@ -80,7 +80,7 @@ Library "containers_data"
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
                     CCHashTrie, CCBloom, CCWBTree, CCRAL, CCAllocCache,
-                    CCImmutArray
+                    CCImmutArray, CCHet
   BuildDepends:     bytes
   # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
