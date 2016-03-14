@@ -27,6 +27,12 @@ module type S = sig
       [k] is removed from [m], and if the result is [Some v'] then
       [add k v' m] is returned. *)
 
+  val merge_safe :
+    f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
+    'a t -> 'b t -> 'c t
+  (** [merge_safe ~f a b] merges the maps [a] and [b] together.
+      @since NEXT_RELEASE *)
+
   val of_seq : (key * 'a) sequence -> 'a t
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t

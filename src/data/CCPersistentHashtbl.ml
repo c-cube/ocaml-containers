@@ -67,8 +67,9 @@ module type S = sig
   (** Fresh copy of the table; the underlying structure is not shared
       anymore, so using both tables alternatively will be efficient *)
 
-  val merge : (key -> 'a option -> 'b option -> 'c option) ->
-              'a t -> 'b t -> 'c t
+  val merge :
+    (key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
+    'a t -> 'b t -> 'c t
   (** Merge two tables together into a new table. The function's argument
       correspond to values associated with the key (if present); if the
       function returns [None] the key will not appear in the result. *)
@@ -543,8 +544,11 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let tbl = create (max (length t1) (length t2)) in
     let tbl = fold
       (fun tbl k v1 ->
-        let v2 = try Some (find t2 k) with Not_found -> None in
-        match f k (Some v1) v2 with
+        let comb =
+          try `Both (v1, find t2 k)
+          with Not_found -> `Left v1
+        in
+        match f k comb with
         | None -> tbl
         | Some v' -> replace tbl k v')
       tbl t1
@@ -552,7 +556,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
     fold
       (fun tbl k v2 ->
         if mem t1 k then tbl
-        else match f k None (Some v2) with
+        else match f k (`Right v2) with
           | None -> tbl
           | Some v' -> replace tbl k v'
       ) tbl t2
