@@ -96,8 +96,8 @@ module type S = sig
   (** Fresh copy of the table; the underlying structure is not shared
       anymore, so using both tables alternatively will be efficient *)
 
-  val merge : (key -> 'a option -> 'a option -> 'a option) ->
-              'a t -> 'a t -> 'a t
+  val merge : (key -> 'a option -> 'b option -> 'c option) ->
+              'a t -> 'b t -> 'c t
   (** Merge two tables together into a new table. The function's argument
       correspond to values associated with the key (if present); if the
       function returns [None] the key will not appear in the result. *)
