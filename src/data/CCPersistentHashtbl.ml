@@ -68,7 +68,7 @@ module type S = sig
       anymore, so using both tables alternatively will be efficient *)
 
   val merge :
-    (key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
+    f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
     'a t -> 'b t -> 'c t
   (** Merge two tables together into a new table. The function's argument
       correspond to values associated with the key (if present); if the
@@ -540,7 +540,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
       false
     with ExitPTbl -> true
 
-  let merge f t1 t2 =
+  let merge ~f t1 t2 =
     let tbl = create (max (length t1) (length t2)) in
     let tbl = fold
       (fun tbl k v1 ->
@@ -565,10 +565,10 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let t1 = H.of_list [1, "a"; 2, "b1"] in
     let t2 = H.of_list [2, "b2"; 3, "c"] in
     let t = H.merge
-      (fun _ v1 v2 -> match v1, v2 with
-        | None, _ -> v2
-        | _ , None -> v1
-        | Some s1, Some s2 -> if s1 < s2 then Some s1 else Some s2)
+      ~f:(fun _ -> function
+        | `Right v2 -> Some v2
+        | `Left v1 -> Some v1
+        | `Both (s1,s2) -> if s1 < s2 then Some s1 else Some s2)
       t1 t2
     in
     OUnit.assert_equal ~printer:string_of_int 3 (H.length t);
