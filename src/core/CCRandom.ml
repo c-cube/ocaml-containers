@@ -213,5 +213,5 @@ let uniformity_test ?(size_hint=10) k rng st =
   Hashtbl.fold predicate histogram true
 
 (*$T split_list
-  run ~st:(Runner.random_state()) ( uniformity_test 50_000 (split_list 10 ~len:3) )
+  run ~st:(QCheck_runner.random_state()) ( uniformity_test 50_000 (split_list 10 ~len:3) )
 *)

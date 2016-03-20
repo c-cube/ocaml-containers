@@ -26,5 +26,5 @@ PKG bigarray
 PKG sequence
 PKG hamt
 PKG gen
-PKG QTest2Lib
+PKG qcheck
 FLG -w +a -w -4 -w -44
