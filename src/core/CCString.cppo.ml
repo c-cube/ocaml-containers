@@ -134,17 +134,14 @@ module Find = struct
     [i] index in [s]
     [j] index in [pattern]
     [len] length of [s] *)
-  let kmp_find_
-  : type a. dir:a direction -> pattern:a kmp_pattern -> string -> int -> int
-  = fun ~dir ~pattern s idx ->
+  let kmp_find ~pattern s idx =
     let len = length s in
-    let get = get_ ~dir in
     let i = ref idx in
     let j = ref 0 in
     let pat_len = kmp_pattern_length pattern in
     while !j < pat_len && !i + !j < len do
-      let c = get s (!i + !j) in
-      let expected = get pattern.str !j in
+      let c = String.get s (!i + !j) in
+      let expected = String.get pattern.str !j in
       if c = expected
       then (
         (* char matches *)
@@ -168,18 +165,44 @@ module Find = struct
     then !i
     else -1
 
-  let kmp_find ~pattern s i = kmp_find_ ~dir:Direct ~pattern s i
-
-  let kmp_rfind ~pattern s i =
-    let i = String.length s - i - 1 in
-    let res = kmp_find_ ~dir:Reverse ~pattern s i in
+  (* proper search function, from the right.
+    [i] index in [s]
+    [j] index in [pattern]
+    [len] length of [s] *)
+  let kmp_rfind ~pattern s idx =
+    let len = length s in
+    let i = ref (len - idx - 1) in
+    let j = ref 0 in
+    let pat_len = kmp_pattern_length pattern in
+    while !j < pat_len && !i + !j < len do
+      let c = String.get s (len - !i - !j - 1) in
+      let expected = String.get pattern.str (String.length pattern.str - !j - 1) in
+      if c = expected
+      then (
+        (* char matches *)
+        incr j;
+      ) else (
+        let fail_offset = pattern.failure.(!j) in
+        if fail_offset >= 0
+        then (
+          assert (fail_offset < !j);
+          (* follow the failure link *)
+          i := !i + !j - fail_offset;
+          j := fail_offset
+        ) else (
+          (* beginning of pattern *)
+          j := 0;
+          incr i
+        )
+      )
+    done;
     (* adjust result: first, [res = string.length s - res -1] to convert
        back to real indices; then, what we got is actually the position
        of the end of the pattern, so we subtract the [length of the pattern -1]
        to obtain the real result. *)
-    if res = ~-1
-    then res
-    else (String.length s - res) - kmp_pattern_length pattern
+    if !j = pat_len
+    then len - !i - kmp_pattern_length pattern
+    else -1
 
   type 'a pattern =
     | P_char of char
