@@ -102,7 +102,7 @@ val find : ?start:int -> sub:string -> string -> int
   6 (find ~sub:"a" ~start:5 "a1a234a")
 *)
 
-(*$Q & ~count:300
+(*$Q & ~count:10_000
   Q.(pair printable_string printable_string) (fun (s1,s2) -> \
     let i = find ~sub:s2 s1 in \
     i < 0 || String.sub s1 i (length s2) = s2)
@@ -149,7 +149,7 @@ val rfind : sub:string -> string -> int
   6 (rfind ~sub:"a" "a1a234a")
 *)
 
-(*$Q & ~count:300
+(*$Q & ~count:10_000
   Q.(pair printable_string printable_string) (fun (s1,s2) -> \
     let i = rfind ~sub:s2 s1 in \
     i < 0 || String.sub s1 i (length s2) = s2)
