@@ -433,6 +433,15 @@ let fold f acc s =
     else fold_rec f (f acc s.[i]) s (i+1)
   in fold_rec f acc s 0
 
+let pad ?(side=`Left) ?(c=' ') n s =
+  let len_s = String.length s in
+  if len_s >= n then s
+  else
+    let pad_len = n - len_s in
+    match side with
+      | `Left -> init n (fun i -> if i < pad_len then c else s.[i-pad_len])
+      | `Right -> init n (fun i -> if i < len_s then s.[i] else c)
+
 let _to_gen s i0 len =
   let i = ref i0 in
   fun () ->

@@ -78,6 +78,22 @@ val rev : string -> string
   " " (rev " ")
 *)
 
+val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
+(** [pad n str] ensures that [str] is at least [n] bytes long,
+    and pads it on the [side] with [c] if it's not the case.
+    @param side determines where padding occurs (default: [`Left])
+    @param c the char used to pad (default: ' ')
+    @since NEXT_RELEASE *)
+
+(*$= & ~printer:Q.Print.string
+  "  42" (pad 4 "42")
+  "0042" (pad ~c:'0' 4 "42")
+  "4200" (pad ~side:`Right ~c:'0' 4 "42")
+  "hello" (pad 4 "hello")
+  "aaa" (pad ~c:'a' 3 "")
+  "aaa" (pad ~side:`Right ~c:'a' 3 "")
+*)
+
 val of_gen : char gen -> string
 val of_seq : char sequence -> string
 val of_klist : char klist -> string
