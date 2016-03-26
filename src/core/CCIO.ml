@@ -329,4 +329,8 @@ module File = struct
       | `File -> "file:"
       | `Dir -> "dir:"
     ) ^ f
+
+  let with_temp ?temp_dir ~prefix ~suffix f =
+    let name = Filename.temp_file ?temp_dir prefix suffix in
+    finally_ f name ~h:remove_noerr
 end
