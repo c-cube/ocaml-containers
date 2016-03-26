@@ -631,6 +631,12 @@ let (--) i j =
     then init (i-j+1) (fun k -> i-k)
     else init (j-i+1) (fun k -> i+k)
 
+(*$T
+  (1 -- 4) |> to_list = [1;2;3;4]
+  (4 -- 1) |> to_list = [4;3;2;1]
+  (0 -- 0) |> to_list = [0]
+*)
+
 (*$Q
   Q.(pair small_int small_int) (fun (a,b) -> \
     (a -- b) |> to_list = CCList.(a -- b))
@@ -641,12 +647,6 @@ let (--^) i j =
   else if i>j
     then init (i-j) (fun k -> i-k)
     else init (j-i) (fun k -> i+k)
-
-(*$T
-  (1 -- 4) |> to_list = [1;2;3;4]
-  (4 -- 1) |> to_list = [4;3;2;1]
-  (0 -- 0) |> to_list = [0]
-*)
 
 (*$Q
   Q.(pair small_int small_int) (fun (a,b) -> \
