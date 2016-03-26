@@ -121,6 +121,31 @@ exception ParseError of line_num * col_num * (unit -> string)
 
 *)
 
+(* test with a temporary file *)
+(*$R
+  let test n =
+    let p = CCParse.(U.list ~sep:"," U.int) in
+
+    let l = CCList.(1 -- n) in
+    let l' =
+      CCIO.File.with_temp ~temp_dir:"/tmp/"
+       ~prefix:"containers_test" ~suffix:""
+       (fun name ->
+          (* write test into file *)
+         CCIO.with_out name
+          (fun oc ->
+            let fmt = Format.formatter_of_out_channel oc in
+            Format.fprintf fmt "@[%a@]@."
+              (CCList.print ~sep:"," ~start:"[" ~stop:"]" CCInt.print) l);
+         (* parse it back *)
+         CCParse.parse_file_exn ~size:1024 ~file:name ~p)
+    in
+    assert_equal ~printer:Q.Print.(list int) l l'
+  in
+  test 100_000;
+  test 400_000;
+*)
+
 let const_ x () = x
 
 let input_of_string s =
