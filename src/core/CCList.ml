@@ -763,9 +763,16 @@ let range' i j =
 
 let (--) = range
 
+let (--^) = range'
+
 (*$T
   append (range 0 100) (range 101 1000) = range 0 1000
   append (range 1000 501) (range 500 0) = range 1000 0
+*)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (a,b) -> \
+    let l = (a--^b) in not (List.mem b l))
 *)
 
 let replicate i x =
@@ -1103,6 +1110,7 @@ module Infix = struct
   let (<$>) = (<$>)
   let (>>=) = (>>=)
   let (--) = (--)
+  let (--^) = (--^)
 end
 
 (** {2 IO} *)

@@ -263,6 +263,10 @@ val range' : int -> int -> int t
 val (--) : int -> int -> int t
 (** Infix alias for [range] *)
 
+val (--^) : int -> int -> int t
+(** Infix alias for [range']
+    @since NEXT_RELEASE *)
+
 val replicate : int -> 'a -> 'a t
 (** Replicate the given element [n] times *)
 
@@ -482,6 +486,9 @@ module Infix : sig
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   val (--) : int -> int -> int t
+
+  val (--^) : int -> int -> int t
+  (** @since NEXT_RELEASE *)
 end
 
 (** {2 IO} *)

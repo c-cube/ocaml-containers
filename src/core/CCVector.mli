@@ -237,6 +237,11 @@ val (--) : int -> int -> (int, 'mut) t
     therefore the result is never empty).
     Example: [1 -- 10] returns the vector [[1;2;3;4;5;6;7;8;9;10]] *)
 
+val (--^) : int -> int -> (int, 'mut) t
+(** Range of integers, either ascending or descending, but excluding right.,
+    Example: [1 --^ 10] returns the vector [[1;2;3;4;5;6;7;8;9]]
+    @since NEXT_RELEASE *)
+
 val of_array : 'a array -> ('a, 'mut) t
 val of_list : 'a list -> ('a, 'mut) t
 val to_array : ('a,_) t -> 'a array
