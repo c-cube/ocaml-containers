@@ -1159,8 +1159,8 @@ module Str = struct
   let rand_str_ ?(among="abcdefgh") n =
     let module Q = QCheck in
     let st = Random.State.make [| n + 17 |] in
-    let gen_c = Q.Gen.oneofl (CCString.to_list among) in
-    Q.Gen.string_size ~gen:gen_c (Q.Gen.return n) st
+    let gen_c = QCheck.Gen.oneofl (CCString.to_list among) in
+    QCheck.Gen.string_size ~gen:gen_c (QCheck.Gen.return n) st
 
   let find ?(start=0) ~sub s =
     let n = String.length sub in
