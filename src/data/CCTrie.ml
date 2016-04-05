@@ -75,6 +75,12 @@ module type S = sig
   val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** Fold on key/value bindings. Will use {!WORD.of_list} to rebuild keys. *)
 
+  val mapi : (key -> 'a -> 'b) -> 'a t -> 'b t
+  (** Map values in the try. Will use {!WORD.of_list} to rebuild keys. *)
+
+  val map : ('a -> 'b) -> 'a t -> 'b t
+  (** Map values in the try, not giving keys to the mapping function. *)
+
   val iter : (key -> 'a -> unit) -> 'a t -> unit
   (** Same as {!fold}, but for effectful functions *)
 
@@ -356,6 +362,33 @@ module Make(W : WORD) = struct
     T.fold (fun acc k v -> (k,v) :: acc) [] t1 \
       |> List.sort Pervasives.compare = List.sort Pervasives.compare l1
   *)
+  let mapi f t =
+    let rec map_ prefix t = match t with
+      | Empty -> Empty
+      | Cons (c, t') -> Cons (c, map_ (_difflist_add prefix c) t')
+      | Node (v, map) ->
+          let v' = match v with
+            | None -> None
+            | Some v -> Some (f (W.of_list (prefix [])) v)
+          in let map' =
+            M.mapi (fun c t' ->
+                      let prefix' = _difflist_add prefix c in
+                        map_ prefix' t')
+              map
+          in Node (v', map')
+    in map_ _id t
+
+  let map f t =
+    let rec map_ = function
+      | Empty -> Empty
+      | Cons (c, t') -> Cons (c, map_ t')
+      | Node (v, map) ->
+          let v' = match v with
+            | None -> None
+            | Some v -> Some (f v)
+          in let map' = M.map map_ map
+          in Node (v', map')
+    in map_ t
 
   let iter f t =
     _fold
