@@ -378,10 +378,11 @@ module Make(W : WORD) = struct
               map
           in Node (v', map')
     in map_ _id t
-  (*$T
-    T.mapi (fun k v -> v ^ "!") t1 \
-    |> T.to_list |> List.sort Pervasives.compare =\
-       List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare
+
+  (*$= & ~printer:Q.Print.(list (pair (list int) string))
+    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare) \
+      (T.mapi (fun k v -> v ^ "!") t1 \
+        |> T.to_list |> List.sort Pervasives.compare)
   *)
 
   let map f t =
@@ -395,10 +396,10 @@ module Make(W : WORD) = struct
           in let map' = M.map map_ map
           in Node (v', map')
     in map_ t
-  (*$T
-    T.map (fun v -> v ^ "!") t1 \
-    |> T.to_list |> List.sort Pervasives.compare =\
-       List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare
+  (*$= & ~printer:Q.Print.(list (pair (list int) string))
+    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare) \
+      (T.map (fun v -> v ^ "!") t1 \
+        |> T.to_list |> List.sort Pervasives.compare)
   *)
 
 
