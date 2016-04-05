@@ -42,14 +42,24 @@ module L = struct
     else if x mod 5 = 1 then [x;x+1]
     else [x;x+1;x+2;x+3]
 
+  let f_ral_ x =
+    if x mod 10 = 0 then CCRAL.empty
+    else if x mod 5 = 1 then CCRAL.of_list [x;x+1]
+    else CCRAL.of_list [x;x+1;x+2;x+3]
+
   let bench_flat_map ?(time=2) n =
     let l = CCList.(1 -- n) in
-    let flatten_map_ l = List.flatten (CCList.map f_ l)
-    and flatten_ccmap_ l = List.flatten (List.map f_ l) in
+    let ral = CCRAL.of_list l in
+    let flatten_map_ l () = ignore @@ List.flatten (CCList.map f_ l)
+    and flatmap l () = ignore @@ CCList.flat_map f_ l
+    and flatten_ccmap_ l () = ignore @@ List.flatten (List.map f_ l)
+    and flatmap_ral_ l () = ignore @@ CCRAL.flat_map f_ral_ l
+    in
     B.throughputN time ~repeat
-      [ "flat_map", CCList.flat_map f_, l
-      ; "flatten o CCList.map", flatten_ccmap_, l
-      ; "flatten o map", flatten_map_, l
+      [ "flat_map", flatmap l, ()
+      ; "flatten o CCList.map", flatten_ccmap_ l, ()
+      ; "flatten o map", flatten_map_ l, ()
+      ; "ral_flatmap", flatmap_ral_ ral, ()
       ]
 
   (* APPEND *)
@@ -87,6 +97,21 @@ module L = struct
       ; "CCList.(fold_right append)", cc_fold_right_append_, l
       ]
 
+  (* RANDOM ACCESS *)
+
+  let bench_nth ?(time=2) n =
+    let l = CCList.(1 -- n) in
+    let ral = CCRAL.of_list l in
+    let bench_list l () =
+      for i = 0 to n-1 do ignore (List.nth l i) done
+    and bench_ral l () =
+      for i = 0 to n-1 do ignore (CCRAL.get_exn l i) done
+    in
+    B.throughputN time ~repeat
+      [ "List.nth", bench_list l, ()
+      ; "RAL.get", bench_ral ral, ()
+      ]
+
   (* MAIN *)
 
   let () = B.Tree.register (
@@ -112,6 +137,11 @@ module L = struct
           [ app_int (bench_append ~time:2) 100
           ; app_int (bench_append ~time:2) 10_000
           ; app_int (bench_append ~time:4) 100_000]
+      ; "nth" @>>
+        B.Tree.concat
+          [ app_int (bench_nth ~time:2) 100
+          ; app_int (bench_nth ~time:2) 10_000
+          ; app_int (bench_nth ~time:4) 100_000]
       ]
     )
 end
