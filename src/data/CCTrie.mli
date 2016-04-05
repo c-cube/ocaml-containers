@@ -76,10 +76,14 @@ module type S = sig
   (** Fold on key/value bindings. Will use {!WORD.of_list} to rebuild keys. *)
 
   val mapi : (key -> 'a -> 'b) -> 'a t -> 'b t
-  (** Map values, giving both key and value. Will use {!WORD.of_list} to rebuild keys. *)
+  (** Map values, giving both key and value. Will use {!WORD.of_list} to rebuild keys.
+      @since NEXT_RELEASE
+   *)
 
   val map : ('a -> 'b) -> 'a t -> 'b t
-  (** Map values, giving only the value. *)
+  (** Map values, giving only the value.
+      @since NEXT_RELEASE
+    *)
 
   val iter : (key -> 'a -> unit) -> 'a t -> unit
   (** Same as {!fold}, but for effectful functions *)
