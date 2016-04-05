@@ -219,6 +219,46 @@ val suffix : suf:string -> string -> bool
   not (suffix ~suf:"abcd" "cd")
 *)
 
+val chop_prefix : pre:string -> string -> string option
+(** [chop_pref ~pre s] removes [pre] from [s] if [pre] really is a prefix
+    of [s], returns [None] otherwise
+    @since NEXT_RELEASE *)
+
+(*$= & ~printer:Q.Print.(option string)
+  (Some "cd") (chop_prefix ~pre:"aab" "aabcd")
+  None (chop_prefix ~pre:"ab" "aabcd")
+  None (chop_prefix ~pre:"abcd" "abc")
+*)
+
+val chop_suffix : suf:string -> string -> string option
+(** [chop_suffix ~suf s] removes [suf] from [s] if [suf] really is a suffix
+    of [s], returns [None] otherwise
+    @since NEXT_RELEASE *)
+
+(*$= & ~printer:Q.Print.(option string)
+  (Some "ab") (chop_suffix ~suf:"cd" "abcd")
+  None (chop_suffix ~suf:"cd" "abcde")
+  None (chop_suffix ~suf:"abcd" "cd")
+*)
+
+val take : int -> string -> string
+(** [take n s] keeps only the [n] first chars of [s]
+    @since NEXT_RELEASE *)
+
+val drop : int -> string -> string
+(** [drop n s] removes the [n] first chars of [s]
+    @since NEXT_RELEASE *)
+
+val take_drop : int -> string -> string * string
+(** [take_drop n s = take n s, drop n s]
+    @since NEXT_RELEASE *)
+
+(*$=
+  ("ab", "cd") (take_drop 2 "abcd")
+  ("abc", "") (take_drop 3 "abc")
+  ("abc", "") (take_drop 5 "abc")
+*)
+
 val lines : string -> string list
 (** [lines s] returns a list of the lines of [s] (splits along '\n')
     @since 0.10 *)
@@ -271,6 +311,25 @@ val map : (char -> char) -> string -> string
 val mapi : (int -> char -> char) -> string -> string
 (** Map chars with their index
     @since 0.12 *)
+
+val filter_map : (char -> char option) -> string -> string
+(** @since NEXT_RELEASE *)
+
+(*$= & ~printer:Q.Print.string
+  "bcef" (filter_map \
+     (function 'c' -> None | c -> Some (Char.chr (Char.code c + 1))) "abcde")
+*)
+
+val filter : (char -> bool) -> string -> string
+(** @since NEXT_RELEASE *)
+
+(*$= & ~printer:Q.Print.string
+  "abde" (filter (function 'c' -> false | _ -> true) "abcdec")
+*)
+
+(*$Q
+  Q.printable_string (fun s -> filter (fun _ -> true) s = s)
+*)
 
 val flat_map : ?sep:string -> (char -> string) -> string -> string
 (** Map each chars to a string, then concatenates them all

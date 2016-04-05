@@ -424,6 +424,27 @@ let suffix ~suf s =
     !i = String.length suf
   )
 
+let take n s =
+  if n < String.length s
+  then String.sub s 0 n
+  else s
+
+let drop n s =
+  if n < String.length s
+  then String.sub s n (String.length s - n)
+  else ""
+
+let take_drop n s = take n s, drop n s
+
+let chop_suffix ~suf s =
+  if suffix ~suf s
+  then Some (String.sub s 0 (String.length s-String.length suf))
+  else None
+
+let chop_prefix ~pre s =
+  if prefix ~pre s
+  then Some (String.sub s (String.length pre) (String.length s-String.length pre))
+  else None
 
 let blit = String.blit
 
@@ -546,6 +567,22 @@ let mapi = String.mapi
 let mapi f s = init (length s) (fun i -> f i s.[i])
 
 #endif
+
+let filter_map f s =
+  let buf = Buffer.create (String.length s) in
+  iter
+    (fun c -> match f c with
+       | None -> ()
+       | Some c' -> Buffer.add_char buf c')
+    s;
+  Buffer.contents buf
+
+let filter f s =
+  let buf = Buffer.create (String.length s) in
+  iter
+    (fun c -> if f c then Buffer.add_char buf c)
+    s;
+  Buffer.contents buf
 
 let flat_map ?sep f s =
   let buf = Buffer.create (String.length s) in
