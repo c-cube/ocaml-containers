@@ -97,6 +97,10 @@ module type S = sig
 
   val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
+  val mapi : f:(key -> 'a -> 'b) -> 'a t -> 'b t
+
+  val map : f:('a -> 'b) -> 'a t -> 'b t
+
   val iter : f:(key -> 'a -> unit) -> 'a t -> unit
 
   val split : key -> 'a t -> 'a t * 'a option * 'a t
@@ -367,6 +371,16 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
         let acc = fold ~f ~x:acc l in
         let acc = f acc k v in
         fold ~f ~x:acc r
+
+  let rec mapi ~f = function
+    | E -> E
+    | N (k, v, l, r, w) ->
+        N (k, f k v, mapi ~f l, mapi ~f r, w)
+
+  let rec map ~f = function
+    | E -> E
+    | N (k, v, l, r, w) ->
+        N (k, f v, map ~f l, map ~f r, w)
 
   let rec iter ~f m = match m with
     | E -> ()
