@@ -80,7 +80,7 @@ Library "containers_data"
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
                     CCHashTrie, CCBloom, CCWBTree, CCRAL, CCAllocCache,
-                    CCImmutArray
+                    CCImmutArray, CCHet
   BuildDepends:     bytes
   # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
@@ -155,7 +155,7 @@ Executable run_benchs
   CompiledObject:   best
   Build$:           flag(bench)
   MainIs:           run_benchs.ml
-  BuildDepends:     containers, containers.advanced,
+  BuildDepends:     containers, containers.advanced, qcheck,
                     containers.data, containers.string, containers.iter,
                     containers.thread, sequence, gen, benchmark, hamt
 
@@ -179,7 +179,7 @@ Executable run_qtest
                     containers.io, containers.advanced, containers.sexp,
                     containers.bigarray, containers.unix, containers.thread,
                     containers.data,
-                    sequence, gen, unix, oUnit, QTest2Lib
+                    sequence, gen, unix, oUnit, qcheck 
 
 Test all
   Command:      ./run_qtest.native

@@ -166,6 +166,10 @@ val except_idx : 'a t -> int -> 'a list
 val (--) : int -> int -> int t
 (** Range array *)
 
+val (--^) : int -> int -> int t
+(** Range array, excluding right bound
+    @since NEXT_RELEASE *)
+
 val random : 'a random_gen -> 'a t random_gen
 val random_non_empty : 'a random_gen -> 'a t random_gen
 val random_len : int -> 'a random_gen -> 'a t random_gen

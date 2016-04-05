@@ -264,7 +264,7 @@ module Make(P : PARAM) = struct
           let l = List.rev_map (fun i ->
             Fut.make
               (fun () ->
-                Thread.delay 0.1;
+                Thread.delay 0.05;
                 1
             )) l in
           let l' = List.map Fut.get l in

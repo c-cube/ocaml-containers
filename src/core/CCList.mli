@@ -53,6 +53,11 @@ val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list ->
     @raise Invalid_argument if the lists do not have the same length
     @since 0.16 *)
 
+val fold_filter_map : ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
+(** [fold_filter_map f acc l] is a [fold_left]-like function, but also
+    generates a list of output in a way similar to {!filter_map}
+    @since NEXT_RELEASE *)
+
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d..
@@ -262,6 +267,10 @@ val range' : int -> int -> int t
 
 val (--) : int -> int -> int t
 (** Infix alias for [range] *)
+
+val (--^) : int -> int -> int t
+(** Infix alias for [range']
+    @since NEXT_RELEASE *)
 
 val replicate : int -> 'a -> 'a t
 (** Replicate the given element [n] times *)
@@ -482,6 +491,9 @@ module Infix : sig
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   val (--) : int -> int -> int t
+
+  val (--^) : int -> int -> int t
+  (** @since NEXT_RELEASE *)
 end
 
 (** {2 IO} *)

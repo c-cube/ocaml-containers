@@ -174,6 +174,21 @@ let fold_map2 f acc l1 l2 =
    with Invalid_argument _ -> true)
 *)
 
+let fold_filter_map f acc l =
+  let rec aux f acc map_acc l = match l with
+    | [] -> acc, List.rev map_acc
+    | x :: l' ->
+        let acc, y = f acc x in
+        aux f acc (cons_maybe y map_acc) l'
+  in
+  aux f acc [] l
+
+(*$= & ~printer:Q.Print.(pair int (list int))
+  (List.fold_left (+) 0 (1--10), [2;4;6;8;10]) \
+  (fold_filter_map (fun acc x -> acc+x, if x mod 2 = 0 then Some x else None) \
+    0 (1--10))
+*)
+
 let fold_flat_map f acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
@@ -763,9 +778,16 @@ let range' i j =
 
 let (--) = range
 
+let (--^) = range'
+
 (*$T
   append (range 0 100) (range 101 1000) = range 0 1000
   append (range 1000 501) (range 500 0) = range 1000 0
+*)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (a,b) -> \
+    let l = (a--^b) in not (List.mem b l))
 *)
 
 let replicate i x =
@@ -1103,6 +1125,7 @@ module Infix = struct
   let (<$>) = (<$>)
   let (>>=) = (>>=)
   let (--) = (--)
+  let (--^) = (--^)
 end
 
 (** {2 IO} *)

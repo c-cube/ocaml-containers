@@ -184,12 +184,12 @@ let stop timer =
   let timer = create () in
   let n = CCLock.create 1 in
   let res = CCLock.create 0 in
-  after timer 0.6
+  after timer 0.3
     ~f:(fun () -> CCLock.update n (fun x -> x+2));
   ignore (Thread.create
-    (fun _ -> Thread.delay 0.8; CCLock.set res (CCLock.get n)) ());
-  after timer 0.4
+    (fun _ -> Thread.delay 0.4; CCLock.set res (CCLock.get n)) ());
+  after timer 0.2
     ~f:(fun () -> CCLock.update n (fun x -> x * 4));
-  Thread.delay 1. ;
+  Thread.delay 0.6 ;
   OUnit.assert_equal 6 (CCLock.get res);
 *)

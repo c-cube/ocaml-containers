@@ -1,27 +1,5 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Persistent hash-table on top of OCaml's hashtables} *)
 
@@ -89,8 +67,9 @@ module type S = sig
   (** Fresh copy of the table; the underlying structure is not shared
       anymore, so using both tables alternatively will be efficient *)
 
-  val merge : (key -> 'a option -> 'b option -> 'c option) ->
-              'a t -> 'b t -> 'c t
+  val merge :
+    f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
+    'a t -> 'b t -> 'c t
   (** Merge two tables together into a new table. The function's argument
       correspond to values associated with the key (if present); if the
       function returns [None] the key will not appear in the result. *)
@@ -561,12 +540,15 @@ module Make(H : HashedType) : S with type key = H.t = struct
       false
     with ExitPTbl -> true
 
-  let merge f t1 t2 =
+  let merge ~f t1 t2 =
     let tbl = create (max (length t1) (length t2)) in
     let tbl = fold
       (fun tbl k v1 ->
-        let v2 = try Some (find t2 k) with Not_found -> None in
-        match f k (Some v1) v2 with
+        let comb =
+          try `Both (v1, find t2 k)
+          with Not_found -> `Left v1
+        in
+        match f k comb with
         | None -> tbl
         | Some v' -> replace tbl k v')
       tbl t1
@@ -574,7 +556,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
     fold
       (fun tbl k v2 ->
         if mem t1 k then tbl
-        else match f k None (Some v2) with
+        else match f k (`Right v2) with
           | None -> tbl
           | Some v' -> replace tbl k v'
       ) tbl t2
@@ -583,10 +565,10 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let t1 = H.of_list [1, "a"; 2, "b1"] in
     let t2 = H.of_list [2, "b2"; 3, "c"] in
     let t = H.merge
-      (fun _ v1 v2 -> match v1, v2 with
-        | None, _ -> v2
-        | _ , None -> v1
-        | Some s1, Some s2 -> if s1 < s2 then Some s1 else Some s2)
+      ~f:(fun _ -> function
+        | `Right v2 -> Some v2
+        | `Left v1 -> Some v1
+        | `Both (s1,s2) -> if s1 < s2 then Some s1 else Some s2)
       t1 t2
     in
     OUnit.assert_equal ~printer:string_of_int 3 (H.length t);
