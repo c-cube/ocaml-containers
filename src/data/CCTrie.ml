@@ -362,6 +362,7 @@ module Make(W : WORD) = struct
     T.fold (fun acc k v -> (k,v) :: acc) [] t1 \
       |> List.sort Pervasives.compare = List.sort Pervasives.compare l1
   *)
+
   let mapi f t =
     let rec map_ prefix t = match t with
       | Empty -> Empty
@@ -377,6 +378,11 @@ module Make(W : WORD) = struct
               map
           in Node (v', map')
     in map_ _id t
+  (*$T
+    T.mapi (fun k v -> v ^ "!") t1 \
+    |> T.to_list |> List.sort Pervasives.compare =\
+       List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare
+  *)
 
   let map f t =
     let rec map_ = function
@@ -389,6 +395,12 @@ module Make(W : WORD) = struct
           in let map' = M.map map_ map
           in Node (v', map')
     in map_ t
+  (*$T
+    T.map (fun v -> v ^ "!") t1 \
+    |> T.to_list |> List.sort Pervasives.compare =\
+       List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare
+  *)
+
 
   let iter f t =
     _fold
