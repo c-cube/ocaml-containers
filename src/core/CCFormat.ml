@@ -76,14 +76,19 @@ let opt pp fmt x = match x with
   | None -> Format.pp_print_string fmt "none"
   | Some x -> Format.fprintf fmt "some %a" pp x
 
-let pair ppa ppb fmt (a, b) =
-  Format.fprintf fmt "(%a,@ %a)" ppa a ppb b
+let pair ?(sep=", ") ppa ppb fmt (a, b) =
+  Format.fprintf fmt "(%a%s@,%a)" ppa a sep ppb b
 
-let triple ppa ppb ppc fmt (a, b, c) =
-  Format.fprintf fmt "(%a,@ %a,@ %a)" ppa a ppb b ppc c
+let triple ?(sep=", ") ppa ppb ppc fmt (a, b, c) =
+  Format.fprintf fmt "(%a%s@,%a%s@,%a)" ppa a sep ppb b sep ppc c
 
-let quad ppa ppb ppc ppd fmt (a, b, c, d) =
-  Format.fprintf fmt "(%a,@ %a,@ %a,@ %a)" ppa a ppb b ppc c ppd d
+let quad ?(sep=", ") ppa ppb ppc ppd fmt (a, b, c, d) =
+  Format.fprintf fmt "(%a%s@,%a%s@,%a%s@,%a)" ppa a sep ppb b sep ppc c sep ppd d
+
+let within a b p out x =
+  string out a;
+  p out x;
+  string out b
 
 let map f pp fmt x =
   pp fmt (f x);
