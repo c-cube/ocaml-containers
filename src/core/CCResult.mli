@@ -181,6 +181,14 @@ val of_opt : 'a option -> ('a, string) t
 
 val to_seq : ('a, _) t -> 'a sequence
 
+type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
+
+val of_err : ('a, 'b) error -> ('a, 'b) t
+(** @since NEXT_RELEASE *)
+
+val to_err : ('a, 'b) t -> ('a, 'b) error
+(** @since NEXT_RELEASE *)
+
 (** {2 IO} *)
 
 val pp : 'a printer -> ('a, string) t printer

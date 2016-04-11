@@ -245,6 +245,16 @@ let to_seq e k = match e with
   | Ok x -> k x
   | Error _ -> ()
 
+type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
+
+let of_err = function
+  | `Ok x -> Ok x
+  | `Error y -> Error y
+
+let to_err = function
+  | Ok x -> `Ok x
+  | Error y -> `Error y
+
 (** {2 IO} *)
 
 let pp pp_x buf e = match e with
