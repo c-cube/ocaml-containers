@@ -21,6 +21,14 @@ let iter f r = f !r
 
 let update f r = r := (f !r)
 
+let incr_then_get r =
+  incr r; !r
+
+let get_then_incr r =
+  let x = !r in
+  incr r;
+  x
+
 let compare f r1 r2 = f !r1 !r2
 
 let equal f r1 r2 = f !r1 !r2
