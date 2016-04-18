@@ -112,6 +112,7 @@ let _diff_list ~last l =
    If we define, y_k = x_{k+1} - x_{k} for k in 0..(len-1), then by construction
    ∑_k y_k = ∑_k (x_{k+1} - x_k ) = x_{len} - x_0 = i. *)
 let split_list i ~len st =
+  if len=0 then invalid_arg "Random.split_list";
   if i >= len then
     let xs = sample_without_replacement (len-1) (int_range 1 (i-1)) st in
     _diff_list ( 0::xs ) ~last:i
@@ -120,7 +121,7 @@ let split_list i ~len st =
 
 (*$Q
   Q.(pair small_int small_int) (fun (i,j) -> \
-    let len, n = min i j, max i j in \
+    let len, n = 1+min i j, max i j in \
     let l = QCheck.Gen.generate1 (split_list n ~len) in \
     match l with None -> true | Some l -> l<> [] && List.for_all (fun x->x>0) l)
 *)

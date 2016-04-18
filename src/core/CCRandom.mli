@@ -104,6 +104,7 @@ val split_list : int -> len:int -> int list option t
 (** Split a value [n] into a list of values whose sum is [n]
     and whose length is [length]. The list is never empty and does not
     contain [0].
+    @raise Invalid_argument if [len=0]
     @return [None] if the value is too small *)
 
 val retry : ?max:int -> 'a option t -> 'a option t
