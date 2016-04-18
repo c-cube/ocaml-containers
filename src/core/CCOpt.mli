@@ -50,6 +50,12 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter on 0 or 1 element
     @since 0.5 *)
 
+val exists : ('a -> bool) -> 'a t -> bool
+(** @since NEXT_RELEASE *)
+
+val for_all : ('a -> bool) -> 'a t -> bool
+(** @since NEXT_RELEASE *)
+
 val get : 'a -> 'a t -> 'a
 (** [get default x] unwraps [x], but if [x = None] it returns [default] instead.
     @since 0.4.1 *)
