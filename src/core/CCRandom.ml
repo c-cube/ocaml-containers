@@ -85,7 +85,9 @@ let sample_without_replacement (type elt)  ?(compare=compare) k (rng:elt t) st=
       if S.mem x s then
         aux s k
       else
-        aux (S.add x s) (k-1) in
+        aux (S.add x s) (k-1)
+  in
+  if k<=0 then invalid_arg "sample_without_replacement";
   aux S.empty k
 
 let list_seq l st = List.map (fun f -> f st) l
@@ -112,7 +114,7 @@ let _diff_list ~last l =
    If we define, y_k = x_{k+1} - x_{k} for k in 0..(len-1), then by construction
    ∑_k y_k = ∑_k (x_{k+1} - x_k ) = x_{len} - x_0 = i. *)
 let split_list i ~len st =
-  if len=0 then invalid_arg "Random.split_list";
+  if len <= 0 then invalid_arg "Random.split_list";
   if i >= len then
     let xs = sample_without_replacement (len-1) (int_range 1 (i-1)) st in
     _diff_list ( 0::xs ) ~last:i
