@@ -118,6 +118,13 @@ let split_list i ~len st =
   else
     None
 
+(*$Q
+  Q.(pair small_int small_int) (fun (i,j) -> \
+    let len, n = min i j, max i j in \
+    let l = QCheck.Gen.generate1 (split_list n ~len) in \
+    match l with None -> true | Some l -> l<> [] && List.for_all (fun x->x>0) l)
+*)
+
 let retry ?(max=10) g st =
   let rec aux n =
     match g st with
