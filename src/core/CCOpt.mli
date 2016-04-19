@@ -50,6 +50,10 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter on 0 or 1 element
     @since 0.5 *)
 
+val if_ : ('a -> bool) -> 'a -> 'a option
+(** [if_ f x] is [Some x] if [f x], [None] otherwise
+    @since NEXT_RELEASE *)
+
 val exists : ('a -> bool) -> 'a t -> bool
 (** @since NEXT_RELEASE *)
 

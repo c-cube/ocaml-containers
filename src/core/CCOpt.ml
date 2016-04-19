@@ -71,6 +71,8 @@ let filter p = function
   | Some x as o when p x -> o
   | o -> o
 
+let if_ p x = if p x then Some x else None
+
 let exists p = function
   | None -> false
   | Some x -> p x
