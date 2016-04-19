@@ -97,7 +97,8 @@ module type S = sig
       ascending order *)
 
   val below : key -> 'a t -> (key * 'a) sequence
-  (** All bindings whose key is smaller or equal to the given key *)
+  (** All bindings whose key is smaller or equal to the given key,
+      in decreasing order *)
 
   (**/**)
   val check_invariants: _ t -> bool
