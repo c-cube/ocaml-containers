@@ -44,6 +44,16 @@ module type S = sig
   (** Same as {!find} but can fail.
       @raise Not_found if the key is not present *)
 
+  val longest_prefix : key -> 'a t -> key
+  (** [longest_prefix k m] finds the longest prefix of [k] that leads to
+      at least one path in [m] (it does not mean that the prefix is bound to
+      a value.
+
+      Example: if [m] has keys "abc0" and "abcd", then [longest_prefix "abc2" m]
+      will return "abc"
+
+      @since NEXT_RELEASE *)
+
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** Update the binding for the given key. The function is given
       [None] if the key is absent, or [Some v] if [key] is bound to [v];
@@ -113,6 +123,8 @@ end
   let t1 = T.of_list l1
 
   let small_l l = List.fold_left (fun acc (k,v) -> List.length k+acc) 0 l
+
+  let s1 = String.of_list ["cat", 1; "catogan", 2; "foo", 3]
 *)
 
 (*$T
@@ -122,14 +134,16 @@ end
   String.of_list ["a", 1; "b", 2] |> String.find_exn "b" = 2
   String.of_list ["a", 1; "b", 2] |> String.find "c" = None
 
-  String.of_list ["cat", 1; "catogan", 2; "foo", 3] |> String.find_exn "cat" = 1
-  String.of_list ["cat", 1; "catogan", 2; "foo", 3] |> String.find_exn "catogan" = 2
-  String.of_list ["cat", 1; "catogan", 2; "foo", 3] |> String.find_exn "foo" = 3
-  String.of_list ["cat", 1; "catogan", 2; "foo", 3] |> String.find "cato" = None
+  s1 |> String.find_exn "cat" = 1
+  s1 |> String.find_exn "catogan" = 2
+  s1 |> String.find_exn "foo" = 3
+  s1 |> String.find "cato" = None
 *)
 
 
-module Make(W : WORD) = struct
+module Make(W : WORD)
+  : S with type char_ = W.char_ and type key = W.t
+= struct
   type char_ = W.char_
   type key = W.t
 
@@ -326,6 +340,39 @@ module Make(W : WORD) = struct
   let _difflist_add
     : 'a difflist -> 'a -> 'a difflist
     = fun f x -> fun l' -> f (x :: l')
+
+  let longest_prefix k t =
+    (* at subtree [t], and character [c] *)
+    let goto (t,prefix) c = match t with
+      | Empty -> Empty, prefix
+      | Cons (c', t') ->
+        if W.compare c c' = 0
+        then t', _difflist_add prefix c
+        else Empty, prefix
+      | Node (_, map) ->
+        try
+          let t' = M.find c map in
+          t', _difflist_add prefix c
+        with Not_found -> Empty, prefix
+    and finish (_,prefix) =
+      W.of_list (prefix [])
+    in
+    let word = W.to_seq k in
+    _fold_seq_and_then goto ~finish (t,_id) word
+
+  (*$= & ~printer:CCFun.id
+    "ca" (String.longest_prefix "carte" s1)
+    "" (String.longest_prefix "yolo" s1)
+    "cat" (String.longest_prefix "cat" s1)
+    "catogan" (String.longest_prefix "catogan" s1)
+  *)
+
+  (*$Q
+    Q.(pair (list (pair printable_string int)) printable_string) (fun (l,s) -> \
+      let m = String.of_list l in \
+      let s' = String.longest_prefix s m in \
+      CCString.prefix ~pre:s' s)
+  *)
 
   (* fold that also keeps the path from the root, so as to provide the list
       of chars that lead to a value. The path is a difference list, ie

@@ -44,6 +44,16 @@ module type S = sig
   (** Same as {!find} but can fail.
       @raise Not_found if the key is not present *)
 
+  val longest_prefix : key -> 'a t -> key
+  (** [longest_prefix k m] finds the longest prefix of [k] that leads to
+      at least one path in [m] (it does not mean that the prefix is bound to
+      a value.
+
+      Example: if [m] has keys "abc0" and "abcd", then [longest_prefix "abc2" m]
+      will return "abc"
+
+      @since NEXT_RELEASE *)
+
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** Update the binding for the given key. The function is given
       [None] if the key is absent, or [Some v] if [key] is bound to [v];
