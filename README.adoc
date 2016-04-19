@@ -4,7 +4,8 @@
 
 image::media/logo.png[logo]
 
-What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!)
+What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!
+or the http://cedeela.fr/~simon/software/containers[documentation])
 
 - A usable, reasonably well-designed library that extends OCaml's standard
   library (in 'src/core/', packaged under `containers` in ocamlfind. Modules
