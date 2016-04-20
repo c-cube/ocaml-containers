@@ -583,10 +583,8 @@ module Make(W : WORD)
         | Some v, Above -> k (W.of_list (prefix[]), v)
         | _ -> ()
       end;
-      let seq =
-        seq_of_map map
-        |> _seq_map (fun (c,t') -> Explore (t', _difflist_add prefix c))
-      in
+      let seq = seq_of_map map in
+      let seq = _seq_map (fun (c,t') -> Explore (t', _difflist_add prefix c)) seq in
       let l' = match o, dir with
         | _, Above -> _seq_append_list [] seq
         | None, Below -> _seq_append_list_rev [] seq
