@@ -92,7 +92,7 @@ let to_list_rev l =
   in
   aux [] l
 
-let to_list l = to_list_rev l |> List.rev
+let to_list l = List.rev (to_list_rev l)
 
 (*$Q
   Q.(list int) (fun l -> l = to_list (of_list l))
@@ -105,5 +105,5 @@ let to_gen l =
     | lazy (Cons (x,tl)) -> l := tl; Some x
 
 (*$Q
-  Q.(list int) (fun l -> l = (of_list l |> to_gen |> Gen.to_list))
+  Q.(list int) (fun l -> l = (of_list l |> to_gen |> Gen.to_list)))
 *)
