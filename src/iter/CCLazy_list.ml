@@ -105,5 +105,5 @@ let to_gen l =
     | lazy (Cons (x,tl)) -> l := tl; Some x
 
 (*$Q
-  Q.(list int) (fun l -> l = (of_list l |> to_gen |> Gen.to_list)))
+  Q.(list int) (fun l -> l = (of_list l |> to_gen |> Gen.to_list))
 *)
