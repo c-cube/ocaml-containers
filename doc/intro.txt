@@ -116,7 +116,10 @@ CCSexpM
 
 Iterators:
 
-{!modules: CCKList CCKTree}
+{!modules:
+CCKList
+CCKTree
+CCLazy_list}
 
 {4 String}
 

@@ -88,7 +88,7 @@ Library "containers_data"
 
 Library "containers_iter"
   Path:             src/iter
-  Modules:          CCKTree, CCKList
+  Modules:          CCKTree, CCKList, CCLazy_list
   FindlibParent:    containers
   FindlibName:      iter
 
