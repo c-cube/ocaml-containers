@@ -195,4 +195,14 @@ module File : sig
       symlinks, etc.) *)
 
   val show_walk_item : walk_item -> string
+
+  val with_temp :
+    ?temp_dir:string -> prefix:string -> suffix:string ->
+    (string -> 'a) -> 'a
+  (** [with_temp ~prefix ~suffix f] will call [f] with the name of a new
+      temporary file (located in [temp_dir]).
+      After [f] returns, the file is deleted. Best to be used in
+      combination with {!with_out}.
+      See {!Filename.temp_file}
+      @since 0.17 *)
 end

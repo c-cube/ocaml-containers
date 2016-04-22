@@ -63,6 +63,37 @@ val init : int -> (int -> char) -> string
   init 0 (fun _ -> assert false) = ""
 *)
 
+val rev : string -> string
+(** [rev s] returns the reverse of [s]
+    @since 0.17 *)
+
+(*$Q
+  Q.printable_string (fun s -> s = rev (rev s))
+  Q.printable_string (fun s -> length s = length (rev s))
+*)
+
+(*$=
+  "abc" (rev "cba")
+  "" (rev "")
+  " " (rev " ")
+*)
+
+val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
+(** [pad n str] ensures that [str] is at least [n] bytes long,
+    and pads it on the [side] with [c] if it's not the case.
+    @param side determines where padding occurs (default: [`Left])
+    @param c the char used to pad (default: ' ')
+    @since 0.17 *)
+
+(*$= & ~printer:Q.Print.string
+  "  42" (pad 4 "42")
+  "0042" (pad ~c:'0' 4 "42")
+  "4200" (pad ~side:`Right ~c:'0' 4 "42")
+  "hello" (pad 4 "hello")
+  "aaa" (pad ~c:'a' 3 "")
+  "aaa" (pad ~side:`Right ~c:'a' 3 "")
+*)
+
 val of_gen : char gen -> string
 val of_seq : char sequence -> string
 val of_klist : char klist -> string
@@ -81,10 +112,35 @@ val find : ?start:int -> sub:string -> string -> int
     Should only be used with very small [sub] *)
 
 (*$= & ~printer:string_of_int
-  (find ~sub:"bc" "abcd") 1
-  (find ~sub:"bc" "abd") ~-1
-  (find ~sub:"a" "_a_a_a_") 1
-  (find ~sub:"a" ~start:5 "a1a234a") 6
+  1 (find ~sub:"bc" "abcd")
+  ~-1 (find ~sub:"bc" "abd")
+  1 (find ~sub:"a" "_a_a_a_")
+  6 (find ~sub:"a" ~start:5 "a1a234a")
+*)
+
+(*$Q & ~count:10_000
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    let i = find ~sub:s2 s1 in \
+    i < 0 || String.sub s1 i (length s2) = s2)
+*)
+
+val find_all : ?start:int -> sub:string -> string -> int gen
+(** [find_all ~sub s] finds all occurrences of [sub] in [s], even overlapping
+    instances.
+    @param start starting position in [s]
+    @since 0.17 *)
+
+val find_all_l : ?start:int -> sub:string -> string -> int list
+(** [find_all ~sub s] finds all occurrences of [sub] in [s] and returns
+    them in a list
+    @param start starting position in [s]
+    @since 0.17 *)
+
+(*$= & ~printer:Q.Print.(list int)
+  [1; 6] (find_all_l ~sub:"bc" "abc aabc  aab")
+  [] (find_all_l ~sub:"bc" "abd")
+  [76] (find_all_l ~sub:"aaaaaa" \
+    "aabbaabbaaaaabbbbabababababbbbabbbabbaaababbbaaabaabbaabbaaaabbababaaaabbaabaaaaaabbbaaaabababaabaaabbaabaaaabbababbaabbaaabaabbabababbbaabababaaabaaababbbaaaabbbaabaaababbabaababbaabbaaaaabababbabaababbbaaabbabbabababaaaabaaababaaaaabbabbaabbabbbbbbbbbbbbbbaabbabbbbbabbaaabbabbbbabaaaaabbababbbaaaa")
 *)
 
 val mem : ?start:int -> sub:string -> string -> bool
@@ -102,11 +158,17 @@ val rfind : sub:string -> string -> int
     @since 0.12 *)
 
 (*$= & ~printer:string_of_int
-  (rfind ~sub:"bc" "abcd") 1
-  (rfind ~sub:"bc" "abd") ~-1
-  (rfind ~sub:"a" "_a_a_a_") 5
-  (rfind ~sub:"bc" "abcdbcd") 4
-  (rfind ~sub:"a" "a1a234a") 6
+  1 (rfind ~sub:"bc" "abcd")
+  ~-1 (rfind ~sub:"bc" "abd")
+  5 (rfind ~sub:"a" "_a_a_a_")
+  4 (rfind ~sub:"bc" "abcdbcd")
+  6 (rfind ~sub:"a" "a1a234a")
+*)
+
+(*$Q & ~count:10_000
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    let i = rfind ~sub:s2 s1 in \
+    i < 0 || String.sub s1 i (length s2) = s2)
 *)
 
 val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string -> string
@@ -155,6 +217,46 @@ val suffix : suf:string -> string -> bool
   suffix ~suf:"cd" "abcd"
   not (suffix ~suf:"cd" "abcde")
   not (suffix ~suf:"abcd" "cd")
+*)
+
+val chop_prefix : pre:string -> string -> string option
+(** [chop_pref ~pre s] removes [pre] from [s] if [pre] really is a prefix
+    of [s], returns [None] otherwise
+    @since 0.17 *)
+
+(*$= & ~printer:Q.Print.(option string)
+  (Some "cd") (chop_prefix ~pre:"aab" "aabcd")
+  None (chop_prefix ~pre:"ab" "aabcd")
+  None (chop_prefix ~pre:"abcd" "abc")
+*)
+
+val chop_suffix : suf:string -> string -> string option
+(** [chop_suffix ~suf s] removes [suf] from [s] if [suf] really is a suffix
+    of [s], returns [None] otherwise
+    @since 0.17 *)
+
+(*$= & ~printer:Q.Print.(option string)
+  (Some "ab") (chop_suffix ~suf:"cd" "abcd")
+  None (chop_suffix ~suf:"cd" "abcde")
+  None (chop_suffix ~suf:"abcd" "cd")
+*)
+
+val take : int -> string -> string
+(** [take n s] keeps only the [n] first chars of [s]
+    @since 0.17 *)
+
+val drop : int -> string -> string
+(** [drop n s] removes the [n] first chars of [s]
+    @since 0.17 *)
+
+val take_drop : int -> string -> string * string
+(** [take_drop n s = take n s, drop n s]
+    @since 0.17 *)
+
+(*$=
+  ("ab", "cd") (take_drop 2 "abcd")
+  ("abc", "") (take_drop 3 "abc")
+  ("abc", "") (take_drop 5 "abc")
 *)
 
 val lines : string -> string list
@@ -209,6 +311,25 @@ val map : (char -> char) -> string -> string
 val mapi : (int -> char -> char) -> string -> string
 (** Map chars with their index
     @since 0.12 *)
+
+val filter_map : (char -> char option) -> string -> string
+(** @since 0.17 *)
+
+(*$= & ~printer:Q.Print.string
+  "bcef" (filter_map \
+     (function 'c' -> None | c -> Some (Char.chr (Char.code c + 1))) "abcde")
+*)
+
+val filter : (char -> bool) -> string -> string
+(** @since 0.17 *)
+
+(*$= & ~printer:Q.Print.string
+  "abde" (filter (function 'c' -> false | _ -> true) "abcdec")
+*)
+
+(*$Q
+  Q.printable_string (fun s -> filter (fun _ -> true) s = s)
+*)
 
 val flat_map : ?sep:string -> (char -> string) -> string -> string
 (** Map each chars to a string, then concatenates them all

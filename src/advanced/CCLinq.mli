@@ -33,6 +33,8 @@ Functions and operations are assumed to be referentially transparent, i.e.
 they should not rely on external side effects, they should not rely on
 the order of execution.
 
+@deprecated use {{: https://github.com/c-cube/olinq} OLinq} (once released)
+
 {[
 
 CCLinq.(

@@ -50,6 +50,10 @@ let init n f =
 
 let length = String.length
 
+let rev s =
+  let n = length s in
+  init n (fun i -> s.[n-i-1])
+
 let rec _to_list s acc i len =
   if len=0 then List.rev acc
   else _to_list s (s.[i]::acc) (i+1) (len-1)
@@ -66,32 +70,197 @@ let is_sub ~sub i s j ~len =
   if i+len > String.length sub then invalid_arg "CCString.is_sub";
   _is_sub ~sub i s j ~len
 
-(* note: inefficient *)
-let find ?(start=0) ~sub s =
-  let n = String.length sub in
-  let i = ref start in
-  try
-    while !i + n <= String.length s do
-      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
-      incr i
+type _ direction =
+  | Direct : [`Direct] direction
+  | Reverse : [`Reverse] direction
+
+(* we follow https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm *)
+module Find = struct
+  type 'a kmp_pattern = {
+    failure : int array;
+    str : string;
+  }
+  (* invariant: [length failure = length str].
+   We use a phantom type to avoid mixing the directions. *)
+
+  let kmp_pattern_length p = String.length p.str
+
+  (* access the [i]-th element of [s] according to direction [dir] *)
+  let get_
+    : type a. dir:a direction -> string -> int -> char
+    = fun ~dir -> match dir with
+    | Direct -> String.get
+    | Reverse -> (fun s i -> s.[String.length s - i - 1])
+
+  let kmp_compile_
+  : type a. dir:a direction -> string -> a kmp_pattern
+  = fun ~dir str ->
+    let len = length str in
+    let get = get_ ~dir in (* how to read elements of the string *)
+    match len with
+    | 0 -> {failure=[| |]; str;}
+    | 1 -> {failure=[| -1 |]; str;}
+    | _ ->
+      (* at least 2 elements, the algorithm can work *)
+      let failure = Array.make len 0 in
+      failure.(0) <- -1;
+      (* i: current index in str *)
+      let i = ref 2 in
+      (* j: index of candidate substring *)
+      let j = ref 0 in
+      while !i < len do
+        match !j with
+        | _ when get str (!i-1) = get str !j ->
+          (* substring starting at !j continues matching current char *)
+          incr j;
+          failure.(!i) <- !j;
+          incr i;
+        | 0 ->
+          (* back to the beginning *)
+          failure.(!i) <- 0;
+          incr i;
+        | _ ->
+          (* fallback for the prefix string *)
+          assert (!j > 0);
+          j := failure.(!j)
+      done;
+      (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
+      { failure; str; }
+
+  let kmp_compile s = kmp_compile_ ~dir:Direct s
+  let kmp_rcompile s = kmp_compile_ ~dir:Reverse s
+
+  (* proper search function.
+    [i] index in [s]
+    [j] index in [pattern]
+    [len] length of [s] *)
+  let kmp_find ~pattern s idx =
+    let len = length s in
+    let i = ref idx in
+    let j = ref 0 in
+    let pat_len = kmp_pattern_length pattern in
+    while !j < pat_len && !i + !j < len do
+      let c = String.get s (!i + !j) in
+      let expected = String.get pattern.str !j in
+      if c = expected
+      then (
+        (* char matches *)
+        incr j;
+      ) else (
+        let fail_offset = pattern.failure.(!j) in
+        if fail_offset >= 0
+        then (
+          assert (fail_offset < !j);
+          (* follow the failure link *)
+          i := !i + !j - fail_offset;
+          j := fail_offset
+        ) else (
+          (* beginning of pattern *)
+          j := 0;
+          incr i
+        )
+      )
     done;
-    -1
-  with Exit ->
-    !i
+    if !j = pat_len
+    then !i
+    else -1
+
+  (* proper search function, from the right.
+    [i] index in [s]
+    [j] index in [pattern]
+    [len] length of [s] *)
+  let kmp_rfind ~pattern s idx =
+    let len = length s in
+    let i = ref (len - idx - 1) in
+    let j = ref 0 in
+    let pat_len = kmp_pattern_length pattern in
+    while !j < pat_len && !i + !j < len do
+      let c = String.get s (len - !i - !j - 1) in
+      let expected = String.get pattern.str (String.length pattern.str - !j - 1) in
+      if c = expected
+      then (
+        (* char matches *)
+        incr j;
+      ) else (
+        let fail_offset = pattern.failure.(!j) in
+        if fail_offset >= 0
+        then (
+          assert (fail_offset < !j);
+          (* follow the failure link *)
+          i := !i + !j - fail_offset;
+          j := fail_offset
+        ) else (
+          (* beginning of pattern *)
+          j := 0;
+          incr i
+        )
+      )
+    done;
+    (* adjust result: first, [res = string.length s - res -1] to convert
+       back to real indices; then, what we got is actually the position
+       of the end of the pattern, so we subtract the [length of the pattern -1]
+       to obtain the real result. *)
+    if !j = pat_len
+    then len - !i - kmp_pattern_length pattern
+    else -1
+
+  type 'a pattern =
+    | P_char of char
+    | P_KMP of 'a kmp_pattern
+
+  let pattern_length = function
+    | P_char _ -> 1
+    | P_KMP p -> kmp_pattern_length p
+
+  let compile ~sub : [`Direct] pattern =
+    if length sub=1
+    then P_char sub.[0]
+    else P_KMP (kmp_compile sub)
+
+  let rcompile ~sub : [`Reverse] pattern =
+    if length sub=1
+    then P_char sub.[0]
+    else P_KMP (kmp_rcompile sub)
+
+  let find ~pattern s start = match pattern with
+    | P_char c ->
+        (try String.index_from s start c with Not_found -> -1)
+    | P_KMP pattern -> kmp_find ~pattern s start
+
+  let rfind ~pattern s start = match pattern with
+    | P_char c ->
+        (try String.rindex_from s start c with Not_found -> -1)
+    | P_KMP pattern -> kmp_rfind ~pattern s start
+end
+
+let find ?(start=0) ~sub =
+  let pattern = Find.compile ~sub in
+  fun s -> Find.find ~pattern s start
+
+let find_all ?(start=0) ~sub =
+  let pattern = Find.compile ~sub in
+  fun s ->
+    let i = ref start in
+    fun () ->
+      let res = Find.find ~pattern s !i in
+      if res = ~-1 then None
+      else (
+        i := res + 1; (* possible overlap *)
+        Some res
+      )
+
+let find_all_l ?start ~sub s =
+  let rec aux acc g = match g () with
+    | None -> List.rev acc
+    | Some i -> aux (i::acc) g
+  in
+  aux [] (find_all ?start ~sub s)
 
 let mem ?start ~sub s = find ?start ~sub s >= 0
 
-let rfind ~sub s =
-  let n = String.length sub in
-  let i = ref (String.length s - n) in
-  try
-    while !i >= 0 do
-      if _is_sub ~sub 0 s !i ~len:n then raise Exit;
-      decr i
-    done;
-    ~-1
-  with Exit ->
-    !i
+let rfind ~sub =
+  let pattern = Find.rcompile ~sub in
+  fun s -> Find.rfind ~pattern s (String.length s-1)
 
 (* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -105,16 +274,18 @@ let replace ?(which=`All) ~sub ~by s =
   if sub="" then invalid_arg "CCString.replace";
   match which with
   | `Left ->
-      let i = find ~sub s in
+      let i = find ~sub s ~start:0 in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
   | `Right ->
       let i = rfind ~sub s in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
   | `All ->
+      (* compile search pattern only once *)
+      let pattern = Find.compile ~sub in
       let b = Buffer.create (String.length s) in
       let start = ref 0 in
       while !start < String.length s do
-        let i = find ~start:!start ~sub s in
+        let i = Find.find ~pattern s !start in
         if i>=0 then (
           (* between last and cur occurrences *)
           Buffer.add_substring b s !start (i- !start);
@@ -133,29 +304,20 @@ module Split = struct
     | SplitStop
     | SplitAt of int (* previous *)
 
-  (* [by_j... prefix of s_i...] ? *)
-  let rec _is_prefix ~by s i j =
-    j = String.length by
-    ||
-    ( i < String.length s &&
-      s.[i] = by.[j] &&
-      _is_prefix ~by s (i+1) (j+1)
-    )
-
   let rec _split ~by s state = match state with
     | SplitStop -> None
-    | SplitAt prev -> _split_search ~by s prev prev
-  and _split_search ~by s prev i =
-    if i >= String.length s
+    | SplitAt prev -> _split_search ~by s prev
+  and _split_search ~by s prev =
+    let j = Find.find ~pattern:by s prev in
+    if j < 0
       then Some (SplitStop, prev, String.length s - prev)
-      else if _is_prefix ~by s i 0
-        then Some (SplitAt (i+String.length by), prev, i-prev)
-      else _split_search ~by s prev (i+1)
+      else Some (SplitAt (j+Find.pattern_length by), prev, j-prev)
 
   let _tuple3 x y z = x,y,z
 
   let _mkgen ~by s k =
     let state = ref (SplitAt 0) in
+    let by = Find.compile ~sub:by in
     fun () ->
       match _split ~by s !state with
         | None -> None
@@ -168,6 +330,7 @@ module Split = struct
   let gen_cpy ~by s = _mkgen ~by s String.sub
 
   let _mklist ~by s k =
+    let by = Find.compile ~sub:by in
     let rec build acc state = match _split ~by s state with
       | None -> List.rev acc
       | Some (state', i, len) ->
@@ -180,6 +343,7 @@ module Split = struct
   let list_cpy ~by s = _mklist ~by s String.sub
 
   let _mkklist ~by s k =
+    let by = Find.compile ~sub:by in
     let rec make state () = match _split ~by s state with
       | None -> `Nil
       | Some (state', i, len) ->
@@ -191,6 +355,7 @@ module Split = struct
   let klist_cpy ~by s = _mkklist ~by s String.sub
 
   let _mkseq ~by s f k =
+    let by = Find.compile ~sub:by in
     let rec aux state = match _split ~by s state with
       | None -> ()
       | Some (state', i, len) -> k (f s i len); aux state'
@@ -259,6 +424,27 @@ let suffix ~suf s =
     !i = String.length suf
   )
 
+let take n s =
+  if n < String.length s
+  then String.sub s 0 n
+  else s
+
+let drop n s =
+  if n < String.length s
+  then String.sub s n (String.length s - n)
+  else ""
+
+let take_drop n s = take n s, drop n s
+
+let chop_suffix ~suf s =
+  if suffix ~suf s
+  then Some (String.sub s 0 (String.length s-String.length suf))
+  else None
+
+let chop_prefix ~pre s =
+  if prefix ~pre s
+  then Some (String.sub s (String.length pre) (String.length s-String.length pre))
+  else None
 
 let blit = String.blit
 
@@ -267,6 +453,15 @@ let fold f acc s =
     if i = String.length s then acc
     else fold_rec f (f acc s.[i]) s (i+1)
   in fold_rec f acc s 0
+
+let pad ?(side=`Left) ?(c=' ') n s =
+  let len_s = String.length s in
+  if len_s >= n then s
+  else
+    let pad_len = n - len_s in
+    match side with
+      | `Left -> init n (fun i -> if i < pad_len then c else s.[i-pad_len])
+      | `Right -> init n (fun i -> if i < len_s then s.[i] else c)
 
 let _to_gen s i0 len =
   let i = ref i0 in
@@ -372,6 +567,22 @@ let mapi = String.mapi
 let mapi f s = init (length s) (fun i -> f i s.[i])
 
 #endif
+
+let filter_map f s =
+  let buf = Buffer.create (String.length s) in
+  iter
+    (fun c -> match f c with
+       | None -> ()
+       | Some c' -> Buffer.add_char buf c')
+    s;
+  Buffer.contents buf
+
+let filter f s =
+  let buf = Buffer.create (String.length s) in
+  iter
+    (fun c -> if f c then Buffer.add_char buf c)
+    s;
+  Buffer.contents buf
 
 let flat_map ?sep f s =
   let buf = Buffer.create (String.length s) in

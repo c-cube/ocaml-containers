@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.16
+Version:     0.17
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -9,6 +9,8 @@ Plugins:     META (0.3), DevFiles (0.3)
 OCamlVersion: >= 4.00.1
 BuildTools:  ocamlbuild
 AlphaFeatures: ocamlbuild_more_args
+
+XOCamlbuildExtraArgs: "-j 0"
 
 Synopsis:    A modular standard library focused on data structures.
 Description:
@@ -77,7 +79,8 @@ Library "containers_data"
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
-                    CCHashTrie, CCBloom, CCWBTree, CCRAL, CCAllocCache
+                    CCHashTrie, CCBloom, CCWBTree, CCRAL, CCAllocCache,
+                    CCImmutArray, CCHet
   BuildDepends:     bytes
   # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
@@ -85,7 +88,7 @@ Library "containers_data"
 
 Library "containers_iter"
   Path:             src/iter
-  Modules:          CCKTree, CCKList
+  Modules:          CCKTree, CCKList, CCLazy_list
   FindlibParent:    containers
   FindlibName:      iter
 
@@ -152,7 +155,7 @@ Executable run_benchs
   CompiledObject:   best
   Build$:           flag(bench)
   MainIs:           run_benchs.ml
-  BuildDepends:     containers, containers.advanced,
+  BuildDepends:     containers, containers.advanced, qcheck,
                     containers.data, containers.string, containers.iter,
                     containers.thread, sequence, gen, benchmark, hamt
 
@@ -176,7 +179,7 @@ Executable run_qtest
                     containers.io, containers.advanced, containers.sexp,
                     containers.bigarray, containers.unix, containers.thread,
                     containers.data,
-                    sequence, gen, unix, oUnit, QTest2Lib
+                    sequence, gen, unix, oUnit, qcheck 
 
 Test all
   Command:      ./run_qtest.native

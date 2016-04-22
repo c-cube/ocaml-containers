@@ -50,6 +50,16 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter on 0 or 1 element
     @since 0.5 *)
 
+val if_ : ('a -> bool) -> 'a -> 'a option
+(** [if_ f x] is [Some x] if [f x], [None] otherwise
+    @since 0.17 *)
+
+val exists : ('a -> bool) -> 'a t -> bool
+(** @since 0.17 *)
+
+val for_all : ('a -> bool) -> 'a t -> bool
+(** @since 0.17 *)
+
 val get : 'a -> 'a t -> 'a
 (** [get default x] unwraps [x], but if [x = None] it returns [default] instead.
     @since 0.4.1 *)

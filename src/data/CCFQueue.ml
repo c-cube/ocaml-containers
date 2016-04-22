@@ -1,27 +1,5 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Functional queues (fifo)} *)
 
@@ -73,39 +51,39 @@ let _empty = Lazy.from_val empty
 
 let rec cons : 'a. 'a -> 'a t -> 'a t
   = fun x q -> match q with
-  | Shallow Zero -> _single x
-  | Shallow (One y) -> Shallow (Two (x,y))
-  | Shallow (Two (y,z)) -> Shallow (Three (x,y,z))
-  | Shallow (Three (y,z,z')) ->
+    | Shallow Zero -> _single x
+    | Shallow (One y) -> Shallow (Two (x,y))
+    | Shallow (Two (y,z)) -> Shallow (Three (x,y,z))
+    | Shallow (Three (y,z,z')) ->
       _deep 4 (Two (x,y)) _empty (Two (z,z'))
-  | Deep (_, Zero, _middle, _tl) -> assert false
-  | Deep (n,One y, middle, tl) -> _deep (n+1) (Two (x,y)) middle tl
-  | Deep (n,Two (y,z), middle, tl) -> _deep (n+1)(Three (x,y,z)) middle tl
-  | Deep (n,Three (y,z,z'), lazy q', tail) ->
+    | Deep (_, Zero, _middle, _tl) -> assert false
+    | Deep (n,One y, middle, tl) -> _deep (n+1) (Two (x,y)) middle tl
+    | Deep (n,Two (y,z), middle, tl) -> _deep (n+1)(Three (x,y,z)) middle tl
+    | Deep (n,Three (y,z,z'), lazy q', tail) ->
       _deep (n+1) (Two (x,y)) (lazy (cons (z,z') q')) tail
 
 (*$Q
   (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
     cons x (of_list l) |> to_list = x::l)
-  *)
+*)
 
 let rec snoc : 'a. 'a t -> 'a -> 'a t
   = fun q x -> match q with
-  | Shallow Zero -> _single x
-  | Shallow (One y) -> Shallow (Two (y,x))
-  | Shallow (Two (y,z)) -> Shallow (Three (y,z,x))
-  | Shallow (Three (y,z,z')) ->
+    | Shallow Zero -> _single x
+    | Shallow (One y) -> Shallow (Two (y,x))
+    | Shallow (Two (y,z)) -> Shallow (Three (y,z,x))
+    | Shallow (Three (y,z,z')) ->
       _deep 4 (Two (y,z)) _empty (Two (z',x))
-  | Deep (_,_hd, _middle, Zero) -> assert false
-  | Deep (n,hd, middle, One y) -> _deep (n+1) hd middle (Two(y,x))
-  | Deep (n,hd, middle, Two (y,z)) -> _deep (n+1) hd middle (Three(y,z,x))
-  | Deep (n,hd, lazy q', Three (y,z,z')) ->
+    | Deep (_,_hd, _middle, Zero) -> assert false
+    | Deep (n,hd, middle, One y) -> _deep (n+1) hd middle (Two(y,x))
+    | Deep (n,hd, middle, Two (y,z)) -> _deep (n+1) hd middle (Three(y,z,x))
+    | Deep (n,hd, lazy q', Three (y,z,z')) ->
       _deep (n+1) hd (lazy (snoc q' (y,z))) (Two(z',x))
 
 (*$Q
   (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
     snoc (of_list l) x |> to_list = l @ [x])
-  *)
+*)
 
 (*$R
   let q = List.fold_left snoc empty [1;2;3;4;5] in
@@ -117,27 +95,27 @@ let rec snoc : 'a. 'a t -> 'a -> 'a t
 
 let rec take_front_exn : 'a. 'a t -> ('a *'a t)
   = fun q -> match q with
-  | Shallow Zero -> raise Empty
-  | Shallow (One x) -> x, empty
-  | Shallow (Two (x,y)) -> x, Shallow (One y)
-  | Shallow (Three (x,y,z)) -> x, Shallow (Two (y,z))
-  | Deep (_,Zero, _, _) -> assert false
-  | Deep (n,One x, lazy q', tail) ->
+    | Shallow Zero -> raise Empty
+    | Shallow (One x) -> x, empty
+    | Shallow (Two (x,y)) -> x, Shallow (One y)
+    | Shallow (Three (x,y,z)) -> x, Shallow (Two (y,z))
+    | Deep (_,Zero, _, _) -> assert false
+    | Deep (n,One x, lazy q', tail) ->
       if is_empty q'
-        then x, Shallow tail
-        else
-          let (y,z), q' = take_front_exn q' in
-          x, _deep (n-1)(Two (y,z)) (Lazy.from_val q') tail
-  | Deep (n,Two (x,y), middle, tail) ->
+      then x, Shallow tail
+      else
+        let (y,z), q' = take_front_exn q' in
+        x, _deep (n-1)(Two (y,z)) (Lazy.from_val q') tail
+    | Deep (n,Two (x,y), middle, tail) ->
       x, _deep (n-1) (One y) middle tail
-  | Deep (n,Three (x,y,z), middle, tail) ->
+    | Deep (n,Three (x,y,z), middle, tail) ->
       x, _deep (n-1) (Two(y,z)) middle tail
 
 (*$Q
   (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
     let x', q = cons x (of_list l) |> take_front_exn in \
     x'=x && to_list q = l)
-  *)
+*)
 
 (*$R
   let q = of_list [1;2;3;4] in
@@ -180,25 +158,25 @@ let take_front_while p q =
 
 let rec take_back_exn : 'a. 'a t -> 'a t * 'a
   = fun q -> match q with
-  | Shallow Zero -> invalid_arg "FQueue.take_back_exn"
-  | Shallow (One x) -> empty, x
-  | Shallow (Two (x,y)) -> _single x, y
-  | Shallow (Three (x,y,z)) -> Shallow (Two(x,y)), z
-  | Deep (_, _hd, _middle, Zero) -> assert false
-  | Deep (n, hd, lazy q', One x) ->
+    | Shallow Zero -> invalid_arg "FQueue.take_back_exn"
+    | Shallow (One x) -> empty, x
+    | Shallow (Two (x,y)) -> _single x, y
+    | Shallow (Three (x,y,z)) -> Shallow (Two(x,y)), z
+    | Deep (_, _hd, _middle, Zero) -> assert false
+    | Deep (n, hd, lazy q', One x) ->
       if is_empty q'
-        then Shallow hd, x
-        else
-          let q'', (y,z) = take_back_exn q' in
-          _deep (n-1) hd (Lazy.from_val q'') (Two (y,z)), x
-  | Deep (n, hd, middle, Two(x,y)) -> _deep (n-1) hd middle (One x), y
-  | Deep (n, hd, middle, Three(x,y,z)) -> _deep (n-1) hd middle (Two (x,y)), z
+      then Shallow hd, x
+      else
+        let q'', (y,z) = take_back_exn q' in
+        _deep (n-1) hd (Lazy.from_val q'') (Two (y,z)), x
+    | Deep (n, hd, middle, Two(x,y)) -> _deep (n-1) hd middle (One x), y
+    | Deep (n, hd, middle, Three(x,y,z)) -> _deep (n-1) hd middle (Two (x,y)), z
 
 (*$Q
   (Q.pair Q.int (Q.list Q.int)) (fun (x,l) -> \
     let q,x' = snoc (of_list l) x |> take_back_exn in \
     x'=x && to_list q = l)
-  *)
+*)
 
 let take_back q =
   try Some (take_back_exn q)
@@ -242,8 +220,8 @@ let _size_digit = function
 
 let size : 'a. 'a t -> int
   = function
-  | Shallow d -> _size_digit d
-  | Deep (n, _, _, _) -> n
+    | Shallow d -> _size_digit d
+    | Deep (n, _, _, _) -> n
 
 (*$Q
   (Q.list Q.int) (fun l -> \
@@ -262,15 +240,15 @@ let _nth_digit i d = match i, d with
 
 let rec nth_exn : 'a. int -> 'a t -> 'a
   = fun i q -> match i, q with
-  | _, Shallow Zero -> raise Not_found
-  | 0, Shallow (One x) -> x
-  | 0, Shallow (Two (x,_)) -> x
-  | 1, Shallow (Two (_,x)) -> x
-  | 0, Shallow (Three (x,_,_)) -> x
-  | 1, Shallow (Three (_,x,_)) -> x
-  | 2, Shallow (Three (_,_,x)) -> x
-  | _, Shallow _ -> raise Not_found
-  | _, Deep (_, l, q, r) ->
+    | _, Shallow Zero -> raise Not_found
+    | 0, Shallow (One x) -> x
+    | 0, Shallow (Two (x,_)) -> x
+    | 1, Shallow (Two (_,x)) -> x
+    | 0, Shallow (Three (x,_,_)) -> x
+    | 1, Shallow (Three (_,x,_)) -> x
+    | 2, Shallow (Three (_,_,x)) -> x
+    | _, Shallow _ -> raise Not_found
+    | _, Deep (_, l, q, r) ->
       if i<_size_digit l
       then _nth_digit i l
       else
@@ -326,7 +304,7 @@ let add_seq_front seq q =
 (*$Q
   Q.(pair (list int) (list int)) (fun (l1, l2) -> \
     add_seq_front (Sequence.of_list l1) (of_list l2) |> to_list = l1 @ l2)
-  *)
+*)
 
 let add_seq_back q seq =
   let q = ref q in
@@ -341,8 +319,8 @@ let _digit_to_seq d k = match d with
 
 let rec to_seq : 'a. 'a t -> 'a sequence
   = fun q k -> match q with
-  | Shallow d -> _digit_to_seq d k
-  | Deep (_, hd, lazy q', tail) ->
+    | Shallow d -> _digit_to_seq d k
+    | Deep (_, hd, lazy q', tail) ->
       _digit_to_seq hd k;
       to_seq q' (fun (x,y) -> k x; k y);
       _digit_to_seq tail k
@@ -354,9 +332,9 @@ let rec to_seq : 'a. 'a t -> 'a sequence
 
 let append q1 q2 =
   match q1, q2 with
-  | Shallow Zero, _ -> q2
-  | _, Shallow Zero -> q1
-  | _ -> add_seq_back q1 (to_seq q2)
+    | Shallow Zero, _ -> q2
+    | _, Shallow Zero -> q1
+    | _ -> add_seq_back q1 (to_seq q2)
 
 (*$Q
   (Q.pair (Q.list Q.int)(Q.list Q.int)) (fun (l1,l2) -> \
@@ -379,8 +357,8 @@ let _map_digit f d = match d with
 
 let rec map : 'a 'b. ('a -> 'b) -> 'a t -> 'b t
   = fun f q -> match q with
-  | Shallow d -> Shallow (_map_digit f d)
-  | Deep (size, hd, lazy q', tl) ->
+    | Shallow d -> Shallow (_map_digit f d)
+    | Deep (size, hd, lazy q', tl) ->
       let q'' = map (fun (x,y) -> f x, f y) q' in
       _deep size (_map_digit f hd) (Lazy.from_val q'') (_map_digit f tl)
 
@@ -399,8 +377,8 @@ let _fold_digit f acc d = match d with
 
 let rec fold : 'a 'b. ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   = fun f acc q -> match q with
-  | Shallow d -> _fold_digit f acc d
-  | Deep (_, hd, lazy q', tl) ->
+    | Shallow d -> _fold_digit f acc d
+    | Deep (_, hd, lazy q', tl) ->
       let acc = _fold_digit f acc hd in
       let acc = fold (fun acc (x,y) -> f (f acc x) y) acc q' in
       _fold_digit f acc tl
@@ -455,18 +433,18 @@ let _digit_to_klist d cont = match d with
 
 let rec _flat_klist : 'a. ('a * 'a) klist -> 'a klist -> 'a klist
   = fun l cont () -> match l () with
-  | `Nil -> cont ()
-  | `Cons ((x,y),l') -> _double x y (_flat_klist l' cont) ()
+    | `Nil -> cont ()
+    | `Cons ((x,y),l') -> _double x y (_flat_klist l' cont) ()
 
 let to_klist q =
   let rec aux : 'a. 'a t -> 'a klist -> 'a klist
     = fun q cont () -> match q with
-    | Shallow d -> _digit_to_klist d cont ()
-    | Deep (_, hd, lazy q', tl) ->
+      | Shallow d -> _digit_to_klist d cont ()
+      | Deep (_, hd, lazy q', tl) ->
         _digit_to_klist hd
           (_flat_klist
-            (aux q' _nil)
-            (_digit_to_klist tl cont))
+             (aux q' _nil)
+             (_digit_to_klist tl cont))
           ()
   in
   aux q _nil
@@ -483,7 +461,7 @@ let rec _equal_klist eq l1 l2 = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> false
   | `Cons(x1,l1'), `Cons(x2,l2') ->
-      eq x1 x2 && _equal_klist eq l1' l2'
+    eq x1 x2 && _equal_klist eq l1' l2'
 
 let equal eq q1 q2 = _equal_klist eq (to_klist q1) (to_klist q2)
 
@@ -507,12 +485,24 @@ let (--) a b =
   0 -- 0 |> to_list = [0]
 *)
 
+let (--^) a b =
+  if a=b then empty
+  else if a<b then a -- (b-1)
+  else a -- (b+1)
+
+(*$T
+  1 --^ 5 |> to_list = [1;2;3;4]
+  5 --^ 1 |> to_list = [5;4;3;2]
+  1 --^ 2 |> to_list = [1]
+  0 --^ 0 |> to_list = []
+*)
+
 let print pp_x out d =
   let first = ref true in
   Format.fprintf out "@[<hov2>queue {";
   iter
     (fun x ->
-      if !first then first:= false else Format.fprintf out ";@ ";
-      pp_x out x
+       if !first then first:= false else Format.fprintf out ";@ ";
+       pp_x out x
     ) d;
   Format.fprintf out "}@]"

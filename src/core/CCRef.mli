@@ -24,6 +24,14 @@ val iter : ('a -> unit) -> 'a t -> unit
 val update : ('a -> 'a) -> 'a t -> unit
 (** Update the reference's content with the given function *)
 
+val incr_then_get : int t -> int
+(** [incr_then_get r] increments [r] and returns its new value, think [++ r]
+    @since 0.17 *)
+
+val get_then_incr : int t -> int
+(** [get_then_incr r] increments [r] and returns its old value, think [r++]
+    @since 0.17 *)
+
 val compare : 'a ord -> 'a t ord
 
 val equal : 'a eq -> 'a t eq

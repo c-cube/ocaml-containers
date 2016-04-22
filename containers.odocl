@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 0670f1d87f40756af3f470a0fbb07a1b)
+# DO NOT EDIT (digest: b2fa90a283cbf634dc8de2f37468b64b)
 src/core/CCVector
 src/core/CCPrint
 src/core/CCError
@@ -28,6 +28,7 @@ src/core/CCResult
 src/core/Containers
 src/iter/CCKTree
 src/iter/CCKList
+src/iter/CCLazy_list
 src/data/CCMultiMap
 src/data/CCMultiSet
 src/data/CCTrie
@@ -52,6 +53,8 @@ src/data/CCBloom
 src/data/CCWBTree
 src/data/CCRAL
 src/data/CCAllocCache
+src/data/CCImmutArray
+src/data/CCHet
 src/string/Containers_string
 src/string/CCKMP
 src/string/CCLevenshtein

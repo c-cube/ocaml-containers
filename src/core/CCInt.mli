@@ -39,3 +39,34 @@ val to_string : t -> string
 
 val of_string : string -> t option
 (** @since 0.13 *)
+
+val min : t -> t -> t
+(** @since 0.17 *)
+
+val max : t -> t -> t
+(** @since 0.17 *)
+
+(** {2 Infix Operators}
+
+    @since 0.17 *)
+module Infix : sig
+  val (=) : t -> t -> bool
+  (** @since 0.17 *)
+
+  val (<>) : t -> t -> bool
+  (** @since 0.17 *)
+
+  val (<) : t -> t -> bool
+  (** @since 0.17 *)
+
+  val (>) : t -> t -> bool
+  (** @since 0.17 *)
+
+  val (<=) : t -> t -> bool
+  (** @since 0.17 *)
+
+  val (>=) : t -> t -> bool
+  (** @since 0.17 *)
+end
+
+include module type of Infix

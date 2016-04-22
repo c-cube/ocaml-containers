@@ -287,6 +287,18 @@ let rec fold f t acc = match t with
 
 let cardinal t = fold (fun _ _ n -> n+1) t 0
 
+let rec mapi f t = match t with
+  | E -> E
+  | L (k, v) -> L (k, f k v)
+  | N (p, s, l, r) ->
+      N (p, s, mapi f l, mapi f r)
+
+let rec map f t = match t with
+  | E -> E
+  | L (k, v) -> L (k, f v)
+  | N (p, s, l, r) ->
+      N (p, s, map f l, map f r)
+
 let rec choose_exn = function
   | E -> raise Not_found
   | L (k, v) -> k, v

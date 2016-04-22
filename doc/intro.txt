@@ -71,10 +71,13 @@ CCBitField
 CCBloom
 CCBV
 CCCache
+CCDeque
 CCFQueue
 CCFlatHashtbl
+CCGraph
 CCHashSet
 CCHashTrie
+CCImmutArray
 CCIntMap
 CCMixmap
 CCMixset
@@ -113,7 +116,10 @@ CCSexpM
 
 Iterators:
 
-{!modules: CCKList CCKTree}
+{!modules:
+CCKList
+CCKTree
+CCLazy_list}
 
 {4 String}
 

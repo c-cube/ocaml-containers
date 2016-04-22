@@ -637,6 +637,22 @@ let (--) i j =
   (0 -- 0) |> to_list = [0]
 *)
 
+(*$Q
+  Q.(pair small_int small_int) (fun (a,b) -> \
+    (a -- b) |> to_list = CCList.(a -- b))
+*)
+
+let (--^) i j =
+  if i=j then create()
+  else if i>j
+    then init (i-j) (fun k -> i-k)
+    else init (j-i) (fun k -> i+k)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (a,b) -> \
+    (a --^ b) |> to_list = CCList.(a --^ b))
+*)
+
 let of_array a =
   if Array.length a = 0
   then create ()

@@ -58,6 +58,7 @@ val sample_without_replacement:
 (** [sample_without_replacement n g] makes a list of [n] elements which are all
     generated randomly using [g] with the added constraint that none of the generated
     random values are equal
+    @raise Invalid_argument if [n <= 0]
     @since 0.15 *)
 
 val list_seq : 'a t list -> 'a list t
@@ -102,7 +103,9 @@ val split : int -> (int * int) option t
 
 val split_list : int -> len:int -> int list option t
 (** Split a value [n] into a list of values whose sum is [n]
-    and whose length is [length].
+    and whose length is [length]. The list is never empty and does not
+    contain [0].
+    @raise Invalid_argument if [len <= 1]
     @return [None] if the value is too small *)
 
 val retry : ?max:int -> 'a option t -> 'a option t

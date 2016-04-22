@@ -66,6 +66,12 @@ val iter : (int -> 'a -> unit) -> 'a t -> unit
 
 val fold : (int -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 
+val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+(** @since 0.17 *)
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+(** @since 0.17 *)
+
 val choose : 'a t -> (int * 'a) option
 
 val choose_exn : 'a t -> int * 'a

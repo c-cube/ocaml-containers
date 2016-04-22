@@ -126,7 +126,7 @@ devel:
 watch:
 	while find src/ benchs/ -print0 | xargs -0 inotifywait -e delete_self -e modify ; do \
 		echo "============ at `date` ==========" ; \
-		make ; \
+		make all; \
 	done
 
 .PHONY: examples push_doc tags qtest-gen qtest-clean devel update_next_tag

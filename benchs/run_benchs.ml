@@ -42,14 +42,24 @@ module L = struct
     else if x mod 5 = 1 then [x;x+1]
     else [x;x+1;x+2;x+3]
 
+  let f_ral_ x =
+    if x mod 10 = 0 then CCRAL.empty
+    else if x mod 5 = 1 then CCRAL.of_list [x;x+1]
+    else CCRAL.of_list [x;x+1;x+2;x+3]
+
   let bench_flat_map ?(time=2) n =
     let l = CCList.(1 -- n) in
-    let flatten_map_ l = List.flatten (CCList.map f_ l)
-    and flatten_ccmap_ l = List.flatten (List.map f_ l) in
+    let ral = CCRAL.of_list l in
+    let flatten_map_ l () = ignore @@ List.flatten (CCList.map f_ l)
+    and flatmap l () = ignore @@ CCList.flat_map f_ l
+    and flatten_ccmap_ l () = ignore @@ List.flatten (List.map f_ l)
+    and flatmap_ral_ l () = ignore @@ CCRAL.flat_map f_ral_ l
+    in
     B.throughputN time ~repeat
-      [ "flat_map", CCList.flat_map f_, l
-      ; "flatten o CCList.map", flatten_ccmap_, l
-      ; "flatten o map", flatten_map_, l
+      [ "flat_map", flatmap l, ()
+      ; "flatten o CCList.map", flatten_ccmap_ l, ()
+      ; "flatten o map", flatten_map_ l, ()
+      ; "ral_flatmap", flatmap_ral_ ral, ()
       ]
 
   (* APPEND *)
@@ -87,6 +97,21 @@ module L = struct
       ; "CCList.(fold_right append)", cc_fold_right_append_, l
       ]
 
+  (* RANDOM ACCESS *)
+
+  let bench_nth ?(time=2) n =
+    let l = CCList.(1 -- n) in
+    let ral = CCRAL.of_list l in
+    let bench_list l () =
+      for i = 0 to n-1 do ignore (List.nth l i) done
+    and bench_ral l () =
+      for i = 0 to n-1 do ignore (CCRAL.get_exn l i) done
+    in
+    B.throughputN time ~repeat
+      [ "List.nth", bench_list l, ()
+      ; "RAL.get", bench_ral ral, ()
+      ]
+
   (* MAIN *)
 
   let () = B.Tree.register (
@@ -112,6 +137,11 @@ module L = struct
           [ app_int (bench_append ~time:2) 100
           ; app_int (bench_append ~time:2) 10_000
           ; app_int (bench_append ~time:4) 100_000]
+      ; "nth" @>>
+        B.Tree.concat
+          [ app_int (bench_nth ~time:2) 100
+          ; app_int (bench_nth ~time:2) 10_000
+          ; app_int (bench_nth ~time:4) 100_000]
       ]
     )
 end
@@ -1081,7 +1111,6 @@ module Thread = struct
 end
 
 module Graph = struct
-
   (* divisors graph *)
   let div_children_ i =
     (* divisors of [i] that are [>= j] *)
@@ -1153,6 +1182,140 @@ module Graph = struct
         app_ints bench_dfs [100; 1000; 10_000; 50_000; 100_000; 500_000]
       ]
     )
+end
+
+module Str = struct
+  (* random string, but always returns the same for a given size *)
+  let rand_str_ ?(among="abcdefgh") n =
+    let module Q = QCheck in
+    let st = Random.State.make [| n + 17 |] in
+    let gen_c = QCheck.Gen.oneofl (CCString.to_list among) in
+    QCheck.Gen.string_size ~gen:gen_c (QCheck.Gen.return n) st
+
+  let find ?(start=0) ~sub s =
+    let n = String.length sub in
+    let i = ref start in
+    try
+      while !i + n <= String.length s do
+        if CCString.is_sub ~sub 0 s !i ~len:n then raise Exit;
+        incr i
+      done;
+      -1
+    with Exit ->
+      !i
+
+  let rfind ~sub s =
+    let n = String.length sub in
+    let i = ref (String.length s - n) in
+    try
+      while !i >= 0 do
+        if CCString.is_sub ~sub 0 s !i ~len:n then raise Exit;
+        decr i
+      done;
+      ~-1
+    with Exit ->
+      !i
+
+  let find_all ?(start=0) ~sub s =
+    let i = ref start in
+    fun () ->
+      let res = find ~sub s ~start:!i in
+      if res = ~-1 then None
+      else (
+        i := res + 1;
+        Some res
+      )
+
+  let find_all_l ?start ~sub s = find_all ?start ~sub s |> Gen.to_list
+
+  let pp_pb needle haystack =
+    Format.printf "search needle `%s` in `%s`...@."
+      needle (String.sub haystack 0 (min 300 (String.length haystack)))
+
+  (* benchmark String.{,r}find *)
+  let bench_find_ ~dir ~size n =
+    let needle = rand_str_ size in
+    let haystack = rand_str_ n in
+    pp_pb needle haystack;
+    let mk_naive = match dir with
+      | `Direct -> fun () -> find ~sub:needle haystack
+      | `Reverse -> fun () -> rfind ~sub:needle haystack
+    and mk_current = match dir with
+      | `Direct -> fun () -> CCString.find ~sub:needle haystack
+      | `Reverse -> fun () -> CCString.rfind ~sub:needle haystack
+    and mk_current_compiled = match dir with
+      | `Direct -> let f = CCString.find ~start:0 ~sub:needle in fun () -> f haystack
+      | `Reverse -> let f = CCString.rfind ~sub:needle in fun () -> f haystack
+    in
+    assert (mk_naive () = mk_current ());
+    B.throughputN 3 ~repeat
+      [ "naive", mk_naive, ()
+      ; "current", mk_current, ()
+      ; "current_compiled", mk_current_compiled, ()
+      ]
+
+  (* benchmark String.find_all *)
+  let bench_find_all ~size n =
+    let needle = rand_str_ size in
+    let haystack = rand_str_ n in
+    pp_pb needle haystack;
+    let mk_naive () = find_all_l ~sub:needle haystack
+    and mk_current () = CCString.find_all_l ~sub:needle haystack
+    and mk_current_compiled =
+      let f = CCString.find_all_l ~start:0 ~sub:needle in fun () -> f haystack in
+    assert (mk_naive () = mk_current ());
+    B.throughputN 3 ~repeat
+      [ "naive", mk_naive, ()
+      ; "current", mk_current, ()
+      ; "current_compiled", mk_current_compiled, ()
+      ]
+
+  (* benchmark String.find_all on constant strings *)
+  let bench_find_all_special ~size n =
+    let needle = CCString.repeat "a" (size-1) ^ "b" in
+    let haystack = CCString.repeat "a" n in
+    pp_pb needle haystack;
+    let mk_naive () = find_all_l ~sub:needle haystack
+    and mk_current () = CCString.find_all_l ~sub:needle haystack in
+    assert (mk_naive () = mk_current ());
+    B.throughputN 3 ~repeat
+      [ "naive", mk_naive, ()
+      ; "current", mk_current, ()
+      ]
+
+  let bench_find  = bench_find_ ~dir:`Direct
+  let bench_rfind  = bench_find_ ~dir:`Reverse
+
+  let () = B.Tree.register (
+    "string" @>>>
+      [ "find" @>>>
+          [ "3" @>> app_ints (bench_find ~size:3) [100; 100_000; 500_000]
+          ; "5" @>> app_ints (bench_find ~size:5) [100; 100_000; 500_000]
+          ; "15" @>> app_ints (bench_find ~size:15) [100; 100_000; 500_000]
+          ; "50" @>> app_ints (bench_find ~size:50) [100; 100_000; 500_000]
+          ; "500" @>> app_ints (bench_find ~size:500) [100_000; 500_000]
+          ];
+        "find_all" @>>>
+          [ "1" @>> app_ints (bench_find_all ~size:1) [100; 100_000; 500_000]
+          ; "3" @>> app_ints (bench_find_all ~size:3) [100; 100_000; 500_000]
+          ; "5" @>> app_ints (bench_find_all ~size:5) [100; 100_000; 500_000]
+          ; "15" @>> app_ints (bench_find_all ~size:15) [100; 100_000; 500_000]
+          ; "50" @>> app_ints (bench_find_all ~size:50) [100; 100_000; 500_000]
+          ; "500" @>> app_ints (bench_find_all ~size:500) [100_000; 500_000]
+          ; "special" @>>>
+            [ "6" @>> app_ints (bench_find_all_special ~size:6) [100_000; 500_000]
+            ; "30" @>> app_ints (bench_find_all_special ~size:30) [100_000; 500_000]
+            ; "100" @>> app_ints (bench_find_all_special ~size:100) [100_000; 500_000]
+            ]
+          ];
+        "rfind" @>>>
+          [ "3" @>> app_ints (bench_rfind ~size:3) [100; 100_000; 500_000]
+          ; "15" @>> app_ints (bench_rfind ~size:15) [100; 100_000; 500_000]
+          ; "50" @>> app_ints (bench_rfind ~size:50) [100; 100_000; 500_000]
+          ; "500" @>> app_ints (bench_rfind ~size:500) [100_000; 500_000]
+          ];
+      ])
+
 end
 
 module Alloc = struct

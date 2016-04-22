@@ -1,27 +1,5 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Continuation List} *)
 
@@ -152,6 +130,12 @@ val flatten : 'a t t -> 'a t
 val range : int -> int -> int t
 
 val (--) : int -> int -> int t
+(** [a -- b] is the range of integers containing
+    [a] and [b] (therefore, never empty) *)
+
+val (--^) : int -> int -> int t
+(** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
+    @since 0.17 *)
 
 (** {2 Operations on two Collections} *)
 
@@ -225,6 +209,20 @@ val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
 val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
 (** Infix version of {!fair_app}
     @since 0.13 *)
+
+(** {2 Infix operators}
+    
+    @since 0.17 *)
+
+module Infix : sig
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
+  val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (--) : int -> int -> int t
+  val (--^) : int -> int -> int t
+end
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig

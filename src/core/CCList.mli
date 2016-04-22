@@ -53,6 +53,11 @@ val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list ->
     @raise Invalid_argument if the lists do not have the same length
     @since 0.16 *)
 
+val fold_filter_map : ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
+(** [fold_filter_map f acc l] is a [fold_left]-like function, but also
+    generates a list of output in a way similar to {!filter_map}
+    @since 0.17 *)
+
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d..
@@ -179,6 +184,24 @@ val sorted_merge_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
     removes duplicates
     @since 0.10 *)
 
+val is_sorted : ?cmp:('a -> 'a -> int) -> 'a list -> bool
+(** [is_sorted l] returns [true] iff [l] is sorted (according to given order)
+    @param cmp the comparison function (default [Pervasives.compare])
+    @since 0.17 *)
+
+val sorted_insert : ?cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
+(** [sorted_insert x l] inserts [x] into [l] such that, if [l] was sorted,
+    then [sorted_insert x l] is sorted too.
+    @param uniq if true and [x] is already in sorted position in [l], then
+      [x] is not duplicated. Default [false] ([x] will be inserted in any case).
+    @since 0.17 *)
+
+(*$Q
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      is_sorted (sorted_insert x l))
+*)
+
 val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
 (** [uniq_succ l] removes duplicate elements that occur one next to the other.
     Examples:
@@ -263,6 +286,10 @@ val range' : int -> int -> int t
 val (--) : int -> int -> int t
 (** Infix alias for [range] *)
 
+val (--^) : int -> int -> int t
+(** Infix alias for [range']
+    @since 0.17 *)
+
 val replicate : int -> 'a -> 'a t
 (** Replicate the given element [n] times *)
 
@@ -294,6 +321,10 @@ module Assoc : sig
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v']
       @since 0.16 *)
+
+  val remove : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> ('a,'b) t
+  (** [remove l k] removes the first occurrence of [k] from [l].
+      @since 0.17 *)
 end
 
 (** {2 Zipper} *)
@@ -478,6 +509,9 @@ module Infix : sig
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   val (--) : int -> int -> int t
+
+  val (--^) : int -> int -> int t
+  (** @since 0.17 *)
 end
 
 (** {2 IO} *)

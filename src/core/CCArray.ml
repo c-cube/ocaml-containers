@@ -443,6 +443,28 @@ let (--) i j =
   else
     Array.init (i-j+1) (fun k -> i-k)
 
+(*$T
+  (1 -- 4) |> Array.to_list = [1;2;3;4]
+  (4 -- 1) |> Array.to_list = [4;3;2;1]
+  (0 -- 0) |> Array.to_list = [0]
+*)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (a,b) -> \
+    (a -- b) |> Array.to_list = CCList.(a -- b))
+*)
+
+let (--^) i j =
+  if i=j then [| |]
+  else if i>j
+    then Array.init (i-j) (fun k -> i-k)
+    else Array.init (j-i) (fun k -> i+k)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (a,b) -> \
+    (a --^ b) |> Array.to_list = CCList.(a --^ b))
+*)
+
 (** all the elements of a, but the i-th, into a list *)
 let except_idx a i =
   foldi

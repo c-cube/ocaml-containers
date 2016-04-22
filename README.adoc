@@ -4,7 +4,8 @@
 
 image::media/logo.png[logo]
 
-What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!)
+What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!
+or the http://cedeela.fr/~simon/software/containers[documentation])
 
 - A usable, reasonably well-designed library that extends OCaml's standard
   library (in 'src/core/', packaged under `containers` in ocamlfind. Modules
@@ -165,6 +166,7 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCWBTree`, a weight-balanced tree, implementing a map interface
 - `CCRAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
   access to elements by their index.
+- `CCImmutArray`, immutable interface to arrays
 
 === Containers.io
 
@@ -190,15 +192,16 @@ Iterators:
 
 === String
 
-See http://cedeela.fr/~simon/software/containers/string[doc].
+See http://cedeela.fr/~simon/software/containers/Containers_string[doc].
 
 In the module `Containers_string`:
 - `Levenshtein`: edition distance between two strings
 - `KMP`: Knuth-Morris-Pratt substring algorithm
+- `Parse`: simple parser combinators
 
 === Advanced
 
-See http://cedeela.fr/~simon/software/containers/advanced[doc].
+See http://cedeela.fr/~simon/software/containers/Containers_advanced[doc].
 
 In the module `Containers_advanced`:
 - `CCLinq`, high-level query language over collections

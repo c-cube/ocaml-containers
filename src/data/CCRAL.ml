@@ -426,6 +426,18 @@ let range i j =
     range i j |> to_list = CCList.(i -- j) )
 *)
 
+let range_r_open_ i j =
+  if i=j then empty
+  else if i<j then range i (j-1)
+  else range i (j+1)
+
+(*$= & ~printer:CCFormat.(to_string (hbox (list int)))
+  [1;2;3;4] (1 --^ 5 |> to_list)
+  [5;4;3;2] (5 --^ 1 |> to_list)
+  [1]       (1 --^ 2 |> to_list)
+  []        (0 --^ 0 |> to_list)
+*)
+
 (** {2 Conversions} *)
 
 type 'a sequence = ('a -> unit) -> unit
@@ -554,6 +566,7 @@ module Infix = struct
   let (>|=) l f = map ~f l
   let (<*>) = app
   let (--) = range
+  let (--^) = range_r_open_
 end
 
 include Infix

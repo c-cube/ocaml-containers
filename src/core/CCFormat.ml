@@ -76,14 +76,19 @@ let opt pp fmt x = match x with
   | None -> Format.pp_print_string fmt "none"
   | Some x -> Format.fprintf fmt "some %a" pp x
 
-let pair ppa ppb fmt (a, b) =
-  Format.fprintf fmt "(%a,@ %a)" ppa a ppb b
+let pair ?(sep=", ") ppa ppb fmt (a, b) =
+  Format.fprintf fmt "(%a%s@,%a)" ppa a sep ppb b
 
-let triple ppa ppb ppc fmt (a, b, c) =
-  Format.fprintf fmt "(%a,@ %a,@ %a)" ppa a ppb b ppc c
+let triple ?(sep=", ") ppa ppb ppc fmt (a, b, c) =
+  Format.fprintf fmt "(%a%s@,%a%s@,%a)" ppa a sep ppb b sep ppc c
 
-let quad ppa ppb ppc ppd fmt (a, b, c, d) =
-  Format.fprintf fmt "(%a,@ %a,@ %a,@ %a)" ppa a ppb b ppc c ppd d
+let quad ?(sep=", ") ppa ppb ppc ppd fmt (a, b, c, d) =
+  Format.fprintf fmt "(%a%s@,%a%s@,%a%s@,%a)" ppa a sep ppb b sep ppc c sep ppd d
+
+let within a b p out x =
+  string out a;
+  p out x;
+  string out b
 
 let map f pp fmt x =
   pp fmt (f x);
@@ -125,22 +130,12 @@ let fprintf = Format.fprintf
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter
 
-let _with_file_out filename f =
+let to_file filename format =
   let oc = open_out filename in
   let fmt = Format.formatter_of_out_channel oc in
-  begin try
-    let x = f fmt in
-    Format.pp_print_flush fmt ();
-    close_out oc;
-    x
-  with e ->
-    Format.pp_print_flush fmt ();
-    close_out_noerr oc;
-    raise e
-  end
-
-let to_file filename format =
-  _with_file_out filename (fun fmt -> Format.fprintf fmt format)
+  Format.kfprintf
+    (fun fmt -> Format.pp_print_flush fmt (); close_out_noerr oc)
+    fmt format
 
 type color =
   [ `Black

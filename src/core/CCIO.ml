@@ -49,15 +49,18 @@ let gen_flat_map f next_elem =
   in
   next
 
+let finally_ f x ~h =
+  try
+    let res = f x in
+    h x;
+    res
+  with e ->
+    h x;
+    raise e
+
 let with_in ?(mode=0o644) ?(flags=[Open_text]) filename f =
   let ic = open_in_gen (Open_rdonly::flags) mode filename in
-  try
-    let x = f ic in
-    close_in ic;
-    x
-  with e ->
-    close_in ic;
-    raise e
+  finally_ f ic ~h:close_in
 
 let read_chunks ?(size=1024) ic =
   let buf = Bytes.create size in
@@ -139,13 +142,7 @@ let read_all ?(size=1024) ic = read_all_ ~op:Ret_string ~size ic
 
 let with_out ?(mode=0o644) ?(flags=[Open_creat; Open_trunc; Open_text]) filename f =
   let oc = open_out_gen (Open_wronly::flags) mode filename in
-  try
-    let x = f oc in
-    close_out oc;
-    x
-  with e ->
-    close_out oc;
-    raise e
+  finally_ f oc ~h:close_out
 
 let with_out_a ?mode ?(flags=[]) filename f =
   with_out ?mode ~flags:(Open_wronly::Open_creat::Open_append::flags) filename f
@@ -323,8 +320,8 @@ module File = struct
       gen_filter_map
         (function
           | `File, f -> Some f
-          | `Dir, _ -> None
-        ) (walk d)
+          | `Dir, _ -> None)
+        (walk d)
     else read_dir_base d
 
   let show_walk_item (i,f) =
@@ -332,4 +329,8 @@ module File = struct
       | `File -> "file:"
       | `Dir -> "dir:"
     ) ^ f
+
+  let with_temp ?temp_dir ~prefix ~suffix f =
+    let name = Filename.temp_file ?temp_dir prefix suffix in
+    finally_ f name ~h:remove_noerr
 end

@@ -174,6 +174,21 @@ let fold_map2 f acc l1 l2 =
    with Invalid_argument _ -> true)
 *)
 
+let fold_filter_map f acc l =
+  let rec aux f acc map_acc l = match l with
+    | [] -> acc, List.rev map_acc
+    | x :: l' ->
+        let acc, y = f acc x in
+        aux f acc (cons_maybe y map_acc) l'
+  in
+  aux f acc [] l
+
+(*$= & ~printer:Q.Print.(pair int (list int))
+  (List.fold_left (+) 0 (1--10), [2;4;6;8;10]) \
+  (fold_filter_map (fun acc x -> acc+x, if x mod 2 = 0 then Some x else None) \
+    0 (1--10))
+*)
+
 let fold_flat_map f acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
@@ -349,6 +364,47 @@ let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
   sort_uniq [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
   sort_uniq [] = []
   sort_uniq [10;10;10;10;1;10] = [1;10]
+*)
+
+let is_sorted ?(cmp=Pervasives.compare) l =
+  let rec aux cmp = function
+    | [] | [_] -> true
+    | x :: ((y :: _) as tail) -> cmp x y <= 0 && aux cmp tail
+  in
+  aux cmp l
+
+(*$Q
+  Q.(list small_int) (fun l -> \
+    is_sorted (List.sort Pervasives.compare l))
+*)
+
+let sorted_insert ?(cmp=Pervasives.compare) ?(uniq=false) x l =
+  let rec aux cmp uniq x left l = match l with
+    | [] -> List.rev_append left [x]
+    | y :: tail ->
+      match cmp x y with
+        | 0 ->
+          let l' = if uniq then l else x :: l in
+          List.rev_append left l'
+        | n when n<0 -> List.rev_append left (x :: l)
+        | _ -> aux cmp uniq x (y::left) tail
+  in
+  aux cmp uniq x [] l
+
+(*$Q
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      is_sorted (sorted_insert ~uniq:true x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      is_sorted (sorted_insert ~uniq:false x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      let l' = sorted_insert ~uniq:false x l in \
+      List.length l' = List.length l + 1)
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      List.mem x (sorted_insert x l))
 *)
 
 let uniq_succ ?(eq=(=)) l =
@@ -763,9 +819,16 @@ let range' i j =
 
 let (--) = range
 
+let (--^) = range'
+
 (*$T
   append (range 0 100) (range 101 1000) = range 0 1000
   append (range 1000 501) (range 500 0) = range 1000 0
+*)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (a,b) -> \
+    let l = (a--^b) in not (List.mem b l))
 *)
 
 let replicate i x =
@@ -848,6 +911,21 @@ module Assoc = struct
     [1,"1"; 2,"2"; 3,"3"] \
       (Assoc.update [1,"1"; 2,"2"] 3 \
         ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
+  *)
+
+  let remove ?(eq=(=)) l x =
+    search_set eq [] l x
+      ~f:(fun _ opt_y rest -> match opt_y with
+          | None -> l  (* keep as is *)
+          | Some _ -> rest)
+
+  (*$=
+    [1,"1"] \
+      (Assoc.remove [1,"1"; 2,"2"] 2 |> lsort)
+    [1,"1"; 3,"3"] \
+      (Assoc.remove [1,"1"; 2,"2"; 3,"3"] 2  |> lsort)
+    [1,"1"; 2,"2"] \
+      (Assoc.remove [1,"1"; 2,"2"] 3 |> lsort)
   *)
 end
 
@@ -1088,6 +1166,7 @@ module Infix = struct
   let (<$>) = (<$>)
   let (>>=) = (>>=)
   let (--) = (--)
+  let (--^) = (--^)
 end
 
 (** {2 IO} *)

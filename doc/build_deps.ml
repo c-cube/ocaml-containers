@@ -1,5 +1,8 @@
 #!/usr/bin/env ocaml
 
+(* note: this requires to generate documentation first, so that
+   .odoc files are generated *)
+
 #use "topfind";;
 #require "containers";;
 #require "containers.io";;

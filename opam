@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "containers"
-version: "0.16.1"
+version: "0.17"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes@inria.fr"
 build: [
@@ -31,7 +31,12 @@ depends: [
     "cppo" {build}
     "ocamlbuild" {build}
 ]
-depopts: [ "sequence" "base-bigarray" "base-unix" "base-threads" ]
+depopts: [ "sequence" "base-bigarray" "base-unix" "base-threads" "qtest" { test } ]
+conflicts: [
+  "sequence" { < "0.5" }
+  "qtest" { < "2.2" }
+  "qcheck"
+]
 tags: [ "stdlib" "containers" "iterators" "list" "heap" "queue" ]
 homepage: "https://github.com/c-cube/ocaml-containers/"
 doc: "http://cedeela.fr/~simon/software/containers/"
@@ -39,11 +44,12 @@ available: [ocaml-version >= "4.00.0"]
 dev-repo: "https://github.com/c-cube/ocaml-containers.git"
 bug-reports: "https://github.com/c-cube/ocaml-containers/issues/"
 post-messages: [
-"A large release, with several deprecations 
-(in particular, bigstring, now in its own library, and
-submodules of CCHashtbl), and lots of new features, including coloring in
-CCFormat!
+"Another large release, with many new features:
 
-A new tutorial can be found at https://github.com/c-cube/ocaml-containers/blob/master/TUTORIAL.adoc
-change log: https://github.com/c-cube/ocaml-containers/blob/0.16/CHANGELOG.adoc"
+- performance improvements, in particular for string search (using KMP)
+- `CCHet`, a heterogeneous map with unique keys
+- `CCImmutArray`, immutable arrays
+- `CCString.pad`, for webscale string padding!
+
+as usual, see https://github.com/c-cube/ocaml-containers/blob/0.17/CHANGELOG.adoc"
 ]

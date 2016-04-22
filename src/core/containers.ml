@@ -80,3 +80,12 @@ module Vector = CCVector
 
 module Int64 = CCInt64
 (** @since 0.13 *)
+
+module Char = struct
+  include Char
+  include (CCChar : module type of CCChar with type t := t)
+end
+(** @since 0.17 *)
+
+module Result = CCResult
+(** @since 0.17 *)
