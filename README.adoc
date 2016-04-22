@@ -268,3 +268,6 @@ A few guidelines:
 
 Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
 
+== Documentation by version
+
+- http://c-cube.github.io/ocaml-containers/0.17/[0.17]
