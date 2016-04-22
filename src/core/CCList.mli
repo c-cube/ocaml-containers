@@ -184,6 +184,24 @@ val sorted_merge_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
     removes duplicates
     @since 0.10 *)
 
+val is_sorted : ?cmp:('a -> 'a -> int) -> 'a list -> bool
+(** [is_sorted l] returns [true] iff [l] is sorted (according to given order)
+    @param cmp the comparison function (default [Pervasives.compare])
+    @since NEXT_RELEASE *)
+
+val sorted_insert : ?cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
+(** [sorted_insert x l] inserts [x] into [l] such that, if [l] was sorted,
+    then [sorted_insert x l] is sorted too.
+    @param uniq if true and [x] is already in sorted position in [l], then
+      [x] is not duplicated. Default [false] ([x] will be inserted in any case).
+    @since NEXT_RELEASE *)
+
+(*$Q
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      is_sorted (sorted_insert x l))
+*)
+
 val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
 (** [uniq_succ l] removes duplicate elements that occur one next to the other.
     Examples:

@@ -366,6 +366,47 @@ let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
   sort_uniq [10;10;10;10;1;10] = [1;10]
 *)
 
+let is_sorted ?(cmp=Pervasives.compare) l =
+  let rec aux cmp = function
+    | [] | [_] -> true
+    | x :: ((y :: _) as tail) -> cmp x y <= 0 && aux cmp tail
+  in
+  aux cmp l
+
+(*$Q
+  Q.(list small_int) (fun l -> \
+    is_sorted (List.sort Pervasives.compare l))
+*)
+
+let sorted_insert ?(cmp=Pervasives.compare) ?(uniq=false) x l =
+  let rec aux cmp uniq x left l = match l with
+    | [] -> List.rev_append left [x]
+    | y :: tail ->
+      match cmp x y with
+        | 0 ->
+          let l' = if uniq then l else x :: l in
+          List.rev_append left l'
+        | n when n<0 -> List.rev_append left (x :: l)
+        | _ -> aux cmp uniq x (y::left) tail
+  in
+  aux cmp uniq x [] l
+
+(*$Q
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      is_sorted (sorted_insert ~uniq:true x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      is_sorted (sorted_insert ~uniq:false x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      let l' = sorted_insert ~uniq:false x l in \
+      List.length l' = List.length l + 1)
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
+      List.mem x (sorted_insert x l))
+*)
+
 let uniq_succ ?(eq=(=)) l =
   let rec f acc l = match l with
     | [] -> List.rev acc
