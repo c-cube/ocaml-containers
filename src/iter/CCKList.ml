@@ -1,27 +1,5 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Continuation List} *)
 
@@ -72,15 +50,15 @@ let rec equal eq l1 l2 = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> false
   | `Cons (x1,l1'), `Cons (x2,l2') ->
-      eq x1 x2 && equal eq l1' l2'
+    eq x1 x2 && equal eq l1' l2'
 
 let rec compare cmp l1 l2 = match l1(), l2() with
   | `Nil, `Nil -> 0
   | `Nil, _ -> -1
   | _, `Nil -> 1
   | `Cons (x1,l1'), `Cons (x2,l2') ->
-      let c = cmp x1 x2 in
-      if c = 0 then compare cmp l1' l2' else c
+    let c = cmp x1 x2 in
+    if c = 0 then compare cmp l1' l2' else c
 
 let rec fold f acc res = match res () with
   | `Nil -> acc
@@ -94,8 +72,8 @@ let iteri f l =
   let rec aux f l i = match l() with
     | `Nil -> ()
     | `Cons (x, l') ->
-        f i x;
-        aux f l' (i+1)
+      f i x;
+      aux f l' (i+1)
   in
   aux f l 0
 
@@ -110,7 +88,7 @@ let rec take n (l:'a t) () =
 let rec take_while p l () = match l () with
   | `Nil -> `Nil
   | `Cons (x,l') ->
-      if p x then `Cons (x, take_while p l') else `Nil
+    if p x then `Cons (x, take_while p l') else `Nil
 
 (*$T
   of_list [1;2;3;4] |> take_while (fun x->x < 4) |> to_list = [1;2;3]
@@ -144,7 +122,7 @@ let mapi f l =
   let rec aux f l i () = match l() with
     | `Nil -> `Nil
     | `Cons (x, tl) ->
-        `Cons (f i x, aux f tl (i+1))
+      `Cons (f i x, aux f tl (i+1))
   in
   aux f l 0
 
@@ -155,10 +133,10 @@ let mapi f l =
 let rec fmap f (l:'a t) () = match l() with
   | `Nil -> `Nil
   | `Cons (x, l') ->
-      begin match f x with
+    begin match f x with
       | None -> fmap f l' ()
       | Some y -> `Cons (y, fmap f l')
-      end
+    end
 
 (*$T
   fmap (fun x -> if x mod 2=0 then Some (x*3) else None) (1--10) |> to_list \
@@ -168,9 +146,9 @@ let rec fmap f (l:'a t) () = match l() with
 let rec filter p l () = match l () with
   | `Nil -> `Nil
   | `Cons (x, l') ->
-      if p x
-      then `Cons (x, filter p l')
-      else filter p l' ()
+    if p x
+    then `Cons (x, filter p l')
+    else filter p l' ()
 
 let rec append l1 l2 () = match l1 () with
   | `Nil -> l2 ()
@@ -195,25 +173,25 @@ let rec unfold f acc () = match f acc with
 let rec flat_map f l () = match l () with
   | `Nil -> `Nil
   | `Cons (x, l') ->
-      _flat_map_app f (f x) l' ()
+    _flat_map_app f (f x) l' ()
 and _flat_map_app f l l' () = match l () with
   | `Nil -> flat_map f l' ()
   | `Cons (x, tl) ->
-      `Cons (x, _flat_map_app f tl l')
+    `Cons (x, _flat_map_app f tl l')
 
 let product_with f l1 l2 =
   let rec _next_left h1 tl1 h2 tl2 () =
     match tl1() with
-    | `Nil -> _next_right ~die:true h1 tl1 h2 tl2 ()
-    | `Cons (x, tl1') ->
+      | `Nil -> _next_right ~die:true h1 tl1 h2 tl2 ()
+      | `Cons (x, tl1') ->
         _map_list_left x h2
           (_next_right ~die:false (x::h1) tl1' h2 tl2)
           ()
   and _next_right ~die h1 tl1 h2 tl2 () =
     match tl2() with
-    | `Nil when die -> `Nil
-    | `Nil -> _next_left h1 tl1 h2 tl2 ()
-    | `Cons (y, tl2') ->
+      | `Nil when die -> `Nil
+      | `Nil -> _next_left h1 tl1 h2 tl2 ()
+      | `Cons (y, tl2') ->
         _map_list_right h1 y
           (_next_left h1 tl1 (y::h2) tl2')
           ()
@@ -232,7 +210,7 @@ let product l1 l2 =
 let rec group eq l () = match l() with
   | `Nil -> `Nil
   | `Cons (x, l') ->
-      `Cons (cons x (take_while (eq x) l'), group eq (drop_while (eq x) l'))
+    `Cons (cons x (take_while (eq x) l'), group eq (drop_while (eq x) l'))
 
 (*$T
   of_list [1;1;1;2;2;3;3;1] |> group (=) |> map to_list |> to_list = \
@@ -242,21 +220,21 @@ let rec group eq l () = match l() with
 let rec _uniq eq prev l () = match prev, l() with
   | _, `Nil -> `Nil
   | None, `Cons (x, l') ->
-      `Cons (x, _uniq eq (Some x) l')
+    `Cons (x, _uniq eq (Some x) l')
   | Some y, `Cons (x, l') ->
-      if eq x y
-        then _uniq eq prev l' ()
-        else `Cons (x, _uniq eq (Some x) l')
+    if eq x y
+    then _uniq eq prev l' ()
+    else `Cons (x, _uniq eq (Some x) l')
 
 let uniq eq l = _uniq eq None l
 
 let rec filter_map f l () = match l() with
   | `Nil -> `Nil
   | `Cons (x, l') ->
-      begin match f x with
+    begin match f x with
       | None -> filter_map f l' ()
       | Some y -> `Cons (y, filter_map f l')
-      end
+    end
 
 let flatten l = flat_map (fun x->x) l
 
@@ -279,39 +257,39 @@ let rec fold2 f acc l1 l2 = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> acc
   | `Cons(x1,l1'), `Cons(x2,l2') ->
-      fold2 f (f acc x1 x2) l1' l2'
+    fold2 f (f acc x1 x2) l1' l2'
 
 let rec map2 f l1 l2 () = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> `Nil
   | `Cons(x1,l1'), `Cons(x2,l2') ->
-      `Cons (f x1 x2, map2 f l1' l2')
+    `Cons (f x1 x2, map2 f l1' l2')
 
 let rec iter2 f l1 l2 = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> ()
   | `Cons(x1,l1'), `Cons(x2,l2') ->
-      f x1 x2; iter2 f l1' l2'
+    f x1 x2; iter2 f l1' l2'
 
 let rec for_all2 f l1 l2 = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> true
   | `Cons(x1,l1'), `Cons(x2,l2') ->
-      f x1 x2 && for_all2 f l1' l2'
+    f x1 x2 && for_all2 f l1' l2'
 
 let rec exists2 f l1 l2 = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> false
   | `Cons(x1,l1'), `Cons(x2,l2') ->
-      f x1 x2 || exists2 f l1' l2'
+    f x1 x2 || exists2 f l1' l2'
 
 let rec merge cmp l1 l2 () = match l1(), l2() with
   | `Nil, tl2 -> tl2
   | tl1, `Nil -> tl1
   | `Cons(x1,l1'), `Cons(x2,l2') ->
-      if cmp x1 x2 < 0
-      then `Cons (x1, merge cmp l1' l2)
-      else `Cons (x2, merge cmp l1 l2')
+    if cmp x1 x2 < 0
+    then `Cons (x1, merge cmp l1' l2)
+    else `Cons (x2, merge cmp l1 l2')
 
 let rec zip a b () = match a(), b() with
   | `Nil, _
@@ -373,14 +351,14 @@ let of_array a =
 
 let to_array l =
   match l() with
-  | `Nil -> [| |]
-  | `Cons (x, _) ->
-    let n = length l in
-    let a = Array.make n x in (* need first elem to create [a] *)
-    iteri
-      (fun i x -> a.(i) <- x)
-      l;
-    a
+    | `Nil -> [| |]
+    | `Cons (x, _) ->
+      let n = length l in
+      let a = Array.make n x in (* need first elem to create [a] *)
+      iteri
+        (fun i x -> a.(i) <- x)
+        l;
+      a
 
 (*$Q
    Q.(array int) (fun a -> of_array a |> to_array = a)
@@ -399,8 +377,8 @@ let to_gen l =
   let l = ref l in
   fun () ->
     match !l () with
-    | `Nil -> None
-    | `Cons (x,l') ->
+      | `Nil -> None
+      | `Cons (x,l') ->
         l := l';
         Some x
 
@@ -412,16 +390,16 @@ let of_gen g =
   let rec consume r () = match !r with
     | Of_gen_saved cons -> cons
     | Of_gen_thunk g ->
-        begin match g() with
+      begin match g() with
         | None ->
-            r := Of_gen_saved `Nil;
-            `Nil
+          r := Of_gen_saved `Nil;
+          `Nil
         | Some x ->
-            let tl = consume (ref (Of_gen_thunk g)) in
-            let l = `Cons (x, tl) in
-            r := Of_gen_saved l;
-            l
-        end
+          let tl = consume (ref (Of_gen_thunk g)) in
+          let l = `Cons (x, tl) in
+          r := Of_gen_saved l;
+          l
+      end
   in
   consume (ref (Of_gen_thunk g))
 
@@ -450,12 +428,12 @@ let rec memoize f =
   fun () -> match !r with
     | MemoSave l -> l
     | MemoThunk ->
-        let l = match f() with
-          | `Nil -> `Nil
-          | `Cons (x, tail) -> `Cons (x, memoize tail)
-        in
-        r := MemoSave l;
-        l
+      let l = match f() with
+        | `Nil -> `Nil
+        | `Cons (x, tail) -> `Cons (x, memoize tail)
+      in
+      r := MemoSave l;
+      l
 
 (*$R
   let printer = Q.Print.(list int) in
@@ -480,13 +458,13 @@ let rec interleave a b () = match a() with
 let rec fair_flat_map f a () = match a() with
   | `Nil -> `Nil
   | `Cons (x, tail) ->
-      let y = f x in
-      interleave y (fair_flat_map f tail) ()
+    let y = f x in
+    interleave y (fair_flat_map f tail) ()
 
 let rec fair_app f a () = match f() with
   | `Nil -> `Nil
   | `Cons (f1, fs) ->
-      interleave (map f1 a) (fair_app fs a) ()
+    interleave (map f1 a) (fair_app fs a) ()
 
 let (>>-) a f = fair_flat_map f a
 let (<.>) f a = fair_app f a
@@ -511,8 +489,8 @@ module Traverse(M : MONAD) = struct
     let rec aux acc l = match l () with
       | `Nil -> return (of_list (List.rev acc))
       | `Cons (x,l') ->
-          f x >>= fun x' ->
-          aux (x' :: acc) l'
+        f x >>= fun x' ->
+        aux (x' :: acc) l'
     in
     aux [] l
 
@@ -521,7 +499,7 @@ module Traverse(M : MONAD) = struct
   let rec fold_m f acc l = match l() with
     | `Nil -> return acc
     | `Cons (x,l') ->
-        f acc x >>= fun acc' -> fold_m f acc' l'
+      f acc x >>= fun acc' -> fold_m f acc' l'
 end
 
 (** {2 IO} *)
@@ -539,10 +517,10 @@ let print ?(sep=",") pp_item fmt l =
   let rec pp fmt l = match l() with
     | `Nil -> ()
     | `Cons (x,l') ->
-        Format.pp_print_string fmt sep;
-        Format.pp_print_cut fmt ();
-        pp_item fmt x;
-        pp fmt l'
+      Format.pp_print_string fmt sep;
+      Format.pp_print_cut fmt ();
+      pp_item fmt x;
+      pp fmt l'
   in
   match l() with
     | `Nil -> ()
