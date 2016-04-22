@@ -76,3 +76,28 @@ val equal_precision : epsilon:t -> t -> t -> bool
 (** Equality with allowed error up to a non negative epsilon value *)
 
 val classify : float -> fpclass
+
+(** {2 Infix Operators}
+
+    @since NEXT_RELEASE *)
+module Infix : sig
+  val (=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<>) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (>) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (>=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+end
+
+include module type of Infix
