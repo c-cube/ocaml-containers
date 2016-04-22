@@ -253,6 +253,18 @@ let range i j =
 
 let (--) = range
 
+let (--^) i j =
+  if i=j then empty
+  else if i<j then range i (j-1)
+  else range i (j+1)
+
+(*$T
+  1 --^ 5 |> to_list = [1;2;3;4]
+  5 --^ 1 |> to_list = [5;4;3;2]
+  1 --^ 2 |> to_list = [1]
+  0 --^ 0 |> to_list = []
+*)
+
 let rec fold2 f acc l1 l2 = match l1(), l2() with
   | `Nil, _
   | _, `Nil -> acc
@@ -474,6 +486,18 @@ let (<.>) f a = fair_app f a
   fair_app (of_list [(+)1; ( * ) 3]) (of_list [1; 10]) \
     |> to_list |> List.sort Pervasives.compare = [2; 3; 11; 30]
 *)
+
+(** {2 Infix} *)
+
+module Infix = struct
+  let (>>=) = (>>=)
+  let (>|=) = (>|=)
+  let (<*>) = (<*>)
+  let (>>-) = (>>-)
+  let (<.>) = (<.>)
+  let (--) = (--)
+  let (--^) = (--^)
+end
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig

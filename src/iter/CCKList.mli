@@ -130,6 +130,12 @@ val flatten : 'a t t -> 'a t
 val range : int -> int -> int t
 
 val (--) : int -> int -> int t
+(** [a -- b] is the range of integers containing
+    [a] and [b] (therefore, never empty) *)
+
+val (--^) : int -> int -> int t
+(** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
+    @since NEXT_RELEASE *)
 
 (** {2 Operations on two Collections} *)
 
@@ -203,6 +209,20 @@ val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
 val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
 (** Infix version of {!fair_app}
     @since 0.13 *)
+
+(** {2 Infix operators}
+    
+    @since NEXT_RELEASE *)
+
+module Infix : sig
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
+  val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
+  val (--) : int -> int -> int t
+  val (--^) : int -> int -> int t
+end
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig

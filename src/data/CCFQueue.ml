@@ -485,6 +485,18 @@ let (--) a b =
   0 -- 0 |> to_list = [0]
 *)
 
+let (--^) a b =
+  if a=b then empty
+  else if a<b then a -- (b-1)
+  else a -- (b+1)
+
+(*$T
+  1 --^ 5 |> to_list = [1;2;3;4]
+  5 --^ 1 |> to_list = [5;4;3;2]
+  1 --^ 2 |> to_list = [1]
+  0 --^ 0 |> to_list = []
+*)
+
 let print pp_x out d =
   let first = ref true in
   Format.fprintf out "@[<hov2>queue {";
