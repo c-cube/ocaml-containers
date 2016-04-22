@@ -178,7 +178,7 @@ module Infix : sig
 
   val (--^) : int -> int -> int t
   (** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
-      @since NEXT_RELEASE *)
+      @since 0.17 *)
 end
 
 include module type of Infix

@@ -85,7 +85,7 @@ module Char = struct
   include Char
   include (CCChar : module type of CCChar with type t := t)
 end
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 module Result = CCResult
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)

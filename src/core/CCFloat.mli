@@ -79,25 +79,25 @@ val classify : float -> fpclass
 
 (** {2 Infix Operators}
 
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 module Infix : sig
   val (=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (<>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (<) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (<=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (>=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 end
 
 include module type of Infix

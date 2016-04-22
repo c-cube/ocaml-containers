@@ -204,5 +204,5 @@ module File : sig
       After [f] returns, the file is deleted. Best to be used in
       combination with {!with_out}.
       See {!Filename.temp_file}
-      @since NEXT_RELEASE *)
+      @since 0.17 *)
 end

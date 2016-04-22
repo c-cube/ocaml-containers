@@ -3,7 +3,7 @@
 
 (** {1 Lazy List}
 
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 type +'a t = 'a node lazy_t
 and +'a node =

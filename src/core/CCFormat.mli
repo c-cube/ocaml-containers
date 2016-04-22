@@ -39,7 +39,7 @@ val seq : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a seque
 val opt : 'a printer -> 'a option printer
 
 (** In the tuple printers, the [sep] argument is only available
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val pair : ?sep:string -> 'a printer -> 'b printer -> ('a * 'b) printer
 val triple : ?sep:string -> 'a printer -> 'b printer -> 'c printer -> ('a * 'b * 'c) printer
@@ -49,7 +49,7 @@ val quad : ?sep:string -> 'a printer -> 'b printer ->
 val within : string -> string -> 'a printer -> 'a printer
 (** [within a b p] wraps [p] inside the strings [a] and [b]. Convenient,
     for instances, for brackets, parenthesis, quotes, etc.
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val map : ('a -> 'b) -> 'b printer -> 'a printer
 

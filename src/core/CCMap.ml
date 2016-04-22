@@ -28,7 +28,7 @@ module type S = sig
     f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
     'a t -> 'b t -> 'c t
   (** [merge_safe ~f a b] merges the maps [a] and [b] together.
-      @since NEXT_RELEASE *)
+      @since 0.17 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
 

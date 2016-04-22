@@ -1,5 +1,58 @@
 = Changelog
 
+== 0.17
+
+=== potentially breaking 
+
+- change the semantics of `CCString.find_all` (allow overlaps)
+
+=== Additions
+
+- add `CCString.pad` for more webscale
+- add `(--^)` to CCRAl, CCFQueue, CCKlist (closes #56); add `CCKList.Infix`
+- add monomorphic signatures in `CCInt` and `CCFloat`
+- add `CCList.{sorted_insert,is_sorted}`
+- add `CCLazy_list` in containers.iter (with a few functions)
+- add `CCTrie.longest_prefix`
+- provide additional ordering properties in `CCTrie.{above,below}`
+- add `CCOpt.if_`
+- have
+  * `CCRandom.split_list` fail on `len=0`
+  * `CCRandom.sample_without_replacement` fail if `n<=0`
+- add `CCOpt.{for_all, exists}`
+- add `CCRef.{get_then_incr,incr_then_get}`
+- add `Result.{to,of}_err`
+- add `CCFormat.within`
+- add `map/mapi` to some of the map types.
+- add `CCString.{drop,take,chop_prefix,chop_suffix,filter,filter_map}`
+- add `CCList.fold_filter_map`
+- add `CCIO.File.with_temp` for creating temporary files
+- add `{CCArray,CCVector,CCList}.(--^)` for right-open ranges
+- add `Containers.{Char,Result}`
+- modify `CCPersistentHashtbl.merge` and add `CCMap.merge_safe`
+- add `CCHet`, heterogeneous containers (table/map) indexed by keys
+- add `CCString.rev`
+- add `CCImmutArray` into containers.data
+- add `CCList.Assoc.remove`
+
+=== Fixes, misc
+
+- Make `CCPersistentHashtbl.S.merge` more general.
+- optimize KMP search in `CCString.Find` (hand-specialize code)
+- bugfix in `CCFormat.to_file` (fd was closed too early)
+
+- add a special case for pattern of length 1 in `CCString.find`
+- more tests, bugfixes, and benchs for KMP in CCString
+- in CCString, use KMP for faster sub-string search; add `find_all{,_l}`
+
+others:
+
+- `watch` target should build all
+- add version constraint on sequence
+- migrate to new qtest
+- add an `IO` section to the tutorial
+- enable `-j 0` for ocamlbuild
+
 == 0.16
 
 === breaking

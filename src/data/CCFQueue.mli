@@ -129,7 +129,7 @@ val (--) : int -> int -> int t
 
 val (--^) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val print : 'a printer -> 'a t printer
 (** @since 0.13 *)

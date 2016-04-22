@@ -7,7 +7,7 @@
     Sadly, it is not possible to make this type covariant without using black
     magic.
 
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 type 'a t
 (** Array of values of type 'a. The underlying type really is

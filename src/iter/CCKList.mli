@@ -135,7 +135,7 @@ val (--) : int -> int -> int t
 
 val (--^) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (** {2 Operations on two Collections} *)
 
@@ -212,7 +212,7 @@ val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
 
 (** {2 Infix operators}
     
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 module Infix : sig
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t

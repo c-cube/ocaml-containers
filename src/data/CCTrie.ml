@@ -52,7 +52,7 @@ module type S = sig
       Example: if [m] has keys "abc0" and "abcd", then [longest_prefix "abc2" m]
       will return "abc"
 
-      @since NEXT_RELEASE *)
+      @since 0.17 *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** Update the binding for the given key. The function is given
@@ -65,11 +65,11 @@ module type S = sig
 
   val mapi : (key -> 'a -> 'b) -> 'a t -> 'b t
   (** Map values, giving both key and value. Will use {!WORD.of_list} to rebuild keys.
-      @since NEXT_RELEASE *)
+      @since 0.17 *)
 
   val map : ('a -> 'b) -> 'a t -> 'b t
   (** Map values, giving only the value.
-      @since NEXT_RELEASE  *)
+      @since 0.17  *)
 
   val iter : (key -> 'a -> unit) -> 'a t -> unit
   (** Same as {!fold}, but for effectful functions *)

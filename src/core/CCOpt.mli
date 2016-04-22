@@ -52,13 +52,13 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 
 val if_ : ('a -> bool) -> 'a -> 'a option
 (** [if_ f x] is [Some x] if [f x], [None] otherwise
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val exists : ('a -> bool) -> 'a t -> bool
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 val for_all : ('a -> bool) -> 'a t -> bool
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 val get : 'a -> 'a t -> 'a
 (** [get default x] unwraps [x], but if [x = None] it returns [default] instead.

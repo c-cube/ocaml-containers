@@ -56,7 +56,7 @@ val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list ->
 val fold_filter_map : ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_filter_map f acc l] is a [fold_left]-like function, but also
     generates a list of output in a way similar to {!filter_map}
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
@@ -187,14 +187,14 @@ val sorted_merge_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 val is_sorted : ?cmp:('a -> 'a -> int) -> 'a list -> bool
 (** [is_sorted l] returns [true] iff [l] is sorted (according to given order)
     @param cmp the comparison function (default [Pervasives.compare])
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val sorted_insert : ?cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
 (** [sorted_insert x l] inserts [x] into [l] such that, if [l] was sorted,
     then [sorted_insert x l] is sorted too.
     @param uniq if true and [x] is already in sorted position in [l], then
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (*$Q
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
@@ -288,7 +288,7 @@ val (--) : int -> int -> int t
 
 val (--^) : int -> int -> int t
 (** Infix alias for [range']
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val replicate : int -> 'a -> 'a t
 (** Replicate the given element [n] times *)
@@ -324,7 +324,7 @@ module Assoc : sig
 
   val remove : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> ('a,'b) t
   (** [remove l k] removes the first occurrence of [k] from [l].
-      @since NEXT_RELEASE *)
+      @since 0.17 *)
 end
 
 (** {2 Zipper} *)
@@ -511,7 +511,7 @@ module Infix : sig
   val (--) : int -> int -> int t
 
   val (--^) : int -> int -> int t
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 end
 
 (** {2 IO} *)

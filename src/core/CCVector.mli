@@ -240,7 +240,7 @@ val (--) : int -> int -> (int, 'mut) t
 val (--^) : int -> int -> (int, 'mut) t
 (** Range of integers, either ascending or descending, but excluding right.,
     Example: [1 --^ 10] returns the vector [[1;2;3;4;5;6;7;8;9]]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val of_array : 'a array -> ('a, 'mut) t
 val of_list : 'a list -> ('a, 'mut) t

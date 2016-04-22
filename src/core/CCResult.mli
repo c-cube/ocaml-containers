@@ -184,10 +184,10 @@ val to_seq : ('a, _) t -> 'a sequence
 type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
 
 val of_err : ('a, 'b) error -> ('a, 'b) t
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 val to_err : ('a, 'b) t -> ('a, 'b) error
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 (** {2 IO} *)
 

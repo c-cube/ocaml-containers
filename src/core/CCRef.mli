@@ -26,11 +26,11 @@ val update : ('a -> 'a) -> 'a t -> unit
 
 val incr_then_get : int t -> int
 (** [incr_then_get r] increments [r] and returns its new value, think [++ r]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val get_then_incr : int t -> int
 (** [get_then_incr r] increments [r] and returns its old value, think [r++]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val compare : 'a ord -> 'a t ord
 

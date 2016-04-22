@@ -6,7 +6,7 @@
     This is similar to {!CCMixtbl}, but the injection is directly used as
     a key.
 
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option

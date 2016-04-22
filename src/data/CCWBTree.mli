@@ -64,12 +64,12 @@ module type S = sig
 
   val mapi : f:(key -> 'a -> 'b) -> 'a t -> 'b t
   (** Map values, giving both key and value. Will use {!WORD.of_list} to rebuild keys.
-      @since NEXT_RELEASE
+      @since 0.17
     *)
 
   val map : f:('a -> 'b) -> 'a t -> 'b t
   (** Map values, giving only the value.
-      @since NEXT_RELEASE
+      @since 0.17
     *)
 
   val iter : f:(key -> 'a -> unit) -> 'a t -> unit

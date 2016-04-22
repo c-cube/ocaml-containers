@@ -65,7 +65,7 @@ val init : int -> (int -> char) -> string
 
 val rev : string -> string
 (** [rev s] returns the reverse of [s]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (*$Q
   Q.printable_string (fun s -> s = rev (rev s))
@@ -83,7 +83,7 @@ val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
     and pads it on the [side] with [c] if it's not the case.
     @param side determines where padding occurs (default: [`Left])
     @param c the char used to pad (default: ' ')
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (*$= & ~printer:Q.Print.string
   "  42" (pad 4 "42")
@@ -128,13 +128,13 @@ val find_all : ?start:int -> sub:string -> string -> int gen
 (** [find_all ~sub s] finds all occurrences of [sub] in [s], even overlapping
     instances.
     @param start starting position in [s]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val find_all_l : ?start:int -> sub:string -> string -> int list
 (** [find_all ~sub s] finds all occurrences of [sub] in [s] and returns
     them in a list
     @param start starting position in [s]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (*$= & ~printer:Q.Print.(list int)
   [1; 6] (find_all_l ~sub:"bc" "abc aabc  aab")
@@ -222,7 +222,7 @@ val suffix : suf:string -> string -> bool
 val chop_prefix : pre:string -> string -> string option
 (** [chop_pref ~pre s] removes [pre] from [s] if [pre] really is a prefix
     of [s], returns [None] otherwise
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (*$= & ~printer:Q.Print.(option string)
   (Some "cd") (chop_prefix ~pre:"aab" "aabcd")
@@ -233,7 +233,7 @@ val chop_prefix : pre:string -> string -> string option
 val chop_suffix : suf:string -> string -> string option
 (** [chop_suffix ~suf s] removes [suf] from [s] if [suf] really is a suffix
     of [s], returns [None] otherwise
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (*$= & ~printer:Q.Print.(option string)
   (Some "ab") (chop_suffix ~suf:"cd" "abcd")
@@ -243,15 +243,15 @@ val chop_suffix : suf:string -> string -> string option
 
 val take : int -> string -> string
 (** [take n s] keeps only the [n] first chars of [s]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val drop : int -> string -> string
 (** [drop n s] removes the [n] first chars of [s]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val take_drop : int -> string -> string * string
 (** [take_drop n s = take n s, drop n s]
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 (*$=
   ("ab", "cd") (take_drop 2 "abcd")
@@ -313,7 +313,7 @@ val mapi : (int -> char -> char) -> string -> string
     @since 0.12 *)
 
 val filter_map : (char -> char option) -> string -> string
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 (*$= & ~printer:Q.Print.string
   "bcef" (filter_map \
@@ -321,7 +321,7 @@ val filter_map : (char -> char option) -> string -> string
 *)
 
 val filter : (char -> bool) -> string -> string
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 (*$= & ~printer:Q.Print.string
   "abde" (filter (function 'c' -> false | _ -> true) "abcdec")

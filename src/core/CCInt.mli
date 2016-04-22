@@ -41,32 +41,32 @@ val of_string : string -> t option
 (** @since 0.13 *)
 
 val min : t -> t -> t
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 val max : t -> t -> t
-(** @since NEXT_RELEASE *)
+(** @since 0.17 *)
 
 (** {2 Infix Operators}
 
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 module Infix : sig
   val (=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (<>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (<) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (<=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 
   val (>=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 0.17 *)
 end
 
 include module type of Infix

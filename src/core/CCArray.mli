@@ -168,7 +168,7 @@ val (--) : int -> int -> int t
 
 val (--^) : int -> int -> int t
 (** Range array, excluding right bound
-    @since NEXT_RELEASE *)
+    @since 0.17 *)
 
 val random : 'a random_gen -> 'a t random_gen
 val random_non_empty : 'a random_gen -> 'a t random_gen
