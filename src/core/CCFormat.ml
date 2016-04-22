@@ -130,22 +130,12 @@ let fprintf = Format.fprintf
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter
 
-let _with_file_out filename f =
+let to_file filename format =
   let oc = open_out filename in
   let fmt = Format.formatter_of_out_channel oc in
-  begin try
-    let x = f fmt in
-    Format.pp_print_flush fmt ();
-    close_out oc;
-    x
-  with e ->
-    Format.pp_print_flush fmt ();
-    close_out_noerr oc;
-    raise e
-  end
-
-let to_file filename format =
-  _with_file_out filename (fun fmt -> Format.fprintf fmt format)
+  Format.kfprintf
+    (fun fmt -> Format.pp_print_flush fmt (); close_out_noerr oc)
+    fmt format
 
 type color =
   [ `Black
