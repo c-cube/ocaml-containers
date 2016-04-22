@@ -26,13 +26,13 @@ remove: [
 ]
 depends: [
     "ocamlfind" {build}
+    "oasis" {build}
     "base-bytes"
     "result"
     "cppo" {build}
-    "oasis" {build}
     "ocamlbuild" {build}
 ]
-depopts: [ "sequence" "base-bigarray" "base-unix" "base-threads" ]
+depopts: [ "sequence" "base-bigarray" "base-unix" "base-threads" "qtest" { test } ]
 conflicts: [
   "sequence" { < "0.5" }
   "qtest" { < "2.2" }
