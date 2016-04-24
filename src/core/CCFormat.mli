@@ -37,6 +37,9 @@ val arrayi : ?start:string -> ?stop:string -> ?sep:string ->
 val seq : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a sequence printer
 
 val opt : 'a printer -> 'a option printer
+(** [opt pp] prints options as follows:
+    [Some x] will become "some foo" if [pp x ---> "foo"]
+    [None] will become "none" *)
 
 (** In the tuple printers, the [sep] argument is only available
     @since 0.17 *)
