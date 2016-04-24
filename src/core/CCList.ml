@@ -792,6 +792,26 @@ module Idx = struct
   *)
 end
 
+let range_by ~step i j =
+  if step = 0 then raise (Invalid_argument "CCList.range_by");
+  let rec up i j acc =
+    if i>j then acc else up i (j-step) (j::acc)
+  and down i j acc =
+    if i<j then acc else down i (j-step) (j::acc)
+  in
+  let j = (j - i) / step * step + i in
+  if step > 0 then up i j [] else down i j []
+
+(*$T
+  range_by ~step:1   0 0 = [0]
+  range_by ~step:1   5 0 = []
+  range_by ~step:2   0 4 = [0;2;4]
+  range_by ~step:2   0 5 = [0;2;4]
+  range_by ~step:~-1 0 5 = []
+  range_by ~step:~-2 5 1 = [5;3;1]
+  range_by ~step:~-2 5 0 = [5;3;1]
+*)
+
 let range i j =
   let rec up i j acc =
     if i=j then i::acc else up i (j-1) (j::acc)
