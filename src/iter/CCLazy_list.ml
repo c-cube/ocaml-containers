@@ -40,6 +40,18 @@ let rec map ~f l =
     | lazy (Cons (x,tl)) -> Cons (f x, map ~f tl)
   )
 
+let filter ~f l =
+  let rec aux f l = match l with
+    | lazy Nil -> Nil
+    | lazy (Cons (x,tl)) when f x -> Cons (x, lazy (aux f tl))
+    | lazy (Cons (_, tl)) ->  aux f tl
+  in
+  lazy (aux f l)
+
+(*$=
+  [2;4;6] (of_list [1;2;3;4;5;6;7] |> filter ~f:(fun x -> x mod 2=0) |> to_list)
+*)
+
 let rec append a b =
   lazy (
     match a with
