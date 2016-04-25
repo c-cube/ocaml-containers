@@ -32,7 +32,11 @@ val map : f:('a -> 'b) -> 'a t -> 'b t
 (** Lazy map *)
 
 val filter : f:('a -> bool) -> 'a t -> 'a t
-(** Filter values
+(** Filter values.
+    @since NEXT_RELEASE *)
+
+val take : int -> 'a t -> 'a t
+(** Take at most n values.
     @since NEXT_RELEASE *)
 
 val append : 'a t -> 'a t -> 'a t

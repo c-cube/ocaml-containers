@@ -50,7 +50,16 @@ let filter ~f l =
 
 (*$=
   [2;4;6] (of_list [1;2;3;4;5;6;7] |> filter ~f:(fun x -> x mod 2=0) |> to_list)
+  [2;4;6] (of_gen Gen.(1 -- max_int) |> filter ~f:(fun x -> x mod 2=0) |> take 3 |> to_list)
 *)
+
+let rec take n l =
+  lazy (
+    match l with
+      | _ when n=0 -> Nil
+      | lazy Nil -> Nil
+      | lazy (Cons (x,tl)) -> Cons (x, take (n-1) tl)
+  )
 
 let rec append a b =
   lazy (
