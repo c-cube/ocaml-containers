@@ -818,6 +818,12 @@ let range_by ~step i j =
   range_by ~step:max_int 0 2 = [0]
 *)
 
+(*$Q
+  Q.(pair small_int small_int) (fun (i,j) -> \
+    let i = min i j and j = max i j in \
+    range_by ~step:1 i j = range i j)
+*)
+
 let range i j =
   let rec up i j acc =
     if i=j then i::acc else up i (j-1) (j::acc)
