@@ -368,7 +368,7 @@ module Make(W : WORD)
   *)
 
   (*$Q
-    Q.(pair (list (pair printable_string int)) printable_string) (fun (l,s) -> \
+    Q.(pair (list (pair (printable_string_of_size Gen.(0 -- 30)) int)) printable_string) (fun (l,s) -> \
       let m = String.of_list l in \
       let s' = String.longest_prefix s m in \
       CCString.prefix ~pre:s' s)
