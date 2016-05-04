@@ -639,6 +639,26 @@ let exists2 p s1 s2 =
   try iter2 (fun c1 c2 -> if p c1 c2 then raise MyExit) s1 s2; false
   with MyExit -> true
 
+(** {2 Ascii functions} *)
+
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
+
+let capitalize_ascii = String.capitalize_ascii
+let uncapitalize_ascii = String.uncapitalize_ascii
+let uppercase_ascii = String.uppercase_ascii
+let lowercase_ascii = String.lowercase_ascii
+
+#else
+
+let capitalize_ascii = String.capitalize
+let uncapitalize_ascii = String.uncapitalize
+let uppercase_ascii = String.uppercase
+let lowercase_ascii = String.lowercase
+
+#endif
+
+
+
 let pp buf s =
   Buffer.add_char buf '"';
   Buffer.add_string buf s;

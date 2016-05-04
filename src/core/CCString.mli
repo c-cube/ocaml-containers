@@ -378,6 +378,24 @@ val exists2 : (char -> char -> bool) -> string -> string -> bool
     @raise Invalid_argument if the strings have not the same length
     @since 0.12 *)
 
+(** {2 Ascii functions}
+
+    Those functions are deprecated in {!String} since 4.03, so we provide
+    a stable alias for them even in older versions *)
+
+val capitalize_ascii : string -> string
+(** See {!String}. @since NEXT_RELEASE *)
+
+val uncapitalize_ascii : string -> string
+(** See {!String}. @since NEXT_RELEASE *)
+
+val uppercase_ascii : string -> string
+(** See {!String}. @since NEXT_RELEASE *)
+
+val lowercase_ascii : string -> string
+(** See {!String}. @since NEXT_RELEASE *)
+
+
 (** {2 Splitting} *)
 
 module Split : sig

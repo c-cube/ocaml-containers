@@ -65,6 +65,12 @@ val finally2 : h:(unit -> _) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
     [h ()] is called whether [f x y] rose an exception or not.
     @since 0.16 *)
 
+val opaque_identity : 'a -> 'a
+(** [opaque_identity x] is like [x], but prevents Flambda from using [x]'s
+    definition for optimizing it (flambda is an optimization/inlining pass
+    in OCaml >= 4.03).
+    @since NEXT_RELEASE *)
+
 (** {2 Monad}
 
 Functions with a fixed domain are monads in their codomain *)
