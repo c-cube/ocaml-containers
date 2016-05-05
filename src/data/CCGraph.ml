@@ -43,6 +43,10 @@ module Seq = struct
     a (fun x -> acc := f !acc x);
     !acc
   let to_list seq = fold (fun acc x->x::acc) [] seq |> List.rev
+  exception Exit_
+  let exists_ f seq =
+    try seq (fun x -> if f x then raise Exit_); false
+    with Exit_ -> true
 end
 
 (** {2 Interfaces for graphs} *)
@@ -314,6 +318,15 @@ module Traverse = struct
       dfs_tag ?eq ~tags ~graph seq
   end
 end
+
+(** {2 Cycles} *)
+
+let is_dag ?(tbl=mk_table 128) ~graph vs =
+  Traverse.Event.dfs ~tbl ~graph vs
+  |> Seq.exists_
+    (function
+      | `Edge (_, `Back) -> true
+      | _ -> false)
 
 (** {2 Topological Sort} *)
 

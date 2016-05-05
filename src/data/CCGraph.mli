@@ -224,6 +224,17 @@ module Traverse : sig
   end
 end
 
+(** {2 Cycles} *)
+
+val is_dag :
+  ?tbl:'v set ->
+  graph:('v, _) t ->
+  'v sequence ->
+  bool
+(** [is_dag ~graph vs] returns [true] if the subset of [graph] reachable
+    from [vs] is acyclic.
+    @since NEXT_RELEASE *)
+
 (** {2 Topological Sort} *)
 
 exception Has_cycle
