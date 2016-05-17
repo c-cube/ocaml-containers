@@ -243,12 +243,22 @@ let append_list a b = match b with
 *)
 
 let equal eq v1 v2 =
-  let n = min v1.size v2.size in
+  v1.size == v2.size
+  &&
+  let n = v1.size in
   let rec check i =
     if i = n
-      then v1.size = v2.size
+      then true
       else eq (get v1 i) (get v2 i) && check (i+1)
-  in check 0
+  in
+  check 0
+
+(*$T
+  equal (=) (create ()) (create ())
+  equal (=) (return 42) (return 42)
+  not (equal (=) (create ()) (return 42))
+  not (equal (=) (return 42) (create ()))
+*)
 
 let compare cmp v1 v2 =
   let n = min v1.size v2.size in
