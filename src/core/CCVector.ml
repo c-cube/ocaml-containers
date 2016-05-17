@@ -243,7 +243,7 @@ let append_list a b = match b with
 *)
 
 let equal eq v1 v2 =
-  v1.size == v2.size
+  v1.size = v2.size
   &&
   let n = v1.size in
   let rec check i =
