@@ -22,6 +22,10 @@ module type S = sig
 
   val get : 'a t -> int -> 'a
 
+  val get_safe : 'a t -> int -> 'a option
+  (** [get_safe a i] returns [Some a.(i)] if [i] is a valid index
+      @since NEXT_RELEASE *)
+
   val set : 'a t -> int -> 'a -> unit
 
   val length : _ t -> int
@@ -290,6 +294,21 @@ let map = Array.map
 let length = Array.length
 
 let get = Array.get
+
+let get_safe a i =
+  if i>=0 && i<Array.length a
+  then Some (Array.unsafe_get a i)
+  else None
+
+(*$=
+  (Some 1) (get_safe [|1;2;3|] 0)
+  (Some 2) (get_safe [|1;2;3|] 1)
+  (Some 3) (get_safe [|1;2;3|] 2)
+  None (get_safe [|1;2;3|] 4)
+  None (get_safe [|1;2;3|] max_int)
+  None (get_safe [|1;2;3|] ~-1)
+  None (get_safe [|1;2;3|] ~-42)
+*)
 
 let set = Array.set
 
@@ -567,6 +586,24 @@ module Sub = struct
     let j = a.i + i in
     if i<0 || j>=a.j then invalid_arg "Array.Sub.get";
     a.arr.(j)
+
+  let get_safe a i =
+    try Some (get a i)
+    with Invalid_argument _ -> None
+
+  (*$inject
+    let sub_a = Sub.make [|1;2;3;4;5|] 1 ~len:3
+  *)
+
+  (*$=
+    (Some 2) (Sub.get_safe sub_a 0)
+    (Some 3) (Sub.get_safe sub_a 1)
+    (Some 4) (Sub.get_safe sub_a 2)
+    None (Sub.get_safe sub_a 4)
+    None (Sub.get_safe sub_a max_int)
+    None (Sub.get_safe sub_a ~-1)
+    None (Sub.get_safe sub_a ~-42)
+  *)
 
   let set a i x =
     let j = a.i + i in
