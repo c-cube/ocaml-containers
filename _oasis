@@ -40,7 +40,7 @@ Flag "bigarray"
   Default:      true
 
 Flag "advanced"
-  Description:  Build advanced combinators, including CCLinq (requires "sequence")
+  Description:  Build advanced combinators (requires "sequence")
   Default:      true
 
 Library "containers"
