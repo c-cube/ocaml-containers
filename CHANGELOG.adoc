@@ -9,7 +9,7 @@
 - add aliases to deprecated  functions from `String`, add `Fun.opaque_identity`
 - add `CCLazy_list.take`
 - add `Lazy_list.filter`
-- add CCList.range_by
+- add `CCList.range_by`
 
 == 0.17
 
