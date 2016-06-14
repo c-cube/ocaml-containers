@@ -247,9 +247,7 @@ let equal eq v1 v2 =
   &&
   let n = v1.size in
   let rec check i =
-    if i = n
-      then true
-      else eq (get v1 i) (get v2 i) && check (i+1)
+    i = n || (eq (get v1 i) (get v2 i) && check (i+1))
   in
   check 0
 
@@ -258,6 +256,11 @@ let equal eq v1 v2 =
   equal (=) (return 42) (return 42)
   not (equal (=) (create ()) (return 42))
   not (equal (=) (return 42) (create ()))
+*)
+
+(*$Q
+  Q.(let g = list_of_size Gen.(0--10) small_int in pair g g) (fun (l1,l2) -> \
+    equal (=) (of_list l1) (of_list l2) = (l1=l2))
 *)
 
 let compare cmp v1 v2 =
