@@ -1,8 +1,19 @@
 = Changelog
 
+== 0.18
+
+- update implem of `CCVector.equal`
+- add `CCOpt.get_or` with label, deprecates `get`
+- add `CCArray.get_safe` (close #70)
+- add `CCGraph.is_dag`
+- add aliases to deprecated  functions from `String`, add `Fun.opaque_identity`
+- add `CCLazy_list.take`
+- add `Lazy_list.filter`
+- add CCList.range_by
+
 == 0.17
 
-=== potentially breaking 
+=== potentially breaking
 
 - change the semantics of `CCString.find_all` (allow overlaps)
 

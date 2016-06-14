@@ -31,6 +31,14 @@ val head : 'a t -> ('a * 'a t) option
 val map : f:('a -> 'b) -> 'a t -> 'b t
 (** Lazy map *)
 
+val filter : f:('a -> bool) -> 'a t -> 'a t
+(** Filter values.
+    @since 0.18 *)
+
+val take : int -> 'a t -> 'a t
+(** Take at most n values.
+    @since 0.18 *)
+
 val append : 'a t -> 'a t -> 'a t
 (** Lazy concatenation *)
 

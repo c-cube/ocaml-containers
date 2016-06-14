@@ -2,10 +2,11 @@
 :toc: macro
 :source-highlighter: pygments
 
-image::media/logo.png[logo]
-
 What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!
 or the http://cedeela.fr/~simon/software/containers[documentation])
+In `containers` and `containers.data`, all modules abide by
+_pay for what you use_: only modules that are used are linked (there are no
+cross-module dependencies).
 
 - A usable, reasonably well-designed library that extends OCaml's standard
   library (in 'src/core/', packaged under `containers` in ocamlfind. Modules
@@ -41,6 +42,8 @@ Some of the modules have been moved to their own repository (e.g. `sequence`,
 image:https://ci.cedeela.fr/buildStatus/icon?job=containers[alt="Build Status", link="http://ci.cedeela.fr/job/containers/"]
 
 toc::[]
+
+image::media/logo.png[logo]
 
 == Change Log
 
@@ -268,3 +271,6 @@ A few guidelines:
 
 Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
 
+== Documentation by version
+
+- http://c-cube.github.io/ocaml-containers/0.17/[0.17]

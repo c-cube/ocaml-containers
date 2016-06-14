@@ -22,6 +22,8 @@ by ocamlfind).
 
 {4 Core Modules (extension of the standard library)}
 
+{b findlib name}: containers
+
 {!modules:
 CCArray
 CCBool
@@ -62,6 +64,8 @@ such as:
 ]}
 
 {4 Containers.data}
+
+{b findlib name}: containers.data
 
 Various data structures.
 
@@ -123,6 +127,8 @@ CCLazy_list}
 
 {4 String}
 
+{b findlib name}: containers.string
+
 {!modules:
 CCApp_parse
 CCKMP
@@ -139,6 +145,8 @@ Use bigarrays to hold large strings and map files directly into memory.
 
 {4 Advanced}
 
+{b findlib name}: containers.advanced
+
 This module is qualified with [Containers_advanced]. It
 requires {{:https://github.com/c-cube/sequence} Sequence}.
 
@@ -152,7 +160,11 @@ Moved to its own repository.
 
 Moved to its own repository
 
-{4 Others}
+{4 Thread Helpers}
+
+{b findlib name}: containers.thread
+
+Modules related to the use of [Thread].
 
 {!modules:
 CCBlockingQueue

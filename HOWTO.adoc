@@ -16,7 +16,8 @@ can be removed.
 8. `git merge master`
 9. `oasis setup; make test doc`
 10. tag, and push both to github
-11. new opam package
+11. `opam pin https://github.com/c-cube/ocaml-containers#<release>`
+12. new opam package: `opam publish prepare; opam publish submit`
 
 == List Authors
 

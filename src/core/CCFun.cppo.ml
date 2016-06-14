@@ -15,6 +15,16 @@ let (@@) f x = f x
 
 #endif
 
+#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
+
+let opaque_identity = Sys.opaque_identity
+
+#else
+
+let opaque_identity x = x
+
+#endif
+
 let compose f g x = g (f x)
 
 let compose_binop f g x y = g (f x) (f y)

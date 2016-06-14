@@ -24,6 +24,10 @@ module type S = sig
 
   val get : 'a t -> int -> 'a
 
+  val get_safe : 'a t -> int -> 'a option
+  (** [get_safe a i] returns [Some a.(i)] if [i] is a valid index
+      @since 0.18 *)
+
   val set : 'a t -> int -> 'a -> unit
 
   val length : _ t -> int
