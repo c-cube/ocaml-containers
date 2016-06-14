@@ -27,7 +27,7 @@ val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 val return : 'a -> 'a t
-(** Monadic return *)
+(** Monadic return, that is [return x = Some x] *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix version of {!map} *)
@@ -62,7 +62,13 @@ val for_all : ('a -> bool) -> 'a t -> bool
 
 val get : 'a -> 'a t -> 'a
 (** [get default x] unwraps [x], but if [x = None] it returns [default] instead.
-    @since 0.4.1 *)
+    @since 0.4.1
+    @deprecated use {!get_or} @since NEXT_RELEASE *)
+
+val get_or : default:'a -> 'a t -> 'a
+(** [get_or ~default o] extracts the value from [o], or
+    returns [default] if [o = None].
+    @since NEXT_RELEASE *)
 
 val get_exn : 'a t -> 'a
 (** Open the option, possibly failing if it is [None]
@@ -103,6 +109,7 @@ val (<+>) : 'a t -> 'a t -> 'a t
 
 val choice : 'a t list -> 'a t
 (** [choice] returns the first non-[None] element of the list, or [None] *)
+
 (** {2 Infix Operators}
     @since 0.16 *)
 

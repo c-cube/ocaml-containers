@@ -93,6 +93,10 @@ let get default x = match x with
   | None -> default
   | Some y -> y
 
+let get_or ~default x = match x with
+  | None -> default
+  | Some y -> y
+
 let get_exn = function
   | Some x -> x
   | None -> invalid_arg "CCOpt.get_exn"
