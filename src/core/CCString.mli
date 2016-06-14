@@ -384,16 +384,16 @@ val exists2 : (char -> char -> bool) -> string -> string -> bool
     a stable alias for them even in older versions *)
 
 val capitalize_ascii : string -> string
-(** See {!String}. @since NEXT_RELEASE *)
+(** See {!String}. @since 0.18 *)
 
 val uncapitalize_ascii : string -> string
-(** See {!String}. @since NEXT_RELEASE *)
+(** See {!String}. @since 0.18 *)
 
 val uppercase_ascii : string -> string
-(** See {!String}. @since NEXT_RELEASE *)
+(** See {!String}. @since 0.18 *)
 
 val lowercase_ascii : string -> string
-(** See {!String}. @since NEXT_RELEASE *)
+(** See {!String}. @since 0.18 *)
 
 
 (** {2 Splitting} *)

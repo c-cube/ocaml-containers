@@ -69,7 +69,7 @@ val opaque_identity : 'a -> 'a
 (** [opaque_identity x] is like [x], but prevents Flambda from using [x]'s
     definition for optimizing it (flambda is an optimization/inlining pass
     in OCaml >= 4.03).
-    @since NEXT_RELEASE *)
+    @since 0.18 *)
 
 (** {2 Monad}
 

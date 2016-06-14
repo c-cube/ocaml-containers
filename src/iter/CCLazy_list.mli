@@ -33,11 +33,11 @@ val map : f:('a -> 'b) -> 'a t -> 'b t
 
 val filter : f:('a -> bool) -> 'a t -> 'a t
 (** Filter values.
-    @since NEXT_RELEASE *)
+    @since 0.18 *)
 
 val take : int -> 'a t -> 'a t
 (** Take at most n values.
-    @since NEXT_RELEASE *)
+    @since 0.18 *)
 
 val append : 'a t -> 'a t -> 'a t
 (** Lazy concatenation *)

@@ -280,7 +280,7 @@ val range_by : step:int -> int -> int -> int t
     where the difference between successive elements is [step].
     use a negative [step] for a decreasing list.
     @raise Invalid_argument if [step=0]
-    @since NEXT_RELEASE *)
+    @since 0.18 *)
 
 val range : int -> int -> int t
 (** [range i j] iterates on integers from [i] to [j] included . It works

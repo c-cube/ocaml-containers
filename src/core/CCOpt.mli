@@ -63,12 +63,12 @@ val for_all : ('a -> bool) -> 'a t -> bool
 val get : 'a -> 'a t -> 'a
 (** [get default x] unwraps [x], but if [x = None] it returns [default] instead.
     @since 0.4.1
-    @deprecated use {!get_or} @since NEXT_RELEASE *)
+    @deprecated use {!get_or} @since 0.18 *)
 
 val get_or : default:'a -> 'a t -> 'a
 (** [get_or ~default o] extracts the value from [o], or
     returns [default] if [o = None].
-    @since NEXT_RELEASE *)
+    @since 0.18 *)
 
 val get_exn : 'a t -> 'a
 (** Open the option, possibly failing if it is [None]

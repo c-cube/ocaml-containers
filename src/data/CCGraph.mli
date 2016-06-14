@@ -233,7 +233,7 @@ val is_dag :
   bool
 (** [is_dag ~graph vs] returns [true] if the subset of [graph] reachable
     from [vs] is acyclic.
-    @since NEXT_RELEASE *)
+    @since 0.18 *)
 
 (** {2 Topological Sort} *)
 
