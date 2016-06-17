@@ -475,6 +475,8 @@ let _to_gen s i0 len =
 
 let to_gen s = _to_gen s 0 (String.length s)
 
+let of_char c = String.make 1 c
+
 let of_gen g =
   let b = Buffer.create 32 in
   let rec aux () = match g () with

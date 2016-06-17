@@ -94,6 +94,10 @@ val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
   "aaa" (pad ~side:`Right ~c:'a' 3 "")
 *)
 
+val of_char : char -> string
+(** [of_char 'a' = "a"]
+    @since NEXT_RELEASE *)
+
 val of_gen : char gen -> string
 val of_seq : char sequence -> string
 val of_klist : char klist -> string
