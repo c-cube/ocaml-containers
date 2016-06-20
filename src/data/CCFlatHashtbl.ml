@@ -267,4 +267,99 @@ module Make(X : HASHABLE) = struct
     Array.iter
       (function Empty -> () | Key (_, v, _) -> yield v)
       tbl.arr
+
+  (*
+  let pp_debug_ out t =
+    let open T in
+    let pp_buck out (i,b) = match b with
+      | Empty -> Format.fprintf out "_"
+      | Key (k,v,h_k) ->
+        let dib = _dib t h_k ~i in
+        Format.fprintf out "[%d]{%d -> %d (dib=%d)}@," i (Obj.magic k) (Obj.magic v) dib
+    in
+    Format.fprintf out "@[";
+    Array.iteri
+      (fun i b -> pp_buck out (i,b))
+      t.arr;
+    Format.fprintf out "@]";
+    ()
+   *)
 end
+
+(*$inject
+  module T = Make(CCInt)
+
+  let gen_l =
+   let g = Q.(list (pair small_int small_int)) in
+   Q.map_same_type
+    (CCList.sort_uniq ~cmp:(fun x y -> compare (fst x) (fst y)))
+    g
+
+
+  type op =
+    | Add of int*int
+    | Remove of int
+
+  let op_add x y = Add (x,y)
+  let op_remove x = Remove x
+
+  let op_exec t = function
+    | Add (x,y) -> T.add t x y
+    | Remove x -> T.remove t x
+
+  let op_pp = function
+    | Add (x,y) -> Printf.sprintf "add(%d,%d)" x y
+    | Remove x -> Printf.sprintf "remove(%d)" x
+
+  let gen_ops =
+    let open Q.Gen in
+    let gen_op =
+      frequency
+        [ 2, return op_add <*> small_int <*> small_int
+        ; 1, return op_remove <*> small_int
+        ]
+    in
+    list_size (1--300) gen_op
+
+  let arb_ops : op list Q.arbitrary =
+    let shrink_op o =
+      let open Q.Iter in
+      match o with
+      | Add (x,y) ->
+        (return op_add <*> Q.Shrink.int x <*> return y)
+        <+>
+        (return op_add <*> return x <*> Q.Shrink.int y)
+      | Remove x -> map op_remove (Q.Shrink.int x)
+    in
+    let shrink =
+      Q.Shrink.list ~shrink:shrink_op in
+    let print = Q.Print.list op_pp in
+    Q.make ~shrink ~print gen_ops
+
+  module TRef = CCHashtbl.Make(CCInt)
+
+  let op_exec_ref t = function
+    | Add (x,y) -> TRef.replace t x y
+    | Remove x -> TRef.remove t x
+*)
+
+(*$T
+  let t = T.create 32 in \
+    T.add t 0 "0"; T.find t 0 = Some "0"
+*)
+
+(*$Q
+  gen_l (fun l -> \
+  (T.of_list l |> T.to_list |> List.sort CCOrd.compare) = l)
+*)
+
+(* test that the table behaves the same as a normal hashtable *)
+(*$QR & ~count:500
+  arb_ops (fun l ->
+    let t = T.create 16 in
+    let t' = TRef.create 16 in
+    List.iter (op_exec t) l;
+    List.iter (op_exec_ref t') l;
+    (T.to_list t |> List.sort CCOrd.compare) =
+    (TRef.to_list t' |> List.sort CCOrd.compare))
+*)
