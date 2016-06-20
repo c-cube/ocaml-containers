@@ -321,7 +321,7 @@ end
     | Add (x,y) -> Printf.sprintf "add(%d,%d)" x y
     | Remove x -> Printf.sprintf "remove(%d)" x
 
-  let gen_ops =
+  let gen_ops n =
     let open Q.Gen in
     let gen_op =
       frequency
@@ -329,9 +329,9 @@ end
         ; 1, return op_remove <*> small_int
         ]
     in
-    list_size (1--300) gen_op
+    list_size (0--n) gen_op
 
-  let arb_ops : op list Q.arbitrary =
+  let arb_ops n : op list Q.arbitrary =
     let shrink_op o =
       let open Q.Iter in
       match o with
@@ -344,7 +344,7 @@ end
     let shrink =
       Q.Shrink.list ~shrink:shrink_op in
     let print = Q.Print.list op_pp in
-    Q.make ~shrink ~print gen_ops
+    Q.make ~shrink ~print (gen_ops n)
 
   module TRef = CCHashtbl.Make(CCInt)
 
@@ -364,12 +364,25 @@ end
 *)
 
 (* test that the table behaves the same as a normal hashtable *)
-(*$QR & ~count:500
-  arb_ops (fun l ->
+
+(*$inject
+  let test_ops l =
     let t = T.create 16 in
     let t' = TRef.create 16 in
     List.iter (op_exec t) l;
     List.iter (op_exec_ref t') l;
     (T.to_list t |> List.sort CCOrd.compare) =
-    (TRef.to_list t' |> List.sort CCOrd.compare))
+    (TRef.to_list t' |> List.sort CCOrd.compare)
+*)
+
+(*$Q & ~count:500
+  (arb_ops 300) test_ops
+*)
+
+(*$Q & ~count:10
+  (arb_ops 3000) test_ops
+*)
+
+(*$Q & ~count:5
+  (arb_ops 30000) test_ops
 *)
