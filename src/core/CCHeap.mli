@@ -65,7 +65,7 @@ module type S = sig
   (** Number of elements (linear complexity) *)
 
   (** {2 Conversions}
-      
+
       The interface of [of_gen], [of_seq], [of_klist]
       has changed @since 0.16 (the old signatures
       are now [add_seq], [add_gen], [add_klist]) *)

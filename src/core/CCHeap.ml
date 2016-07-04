@@ -64,6 +64,19 @@ end
   )
 *)
 
+(* test filter *)
+(*$QR & ~count:30
+  Q.(list_of_size Gen.(return 1_000) int) (fun l ->
+    (* put elements into a heap *)
+    let h = H.of_seq (Sequence.of_list l) in
+    let h = H.filter (fun x->x mod 2=0) h in
+    OUnit.assert_bool "all odd"
+      (H.to_seq h |> Sequence.for_all (fun x -> x mod 2 = 0));
+    let l' = extract_list h in
+    is_sorted l'
+  )
+*)
+
 module type S = sig
   type elt
   type t
@@ -114,7 +127,7 @@ module type S = sig
   (** Number of elements (linear complexity) *)
 
   (** {2 Conversions}
-      
+
       The interface of [of_gen], [of_seq], [of_klist]
       has changed @since 0.16 (the old signatures
       are now [add_seq], [add_gen], [add_klist]) *)
