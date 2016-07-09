@@ -210,4 +210,4 @@ module Byte : S with module Array = Array.Byte
 module MakeFromArray(A : Array.S) : S with module Array = A
 
 (** Buffer using regular arrays *)
-module Make(X : sig type t end) : S with type Array.elt = X.t
+module Make(X : sig type t end) : S with type Array.elt = X.t and type Array.t = X.t array
