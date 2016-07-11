@@ -15,13 +15,15 @@ let install_printer s =
     ()
 let install_printers = List.iter install_printer
 
-let pp_vector pp_x out (v: _ CCVector.vector) = CCVector.print pp_x out v
+let pp_rw_vector pp_x out (v: _ CCVector.vector) = CCVector.print pp_x out v
+let pp_ro_vector pp_x out (v: _ CCVector.ro_vector) = CCVector.print pp_x out v
 let pp_klist (ppx:Format.formatter -> 'a -> unit) out l = CCKList.print ppx out l
 
 let () =
   install_printers
     [ "CCHashtbl.print"
-    ; "Containers_top.pp_vector"
+    ; "Containers_top.pp_rw_vector"
+    ; "Containers_top.pp_ro_vector"
     ; "CCBV.print"
     ; "CCDeque.print"
     ; "CCFQueue.print"

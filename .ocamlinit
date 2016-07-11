@@ -30,6 +30,5 @@
 #load "containers_top.cma";;
 #thread;;
 #load "containers_thread.cma";;
-#install_printer CCSexp.print;;
 (* vim:syntax=ocaml:
 *)
