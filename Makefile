@@ -55,6 +55,13 @@ examples: all
 push_doc: doc
 	rsync -tavu containers.docdir/* cedeela.fr:~/simon/root/software/containers/
 
+push_doc_gh: doc
+	git checkout gh-pages && \
+	  rm -rf dev/ && \
+	  mkdir -p dev && \
+	  cp -r containers.docdir/* dev/ && \
+	  git add --all dev
+
 DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*)
 QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/core/*.ml) \
