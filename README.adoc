@@ -3,7 +3,7 @@
 :source-highlighter: pygments
 
 What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!
-or the http://cedeela.fr/~simon/software/containers[documentation])
+or the http://cedeela.fr/~simon/software/containers[current documentation])
 In `containers` and `containers.data`, all modules abide by
 _pay for what you use_: only modules that are used are linked (there are no
 cross-module dependencies).
@@ -230,6 +230,18 @@ The library has moved to https://github.com/c-cube/containers-misc .
 `containers.lwt` has moved to https://github.com/c-cube/containers-lwt .
 
 [[build]]
+
+== Documentation
+
+In general, see http://c-cube.github.io/ocaml-containers/ or 
+http://cedeela.fr/~simon/software/containers
+
+by version:
+
+- http://c-cube.github.io/ocaml-containers/dev/[dev branch]
+- http://c-cube.github.io/ocaml-containers/0.17/[0.17]
+- http://c-cube.github.io/ocaml-containers/0.19/[0.19]
+
 == Build
 
 You will need OCaml `>=` 4.00.0.
@@ -270,7 +282,3 @@ A few guidelines:
 - add tests if possible (using `qtest`).
 
 Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
-
-== Documentation by version
-
-- http://c-cube.github.io/ocaml-containers/0.17/[0.17]
