@@ -1,5 +1,17 @@
 = Changelog
 
+== 0.19
+
+- add regression test for #75
+- Fix `CCString.Split.{left,right}` (#75)
+- additional functions in `CCMultiSet`
+- show ocaml array type concretely in `CCRingBuffer.Make` sig
+- cleanup and more tests in `CCHeap`
+- fix bugs in `CCFlatHashtbl`, add some tests
+- add more generic printers for `CCError` and `CCResult` (close #73)
+- add `CCstring.of_char`
+- update headers
+
 == 0.18
 
 - update implem of `CCVector.equal`

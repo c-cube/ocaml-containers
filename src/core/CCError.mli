@@ -192,13 +192,13 @@ val pp : 'a printer -> ('a, string) t printer
 
 val pp': 'a printer -> 'e printer -> ('a, 'e) t printer
 (** Printer that is generic on the error type
-    @since NEXT_RELEASE *)
+    @since 0.19 *)
 
 val print : 'a formatter -> ('a, string) t formatter
 
 val print' : 'a formatter -> 'e formatter -> ('a, 'e) t formatter
 (** Printer that is generic on the error type
-    @since NEXT_RELEASE *)
+    @since 0.19 *)
 
 (** {2 Global Exception Printers}
 

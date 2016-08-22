@@ -96,7 +96,7 @@ val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
 
 val of_char : char -> string
 (** [of_char 'a' = "a"]
-    @since NEXT_RELEASE *)
+    @since 0.19 *)
 
 val of_gen : char gen -> string
 val of_seq : char sequence -> string

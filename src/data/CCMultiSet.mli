@@ -85,16 +85,16 @@ module type S = sig
   val of_seq : elt sequence -> t
 
   val of_list_mult : (elt * int) list -> t
-  (** @since NEXT_RELEASE *)
+  (** @since 0.19 *)
 
   val to_list_mult : t -> (elt * int) list
-  (** @since NEXT_RELEASE *)
+  (** @since 0.19 *)
 
   val to_seq_mult : t -> (elt * int) sequence
-  (** @since NEXT_RELEASE *)
+  (** @since 0.19 *)
 
   val of_seq_mult : (elt * int) sequence -> t
-  (** @since NEXT_RELEASE *)
+  (** @since 0.19 *)
 end
 
 module Make(O : Set.OrderedType) : S with type elt = O.t
