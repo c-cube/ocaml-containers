@@ -367,14 +367,18 @@ module Split = struct
   let left_exn ~by s =
     let i = find ~sub:by s in
     if i = ~-1 then raise Not_found
-    else String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1)
+    else
+      let right = i + String.length by in
+      String.sub s 0 i, String.sub s right (String.length s - right)
 
   let left ~by s = try Some (left_exn ~by s) with Not_found -> None
 
   let right_exn ~by s =
     let i = rfind ~sub:by s in
     if i = ~-1 then raise Not_found
-    else String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1)
+    else
+      let right = i + String.length by in
+      String.sub s 0 i, String.sub s right (String.length s - right)
 
   let right ~by s = try Some (right_exn ~by s) with Not_found -> None
 end
@@ -397,11 +401,6 @@ let compare_versions a b =
             if c<>0 then c else cmp_rec a b
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
-
-(*$Q
-  Q.(pair printable_string printable_string) (fun (a,b) -> \
-    CCOrd.equiv (compare_versions a b) (CCOrd.opp (compare_versions b a)))
-*)
 
 let repeat s n =
   assert (n>=0);
@@ -474,6 +473,8 @@ let _to_gen s i0 len =
     )
 
 let to_gen s = _to_gen s 0 (String.length s)
+
+let of_char c = String.make 1 c
 
 let of_gen g =
   let b = Buffer.create 32 in

@@ -94,6 +94,10 @@ val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
   "aaa" (pad ~side:`Right ~c:'a' 3 "")
 *)
 
+val of_char : char -> string
+(** [of_char 'a' = "a"]
+    @since 0.19 *)
+
 val of_gen : char gen -> string
 val of_seq : char sequence -> string
 val of_klist : char klist -> string
@@ -445,7 +449,10 @@ module Split : sig
 
   (*$T
     Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ")
+    Split.left ~by:"__" "a__c__e_f" = Some ("a", "c__e_f")
     Split.left ~by:"_" "abcde" = None
+    Split.left ~by:"bb" "abbc" = Some ("a", "c")
+    Split.left ~by:"a_" "abcde" = None
   *)
 
   val right : by:string -> string -> (string * string) option
@@ -460,7 +467,9 @@ module Split : sig
 
   (*$T
     Split.right ~by:" " "ab cde f g" = Some ("ab cde f", "g")
+    Split.right ~by:"__" "a__c__e_f" = Some ("a__c", "e_f")
     Split.right ~by:"_" "abcde" = None
+    Split.right ~by:"a_" "abcde" = None
   *)
 end
 
@@ -479,6 +488,12 @@ val compare_versions : string -> string -> int
   compare_versions "0.foo" "0.0" < 0
   compare_versions "1.2.3.4" "01.2.4.3" < 0
 *)
+
+(*$Q
+  Q.(pair printable_string printable_string) (fun (a,b) -> \
+    CCOrd.equiv (compare_versions a b) (CCOrd.opp compare_versions b a))
+*)
+
 
 (** {2 Slices} A contiguous part of a string *)
 

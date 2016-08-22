@@ -5,19 +5,21 @@
 Beforehand, check `grep deprecated -r src` to see whether some functions
 can be removed.
 
-1. `make test`
-2. update version in `_oasis`
-3. `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
-4. check status of modules (`{b status: foo}`) and update if required;
+. `make test`
+. update version in `_oasis`
+. `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
+. check status of modules (`{b status: foo}`) and update if required;
    removed deprecated functions, etc.
-5. update `CHANGELOG.md` (see its end to find the right git command)
-6. commit the changes
-7. `git checkout stable`
-8. `git merge master`
-9. `oasis setup; make test doc`
-10. tag, and push both to github
-11. `opam pin https://github.com/c-cube/ocaml-containers#<release>`
-12. new opam package: `opam publish prepare; opam publish submit`
+. update `CHANGELOG.md` (see its end to find the right git command)
+. commit the changes
+. `git checkout stable`
+. `git merge master`
+. `oasis setup; make test doc`
+. update `opam` (the version field; remove `oasis` in deps)
+. tag, and push both to github
+. `opam pin add containers https://github.com/c-cube/ocaml-containers.git#<release>`
+. new opam package: `opam publish prepare; opam publish submit`
+. re-generate doc: `make doc push_doc`
 
 == List Authors
 

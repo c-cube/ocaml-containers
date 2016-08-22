@@ -260,6 +260,14 @@ let pp pp_x buf e = match e with
   | `Ok x -> Printf.bprintf buf "ok(%a)" pp_x x
   | `Error s -> Printf.bprintf buf "error(%s)" s
 
+let pp' pp_x pp_e buf e = match e with
+  | `Ok x -> Printf.bprintf buf "ok(%a)" pp_x x
+  | `Error s -> Printf.bprintf buf "error(%a)" pp_e s
+
 let print pp_x fmt e = match e with
   | `Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
   | `Error s -> Format.fprintf fmt "@[error(@,%s)@]" s
+
+let print' pp_x pp_e fmt e = match e with
+  | `Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
+  | `Error s -> Format.fprintf fmt "@[error(@,%a)@]" pp_e s
