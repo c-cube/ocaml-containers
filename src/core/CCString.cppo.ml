@@ -367,14 +367,18 @@ module Split = struct
   let left_exn ~by s =
     let i = find ~sub:by s in
     if i = ~-1 then raise Not_found
-    else String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1)
+    else
+      let right = i + String.length by in
+      String.sub s 0 i, String.sub s right (String.length s - right)
 
   let left ~by s = try Some (left_exn ~by s) with Not_found -> None
 
   let right_exn ~by s =
     let i = rfind ~sub:by s in
     if i = ~-1 then raise Not_found
-    else String.sub s 0 i, String.sub s (i+1) (String.length s - i - 1)
+    else
+      let right = i + String.length by in
+      String.sub s 0 i, String.sub s right (String.length s - right)
 
   let right ~by s = try Some (right_exn ~by s) with Not_found -> None
 end

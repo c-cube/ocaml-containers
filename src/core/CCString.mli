@@ -449,8 +449,10 @@ module Split : sig
 
   (*$T
     Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ")
+    Split.left ~by:"__" "a__c__e_f" = Some ("a", "c__e_f")
     Split.left ~by:"_" "abcde" = None
     Split.left ~by:"bb" "abbc" = Some ("a", "c")
+    Split.left ~by:"a_" "abcde" = None
   *)
 
   val right : by:string -> string -> (string * string) option
@@ -465,7 +467,9 @@ module Split : sig
 
   (*$T
     Split.right ~by:" " "ab cde f g" = Some ("ab cde f", "g")
+    Split.right ~by:"__" "a__c__e_f" = Some ("a__c", "e_f")
     Split.right ~by:"_" "abcde" = None
+    Split.right ~by:"a_" "abcde" = None
   *)
 end
 
