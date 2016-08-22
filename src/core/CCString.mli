@@ -484,6 +484,12 @@ val compare_versions : string -> string -> int
   compare_versions "1.2.3.4" "01.2.4.3" < 0
 *)
 
+(*$Q
+  Q.(pair printable_string printable_string) (fun (a,b) -> \
+    CCOrd.equiv (compare_versions a b) (CCOrd.opp compare_versions b a))
+*)
+
+
 (** {2 Slices} A contiguous part of a string *)
 
 module Sub : sig

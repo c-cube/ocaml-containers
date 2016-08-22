@@ -398,11 +398,6 @@ let compare_versions a b =
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
 
-(*$Q
-  Q.(pair printable_string printable_string) (fun (a,b) -> \
-    CCOrd.equiv (compare_versions a b) (CCOrd.opp (compare_versions b a)))
-*)
-
 let repeat s n =
   assert (n>=0);
   let len = String.length s in
