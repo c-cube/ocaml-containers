@@ -14,3 +14,4 @@
 - JP Rodi
 - octachron (Florian Angeletti)
 - Johannes Kloos
+- Geoff Gole (@gsg)
