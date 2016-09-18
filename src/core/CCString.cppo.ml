@@ -651,10 +651,20 @@ let lowercase_ascii = String.lowercase_ascii
 
 #else
 
-let capitalize_ascii = String.capitalize
-let uncapitalize_ascii = String.uncapitalize
-let uppercase_ascii = String.uppercase
-let lowercase_ascii = String.lowercase
+let capitalize_ascii s =
+  mapi
+    (fun i c -> if i=0 then CCChar.uppercase_ascii c else c)
+    s
+    
+
+let uncapitalize_ascii s =
+  mapi
+    (fun i c -> if i=0 then CCChar.lowercase_ascii c else c)
+    s
+
+let uppercase_ascii = map CCChar.uppercase_ascii
+
+let lowercase_ascii = map CCChar.lowercase_ascii
 
 #endif
 
