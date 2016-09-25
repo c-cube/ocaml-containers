@@ -58,6 +58,10 @@ val fsign : t -> t
 (** [fsign x] is one of [-1., -0., +0., +1.], or [nan] if [x] is NaN.
     @since 0.7 *)
 
+val round : t -> t
+(** [round f] returns the closest integer value, either above or below
+    @since NEXT_RELEASE *)
+
 exception TrapNaN of string
 val sign_exn : t -> int
 (** [sign_exn x] will return the sign of [x] as [1, 0] or [-1], or raise an

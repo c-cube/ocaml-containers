@@ -60,6 +60,17 @@ let sign_exn (a:float) =
   if is_nan a then raise (TrapNaN "sign_exn")
   else compare a 0.
 
+let round x =
+  let low = floor x in
+  let high = ceil x in
+  if x-.low > high-.x then high else low
+
+(*$=
+  2. (round 1.6)
+  1. (round 1.4)
+  0. (round 0.)
+*)
+
 let to_int (a:float) = Pervasives.int_of_float a
 let of_int (a:int) = Pervasives.float_of_int a
 
