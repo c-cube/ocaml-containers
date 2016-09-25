@@ -19,7 +19,7 @@ val min_value : t
 
 val max_finite_value : t
 
-val epsilon : float
+val epsilon : t
 
 val is_nan : t -> bool
 
@@ -39,7 +39,7 @@ val max : t -> t -> t
 
 val equal : t -> t -> bool
 
-val compare : float -> float -> int
+val compare : t -> t -> int
 
 type 'a printer = Buffer.t -> 'a -> unit
 type 'a formatter = Format.formatter -> 'a -> unit
@@ -54,7 +54,7 @@ val random : t -> t random_gen
 val random_small : t random_gen
 val random_range : t -> t -> t random_gen
 
-val fsign : t -> float
+val fsign : t -> t
 (** [fsign x] is one of [-1., -0., +0., +1.], or [nan] if [x] is NaN.
     @since 0.7 *)
 
@@ -75,7 +75,7 @@ val of_string : string -> t
 val equal_precision : epsilon:t -> t -> t -> bool
 (** Equality with allowed error up to a non negative epsilon value *)
 
-val classify : float -> fpclass
+val classify : t -> fpclass
 
 (** {2 Infix Operators}
 
