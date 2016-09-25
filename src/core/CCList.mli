@@ -134,6 +134,14 @@ val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)
 
+val head_opt : 'a t -> 'a option
+(** First element.
+    @since NEXT_RELEASE *)
+
+val last_opt : 'a t -> 'a option
+(** Last element.
+    @since NEXT_RELEASE *)
+
 val find_pred : ('a -> bool) -> 'a t -> 'a option
 (** [find_pred p l] finds the first element of [l] that satisfies [p],
     or returns [None] if no element satisfies [p]

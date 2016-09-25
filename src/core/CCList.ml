@@ -569,6 +569,24 @@ let last n l =
   let len = List.length l in
   if len < n then l else drop (len-n) l
 
+let head_opt = function
+  | [] -> None
+  | x::_ -> Some x
+
+let rec last_opt = function
+  | [] -> None
+  | [x] -> Some x
+  | _ :: tail -> last_opt tail
+
+(*$= & ~printer:Q.Print.(option int)
+  (Some 1) (head_opt [1;2;3])
+  (Some 1) (head_opt [1])
+  None (head_opt [])
+  (Some 3) (last_opt [1;2;3])
+  (Some 1) (last_opt [1])
+  None (last_opt [])
+*)
+
 let rec find_pred p l = match l with
   | [] -> None
   | x :: _ when p x -> Some x
