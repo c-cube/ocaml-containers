@@ -12,6 +12,7 @@
 - Emmanuel Surleau (emm)
 - Guillaume Bury (guigui)
 - JP Rodi
-- octachron (Florian Angeletti)
+- Florian Angeletti (@octachron)
 - Johannes Kloos
 - Geoff Gole (@gsg)
+- Roma Sokolov (@little-arhat)
