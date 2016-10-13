@@ -350,6 +350,21 @@ let reverse_in_place a =
     a = [| 6;5;4;3;2;1 |]
 *)
 
+let rev a =
+  let b = Array.copy a in
+  reverse_in_place b;
+  b
+
+(*$Q
+  Q.(array small_int) (fun a -> rev (rev a) = a)
+*)
+
+(*$T
+  rev [| 1; 2; 3 |] = [| 3; 2; 1 |]
+  rev [| 1; 2; |] = [| 2; 1 |]
+  rev [| |] = [| |]
+  *)
+
 let find f a =
   _find (fun _ -> f ) a 0 (Array.length a)
 

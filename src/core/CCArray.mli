@@ -143,6 +143,10 @@ include S with type 'a t := 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 
+val rev : 'a t -> 'a t
+(** Copy + reverse in place
+    @since NEXT_RELEASE *)
+
 val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter elements out of the array. Only the elements satisfying
     the given predicate will be kept. *)
