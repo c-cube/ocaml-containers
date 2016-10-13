@@ -96,15 +96,17 @@ module type S = sig
 
   val for_all : ('a -> bool) -> 'a t -> bool
 
-  val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Forall on pairs of arrays.
-      @raise Invalid_argument if they have distinct lengths *)
+      @raise Invalid_argument if they have distinct lengths
+      allow different types @since NEXT_RELEASE *)
 
   val exists : ('a -> bool) -> 'a t -> bool
 
-  val exists2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Exists on pairs of arrays.
-      @raise Invalid_argument if they have distinct lengths *)
+      @raise Invalid_argument if they have distinct lengths
+      allow different types @since NEXT_RELEASE *)
 
   val shuffle : 'a t -> unit
   (** Shuffle randomly the array, in place *)
