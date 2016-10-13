@@ -108,6 +108,16 @@ module type S = sig
       @raise Invalid_argument if they have distinct lengths
       allow different types @since NEXT_RELEASE *)
 
+  val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+  (** Fold on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since NEXT_RELEASE *)
+
+  val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+  (** Iterate on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since NEXT_RELEASE *)
+
   val shuffle : 'a t -> unit
   (** Shuffle randomly the array, in place *)
 
@@ -144,6 +154,11 @@ type 'a t = 'a array
 include S with type 'a t := 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
+
+val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** Map on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since NEXT_RELEASE *)
 
 val rev : 'a t -> 'a t
 (** Copy + reverse in place
