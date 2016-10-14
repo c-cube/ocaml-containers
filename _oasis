@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     0.19
+Version:     0.20
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -179,7 +179,7 @@ Executable run_qtest
                     containers.io, containers.advanced, containers.sexp,
                     containers.bigarray, containers.unix, containers.thread,
                     containers.data,
-                    sequence, gen, unix, oUnit, qcheck 
+                    sequence, gen, unix, oUnit, qcheck
 
 Test all
   Command:      ./run_qtest.native

@@ -136,11 +136,11 @@ val last : int -> 'a t -> 'a t
 
 val head_opt : 'a t -> 'a option
 (** First element.
-    @since NEXT_RELEASE *)
+    @since 0.20 *)
 
 val last_opt : 'a t -> 'a option
 (** Last element.
-    @since NEXT_RELEASE *)
+    @since 0.20 *)
 
 val find_pred : ('a -> bool) -> 'a t -> 'a option
 (** [find_pred p l] finds the first element of [l] that satisfies [p],

@@ -60,7 +60,7 @@ val fsign : t -> t
 
 val round : t -> t
 (** [round f] returns the closest integer value, either above or below
-    @since NEXT_RELEASE *)
+    @since 0.20 *)
 
 exception TrapNaN of string
 val sign_exn : t -> int

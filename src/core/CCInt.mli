@@ -42,10 +42,10 @@ val of_string : string -> t option
 
 val print_binary : t formatter
 (** prints as "0b00101010".
-    @since NEXT_RELEASE *)
+    @since 0.20 *)
 
 val to_string_binary : t -> string
-(** @since NEXT_RELEASE *)
+(** @since 0.20 *)
 
 val min : t -> t -> t
 (** @since 0.17 *)

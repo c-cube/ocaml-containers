@@ -86,7 +86,7 @@ val append_list : ('a, rw) t -> 'a list -> unit
 
 val append_gen : ('a, rw) t -> 'a gen -> unit
 (** Append content of generator
-    @since NEXT_RELEASE *)
+    @since 0.20 *)
 
 val equal : 'a equal -> ('a,_) t equal
 

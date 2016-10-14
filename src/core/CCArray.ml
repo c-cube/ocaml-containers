@@ -97,24 +97,24 @@ module type S = sig
   val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Forall on pairs of arrays.
       @raise Invalid_argument if they have distinct lengths
-      allow different types @since NEXT_RELEASE *)
+      allow different types @since 0.20 *)
 
   val exists : ('a -> bool) -> 'a t -> bool
 
   val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Exists on pairs of arrays.
       @raise Invalid_argument if they have distinct lengths
-      allow different types @since NEXT_RELEASE *)
+      allow different types @since 0.20 *)
 
   val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
   (** Fold on two arrays stepwise.
       @raise Invalid_argument if they have distinct lengths
-      @since NEXT_RELEASE *)
+      @since 0.20 *)
 
   val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
   (** Iterate on two arrays stepwise.
       @raise Invalid_argument if they have distinct lengths
-      @since NEXT_RELEASE *)
+      @since 0.20 *)
 
   val shuffle : 'a t -> unit
   (** Shuffle randomly the array, in place *)
