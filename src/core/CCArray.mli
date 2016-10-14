@@ -96,15 +96,27 @@ module type S = sig
 
   val for_all : ('a -> bool) -> 'a t -> bool
 
-  val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Forall on pairs of arrays.
-      @raise Invalid_argument if they have distinct lengths *)
+      @raise Invalid_argument if they have distinct lengths
+      allow different types @since 0.20 *)
 
   val exists : ('a -> bool) -> 'a t -> bool
 
-  val exists2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Exists on pairs of arrays.
-      @raise Invalid_argument if they have distinct lengths *)
+      @raise Invalid_argument if they have distinct lengths
+      allow different types @since 0.20 *)
+
+  val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+  (** Fold on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since 0.20 *)
+
+  val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+  (** Iterate on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since 0.20 *)
 
   val shuffle : 'a t -> unit
   (** Shuffle randomly the array, in place *)
@@ -142,6 +154,15 @@ type 'a t = 'a array
 include S with type 'a t := 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
+
+val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** Map on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since 0.20 *)
+
+val rev : 'a t -> 'a t
+(** Copy + reverse in place
+    @since 0.20 *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter elements out of the array. Only the elements satisfying

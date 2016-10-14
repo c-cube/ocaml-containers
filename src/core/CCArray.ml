@@ -94,18 +94,30 @@ module type S = sig
 
   val for_all : ('a -> bool) -> 'a t -> bool
 
-  val for_all2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Forall on pairs of arrays.
-      @raise Invalid_argument if they have distinct lengths *)
+      @raise Invalid_argument if they have distinct lengths
+      allow different types @since 0.20 *)
 
   val exists : ('a -> bool) -> 'a t -> bool
 
-  val exists2 : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+  val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
   (** Exists on pairs of arrays.
-      @raise Invalid_argument if they have distinct lengths *)
+      @raise Invalid_argument if they have distinct lengths
+      allow different types @since 0.20 *)
+
+  val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+  (** Fold on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since 0.20 *)
+
+  val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+  (** Iterate on two arrays stepwise.
+      @raise Invalid_argument if they have distinct lengths
+      @since 0.20 *)
 
   val shuffle : 'a t -> unit
-  (** shuffle randomly the array, in place *)
+  (** Shuffle randomly the array, in place *)
 
   val shuffle_with : Random.State.t -> 'a t -> unit
   (** Like shuffle but using a specialized random state *)
@@ -122,15 +134,15 @@ module type S = sig
 
   val pp: ?sep:string -> (Buffer.t -> 'a -> unit) ->
           Buffer.t -> 'a t -> unit
-  (** print an array of items with printing function *)
+  (** Print an array of items with printing function *)
 
   val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit) ->
             Buffer.t -> 'a t -> unit
-  (** print an array, giving the printing function both index and item *)
+  (** Print an array, giving the printing function both index and item *)
 
   val print : ?sep:string -> (Format.formatter -> 'a -> unit) ->
               Format.formatter -> 'a t -> unit
-  (** print an array of items with printing function *)
+  (** Print an array of items with printing function *)
 end
 
 (** {2 General Implementation}
@@ -150,10 +162,10 @@ let _reverse_in_place a i ~len =
     done
 
 let rec _equal eq a1 i1 j1 a2 i2 j2 =
-  if i1 = j1 || i2 = j2
+  if i1 = j1
   then (assert (i1=j1 && i2=j2); true)
   else
-    eq a1.(i1) a2.(i2) && _equal eq a1 (i1+1) j1 a2 (i2+2) j2
+    eq a1.(i1) a2.(i2) && _equal eq a1 (i1+1) j1 a2 (i2+1) j2
 
 let rec _compare cmp a1 i1 j1 a2 i2 j2 =
   if i1 = j1
@@ -291,6 +303,10 @@ let empty = [| |]
 
 let map = Array.map
 
+let map2 f a b =
+  if Array.length a <> Array.length b then invalid_arg "map2";
+  Array.init (Array.length a) (fun i -> f (Array.unsafe_get a i) (Array.unsafe_get b i))
+
 let length = Array.length
 
 let get = Array.get
@@ -349,6 +365,21 @@ let reverse_in_place a =
     reverse_in_place a; \
     a = [| 6;5;4;3;2;1 |]
 *)
+
+let rev a =
+  let b = Array.copy a in
+  reverse_in_place b;
+  b
+
+(*$Q
+  Q.(array small_int) (fun a -> rev (rev a) = a)
+*)
+
+(*$T
+  rev [| 1; 2; 3 |] = [| 3; 2; 1 |]
+  rev [| 1; 2; |] = [| 2; 1 |]
+  rev [| |] = [| |]
+  *)
 
 let find f a =
   _find (fun _ -> f ) a 0 (Array.length a)
@@ -455,6 +486,28 @@ let for_all2 p a b =
 let exists2 p a b =
   _exists2 p a b 0 0 ~len:(min (Array.length a) (Array.length b))
 
+let _iter2 f a b i j ~len =
+  for o = 0 to len-1 do
+    f (Array.get a (i+o)) (Array.get b (j+o))
+  done
+
+let _fold2 f acc a b i j ~len =
+  let rec aux acc o =
+    if o=len then acc
+    else
+      let acc = f acc (Array.get a (i+o)) (Array.get b (j+o)) in
+      aux acc (o+1)
+  in
+  aux acc 0
+
+let iter2 f a b =
+  if length a <> length b then invalid_arg "iter2";
+  _iter2 f a b 0 0 ~len:(Array.length a)
+
+let fold2 f acc a b =
+  if length a <> length b then invalid_arg "fold2";
+  _fold2 f acc a b 0 0 ~len:(Array.length a)
+
 let (--) i j =
   if i<=j
   then
@@ -494,6 +547,15 @@ let equal eq a b =
   Array.length a = Array.length b
   &&
   _equal eq a 0 (Array.length a) b 0 (Array.length b)
+
+(*$Q
+  Q.(pair (array small_int)(array small_int)) (fun (a,b) -> \
+    equal (=) a b = equal (=) b a)
+*)
+
+(*$T
+  equal (=) [|1|] [|1|]
+*)
 
 let compare cmp a b =
   _compare cmp a 0 (Array.length a) b 0 (Array.length b)
@@ -657,6 +719,14 @@ module Sub = struct
   (*$T
   Sub.exists2 (=) (Sub.make [| 1;2;3;4 |] 1 ~len:2) (Sub.make [| 0;1;3;4 |] 1 ~len:3)
   *)
+
+  let iter2 f a b =
+    if length a <> length b then invalid_arg "iter2";
+    _iter2 f a.arr b.arr a.i b.i ~len:(length a)
+
+  let fold2 f acc a b =
+    if length a <> length b then invalid_arg "fold2";
+    _fold2 f acc a.arr b.arr a.i b.i ~len:(length a)
 
   let shuffle a =
     _shuffle Random.int a.arr a.i a.j

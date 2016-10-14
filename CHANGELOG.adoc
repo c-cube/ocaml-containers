@@ -1,5 +1,19 @@
 = Changelog
 
+== 0.20
+
+- bugfix in `CCArray.equal`
+- fix `CCString.*_ascii`; add `CCChar.{upper,lower}case_ascii`
+
+- add functions in `CCArray`: fold2,iter2,map2
+- add `CCArray.rev`
+- add `CCFloat.round`
+- add `CCVector.append_gen`
+- add `CCList.{head_opt,last_opt}`
+- add `CCInt.{print_binary,to_string_binary}` + tests (thanks @gsg)
+- more general types for `CCArray.{for_all2,exists2}`
+- more general type for `CCResult.map_or`
+
 == 0.19
 
 - add regression test for #75

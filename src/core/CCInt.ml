@@ -48,11 +48,55 @@ let random_range i j st = i + random (j-i) st
 let pp buf = Printf.bprintf buf "%d"
 let print fmt = Format.pp_print_int fmt
 
+let most_significant_bit =
+  (-1) lxor ((-1) lsr 1)
+
 let to_string = string_of_int
 
 let of_string s =
   try Some (int_of_string s)
   with _ -> None
+
+type output = char -> unit
+
+(* abstract printer *)
+let to_binary_gen (out:output) n =
+  let n = if n<0 then (out '-'; -n) else n in
+  out '0'; out 'b';
+  let rec loop started bit n =
+    if bit = 0 then (
+      if not started then out '0'
+    ) else (
+      let b = n land bit in
+      if b = 0 then (
+        if started then out '0';
+        loop started (bit lsr 1) n
+      ) else (
+        out '1';
+        loop true (bit lsr 1) n
+      )
+    )
+  in
+  loop false most_significant_bit n
+
+let print_binary out n =
+  to_binary_gen (Format.pp_print_char out) n
+
+let to_string_binary n =
+  let buf = Buffer.create 16 in
+  to_binary_gen (Buffer.add_char buf) n;
+  Buffer.contents buf
+
+(*$= & ~printer:CCFun.id
+  "0b111" (to_string_binary 7)
+  "-0b111" (to_string_binary (-7))
+  "0b0" (to_string_binary 0)
+*)
+
+
+(*$Q & ~count:10_000
+  Q.int (fun n -> n = int_of_string (to_string_binary n))
+*)
 
 module Infix = struct
   let (=) = Pervasives.(=)

@@ -226,6 +226,20 @@ let append_list a b = match b with
     length v = List.length l1 + List.length l2)
 *)
 
+let rec append_gen a b = match b() with
+  | None -> ()
+  | Some x -> push a x; append_gen a b
+
+(*$Q
+  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
+    let v = of_list l1 in append_gen v (Gen.of_list l2); \
+    to_list v = (l1 @ l2))
+  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
+    let v = of_list l1 in append_gen v (Gen.of_list l2); \
+    length v = List.length l1 + List.length l2)
+*)
+
+
 (*$inject
   let gen x =
     let small = length in

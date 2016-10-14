@@ -11,3 +11,13 @@ let compare = Char.compare
 
 let pp = Buffer.add_char
 let print = Format.pp_print_char
+
+let lowercase_ascii c =
+  if c >= 'A' && c <= 'Z'
+  then Char.unsafe_chr (Char. code c + 32)
+  else c
+
+let uppercase_ascii c =
+  if c >= 'a' && c <= 'z'
+  then Char.unsafe_chr (Char.code c - 32)
+  else c
