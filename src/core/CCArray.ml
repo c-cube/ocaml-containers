@@ -165,7 +165,7 @@ let rec _equal eq a1 i1 j1 a2 i2 j2 =
   if i1 = j1
   then (assert (i1=j1 && i2=j2); true)
   else
-    eq a1.(i1) a2.(i2) && _equal eq a1 (i1+1) j1 a2 (i2+2) j2
+    eq a1.(i1) a2.(i2) && _equal eq a1 (i1+1) j1 a2 (i2+1) j2
 
 let rec _compare cmp a1 i1 j1 a2 i2 j2 =
   if i1 = j1
@@ -551,6 +551,10 @@ let equal eq a b =
 (*$Q
   Q.(pair (array small_int)(array small_int)) (fun (a,b) -> \
     equal (=) a b = equal (=) b a)
+*)
+
+(*$T
+  equal (=) [|1|] [|1|]
 *)
 
 let compare cmp a b =
