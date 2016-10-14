@@ -162,7 +162,7 @@ let _reverse_in_place a i ~len =
     done
 
 let rec _equal eq a1 i1 j1 a2 i2 j2 =
-  if i1 = j1 || i2 = j2
+  if i1 = j1
   then (assert (i1=j1 && i2=j2); true)
   else
     eq a1.(i1) a2.(i2) && _equal eq a1 (i1+1) j1 a2 (i2+2) j2
@@ -547,6 +547,11 @@ let equal eq a b =
   Array.length a = Array.length b
   &&
   _equal eq a 0 (Array.length a) b 0 (Array.length b)
+
+(*$Q
+  Q.(pair (array small_int)(array small_int)) (fun (a,b) -> \
+    equal (=) a b = equal (=) b a)
+*)
 
 let compare cmp a b =
   _compare cmp a 0 (Array.length a) b 0 (Array.length b)
