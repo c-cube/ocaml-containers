@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "containers"
-version: "0.19"
+version: "0.20"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes@inria.fr"
 build: [
