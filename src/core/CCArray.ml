@@ -57,7 +57,7 @@ module type S = sig
 
   val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
   (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
-      such that [b.(i)] is the index of the [i]-th element in [sort cmp a].
+      such that [b.(i)] is the index of the [i]-th element of [a] in [sort cmp a].
       In other words, [map (fun i -> a.(i)) (sort_indices a) = sorted cmp a].
       [a] is not modified.
       @since NEXT_RELEASE *)
@@ -71,7 +71,7 @@ module type S = sig
       In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].
 
       Without duplicates, we also have
-      [lookup_exn (sorted a) a.(i) = (sorted_ranking a).(i)]
+      [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
       @since NEXT_RELEASE *)
 
   val find : ('a -> 'b option) -> 'a t -> 'b option

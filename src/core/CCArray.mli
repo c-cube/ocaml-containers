@@ -59,7 +59,7 @@ module type S = sig
 
   val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
   (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
-      such that [b.(i)] is the index of the [i]-th element in [sort cmp a].
+      such that [b.(i)] is the index of the [i]-th element of [a] in [sort cmp a].
       In other words, [map (fun i -> a.(i)) (sort_indices a) = sorted cmp a].
       [a] is not modified.
       @since NEXT_RELEASE *)
