@@ -709,6 +709,9 @@ module Sub = struct
       else _fold (f acc a.arr.(i)) (i+1) j
     in _fold acc a.i a.j
 
+  let to_list a =
+    fold (fun l x -> x::l) [] a |> List.rev
+
   let foldi f acc a = _foldi f acc a.arr a.i a.j
 
   let fold_while f acc a =

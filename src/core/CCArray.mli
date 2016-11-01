@@ -247,6 +247,10 @@ module Sub : sig
   (** Convert into a triple [(arr, i, len)] where [len] is the length of
       the subarray of [arr] starting at offset [i] *)
 
+  val to_list : 'a t -> 'a list
+  (** Convert directly to a list
+      @since NEXT_RELEASE *)
+
   val full : 'a array -> 'a t
   (** Slice that covers the full array *)
 
