@@ -845,17 +845,28 @@ module Sub = struct
   let findi f a = _find (fun i -> f (i-a.i)) a.arr a.i a.j
 
   let find_idx p a =
-    _find (fun i x -> if p x then Some (i,x) else None) a.arr a.i a.j
+    _find (fun i x -> if p x then Some (i-a.i,x) else None) a.arr a.i a.j
+
+  (*$=
+    (Some (1,"c")) (Sub.find_idx ((=) "c") (Sub.make [| "a"; "b"; "c" |] 1 2))
+    *)
 
   let lookup_exn ?(cmp=Pervasives.compare) k a =
-    _lookup_exn ~cmp k a.arr a.i (a.j-1)
+    _lookup_exn ~cmp k a.arr a.i (a.j-1) - a.i
 
   let lookup ?(cmp=Pervasives.compare) k a =
-    try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1))
+    try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1) - a.i)
     with Not_found -> None
 
+  (*$=
+    (Some 1) (Sub.lookup "c" (Sub.make [| "a"; "b"; "c" |] 1 2))
+    *)
+
   let bsearch ?(cmp=Pervasives.compare) k a =
-    bsearch_ ~cmp k a.arr a.i (a.j - 1)
+    match bsearch_ ~cmp k a.arr a.i (a.j - 1) with
+      | `At m -> `At (m - a.i)
+      | `Just_after m -> `Just_after (m - a.i)
+      | res -> res
 
   let for_all p a = _for_all p a.arr a.i a.j
 
@@ -889,7 +900,8 @@ module Sub = struct
 
   let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a.arr a.i a.j
 
-  let pp_i ?(sep=", ") pp_item buf a = _pp_i ~sep pp_item buf a.arr a.i a.j
+  let pp_i ?(sep=", ") pp_item buf a =
+    _pp_i ~sep (fun out k x -> pp_item out (k-a.i) x) buf a.arr a.i a.j
 
   let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a.arr a.i a.j
 
