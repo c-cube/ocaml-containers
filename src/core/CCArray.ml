@@ -695,7 +695,15 @@ module Sub = struct
 
   let copy a = Array.sub a.arr a.i (length a)
 
-  let sub a i len = make a.arr ~len:(a.i + i) len
+  let sub a i len = make a.arr (a.i + i) ~len
+  (*$=
+    [ 3;4 ] \
+      (let a = Sub.make (0--10) 2 5 in Sub.sub a 1 2 |> Sub.to_list)
+    [ ] \
+      (let a = Sub.make (0--10) 2 5 in Sub.sub a 1 0 |> Sub.to_list)
+    [ 5 ] \
+      (let a = Sub.make (0--10) 1 9 in Sub.sub a 4 1 |> Sub.to_list)
+  *)
 
   let equal eq a b =
     length a = length b && _equal eq a.arr a.i a.j b.arr b.i b.j
@@ -710,7 +718,8 @@ module Sub = struct
     in _fold acc a.i a.j
 
   let to_list a =
-    fold (fun l x -> x::l) [] a |> List.rev
+    let l = fold (fun l x -> x::l) [] a in
+    List.rev l
 
   let foldi f acc a = _foldi f acc a.arr a.i a.j
 
