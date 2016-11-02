@@ -81,6 +81,9 @@ module Vector = CCVector
 module Int64 = CCInt64
 (** @since 0.13 *)
 
+module IO = CCIO
+(** @since NEXT_RELEASE *)
+
 module Char = struct
   include Char
   include (CCChar : module type of CCChar with type t := t)
