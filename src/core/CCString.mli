@@ -399,6 +399,28 @@ val uppercase_ascii : string -> string
 val lowercase_ascii : string -> string
 (** See {!String}. @since 0.18 *)
 
+(** {2 Finding}
+
+    A relatively efficient algorithm for finding sub-strings
+    @since 1.0 *)
+
+module Find : sig
+  type _ pattern
+
+  val compile : string -> [ `Direct ] pattern
+
+  val rcompile : string -> [ `Reverse ] pattern
+
+  val find : ?start:int -> pattern:[`Direct] pattern -> string -> int
+  (** Search for [pattern] in the string, left-to-right
+      @return the offset of the first match, -1 otherwise
+      @param start offset in string at which we start *)
+
+  val rfind : ?start:int -> pattern:[`Reverse] pattern -> string -> int
+  (** Search for [pattern] in the string, right-to-left
+      @return the offset of the start of the first match from the right, -1 otherwise
+      @param start right-offset in string at which we start *)
+end
 
 (** {2 Splitting} *)
 

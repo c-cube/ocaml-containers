@@ -212,37 +212,42 @@ module Find = struct
     | P_char _ -> 1
     | P_KMP p -> kmp_pattern_length p
 
-  let compile ~sub : [`Direct] pattern =
+  let compile sub : [`Direct] pattern =
     if length sub=1
     then P_char sub.[0]
     else P_KMP (kmp_compile sub)
 
-  let rcompile ~sub : [`Reverse] pattern =
+  let rcompile sub : [`Reverse] pattern =
     if length sub=1
     then P_char sub.[0]
     else P_KMP (kmp_rcompile sub)
 
-  let find ~(pattern:[`Direct] pattern) s start = match pattern with
+  let find ?(start=0) ~(pattern:[`Direct] pattern) s = match pattern with
     | P_char c ->
         (try String.index_from s start c with Not_found -> -1)
     | P_KMP pattern -> kmp_find ~pattern s start
 
-  let rfind ~(pattern:[`Reverse] pattern) s start = match pattern with
-    | P_char c ->
+  let rfind ?start ~(pattern:[`Reverse] pattern) s =
+    let start = match start with
+      | Some n -> n
+      | None -> String.length s - 1
+    in
+    match pattern with
+      | P_char c ->
         (try String.rindex_from s start c with Not_found -> -1)
-    | P_KMP pattern -> kmp_rfind ~pattern s start
+      | P_KMP pattern -> kmp_rfind ~pattern s start
 end
 
 let find ?(start=0) ~sub =
-  let pattern = Find.compile ~sub in
-  fun s -> Find.find ~pattern s start
+  let pattern = Find.compile sub in
+  fun s -> Find.find ~pattern s ~start
 
 let find_all ?(start=0) ~sub =
-  let pattern = Find.compile ~sub in
+  let pattern = Find.compile sub in
   fun s ->
     let i = ref start in
     fun () ->
-      let res = Find.find ~pattern s !i in
+      let res = Find.find ~pattern s ~start:!i in
       if res = ~-1 then None
       else (
         i := res + 1; (* possible overlap *)
@@ -259,8 +264,8 @@ let find_all_l ?start ~sub s =
 let mem ?start ~sub s = find ?start ~sub s >= 0
 
 let rfind ~sub =
-  let pattern = Find.rcompile ~sub in
-  fun s -> Find.rfind ~pattern s (String.length s-1)
+  let pattern = Find.rcompile sub in
+  fun s -> Find.rfind ~pattern s ~start:(String.length s-1)
 
 (* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -281,11 +286,11 @@ let replace ?(which=`All) ~sub ~by s =
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
   | `All ->
       (* compile search pattern only once *)
-      let pattern = Find.compile ~sub in
+      let pattern = Find.compile sub in
       let b = Buffer.create (String.length s) in
       let start = ref 0 in
       while !start < String.length s do
-        let i = Find.find ~pattern s !start in
+        let i = Find.find ~pattern s ~start:!start in
         if i>=0 then (
           (* between last and cur occurrences *)
           Buffer.add_substring b s !start (i- !start);
@@ -308,7 +313,7 @@ module Split = struct
     | SplitStop -> None
     | SplitAt prev -> _split_search ~by s prev
   and _split_search ~by s prev =
-    let j = Find.find ~pattern:by s prev in
+    let j = Find.find ~pattern:by s ~start:prev in
     if j < 0
       then Some (SplitStop, prev, String.length s - prev)
       else Some (SplitAt (j+Find.pattern_length by), prev, j-prev)
@@ -317,7 +322,7 @@ module Split = struct
 
   let _mkgen ~by s k =
     let state = ref (SplitAt 0) in
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     fun () ->
       match _split ~by s !state with
         | None -> None
@@ -330,7 +335,7 @@ module Split = struct
   let gen_cpy ~by s = _mkgen ~by s String.sub
 
   let _mklist ~by s k =
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     let rec build acc state = match _split ~by s state with
       | None -> List.rev acc
       | Some (state', i, len) ->
@@ -343,7 +348,7 @@ module Split = struct
   let list_cpy ~by s = _mklist ~by s String.sub
 
   let _mkklist ~by s k =
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     let rec make state () = match _split ~by s state with
       | None -> `Nil
       | Some (state', i, len) ->
@@ -355,7 +360,7 @@ module Split = struct
   let klist_cpy ~by s = _mkklist ~by s String.sub
 
   let _mkseq ~by s f k =
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     let rec aux state = match _split ~by s state with
       | None -> ()
       | Some (state', i, len) -> k (f s i len); aux state'
