@@ -82,7 +82,7 @@ module Int64 = CCInt64
 (** @since 0.13 *)
 
 module IO = CCIO
-(** @since NEXT_RELEASE *)
+(** @since 0.21 *)
 
 module Char = struct
   include Char
