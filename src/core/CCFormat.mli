@@ -137,6 +137,16 @@ val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
     {b status: experimental}
     @since 0.16 *)
 
+val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
+(** [with_color_sf "Blue" out "%s %d" "yolo" 42] will behave like
+    {!sprintf}, but wrapping the content with the given style
+    Example:
+    {[
+      CCFormat.with_color_sf "red" "%a" CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
+    ]}
+    {b status: experimental}
+    @since NEXT_RELEASE *)
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit
@@ -153,9 +163,27 @@ val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
 (** Similar to {!sprintf} but never prints colors
     @since 0.16 *)
 
+val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
+(** Similar to {!sprintf} but enable/disable colors depending on [colors].
+    Example:
+    {[
+      (* with colors *)
+      CCFormat.sprintf_dyn_color ~colors:true "@{<Red>%a@}"
+        CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
+
+      (* without colors *)
+      CCFormat.sprintf_dyn_color ~colors:false "@{<Red>%a@}"
+        CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
+    ]}
+    @since NEXT_RELEASE *)
+
 val fprintf : t -> ('a, t, unit ) format -> 'a
 (** Alias to {!Format.fprintf}
     @since 0.14 *)
+
+val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit ) format -> 'a
+(** Similar to {!fprintf} but enable/disable colors depending on [colors]
+    @since NEXT_RELEASE *)
 
 val ksprintf :
   f:(string -> 'b) ->

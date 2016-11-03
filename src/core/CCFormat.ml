@@ -279,8 +279,28 @@ let sprintf_ c format =
     fmt
     format
 
+let with_color_sf s fmt =
+  let buf = Buffer.create 64 in
+  let out = Format.formatter_of_buffer buf in
+  if !color_enabled then set_color_tag_handling out;
+  Format.pp_open_tag out s;
+  Format.kfprintf
+    (fun out ->
+       Format.pp_close_tag out ();
+       Format.pp_print_flush out ();
+       Buffer.contents buf)
+    out fmt
+
 let sprintf fmt = sprintf_ true fmt
 let sprintf_no_color fmt = sprintf_ false fmt
+let sprintf_dyn_color ~colors fmt = sprintf_ colors fmt
+
+let fprintf_dyn_color ~colors out fmt =
+  let old_tags = Format.pp_get_mark_tags out () in
+  Format.pp_set_mark_tags out colors; (* enable/disable tags *)
+  Format.kfprintf
+    (fun out -> Format.pp_set_mark_tags out old_tags)
+    out fmt
 
 (*$T
   sprintf "yolo %s %d" "a b" 42 = "yolo a b 42"
