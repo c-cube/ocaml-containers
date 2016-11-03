@@ -235,4 +235,8 @@ module Dump : sig
   val quad :
     'a t -> 'b t -> 'c t -> 'd t ->
     ('a * 'b * 'c * 'd) t
+  val result : 'a t -> ('a, string) Result.result t
+  val result' : 'a t -> 'e t -> ('a, 'e) Result.result t
+  val to_string : 'a t -> 'a -> string
+  (** Alias to {!to_string} *)
 end
