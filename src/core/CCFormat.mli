@@ -172,3 +172,32 @@ val ksprintf :
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
 (** Print to the given file *)
+
+(** {2 Dump}
+
+    Print structures as OCaml values, so that they can be parsed back
+    by OCaml (typically, in the toplevel, for debugging)
+
+    @since NEXT_RELEASE *)
+
+module Dump : sig
+  type 'a t = 'a printer
+  val unit : unit t
+  val int : int t
+  val string : string t
+  val bool : bool t
+  val float : float t
+  val char : char t (** @since 0.14 *)
+  val int32 : int32 t (** @since 0.14 *)
+  val int64 : int64 t (** @since 0.14 *)
+  val nativeint : nativeint t (** @since 0.14 *)
+
+  val list : 'a t -> 'a list t
+  val array : 'a t -> 'a array t
+  val option : 'a t -> 'a option t
+  val pair : 'a t -> 'b t -> ('a * 'b) t
+  val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+  val quad :
+    'a t -> 'b t -> 'c t -> 'd t ->
+    ('a * 'b * 'c * 'd) t
+end

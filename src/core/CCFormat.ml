@@ -301,3 +301,31 @@ let ksprintf ~f fmt =
   Format.kfprintf
     (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
     out fmt
+
+
+module Dump = struct
+  type 'a t = 'a printer
+  let unit = unit
+  let int = int
+  let string = string_quoted
+  let bool = bool
+  let float = float
+  let char = char
+  let int32 = int32
+  let int64 = int64
+  let nativeint = nativeint
+  let list pp = hovbox (list ~start:"[" ~stop:"]" ~sep:";" pp)
+  let array pp = hovbox (array ~start:"[|" ~stop:"|]" ~sep:";" pp)
+  let option pp out x = match x with
+    | None -> Format.pp_print_string out "None"
+    | Some x -> Format.fprintf out "Some %a" pp x
+  let pair p1 p2 = pair p1 p2
+  let triple p1 p2 p3 = triple p1 p2 p3
+  let quad p1 p2 p3 p4 = quad p1 p2 p3 p4
+end
+
+(*$= & ~printer:(fun s->s)
+  "[1;2;3]" (to_string Dump.(list int) [1;2;3])
+  "Some 1" (to_string Dump.(option int) (Some 1))
+  "[None;Some \"a b\"]" (to_string Dump.(list (option string)) [None; Some "a b"])
+*)
