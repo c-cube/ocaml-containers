@@ -49,13 +49,6 @@ Library "containers"
   BuildDepends:     bytes, result
   # BuildDepends:     bytes, bisect_ppx
 
-Library "containers_io"
-  Path:             src/io
-  Modules:          Containers_io_is_deprecated
-  BuildDepends:     bytes
-  FindlibParent:    containers
-  FindlibName:      io
-
 Library "containers_unix"
   Path:             src/unix
   Modules:          CCUnix
@@ -137,7 +130,7 @@ Document containers
   XOCamlbuildLibraries:
     containers, containers.iter, containers.data,
     containers.string, containers.thread,
-    containers.advanced, containers.io, containers.unix, containers.sexp
+    containers.advanced, containers.unix, containers.sexp
 
 Executable run_benchs
   Path:             benchs/
@@ -166,7 +159,7 @@ Executable run_qtest
   MainIs:           run_qtest.ml
   Build$:           flag(tests) && flag(bigarray) && flag(unix) && flag(advanced)
   BuildDepends:     containers, containers.string, containers.iter,
-                    containers.io, containers.advanced, containers.sexp,
+                    containers.advanced, containers.sexp,
                     containers.unix, containers.thread,
                     containers.data,
                     sequence, gen, unix, oUnit, qcheck

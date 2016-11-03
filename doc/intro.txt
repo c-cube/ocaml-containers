@@ -96,10 +96,6 @@ CCTrie
 CCWBTree
 }
 
-{4 Containers.io}
-
-{b deprecated} use {!CCIO} directly from the set of core modules.
-
 {4 Containers.unix}
 
 Helpers that depend on {!Unix}, e.g. to spawn sub-processes.

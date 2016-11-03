@@ -21,7 +21,6 @@ cross-module dependencies).
 
   containers.data:: with additional data structures that don't have an
     equivalent in the standard library;
-  containers.io:: (deprecated)
   containers.iter:: with list-like and tree-like iterators;
   containers.string:: (in directory `string`) with
     a few packed modules that deal with strings (Levenshtein distance,
