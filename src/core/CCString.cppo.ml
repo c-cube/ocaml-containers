@@ -407,6 +407,38 @@ let compare_versions a b =
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
 
+let edit_distance s1 s2 =
+  if length s1 = 0
+  then length s2
+  else if length s2 = 0
+  then length s1
+  else if s1 = s2
+  then 0
+  else begin
+    (* distance vectors (v0=previous, v1=current) *)
+    let v0 = Array.make (length s2 + 1) 0 in
+    let v1 = Array.make (length s2 + 1) 0 in
+    (* initialize v0: v0(i) = A(0)(i) = delete i chars from t *)
+    for i = 0 to length s2 do
+      v0.(i) <- i
+    done;
+    (* main loop for the bottom up dynamic algorithm *)
+    for i = 0 to length s1 - 1 do
+      (* first edit distance is the deletion of i+1 elements from s *)
+      v1.(0) <- i+1;
+
+      (* try add/delete/replace operations *)
+      for j = 0 to length s2 - 1 do
+        let cost = if Char.compare (String.get s1 i) (String.get s2 j) = 0 then 0 else 1 in
+        v1.(j+1) <- min (v1.(j) + 1) (min (v0.(j+1) + 1) (v0.(j) + cost));
+      done;
+
+      (* copy v1 into v0 for next iteration *)
+      Array.blit v1 0 v0 0 (length s2 + 1);
+    done;
+    v1.(length s2)
+  end
+
 let repeat s n =
   assert (n>=0);
   let len = String.length s in

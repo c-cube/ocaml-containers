@@ -517,6 +517,40 @@ val compare_versions : string -> string -> int
 *)
 
 
+val edit_distance : string -> string -> int
+(** Edition distance between two strings. This satisfies the classical
+    distance axioms: it is always positive, symmetric, and satisfies
+    the formula [distance a b + distance b c >= distance a c] *)
+
+(*$Q
+  Q.(string_of_size Gen.(0 -- 30)) (fun s -> \
+    edit_distance s s = 0)
+*)
+
+(* test that building a from s, and mutating one char of s, yields
+   a string s' that is accepted by a.
+
+   --> generate triples (s, i, c) where c is a char, s a non empty string
+   and i a valid index in s
+*)
+
+(*$QR
+  (
+    let gen = Q.Gen.(
+      3 -- 10 >>= fun len ->
+      0 -- (len-1) >>= fun i ->
+      string_size (return len) >>= fun s ->
+      char >|= fun c -> (s,i,c)
+    ) in
+    let small (s,_,_) = String.length s in
+    Q.make ~small gen
+  )
+  (fun (s,i,c) ->
+    let s' = Bytes.of_string s in
+    Bytes.set s' i c;
+    edit_distance s (Bytes.to_string s') <= 1)
+*)
+
 (** {2 Slices} A contiguous part of a string *)
 
 module Sub : sig
