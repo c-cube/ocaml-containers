@@ -26,6 +26,7 @@ by ocamlfind).
 
 {!modules:
 CCArray
+CCArray_slice
 CCBool
 CCChar
 CCFloat

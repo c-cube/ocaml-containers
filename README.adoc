@@ -119,7 +119,8 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCHeap`, a purely functional heap structure
 - `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
 - `CCList`, functions on lists, including tail-recursive implementations of `map` and `append` and many other things
-- `CCArray`, utilities on arrays and slices
+- `CCArray`, utilities on arrays
+- `CCArray_slice`, array slices
 - `CCHashtbl`, `CCMap` extensions of the standard modules `Hashtbl` and `Map`
 - `CCInt`
 - `CCString` (basic string operations)

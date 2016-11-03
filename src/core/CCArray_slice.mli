@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Array utils} *)
+(** {1 Array Slice} *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -11,9 +11,8 @@ type 'a ord = 'a -> 'a -> int
 type 'a random_gen = Random.State.t -> 'a
 type 'a printer = Format.formatter -> 'a -> unit
 
-(** {2 Arrays} *)
-
-type 'a t = 'a array
+type 'a t
+(** Array slice, containing elements of type ['a] *)
 
 val empty : 'a t
 
@@ -26,6 +25,35 @@ val get : 'a t -> int -> 'a
 val get_safe : 'a t -> int -> 'a option
 (** [get_safe a i] returns [Some a.(i)] if [i] is a valid index
     @since 0.18 *)
+
+val make : 'a array -> int -> len:int -> 'a t
+(** Create a slice from given offset and length..
+    @raise Invalid_argument if the slice isn't valid *)
+
+val of_slice : ('a array * int * int) -> 'a t
+(** Make a sub-array from a triple [(arr, i, len)] where [arr] is the array,
+    [i] the offset in [arr], and [len] the number of elements of the slice.
+    @raise Invalid_argument if the slice isn't valid (See {!make}) *)
+
+val to_slice : 'a t -> ('a array * int * int)
+(** Convert into a triple [(arr, i, len)] where [len] is the length of
+    the subarray of [arr] starting at offset [i] *)
+
+val to_list : 'a t -> 'a list
+(** Convert directly to a list
+    @since NEXT_RELEASE *)
+
+val full : 'a array -> 'a t
+(** Slice that covers the full array *)
+
+val underlying : 'a t -> 'a array
+(** Underlying array (shared). Modifying this array will modify the slice *)
+
+val copy : 'a t -> 'a array
+(** Copy into a new array *)
+
+val sub : 'a t -> int -> int -> 'a t
+(** Sub-slice *)
 
 val set : 'a t -> int -> 'a -> unit
 
@@ -161,69 +189,3 @@ val pp: ?sep:string -> 'a printer -> 'a t printer
 
 val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
 (** Print an array, giving the printing function both index and item *)
-
-val map : ('a -> 'b) -> 'a t -> 'b t
-
-val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** Map on two arrays stepwise.
-      @raise Invalid_argument if they have distinct lengths
-      @since 0.20 *)
-
-val rev : 'a t -> 'a t
-(** Copy + reverse in place
-    @since 0.20 *)
-
-val filter : ('a -> bool) -> 'a t -> 'a t
-(** Filter elements out of the array. Only the elements satisfying
-    the given predicate will be kept. *)
-
-val filter_map : ('a -> 'b option) -> 'a t -> 'b t
-(** Map each element into another value, or discard it *)
-
-val flat_map : ('a -> 'b t) -> 'a t -> 'b array
-(** Transform each element into an array, then flatten *)
-
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** Infix version of {!flat_map} *)
-
-val (>>|) : 'a t -> ('a -> 'b) -> 'b t
-(** Infix version of {!map}
-    @since 0.8 *)
-
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** Infix version of {!map}
-    @since 0.8 *)
-
-val except_idx : 'a t -> int -> 'a list
-(** Remove given index, obtaining the list of the other elements *)
-
-val (--) : int -> int -> int t
-(** Range array *)
-
-val (--^) : int -> int -> int t
-(** Range array, excluding right bound
-    @since 0.17 *)
-
-val random : 'a random_gen -> 'a t random_gen
-val random_non_empty : 'a random_gen -> 'a t random_gen
-val random_len : int -> 'a random_gen -> 'a t random_gen
-
-(** {2 Generic Functions} *)
-
-module type MONO_ARRAY = sig
-  type elt
-  type t
-
-  val length : t -> int
-
-  val get : t -> int -> elt
-
-  val set : t -> int -> elt -> unit
-end
-
-val sort_generic :
-  (module MONO_ARRAY with type t = 'arr and type elt = 'elt) ->
-  ?cmp:('elt -> 'elt -> int) -> 'arr -> unit
-(** Sort the array, without allocating (eats stack space though). Performance
-    might be lower than {!Array.sort}.
-    @since 0.14 *)
