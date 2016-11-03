@@ -80,7 +80,7 @@ Library "containers_iter"
 
 Library "containers_string"
   Path:             src/string
-  Modules:          Containers_string, CCKMP, CCLevenshtein, CCApp_parse, CCParse
+  Modules:          Containers_string, CCLevenshtein, CCApp_parse
   BuildDepends:     bytes
   FindlibName:      string
   FindlibParent:    containers
