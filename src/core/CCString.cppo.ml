@@ -222,12 +222,12 @@ module Find = struct
     then P_char sub.[0]
     else P_KMP (kmp_rcompile sub)
 
-  let find ~pattern s start = match pattern with
+  let find ~(pattern:[`Direct] pattern) s start = match pattern with
     | P_char c ->
         (try String.index_from s start c with Not_found -> -1)
     | P_KMP pattern -> kmp_find ~pattern s start
 
-  let rfind ~pattern s start = match pattern with
+  let rfind ~(pattern:[`Reverse] pattern) s start = match pattern with
     | P_char c ->
         (try String.rindex_from s start c with Not_found -> -1)
     | P_KMP pattern -> kmp_rfind ~pattern s start
@@ -655,7 +655,7 @@ let capitalize_ascii s =
   mapi
     (fun i c -> if i=0 then CCChar.uppercase_ascii c else c)
     s
-    
+
 
 let uncapitalize_ascii s =
   mapi
