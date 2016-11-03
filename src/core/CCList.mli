@@ -251,35 +251,36 @@ module Idx : sig
       too high. *)
 end
 
-(** {2 Set Operators} *)
+(** {2 Set Operators}
 
-module Set : sig
-  val add : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [add x set] adds [x] to [set] if it was not already present. Linear time.
-      @since 0.11 *)
+    Those operations maintain the invariant that the list does not
+    contain duplicates (if it already satisfies it) *)
 
-  val remove : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [remove x set] removes one occurrence of [x] from [set]. Linear time.
-      @since 0.11 *)
+val add_nodup : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+(** [add_nodup x set] adds [x] to [set] if it was not already present. Linear time.
+    @since 0.11 *)
 
-  val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
-  (** Membership to the list. Linear time *)
+val remove_one : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+(** [remove_one x set] removes one occurrence of [x] from [set]. Linear time.
+    @since 0.11 *)
 
-  val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-  (** Test for inclusion *)
+val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
+(** Membership to the list. Linear time *)
 
-  val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
-  (** List uniq. Remove duplicates w.r.t the equality predicate.
-      Complexity is quadratic in the length of the list, but the order
-      of elements is preserved. If you wish for a faster de-duplication
-      but do not care about the order, use {!sort_uniq}*)
+val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+(** Test for inclusion *)
 
-  val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** List union. Complexity is product of length of inputs. *)
+val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
+(** Remove duplicates w.r.t the equality predicate.
+    Complexity is quadratic in the length of the list, but the order
+    of elements is preserved. If you wish for a faster de-duplication
+    but do not care about the order, use {!sort_uniq}*)
 
-  val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** List intersection. Complexity is product of length of inputs. *)
-end
+val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+(** List union. Complexity is product of length of inputs. *)
+
+val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+(** List intersection. Complexity is product of length of inputs. *)
 
 (** {2 Other Constructors} *)
 

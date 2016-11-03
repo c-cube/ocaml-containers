@@ -654,71 +654,69 @@ let filter_map f l =
       [ 1; 2; 3; 4; 5; 6 ])
 *)
 
-module Set = struct
-  let mem ?(eq=(=)) x l =
-    let rec search eq x l = match l with
-      | [] -> false
-      | y::l' -> eq x y || search eq x l'
-    in search eq x l
+let mem ?(eq=(=)) x l =
+  let rec search eq x l = match l with
+    | [] -> false
+    | y::l' -> eq x y || search eq x l'
+  in search eq x l
 
-  let add ?(eq=(=)) x l =
-    if mem ~eq x l then l else x::l
+let add_nodup ?(eq=(=)) x l =
+  if mem ~eq x l then l else x::l
 
-  let remove ?(eq=(=)) x l =
-    let rec remove_one ~eq x acc l = match l with
-      | [] -> assert false
-      | y :: tl when eq x y -> List.rev_append acc tl
-      | y :: tl -> remove_one ~eq x (y::acc) tl
-    in
-    if mem ~eq x l then remove_one ~eq x [] l else l
+let remove_one ?(eq=(=)) x l =
+  let rec remove_one ~eq x acc l = match l with
+    | [] -> assert false
+    | y :: tl when eq x y -> List.rev_append acc tl
+    | y :: tl -> remove_one ~eq x (y::acc) tl
+  in
+  if mem ~eq x l then remove_one ~eq x [] l else l
 
-  (*$Q
-    Q.(pair int (list int)) (fun (x,l) -> \
-      Set.remove x (Set.add x l) = l)
-    Q.(pair int (list int)) (fun (x,l) -> \
-      Set.mem x l || List.length (Set.add x l) = List.length l + 1)
-    Q.(pair int (list int)) (fun (x,l) -> \
-      not (Set.mem x l) || List.length (Set.remove x l) = List.length l - 1)
-  *)
+(*$Q
+  Q.(pair int (list int)) (fun (x,l) -> \
+    remove_one x (add_nodup x l) = l)
+  Q.(pair int (list int)) (fun (x,l) -> \
+    mem x l || List.length (add_nodup x l) = List.length l + 1)
+  Q.(pair int (list int)) (fun (x,l) -> \
+    not (mem x l) || List.length (remove_one x l) = List.length l - 1)
+*)
 
-  let subset ?(eq=(=)) l1 l2 =
-    List.for_all
-      (fun t -> mem ~eq t l2)
-      l1
+let subset ?(eq=(=)) l1 l2 =
+  List.for_all
+    (fun t -> mem ~eq t l2)
+    l1
 
-  let uniq ?(eq=(=)) l =
-    let rec uniq eq acc l = match l with
-      | [] -> List.rev acc
-      | x::xs when List.exists (eq x) xs -> uniq eq acc xs
-      | x::xs -> uniq eq (x::acc) xs
-    in uniq eq [] l
+let uniq ?(eq=(=)) l =
+  let rec uniq eq acc l = match l with
+    | [] -> List.rev acc
+    | x::xs when List.exists (eq x) xs -> uniq eq acc xs
+    | x::xs -> uniq eq (x::acc) xs
+  in uniq eq [] l
 
-  (*$T
-    Set.uniq [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
-  *)
+(*$T
+  uniq [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
+*)
 
-  let union ?(eq=(=)) l1 l2 =
-    let rec union eq acc l1 l2 = match l1 with
-      | [] -> List.rev_append acc l2
-      | x::xs when mem ~eq x l2 -> union eq acc xs l2
-      | x::xs -> union eq (x::acc) xs l2
-    in union eq [] l1 l2
+let union ?(eq=(=)) l1 l2 =
+  let rec union eq acc l1 l2 = match l1 with
+    | [] -> List.rev_append acc l2
+    | x::xs when mem ~eq x l2 -> union eq acc xs l2
+    | x::xs -> union eq (x::acc) xs l2
+  in union eq [] l1 l2
 
-  (*$T
-    Set.union [1;2;4] [2;3;4;5] = [1;2;3;4;5]
-  *)
+(*$T
+  union [1;2;4] [2;3;4;5] = [1;2;3;4;5]
+*)
 
-  let inter ?(eq=(=)) l1 l2 =
-    let rec inter eq acc l1 l2 = match l1 with
-      | [] -> List.rev acc
-      | x::xs when mem ~eq x l2 -> inter eq (x::acc) xs l2
-      | _::xs -> inter eq acc xs l2
-    in inter eq [] l1 l2
+let inter ?(eq=(=)) l1 l2 =
+  let rec inter eq acc l1 l2 = match l1 with
+    | [] -> List.rev acc
+    | x::xs when mem ~eq x l2 -> inter eq (x::acc) xs l2
+    | _::xs -> inter eq acc xs l2
+  in inter eq [] l1 l2
 
-  (*$T
-    Set.inter [1;2;4] [2;3;4;5] = [2;4]
-  *)
-end
+(*$T
+  inter [1;2;4] [2;3;4;5] = [2;4]
+*)
 
 module Idx = struct
   let mapi f l =
