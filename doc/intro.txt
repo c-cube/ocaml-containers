@@ -107,7 +107,6 @@ the main type ([CCSexp.t]) isn't.
 
 {!modules:
 CCSexp
-CCSexpM
 }
 
 {4 Containers.iter}
