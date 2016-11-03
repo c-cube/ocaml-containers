@@ -165,11 +165,6 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
   access to elements by their index.
 - `CCImmutArray`, immutable interface to arrays
 
-=== Containers.io
-
-*deprecated*, `CCIO` is now a <<core,core>> module. You can still install it and
-depend on it but it contains no useful module.
-
 === Containers.unix
 
 - `CCUnix`, utils for `Unix`

@@ -121,6 +121,21 @@ CCKList
 CCKTree
 CCLazy_list}
 
+{4 String}
+
+containers.string has been removed. Some of its functionality is present
+in {!CCString}; some in other libraries such as [Spelll].
+
+{4 Bigarrays}
+
+containers.bigarray has been removed. Use the [Bigstring] library for
+arrays of bytes.
+
+{4 Advanced}
+
+containers.advanced has been removed. Use [OLinq] to replace some of its
+functionality.
+
 {4 Misc}
 
 Moved to its own repository.
