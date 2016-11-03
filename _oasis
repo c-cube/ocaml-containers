@@ -38,7 +38,7 @@ Flag "bench"
 
 Library "containers"
   Path:             src/core
-  Modules:          CCVector, CCError, CCHeap, CCList, CCOpt, CCPair,
+  Modules:          CCVector, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
                     CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
                     CCInt64, CCChar, CCResult, Containers
@@ -48,7 +48,7 @@ Library "containers"
 Library "containers_unix"
   Path:             src/unix
   Modules:          CCUnix
-  BuildDepends:     bytes, unix
+  BuildDepends:     bytes, result, unix
   FindlibParent:    containers
   FindlibName:      unix
 

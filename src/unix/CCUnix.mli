@@ -8,7 +8,7 @@ Some useful functions built on top of Unix.
 {b status: unstable}
 @since 0.10 *)
 
-type 'a or_error = [`Ok of 'a | `Error of string]
+type 'a or_error = ('a, string) Result.result
 type 'a gen = unit -> 'a option
 
 (** {2 Calling Commands} *)

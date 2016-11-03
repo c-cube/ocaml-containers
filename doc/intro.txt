@@ -28,7 +28,6 @@ by ocamlfind).
 CCArray
 CCBool
 CCChar
-CCError
 CCFloat
 CCFun
 CCFormat

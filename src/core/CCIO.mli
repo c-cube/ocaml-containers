@@ -36,7 +36,7 @@ Examples:
 
 *)
 
-
+type 'a or_error = ('a, string) Result.result
 type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library *)
 
 (** {2 Input} *)
@@ -127,7 +127,6 @@ See {!File.walk} if you also need to list directories:
 *)
 
 module File : sig
-  type 'a or_error = [`Ok of 'a | `Error of string]
   type t = string
   (** A file should be represented by its absolute path, but currently
       this is not enforced. *)

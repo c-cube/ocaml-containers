@@ -101,9 +101,10 @@ sequence:: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
   It is easier to define on data structures than `gen`, but it a bit less
   powerful.  The opam library https://github.com/c-cube/sequence[sequence]
   can be used to consume and produce values of this type.
-error:: `'a or_error = [`Error of string | `Ok of 'a]` is a error type
-  that is used in other libraries, too. The reference module in containers
-  is `CCError`.
+error:: (DEPRECATED) `'a or_error = [`Error of string | `Ok of 'a]` is a error type
+  that is used in other libraries, too. It is now deprecated and
+  replaced with `('a, string) Result.result`, supported in
+  `CCResult`.
 klist:: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
   without memoization, used as a persistent iterator. The reference
   module is `CCKList` (in `containers.iter`).
@@ -135,7 +136,7 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCOrd` (combinators for total orderings)
 - `CCRandom` (combinators for random generators)
 - `CCHash` (hashing combinators)
-- `CCError` (monadic error handling, very useful)
+- `CCResult` (monadic error handling, very useful)
 - `CCIO`, basic utilities for IO (channels, files)
 - `CCInt64,` utils for `int64`
 - `CCChar`, utils for `char`
@@ -221,7 +222,7 @@ The library has moved to https://github.com/c-cube/containers-misc .
 
 == Documentation
 
-In general, see http://c-cube.github.io/ocaml-containers/ or 
+In general, see http://c-cube.github.io/ocaml-containers/ or
 http://cedeela.fr/~simon/software/containers
 
 by version:
