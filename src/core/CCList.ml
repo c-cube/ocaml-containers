@@ -718,95 +718,93 @@ let inter ?(eq=(=)) l1 l2 =
   inter [1;2;4] [2;3;4;5] = [2;4]
 *)
 
-module Idx = struct
-  let mapi f l =
-    let r = ref 0 in
-    map
-      (fun x ->
-        let y = f !r x in
-        incr r; y
-      ) l
+let mapi f l =
+  let r = ref 0 in
+  map
+    (fun x ->
+       let y = f !r x in
+       incr r; y
+    ) l
 
-  (*$T
-    Idx.mapi (fun i x -> i*x) [10;10;10] = [0;10;20]
-  *)
+(*$T
+  mapi (fun i x -> i*x) [10;10;10] = [0;10;20]
+*)
 
-  let iteri f l =
-    let rec aux f i l = match l with
-      | [] -> ()
-      | x::l' -> f i x; aux f (i+1) l'
-    in aux f 0 l
+let iteri f l =
+  let rec aux f i l = match l with
+    | [] -> ()
+    | x::l' -> f i x; aux f (i+1) l'
+  in aux f 0 l
 
-  let foldi f acc l =
-    let rec foldi f acc i l = match l with
+let foldi f acc l =
+  let rec foldi f acc i l = match l with
     | [] -> acc
     | x::l' ->
       let acc = f acc i x in
       foldi f acc (i+1) l'
-    in
-    foldi f acc 0 l
+  in
+  foldi f acc 0 l
 
-  let rec get_exn l i = match l with
-    | [] -> raise Not_found
-    | x::_ when i=0 -> x
-    | _::l' -> get_exn l' (i-1)
+let rec get_at_idx_exn i l = match l with
+  | [] -> raise Not_found
+  | x::_ when i=0 -> x
+  | _::l' -> get_at_idx_exn (i-1) l'
 
-  let get l i =
-    try Some (get_exn l i)
-    with Not_found -> None
+let get_at_idx i l =
+  try Some (get_at_idx_exn i l)
+  with Not_found -> None
 
-  (*$T
-    Idx.get (range 0 10) 0 = Some 0
-    Idx.get (range 0 10) 5 = Some 5
-    Idx.get (range 0 10) 11 = None
-    Idx.get [] 0 = None
-  *)
+(*$T
+  get_at_idx 0 (range 0 10) = Some 0
+  get_at_idx 5 (range 0 10) = Some 5
+  get_at_idx 11 (range 0 10) = None
+  get_at_idx 0 [] = None
+*)
 
-  let set l0 i x =
-    let rec aux l acc i = match l with
-      | [] -> l0
-      | _::l' when i=0 -> List.rev_append acc (x::l')
-      | y::l' ->
-          aux l' (y::acc) (i-1)
-    in
-    aux l0 [] i
+let set_at_idx i x l0 =
+  let rec aux l acc i = match l with
+    | [] -> l0
+    | _::l' when i=0 -> List.rev_append acc (x::l')
+    | y::l' ->
+      aux l' (y::acc) (i-1)
+  in
+  aux l0 [] i
 
-  (*$T
-    Idx.set [1;2;3] 0 10 = [10;2;3]
-    Idx.set [1;2;3] 4 10 = [1;2;3]
-    Idx.set [1;2;3] 1 10 = [1;10;3]
-   *)
+(*$T
+  set_at_idx 0 10 [1;2;3] = [10;2;3]
+  set_at_idx 4 10 [1;2;3] = [1;2;3]
+  set_at_idx 1 10 [1;2;3] = [1;10;3]
+ *)
 
-  let insert l i x =
-    let rec aux l acc i x = match l with
-      | [] -> List.rev_append acc [x]
-      | y::l' when i=0 -> List.rev_append acc (x::y::l')
-      | y::l' ->
-          aux l' (y::acc) (i-1) x
-    in
-    aux l [] i x
+let insert_at_idx i x l =
+  let rec aux l acc i x = match l with
+    | [] -> List.rev_append acc [x]
+    | y::l' when i=0 -> List.rev_append acc (x::y::l')
+    | y::l' ->
+        aux l' (y::acc) (i-1) x
+  in
+  aux l [] i x
 
-  (*$T
-    Idx.insert [1;2;3] 0 10 = [10;1;2;3]
-    Idx.insert [1;2;3] 4 10 = [1;2;3;10]
-    Idx.insert [1;2;3] 1 10 = [1;10;2;3]
-   *)
+(*$T
+  insert_at_idx 0 10 [1;2;3] = [10;1;2;3]
+  insert_at_idx 4 10 [1;2;3] = [1;2;3;10]
+  insert_at_idx 1 10 [1;2;3] = [1;10;2;3]
+ *)
 
-  let remove l0 i =
-    let rec aux l acc i = match l with
-      | [] -> l0
-      | _::l' when i=0 -> List.rev_append acc l'
-      | y::l' ->
-          aux l' (y::acc) (i-1)
-    in
-    aux l0 [] i
+let remove_at_idx i l0 =
+  let rec aux l acc i = match l with
+    | [] -> l0
+    | _::l' when i=0 -> List.rev_append acc l'
+    | y::l' ->
+        aux l' (y::acc) (i-1)
+  in
+  aux l0 [] i
 
-  (*$T
-    Idx.remove [1;2;3;4] 0 = [2;3;4]
-    Idx.remove [1;2;3;4] 3 = [1;2;3]
-    Idx.remove [1;2;3;4] 5 = [1;2;3;4]
-  *)
-end
+(*$T
+  remove_at_idx 0 [1;2;3;4] = [2;3;4]
+  remove_at_idx 3 [1;2;3;4] = [1;2;3]
+  remove_at_idx 5 [1;2;3;4] = [1;2;3;4]
+*)
 
 let range_by ~step i j =
   let rec range i j acc =

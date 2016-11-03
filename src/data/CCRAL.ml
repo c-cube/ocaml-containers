@@ -65,7 +65,7 @@ let rec set l i v = match l with
 (*$Q & ~small:List.length
    Q.(list small_int) (fun l -> \
     let l1 = of_list l in \
-    CCList.Idx.mapi (fun i x -> i,x) l \
+    CCList.mapi (fun i x -> i,x) l \
       |> List.for_all (fun (i,x) -> get_exn l1 i = x))
 *)
 

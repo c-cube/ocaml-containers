@@ -224,32 +224,30 @@ val group_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list list
 
 (** {2 Indices} *)
 
-module Idx : sig
-  val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
 
-  val iteri : (int -> 'a -> unit) -> 'a t -> unit
+val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
-  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** Fold on list, with index *)
+val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
+(** Fold on list, with index *)
 
-  val get : 'a t -> int -> 'a option
+val get_at_idx : int -> 'a t -> 'a option
 
-  val get_exn : 'a t -> int -> 'a
-  (** Get the i-th element, or
-      @raise Not_found if the index is invalid *)
+val get_at_idx_exn : int -> 'a t -> 'a
+(** Get the i-th element, or
+    @raise Not_found if the index is invalid *)
 
-  val set : 'a t -> int -> 'a -> 'a t
-  (** Set i-th element (removes the old one), or does nothing if
-      index is too high *)
+val set_at_idx : int -> 'a -> 'a t -> 'a t
+(** Set i-th element (removes the old one), or does nothing if
+    index is too high *)
 
-  val insert : 'a t -> int -> 'a -> 'a t
-  (** Insert at i-th position, between the two existing elements. If the
-      index is too high, append at the end of the list *)
+val insert_at_idx : int -> 'a -> 'a t -> 'a t
+(** Insert at i-th position, between the two existing elements. If the
+    index is too high, append at the end of the list *)
 
-  val remove : 'a t -> int -> 'a t
-  (** Remove element at given index. Does nothing if the index is
-      too high. *)
-end
+val remove_at_idx : int -> 'a t -> 'a t
+(** Remove element at given index. Does nothing if the index is
+    too high. *)
 
 (** {2 Set Operators}
 
