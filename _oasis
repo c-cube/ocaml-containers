@@ -59,7 +59,7 @@ Library "containers_data"
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
                     CCMixset, CCHashconsedSet, CCGraph, CCHashSet, CCBitField,
-                    CCHashTrie, CCBloom, CCWBTree, CCRAL, CCAllocCache,
+                    CCHashTrie, CCWBTree, CCRAL, CCAllocCache,
                     CCImmutArray, CCHet, CCZipper
   BuildDepends:     bytes
   # BuildDepends:     bytes, bisect_ppx

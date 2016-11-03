@@ -72,7 +72,6 @@ Various data structures.
 {!modules:
 CCAllocCache
 CCBitField
-CCBloom
 CCBV
 CCCache
 CCDeque
