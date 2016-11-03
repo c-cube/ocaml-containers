@@ -58,8 +58,8 @@ Library "containers_unix"
 
 Library "containers_sexp"
   Path:             src/sexp
-  Modules:          CCSexp, CCSexpM
-  BuildDepends:     bytes
+  Modules:          CCSexp, CCSexp_lex
+  BuildDepends:     bytes, result
   FindlibParent:    containers
   FindlibName:      sexp
 

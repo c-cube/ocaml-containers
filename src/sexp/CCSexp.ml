@@ -1,34 +1,17 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Simple S-expression parsing/printing} *)
+
+type 'a or_error = ('a, string) Result.result
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
 
 type t = [
   | `Atom of string
   | `List of t list
   ]
+type sexp = t
 
 let equal a b = a = b
 
@@ -52,122 +35,241 @@ let of_field name t = `List [`Atom name; t]
 let of_record l =
   `List (List.map (fun (n,x) -> of_field n x) l)
 
-(** {6 Traversal of S-exp} *)
+(** {2 Printing} *)
 
-module Traverse = struct
-  type 'a conv = t -> 'a option
+let _with_out filename f =
+  let oc = open_out filename in
+  try
+    let x = f oc in
+    close_out oc;
+    x
+  with e ->
+    close_out oc;
+    raise e
 
-  let return x = Some x
+(* shall we escape the string because of one of its chars? *)
+let _must_escape s =
+  try
+    for i = 0 to String.length s - 1 do
+      let c = String.unsafe_get s i in
+      match c with
+      | ' ' | ')' | '(' | '"' | ';' | '\\' | '\n' | '\t' | '\r' -> raise Exit
+      | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
+      | _ -> ()
+    done;
+    false
+  with Exit -> true
 
-  let (>|=) e f = match e with
-    | None -> None
-    | Some x -> Some (f x)
+let rec to_buf b t = match t with
+  | `Atom s when _must_escape s -> Printf.bprintf b "\"%s\"" (String.escaped s)
+  | `Atom s -> Buffer.add_string b s
+  | `List [] -> Buffer.add_string b "()"
+  | `List [x] -> Printf.bprintf b "(%a)" to_buf x
+  | `List l ->
+      Buffer.add_char b '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t'))
+        l;
+      Buffer.add_char b ')'
 
-  let (>>=) e f = match e with
-    | None -> None
-    | Some x -> f x
+let to_string t =
+  let b = Buffer.create 128 in
+  to_buf b t;
+  Buffer.contents b
 
-  let map_opt f l =
-    let rec recurse acc l = match l with
-    | [] -> Some (List.rev acc)
-    | x::l' ->
-        match f x with
-        | None -> None
-        | Some y -> recurse (y::acc) l'
-    in recurse [] l
+let rec pp fmt t = match t with
+  | `Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | `Atom s -> Format.pp_print_string fmt s
+  | `List [] -> Format.pp_print_string fmt "()"
+  | `List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" pp x
+  | `List l ->
+      Format.fprintf fmt "@[<hov1>(";
+      List.iteri
+        (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; pp fmt t'))
+        l;
+      Format.fprintf fmt ")@]"
 
-  let rec _list_any f l = match l with
-    | [] -> None
-    | x::tl ->
-        match f x with
-        | Some _ as res -> res
-        | None -> _list_any f tl
+let rec pp_noindent fmt t = match t with
+  | `Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
+  | `Atom s -> Format.pp_print_string fmt s
+  | `List [] -> Format.pp_print_string fmt "()"
+  | `List [x] -> Format.fprintf fmt "(%a)" pp_noindent x
+  | `List l ->
+      Format.pp_print_char fmt '(';
+      List.iteri
+        (fun i t' -> (if i > 0 then Format.pp_print_char fmt ' '; pp_noindent fmt t'))
+        l;
+      Format.pp_print_char fmt ')'
 
-  let list_any f e = match e with
-    | `Atom _ -> None
-    | `List l -> _list_any f l
+let to_chan oc t =
+  let fmt = Format.formatter_of_out_channel oc in
+  pp fmt t;
+  Format.pp_print_flush fmt ()
 
-  let rec _list_all f acc l = match l with
-    | [] -> List.rev acc
-    | x::tl ->
-        match f x with
-        | Some y -> _list_all f (y::acc) tl
-        | None -> _list_all f acc tl
+let to_file_seq filename seq =
+  _with_out filename
+    (fun oc ->
+      seq (fun t -> to_chan oc t; output_char oc '\n')
+    )
 
-  let list_all f e = match e with
-    | `Atom _ -> []
-    | `List l -> _list_all f [] l
+let to_file filename t = to_file_seq filename (fun k -> k t)
 
-  let _try_atom e f = match e with
-    | `List _ -> None
-    | `Atom x -> try Some (f x) with _ -> None
+(** {2 Parsing} *)
 
-  let to_int e = _try_atom e int_of_string
-  let to_bool e = _try_atom e bool_of_string
-  let to_float e = _try_atom e float_of_string
-  let to_string e = _try_atom e (fun x->x)
+let _with_in filename f =
+  let ic = open_in filename in
+  try
+    let x = f ic in
+    close_in ic;
+    x
+  with e ->
+    close_in ic;
+    Result.Error (Printexc.to_string e)
 
-  let to_pair e = match e with
-    | `List [x;y] -> Some (x,y)
-    | _ -> None
+(** A parser of ['a] can return [Yield x] when it parsed a value,
+    or [Fail e] when a parse error was encountered, or
+    [End] if the input was empty *)
+type 'a parse_result =
+  | Yield of 'a
+  | Fail of string
+  | End
 
-  let to_pair_with f1 f2 e =
-    to_pair e >>= fun (x,y) ->
-    f1 x >>= fun x ->
-    f2 y >>= fun y ->
-    return (x,y)
+module Decoder = struct
+  module L = CCSexp_lex
 
-  let to_triple e = match e with
-    | `List [x;y;z] -> Some (x,y,z)
-    | _ -> None
+  type t = {
+    buf: Lexing.lexbuf;
+    mutable cur_tok: L.token option; (* current token *)
+  }
 
-  let to_triple_with f1 f2 f3 e =
-    to_triple e >>= fun (x,y,z) ->
-    f1 x >>= fun x ->
-    f2 y >>= fun y ->
-    f3 z >>= fun z ->
-    return (x,y,z)
+  let cur (t:t): L.token = match t.cur_tok with
+    | Some L.EOI -> assert false
+    | Some t -> t
+    | None ->
+      (* fetch token *)
+      let tok = L.token t.buf in
+      t.cur_tok <- Some tok;
+      tok
 
-  let to_list e = match e with
-    | `List l -> Some l
-    | `Atom _ -> None
+  let junk t = t.cur_tok <- None
 
-  let to_list_with f (e:t) = match e with
-    | `List l -> map_opt f l
-    | `Atom _ -> None
+  let of_lexbuf buf = {
+    buf;
+    cur_tok=None;
+  }
 
-  let rec _get_field name l = match l with
-    | `List [`Atom n; x] :: _ when name=n -> Some x
-    | _ :: tl -> _get_field name tl
-    | [] -> None
+  exception E_end
+  exception E_error of int * int * string
 
-  let get_field name e = match e with
-    | `List l -> _get_field name l
-    | `Atom _ -> None
+  let error_ lexbuf msg =
+    let start = Lexing.lexeme_start_p lexbuf in
+    let line = start.Lexing.pos_lnum in
+    let col = start.Lexing.pos_cnum - start.Lexing.pos_bol in
+    raise (E_error (line,col,msg))
 
-  let field name f e =
-    get_field name e >>= f
-
-  let rec _get_field_list name l = match l with
-    | `List (`Atom n :: tl) :: _ when name=n -> Some tl
-    | _ :: tl -> _get_field_list name tl
-    | [] -> None
-
-  let field_list name f e = match e with
-    | `List l -> _get_field_list name l >>= f
-    | `Atom _ -> None
-
-  let rec _get_variant s args l = match l with
-    | [] -> None
-    | (s', f) :: _ when s=s' -> f args
-    | _ :: tl -> _get_variant s args tl
-
-  let get_variant l e = match e with
-    | `List (`Atom s :: args) -> _get_variant s args l
-    | `List _ -> None
-    | `Atom s -> _get_variant s [] l
-
-  let get_exn e = match e with
-    | None -> failwith "CCSexp.Traverse.get_exn"
-    | Some x -> x
+  let next (t:t) =
+    let rec expr () = match cur t with
+      | L.EOI -> raise E_end
+      | L.ATOM s -> junk t; `Atom s
+      | L.LIST_OPEN ->
+        junk t;
+        let l = lst [] in
+        begin match cur t with
+          | L.LIST_CLOSE -> junk t; `List l
+          | _ -> error_ t.buf "expected ')'"
+        end
+      | L.LIST_CLOSE -> error_ t.buf "expected expression"
+    and lst acc = match cur t with
+      | L.LIST_CLOSE -> List.rev acc
+      | L.LIST_OPEN | L.ATOM _ ->
+        let sub = expr () in
+        lst (sub::acc)
+      | L.EOI -> error_ t.buf "unexpected EOI"
+    in
+    try Yield (expr ())
+    with
+      | E_end -> End
+      | E_error (line,col,msg)
+      | CCSexp_lex.Error (line,col,msg) ->
+        Fail (Printf.sprintf "parse error at %d:%d: %s" line col msg)
 end
+
+let parse_string s : t or_error =
+  let buf = Lexing.from_string s in
+  let d = Decoder.of_lexbuf buf in
+  match Decoder.next d with
+  | End -> Result.Error "unexpected end of file"
+  | Yield x -> Result.Ok x
+  | Fail s -> Result.Error s
+
+(*$T
+  CCResult.to_opt (parse_string "(abc d/e/f \"hello \\\" () world\" )") <> None
+  CCResult.to_opt (parse_string "(abc ( d e ffff   ) \"hello/world\")") <> None
+*)
+
+(*$inject
+  let sexp_gen =
+    let mkatom a = `Atom a and mklist l = `List l in
+    let atom = Q.Gen.(map mkatom (string_size ~gen:printable (1 -- 30))) in
+    let gen = Q.Gen.(
+      sized (fix
+        (fun self n st -> match n with
+        | 0 -> atom st
+        | _ ->
+          frequency
+            [ 1, atom
+            ; 2, map mklist (list_size (0 -- 10) (self (n/10)))
+            ] st
+        )
+    )) in
+    let rec small = function
+      | `Atom s -> String.length s
+      |  `List l -> List.fold_left (fun n x->n+small x) 0 l
+    and print = function
+      | `Atom s -> Printf.sprintf "`Atom \"%s\"" s
+      | `List l -> "`List " ^ Q.Print.list print l
+    and shrink = function
+      | `Atom s -> Q.Iter.map mkatom (Q.Shrink.string s)
+      | `List l -> Q.Iter.map mklist (Q.Shrink.list ~shrink l)
+    in
+    Q.make ~print ~small ~shrink gen
+
+  let rec sexp_valid  = function
+    | `Atom "" -> false
+    | `Atom _ -> true
+    | `List l -> List.for_all sexp_valid l
+*)
+
+(*$Q & ~count:100
+    sexp_gen (fun s -> sexp_valid s ==> (to_string s |> parse_string = Result.Ok s))
+*)
+
+let parse_chan ic : sexp or_error =
+  let buf = Lexing.from_channel ic in
+  let d = Decoder.of_lexbuf buf in
+  match Decoder.next d with
+  | End -> Result.Error "unexpected end of file"
+  | Yield x -> Result.Ok x
+  | Fail e -> Result.Error e
+
+let parse_chan_list ic =
+  let buf = Lexing.from_channel ic in
+  let d = Decoder.of_lexbuf buf in
+  let rec iter acc = match Decoder.next d with
+    | End -> Result.Ok (List.rev acc)
+    | Yield x -> iter (x::acc)
+    | Fail e -> Result.Error e
+  in
+  iter []
+
+let parse_chan_gen ic =
+  let buf = Lexing.from_channel ic in
+  let d = Decoder.of_lexbuf buf in
+  fun () -> match Decoder.next d with
+    | End -> None
+    | Fail e -> Some (Result.Error e)
+    | Yield x -> Some (Result.Ok x)
+
+let parse_file filename = _with_in filename parse_chan
+
+let parse_file_list filename = _with_in filename parse_chan_list
