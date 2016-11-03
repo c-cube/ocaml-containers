@@ -136,13 +136,6 @@ CCLevenshtein
 CCParse
 }
 
-{4 Bigarrays}
-
-{b deprecated} (use package bigstring instead)
-Use bigarrays to hold large strings and map files directly into memory.
-
-{!modules: CCBigstring CCArray1}
-
 {4 Advanced}
 
 {b findlib name}: containers.advanced

@@ -36,10 +36,6 @@ Flag "bench"
   Description:  Build and run benchmarks
   Default:      true
 
-Flag "bigarray"
-  Description:  Build modules that depend on bigarrays
-  Default:      true
-
 Flag "advanced"
   Description:  Build advanced combinators (requires "sequence")
   Default:      true
@@ -109,13 +105,6 @@ Library "containers_advanced"
   FindlibParent:    containers
   BuildDepends:     containers, sequence
 
-Library "containers_bigarray"
-  Path:             src/bigarray
-  Modules:          CCBigstring, CCArray1
-  FindlibName:      bigarray
-  FindlibParent:    containers
-  BuildDepends:     containers, bigarray, bytes
-
 Library "containers_thread"
   Path:             src/threads/
   Modules:          CCPool, CCLock, CCSemaphore, CCThread, CCBlockingQueue,
@@ -140,14 +129,14 @@ Document containers
   Title:                Containers docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Build$:               flag(docs) && flag(advanced) && flag(bigarray) && flag(unix)
+  Build$:               flag(docs) && flag(advanced) && flag(unix)
   Install:              true
   XOCamlbuildPath:      .
   XOCamlbuildExtraArgs:
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.iter, containers.data,
-    containers.string, containers.bigarray, containers.thread,
+    containers.string, containers.thread,
     containers.advanced, containers.io, containers.unix, containers.sexp
 
 Executable run_benchs
@@ -178,7 +167,7 @@ Executable run_qtest
   Build$:           flag(tests) && flag(bigarray) && flag(unix) && flag(advanced)
   BuildDepends:     containers, containers.string, containers.iter,
                     containers.io, containers.advanced, containers.sexp,
-                    containers.bigarray, containers.unix, containers.thread,
+                    containers.unix, containers.thread,
                     containers.data,
                     sequence, gen, unix, oUnit, qcheck
 

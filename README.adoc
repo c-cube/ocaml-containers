@@ -33,7 +33,6 @@ cross-module dependencies).
   a LINQ-like query module, batch operations using GADTs, and others).
 - Utilities around the `unix` library in `containers.unix` (mainly to spawn
   sub-processes)
-- A bigstring module using `bigarray` in `containers.bigarray` (*deprecated*)
 - A lightweight S-expression printer and streaming parser in `containers.sexp`
 
 Some of the modules have been moved to their own repository (e.g. `sequence`,
@@ -262,7 +261,7 @@ branch `stable` it is not necessary.
 To build and run tests (requires `oUnit` and https://github.com/vincent-hugot/iTeML[qtest]):
 
     $ opam install oUnit qtest
-    $ ./configure --enable-tests --enable-unix --enable-bigarray
+    $ ./configure --enable-tests --enable-unix
     $ make test
 
 To build the small benchmarking suite (requires https://github.com/chris00/ocaml-benchmark[benchmark]):
