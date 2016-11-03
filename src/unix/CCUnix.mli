@@ -29,12 +29,13 @@ type call_result =
     errcode:int; (** Extracted from status *)
   >
 
-val call : ?bufsize:int ->
-           ?stdin:[`Gen of string gen | `Str of string] ->
-           ?env:string array ->
-           ('a, Buffer.t, unit, call_result) format4 ->
-           'a
-(** [call cmd] wraps the result of [Unix.open_process_full cmd] into an
+val call_full :
+  ?bufsize:int ->
+  ?stdin:[`Gen of string gen | `Str of string] ->
+  ?env:string array ->
+  ('a, Buffer.t, unit, call_result) format4 ->
+  'a
+(** [call_full cmd] wraps the result of [Unix.open_process_full cmd] into an
     object. It reads the full stdout and stderr of the subprocess before
     returning.
     @param stdin if provided, the generator or string is consumed and fed to
@@ -44,9 +45,31 @@ val call : ?bufsize:int ->
 *)
 
 (*$T
-  (call ~stdin:(`Str "abc") "cat")#stdout = "abc"
-  (call "echo %s" (escape_str "a'b'c"))#stdout = "a'b'c\n"
-  (call "echo %s" "a'b'c")#stdout = "abc\n"
+  call_full ~stdin:(`Str "abc") "cat" |> stdout = "abc"
+  call_full "echo %s" (escape_str "a'b'c") |> stdout = "a'b'c\n"
+  call_full "echo %s" "a'b'c" |> stdout = "abc\n"
+*)
+
+val call :
+  ?bufsize:int ->
+  ?stdin:[`Gen of string gen | `Str of string] ->
+  ?env:string array ->
+  ('a, Buffer.t, unit, string * string * int) format4 ->
+  'a
+(** [call cmd] is similar to [call_full cmd] but returns
+    a tuple [stdout, stderr, errcode] instead of an object. *)
+
+val call_stdout :
+  ?bufsize:int ->
+  ?stdin:[`Gen of string gen | `Str of string] ->
+  ?env:string array ->
+  ('a, Buffer.t, unit, string) format4 ->
+  'a
+
+(*$T
+  call_stdout ~stdin:(`Str "abc") "cat" = "abc"
+  call_stdout "echo %s" (escape_str "a'b'c") = "a'b'c\n"
+  call_stdout "echo %s" "a'b'c" = "abc\n"
 *)
 
 type line = string
@@ -103,6 +126,9 @@ val with_out : ?mode:int -> ?flags:Unix.open_flag list ->
 
 val with_process_in : string -> f:(in_channel -> 'a) -> 'a
 (** Open a subprocess and obtain a handle to its stdout
+    {[
+      CCUnix.with_process_in "ls /tmp" ~f:CCIO.read_lines_l;;
+    ]}
     @since 0.16 *)
 
 val with_process_out : string -> f:(out_channel -> 'a) -> 'a
@@ -115,7 +141,7 @@ type process_full = <
   stdin: out_channel;
   stdout: in_channel;
   stderr: in_channel;
-  close: Unix.process_status;
+  close: Unix.process_status; (** Will block until the process stops *)
 >
 
 val with_process_full : ?env:string array -> string -> f:(process_full -> 'a) -> 'a

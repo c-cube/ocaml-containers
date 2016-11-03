@@ -77,7 +77,7 @@ type call_result =
 
 let kbprintf' buf fmt k = Printf.kbprintf k buf fmt
 
-let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) cmd =
+let call_full_inner ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) ~f cmd =
   (* render the command *)
   let buf = Buffer.create 256 in
   kbprintf' buf cmd
@@ -94,13 +94,26 @@ let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) cmd =
         let out = read_all ~size:bufsize oc in
         let err = read_all ~size:bufsize errc in
         let status = Unix.close_process_full (oc, ic, errc) in
+        f (out,err,status)
+    )
+
+let call_full ?bufsize ?stdin ?env cmd =
+  call_full_inner ?bufsize ?stdin ?env cmd
+    ~f:(fun (out,err,status) ->
         object
           method stdout = out
           method stderr = err
           method status = status
           method errcode = int_of_process_status status
-        end
-    )
+        end)
+
+let call ?bufsize ?stdin ?env cmd =
+  call_full_inner ?bufsize ?stdin ?env cmd
+    ~f:(fun (out,err,status) -> out, err, int_of_process_status status)
+
+let call_stdout ?bufsize ?stdin ?env cmd =
+  call_full_inner ?bufsize ?stdin ?env cmd
+    ~f:(fun (out,_err,_status) -> out)
 
 type line = string
 
@@ -212,7 +225,7 @@ let establish_server sockaddr ~f =
   done
 
 module Infix = struct
-  let (?|) fmt = call fmt
+  let (?|) fmt = call_full fmt
 
   let (?|&) fmt = async_call fmt
 end
