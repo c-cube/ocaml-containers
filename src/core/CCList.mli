@@ -315,29 +315,29 @@ val repeat : int -> 'a t -> 'a t
 module Assoc : sig
   type ('a, 'b) t = ('a*'b) list
 
-  val get : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b option
+  val get : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b option
   (** Find the element *)
 
-  val get_exn : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b
-  (** Same as [get]
+  val get_exn : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b
+  (** Same as [get], but unsafe
       @raise Not_found if the element is not present *)
 
-  val set : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b -> ('a,'b) t
+  val set : ?eq:('a->'a->bool) -> 'a -> 'b -> ('a,'b) t -> ('a,'b) t
   (** Add the binding into the list (erase it if already present) *)
 
-  val mem : ?eq:('a->'a->bool) -> ('a,_) t -> 'a -> bool
-  (** [mem l x] returns [true] iff [x] is a key in [l]
+  val mem : ?eq:('a->'a->bool) -> 'a -> ('a,_) t -> bool
+  (** [mem x l] returns [true] iff [x] is a key in [l]
       @since 0.16 *)
 
   val update :
-    ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> f:('b option -> 'b option) -> ('a,'b) t
-  (** [update l k ~f] updates [l] on the key [k], by calling [f (get l k)]
+    ?eq:('a->'a->bool) -> f:('b option -> 'b option) -> 'a -> ('a,'b) t -> ('a,'b) t
+  (** [update k ~f l] updates [l] on the key [k], by calling [f (get l k)]
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v']
       @since 0.16 *)
 
-  val remove : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> ('a,'b) t
-  (** [remove l k] removes the first occurrence of [k] from [l].
+  val remove : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> ('a,'b) t
+  (** [remove x l] removes the first occurrence of [k] from [l].
       @since 0.17 *)
 end
 
