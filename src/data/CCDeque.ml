@@ -27,7 +27,7 @@ type 'a t = {
 (** The deque, a double linked list of cells *)
 
 (*$inject
-  let plist l = CCPrint.to_string (CCList.pp CCInt.pp) l
+  let plist l = CCFormat.(to_string (list int)) l
   let pint i = string_of_int i
 *)
 

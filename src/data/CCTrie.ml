@@ -662,7 +662,7 @@ module Make(W : WORD)
   let below key t =
     _half_range ~dir:Below ~p:(fun ~cur ~other -> W.compare cur other > 0) key t
 
-  (*$= & ~printer:CCPrint.(to_string (list (pair (list int) string)))
+  (*$= & ~printer:CCFormat.(to_string (list (pair (list int) string)))
     [ [1], "1"; [1;2], "12"; [1;2;3], "123"; [2;1], "21" ] \
       (T.above [1] t1 |> Sequence.to_list)
     [ [1;2], "12"; [1;2;3], "123"; [2;1], "21" ] \

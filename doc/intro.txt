@@ -43,7 +43,6 @@ CCMap
 CCOpt
 CCOrd
 CCPair
-CCPrint
 CCRandom
 CCRef
 CCResult

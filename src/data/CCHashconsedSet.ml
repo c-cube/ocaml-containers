@@ -357,7 +357,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
       let s = S.of_list l in S.equal s (S.union s s))
   *)
 
-  (*$= & ~printer:(CCPrint.to_string (CCList.pp CCInt.pp))
+  (*$= & ~printer:(CCFormat.(to_string (list int)))
     [1;2;4;5;6;7;8;10] (let module S = Make(CCInt) in \
     let s1 = S.of_list [1;2;4;5;  7;8   ] in \
     let s2 = S.of_list [  2;4;  6;7;  10] in \
@@ -400,7 +400,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
       let s = S.of_list l in S.equal s (S.inter s s))
   *)
 
-  (*$= & ~printer:(CCPrint.to_string (CCList.pp CCInt.pp))
+  (*$= & ~printer:(CCFormat.(to_string (list int)))
     [2;4;7] (let module S = Make(CCInt) in \
     let s1 = S.of_list [1;2;4;5;  7;8   ] in \
     let s2 = S.of_list [  2;4;  6;7;  10] in \
@@ -443,7 +443,7 @@ module Make(E : ELT) : S with type elt = E.t = struct
         else diff a r2
       else a
 
-  (*$= & ~printer:(CCPrint.to_string (CCList.pp CCInt.pp))
+  (*$= & ~printer:(CCFormat.(to_string (list int)))
     [1;5;8] (let module S = Make(CCInt) in \
     let s1 = S.of_list [1;2;4;5;  7;8   ] in \
     let s2 = S.of_list [  2;4;  6;7;  10] in \

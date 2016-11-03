@@ -96,7 +96,7 @@ exception ParseError of line_num * col_num * (unit -> string)
 (*$R
   let p = U.list ~sep:"," U.word in
   let printer = function
-    | `Ok l -> "Ok " ^ CCPrint.to_string (CCList.pp CCString.pp) l
+    | `Ok l -> "Ok " ^ CCFormat.(to_string (list string)) l
     | `Error s -> "Error " ^ s
   in
   assert_equal ~printer

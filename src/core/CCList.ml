@@ -1231,10 +1231,6 @@ let pp ?(start="") ?(stop="") ?(sep=", ") pp_item buf l =
     | [] -> ()
   in Buffer.add_string buf start; print l; Buffer.add_string buf stop
 
-(*$T
-  CCPrint.to_string (pp ~start:"[" ~stop:"]" CCPrint.int) [1;2;3] = "[1, 2, 3]"
-  *)
-
 let print ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
   let rec print fmt l = match l with
     | x::((_::_) as l) ->
@@ -1248,3 +1244,7 @@ let print ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
   Format.pp_print_string fmt start;
   print fmt l;
   Format.pp_print_string fmt stop
+
+(*$= & ~printer:(fun s->s)
+  "[1, 2, 3]" (CCFormat.to_string (CCFormat.hbox(print ~start:"[" ~stop:"]" CCFormat.int)) [1;2;3])
+  *)

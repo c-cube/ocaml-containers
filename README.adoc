@@ -134,7 +134,6 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCFloat`
 - `CCOrd` (combinators for total orderings)
 - `CCRandom` (combinators for random generators)
-- `CCPrint` (printing combinators)
 - `CCHash` (hashing combinators)
 - `CCError` (monadic error handling, very useful)
 - `CCIO`, basic utilities for IO (channels, files)
