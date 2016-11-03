@@ -36,10 +36,6 @@ Flag "bench"
   Description:  Build and run benchmarks
   Default:      true
 
-Flag "advanced"
-  Description:  Build advanced combinators (requires "sequence")
-  Default:      true
-
 Library "containers"
   Path:             src/core
   Modules:          CCVector, CCError, CCHeap, CCList, CCOpt, CCPair,
@@ -89,15 +85,6 @@ Library "containers_string"
   FindlibName:      string
   FindlibParent:    containers
 
-Library "containers_advanced"
-  Path:             src/advanced
-  Modules:          Containers_advanced, CCLinq, CCBatch, CCCat, CCMonadIO
-  Build$:           flag(advanced)
-  Install$:         flag(advanced)
-  FindlibName:      advanced
-  FindlibParent:    containers
-  BuildDepends:     containers, sequence
-
 Library "containers_thread"
   Path:             src/threads/
   Modules:          CCPool, CCLock, CCSemaphore, CCThread, CCBlockingQueue,
@@ -122,7 +109,7 @@ Document containers
   Title:                Containers docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Build$:               flag(docs) && flag(advanced) && flag(unix)
+  Build$:               flag(docs) && flag(unix)
   Install:              true
   XOCamlbuildPath:      .
   XOCamlbuildExtraArgs:
@@ -130,7 +117,7 @@ Document containers
   XOCamlbuildLibraries:
     containers, containers.iter, containers.data,
     containers.string, containers.thread,
-    containers.advanced, containers.unix, containers.sexp
+    containers.unix, containers.sexp
 
 Executable run_benchs
   Path:             benchs/
@@ -138,7 +125,7 @@ Executable run_benchs
   CompiledObject:   best
   Build$:           flag(bench)
   MainIs:           run_benchs.ml
-  BuildDepends:     containers, containers.advanced, qcheck,
+  BuildDepends:     containers, qcheck,
                     containers.data, containers.string, containers.iter,
                     containers.thread, sequence, gen, benchmark, hamt
 
@@ -157,9 +144,9 @@ Executable run_qtest
   Install:          false
   CompiledObject:   best
   MainIs:           run_qtest.ml
-  Build$:           flag(tests) && flag(bigarray) && flag(unix) && flag(advanced)
+  Build$:           flag(tests) && flag(bigarray) && flag(unix)
   BuildDepends:     containers, containers.string, containers.iter,
-                    containers.advanced, containers.sexp,
+                    containers.sexp,
                     containers.unix, containers.thread,
                     containers.data,
                     sequence, gen, unix, oUnit, qcheck
@@ -167,7 +154,7 @@ Executable run_qtest
 Test all
   Command:      ./run_qtest.native
   TestTools:    run_qtest
-  Run$:         flag(tests) && flag(unix) && flag(advanced) && flag(bigarray)
+  Run$:         flag(tests) && flag(unix) && flag(bigarray)
 
 Executable mem_measure
   Path:             benchs/

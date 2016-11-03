@@ -131,15 +131,6 @@ CCLevenshtein
 CCParse
 }
 
-{4 Advanced}
-
-{b findlib name}: containers.advanced
-
-This module is qualified with [Containers_advanced]. It
-requires {{:https://github.com/c-cube/sequence} Sequence}.
-
-{!modules: CCLinq CCCat CCBatch}
-
 {4 Misc}
 
 Moved to its own repository.

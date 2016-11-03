@@ -74,8 +74,6 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/unix/*.mli) \
 	$(wildcard src/sexp/*.ml) \
 	$(wildcard src/sexp/*.mli) \
-	$(wildcard src/advanced/*.ml) \
-	$(wildcard src/advanced/*.mli) \
 	$(wildcard src/iter/*.ml) \
 	$(wildcard src/iter/*.mli) \
 	$(wildcard src/bigarray/*.ml) \
