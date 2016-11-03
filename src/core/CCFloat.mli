@@ -41,12 +41,10 @@ val equal : t -> t -> bool
 
 val compare : t -> t -> int
 
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val pp : t printer
-val print : t formatter
 
 val hash : t -> int
 

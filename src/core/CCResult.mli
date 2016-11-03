@@ -10,8 +10,7 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -194,12 +193,4 @@ val to_err : ('a, 'b) t -> ('a, 'b) error
 val pp : 'a printer -> ('a, string) t printer
 
 val pp': 'a printer -> 'e printer -> ('a, 'e) t printer
-(** Printer that is generic on the error type
-    @since 0.19 *)
-
-val print : 'a formatter -> ('a, string) t formatter
-
-val print' : 'a formatter -> 'e formatter -> ('a, 'e) t formatter
-(** Printer that is generic on the error type
-    @since 0.19 *)
-
+(** Printer that is generic on the error type *)

@@ -488,8 +488,7 @@ end
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val random : 'a random_gen -> 'a t random_gen
@@ -533,6 +532,3 @@ end
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
          'a printer -> 'a t printer
-
-val print : ?start:string -> ?stop:string -> ?sep:string ->
-            'a formatter -> 'a t formatter

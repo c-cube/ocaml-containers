@@ -6,8 +6,7 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -257,18 +256,10 @@ let to_err = function
 
 (** {2 IO} *)
 
-let pp pp_x buf e = match e with
-  | Ok x -> Printf.bprintf buf "ok(%a)" pp_x x
-  | Error s -> Printf.bprintf buf "error(%s)" s
-
-let pp' pp_x pp_e buf e = match e with
-  | Ok x -> Printf.bprintf buf "ok(%a)" pp_x x
-  | Error s -> Printf.bprintf buf "error(%a)" pp_e s
-
-let print pp_x fmt e = match e with
+let pp pp_x fmt e = match e with
   | Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
   | Error s -> Format.fprintf fmt "@[error(@,%s)@]" s
 
-let print' pp_x pp_e fmt e = match e with
+let pp' pp_x pp_e fmt e = match e with
   | Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
   | Error s -> Format.fprintf fmt "@[error(@,%a)@]" pp_e s

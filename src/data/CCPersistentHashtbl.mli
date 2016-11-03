@@ -11,8 +11,7 @@ old values).
 This module is not thread-safe. *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a equal = 'a -> 'a -> bool
 
 module type HashedType = sig
@@ -118,9 +117,7 @@ module type S = sig
 
   val equal : 'a equal -> 'a t equal
 
-  val pp : key printer -> 'a printer -> 'a t printer
-
-  val print : key formatter -> 'a formatter -> 'a t formatter
+  val pp : ?sep:string -> ?arrow:string -> key printer -> 'a printer -> 'a t printer
 
   val stats : _ t -> Hashtbl.statistics
   (** Statistics on the internal table.

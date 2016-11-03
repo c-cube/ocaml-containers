@@ -7,8 +7,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -211,7 +210,7 @@ val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
     @since 0.13 *)
 
 (** {2 Infix operators}
-    
+
     @since 0.17 *)
 
 module Infix : sig
@@ -268,9 +267,5 @@ val of_gen : 'a gen -> 'a t
 (** {2 IO} *)
 
 val pp : ?sep:string -> 'a printer -> 'a t printer
-(** Print the list with the given separator (default ",").
-    Does not print opening/closing delimiters *)
-
-val print : ?sep:string -> 'a formatter -> 'a t formatter
 (** Print the list with the given separator (default ",").
     Does not print opening/closing delimiters *)

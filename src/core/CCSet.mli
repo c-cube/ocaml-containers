@@ -6,8 +6,7 @@
     @since 0.9 *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   include Set.S
@@ -29,10 +28,6 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
-
-  val print :
-    ?start:string -> ?stop:string -> ?sep:string ->
-    elt formatter -> t formatter
 end
 
 module Make(O : Set.OrderedType) : S

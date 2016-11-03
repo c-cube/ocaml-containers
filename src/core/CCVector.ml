@@ -11,8 +11,7 @@ type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** A vector of 'a. *)
 type ('a,'mut) t = {
@@ -737,16 +736,7 @@ let to_klist v =
     else `Cons (v.vec.(i), aux (i+1))
   in aux 0
 
-let pp ?(start="") ?(stop="") ?(sep=", ") pp_item buf v =
-  Buffer.add_string buf start;
-  iteri
-    (fun i x ->
-      if i > 0 then Buffer.add_string buf sep;
-      pp_item buf x
-    ) v;
-  Buffer.add_string buf stop
-
-let print ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
+let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
   Format.pp_print_string fmt start;
   iteri
     (fun i x ->

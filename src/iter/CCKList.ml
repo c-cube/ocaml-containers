@@ -7,8 +7,7 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 type + 'a t = unit ->
   [ `Nil
@@ -528,16 +527,7 @@ end
 
 (** {2 IO} *)
 
-let pp ?(sep=",") pp_item buf l =
-  let rec pp buf l = match l() with
-    | `Nil -> ()
-    | `Cons (x,l') -> Buffer.add_string buf sep; pp_item buf x; pp buf l'
-  in
-  match l() with
-    | `Nil -> ()
-    | `Cons (x,l') -> pp_item buf x; pp buf l'
-
-let print ?(sep=",") pp_item fmt l =
+let pp ?(sep=",") pp_item fmt l =
   let rec pp fmt l = match l() with
     | `Nil -> ()
     | `Cons (x,l') ->

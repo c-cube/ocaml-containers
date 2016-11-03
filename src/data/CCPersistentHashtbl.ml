@@ -4,8 +4,7 @@
 (** {1 Persistent hash-table on top of OCaml's hashtables} *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a equal = 'a -> 'a -> bool
 
 module type HashedType = sig
@@ -111,9 +110,7 @@ module type S = sig
 
   val equal : 'a equal -> 'a t equal
 
-  val pp : key printer -> 'a printer -> 'a t printer
-
-  val print : key formatter -> 'a formatter -> 'a t formatter
+  val pp : ?sep:string -> ?arrow:string -> key printer -> 'a printer -> 'a t printer
 
   val stats : _ t -> Hashtbl.statistics
   (** Statistics on the internal table.
@@ -636,26 +633,15 @@ module Make(H : HashedType) : S with type key = H.t = struct
         | Some v' -> eq v v'
       ) t1
 
-  let pp pp_k pp_v buf t =
-    Buffer.add_string buf "{";
-    let first = ref true in
-    iter t
-      (fun k v ->
-        if !first then first:=false else Buffer.add_string buf ", ";
-        Printf.bprintf buf "%a -> %a" pp_k k pp_v v
-      );
-    Buffer.add_string buf "}"
-
-  let print pp_k pp_v fmt t =
-    Format.pp_print_string fmt "{";
+  let pp ?(sep=",") ?(arrow="->") pp_k pp_v fmt t =
     let first = ref true in
     iter t
       (fun k v ->
         if !first then first:=false
-        else (Format.pp_print_string fmt ", "; Format.pp_print_cut fmt ());
-        Format.fprintf fmt "%a -> %a" pp_k k pp_v v
+        else (Format.pp_print_string fmt sep; Format.pp_print_cut fmt ());
+        Format.fprintf fmt "%a %s %a" pp_k k arrow pp_v v
       );
-    Format.pp_print_string fmt "}"
+    ()
 
   let stats t =
     let a = reroot_ t in

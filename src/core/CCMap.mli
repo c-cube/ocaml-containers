@@ -7,8 +7,7 @@
     @since 0.5 *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   include Map.S
@@ -58,10 +57,6 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
     key printer -> 'a printer -> 'a t printer
-
-  val print :
-    ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
-    key formatter -> 'a formatter -> 'a t formatter
 end
 
 module Make(O : Map.OrderedType) : S

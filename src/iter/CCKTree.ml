@@ -31,8 +31,7 @@ is a structural type. *)
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 type +'a t = unit -> [`Nil | `Node of 'a * 'a t list]
 
@@ -186,7 +185,7 @@ let find ?pset f t =
 
 (** {2 Pretty-printing} *)
 
-let print pp_x fmt t =
+let pp pp_x fmt t =
   (* at depth [lvl] *)
   let rec pp fmt t = match t with
     | `Nil -> ()
@@ -273,7 +272,7 @@ module Dot = struct
         Format.pp_print_char fmt ',';
         _pp_attrs fmt l'
 
-  let print fmt (name,l) =
+  let pp out (name,l) =
     (* nodes already printed *)
     let tbl = Hashtbl.create 32 in
     (* fresh name generator *)
@@ -303,11 +302,11 @@ module Dot = struct
           let name, attrs = get_name x in
           begin match parent with
             | None -> ()
-            | Some n -> Format.fprintf fmt "  %s -> %s;@," n name
+            | Some n -> Format.fprintf out "  %s -> %s;@," n name
           end;
           if not (Hashtbl.mem tbl name) then (
             Hashtbl.add tbl name ();
-            Format.fprintf fmt "@[%s [%a];@]@," name _pp_attrs attrs;
+            Format.fprintf out "@[%s [%a];@]@," name _pp_attrs attrs;
             List.fold_left
               (fun q y -> FQ.push q (Some name, y)) q l
           ) else q
@@ -318,23 +317,18 @@ module Dot = struct
         FQ.empty l
     in
     (* preamble *)
-    Format.fprintf fmt "@[<hv 2>digraph \"%s\" {@," name;
+    Format.fprintf out "@[<hv 2>digraph \"%s\" {@," name;
     aux q;
-    Format.fprintf fmt "}@]@.";
+    Format.fprintf out "}@]@.";
     ()
 
-  let pp buf t =
-    let fmt = Format.formatter_of_buffer buf in
-    print fmt t;
-    Format.pp_print_flush fmt ()
-
-  let pp_single name buf t = pp buf (singleton ~name t)
+  let pp_single name out t = pp out (singleton ~name t)
 
   let print_to_file filename g =
     let oc = open_out filename in
     let fmt = Format.formatter_of_out_channel oc in
     try
-      print fmt g;
+      pp fmt g;
       Format.pp_print_flush fmt ();
       close_out oc
     with e ->

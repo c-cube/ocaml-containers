@@ -9,6 +9,7 @@ type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a random_gen = Random.State.t -> 'a
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   type 'a t
@@ -155,17 +156,11 @@ module type S = sig
 
   (** {2 IO} *)
 
-  val pp: ?sep:string -> (Buffer.t -> 'a -> unit) ->
-          Buffer.t -> 'a t -> unit
+  val pp: ?sep:string -> 'a printer -> 'a t printer
   (** Print an array of items with printing function *)
 
-  val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit) ->
-            Buffer.t -> 'a t -> unit
+  val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
   (** Print an array, giving the printing function both index and item *)
-
-  val print : ?sep:string -> (Format.formatter -> 'a -> unit) ->
-              Format.formatter -> 'a t -> unit
-  (** Print an array of items with printing function *)
 end
 
 (** {2 General Implementation}
@@ -299,22 +294,16 @@ let _choose a i j st =
   if i>=j then raise Not_found;
   a.(i+Random.State.int st (j-i))
 
-let _pp ~sep pp_item buf a i j =
+let _pp ~sep pp_item out a i j =
   for k = i to j - 1 do
-    if k > i then Buffer.add_string buf sep;
-    pp_item buf a.(k)
+    if k > i then (Format.pp_print_string out sep; Format.pp_print_cut out ());
+    pp_item out a.(k)
   done
 
-let _pp_i ~sep pp_item buf a i j =
+let _pp_i ~sep pp_item out a i j =
   for k = i to j - 1 do
-    if k > i then Buffer.add_string buf sep;
-    pp_item buf k a.(k)
-  done
-
-let _print ~sep pp_item fmt a i j =
-  for k = i to j - 1 do
-    if k > i then (Format.pp_print_string fmt sep; Format.pp_print_cut fmt ());
-    pp_item fmt a.(k)
+    if k > i then (Format.pp_print_string out sep; Format.pp_print_cut out ());
+    pp_item k out a.(k)
   done
 
 let _to_gen a i j =
@@ -654,11 +643,9 @@ let random_non_empty g st =
   let n = 1 + Random.State.int st 1_000 in
   random_len n g st
 
-let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a 0 (Array.length a)
+let pp ?(sep=", ") pp_item out a = _pp ~sep pp_item out a 0 (Array.length a)
 
-let pp_i ?(sep=", ") pp_item buf a = _pp_i ~sep pp_item buf a 0 (Array.length a)
-
-let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a 0 (Array.length a)
+let pp_i ?(sep=", ") pp_item out a = _pp_i ~sep pp_item out a 0 (Array.length a)
 
 let to_seq a k = iter k a
 
@@ -900,10 +887,8 @@ module Sub = struct
 
   let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a.arr a.i a.j
 
-  let pp_i ?(sep=", ") pp_item buf a =
-    _pp_i ~sep (fun out k x -> pp_item out (k-a.i) x) buf a.arr a.i a.j
-
-  let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a.arr a.i a.j
+  let pp_i ?(sep=", ") pp_item out a =
+    _pp_i ~sep (fun k out x -> pp_item (k-a.i) out x) out a.arr a.i a.j
 
   let to_seq a k = iter k a
 

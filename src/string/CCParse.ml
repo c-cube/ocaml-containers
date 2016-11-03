@@ -110,7 +110,7 @@ exception ParseError of line_num * col_num * (unit -> string)
 
     let l = CCList.(1 -- n) in
     let l_printed =
-      CCFormat.to_string (CCList.print ~sep:"," ~start:"[" ~stop:"]" CCInt.print) l in
+      CCFormat.(to_string (list ~start:"[" ~stop:"]" ~sep:"," int)) l in
 
     let l' = CCParse.parse_string_exn ~p l_printed in
 
@@ -136,7 +136,7 @@ exception ParseError of line_num * col_num * (unit -> string)
           (fun oc ->
             let fmt = Format.formatter_of_out_channel oc in
             Format.fprintf fmt "@[%a@]@."
-              (CCList.print ~sep:"," ~start:"[" ~stop:"]" CCInt.print) l);
+              CCFormat.(list ~start:"[" ~stop:"]" ~sep:"," int) l);
          (* parse it back *)
          CCParse.parse_file_exn ~size:1024 ~file:name ~p)
     in

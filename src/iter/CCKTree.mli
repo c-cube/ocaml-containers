@@ -31,8 +31,7 @@ is a structural type. *)
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -119,7 +118,7 @@ Example (tree of calls for naive Fibonacci function):
 ]}
 *)
 
-val print : 'a formatter -> 'a t formatter
+val pp : 'a printer -> 'a t printer
 (** A pretty-printer using S-expressions and boxes to render the tree.
     Empty nodes are not rendered; sharing is ignored.
     @since 0.9 *)
@@ -150,13 +149,10 @@ module Dot : sig
 
   val singleton : name:string -> attribute list t -> graph
 
-  val pp : graph printer
-  (** Print the graph in DOT *)
-
   val pp_single : string -> attribute list t printer
 
-  val print : graph formatter
-  (** Printer with indentation, etc.
+  val pp : graph printer
+  (** Printer to DOT with indentation, etc.
       @since 0.6.1 *)
 
   val print_to_file : string -> graph -> unit

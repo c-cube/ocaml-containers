@@ -4,8 +4,7 @@
 (** {1 Extensions of Standard Map} *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   include Map.S
@@ -55,10 +54,6 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
     key printer -> 'a printer -> 'a t printer
-
-  val print :
-    ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
-    key formatter -> 'a formatter -> 'a t formatter
 end
 
 module Make(O : Map.OrderedType) = struct
@@ -113,19 +108,7 @@ module Make(O : Map.OrderedType) = struct
   let to_list m =
     fold (fun k v acc -> (k,v)::acc) m []
 
-  let pp ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v buf m =
-    let first = ref true in
-    Buffer.add_string buf start;
-    iter
-      (fun k v ->
-         if !first then first := false else Buffer.add_string buf sep;
-         pp_k buf k;
-         Buffer.add_string buf arrow;
-         pp_v buf v)
-      m;
-    Buffer.add_string buf stop
-
-  let print ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
+  let pp ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
     Format.pp_print_string fmt start;
     let first = ref true in
     iter

@@ -1136,8 +1136,7 @@ end
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 let random_len len g st =
@@ -1221,17 +1220,7 @@ end
 
 (** {2 IO} *)
 
-let pp ?(start="") ?(stop="") ?(sep=", ") pp_item buf l =
-  let rec print l = match l with
-    | x::((_::_) as l) ->
-      pp_item buf x;
-      Buffer.add_string buf sep;
-      print l
-    | x::[] -> pp_item buf x
-    | [] -> ()
-  in Buffer.add_string buf start; print l; Buffer.add_string buf stop
-
-let print ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
+let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
   let rec print fmt l = match l with
     | x::((_::_) as l) ->
       pp_item fmt x;
@@ -1246,5 +1235,8 @@ let print ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
   Format.pp_print_string fmt stop
 
 (*$= & ~printer:(fun s->s)
-  "[1, 2, 3]" (CCFormat.to_string (CCFormat.hbox(print ~start:"[" ~stop:"]" CCFormat.int)) [1;2;3])
+  "[1, 2, 3]" \
+      (CCFormat.to_string \
+        (CCFormat.hbox(CCList.pp ~start:"[" ~stop:"]" CCFormat.int)) \
+        [1;2;3])
   *)

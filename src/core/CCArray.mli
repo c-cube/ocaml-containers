@@ -9,6 +9,7 @@ type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a random_gen = Random.State.t -> 'a
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Abstract Signature} *)
 
@@ -157,17 +158,11 @@ module type S = sig
 
   (** {2 IO} *)
 
-  val pp: ?sep:string -> (Buffer.t -> 'a -> unit) ->
-          Buffer.t -> 'a t -> unit
+  val pp: ?sep:string -> 'a printer -> 'a t printer
   (** Print an array of items with printing function *)
 
-  val pp_i: ?sep:string -> (Buffer.t -> int -> 'a -> unit) ->
-            Buffer.t -> 'a t -> unit
+  val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
   (** Print an array, giving the printing function both index and item *)
-
-  val print : ?sep:string -> (Format.formatter -> 'a -> unit) ->
-              Format.formatter -> 'a t -> unit
-  (** Print an array of items with printing function *)
 end
 
 (** {2 Arrays} *)

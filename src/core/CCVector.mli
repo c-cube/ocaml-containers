@@ -24,8 +24,7 @@ type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 val freeze : ('a, _) t -> ('a, ro) t
 (** Make an immutable vector (no copy! Don't use the old version)*)
@@ -275,6 +274,3 @@ val to_gen : ('a,_) t -> 'a gen
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
          'a printer -> ('a,_) t printer
-
-val print : ?start:string -> ?stop:string -> ?sep:string ->
-            'a formatter -> ('a,_) t formatter
