@@ -205,6 +205,7 @@ let parse_string s : t or_error =
 (*$T
   CCResult.to_opt (parse_string "(abc d/e/f \"hello \\\" () world\" )") <> None
   CCResult.to_opt (parse_string "(abc ( d e ffff   ) \"hello/world\")") <> None
+  CCResult.to_opt (parse_string "\"\123\bcoucou\"") <> None
 *)
 
 (*$inject
