@@ -70,7 +70,6 @@ such as:
 Various data structures.
 
 {!modules:
-CCAllocCache
 CCBitField
 CCBV
 CCCache
