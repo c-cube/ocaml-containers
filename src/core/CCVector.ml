@@ -737,7 +737,7 @@ let to_klist v =
     else `Cons (v.vec.(i), aux (i+1))
   in aux 0
 
-let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf v =
+let pp ?(start="") ?(stop="") ?(sep=", ") pp_item buf v =
   Buffer.add_string buf start;
   iteri
     (fun i x ->
@@ -746,7 +746,7 @@ let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf v =
     ) v;
   Buffer.add_string buf stop
 
-let print ?(start="[") ?(stop="]") ?(sep=", ") pp_item fmt v =
+let print ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
   Format.pp_print_string fmt start;
   iteri
     (fun i x ->

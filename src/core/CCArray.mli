@@ -53,6 +53,29 @@ module type S = sig
   val reverse_in_place : 'a t -> unit
   (** Reverse the array in place *)
 
+  val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
+  (** [sorted cmp a] makes a copy of [a] and sorts it with [cmp].
+      @since 0.21 *)
+
+  val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
+  (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
+      such that [b.(i)] is the index of the [i]-th element of [a] in [sort cmp a].
+      In other words, [map (fun i -> a.(i)) (sort_indices a) = sorted cmp a].
+      [a] is not modified.
+      @since 0.21 *)
+
+  val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
+  (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
+      such that [b.(i)] is the position in [sorted cmp a] of the [i]-th
+      element of [a].
+      [a] is not modified.
+
+      In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].
+
+      Without duplicates, we also have
+      [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
+      @since 0.21 *)
+
   val find : ('a -> 'b option) -> 'a t -> 'b option
   (** [find f a] returns [Some y] if there is an element [x] such
       that [f x = Some y], else it returns [None] *)
@@ -223,6 +246,10 @@ module Sub : sig
   val to_slice : 'a t -> ('a array * int * int)
   (** Convert into a triple [(arr, i, len)] where [len] is the length of
       the subarray of [arr] starting at offset [i] *)
+
+  val to_list : 'a t -> 'a list
+  (** Convert directly to a list
+      @since 0.21 *)
 
   val full : 'a array -> 'a t
   (** Slice that covers the full array *)

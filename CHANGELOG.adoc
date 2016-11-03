@@ -1,5 +1,20 @@
 = Changelog
 
+== 0.21
+
+- (breaking) make default `start`/`stop` arguments empty in printers (#82)
+
+- add `CCFormat.{with_color_sf,fprintf_dyn_color,sprintf_dyn_color}`
+- add `CCFormat.Dump` for easy debugging (see #82)
+- add `CCArray.Sub.to_list`
+- add `CCArray.{sorted,sort_indices,sort_ranking}` (closes #81)
+
+- handle '\r` in CCSexpM (fixes #83)
+- add alias `Containers.IO`
+- bugfixes in `CCArray.Sub`
+- bugfix + tests for `CCArray.Sub.sub`
+- disable parallel build to support cygwin
+
 == 0.20
 
 - bugfix in `CCArray.equal`

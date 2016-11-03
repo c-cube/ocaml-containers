@@ -41,7 +41,7 @@ let _must_escape s =
     for i = 0 to String.length s - 1 do
       let c = String.unsafe_get s i in
       match c with
-      | ' ' | ';' | ')' | '(' | '"' | '\\' | '\n' | '\t' -> raise Exit
+      | ' ' | ';' | ')' | '(' | '"' | '\\' | '\n' | '\t' | '\r' -> raise Exit
       | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
       | _ -> ()
     done;
@@ -176,11 +176,11 @@ module MakeDecode(M : MONAD) = struct
   let rec expr k t =
     if t.i = t.len then _refill t (expr k) _error_eof
     else match _get t with
-    | ' ' | '\t' | '\n' -> expr k t
+    | ' ' | '\t' | '\r' | '\n' -> expr k t
     | c -> expr_starting_with c k t
 
   and expr_starting_with c k t = match c with
-    | ' ' | '\t' | '\n' -> assert false
+    | ' ' | '\t' | '\r' | '\n' -> assert false
     | ';' -> skip_comment (fun _ () -> expr k t) t
     | '(' -> expr_list [] k t
     | ')' -> _error t "unexpected ')'"
@@ -194,7 +194,7 @@ module MakeDecode(M : MONAD) = struct
   and expr_list acc k t =
     if t.i = t.len then _refill t (expr_list acc k) _error_eof
     else match _get t with
-    | ' ' | '\t' | '\n' -> expr_list acc k t
+    | ' ' | '\t' | '\r' | '\n' -> expr_list acc k t
     | ')' -> k None (`List (List.rev acc))
     | c ->
         expr_starting_with c
@@ -216,7 +216,7 @@ module MakeDecode(M : MONAD) = struct
     else match _get t with
     | '\\' -> _error t "unexpected '\\' in non-quoted string"
     | '"' -> _error t "unexpected '\"' in the middle of an atom"
-    | (' ' | '\n' | '\t' | '(' | ')') as c ->
+    | (' ' | '\r' | '\n' | '\t' | '(' | ')') as c ->
         _return_atom (Some c) k t
     | c ->
         Buffer.add_char t.atom c;
@@ -277,7 +277,7 @@ module MakeDecode(M : MONAD) = struct
     if t.i = t.len
     then _refill t (expr_or_end k) (fun _ -> M.return `End)
     else match _get t with
-    | ' ' | '\t' | '\n' -> expr_or_end k t
+    | ' ' | '\t' | '\r' | '\n' -> expr_or_end k t
     | c -> expr_starting_with c k t
 
   (* entry point *)
@@ -308,6 +308,8 @@ let parse_string s : t or_error =
 (*$T
   CCError.to_opt (parse_string "(abc d/e/f \"hello \\\" () world\" )") <> None
   CCError.to_opt (parse_string "(abc ( d e ffff   ) \"hello/world\")") <> None
+  (parse_string "(abc\r\n ( d e \r\tffff   ))") \
+    = `Ok (`List [`Atom "abc"; `List [`Atom "d"; `Atom "e"; `Atom "ffff"]])
 *)
 
 (*$inject

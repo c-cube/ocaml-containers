@@ -25,7 +25,7 @@ let int64 fmt n = Format.fprintf fmt "%Ld" n
 let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 
-let list ?(start="[") ?(stop="]") ?(sep=", ") pp fmt l =
+let list ?(start="") ?(stop="") ?(sep=", ") pp fmt l =
   let rec pp_list l = match l with
   | x::((_::_) as l) ->
     pp fmt x;
@@ -39,7 +39,7 @@ let list ?(start="[") ?(stop="]") ?(sep=", ") pp fmt l =
   pp_list l;
   Format.pp_print_string fmt stop
 
-let array ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
+let array ?(start="") ?(stop="") ?(sep=", ") pp fmt a =
   Format.pp_print_string fmt start;
   for i = 0 to Array.length a - 1 do
     if i > 0 then (
@@ -50,7 +50,7 @@ let array ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
   done;
   Format.pp_print_string fmt stop
 
-let arrayi ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
+let arrayi ?(start="") ?(stop="") ?(sep=", ") pp fmt a =
   Format.pp_print_string fmt start;
   for i = 0 to Array.length a - 1 do
     if i > 0 then (
@@ -61,7 +61,7 @@ let arrayi ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
   done;
   Format.pp_print_string fmt stop
 
-let seq ?(start="[") ?(stop="]") ?(sep=", ") pp fmt seq =
+let seq ?(start="") ?(stop="") ?(sep=", ") pp fmt seq =
   Format.pp_print_string fmt start;
   let first = ref true in
   seq (fun x ->
@@ -279,8 +279,28 @@ let sprintf_ c format =
     fmt
     format
 
+let with_color_sf s fmt =
+  let buf = Buffer.create 64 in
+  let out = Format.formatter_of_buffer buf in
+  if !color_enabled then set_color_tag_handling out;
+  Format.pp_open_tag out s;
+  Format.kfprintf
+    (fun out ->
+       Format.pp_close_tag out ();
+       Format.pp_print_flush out ();
+       Buffer.contents buf)
+    out fmt
+
 let sprintf fmt = sprintf_ true fmt
 let sprintf_no_color fmt = sprintf_ false fmt
+let sprintf_dyn_color ~colors fmt = sprintf_ colors fmt
+
+let fprintf_dyn_color ~colors out fmt =
+  let old_tags = Format.pp_get_mark_tags out () in
+  Format.pp_set_mark_tags out colors; (* enable/disable tags *)
+  Format.kfprintf
+    (fun out -> Format.pp_set_mark_tags out old_tags)
+    out fmt
 
 (*$T
   sprintf "yolo %s %d" "a b" 42 = "yolo a b 42"
@@ -301,3 +321,31 @@ let ksprintf ~f fmt =
   Format.kfprintf
     (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
     out fmt
+
+
+module Dump = struct
+  type 'a t = 'a printer
+  let unit = unit
+  let int = int
+  let string = string_quoted
+  let bool = bool
+  let float = float
+  let char = char
+  let int32 = int32
+  let int64 = int64
+  let nativeint = nativeint
+  let list pp = within "[" "]" (hovbox (list ~sep:";" pp))
+  let array pp = within "[|" "|]" (hovbox (array ~sep:";" pp))
+  let option pp out x = match x with
+    | None -> Format.pp_print_string out "None"
+    | Some x -> Format.fprintf out "Some %a" pp x
+  let pair p1 p2 = pair p1 p2
+  let triple p1 p2 p3 = triple p1 p2 p3
+  let quad p1 p2 p3 p4 = quad p1 p2 p3 p4
+end
+
+(*$= & ~printer:(fun s->s)
+  "[1;2;3]" (to_string Dump.(list int) [1;2;3])
+  "Some 1" (to_string Dump.(option int) (Some 1))
+  "[None;Some \"a b\"]" (to_string Dump.(list (option string)) [None; Some "a b"])
+*)

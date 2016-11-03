@@ -137,6 +137,16 @@ val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
     {b status: experimental}
     @since 0.16 *)
 
+val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
+(** [with_color_sf "Blue" out "%s %d" "yolo" 42] will behave like
+    {!sprintf}, but wrapping the content with the given style
+    Example:
+    {[
+      CCFormat.with_color_sf "red" "%a" CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
+    ]}
+    {b status: experimental}
+    @since 0.21 *)
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit
@@ -153,9 +163,27 @@ val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
 (** Similar to {!sprintf} but never prints colors
     @since 0.16 *)
 
+val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
+(** Similar to {!sprintf} but enable/disable colors depending on [colors].
+    Example:
+    {[
+      (* with colors *)
+      CCFormat.sprintf_dyn_color ~colors:true "@{<Red>%a@}"
+        CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
+
+      (* without colors *)
+      CCFormat.sprintf_dyn_color ~colors:false "@{<Red>%a@}"
+        CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
+    ]}
+    @since 0.21 *)
+
 val fprintf : t -> ('a, t, unit ) format -> 'a
 (** Alias to {!Format.fprintf}
     @since 0.14 *)
+
+val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit ) format -> 'a
+(** Similar to {!fprintf} but enable/disable colors depending on [colors]
+    @since 0.21 *)
 
 val ksprintf :
   f:(string -> 'b) ->
@@ -172,3 +200,39 @@ val ksprintf :
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
 (** Print to the given file *)
+
+(** {2 Dump}
+
+    Print structures as OCaml values, so that they can be parsed back
+    by OCaml (typically, in the toplevel, for debugging).
+
+    Example:
+    {[
+      Format.printf "%a@." CCFormat.Dump.(list int) CCList.(1 -- 200);;
+
+      Format.printf "%a@." CCFormat.Dump.(array (list (pair int bool)))
+        [| [1, true; 2, false]; []; [42, false] |];;
+    ]}
+
+    @since 0.21 *)
+
+module Dump : sig
+  type 'a t = 'a printer
+  val unit : unit t
+  val int : int t
+  val string : string t
+  val bool : bool t
+  val float : float t
+  val char : char t
+  val int32 : int32 t
+  val int64 : int64 t
+  val nativeint : nativeint t
+  val list : 'a t -> 'a list t
+  val array : 'a t -> 'a array t
+  val option : 'a t -> 'a option t
+  val pair : 'a t -> 'b t -> ('a * 'b) t
+  val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+  val quad :
+    'a t -> 'b t -> 'c t -> 'd t ->
+    ('a * 'b * 'c * 'd) t
+end

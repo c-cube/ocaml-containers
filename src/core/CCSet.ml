@@ -51,7 +51,7 @@ module Make(O : Map.OrderedType) = struct
 
   let to_list = elements
 
-  let pp ?(start="{") ?(stop="}") ?(sep=", ") pp_x buf m =
+  let pp ?(start="") ?(stop="") ?(sep=", ") pp_x buf m =
     let first = ref true in
     Buffer.add_string buf start;
     iter
@@ -61,7 +61,7 @@ module Make(O : Map.OrderedType) = struct
       m;
     Buffer.add_string buf stop
 
-  let print ?(start="[") ?(stop="]") ?(sep=", ") pp_x fmt m =
+  let print ?(start="") ?(stop="") ?(sep=", ") pp_x fmt m =
     Format.pp_print_string fmt start;
     let first = ref true in
     iter

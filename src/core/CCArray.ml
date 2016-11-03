@@ -51,6 +51,29 @@ module type S = sig
   val reverse_in_place : 'a t -> unit
   (** Reverse the array in place *)
 
+  val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
+  (** [sorted cmp a] makes a copy of [a] and sorts it with [cmp].
+      @since 0.21 *)
+
+  val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
+  (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
+      such that [b.(i)] is the index of the [i]-th element of [a] in [sort cmp a].
+      In other words, [map (fun i -> a.(i)) (sort_indices a) = sorted cmp a].
+      [a] is not modified.
+      @since 0.21 *)
+
+  val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
+  (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
+      such that [b.(i)] is the position in [sorted cmp a] of the [i]-th
+      element of [a].
+      [a] is not modified.
+
+      In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].
+
+      Without duplicates, we also have
+      [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
+      @since 0.21 *)
+
   val find : ('a -> 'b option) -> 'a t -> 'b option
   (** [find f a] returns [Some y] if there is an element [x] such
       that [f x = Some y], else it returns [None] *)
@@ -260,6 +283,18 @@ let _shuffle _rand_int a i j =
   let b = Array.copy a in shuffle_with st a; a <> b
 *)
 
+let _sort_indices cmp a i j =
+  let len = j-i in
+  let b = Array.init len (fun k->k) in
+  Array.sort (fun k1 k2 -> cmp a.(k1+i) a.(k2+i)) b;
+  b
+
+let _sorted cmp a i j =
+  let len = j-i in
+  let b = Array.sub a i len in
+  Array.sort cmp b;
+  b
+
 let _choose a i j st =
   if i>=j then raise Not_found;
   a.(i+Random.State.int st (j-i))
@@ -364,6 +399,48 @@ let reverse_in_place a =
   let a = [| 1; 2; 3; 4; 5; 6 |] in \
     reverse_in_place a; \
     a = [| 6;5;4;3;2;1 |]
+*)
+
+let sorted cmp a = _sorted cmp a 0 (Array.length a)
+
+(*$= & ~cmp:(=) ~printer:Q.Print.(array int)
+  [||] (sorted Pervasives.compare [||])
+  [|0;1;2;3;4|] (sorted Pervasives.compare [|3;2;1;4;0|])
+  *)
+
+(*$Q
+  Q.(array int) (fun a -> \
+    let b = Array.copy a in \
+    Array.sort Pervasives.compare b; b = sorted Pervasives.compare a)
+*)
+
+let sort_indices cmp a = _sort_indices cmp a 0 (Array.length a)
+
+(*$= & ~cmp:(=) ~printer:Q.Print.(array int)
+  [||] (sort_indices Pervasives.compare [||])
+  [|4;2;1;0;3|] (sort_indices Pervasives.compare [|"d";"c";"b";"e";"a"|])
+*)
+
+(*$Q
+  Q.(array printable_string) (fun a -> \
+    let b = sort_indices String.compare a in \
+    sorted String.compare a = Array.map (Array.get a) b)
+*)
+
+let sort_ranking cmp a =
+  let cmp_int : int -> int -> int = Pervasives.compare in
+  sort_indices cmp_int (sort_indices cmp a)
+
+(*$= & ~cmp:(=) ~printer:Q.Print.(array int)
+  [||] (sort_ranking Pervasives.compare [||])
+  [|3;2;1;4;0|] (sort_ranking Pervasives.compare [|"d";"c";"b";"e";"a"|])
+*)
+
+(*$Q
+  Q.(array printable_string) (fun a -> \
+    let b = sort_ranking String.compare a in \
+    let a_sorted = sorted String.compare a in \
+    a = Array.map (Array.get a_sorted) b)
 *)
 
 let rev a =
@@ -618,7 +695,15 @@ module Sub = struct
 
   let copy a = Array.sub a.arr a.i (length a)
 
-  let sub a i len = make a.arr ~len:(a.i + i) len
+  let sub a i len = make a.arr (a.i + i) ~len
+  (*$=
+    [ 3;4 ] \
+      (let a = Sub.make (0--10) 2 5 in Sub.sub a 1 2 |> Sub.to_list)
+    [ ] \
+      (let a = Sub.make (0--10) 2 5 in Sub.sub a 1 0 |> Sub.to_list)
+    [ 5 ] \
+      (let a = Sub.make (0--10) 1 9 in Sub.sub a 4 1 |> Sub.to_list)
+  *)
 
   let equal eq a b =
     length a = length b && _equal eq a.arr a.i a.j b.arr b.i b.j
@@ -631,6 +716,10 @@ module Sub = struct
       if i=j then acc
       else _fold (f acc a.arr.(i)) (i+1) j
     in _fold acc a.i a.j
+
+  let to_list a =
+    let l = fold (fun l x -> x::l) [] a in
+    List.rev l
 
   let foldi f acc a = _foldi f acc a.arr a.i a.j
 
@@ -689,22 +778,95 @@ module Sub = struct
     Sub.reverse_in_place s; a = [| 1; 2; 5; 4; 3; 6 |]
   *)
 
+  let sorted cmp a = _sorted cmp a.arr a.i a.j
+
+  (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
+    [||] \
+      (let a = 1--6 in let s = Sub.make a 2 ~len:0 in \
+       Sub.sorted Pervasives.compare s)
+    [|2;3;4|] \
+      (let a = [|6;5;4;3;2;1|] in let s = Sub.make a 2 ~len:3 in \
+      Sub.sorted Pervasives.compare s)
+  *)
+
+  (*$Q
+    Q.(array int) (fun a -> \
+    Array.length a > 10 ==> ( Array.length a > 10 && \
+    let s = Sub.make a 5 ~len:5 in \
+    let b = Array.sub a 5 5 in \
+    Array.sort Pervasives.compare b; b = Sub.sorted Pervasives.compare s))
+  *)
+
+  let sort_ranking cmp a =
+    let idx = _sort_indices cmp a.arr a.i a.j in
+    let cmp_int : int -> int -> int = Pervasives.compare in
+    sort_indices cmp_int idx
+
+  (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
+    [||] \
+       (let a = 1--6 in let s = Sub.make a 2 ~len:0 in \
+       Sub.sort_ranking Pervasives.compare s)
+    [|2;1;3;0|] \
+      (let a = [|"d";"c";"b";"e";"a"|] in let s = Sub.make a 1 ~len:4 in \
+      Sub.sort_ranking Pervasives.compare s)
+  *)
+
+  (*$Q
+    Q.(array printable_string) (fun a -> \
+    Array.length a > 10 ==> ( Array.length a > 10 && \
+    let s = Sub.make a 5 ~len:5 in \
+    let b = Sub.sort_indices String.compare s in \
+    Sub.sorted String.compare s = Array.map (Sub.get s) b))
+  *)
+
+  let sort_indices cmp a = _sort_indices cmp a.arr a.i a.j
+
+  (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
+    [||] \
+       (let a = 1--6 in let s = Sub.make a 2 ~len:0 in \
+       Sub.sort_indices Pervasives.compare s)
+    [|3;1;0;2|] \
+      (let a = [|"d";"c";"b";"e";"a"|] in let s = Sub.make a 1 ~len:4 in \
+      Sub.sort_indices Pervasives.compare s)
+  *)
+
+  (*$Q
+    Q.(array printable_string) (fun a -> \
+    Array.length a > 10 ==> ( Array.length a > 10 && \
+    let s = Sub.make a 5 ~len:5 in \
+    let b = Sub.sort_ranking String.compare s in \
+    let a_sorted = Sub.sorted String.compare s in \
+    Sub.copy s = Array.map (Array.get a_sorted) b))
+  *)
+
+
   let find f a = _find (fun _ -> f) a.arr a.i a.j
 
   let findi f a = _find (fun i -> f (i-a.i)) a.arr a.i a.j
 
   let find_idx p a =
-    _find (fun i x -> if p x then Some (i,x) else None) a.arr a.i a.j
+    _find (fun i x -> if p x then Some (i-a.i,x) else None) a.arr a.i a.j
+
+  (*$=
+    (Some (1,"c")) (Sub.find_idx ((=) "c") (Sub.make [| "a"; "b"; "c" |] 1 2))
+    *)
 
   let lookup_exn ?(cmp=Pervasives.compare) k a =
-    _lookup_exn ~cmp k a.arr a.i (a.j-1)
+    _lookup_exn ~cmp k a.arr a.i (a.j-1) - a.i
 
   let lookup ?(cmp=Pervasives.compare) k a =
-    try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1))
+    try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1) - a.i)
     with Not_found -> None
 
+  (*$=
+    (Some 1) (Sub.lookup "c" (Sub.make [| "a"; "b"; "c" |] 1 2))
+    *)
+
   let bsearch ?(cmp=Pervasives.compare) k a =
-    bsearch_ ~cmp k a.arr a.i (a.j - 1)
+    match bsearch_ ~cmp k a.arr a.i (a.j - 1) with
+      | `At m -> `At (m - a.i)
+      | `Just_after m -> `Just_after (m - a.i)
+      | res -> res
 
   let for_all p a = _for_all p a.arr a.i a.j
 
@@ -738,7 +900,8 @@ module Sub = struct
 
   let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a.arr a.i a.j
 
-  let pp_i ?(sep=", ") pp_item buf a = _pp_i ~sep pp_item buf a.arr a.i a.j
+  let pp_i ?(sep=", ") pp_item buf a =
+    _pp_i ~sep (fun out k x -> pp_item out (k-a.i) x) buf a.arr a.i a.j
 
   let print ?(sep=", ") pp_item fmt a = _print ~sep pp_item fmt a.arr a.i a.j
 
