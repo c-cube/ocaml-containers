@@ -129,22 +129,6 @@ Moved to its own repository.
 
 Moved to its own repository
 
-{4 Thread Helpers}
-
-{b findlib name}: containers.thread
-
-Modules related to the use of [Thread].
-
-{!modules:
-CCBlockingQueue
-CCLock
-CCPool
-CCSemaphore
-CCThread
-CCTimer
-}
-
-
 {2 Index}
 
 {!indexlist}
