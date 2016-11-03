@@ -334,8 +334,8 @@ module Dump = struct
   let int32 = int32
   let int64 = int64
   let nativeint = nativeint
-  let list pp = hovbox (list ~start:"[" ~stop:"]" ~sep:";" pp)
-  let array pp = hovbox (array ~start:"[|" ~stop:"|]" ~sep:";" pp)
+  let list pp = within "[" "]" (hovbox (list ~sep:";" pp))
+  let array pp = within "[|" "|]" (hovbox (array ~sep:";" pp))
   let option pp out x = match x with
     | None -> Format.pp_print_string out "None"
     | Some x -> Format.fprintf out "Some %a" pp x

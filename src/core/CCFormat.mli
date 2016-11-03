@@ -204,7 +204,15 @@ val to_file : string -> ('a, t, unit, unit) format4 -> 'a
 (** {2 Dump}
 
     Print structures as OCaml values, so that they can be parsed back
-    by OCaml (typically, in the toplevel, for debugging)
+    by OCaml (typically, in the toplevel, for debugging).
+
+    Example:
+    {[
+      Format.printf "%a@." CCFormat.Dump.(list int) CCList.(1 -- 200);;
+
+      Format.printf "%a@." CCFormat.Dump.(array (list (pair int bool)))
+        [| [1, true; 2, false]; []; [42, false] |];;
+    ]}
 
     @since NEXT_RELEASE *)
 
@@ -215,11 +223,10 @@ module Dump : sig
   val string : string t
   val bool : bool t
   val float : float t
-  val char : char t (** @since 0.14 *)
-  val int32 : int32 t (** @since 0.14 *)
-  val int64 : int64 t (** @since 0.14 *)
-  val nativeint : nativeint t (** @since 0.14 *)
-
+  val char : char t
+  val int32 : int32 t
+  val int64 : int64 t
+  val nativeint : nativeint t
   val list : 'a t -> 'a list t
   val array : 'a t -> 'a array t
   val option : 'a t -> 'a option t
