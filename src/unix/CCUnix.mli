@@ -13,13 +13,13 @@ type 'a gen = unit -> 'a option
 
 (** {2 Calling Commands} *)
 
-val escape_str : Buffer.t -> string -> unit
+val escape_str : string -> string
 (** Escape a string so it can be a shell argument. *)
 
 (*$T
-  CCPrint.sprintf "%a" escape_str "foo" = "foo"
-  CCPrint.sprintf "%a" escape_str "foo bar" = "'foo bar'"
-  CCPrint.sprintf "%a" escape_str "fo'o b'ar" = "'fo'\\''o b'\\''ar'"
+  escape_str "foo" = "foo"
+  escape_str "foo bar" = "'foo bar'"
+  escape_str "fo'o b'ar" = "'fo'\\''o b'\\''ar'"
 *)
 
 type call_result =
@@ -45,7 +45,7 @@ val call : ?bufsize:int ->
 
 (*$T
   (call ~stdin:(`Str "abc") "cat")#stdout = "abc"
-  (call "echo %a" escape_str "a'b'c")#stdout = "a'b'c\n"
+  (call "echo %s" (escape_str "a'b'c"))#stdout = "a'b'c\n"
   (call "echo %s" "a'b'c")#stdout = "abc\n"
 *)
 

@@ -34,10 +34,12 @@ let finally_ f x ~h =
     raise e
 
 (* print a string, but escaped if required *)
-let escape_str buf s =
-  if str_exists s
+let escape_str s =
+  if
+    str_exists s
       (function ' ' | '"' | '\'' | '\n' | '\t'-> true | _ -> false)
   then (
+    let buf = Buffer.create (String.length s) in
     Buffer.add_char buf '\'';
     String.iter
       (function
@@ -45,7 +47,8 @@ let escape_str buf s =
         | c -> Buffer.add_char buf c
       ) s;
     Buffer.add_char buf '\'';
-  ) else Buffer.add_string buf s
+    Buffer.contents buf
+  ) else s
 
 let read_all ?(size=1024) ic =
   let buf = ref (Bytes.create size) in
