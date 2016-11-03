@@ -41,7 +41,7 @@ Library "containers"
   Modules:          CCVector, CCHeap, CCList, CCOpt, CCPair,
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
                     CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
-                    CCInt64, CCChar, CCResult, Containers
+                    CCInt64, CCChar, CCResult, CCParse, Containers
   BuildDepends:     bytes, result
   # BuildDepends:     bytes, bisect_ppx
 
