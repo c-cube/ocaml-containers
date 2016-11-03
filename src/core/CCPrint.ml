@@ -25,7 +25,7 @@ let float3 buf f = Printf.bprintf buf "%.3f" f
 let float buf f = Buffer.add_string buf (string_of_float f)
 let char buf c = Buffer.add_char buf c
 
-let list ?(start="[") ?(stop="]") ?(sep=", ") pp buf l =
+let list ?(start="") ?(stop="") ?(sep=", ") pp buf l =
   let rec pp_list l = match l with
   | x::((_::_) as l) ->
     pp buf x;
@@ -38,7 +38,7 @@ let list ?(start="[") ?(stop="]") ?(sep=", ") pp buf l =
   pp_list l;
   Buffer.add_string buf stop
 
-let array ?(start="[") ?(stop="]") ?(sep=", ") pp buf a =
+let array ?(start="") ?(stop="") ?(sep=", ") pp buf a =
   Buffer.add_string buf start;
   for i = 0 to Array.length a - 1 do
     (if i > 0 then Buffer.add_string buf sep);
@@ -46,7 +46,7 @@ let array ?(start="[") ?(stop="]") ?(sep=", ") pp buf a =
   done;
   Buffer.add_string buf stop
 
-let arrayi ?(start="[") ?(stop="]") ?(sep=", ") pp buf a =
+let arrayi ?(start="") ?(stop="") ?(sep=", ") pp buf a =
   Buffer.add_string buf start;
   for i = 0 to Array.length a - 1 do
     (if i > 0 then Buffer.add_string buf sep);
@@ -54,7 +54,7 @@ let arrayi ?(start="[") ?(stop="]") ?(sep=", ") pp buf a =
   done;
   Buffer.add_string buf stop
 
-let seq ?(start="[") ?(stop="]") ?(sep=", ") pp buf seq =
+let seq ?(start="") ?(stop="") ?(sep=", ") pp buf seq =
   Buffer.add_string buf start;
   let first = ref true in
   seq (fun x ->

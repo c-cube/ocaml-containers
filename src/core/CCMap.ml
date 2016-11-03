@@ -113,7 +113,7 @@ module Make(O : Map.OrderedType) = struct
   let to_list m =
     fold (fun k v acc -> (k,v)::acc) m []
 
-  let pp ?(start="{") ?(stop="}") ?(arrow="->") ?(sep=", ") pp_k pp_v buf m =
+  let pp ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v buf m =
     let first = ref true in
     Buffer.add_string buf start;
     iter
@@ -125,7 +125,7 @@ module Make(O : Map.OrderedType) = struct
       m;
     Buffer.add_string buf stop
 
-  let print ?(start="[") ?(stop="]") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
+  let print ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
     Format.pp_print_string fmt start;
     let first = ref true in
     iter

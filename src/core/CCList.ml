@@ -1221,7 +1221,7 @@ end
 
 (** {2 IO} *)
 
-let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf l =
+let pp ?(start="") ?(stop="") ?(sep=", ") pp_item buf l =
   let rec print l = match l with
     | x::((_::_) as l) ->
       pp_item buf x;
@@ -1232,10 +1232,10 @@ let pp ?(start="[") ?(stop="]") ?(sep=", ") pp_item buf l =
   in Buffer.add_string buf start; print l; Buffer.add_string buf stop
 
 (*$T
-  CCPrint.to_string (pp CCPrint.int) [1;2;3] = "[1, 2, 3]"
+  CCPrint.to_string (pp ~start:"[" ~stop:"]" CCPrint.int) [1;2;3] = "[1, 2, 3]"
   *)
 
-let print ?(start="[") ?(stop="]") ?(sep=", ") pp_item fmt l =
+let print ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
   let rec print fmt l = match l with
     | x::((_::_) as l) ->
       pp_item fmt x;

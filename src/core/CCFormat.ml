@@ -25,7 +25,7 @@ let int64 fmt n = Format.fprintf fmt "%Ld" n
 let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 
-let list ?(start="[") ?(stop="]") ?(sep=", ") pp fmt l =
+let list ?(start="") ?(stop="") ?(sep=", ") pp fmt l =
   let rec pp_list l = match l with
   | x::((_::_) as l) ->
     pp fmt x;
@@ -39,7 +39,7 @@ let list ?(start="[") ?(stop="]") ?(sep=", ") pp fmt l =
   pp_list l;
   Format.pp_print_string fmt stop
 
-let array ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
+let array ?(start="") ?(stop="") ?(sep=", ") pp fmt a =
   Format.pp_print_string fmt start;
   for i = 0 to Array.length a - 1 do
     if i > 0 then (
@@ -50,7 +50,7 @@ let array ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
   done;
   Format.pp_print_string fmt stop
 
-let arrayi ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
+let arrayi ?(start="") ?(stop="") ?(sep=", ") pp fmt a =
   Format.pp_print_string fmt start;
   for i = 0 to Array.length a - 1 do
     if i > 0 then (
@@ -61,7 +61,7 @@ let arrayi ?(start="[") ?(stop="]") ?(sep=", ") pp fmt a =
   done;
   Format.pp_print_string fmt stop
 
-let seq ?(start="[") ?(stop="]") ?(sep=", ") pp fmt seq =
+let seq ?(start="") ?(stop="") ?(sep=", ") pp fmt seq =
   Format.pp_print_string fmt start;
   let first = ref true in
   seq (fun x ->
