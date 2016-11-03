@@ -22,7 +22,7 @@ let max_width = Sys.word_size - 2
 
 (*$R
   let module B = CCBitField.Make(struct end) in
-  let x = B.mk_field () in
+  let _ = B.mk_field () in
   B.freeze();
   assert_bool "must raise"
     (try ignore (B.mk_field()); false with Frozen -> true);
