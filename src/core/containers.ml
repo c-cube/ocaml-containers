@@ -10,18 +10,6 @@ This module is meant to be opened if one doesn't want to use both, say,
     include CCList
   end
 ]}
-
-@since 0.4
-
-Changed [Opt] to [Option] to better reflect that this module is about the
-['a option] type, with [module Option = CCOpt].
-
-@since 0.5
-
-Renamed from [CCPervasives] in [containers.pervasives], to [Containers]
-in the core library [containers]
-
-@since 0.10
 *)
 
 module Array = struct
@@ -29,7 +17,6 @@ module Array = struct
   include CCArray
 end
 module Bool = CCBool
-module Error = CCError
 module Float = CCFloat
 module Format = struct
   include Format
@@ -79,16 +66,15 @@ end
 module Vector = CCVector
 
 module Int64 = CCInt64
-(** @since 0.13 *)
 
 module IO = CCIO
-(** @since NEXT_RELEASE *)
 
 module Char = struct
   include Char
   include (CCChar : module type of CCChar with type t := t)
 end
-(** @since 0.17 *)
 
-module Result = CCResult
-(** @since 0.17 *)
+module Result = struct
+  include Result
+  include CCResult
+end
