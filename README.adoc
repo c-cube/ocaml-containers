@@ -22,11 +22,6 @@ cross-module dependencies).
   containers.data:: with additional data structures that don't have an
     equivalent in the standard library;
   containers.iter:: with list-like and tree-like iterators;
-  containers.string:: (in directory `string`) with
-    a few packed modules that deal with strings (Levenshtein distance,
-    KMP search algorithm, and a few naive utils). Again, modules are independent
-    and sometimes parametric on the string and char types (so they should
-    be able to deal with your favorite unicode library).
 
 - A sub-library with complicated abstractions, `containers.advanced` (with
   a LINQ-like query module, batch operations using GADTs, and others).
@@ -191,14 +186,6 @@ Iterators:
 - `CCKList`, a persistent iterator structure (akin to a lazy list, without memoization)
 - `CCKTree`, an abstract lazy tree structure
 
-=== String
-
-See http://cedeela.fr/~simon/software/containers/Containers_string[doc].
-
-In the module `Containers_string`:
-- `Levenshtein`: edition distance between two strings
-- `KMP`: Knuth-Morris-Pratt substring algorithm
-- `Parse`: simple parser combinators
 
 === Thread
 

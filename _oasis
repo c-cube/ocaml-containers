@@ -78,13 +78,6 @@ Library "containers_iter"
   FindlibParent:    containers
   FindlibName:      iter
 
-Library "containers_string"
-  Path:             src/string
-  Modules:          Containers_string, CCLevenshtein, CCApp_parse
-  BuildDepends:     bytes
-  FindlibName:      string
-  FindlibParent:    containers
-
 Library "containers_thread"
   Path:             src/threads/
   Modules:          CCPool, CCLock, CCSemaphore, CCThread, CCBlockingQueue,
@@ -102,7 +95,6 @@ Library "containers_top"
   FindlibName:      top
   FindlibParent:    containers
   BuildDepends:     compiler-libs.common, containers, containers.data,
-                    containers.bigarray, containers.string,
                     containers.unix, containers.sexp, containers.iter
 
 Document containers
@@ -116,8 +108,7 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.iter, containers.data,
-    containers.string, containers.thread,
-    containers.unix, containers.sexp
+    containers.thread, containers.unix, containers.sexp
 
 Executable run_benchs
   Path:             benchs/
@@ -126,7 +117,7 @@ Executable run_benchs
   Build$:           flag(bench)
   MainIs:           run_benchs.ml
   BuildDepends:     containers, qcheck,
-                    containers.data, containers.string, containers.iter,
+                    containers.data, containers.iter,
                     containers.thread, sequence, gen, benchmark, hamt
 
 Executable run_bench_hash
@@ -145,9 +136,8 @@ Executable run_qtest
   CompiledObject:   best
   MainIs:           run_qtest.ml
   Build$:           flag(tests) && flag(bigarray) && flag(unix)
-  BuildDepends:     containers, containers.string, containers.iter,
-                    containers.sexp,
-                    containers.unix, containers.thread,
+  BuildDepends:     containers, containers.iter,
+                    containers.sexp, containers.unix, containers.thread,
                     containers.data,
                     sequence, gen, unix, oUnit, qcheck
 

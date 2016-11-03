@@ -120,17 +120,6 @@ CCKList
 CCKTree
 CCLazy_list}
 
-{4 String}
-
-{b findlib name}: containers.string
-
-{!modules:
-CCApp_parse
-CCKMP
-CCLevenshtein
-CCParse
-}
-
 {4 Misc}
 
 Moved to its own repository.
