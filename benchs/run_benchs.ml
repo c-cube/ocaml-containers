@@ -163,6 +163,98 @@ module Arr = struct
   let sort_ccarray a =
     CCArray.sort_generic (module IntArr) ~cmp:CCInt.compare a
 
+  module Quicksort_ref = struct
+    module A = Array
+    module Rand = Random.State
+
+    let seed_ = [|123456|]
+
+    type state = {
+      mutable l: int; (* left pointer *)
+      mutable g: int; (* right pointer *)
+      mutable k: int;
+    }
+
+    let rand_idx_ rand i j = i + Rand.int rand (j-i)
+
+    let swap_ a i j =
+      if i=j then ()
+      else (
+        let tmp = A.get a i in
+        A.set a i (A.get a j);
+        A.set a j tmp
+      )
+
+    (* limit: under which we switch to insertion *)
+    let sort ~limit ~cmp a =
+      let rec insert_ a i k =
+        if k<i then ()
+        else if cmp (A.get a k) (A.get a (k+1)) > 0 then (
+          swap_ a k (k+1);
+          insert_ a i (k-1)
+        )
+      in
+      (* recursive part of insertion sort *)
+      let rec sort_insertion_rec a i j k =
+        if k<j then (
+          insert_ a i (k-1);
+          sort_insertion_rec a i j (k+1)
+        )
+      in
+      (* insertion sort, for small slices *)
+      let sort_insertion a i j =
+        if j-i > 1 then sort_insertion_rec a i j (i+1)
+      in
+      let rand = Rand.make seed_ in
+      (* sort slice.
+         There is a chance that the two pivots are equal, but it's unlikely. *)
+      let rec sort_slice_ ~st a i j =
+        if j-i>limit then (
+          st.l <- i;
+          st.g <- j-1;
+          st.k <- i;
+          (* choose pivots *)
+          let p = A.get a (rand_idx_ rand i j) in
+          let q = A.get a (rand_idx_ rand i j) in
+          (* invariant: st.p <= st.q, swap them otherwise *)
+          let p, q = if cmp p q > 0 then q, p else p, q in
+          while st.k <= st.g do
+            let cur = A.get a st.k in
+            if cmp cur p < 0 then (
+              (* insert in leftmost band *)
+              if st.k <> st.l then swap_ a st.k st.l;
+              st.l <- st.l + 1
+            ) else if cmp cur q > 0 then (
+              (* insert in rightmost band *)
+              while st.k < st.g && cmp (A.get a st.g) q > 0 do
+                st.g <- st.g - 1
+              done;
+              swap_ a st.k st.g;
+              st.g <- st.g - 1;
+              (* the element swapped from the right might be in the first situation.
+                 that is, < p  (we know it's <= q already) *)
+              if cmp (A.get a st.k) p < 0 then (
+                if st.k <> st.l then swap_ a st.k st.l;
+                st.l <- st.l + 1
+              )
+            );
+            st.k <- st.k + 1
+          done;
+          (* save values before recursing *)
+          let l = st.l and g = st.g and sort_middle = cmp p q < 0 in
+          sort_slice_ ~st a i l;
+          if sort_middle then sort_slice_ ~st a l (g+1);
+          sort_slice_ ~st a (g+1) j;
+        ) else sort_insertion a i j
+      in
+      if A.length a > 0 then (
+        let st = { l=0; g=A.length a; k=0; } in
+        sort_slice_ ~st a 0 (A.length a)
+      )
+  end
+
+  let quicksort ~limit a = Quicksort_ref.sort ~limit ~cmp:CCInt.compare a
+
   let sort_std a = Array.sort CCInt.compare a
 
   (* helper, to apply a sort function over a list of arrays *)
@@ -173,6 +265,16 @@ module Arr = struct
         sort a
       ) l
 
+  let () =
+    List.iter
+      (fun n ->
+         let a1 = mk_arr n in
+         let a2 = Array.copy a1 in
+         sort_std a1;
+         quicksort ~limit:10 a2;
+         assert (a1 = a2))
+      [ 10; 100; 1000]
+
   let bench_sort ?(time=2) n =
     let a1 = mk_arr n in
     let a2 = mk_arr n in
@@ -180,12 +282,15 @@ module Arr = struct
     B.throughputN time ~repeat
       [ "std", app_list sort_std, [a1;a2;a3]
       ; "ccarray.sort_gen", app_list sort_ccarray, [a1;a2;a3]
+      ; "ccarray.quicksort(limit=5)", app_list (quicksort ~limit:5), [a1;a2;a3]
+      ; "ccarray.quicksort(limit=10)", app_list (quicksort ~limit:10), [a1;a2;a3]
+      ; "ccarray.quicksort(limit=20)", app_list (quicksort ~limit:20), [a1;a2;a3]
       ]
 
   let () =
     B.Tree.register ("array" @>>>
       [ "sort" @>>
-        app_ints (bench_sort ?time:None) [100; 1000; 10_000; 50_000; 100_000; 500_000]
+        app_ints (bench_sort ?time:None) [50; 100; 1000; 10_000; 50_000; 100_000; 500_000]
       ]
     )
 end
