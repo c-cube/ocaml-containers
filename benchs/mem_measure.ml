@@ -102,8 +102,8 @@ let tests_ =
 let run_test ~n name = List.assoc name tests_ n
 
 let print_list () =
-  Format.printf "@[<v2>tests:@ %a@]@."
-    (CCList.print CCString.print) (List.map fst tests_)
+  Format.printf "@[<v2>tests:@ [@[%a@]]@]@."
+    CCFormat.(list string) (List.map fst tests_)
 
 let () =
   let to_test = ref [] in

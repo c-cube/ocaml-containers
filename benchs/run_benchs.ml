@@ -86,7 +86,7 @@ module L = struct
       CCList.fold_right CCList.append l []
     in
     let l =
-      CCList.Idx.mapi
+      CCList.mapi
         (fun i x -> CCList.(x -- (x+ min i 100)))
         CCList.(1 -- n)
     in
@@ -688,97 +688,6 @@ module Iter = struct
       ])
 end
 
-module Batch = struct
-  (** benchmark CCBatch *)
-
-  module type COLL = sig
-    val name : string
-    include CCBatch.COLLECTION
-    val doubleton : 'a -> 'a -> 'a t
-    val (--) : int -> int -> int t
-    val equal : int t -> int t -> bool
-  end
-
-  module Make(C : COLL) = struct
-    let f1 x = x mod 2 = 0
-    let f2 x = -x
-    let f3 x = C.doubleton x (x+1)
-    let f4 x = -x
-    let collect a = C.fold (+) 0 a
-
-    let naive a =
-      let a = C.filter f1 a in
-      let a = C.flat_map f3 a in
-      let a = C.filter f1 a in
-      let a = C.map f2 a in
-      let a = C.flat_map f3 a in
-      let a = C.map f4 a in
-      ignore (collect a);
-      a
-
-    module BA = CCBatch.Make(C)
-
-    let ops =
-      BA.(filter f1 >>> flat_map f3 >>> filter f1 >>>
-          map f2 >>> flat_map f3 >>> map f4)
-
-    let batch a =
-      let a = BA.apply ops a in
-      ignore (collect a);
-      a
-
-    let bench_for ~time n =
-      let a = C.(0 -- n) in
-      (* debug
-      CCPrint.printf "naive: %a\n" (CCArray.pp CCInt.pp) (naive a);
-      CCPrint.printf "simple: %a\n" (CCArray.pp CCInt.pp) (batch_simple a);
-      CCPrint.printf "batch: %a\n" (CCArray.pp CCInt.pp) (batch a);
-      *)
-      assert (C.equal (batch a) (naive a));
-      B.throughputN time ~repeat
-        [ C.name ^ "_naive", naive, a
-        ; C.name ^ "_batch", batch, a
-        ]
-
-    let bench =
-      C.name @>> B.Tree.concat
-      [ app_int (bench_for ~time:1) 100
-      ; app_int (bench_for ~time:4) 100_000
-      ; app_int (bench_for ~time:4) 1_000_000
-      ]
-  end
-
-  module BenchArray = Make(struct
-    include CCArray
-    let name = "array"
-    let equal a b = a=b
-    let doubleton x y = [| x; y |]
-    let fold = Array.fold_left
-  end)
-
-  module BenchList = Make(struct
-    include CCList
-    let name = "list"
-    let equal a b = a=b
-    let doubleton x y = [ x; y ]
-    let fold = List.fold_left
-  end)
-
-  module BenchKList = Make(struct
-    include CCKList
-    let name = "klist"
-    let equal a b = equal (=) a b
-    let doubleton x y = CCKList.of_list [ x; y ]
-  end)
-
-  let () = B.Tree.register (
-    "batch" @>> B.Tree.concat
-      [ BenchKList.bench
-      ; BenchArray.bench
-      ; BenchList.bench
-      ])
-end
-
 module Deque = struct
   module type DEQUE = sig
     type 'a t
@@ -983,133 +892,6 @@ module Deque = struct
   )
 end
 
-module Thread = struct
-  module Q = CCBlockingQueue
-
-  module type TAKE_PUSH = sig
-    val take : 'a Q.t -> 'a
-    val push : 'a Q.t -> 'a -> unit
-    val take_list: 'a Q.t -> int -> 'a list
-    val push_list : 'a Q.t -> 'a list -> unit
-  end
-
-  let cur = (module Q : TAKE_PUSH)
-  let naive =
-    let module Q = struct
-      let take = Q.take
-      let push = Q.push
-      let push_list q l = List.iter (push q) l
-      let rec take_list q n =
-        if n=0 then []
-        else
-          let x = take q in
-          x :: take_list q (n-1)
-    end in
-    (module Q : TAKE_PUSH)
-
-  (* n senders, n receivers *)
-  let bench_queue ~size ~senders ~receivers n =
-    let make (module TP : TAKE_PUSH) =
-      let l = CCList.(1 -- n) in
-      fun () ->
-        let q = Q.create size in
-        let res = CCLock.create 0 in
-        let expected_res = 2 * senders * Sequence.(1 -- n |> fold (+) 0) in
-        let a_senders = CCThread.Arr.spawn senders
-          (fun _ ->
-            TP.push_list q l;
-            TP.push_list q l
-          )
-        and a_receivers = CCThread.Arr.spawn receivers
-          (fun _ ->
-            let l1 = TP.take_list q n in
-            let l2 = TP.take_list q n in
-            let n = List.fold_left (+) 0 l1 + List.fold_left (+) 0 l2 in
-            CCLock.update res ((+) n);
-            ()
-          )
-        in
-        CCThread.Arr.join a_senders;
-        CCThread.Arr.join a_receivers;
-        assert (expected_res = CCLock.get res);
-        ()
-    in
-    B.throughputN 3 ~repeat
-      [ "cur", make cur, ()
-      ; "naive", make naive, ()
-      ]
-
-  let fib_pool_ ~size n =
-    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
-    let open P.Fut.Infix in
-    let rec fib n =
-      if n<=1 then P.Fut.return 1
-      else
-        let f1 = fib (n-1)
-        and f2 = fib (n-2) in
-        P.Fut.return (+) <*> f1 <*> f2
-    in
-    P.Fut.get (fib n)
-
-  let fib_manual n =
-    let rec fib n =
-      if n<= 1  then 1
-      else fib (n-1) + fib (n-2)
-    in
-    fib n
-
-  (* pool of size [size] *)
-  let bench_pool ~size n =
-    assert (fib_manual n = fib_pool_ ~size n);
-    B.throughputN 3 ~repeat
-      [ "sequential", fib_manual, n
-      ; "pool", fib_pool_ ~size, n
-      ]
-
-  let bench_sequence ~size n =
-    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
-    let id_ x = Thread.delay 0.0001; x in
-    let mk_list() = CCList.init n (P.Fut.make1 id_) in
-    let mk_sequence () =
-      let l = mk_list() in
-      P.Fut.sequence_l l |> P.Fut.get
-    (* reserves a thread for the computation *)
-    and mk_blocking () =
-      let l = mk_list() in
-      P.Fut.make (fun () -> List.map P.Fut.get l) |> P.Fut.get
-    in
-    B.throughputN 3 ~repeat
-      [ "sequence", mk_sequence, ()
-      ; "blocking", mk_blocking, ()
-      ]
-
-  let () = B.Tree.register (
-    let take_push = CCList.map
-      (fun (size,senders,receivers) ->
-        Printf.sprintf "queue.take/push (size=%d,senders=%d,receivers=%d)"
-          size senders receivers
-        @>>
-        app_ints (bench_queue ~size ~senders ~receivers)
-          [100; 1_000]
-      ) [ 2, 3, 3
-        ; 5, 3, 3
-        ; 1, 5, 5
-        ; 2, 10, 10
-        ; 5, 10, 10
-        ; 20, 10, 10
-      ]
-    in
-
-    "thread" @>>>
-      ( take_push @
-      [ "fib_size5" @>> app_ints (bench_pool ~size:5) [10; 15; 30; 35]
-      ; "fib_size15" @>> app_ints (bench_pool ~size:15) [10; 15; 30; 35]
-      ; "sequence" @>> app_ints (bench_sequence ~size:15) [100; 500; 10_000; 100_000]
-      ]
-      )
-  )
-end
-
 module Graph = struct
   (* divisors graph *)
   let div_children_ i =
@@ -1123,11 +905,7 @@ module Graph = struct
     in
     aux 1 i
 
-  let div_graph_ = {CCGraph.
-    origin=fst;
-    dest=snd;
-    children=div_children_
-  }
+  let div_graph_ = CCGraph.divisors_graph
 
   module H = Hashtbl.Make(CCInt)
 
@@ -1316,72 +1094,6 @@ module Str = struct
           ];
       ])
 
-end
-
-module Alloc = struct
-  module type ALLOC_ARR = sig
-    type 'a t
-    val name : string
-    val create : int -> 'a t
-    val make : 'a t -> int -> 'a -> 'a array
-    val free : 'a t -> 'a array -> unit
-  end
-
-  let dummy =
-    let module A = struct
-      type _ t = unit
-      let name = "dummy"
-      let create _ = ()
-      let make _ i x = Array.make i x
-      let free _ _ = ()
-    end in
-    (module A : ALLOC_ARR)
-
-  let alloc_cache ~buck_size =
-    let module A = struct
-      type 'a t = 'a CCAllocCache.Arr.t
-      let name = Printf.sprintf "alloc_cache(%d)" buck_size
-      let create n = CCAllocCache.Arr.create ~buck_size n
-      let make = CCAllocCache.Arr.make
-      let free = CCAllocCache.Arr.free
-    end in
-    (module A : ALLOC_ARR)
-
-  (* repeat [n] times:
-    - repeat [batch] times:
-      - allocate [batch] arrays of size from 1 to batch+1
-    - free those arrays
-  *)
-  let bench1 ~batch n =
-    let make (module C : ALLOC_ARR) () =
-      let c = C.create (batch*2) in
-      let tmp = Array.make (batch * batch) [||] in (* temporary storage *)
-      for _ = 1 to n do
-        for j = 0 to batch-1 do
-          for k = 0 to batch-1 do
-            tmp.(j*batch + k) <- C.make c (k+1) '_';
-          done;
-        done;
-        Array.iter (C.free c) tmp (* free the whole array *)
-      done
-    in
-    B.throughputN 3 ~repeat
-      [ "dummy", make dummy, ()
-      ; "cache(5)", make (alloc_cache ~buck_size:5), ()
-      ; "cache(20)", make (alloc_cache ~buck_size:20), ()
-      ; "cache(50)", make (alloc_cache ~buck_size:50), ()
-      ]
-
-  let () = B.Tree.register (
-    "alloc" @>>>
-      [ "bench1(batch=5)" @>>
-          app_ints (bench1 ~batch:5) [100; 1_000]
-      ; "bench1(batch=15)" @>>
-          app_ints (bench1 ~batch:15) [100; 1_000]
-      ; "bench1(batch=50)" @>>
-          app_ints (bench1 ~batch:50) [100; 1_000]
-      ]
-    )
 end
 
 let () =

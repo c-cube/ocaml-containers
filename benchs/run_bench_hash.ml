@@ -26,9 +26,9 @@ let rec eq t1 t2 = match t1, t2 with
   | _, Node _ -> false
 
 let rec hash_tree t h = match t with
-  | Empty -> CCHash.string_ "empty" h
+  | Empty -> CCHash.string "empty" h
   | Node (i, l) ->
-      CCHash.list_ hash_tree l (CCHash.int_ i (CCHash.string_ "node" h))
+      CCHash.list hash_tree l (CCHash.int i (CCHash.string "node" h))
 
 module H = Hashtbl.Make(struct
   type t = tree
@@ -38,25 +38,25 @@ end)
 
 let print_hashcons_stats st =
   let open Hashtbl in
-    CCPrint.printf
-      "tbl stats: %d elements, num buckets: %d, max bucket: %d\n"
+    Format.printf
+      "tbl stats: %d elements, num buckets: %d, max bucket: %d@."
       st.num_bindings st.num_buckets st.max_bucket_length;
     Array.iteri
-      (fun i n -> CCPrint.printf "  %d\t buckets have length %d\n" n i)
+      (fun i n -> Format.printf "  %d\t buckets have length %d@." n i)
       st.bucket_histogram
 
 let () =
   let st = Random.State.make_self_init () in
   let n = 50_000 in
-  CCPrint.printf "generate %d elements...\n" n;
+  Format.printf "generate %d elements...\n" n;
   let l = CCRandom.run ~st (CCList.random_len n random_tree) in
   (* with custom hashtable *)
-  CCPrint.printf "### custom hashtable\n";
+  Format.printf "### custom hashtable\n";
   let tbl = H.create 256 in
   List.iter (fun t -> H.replace tbl t ()) l;
   print_hashcons_stats (H.stats tbl);
   (* with default hashtable *)
-  CCPrint.printf "### default hashtable\n";
+  Format.printf "### default hashtable\n";
   let tbl' = Hashtbl.create 256 in
   List.iter (fun t -> Hashtbl.replace tbl' t ()) l;
   print_hashcons_stats (Hashtbl.stats tbl');
