@@ -118,7 +118,7 @@ Executable run_qtest
   Install:          false
   CompiledObject:   best
   MainIs:           run_qtest.ml
-  Build$:           flag(tests) && flag(bigarray) && flag(unix)
+  Build$:           flag(tests) && flag(unix)
   BuildDepends:     containers, containers.iter,
                     containers.sexp, containers.unix,
                     containers.data,
@@ -127,7 +127,7 @@ Executable run_qtest
 Test all
   Command:      ./run_qtest.native
   TestTools:    run_qtest
-  Run$:         flag(tests) && flag(unix) && flag(bigarray)
+  Run$:         flag(tests) && flag(unix)
 
 Executable mem_measure
   Path:             benchs/
