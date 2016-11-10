@@ -22,9 +22,9 @@ type 'a t = 'a array
 
 let empty = [| |]
 
-let map = Array.map
+let map ~f a = Array.map f a
 
-let map2 f a b =
+let map2 ~f a b =
   if Array.length a <> Array.length b then invalid_arg "map2";
   Array.init (Array.length a) (fun i -> f (Array.unsafe_get a i) (Array.unsafe_get b i))
 
@@ -49,15 +49,15 @@ let get_safe a i =
 
 let set = Array.set
 
-let fold = Array.fold_left
+let fold ~f ~init a = Array.fold_left f init a
 
-let foldi f acc a =
+let foldi ~f ~init a =
   let rec aux acc i =
     if i = Array.length a then acc else aux (f acc i a.(i)) (i+1)
   in
-  aux acc 0
+  aux init 0
 
-let fold_while f acc a =
+let fold_while ~f ~init a =
   let rec fold_while_i f acc i =
     if i < Array.length a then
       let acc, cont = f acc a.(i) in
@@ -65,15 +65,16 @@ let fold_while f acc a =
       | `Stop -> acc
       | `Continue -> fold_while_i f acc (i+1)
     else acc
-  in fold_while_i f acc 0
+  in fold_while_i f init 0
 
 (*$T
-  fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 (Array.of_list [true;true;false;true]) = 2
+  fold_while ~f:(fun acc b -> if b then acc+1, `Continue else acc, `Stop) \
+    ~init:0 (Array.of_list [true;true;false;true]) = 2
 *)
 
-let iter = Array.iter
+let iter ~f a = Array.iter f a
 
-let iteri = Array.iteri
+let iteri ~f a = Array.iteri f a
 
 let blit = Array.blit
 
@@ -98,53 +99,53 @@ let reverse_in_place a =
     a = [| 6;5;4;3;2;1 |]
 *)
 
-let sorted cmp a =
+let sorted ~f a =
   let b = Array.copy a in
-  Array.sort cmp b;
+  Array.sort f b;
   b
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
-  [||] (sorted Pervasives.compare [||])
-  [|0;1;2;3;4|] (sorted Pervasives.compare [|3;2;1;4;0|])
+  [||] (sorted ~f:Pervasives.compare [||])
+  [|0;1;2;3;4|] (sorted ~f:Pervasives.compare [|3;2;1;4;0|])
   *)
 
 (*$Q
   Q.(array int) (fun a -> \
     let b = Array.copy a in \
-    Array.sort Pervasives.compare b; b = sorted Pervasives.compare a)
+    Array.sort Pervasives.compare b; b = sorted ~f:Pervasives.compare a)
 *)
 
-let sort_indices cmp a =
+let sort_indices ~f:cmp a =
   let len = Array.length a in
   let b = Array.init len (fun k->k) in
   Array.sort (fun k1 k2 -> cmp a.(k1) a.(k2)) b;
   b
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
-  [||] (sort_indices Pervasives.compare [||])
-  [|4;2;1;0;3|] (sort_indices Pervasives.compare [|"d";"c";"b";"e";"a"|])
+  [||] (sort_indices ~f:Pervasives.compare [||])
+  [|4;2;1;0;3|] (sort_indices ~f:Pervasives.compare [|"d";"c";"b";"e";"a"|])
 *)
 
 (*$Q
   Q.(array printable_string) (fun a -> \
-    let b = sort_indices String.compare a in \
-    sorted String.compare a = Array.map (Array.get a) b)
+    let b = sort_indices ~f:String.compare a in \
+    sorted ~f:String.compare a = map ~f:(Array.get a) b)
 *)
 
-let sort_ranking cmp a =
+let sort_ranking ~f:cmp a =
   let cmp_int : int -> int -> int = Pervasives.compare in
-  sort_indices cmp_int (sort_indices cmp a)
+  sort_indices ~f:cmp_int (sort_indices ~f:cmp a)
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
-  [||] (sort_ranking Pervasives.compare [||])
-  [|3;2;1;4;0|] (sort_ranking Pervasives.compare [|"d";"c";"b";"e";"a"|])
+  [||] (sort_ranking ~f:Pervasives.compare [||])
+  [|3;2;1;4;0|] (sort_ranking ~f:Pervasives.compare [|"d";"c";"b";"e";"a"|])
 *)
 
 (*$Q
   Q.(array printable_string) (fun a -> \
-    let b = sort_ranking String.compare a in \
-    let a_sorted = sorted String.compare a in \
-    a = Array.map (Array.get a_sorted) b)
+    let b = sort_ranking ~f:String.compare a in \
+    let a_sorted = sorted ~f:String.compare a in \
+    a = map ~f:(Array.get a_sorted) b)
 *)
 
 let rev a =
@@ -168,16 +169,16 @@ let rec find_aux f a i =
     | Some _ as res -> res
     | None -> find_aux f a (i+1)
 
-let find f a =
+let find ~f a =
   find_aux (fun _ -> f ) a 0
 
-let findi f a =
+let findi ~f a =
   find_aux f a 0
 
-let find_idx p a =
-  find_aux (fun i x -> if p x then Some (i,x) else None) a 0
+let find_idx ~f a =
+  find_aux (fun i x -> if f x then Some (i,x) else None) a 0
 
-let filter_map f a =
+let filter_map ~f a =
   let rec aux acc i =
     if i = Array.length a
     then (
@@ -197,8 +198,8 @@ let filter_map f a =
     = [| "2"; "4"; "6" |]
 *)
 
-let filter p a =
-  filter_map (fun x -> if p x then Some x else None) a
+let filter ~f a =
+  filter_map a ~f:(fun x -> if f x then Some x else None)
 
 (* append [rev a] in front of [acc] *)
 let rec __rev_append_list a acc i =
@@ -207,7 +208,7 @@ let rec __rev_append_list a acc i =
   else
     __rev_append_list a (a.(i) :: acc) (i+1)
 
-let flat_map f a =
+let flat_map ~f a =
   let rec aux acc i =
     if i = Array.length a
     then (
@@ -251,11 +252,11 @@ let _lookup_exn ~cmp k a i j =
       | n when n<0 -> _lookup_rec ~cmp k a (i+1) (j-1)
       | _ -> raise Not_found  (* too high *)
 
-let lookup_exn ?(cmp=Pervasives.compare) k a =
-  _lookup_exn ~cmp k a 0 (Array.length a-1)
+let lookup_exn ?(cmp=Pervasives.compare) ~key a =
+  _lookup_exn ~cmp key a 0 (Array.length a-1)
 
-let lookup ?(cmp=Pervasives.compare) k a =
-  try Some (_lookup_exn ~cmp k a 0 (Array.length a-1))
+let lookup ?(cmp=Pervasives.compare) ~key a =
+  try Some (_lookup_exn ~cmp key a 0 (Array.length a-1))
   with Not_found -> None
 
 (*$T
@@ -268,20 +269,20 @@ let lookup ?(cmp=Pervasives.compare) k a =
   lookup 2 [| 1 |] = None
 *)
 
-let bsearch ?(cmp=Pervasives.compare) k a =
+let bsearch ?(cmp=Pervasives.compare) ~key a =
   let rec aux i j =
     if i > j
     then `Just_after j
     else
       let middle = i + (j - i) / 2 in (* avoid overflow *)
-      match cmp k a.(middle) with
+      match cmp key a.(middle) with
         | 0 -> `At middle
         | n when n<0 -> aux i (middle - 1)
         | _ -> aux (middle + 1) j
   in
   let n = Array.length a in
   if n=0 then `Empty
-  else match cmp a.(0) k, cmp a.(n-1) k with
+  else match cmp a.(0) key, cmp a.(n-1) key with
     | c, _ when c>0 -> `All_bigger
     | _, c when c<0 -> `All_lower
     | _ -> aux 0 (n-1)
@@ -296,37 +297,37 @@ let bsearch ?(cmp=Pervasives.compare) k a =
   bsearch 3 [| |] = `Empty
 *)
 
-let (>>=) a f = flat_map f a
+let (>>=) a f = flat_map ~f a
 
-let (>>|) a f = map f a
+let (>>|) a f = map ~f a
 
-let (>|=) a f = map f a
+let (>|=) a f = map ~f a
 
-let for_all p a =
+let for_all ~f a =
   let rec aux i =
-    i = Array.length a || (p a.(i) && aux (i+1))
+    i = Array.length a || (f a.(i) && aux (i+1))
   in
   aux 0
 
-let exists p a =
+let exists ~f a =
   let rec aux i =
-    i <> Array.length a && (p a.(i) || aux (i+1))
+    i <> Array.length a && (f a.(i) || aux (i+1))
   in
   aux 0
 
 let rec _for_all2 p a1 a2 i1 i2 ~len =
   len=0 || (p a1.(i1) a2.(i2) && _for_all2 p a1 a2 (i1+1) (i2+1) ~len:(len-1))
 
-let for_all2 p a b =
+let for_all2 ~f a b =
   Array.length a = Array.length b
   &&
-  _for_all2 p a b 0 0 ~len:(Array.length a)
+  _for_all2 f a b 0 0 ~len:(Array.length a)
 
 let rec _exists2 p a1 a2 i1 i2 ~len =
   len>0 && (p a1.(i1) a2.(i2) || _exists2 p a1 a2 (i1+1) (i2+1) ~len:(len-1))
 
-let exists2 p a b =
-  _exists2 p a b 0 0 ~len:(min (Array.length a) (Array.length b))
+let exists2 ~f a b =
+  _exists2 f a b 0 0 ~len:(min (Array.length a) (Array.length b))
 
 let _iter2 f a b i j ~len =
   for o = 0 to len-1 do
@@ -342,13 +343,13 @@ let _fold2 f acc a b i j ~len =
   in
   aux acc 0
 
-let iter2 f a b =
+let iter2 ~f a b =
   if length a <> length b then invalid_arg "iter2";
   _iter2 f a b 0 0 ~len:(Array.length a)
 
-let fold2 f acc a b =
+let fold2 ~f ~init a b =
   if length a <> length b then invalid_arg "fold2";
-  _fold2 f acc a b 0 0 ~len:(Array.length a)
+  _fold2 f init a b 0 0 ~len:(Array.length a)
 
 let (--) i j =
   if i<=j
@@ -381,9 +382,9 @@ let (--^) i j =
 
 (** all the elements of a, but the i-th, into a list *)
 let except_idx a i =
-  foldi
-    (fun acc j elt -> if i = j then acc else elt::acc)
-    [] a
+  foldi a
+    ~f:(fun acc j elt -> if i = j then acc else elt::acc)
+    ~init:[]
 
 let equal eq a b =
   let rec aux i =
@@ -469,7 +470,7 @@ let pp_i ?(sep=", ") pp_item out a =
     pp_item k out a.(k)
   done
 
-let to_seq a k = iter k a
+let to_seq a yield = iter ~f:yield a
 
 let to_gen a =
   let k = ref 0 in
