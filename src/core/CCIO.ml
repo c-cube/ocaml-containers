@@ -6,6 +6,8 @@
 type 'a or_error = ('a, string) Result.result
 type 'a gen = unit -> 'a option
 
+let gen_empty () = None
+
 let gen_singleton x =
   let done_ = ref false in
   fun () -> if !done_ then None else (done_ := true; Some x)
@@ -294,14 +296,17 @@ module File = struct
       ) else tl ()
 
   let rec walk d =
-    if Sys.is_directory d
-    then
-      let arr = Sys.readdir d in
+    if not (Sys.file_exists d) then gen_empty
+    else if Sys.is_directory d
+    then (
+      (* try to list the directory *)
+      let arr = try Sys.readdir d with Sys_error _ -> [||] in
       let tail = gen_of_array arr in
       let tail = gen_flat_map
         (fun s -> walk (Filename.concat d s))
         tail
       in cons_ (`Dir,d) tail
+    )
     else gen_singleton (`File, d)
 
   (*$R
@@ -327,7 +332,7 @@ module File = struct
         (walk d)
     else read_dir_base d
 
-  let show_walk_item (i,f) =
+  let show_walk_item ((i,f):walk_item) =
     (match i with
       | `File -> "file:"
       | `Dir -> "dir:"
