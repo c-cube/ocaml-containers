@@ -195,16 +195,12 @@ Iterators:
 
 === String
 
-See http://cedeela.fr/~simon/software/containers/Containers_string[doc].
-
 In the module `Containers_string`:
 - `Levenshtein`: edition distance between two strings
 - `KMP`: Knuth-Morris-Pratt substring algorithm
 - `Parse`: simple parser combinators
 
 === Advanced
-
-See http://cedeela.fr/~simon/software/containers/Containers_advanced[doc].
 
 In the module `Containers_advanced`:
 - `CCLinq`, high-level query language over collections
