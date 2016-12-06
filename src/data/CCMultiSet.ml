@@ -33,6 +33,10 @@ module type S = sig
       @raise Invalid_argument if [n < 0]
       @since 0.6 *)
 
+  val remove_all : t -> elt -> t
+  (** [remove_all set x] removes all occurrences of [x] from [set]
+      @since NEXT_RELEASE *)
+
   val update : t -> elt -> (int -> int) -> t
   (** [update set x f] calls [f n] where [n] is the current multiplicity
       of [x] in [set] ([0] to indicate its absence); the result of [f n]
@@ -135,6 +139,8 @@ module Make(O : Set.OrderedType) = struct
       else M.add x new_n ms
 
   let remove ms x = remove_mult ms x 1
+
+  let remove_all ms x = M.remove x ms
 
   let update ms x f =
     let n = count ms x in
