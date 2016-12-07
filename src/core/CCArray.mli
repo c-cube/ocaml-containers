@@ -187,6 +187,10 @@ val rev : 'a t -> 'a t
 (** Copy + reverse in place
     @since 0.20 *)
 
+val append : 'a t -> 'a t -> 'a t
+(** Append 2 arrays
+    @since NEXT_RELEASE *)
+
 val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter elements out of the array. Only the elements satisfying
     the given predicate will be kept. *)
