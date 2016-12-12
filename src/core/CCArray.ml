@@ -490,25 +490,6 @@ let filter_map f a =
 let filter p a =
   filter_map (fun x -> if p x then Some x else None) a
 
-let append a1 a2 =
-  let n1 = Array.length a1 in
-  let n2 = Array.length a2 in
-  if n1=0 then a2
-  else if n2=0 then a1
-  else (
-    let res = Array.make (n1+n2) a1.(0) in
-    Array.blit a1 0 res 0 n1;
-    Array.blit a2 0 res n1 n2;
-    res
-  )
-
-(*$= & ~printer:Q.Print.(array int)
-  [| 1;2;3;4 |] (append [|1;2|] [| 3;4 |])
-  [| 1;2;3;4 |] (append [||] [| 1;2; 3;4 |])
-  [| 1;2;3;4 |] (append [| 1;2; 3;4 |] [||])
-  [||] (append [||] [||])
-*)
-
 (* append [rev a] in front of [acc] *)
 let rec __rev_append_list a acc i =
   if i = Array.length a
