@@ -40,8 +40,6 @@ depopts: [
 ]
 conflicts: [
   "sequence" { < "0.5" }
-  "qtest" { < "2.2" }
-  "qcheck"
 ]
 tags: [ "stdlib" "containers" "iterators" "list" "heap" "queue" ]
 homepage: "https://github.com/c-cube/ocaml-containers/"
