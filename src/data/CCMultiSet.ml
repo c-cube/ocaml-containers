@@ -35,7 +35,7 @@ module type S = sig
 
   val remove_all : t -> elt -> t
   (** [remove_all set x] removes all occurrences of [x] from [set]
-      @since NEXT_RELEASE *)
+      @since 0.22 *)
 
   val update : t -> elt -> (int -> int) -> t
   (** [update set x f] calls [f n] where [n] is the current multiplicity

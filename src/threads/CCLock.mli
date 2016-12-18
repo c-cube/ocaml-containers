@@ -22,7 +22,7 @@ val try_with_lock : 'a t -> ('a -> 'b) -> 'b option
 (** [try_with_lock l f] runs [f x] in a critical section if [l] is not
     locked. [x] is the value protected by the lock [l]. If [f x]
     fails, [try_with_lock l f] fails too but the lock is released
-    @since NEXT_RELEASE *)
+    @since 0.22 *)
 
 (** Type allowing to manipulate the lock as a reference
     @since 0.13 *)

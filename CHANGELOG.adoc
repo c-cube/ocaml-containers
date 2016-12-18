@@ -1,5 +1,12 @@
 = Changelog
 
+== 0.22
+
+- threads/CCLock: add `try_with_lock` to wrap `Mutex.try_lock`
+- Add `CCMultiSet.remove_all`
+- document errors in `CCIO` (close #86)
+- use the new qtest/qcheck
+
 == 0.21
 
 - (breaking) make default `start`/`stop` arguments empty in printers (#82)
