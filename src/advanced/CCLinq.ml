@@ -212,7 +212,7 @@ module PMap = struct
     seq
 
   let flatten_l m =
-    let seq = Sequence.flatMap
+    let seq = Sequence.flat_map
         (fun (k,v) -> Sequence.map (fun v' -> k,v') (Sequence.of_list v))
         m.to_seq
     in
