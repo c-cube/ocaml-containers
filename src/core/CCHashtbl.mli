@@ -15,9 +15,9 @@ type 'a printer = Format.formatter -> 'a -> unit
 val get : ('a,'b) Hashtbl.t -> 'a -> 'b option
 (** Safe version of {!Hashtbl.find} *)
 
-val get_or : ('a,'b) Hashtbl.t -> 'a -> or_:'b -> 'b
-(** [get_or tbl k ~or_] returns the value associated to [k] if present,
-    and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+val get_or : ('a,'b) Hashtbl.t -> 'a -> default:'b -> 'b
+(** [get_or tbl k ~default] returns the value associated to [k] if present,
+    and returns [default] otherwise (if [k] doesn't belong in [tbl])
     @since 0.16 *)
 
 val keys : ('a,'b) Hashtbl.t -> 'a sequence
@@ -104,9 +104,9 @@ module type S = sig
   val get : 'a t -> key -> 'a option
   (** Safe version of {!Hashtbl.find} *)
 
-  val get_or : 'a t -> key -> or_:'a -> 'a
-  (** [get_or tbl k ~or_] returns the value associated to [k] if present,
-      and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+  val get_or : 'a t -> key -> default:'a -> 'a
+  (** [get_or tbl k ~default] returns the value associated to [k] if present,
+      and returns [default] otherwise (if [k] doesn't belong in [tbl])
       @since 0.16 *)
 
   val add_list : 'a list t -> key -> 'a -> unit

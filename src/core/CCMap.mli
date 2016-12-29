@@ -15,9 +15,9 @@ module type S = sig
   val get : key -> 'a t -> 'a option
   (** Safe version of {!find} *)
 
-  val get_or : key -> 'a t -> or_:'a -> 'a
-  (** [get_or k m ~or_] returns the value associated to [k] if present,
-      and returns [or_] otherwise (if [k] doesn't belong in [m])
+  val get_or : key -> 'a t -> default:'a -> 'a
+  (** [get_or k m ~default] returns the value associated to [k] if present,
+      and returns [default] otherwise (if [k] doesn't belong in [m])
       @since 0.16 *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t

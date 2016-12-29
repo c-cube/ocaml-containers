@@ -14,13 +14,13 @@ let get tbl x =
   try Some (Hashtbl.find tbl x)
   with Not_found -> None
 
-let get_or tbl x ~or_ =
+let get_or tbl x ~default =
   try Hashtbl.find tbl x
-  with Not_found -> or_
+  with Not_found -> default
 
 (*$=
-  "c" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 3 ~or_:"c")
-  "b" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 2 ~or_:"c")
+  "c" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 3 ~default:"c")
+  "b" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 2 ~default:"c")
 *)
 
 let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
@@ -35,7 +35,7 @@ let add_list tbl k v =
   Hashtbl.replace tbl k (v::l)
 
 let incr ?(by=1) tbl x =
-  let n = get_or tbl x ~or_:0 in
+  let n = get_or tbl x ~default:0 in
   if n+by <= 0
   then Hashtbl.remove tbl x
   else Hashtbl.replace tbl x (n+by)
@@ -124,9 +124,9 @@ module type S = sig
   val get : 'a t -> key -> 'a option
   (** Safe version of {!Hashtbl.find} *)
 
-  val get_or : 'a t -> key -> or_:'a -> 'a
-  (** [get_or tbl k ~or_] returns the value associated to [k] if present,
-      and returns [or_] otherwise (if [k] doesn't belong in [tbl])
+  val get_or : 'a t -> key -> default:'a -> 'a
+  (** [get_or tbl k ~default] returns the value associated to [k] if present,
+      and returns [default] otherwise (if [k] doesn't belong in [tbl])
       @since 0.16 *)
 
   val add_list : 'a list t -> key -> 'a -> unit
@@ -216,17 +216,17 @@ module Make(X : Hashtbl.HashedType)
     try Some (find tbl x)
     with Not_found -> None
 
-  let get_or tbl x ~or_ =
+  let get_or tbl x ~default =
     try find tbl x
-    with Not_found -> or_
+    with Not_found -> default
 
   (*$=
-    "c" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 3 ~or_:"c")
-    "b" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 2 ~or_:"c")
+    "c" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 3 ~default:"c")
+    "b" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 2 ~default:"c")
   *)
 
   let incr ?(by=1) tbl x =
-    let n = get_or tbl x ~or_:0 in
+    let n = get_or tbl x ~default:0 in
     if n+by <= 0
     then remove tbl x
     else replace tbl x (n+by)
@@ -240,7 +240,7 @@ module Make(X : Hashtbl.HashedType)
     assert_equal 1 (T.find tbl 2);
     assert_equal 2 (T.length tbl);
     T.decr tbl 2;
-    assert_equal 0 (T.get_or tbl 2 ~or_:0);
+    assert_equal 0 (T.get_or tbl 2 ~default:0);
     assert_equal 1 (T.length tbl);
     assert_bool "2 removed" (not (T.mem tbl 2));
   *)
