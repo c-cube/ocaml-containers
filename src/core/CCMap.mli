@@ -33,6 +33,7 @@ module type S = sig
       @since 0.17 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
+  (** Same as {!of_list} *)
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
   (** @since 0.14 *)
@@ -40,6 +41,10 @@ module type S = sig
   val to_seq : 'a t -> (key * 'a) sequence
 
   val of_list : (key * 'a) list -> 'a t
+  (** Build a map from the given list of bindings [k_i -> v_i],
+      added in order using {!add}.
+      If a key occurs several times, only its last binding
+      will be present in the result. *)
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
   (** @since 0.14 *)

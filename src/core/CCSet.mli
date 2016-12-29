@@ -19,6 +19,8 @@ module type S = sig
   val to_seq : t -> elt sequence
 
   val of_list : elt list -> t
+  (** Build a set from the given list of elements,
+      added in order using {!add}. *)
 
   val add_list : t -> elt list -> t
   (** @since 0.14 *)

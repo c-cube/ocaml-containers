@@ -79,7 +79,10 @@ val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
 (** List of bindings (order unspecified)  *)
 
 val of_list : ('a * 'b) list -> ('a,'b) Hashtbl.t
-(** From the given list of bindings, added in order *)
+(** Build a table from the given list of bindings [k_i -> v_i],
+    added in order using {!add}. If a key occurs several times,
+    it will be added several times, and the visible binding
+    will be the last one. *)
 
 val update : ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> unit
 (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
@@ -165,7 +168,10 @@ module type S = sig
   (** List of bindings (order unspecified)  *)
 
   val of_list : (key * 'a) list -> 'a t
-  (** From the given list of bindings, added in order *)
+  (** Build a table from the given list of bindings [k_i -> v_i],
+      added in order using {!add}. If a key occurs several times,
+      it will be added several times, and the visible binding
+      will be the last one. *)
 
   val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
   (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
