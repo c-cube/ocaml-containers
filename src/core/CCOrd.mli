@@ -15,10 +15,10 @@ val opp : 'a t -> 'a t
 val equiv : int -> int -> bool
 (** Returns [true] iff the two comparison results are the same *)
 
-val int_ : int t
-val string_ : string t
-val bool_ : bool t
-val float_ : float t
+val int : int t
+val string : string t
+val bool : bool t
+val float : float t
 
 (** {2 Lexicographic Combination} *)
 
@@ -31,6 +31,11 @@ val (<?>) : int -> ('a t * 'a * 'a) -> int
     {[CCInt.compare 1 3
       <?> (String.compare, "a", "b")
       <?> (CCBool.compare, true, false)]}
+
+    Same example, using only CCOrd::
+    {[CCOrd.(int 1 3
+      <?> (string, "a", "b")
+      <?> (bool, true, false))]}
 *)
 
 val option : 'a t -> 'a option t
@@ -41,10 +46,10 @@ val pair : 'a t -> 'b t -> ('a * 'b) t
 
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 
-val list_ : 'a t -> 'a list t
+val list : 'a t -> 'a list t
 (** Lexicographic combination on lists *)
 
-val array_ : 'a t -> 'a array t
+val array : 'a t -> 'a array t
 
 val map : ('a -> 'b) -> 'b t -> 'a t
 (** [map f ord] is the comparison function that, given objects [x] and [y],
