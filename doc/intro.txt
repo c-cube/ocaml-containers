@@ -26,19 +26,21 @@ by ocamlfind).
 
 {!modules:
 CCArray
+CCArrayLabels
 CCArray_slice
 CCBool
 CCChar
 CCFloat
-CCFun
 CCFormat
+CCFun
 CCHash
 CCHashtbl
 CCHeap
+CCIO
 CCInt
 CCInt64
-CCIO
 CCList
+CCListLabels
 CCMap
 CCOpt
 CCOrd
