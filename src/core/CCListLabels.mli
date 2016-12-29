@@ -11,7 +11,7 @@ val is_empty : _ t -> bool
 (** [is_empty l] returns [true] iff [l = []]
     @since 0.11 *)
 
-val map : ('a -> 'b) -> 'a t -> 'b t
+val map : f:('a -> 'b) -> 'a t -> 'b t
 (** Safe version of map *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
@@ -32,38 +32,38 @@ val cons_maybe : 'a option -> 'a t -> 'a t
 
 val (@) : 'a t -> 'a t -> 'a t
 
-val filter : ('a -> bool) -> 'a t -> 'a t
+val filter : f:('a -> bool) -> 'a t -> 'a t
 (** Safe version of {!List.filter} *)
 
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Safe version of [fold_right] *)
 
-val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 'a
 (** Fold until a stop condition via [('a, `Stop)] is
     indicated by the accumulator
     @since 0.8 *)
 
-val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a list -> 'acc * 'b list
 (** [fold_map f acc l] is a [fold_left]-like function, but it also maps the
     list to another list.
     @since 0.14 *)
 
-val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
+val fold_map2 : f:('acc -> 'a -> 'b -> 'acc * 'c) -> init:'acc -> 'a list -> 'b list -> 'acc * 'c list
 (** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length
     @since 0.16 *)
 
-val fold_filter_map : ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_filter_map : f:('acc -> 'a -> 'acc * 'b option) -> init:'acc -> 'a list -> 'acc * 'b list
 (** [fold_filter_map f acc l] is a [fold_left]-like function, but also
     generates a list of output in a way similar to {!filter_map}
     @since 0.17 *)
 
-val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_flat_map : f:('acc -> 'a -> 'acc * 'b list) -> init:'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d..
     @since 0.14 *)
 
-val init : int -> (int -> 'a) -> 'a t
+val init : int -> f:(int -> 'a) -> 'a t
 (** Similar to {!Array.init}
     @since 0.6 *)
 
@@ -71,23 +71,23 @@ val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
-val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
 (** Map and flatten at the same time (safe). Evaluation order is not guaranteed. *)
 
 val flatten : 'a t t -> 'a t
 (** Safe flatten *)
 
-val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+val product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** Cartesian product of the two lists, with the given combinator *)
 
-val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
+val fold_product : f:('c -> 'a -> 'b -> 'c) -> init:'c -> 'a t -> 'b t -> 'c
 (** Fold on the cartesian product *)
 
 val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
-val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
+val partition_map : f:('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
                     'a list -> 'b list * 'c list
 (** [partition_map f l] maps [f] on [l] and gather results in lists:
     - if [f x = `Left y], adds [y] to the first list
@@ -120,10 +120,10 @@ val take_drop : int -> 'a t -> 'a t * 'a t
 (** [take_drop n l] returns [l1, l2] such that [l1 @ l2 = l] and
     [length l1 = min (length l) n] *)
 
-val take_while : ('a -> bool) -> 'a t -> 'a t
+val take_while : f:('a -> bool) -> 'a t -> 'a t
 (** @since 0.13 *)
 
-val drop_while : ('a -> bool) -> 'a t -> 'a t
+val drop_while : f:('a -> bool) -> 'a t -> 'a t
 (** @since 0.13 *)
 
 val split : int -> 'a t -> 'a t * 'a t
@@ -142,43 +142,44 @@ val last_opt : 'a t -> 'a option
 (** Last element.
     @since 0.20 *)
 
-val find_pred : ('a -> bool) -> 'a t -> 'a option
+val find_pred : f:('a -> bool) -> 'a t -> 'a option
 (** [find_pred p l] finds the first element of [l] that satisfies [p],
     or returns [None] if no element satisfies [p]
     @since 0.11 *)
 
-val find_pred_exn : ('a -> bool) -> 'a t -> 'a
+val find_pred_exn : f:('a -> bool) -> 'a t -> 'a
 (** Unsafe version of {!find_pred}
     @raise Not_found if no such element is found
     @since 0.11 *)
 
-val find_map : ('a -> 'b option) -> 'a t -> 'b option
+val find_map : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find_map f l] traverses [l], applying [f] to each element. If for
     some element [x], [f x = Some y], then [Some y] is returned. Otherwise
     the call returns [None]
     @since 0.11 *)
 
-val find : ('a -> 'b option) -> 'a list -> 'b option
+(* TODO remove *)
+val find : f:('a -> 'b option) -> 'a list -> 'b option
 (** @deprecated since 0.11 in favor of {!find_map}, for the name is too confusing *)
 
-val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+val find_mapi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
     @since 0.11 *)
 
-val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** @deprecated since 0.11 in favor of {!find_mapi}, name is too confusing
     @since 0.3.4 *)
 
-val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
+val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None] *)
 
-val remove : ?eq:('a -> 'a -> bool) -> x:'a -> 'a t -> 'a t
-(** [remove ~x l] removes every instance of [x] from [l]. Tailrec.
+val remove : ?eq:('a -> 'a -> bool) -> key:'a -> 'a t -> 'a t
+(** [remove ~key l] removes every instance of [key] from [l]. Tailrec.
     @param eq equality function
     @since 0.11 *)
 
-val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
 
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
@@ -224,11 +225,11 @@ val group_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list list
 
 (** {2 Indices} *)
 
-val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+val mapi : f:(int -> 'a -> 'b) -> 'a t -> 'b t
 
-val iteri : (int -> 'a -> unit) -> 'a t -> unit
+val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 
-val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
+val foldi : f:('b -> int -> 'a -> 'b) -> init:'b -> 'a t -> 'b
 (** Fold on list, with index *)
 
 val get_at_idx : int -> 'a t -> 'a option
@@ -379,11 +380,11 @@ end
 module Traverse(M : MONAD) : sig
   val sequence_m : 'a M.t t -> 'a t M.t
 
-  val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
+  val fold_m : f:('b -> 'a -> 'b M.t) -> init:'b -> 'a t -> 'b M.t
 
-  val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+  val map_m : f:('a -> 'b M.t) -> 'a t -> 'b t M.t
 
-  val map_m_par : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+  val map_m_par : f:('a -> 'b M.t) -> 'a t -> 'b t M.t
   (** Same as {!map_m} but [map_m_par f (x::l)] evaluates [f x] and
       [f l] "in parallel" before combining their result (for instance
       in Lwt). *)

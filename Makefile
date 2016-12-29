@@ -62,7 +62,7 @@ push_doc_gh: doc
 	  cp -r containers.docdir/* dev/ && \
 	  git add --all dev
 
-DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*)
+DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*) $(wildcard src/**/*Labels*)
 QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/core/*.ml) \
 	$(wildcard src/core/*.mli) \

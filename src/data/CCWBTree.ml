@@ -361,7 +361,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     with Not_found -> None
 
   (*$T
-    let m = CCList.(0 -- 1000 |> map ~f:(fun i->i,i) |> M.of_list) in \
+    let m = CCList.(0 -- 1000 |> map (fun i->i,i) |> M.of_list) in \
     List.for_all (fun i -> M.nth_exn i m = (i,i)) CCList.(0--1000)
   *)
 

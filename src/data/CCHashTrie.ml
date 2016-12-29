@@ -604,7 +604,7 @@ module Make(Key : KEY)
     aux acc t
 
   (*$T
-    let l = CCList.(1 -- 10 |> map ~f:(fun x->x,x)) in  \
+    let l = CCList.(1 -- 10 |> map (fun x->x,x)) in  \
     M.of_list l \
       |> M.fold ~f:(fun acc x y -> (x,y)::acc) ~x:[] \
       |> List.sort Pervasives.compare = l
@@ -720,7 +720,7 @@ module Make(Key : KEY)
 end
 
 (*$R
-  let m = M.of_list CCList.( (501 -- 1000) @ (500 -- 1) |> map ~f:(fun i->i,i)) in
+  let m = M.of_list CCList.( (501 -- 1000) @ (500 -- 1) |> map (fun i->i,i)) in
   assert_equal ~printer:CCInt.to_string 1000 (M.cardinal m);
   assert_bool "check all get"
     (Sequence.for_all (fun i -> i = M.get_exn i m) Sequence.(1 -- 1000));
