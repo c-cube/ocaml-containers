@@ -155,6 +155,10 @@ val to_string : 'a printer -> 'a -> string
 val stdout : t
 val stderr : t
 
+val tee : t -> t -> t
+(** [tee a b] makes a new formatter that writes in both [a] and [b].
+    @since NEXT_RELEASE *)
+
 val sprintf : ('a, t, unit, string) format4 -> 'a
 (** Print into a string any format string that would usually be compatible
     with {!fprintf}. Similar to {!Format.asprintf}. *)

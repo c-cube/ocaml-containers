@@ -130,6 +130,26 @@ let fprintf = Format.fprintf
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter
 
+let tee a b =
+  let fa = Format.pp_get_formatter_out_functions a () in
+  let fb = Format.pp_get_formatter_out_functions b () in
+  Format.make_formatter
+    (fun str i len ->
+       fa.Format.out_string str i len;
+       fb.Format.out_string str i len)
+    (fun () -> fa.Format.out_flush (); fb.Format.out_flush ())
+
+(*$R
+  let buf1 = Buffer.create 42 in
+  let buf2 = Buffer.create 42 in
+  let f1 = Format.formatter_of_buffer buf1 in
+  let f2 = Format.formatter_of_buffer buf2 in
+  let fmt = tee f1 f2 in
+  Format.fprintf fmt "coucou@.";
+  assert_equal ~printer:CCFun.id "coucou\n" (Buffer.contents buf1);
+  assert_equal ~printer:CCFun.id "coucou\n" (Buffer.contents buf2);
+  *)
+
 let to_file filename format =
   let oc = open_out filename in
   let fmt = Format.formatter_of_out_channel oc in
