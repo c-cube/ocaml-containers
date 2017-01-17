@@ -87,6 +87,16 @@ val fold : ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) t -> 'b
 (** [fold ~ok ~error e] opens [e] and, if [e = Ok x], returns
     [ok x], otherwise [e = Error s] and it returns [error s]. *)
 
+val is_ok : ('a, 'err) t -> bool
+(** Return true if Ok/
+
+    @since NEXT_RELEASE *)
+
+val is_error : ('a, 'err) t -> bool
+(** Return true if Error
+
+    @since NEXT_RELEASE *)
+
 (** {2 Wrappers} *)
 
 val guard : (unit -> 'a) -> ('a, exn) t
