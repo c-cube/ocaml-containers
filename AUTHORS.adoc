@@ -16,3 +16,4 @@
 - Johannes Kloos
 - Geoff Gole (@gsg)
 - Roma Sokolov (@little-arhat)
+- Malcolm Matalka (`orbitz`)

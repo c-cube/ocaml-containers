@@ -98,6 +98,14 @@ let fold ~ok ~error x = match x with
   | Ok x -> ok x
   | Error s -> error s
 
+let is_ok = function
+  | Ok _ -> true
+  | Error _ -> false
+
+let is_error = function
+  | Ok _ -> false
+  | Error _ -> true
+
 (** {2 Wrappers} *)
 
 let guard f =
