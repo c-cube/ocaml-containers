@@ -173,7 +173,7 @@ val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
       CCFormat.with_color_sf "red" "%a" CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
     ]}
     {b status: experimental}
-    @since NEXT_RELEASE *)
+    @since 0.21 *)
 
 (** {2 IO} *)
 
@@ -207,7 +207,7 @@ val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
       CCFormat.sprintf_dyn_color ~colors:false "@{<Red>%a@}"
         CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
     ]}
-    @since NEXT_RELEASE *)
+    @since 0.21 *)
 
 val fprintf : t -> ('a, t, unit ) format -> 'a
 (** Alias to {!Format.fprintf}
@@ -215,7 +215,7 @@ val fprintf : t -> ('a, t, unit ) format -> 'a
 
 val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit ) format -> 'a
 (** Similar to {!fprintf} but enable/disable colors depending on [colors]
-    @since NEXT_RELEASE *)
+    @since 0.21 *)
 
 val ksprintf :
   f:(string -> 'b) ->
@@ -246,7 +246,7 @@ val to_file : string -> ('a, t, unit, unit) format4 -> 'a
         [| [1, true; 2, false]; []; [42, false] |];;
     ]}
 
-    @since NEXT_RELEASE *)
+    @since 0.21 *)
 
 module Dump : sig
   type 'a t = 'a printer

@@ -18,6 +18,12 @@ val with_lock : 'a t -> ('a -> 'b) -> 'b
     the lock [l], in a critical section. If [f x] fails, [with_lock l f]
     fails too but the lock is released *)
 
+val try_with_lock : 'a t -> ('a -> 'b) -> 'b option
+(** [try_with_lock l f] runs [f x] in a critical section if [l] is not
+    locked. [x] is the value protected by the lock [l]. If [f x]
+    fails, [try_with_lock l f] fails too but the lock is released
+    @since 0.22 *)
+
 (** Type allowing to manipulate the lock as a reference
     @since 0.13 *)
 module LockRef : sig
@@ -48,7 +54,8 @@ val mutex : _ t -> Mutex.t
 (** Underlying mutex *)
 
 val get : 'a t -> 'a
-(** Get the value in the lock. The value that is returned isn't protected! *)
+(** Atomically get the value in the lock. The value that is returned
+    isn't protected! *)
 
 val set : 'a t -> 'a -> unit
 (** Atomically set the value

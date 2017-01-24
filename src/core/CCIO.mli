@@ -46,6 +46,7 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
+    @raise Sys_error in case of error (same as {!open_in} and {!close_in})
     @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases *)
 
 val read_chunks : ?size:int -> in_channel -> string gen
@@ -77,12 +78,14 @@ val with_out : ?mode:int -> ?flags:open_flag list ->
   string -> (out_channel -> 'a) -> 'a
 (** Same as {!with_in} but for an output channel
     @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]).
+    @raise Sys_error in case of error (same as {!open_out} and {!close_out})
     [Open_wronly] is used in any cases *)
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
   string -> (out_channel -> 'a) -> 'a
 (** Similar to {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
-    flags activated, to append to the file *)
+    flags activated, to append to the file.
+    @raise Sys_error in case of error (same as {!open_out} and {!close_out}) *)
 
 val write_line : out_channel -> string -> unit
 (** Write the given string on the channel, followed by "\n" *)
@@ -102,6 +105,7 @@ val with_in_out : ?mode:int -> ?flags:open_flag list ->
   string -> (in_channel -> out_channel -> 'a) -> 'a
 (** Combines {!with_in} and {!with_out}.
     @param flags opening flags (default [[Open_creat]])
+    @raise Sys_error in case of error
     @since 0.12 *)
 
 (** {2 Misc for Generators} *)
@@ -144,7 +148,7 @@ module File : sig
   (** [remove_exn path] tries to remove the file at [path] from the
       file system.
 
-      {b Raises} [Sys_error] if there is no file at [path].
+      @raise Sys_error if there is no file at [path] or access rights are wrong.
       @since 0.8 *)
 
   val remove : t -> unit or_error
@@ -158,11 +162,13 @@ module File : sig
   val read_dir : ?recurse:bool -> t -> t gen
   (** [read_dir d] returns a sequence of files and directory contained
       in the directory [d] (or an empty stream if [d] is not a directory)
+      @raise Sys_error in case of error (e.g. permission denied)
       @param recurse if true (default [false]), sub-directories are also
         explored *)
 
   val read_exn : t -> string
   (** Read the content of the given file, or raises some exception
+      @raise Sys_error in case of error
       @since 0.16 *)
 
   val read : t -> string or_error
@@ -171,6 +177,7 @@ module File : sig
 
   val append_exn : t -> string -> unit
   (** Append the given string into the given file, possibly raising
+      @raise Sys_error in case of error
       @since 0.16 *)
 
   val append : t -> string -> unit or_error
@@ -179,6 +186,7 @@ module File : sig
 
   val write_exn : t -> string -> unit
   (** Write the given string into the given file, possibly raising
+      @raise Sys_error in case of error
       @since 0.16 *)
 
   val write : t -> string -> unit or_error
@@ -191,7 +199,8 @@ module File : sig
   (** Similar to {!read_dir} (with [recurse=true]), this function walks
       a directory recursively and yields either files or directories.
       Is a file anything that doesn't satisfy {!is_directory} (including
-      symlinks, etc.) *)
+      symlinks, etc.)
+      @raise Sys_error in case of error (e.g. permission denied) during iteration *)
 
   val show_walk_item : walk_item -> string
 

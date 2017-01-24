@@ -180,7 +180,6 @@ Iterators:
 - `CCKList`, a persistent iterator structure (akin to a lazy list, without memoization)
 - `CCKTree`, an abstract lazy tree structure
 
-
 === Thread
 
 In the library `containers.thread`, for preemptive system threads:

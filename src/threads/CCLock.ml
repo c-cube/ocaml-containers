@@ -35,6 +35,18 @@ let with_lock l f =
   assert_equal 10 (get l)
 *)
 
+let try_with_lock l f =
+  if Mutex.try_lock l.mutex
+  then
+    try
+      let x = f l.content in
+      Mutex.unlock l.mutex;
+      Some x
+    with e ->
+      Mutex.unlock l.mutex;
+      raise e
+  else None
+
 module LockRef = struct
   type 'a t = 'a lock
   let get t = t.content

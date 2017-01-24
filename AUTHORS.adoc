@@ -17,3 +17,4 @@
 - Geoff Gole (@gsg)
 - Roma Sokolov (@little-arhat)
 - Malcolm Matalka (`orbitz`)
+- David Sheets (@dsheets)
