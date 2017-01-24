@@ -8,11 +8,6 @@ type +'a t = 'a option
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Transform the element inside, if any *)
 
-val maybe : ('a -> 'b) -> 'b -> 'a t -> 'b
-(** [maybe f x o] is [x] if [o] is [None],
-    otherwise it's [f y] if [o = Some y]
-    @deprecated, use {!map_or} *)
-
 val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
 (** [map_or ~default f o] is [f x] if [o = Some x], [default otherwise]
     @since 0.16 *)
@@ -59,11 +54,6 @@ val exists : ('a -> bool) -> 'a t -> bool
 
 val for_all : ('a -> bool) -> 'a t -> bool
 (** @since 0.17 *)
-
-val get : 'a -> 'a t -> 'a
-(** [get default x] unwraps [x], but if [x = None] it returns [default] instead.
-    @since 0.4.1
-    @deprecated use {!get_or} @since 0.18 *)
 
 val get_or : default:'a -> 'a t -> 'a
 (** [get_or ~default o] extracts the value from [o], or

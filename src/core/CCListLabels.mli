@@ -126,10 +126,6 @@ val take_while : f:('a -> bool) -> 'a t -> 'a t
 val drop_while : f:('a -> bool) -> 'a t -> 'a t
 (** @since 0.13 *)
 
-val split : int -> 'a t -> 'a t * 'a t
-(** Synonym to {!take_drop}
-    @deprecated since 0.13: conflict with the {!List.split} standard function *)
-
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)
@@ -158,17 +154,9 @@ val find_map : f:('a -> 'b option) -> 'a t -> 'b option
     the call returns [None]
     @since 0.11 *)
 
-(* TODO remove *)
-val find : f:('a -> 'b option) -> 'a list -> 'b option
-(** @deprecated since 0.11 in favor of {!find_map}, for the name is too confusing *)
-
 val find_mapi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
     @since 0.11 *)
-
-val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
-(** @deprecated since 0.11 in favor of {!find_mapi}, name is too confusing
-    @since 0.3.4 *)
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],

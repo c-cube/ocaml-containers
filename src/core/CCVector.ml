@@ -562,8 +562,6 @@ let flat_map_list f v =
     ) v;
   v'
 
-let flat_map' = flat_map_seq
-
 let (>>=) x f = flat_map f x
 
 let (>|=) x f = map f x
@@ -580,8 +578,6 @@ let rev_in_place v =
       Array.unsafe_set vec (n-i-1) x;
     done
   )
-
-let rev' = rev_in_place
 
 let rev v =
   let v' = copy v in

@@ -185,10 +185,6 @@ val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
     intermediate collections.
     @since 0.14 *)
 
-val flat_map' : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
-(** Alias to {!flat_map_seq}
-   @deprecated since 0.14 , use {!flat_map_seq} *)
-
 val (>>=) : ('a,_) t -> ('a -> ('b,_) t) -> ('b, 'mut) t
 (** Infix version of {!flat_map} *)
 
@@ -213,9 +209,6 @@ val rev : ('a,_) t -> ('a, 'mut) t
 val rev_in_place : ('a, rw) t -> unit
 (** Reverse the vector in place
     @since 0.14 *)
-
-val rev' : ('a, rw) t -> unit
-(** @deprecated since 0.14 old name for {!rev_in_place} *)
 
 val rev_iter : ('a -> unit) -> ('a,_) t -> unit
 (** [rev_iter f a] is the same as [iter f (rev a)], only more efficient.

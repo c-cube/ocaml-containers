@@ -521,8 +521,6 @@ let hd_tl = function
 
 let take_drop n l = take n l, drop n l
 
-let split = take_drop
-
 (*$Q
   (Q.pair (Q.list Q.small_int) Q.int) (fun (l,i) -> \
     let i = abs i in \
@@ -614,14 +612,11 @@ let find_mapi f l =
 
 let find_map f l = find_mapi (fun _ -> f) l
 
-let find = find_map
-let findi = find_mapi
-
 let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
 
 (*$T
-  find (fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"
-  find (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
+  find_map (fun x -> if x=3 then Some "a" else None) [1;2;3;4] = Some "a"
+  find_map (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
 *)
 
 let remove ?(eq=(=)) ~x l =

@@ -47,8 +47,6 @@ module Hashtbl = struct
   (* still unable to include CCHashtbl itself, for the polymorphic functions *)
   module type S' = CCHashtbl.S
   module Make' = CCHashtbl.Make
-  module Counter = CCHashtbl.MakeCounter
-  module MakeDefault = CCHashtbl.MakeDefault
 end
 module Heap = CCHeap
 module List = struct
