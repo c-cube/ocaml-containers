@@ -15,6 +15,8 @@ type 'a printer = t -> 'a -> unit
 val silent : 'a printer (** Prints nothing *)
 
 val unit : unit printer
+(** Prints "()" *)
+
 val int : int printer
 val string : string printer
 val bool : bool printer
@@ -74,6 +76,33 @@ val hovbox : ?i:int -> 'a printer -> 'a printer
 val hbox : 'a printer -> 'a printer
 (** Wrap the printer in an horizontal box
     @since 0.16 *)
+
+val return : ('a, _, _, 'a) format4 -> unit printer
+(** [return "some_format_string"] takes a argument-less format string
+    and returns a printer actionable by [()].
+    Examples:
+    - [return ",@ "]
+    - [return "@{<Red>and then@}@,"]
+    - [return "@[<v>a@ b@]"]
+
+    @since NEXT_RELEASE
+*)
+
+val of_to_string : ('a -> string) -> 'a printer
+(** [of_to_string f] converts its input to a string using [f],
+    then prints the string
+    @since NEXT_RELEASE *)
+
+val const : 'a printer -> 'a -> unit printer
+(** [const pp x] is a unit printer that uses [pp] on [x]
+    @since NEXT_RELEASE *)
+
+val some : 'a printer -> 'a option printer
+(** [some pp] will print options as follows:
+    - [Some x] is printed using [pp] on [x]
+    - [None] is not printed at all
+    @since NEXT_RELEASE
+*)
 
 (** {2 ANSI codes}
 

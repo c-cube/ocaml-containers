@@ -12,6 +12,19 @@ type 'a printer = t -> 'a -> unit
 
 let silent _fmt _ = ()
 
+let return fmt_str out () = Format.fprintf out "%(%)" fmt_str
+
+(*$inject
+  let to_string_test s = CCFormat.sprintf_no_color "@[<h>%a@]%!" s ()
+*)
+
+(*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
+  "a b" (to_string_test (return "a@ b"))
+  ", " (to_string_test (return ",@ "))
+  "and then" (to_string_test (return "@{<Red>and then@}@,"))
+  "a b" (to_string_test (return "@[<h>a@ b@]"))
+*)
+
 let unit fmt () = Format.pp_print_string fmt "()"
 let int fmt i = Format.pp_print_string fmt (string_of_int i)
 let string = Format.pp_print_string
@@ -113,6 +126,14 @@ let hbox pp out x =
   Format.pp_open_hbox out ();
   pp out x;
   Format.pp_close_box out ()
+
+let of_to_string f out x = Format.pp_print_string out (f x)
+
+let const pp x out () = pp out x
+
+let some pp out = function
+  | None -> ()
+  | Some x -> pp out x
 
 (** {2 IO} *)
 
