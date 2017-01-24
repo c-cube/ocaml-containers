@@ -58,3 +58,11 @@ val map : ('a -> 'b) -> 'b t -> 'a t
     Example:
     [map fst CCInt.compare] compares values of type [(int * 'a)]  by their
       first component. *)
+
+val (>|=) : 'b t -> ('a -> 'b) -> 'a t
+(** Infix equivalent of {!map} *)
+
+module Infix : sig
+  val (<?>) : int -> ('a t * 'a * 'a) -> int
+  val (>|=) : 'b t -> ('a -> 'b) -> 'a t
+end

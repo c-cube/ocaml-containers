@@ -123,3 +123,10 @@ let array ord a1 a2 =
 *)
 
 let map f ord a b = ord (f a) (f b)
+
+let (>|=) x f = map f x
+
+module Infix = struct
+  let (>|=) = (>|=)
+  let (<?>) = (<?>)
+end
