@@ -53,14 +53,13 @@ let release m t =
 *)
 
 let with_acquire ~n t ~f =
-  Mutex.lock t.mutex;
-  acquire_once_locked_ n t;
+  acquire n t;
   try
     let x = f() in
-    release_once_locked_ n t;
+    release n t;
     x
   with e ->
-    release_once_locked_ n t;
+    release n t;
     raise e
 
 (*$R
