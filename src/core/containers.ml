@@ -16,7 +16,16 @@ module Array = struct
   include Array
   include CCArray
 end
+module ArrayLabels = struct
+  include ArrayLabels
+  include CCArrayLabels
+end
+module Array_slice = CCArray_slice
 module Bool = CCBool
+module Char = struct
+  include Char
+  include (CCChar : module type of CCChar with type t := t)
+end
 module Float = CCFloat
 module Format = struct
   include Format
@@ -25,6 +34,8 @@ end
 module Fun = CCFun
 module Hash = CCHash
 module Int = CCInt
+module Int64 = CCInt64
+module IO = CCIO
 
 (** @since 0.14 *)
 module Hashtbl = struct
@@ -39,22 +50,32 @@ module Hashtbl = struct
   module Counter = CCHashtbl.MakeCounter
   module MakeDefault = CCHashtbl.MakeDefault
 end
-
+module Heap = CCHeap
 module List = struct
   include List
   include CCList
+end
+module ListLabels = struct
+  include ListLabels
+  include CCListLabels
 end
 module Map = struct
   module type OrderedType = Map.OrderedType
   include CCMap
 end
 module Option = CCOpt
+module Ord = CCOrd
 module Pair = CCPair
+module Parse = CCParse
 module Random = struct
   include Random
   include CCRandom
 end
 module Ref = CCRef
+module Result = struct
+  include Result
+  include CCResult
+end
 module Set = struct
   module type OrderedType = Set.OrderedType
   include CCSet
@@ -65,16 +86,3 @@ module String = struct
 end
 module Vector = CCVector
 
-module Int64 = CCInt64
-
-module IO = CCIO
-
-module Char = struct
-  include Char
-  include (CCChar : module type of CCChar with type t := t)
-end
-
-module Result = struct
-  include Result
-  include CCResult
-end
