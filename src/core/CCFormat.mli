@@ -32,11 +32,10 @@ val string_quoted : string printer
 (** Similar to {!CCString.print}.
     @since 0.14 *)
 
-val list : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a list printer
-val array : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a array printer
-val arrayi : ?start:string -> ?stop:string -> ?sep:string ->
-            (int * 'a) printer -> 'a array printer
-val seq : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a sequence printer
+val list : ?sep:unit printer -> 'a printer -> 'a list printer
+val array : ?sep:unit printer -> 'a printer -> 'a array printer
+val arrayi : ?sep:unit printer -> (int * 'a) printer -> 'a array printer
+val seq : ?sep:unit printer -> 'a printer -> 'a sequence printer
 
 val opt : 'a printer -> 'a option printer
 (** [opt pp] prints options as follows:
@@ -46,9 +45,9 @@ val opt : 'a printer -> 'a option printer
 (** In the tuple printers, the [sep] argument is only available
     @since 0.17 *)
 
-val pair : ?sep:string -> 'a printer -> 'b printer -> ('a * 'b) printer
-val triple : ?sep:string -> 'a printer -> 'b printer -> 'c printer -> ('a * 'b * 'c) printer
-val quad : ?sep:string -> 'a printer -> 'b printer ->
+val pair : ?sep:unit printer -> 'a printer -> 'b printer -> ('a * 'b) printer
+val triple : ?sep:unit printer -> 'a printer -> 'b printer -> 'c printer -> ('a * 'b * 'c) printer
+val quad : ?sep:unit printer -> 'a printer -> 'b printer ->
             'c printer -> 'd printer -> ('a * 'b * 'c * 'd) printer
 
 val within : string -> string -> 'a printer -> 'a printer

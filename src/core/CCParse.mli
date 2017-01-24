@@ -107,7 +107,7 @@ assert (l=l');;
 
     let l = CCList.(1 -- n) in
     let l_printed =
-      CCFormat.(to_string (list ~start:"[" ~stop:"]" ~sep:"," int)) l in
+      CCFormat.(to_string (within "[" "]" (list ~sep:(return ",") int))) l in
 
     let l' = CCParse.parse_string_exn p l_printed in
 

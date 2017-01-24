@@ -38,65 +38,48 @@ let int64 fmt n = Format.fprintf fmt "%Ld" n
 let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 
-let list ?(start="") ?(stop="") ?(sep=", ") pp fmt l =
+let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
   | x::((_::_) as l) ->
     pp fmt x;
-    Format.pp_print_string fmt sep;
-    Format.pp_print_cut fmt ();
+    sep fmt ();
     pp_list l
   | x::[] -> pp fmt x
   | [] -> ()
   in
-  Format.pp_print_string fmt start;
-  pp_list l;
-  Format.pp_print_string fmt stop
+  pp_list l
 
-let array ?(start="") ?(stop="") ?(sep=", ") pp fmt a =
-  Format.pp_print_string fmt start;
+let array ?(sep=return ",@ ") pp fmt a =
   for i = 0 to Array.length a - 1 do
-    if i > 0 then (
-      Format.pp_print_string fmt sep;
-      Format.pp_print_cut fmt ();
-    );
+    if i > 0 then sep fmt ();
     pp fmt a.(i)
-  done;
-  Format.pp_print_string fmt stop
+  done
 
-let arrayi ?(start="") ?(stop="") ?(sep=", ") pp fmt a =
-  Format.pp_print_string fmt start;
+let arrayi ?(sep=return ",@ ") pp fmt a =
   for i = 0 to Array.length a - 1 do
-    if i > 0 then (
-      Format.pp_print_string fmt sep;
-      Format.pp_print_cut fmt ();
-    );
+    if i > 0 then sep fmt ();
     pp fmt (i, a.(i))
-  done;
-  Format.pp_print_string fmt stop
+  done
 
-let seq ?(start="") ?(stop="") ?(sep=", ") pp fmt seq =
-  Format.pp_print_string fmt start;
+let seq ?(sep=return ",@ ") pp fmt seq =
   let first = ref true in
-  seq (fun x ->
-    (if !first then first := false else (
-      Format.pp_print_string fmt sep;
-      Format.pp_print_cut fmt ();
-    ));
-    pp fmt x);
-  Format.pp_print_string fmt stop
+  seq
+    (fun x ->
+       if !first then first := false else sep fmt ();
+       pp fmt x)
 
 let opt pp fmt x = match x with
   | None -> Format.pp_print_string fmt "none"
   | Some x -> Format.fprintf fmt "some %a" pp x
 
-let pair ?(sep=", ") ppa ppb fmt (a, b) =
-  Format.fprintf fmt "(%a%s@,%a)" ppa a sep ppb b
+let pair ?(sep=return ",@ ") ppa ppb fmt (a, b) =
+  Format.fprintf fmt "%a%a%a" ppa a sep () ppb b
 
-let triple ?(sep=", ") ppa ppb ppc fmt (a, b, c) =
-  Format.fprintf fmt "(%a%s@,%a%s@,%a)" ppa a sep ppb b sep ppc c
+let triple ?(sep=return ",@ ") ppa ppb ppc fmt (a, b, c) =
+  Format.fprintf fmt "%a%a%a%a%a" ppa a sep () ppb b sep () ppc c
 
-let quad ?(sep=", ") ppa ppb ppc ppd fmt (a, b, c, d) =
-  Format.fprintf fmt "(%a%s@,%a%s@,%a%s@,%a)" ppa a sep ppb b sep ppc c sep ppd d
+let quad ?(sep=return ",@ ") ppa ppb ppc ppd fmt (a, b, c, d) =
+  Format.fprintf fmt "%a%a%a%a%a%a%a" ppa a sep () ppb b sep () ppc c sep () ppd d
 
 let within a b p out x =
   string out a;
@@ -214,11 +197,19 @@ let code_of_style : style -> int = function
 
 let ansi_l_to_str_ = function
   | [] -> "\x1b[0m"
-  | [a] -> Format.sprintf "\x1b[%dm" (code_of_style a)
-  | [a;b] -> Format.sprintf "\x1b[%d;%dm" (code_of_style a) (code_of_style b)
+  | [a] -> Printf.sprintf "\x1b[%dm" (code_of_style a)
+  | [a;b] -> Printf.sprintf "\x1b[%d;%dm" (code_of_style a) (code_of_style b)
   | l ->
-      let pp_num out c = int out (code_of_style c) in
-      to_string (list ~start:"\x1b[" ~stop:"m" ~sep:";" pp_num) l
+    let buf = Buffer.create 16 in
+    let pp_num c = Buffer.add_string buf (string_of_int (code_of_style c)) in
+    Buffer.add_string buf "\x1b[";
+    List.iteri
+      (fun i c ->
+         if i>0 then Buffer.add_char buf ';';
+         pp_num c)
+      l;
+    Buffer.add_string buf "m";
+    Buffer.contents buf
 
 (* parse a tag *)
 let style_of_tag_ s = match String.trim s with
@@ -375,17 +366,17 @@ module Dump = struct
   let int32 = int32
   let int64 = int64
   let nativeint = nativeint
-  let list pp = within "[" "]" (hovbox (list ~sep:";" pp))
-  let array pp = within "[|" "|]" (hovbox (array ~sep:";" pp))
+  let list pp = within "[" "]" (hovbox (list ~sep:(return ";@,") pp))
+  let array pp = within "[|" "|]" (hovbox (array ~sep:(return ";@,") pp))
   let option pp out x = match x with
     | None -> Format.pp_print_string out "None"
     | Some x -> Format.fprintf out "Some %a" pp x
-  let pair p1 p2 = pair p1 p2
-  let triple p1 p2 p3 = triple p1 p2 p3
-  let quad p1 p2 p3 p4 = quad p1 p2 p3 p4
+  let pair p1 p2 = within "(" ")" (pair p1 p2)
+  let triple p1 p2 p3 = within "(" ")" (triple p1 p2 p3)
+  let quad p1 p2 p3 p4 = within "(" ")" (quad p1 p2 p3 p4)
   let result' pok perror out = function
-    | Result.Ok x -> Format.fprintf out "Ok %a" pok x
-    | Result.Error e -> Format.fprintf out "Error %a" perror e
+    | Result.Ok x -> Format.fprintf out "(Ok %a)" pok x
+    | Result.Error e -> Format.fprintf out "(Error %a)" perror e
   let result pok = result' pok string
   let to_string = to_string
 end
@@ -394,6 +385,6 @@ end
   "[1;2;3]" (to_string Dump.(list int) [1;2;3])
   "Some 1" (to_string Dump.(option int) (Some 1))
   "[None;Some \"a b\"]" (to_string Dump.(list (option string)) [None; Some "a b"])
-  "[Ok \"a b c\";Error \"nope\"]" \
+  "[(Ok \"a b c\");(Error \"nope\")]" \
     (to_string Dump.(list (result string)) [Result.Ok "a b c"; Result.Error "nope"])
 *)
