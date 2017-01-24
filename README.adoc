@@ -181,6 +181,15 @@ Iterators:
 - `CCKTree`, an abstract lazy tree structure
 
 
+=== Thread
+
+In the library `containers.thread`, for preemptive system threads:
+
+- `CCFuture`, a set of tools for preemptive threading, including a thread pool,
+  monadic futures, and MVars (concurrent boxes)
+- `CCLock`, values protected by locks
+- `CCSemaphore`, a simple implementation of semaphores
+- `CCThread` basic wrappers for `Thread`
 
 === Misc
 

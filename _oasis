@@ -21,9 +21,16 @@ Description:
     extend the stdlib (e.g. CCList provides safe map/fold_right/append, and
     additional functions on lists).
 
+    It also features optional libraries for dealing with strings, and
+    helpers for unix and threads.
+
 Flag "unix"
   Description:  Build the containers.unix library (depends on Unix)
   Default:      false
+
+Flag "thread"
+  Description:  Build modules that depend on threads
+  Default:      true
 
 Flag "bench"
   Description:  Build and run benchmarks
@@ -73,6 +80,17 @@ Library "containers_iter"
   FindlibParent:    containers
   FindlibName:      iter
 
+Library "containers_thread"
+  Path:             src/threads/
+  Modules:          CCPool, CCLock, CCSemaphore, CCThread, CCBlockingQueue,
+                    CCTimer
+  FindlibName:      thread
+  FindlibParent:    containers
+  Build$:           flag(thread)
+  Install$:         flag(thread)
+  BuildDepends:     containers, threads
+  XMETARequires:    containers, threads
+
 Library "containers_top"
   Path:             src/top/
   Modules:          Containers_top
@@ -92,7 +110,7 @@ Document containers
     "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries:
     containers, containers.iter, containers.data,
-    containers.unix, containers.sexp
+    containers.thread, containers.unix, containers.sexp
 
 Executable run_benchs
   Path:             benchs/
@@ -101,7 +119,7 @@ Executable run_benchs
   Build$:           flag(bench)
   MainIs:           run_benchs.ml
   BuildDepends:     containers, qcheck,
-                    containers.data, containers.iter,
+                    containers.data, containers.iter, containers.thread,
                     sequence, gen, benchmark
 
 Executable run_bench_hash
@@ -121,7 +139,7 @@ Executable run_qtest
   MainIs:           run_qtest.ml
   Build$:           flag(tests) && flag(unix)
   BuildDepends:     containers, containers.iter,
-                    containers.sexp, containers.unix,
+                    containers.sexp, containers.unix, containers.thread,
                     containers.data,
                     sequence, gen, unix, oUnit, qcheck
 
