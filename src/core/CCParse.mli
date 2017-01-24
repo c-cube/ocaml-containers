@@ -26,7 +26,7 @@ parse_string_exn ptree "((1 2) (3 (4 5)))" ;;
 {6 Parse a list of words}
 
 {[
-open Containers_string.Parse;;
+open Containers.Parse;;
 let p = U.list ~sep:"," U.word;;
 parse_string_exn p "[abc , de, hello ,world  ]";;
 ]}
@@ -39,7 +39,7 @@ let p = CCParse.(U.list ~sep:"," U.int);;
 
 let l = CCList.(1 -- 100_000);;
 let l_printed =
-  CCFormat.to_string (CCList.print ~sep:"," ~start:"[" ~stop:"]" CCInt.print) l;;
+  CCFormat.(to_string (within "[" "]" (list ~sep:(return ",@,") int))) l;;
 
 let l' = CCParse.parse_string_exn p l_printed;;
 
