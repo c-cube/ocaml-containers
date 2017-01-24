@@ -5,49 +5,47 @@
 
 (** {2 Definitions} *)
 
-type t = int
+type hash = int
 (** A hash value is a positive integer *)
 
-type state
+type 'a t = 'a -> hash
+(** A hash function for values of type ['a] *)
 
-type 'a hash_fun = 'a -> state -> state
-(** Hash function for values of type ['a], merging a fingerprint of the
-    value into the state of type [t] *)
+val const : hash -> _ t
+(** [return h] hashes any value into [h]. Use with caution!. *)
 
-val init : state
-(** Initial value *)
-
-val finish : state -> int
-(** Extract a usable hash value *)
-
-val apply : 'a hash_fun -> 'a -> int
-(** Apply a hash function to a value.
-    [apply f x] is the same as [finish (f x init)] *)
-
-val int : int hash_fun
-val bool : bool hash_fun
-val char : char hash_fun
-val int32 : int32 hash_fun
-val int64 : int64 hash_fun
-val nativeint : nativeint hash_fun
-val slice : string -> int -> int hash_fun
+val int : int t
+val bool : bool t
+val char : char t
+val int32 : int32 t
+val int64 : int64 t
+val nativeint : nativeint t
+val slice : string -> int -> int t
 (** [slice s i len state] hashes the slice [i, ... i+len-1] of [s]
     into [state] *)
 
-val combine : ('a -> int) -> 'a hash_fun
+val string : string t
 
-val string : string hash_fun
+val list : 'a t -> 'a list t
+val array : 'a t -> 'a array t
+val opt : 'a t -> 'a option t
+val pair : 'a t -> 'b t -> ('a * 'b) t
+val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
 
-val list : 'a hash_fun -> 'a list hash_fun
-
-val array : 'a hash_fun -> 'a array hash_fun
-
-val opt : 'a hash_fun -> 'a option hash_fun
-val pair : 'a hash_fun -> 'b hash_fun -> ('a * 'b) hash_fun
-val triple : 'a hash_fun -> 'b hash_fun -> 'c hash_fun -> ('a * 'b * 'c) hash_fun
-
-val if_ : bool -> 'a hash_fun -> 'a hash_fun -> 'a hash_fun
+val if_ : bool -> 'a t -> 'a t -> 'a t
 (** Decide which hash function to use depending on the boolean *)
+
+val poly : 'a t
+(** the regular polymorphic hash function *)
+
+(** {2 Base hash combinators} *)
+
+val combine : 'a t -> hash -> 'a -> hash
+
+val combine2 : hash -> hash -> hash
+val combine3 : hash -> hash -> hash -> hash
+val combine4 : hash -> hash -> hash -> hash -> hash
 
 (** {2 Iterators} *)
 
@@ -55,6 +53,6 @@ type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
-val seq : 'a hash_fun -> 'a sequence hash_fun
-val gen : 'a hash_fun -> 'a gen hash_fun
-val klist : 'a hash_fun -> 'a klist hash_fun
+val seq : 'a t -> 'a sequence t
+val gen : 'a t -> 'a gen t
+val klist : 'a t -> 'a klist t

@@ -3,67 +3,72 @@
 
 (** {1 Hash combinators} *)
 
-type t = int
+type hash = int
+
+type 'a t = 'a -> hash
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
-type state = int
-
-type 'a hash_fun = 'a -> state -> state
-
-let combine f x s = Hashtbl.seeded_hash s (f x)
+let combine f s x = Hashtbl.seeded_hash s (f x)
 
 let combine2 a b = Hashtbl.seeded_hash a b
 
-let init : state = 0
-let finish i = i
+let combine3 a b c =
+  combine2 (combine2 a b) c
 
-let apply f x = f x init
+let combine4 a b c d =
+  combine2 (combine2 a b) (combine2 c d)
 
 (** {2 Combinators} *)
 
-let int i s = combine2 s (Int64.of_int i)
-let bool x s = combine2 s (if x then 1L else 2L)
-let char x s = combine2 s (Int64.of_int (Char.code x))
-let int32 x s = combine2 s (Int64.of_int32 x)
-let int64 x s = combine2 s x
-let nativeint x s = combine2 s (Int64.of_nativeint x)
+let const h _ = h
 
-let slice x i len s =
+let int i = i land max_int
+let bool b = if b then 1 else 2
+let char x = Char.code x
+let int32 (x:int32) = Hashtbl.hash x
+let int64 (x:int64) = Hashtbl.hash x
+let nativeint (x:nativeint) = Hashtbl.hash x
+let string (x:string) = Hashtbl.hash x
+
+let slice x i len =
   let j=i+len in
   let rec aux i s =
-    if i=j then s else aux (i+1) (char x.[i] s)
+    if i=j then s else aux (i+1) (combine2 (char x.[i]) s)
   in
-  aux i s
+  aux i 0
 
-let rec list f l s = match l with
-  | [] -> s
-  | x::l' -> list f l' (f x s)
+let opt f = function
+  | None -> 42
+  | Some x -> combine2 43 (f x)
 
-let array f a s = Array.fold_right f a s
+let list f l = List.fold_left (combine f) 0x42 l
+let array f l = Array.fold_left (combine f) 0x42 l
 
-let opt f o h = match o with
-  | None -> h
-  | Some x -> f x h
-let pair h1 h2 (x,y) s = h2 y (h1 x s)
-let triple h1 h2 h3 (x,y,z) s = h3 z (h2 y (h1 x s))
-
-let string x s = slice x 0 (String.length x) s
+let pair f g (x,y) = combine2 (f x) (g y)
+let triple f g h (x,y,z) = combine2 (combine2 (f x) (g y)) (h z)
+let quad f g h i (x,y,z,w) = combine2 (combine2 (f x) (g y)) (combine2 (h z) (i w))
 
 let if_ b then_ else_ h =
   if b then then_ h else else_ h
 
-let seq f seq s =
-  let s = ref s in
-  seq (fun x -> s := f x !s);
-  !s
+let poly x = Hashtbl.hash x
 
-let rec gen f g s = match g () with
-  | None -> s
-  | Some x -> gen f g (f x s)
+let seq f seq =
+  let h = ref 0x43 in
+  seq (fun x -> h := combine f !h x);
+  !h
 
-let rec klist f l s = match l () with
-  | `Nil -> s
-  | `Cons (x,l') -> klist f l' (f x s)
+let gen f g =
+  let rec aux s = match g () with
+    | None -> s
+    | Some x -> aux (combine2 s (f x))
+  in aux 0x42
+
+let klist f l =
+  let rec aux l s = match l () with
+    | `Nil -> s
+    | `Cons (x,tail) -> aux tail (combine2 s (f x))
+  in aux l 0x42
