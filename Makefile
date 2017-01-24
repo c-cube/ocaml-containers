@@ -137,4 +137,9 @@ watch:
 		make all; \
 	done
 
+reindent:
+	@which ocp-indent || ( echo "require ocp-indent" ; exit 1 )
+	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 echo "reindenting: "
+	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 ocp-indent -i
+
 .PHONY: examples push_doc tags qtest-gen qtest-clean devel update_next_tag
