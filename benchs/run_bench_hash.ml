@@ -25,15 +25,15 @@ let rec eq t1 t2 = match t1, t2 with
   | Node _, _
   | _, Node _ -> false
 
-let rec hash_tree t h = match t with
-  | Empty -> CCHash.string "empty" h
+let rec hash_tree t = match t with
+  | Empty -> CCHash.string "empty"
   | Node (i, l) ->
-      CCHash.list hash_tree l (CCHash.int i (CCHash.string "node" h))
+    CCHash.(combine2 (int i) (list hash_tree l))
 
 module H = Hashtbl.Make(struct
   type t = tree
   let equal = eq
-  let hash = CCHash.apply hash_tree
+  let hash = hash_tree
 end)
 
 let print_hashcons_stats st =

@@ -558,6 +558,7 @@ module Tbl = struct
     end in
     (module T)
 
+(*
   let hamt : type a. a key_type -> (module MUT with type key = a)
   = fun k ->
     let (module K), name = arg_make k in
@@ -568,6 +569,7 @@ module Tbl = struct
     end in
     let module U = MUT_OF_IMMUT(T) in
     (module U)
+   *)
 
   let modules_int =
     [ hashtbl_make Int
@@ -579,7 +581,7 @@ module Tbl = struct
     ; flat_hashtbl
     ; hashtrie Int
     ; hashtrie_mut Int
-    ; hamt Int
+      (* ; hamt Int *)
     ]
 
   let modules_string =
@@ -588,7 +590,7 @@ module Tbl = struct
     ; wbt Str
     ; hashtrie Str
     ; persistent_hashtbl Str
-    ; hamt Str
+    (* ; hamt Str *)
     ; trie
     ]
 
