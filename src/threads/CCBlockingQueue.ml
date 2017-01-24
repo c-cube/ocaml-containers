@@ -41,26 +41,26 @@ let with_lock_ q f =
 let push q x =
   with_lock_ q
     (fun () ->
-      while q.size = q.capacity do
-        Condition.wait q.cond q.lock
-      done;
-      assert (q.size < q.capacity);
-      Queue.push x q.q;
-      (* if there are blocked receivers, awake one of them *)
-      incr_size_ q;
-      Condition.broadcast q.cond)
+       while q.size = q.capacity do
+         Condition.wait q.cond q.lock
+       done;
+       assert (q.size < q.capacity);
+       Queue.push x q.q;
+       (* if there are blocked receivers, awake one of them *)
+       incr_size_ q;
+       Condition.broadcast q.cond)
 
 let take q =
   with_lock_ q
     (fun () ->
-      while q.size = 0 do
-        Condition.wait q.cond q.lock
-      done;
-      let x = Queue.take q.q in
-      (* if there are blocked senders, awake one of them *)
-      decr_size_ q;
-      Condition.broadcast q.cond;
-      x)
+       while q.size = 0 do
+         Condition.wait q.cond q.lock
+       done;
+       let x = Queue.take q.q in
+       (* if there are blocked senders, awake one of them *)
+       decr_size_ q;
+       Condition.broadcast q.cond;
+       x)
 
 (*$R
   let q = create 1 in
@@ -83,22 +83,22 @@ let push_list q l =
     | [] -> l
     | _::_ when q.size = q.capacity -> l (* no room remaining *)
     | x :: tl ->
-        Queue.push x q.q;
-        incr_size_ q;
-        push_ q tl
+      Queue.push x q.q;
+      incr_size_ q;
+      push_ q tl
   in
   (* push chunks of [l] in [q] until [l] is empty *)
   let rec aux q l = match l with
-  | [] -> ()
-  | _::_ ->
+    | [] -> ()
+    | _::_ ->
       let l = with_lock_ q
-        (fun () ->
-          while q.size = q.capacity do
-            Condition.wait q.cond q.lock
-          done;
-          let l = push_ q l in
-          Condition.broadcast q.cond;
-          l)
+          (fun () ->
+             while q.size = q.capacity do
+               Condition.wait q.cond q.lock
+             done;
+             let l = push_ q l in
+             Condition.broadcast q.cond;
+             l)
       in
       aux q l
   in aux q l
@@ -118,14 +118,14 @@ let take_list q n =
     if n=0 then List.rev acc
     else
       let acc, n = with_lock_ q
-        (fun () ->
-          while q.size = 0 do
-            Condition.wait q.cond q.lock
-          done;
-          let acc, n = pop_ acc q n in
-          Condition.broadcast q.cond;
-          acc, n
-        )
+          (fun () ->
+             while q.size = 0 do
+               Condition.wait q.cond q.lock
+             done;
+             let acc, n = pop_ acc q n in
+             Condition.broadcast q.cond;
+             acc, n
+          )
       in
       aux acc q n
   in
@@ -163,28 +163,28 @@ let take_list q n =
 let try_take q =
   with_lock_ q
     (fun () ->
-      if q.size = 0 then None
-      else (
-        decr_size_ q;
-        Some (Queue.take q.q)
-      ))
+       if q.size = 0 then None
+       else (
+         decr_size_ q;
+         Some (Queue.take q.q)
+       ))
 
 let try_push q x =
   with_lock_ q
     (fun () ->
-      if q.size = q.capacity then false
-      else (
-        incr_size_ q;
-        Queue.push x q.q;
-        Condition.signal q.cond;
-        true
-      ))
+       if q.size = q.capacity then false
+       else (
+         incr_size_ q;
+         Queue.push x q.q;
+         Condition.signal q.cond;
+         true
+       ))
 
 let peek q =
   with_lock_ q
     (fun () ->
-      try Some (Queue.peek q.q)
-      with Queue.Empty -> None)
+       try Some (Queue.peek q.q)
+       with Queue.Empty -> None)
 
 let size q = with_lock_ q (fun () -> q.size)
 
