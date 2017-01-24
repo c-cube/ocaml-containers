@@ -41,8 +41,8 @@ let float (x:float) y = Pervasives.compare x y
 
 let (<?>) c (ord,x,y) =
   if c = 0
-    then ord x y
-    else c
+  then ord x y
+  else c
 
 let option c o1 o2 = match o1, o2 with
   | None, None -> 0
@@ -52,13 +52,13 @@ let option c o1 o2 = match o1, o2 with
 
 (*$Q
   Q.(option int) (fun o -> option int None o <= 0)
-  *)
+*)
 
 let pair o_x o_y (x1,y1) (x2,y2) =
   let c = o_x x1 x2 in
   if c = 0
-    then o_y y1 y2
-    else c
+  then o_y y1 y2
+  else c
 
 (*$T
   pair int string (1, "b") (2, "a") < 0
@@ -69,22 +69,22 @@ let pair o_x o_y (x1,y1) (x2,y2) =
 let triple o_x o_y o_z (x1,y1,z1) (x2,y2,z2) =
   let c = o_x x1 x2 in
   if c = 0
-    then
-      let c' = o_y y1 y2 in
-      if c' = 0
-        then o_z z1 z2
-        else c'
-    else c
+  then
+    let c' = o_y y1 y2 in
+    if c' = 0
+    then o_z z1 z2
+    else c'
+  else c
 
 let rec list ord l1 l2 = match l1, l2 with
   | [], [] -> 0
   | [], _ -> -1
   | _, [] -> 1
   | x1::l1', x2::l2' ->
-      let c = ord x1 x2 in
-      if c = 0
-        then list ord l1' l2'
-        else c
+    let c = ord x1 x2 in
+    if c = 0
+    then list ord l1' l2'
+    else c
 
 (*$T
   list int [1;2;3] [1;2;3;4] < 0
@@ -100,14 +100,14 @@ let rec list ord l1 l2 = match l1, l2 with
 let array ord a1 a2 =
   let rec aux i =
     if i = Array.length a1
-      then if Array.length a1 = Array.length a2 then 0
+    then if Array.length a1 = Array.length a2 then 0
       else -1
     else if i = Array.length a2
-      then 1
-      else
-        let c = ord a1.(i) a2.(i) in
-        if c = 0
-          then aux (i+1) else c
+    then 1
+    else
+      let c = ord a1.(i) a2.(i) in
+      if c = 0
+      then aux (i+1) else c
   in
   aux 0
 

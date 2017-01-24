@@ -3,7 +3,7 @@
 
 (** {1 References}
 
-@since 0.9 *)
+    @since 0.9 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ord = 'a -> 'a -> int

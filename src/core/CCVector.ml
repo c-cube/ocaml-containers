@@ -88,21 +88,21 @@ let _resize v newcapacity =
 (* grow the array, using [x] as a filler if required *)
 let _grow v x =
   if _empty_array v
-    then v.vec <- Array.make 32 x
-    else (
-      let n = Array.length v.vec in
-      let size = min (2 * n + 10) Sys.max_array_length in
-      if size = n then failwith "vec: can't grow any further";
-      _resize v size
-    )
+  then v.vec <- Array.make 32 x
+  else (
+    let n = Array.length v.vec in
+    let size = min (2 * n + 10) Sys.max_array_length in
+    if size = n then failwith "vec: can't grow any further";
+    _resize v size
+  )
 
 (* v is not empty; ensure it has at least [size] slots.
 
-  Use a doubling-size strategy so that calling many times [ensure] will
-  behave well *)
+   Use a doubling-size strategy so that calling many times [ensure] will
+   behave well *)
 let ensure_not_empty_ v size =
   if size > Sys.max_array_length
-    then failwith "vec.ensure: size too big"
+  then failwith "vec.ensure: size too big"
   else (
     let n = ref (max 16 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;
@@ -138,7 +138,7 @@ let push_unsafe_ v x =
 
 let push v x =
   if v.size = Array.length v.vec
-    then _grow v x;
+  then _grow v x;
   push_unsafe_ v x
 
 (*$T
@@ -188,7 +188,7 @@ let remove v i =
   if i < 0 || i >= v.size then invalid_arg "CCVector.remove";
   (* if v.(i) not the last element, then put last element at index i *)
   if i < v.size - 1
-    then v.vec.(i) <- v.vec.(v.size - 1);
+  then v.vec.(i) <- v.vec.(v.size - 1);
   (* remove one element *)
   v.size <- v.size - 1
 
@@ -209,12 +209,12 @@ let append_array a b =
 let append_list a b = match b with
   | [] -> ()
   | x :: _ ->
-      (* need to push at least one elem *)
-      let len_a = a.size in
-      let len_b = List.length b in
-      ensure_with ~init:x a (len_a + len_b);
-      List.iter (push_unsafe_ a) b;
-      ()
+    (* need to push at least one elem *)
+    let len_a = a.size in
+    let len_b = List.length b in
+    ensure_with ~init:x a (len_a + len_b);
+    List.iter (push_unsafe_ a) b;
+    ()
 
 (*$Q
   Q.(pair (list int)(list int)) (fun (l1,l2) -> \
@@ -280,10 +280,10 @@ let compare cmp v1 v2 =
   let n = min v1.size v2.size in
   let rec check i =
     if i = n
-      then Pervasives.compare v1.size v2.size
-      else
-        let c = cmp (get v1 i) (get v2 i) in
-        if c = 0 then check (i+1) else c
+    then Pervasives.compare v1.size v2.size
+    else
+      let c = cmp (get v1 i) (get v2 i) in
+      if c = 0 then check (i+1) else c
   in check 0
 
 exception Empty
@@ -309,7 +309,7 @@ let top_exn v =
   1 -- 10 |> top = Some 10
   create () |> top = None
   1 -- 10 |> top_exn = 10
-  *)
+*)
 
 let copy v = {
   size = v.size;
@@ -387,18 +387,18 @@ let uniq_sort cmp v =
   let rec traverse prev i j =
     if i >= n then () (* done traversing *)
     else if cmp prev v.vec.(i) = 0
-      then (
-        v.size <- v.size - 1;
-        traverse prev (i+1) j
-      ) (* duplicate, remove it *)
-      else (
-        v.vec.(j) <- v.vec.(i);
-        traverse v.vec.(i) (i+1) (j+1)
-      ) (* keep it *)
+    then (
+      v.size <- v.size - 1;
+      traverse prev (i+1) j
+    ) (* duplicate, remove it *)
+    else (
+      v.vec.(j) <- v.vec.(i);
+      traverse v.vec.(i) (i+1) (j+1)
+    ) (* keep it *)
   in
   if v.size > 0
-    then traverse v.vec.(0) 1 1
-    (* start at 1, to get the first element in hand *)
+  then traverse v.vec.(0) 1 1
+(* start at 1, to get the first element in hand *)
 
 (*$T
   let v = of_list [1;4;5;3;2;4;1] in \
@@ -418,7 +418,7 @@ let iteri k v =
 (*$T
   let v = (0--6) in \
     iteri (fun i x ->  if i = 3 then remove v i) v; length v = 6
-  *)
+*)
 
 let map f v =
   if _empty_array v
@@ -431,7 +431,7 @@ let map f v =
 (*$T
   let v = create() in push v 1; push v 2; push v 3; \
   to_list (map string_of_int v) = ["1"; "2"; "3"]
-  *)
+*)
 
 let filter' p v =
   let i = ref 0 in (* cur element *)
@@ -440,7 +440,7 @@ let filter' p v =
   while !i < n do
     if p v.vec.(! i) then (
       (* move element i at the first empty slot.
-        invariant: i >= j*)
+         invariant: i >= j*)
       if !i > !j then v.vec.(!j) <- v.vec.(!i);
       incr i;
       incr j
@@ -506,7 +506,7 @@ let find_exn p v =
     else
       let x = v.vec.(i) in
       if p x then x
-    else check (i+1)
+      else check (i+1)
   in check 0
 
 let find p v =
@@ -534,8 +534,8 @@ let filter_map f v =
   let v' = create () in
   iter
     (fun x -> match f x with
-      | None -> ()
-      | Some y -> push v' y
+       | None -> ()
+       | Some y -> push v' y
     ) v;
   v'
 
@@ -548,8 +548,8 @@ let flat_map_seq f v =
   let v' = create () in
   iter
     (fun x ->
-      let seq = f x in
-      append_seq v' seq;
+       let seq = f x in
+       append_seq v' seq;
     ) v;
   v'
 
@@ -557,8 +557,8 @@ let flat_map_list f v =
   let v' = create () in
   iter
     (fun x ->
-      let l = f x in
-      append_list v' l;
+       let l = f x in
+       append_list v' l;
     ) v;
   v'
 
@@ -650,8 +650,8 @@ let slice v = (v.vec, 0, v.size)
 
 let (--) i j =
   if i>j
-    then init (i-j+1) (fun k -> i-k)
-    else init (j-i+1) (fun k -> i+k)
+  then init (i-j+1) (fun k -> i-k)
+  else init (j-i+1) (fun k -> i+k)
 
 (*$T
   (1 -- 4) |> to_list = [1;2;3;4]
@@ -667,8 +667,8 @@ let (--) i j =
 let (--^) i j =
   if i=j then create()
   else if i>j
-    then init (i-j) (fun k -> i-k)
-    else init (j-i) (fun k -> i+k)
+  then init (i-j) (fun k -> i-k)
+  else init (j-i) (fun k -> i+k)
 
 (*$Q
   Q.(pair small_int small_int) (fun (a,b) -> \
@@ -686,9 +686,9 @@ let of_array a =
 let of_list l = match l with
   | [] -> create()
   | x::_ ->
-      let v = create_with ~capacity:(List.length l + 5) x in
-      List.iter (push_unsafe_ v) l;
-      v
+    let v = create_with ~capacity:(List.length l + 5) x in
+    List.iter (push_unsafe_ v) l;
+    v
 
 (*$T
   of_list CCList.(1--300_000) |> to_list = CCList.(1--300_000)
@@ -710,15 +710,15 @@ let to_gen v =
   let i = ref 0 in
   fun () ->
     if !i < v.size
-      then (
-        let x = v.vec.( !i ) in
-        incr i;
-        Some x
-      ) else None
+    then (
+      let x = v.vec.( !i ) in
+      incr i;
+      Some x
+    ) else None
 
 (*$T
   let v = (1--10) in to_list v = Gen.to_list (to_gen v)
-  *)
+*)
 
 let of_klist ?(init=create ()) l =
   let rec aux l = match l() with
@@ -736,7 +736,7 @@ let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
   Format.pp_print_string fmt start;
   iteri
     (fun i x ->
-      if i > 0 then (Format.pp_print_string fmt sep; Format.pp_print_cut fmt());
-      pp_item fmt x
+       if i > 0 then (Format.pp_print_string fmt sep; Format.pp_print_cut fmt());
+       pp_item fmt x
     ) v;
   Format.pp_print_string fmt stop

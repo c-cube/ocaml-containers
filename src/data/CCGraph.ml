@@ -58,10 +58,10 @@ type 'a set = ('a, unit) table
 
 let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
   let module H = Hashtbl.Make(struct
-    type t = k
-    let equal = eq
-    let hash = hash
-  end) in
+      type t = k
+      let equal = eq
+      let hash = hash
+    end) in
   let tbl = H.create size in
   { mem=(fun k -> H.mem tbl k)
   ; find=(fun k -> H.find tbl k)
@@ -70,9 +70,9 @@ let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
 
 let mk_map (type k) ?(cmp=Pervasives.compare) () =
   let module M = Map.Make(struct
-    type t = k
-    let compare = cmp
-  end) in
+      type t = k
+      let compare = cmp
+    end) in
   let tbl = ref M.empty in
   { mem=(fun k -> M.mem k !tbl)
   ; find=(fun k -> M.find k !tbl)
@@ -112,10 +112,10 @@ module Heap = struct
     | N _ -> false
 
   let rec union ~leq t1 t2 = match t1, t2 with
-  | E, _ -> t2
-  | _, E -> t1
-  | N (x1, l1, r1), N (x2, l2, r2) ->
-    if leq x1 x2
+    | E, _ -> t2
+    | _, E -> t1
+    | N (x1, l1, r1), N (x2, l2, r2) ->
+      if leq x1 x2
       then N (x1, union ~leq t2 r1, l1)
       else N (x2, union ~leq t1 r2, l2)
 
@@ -132,9 +132,9 @@ let mk_heap ~leq =
   { push=(fun x -> t := Heap.insert ~leq !t x)
   ; is_empty=(fun () -> Heap.is_empty !t)
   ; pop=(fun () ->
-        let x, h = Heap.pop ~leq !t in
-        t := h;
-        x
+      let x, h = Heap.pop ~leq !t in
+      t := h;
+      x
     )
   }
 
@@ -252,30 +252,30 @@ module Traverse = struct
              bag.push (`Enter (v, []));
              while not (bag.is_empty ()) do
                match bag.pop () with
-               | `Enter (x, path) ->
-                 if not (tags.get_tag x) then (
-                   let num = !n in
-                   incr n;
-                   tags.set_tag x;
-                   k (`Enter (x, num, path));
-                   bag.push (`Exit x);
-                   Seq.iter
-                     (fun (e,v') -> bag.push (`Edge (v,e,v',(v,e,v') :: path)))
-                     (graph x);
-                 )
-               | `Exit x -> k (`Exit x)
-               | `Edge (v,e,v', path) ->
-                 let edge_kind =
-                   if tags.get_tag v'
-                   then if list_mem_ ~eq ~graph v' path
-                     then `Back
-                     else `Cross
-                   else (
-                     bag.push (`Enter (v', path));
-                     `Forward
+                 | `Enter (x, path) ->
+                   if not (tags.get_tag x) then (
+                     let num = !n in
+                     incr n;
+                     tags.set_tag x;
+                     k (`Enter (x, num, path));
+                     bag.push (`Exit x);
+                     Seq.iter
+                       (fun (e,v') -> bag.push (`Edge (v,e,v',(v,e,v') :: path)))
+                       (graph x);
                    )
-                 in
-                 k (`Edge (v,e,v', edge_kind))
+                 | `Exit x -> k (`Exit x)
+                 | `Edge (v,e,v', path) ->
+                   let edge_kind =
+                     if tags.get_tag v'
+                     then if list_mem_ ~eq ~graph v' path
+                       then `Back
+                       else `Cross
+                     else (
+                       bag.push (`Enter (v', path));
+                       `Forward
+                     )
+                   in
+                   k (`Edge (v,e,v', edge_kind))
              done
           ) seq
 
@@ -306,12 +306,12 @@ let topo_sort_tag ?(eq=(=)) ?(rev=false) ~tags ~graph seq =
   let l =
     Traverse.Event.dfs_tag ~eq ~tags ~graph seq
     |> Seq.filter_map
-        (function
-          | `Exit v -> Some v
-          | `Edge (_, _, _, `Back) -> raise Has_cycle
-          | `Enter _
-          | `Edge _ -> None
-        )
+      (function
+        | `Exit v -> Some v
+        | `Edge (_, _, _, `Back) -> raise Has_cycle
+        | `Enter _
+        | `Edge _ -> None
+      )
     |> Seq.fold (fun acc x -> x::acc) []
   in
   if rev then List.rev l else l
@@ -372,7 +372,7 @@ let spanning_tree_tag ~tags ~graph v =
              (e, mk_node v') :: acc
            )
         ) [] (graph v)
-      )
+    )
     in
     Lazy_tree.make_ v children
   in
@@ -428,37 +428,37 @@ module SCC = struct
            Stack.push (`Enter v) to_explore;
            while not (Stack.is_empty to_explore) do
              match Stack.pop to_explore with
-             | `Enter v ->
-               if not (tbl.mem v) then (
-                 (* remember unique ID for [v] *)
-                 let id = !n in
-                 incr n;
-                 let cell = mk_cell v id in
-                 cell.on_stack <- true;
-                 tbl.add v cell;
-                 Stack.push cell stack;
-                 Stack.push (`Exit (v, cell)) to_explore;
-                 (* explore children *)
+               | `Enter v ->
+                 if not (tbl.mem v) then (
+                   (* remember unique ID for [v] *)
+                   let id = !n in
+                   incr n;
+                   let cell = mk_cell v id in
+                   cell.on_stack <- true;
+                   tbl.add v cell;
+                   Stack.push cell stack;
+                   Stack.push (`Exit (v, cell)) to_explore;
+                   (* explore children *)
+                   Seq.iter
+                     (fun (_,v') -> Stack.push (`Enter v') to_explore)
+                     (graph v)
+                 )
+               | `Exit (v, cell) ->
+                 (* update [min_id] *)
+                 assert cell.on_stack;
                  Seq.iter
-                   (fun (_,v') -> Stack.push (`Enter v') to_explore)
-                   (graph v)
-               )
-             | `Exit (v, cell) ->
-               (* update [min_id] *)
-               assert cell.on_stack;
-               Seq.iter
-                 (fun (_,dest) ->
-                    (* must not fail, [dest] already explored *)
-                    let dest_cell = tbl.find dest in
-                    (* same SCC? yes if [dest] points to [cell.v] *)
-                    if dest_cell.on_stack
+                   (fun (_,dest) ->
+                      (* must not fail, [dest] already explored *)
+                      let dest_cell = tbl.find dest in
+                      (* same SCC? yes if [dest] points to [cell.v] *)
+                      if dest_cell.on_stack
                       then cell.min_id <- min cell.min_id dest_cell.min_id
-                 ) (graph v);
-               (* pop from stack if SCC found *)
-               if cell.id = cell.min_id then (
-                 let scc = pop_down_to ~id:cell.id [] stack in
-                 k scc
-               )
+                   ) (graph v);
+                 (* pop from stack if SCC found *)
+                 if cell.id = cell.min_id then (
+                   let scc = pop_down_to ~id:cell.id [] stack in
+                   k scc
+                 )
            done
         ) seq;
       assert (Stack.is_empty stack);
@@ -502,20 +502,20 @@ let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
 
 module Dot = struct
   type attribute = [
-  | `Color of string
-  | `Shape of string
-  | `Weight of int
-  | `Style of string
-  | `Label of string
-  | `Other of string * string
+    | `Color of string
+    | `Shape of string
+    | `Weight of int
+    | `Style of string
+    | `Label of string
+    | `Other of string * string
   ] (** Dot attribute *)
 
   let pp_list pp_x out l =
     Format.pp_print_string out "[";
     List.iteri
       (fun i x ->
-        if i > 0 then Format.fprintf out ",@;";
-        pp_x out x)
+         if i > 0 then Format.fprintf out ",@;";
+         pp_x out x)
       l;
     Format.pp_print_string out "]"
 
@@ -609,10 +609,10 @@ type ('v, 'e) mut_graph = {
 
 let mk_mut_tbl (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
   let module Tbl = Hashtbl.Make(struct
-    type t = k
-    let hash = hash
-    let equal = eq
-  end) in
+      type t = k
+      let hash = hash
+      let equal = eq
+    end) in
   let tbl = Tbl.create size in
   {
     graph=(fun v yield ->
@@ -677,10 +677,10 @@ module Map(O : Map.OrderedType) : MAP with type vertex = O.t = struct
 
   let as_graph m =
     (fun v yield ->
-      try
-        let sub = M.find v m in
-        M.iter (fun v' e -> yield (e, v')) sub
-      with Not_found -> ()
+       try
+         let sub = M.find v m in
+         M.iter (fun v' e -> yield (e, v')) sub
+       with Not_found -> ()
     )
 
   let empty = M.empty
@@ -753,19 +753,19 @@ let of_fun f =
 
 let of_hashtbl tbl =
   (fun v yield ->
-    try List.iter (fun b -> yield ((), b)) (Hashtbl.find tbl v)
-    with Not_found -> ()
+     try List.iter (fun b -> yield ((), b)) (Hashtbl.find tbl v)
+     with Not_found -> ()
   )
 
 let divisors_graph =
   (fun i ->
-    (* divisors of [i] that are [>= j] *)
-    let rec divisors j i yield =
-      if j < i
-      then (
-        if (i mod j = 0) then yield ((),j);
-        divisors (j+1) i yield
-      )
-    in
-    divisors 1 i
+     (* divisors of [i] that are [>= j] *)
+     let rec divisors j i yield =
+       if j < i
+       then (
+         if (i mod j = 0) then yield ((),j);
+         divisors (j+1) i yield
+       )
+     in
+     divisors 1 i
   )

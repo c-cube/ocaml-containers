@@ -2,9 +2,9 @@
 
 (** {1 Bit Field}
 
-  This module defines efficient bitfields
-  up to 30 or 62 bits (depending on the architecture) in
-  a relatively type-safe way.
+    This module defines efficient bitfields
+    up to 30 or 62 bits (depending on the architecture) in
+    a relatively type-safe way.
 
     {[
       module B = CCBitField.Make(struct end);;

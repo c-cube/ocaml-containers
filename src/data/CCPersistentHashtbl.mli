@@ -3,12 +3,12 @@
 
 (** {1 Persistent hash-table on top of OCaml's hashtables}
 
-Almost as efficient as the regular Hashtbl type, but with a persistent
-interface (rewinding changes to get back in the past history). This is
-mostly useful for backtracking-like uses, or forward uses (never using
-old values).
+    Almost as efficient as the regular Hashtbl type, but with a persistent
+    interface (rewinding changes to get back in the past history). This is
+    mostly useful for backtracking-like uses, or forward uses (never using
+    old values).
 
-This module is not thread-safe. *)
+    This module is not thread-safe. *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit

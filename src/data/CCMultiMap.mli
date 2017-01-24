@@ -33,59 +33,59 @@ module type S = sig
   type t
 
   val empty : t
-    (** Empty multimap *)
+  (** Empty multimap *)
 
   val is_empty : t -> bool
-    (** Empty multimap? *)
+  (** Empty multimap? *)
 
   val add : t -> key -> value -> t
-    (** Add a key/value binding *)
+  (** Add a key/value binding *)
 
   val remove : t -> key -> value -> t
-    (** Remove the binding *)
+  (** Remove the binding *)
 
   val remove_all : t -> key -> t
-    (** Remove the key from the map *)
+  (** Remove the key from the map *)
 
   val mem : t -> key -> bool
-    (** Is there a binding for this key? *)
+  (** Is there a binding for this key? *)
 
   val find : t -> key -> value list
-    (** List of values for this key *)
+  (** List of values for this key *)
 
   val find_iter : t -> key -> (value -> unit) -> unit
-    (** Iterate on bindings for this key *)
+  (** Iterate on bindings for this key *)
 
   val count : t -> key -> int
-    (** Number of bindings for this key *)
+  (** Number of bindings for this key *)
 
   val iter : t -> (key -> value -> unit) -> unit
-    (** Iterate on all key/value *)
+  (** Iterate on all key/value *)
 
   val fold : t -> 'a -> ('a -> key -> value -> 'a) -> 'a
-    (** Fold on all key/value *)
+  (** Fold on all key/value *)
 
   val size : t -> int
-    (** Number of keys *)
+  (** Number of keys *)
 
   val union : t -> t -> t
-    (** Union of multimaps *)
+  (** Union of multimaps *)
 
   val inter : t -> t -> t
-    (** Intersection of multimaps *)
+  (** Intersection of multimaps *)
 
   val diff : t -> t -> t
-    (** Difference of maps, ie bindings of the first that are not
-        in the second *)
+  (** Difference of maps, ie bindings of the first that are not
+      in the second *)
 
   val equal : t -> t -> bool
-    (** Same multimap *)
+  (** Same multimap *)
 
   val compare : t -> t -> int
-    (** Total order on multimaps *)
+  (** Total order on multimaps *)
 
   val submap : t -> t -> bool
-    (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2] *)
+  (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2] *)
 
   val to_seq : t -> (key * value) sequence
 
@@ -94,7 +94,7 @@ module type S = sig
   val keys : t -> key sequence
 
   val values : t -> value sequence
-    (** Some values may occur several times *)
+  (** Some values may occur several times *)
 end
 
 module type OrderedType = sig
@@ -105,10 +105,10 @@ end
 module Make(K : OrderedType)(V : OrderedType) : S with type key = K.t and type value = V.t
 
 (** {2 Two-Way Multimap}
-Represents n-to-n mappings between two types. Each element from the "left"
-is mapped to several right values, and conversely.
+    Represents n-to-n mappings between two types. Each element from the "left"
+    is mapped to several right values, and conversely.
 
-@since 0.3.3 *)
+    @since 0.3.3 *)
 
 module type BIDIR = sig
   type t

@@ -3,8 +3,8 @@
 
 (** {1 Basic String Utils}
 
-Consider using {!Containers_string.KMP} for pattern search, or Regex
-libraries. *)
+    Consider using {!Containers_string.KMP} for pattern search, or Regex
+    libraries. *)
 
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
@@ -442,8 +442,8 @@ module Split : sig
 
   (** {6 Copying functions}
 
-  Those split functions actually copy the substrings, which can be
-  more convenient but less efficient in general *)
+      Those split functions actually copy the substrings, which can be
+      more convenient but less efficient in general *)
 
   val list_cpy : by:string -> string -> string list
 

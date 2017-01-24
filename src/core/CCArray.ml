@@ -62,8 +62,8 @@ let fold_while f acc a =
     if i < Array.length a then
       let acc, cont = f acc a.(i) in
       match cont with
-      | `Stop -> acc
-      | `Continue -> fold_while_i f acc (i+1)
+        | `Stop -> acc
+        | `Continue -> fold_while_i f acc (i+1)
     else acc
   in fold_while_i f acc 0
 
@@ -106,7 +106,7 @@ let sorted cmp a =
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
   [||] (sorted Pervasives.compare [||])
   [|0;1;2;3;4|] (sorted Pervasives.compare [|3;2;1;4;0|])
-  *)
+*)
 
 (*$Q
   Q.(array int) (fun a -> \
@@ -160,7 +160,7 @@ let rev a =
   rev [| 1; 2; 3 |] = [| 3; 2; 1 |]
   rev [| 1; 2; |] = [| 2; 1 |]
   rev [| |] = [| |]
-  *)
+*)
 
 let rec find_aux f a i =
   if i = Array.length a then None
@@ -229,27 +229,27 @@ let flat_map f a =
 let rec _lookup_rec ~cmp k a i j =
   if i>j then raise Not_found
   else if i=j
-    then if cmp k a.(i) = 0
-      then i
-      else raise Not_found
+  then if cmp k a.(i) = 0
+    then i
+    else raise Not_found
   else
     let middle = (j+i)/2 in
     match cmp k a.(middle) with
-    | 0 -> middle
-    | n when n<0 -> _lookup_rec ~cmp k a i (middle-1)
-    | _ -> _lookup_rec ~cmp k a (middle+1) j
+      | 0 -> middle
+      | n when n<0 -> _lookup_rec ~cmp k a i (middle-1)
+      | _ -> _lookup_rec ~cmp k a (middle+1) j
 
 let _lookup_exn ~cmp k a i j =
   if i>j then raise Not_found;
   match cmp k a.(i) with
-  | 0 -> i
-  | n when n<0 -> raise Not_found (* too low *)
-  | _ when i=j -> raise Not_found (* too high *)
-  | _ ->
+    | 0 -> i
+    | n when n<0 -> raise Not_found (* too low *)
+    | _ when i=j -> raise Not_found (* too high *)
+    | _ ->
       match cmp k a.(j) with
-      | 0 -> j
-      | n when n<0 -> _lookup_rec ~cmp k a (i+1) (j-1)
-      | _ -> raise Not_found  (* too high *)
+        | 0 -> j
+        | n when n<0 -> _lookup_rec ~cmp k a (i+1) (j-1)
+        | _ -> raise Not_found  (* too high *)
 
 let lookup_exn ?(cmp=Pervasives.compare) k a =
   _lookup_exn ~cmp k a 0 (Array.length a-1)
@@ -371,8 +371,8 @@ let (--) i j =
 let (--^) i j =
   if i=j then [| |]
   else if i>j
-    then Array.init (i-j) (fun k -> i-k)
-    else Array.init (j-i) (fun k -> i+k)
+  then Array.init (i-j) (fun k -> i-k)
+  else Array.init (j-i) (fun k -> i+k)
 
 (*$Q
   Q.(pair small_int small_int) (fun (a,b) -> \
@@ -540,7 +540,7 @@ module SortGeneric(A : MONO_ARRAY) = struct
     in
     let rand = Rand.make seed_ in
     (* sort slice.
-      There is a chance that the two pivots are equal, but it's unlikely. *)
+       There is a chance that the two pivots are equal, but it's unlikely. *)
     let rec sort_slice_ ~st a i j =
       if j-i>10 then (
         st.l <- i;
@@ -565,7 +565,7 @@ module SortGeneric(A : MONO_ARRAY) = struct
             swap_ a st.k st.g;
             st.g <- st.g - 1;
             (* the element swapped from the right might be in the first situation.
-              that is, < p  (we know it's <= q already) *)
+               that is, < p  (we know it's <= q already) *)
             if cmp (A.get a st.k) p < 0 then (
               if st.k <> st.l then swap_ a st.k st.l;
               st.l <- st.l + 1
@@ -588,9 +588,9 @@ end
 
 
 let sort_generic (type arr)(type elt)
-(module A : MONO_ARRAY with type t = arr and type elt = elt)
-?(cmp=Pervasives.compare) a
-=
+    (module A : MONO_ARRAY with type t = arr and type elt = elt)
+    ?(cmp=Pervasives.compare) a
+  =
   let module S = SortGeneric(A) in
   S.sort ~cmp a
 

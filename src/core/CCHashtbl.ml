@@ -87,10 +87,10 @@ let of_list l =
 let update tbl ~f ~k =
   let v = get tbl k in
   match v, f k v with
-  | None, None -> ()
-  | None, Some v' -> Hashtbl.add tbl k v'
-  | Some _, Some v' -> Hashtbl.replace tbl k v'
-  | Some _, None -> Hashtbl.remove tbl k
+    | None, None -> ()
+    | None, Some v' -> Hashtbl.add tbl k v'
+    | Some _, Some v' -> Hashtbl.replace tbl k v'
+    | Some _, None -> Hashtbl.remove tbl k
 
 (*$R
   let tbl = Hashtbl.create 32 in
@@ -108,11 +108,11 @@ let print pp_k pp_v fmt m =
   let first = ref true in
   Hashtbl.iter
     (fun k v ->
-      if !first then first := false else Format.pp_print_string fmt ", ";
-      pp_k fmt k;
-      Format.pp_print_string fmt " -> ";
-      pp_v fmt v;
-      Format.pp_print_cut fmt ()
+       if !first then first := false else Format.pp_print_string fmt ", ";
+       pp_k fmt k;
+       Format.pp_print_string fmt " -> ";
+       pp_v fmt v;
+       Format.pp_print_cut fmt ()
     ) m;
   Format.fprintf fmt "}@]"
 
@@ -272,10 +272,10 @@ module Make(X : Hashtbl.HashedType)
   let update tbl ~f ~k =
     let v = get tbl k in
     match v, f k v with
-    | None, None -> ()
-    | None, Some v' -> add tbl k v'
-    | Some _, Some v' -> replace tbl k v'
-    | Some _, None -> remove tbl k
+      | None, None -> ()
+      | None, Some v' -> add tbl k v'
+      | Some _, Some v' -> replace tbl k v'
+      | Some _, None -> remove tbl k
 
   let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 
@@ -308,11 +308,11 @@ module Make(X : Hashtbl.HashedType)
     let first = ref true in
     iter
       (fun k v ->
-        if !first then first := false else Format.pp_print_string fmt ", ";
-        pp_k fmt k;
-        Format.pp_print_string fmt " -> ";
-        pp_v fmt v;
-        Format.pp_print_cut fmt ()
+         if !first then first := false else Format.pp_print_string fmt ", ";
+         pp_k fmt k;
+         Format.pp_print_string fmt " -> ";
+         pp_v fmt v;
+         Format.pp_print_cut fmt ()
       ) m;
     Format.fprintf fmt "}@]"
 end

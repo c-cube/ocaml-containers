@@ -3,7 +3,7 @@
 
 (** {1 Extension to the standard Hashtbl}
 
-@since 0.4 *)
+    @since 0.4 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a eq = 'a -> 'a -> bool

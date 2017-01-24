@@ -3,13 +3,13 @@
 
 (** {1 Drop-In replacement to Stdlib}
 
-This module is meant to be opened if one doesn't want to use both, say,
-[List] and [CCList]. Instead, [List] is now an alias to
-{[struct
-    include List
-    include CCList
-  end
-]}
+    This module is meant to be opened if one doesn't want to use both, say,
+    [List] and [CCList]. Instead, [List] is now an alias to
+    {[struct
+      include List
+      include CCList
+    end
+    ]}
 *)
 
 module Array = struct
@@ -41,8 +41,8 @@ module IO = CCIO
 module Hashtbl = struct
   include (Hashtbl : module type of Hashtbl
     with type statistics = Hashtbl.statistics
-    and module Make = Hashtbl.Make
-    and type ('a,'b) t = ('a,'b) Hashtbl.t
+     and module Make = Hashtbl.Make
+     and type ('a,'b) t = ('a,'b) Hashtbl.t
   )
   (* still unable to include CCHashtbl itself, for the polymorphic functions *)
   module type S' = CCHashtbl.S

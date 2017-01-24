@@ -26,11 +26,11 @@ let map f l =
     | [x1;x2;x3] -> let y1 = f x1 in let y2 = f x2 in [y1; y2; f x3]
     | _ when i=0 -> List.rev (List.rev_map f l)
     | x1::x2::x3::x4::l' ->
-        let y1 = f x1 in
-        let y2 = f x2 in
-        let y3 = f x3 in
-        let y4 = f x4 in
-        y1 :: y2 :: y3 :: y4 :: direct f (i-1) l'
+      let y1 = f x1 in
+      let y2 = f x2 in
+      let y3 = f x3 in
+      let y4 = f x4 in
+      y1 :: y2 :: y3 :: y4 :: direct f (i-1) l'
   in
   direct f direct_depth_default_ l
 
@@ -55,10 +55,10 @@ let append l1 l2 =
     List.rev_append (List.rev l1) l2
   in
   match l1 with
-  | [] -> l2
-  | [x] -> x::l2
-  | [x;y] -> x::y::l2
-  | _ -> direct direct_depth_append_ l1 l2
+    | [] -> l2
+    | [x] -> x::l2
+    | [x;y] -> x::y::l2
+    | _ -> direct direct_depth_append_ l1 l2
 
 let (@) = append
 
@@ -102,13 +102,13 @@ let fold_right f l acc =
     | [] -> acc
     | _ when i=0 -> safe f (List.rev l) acc
     | x::l' ->
-        let acc = direct (i-1) f l' acc in
-        f x acc
+      let acc = direct (i-1) f l' acc in
+      f x acc
   and safe f l acc = match l with
     | [] -> acc
     | x::l' ->
-        let acc = f x acc in
-        safe f l' acc
+      let acc = f x acc in
+      safe f l' acc
   in
   direct direct_depth_default_ f l acc
 
@@ -126,8 +126,8 @@ let rec fold_while f acc = function
   | [] -> acc
   | e::l -> let acc, cont = f acc e in
     match cont with
-    | `Stop -> acc
-    | `Continue -> fold_while f acc l
+      | `Stop -> acc
+      | `Continue -> fold_while f acc l
 
 (*$T
   fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 [true;true;false;true] = 2
@@ -137,8 +137,8 @@ let fold_map f acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
     | x :: l' ->
-        let acc, y = f acc x in
-        aux f acc (y :: map_acc) l'
+      let acc, y = f acc x in
+      aux f acc (y :: map_acc) l'
   in
   aux f acc [] l
 
@@ -158,8 +158,8 @@ let fold_map2 f acc l1 l2 =
     | [], _
     | _, [] -> invalid_arg "fold_map2"
     | x1 :: l1', x2 :: l2' ->
-        let acc, y = f acc x1 x2 in
-        aux f acc (y :: map_acc) l1' l2'
+      let acc, y = f acc x1 x2 in
+      aux f acc (y :: map_acc) l1' l2'
   in
   aux f acc [] l1 l2
 
@@ -178,8 +178,8 @@ let fold_filter_map f acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
     | x :: l' ->
-        let acc, y = f acc x in
-        aux f acc (cons_maybe y map_acc) l'
+      let acc, y = f acc x in
+      aux f acc (cons_maybe y map_acc) l'
   in
   aux f acc [] l
 
@@ -193,8 +193,8 @@ let fold_flat_map f acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
     | x :: l' ->
-        let acc, y = f acc x in
-        aux f acc (List.rev_append y map_acc) l'
+      let acc, y = f acc x in
+      aux f acc (List.rev_append y map_acc) l'
   in
   aux f acc [] l
 
@@ -230,8 +230,8 @@ let rec compare f l1 l2 = match l1, l2 with
   | _, [] -> 1
   | [], _ -> -1
   | x1::l1', x2::l2' ->
-      let c = f x1 x2 in
-      if c <> 0 then c else compare f l1' l2'
+    let c = f x1 x2 in
+    if c <> 0 then c else compare f l1' l2'
 
 let rec equal f l1 l2 = match l1, l2 with
   | [], [] -> true
@@ -246,14 +246,14 @@ let flat_map f l =
   let rec aux f l kont = match l with
     | [] -> kont []
     | x::l' ->
-        let y = f x in
-        let kont' tail = match y with
-          | [] -> kont tail
-          | [x] -> kont (x :: tail)
-          | [x;y] -> kont (x::y::tail)
-          | l -> kont (append l tail)
-        in
-        aux f l' kont'
+      let y = f x in
+      let kont' tail = match y with
+        | [] -> kont tail
+        | [x] -> kont (x :: tail)
+        | [x;y] -> kont (x::y::tail)
+        | l -> kont (append l tail)
+      in
+      aux f l' kont'
   in
   aux f l (fun l->l)
 
@@ -275,17 +275,17 @@ let product f l1 l2 =
 let fold_product f acc l1 l2 =
   List.fold_left
     (fun acc x1 ->
-      List.fold_left
-        (fun acc x2 -> f acc x1 x2)
-        acc l2
+       List.fold_left
+         (fun acc x2 -> f acc x1 x2)
+         acc l2
     ) acc l1
 
 let diagonal l =
   let rec gen acc l = match l with
-  | [] -> acc
-  | x::l' ->
-    let acc = List.fold_left (fun acc y -> (x,y) :: acc) acc l' in
-    gen acc l'
+    | [] -> acc
+    | x::l' ->
+      let acc = List.fold_left (fun acc y -> (x,y) :: acc) acc l' in
+      gen acc l'
   in
   gen [] l
 
@@ -298,12 +298,12 @@ let diagonal l =
 
 let partition_map f l =
   let rec iter f l1 l2 l = match l with
-  | [] -> List.rev l1, List.rev l2
-  | x :: tl ->
-    match f x with
-    | `Left y -> iter f (y :: l1) l2 tl
-    | `Right y -> iter f l1 (y :: l2) tl
-    | `Drop -> iter f l1 l2 tl
+    | [] -> List.rev l1, List.rev l2
+    | x :: tl ->
+      match f x with
+        | `Left y -> iter f (y :: l1) l2 tl
+        | `Right y -> iter f l1 (y :: l2) tl
+        | `Drop -> iter f l1 l2 tl
   in
   iter f [] [] l
 
@@ -354,9 +354,9 @@ let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
 
 let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
   let module S = Set.Make(struct
-    type t = elt
-    let compare = cmp
-  end) in
+      type t = elt
+      let compare = cmp
+    end) in
   let set = fold_right S.add l S.empty in
   S.elements set
 
@@ -481,9 +481,9 @@ let take n l =
     | [] -> []
     | _ when i=0 -> safe n [] l
     | x::l' ->
-        if n > 0
-        then x :: direct (i-1) (n-1) l'
-        else []
+      if n > 0
+      then x :: direct (i-1) (n-1) l'
+      else []
   and safe n acc l = match l with
     | [] -> List.rev acc
     | _ when n=0 -> List.rev acc
@@ -533,11 +533,11 @@ let take_while p l =
     | [] -> []
     | _ when i=0 -> safe p [] l
     | x :: l' ->
-        if p x then x :: direct (i-1) p l' else []
+      if p x then x :: direct (i-1) p l' else []
   and safe p acc l = match l with
     | [] -> List.rev acc
     | x :: l' ->
-        if p x then safe p (x::acc) l' else List.rev acc
+      if p x then safe p (x::acc) l' else List.rev acc
   in
   direct direct_depth_default_ p l
 
@@ -605,9 +605,9 @@ let find_mapi f l =
   let rec aux f i = function
     | [] -> None
     | x::l' ->
-        match f i x with
-          | Some _ as res -> res
-          | None -> aux f (i+1) l'
+      match f i x with
+        | Some _ as res -> res
+        | None -> aux f (i+1) l'
   in aux f 0 l
 
 let find_map f l = find_mapi (fun _ -> f) l
@@ -634,10 +634,10 @@ let remove ?(eq=(=)) ~x l =
 
 let filter_map f l =
   let rec recurse acc l = match l with
-  | [] -> List.rev acc
-  | x::l' ->
-    let acc' = match f x with | None -> acc | Some y -> y::acc in
-    recurse acc' l'
+    | [] -> List.rev acc
+    | x::l' ->
+      let acc' = match f x with | None -> acc | Some y -> y::acc in
+      recurse acc' l'
   in recurse [] l
 
 (*$=
@@ -769,14 +769,14 @@ let set_at_idx i x l0 =
   set_at_idx 0 10 [1;2;3] = [10;2;3]
   set_at_idx 4 10 [1;2;3] = [1;2;3]
   set_at_idx 1 10 [1;2;3] = [1;10;3]
- *)
+*)
 
 let insert_at_idx i x l =
   let rec aux l acc i x = match l with
     | [] -> List.rev_append acc [x]
     | y::l' when i=0 -> List.rev_append acc (x::y::l')
     | y::l' ->
-        aux l' (y::acc) (i-1) x
+      aux l' (y::acc) (i-1) x
   in
   aux l [] i x
 
@@ -784,14 +784,14 @@ let insert_at_idx i x l =
   insert_at_idx 0 10 [1;2;3] = [10;1;2;3]
   insert_at_idx 4 10 [1;2;3] = [1;2;3;10]
   insert_at_idx 1 10 [1;2;3] = [1;10;2;3]
- *)
+*)
 
 let remove_at_idx i l0 =
   let rec aux l acc i = match l with
     | [] -> l0
     | _::l' when i=0 -> List.rev_append acc l'
     | y::l' ->
-        aux l' (y::acc) (i-1)
+      aux l' (y::acc) (i-1)
   in
   aux l0 [] i
 
@@ -891,7 +891,7 @@ module Assoc = struct
   let rec search_exn eq l x = match l with
     | [] -> raise Not_found
     | (y,z)::l' ->
-        if eq x y then z else search_exn eq l' x
+      if eq x y then z else search_exn eq l' x
 
   let get_exn ?(eq=(=)) x l = search_exn eq l x
 
@@ -912,9 +912,9 @@ module Assoc = struct
   let rec search_set eq acc l x ~f = match l with
     | [] -> f x None acc
     | (x',y')::l' ->
-        if eq x x'
-          then f x (Some y') (List.rev_append acc l')
-          else search_set eq ((x',y')::acc) l' x ~f
+      if eq x x'
+      then f x (Some y') (List.rev_append acc l')
+      else search_set eq ((x',y')::acc) l' x ~f
 
   let set ?(eq=(=)) x y l =
     search_set eq [] l x
@@ -940,8 +940,8 @@ module Assoc = struct
     search_set eq [] l x
       ~f:(fun x opt_y rest ->
         match f opt_y with
-        | None -> rest (* drop *)
-        | Some y' -> (x,y') :: rest)
+          | None -> rest (* drop *)
+          | Some y' -> (x,y') :: rest)
   (*$=
     [1,"1"; 2,"22"] \
       (Assoc.update 2 [1,"1"; 2,"2"] \
@@ -957,8 +957,8 @@ module Assoc = struct
   let remove ?(eq=(=)) x l =
     search_set eq [] l x
       ~f:(fun _ opt_y rest -> match opt_y with
-          | None -> l  (* keep as is *)
-          | Some _ -> rest)
+        | None -> l  (* keep as is *)
+        | Some _ -> rest)
 
   (*$=
     [1,"1"] \
@@ -980,14 +980,14 @@ module Ref = struct
   let pop l = match !l with
     | [] -> None
     | x::tail ->
-        l := tail;
-        Some x
+      l := tail;
+      Some x
 
   let pop_exn l = match !l with
     | [] -> failwith "CCList.Ref.pop_exn"
     | x::tail ->
-        l := tail;
-        x
+      l := tail;
+      x
 
   let create() = ref []
 
@@ -1017,27 +1017,27 @@ module Traverse(M : MONAD) = struct
     let rec aux f acc l = match l with
       | [] -> return (List.rev acc)
       | x::tail ->
-          f x >>= fun x' ->
-          aux f (x' :: acc) tail
+        f x >>= fun x' ->
+        aux f (x' :: acc) tail
     in aux f [] l
 
   let rec map_m_par f l = match l with
     | [] -> M.return []
     | x::tl ->
-        let x' = f x in
-        let tl' = map_m_par f tl in
-        x' >>= fun x' ->
-        tl' >>= fun tl' ->
-        M.return (x'::tl')
+      let x' = f x in
+      let tl' = map_m_par f tl in
+      x' >>= fun x' ->
+      tl' >>= fun tl' ->
+      M.return (x'::tl')
 
   let sequence_m l = map_m (fun x->x) l
 
   let rec fold_m f acc l = match l with
     | [] -> return acc
     | x :: l' ->
-        f acc x
-        >>= fun acc' ->
-        fold_m f acc' l'
+      f acc x
+      >>= fun acc' ->
+      fold_m f acc' l'
 end
 
 (** {2 Conversions} *)
@@ -1066,10 +1066,10 @@ let random_non_empty g st =
 let random_choose l = match l with
   | [] -> raise Not_found
   | _::_ ->
-      let len = List.length l in
-      fun st ->
-        let i = Random.State.int st len in
-        List.nth l i
+    let len = List.length l in
+    fun st ->
+      let i = Random.State.int st len in
+      List.nth l i
 
 let random_sequence l st = map (fun g -> g st) l
 
@@ -1083,8 +1083,8 @@ let to_gen l =
   let l = ref l in
   fun () ->
     match !l with
-    | [] -> None
-    | x::l' ->
+      | [] -> None
+      | x::l' ->
         l := l'; Some x
 
 let of_gen g =
@@ -1148,4 +1148,4 @@ let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
       (CCFormat.to_string \
         (CCFormat.hbox(CCList.pp ~start:"[" ~stop:"]" CCFormat.int)) \
         [1;2;3])
-  *)
+*)

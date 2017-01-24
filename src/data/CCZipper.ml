@@ -40,15 +40,15 @@ let right_exn = function
 
 let modify f z = match z with
   | l, [] ->
-      begin match f None with
+    begin match f None with
       | None -> z
       | Some x -> l, [x]
-      end
+    end
   | l, x::r ->
-      begin match f (Some x) with
+    begin match f (Some x) with
       | None -> l,r
       | Some _ -> l, x::r
-      end
+    end
 
 let is_focused = function
   | _, [] -> true

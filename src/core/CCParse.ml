@@ -49,11 +49,11 @@ let rec string_of_branch l =
     | Some s -> Format.sprintf "while parsing %s, " s
   in
   match l with
-  | [] -> ""
-  | [l,c,s] ->
-    Format.sprintf "@[%aat line %d, col %d@]" pp_s s l c
-  | (l,c,s) :: tail ->
-    Format.sprintf "@[%aat line %d, col %d@]@,%s" pp_s s l c (string_of_branch tail)
+    | [] -> ""
+    | [l,c,s] ->
+      Format.sprintf "@[%aat line %d, col %d@]" pp_s s l c
+    | (l,c,s) :: tail ->
+      Format.sprintf "@[%aat line %d, col %d@]@,%s" pp_s s l c (string_of_branch tail)
 
 let () = Printexc.register_printer
     (function
@@ -112,7 +112,7 @@ let (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   = fun p f st ~ok ~err -> p st ~err ~ok:(fun x -> f x st ~err ~ok)
 let (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   = fun f x st ~ok ~err ->
-      f st ~err ~ok:(fun f' -> x st ~err ~ok:(fun x' -> ok (f' x')))
+    f st ~err ~ok:(fun f' -> x st ~err ~ok:(fun x' -> ok (f' x')))
 let (<* ) : 'a t -> _ t -> 'a t
   = fun x y st ~ok ~err ->
     x st ~err ~ok:(fun res -> y st ~err ~ok:(fun _ -> ok res))
@@ -275,8 +275,8 @@ and sep1 ~by p =
 
 let sep ~by p =
   (try_ p >>= fun x ->
-     (sep_rec ~by p >|= fun tl -> x::tl)
-     <|> return [x])
+   (sep_rec ~by p >|= fun tl -> x::tl)
+   <|> return [x])
   <|> return []
 
 let fix f =
@@ -382,8 +382,8 @@ module U = struct
 
   let list ?(start="[") ?(stop="]") ?(sep=";") p =
     string start *> skip_white *>
-    sep_ ~by:(skip_white *> string sep *> skip_white) p <*
-    skip_white <* string stop
+      sep_ ~by:(skip_white *> string sep *> skip_white) p <*
+      skip_white <* string stop
 
   let int =
     chars1_if (fun c -> is_num c || c='-')
@@ -398,17 +398,17 @@ module U = struct
 
   let pair ?(start="(") ?(stop=")") ?(sep=",") p1 p2 =
     string start *> skip_white *>
-    p1 >>= fun x1 ->
+      p1 >>= fun x1 ->
     skip_white *> string sep *> skip_white *>
-    p2 >>= fun x2 ->
+      p2 >>= fun x2 ->
     string stop *> return (x1,x2)
 
   let triple ?(start="(") ?(stop=")") ?(sep=",") p1 p2 p3 =
     string start *> skip_white *>
-    p1 >>= fun x1 ->
+      p1 >>= fun x1 ->
     skip_white *> string sep *> skip_white *>
-    p2 >>= fun x2 ->
+      p2 >>= fun x2 ->
     skip_white *> string sep *> skip_white *>
-    p3 >>= fun x3 ->
+      p3 >>= fun x3 ->
     string stop *> return (x1,x2,x3)
 end

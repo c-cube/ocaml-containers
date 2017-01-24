@@ -38,12 +38,12 @@ let rec _reroot t k = match !t with
   | Array a -> k a
   | Diff (i, v, t') ->
     _reroot t' (fun a ->
-        let v' = a.(i) in
-        a.(i) <- v;
-        t := Array a;
-        t' := Diff(i, v', t);
-        k a
-      )
+      let v' = a.(i) in
+      a.(i) <- v;
+      t := Array a;
+      t' := Diff(i, v', t);
+      k a
+    )
 
 let reroot t = match !t with
   | Array a -> a
@@ -159,7 +159,7 @@ let to_gen a =
 (*$Q
   Q.(list int) (fun l -> \
     of_list l |> to_gen |> of_gen |> to_list = l)
-  *)
+*)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
@@ -167,8 +167,8 @@ let print pp_item out v =
   Format.fprintf out "[|";
   iteri
     (fun i x ->
-      if i > 0 then Format.fprintf out ";@ ";
-      pp_item out x
+       if i > 0 then Format.fprintf out ";@ ";
+       pp_item out x
     ) v;
   Format.fprintf out "|]"
 

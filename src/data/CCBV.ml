@@ -8,8 +8,8 @@ let __width = Sys.word_size - 2
 (* int with [n] ones *)
 let rec __shift bv n =
   if n = 0
-    then bv
-    else __shift ((bv lsl 1) lor 1) (n-1)
+  then bv
+  else __shift ((bv lsl 1) lor 1) (n-1)
 
 (* only ones *)
 let __all_ones = __shift 0 __width
@@ -22,17 +22,17 @@ let empty () = { a = [| |] }
 
 let create ~size default =
   if size = 0 then { a = [| |] }
-    else begin
-      let n = if size mod __width = 0 then size / __width else (size / __width) + 1 in
-      let arr = if default
-        then Array.make n __all_ones
-        else Array.make n 0
-      in
-      (* adjust last bits *)
-      if default && (size mod __width) <> 0
-        then arr.(n-1) <- __shift 0 (size - (n-1) * __width);
-      { a = arr }
-    end
+  else begin
+    let n = if size mod __width = 0 then size / __width else (size / __width) + 1 in
+    let arr = if default
+      then Array.make n __all_ones
+      else Array.make n 0
+    in
+    (* adjust last bits *)
+    if default && (size mod __width) <> 0
+    then arr.(n-1) <- __shift 0 (size - (n-1) * __width);
+    { a = arr }
+  end
 
 (*$T
   create ~size:17 true |> cardinal = 17
@@ -53,11 +53,11 @@ let length bv = Array.length bv.a
 
 let resize bv len =
   if len > Array.length bv.a
-    then begin
-      let a' = Array.make len 0 in
-      Array.blit bv.a 0 a' 0 (Array.length bv.a);
-      bv.a <- a'
-    end
+  then begin
+    let a' = Array.make len 0 in
+    Array.blit bv.a 0 a' 0 (Array.length bv.a);
+    bv.a <- a'
+  end
 
 (* count the 1 bits in [n]. See https://en.wikipedia.org/wiki/Hamming_weight *)
 let __count_bits n =
@@ -65,8 +65,8 @@ let __count_bits n =
     if n = 0 then count else recurse (count+1) (n land (n-1))
   in
   if n < 0
-    then recurse 1 (n lsr 1)   (* only on unsigned *)
-    else recurse 0 n
+  then recurse 1 (n lsr 1)   (* only on unsigned *)
+  else recurse 0 n
 
 let cardinal bv =
   let n = ref 0 in
@@ -78,11 +78,11 @@ let cardinal bv =
 (*$R
   let bv1 = CCBV.create ~size:87 true in
   assert_equal ~printer:string_of_int 87 (CCBV.cardinal bv1);
-  *)
+*)
 
 (*$Q
   Q.small_int (fun n -> CCBV.cardinal (CCBV.create ~size:n true) = n)
-  *)
+*)
 
 let is_empty bv =
   try
@@ -96,10 +96,10 @@ let is_empty bv =
 let get bv i =
   let n = i / __width in
   if n < Array.length bv.a
-    then
-      let i = i - n * __width in
-      bv.a.(n) land (1 lsl i) <> 0
-    else false
+  then
+    let i = i - n * __width in
+    bv.a.(n) land (1 lsl i) <> 0
+  else false
 
 (*$R
   let bv = CCBV.create ~size:99 false in
@@ -120,7 +120,7 @@ let get bv i =
 let set bv i =
   let n = i / __width in
   if n >= Array.length bv.a
-    then resize bv (n+1);
+  then resize bv (n+1);
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) lor (1 lsl i)
 
@@ -132,7 +132,7 @@ let set bv i =
 let reset bv i =
   let n = i / __width in
   if n >= Array.length bv.a
-    then resize bv (n+1);
+  then resize bv (n+1);
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) land (lnot (1 lsl i))
 
@@ -143,7 +143,7 @@ let reset bv i =
 let flip bv i =
   let n = i / __width in
   if n >= Array.length bv.a
-    then resize bv (n+1);
+  then resize bv (n+1);
   let i = i - n * __width in
   bv.a.(n) <- bv.a.(n) lxor (1 lsl i)
 
@@ -166,7 +166,7 @@ let clear bv =
   Array.iteri (fun i _ -> bv.a.(i) <- 0) bv.a
 
 (*$T
-let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
+  let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
 *)
 
 (*$R
@@ -200,7 +200,7 @@ let iter_true bv f =
     let j = __width * n in
     for i = 0 to __width - 1 do
       if bv.a.(n) land (1 lsl i) <> 0
-        then f (j+i)
+      then f (j+i)
     done
   done
 
@@ -278,7 +278,7 @@ let filter bv p =
 
 let union_into ~into bv =
   if length into < length bv
-    then resize into (length bv);
+  then resize into (length bv);
   let len = Array.length bv.a in
   for i = 0 to len - 1 do
     into.a.(i) <- into.a.(i) lor bv.a.(i)
@@ -299,7 +299,7 @@ let union bv1 bv2 =
 *)
 
 (*$T
-union (of_list [1;2;3;4;5]) (of_list [7;3;5;6]) |> to_sorted_list = CCList.range 1 7
+  union (of_list [1;2;3;4;5]) (of_list [7;3;5;6]) |> to_sorted_list = CCList.range 1 7
 *)
 
 let inter_into ~into bv =
@@ -310,14 +310,14 @@ let inter_into ~into bv =
 
 let inter bv1 bv2 =
   if length bv1 < length bv2
-    then
-      let bv = copy bv1 in
-      let () = inter_into ~into:bv bv2 in
-      bv
-    else
-      let bv = copy bv2 in
-      let () = inter_into ~into:bv bv1 in
-      bv
+  then
+    let bv = copy bv1 in
+    let () = inter_into ~into:bv bv2 in
+    bv
+  else
+    let bv = copy bv2 in
+    let () = inter_into ~into:bv bv1 in
+    bv
 
 (*$T
   inter (of_list [1;2;3;4]) (of_list [2;4;6;1]) |> to_sorted_list = [1;2;4]
@@ -334,12 +334,12 @@ let inter bv1 bv2 =
 let select bv arr =
   let l = ref [] in
   begin try
-    iter_true bv
-      (fun i ->
-        if i >= Array.length arr
-          then raise Exit
-          else l := arr.(i) :: !l)
-  with Exit -> ()
+      iter_true bv
+        (fun i ->
+           if i >= Array.length arr
+           then raise Exit
+           else l := arr.(i) :: !l)
+    with Exit -> ()
   end;
   !l
 
@@ -353,12 +353,12 @@ let select bv arr =
 let selecti bv arr =
   let l = ref [] in
   begin try
-    iter_true bv
-      (fun i ->
-        if i >= Array.length arr
-          then raise Exit
-          else l := (arr.(i), i) :: !l)
-  with Exit -> ()
+      iter_true bv
+        (fun i ->
+           if i >= Array.length arr
+           then raise Exit
+           else l := (arr.(i), i) :: !l)
+    with Exit -> ()
   end;
   !l
 
@@ -394,6 +394,6 @@ let print out bv =
   Format.pp_print_string out "bv {";
   iter bv
     (fun _i b ->
-      Format.pp_print_char out (if b then '1' else '0')
+       Format.pp_print_char out (if b then '1' else '0')
     );
   Format.pp_print_string out "}"

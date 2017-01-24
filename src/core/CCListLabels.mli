@@ -88,7 +88,7 @@ val diagonal : 'a t -> ('a * 'a) t
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
 val partition_map : f:('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
-                    'a list -> 'b list * 'c list
+  'a list -> 'b list * 'c list
 (** [partition_map f l] maps [f] on [l] and gather results in lists:
     - if [f x = `Left y], adds [y] to the first list
     - if [f x = `Right z], adds [z] to the second list
@@ -331,7 +331,7 @@ module Assoc : sig
 end
 
 (** {2 References on Lists}
-@since 0.3.3 *)
+    @since 0.3.3 *)
 
 module Ref : sig
   type 'a t = 'a list ref
@@ -426,4 +426,4 @@ end
 (** {2 IO} *)
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
-         'a printer -> 'a t printer
+  'a printer -> 'a t printer

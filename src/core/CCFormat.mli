@@ -3,7 +3,7 @@
 
 (** {1 Helpers for Format}
 
-@since 0.8 *)
+    @since 0.8 *)
 
 type 'a sequence = ('a -> unit) -> unit
 
@@ -48,7 +48,7 @@ val opt : 'a printer -> 'a option printer
 val pair : ?sep:unit printer -> 'a printer -> 'b printer -> ('a * 'b) printer
 val triple : ?sep:unit printer -> 'a printer -> 'b printer -> 'c printer -> ('a * 'b * 'c) printer
 val quad : ?sep:unit printer -> 'a printer -> 'b printer ->
-            'c printer -> 'd printer -> ('a * 'b * 'c * 'd) printer
+  'c printer -> 'd printer -> ('a * 'b * 'c * 'd) printer
 
 val within : string -> string -> 'a printer -> 'a printer
 (** [within a b p] wraps [p] inside the strings [a] and [b]. Convenient,
@@ -105,13 +105,13 @@ val some : 'a printer -> 'a option printer
 
 (** {2 ANSI codes}
 
-  Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
-  to put some colors on the terminal.
+    Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
+    to put some colors on the terminal.
 
-  This uses {b tags} in format strings to specify the style. Current styles
-  are the following:
+    This uses {b tags} in format strings to specify the style. Current styles
+    are the following:
 
-  {ul
+    {ul
     {- "reset" resets style}
     {- "black" }
     {- "red" }
@@ -130,19 +130,19 @@ val some : 'a printer -> 'a option printer
     {- "Magenta" bold magenta }
     {- "Cyan" bold cyan }
     {- "White" bold white }
-  }
+    }
 
-  Example:
+    Example:
 
-  {[
-    set_color_default true;;
+    {[
+      set_color_default true;;
 
-    Format.printf
-      "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@.";;
-   ]}
+      Format.printf
+        "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@.";;
+    ]}
 
-  {b status: experimental}
-  @since 0.15 *)
+    {b status: experimental}
+    @since 0.15 *)
 
 val set_color_tag_handling : t -> unit
 (** adds functions to support color tags to the given formatter.

@@ -10,7 +10,7 @@ type 'a gen = unit -> 'a option
 type t = [
   | `Atom of string
   | `List of t list
-  ]
+]
 type sexp = t
 
 let equal a b = a = b
@@ -53,9 +53,9 @@ let _must_escape s =
     for i = 0 to String.length s - 1 do
       let c = String.unsafe_get s i in
       match c with
-      | ' ' | ')' | '(' | '"' | ';' | '\\' | '\n' | '\t' | '\r' -> raise Exit
-      | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
-      | _ -> ()
+        | ' ' | ')' | '(' | '"' | ';' | '\\' | '\n' | '\t' | '\r' -> raise Exit
+        | _ when Char.code c > 127 -> raise Exit  (* non-ascii *)
+        | _ -> ()
     done;
     false
   with Exit -> true
@@ -66,11 +66,11 @@ let rec to_buf b t = match t with
   | `List [] -> Buffer.add_string b "()"
   | `List [x] -> Printf.bprintf b "(%a)" to_buf x
   | `List l ->
-      Buffer.add_char b '(';
-      List.iteri
-        (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t'))
-        l;
-      Buffer.add_char b ')'
+    Buffer.add_char b '(';
+    List.iteri
+      (fun i t' -> (if i > 0 then Buffer.add_char b ' '; to_buf b t'))
+      l;
+    Buffer.add_char b ')'
 
 let to_string t =
   let b = Buffer.create 128 in
@@ -83,11 +83,11 @@ let rec pp fmt t = match t with
   | `List [] -> Format.pp_print_string fmt "()"
   | `List [x] -> Format.fprintf fmt "@[<hov2>(%a)@]" pp x
   | `List l ->
-      Format.fprintf fmt "@[<hov1>(";
-      List.iteri
-        (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; pp fmt t'))
-        l;
-      Format.fprintf fmt ")@]"
+    Format.fprintf fmt "@[<hov1>(";
+    List.iteri
+      (fun i t' -> (if i > 0 then Format.fprintf fmt "@ "; pp fmt t'))
+      l;
+    Format.fprintf fmt ")@]"
 
 let rec pp_noindent fmt t = match t with
   | `Atom s when _must_escape s -> Format.fprintf fmt "\"%s\"" (String.escaped s)
@@ -95,11 +95,11 @@ let rec pp_noindent fmt t = match t with
   | `List [] -> Format.pp_print_string fmt "()"
   | `List [x] -> Format.fprintf fmt "(%a)" pp_noindent x
   | `List l ->
-      Format.pp_print_char fmt '(';
-      List.iteri
-        (fun i t' -> (if i > 0 then Format.pp_print_char fmt ' '; pp_noindent fmt t'))
-        l;
-      Format.pp_print_char fmt ')'
+    Format.pp_print_char fmt '(';
+    List.iteri
+      (fun i t' -> (if i > 0 then Format.pp_print_char fmt ' '; pp_noindent fmt t'))
+      l;
+    Format.pp_print_char fmt ')'
 
 let to_chan oc t =
   let fmt = Format.formatter_of_out_channel oc in
@@ -109,7 +109,7 @@ let to_chan oc t =
 let to_file_seq filename seq =
   _with_out filename
     (fun oc ->
-      seq (fun t -> to_chan oc t; output_char oc '\n')
+       seq (fun t -> to_chan oc t; output_char oc '\n')
     )
 
 let to_file filename t = to_file_seq filename (fun k -> k t)
@@ -198,9 +198,9 @@ let parse_string s : t or_error =
   let buf = Lexing.from_string s in
   let d = Decoder.of_lexbuf buf in
   match Decoder.next d with
-  | End -> Result.Error "unexpected end of file"
-  | Yield x -> Result.Ok x
-  | Fail s -> Result.Error s
+    | End -> Result.Error "unexpected end of file"
+    | Yield x -> Result.Ok x
+    | Fail s -> Result.Error s
 
 (*$T
   CCResult.to_opt (parse_string "(abc d/e/f \"hello \\\" () world\" )") <> None
@@ -249,9 +249,9 @@ let parse_chan ic : sexp or_error =
   let buf = Lexing.from_channel ic in
   let d = Decoder.of_lexbuf buf in
   match Decoder.next d with
-  | End -> Result.Error "unexpected end of file"
-  | Yield x -> Result.Ok x
-  | Fail e -> Result.Error e
+    | End -> Result.Error "unexpected end of file"
+    | Yield x -> Result.Ok x
+    | Fail e -> Result.Error e
 
 let parse_chan_list ic =
   let buf = Lexing.from_channel ic in

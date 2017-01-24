@@ -266,4 +266,4 @@ val of_gen : ?init:('a, rw) t -> 'a gen -> ('a, rw) t
 val to_gen : ('a,_) t -> 'a gen
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
-         'a printer -> ('a,_) t printer
+  'a printer -> ('a,_) t printer

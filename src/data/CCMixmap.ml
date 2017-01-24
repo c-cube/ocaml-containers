@@ -146,9 +146,9 @@ module Make(X : ORD) : S with type key = X.t = struct
   let bindings_of ~inj map yield =
     M.iter
       (fun k value ->
-        match inj.get value with
-        | None -> ()
-        | Some v -> yield (k, v)
+         match inj.get value with
+           | None -> ()
+           | Some v -> yield (k, v)
       ) map
 
   type value =

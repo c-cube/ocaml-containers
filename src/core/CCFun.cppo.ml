@@ -8,22 +8,22 @@
 external (|>) : 'a -> ('a -> 'b) -> 'b = "%revapply"
 external (@@) : ('a -> 'b) -> 'a -> 'b = "%apply"
 
-#else
+  #else
 
-let (|>) x f = f x
+  let (|>) x f = f x
 let (@@) f x = f x
 
-#endif
+    #endif
 
-#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
+    #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
 
 let opaque_identity = Sys.opaque_identity
 
-#else
+  #else
 
-let opaque_identity x = x
+  let opaque_identity x = x
 
-#endif
+    #endif
 
 let compose f g x = g (f x)
 

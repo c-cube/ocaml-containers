@@ -2,10 +2,10 @@
 
 (** {1 Weight-Balanced Tree}
 
- Most of this comes from "implementing sets efficiently in a functional language",
- Stephen Adams.
+    Most of this comes from "implementing sets efficiently in a functional language",
+    Stephen Adams.
 
- The coefficients 5/2, 3/2 for balancing come from "balancing weight-balanced trees"
+    The coefficients 5/2, 3/2 for balancing come from "balancing weight-balanced trees"
 *)
 
 (*$inject
@@ -175,7 +175,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let rec get_exn k m = match m with
     | E -> raise Not_found
     | N (k', v, l, r, _) ->
-        match K.compare k k' with
+      match K.compare k k' with
         | 0 -> v
         | n when n<0 -> get_exn k l
         | _ -> get_exn k r
@@ -215,10 +215,10 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let rec balanced = function
     | E -> true
     | N (_, _, l, r, _) ->
-        is_balanced l r &&
-        is_balanced r l &&
-        balanced l &&
-        balanced r
+      is_balanced l r &&
+      is_balanced r l &&
+      balanced l &&
+      balanced r
 
   (* smart constructor *)
   let mk_node_ k v l r =
@@ -227,19 +227,19 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let single_l k1 v1 t1 t2 = match t2 with
     | E -> assert false
     | N (k2, v2, t2, t3, _) ->
-        mk_node_ k2 v2 (mk_node_ k1 v1 t1 t2) t3
+      mk_node_ k2 v2 (mk_node_ k1 v1 t1 t2) t3
 
   let double_l k1 v1 t1 t2 = match t2 with
     | N (k2, v2, N (k3, v3, t2, t3, _), t4, _) ->
-        mk_node_ k3 v3 (mk_node_ k1 v1 t1 t2) (mk_node_ k2 v2 t3 t4)
+      mk_node_ k3 v3 (mk_node_ k1 v1 t1 t2) (mk_node_ k2 v2 t3 t4)
     | _ -> assert false
 
   let rotate_l k v l r = match r with
     | E -> assert false
     | N (_, _, rl, rr, _) ->
-        if is_single rl rr
-        then single_l k v l r
-        else double_l k v l r
+      if is_single rl rr
+      then single_l k v l r
+      else double_l k v l r
 
   (* balance towards left *)
   let balance_l k v l r =
@@ -249,19 +249,19 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let single_r k1 v1 t1 t2 = match t1 with
     | E -> assert false
     | N (k2, v2, t11, t12, _) ->
-        mk_node_ k2 v2 t11 (mk_node_ k1 v1 t12 t2)
+      mk_node_ k2 v2 t11 (mk_node_ k1 v1 t12 t2)
 
   let double_r k1 v1 t1 t2 = match t1 with
     | N (k2, v2, t11, N (k3, v3, t121, t122, _), _) ->
-        mk_node_ k3 v3 (mk_node_ k2 v2 t11 t121) (mk_node_ k1 v1 t122 t2)
+      mk_node_ k3 v3 (mk_node_ k2 v2 t11 t121) (mk_node_ k1 v1 t122 t2)
     | _ -> assert false
 
   let rotate_r k v l r = match l with
     | E -> assert false
     | N (_, _, ll, lr, _) ->
-        if is_single lr ll
-        then single_r k v l r
-        else double_r k v l r
+      if is_single lr ll
+      then single_r k v l r
+      else double_r k v l r
 
   (* balance toward right *)
   let balance_r k v l r =
@@ -271,7 +271,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let rec add k v m = match m with
     | E -> singleton k v
     | N (k', v', l, r, _) ->
-        match K.compare k k' with
+      match K.compare k k' with
         | 0 -> mk_node_ k v l r
         | n when n<0 -> balance_r k' v' (add k v l) r
         | _ -> balance_l k' v' l (add k v r)
@@ -293,38 +293,38 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     | E -> raise Not_found
     | N (k, v, E, r, _) -> k, v, r
     | N (k, v, l, r, _) ->
-        let k', v', l' = extract_min l in
-        k', v', balance_l k v l' r
+      let k', v', l' = extract_min l in
+      k', v', balance_l k v l' r
 
   (* extract max binding of the tree *)
   let rec extract_max m = match m with
     | E -> raise Not_found
     | N (k, v, l, E, _) -> k, v, l
     | N (k, v, l, r, _) ->
-        let k', v', r' = extract_max r in
-        k', v', balance_r k v l r'
+      let k', v', r' = extract_max r in
+      k', v', balance_r k v l r'
 
   let rec remove k m = match m with
     | E -> E
     | N (k', v', l, r, _) ->
-        match K.compare k k' with
+      match K.compare k k' with
         | 0 ->
-            begin match l, r with
+          begin match l, r with
             | E, E -> E
             | E, o
             | o, E -> o
             | _, _ ->
-                if weight l > weight r
-                then
-                  (* remove max element of [l] and put it at the root,
-                     then rebalance towards the left if needed *)
-                  let k', v', l' = extract_max l in
-                  balance_l k' v' l' r
-                else
-                  (* remove min element of [r] and rebalance *)
-                  let k', v', r' = extract_min r in
-                  balance_r k' v' l r'
-            end
+              if weight l > weight r
+              then
+                (* remove max element of [l] and put it at the root,
+                   then rebalance towards the left if needed *)
+                let k', v', l' = extract_max l in
+                balance_l k' v' l' r
+              else
+                (* remove min element of [r] and rebalance *)
+                let k', v', r' = extract_min r in
+                balance_r k' v' l r'
+          end
         | n when n<0 -> balance_l k' v' (remove k l) r
         | _ -> balance_r k' v' l (remove k r)
 
@@ -341,20 +341,20 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let update k f m =
     let maybe_v = get k m in
     match maybe_v, f maybe_v with
-    | None, None -> m
-    | Some _, None -> remove k m
-    | _, Some v -> add k v m
+      | None, None -> m
+      | Some _, None -> remove k m
+      | _, Some v -> add k v m
 
   let rec nth_exn i m = match m with
     | E -> raise Not_found
     | N (k, v, l, r, w) ->
-        let c = i - weight l in
-        match c with
+      let c = i - weight l in
+      match c with
         | 0 -> k, v
         | n when n<0 -> nth_exn i l  (* search left *)
         | _ ->
-            (* means c< K.weight k *)
-            if i<w-weight r then k,v else nth_exn (i+weight r-w) r
+          (* means c< K.weight k *)
+          if i<w-weight r then k,v else nth_exn (i+weight r-w) r
 
   let nth i m =
     try Some (nth_exn i m)
@@ -368,26 +368,26 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let rec fold ~f ~x:acc m = match m with
     | E -> acc
     | N (k, v, l, r, _) ->
-        let acc = fold ~f ~x:acc l in
-        let acc = f acc k v in
-        fold ~f ~x:acc r
+      let acc = fold ~f ~x:acc l in
+      let acc = f acc k v in
+      fold ~f ~x:acc r
 
   let rec mapi ~f = function
     | E -> E
     | N (k, v, l, r, w) ->
-        N (k, f k v, mapi ~f l, mapi ~f r, w)
+      N (k, f k v, mapi ~f l, mapi ~f r, w)
 
   let rec map ~f = function
     | E -> E
     | N (k, v, l, r, w) ->
-        N (k, f v, map ~f l, map ~f r, w)
+      N (k, f v, map ~f l, map ~f r, w)
 
   let rec iter ~f m = match m with
     | E -> ()
     | N (k, v, l, r, _) ->
-        iter ~f l;
-        f k v;
-        iter ~f r
+      iter ~f l;
+      f k v;
+      iter ~f r
 
   let choose_exn = function
     | E -> raise Not_found
@@ -422,10 +422,10 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     | N (kl, vl, ll, lr, _), N (kr, vr, rl, rr, _) ->
       let left = is_balanced l r in
       if left && is_balanced r l
-        then mk_node_ k v l r
+      then mk_node_ k v l r
       else if not left
-        then node_shallow_ kr vr (node_ k v l rl) rr
-        else node_shallow_ kl vl ll (node_ k v lr r)
+      then node_shallow_ kr vr (node_ k v l rl) rr
+      else node_shallow_ kl vl ll (node_ k v lr r)
 
   (* join two trees, assuming all keys of [l] are smaller than keys of [r] *)
   let join_ l r = match l, r with
@@ -433,13 +433,13 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     | E, o
     | o, E -> o
     | N _, N _ ->
-        if weight l <= weight r
-        then
-          let k, v, r' = extract_min r in
-          node_ k v l r'
-        else
-          let k, v, l' = extract_max l in
-          node_ k v l' r
+      if weight l <= weight r
+      then
+        let k, v, r' = extract_min r in
+        node_ k v l r'
+      else
+        let k, v, l' = extract_max l in
+        node_ k v l' r
 
   (* if [o_v = Some v], behave like [mk_node k v l r]
       else behave like [join_ l r] *)
@@ -450,14 +450,14 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let rec split k m = match m with
     | E -> E, None, E
     | N (k', v', l, r, _) ->
-        match K.compare k k' with
+      match K.compare k k' with
         | 0 -> l, Some v', r
         | n when n<0 ->
-            let ll, o, lr = split k l in
-            ll, o, node_ k' v' lr r
+          let ll, o, lr = split k l in
+          ll, o, node_ k' v' lr r
         | _ ->
-            let rl, o, rr = split k r in
-            node_ k' v' l rl, o, rr
+          let rl, o, rr = split k r in
+          node_ k' v' l rl, o, rr
 
   (*$QR & ~count:20
      Q.(list_of_size Gen.(1 -- 100) (pair small_int small_int)) ( fun lst ->
@@ -476,25 +476,25 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   let rec merge ~f a b = match a, b with
     | E, E -> E
     | E, N (k, v, l, r, _) ->
-        let v' = f k None (Some v) in
-        mk_node_or_join_ k v' (merge ~f E l) (merge ~f E r)
+      let v' = f k None (Some v) in
+      mk_node_or_join_ k v' (merge ~f E l) (merge ~f E r)
     | N (k, v, l, r, _), E ->
-        let v' = f k (Some v) None in
-        mk_node_or_join_ k v' (merge ~f l E) (merge ~f r E)
+      let v' = f k (Some v) None in
+      mk_node_or_join_ k v' (merge ~f l E) (merge ~f r E)
     | N (k1, v1, l1, r1, w1), N (k2, v2, l2, r2, w2) ->
-        if K.compare k1 k2 = 0
-        then (* easy case *)
-          mk_node_or_join_ k1 (f k1 (Some v1) (Some v2))
-            (merge ~f l1 l2) (merge ~f r1 r2)
-        else if w1 <= w2
-          then (* split left tree *)
-            let l1', v1', r1' = split k2 a in
-            mk_node_or_join_ k2 (f k2 v1' (Some v2))
-              (merge ~f l1' l2) (merge ~f r1' r2)
-          else (* split right tree *)
-            let l2', v2', r2' = split k1 b in
-            mk_node_or_join_ k1 (f k1 (Some v1) v2')
-              (merge ~f l1 l2') (merge ~f r1 r2')
+      if K.compare k1 k2 = 0
+      then (* easy case *)
+        mk_node_or_join_ k1 (f k1 (Some v1) (Some v2))
+          (merge ~f l1 l2) (merge ~f r1 r2)
+      else if w1 <= w2
+      then (* split left tree *)
+        let l1', v1', r1' = split k2 a in
+        mk_node_or_join_ k2 (f k2 v1' (Some v2))
+          (merge ~f l1' l2) (merge ~f r1' r2)
+      else (* split right tree *)
+        let l2', v2', r2' = split k1 b in
+        mk_node_or_join_ k1 (f k1 (Some v1) v2')
+          (merge ~f l1 l2') (merge ~f r1 r2')
 
   (*$R
     let m1 = M.of_list [1, 1; 2, 2; 4, 4] in
@@ -549,9 +549,9 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       else match Stack.pop st with
         | E -> next ()
         | N (k, v, l, r, _) ->
-            Stack.push r st;
-            Stack.push l st;
-            Some (k,v)
+          Stack.push r st;
+          Stack.push l st;
+          Some (k,v)
     in next
 
   let print pp_k pp_v fmt m =
@@ -570,6 +570,6 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 end
 
 module Make(X : ORD) = MakeFull(struct
-  include X
-  let weight _ = 1
-end)
+    include X
+    let weight _ = 1
+  end)

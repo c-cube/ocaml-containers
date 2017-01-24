@@ -3,48 +3,48 @@
 
 (** {1 Very Simple Parser Combinators}
 
-{[
-open CCParse;;
+    {[
+      open CCParse;;
 
-type tree = L of int | N of tree * tree;;
+      type tree = L of int | N of tree * tree;;
 
-let mk_leaf x = L x
-let mk_node x y = N(x,y)
+      let mk_leaf x = L x
+      let mk_node x y = N(x,y)
 
-let ptree = fix @@ fun self ->
-  skip_space *>
-  ( (try_ (char '(') *> (pure mk_node <*> self <*> self) <* char ')')
-    <|>
-    (U.int >|= mk_leaf) )
-;;
+      let ptree = fix @@ fun self ->
+        skip_space *>
+          ( (try_ (char '(') *> (pure mk_node <*> self <*> self) <* char ')')
+            <|>
+              (U.int >|= mk_leaf) )
+      ;;
 
-parse_string_exn ptree "(1 (2 3))" ;;
-parse_string_exn ptree "((1 2) (3 (4 5)))" ;;
+      parse_string_exn ptree "(1 (2 3))" ;;
+      parse_string_exn ptree "((1 2) (3 (4 5)))" ;;
 
-]}
+    ]}
 
-{6 Parse a list of words}
+    {6 Parse a list of words}
 
-{[
-open Containers.Parse;;
-let p = U.list ~sep:"," U.word;;
-parse_string_exn p "[abc , de, hello ,world  ]";;
-]}
+    {[
+      open Containers.Parse;;
+      let p = U.list ~sep:"," U.word;;
+      parse_string_exn p "[abc , de, hello ,world  ]";;
+    ]}
 
-{6 Stress Test}
-This makes a list of 100_000 integers, prints it and parses it back.
+    {6 Stress Test}
+    This makes a list of 100_000 integers, prints it and parses it back.
 
-{[
-let p = CCParse.(U.list ~sep:"," U.int);;
+    {[
+      let p = CCParse.(U.list ~sep:"," U.int);;
 
-let l = CCList.(1 -- 100_000);;
-let l_printed =
-  CCFormat.(to_string (within "[" "]" (list ~sep:(return ",@,") int))) l;;
+      let l = CCList.(1 -- 100_000);;
+      let l_printed =
+        CCFormat.(to_string (within "[" "]" (list ~sep:(return ",@,") int))) l;;
 
-let l' = CCParse.parse_string_exn p l_printed;;
+      let l' = CCParse.parse_string_exn p l_printed;;
 
-assert (l=l');;
-]}
+      assert (l=l');;
+    ]}
 
 *)
 
@@ -99,7 +99,7 @@ assert (l=l');;
   assert_equal ~printer
     (Ok ["abc"; "de"; "hello"; "world"])
     (parse_string p "[abc , de, hello ,world  ]");
- *)
+*)
 
 (*$R
   let test n =
@@ -356,12 +356,12 @@ module U : sig
   (** non empty string of alpha num, start with alpha *)
 
   val pair : ?start:string -> ?stop:string -> ?sep:string ->
-             'a t -> 'b t -> ('a * 'b) t
+    'a t -> 'b t -> ('a * 'b) t
   (** Parse a pair using OCaml whitespace conventions.
       The default is "(a, b)". *)
 
   val triple : ?start:string -> ?stop:string -> ?sep:string ->
-               'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+    'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   (** Parse a triple using OCaml whitespace conventions.
       The default is "(a, b, c)". *)
 end

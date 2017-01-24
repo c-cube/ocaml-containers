@@ -2,7 +2,7 @@
 
 (** {1 Utils around char}
 
-  @since 0.14 *)
+    @since 0.14 *)
 
 type t = char
 

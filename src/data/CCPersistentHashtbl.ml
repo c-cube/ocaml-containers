@@ -136,7 +136,7 @@ end
     map_same_type _list_uniq
       (list_of_size Gen.(0 -- 40) (pair small_int small_int))
   )
- *)
+*)
 
 (** {2 Implementation} *)
 
@@ -175,12 +175,12 @@ module Make(H : HashedType) : S with type key = H.t = struct
     | Arr a -> k a
     | Set (i, v, t') ->
       reroot_rec_ t' (fun a ->
-          let v' = a.(i) in
-          a.(i) <- v;
-          t.arr <- Arr a;
-          t'.arr <- Set (i, v', t);
-          k a
-        )
+        let v' = a.(i) in
+        a.(i) <- v;
+        t.arr <- Arr a;
+        t'.arr <- Set (i, v', t);
+        k a
+      )
 
   (* obtain the array *)
   let reroot_ t = match t.arr with
@@ -199,26 +199,26 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let rec find_rec_ k l = match l with
     | Nil -> raise Not_found
     | Cons (k', v', l') ->
-        if H.equal k k' then v' else find_rec_ k l'
+      if H.equal k k' then v' else find_rec_ k l'
 
   let find t k =
     let a = reroot_ t in
     (* unroll like crazy *)
     match a.(find_idx_ ~h:(H.hash k) a) with
-    | Nil -> raise Not_found
-    | Cons (k1, v1, l1) ->
+      | Nil -> raise Not_found
+      | Cons (k1, v1, l1) ->
         if H.equal k k1 then v1
         else match l1 with
-        | Nil -> raise Not_found
-        | Cons (k2,v2,l2) ->
+          | Nil -> raise Not_found
+          | Cons (k2,v2,l2) ->
             if H.equal k k2 then v2
             else match l2 with
-            | Nil -> raise Not_found
-            | Cons (k3,v3,l3) ->
+              | Nil -> raise Not_found
+              | Cons (k3,v3,l3) ->
                 if H.equal k k3 then v3
                 else match l3 with
-                | Nil -> raise Not_found
-                | Cons (k4,v4,l4) ->
+                  | Nil -> raise Not_found
+                  | Cons (k4,v4,l4) ->
                     if H.equal k k4 then v4 else find_rec_ k l4
 
   (*$R
@@ -291,10 +291,10 @@ module Make(H : HashedType) : S with type key = H.t = struct
     (* preserve order of elements by iterating on each bucket in rev order *)
     Array.iter
       (buck_rev_iter_
-          ~f:(fun k v ->
-            let i = find_idx_ ~h:(H.hash k) a' in
-            a'.(i) <- Cons (k,v,a'.(i))
-          )
+         ~f:(fun k v ->
+           let i = find_idx_ ~h:(H.hash k) a' in
+           a'.(i) <- Cons (k,v,a'.(i))
+         )
       )
       a;
     let i = find_idx_ ~h a' in
@@ -306,18 +306,18 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let rec replace_rec_ k v l = match l with
     | Nil -> Cons (k,v,Nil), true
     | Cons (k',v',l') ->
-        if H.equal k k'
-        then Cons (k,v,l'), false
-        else
-          let l', is_new = replace_rec_ k v l' in
-          Cons (k',v',l'), is_new
+      if H.equal k k'
+      then Cons (k,v,l'), false
+      else
+        let l', is_new = replace_rec_ k v l' in
+        Cons (k',v',l'), is_new
 
   let replace t k v =
     let a = reroot_ t in
     let h = H.hash k in
     let i = find_idx_ ~h a in
     match a.(i) with
-    | Nil ->
+      | Nil ->
         if t.length > (Array.length a) lsl 1
         then (
           (* resize *)
@@ -330,7 +330,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
           t.arr <- Set (i,Nil,t');
           t'
         )
-    | Cons _ as l ->
+      | Cons _ as l ->
         let l', is_new = replace_rec_ k v l in
         if is_new && t.length > (Array.length a) lsl 1
         then (
@@ -392,21 +392,21 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let rec remove_rec_ k l = match l with
     | Nil -> None
     | Cons (k', v', l') ->
-        if H.equal k k'
-        then Some l'
-        else match remove_rec_ k l' with
-          | None -> None
-          | Some l' -> Some (Cons (k', v', l'))
+      if H.equal k k'
+      then Some l'
+      else match remove_rec_ k l' with
+        | None -> None
+        | Some l' -> Some (Cons (k', v', l'))
 
   let remove t k =
     let a = reroot_ t in
     let i = find_idx_ ~h:(H.hash k) a in
     match a.(i) with
-    | Nil -> t
-    | Cons _ as l ->
+      | Nil -> t
+      | Cons _ as l ->
         match remove_rec_ k l with
-        | None -> t
-        | Some l' ->
+          | None -> t
+          | Some l' ->
             a.(i) <- l';
             let t' = {length=t.length-1; arr=Arr a} in
             t.arr <- Set (i,l,t');
@@ -440,14 +440,14 @@ module Make(H : HashedType) : S with type key = H.t = struct
       let h = H.of_list l in
       let h = List.fold_left (fun h (k,_) -> H.remove h k) h l in
       H.is_empty h)
-    *)
+  *)
 
   let update t k f =
     let v = get k t in
     match v, f v with
-    | None, None -> t  (* no change *)
-    | Some _, None -> remove t k
-    | _, Some v' -> replace t k v'
+      | None, None -> t  (* no change *)
+      | Some _, None -> remove t k
+      | _, Some v' -> replace t k v'
 
   let copy t =
     let a = Array.copy (reroot_ t) in
@@ -464,8 +464,8 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let rec buck_fold_ f acc l = match l with
     | Nil -> acc
     | Cons (k,v,l') ->
-        let acc = f acc k v in
-        buck_fold_ f acc l'
+      let acc = f acc k v in
+      buck_fold_ f acc l'
 
   let fold f acc t =
     let a = reroot_ t in
@@ -475,8 +475,8 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let rec buck_map_ f l = match l with
       | Nil -> Nil
       | Cons (k,v,l') ->
-          let v' = f k v in
-          Cons (k,v', buck_map_ f l')
+        let v' = f k v in
+        Cons (k,v', buck_map_ f l')
     in
     let a = reroot_ t in
     let a' = Array.map (buck_map_ f) a in
@@ -485,8 +485,8 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let rec buck_filter_ ~f l = match l with
     | Nil -> Nil
     | Cons (k,v,l') ->
-        let l' = buck_filter_ ~f l' in
-        if f k v then Cons (k,v,l') else l'
+      let l' = buck_filter_ ~f l' in
+      if f k v then Cons (k,v,l') else l'
 
   let buck_length_ b = buck_fold_ (fun n _ _ -> n+1) 0 b
 
@@ -494,32 +494,32 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let a = reroot_ t in
     let length = ref 0 in
     let a' = Array.map
-      (fun b ->
-        let b' = buck_filter_ ~f:p b in
-        length := !length + (buck_length_ b');
-        b'
-      ) a
+        (fun b ->
+           let b' = buck_filter_ ~f:p b in
+           length := !length + (buck_length_ b');
+           b'
+        ) a
     in
     {length= !length; arr=Arr a'}
 
   let rec buck_filter_map_ ~f l = match l with
     | Nil -> Nil
     | Cons (k,v,l') ->
-        let l' = buck_filter_map_ ~f l' in
-        match f k v with
+      let l' = buck_filter_map_ ~f l' in
+      match f k v with
         | None -> l'
         | Some v' ->
-            Cons (k,v',l')
+          Cons (k,v',l')
 
   let filter_map f t =
     let a = reroot_ t in
     let length = ref 0 in
     let a' = Array.map
-      (fun b ->
-        let b' = buck_filter_map_ ~f b in
-        length := !length + (buck_length_ b');
-        b'
-      ) a
+        (fun b ->
+           let b' = buck_filter_map_ ~f b in
+           length := !length + (buck_length_ b');
+           b'
+        ) a
     in
     {length= !length; arr=Arr a'}
 
@@ -540,22 +540,22 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let merge ~f t1 t2 =
     let tbl = create (max (length t1) (length t2)) in
     let tbl = fold
-      (fun tbl k v1 ->
-        let comb =
-          try `Both (v1, find t2 k)
-          with Not_found -> `Left v1
-        in
-        match f k comb with
-        | None -> tbl
-        | Some v' -> replace tbl k v')
-      tbl t1
+        (fun tbl k v1 ->
+           let comb =
+             try `Both (v1, find t2 k)
+             with Not_found -> `Left v1
+           in
+           match f k comb with
+             | None -> tbl
+             | Some v' -> replace tbl k v')
+        tbl t1
     in
     fold
       (fun tbl k v2 ->
-        if mem t1 k then tbl
-        else match f k (`Right v2) with
-          | None -> tbl
-          | Some v' -> replace tbl k v'
+         if mem t1 k then tbl
+         else match f k (`Right v2) with
+           | None -> tbl
+           | Some v' -> replace tbl k v'
       ) tbl t2
 
   (*$R
@@ -629,17 +629,17 @@ module Make(H : HashedType) : S with type key = H.t = struct
     &&
     for_all
       (fun k v -> match get k t2 with
-        | None -> false
-        | Some v' -> eq v v'
+         | None -> false
+         | Some v' -> eq v v'
       ) t1
 
   let pp ?(sep=",") ?(arrow="->") pp_k pp_v fmt t =
     let first = ref true in
     iter t
       (fun k v ->
-        if !first then first:=false
-        else (Format.pp_print_string fmt sep; Format.pp_print_cut fmt ());
-        Format.fprintf fmt "%a %s %a" pp_k k arrow pp_v v
+         if !first then first:=false
+         else (Format.pp_print_string fmt sep; Format.pp_print_cut fmt ());
+         Format.fprintf fmt "%a %s %a" pp_k k arrow pp_v v
       );
     ()
 
@@ -650,8 +650,8 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let bucket_histogram = Array.make (max_bucket_length+1) 0 in
     Array.iter
       (fun b ->
-        let l = buck_length_ b in
-        bucket_histogram.(l) <- bucket_histogram.(l) + 1
+         let l = buck_length_ b in
+         bucket_histogram.(l) <- bucket_histogram.(l) + 1
       ) a;
     {Hashtbl.
       num_bindings=t.length;

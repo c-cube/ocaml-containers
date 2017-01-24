@@ -34,8 +34,8 @@ val (<?>) : int -> ('a t * 'a * 'a) -> int
 
     Same example, using only CCOrd::
     {[CCOrd.(int 1 3
-      <?> (string, "a", "b")
-      <?> (bool, true, false))]}
+        <?> (string, "a", "b")
+        <?> (bool, true, false))]}
 *)
 
 val option : 'a t -> 'a option t

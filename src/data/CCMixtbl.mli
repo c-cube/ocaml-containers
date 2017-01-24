@@ -3,34 +3,34 @@
 
 (** {1 Hash Table with Heterogeneous Keys}
 
-From https://github.com/mjambon/mixtbl (thanks to him).
-Example:
+    From https://github.com/mjambon/mixtbl (thanks to him).
+    Example:
 
-{[
-let inj_int = CCMixtbl.create_inj () ;;
+    {[
+      let inj_int = CCMixtbl.create_inj () ;;
 
-let tbl = CCMixtbl.create 10 ;;
+      let tbl = CCMixtbl.create 10 ;;
 
-OUnit.assert_equal None (CCMixtbl.get ~inj:inj_int tbl "a");;
+      OUnit.assert_equal None (CCMixtbl.get ~inj:inj_int tbl "a");;
 
-CCMixtbl.set inj_int tbl "a" 1;;
+      CCMixtbl.set inj_int tbl "a" 1;;
 
-OUnit.assert_equal (Some 1) (CCMixtbl.get ~inj:inj_int tbl "a");;
+      OUnit.assert_equal (Some 1) (CCMixtbl.get ~inj:inj_int tbl "a");;
 
-let inj_string = CCMixtbl.create_inj () ;;
+      let inj_string = CCMixtbl.create_inj () ;;
 
-CCMixtbl.set inj_string tbl "b" "Hello";
+      CCMixtbl.set inj_string tbl "b" "Hello";
 
-OUnit.assert_equal (Some "Hello") (CCMixtbl.get inj_string tbl "b");;
-OUnit.assert_equal None (CCMixtbl.get inj_string tbl "a");;
-OUnit.assert_equal (Some 1) (CCMixtbl.get inj_int tbl "a");;
-CCMixtbl.set inj_string tbl "a" "Bye";;
+      OUnit.assert_equal (Some "Hello") (CCMixtbl.get inj_string tbl "b");;
+      OUnit.assert_equal None (CCMixtbl.get inj_string tbl "a");;
+      OUnit.assert_equal (Some 1) (CCMixtbl.get inj_int tbl "a");;
+      CCMixtbl.set inj_string tbl "a" "Bye";;
 
-OUnit.assert_equal None (CCMixtbl.get inj_int tbl "a");;
-OUnit.assert_equal (Some "Bye") (CCMixtbl.get inj_string tbl "a");;
-]}
+      OUnit.assert_equal None (CCMixtbl.get inj_int tbl "a");;
+      OUnit.assert_equal (Some "Bye") (CCMixtbl.get inj_string tbl "a");;
+    ]}
 
-@since 0.6 *)
+    @since 0.6 *)
 
 type 'a t
 (** A hash table containing values of different types.

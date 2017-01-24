@@ -105,46 +105,46 @@ module Traverse : sig
   type ('v, 'e) path = ('v * 'e * 'v) list
 
   val generic: ?tbl:'v set ->
-                bag:'v bag ->
-                graph:('v, 'e) t ->
-                'v sequence ->
-                'v sequence_once
+    bag:'v bag ->
+    graph:('v, 'e) t ->
+    'v sequence ->
+    'v sequence_once
   (** Traversal of the given graph, starting from a sequence
       of vertices, using the given bag to choose the next vertex to
       explore. Each vertex is visited at most once. *)
 
   val generic_tag: tags:'v tag_set ->
-                   bag:'v bag ->
-                   graph:('v, 'e) t ->
-                   'v sequence ->
-                   'v sequence_once
+    bag:'v bag ->
+    graph:('v, 'e) t ->
+    'v sequence ->
+    'v sequence_once
   (** One-shot traversal of the graph using a tag set and the given bag *)
 
   val dfs: ?tbl:'v set ->
-           graph:('v, 'e) t ->
-           'v sequence ->
-           'v sequence_once
+    graph:('v, 'e) t ->
+    'v sequence ->
+    'v sequence_once
 
   val dfs_tag: tags:'v tag_set ->
-               graph:('v, 'e) t ->
-               'v sequence ->
-               'v sequence_once
+    graph:('v, 'e) t ->
+    'v sequence ->
+    'v sequence_once
 
   val bfs: ?tbl:'v set ->
-           graph:('v, 'e) t ->
-           'v sequence ->
-           'v sequence_once
+    graph:('v, 'e) t ->
+    'v sequence ->
+    'v sequence_once
 
   val bfs_tag: tags:'v tag_set ->
-               graph:('v, 'e) t ->
-               'v sequence ->
-               'v sequence_once
+    graph:('v, 'e) t ->
+    'v sequence ->
+    'v sequence_once
 
   val dijkstra : ?tbl:'v set ->
-                  ?dist:('e -> int) ->
-                  graph:('v, 'e) t ->
-                  'v sequence ->
-                  ('v * int * ('v,'e) path) sequence_once
+    ?dist:('e -> int) ->
+    graph:('v, 'e) t ->
+    'v sequence ->
+    ('v * int * ('v,'e) path) sequence_once
   (** Dijkstra algorithm, traverses a graph in increasing distance order.
       Yields each vertex paired with its distance to the set of initial vertices
       (the smallest distance needed to reach the node from the initial vertices)
@@ -152,10 +152,10 @@ module Traverse : sig
         must be strictly positive. Default is 1 for every edge *)
 
   val dijkstra_tag : ?dist:('e -> int) ->
-                      tags:'v tag_set ->
-                      graph:('v, 'e) t ->
-                      'v sequence ->
-                      ('v * int * ('v,'e) path) sequence_once
+    tags:'v tag_set ->
+    graph:('v, 'e) t ->
+    'v sequence ->
+    ('v * int * ('v,'e) path) sequence_once
 
   (** {2 More detailed interface} *)
   module Event : sig
@@ -175,20 +175,20 @@ module Traverse : sig
     val get_edge_kind : ('v, 'e) t -> ('v * 'e * 'v * edge_kind) option
 
     val dfs: ?tbl:'v set ->
-             ?eq:('v -> 'v -> bool) ->
-             graph:('v, 'e) graph ->
-             'v sequence ->
-             ('v,'e) t sequence_once
+      ?eq:('v -> 'v -> bool) ->
+      graph:('v, 'e) graph ->
+      'v sequence ->
+      ('v,'e) t sequence_once
     (** Full version of DFS.
         @param eq equality predicate on vertices *)
 
     val dfs_tag: ?eq:('v -> 'v -> bool) ->
-                 tags:'v tag_set ->
-                 graph:('v, 'e) graph ->
-                 'v sequence ->
-                 ('v,'e) t sequence_once
-    (** Full version of DFS using integer tags
-        @param eq equality predicate on vertices *)
+      tags:'v tag_set ->
+      graph:('v, 'e) graph ->
+      'v sequence ->
+      ('v,'e) t sequence_once
+      (** Full version of DFS using integer tags
+          @param eq equality predicate on vertices *)
   end
 end
 
@@ -208,11 +208,11 @@ val is_dag :
 exception Has_cycle
 
 val topo_sort : ?eq:('v -> 'v -> bool) ->
-                ?rev:bool ->
-                ?tbl:'v set ->
-                graph:('v, 'e) t ->
-                'v sequence ->
-                'v list
+  ?rev:bool ->
+  ?tbl:'v set ->
+  graph:('v, 'e) t ->
+  'v sequence ->
+  'v list
 (** [topo_sort ~graph seq] returns a list of vertices [l] where each
     element of [l] is reachable from [seq].
     The list is sorted in a way such that if [v -> v'] in the graph, then
@@ -225,11 +225,11 @@ val topo_sort : ?eq:('v -> 'v -> bool) ->
     @raise Has_cycle if the graph is not a DAG *)
 
 val topo_sort_tag : ?eq:('v -> 'v -> bool) ->
-                    ?rev:bool ->
-                    tags:'v tag_set ->
-                    graph:('v, 'e) t ->
-                    'v sequence ->
-                    'v list
+  ?rev:bool ->
+  tags:'v tag_set ->
+  graph:('v, 'e) t ->
+  'v sequence ->
+  'v list
 (** Same as {!topo_sort} but uses an explicit tag set *)
 
 (** {2 Lazy Spanning Tree} *)
@@ -246,16 +246,16 @@ module Lazy_tree : sig
 end
 
 val spanning_tree : ?tbl:'v set ->
-                    graph:('v, 'e) t ->
-                    'v ->
-                    ('v, 'e) Lazy_tree.t
+  graph:('v, 'e) t ->
+  'v ->
+  ('v, 'e) Lazy_tree.t
 (** [spanning_tree ~graph v] computes a lazy spanning tree that has [v]
     as a root. The table [tbl] is used for the memoization part *)
 
 val spanning_tree_tag : tags:'v tag_set ->
-                        graph:('v, 'e) t ->
-                        'v ->
-                        ('v, 'e) Lazy_tree.t
+  graph:('v, 'e) t ->
+  'v ->
+  ('v, 'e) Lazy_tree.t
 
 (** {2 Strongly Connected Components} *)
 
@@ -263,9 +263,9 @@ type 'v scc_state
 (** Hidden state for {!scc} *)
 
 val scc : ?tbl:('v, 'v scc_state) table ->
-          graph:('v, 'e) t ->
-          'v sequence ->
-          'v list sequence_once
+  graph:('v, 'e) t ->
+  'v sequence ->
+  'v list sequence_once
 (** Strongly connected components reachable from the given vertices.
     Each component is a list of vertices that are all mutually reachable
     in the graph.
@@ -274,7 +274,7 @@ val scc : ?tbl:('v, 'v scc_state) table ->
     Uses {{: https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm} Tarjan's algorithm}
     @param tbl table used to map nodes to some hidden state
     @raise Sequence_once if the result is iterated on more than once.
-    *)
+*)
 
 (** {2 Pretty printing in the DOT (graphviz) format}
 
@@ -293,40 +293,40 @@ val scc : ?tbl:('v, 'v scc_state) table ->
 
 module Dot : sig
   type attribute = [
-  | `Color of string
-  | `Shape of string
-  | `Weight of int
-  | `Style of string
-  | `Label of string
-  | `Other of string * string
+    | `Color of string
+    | `Shape of string
+    | `Weight of int
+    | `Style of string
+    | `Label of string
+    | `Other of string * string
   ] (** Dot attribute *)
 
   type vertex_state
   (** Hidden state associated to a vertex *)
 
   val pp : ?tbl:('v,vertex_state) table ->
-           ?eq:('v -> 'v -> bool) ->
-           ?attrs_v:('v -> attribute list) ->
-           ?attrs_e:('e -> attribute list) ->
-           ?name:string ->
-           graph:('v,'e) t ->
-           Format.formatter ->
-           'v ->
-           unit
+    ?eq:('v -> 'v -> bool) ->
+    ?attrs_v:('v -> attribute list) ->
+    ?attrs_e:('e -> attribute list) ->
+    ?name:string ->
+    graph:('v,'e) t ->
+    Format.formatter ->
+    'v ->
+    unit
   (** Print the graph, starting from given vertex, on the formatter
       @param attrs_v attributes for vertices
       @param attrs_e attributes for edges
       @param name name of the graph *)
 
   val pp_seq : ?tbl:('v,vertex_state) table ->
-               ?eq:('v -> 'v -> bool) ->
-               ?attrs_v:('v -> attribute list) ->
-               ?attrs_e:('e -> attribute list) ->
-               ?name:string ->
-               graph:('v,'e) t ->
-               Format.formatter ->
-               'v sequence ->
-               unit
+    ?eq:('v -> 'v -> bool) ->
+    ?attrs_v:('v -> attribute list) ->
+    ?attrs_e:('e -> attribute list) ->
+    ?name:string ->
+    graph:('v,'e) t ->
+    Format.formatter ->
+    'v sequence ->
+    unit
 
   val with_out : string -> (Format.formatter -> 'a) -> 'a
   (** Shortcut to open a file and write to it *)
@@ -341,9 +341,9 @@ type ('v, 'e) mut_graph = {
 }
 
 val mk_mut_tbl : ?eq:('v -> 'v -> bool) ->
-                 ?hash:('v -> int) ->
-                int ->
-                ('v, 'a) mut_graph
+  ?hash:('v -> int) ->
+  int ->
+  ('v, 'a) mut_graph
 (** Make a new mutable graph from a Hashtbl. Edges are labelled with type ['a] *)
 
 (** {2 Immutable Graph}

@@ -3,36 +3,36 @@
 
 (** {1 IO Utils}
 
-Simple utilities to deal with basic Input/Output tasks in a resource-safe
-way. For advanced IO tasks, the user is advised to use something
-like Lwt or Async, that are far more comprehensive.
+    Simple utilities to deal with basic Input/Output tasks in a resource-safe
+    way. For advanced IO tasks, the user is advised to use something
+    like Lwt or Async, that are far more comprehensive.
 
-Examples:
+    Examples:
 
-- obtain the list of lines of a file:
+    - obtain the list of lines of a file:
 
-{[
-# let l = CCIO.(with_in "/tmp/some_file" read_lines);;
-]}
+    {[
+      # let l = CCIO.(with_in "/tmp/some_file" read_lines);;
+    ]}
 
-- transfer one file into another:
+    - transfer one file into another:
 
-{[
-# CCIO.(
-  with_in "/tmp/input"
-    (fun ic ->
-      let chunks = read_chunks ic in
-      with_out ~flags:[Open_binary] ~mode:0o644 "/tmp/output"
-        (fun oc ->
-          write_gen oc chunks
-        )
-    )
-) ;;
-]}
+    {[
+      # CCIO.(
+          with_in "/tmp/input"
+            (fun ic ->
+               let chunks = read_chunks ic in
+               with_out ~flags:[Open_binary] ~mode:0o644 "/tmp/output"
+                 (fun oc ->
+                    write_gen oc chunks
+                 )
+            )
+        ) ;;
+    ]}
 
-@since 0.6
+    @since 0.6
 
-@before 0.12 was in 'containers.io', now moved into 'containers'
+    @before 0.12 was in 'containers.io', now moved into 'containers'
 
 *)
 
@@ -42,7 +42,7 @@ type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library *)
 (** {2 Input} *)
 
 val with_in : ?mode:int -> ?flags:open_flag list ->
-              string -> (in_channel -> 'a) -> 'a
+  string -> (in_channel -> 'a) -> 'a
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
@@ -74,13 +74,13 @@ val read_all_bytes : ?size:int -> in_channel -> Bytes.t
 (** {2 Output} *)
 
 val with_out : ?mode:int -> ?flags:open_flag list ->
-               string -> (out_channel -> 'a) -> 'a
+  string -> (out_channel -> 'a) -> 'a
 (** Same as {!with_in} but for an output channel
     @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]).
     [Open_wronly] is used in any cases *)
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
-                  string -> (out_channel -> 'a) -> 'a
+  string -> (out_channel -> 'a) -> 'a
 (** Similar to {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
     flags activated, to append to the file *)
 
@@ -99,7 +99,7 @@ val write_lines_l : out_channel -> string list -> unit
 (** {2 Both} *)
 
 val with_in_out : ?mode:int -> ?flags:open_flag list ->
-                  string -> (in_channel -> out_channel -> 'a) -> 'a
+  string -> (in_channel -> out_channel -> 'a) -> 'a
 (** Combines {!with_in} and {!with_out}.
     @param flags opening flags (default [[Open_creat]])
     @since 0.12 *)
@@ -112,18 +112,18 @@ val tee : ('a -> unit) list -> 'a gen -> 'a gen
 
 (** {2 File and file names}
 
-How to list recursively files in a directory:
-{[
-# let files = CCIO.File.read_dir ~recurse:true (CCIO.File.make "/tmp");;
-# CCIO.write_lines stdout files;;
-]}
+    How to list recursively files in a directory:
+    {[
+      # let files = CCIO.File.read_dir ~recurse:true (CCIO.File.make "/tmp");;
+      # CCIO.write_lines stdout files;;
+    ]}
 
-See {!File.walk} if you also need to list directories:
+    See {!File.walk} if you also need to list directories:
 
-{[
-# let content = CCIO.File.walk (CCIO.File.make "/tmp");;
-# Gen.map CCIO.File.show_walk_item content |> CCIO.write_lines stdout;;
-]}
+    {[
+      # let content = CCIO.File.walk (CCIO.File.make "/tmp");;
+      # Gen.map CCIO.File.show_walk_item content |> CCIO.write_lines stdout;;
+    ]}
 *)
 
 module File : sig
@@ -198,10 +198,10 @@ module File : sig
   val with_temp :
     ?temp_dir:string -> prefix:string -> suffix:string ->
     (string -> 'a) -> 'a
-  (** [with_temp ~prefix ~suffix f] will call [f] with the name of a new
-      temporary file (located in [temp_dir]).
-      After [f] returns, the file is deleted. Best to be used in
-      combination with {!with_out}.
-      See {!Filename.temp_file}
-      @since 0.17 *)
+    (** [with_temp ~prefix ~suffix f] will call [f] with the name of a new
+        temporary file (located in [temp_dir]).
+        After [f] returns, the file is deleted. Best to be used in
+        combination with {!with_out}.
+        See {!Filename.temp_file}
+        @since 0.17 *)
 end

@@ -40,12 +40,12 @@ let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
-  | x::((_::_) as l) ->
-    pp fmt x;
-    sep fmt ();
-    pp_list l
-  | x::[] -> pp fmt x
-  | [] -> ()
+    | x::((_::_) as l) ->
+      pp fmt x;
+      sep fmt ();
+      pp_list l
+    | x::[] -> pp fmt x
+    | [] -> ()
   in
   pp_list l
 
@@ -152,7 +152,7 @@ let tee a b =
   Format.fprintf fmt "coucou@.";
   assert_equal ~printer:CCFun.id "coucou\n" (Buffer.contents buf1);
   assert_equal ~printer:CCFun.id "coucou\n" (Buffer.contents buf2);
-  *)
+*)
 
 let to_file filename format =
   let oc = open_out filename in
@@ -262,9 +262,9 @@ let set_color_tag_handling ppf =
   let functions = pp_get_formatter_tag_functions ppf () in
   let st = Stack.create () in (* stack of styles *)
   let functions' = {functions with
-    mark_open_tag=(mark_open_tag st ~or_else:functions.mark_open_tag);
-    mark_close_tag=(mark_close_tag st ~or_else:functions.mark_close_tag);
-  } in
+                      mark_open_tag=(mark_open_tag st ~or_else:functions.mark_open_tag);
+                      mark_close_tag=(mark_close_tag st ~or_else:functions.mark_close_tag);
+                   } in
   pp_set_mark_tags ppf true; (* enable tags *)
   pp_set_formatter_tag_functions ppf functions'
 

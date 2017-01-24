@@ -74,8 +74,8 @@ type exn_pair =
 let pair_of_e_pair (E_pair (k,e)) =
   let module K = (val k) in
   match e with
-  | K.Store v -> Pair (k,v)
-  | _ -> assert false
+    | K.Store v -> Pair (k,v)
+    | _ -> assert false
 
 module Tbl = struct
   module M = Hashtbl.Make(struct
@@ -148,8 +148,8 @@ module Map = struct
     let module K = (val k) in
     let E_pair (_, e) = M.find K.id t in
     match e with
-    | K.Store v -> v
-    | _ -> assert false
+      | K.Store v -> v
+      | _ -> assert false
 
   let find k t =
     try Some (find_exn k t)

@@ -123,28 +123,28 @@ module Make(O : Set.OrderedType) = struct
   let add_mult ms x n =
     if n < 0 then invalid_arg "CCMultiSet.add_mult";
     if n=0
-      then ms
-      else M.add x (count ms x + n) ms
+    then ms
+    else M.add x (count ms x + n) ms
 
   let remove_mult ms x n =
     if n < 0 then invalid_arg "CCMultiSet.remove_mult";
     let cur_n = count ms x in
     let new_n = cur_n - n in
     if new_n <= 0
-      then M.remove x ms
-      else M.add x new_n ms
+    then M.remove x ms
+    else M.add x new_n ms
 
   let remove ms x = remove_mult ms x 1
 
   let update ms x f =
     let n = count ms x in
     match f n with
-    | 0 ->
+      | 0 ->
         if n=0 then ms else M.remove x ms
-    | n' ->
+      | n' ->
         if n' < 0
-          then invalid_arg "CCMultiSet.update"
-          else M.add x n' ms
+        then invalid_arg "CCMultiSet.update"
+        else M.add x n' ms
 
   let min ms =
     fst (M.min_binding ms)
@@ -155,39 +155,39 @@ module Make(O : Set.OrderedType) = struct
   let union m1 m2 =
     M.merge
       (fun _x n1 n2 -> match n1, n2 with
-        | None, None -> assert false
-        | Some n, None
-        | None, Some n -> Some n
-        | Some n1, Some n2 -> Some (n1+n2))
+         | None, None -> assert false
+         | Some n, None
+         | None, Some n -> Some n
+         | Some n1, Some n2 -> Some (n1+n2))
       m1 m2
 
   let meet m1 m2 =
-        M.merge
-          (fun _ n1 n2 -> match n1, n2 with
-                | None, None -> assert false
-                | Some n, None | None, Some n -> Some n
-                | Some n1, Some n2 -> Some (Pervasives.max n1 n2))
-          m1 m2
+    M.merge
+      (fun _ n1 n2 -> match n1, n2 with
+         | None, None -> assert false
+         | Some n, None | None, Some n -> Some n
+         | Some n1, Some n2 -> Some (Pervasives.max n1 n2))
+      m1 m2
 
   let intersection m1 m2 =
     M.merge
       (fun _x n1 n2 -> match n1, n2 with
-        | None, None -> assert false
-        | Some _, None
-        | None, Some _ -> None
-        | Some n1, Some n2 -> Some (Pervasives.min n1 n2))
+         | None, None -> assert false
+         | Some _, None
+         | None, Some _ -> None
+         | Some n1, Some n2 -> Some (Pervasives.min n1 n2))
       m1 m2
 
   let diff m1 m2 =
     M.merge
       (fun _x n1 n2 -> match n1, n2 with
-        | None, None -> assert false
-        | Some n1, None -> Some n1
-        | None, Some _n2 -> None
-        | Some n1, Some n2 ->
-          if n1 > n2
-            then Some (n1 - n2)
-            else None)
+         | None, None -> assert false
+         | Some n1, None -> Some n1
+         | None, Some _n2 -> None
+         | Some n1, Some n2 ->
+           if n1 > n2
+           then Some (n1 - n2)
+           else None)
       m1 m2
 
   let contains m1 m2 =
@@ -211,8 +211,8 @@ module Make(O : Set.OrderedType) = struct
 
   let of_list l =
     let rec build acc l = match l with
-    | [] -> acc
-    | x::l' -> build (add acc x) l'
+      | [] -> acc
+      | x::l' -> build (add acc x) l'
     in
     build empty l
 
@@ -220,9 +220,9 @@ module Make(O : Set.OrderedType) = struct
     (* [n_cons n x l] is the result of applying [fun l -> x :: l]  [n] times
         to [l] *)
     let rec n_cons n x l = match n with
-    | 0 -> l
-    | 1 -> x::l
-    | _ -> n_cons (n-1) x (x::l)
+      | 0 -> l
+      | 1 -> x::l
+      | _ -> n_cons (n-1) x (x::l)
     in
     fold m [] (fun acc n x -> n_cons n x acc)
 

@@ -27,12 +27,12 @@ val delay : (unit -> 'a t) -> 'a t
     need some code to run for every call.
     Example:
     {[
-    let gensym = let r = ref 0 in fun () -> incr r; !r ;;
+      let gensym = let r = ref 0 in fun () -> incr r; !r ;;
 
-    delay (fun () ->
-      let name = gensym() in
-      small_int >>= fun i -> return (name,i)
-    )
+      delay (fun () ->
+        let name = gensym() in
+        small_int >>= fun i -> return (name,i)
+      )
     ]}
     @since 0.4 *)
 

@@ -2,7 +2,7 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Basic Float functions}
-@since 0.6.1 *)
+    @since 0.6.1 *)
 
 type t = float
 type fpclass = Pervasives.fpclass =

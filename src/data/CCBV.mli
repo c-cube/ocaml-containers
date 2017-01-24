@@ -3,9 +3,9 @@
 
 (** {2 Imperative Bitvectors}
 
-The size of the bitvector is rounded up to the multiple of 30 or  62.
-In other words some functions such as {!iter} might iterate on more
-bits than what was originally asked for.
+    The size of the bitvector is rounded up to the multiple of 30 or  62.
+    In other words some functions such as {!iter} might iterate on more
+    bits than what was originally asked for.
 *)
 
 type t

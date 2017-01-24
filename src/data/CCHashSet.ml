@@ -158,7 +158,7 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
   let inter_mut ~into a =
     iter
       (fun x ->
-        if not (mem a x) then remove into x
+         if not (mem a x) then remove into x
       ) into
 
   let union a b =
@@ -229,8 +229,8 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
          if !first
          then first := false
          else (
-          Format.pp_print_string out sep;
-          Format.pp_print_cut out ();
+           Format.pp_print_string out sep;
+           Format.pp_print_cut out ();
          );
          pp_x out x
       ) s;

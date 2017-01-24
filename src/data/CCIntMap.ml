@@ -26,7 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 Map specialized for Int keys} *)
 
 (* "Fast Mergeable Integer Maps", Okasaki & Gill.
-We use big-endian trees. *)
+   We use big-endian trees. *)
 
 (** Masks with exactly one bit active *)
 module Bit : sig
@@ -83,7 +83,7 @@ let is_prefix_ ~prefix y ~bit = prefix = Bit.mask y ~mask:bit
 
 (*$inject
   let _list_uniq = CCList.sort_uniq ~cmp:(fun a b-> Pervasives.compare (fst a)(fst b))
- *)
+*)
 
 (*$Q
   Q.int (fun i -> \
@@ -99,7 +99,7 @@ let is_prefix_ ~prefix y ~bit = prefix = Bit.mask y ~mask:bit
   (Bit.highest 2 :> int) = 2
   (Bit.highest 17 :> int)  = 16
   (Bit.highest 300 :> int) = 256
- *)
+*)
 
 (* helper:
 
@@ -120,18 +120,18 @@ let check_invariants t =
   let rec check_keys path t = match t with
     | E -> true
     | L (k, _) ->
-        List.for_all
-          (fun (prefix, switch, side) ->
-            is_prefix_ ~prefix k ~bit:switch
-            &&
-            match side with
-            | `Left -> Bit.is_0 k ~bit:switch
-            | `Right -> Bit.is_1 k ~bit:switch
-          ) path
+      List.for_all
+        (fun (prefix, switch, side) ->
+           is_prefix_ ~prefix k ~bit:switch
+           &&
+           match side with
+             | `Left -> Bit.is_0 k ~bit:switch
+             | `Right -> Bit.is_1 k ~bit:switch
+        ) path
     | N (prefix, switch, l, r) ->
-        check_keys ((prefix, switch, `Left) :: path) l
-        &&
-        check_keys ((prefix, switch, `Right) :: path) r
+      check_keys ((prefix, switch, `Left) :: path) l
+      &&
+      check_keys ((prefix, switch, `Right) :: path) r
   in
   check_keys [] t
 
@@ -151,7 +151,7 @@ let rec find_exn k t = match t with
       else find_exn k r
     else raise Not_found
 
-    (* XXX could test with lt_unsigned_? *)
+(* XXX could test with lt_unsigned_? *)
 
     (*
     if k <= prefix (* search tree *)
@@ -185,7 +185,7 @@ let mk_node_ prefix switch l r = match l, r with
   | _ -> N (prefix, switch, l, r)
 
 (* join trees t1 and t2 with prefix p1 and p2 respectively
-  (p1 and p2 do not overlap) *)
+   (p1 and p2 do not overlap) *)
 let join_ t1 p1 t2 p2 =
   let switch = branching_bit_ p1 p2 in
   let prefix = Bit.mask p1 ~mask:switch in
@@ -246,7 +246,7 @@ let update k f t =
       | Some v' -> add k v' t
     end
   with Not_found ->
-    match f None with
+  match f None with
     | None -> t
     | Some v -> add k v t
 
@@ -263,7 +263,7 @@ let rec equal ~eq a b = match a, b with
   | E, E -> true
   | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
   | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
-      pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
+    pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
   | E, _
   | N _, _
   | L _, _ -> false
@@ -291,13 +291,13 @@ let rec mapi f t = match t with
   | E -> E
   | L (k, v) -> L (k, f k v)
   | N (p, s, l, r) ->
-      N (p, s, mapi f l, mapi f r)
+    N (p, s, mapi f l, mapi f r)
 
 let rec map f t = match t with
   | E -> E
   | L (k, v) -> L (k, f v)
   | N (p, s, l, r) ->
-      N (p, s, map f l, map f r)
+    N (p, s, map f l, map f r)
 
 let rec choose_exn = function
   | E -> raise Not_found
@@ -318,13 +318,13 @@ let rec union f t1 t2 = match t1, t2 with
     if p1 = p2 && m1 = m2
     then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
     else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
-      then if Bit.is_0 p2 ~bit:m1
-        then N (p1, m1, union f l1 t2, r1)
-        else N (p1, m1, l1, union f r1 t2)
+    then if Bit.is_0 p2 ~bit:m1
+      then N (p1, m1, union f l1 t2, r1)
+      else N (p1, m1, l1, union f r1 t2)
     else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
-      then if Bit.is_0 p1 ~bit:m2
-        then N (p2, m2, union f t1 l2, r2)
-        else N (p2, m2, l2, union f t1 r2)
+    then if Bit.is_0 p1 ~bit:m2
+      then N (p2, m2, union f t1 l2, r2)
+      else N (p2, m2, l2, union f t1 r2)
     else join_ t1 p1 t2 p2
 
 (*$Q & ~small:(fun (a,b) -> List.length a + List.length b)
@@ -366,21 +366,21 @@ let rec inter f a b = match a, b with
   | L (k, v), o
   | o, L (k, v) ->
     begin try
-      let v' = find_exn k o in
-      L (k, f k v v')
-    with Not_found -> E
+        let v' = find_exn k o in
+        L (k, f k v v')
+      with Not_found -> E
     end
   | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
     if p1 = p2 && m1 = m2
     then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
     else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
-      then if Bit.is_0 p2 ~bit:m1
-        then inter f l1 b
-        else inter f r1 b
+    then if Bit.is_0 p2 ~bit:m1
+      then inter f l1 b
+      else inter f r1 b
     else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
-      then if Bit.is_0 p1 ~bit:m2
-        then inter f l2 a
-        else inter f r2 a
+    then if Bit.is_0 p1 ~bit:m2
+      then inter f l2 a
+      else inter f r2 a
     else E
 
 (*$R
@@ -427,7 +427,7 @@ let to_list t = fold (fun k v l -> (k,v) :: l) t []
 (*$Q
   Q.(list (pair int int)) (fun l -> \
     of_list l |> cardinal = List.length l)
-  *)
+*)
 
 let add_seq t seq =
   let t = ref t in
@@ -458,8 +458,8 @@ let to_gen m =
     | E -> next()  (* backtrack *)
     | L (k,v) -> Some (k,v)
     | N (_, _, l, r) ->
-        Stack.push r st;
-        explore l
+      Stack.push r st;
+      explore l
   in
   next
 
@@ -480,11 +480,11 @@ let compare ~cmp a b =
     | Some _, None -> 1
     | None, Some _ -> -1
     | Some (ka, va), Some (kb, vb) ->
-        if ka=kb
-          then
-            let c = cmp va vb in
-            if c=0 then cmp_gen cmp a b else c
-          else Pervasives.compare ka kb
+      if ka=kb
+      then
+        let c = cmp va vb in
+        if c=0 then cmp_gen cmp a b else c
+      else Pervasives.compare ka kb
   in
   cmp_gen cmp (to_gen a) (to_gen b)
 
@@ -553,9 +553,9 @@ let print pp_x out m =
   let first = ref true in
   iter
     (fun k v ->
-      if !first then first := false else Format.pp_print_string out ", ";
-      Format.fprintf out "%d -> " k;
-      pp_x out v;
-      Format.pp_print_cut out ()
+       if !first then first := false else Format.pp_print_string out ", ";
+       Format.fprintf out "%d -> " k;
+       pp_x out v;
+       Format.pp_print_cut out ()
     ) m;
   Format.fprintf out "}@]"

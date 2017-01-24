@@ -158,11 +158,11 @@ exception ExitChoice
 let choice_seq s =
   let r = ref None in
   begin try
-    s (function
-    | None -> ()
-    | (Some _) as o -> r := o; raise ExitChoice
-    )
-  with ExitChoice -> ()
+      s (function
+        | None -> ()
+        | (Some _) as o -> r := o; raise ExitChoice
+      )
+    with ExitChoice -> ()
   end;
   !r
 
@@ -174,10 +174,10 @@ let choice_seq s =
 
 let to_gen o =
   match o with
-  | None -> (fun () -> None)
-  | Some _ ->
-    let first = ref true in
-    fun () -> if !first then (first:=false; o) else None
+    | None -> (fun () -> None)
+    | Some _ ->
+      let first = ref true in
+      fun () -> if !first then (first:=false; o) else None
 
 let to_seq o k = match o with
   | None -> ()

@@ -8,7 +8,7 @@ type 'a cell =
   | One of 'a
   | Two of 'a * 'a
   | Three of 'a * 'a * 'a
-(** A cell holding a small number of elements *)
+  (** A cell holding a small number of elements *)
 
 type 'a node = {
   mutable cell : 'a cell;
@@ -82,26 +82,26 @@ let is_empty d =
 let push_front d x =
   incr_size_ d;
   match d.cur.cell with
-  | Zero -> d.cur.cell <- One x
-  | One y -> d.cur.cell <- Two (x, y)
-  | Two (y, z) -> d.cur.cell <- Three (x,y,z)
-  | Three _ ->
-    let node = { cell = One x; prev = d.cur.prev; next=d.cur; } in
-    d.cur.prev.next <- node;
-    d.cur.prev <- node;
-    d.cur <- node (* always point to first node *)
+    | Zero -> d.cur.cell <- One x
+    | One y -> d.cur.cell <- Two (x, y)
+    | Two (y, z) -> d.cur.cell <- Three (x,y,z)
+    | Three _ ->
+      let node = { cell = One x; prev = d.cur.prev; next=d.cur; } in
+      d.cur.prev.next <- node;
+      d.cur.prev <- node;
+      d.cur <- node (* always point to first node *)
 
 let push_back d x =
   incr_size_ d;
   let n = d.cur.prev in (* last node *)
   match n.cell with
-  | Zero -> n.cell <- One x
-  | One y -> n.cell <- Two (y, x)
-  | Two (y,z) -> n.cell <- Three (y, z, x)
-  | Three _ ->
-    let elt = { cell = One x; next=d.cur; prev=n; } in
-    n.next <- elt;
-    d.cur.prev <- elt
+    | Zero -> n.cell <- One x
+    | One y -> n.cell <- Two (y, x)
+    | Two (y,z) -> n.cell <- Three (y, z, x)
+    | Three _ ->
+      let elt = { cell = One x; next=d.cur; prev=n; } in
+      n.next <- elt;
+      d.cur.prev <- elt
 
 let peek_front d = match d.cur.cell with
   | Zero -> raise Empty
@@ -112,7 +112,7 @@ let peek_front d = match d.cur.cell with
 (*$T
   of_list [1;2;3] |> peek_front = 1
   try (ignore (of_list [] |> peek_front); false) with Empty -> true
-  *)
+*)
 
 (*$R
   let d = of_seq Sequence.(1 -- 10) in
@@ -180,7 +180,7 @@ let take_back d =
 
 (*$T
   let q = of_list [1;2;3] in take_back q = 3 && to_list q = [1;2]
-  *)
+*)
 
 let take_front_node_ n = match n.cell with
   | Zero -> assert false
@@ -190,7 +190,7 @@ let take_front_node_ n = match n.cell with
 
 (*$T
   let q = of_list [1;2;3] in take_front q = 1 && to_list q = [2;3]
-  *)
+*)
 
 let take_front d =
   if is_empty d then raise Empty
@@ -213,10 +213,10 @@ let take_front d =
 let iter f d =
   let rec iter f ~first n =
     begin match n.cell with
-    | Zero -> ()
-    | One x -> f x
-    | Two (x,y) -> f x; f y
-    | Three (x,y,z) -> f x; f y; f z
+      | Zero -> ()
+      | One x -> f x
+      | Two (x,y) -> f x; f y
+      | Three (x,y,z) -> f x; f y; f z
     end;
     if n.next != first then iter f ~first n.next
   in
@@ -302,7 +302,7 @@ let to_seq d k = iter k d
 (*$Q
   Q.(list int) (fun l -> \
     Sequence.of_list l |> of_seq |> to_seq |> Sequence.to_list = l)
-  *)
+*)
 
 let of_list l =
   let q = create() in
@@ -391,15 +391,15 @@ let compare ?(cmp=Pervasives.compare) a b =
     | None, Some _ -> -1
     | Some _, None -> 1
     | Some x, Some y ->
-        let c = cmp x y in
-        if c=0 then aux cmp a b else c
+      let c = cmp x y in
+      if c=0 then aux cmp a b else c
   in aux cmp (to_gen a) (to_gen b)
 
 (*$Q
    Q.(pair (list int) (list int)) (fun (l1,l2) -> \
     CCOrd.equiv (compare (of_list l1) (of_list l2)) \
       (CCList.compare Pervasives.compare l1 l2))
-  *)
+*)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
@@ -408,8 +408,8 @@ let print pp_x out d =
   Format.fprintf out "@[<hov2>deque {";
   iter
     (fun x ->
-      if !first then first:= false else Format.fprintf out ";@ ";
-      pp_x out x
+       if !first then first:= false else Format.fprintf out ";@ ";
+       pp_x out x
     ) d;
   Format.fprintf out "}@]"
 

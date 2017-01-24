@@ -140,10 +140,10 @@ let retry ?(max=10) g st =
 let rec try_successively l st = match l with
   | [] -> None
   | g :: l' ->
-      begin match g st with
+    begin match g st with
       | None -> try_successively l' st
       | Some _ as res -> res
-      end
+    end
 
 let (<?>) a b = try_successively [a;b]
 
@@ -165,28 +165,28 @@ let fix ?(sub1=[]) ?(sub2=[]) ?(subn=[]) ~base fuel st =
     else
       _try_otherwise 0
         [| _choose_array_call sub1 (fun f -> f (make (fuel-1)) st)
-        ;  _choose_array_call sub2
-          (fun f ->
-            match split fuel st with
-            | None -> raise Backtrack
-            | Some (i,j) -> f (make i) (make j) st
-          )
-        ; _choose_array_call subn
-          (fun (len,f) ->
-            let len = len st in
-            match split_list fuel ~len st with
-            | None -> raise Backtrack
-            | Some l' ->
-                f (fun st -> List.map (fun x -> make x st) l') st
-          )
-        ; base (* base case then *)
+         ;  _choose_array_call sub2
+             (fun f ->
+                match split fuel st with
+                  | None -> raise Backtrack
+                  | Some (i,j) -> f (make i) (make j) st
+             )
+         ; _choose_array_call subn
+             (fun (len,f) ->
+                let len = len st in
+                match split_list fuel ~len st with
+                  | None -> raise Backtrack
+                  | Some l' ->
+                    f (fun st -> List.map (fun x -> make x st) l') st
+             )
+         ; base (* base case then *)
         |]
   and _try_otherwise i a =
     if i=Array.length a then raise Backtrack
     else try
-      a.(i) st
-    with Backtrack ->
-      _try_otherwise (i+1) a
+        a.(i) st
+      with Backtrack ->
+        _try_otherwise (i+1) a
   in
   make (fuel st) st
 

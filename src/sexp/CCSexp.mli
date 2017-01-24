@@ -12,7 +12,7 @@ type 'a gen = unit -> 'a option
 type t = [
   | `Atom of string
   | `List of t list
-  ]
+]
 type sexp = t
 
 val equal : t -> t -> bool

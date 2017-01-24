@@ -24,9 +24,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 (** {1 Lazy Tree Structure}
-This structure can be used to represent trees and directed
-graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
-is a structural type. *)
+    This structure can be used to represent trees and directed
+    graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
+    is a structural type. *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -99,23 +99,23 @@ val find : ?pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
 
 (** {2 Pretty-printing}
 
-Example (tree of calls for naive Fibonacci function):
-{[
-  let mk_fib n =
-    let rec fib' l r i =
-      if i=n then r else fib' r (l+r) (i+1)
-    in fib' 1 1 1;;
+    Example (tree of calls for naive Fibonacci function):
+    {[
+      let mk_fib n =
+        let rec fib' l r i =
+          if i=n then r else fib' r (l+r) (i+1)
+        in fib' 1 1 1;;
 
-  let rec fib n = match n with
-    | 0 | 1 -> CCKTree.singleton (`Cst n)
-    | _ -> CCKTree.node2 (`Plus (mk_fib n)) (fib (n-1)) (fib (n-2));;
+      let rec fib n = match n with
+        | 0 | 1 -> CCKTree.singleton (`Cst n)
+        | _ -> CCKTree.node2 (`Plus (mk_fib n)) (fib (n-1)) (fib (n-2));;
 
-  let pp_node fmt = function
-    | `Cst n -> Format.fprintf fmt "%d" n
-    | `Plus n -> Format.fprintf fmt "%d" n;;
+      let pp_node fmt = function
+        | `Cst n -> Format.fprintf fmt "%d" n
+        | `Plus n -> Format.fprintf fmt "%d" n;;
 
-  Format.printf "%a@." (CCKTree.print pp_node) (fib 8);;
-]}
+      Format.printf "%a@." (CCKTree.print pp_node) (fib 8);;
+    ]}
 *)
 
 val pp : 'a printer -> 'a t printer
@@ -127,13 +127,13 @@ val pp : 'a printer -> 'a t printer
 
 module Dot : sig
   type attribute = [
-  | `Color of string
-  | `Shape of string
-  | `Weight of int
-  | `Style of string
-  | `Label of string
-  | `Id of string  (** Unique ID in the graph. Allows sharing. *)
-  | `Other of string * string
+    | `Color of string
+    | `Shape of string
+    | `Weight of int
+    | `Style of string
+    | `Label of string
+    | `Id of string  (** Unique ID in the graph. Allows sharing. *)
+    | `Other of string * string
   ] (** Dot attributes for nodes *)
 
   type graph = (string * attribute list t list)

@@ -73,8 +73,8 @@ module Make(O : Map.OrderedType) = struct
       with Not_found -> f None
     in
     match x with
-    | None -> remove k m
-    | Some v' -> add k v' m
+      | None -> remove k m
+      | Some v' -> add k v' m
 
   let merge_safe ~f a b =
     merge

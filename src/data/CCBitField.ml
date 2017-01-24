@@ -99,7 +99,7 @@ let rec all_bits_ acc w =
   all_bits_ 0 2 = 3
   all_bits_ 0 3 = 7
   all_bits_ 0 4 = 15
-  *)
+*)
 
 (* increment and return previous value *)
 let get_then_incr n =
