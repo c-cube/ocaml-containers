@@ -290,7 +290,7 @@ module LRU(X:HASH) = struct
   let set c x y =
     let len = H.length c.table in
     assert (len <= c.size);
-    if len = c.size
+    if len = c.size || H.mem c.table x
       then replace_ c x y
       else insert_ c x y
 
