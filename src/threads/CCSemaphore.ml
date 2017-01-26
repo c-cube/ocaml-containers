@@ -68,10 +68,10 @@ let with_acquire ~n t ~f =
   let a = Array.init 100 (fun i ->
     Thread.create (fun _ ->
       for _i = 1 to 100 do
-      with_acquire ~n:(1 + (i mod 5)) s
-        ~f:(fun () -> CCLock.incr n)
-      done
-    ) ())
+        with_acquire ~n:(1 + (i mod 5)) s
+          ~f:(fun () -> Thread.yield(); CCLock.incr n)
+      done)
+    ())
   in
   Array.iter Thread.join a;
   assert_equal ~printer:CCInt.to_string 5 (get s);
