@@ -17,5 +17,18 @@ val uppercase_ascii : t -> t
 (** See {!Char}
     @since 0.20 *)
 
+val of_int_exn : int -> t
+(** Alias to {!Char.chr}
+    @raise Invalid_argument if the int is not within [0,...,255]
+    @since NEXT_RELEASE *)
+
+val of_int : int -> t option
+(** Safe version of {!of_int}
+    @since NEXT_RELEASE *)
+
+val to_int : t -> int
+(** Alias to {!Char.code}
+    @since NEXT_RELEASE *)
+
 val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
