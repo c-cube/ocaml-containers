@@ -95,6 +95,23 @@ val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
     - if [f x = `Drop], ignores [x]
     @since 0.11 *)
 
+val sublists_of_len :
+  ?drop_short:bool ->
+  ?offset:int ->
+  int ->
+  'a list ->
+  'a list list
+(** [sublists_of_len n l] returns sub-lists of [l] that have length [n].
+    By default, these sub-lists are non overlapping:
+    [sublists_of_len 2 [1;2;3;4;5;6]] returns [[1;2]; [3;4]; [5;6]]
+    @param drop_short if true, last elements are dropped if they do not
+      make a long enough list
+    @param offset the number of elements dropped between two consecutive
+      sub-lists. By default it is [n]. If [offset < n], the sub-lists
+      will overlap; if [offset > n], some elements will not appear at all.
+    @raise Invalid_argument if [offset <= 0] or [n <= 0]
+    @since NEXT_RELEASE *)
+
 val pure : 'a -> 'a t
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t

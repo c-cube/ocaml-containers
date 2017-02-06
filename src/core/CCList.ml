@@ -528,6 +528,37 @@ let take_drop n l = take n l, drop n l
     l1 @ l2 = l )
 *)
 
+let sublists_of_len ?(drop_short=true) ?offset n l =
+  if n < 1 then invalid_arg "sublists_of_len: n must be > 0";
+  let offset = match offset with
+    | None -> n
+    | Some o when o < 1 -> invalid_arg "sublists_of_len: offset must be > 0"
+    | Some o -> o
+  in
+  (* add sub-lists of [l] to [acc] *)
+  let rec aux acc l =
+    let group = take n l in
+    if List.length group < n
+    then (
+      (* this was the last group *)
+      if drop_short || group=[] then acc else group :: acc
+    ) else (
+      let l' = drop offset l in
+      aux (group :: acc) l' (* continue *)
+    )
+  in
+  List.rev (aux [] l)
+
+(*$= sublists_of_len as subs & ~printer:Q.Print.(list (list int))
+  [[1;2;3]] (subs 3 [1;2;3;4])
+  [[1;2]; [3;4]; [5;6]] (subs 2 [1;2;3;4;5;6])
+  [] (subs 3 [1;2])
+  [[1;2];[3;4]] (subs 2 ~offset:2 [1;2;3;4])
+  [[1;2];[2;3]] (subs 2 ~offset:1 [1;2;3])
+  [[1;2];[4;5]] (subs 2 ~offset:3 [1;2;3;4;5;6])
+  [[1;2;3];[4]] (subs 3 ~drop_short:false [1;2;3;4])
+*)
+
 let take_while p l =
   let rec direct i p l = match l with
     | [] -> []
