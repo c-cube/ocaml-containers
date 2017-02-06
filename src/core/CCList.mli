@@ -104,13 +104,22 @@ val sublists_of_len :
 (** [sublists_of_len n l] returns sub-lists of [l] that have length [n].
     By default, these sub-lists are non overlapping:
     [sublists_of_len 2 [1;2;3;4;5;6]] returns [[1;2]; [3;4]; [5;6]]
-    @param offset the number of elements dropped between two consecutive
+
+    Examples:
+
+    - [sublists_of_len 2 [1;2;3;4;5;6] = [[1;2]; [3;4]; [5;6]]]
+    - [sublists_of_len 2 ~offset:3 [1;2;3;4;5;6] = [1;2];[4;5]]
+    - [sublists_of_len 3 ~last:CCOpt.return [1;2;3;4] = [1;2;3];[4]]
+    - [sublists_of_len 2 [1;2;3;4;5] = [[1;2]; [3;4]]]
+
+    @param offset the number of elements skipped between two consecutive
       sub-lists. By default it is [n]. If [offset < n], the sub-lists
       will overlap; if [offset > n], some elements will not appear at all.
     @param last if provided and the last group of elements [g] is such
       that [length g < n], [last g] is called. If [last g = Some g'],
       [g'] is appended; otherwise [g] is dropped.
       If [last = CCOpt.return], it will simply keep the last group.
+      By default, [last = fun _ -> None], i.e. the last group is dropped if shorter than [n].
     @raise Invalid_argument if [offset <= 0] or [n <= 0]
     @since NEXT_RELEASE *)
 
