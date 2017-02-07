@@ -92,6 +92,13 @@ val update : ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> u
     using {!Hashtbl.replace}
     @since 0.14 *)
 
+val get_or_add : ('a, 'b) Hashtbl.t -> f:('a -> 'b) -> k:'a -> 'b
+(** [get_or_add tbl ~k ~f] finds and returns the binding of [k]
+    in [tbl], if it exists. If it does not exist, then [f k]
+    is called to obtain a new binding [v]; [k -> v] is added
+    to [tbl] and [v] is returned.
+    @since NEXT_RELEASE *)
+
 val print : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
 (** Printer for table
     @since 0.13 *)
@@ -180,6 +187,13 @@ module type S = sig
       returns [Some v'] then the binding [k -> v'] is inserted
       using {!Hashtbl.replace}
       @since 0.14 *)
+
+  val get_or_add : 'a t -> f:(key -> 'a) -> k:key -> 'a
+  (** [get_or_add tbl ~k ~f] finds and returns the binding of [k]
+      in [tbl], if it exists. If it does not exist, then [f k]
+      is called to obtain a new binding [v]; [k -> v] is added
+      to [tbl] and [v] is returned.
+      @since NEXT_RELEASE *)
 
   val print : key printer -> 'a printer -> 'a t printer
   (** Printer for tables
