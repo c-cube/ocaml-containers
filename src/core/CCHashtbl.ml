@@ -10,131 +10,135 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Polymorphic tables} *)
 
-let get tbl x =
-  try Some (Hashtbl.find tbl x)
-  with Not_found -> None
+module Poly = struct
+  let get tbl x =
+    try Some (Hashtbl.find tbl x)
+    with Not_found -> None
 
-let get_or tbl x ~default =
-  try Hashtbl.find tbl x
-  with Not_found -> default
+  let get_or tbl x ~default =
+    try Hashtbl.find tbl x
+    with Not_found -> default
 
-(*$=
-  "c" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 3 ~default:"c")
-  "b" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 2 ~default:"c")
-*)
+  (*$=
+    "c" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 3 ~default:"c")
+    "b" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 2 ~default:"c")
+  *)
 
-let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
+  let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
 
-let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
+  let values tbl k = Hashtbl.iter (fun _ v -> k v) tbl
 
-let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
-let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
+  let keys_list tbl = Hashtbl.fold (fun k _ a -> k::a) tbl []
+  let values_list tbl = Hashtbl.fold (fun _ v a -> v::a) tbl []
 
-let add_list tbl k v =
-  let l = try Hashtbl.find tbl k with Not_found -> [] in
-  Hashtbl.replace tbl k (v::l)
+  let add_list tbl k v =
+    let l = try Hashtbl.find tbl k with Not_found -> [] in
+    Hashtbl.replace tbl k (v::l)
 
-let incr ?(by=1) tbl x =
-  let n = get_or tbl x ~default:0 in
-  if n+by <= 0
-  then Hashtbl.remove tbl x
-  else Hashtbl.replace tbl x (n+by)
-
-let decr ?(by=1) tbl x =
-  try
-    let n = Hashtbl.find tbl x in
-    if n-by <= 0
+  let incr ?(by=1) tbl x =
+    let n = get_or tbl x ~default:0 in
+    if n+by <= 0
     then Hashtbl.remove tbl x
-    else Hashtbl.replace tbl x (n-by)
-  with Not_found -> ()
+    else Hashtbl.replace tbl x (n+by)
 
-let map_list f h =
-  Hashtbl.fold
-    (fun x y acc -> f x y :: acc)
-    h []
+  let decr ?(by=1) tbl x =
+    try
+      let n = Hashtbl.find tbl x in
+      if n-by <= 0
+      then Hashtbl.remove tbl x
+      else Hashtbl.replace tbl x (n-by)
+    with Not_found -> ()
 
-(*$T
-  of_list [1,"a"; 2,"b"] |> map_list (fun x y -> string_of_int x ^ y) \
-    |> List.sort Pervasives.compare = ["1a"; "2b"]
-*)
+  let map_list f h =
+    Hashtbl.fold
+      (fun x y acc -> f x y :: acc)
+      h []
 
-let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
+  (*$T
+    of_list [1,"a"; 2,"b"] |> map_list (fun x y -> string_of_int x ^ y) \
+      |> List.sort Pervasives.compare = ["1a"; "2b"]
+  *)
 
-let add_seq tbl seq = seq (fun (k,v) -> Hashtbl.add tbl k v)
+  let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
 
-let of_seq seq =
-  let tbl = Hashtbl.create 32 in
-  add_seq tbl seq;
-  tbl
+  let add_seq tbl seq = seq (fun (k,v) -> Hashtbl.add tbl k v)
 
-let add_seq_count tbl seq = seq (fun k -> incr tbl k)
+  let of_seq seq =
+    let tbl = Hashtbl.create 32 in
+    add_seq tbl seq;
+    tbl
 
-let of_seq_count seq =
-  let tbl = Hashtbl.create 32 in
-  add_seq_count tbl seq;
-  tbl
+  let add_seq_count tbl seq = seq (fun k -> incr tbl k)
 
-let to_list tbl =
-  Hashtbl.fold
-    (fun k v l -> (k,v) :: l)
-    tbl []
+  let of_seq_count seq =
+    let tbl = Hashtbl.create 32 in
+    add_seq_count tbl seq;
+    tbl
 
-let of_list l =
-  let tbl = Hashtbl.create 32 in
-  List.iter (fun (k,v) -> Hashtbl.add tbl k v) l;
-  tbl
+  let to_list tbl =
+    Hashtbl.fold
+      (fun k v l -> (k,v) :: l)
+      tbl []
 
-let update tbl ~f ~k =
-  let v = get tbl k in
-  match v, f k v with
-    | None, None -> ()
-    | None, Some v' -> Hashtbl.add tbl k v'
-    | Some _, Some v' -> Hashtbl.replace tbl k v'
-    | Some _, None -> Hashtbl.remove tbl k
+  let of_list l =
+    let tbl = Hashtbl.create 32 in
+    List.iter (fun (k,v) -> Hashtbl.add tbl k v) l;
+    tbl
 
-(*$R
-  let tbl = Hashtbl.create 32 in
-  update tbl ~k:1 ~f:(fun _ _ -> Some "1");
-  assert_equal (Some "1") (get tbl 1);
-  update tbl ~k:2 ~f:(fun _ v->match v with Some _ -> assert false | None -> Some "2");
-  assert_equal (Some "2") (get tbl 2);
-  assert_equal 2 (Hashtbl.length tbl);
-  update tbl ~k:1 ~f:(fun _ _ -> None);
-  assert_equal None (get tbl 1);
-*)
+  let update tbl ~f ~k =
+    let v = get tbl k in
+    match v, f k v with
+      | None, None -> ()
+      | None, Some v' -> Hashtbl.add tbl k v'
+      | Some _, Some v' -> Hashtbl.replace tbl k v'
+      | Some _, None -> Hashtbl.remove tbl k
 
-let get_or_add tbl ~f ~k =
-  try Hashtbl.find tbl k
-  with Not_found ->
-    let v = f k in
-    Hashtbl.add tbl k v;
-    v
+  (*$R
+    let tbl = Hashtbl.create 32 in
+    update tbl ~k:1 ~f:(fun _ _ -> Some "1");
+    assert_equal (Some "1") (get tbl 1);
+    update tbl ~k:2 ~f:(fun _ v->match v with Some _ -> assert false | None -> Some "2");
+    assert_equal (Some "2") (get tbl 2);
+    assert_equal 2 (Hashtbl.length tbl);
+    update tbl ~k:1 ~f:(fun _ _ -> None);
+    assert_equal None (get tbl 1);
+  *)
 
-(*$R
-  let tbl = Hashtbl.create 32 in
-  let v1 = get_or_add tbl ~k:1 ~f:(fun _ -> "1") in
-  assert_equal "1" v1;
-  assert_equal (Some "1") (get tbl 1);
-  let v2 = get_or_add tbl ~k:2 ~f:(fun _ ->"2") in
-  assert_equal "2" v2;
-  assert_equal (Some "2") (get tbl 2);
-  assert_equal "2" (get_or_add tbl ~k:2 ~f:(fun _ -> assert false));
-  assert_equal 2 (Hashtbl.length tbl);
-  ()
-*)
+  let get_or_add tbl ~f ~k =
+    try Hashtbl.find tbl k
+    with Not_found ->
+      let v = f k in
+      Hashtbl.add tbl k v;
+      v
 
-let print pp_k pp_v fmt m =
-  Format.fprintf fmt "@[<hov2>tbl {@,";
-  let first = ref true in
-  Hashtbl.iter
-    (fun k v ->
-       if !first then first := false else Format.pp_print_string fmt ", ";
-       pp_k fmt k;
-       Format.pp_print_string fmt " -> ";
-       pp_v fmt v;
-       Format.pp_print_cut fmt ()
-    ) m;
-  Format.fprintf fmt "}@]"
+  (*$R
+    let tbl = Hashtbl.create 32 in
+    let v1 = get_or_add tbl ~k:1 ~f:(fun _ -> "1") in
+    assert_equal "1" v1;
+    assert_equal (Some "1") (get tbl 1);
+    let v2 = get_or_add tbl ~k:2 ~f:(fun _ ->"2") in
+    assert_equal "2" v2;
+    assert_equal (Some "2") (get tbl 2);
+    assert_equal "2" (get_or_add tbl ~k:2 ~f:(fun _ -> assert false));
+    assert_equal 2 (Hashtbl.length tbl);
+    ()
+  *)
+
+  let print pp_k pp_v fmt m =
+    Format.fprintf fmt "@[<hov2>tbl {@,";
+    let first = ref true in
+    Hashtbl.iter
+      (fun k v ->
+         if !first then first := false else Format.pp_print_string fmt ", ";
+         pp_k fmt k;
+         Format.pp_print_string fmt " -> ";
+         pp_v fmt v;
+         Format.pp_print_cut fmt ()
+      ) m;
+    Format.fprintf fmt "}@]"
+end
+
+include Poly
 
 (** {2 Functor} *)
 

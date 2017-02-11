@@ -44,7 +44,7 @@ module Hashtbl = struct
      and module Make = Hashtbl.Make
      and type ('a,'b) t = ('a,'b) Hashtbl.t
   )
-  (* still unable to include CCHashtbl itself, for the polymorphic functions *)
+  include CCHashtbl.Poly
   module type S' = CCHashtbl.S
   module Make' = CCHashtbl.Make
 end
