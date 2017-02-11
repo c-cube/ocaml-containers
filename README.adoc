@@ -57,7 +57,7 @@ See link:CHANGELOG.adoc[this file].
 
 == Use
 
-Start with the link:TUTORIAL.adoc[tutorial]
+You might start with the <<tutorial>> to get a picture of how to use the library.
 
 You can either build and install the library (see <<build>>), or just copy
 files to your own project. The last solution has the benefits that you
