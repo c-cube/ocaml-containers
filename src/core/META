@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: e46e29f7bdcb542070b9b01d13e70831)
-version = "0.22.1"
+# DO NOT EDIT (digest: f2253e1b845a7843c6df42fc774ce6e5)
+version = "1.0"
 description = "A modular standard library focused on data structures."
 requires = "bytes result"
 archive(byte) = "containers.cma"
@@ -9,9 +9,9 @@ archive(native) = "containers.cmxa"
 archive(native, plugin) = "containers.cmxs"
 exists_if = "containers.cma"
 package "unix" (
- version = "0.22.1"
+ version = "1.0"
  description = "A modular standard library focused on data structures."
- requires = "bytes unix"
+ requires = "bytes result unix"
  archive(byte) = "containers_unix.cma"
  archive(byte, plugin) = "containers_unix.cma"
  archive(native) = "containers_unix.cmxa"
@@ -20,10 +20,10 @@ package "unix" (
 )
 
 package "top" (
- version = "0.22.1"
+ version = "1.0"
  description = "A modular standard library focused on data structures."
  requires =
- "compiler-libs.common containers containers.data containers.bigarray containers.string containers.unix containers.sexp containers.iter"
+ "compiler-libs.common containers containers.data containers.unix containers.sexp containers.iter"
  archive(byte) = "containers_top.cma"
  archive(byte, plugin) = "containers_top.cma"
  archive(native) = "containers_top.cmxa"
@@ -32,7 +32,7 @@ package "top" (
 )
 
 package "thread" (
- version = "0.22.1"
+ version = "1.0"
  description = "A modular standard library focused on data structures."
  requires = "containers threads"
  archive(byte) = "containers_thread.cma"
@@ -42,21 +42,10 @@ package "thread" (
  exists_if = "containers_thread.cma"
 )
 
-package "string" (
- version = "0.22.1"
- description = "A modular standard library focused on data structures."
- requires = "bytes"
- archive(byte) = "containers_string.cma"
- archive(byte, plugin) = "containers_string.cma"
- archive(native) = "containers_string.cmxa"
- archive(native, plugin) = "containers_string.cmxs"
- exists_if = "containers_string.cma"
-)
-
 package "sexp" (
- version = "0.22.1"
+ version = "1.0"
  description = "A modular standard library focused on data structures."
- requires = "bytes"
+ requires = "bytes result"
  archive(byte) = "containers_sexp.cma"
  archive(byte, plugin) = "containers_sexp.cma"
  archive(native) = "containers_sexp.cmxa"
@@ -65,7 +54,7 @@ package "sexp" (
 )
 
 package "iter" (
- version = "0.22.1"
+ version = "1.0"
  description = "A modular standard library focused on data structures."
  archive(byte) = "containers_iter.cma"
  archive(byte, plugin) = "containers_iter.cma"
@@ -74,19 +63,8 @@ package "iter" (
  exists_if = "containers_iter.cma"
 )
 
-package "io" (
- version = "0.22.1"
- description = "A modular standard library focused on data structures."
- requires = "bytes"
- archive(byte) = "containers_io.cma"
- archive(byte, plugin) = "containers_io.cma"
- archive(native) = "containers_io.cmxa"
- archive(native, plugin) = "containers_io.cmxs"
- exists_if = "containers_io.cma"
-)
-
 package "data" (
- version = "0.22.1"
+ version = "1.0"
  description = "A modular standard library focused on data structures."
  requires = "bytes"
  archive(byte) = "containers_data.cma"
@@ -94,28 +72,6 @@ package "data" (
  archive(native) = "containers_data.cmxa"
  archive(native, plugin) = "containers_data.cmxs"
  exists_if = "containers_data.cma"
-)
-
-package "bigarray" (
- version = "0.22.1"
- description = "A modular standard library focused on data structures."
- requires = "containers bigarray bytes"
- archive(byte) = "containers_bigarray.cma"
- archive(byte, plugin) = "containers_bigarray.cma"
- archive(native) = "containers_bigarray.cmxa"
- archive(native, plugin) = "containers_bigarray.cmxs"
- exists_if = "containers_bigarray.cma"
-)
-
-package "advanced" (
- version = "0.22.1"
- description = "A modular standard library focused on data structures."
- requires = "containers sequence"
- archive(byte) = "containers_advanced.cma"
- archive(byte, plugin) = "containers_advanced.cma"
- archive(native) = "containers_advanced.cmxa"
- archive(native, plugin) = "containers_advanced.cmxs"
- exists_if = "containers_advanced.cma"
 )
 # OASIS_STOP
 

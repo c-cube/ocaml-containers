@@ -24,15 +24,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 (** {1 Lazy Tree Structure}
-This structure can be used to represent trees and directed
-graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
-is a structural type. *)
+    This structure can be used to represent trees and directed
+    graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
+    is a structural type. *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 type +'a t = unit -> [`Nil | `Node of 'a * 'a t list]
 
@@ -52,8 +51,8 @@ let node2 x t1 t2 () = `Node(x,[t1;t2])
 let rec fold f acc t = match t() with
   | `Nil -> acc
   | `Node (x,l) ->
-      let acc = f acc x in
-      List.fold_left (fold f) acc l
+    let acc = f acc x in
+    List.fold_left (fold f) acc l
 
 let rec iter f t = match t() with
   | `Nil -> ()
@@ -68,13 +67,13 @@ let height t =
   and aux_l acc l k = match l with
     | [] -> k acc
     | t'::l' ->
-        aux t' (fun n -> aux_l (max acc n) l' k)
+      aux t' (fun n -> aux_l (max acc n) l' k)
   in aux t (fun x->x)
 
 let rec map f t () = match t() with
   | `Nil -> `Nil
   | `Node(x,l) ->
-      `Node (f x, List.map (map f) l)
+    `Node (f x, List.map (map f) l)
 
 let (>|=) t f = map f t
 
@@ -82,7 +81,7 @@ let rec cut_depth n t () = match t() with
   | `Nil -> `Nil
   | `Node _ when n=0 -> `Nil
   | `Node(x,l) ->
-      `Node(x, List.map (cut_depth (n-1)) l)
+    `Node(x, List.map (cut_depth (n-1)) l)
 
 (** {2 Graph Traversals} *)
 
@@ -94,9 +93,9 @@ end
 
 let set_of_cmp (type elt) ?(cmp=Pervasives.compare) () =
   let module S = Set.Make(struct
-    type t = elt
-    let compare = cmp
-  end) in
+      type t = elt
+      let compare = cmp
+    end) in
   object
     val s = S.empty
     method add x = {< s = S.add x s >}
@@ -110,19 +109,19 @@ let dfs ?(pset=set_of_cmp ()) t =
   let rec dfs pset stack () = match stack with
     | [] -> `Nil
     | `Explore t :: stack' ->
-        begin match t() with
+      begin match t() with
         | `Nil -> dfs pset stack' ()
         | `Node (x, _) when pset#mem x ->
-            dfs pset stack' ()  (* loop *)
+          dfs pset stack' ()  (* loop *)
         | `Node (x, l) ->
-            let pset' = pset#add x in
-            let stack' =
-              List.rev_append (List.rev_map (fun x -> `Explore x) l) (`Exit x :: stack')
-            in
-            _cons (`Enter x) (dfs pset' stack')
-        end
+          let pset' = pset#add x in
+          let stack' =
+            List.rev_append (List.rev_map (fun x -> `Explore x) l) (`Exit x :: stack')
+          in
+          _cons (`Enter x) (dfs pset' stack')
+      end
     | `Exit x :: stack' ->
-        _cons (`Exit x) (dfs pset stack')
+      _cons (`Exit x) (dfs pset stack')
   in
   dfs pset [`Explore t]
 
@@ -148,10 +147,10 @@ module FQ = struct
 
   let pop_exn q =
     match q.hd with
-    | [] -> assert (q.tl = []); raise Empty
-    | x::hd' ->
-      let q' = _make hd' q.tl in
-      x, q'
+      | [] -> assert (q.tl = []); raise Empty
+      | x::hd' ->
+        let q' = _make hd' q.tl in
+        x, q'
 end
 
 let bfs ?(pset=set_of_cmp ()) t =
@@ -160,10 +159,10 @@ let bfs ?(pset=set_of_cmp ()) t =
     else
       let t, q' = FQ.pop_exn q in
       match t() with
-      | `Nil -> bfs pset q' ()
-      | `Node(x,_) when pset#mem x ->
+        | `Nil -> bfs pset q' ()
+        | `Node(x,_) when pset#mem x ->
           bfs pset q' () (* loop *)
-      | `Node(x,l) ->
+        | `Node(x,l) ->
           let q' = List.fold_left FQ.push q' l in
           let pset' = pset#add x in
           _cons x (bfs pset' q')
@@ -178,7 +177,7 @@ let find ?pset f t =
   let rec _find_kl f l = match l() with
     | `Nil -> None
     | `Cons (x, l') ->
-        match f x with
+      match f x with
         | None -> _find_kl f l'
         | Some _ as res -> res
   in
@@ -186,23 +185,23 @@ let find ?pset f t =
 
 (** {2 Pretty-printing} *)
 
-let print pp_x fmt t =
+let pp pp_x fmt t =
   (* at depth [lvl] *)
   let rec pp fmt t = match t with
     | `Nil -> ()
     | `Node (x, children) ->
       let children = filter children in
       match children with
-      | [] -> pp_x fmt x
-      | _::_ ->
-        Format.fprintf fmt "@[<v2>(@[<hov0>%a@]%a)@]"
-          pp_x x pp_children children
+        | [] -> pp_x fmt x
+        | _::_ ->
+          Format.fprintf fmt "@[<v2>(@[<hov0>%a@]%a)@]"
+            pp_x x pp_children children
   and filter l  =
     let l = List.fold_left
-      (fun acc c -> match c() with
-        | `Nil -> acc
-        | `Node _ as sub -> sub :: acc
-      ) [] l
+        (fun acc c -> match c() with
+           | `Nil -> acc
+           | `Node _ as sub -> sub :: acc
+        ) [] l
     in
     List.rev l
   and pp_children fmt children =
@@ -220,13 +219,13 @@ let print pp_x fmt t =
 
 module Dot = struct
   type attribute = [
-  | `Color of string
-  | `Shape of string
-  | `Weight of int
-  | `Style of string
-  | `Label of string
-  | `Id of string
-  | `Other of string * string
+    | `Color of string
+    | `Shape of string
+    | `Weight of int
+    | `Style of string
+    | `Label of string
+    | `Id of string
+    | `Other of string * string
   ] (** Dot attributes for nodes *)
 
   type graph = (string * attribute list t list)
@@ -269,11 +268,11 @@ module Dot = struct
     | [] -> ()
     | [x] -> _pp_attr fmt x
     | x::l' ->
-        _pp_attr fmt x;
-        Format.pp_print_char fmt ',';
-        _pp_attrs fmt l'
+      _pp_attr fmt x;
+      Format.pp_print_char fmt ',';
+      _pp_attrs fmt l'
 
-  let print fmt (name,l) =
+  let pp out (name,l) =
     (* nodes already printed *)
     let tbl = Hashtbl.create 32 in
     (* fresh name generator *)
@@ -300,17 +299,17 @@ module Dot = struct
     and pp_node q ?parent t = match t() with
       | `Nil -> q
       | `Node (x,l) ->
-          let name, attrs = get_name x in
-          begin match parent with
-            | None -> ()
-            | Some n -> Format.fprintf fmt "  %s -> %s;@," n name
-          end;
-          if not (Hashtbl.mem tbl name) then (
-            Hashtbl.add tbl name ();
-            Format.fprintf fmt "@[%s [%a];@]@," name _pp_attrs attrs;
-            List.fold_left
-              (fun q y -> FQ.push q (Some name, y)) q l
-          ) else q
+        let name, attrs = get_name x in
+        begin match parent with
+          | None -> ()
+          | Some n -> Format.fprintf out "  %s -> %s;@," n name
+        end;
+        if not (Hashtbl.mem tbl name) then (
+          Hashtbl.add tbl name ();
+          Format.fprintf out "@[%s [%a];@]@," name _pp_attrs attrs;
+          List.fold_left
+            (fun q y -> FQ.push q (Some name, y)) q l
+        ) else q
     in
     let q =
       List.fold_left
@@ -318,23 +317,18 @@ module Dot = struct
         FQ.empty l
     in
     (* preamble *)
-    Format.fprintf fmt "@[<hv 2>digraph \"%s\" {@," name;
+    Format.fprintf out "@[<hv 2>digraph \"%s\" {@," name;
     aux q;
-    Format.fprintf fmt "}@]@.";
+    Format.fprintf out "}@]@.";
     ()
 
-  let pp buf t =
-    let fmt = Format.formatter_of_buffer buf in
-    print fmt t;
-    Format.pp_print_flush fmt ()
-
-  let pp_single name buf t = pp buf (singleton ~name t)
+  let pp_single name out t = pp out (singleton ~name t)
 
   let print_to_file filename g =
     let oc = open_out filename in
     let fmt = Format.formatter_of_out_channel oc in
     try
-      print fmt g;
+      pp fmt g;
       Format.pp_print_flush fmt ();
       close_out oc
     with e ->

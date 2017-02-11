@@ -101,15 +101,15 @@ module Make(P : PARAM) = struct
   and run_cmd = function
     | Die -> ()
     | Wait ->
-        with_lock_ pool (fun p -> Condition.wait p.cond p.mutex)
+      with_lock_ pool (fun p -> Condition.wait p.cond p.mutex)
     | Process (Job1 (f, x)) ->
-        begin try ignore (f x) with e -> pool.exn_handler e end; serve pool
+      begin try ignore (f x) with e -> pool.exn_handler e end; serve pool
     | Process (Job2 (f, x, y)) ->
-        begin try ignore (f x y) with e -> pool.exn_handler e end; serve pool
+      begin try ignore (f x y) with e -> pool.exn_handler e end; serve pool
     | Process (Job3 (f, x, y, z)) ->
-        begin try ignore (f x y z) with e -> pool.exn_handler e end; serve pool
+      begin try ignore (f x y z) with e -> pool.exn_handler e end; serve pool
     | Process (Job4 (f, x, y, z, w)) ->
-        begin try ignore (f x y z w) with e -> pool.exn_handler e end; serve pool
+      begin try ignore (f x y z w) with e -> pool.exn_handler e end; serve pool
 
   (* create a new worker thread *)
   let launch_worker_ pool = ignore (Thread.create serve pool)
@@ -126,24 +126,24 @@ module Make(P : PARAM) = struct
        if the queue is empty *)
     with_lock_ pool
       (fun pool ->
-        if pool.stop then raise Stopped;
-        if Queue.is_empty pool.jobs && can_start_thread_ pool && pool.cur_idle = 0
-        then (
-          (* create the thread now, on [job], as it will not break order of
-             jobs. We do not want to wait for the busy threads to do our task
-             if we are allowed to spawn a new thread. *)
-          incr_size_ pool;
-          ignore (Thread.create run_cmd (Process job))
-        ) else (
-          (* cannot start thread, push and wait for some worker to pick it up *)
-          Queue.push job pool.jobs;
-          Condition.signal pool.cond; (* wake up *)
-          (* might want to process in the background, if all threads are busy *)
-          if pool.cur_idle = 0 && can_start_thread_ pool then (
-            incr_size_ pool;
-            launch_worker_ pool;
-          )
-        ))
+         if pool.stop then raise Stopped;
+         if Queue.is_empty pool.jobs && can_start_thread_ pool && pool.cur_idle = 0
+         then (
+           (* create the thread now, on [job], as it will not break order of
+              jobs. We do not want to wait for the busy threads to do our task
+              if we are allowed to spawn a new thread. *)
+           incr_size_ pool;
+           ignore (Thread.create run_cmd (Process job))
+         ) else (
+           (* cannot start thread, push and wait for some worker to pick it up *)
+           Queue.push job pool.jobs;
+           Condition.signal pool.cond; (* wake up *)
+           (* might want to process in the background, if all threads are busy *)
+           if pool.cur_idle = 0 && can_start_thread_ pool then (
+             incr_size_ pool;
+             launch_worker_ pool;
+           )
+         ))
 
   (* run the function on the argument in the given pool *)
   let run1 f x = run_job (Job1 (f, x))
@@ -162,8 +162,8 @@ module Make(P : PARAM) = struct
   let stop () =
     with_lock_ pool
       (fun p ->
-        p.stop <- true;
-        Queue.clear p.jobs)
+         p.stop <- true;
+         Queue.clear p.jobs)
 
   (* stop threads if pool is GC'd *)
   let () = Gc.finalise (fun _ -> stop ()) pool
@@ -216,24 +216,24 @@ module Make(P : PARAM) = struct
     let set_done_ cell x =
       with_lock_ cell
         (fun cell -> match cell.state with
-        | Waiting ->  (* set state and signal *)
-            cell.state <- Done x;
-            Condition.broadcast cell.condition;
-            List.iter
-              (fun f -> try f cell.state with e -> pool.exn_handler e)
-              cell.handlers
-        | _ -> assert false)
+           | Waiting ->  (* set state and signal *)
+             cell.state <- Done x;
+             Condition.broadcast cell.condition;
+             List.iter
+               (fun f -> try f cell.state with e -> pool.exn_handler e)
+               cell.handlers
+           | _ -> assert false)
 
     let set_fail_ cell e =
       with_lock_ cell
         (fun cell -> match cell.state with
-        | Waiting ->
-            cell.state <- Failed e;
-            Condition.broadcast cell.condition;
-            List.iter
-              (fun f -> try f cell.state with e -> pool.exn_handler e)
-              cell.handlers
-        | _ -> assert false)
+           | Waiting ->
+             cell.state <- Failed e;
+             Condition.broadcast cell.condition;
+             List.iter
+               (fun f -> try f cell.state with e -> pool.exn_handler e)
+               cell.handlers
+           | _ -> assert false)
 
     (* calls [f x], and put result or exception in [cell] *)
     let run_and_set1 cell f x =
@@ -282,14 +282,14 @@ module Make(P : PARAM) = struct
       | Return x -> x
       | FailNow e -> raise e
       | Run cell ->
-          let rec get_ cell = match cell.state with
-            | Waiting ->
-                Condition.wait cell.condition cell.f_mutex; (* wait *)
-                get_ cell
-            | Done x -> x
-            | Failed e -> raise e
-          in
-          with_lock_ cell get_
+        let rec get_ cell = match cell.state with
+          | Waiting ->
+            Condition.wait cell.condition cell.f_mutex; (* wait *)
+            get_ cell
+          | Done x -> x
+          | Failed e -> raise e
+        in
+        with_lock_ cell get_
 
     (* access the result without locking *)
     let get_nolock_ = function
@@ -302,21 +302,21 @@ module Make(P : PARAM) = struct
       | Return x -> Done x
       | FailNow e -> Failed e
       | Run cell ->
-          with_lock_ cell (fun cell -> cell.state)
+        with_lock_ cell (fun cell -> cell.state)
 
     let is_done = function
       | Return _
       | FailNow _ -> true
       | Run cell ->
-          with_lock_ cell (fun c -> c.state <> Waiting)
+        with_lock_ cell (fun c -> c.state <> Waiting)
 
     (** {2 Combinators *)
 
     let add_handler_ cell f =
       with_lock_ cell
         (fun cell -> match cell.state with
-          | Waiting -> cell.handlers <- f :: cell.handlers
-          | Done _ | Failed _ -> f cell.state)
+           | Waiting -> cell.handlers <- f :: cell.handlers
+           | Done _ | Failed _ -> f cell.state)
 
     let on_finish fut k = match fut with
       | Return x -> k (Done x)
@@ -339,18 +339,18 @@ module Make(P : PARAM) = struct
       add_handler_ cell
         (function
           | Done x ->
-              if async
-              then run3 run_and_set1 cell' f x
-              else run_and_set1 cell' f x
+            if async
+            then run3 run_and_set1 cell' f x
+            else run_and_set1 cell' f x
           | Failed e -> set_fail_ cell' e
           | Waiting -> assert false);
       Run cell'
 
     let map_ ~async f fut = match fut with
       | Return x ->
-          if async
-          then make1 f x
-          else Return (f x)
+        if async
+        then make1 f x
+        else Return (f x)
       | FailNow e -> FailNow e
       | Run cell -> map_cell_ ~async f cell ~into:(create_cell())
 
@@ -367,23 +367,23 @@ module Make(P : PARAM) = struct
 
     let app_ ~async f x = match f, x with
       | Return f, Return x ->
-          if async
-          then make1 f x
-          else Return (f x)
+        if async
+        then make1 f x
+        else Return (f x)
       | FailNow e, _
       | _, FailNow e -> FailNow e
       | Return f, Run x ->
-          map_cell_ ~async (fun x -> f x) x ~into:(create_cell())
+        map_cell_ ~async (fun x -> f x) x ~into:(create_cell())
       | Run f, Return x ->
-          map_cell_ ~async (fun f -> f x) f ~into:(create_cell())
+        map_cell_ ~async (fun f -> f x) f ~into:(create_cell())
       | Run f, Run x ->
-          let cell' = create_cell () in
-          add_handler_ f
-            (function
-              | Done f -> ignore (map_cell_ ~async f x ~into:cell')
-              | Failed e -> set_fail_ cell' e
-              | Waiting -> assert false);
-          Run cell'
+        let cell' = create_cell () in
+        add_handler_ f
+          (function
+            | Done f -> ignore (map_cell_ ~async f x ~into:cell')
+            | Failed e -> set_fail_ cell' e
+            | Waiting -> assert false);
+        Run cell'
 
     let app f x = app_ ~async:false f x
 
@@ -393,21 +393,21 @@ module Make(P : PARAM) = struct
       | Return x -> f x
       | FailNow e -> FailNow e
       | Run cell ->
-          let cell' = create_cell() in
-          add_handler_ cell
-            (function
-              | Done x ->
-                  let fut' = f x in
-                  on_finish fut'
-                    (function
-                      | Done y -> set_done_ cell' y
-                      | Failed e -> set_fail_ cell' e
-                      | Waiting -> assert false
-                    )
-              | Failed e -> set_fail_ cell' e
-              | Waiting -> assert false
-            );
-          Run cell'
+        let cell' = create_cell() in
+        add_handler_ cell
+          (function
+            | Done x ->
+              let fut' = f x in
+              on_finish fut'
+                (function
+                  | Done y -> set_done_ cell' y
+                  | Failed e -> set_fail_ cell' e
+                  | Waiting -> assert false
+                )
+            | Failed e -> set_fail_ cell' e
+            | Waiting -> assert false
+          );
+        Run cell'
 
     let and_then fut f = flat_map (fun _ -> f ()) fut
 
@@ -416,57 +416,57 @@ module Make(P : PARAM) = struct
       | L_ : 'a list -> 'a array_or_list
 
     let iter_aol
-    : type a. a array_or_list -> (a -> unit) -> unit
-    = fun aol f -> match aol with
-      | A_ a -> Array.iter f a
-      | L_ l -> List.iter f l
+      : type a. a array_or_list -> (a -> unit) -> unit
+      = fun aol f -> match aol with
+        | A_ a -> Array.iter f a
+        | L_ l -> List.iter f l
 
     (* [sequence_ l f] returns a future that waits for every element of [l]
        to return of fail, and call [f ()] to obtain the result (as a closure)
        in case every element succeeded (otherwise a failure is
        returned automatically) *)
     let sequence_
-    : type a res. a t array_or_list -> (unit -> res) -> res t
-    = fun aol f ->
-      let n = match aol with
-        | A_ a -> Array.length a
-        | L_ l -> List.length l
-      in
-      assert (n>0);
-      let cell = create_cell() in
-      let n_err = CCLock.create 0 in (* number of failed threads *)
-      let n_ok = CCLock.create 0 in (* number of succeeding threads *)
-      iter_aol aol
-        (fun fut ->
-          on_finish fut
-            (function
-              | Failed e ->
-                  let x = CCLock.incr_then_get n_err in
-                  (* if first failure, then seal [cell]'s fate now *)
-                  if x=1 then set_fail_ cell e
-              | Done _ ->
-                  let x = CCLock.incr_then_get n_ok in
-                  (* if [n] successes, then [cell] succeeds. Otherwise, some
-                     job has not finished or some job has failed. *)
-                  if x = n then (
-                    let res = f () in
-                    set_done_ cell res
-                  )
-              | Waiting -> assert false));
-      Run cell
+      : type a res. a t array_or_list -> (unit -> res) -> res t
+      = fun aol f ->
+        let n = match aol with
+          | A_ a -> Array.length a
+          | L_ l -> List.length l
+        in
+        assert (n>0);
+        let cell = create_cell() in
+        let n_err = CCLock.create 0 in (* number of failed threads *)
+        let n_ok = CCLock.create 0 in (* number of succeeding threads *)
+        iter_aol aol
+          (fun fut ->
+             on_finish fut
+               (function
+                 | Failed e ->
+                   let x = CCLock.incr_then_get n_err in
+                   (* if first failure, then seal [cell]'s fate now *)
+                   if x=1 then set_fail_ cell e
+                 | Done _ ->
+                   let x = CCLock.incr_then_get n_ok in
+                   (* if [n] successes, then [cell] succeeds. Otherwise, some
+                      job has not finished or some job has failed. *)
+                   if x = n then (
+                     let res = f () in
+                     set_done_ cell res
+                   )
+                 | Waiting -> assert false));
+        Run cell
 
     (* map an array of futures to a future array *)
     let sequence_a a = match a with
-    | [||] -> return [||]
-    | _ ->
+      | [||] -> return [||]
+      | _ ->
         sequence_ (A_ a)
           (fun () -> Array.map get_nolock_ a)
 
     let map_a f a = sequence_a (Array.map f a)
 
     let sequence_l l = match l with
-    | [] -> return []
-    | _ :: _ ->
+      | [] -> return []
+      | _ :: _ ->
         sequence_ (L_ l) (fun () -> List.map get_nolock_ l)
 
     (* reverse twice *)
@@ -499,22 +499,22 @@ module Make(P : PARAM) = struct
     *)
 
     let choose_
-    : type a. a t array_or_list -> a t
-    = fun aol ->
-      let cell = create_cell() in
-      let is_done = CCLock.create false in
-      iter_aol aol
-        (fun fut ->
-          on_finish fut
-            (fun res -> match res with
-              | Waiting -> assert false
-              | Done x ->
-                  let was_done = CCLock.get_then_clear is_done in
-                  if not was_done then set_done_ cell x
-              | Failed e ->
-                  let was_done = CCLock.get_then_clear is_done in
-                  if not was_done then set_fail_ cell e));
-      Run cell
+      : type a. a t array_or_list -> a t
+      = fun aol ->
+        let cell = create_cell() in
+        let is_done = CCLock.create false in
+        iter_aol aol
+          (fun fut ->
+             on_finish fut
+               (fun res -> match res with
+                  | Waiting -> assert false
+                  | Done x ->
+                    let was_done = CCLock.get_then_clear is_done in
+                    if not was_done then set_done_ cell x
+                  | Failed e ->
+                    let was_done = CCLock.get_then_clear is_done in
+                    if not was_done then set_fail_ cell e));
+        Run cell
 
     let choose_a a = choose_ (A_ a)
 

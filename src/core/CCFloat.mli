@@ -2,7 +2,7 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Basic Float functions}
-@since 0.6.1 *)
+    @since 0.6.1 *)
 
 type t = float
 type fpclass = Pervasives.fpclass =
@@ -41,12 +41,10 @@ val equal : t -> t -> bool
 
 val compare : t -> t -> int
 
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val pp : t printer
-val print : t formatter
 
 val hash : t -> int
 

@@ -58,16 +58,16 @@ module Barrier = struct
   let wait b =
     with_lock_ b
       (fun () ->
-        while not b.activated do
-          Condition.wait b.cond b.lock
-        done)
+         while not b.activated do
+           Condition.wait b.cond b.lock
+         done)
 
   let activate b =
     with_lock_ b
       (fun () ->
-        if not b.activated then (
-          b.activated <- true;
-          Condition.broadcast b.cond))
+         if not b.activated then (
+           b.activated <- true;
+           Condition.broadcast b.cond))
 
   let activated b = with_lock_ b (fun () -> b.activated)
 end

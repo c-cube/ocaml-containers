@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 424a79b7df70bc76f7d6f1ee2e9da48e) *)
+(* DO NOT EDIT (digest: d0913c9409d93aeda14a31d6f9ebb3b2) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -746,6 +746,9 @@ module MyOCamlbuildBase = struct
 (* # 110 "src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
 
 
+  let env_filename = Pathname.basename BaseEnvLight.default_filename
+
+
   let dispatch_combine lst =
     fun e ->
       List.iter
@@ -878,21 +881,17 @@ module MyOCamlbuildBase = struct
 end
 
 
-# 881 "myocamlbuild.ml"
+# 884 "myocamlbuild.ml"
 open Ocamlbuild_plugin;;
 let package_default =
   {
      MyOCamlbuildBase.lib_ocaml =
        [
           ("containers", ["src/core"], []);
-          ("containers_io", ["src/io"], []);
           ("containers_unix", ["src/unix"], []);
           ("containers_sexp", ["src/sexp"], []);
           ("containers_data", ["src/data"], []);
           ("containers_iter", ["src/iter"], []);
-          ("containers_string", ["src/string"], []);
-          ("containers_advanced", ["src/advanced"], []);
-          ("containers_bigarray", ["src/bigarray"], []);
           ("containers_thread", ["src/threads"], []);
           ("containers_top", ["src/top"], [])
        ];
@@ -901,41 +900,19 @@ let package_default =
      includes =
        [
           ("src/top",
-            [
-               "src/bigarray";
-               "src/core";
-               "src/data";
-               "src/iter";
-               "src/sexp";
-               "src/string";
-               "src/unix"
-            ]);
+            ["src/core"; "src/data"; "src/iter"; "src/sexp"; "src/unix"]);
           ("src/threads", ["src/core"]);
-          ("src/bigarray", ["src/core"]);
-          ("src/advanced", ["src/core"]);
           ("qtest",
             [
-               "src/advanced";
-               "src/bigarray";
                "src/core";
                "src/data";
-               "src/io";
                "src/iter";
                "src/sexp";
-               "src/string";
                "src/threads";
                "src/unix"
             ]);
           ("examples", ["src/sexp"]);
-          ("benchs",
-            [
-               "src/advanced";
-               "src/core";
-               "src/data";
-               "src/iter";
-               "src/string";
-               "src/threads"
-            ])
+          ("benchs", ["src/core"; "src/data"; "src/iter"; "src/threads"])
        ]
   }
   ;;
@@ -944,7 +921,7 @@ let conf = {MyOCamlbuildFindlib.no_automatic_syntax = false}
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 
-# 948 "myocamlbuild.ml"
+# 925 "myocamlbuild.ml"
 (* OASIS_STOP *)
 let doc_intro = "doc/intro.txt" ;;
 

@@ -25,28 +25,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Caches}
 
-Particularly useful for memoization. See {!with_cache} and {!with_cache_rec}
-for more details.
-@since 0.6 *)
+    Particularly useful for memoization. See {!with_cache} and {!with_cache_rec}
+    for more details.
+    @since 0.6 *)
 
 type 'a equal = 'a -> 'a -> bool
 type 'a hash = 'a -> int
 
 (** {2 Value interface}
 
-Typical use case: one wants to memoize a function [f : 'a -> 'b]. Code sample:
-{[
-let f x =
-  print_endline "call f";
-  x + 1;;
+    Typical use case: one wants to memoize a function [f : 'a -> 'b]. Code sample:
+    {[
+      let f x =
+        print_endline "call f";
+        x + 1;;
 
-let f' = with_cache (lru 256) f;;
-f' 0;;  (* prints *)
-f' 1;;  (* prints *)
-f' 0;;  (* doesn't print, returns cached value *)
-]}
+      let f' = with_cache (lru 256) f;;
+      f' 0;;  (* prints *)
+      f' 1;;  (* prints *)
+      f' 0;;  (* doesn't print, returns cached value *)
+    ]}
 
-@since 0.6 *)
+    @since 0.6 *)
 
 type ('a, 'b) t
 
@@ -65,15 +65,15 @@ val with_cache_rec : ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
     It is similar to {!with_cache} but with a function that takes as
     first argument its own recursive version.
     Example (memoized Fibonacci function):
-{[
-let fib = with_cache_rec (lru 256)
-  (fun fib' n -> match n with
-    | 1 | 2 -> 1
-    | _ -> fib' (n-1) + fib' (n-2)
-  );;
+    {[
+      let fib = with_cache_rec (lru 256)
+          (fun fib' n -> match n with
+             | 1 | 2 -> 1
+             | _ -> fib' (n-1) + fib' (n-2)
+          );;
 
-fib 70;;
-]}
+      fib 70;;
+    ]}
 *)
 
 val size : (_,_) t -> int
@@ -93,7 +93,7 @@ val linear : ?eq:'a equal -> int -> ('a, 'b) t
     @param eq optional equality predicate for keys *)
 
 val replacing : ?eq:'a equal -> ?hash:'a hash ->
-                int -> ('a,'b) t
+  int -> ('a,'b) t
 (** Replacing cache of the given size. Equality and hash functions can be
     parametrized. It's a hash table that handles collisions by replacing
     the old value with the new (so a cache entry is evicted when another
@@ -101,11 +101,11 @@ val replacing : ?eq:'a equal -> ?hash:'a hash ->
     Never grows wider than the given size. *)
 
 val lru : ?eq:'a equal -> ?hash:'a hash ->
-          int -> ('a,'b) t
+  int -> ('a,'b) t
 (** LRU cache of the given size ("Least Recently Used": keys that have not been
     used recently are deleted first). Never grows wider than the given size. *)
 
 val unbounded : ?eq:'a equal -> ?hash:'a hash ->
-                int -> ('a,'b) t
+  int -> ('a,'b) t
 (** Unbounded cache, backed by a Hash table. Will grow forever
     unless {!clear} is called manually. *)

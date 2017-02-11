@@ -1,8 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: b2fa90a283cbf634dc8de2f37468b64b)
+# DO NOT EDIT (digest: 00cb4b9b72c4140588c3e040b056e79e)
 src/core/CCVector
-src/core/CCPrint
-src/core/CCError
 src/core/CCHeap
 src/core/CCList
 src/core/CCOpt
@@ -25,6 +23,10 @@ src/core/CCIO
 src/core/CCInt64
 src/core/CCChar
 src/core/CCResult
+src/core/CCParse
+src/core/CCArray_slice
+src/core/CCListLabels
+src/core/CCArrayLabels
 src/core/Containers
 src/iter/CCKTree
 src/iter/CCKList
@@ -44,37 +46,22 @@ src/data/CCRingBuffer
 src/data/CCIntMap
 src/data/CCPersistentArray
 src/data/CCMixset
-src/data/CCHashconsedSet
 src/data/CCGraph
 src/data/CCHashSet
 src/data/CCBitField
 src/data/CCHashTrie
-src/data/CCBloom
 src/data/CCWBTree
 src/data/CCRAL
-src/data/CCAllocCache
 src/data/CCImmutArray
 src/data/CCHet
-src/string/Containers_string
-src/string/CCKMP
-src/string/CCLevenshtein
-src/string/CCApp_parse
-src/string/CCParse
-src/bigarray/CCBigstring
-src/bigarray/CCArray1
+src/data/CCZipper
 src/threads/CCPool
 src/threads/CCLock
 src/threads/CCSemaphore
 src/threads/CCThread
 src/threads/CCBlockingQueue
 src/threads/CCTimer
-src/advanced/Containers_advanced
-src/advanced/CCLinq
-src/advanced/CCBatch
-src/advanced/CCCat
-src/advanced/CCMonadIO
-src/io/Containers_io_is_deprecated
 src/unix/CCUnix
 src/sexp/CCSexp
-src/sexp/CCSexpM
+src/sexp/CCSexp_lex
 # OASIS_STOP

@@ -42,11 +42,8 @@ let compare f g (x1,y1) (x2,y2) =
   let c = f x1 x2 in
   if c <> 0 then c else g y1 y2
 
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
 
-let pp pp_x pp_y buf (x,y) =
-  Printf.bprintf buf "(%a, %a)" pp_x x pp_y y
+type 'a printer = Format.formatter -> 'a -> unit
 
-let print pa pb fmt (x,y) =
-  Format.fprintf fmt "(%a, %a)" pa x pb y
+let pp ?(sep=", ") pa pb out (x,y) =
+  Format.fprintf out "%a%s@,%a" pa x sep pb y

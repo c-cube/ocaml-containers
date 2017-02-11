@@ -3,7 +3,7 @@
 
 (** {1 Helpers for Format}
 
-@since 0.8 *)
+    @since 0.8 *)
 
 type 'a sequence = ('a -> unit) -> unit
 
@@ -15,6 +15,8 @@ type 'a printer = t -> 'a -> unit
 val silent : 'a printer (** Prints nothing *)
 
 val unit : unit printer
+(** Prints "()" *)
+
 val int : int printer
 val string : string printer
 val bool : bool printer
@@ -30,11 +32,10 @@ val string_quoted : string printer
 (** Similar to {!CCString.print}.
     @since 0.14 *)
 
-val list : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a list printer
-val array : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a array printer
-val arrayi : ?start:string -> ?stop:string -> ?sep:string ->
-            (int * 'a) printer -> 'a array printer
-val seq : ?start:string -> ?stop:string -> ?sep:string -> 'a printer -> 'a sequence printer
+val list : ?sep:unit printer -> 'a printer -> 'a list printer
+val array : ?sep:unit printer -> 'a printer -> 'a array printer
+val arrayi : ?sep:unit printer -> (int * 'a) printer -> 'a array printer
+val seq : ?sep:unit printer -> 'a printer -> 'a sequence printer
 
 val opt : 'a printer -> 'a option printer
 (** [opt pp] prints options as follows:
@@ -44,10 +45,10 @@ val opt : 'a printer -> 'a option printer
 (** In the tuple printers, the [sep] argument is only available
     @since 0.17 *)
 
-val pair : ?sep:string -> 'a printer -> 'b printer -> ('a * 'b) printer
-val triple : ?sep:string -> 'a printer -> 'b printer -> 'c printer -> ('a * 'b * 'c) printer
-val quad : ?sep:string -> 'a printer -> 'b printer ->
-            'c printer -> 'd printer -> ('a * 'b * 'c * 'd) printer
+val pair : ?sep:unit printer -> 'a printer -> 'b printer -> ('a * 'b) printer
+val triple : ?sep:unit printer -> 'a printer -> 'b printer -> 'c printer -> ('a * 'b * 'c) printer
+val quad : ?sep:unit printer -> 'a printer -> 'b printer ->
+  'c printer -> 'd printer -> ('a * 'b * 'c * 'd) printer
 
 val within : string -> string -> 'a printer -> 'a printer
 (** [within a b p] wraps [p] inside the strings [a] and [b]. Convenient,
@@ -75,15 +76,42 @@ val hbox : 'a printer -> 'a printer
 (** Wrap the printer in an horizontal box
     @since 0.16 *)
 
+val return : ('a, _, _, 'a) format4 -> unit printer
+(** [return "some_format_string"] takes a argument-less format string
+    and returns a printer actionable by [()].
+    Examples:
+    - [return ",@ "]
+    - [return "@{<Red>and then@}@,"]
+    - [return "@[<v>a@ b@]"]
+
+    @since 1.0
+*)
+
+val of_to_string : ('a -> string) -> 'a printer
+(** [of_to_string f] converts its input to a string using [f],
+    then prints the string
+    @since 1.0 *)
+
+val const : 'a printer -> 'a -> unit printer
+(** [const pp x] is a unit printer that uses [pp] on [x]
+    @since 1.0 *)
+
+val some : 'a printer -> 'a option printer
+(** [some pp] will print options as follows:
+    - [Some x] is printed using [pp] on [x]
+    - [None] is not printed at all
+    @since 1.0
+*)
+
 (** {2 ANSI codes}
 
-  Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
-  to put some colors on the terminal.
+    Use ANSI escape codes https://en.wikipedia.org/wiki/ANSI_escape_code
+    to put some colors on the terminal.
 
-  This uses {b tags} in format strings to specify the style. Current styles
-  are the following:
+    This uses {b tags} in format strings to specify the style. Current styles
+    are the following:
 
-  {ul
+    {ul
     {- "reset" resets style}
     {- "black" }
     {- "red" }
@@ -102,19 +130,19 @@ val hbox : 'a printer -> 'a printer
     {- "Magenta" bold magenta }
     {- "Cyan" bold cyan }
     {- "White" bold white }
-  }
+    }
 
-  Example:
+    Example:
 
-  {[
-    set_color_default true;;
+    {[
+      set_color_default true;;
 
-    Format.printf
-      "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@.";;
-   ]}
+      Format.printf
+        "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@.";;
+    ]}
 
-  {b status: experimental}
-  @since 0.15 *)
+    {b status: experimental}
+    @since 0.15 *)
 
 val set_color_tag_handling : t -> unit
 (** adds functions to support color tags to the given formatter.
@@ -154,6 +182,10 @@ val to_string : 'a printer -> 'a -> string
 
 val stdout : t
 val stderr : t
+
+val tee : t -> t -> t
+(** [tee a b] makes a new formatter that writes in both [a] and [b].
+    @since 1.0 *)
 
 val sprintf : ('a, t, unit, string) format4 -> 'a
 (** Print into a string any format string that would usually be compatible
@@ -235,4 +267,8 @@ module Dump : sig
   val quad :
     'a t -> 'b t -> 'c t -> 'd t ->
     ('a * 'b * 'c * 'd) t
+  val result : 'a t -> ('a, string) Result.result t
+  val result' : 'a t -> 'e t -> ('a, 'e) Result.result t
+  val to_string : 'a t -> 'a -> string
+  (** Alias to {!to_string} *)
 end

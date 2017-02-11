@@ -20,14 +20,14 @@ let pow a b =
   let rec aux acc = function
     | 1 -> acc
     | n ->
-       if n mod 2 = 0
-       then aux (acc*acc) (n/2)
-       else acc * (aux (acc*acc) (n/2))
+      if n mod 2 = 0
+      then aux (acc*acc) (n/2)
+      else acc * (aux (acc*acc) (n/2))
   in
   match b with
-  | 0 -> if a = 0 then raise (Invalid_argument "pow: undefined value 0^0") else 1
-  | b when b < 0 -> raise (Invalid_argument "pow: can't raise int to negative power")
-  | b -> aux a b
+    | 0 -> if a = 0 then raise (Invalid_argument "pow: undefined value 0^0") else 1
+    | b when b < 0 -> raise (Invalid_argument "pow: can't raise int to negative power")
+    | b -> aux a b
 
 (*$T
   pow 2 10 = 1024
@@ -37,16 +37,14 @@ let pow a b =
   pow 0 1 = 0
 *)
 
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 let random n st = Random.State.int st n
 let random_small = random 100
 let random_range i j st = i + random (j-i) st
 
-let pp buf = Printf.bprintf buf "%d"
-let print fmt = Format.pp_print_int fmt
+let pp fmt = Format.pp_print_int fmt
 
 let most_significant_bit =
   (-1) lxor ((-1) lsr 1)
@@ -79,7 +77,7 @@ let to_binary_gen (out:output) n =
   in
   loop false most_significant_bit n
 
-let print_binary out n =
+let pp_binary out n =
   to_binary_gen (Format.pp_print_char out) n
 
 let to_string_binary n =

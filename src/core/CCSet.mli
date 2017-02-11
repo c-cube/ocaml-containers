@@ -6,8 +6,7 @@
     @since 0.9 *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   include Set.S
@@ -20,6 +19,8 @@ module type S = sig
   val to_seq : t -> elt sequence
 
   val of_list : elt list -> t
+  (** Build a set from the given list of elements,
+      added in order using {!add}. *)
 
   val add_list : t -> elt list -> t
   (** @since 0.14 *)
@@ -29,10 +30,6 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
-
-  val print :
-    ?start:string -> ?stop:string -> ?sep:string ->
-    elt formatter -> t formatter
 end
 
 module Make(O : Set.OrderedType) : S

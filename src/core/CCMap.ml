@@ -4,8 +4,7 @@
 (** {1 Extensions of Standard Map} *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   include Map.S
@@ -13,9 +12,9 @@ module type S = sig
   val get : key -> 'a t -> 'a option
   (** Safe version of {!find} *)
 
-  val get_or : key -> 'a t -> or_:'a -> 'a
-  (** [get_or k m ~or_] returns the value associated to [k] if present,
-      and returns [or_] otherwise (if [k] doesn't belong in [m])
+  val get_or : key -> 'a t -> default:'a -> 'a
+  (** [get_or k m ~default] returns the value associated to [k] if present,
+      and returns [default] otherwise (if [k] doesn't belong in [m])
       @since 0.16 *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
@@ -55,10 +54,6 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
     key printer -> 'a printer -> 'a t printer
-
-  val print :
-    ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
-    key formatter -> 'a formatter -> 'a t formatter
 end
 
 module Make(O : Map.OrderedType) = struct
@@ -68,9 +63,9 @@ module Make(O : Map.OrderedType) = struct
     try Some (find k m)
     with Not_found -> None
 
-  let get_or k m ~or_ =
+  let get_or k m ~default =
     try find k m
-    with Not_found -> or_
+    with Not_found -> default
 
   let update k f m =
     let x =
@@ -78,8 +73,8 @@ module Make(O : Map.OrderedType) = struct
       with Not_found -> f None
     in
     match x with
-    | None -> remove k m
-    | Some v' -> add k v' m
+      | None -> remove k m
+      | Some v' -> add k v' m
 
   let merge_safe ~f a b =
     merge
@@ -113,19 +108,7 @@ module Make(O : Map.OrderedType) = struct
   let to_list m =
     fold (fun k v acc -> (k,v)::acc) m []
 
-  let pp ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v buf m =
-    let first = ref true in
-    Buffer.add_string buf start;
-    iter
-      (fun k v ->
-         if !first then first := false else Buffer.add_string buf sep;
-         pp_k buf k;
-         Buffer.add_string buf arrow;
-         pp_v buf v)
-      m;
-    Buffer.add_string buf stop
-
-  let print ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
+  let pp ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
     Format.pp_print_string fmt start;
     let first = ref true in
     iter

@@ -46,9 +46,9 @@ let foldi f acc a =
   let n = ref 0 in
   Array.fold_left
     (fun acc x ->
-      let acc = f acc !n x in
-      incr n;
-      acc)
+       let acc = f acc !n x in
+       incr n;
+       acc)
     acc a
 
 exception ExitNow

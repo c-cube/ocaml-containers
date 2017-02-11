@@ -183,20 +183,20 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     | N (r, _, _, _) -> r
 
   (* Make a balanced node labelled with [x], and subtrees [a] and [b].
-    We ensure that the right child's rank is ≤ to the rank of the
-    left child (leftist property). The rank of the resulting node
-    is the length of the rightmost path. *)
+     We ensure that the right child's rank is ≤ to the rank of the
+     left child (leftist property). The rank of the resulting node
+     is the length of the rightmost path. *)
   let _make_node x a b =
     if _rank a >= _rank b
-      then N (_rank b + 1, x, a, b)
-      else N (_rank a + 1, x, b, a)
+    then N (_rank b + 1, x, a, b)
+    else N (_rank a + 1, x, b, a)
 
   let rec merge t1 t2 =
     match t1, t2 with
-    | t, E -> t
-    | E, t -> t
-    | N (_, x, a1, b1), N (_, y, a2, b2) ->
-      if E.leq x y
+      | t, E -> t
+      | E, t -> t
+      | N (_, x, a1, b1), N (_, y, a2, b2) ->
+        if E.leq x y
         then _make_node x a1 (merge b1 t2)
         else _make_node y a2 (merge t1 b2)
 
@@ -209,7 +209,7 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     | E -> E
     | N(_, x, l, r) when p x -> _make_node x (filter p l) (filter p r)
     | N(_, _, l, r) ->
-        merge (filter p l) (filter p r)
+      merge (filter p l) (filter p r)
 
   let find_min_exn = function
     | E -> raise Empty
@@ -234,9 +234,9 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let rec fold f acc h = match h with
     | E -> acc
     | N (_, x, a, b) ->
-        let acc = f acc x in
-        let acc = fold f acc a in
-        fold f acc b
+      let acc = f acc x in
+      let acc = fold f acc a in
+      fold f acc b
 
   let rec size = function
     | E -> 0
@@ -248,7 +248,7 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     let rec aux acc h = match h with
       | E -> acc
       | N(_,x,l,r) ->
-          x::aux (aux acc l) r
+        x::aux (aux acc l) r
     in aux [] h
 
   let add_list h l = List.fold_left add h l
@@ -267,8 +267,8 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let rec add_klist h l = match l() with
     | `Nil -> h
     | `Cons (x, l') ->
-        let h' = add h x in
-        add_klist h' l'
+      let h' = add h x in
+      add_klist h' l'
 
   let of_klist l = add_klist empty l
 
@@ -277,14 +277,14 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
       | [] -> `Nil
       | E :: stack' -> next stack' ()
       | N (_, x, a, b) :: stack' ->
-          `Cons (x, next (a :: b :: stack'))
+        `Cons (x, next (a :: b :: stack'))
     in
     next [h]
 
   let rec add_gen h g = match g () with
     | None -> h
     | Some x ->
-        add_gen (add h x) g
+      add_gen (add h x) g
 
   let of_gen g = add_gen empty g
 
@@ -297,9 +297,9 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
       else match Stack.pop stack with
         | E -> next()
         | N (_, x, a, b) ->
-            Stack.push a stack;
-            Stack.push b stack;
-            Some x
+          Stack.push a stack;
+          Stack.push b stack;
+          Some x
     in next
 
   (*$Q
@@ -320,7 +320,7 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     let first=ref true in
     iter
       (fun x ->
-        if !first then first := false else Format.fprintf out "%s@," sep;
-        pp_elt out x)
+         if !first then first := false else Format.fprintf out "%s@," sep;
+         pp_elt out x)
       h
 end

@@ -3,7 +3,10 @@
 
 (** {1 IO Utils} *)
 
+type 'a or_error = ('a, string) Result.result
 type 'a gen = unit -> 'a option
+
+let gen_empty () = None
 
 let gen_singleton x =
   let done_ = ref false in
@@ -13,11 +16,11 @@ let gen_filter_map f gen =
   (* tailrec *)
   let rec next () =
     match gen() with
-    | None -> None
-    | Some x ->
+      | None -> None
+      | Some x ->
         match f x with
-        | None -> next()
-        | (Some _) as res -> res
+          | None -> next()
+          | (Some _) as res -> res
   in next
 
 let gen_of_array arr =
@@ -34,18 +37,18 @@ let gen_flat_map f next_elem =
   let state = ref `Init in
   let rec next() =
     match !state with
-    | `Init -> get_next_gen()
-    | `Run gen ->
-      begin match gen () with
-      | None -> get_next_gen ()
-      | (Some _) as x -> x
-      end
-    | `Stop -> None
+      | `Init -> get_next_gen()
+      | `Run gen ->
+        begin match gen () with
+          | None -> get_next_gen ()
+          | (Some _) as x -> x
+        end
+      | `Stop -> None
   and get_next_gen() = match next_elem() with
     | None -> state:=`Stop; None
     | Some x ->
-        try state := `Run (f x); next()
-        with e -> state := `Stop; raise e
+      try state := `Run (f x); next()
+      with e -> state := `Stop; raise e
   in
   next
 
@@ -84,7 +87,7 @@ let read_lines ic =
   fun () ->
     if !stop then None
     else try Some (input_line ic)
-    with End_of_file -> (stop:=true; None)
+      with End_of_file -> (stop:=true; None)
 
 let read_lines_l ic =
   let l = ref [] in
@@ -102,26 +105,26 @@ type _ ret_type =
   | Ret_bytes : Bytes.t ret_type
 
 let read_all_
-: type a. op:a ret_type -> size:int -> in_channel -> a
-= fun ~op ~size ic ->
-  let buf = ref (Bytes.create size) in
-  let len = ref 0 in
-  try
-    while true do
-      (* resize *)
-      if !len = Bytes.length !buf then (
-        buf := Bytes.extend !buf 0 !len;
-      );
-      assert (Bytes.length !buf > !len);
-      let n = input ic !buf !len (Bytes.length !buf - !len) in
-      len := !len + n;
-      if n = 0 then raise Exit;  (* exhausted *)
-    done;
-    assert false (* never reached*)
-  with Exit ->
+  : type a. op:a ret_type -> size:int -> in_channel -> a
+  = fun ~op ~size ic ->
+    let buf = ref (Bytes.create size) in
+    let len = ref 0 in
+    try
+      while true do
+        (* resize *)
+        if !len = Bytes.length !buf then (
+          buf := Bytes.extend !buf 0 !len;
+        );
+        assert (Bytes.length !buf > !len);
+        let n = input ic !buf !len (Bytes.length !buf - !len) in
+        len := !len + n;
+        if n = 0 then raise Exit;  (* exhausted *)
+      done;
+      assert false (* never reached*)
+    with Exit ->
     match op with
-    | Ret_string -> Bytes.sub_string !buf 0 !len
-    | Ret_bytes -> Bytes.sub !buf 0 !len
+      | Ret_string -> Bytes.sub_string !buf 0 !len
+      | Ret_bytes -> Bytes.sub !buf 0 !len
 
 let read_all_bytes ?(size=1024) ic = read_all_ ~op:Ret_bytes ~size ic
 
@@ -155,20 +158,20 @@ let write_gen ?(sep="") oc g =
   let rec recurse () = match g() with
     | None -> ()
     | Some s ->
-        output_string oc sep;
-        output_string oc s;
-        recurse ()
+      output_string oc sep;
+      output_string oc s;
+      recurse ()
   in match g() with
     | None -> ()
     | Some s ->
-        output_string oc s;
-        recurse ()
+      output_string oc s;
+      recurse ()
 
 let rec write_lines oc g = match g () with
   | None -> ()
   | Some l ->
-      write_line oc l;
-      write_lines oc g
+    write_line oc l;
+    write_lines oc g
 
 let write_lines_l oc l =
   List.iter (write_line oc) l
@@ -218,33 +221,32 @@ let with_in_out ?(mode=0o644) ?(flags=[Open_creat]) filename f =
 let tee funs g () = match g() with
   | None -> None
   | Some x as res ->
-      List.iter
-        (fun f ->
-          try f x
-          with _ -> ()
-        ) funs;
-      res
+    List.iter
+      (fun f ->
+         try f x
+         with _ -> ()
+      ) funs;
+    res
 
 (* TODO: lines/unlines:  string gen -> string gen *)
 
 (* TODO:  words: string gen -> string gen,
-  with a state machine that goes:
-  - 0: read input chunk
-  - switch to "search for ' '", and yield word
-  - goto 0 if no ' ' found
-  - yield leftover when g returns Stop
+   with a state machine that goes:
+   - 0: read input chunk
+   - switch to "search for ' '", and yield word
+   - goto 0 if no ' ' found
+   - yield leftover when g returns Stop
 *)
 
 module File = struct
-  type 'a or_error = [`Ok of 'a | `Error of string]
   type t = string
 
   let to_string f = f
 
   let make f =
     if Filename.is_relative f
-      then Filename.concat (Sys.getcwd()) f
-      else f
+    then Filename.concat (Sys.getcwd()) f
+    else f
 
   let exists f = Sys.file_exists f
 
@@ -253,25 +255,28 @@ module File = struct
   let remove_exn f = Sys.remove f
 
   let remove f =
-    try `Ok (Sys.remove f)
+    try Result.Ok (Sys.remove f)
     with exn ->
-      `Error (Printexc.to_string exn)
+      Result.Error (Printexc.to_string exn)
 
   let read_exn f = with_in f (read_all_ ~op:Ret_string ~size:4096)
 
-  let read f = try `Ok (read_exn f) with e -> `Error (Printexc.to_string e)
+  let read f =
+    try Result.Ok (read_exn f) with e -> Result.Error (Printexc.to_string e)
 
   let append_exn f x =
     with_out ~flags:[Open_append; Open_creat; Open_text] f
       (fun oc -> output_string oc x; flush oc)
 
-  let append f x = try `Ok (append_exn f x) with e -> `Error (Printexc.to_string e)
+  let append f x =
+    try Result.Ok (append_exn f x) with e -> Result.Error (Printexc.to_string e)
 
   let write_exn f x =
     with_out f
       (fun oc -> output_string oc x; flush oc)
 
-  let write f x = try `Ok (write_exn f x) with e -> `Error (Printexc.to_string e)
+  let write f x =
+    try Result.Ok (write_exn f x) with e -> Result.Error (Printexc.to_string e)
 
   let remove_noerr f = try Sys.remove f with _ -> ()
 
@@ -291,14 +296,17 @@ module File = struct
       ) else tl ()
 
   let rec walk d =
-    if Sys.is_directory d
-    then
-      let arr = Sys.readdir d in
+    if not (Sys.file_exists d) then gen_empty
+    else if Sys.is_directory d
+    then (
+      (* try to list the directory *)
+      let arr = try Sys.readdir d with Sys_error _ -> [||] in
       let tail = gen_of_array arr in
       let tail = gen_flat_map
-        (fun s -> walk (Filename.concat d s))
-        tail
+          (fun s -> walk (Filename.concat d s))
+          tail
       in cons_ (`Dir,d) tail
+    )
     else gen_singleton (`File, d)
 
   (*$R
@@ -310,7 +318,7 @@ module File = struct
             | `Dir, f -> Sys.is_directory f
           )
       )
-   *)
+  *)
 
   type walk_item = [`File | `Dir] * t
 
@@ -324,7 +332,7 @@ module File = struct
         (walk d)
     else read_dir_base d
 
-  let show_walk_item (i,f) =
+  let show_walk_item ((i,f):walk_item) =
     (match i with
       | `File -> "file:"
       | `Dir -> "dir:"

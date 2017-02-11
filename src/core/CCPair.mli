@@ -63,9 +63,6 @@ val equal : ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> ('a * 'b) -> ('a * 'b) -
 
 val compare : ('a -> 'a -> int) -> ('b -> 'b -> int) -> ('a * 'b) -> ('a * 'b) -> int
 
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
-val pp : 'a printer -> 'b printer -> ('a*'b) printer
-
-val print : 'a formatter -> 'b formatter -> ('a*'b) formatter
+val pp : ?sep:string -> 'a printer -> 'b printer -> ('a*'b) printer

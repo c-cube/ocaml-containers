@@ -1,8 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: bf6db1e8114e0b3136182bb22642e863)
+# DO NOT EDIT (digest: dbfe65c79fab2a752c0ce01bf92e9b0d)
 CCVector
-CCPrint
-CCError
 CCHeap
 CCList
 CCOpt
@@ -25,5 +23,9 @@ CCIO
 CCInt64
 CCChar
 CCResult
+CCParse
+CCArray_slice
+CCListLabels
+CCArrayLabels
 Containers
 # OASIS_STOP

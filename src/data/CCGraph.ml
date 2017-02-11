@@ -1,27 +1,9 @@
-(*
-copyright (c) 2013-2015, simon cruanes
-all rights reserved.
 
-redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+(* This file is free software, part of containers. See file "license" for more details. *)
 
-redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
+(** {1 Simple Graph Interface} *)
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(** {2 Sequence Helpers} *)
 
 type 'a sequence = ('a -> unit) -> unit
 
@@ -51,24 +33,12 @@ end
 
 (** {2 Interfaces for graphs} *)
 
-(** Directed graph with vertices of type ['v] and edges of type [e'] *)
-type ('v, 'e) t = {
-  children: 'v -> 'e sequence;
-  origin: 'e -> 'v;
-  dest: 'e -> 'v;
-}
+(** Directed graph with vertices of type ['v] and edges labeled with [e'] *)
+type ('v, 'e) t = ('v -> ('e * 'v) sequence)
 
 type ('v, 'e) graph = ('v, 'e) t
 
-let make ~origin ~dest f = {origin; dest; children=f; }
-
-let make_labelled_tuple f =
-  make ~origin:(fun (x,_,_) -> x) ~dest:(fun (_,_,x) -> x)
-    (fun v yield -> f v (fun (l,v') -> yield (v,l,v')))
-
-let make_tuple f =
-  make ~origin:fst ~dest:snd
-    (fun v yield -> f v (fun v' -> yield (v,v')))
+let make (f:'v->('e*'v) sequence): ('v, 'e) t = f
 
 (** Mutable bitset for values of type ['v] *)
 type 'v tag_set = {
@@ -88,10 +58,10 @@ type 'a set = ('a, unit) table
 
 let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
   let module H = Hashtbl.Make(struct
-    type t = k
-    let equal = eq
-    let hash = hash
-  end) in
+      type t = k
+      let equal = eq
+      let hash = hash
+    end) in
   let tbl = H.create size in
   { mem=(fun k -> H.mem tbl k)
   ; find=(fun k -> H.find tbl k)
@@ -100,9 +70,9 @@ let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
 
 let mk_map (type k) ?(cmp=Pervasives.compare) () =
   let module M = Map.Make(struct
-    type t = k
-    let compare = cmp
-  end) in
+      type t = k
+      let compare = cmp
+    end) in
   let tbl = ref M.empty in
   { mem=(fun k -> M.mem k !tbl)
   ; find=(fun k -> M.find k !tbl)
@@ -142,10 +112,10 @@ module Heap = struct
     | N _ -> false
 
   let rec union ~leq t1 t2 = match t1, t2 with
-  | E, _ -> t2
-  | _, E -> t1
-  | N (x1, l1, r1), N (x2, l2, r2) ->
-    if leq x1 x2
+    | E, _ -> t2
+    | _, E -> t1
+    | N (x1, l1, r1), N (x2, l2, r2) ->
+      if leq x1 x2
       then N (x1, union ~leq t2 r1, l1)
       else N (x2, union ~leq t1 r2, l2)
 
@@ -162,16 +132,16 @@ let mk_heap ~leq =
   { push=(fun x -> t := Heap.insert ~leq !t x)
   ; is_empty=(fun () -> Heap.is_empty !t)
   ; pop=(fun () ->
-        let x, h = Heap.pop ~leq !t in
-        t := h;
-        x
+      let x, h = Heap.pop ~leq !t in
+      t := h;
+      x
     )
   }
 
 (** {2 Traversals} *)
 
 module Traverse = struct
-  type 'e path = 'e list
+  type ('v, 'e) path = ('v * 'e * 'v) list
 
   let generic_tag ~tags ~bag ~graph seq =
     let first = ref true in
@@ -185,8 +155,8 @@ module Traverse = struct
           k x;
           tags.set_tag x;
           Seq.iter
-            (fun e -> bag.push (graph.dest e))
-            (graph.children x)
+            (fun (_,dest) -> bag.push dest)
+            (graph x)
         )
       done
 
@@ -209,11 +179,10 @@ module Traverse = struct
       set_tag=(fun (v,_,_) -> tags.set_tag v);
     }
     and seq' = Seq.map (fun v -> v, 0, []) seq
-    and graph' = {
-      children=(fun (v,d,p) -> Seq.map (fun e -> e, d, p) (graph.children v));
-      origin=(fun (e, d, p) -> graph.origin e, d, p);
-      dest=(fun (e, d, p) -> graph.dest e, d + dist e, e :: p);
-    } in
+    and graph' (v,d,p) =
+      graph v
+      |> Seq.map (fun (e,v') -> e, (v',d+dist e, (v,e,v')::p))
+    in
     let bag = mk_heap ~leq:(fun (_,d1,_) (_,d2,_) -> d1 <= d2) in
     generic_tag ~tags:tags' ~bag ~graph:graph' seq'
 
@@ -235,9 +204,9 @@ module Traverse = struct
 
     (** A traversal is a sequence of such events *)
     type ('v,'e) t =
-      [ `Enter of 'v * int * 'e path  (* unique index in traversal, path from start *)
+      [ `Enter of 'v * int * ('v,'e) path  (* unique index in traversal, path from start *)
       | `Exit of 'v
-      | `Edge of 'e * edge_kind
+      | `Edge of 'v * 'e * 'v * edge_kind
       ]
 
     let get_vertex = function
@@ -256,20 +225,20 @@ module Traverse = struct
       | `Edge _ -> None
 
     let get_edge = function
-      | `Edge (e, _) -> Some e
+      | `Edge (v1,e,v2,_) -> Some (v1,e,v2)
       | `Enter _
       | `Exit _ -> None
 
     let get_edge_kind = function
-      | `Edge (e, k) -> Some (e, k)
+      | `Edge (v,e,v',k) -> Some (v,e,v',k)
       | `Enter _
       | `Exit _ -> None
 
     (* is [v] the origin of some edge in [path]? *)
     let rec list_mem_ ~eq ~graph v path = match path with
       | [] -> false
-      | e :: path' ->
-        eq v (graph.origin e) || list_mem_ ~eq ~graph v path'
+      | (v1,_,_) :: path' ->
+        eq v v1 || list_mem_ ~eq ~graph v path'
 
     let dfs_tag ?(eq=(=)) ~tags ~graph seq =
       let first = ref true in
@@ -283,30 +252,30 @@ module Traverse = struct
              bag.push (`Enter (v, []));
              while not (bag.is_empty ()) do
                match bag.pop () with
-               | `Enter (x, path) ->
-                 if not (tags.get_tag x) then (
-                   let num = !n in
-                   incr n;
-                   tags.set_tag x;
-                   k (`Enter (x, num, path));
-                   bag.push (`Exit x);
-                   Seq.iter
-                     (fun e -> bag.push (`Edge (e, e :: path)))
-                     (graph.children x);
-                 )
-               | `Exit x -> k (`Exit x)
-               | `Edge (e, path) ->
-                 let v = graph.dest e in
-                 let edge_kind =
-                   if tags.get_tag v
-                   then if list_mem_ ~eq ~graph v path
-                     then `Back
-                     else `Cross
-                   else (
-                     bag.push (`Enter (v, path));
-                     `Forward
-                   ) in
-                 k (`Edge (e, edge_kind))
+                 | `Enter (x, path) ->
+                   if not (tags.get_tag x) then (
+                     let num = !n in
+                     incr n;
+                     tags.set_tag x;
+                     k (`Enter (x, num, path));
+                     bag.push (`Exit x);
+                     Seq.iter
+                       (fun (e,v') -> bag.push (`Edge (v,e,v',(v,e,v') :: path)))
+                       (graph x);
+                   )
+                 | `Exit x -> k (`Exit x)
+                 | `Edge (v,e,v', path) ->
+                   let edge_kind =
+                     if tags.get_tag v'
+                     then if list_mem_ ~eq ~graph v' path
+                       then `Back
+                       else `Cross
+                     else (
+                       bag.push (`Enter (v', path));
+                       `Forward
+                     )
+                   in
+                   k (`Edge (v,e,v', edge_kind))
              done
           ) seq
 
@@ -325,7 +294,7 @@ let is_dag ?(tbl=mk_table 128) ~graph vs =
   Traverse.Event.dfs ~tbl ~graph vs
   |> Seq.exists_
     (function
-      | `Edge (_, `Back) -> true
+      | `Edge (_, _, _, `Back) -> true
       | _ -> false)
 
 (** {2 Topological Sort} *)
@@ -337,12 +306,12 @@ let topo_sort_tag ?(eq=(=)) ?(rev=false) ~tags ~graph seq =
   let l =
     Traverse.Event.dfs_tag ~eq ~tags ~graph seq
     |> Seq.filter_map
-        (function
-          | `Exit v -> Some v
-          | `Edge (_, `Back) -> raise Has_cycle
-          | `Enter _
-          | `Edge _ -> None
-        )
+      (function
+        | `Exit v -> Some v
+        | `Edge (_, _, _, `Back) -> raise Has_cycle
+        | `Enter _
+        | `Edge _ -> None
+      )
     |> Seq.fold (fun acc x -> x::acc) []
   in
   if rev then List.rev l else l
@@ -371,39 +340,41 @@ let topo_sort ?eq ?rev ?(tbl=mk_table 128) ~graph seq =
 
 (** {2 Lazy Spanning Tree} *)
 
-module LazyTree = struct
-  type ('v, 'e) t =
-    | Vertex of 'v * ('e * ('v, 'e) t) list Lazy.t
+module Lazy_tree = struct
+  type ('v, 'e) t = {
+    vertex: 'v;
+    children: ('e * ('v, 'e) t) list Lazy.t;
+  }
 
-  let rec map_v f (Vertex (v, l)) =
+  let make_ vertex children = {vertex; children}
+
+  let rec map_v f {vertex=v; children=l} =
     let l' = lazy (List.map (fun (e, child) -> e, map_v f child) (Lazy.force l)) in
-    Vertex (f v, l')
+    make_ (f v) l'
 
-  let rec fold_v f acc t = match t with
-    | Vertex (v, l) ->
-      let acc = f acc v in
-      List.fold_left
-        (fun acc (_, t') -> fold_v f acc t')
-        acc
-        (Lazy.force l)
+  let rec fold_v f acc {vertex=v; children=l} =
+    let acc = f acc v in
+    List.fold_left
+      (fun acc (_, t') -> fold_v f acc t')
+      acc
+      (Lazy.force l)
 end
 
 let spanning_tree_tag ~tags ~graph v =
   let rec mk_node v =
     let children = lazy (
       Seq.fold
-        (fun acc e ->
-           let v' = graph.dest e in
+        (fun acc (e,v') ->
            if tags.get_tag v'
            then acc
            else (
              tags.set_tag v';
              (e, mk_node v') :: acc
            )
-        ) [] (graph.children v)
-      )
+        ) [] (graph v)
+    )
     in
-    LazyTree.Vertex (v, children)
+    Lazy_tree.make_ v children
   in
   mk_node v
 
@@ -457,38 +428,37 @@ module SCC = struct
            Stack.push (`Enter v) to_explore;
            while not (Stack.is_empty to_explore) do
              match Stack.pop to_explore with
-             | `Enter v ->
-               if not (tbl.mem v) then (
-                 (* remember unique ID for [v] *)
-                 let id = !n in
-                 incr n;
-                 let cell = mk_cell v id in
-                 cell.on_stack <- true;
-                 tbl.add v cell;
-                 Stack.push cell stack;
-                 Stack.push (`Exit (v, cell)) to_explore;
-                 (* explore children *)
+               | `Enter v ->
+                 if not (tbl.mem v) then (
+                   (* remember unique ID for [v] *)
+                   let id = !n in
+                   incr n;
+                   let cell = mk_cell v id in
+                   cell.on_stack <- true;
+                   tbl.add v cell;
+                   Stack.push cell stack;
+                   Stack.push (`Exit (v, cell)) to_explore;
+                   (* explore children *)
+                   Seq.iter
+                     (fun (_,v') -> Stack.push (`Enter v') to_explore)
+                     (graph v)
+                 )
+               | `Exit (v, cell) ->
+                 (* update [min_id] *)
+                 assert cell.on_stack;
                  Seq.iter
-                   (fun e -> Stack.push (`Enter (graph.dest e)) to_explore)
-                   (graph.children v)
-               )
-             | `Exit (v, cell) ->
-               (* update [min_id] *)
-               assert cell.on_stack;
-               Seq.iter
-                 (fun e ->
-                    let dest = graph.dest e in
-                    (* must not fail, [dest] already explored *)
-                    let dest_cell = tbl.find dest in
-                    (* same SCC? yes if [dest] points to [cell.v] *)
-                    if dest_cell.on_stack
+                   (fun (_,dest) ->
+                      (* must not fail, [dest] already explored *)
+                      let dest_cell = tbl.find dest in
+                      (* same SCC? yes if [dest] points to [cell.v] *)
+                      if dest_cell.on_stack
                       then cell.min_id <- min cell.min_id dest_cell.min_id
-                 ) (graph.children v);
-               (* pop from stack if SCC found *)
-               if cell.id = cell.min_id then (
-                 let scc = pop_down_to ~id:cell.id [] stack in
-                 k scc
-               )
+                   ) (graph v);
+                 (* pop from stack if SCC found *)
+                 if cell.id = cell.min_id then (
+                   let scc = pop_down_to ~id:cell.id [] stack in
+                   k scc
+                 )
            done
         ) seq;
       assert (Stack.is_empty stack);
@@ -501,7 +471,7 @@ let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
 
 (* example from https://en.wikipedia.org/wiki/Strongly_connected_component *)
 (*$R
-  let set_eq ?(eq=(=)) l1 l2 = CCList.Set.subset ~eq l1 l2 && CCList.Set.subset ~eq l2 l1 in
+  let set_eq ?(eq=(=)) l1 l2 = CCList.subset ~eq l1 l2 && CCList.subset ~eq l2 l1 in
   let graph = of_list
     [ "a", "b"
     ; "b", "e"
@@ -532,20 +502,20 @@ let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
 
 module Dot = struct
   type attribute = [
-  | `Color of string
-  | `Shape of string
-  | `Weight of int
-  | `Style of string
-  | `Label of string
-  | `Other of string * string
+    | `Color of string
+    | `Shape of string
+    | `Weight of int
+    | `Style of string
+    | `Label of string
+    | `Other of string * string
   ] (** Dot attribute *)
 
   let pp_list pp_x out l =
     Format.pp_print_string out "[";
     List.iteri
       (fun i x ->
-        if i > 0 then Format.fprintf out ",@;";
-        pp_x out x)
+         if i > 0 then Format.fprintf out ",@;";
+         pp_x out x)
       l;
     Format.pp_print_string out "]"
 
@@ -602,9 +572,7 @@ module Dot = struct
           let attrs = attrs_v v in
           Format.fprintf out "@[<h>%a %a;@]@," pp_vertex v (pp_list pp_attr) attrs
         | `Exit _ -> ()
-        | `Edge (e, _) ->
-          let v1 = graph.origin e in
-          let v2 = graph.dest e in
+        | `Edge (v1,e,v2,_) ->
           let attrs = attrs_e e in
           Format.fprintf out "@[<h>%a -> %a %a;@]@,"
             pp_vertex v1 pp_vertex v2
@@ -633,187 +601,171 @@ end
 
 (** {2 Mutable Graph} *)
 
-type ('v, 'e) mut_graph = <
+type ('v, 'e) mut_graph = {
   graph: ('v, 'e) t;
-  add_edge: 'e -> unit;
+  add_edge: 'v -> 'e -> 'v -> unit;
   remove : 'v -> unit;
->
+}
 
 let mk_mut_tbl (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
   let module Tbl = Hashtbl.Make(struct
-    type t = k
-    let hash = hash
-    let equal = eq
-  end) in
+      type t = k
+      let hash = hash
+      let equal = eq
+    end) in
   let tbl = Tbl.create size in
-  object
-    method graph = {
-      origin=(fun (x,_,_) -> x);
-      dest=(fun (_,_,x) -> x);
-      children=(fun v k ->
-          try List.iter k (Tbl.find tbl v)
-         with Not_found -> ()
-        );
-    }
-    method add_edge (v1,e,v2) =
+  {
+    graph=(fun v yield ->
+      try List.iter yield (Tbl.find tbl v)
+      with Not_found -> ()
+    );
+    add_edge=(fun v1 e v2 ->
       let l = try Tbl.find tbl v1 with Not_found -> [] in
-      Tbl.replace tbl v1 ((v1,e,v2)::l)
-    method remove v = Tbl.remove tbl v
-  end
+      Tbl.replace tbl v1 ((e,v2)::l)
+    );
+    remove = (fun v -> Tbl.remove tbl v);
+  }
 
 (** {2 Immutable Graph} *)
 
 module type MAP = sig
   type vertex
-  type t
+  type 'a t
 
-  val as_graph : t -> (vertex, (vertex * vertex)) graph
+  val as_graph : 'a t -> (vertex, 'a) graph
   (** Graph view of the map *)
 
-  val empty : t
+  val empty : 'a t
 
-  val add_edge : vertex -> vertex -> t -> t
+  val add_edge : vertex -> 'a -> vertex -> 'a t -> 'a t
 
-  val remove_edge : vertex -> vertex -> t -> t
+  val remove_edge : vertex -> vertex -> 'a t -> 'a t
 
-  val add : vertex -> t -> t
+  val add : vertex -> 'a t -> 'a t
   (** Add a vertex, possibly with no outgoing edge *)
 
-  val remove : vertex -> t -> t
+  val remove : vertex -> 'a t -> 'a t
   (** Remove the vertex and all its outgoing edges.
       Edges that point to the vertex are {b NOT} removed, they must be
       manually removed with {!remove_edge} *)
 
-  val union : t -> t -> t
+  val union : 'a t -> 'a t -> 'a t
 
-  val vertices : t -> vertex sequence
+  val vertices : _ t -> vertex sequence
 
-  val vertices_l : t -> vertex list
+  val vertices_l : _ t -> vertex list
 
-  val of_list : (vertex * vertex) list -> t
+  val of_list : (vertex * 'a * vertex) list -> 'a t
 
-  val add_list : (vertex * vertex) list -> t -> t
+  val add_list : (vertex * 'a * vertex) list -> 'a t -> 'a t
 
-  val to_list : t -> (vertex * vertex) list
+  val to_list : 'a t -> (vertex * 'a * vertex) list
 
-  val of_seq : (vertex * vertex) sequence -> t
+  val of_seq : (vertex * 'a * vertex) sequence -> 'a t
 
-  val add_seq : (vertex * vertex) sequence -> t -> t
+  val add_seq : (vertex * 'a * vertex) sequence -> 'a t -> 'a t
 
-  val to_seq : t -> (vertex * vertex) sequence
+  val to_seq : 'a t -> (vertex * 'a * vertex) sequence
 end
 
-module Map(O : Map.OrderedType) = struct
+module Map(O : Map.OrderedType) : MAP with type vertex = O.t = struct
   module M = Map.Make(O)
-  module S = Set.Make(O)
 
   type vertex = O.t
-  type t = {
-    edges: S.t M.t;
-    vertices: S.t;
-  }
+  type 'a t = 'a M.t M.t
+  (* vertex -> set of (vertex * label) *)
 
-  let as_graph m = {
-    origin=fst;
-    dest=snd;
-    children=(fun v yield ->
-      try
-        let set = M.find v m.edges in
-        S.iter (fun v' -> yield (v, v')) set
-      with Not_found -> ()
-      );
-  }
+  let as_graph m =
+    (fun v yield ->
+       try
+         let sub = M.find v m in
+         M.iter (fun v' e -> yield (e, v')) sub
+       with Not_found -> ()
+    )
 
-  let empty = {edges=M.empty; vertices=S.empty}
+  let empty = M.empty
 
-  let add_edge v1 v2 m =
-    let set = try M.find v1 m.edges with Not_found -> S.empty in
-    let edges = M.add v1 (S.add v2 set) m.edges in
-    let vertices = S.add v1 (S.add v2 m.vertices) in
-    { edges; vertices; }
+  let add_edge v1 e v2 m =
+    let sub = try M.find v1 m with Not_found -> M.empty in
+    M.add v1 (M.add v2 e sub) m
 
   let remove_edge v1 v2 m =
     try
-      let set = S.remove v2 (M.find v1 m.edges) in
-      if S.is_empty set
-      then {m with edges=M.remove v1 m.edges}
-      else {m with edges=M.add v1 set m.edges}
+      let map = M.remove v2 (M.find v1 m) in
+      if M.is_empty map
+      then M.remove v1 m
+      else M.add v1 map m
     with Not_found -> m
 
-  let add v m = { m with vertices=S.add v m.vertices }
+  let add v m =
+    if M.mem v m then m
+    else M.add v M.empty m
 
-  let remove v m =
-    { edges=M.remove v m.edges; vertices=S.remove v m.vertices }
+  let remove v m = M.remove v m
 
   let union m1 m2 =
-    {edges=M.merge
+    M.merge
       (fun _ s1 s2 -> match s1, s2 with
          | Some s, None
          | None, Some s -> Some s
          | None, None -> assert false
-         | Some s1, Some s2 -> Some (S.union s1 s2)
-      ) m1.edges m2.edges;
-     vertices=S.union m1.vertices m2.vertices
-    }
+         | Some s1, Some s2 ->
+           let s =
+             M.merge
+               (fun _ e1 e2 -> match e1, e2 with
+                  | Some _, _ -> e1
+                  | None, _ -> e2)
+               s1 s2
+           in
+           Some s)
+      m1 m2
 
-  let vertices m yield = S.iter yield m.vertices
+  let vertices m yield = M.iter (fun v _ -> yield v) m
 
-  let vertices_l m = S.fold (fun v acc -> v::acc) m.vertices []
+  let vertices_l m = M.fold (fun v _ acc -> v::acc) m []
 
-  let add_list l m = List.fold_left (fun m (v1,v2) -> add_edge v1 v2 m) m l
+  let add_list l m = List.fold_left (fun m (v1,e,v2) -> add_edge v1 e v2 m) m l
 
   let of_list l = add_list l empty
 
   let to_list m =
     M.fold
-      (fun v set acc -> S.fold (fun v' acc -> (v,v')::acc) set acc)
-      m.edges []
+      (fun v map acc -> M.fold (fun v' e acc -> (v,e,v')::acc) map acc)
+      m []
 
-  let add_seq seq m = Seq.fold (fun m (v1,v2) -> add_edge v1 v2 m) m seq
+  let add_seq seq m = Seq.fold (fun m (v1,e,v2) -> add_edge v1 e v2 m) m seq
 
   let of_seq seq = add_seq seq empty
 
-  let to_seq m k = M.iter (fun v set -> S.iter (fun v' -> k(v,v')) set) m.edges
+  let to_seq m k = M.iter (fun v map -> M.iter (fun v' e -> k(v,e,v')) map) m
 end
 
 (** {2 Misc} *)
 
-let of_list ?(eq=(=)) l = {
-  origin=fst;
-  dest=snd;
-  children=(fun v yield -> List.iter (fun (a,b) -> if eq a v then yield (a,b)) l)
-}
+let of_list ?(eq=(=)) l =
+  (fun v yield -> List.iter (fun (a,b) -> if eq a v then yield ((),b)) l)
 
-let of_fun f = {
-  origin=fst;
-  dest=snd;
-  children=(fun v yield ->
-    let l = f v in
-    List.iter (fun v' -> yield (v,v')) l
-  );
-}
-
-let of_hashtbl tbl = {
-  origin=fst;
-  dest=snd;
-  children=(fun v yield ->
-    try List.iter (fun b -> yield (v, b)) (Hashtbl.find tbl v)
-    with Not_found -> ()
+let of_fun f =
+  (fun v yield ->
+     let l = f v in
+     List.iter (fun v' -> yield ((),v')) l
   )
-}
 
-let divisors_graph = {
-  origin=fst;
-  dest=snd;
-  children=(fun i ->
-    (* divisors of [i] that are [>= j] *)
-    let rec divisors j i yield =
-      if j < i
-      then (
-        if (i mod j = 0) then yield (i,j);
-        divisors (j+1) i yield
-      )
-    in
-    divisors 1 i
-  );
-}
+let of_hashtbl tbl =
+  (fun v yield ->
+     try List.iter (fun b -> yield ((), b)) (Hashtbl.find tbl v)
+     with Not_found -> ()
+  )
+
+let divisors_graph =
+  (fun i ->
+     (* divisors of [i] that are [>= j] *)
+     let rec divisors j i yield =
+       if j < i
+       then (
+         if (i mod j = 0) then yield ((),j);
+         divisors (j+1) i yield
+       )
+     in
+     divisors 1 i
+  )

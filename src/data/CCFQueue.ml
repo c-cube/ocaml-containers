@@ -9,7 +9,7 @@ type 'a equal = 'a -> 'a -> bool
 type 'a printer = Format.formatter -> 'a -> unit
 
 (*$inject
-  let pp_ilist = CCPrint.(to_string (list int))
+  let pp_ilist = CCFormat.(to_string (list int))
 *)
 
 (** {2 Basics} *)

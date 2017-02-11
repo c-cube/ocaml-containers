@@ -2,17 +2,17 @@
 
 (** {1 Hash Tries}
 
-  Trie indexed by the hash of the keys, where the branching factor is fixed.
-  The goal is to have a quite efficient functional structure with fast
-  update and access {b if} the hash function is good.
-  The trie is not binary, to improve cache locality and decrease depth.
+    Trie indexed by the hash of the keys, where the branching factor is fixed.
+    The goal is to have a quite efficient functional structure with fast
+    update and access {b if} the hash function is good.
+    The trie is not binary, to improve cache locality and decrease depth.
 
-  Preliminary benchmarks (see the "tbl" section of benchmarks) tend to show
-  that this type is quite efficient for small data sets.
+    Preliminary benchmarks (see the "tbl" section of benchmarks) tend to show
+    that this type is quite efficient for small data sets.
 
-  {b status: unstable}
+    {b status: unstable}
 
-  @since 0.13
+    @since 0.13
 *)
 
 type 'a sequence = ('a -> unit) -> unit

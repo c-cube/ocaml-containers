@@ -23,8 +23,7 @@ val pow : t -> t -> t
     Raises [Invalid_argument] if [a = b = 0] or [b] < 0.
     @since 0.11 *)
 
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val random : int -> t random_gen
@@ -32,7 +31,6 @@ val random_small : t random_gen
 val random_range : int -> int -> t random_gen
 
 val pp : t printer
-val print : t formatter
 
 val to_string : t -> string
 (** @since 0.13 *)
@@ -40,7 +38,7 @@ val to_string : t -> string
 val of_string : string -> t option
 (** @since 0.13 *)
 
-val print_binary : t formatter
+val pp_binary : t printer
 (** prints as "0b00101010".
     @since 0.20 *)
 

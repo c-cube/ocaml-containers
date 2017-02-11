@@ -10,8 +10,7 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -87,6 +86,16 @@ val compare : ?err:'err ord -> 'a ord -> ('a, 'err) t ord
 val fold : ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) t -> 'b
 (** [fold ~ok ~error e] opens [e] and, if [e = Ok x], returns
     [ok x], otherwise [e = Error s] and it returns [error s]. *)
+
+val is_ok : ('a, 'err) t -> bool
+(** Return true if Ok/
+
+    @since 1.0 *)
+
+val is_error : ('a, 'err) t -> bool
+(** Return true if Error
+
+    @since 1.0 *)
 
 (** {2 Wrappers} *)
 
@@ -194,12 +203,4 @@ val to_err : ('a, 'b) t -> ('a, 'b) error
 val pp : 'a printer -> ('a, string) t printer
 
 val pp': 'a printer -> 'e printer -> ('a, 'e) t printer
-(** Printer that is generic on the error type
-    @since 0.19 *)
-
-val print : 'a formatter -> ('a, string) t formatter
-
-val print' : 'a formatter -> 'e formatter -> ('a, 'e) t formatter
-(** Printer that is generic on the error type
-    @since 0.19 *)
-
+(** Printer that is generic on the error type *)

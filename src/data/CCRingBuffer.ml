@@ -344,7 +344,7 @@ module MakeFromArray(A:Array.S) = struct
     let cap = capacity b - length b in
     (* resize if needed, with a constant to amortize *)
     if cap < len
-      then resize b (max (b.size+1) (A.length b.buf + len + 24)) (A.get from_buf 0);
+    then resize b (max (b.size+1) (A.length b.buf + len + 24)) (A.get from_buf 0);
     let good = capacity b - length b >= len in
     assert good;
     if b.stop >= b.start
@@ -352,10 +352,10 @@ module MakeFromArray(A:Array.S) = struct
       let len_end = A.length b.buf - b.stop in
       if len_end >= len
       then (A.blit from_buf o b.buf b.stop len;
-            b.stop <- b.stop + len)
+        b.stop <- b.stop + len)
       else (A.blit from_buf o b.buf b.stop len_end;
-            A.blit from_buf (o+len_end) b.buf 0 (len-len_end);
-            b.stop <- len-len_end)
+        A.blit from_buf (o+len_end) b.buf 0 (len-len_end);
+        b.stop <- len-len_end)
     else begin (* [xxxxx stop ____________ start xxxxxx] *)
       let len_middle = b.start - b.stop in
       assert (len_middle >= len);

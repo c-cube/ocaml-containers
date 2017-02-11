@@ -88,12 +88,40 @@ val diagonal : 'a t -> ('a * 'a) t
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
 val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
-                    'a list -> 'b list * 'c list
+  'a list -> 'b list * 'c list
 (** [partition_map f l] maps [f] on [l] and gather results in lists:
     - if [f x = `Left y], adds [y] to the first list
     - if [f x = `Right z], adds [z] to the second list
     - if [f x = `Drop], ignores [x]
     @since 0.11 *)
+
+val sublists_of_len :
+  ?last:('a list -> 'a list option) ->
+  ?offset:int ->
+  int ->
+  'a list ->
+  'a list list
+(** [sublists_of_len n l] returns sub-lists of [l] that have length [n].
+    By default, these sub-lists are non overlapping:
+    [sublists_of_len 2 [1;2;3;4;5;6]] returns [[1;2]; [3;4]; [5;6]]
+
+    Examples:
+
+    - [sublists_of_len 2 [1;2;3;4;5;6] = [[1;2]; [3;4]; [5;6]]]
+    - [sublists_of_len 2 ~offset:3 [1;2;3;4;5;6] = [1;2];[4;5]]
+    - [sublists_of_len 3 ~last:CCOpt.return [1;2;3;4] = [1;2;3];[4]]
+    - [sublists_of_len 2 [1;2;3;4;5] = [[1;2]; [3;4]]]
+
+    @param offset the number of elements skipped between two consecutive
+      sub-lists. By default it is [n]. If [offset < n], the sub-lists
+      will overlap; if [offset > n], some elements will not appear at all.
+    @param last if provided and the last group of elements [g] is such
+      that [length g < n], [last g] is called. If [last g = Some g'],
+      [g'] is appended; otherwise [g] is dropped.
+      If [last = CCOpt.return], it will simply keep the last group.
+      By default, [last = fun _ -> None], i.e. the last group is dropped if shorter than [n].
+    @raise Invalid_argument if [offset <= 0] or [n <= 0]
+    @since 1.0 *)
 
 val pure : 'a -> 'a t
 
@@ -126,10 +154,6 @@ val take_while : ('a -> bool) -> 'a t -> 'a t
 val drop_while : ('a -> bool) -> 'a t -> 'a t
 (** @since 0.13 *)
 
-val split : int -> 'a t -> 'a t * 'a t
-(** Synonym to {!take_drop}
-    @deprecated since 0.13: conflict with the {!List.split} standard function *)
-
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)
@@ -158,16 +182,9 @@ val find_map : ('a -> 'b option) -> 'a t -> 'b option
     the call returns [None]
     @since 0.11 *)
 
-val find : ('a -> 'b option) -> 'a list -> 'b option
-(** @deprecated since 0.11 in favor of {!find_map}, for the name is too confusing *)
-
 val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
     @since 0.11 *)
-
-val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-(** @deprecated since 0.11 in favor of {!find_mapi}, name is too confusing
-    @since 0.3.4 *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
@@ -224,62 +241,61 @@ val group_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list list
 
 (** {2 Indices} *)
 
-module Idx : sig
-  val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
 
-  val iteri : (int -> 'a -> unit) -> 'a t -> unit
+val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
-  val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** Fold on list, with index *)
+val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
+(** Fold on list, with index *)
 
-  val get : 'a t -> int -> 'a option
+val get_at_idx : int -> 'a t -> 'a option
 
-  val get_exn : 'a t -> int -> 'a
-  (** Get the i-th element, or
-      @raise Not_found if the index is invalid *)
+val get_at_idx_exn : int -> 'a t -> 'a
+(** Get the i-th element, or
+    @raise Not_found if the index is invalid *)
 
-  val set : 'a t -> int -> 'a -> 'a t
-  (** Set i-th element (removes the old one), or does nothing if
-      index is too high *)
+val set_at_idx : int -> 'a -> 'a t -> 'a t
+(** Set i-th element (removes the old one), or does nothing if
+    index is too high *)
 
-  val insert : 'a t -> int -> 'a -> 'a t
-  (** Insert at i-th position, between the two existing elements. If the
-      index is too high, append at the end of the list *)
+val insert_at_idx : int -> 'a -> 'a t -> 'a t
+(** Insert at i-th position, between the two existing elements. If the
+    index is too high, append at the end of the list *)
 
-  val remove : 'a t -> int -> 'a t
-  (** Remove element at given index. Does nothing if the index is
-      too high. *)
-end
+val remove_at_idx : int -> 'a t -> 'a t
+(** Remove element at given index. Does nothing if the index is
+    too high. *)
 
-(** {2 Set Operators} *)
+(** {2 Set Operators}
 
-module Set : sig
-  val add : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [add x set] adds [x] to [set] if it was not already present. Linear time.
-      @since 0.11 *)
+    Those operations maintain the invariant that the list does not
+    contain duplicates (if it already satisfies it) *)
 
-  val remove : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
-  (** [remove x set] removes one occurrence of [x] from [set]. Linear time.
-      @since 0.11 *)
+val add_nodup : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+(** [add_nodup x set] adds [x] to [set] if it was not already present. Linear time.
+    @since 0.11 *)
 
-  val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
-  (** Membership to the list. Linear time *)
+val remove_one : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+(** [remove_one x set] removes one occurrence of [x] from [set]. Linear time.
+    @since 0.11 *)
 
-  val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-  (** Test for inclusion *)
+val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
+(** Membership to the list. Linear time *)
 
-  val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
-  (** List uniq. Remove duplicates w.r.t the equality predicate.
-      Complexity is quadratic in the length of the list, but the order
-      of elements is preserved. If you wish for a faster de-duplication
-      but do not care about the order, use {!sort_uniq}*)
+val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+(** Test for inclusion *)
 
-  val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** List union. Complexity is product of length of inputs. *)
+val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
+(** Remove duplicates w.r.t the equality predicate.
+    Complexity is quadratic in the length of the list, but the order
+    of elements is preserved. If you wish for a faster de-duplication
+    but do not care about the order, use {!sort_uniq}*)
 
-  val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
-  (** List intersection. Complexity is product of length of inputs. *)
-end
+val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+(** List union. Complexity is product of length of inputs. *)
+
+val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+(** List intersection. Complexity is product of length of inputs. *)
 
 (** {2 Other Constructors} *)
 
@@ -316,127 +332,34 @@ val repeat : int -> 'a t -> 'a t
 module Assoc : sig
   type ('a, 'b) t = ('a*'b) list
 
-  val get : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b option
+  val get : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b option
   (** Find the element *)
 
-  val get_exn : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b
-  (** Same as [get]
+  val get_exn : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b
+  (** Same as [get], but unsafe
       @raise Not_found if the element is not present *)
 
-  val set : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> 'b -> ('a,'b) t
+  val set : ?eq:('a->'a->bool) -> 'a -> 'b -> ('a,'b) t -> ('a,'b) t
   (** Add the binding into the list (erase it if already present) *)
 
-  val mem : ?eq:('a->'a->bool) -> ('a,_) t -> 'a -> bool
-  (** [mem l x] returns [true] iff [x] is a key in [l]
+  val mem : ?eq:('a->'a->bool) -> 'a -> ('a,_) t -> bool
+  (** [mem x l] returns [true] iff [x] is a key in [l]
       @since 0.16 *)
 
   val update :
-    ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> f:('b option -> 'b option) -> ('a,'b) t
-  (** [update l k ~f] updates [l] on the key [k], by calling [f (get l k)]
+    ?eq:('a->'a->bool) -> f:('b option -> 'b option) -> 'a -> ('a,'b) t -> ('a,'b) t
+  (** [update k ~f l] updates [l] on the key [k], by calling [f (get l k)]
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v']
       @since 0.16 *)
 
-  val remove : ?eq:('a->'a->bool) -> ('a,'b) t -> 'a -> ('a,'b) t
-  (** [remove l k] removes the first occurrence of [k] from [l].
+  val remove : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> ('a,'b) t
+  (** [remove x l] removes the first occurrence of [k] from [l].
       @since 0.17 *)
 end
 
-(** {2 Zipper} *)
-
-module Zipper : sig
-  type 'a t = 'a list * 'a list
-  (** The pair [l, r] represents the list [List.rev_append l r], but
-      with the focus on [r]. *)
-
-  val empty : 'a t
-  (** Empty zipper *)
-
-  val is_empty : _ t -> bool
-  (** Empty zipper? Returns true iff the two lists are empty. *)
-
-  (*$T
-    Zipper.(is_empty empty)
-    not ([42] |> Zipper.make |> Zipper.right |> Zipper.is_empty)
-  *)
-
-  val to_list : 'a t -> 'a list
-  (** Convert the zipper back to a list.
-      [to_list (l,r)] is [List.rev_append l r] *)
-
-  val to_rev_list : 'a t -> 'a list
-  (** Convert the zipper back to a {i reversed} list.
-      In other words, [to_list (l,r)] is [List.rev_append r l]
-      @since 0.14 *)
-
-  val make : 'a list -> 'a t
-  (** Create a zipper pointing at the first element of the list *)
-
-  val left : 'a t -> 'a t
-  (** Go to the left, or do nothing if the zipper is already at leftmost pos *)
-
-  val left_exn : 'a t -> 'a t
-  (** Go to the left, or
-      @raise Invalid_argument if the zipper is already at leftmost pos
-      @since 0.14 *)
-
-  val right : 'a t -> 'a t
-  (** Go to the right, or do nothing if the zipper is already at rightmost pos *)
-
-  val right_exn : 'a t -> 'a t
-  (** Go to the right, or
-      @raise Invalid_argument if the zipper is already at rightmost pos
-      @since 0.14 *)
-
-  val modify : ('a option -> 'a option) -> 'a t -> 'a t
-  (** Modify the current element, if any, by returning a new element, or
-      returning [None] if the element is to be deleted *)
-
-  val insert : 'a -> 'a t -> 'a t
-  (** Insert an element at the current position. If an element was focused,
-      [insert x l] adds [x] just before it, and focuses on [x]
-      @since 0.14 *)
-
-  val remove : 'a t -> 'a t
-  (** [remove l] removes the current element, if any.
-      @since 0.14 *)
-
-  val is_focused : _ t -> bool
-  (** Is the zipper focused on some element? That is, will {!focused}
-      return a [Some v]?
-      @since 0.14 *)
-
-  val focused : 'a t -> 'a option
-  (** Returns the focused element, if any. [focused zip = Some _] iff
-      [empty zip = false] *)
-
-  val focused_exn : 'a t -> 'a
-  (** Returns the focused element, or
-      @raise Not_found if the zipper is at an end *)
-
-  val drop_before : 'a t -> 'a t
-  (** Drop every element on the "left" (calling {!left} then will do nothing).
-      @since 0.14 *)
-
-  val drop_after : 'a t -> 'a t
-  (** Drop every element on the "right" (calling {!right} then will do nothing),
-      keeping the focused element, if any.
-      @since 0.14 *)
-
-  val drop_after_and_focused : 'a t -> 'a t
-  (** Drop every element on the "right" (calling {!right} then will do nothing),
-      {i including} the focused element if it is present.
-      @since 0.14 *)
-
-  (*$=
-    ([1], [2]) (Zipper.drop_after ([1], [2;3]))
-    ([1], []) (Zipper.drop_after ([1], []))
-    ([1], []) (Zipper.drop_after_and_focused ([1], [2;3]))
-  *)
-end
-
 (** {2 References on Lists}
-@since 0.3.3 *)
+    @since 0.3.3 *)
 
 module Ref : sig
   type 'a t = 'a list ref
@@ -488,8 +411,7 @@ end
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val random : 'a random_gen -> 'a t random_gen
@@ -532,7 +454,4 @@ end
 (** {2 IO} *)
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
-         'a printer -> 'a t printer
-
-val print : ?start:string -> ?stop:string -> ?sep:string ->
-            'a formatter -> 'a t formatter
+  'a printer -> 'a t printer

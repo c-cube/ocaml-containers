@@ -7,8 +7,7 @@
     @since 0.5 *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   include Map.S
@@ -16,9 +15,9 @@ module type S = sig
   val get : key -> 'a t -> 'a option
   (** Safe version of {!find} *)
 
-  val get_or : key -> 'a t -> or_:'a -> 'a
-  (** [get_or k m ~or_] returns the value associated to [k] if present,
-      and returns [or_] otherwise (if [k] doesn't belong in [m])
+  val get_or : key -> 'a t -> default:'a -> 'a
+  (** [get_or k m ~default] returns the value associated to [k] if present,
+      and returns [default] otherwise (if [k] doesn't belong in [m])
       @since 0.16 *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
@@ -34,6 +33,7 @@ module type S = sig
       @since 0.17 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
+  (** Same as {!of_list} *)
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
   (** @since 0.14 *)
@@ -41,6 +41,10 @@ module type S = sig
   val to_seq : 'a t -> (key * 'a) sequence
 
   val of_list : (key * 'a) list -> 'a t
+  (** Build a map from the given list of bindings [k_i -> v_i],
+      added in order using {!add}.
+      If a key occurs several times, only its last binding
+      will be present in the result. *)
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
   (** @since 0.14 *)
@@ -58,10 +62,6 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
     key printer -> 'a printer -> 'a t printer
-
-  val print :
-    ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
-    key formatter -> 'a formatter -> 'a t formatter
 end
 
 module Make(O : Map.OrderedType) : S

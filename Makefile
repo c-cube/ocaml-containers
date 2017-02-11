@@ -57,7 +57,7 @@ push_doc_gh: doc
 	  cp -r containers.docdir/* dev/ && \
 	  git add --all dev
 
-DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*)
+DONTTEST=myocamlbuild.ml setup.ml $(wildcard src/**/*.cppo.*) $(wildcard src/**/*Labels*)
 QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/core/*.ml) \
 	$(wildcard src/core/*.mli) \
@@ -65,14 +65,10 @@ QTESTABLE=$(filter-out $(DONTTEST), \
 	$(wildcard src/data/*.mli) \
 	$(wildcard src/string/*.ml) \
 	$(wildcard src/string/*.mli) \
-	$(wildcard src/io/*.ml) \
-	$(wildcard src/io/*.mli) \
 	$(wildcard src/unix/*.ml) \
 	$(wildcard src/unix/*.mli) \
 	$(wildcard src/sexp/*.ml) \
 	$(wildcard src/sexp/*.mli) \
-	$(wildcard src/advanced/*.ml) \
-	$(wildcard src/advanced/*.mli) \
 	$(wildcard src/iter/*.ml) \
 	$(wildcard src/iter/*.mli) \
 	$(wildcard src/bigarray/*.ml) \
@@ -135,5 +131,10 @@ watch:
 		echo "============ at `date` ==========" ; \
 		make all; \
 	done
+
+reindent:
+	@which ocp-indent || ( echo "require ocp-indent" ; exit 1 )
+	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 echo "reindenting: "
+	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 ocp-indent -i
 
 .PHONY: examples push_doc tags qtest-gen qtest-clean devel update_next_tag

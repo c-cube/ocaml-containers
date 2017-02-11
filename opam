@@ -1,16 +1,13 @@
 opam-version: "1.2"
 name: "containers"
-version: "0.22.1"
+version: "1.0"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes@inria.fr"
 build: [
     ["./configure"
         "--prefix" prefix
-        "--%{base-threads:enable}%-thread"
         "--disable-bench"
         "--disable-tests"
-        "--%{base-bigarray:enable}%-bigarray"
-        "--%{sequence:enable}%-advanced"
         "--%{base-unix:enable}%-unix"
         "--enable-docs"
     ]
@@ -25,15 +22,14 @@ remove: [
     ["ocamlfind" "remove" "containers"]
 ]
 depends: [
-    "ocamlfind" {build}
-    "base-bytes"
-    "result"
-    "cppo" {build}
-    "ocamlbuild" {build}
+  "ocamlfind" {build}
+  "oasis" {build}
+  "base-bytes"
+  "result"
+  "cppo" {build}
+  "ocamlbuild" {build}
 ]
 depopts: [
-  "sequence"
-  "base-bigarray"
   "base-unix"
   "base-threads"
   "qtest" { test }
@@ -44,12 +40,16 @@ conflicts: [
 tags: [ "stdlib" "containers" "iterators" "list" "heap" "queue" ]
 homepage: "https://github.com/c-cube/ocaml-containers/"
 doc: "http://cedeela.fr/~simon/software/containers/"
-available: [ocaml-version >= "4.00.0"]
+available: [ocaml-version >= "4.01.0"]
 dev-repo: "https://github.com/c-cube/ocaml-containers.git"
 bug-reports: "https://github.com/c-cube/ocaml-containers/issues/"
 post-messages: [
-"Small release with mostly bugfixes, and a few improvements of some
-already existing modules.
+"Major release, with breaking changes. The APIs are more focused,
+more consistent, and some sub-libraries were removed or merged into the core
+ones.
 
-changelog: https://github.com/c-cube/ocaml-containers/blob/0.19/CHANGELOG.adoc"
+A summary of the changes can be found at
+https://github.com/c-cube/ocaml-containers/issues/84
+and in the changelog
+https://github.com/c-cube/ocaml-containers/blob/1.0/CHANGELOG.adoc"
 ]

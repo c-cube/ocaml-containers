@@ -33,59 +33,59 @@ module type S = sig
   type t
 
   val empty : t
-    (** Empty multimap *)
+  (** Empty multimap *)
 
   val is_empty : t -> bool
-    (** Empty multimap? *)
+  (** Empty multimap? *)
 
   val add : t -> key -> value -> t
-    (** Add a key/value binding *)
+  (** Add a key/value binding *)
 
   val remove : t -> key -> value -> t
-    (** Remove the binding *)
+  (** Remove the binding *)
 
   val remove_all : t -> key -> t
-    (** Remove the key from the map *)
+  (** Remove the key from the map *)
 
   val mem : t -> key -> bool
-    (** Is there a binding for this key? *)
+  (** Is there a binding for this key? *)
 
   val find : t -> key -> value list
-    (** List of values for this key *)
+  (** List of values for this key *)
 
   val find_iter : t -> key -> (value -> unit) -> unit
-    (** Iterate on bindings for this key *)
+  (** Iterate on bindings for this key *)
 
   val count : t -> key -> int
-    (** Number of bindings for this key *)
+  (** Number of bindings for this key *)
 
   val iter : t -> (key -> value -> unit) -> unit
-    (** Iterate on all key/value *)
+  (** Iterate on all key/value *)
 
   val fold : t -> 'a -> ('a -> key -> value -> 'a) -> 'a
-    (** Fold on all key/value *)
+  (** Fold on all key/value *)
 
   val size : t -> int
-    (** Number of keys *)
+  (** Number of keys *)
 
   val union : t -> t -> t
-    (** Union of multimaps *)
+  (** Union of multimaps *)
 
   val inter : t -> t -> t
-    (** Intersection of multimaps *)
+  (** Intersection of multimaps *)
 
   val diff : t -> t -> t
-    (** Difference of maps, ie bindings of the first that are not
-        in the second *)
+  (** Difference of maps, ie bindings of the first that are not
+      in the second *)
 
   val equal : t -> t -> bool
-    (** Same multimap *)
+  (** Same multimap *)
 
   val compare : t -> t -> int
-    (** Total order on multimaps *)
+  (** Total order on multimaps *)
 
   val submap : t -> t -> bool
-    (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2] *)
+  (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2] *)
 
   val to_seq : t -> (key * value) sequence
 
@@ -94,7 +94,7 @@ module type S = sig
   val keys : t -> key sequence
 
   val values : t -> value sequence
-    (** Some values may occur several times *)
+  (** Some values may occur several times *)
 end
 
 module type OrderedType = sig
@@ -110,7 +110,7 @@ module Make(K : OrderedType)(V : OrderedType) = struct
   module S = Set.Make(V)
 
   type t = S.t M.t
-    (** Map of sets *)
+  (** Map of sets *)
 
   let empty = M.empty
 
@@ -125,8 +125,8 @@ module Make(K : OrderedType)(V : OrderedType) = struct
       let set = M.find k m in
       let set' = S.remove v set in
       if S.is_empty set'
-        then M.remove k m
-        else M.add k set' m
+      then M.remove k m
+      else M.add k set' m
     with Not_found ->
       m
 
@@ -167,34 +167,34 @@ module Make(K : OrderedType)(V : OrderedType) = struct
   let union m1 m2 =
     M.merge
       (fun _k v1 v2 -> match v1, v2 with
-        | None, None -> None
-        | Some set1, Some set2 -> Some (S.union set1 set2)
-        | Some set, None
-        | None, Some set -> Some set)
+         | None, None -> None
+         | Some set1, Some set2 -> Some (S.union set1 set2)
+         | Some set, None
+         | None, Some set -> Some set)
       m1 m2
 
   let inter m1 m2 =
     M.merge
       (fun _k v1 v2 -> match v1, v2 with
-        | None, _
-        | _, None -> None
-        | Some set1, Some set2 ->
-          let set = S.inter set1 set2 in
-          if S.is_empty set
-            then None
-            else Some set)
+         | None, _
+         | _, None -> None
+         | Some set1, Some set2 ->
+           let set = S.inter set1 set2 in
+           if S.is_empty set
+           then None
+           else Some set)
       m1 m2
 
   let diff m1 m2 =
     M.merge
       (fun _k v1 v2 -> match v1, v2 with
-        | None, _ -> None
-        | Some set, None -> Some set
-        | Some set1, Some set2 ->
-          let set' = S.diff set1 set2 in
-          if S.is_empty set'
-            then None
-            else Some set')
+         | None, _ -> None
+         | Some set, None -> Some set
+         | Some set1, Some set2 ->
+           let set' = S.diff set1 set2 in
+           if S.is_empty set'
+           then None
+           else Some set')
       m1 m2
 
   let equal m1 m2 =
@@ -206,11 +206,11 @@ module Make(K : OrderedType)(V : OrderedType) = struct
   let submap m1 m2 =
     M.for_all
       (fun k set1 ->
-        try
-          let set2 = M.find k m2 in
-          S.subset set1 set2
-        with Not_found ->
-          false)
+         try
+           let set2 = M.find k m2 in
+           S.subset set1 set2
+         with Not_found ->
+           false)
       m1
 
   let to_seq m k = iter m (fun x y -> k (x,y))
@@ -291,7 +291,7 @@ let _fold_seq f acc seq =
 let _head_seq seq =
   let r = ref None in
   begin try seq (fun x -> r := Some x; raise Exit)
-  with Exit -> ();
+    with Exit -> ();
   end;
   !r
 
