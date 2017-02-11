@@ -84,23 +84,23 @@ val return : ('a, _, _, 'a) format4 -> unit printer
     - [return "@{<Red>and then@}@,"]
     - [return "@[<v>a@ b@]"]
 
-    @since NEXT_RELEASE
+    @since 1.0
 *)
 
 val of_to_string : ('a -> string) -> 'a printer
 (** [of_to_string f] converts its input to a string using [f],
     then prints the string
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val const : 'a printer -> 'a -> unit printer
 (** [const pp x] is a unit printer that uses [pp] on [x]
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val some : 'a printer -> 'a option printer
 (** [some pp] will print options as follows:
     - [Some x] is printed using [pp] on [x]
     - [None] is not printed at all
-    @since NEXT_RELEASE
+    @since 1.0
 *)
 
 (** {2 ANSI codes}
@@ -185,7 +185,7 @@ val stderr : t
 
 val tee : t -> t -> t
 (** [tee a b] makes a new formatter that writes in both [a] and [b].
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val sprintf : ('a, t, unit, string) format4 -> 'a
 (** Print into a string any format string that would usually be compatible

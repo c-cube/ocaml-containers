@@ -90,12 +90,12 @@ val fold : ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) t -> 'b
 val is_ok : ('a, 'err) t -> bool
 (** Return true if Ok/
 
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val is_error : ('a, 'err) t -> bool
 (** Return true if Error
 
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 (** {2 Wrappers} *)
 

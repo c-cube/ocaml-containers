@@ -41,7 +41,7 @@ val to_slice : 'a t -> ('a array * int * int)
 
 val to_list : 'a t -> 'a list
 (** Convert directly to a list
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val full : 'a array -> 'a t
 (** Slice that covers the full array *)
@@ -82,14 +82,14 @@ val reverse_in_place : 'a t -> unit
 
 val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
 (** [sorted cmp a] makes a copy of [a] and sorts it with [cmp].
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index of the [i]-th element of [a] in [sort cmp a].
     In other words, [map (fun i -> a.(i)) (sort_indices a) = sorted cmp a].
     [a] is not modified.
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
@@ -101,7 +101,7 @@ val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
 
     Without duplicates, we also have
     [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val find : ('a -> 'b option) -> 'a t -> 'b option
 (** [find f a] returns [Some y] if there is an element [x] such

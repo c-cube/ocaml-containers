@@ -42,12 +42,12 @@ val poly : 'a t
 val list_comm : 'a t -> 'a list t
 (** Commutative version of {!list}. Lists that are equal up to permutation
     will have the same hash.
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val array_comm : 'a t -> 'a array t
 (** Commutative version of {!array}. Arrays that are equal up to permutation
     will have the same hash.
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 (** {2 Base hash combinators} *)
 

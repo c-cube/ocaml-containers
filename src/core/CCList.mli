@@ -121,7 +121,7 @@ val sublists_of_len :
       If [last = CCOpt.return], it will simply keep the last group.
       By default, [last = fun _ -> None], i.e. the last group is dropped if shorter than [n].
     @raise Invalid_argument if [offset <= 0] or [n <= 0]
-    @since NEXT_RELEASE *)
+    @since 1.0 *)
 
 val pure : 'a -> 'a t
 

@@ -230,7 +230,7 @@ module type S = sig
       in [tbl], if it exists. If it does not exist, then [f k]
       is called to obtain a new binding [v]; [k -> v] is added
       to [tbl] and [v] is returned.
-      @since NEXT_RELEASE *)
+      @since 1.0 *)
 
   val print : key printer -> 'a printer -> 'a t printer
   (** Printer for tables
