@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Containers.Map.html">
+<link rel="next" href="Containers.Ord.html">
+<link rel="Up" href="Containers.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="CCVector" rel="Chapter" href="CCVector.html">
+<link title="CCHeap" rel="Chapter" href="CCHeap.html">
+<link title="CCList" rel="Chapter" href="CCList.html">
+<link title="CCOpt" rel="Chapter" href="CCOpt.html">
+<link title="CCPair" rel="Chapter" href="CCPair.html">
+<link title="CCFun" rel="Chapter" href="CCFun.html">
+<link title="CCHash" rel="Chapter" href="CCHash.html">
+<link title="CCInt" rel="Chapter" href="CCInt.html">
+<link title="CCBool" rel="Chapter" href="CCBool.html">
+<link title="CCFloat" rel="Chapter" href="CCFloat.html">
+<link title="CCArray" rel="Chapter" href="CCArray.html">
+<link title="CCRef" rel="Chapter" href="CCRef.html">
+<link title="CCSet" rel="Chapter" href="CCSet.html">
+<link title="CCOrd" rel="Chapter" href="CCOrd.html">
+<link title="CCRandom" rel="Chapter" href="CCRandom.html">
+<link title="CCString" rel="Chapter" href="CCString.html">
+<link title="CCHashtbl" rel="Chapter" href="CCHashtbl.html">
+<link title="CCMap" rel="Chapter" href="CCMap.html">
+<link title="CCFormat" rel="Chapter" href="CCFormat.html">
+<link title="CCIO" rel="Chapter" href="CCIO.html">
+<link title="CCInt64" rel="Chapter" href="CCInt64.html">
+<link title="CCChar" rel="Chapter" href="CCChar.html">
+<link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="Containers" rel="Chapter" href="Containers.html">
+<link title="CCKTree" rel="Chapter" href="CCKTree.html">
+<link title="CCKList" rel="Chapter" href="CCKList.html">
+<link title="CCLazy_list" rel="Chapter" href="CCLazy_list.html">
+<link title="CCMultiMap" rel="Chapter" href="CCMultiMap.html">
+<link title="CCMultiSet" rel="Chapter" href="CCMultiSet.html">
+<link title="CCTrie" rel="Chapter" href="CCTrie.html">
+<link title="CCFlatHashtbl" rel="Chapter" href="CCFlatHashtbl.html">
+<link title="CCCache" rel="Chapter" href="CCCache.html">
+<link title="CCPersistentHashtbl" rel="Chapter" href="CCPersistentHashtbl.html">
+<link title="CCDeque" rel="Chapter" href="CCDeque.html">
+<link title="CCFQueue" rel="Chapter" href="CCFQueue.html">
+<link title="CCBV" rel="Chapter" href="CCBV.html">
+<link title="CCMixtbl" rel="Chapter" href="CCMixtbl.html">
+<link title="CCMixmap" rel="Chapter" href="CCMixmap.html">
+<link title="CCRingBuffer" rel="Chapter" href="CCRingBuffer.html">
+<link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
+<link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
+<link title="CCMixset" rel="Chapter" href="CCMixset.html">
+<link title="CCGraph" rel="Chapter" href="CCGraph.html">
+<link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
+<link title="CCBitField" rel="Chapter" href="CCBitField.html">
+<link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
+<link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
+<link title="CCRAL" rel="Chapter" href="CCRAL.html">
+<link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
+<link title="CCHet" rel="Chapter" href="CCHet.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
+<link title="CCPool" rel="Chapter" href="CCPool.html">
+<link title="CCLock" rel="Chapter" href="CCLock.html">
+<link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
+<link title="CCThread" rel="Chapter" href="CCThread.html">
+<link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
+<link title="CCTimer" rel="Chapter" href="CCTimer.html">
+<link title="CCUnix" rel="Chapter" href="CCUnix.html">
+<link title="CCSexp" rel="Chapter" href="CCSexp.html">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Applicative" rel="Section" href="#2_Applicative">
+<link title="Alternatives" rel="Section" href="#2_Alternatives">
+<link title="Infix Operators" rel="Section" href="#2_InfixOperators">
+<link title="Conversion and IO" rel="Section" href="#2_ConversionandIO">
+<title>Containers doc : Containers.Option</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Containers.Map.html" title="Containers.Map">Previous</a>
+&nbsp;<a class="up" href="Containers.html" title="Containers">Up</a>
+&nbsp;<a class="post" href="Containers.Ord.html" title="Containers.Ord">Next</a>
+</div>
+<h1>Module <a href="type_Containers.Option.html">Containers.Option</a></h1>
+
+<pre><span class="keyword">module</span> Option: <code class="type"><a href="CCOpt.html">CCOpt</a></code></pre><hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type">'a</code> t</span> = <code class="type">'a option</code> </pre>
+
+
+<pre><span id="VALmap"><span class="keyword">val</span> map</span> : <code class="type">('a -> 'b) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'b <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Transform the element inside, if any<br>
+</div>
+
+<pre><span id="VALmap_or"><span class="keyword">val</span> map_or</span> : <code class="type">default:'b -> ('a -> 'b) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'b</code></pre><div class="info ">
+<code class="code">map_or ~default f o</code> is <code class="code">f x</code> if <code class="code">o = <span class="constructor">Some</span> x</code>, <code class="code">default otherwise</code><br>
+<b>Since</b> 0.16<br>
+</div>
+
+<pre><span id="VALis_some"><span class="keyword">val</span> is_some</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALis_none"><span class="keyword">val</span> is_none</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALcompare"><span class="keyword">val</span> compare</span> : <code class="type">('a -> 'a -> int) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEt">t</a> -> int</code></pre>
+<pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type">('a -> 'a -> bool) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALreturn"><span class="keyword">val</span> return</span> : <code class="type">'a -> 'a <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Monadic return, that is <code class="code">return x = <span class="constructor">Some</span> x</code><br>
+</div>
+
+<pre><span id="VAL(>|=)"><span class="keyword">val</span> (&gt;|=)</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> ('a -> 'b) -> 'b <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Infix version of <a href="CCOpt.html#VALmap"><code class="code"><span class="constructor">CCOpt</span>.map</code></a><br>
+</div>
+
+<pre><span id="VAL(>>=)"><span class="keyword">val</span> (&gt;&gt;=)</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> ('a -> 'b <a href="CCOpt.html#TYPEt">t</a>) -> 'b <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Monadic bind<br>
+</div>
+
+<pre><span id="VALflat_map"><span class="keyword">val</span> flat_map</span> : <code class="type">('a -> 'b <a href="CCOpt.html#TYPEt">t</a>) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'b <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Flip version of <code class="code">&gt;&gt;=</code><br>
+</div>
+
+<pre><span id="VALmap2"><span class="keyword">val</span> map2</span> : <code class="type">('a -> 'b -> 'c) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'b <a href="CCOpt.html#TYPEt">t</a> -> 'c <a href="CCOpt.html#TYPEt">t</a></code></pre>
+<pre><span id="VALiter"><span class="keyword">val</span> iter</span> : <code class="type">('a -> unit) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Iterate on 0 or 1 element<br>
+</div>
+
+<pre><span id="VALfold"><span class="keyword">val</span> fold</span> : <code class="type">('a -> 'b -> 'a) -> 'a -> 'b <a href="CCOpt.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+Fold on 0 or 1 element<br>
+</div>
+
+<pre><span id="VALfilter"><span class="keyword">val</span> filter</span> : <code class="type">('a -> bool) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Filter on 0 or 1 element<br>
+<b>Since</b> 0.5<br>
+</div>
+
+<pre><span id="VALif_"><span class="keyword">val</span> if_</span> : <code class="type">('a -> bool) -> 'a -> 'a option</code></pre><div class="info ">
+<code class="code">if_ f x</code> is <code class="code"><span class="constructor">Some</span> x</code> if <code class="code">f x</code>, <code class="code"><span class="constructor">None</span></code> otherwise<br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">('a -> bool) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALfor_all"><span class="keyword">val</span> for_all</span> : <code class="type">('a -> bool) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALget_or"><span class="keyword">val</span> get_or</span> : <code class="type">default:'a -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+<code class="code">get_or ~default o</code> extracts the value from <code class="code">o</code>, or
+    returns <code class="code">default</code> if <code class="code">o = <span class="constructor">None</span></code>.<br>
+<b>Since</b> 0.18<br>
+</div>
+
+<pre><span id="VALget_exn"><span class="keyword">val</span> get_exn</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+Open the option, possibly failing if it is <code class="code"><span class="constructor">None</span></code><br>
+<b>Raises</b> <code>Invalid_argument</code> if the option is <code class="code"><span class="constructor">None</span></code><br>
+</div>
+
+<pre><span id="VALget_lazy"><span class="keyword">val</span> get_lazy</span> : <code class="type">(unit -> 'a) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+<code class="code">get_lazy default_fn x</code> unwraps <code class="code">x</code>, but if <code class="code">x = <span class="constructor">None</span></code> it returns <code class="code">default_fn ()</code> instead.<br>
+<b>Since</b> 0.6.1<br>
+</div>
+
+<pre><span id="VALsequence_l"><span class="keyword">val</span> sequence_l</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> list -> 'a list <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">sequence_l [x1; x2; ...; xn]</code> returns <code class="code"><span class="constructor">Some</span> [y1;y2;...;yn]</code> if
+    every <code class="code">xi</code> is <code class="code"><span class="constructor">Some</span> yi</code>. Otherwise, if the list contains at least
+    one <code class="code"><span class="constructor">None</span></code>, the result is <code class="code"><span class="constructor">None</span></code>.<br>
+</div>
+
+<pre><span id="VALwrap"><span class="keyword">val</span> wrap</span> : <code class="type">?handler:(exn -> bool) -> ('a -> 'b) -> 'a -> 'b option</code></pre><div class="info ">
+<code class="code">wrap f x</code> calls <code class="code">f x</code> and returns <code class="code"><span class="constructor">Some</span> y</code> if <code class="code">f x = y</code>. If <code class="code">f x</code> raises
+    any exception, the result is <code class="code"><span class="constructor">None</span></code>. This can be useful to wrap functions
+    such as <code class="code"><span class="constructor">Map</span>.<span class="constructor">S</span>.find</code>.<br>
+</div>
+<div class="param_info"><code class="code">handler</code> : the exception handler, which returns <code class="code"><span class="keyword">true</span></code> if the
+        exception is to be caught.</div>
+
+<pre><span id="VALwrap2"><span class="keyword">val</span> wrap2</span> : <code class="type">?handler:(exn -> bool) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c option</code></pre><div class="info ">
+<code class="code">wrap2 f x y</code> is similar to <code class="code">wrap1</code> but for binary functions.<br>
+</div>
+<br>
+<h2 id="2_Applicative">Applicative</h2><br>
+
+<pre><span id="VALpure"><span class="keyword">val</span> pure</span> : <code class="type">'a -> 'a <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Alias to <a href="CCOpt.html#VALreturn"><code class="code"><span class="constructor">CCOpt</span>.return</code></a><br>
+</div>
+
+<pre><span id="VAL(<*>)"><span class="keyword">val</span> (&lt;*&gt;)</span> : <code class="type">('a -> 'b) <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'b <a href="CCOpt.html#TYPEt">t</a></code></pre>
+<pre><span id="VAL(<$>)"><span class="keyword">val</span> (&lt;$&gt;)</span> : <code class="type">('a -> 'b) -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'b <a href="CCOpt.html#TYPEt">t</a></code></pre><br>
+<h2 id="2_Alternatives">Alternatives</h2><br>
+
+<pre><span id="VAL(<+>)"><span class="keyword">val</span> (&lt;+&gt;)</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">a &lt;+&gt; b</code> is <code class="code">a</code> if <code class="code">a</code> is <code class="code"><span class="constructor">Some</span> _</code>, <code class="code">b</code> otherwise<br>
+</div>
+
+<pre><span id="VALchoice"><span class="keyword">val</span> choice</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> list -> 'a <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">choice</code> returns the first non-<code class="code"><span class="constructor">None</span></code> element of the list, or <code class="code"><span class="constructor">None</span></code><br>
+</div>
+<br>
+<h2 id="2_InfixOperators">Infix Operators</h2><br>
+
+<pre><span class="keyword">module</span> <a href="CCOpt.Infix.html">Infix</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCOpt.Infix.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_ConversionandIO">Conversion and IO</h2><br>
+
+<pre><span id="VALto_list"><span class="keyword">val</span> to_list</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> 'a list</code></pre>
+<pre><span id="VALof_list"><span class="keyword">val</span> of_list</span> : <code class="type">'a list -> 'a <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+Head of list, or <code class="code"><span class="constructor">None</span></code><br>
+</div>
+
+<pre><span id="TYPEsequence"><span class="keyword">type</span> <code class="type">'a</code> sequence</span> = <code class="type">('a -> unit) -> unit</code> </pre>
+
+
+<pre><span id="TYPEgen"><span class="keyword">type</span> <code class="type">'a</code> gen</span> = <code class="type">unit -> 'a option</code> </pre>
+
+
+<pre><span id="TYPEprinter"><span class="keyword">type</span> <code class="type">'a</code> printer</span> = <code class="type">Format.formatter -> 'a -> unit</code> </pre>
+
+
+<pre><span id="TYPErandom_gen"><span class="keyword">type</span> <code class="type">'a</code> random_gen</span> = <code class="type">Random.State.t -> 'a</code> </pre>
+
+
+<pre><span id="VALrandom"><span class="keyword">val</span> random</span> : <code class="type">'a <a href="CCOpt.html#TYPErandom_gen">random_gen</a> -> 'a <a href="CCOpt.html#TYPEt">t</a> <a href="CCOpt.html#TYPErandom_gen">random_gen</a></code></pre>
+<pre><span id="VALchoice_seq"><span class="keyword">val</span> choice_seq</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> <a href="CCOpt.html#TYPEsequence">sequence</a> -> 'a <a href="CCOpt.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">choice_seq s</code> is similar to <a href="CCOpt.html#VALchoice"><code class="code"><span class="constructor">CCOpt</span>.choice</code></a>, but works on sequences.
+    It returns the first <code class="code"><span class="constructor">Some</span> x</code> occurring in <code class="code">s</code>, or <code class="code"><span class="constructor">None</span></code> otherwise.<br>
+<b>Since</b> 0.13<br>
+</div>
+
+<pre><span id="VALto_gen"><span class="keyword">val</span> to_gen</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEgen">gen</a></code></pre>
+<pre><span id="VALto_seq"><span class="keyword">val</span> to_seq</span> : <code class="type">'a <a href="CCOpt.html#TYPEt">t</a> -> 'a <a href="CCOpt.html#TYPEsequence">sequence</a></code></pre>
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">'a <a href="CCOpt.html#TYPEprinter">printer</a> -> 'a <a href="CCOpt.html#TYPEt">t</a> <a href="CCOpt.html#TYPEprinter">printer</a></code></pre></body></html>

@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="CCIO.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="CCVector" rel="Chapter" href="CCVector.html">
+<link title="CCHeap" rel="Chapter" href="CCHeap.html">
+<link title="CCList" rel="Chapter" href="CCList.html">
+<link title="CCOpt" rel="Chapter" href="CCOpt.html">
+<link title="CCPair" rel="Chapter" href="CCPair.html">
+<link title="CCFun" rel="Chapter" href="CCFun.html">
+<link title="CCHash" rel="Chapter" href="CCHash.html">
+<link title="CCInt" rel="Chapter" href="CCInt.html">
+<link title="CCBool" rel="Chapter" href="CCBool.html">
+<link title="CCFloat" rel="Chapter" href="CCFloat.html">
+<link title="CCArray" rel="Chapter" href="CCArray.html">
+<link title="CCRef" rel="Chapter" href="CCRef.html">
+<link title="CCSet" rel="Chapter" href="CCSet.html">
+<link title="CCOrd" rel="Chapter" href="CCOrd.html">
+<link title="CCRandom" rel="Chapter" href="CCRandom.html">
+<link title="CCString" rel="Chapter" href="CCString.html">
+<link title="CCHashtbl" rel="Chapter" href="CCHashtbl.html">
+<link title="CCMap" rel="Chapter" href="CCMap.html">
+<link title="CCFormat" rel="Chapter" href="CCFormat.html">
+<link title="CCIO" rel="Chapter" href="CCIO.html">
+<link title="CCInt64" rel="Chapter" href="CCInt64.html">
+<link title="CCChar" rel="Chapter" href="CCChar.html">
+<link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="Containers" rel="Chapter" href="Containers.html">
+<link title="CCKTree" rel="Chapter" href="CCKTree.html">
+<link title="CCKList" rel="Chapter" href="CCKList.html">
+<link title="CCLazy_list" rel="Chapter" href="CCLazy_list.html">
+<link title="CCMultiMap" rel="Chapter" href="CCMultiMap.html">
+<link title="CCMultiSet" rel="Chapter" href="CCMultiSet.html">
+<link title="CCTrie" rel="Chapter" href="CCTrie.html">
+<link title="CCFlatHashtbl" rel="Chapter" href="CCFlatHashtbl.html">
+<link title="CCCache" rel="Chapter" href="CCCache.html">
+<link title="CCPersistentHashtbl" rel="Chapter" href="CCPersistentHashtbl.html">
+<link title="CCDeque" rel="Chapter" href="CCDeque.html">
+<link title="CCFQueue" rel="Chapter" href="CCFQueue.html">
+<link title="CCBV" rel="Chapter" href="CCBV.html">
+<link title="CCMixtbl" rel="Chapter" href="CCMixtbl.html">
+<link title="CCMixmap" rel="Chapter" href="CCMixmap.html">
+<link title="CCRingBuffer" rel="Chapter" href="CCRingBuffer.html">
+<link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
+<link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
+<link title="CCMixset" rel="Chapter" href="CCMixset.html">
+<link title="CCGraph" rel="Chapter" href="CCGraph.html">
+<link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
+<link title="CCBitField" rel="Chapter" href="CCBitField.html">
+<link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
+<link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
+<link title="CCRAL" rel="Chapter" href="CCRAL.html">
+<link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
+<link title="CCHet" rel="Chapter" href="CCHet.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
+<link title="CCPool" rel="Chapter" href="CCPool.html">
+<link title="CCLock" rel="Chapter" href="CCLock.html">
+<link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
+<link title="CCThread" rel="Chapter" href="CCThread.html">
+<link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
+<link title="CCTimer" rel="Chapter" href="CCTimer.html">
+<link title="CCUnix" rel="Chapter" href="CCUnix.html">
+<link title="CCSexp" rel="Chapter" href="CCSexp.html">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><title>Containers doc : CCIO.File</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="CCIO.html" title="CCIO">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_CCIO.File.html">CCIO.File</a></h1>
+
+<pre><span class="keyword">module</span> File: <code class="code"><span class="keyword">sig</span></code> <a href="CCIO.File.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = <code class="type">string</code> </pre>
+<div class="info ">
+A file should be represented by its absolute path, but currently
+      this is not enforced.<br>
+</div>
+
+
+<pre><span id="VALto_string"><span class="keyword">val</span> to_string</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> string</code></pre>
+<pre><span id="VALmake"><span class="keyword">val</span> make</span> : <code class="type">string -> <a href="CCIO.File.html#TYPEt">t</a></code></pre><div class="info ">
+Build a file representation from a path (absolute or relative)<br>
+</div>
+
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALis_directory"><span class="keyword">val</span> is_directory</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALremove_exn"><span class="keyword">val</span> remove_exn</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+<code class="code">remove_exn path</code> tries to remove the file at <code class="code">path</code> from the
+      file system.<br>
+<b>Since</b> 0.8<br>
+<b>Raises</b> <code>Sys_error</code> if there is no file at <code class="code">path</code> or access rights are wrong.<br>
+</div>
+
+<pre><span id="VALremove"><span class="keyword">val</span> remove</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> unit <a href="CCIO.html#TYPEor_error">CCIO.or_error</a></code></pre><div class="info ">
+Like <code class="code">remove_exn</code> but with an error monad.<br>
+<b>Since</b> 0.8<br>
+</div>
+
+<pre><span id="VALremove_noerr"><span class="keyword">val</span> remove_noerr</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Like <code class="code">remove_exn</code> but do not raise any exception on failure.<br>
+<b>Since</b> 0.8<br>
+</div>
+
+<pre><span id="VALread_dir"><span class="keyword">val</span> read_dir</span> : <code class="type">?recurse:bool -> <a href="CCIO.File.html#TYPEt">t</a> -> <a href="CCIO.File.html#TYPEt">t</a> <a href="CCIO.html#TYPEgen">CCIO.gen</a></code></pre><div class="info ">
+<code class="code">read_dir d</code> returns a sequence of files and directory contained
+      in the directory <code class="code">d</code> (or an empty stream if <code class="code">d</code> is not a directory)<br>
+<b>Raises</b> <code>Sys_error</code> in case of error (e.g. permission denied)<br>
+</div>
+<div class="param_info"><code class="code">recurse</code> : if true (default <code class="code"><span class="keyword">false</span></code>), sub-directories are also
+        explored</div>
+
+<pre><span id="VALread_exn"><span class="keyword">val</span> read_exn</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+Read the content of the given file, or raises some exception<br>
+<b>Since</b> 0.16<br>
+<b>Raises</b> <code>Sys_error</code> in case of error<br>
+</div>
+
+<pre><span id="VALread"><span class="keyword">val</span> read</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> string <a href="CCIO.html#TYPEor_error">CCIO.or_error</a></code></pre><div class="info ">
+Read the content of the given file<br>
+<b>Since</b> 0.16<br>
+</div>
+
+<pre><span id="VALappend_exn"><span class="keyword">val</span> append_exn</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> string -> unit</code></pre><div class="info ">
+Append the given string into the given file, possibly raising<br>
+<b>Since</b> 0.16<br>
+<b>Raises</b> <code>Sys_error</code> in case of error<br>
+</div>
+
+<pre><span id="VALappend"><span class="keyword">val</span> append</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> string -> unit <a href="CCIO.html#TYPEor_error">CCIO.or_error</a></code></pre><div class="info ">
+Append the given string into the given file<br>
+<b>Since</b> 0.16<br>
+</div>
+
+<pre><span id="VALwrite_exn"><span class="keyword">val</span> write_exn</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> string -> unit</code></pre><div class="info ">
+Write the given string into the given file, possibly raising<br>
+<b>Since</b> 0.16<br>
+<b>Raises</b> <code>Sys_error</code> in case of error<br>
+</div>
+
+<pre><span id="VALwrite"><span class="keyword">val</span> write</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> string -> unit <a href="CCIO.html#TYPEor_error">CCIO.or_error</a></code></pre><div class="info ">
+Write the given string into the given file<br>
+<b>Since</b> 0.16<br>
+</div>
+
+<pre><span id="TYPEwalk_item"><span class="keyword">type</span> <code class="type"></code>walk_item</span> = <code class="type">[ `Dir | `File ] * <a href="CCIO.File.html#TYPEt">t</a></code> </pre>
+
+
+<pre><span id="VALwalk"><span class="keyword">val</span> walk</span> : <code class="type"><a href="CCIO.File.html#TYPEt">t</a> -> <a href="CCIO.File.html#TYPEwalk_item">walk_item</a> <a href="CCIO.html#TYPEgen">CCIO.gen</a></code></pre><div class="info ">
+Similar to <a href="CCIO.File.html#VALread_dir"><code class="code"><span class="constructor">CCIO</span>.<span class="constructor">File</span>.read_dir</code></a> (with <code class="code">recurse=<span class="keyword">true</span></code>), this function walks
+      a directory recursively and yields either files or directories.
+      Is a file anything that doesn't satisfy <a href="CCIO.File.html#VALis_directory"><code class="code"><span class="constructor">CCIO</span>.<span class="constructor">File</span>.is_directory</code></a> (including
+      symlinks, etc.)<br>
+<b>Raises</b> <code>Sys_error</code> in case of error (e.g. permission denied) during iteration<br>
+</div>
+
+<pre><span id="VALshow_walk_item"><span class="keyword">val</span> show_walk_item</span> : <code class="type"><a href="CCIO.File.html#TYPEwalk_item">walk_item</a> -> string</code></pre>
+<pre><span id="VALwith_temp"><span class="keyword">val</span> with_temp</span> : <code class="type">?temp_dir:string -> prefix:string -> suffix:string -> (string -> 'a) -> 'a</code></pre><div class="info ">
+<code class="code">with_temp ~prefix ~suffix f</code> will call <code class="code">f</code> with the name of a new
+        temporary file (located in <code class="code">temp_dir</code>).
+        After <code class="code">f</code> returns, the file is deleted. Best to be used in
+        combination with <a href="CCIO.html#VALwith_out"><code class="code"><span class="constructor">CCIO</span>.with_out</code></a>.
+        See <code class="code"><span class="constructor">Filename</span>.temp_file</code><br>
+<b>Since</b> 0.17<br>
+</div>
+</body></html>
