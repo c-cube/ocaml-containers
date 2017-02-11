@@ -56,6 +56,15 @@ let if_ b then_ else_ h =
 
 let poly x = Hashtbl.hash x
 
+let array_comm f a =
+  let arr = Array.init (Array.length a) (fun i -> f a.(i)) in
+  Array.sort CCInt.compare arr; (* sort the hashes, so their order does not matter *)
+  array (fun h->h) arr
+
+let list_comm f l =
+  let a = Array.of_list l in
+  array_comm f a
+
 let seq f seq =
   let h = ref 0x43 in
   seq (fun x -> h := combine f !h x);

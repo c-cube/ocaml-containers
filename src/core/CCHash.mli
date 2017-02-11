@@ -39,6 +39,16 @@ val if_ : bool -> 'a t -> 'a t -> 'a t
 val poly : 'a t
 (** the regular polymorphic hash function *)
 
+val list_comm : 'a t -> 'a list t
+(** Commutative version of {!list}. Lists that are equal up to permutation
+    will have the same hash.
+    @since NEXT_RELEASE *)
+
+val array_comm : 'a t -> 'a array t
+(** Commutative version of {!array}. Arrays that are equal up to permutation
+    will have the same hash.
+    @since NEXT_RELEASE *)
+
 (** {2 Base hash combinators} *)
 
 val combine : 'a t -> hash -> 'a -> hash
