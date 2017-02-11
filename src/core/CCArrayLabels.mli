@@ -31,19 +31,19 @@ val set : 'a t -> int -> 'a -> unit
 
 val length : _ t -> int
 
-val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
+val fold : f:('a -> 'b -> 'a) -> init:'a -> 'b t -> 'a
 
-val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+val foldi : f:('a -> int -> 'b -> 'a) -> init:'a -> 'b t -> 'a
 (** Fold left on array, with index *)
 
-val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 'a
 (** Fold left on array until a stop condition via [('a, `Stop)] is
     indicated by the accumulator
     @since 0.8 *)
 
-val iter : ('a -> unit) -> 'a t -> unit
+val iter : f:('a -> unit) -> 'a t -> unit
 
-val iteri : (int -> 'a -> unit) -> 'a t -> unit
+val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 
 val blit : 'a t -> int -> 'a t -> int -> int -> unit
 (** [blit from i into j len] copies [len] elements from the first array
@@ -52,18 +52,18 @@ val blit : 'a t -> int -> 'a t -> int -> int -> unit
 val reverse_in_place : 'a t -> unit
 (** Reverse the array in place *)
 
-val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
+val sorted : f:('a -> 'a -> int) -> 'a t -> 'a array
 (** [sorted cmp a] makes a copy of [a] and sorts it with [cmp].
     @since 1.0 *)
 
-val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
+val sort_indices : f:('a -> 'a -> int) -> 'a t -> int array
 (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index of the [i]-th element of [a] in [sort cmp a].
     In other words, [map (fun i -> a.(i)) (sort_indices a) = sorted cmp a].
     [a] is not modified.
     @since 1.0 *)
 
-val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
+val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
 (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the position in [sorted cmp a] of the [i]-th
     element of [a].
@@ -75,31 +75,31 @@ val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
     [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
     @since 1.0 *)
 
-val find : ('a -> 'b option) -> 'a t -> 'b option
+val find : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find f a] returns [Some y] if there is an element [x] such
     that [f x = Some y], else it returns [None] *)
 
-val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
+val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find}, but also pass the index to the predicate function.
     @since 0.3.4 *)
 
-val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
+val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None]
     @since 0.3.4 *)
 
-val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
+val lookup : ?cmp:'a ord -> key:'a -> 'a t -> int option
 (** Lookup the index of some value in a sorted array.
     @return [None] if the key is not present, or
       [Some i] ([i] the index of the key) otherwise *)
 
-val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
+val lookup_exn : ?cmp:'a ord -> key:'a -> 'a t -> int
 (** Same as {!lookup_exn}, but
     @raise Not_found if the key is not present *)
 
-val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+val bsearch : ?cmp:('a -> 'a -> int) -> key:'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
-(** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
+(** [bsearch ?cmp key arr] finds the index of the object [key] in the array [arr],
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
     the result is not specified (may raise Invalid_argument).
 
@@ -107,35 +107,35 @@ val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
     (dichotomic search).
 
     @return
-    - [`At i] if [cmp arr.(i) x = 0] (for some i)
-    - [`All_lower] if all elements of [arr] are lower than [x]
-    - [`All_bigger] if all elements of [arr] are bigger than [x]
-    - [`Just_after i] if [arr.(i) < x < arr.(i+1)]
+    - [`At i] if [cmp arr.(i) key = 0] (for some i)
+    - [`All_lower] if all elements of [arr] are lower than [key]
+    - [`All_bigger] if all elements of [arr] are bigger than [key]
+    - [`Just_after i] if [arr.(i) < key < arr.(i+1)]
     - [`Empty] if the array is empty
 
     @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp]
     @since 0.13 *)
 
-val for_all : ('a -> bool) -> 'a t -> bool
+val for_all : f:('a -> bool) -> 'a t -> bool
 
-val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+val for_all2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (** Forall on pairs of arrays.
     @raise Invalid_argument if they have distinct lengths
     allow different types @since 0.20 *)
 
-val exists : ('a -> bool) -> 'a t -> bool
+val exists : f:('a -> bool) -> 'a t -> bool
 
-val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
+val exists2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (** Exists on pairs of arrays.
     @raise Invalid_argument if they have distinct lengths
     allow different types @since 0.20 *)
 
-val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+val fold2 : f:('acc -> 'a -> 'b -> 'acc) -> init:'acc -> 'a t -> 'b t -> 'acc
 (** Fold on two arrays stepwise.
     @raise Invalid_argument if they have distinct lengths
     @since 0.20 *)
 
-val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+val iter2 : f:('a -> 'b -> unit) -> 'a t -> 'b t -> unit
 (** Iterate on two arrays stepwise.
     @raise Invalid_argument if they have distinct lengths
     @since 0.20 *)
@@ -162,9 +162,9 @@ val pp: ?sep:string -> 'a printer -> 'a t printer
 val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
 (** Print an array, giving the printing function both index and item *)
 
-val map : ('a -> 'b) -> 'a t -> 'b t
+val map : f:('a -> 'b) -> 'a t -> 'b t
 
-val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+val map2 : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** Map on two arrays stepwise.
       @raise Invalid_argument if they have distinct lengths
       @since 0.20 *)
@@ -173,14 +173,14 @@ val rev : 'a t -> 'a t
 (** Copy + reverse in place
     @since 0.20 *)
 
-val filter : ('a -> bool) -> 'a t -> 'a t
+val filter : f:('a -> bool) -> 'a t -> 'a t
 (** Filter elements out of the array. Only the elements satisfying
     the given predicate will be kept. *)
 
-val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 (** Map each element into another value, or discard it *)
 
-val flat_map : ('a -> 'b t) -> 'a t -> 'b array
+val flat_map : f:('a -> 'b t) -> 'a t -> 'b array
 (** Transform each element into an array, then flatten *)
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t

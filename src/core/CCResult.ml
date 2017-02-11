@@ -6,8 +6,7 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
@@ -38,7 +37,7 @@ let of_exn e =
 
 let of_exn_trace e =
   let res = Printf.sprintf "%s\n%s"
-    (Printexc.to_string e) (Printexc.get_backtrace ())
+      (Printexc.to_string e) (Printexc.get_backtrace ())
   in
   Error res
 
@@ -99,6 +98,14 @@ let fold ~ok ~error x = match x with
   | Ok x -> ok x
   | Error s -> error s
 
+let is_ok = function
+  | Ok _ -> true
+  | Error _ -> false
+
+let is_error = function
+  | Ok _ -> false
+  | Error _ -> true
+
 (** {2 Wrappers} *)
 
 let guard f =
@@ -139,19 +146,19 @@ let join t = match t with
   | (Error _) as e -> e
 
 let both x y = match x,y with
-   | Ok o, Ok o' -> Ok (o, o')
-   | Ok _, Error e -> Error e
-   | Error e, _  -> Error e
+  | Ok o, Ok o' -> Ok (o, o')
+  | Ok _, Error e -> Error e
+  | Error e, _  -> Error e
 
 (** {2 Collections} *)
 
 let map_l f l =
   let rec map acc l = match l with
-  | [] -> Ok (List.rev acc)
-  | x::l' ->
+    | [] -> Ok (List.rev acc)
+    | x::l' ->
       match f x with
-      | Error s -> Error s
-      | Ok y -> map (y::acc) l'
+        | Error s -> Error s
+        | Ok y -> map (y::acc) l'
   in map [] l
 
 exception LocalExit
@@ -162,11 +169,11 @@ let fold_seq f acc seq =
     let acc = ref acc in
     seq
       (fun x -> match f !acc x with
-        | Error s -> err := Some s; raise LocalExit
-        | Ok y -> acc := y);
+         | Error s -> err := Some s; raise LocalExit
+         | Ok y -> acc := y);
     Ok !acc
   with LocalExit ->
-    match !err with None -> assert false | Some s -> Error s
+  match !err with None -> assert false | Some s -> Error s
 
 let fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
 
@@ -185,11 +192,11 @@ let choose l =
 
 let retry n f =
   let rec retry n acc = match n with
-  | 0 -> fail (List.rev acc)
-  | _ ->
+    | 0 -> fail (List.rev acc)
+    | _ ->
       match f () with
-      | Ok _ as res -> res
-      | Error e -> retry (n-1) (e::acc)
+        | Ok _ as res -> res
+        | Error e -> retry (n-1) (e::acc)
   in retry n []
 
 (** {2 Infix} *)
@@ -223,8 +230,8 @@ module Traverse(M : MONAD) = struct
 
   let retry_m n f =
     let rec retry n acc = match n with
-    | 0 -> M.return (fail (List.rev acc))
-    | _ ->
+      | 0 -> M.return (fail (List.rev acc))
+      | _ ->
         f () >>= function
         | Ok x -> M.return (Ok x)
         | Error e -> retry (n-1) (e::acc)
@@ -257,18 +264,10 @@ let to_err = function
 
 (** {2 IO} *)
 
-let pp pp_x buf e = match e with
-  | Ok x -> Printf.bprintf buf "ok(%a)" pp_x x
-  | Error s -> Printf.bprintf buf "error(%s)" s
-
-let pp' pp_x pp_e buf e = match e with
-  | Ok x -> Printf.bprintf buf "ok(%a)" pp_x x
-  | Error s -> Printf.bprintf buf "error(%a)" pp_e s
-
-let print pp_x fmt e = match e with
+let pp pp_x fmt e = match e with
   | Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
   | Error s -> Format.fprintf fmt "@[error(@,%s)@]" s
 
-let print' pp_x pp_e fmt e = match e with
+let pp' pp_x pp_e fmt e = match e with
   | Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
   | Error s -> Format.fprintf fmt "@[error(@,%a)@]" pp_e s

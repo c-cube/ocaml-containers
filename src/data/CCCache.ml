@@ -34,11 +34,11 @@ let default_hash_ = Hashtbl.hash
 (** {2 Value interface} *)
 
 (** Invariants:
-  - after [cache.set x y], [get cache x] must return [y] or raise [Not_found]
-  - [cache.set x y] is only called if [get cache x] fails, never if [x] is already bound
-  - [cache.size()] must be positive and correspond to the number of items in [cache.iter]
-  - [cache.iter f] calls [f x y] with every [x] such that [cache.get x = y]
-  - after [cache.clear()], [cache.get x] fails for every [x]
+    - after [cache.set x y], [get cache x] must return [y] or raise [Not_found]
+    - [cache.set x y] is only called if [get cache x] fails, never if [x] is already bound
+    - [cache.size()] must be positive and correspond to the number of items in [cache.iter]
+    - [cache.iter f] calls [f x y] with every [x] such that [cache.get x = y]
+    - after [cache.clear()], [cache.get x] fails for every [x]
 *)
 type ('a,'b) t = {
   set : 'a -> 'b -> unit;
@@ -163,9 +163,9 @@ module Replacing = struct
   let get c x =
     let i = c.hash x mod Array.length c.arr in
     match c.arr.(i) with
-    | Pair (x', y) when c.eq x x' -> y
-    | Pair _
-    | Empty -> raise Not_found
+      | Pair (x', y) when c.eq x x' -> y
+      | Pair _
+      | Empty -> raise Not_found
 
   let set c x y =
     let i = c.hash x mod Array.length c.arr in
@@ -225,27 +225,27 @@ module LRU(X:HASH) = struct
   (* take first from queue *)
   let take_ c =
     match c.first with
-    | Some n when n.next == n ->
+      | Some n when n.next == n ->
         (* last element *)
         c.first <- None;
         n
-    | Some n ->
+      | Some n ->
         c.first <- Some n.next;
         n.prev.next <- n.next;
         n.next.prev <- n.prev;
         n
-    | None ->
+      | None ->
         failwith "LRU: empty queue"
 
   (* push at back of queue *)
   let push_ c n =
     match c.first with
-    | None ->
+      | None ->
         n.next <- n;
         n.prev <- n;
         c.first <- Some n
-    | Some n1 when n1==n -> ()
-    | Some n1 ->
+      | Some n1 when n1==n -> ()
+      | Some n1 ->
         n.prev <- n1.prev;
         n.next <- n1;
         n1.prev.next <- n;
@@ -291,8 +291,8 @@ module LRU(X:HASH) = struct
     let len = H.length c.table in
     assert (len <= c.size);
     if len = c.size
-      then replace_ c x y
-      else insert_ c x y
+    then replace_ c x y
+    else insert_ c x y
 
   let size c () = H.length c.table
 
@@ -302,10 +302,10 @@ end
 
 let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
   let module L = LRU(struct
-    type t = a
-    let equal = eq
-    let hash = hash
-  end) in
+      type t = a
+      let equal = eq
+      let hash = hash
+    end) in
   let c = L.make size in
   { get=(fun x -> L.get c x);
     set=(fun x y -> L.set c x y);
@@ -364,10 +364,10 @@ end
 
 let unbounded (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
   let module C = UNBOUNDED(struct
-    type t = a
-    let equal = eq
-    let hash = hash
-  end) in
+      type t = a
+      let equal = eq
+      let hash = hash
+    end) in
   let c = C.make size in
   { get=(fun x -> C.get c x);
     set=(fun x y -> C.set c x y);

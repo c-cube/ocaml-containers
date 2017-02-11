@@ -72,11 +72,16 @@ module type S = sig
 
   val to_list : t -> elt list
 
-  val add_list : t -> elt list -> t (** @since 0.16 *)
+  val add_list : t -> elt list -> t
+  (** Add the elements of the list to the heap. An element occurring several
+      times will be added that many times to the heap.
+      @since 0.16 *)
 
   val of_list : elt list -> t
+  (** [of_list l = add_list empty l] *)
 
   val add_seq : t -> elt sequence -> t (** @since 0.16 *)
+  (** Similar to {!add_list} *)
 
   val of_seq : elt sequence -> t
 

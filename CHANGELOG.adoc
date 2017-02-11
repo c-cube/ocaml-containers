@@ -1,5 +1,68 @@
 = Changelog
 
+== 1.0
+
+See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
+
+**Breaking and Removals**:
+
+- simplify and cleanup of CCGraph
+- remove poly-variant based errors, use `result` everywhere
+- remove deprecated functions and modules
+- remove `CCVHashconsedSet`
+- remove `CCAllocCache`
+- remove `CCBloom`
+- update benchmarks (ignoring hamt); remove useless old script
+- simplify `CCHash`, changing the type to `'a -> int`, relying on
+  `Hashtbl.seeded_hash` for combining hashes
+- split `CCList.Zipper` into its own module, `CCZipper` in containers.data
+- change argument ordering in `CCList.Assoc`
+- remove `CCList.Idx`, rename its functions to toplevel
+- remove `CCList.Set`, move functions to toplevel and rename them
+- rewrite `CCBitField` with a much simpler interface
+- split `CCArray.Sub` into `CCArray_slice`
+- remove containers.string
+  * remove CCParse and CCKMP (will be replaced in core)
+- `CCFormat`:
+  * remove `start/stop` args, make `sep` a `unit printer`
+  * many other improvements and additions
+  * add `CCFormat.tee`
+  * add `CCFormat.Dump.{result,to_string}`
+- replace `or_` by `default` in labelled functions
+- remove trailing `_` in `CCOrd` primitives
+- remove `containers.io` (deprecated for a while)
+- remove `containers.bigarray`
+- remove `CCSexpM`, use ocamllex for a much simpler `CCSexp` using ocamllex
+- add `CCParse` into core, a simple, lightweight version of parser combs
+- remove `CCPrint`, use `CCFormat` instead (also, update tests relying on it)
+- remove containers.advanced
+- change type of `CCUnix.escape_str`
+
+**Additions**:
+
+- `CCHashtbl`:
+  * `CCHash.{list,array}_comm`
+  * `CCHashtbl.Poly` and fix issue in Containers (close #46)
+  * `CCHashtbl.get_or_add`
+- `CCList.sublists_of_len` (close #97)
+- `Char.{of_int{,_exn},to_int}` (close #95)
+- Add `CCResult.{is_ok,is_error}`
+- improve `CCUnix` a bit
+- update `containers.ml` so as to include all core containers
+- add `CCOrd.Infix`
+- use `Labels` versions of `CCList` and `CCArray`
+- add `CCString.edit_distance`
+- expose `CCString.Find` for efficient sub-string searching
+
+**Bugfixes**:
+
+- `CCIO`: deal properly with broken symlinks and permission errors
+- test for #94 (using Thread.yield to trigger segfault)
+  Fix `CCSemaphore.with_acquire`: release a non locked mutex is UB
+- containers.top: remove printers on structural types (#71)
+- add doc for `of_list` in relevant modules (close #85)
+- bugfix: do not use `Sequence.flatMap` (close #90)
+
 == 0.22
 
 - threads/CCLock: add `try_with_lock` to wrap `Mutex.try_lock`

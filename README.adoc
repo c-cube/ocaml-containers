@@ -21,19 +21,12 @@ cross-module dependencies).
 
   containers.data:: with additional data structures that don't have an
     equivalent in the standard library;
-  containers.io:: (deprecated)
   containers.iter:: with list-like and tree-like iterators;
-  containers.string:: (in directory `string`) with
-    a few packed modules that deal with strings (Levenshtein distance,
-    KMP search algorithm, and a few naive utils). Again, modules are independent
-    and sometimes parametric on the string and char types (so they should
-    be able to deal with your favorite unicode library).
 
 - A sub-library with complicated abstractions, `containers.advanced` (with
   a LINQ-like query module, batch operations using GADTs, and others).
 - Utilities around the `unix` library in `containers.unix` (mainly to spawn
   sub-processes)
-- A bigstring module using `bigarray` in `containers.bigarray` (*deprecated*)
 - A lightweight S-expression printer and streaming parser in `containers.sexp`
 
 Some of the modules have been moved to their own repository (e.g. `sequence`,
@@ -103,9 +96,10 @@ sequence:: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
   It is easier to define on data structures than `gen`, but it a bit less
   powerful.  The opam library https://github.com/c-cube/sequence[sequence]
   can be used to consume and produce values of this type.
-error:: `'a or_error = [`Error of string | `Ok of 'a]` is a error type
-  that is used in other libraries, too. The reference module in containers
-  is `CCError`.
+error:: (DEPRECATED) `'a or_error = [`Error of string | `Ok of 'a]` is a error type
+  that is used in other libraries, too. It is now deprecated and
+  replaced with `('a, string) Result.result`, supported in
+  `CCResult`.
 klist:: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
   without memoization, used as a persistent iterator. The reference
   module is `CCKList` (in `containers.iter`).
@@ -125,7 +119,8 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCHeap`, a purely functional heap structure
 - `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
 - `CCList`, functions on lists, including tail-recursive implementations of `map` and `append` and many other things
-- `CCArray`, utilities on arrays and slices
+- `CCArray`, utilities on arrays
+- `CCArray_slice`, array slices
 - `CCHashtbl`, `CCMap` extensions of the standard modules `Hashtbl` and `Map`
 - `CCInt`
 - `CCString` (basic string operations)
@@ -136,9 +131,8 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 - `CCFloat`
 - `CCOrd` (combinators for total orderings)
 - `CCRandom` (combinators for random generators)
-- `CCPrint` (printing combinators)
 - `CCHash` (hashing combinators)
-- `CCError` (monadic error handling, very useful)
+- `CCResult` (monadic error handling, very useful)
 - `CCIO`, basic utilities for IO (channels, files)
 - `CCInt64,` utils for `int64`
 - `CCChar`, utils for `char`
@@ -147,7 +141,6 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
 === Containers.data
 
 - `CCBitField`, bitfields embedded in integers
-- `CCBloom`, a bloom filter
 - `CCCache`, memoization caches, LRU, etc.
 - `CCFlatHashtbl`, a flat (open-addressing) hashtable functorial implementation
 - `CCTrie`, a prefix tree
@@ -163,18 +156,12 @@ Documentation http://cedeela.fr/~simon/software/containers[here].
   with batch operations
 - `CCIntMap`, map specialized for integer keys based on Patricia Trees,
   with fast merges
-- `CCHashconsedSet`, a set structure with sharing of sub-structures
 - `CCGraph`, a small collection of graph algorithms
 - `CCBitField`, a type-safe implementation of bitfields that fit in `int`
 - `CCWBTree`, a weight-balanced tree, implementing a map interface
 - `CCRAL`, a random-access list structure, with `O(1)` cons/hd/tl and `O(ln(n))`
   access to elements by their index.
 - `CCImmutArray`, immutable interface to arrays
-
-=== Containers.io
-
-*deprecated*, `CCIO` is now a <<core,core>> module. You can still install it and
-depend on it but it contains no useful module.
 
 === Containers.unix
 
@@ -192,20 +179,6 @@ Iterators:
 
 - `CCKList`, a persistent iterator structure (akin to a lazy list, without memoization)
 - `CCKTree`, an abstract lazy tree structure
-
-=== String
-
-In the module `Containers_string`:
-- `Levenshtein`: edition distance between two strings
-- `KMP`: Knuth-Morris-Pratt substring algorithm
-- `Parse`: simple parser combinators
-
-=== Advanced
-
-In the module `Containers_advanced`:
-- `CCLinq`, high-level query language over collections
-- `CCCat`, a few categorical structures
-- `CCBatch`, to combine operations on collections into one traversal
 
 === Thread
 
@@ -229,7 +202,7 @@ The library has moved to https://github.com/c-cube/containers-misc .
 
 == Documentation
 
-In general, see http://c-cube.github.io/ocaml-containers/ or 
+In general, see http://c-cube.github.io/ocaml-containers/ or
 http://cedeela.fr/~simon/software/containers
 
 by version:
@@ -258,7 +231,7 @@ branch `stable` it is not necessary.
 To build and run tests (requires `oUnit` and https://github.com/vincent-hugot/iTeML[qtest]):
 
     $ opam install oUnit qtest
-    $ ./configure --enable-tests --enable-unix --enable-bigarray
+    $ ./configure --enable-tests --enable-unix
     $ make test
 
 To build the small benchmarking suite (requires https://github.com/chris00/ocaml-benchmark[benchmark]):

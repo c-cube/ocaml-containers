@@ -2,7 +2,7 @@
 
 (** {1 Utils around char}
 
-  @since 0.14 *)
+    @since 0.14 *)
 
 type t = char
 
@@ -11,6 +11,10 @@ let compare = Char.compare
 
 let pp = Buffer.add_char
 let print = Format.pp_print_char
+
+let of_int_exn = Char.chr
+let of_int c = try Some (of_int_exn c) with _ -> None
+let to_int = Char.code
 
 let lowercase_ascii c =
   if c >= 'A' && c <= 'Z'

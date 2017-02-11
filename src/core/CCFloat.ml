@@ -42,12 +42,10 @@ let equal (a:float) b = a=b
 let hash = Hashtbl.hash
 let compare (a:float) b = Pervasives.compare a b
 
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
-let pp buf = Printf.bprintf buf "%f"
-let print fmt = Format.pp_print_float fmt
+let pp = Format.pp_print_float
 
 let fsign a =
   if is_nan a then nan

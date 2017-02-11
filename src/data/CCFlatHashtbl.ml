@@ -26,9 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Open-Addressing Hash-table}
 
-We use Robin-Hood hashing as described in
-http://codecapsule.com/2013/11/17/robin-hood-hashing-backward-shift-deletion/
-with backward shift. *)
+    We use Robin-Hood hashing as described in
+    http://codecapsule.com/2013/11/17/robin-hood-hashing-backward-shift-deletion/
+    with backward shift. *)
 
 type 'a sequence = ('a -> unit) -> unit
 
@@ -122,15 +122,15 @@ module Make(X : HASHABLE) = struct
   (* insert k->v in [tbl], currently at index [i] and distance [dib] *)
   let rec _linear_probe tbl k v h_k i dib =
     match tbl.arr.(i) with
-    | Empty ->
+      | Empty ->
         (* add binding *)
         tbl.size <- 1 + tbl.size;
         tbl.arr.(i) <- Key (k, v, h_k)
-    | Key (k', _, h_k') when X.equal k k' ->
+      | Key (k', _, h_k') when X.equal k k' ->
         (* replace *)
         assert (h_k = h_k');
         tbl.arr.(i) <- Key (k, v, h_k)
-    | Key (k', v', h_k') ->
+      | Key (k', v', h_k') ->
         let dib' = _dib tbl h_k' ~i in
         if dib > dib'
         then (
@@ -143,7 +143,7 @@ module Make(X : HASHABLE) = struct
         )
 
   (* resize table: put a bigger array in it, then insert values
-    from the old array *)
+     from the old array *)
   let _resize tbl =
     let size' = min Sys.max_array_length (2 * Array.length tbl.arr) in
     let arr' = Array.make size' Empty in
@@ -168,9 +168,9 @@ module Make(X : HASHABLE) = struct
      or a bucket that doesn't need shifting is met *)
   let rec _backward_shift tbl ~prev:prev_i i =
     match tbl.arr.(i) with
-    | Empty ->
+      | Empty ->
         tbl.arr.(prev_i) <- Empty;
-    | Key (_, _, h_k) as bucket ->
+      | Key (_, _, h_k) as bucket ->
         let d = _dib tbl h_k ~i in
         assert (d >= 0);
         if d > 0 then (
@@ -185,17 +185,17 @@ module Make(X : HASHABLE) = struct
      if any, and perform backward shift from there *)
   let rec _linear_probe_remove tbl k h_k i dib =
     match tbl.arr.(i) with
-    | Empty -> ()
-    | Key (k', _, _) when X.equal k k' ->
+      | Empty -> ()
+      | Key (k', _, _) when X.equal k k' ->
         tbl.size <- tbl.size - 1;
         (* shift all elements that follow and have a DIB > 0;
            it will also erase the last shifted bucket, and erase [i] in
            any case *)
         _backward_shift tbl ~prev:i (_succ tbl i)
-    | Key (_, _, h_k') ->
-      if dib > _dib tbl h_k' ~i
-      then ()  (* [k] not present, would be here otherwise *)
-      else _linear_probe_remove tbl k h_k (_succ tbl i) (dib+1)
+      | Key (_, _, h_k') ->
+        if dib > _dib tbl h_k' ~i
+        then ()  (* [k] not present, would be here otherwise *)
+        else _linear_probe_remove tbl k h_k (_succ tbl i) (dib+1)
 
   let remove tbl k =
     let h_k = X.hash k in
@@ -203,9 +203,9 @@ module Make(X : HASHABLE) = struct
 
   let rec get_exn_rec tbl k h_k i dib =
     match tbl.arr.(i) with
-    | Empty -> raise Not_found
-    | Key (k', v', _) when X.equal k k' -> v'
-    | Key (_, _, h_k') ->
+      | Empty -> raise Not_found
+      | Key (k', v', _) when X.equal k k' -> v'
+      | Key (_, _, h_k') ->
         if dib > _dib tbl h_k' ~i
         then raise Not_found  (* [k] would be here otherwise *)
         else get_exn_rec tbl k h_k (_succ tbl i) (dib+1)
@@ -215,22 +215,22 @@ module Make(X : HASHABLE) = struct
     let i0 = _initial_idx tbl h_k in
     (* unroll a few steps *)
     match tbl.arr.(i0) with
-    | Empty -> raise Not_found
-    | Key (k', v, _) ->
-      if X.equal k k' then v
-      else
-        let i1 = _succ tbl i0 in
-        match tbl.arr.(i1) with
-        | Empty -> raise Not_found
-        | Key (k', v, _) ->
-          if X.equal k k' then v
-          else
-            let i2 = _succ tbl i1 in
-            match tbl.arr.(i2) with
+      | Empty -> raise Not_found
+      | Key (k', v, _) ->
+        if X.equal k k' then v
+        else
+          let i1 = _succ tbl i0 in
+          match tbl.arr.(i1) with
             | Empty -> raise Not_found
             | Key (k', v, _) ->
               if X.equal k k' then v
-              else get_exn_rec tbl k h_k (_succ tbl i2) 3
+              else
+                let i2 = _succ tbl i1 in
+                match tbl.arr.(i2) with
+                  | Empty -> raise Not_found
+                  | Key (k', v, _) ->
+                    if X.equal k k' then v
+                    else get_exn_rec tbl k h_k (_succ tbl i2) 3
 
   let get k tbl =
     try Some (get_exn k tbl)
@@ -254,8 +254,8 @@ module Make(X : HASHABLE) = struct
   let to_list tbl =
     Array.fold_left
       (fun acc bucket -> match bucket with
-        | Empty -> acc
-        | Key (k,v,_) -> (k,v)::acc)
+         | Empty -> acc
+         | Key (k,v,_) -> (k,v)::acc)
       [] tbl.arr
 
   let of_seq seq =

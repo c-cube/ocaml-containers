@@ -2,9 +2,9 @@
 
 (** {1 Weight-Balanced Tree}
 
-  {b status: experimental}
+    {b status: experimental}
 
-  @since 0.13 *)
+    @since 0.13 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -65,12 +65,12 @@ module type S = sig
   val mapi : f:(key -> 'a -> 'b) -> 'a t -> 'b t
   (** Map values, giving both key and value. Will use {!WORD.of_list} to rebuild keys.
       @since 0.17
-    *)
+  *)
 
   val map : f:('a -> 'b) -> 'a t -> 'b t
   (** Map values, giving only the value.
       @since 0.17
-    *)
+  *)
 
   val iter : f:(key -> 'a -> unit) -> 'a t -> unit
 

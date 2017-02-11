@@ -73,7 +73,7 @@ val opaque_identity : 'a -> 'a
 
 (** {2 Monad}
 
-Functions with a fixed domain are monads in their codomain *)
+    Functions with a fixed domain are monads in their codomain *)
 
 module Monad(X : sig type t end) : sig
   type 'a t = X.t -> 'a

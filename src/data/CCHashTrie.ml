@@ -179,7 +179,7 @@ let popcount b =
 
 (*$Q
   Q.int (fun i -> let i = i land (1 lsl 32) in popcount i <= 32)
-  *)
+*)
 
 (* sparse array, using a bitfield and POPCOUNT *)
 module A_SPARSE = struct
@@ -216,9 +216,9 @@ module A_SPARSE = struct
       let arr = Array.make (n+1) x in
       arr.(real_idx) <- x;
       if real_idx>0
-        then Array.blit a.arr 0 arr 0 real_idx;
+      then Array.blit a.arr 0 arr 0 real_idx;
       if real_idx<n
-        then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
+      then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
       {a with bits; arr}
     ) else (
       (* replace element at [real_idx] *)
@@ -244,9 +244,9 @@ module A_SPARSE = struct
       let n = Array.length a.arr in
       let arr = Array.make (n+1) x in
       if real_idx>0
-        then Array.blit a.arr 0 arr 0 real_idx;
+      then Array.blit a.arr 0 arr 0 real_idx;
       if real_idx<n
-        then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
+      then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
       {a with bits; arr}
     ) else (
       let x = f a.arr.(real_idx) in
@@ -267,9 +267,9 @@ module A_SPARSE = struct
       let n = Array.length a.arr in
       let arr = if n=1 then [||] else Array.make (n-1) a.arr.(0) in
       if real_idx > 0
-        then Array.blit a.arr 0 arr 0 real_idx;
+      then Array.blit a.arr 0 arr 0 real_idx;
       if real_idx+1 < n
-        then Array.blit a.arr (real_idx+1) arr real_idx (n-real_idx-1);
+      then Array.blit a.arr (real_idx+1) arr real_idx (n-real_idx-1);
       {a with bits; arr}
     )
 
@@ -281,7 +281,7 @@ end
 (** {2 Functors} *)
 
 module Make(Key : KEY)
-: S with type key = Key.t
+  : S with type key = Key.t
 = struct
   module A = A_SPARSE
 
@@ -351,22 +351,22 @@ module Make(Key : KEY)
     | Nil -> raise Not_found
     | One (k', v') -> if Key.equal k k' then v' else raise Not_found
     | Two (k1, v1, k2, v2) ->
-        if Key.equal k k1 then v1
-        else if Key.equal k k2 then v2
-        else raise Not_found
+      if Key.equal k k1 then v1
+      else if Key.equal k k2 then v2
+      else raise Not_found
     | Cons (k', v', tail) ->
-        if Key.equal k k' then v' else get_exn_list_ k tail
+      if Key.equal k k' then v' else get_exn_list_ k tail
 
   let rec get_exn_ k ~h m = match m with
     | E -> raise Not_found
     | S (_, k', v') -> if Key.equal k k' then v' else raise Not_found
     | L (_, l) -> get_exn_list_ k l
     | N (leaf, a) ->
-        if Hash.is_0 h then get_exn_list_ k leaf
-        else
-          let i = Hash.rem h in
-          let h' = Hash.quotient h in
-          get_exn_ k ~h:h' (A.get ~default:E a i)
+      if Hash.is_0 h then get_exn_list_ k leaf
+      else
+        let i = Hash.rem h in
+        let h' = Hash.quotient h in
+        get_exn_ k ~h:h' (A.get ~default:E a i)
 
   let get_exn k m = get_exn_ k ~h:(hash_ k) m
 
@@ -390,15 +390,15 @@ module Make(Key : KEY)
   let rec add_list_ k v l = match l with
     | Nil -> One (k,v)
     | One (k1, v1) ->
-        if Key.equal k k1 then One (k, v) else Two (k,v,k1,v1)
+      if Key.equal k k1 then One (k, v) else Two (k,v,k1,v1)
     | Two (k1, v1, k2, v2) ->
-        if Key.equal k k1 then Two (k, v, k2, v2)
-        else if Key.equal k k2 then Two (k, v, k1, v1)
-        else Cons (k, v, l)
+      if Key.equal k k1 then Two (k, v, k2, v2)
+      else if Key.equal k k2 then Two (k, v, k1, v1)
+      else Cons (k, v, l)
     | Cons (k', v', tail) ->
-        if Key.equal k k'
-        then Cons (k, v, tail) (* replace *)
-        else Cons (k', v', add_list_ k v tail)
+      if Key.equal k k'
+      then Cons (k, v, tail) (* replace *)
+      else Cons (k', v', add_list_ k v tail)
 
   let node_ leaf a = N (leaf, a)
 
@@ -407,23 +407,23 @@ module Make(Key : KEY)
   let rec add_ ~id k v ~h m = match m with
     | E -> S (h, k, v)
     | S (h', k', v') ->
-        if h=h'
-        then if Key.equal k k'
-          then S (h, k, v)  (* replace *)
-          else L (h, Cons (k, v, Cons (k', v', Nil)))
-        else
-          make_array_ ~id ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
+      if h=h'
+      then if Key.equal k k'
+        then S (h, k, v)  (* replace *)
+        else L (h, Cons (k, v, Cons (k', v', Nil)))
+      else
+        make_array_ ~id ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
     | L (h', l) ->
-        if h=h'
-        then L (h, add_list_ k v l)
-        else (* split into N *)
-          make_array_ ~id ~leaf:l ~h_leaf:h' k v ~h
+      if h=h'
+      then L (h, add_list_ k v l)
+      else (* split into N *)
+        make_array_ ~id ~leaf:l ~h_leaf:h' k v ~h
     | N (leaf, a) ->
-        if Hash.is_0 h
-        then node_ (add_list_ k v leaf) a
-        else
-          let mut = A.owns ~id a in (* can we modify [a] in place? *)
-          node_ leaf (add_to_array_ ~id ~mut k v ~h a)
+      if Hash.is_0 h
+      then node_ (add_list_ k v leaf) a
+      else
+        let mut = A.owns ~id a in (* can we modify [a] in place? *)
+        node_ leaf (add_to_array_ ~id ~mut k v ~h a)
 
   (* make an array containing a leaf, and insert (k,v) in it *)
   and make_array_ ~id ~leaf ~h_leaf:h' k v ~h =
@@ -493,40 +493,40 @@ module Make(Key : KEY)
   let rec remove_list_ k l = match l with
     | Nil -> Nil
     | One (k', _) ->
-        if Key.equal k k' then Nil else l
+      if Key.equal k k' then Nil else l
     | Two (k1, v1, k2, v2) ->
-        if Key.equal k k1 then One (k2, v2)
-        else if Key.equal k k2 then One (k1, v1)
-        else l
+      if Key.equal k k1 then One (k2, v2)
+      else if Key.equal k k2 then One (k1, v1)
+      else l
     | Cons (k', v', tail) ->
-        if Key.equal k k'
-          then tail
-          else Cons (k', v', remove_list_ k tail)
+      if Key.equal k k'
+      then tail
+      else Cons (k', v', remove_list_ k tail)
 
   let rec remove_rec_ ~id k ~h m = match m with
     | E -> E
     | S (_, k', _) ->
-        if Key.equal k k' then E else m
+      if Key.equal k k' then E else m
     | L (h, l) ->
-        let l = remove_list_ k l in
-        if is_empty_list_ l then E else L (h, l)
+      let l = remove_list_ k l in
+      if is_empty_list_ l then E else L (h, l)
     | N (leaf, a) ->
-        let leaf, a =
-          if Hash.is_0 h
-            then remove_list_ k leaf, a
-            else
-              let i = Hash.rem h in
-              let h' = Hash.quotient h in
-              let new_t = remove_rec_ ~id k ~h:h' (A.get ~default:E a i) in
-              if is_empty new_t
-              then leaf, A.remove a i (* remove sub-tree *)
-              else
-                let mut = A.owns ~id a in
-                leaf, A.set ~mut a i new_t
-        in
-        if is_empty_list_ leaf && is_empty_arr_ a
-          then E
-          else N (leaf, a)
+      let leaf, a =
+        if Hash.is_0 h
+        then remove_list_ k leaf, a
+        else
+          let i = Hash.rem h in
+          let h' = Hash.quotient h in
+          let new_t = remove_rec_ ~id k ~h:h' (A.get ~default:E a i) in
+          if is_empty new_t
+          then leaf, A.remove a i (* remove sub-tree *)
+          else
+            let mut = A.owns ~id a in
+            leaf, A.set ~mut a i new_t
+      in
+      if is_empty_list_ leaf && is_empty_arr_ a
+      then E
+      else N (leaf, a)
 
   let remove k m = remove_rec_ ~id:Transient.empty k ~h:(hash_ k) m
 
@@ -553,10 +553,10 @@ module Make(Key : KEY)
     let h = hash_ k in
     let opt_v = try Some (get_exn_ k ~h m) with Not_found -> None in
     match opt_v, f opt_v with
-    | None, None -> m
-    | Some _, Some v
-    | None, Some v -> add_ ~id k v ~h m
-    | Some _, None -> remove_rec_ ~id k ~h m
+      | None, None -> m
+      | Some _, Some v
+      | None, Some v -> add_ ~id k v ~h m
+      | Some _, None -> remove_rec_ ~id k ~h m
 
   let update k ~f m = update_ ~id:Transient.empty k f m
 
@@ -664,17 +664,17 @@ module Make(Key : KEY)
         | L (_, Nil) -> next()
         | L (_, One (k,v)) -> Some (k,v)
         | L (h, Two (k1,v1,k2,v2)) ->
-            Stack.push (L (h, One (k2,v2))) st;
-            Some (k1,v1)
+          Stack.push (L (h, One (k2,v2))) st;
+          Some (k1,v1)
         | L (h, Cons(k,v,tl)) ->
-            Stack.push (L (h, tl)) st;  (* tail *)
-            Some (k,v)
+          Stack.push (L (h, tl)) st;  (* tail *)
+          Some (k,v)
         | N (l, a) ->
-            A.iter
-              (fun sub -> Stack.push sub st)
-              a;
-            Stack.push (L (Hash.zero, l)) st;  (* leaf *)
-            next()
+          A.iter
+            (fun sub -> Stack.push sub st)
+            a;
+          Stack.push (L (Hash.zero, l)) st;  (* leaf *)
+          next()
     in
     next
 

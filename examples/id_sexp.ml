@@ -1,18 +1,20 @@
 
+open Result
+
 let pp_sexp s = match s with
-  | `Ok l ->
+  | Ok l ->
       List.iter
-        (fun s -> Format.printf "@[%a@]@." CCSexpM.print s)
+        (fun s -> Format.printf "@[%a@]@." CCSexp.pp s)
         l
-  | `Error msg ->
+  | Error msg ->
       Format.printf "error: %s@." msg
 
 let () =
   match Sys.argv with
   | [| _ |] ->
-      let s = CCSexpM.parse_chan_list stdin in
+      let s = CCSexp.parse_chan_list stdin in
       pp_sexp s
   | [| _; file |] ->
-      let s = CCSexpM.parse_file_list file in
+      let s = CCSexp.parse_file_list file in
       pp_sexp s
   | _ -> failwith "usage: id_sexp [file]"

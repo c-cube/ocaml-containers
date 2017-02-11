@@ -86,7 +86,7 @@ module L = struct
       CCList.fold_right CCList.append l []
     in
     let l =
-      CCList.Idx.mapi
+      CCList.mapi
         (fun i x -> CCList.(x -- (x+ min i 100)))
         CCList.(1 -- n)
     in
@@ -163,6 +163,98 @@ module Arr = struct
   let sort_ccarray a =
     CCArray.sort_generic (module IntArr) ~cmp:CCInt.compare a
 
+  module Quicksort_ref = struct
+    module A = Array
+    module Rand = Random.State
+
+    let seed_ = [|123456|]
+
+    type state = {
+      mutable l: int; (* left pointer *)
+      mutable g: int; (* right pointer *)
+      mutable k: int;
+    }
+
+    let rand_idx_ rand i j = i + Rand.int rand (j-i)
+
+    let swap_ a i j =
+      if i=j then ()
+      else (
+        let tmp = A.get a i in
+        A.set a i (A.get a j);
+        A.set a j tmp
+      )
+
+    (* limit: under which we switch to insertion *)
+    let sort ~limit ~cmp a =
+      let rec insert_ a i k =
+        if k<i then ()
+        else if cmp (A.get a k) (A.get a (k+1)) > 0 then (
+          swap_ a k (k+1);
+          insert_ a i (k-1)
+        )
+      in
+      (* recursive part of insertion sort *)
+      let rec sort_insertion_rec a i j k =
+        if k<j then (
+          insert_ a i (k-1);
+          sort_insertion_rec a i j (k+1)
+        )
+      in
+      (* insertion sort, for small slices *)
+      let sort_insertion a i j =
+        if j-i > 1 then sort_insertion_rec a i j (i+1)
+      in
+      let rand = Rand.make seed_ in
+      (* sort slice.
+         There is a chance that the two pivots are equal, but it's unlikely. *)
+      let rec sort_slice_ ~st a i j =
+        if j-i>limit then (
+          st.l <- i;
+          st.g <- j-1;
+          st.k <- i;
+          (* choose pivots *)
+          let p = A.get a (rand_idx_ rand i j) in
+          let q = A.get a (rand_idx_ rand i j) in
+          (* invariant: st.p <= st.q, swap them otherwise *)
+          let p, q = if cmp p q > 0 then q, p else p, q in
+          while st.k <= st.g do
+            let cur = A.get a st.k in
+            if cmp cur p < 0 then (
+              (* insert in leftmost band *)
+              if st.k <> st.l then swap_ a st.k st.l;
+              st.l <- st.l + 1
+            ) else if cmp cur q > 0 then (
+              (* insert in rightmost band *)
+              while st.k < st.g && cmp (A.get a st.g) q > 0 do
+                st.g <- st.g - 1
+              done;
+              swap_ a st.k st.g;
+              st.g <- st.g - 1;
+              (* the element swapped from the right might be in the first situation.
+                 that is, < p  (we know it's <= q already) *)
+              if cmp (A.get a st.k) p < 0 then (
+                if st.k <> st.l then swap_ a st.k st.l;
+                st.l <- st.l + 1
+              )
+            );
+            st.k <- st.k + 1
+          done;
+          (* save values before recursing *)
+          let l = st.l and g = st.g and sort_middle = cmp p q < 0 in
+          sort_slice_ ~st a i l;
+          if sort_middle then sort_slice_ ~st a l (g+1);
+          sort_slice_ ~st a (g+1) j;
+        ) else sort_insertion a i j
+      in
+      if A.length a > 0 then (
+        let st = { l=0; g=A.length a; k=0; } in
+        sort_slice_ ~st a 0 (A.length a)
+      )
+  end
+
+  let quicksort ~limit a = Quicksort_ref.sort ~limit ~cmp:CCInt.compare a
+
   let sort_std a = Array.sort CCInt.compare a
 
   (* helper, to apply a sort function over a list of arrays *)
@@ -173,6 +265,16 @@ module Arr = struct
         sort a
       ) l
 
+  let () =
+    List.iter
+      (fun n ->
+         let a1 = mk_arr n in
+         let a2 = Array.copy a1 in
+         sort_std a1;
+         quicksort ~limit:10 a2;
+         assert (a1 = a2))
+      [ 10; 100; 1000]
+
   let bench_sort ?(time=2) n =
     let a1 = mk_arr n in
     let a2 = mk_arr n in
@@ -180,12 +282,15 @@ module Arr = struct
     B.throughputN time ~repeat
       [ "std", app_list sort_std, [a1;a2;a3]
       ; "ccarray.sort_gen", app_list sort_ccarray, [a1;a2;a3]
+      ; "ccarray.quicksort(limit=5)", app_list (quicksort ~limit:5), [a1;a2;a3]
+      ; "ccarray.quicksort(limit=10)", app_list (quicksort ~limit:10), [a1;a2;a3]
+      ; "ccarray.quicksort(limit=20)", app_list (quicksort ~limit:20), [a1;a2;a3]
       ]
 
   let () =
     B.Tree.register ("array" @>>>
       [ "sort" @>>
-        app_ints (bench_sort ?time:None) [100; 1000; 10_000; 50_000; 100_000; 500_000]
+        app_ints (bench_sort ?time:None) [50; 100; 1000; 10_000; 50_000; 100_000; 500_000]
       ]
     )
 end
@@ -453,6 +558,7 @@ module Tbl = struct
     end in
     (module T)
 
+(*
   let hamt : type a. a key_type -> (module MUT with type key = a)
   = fun k ->
     let (module K), name = arg_make k in
@@ -463,6 +569,7 @@ module Tbl = struct
     end in
     let module U = MUT_OF_IMMUT(T) in
     (module U)
+   *)
 
   let modules_int =
     [ hashtbl_make Int
@@ -474,7 +581,7 @@ module Tbl = struct
     ; flat_hashtbl
     ; hashtrie Int
     ; hashtrie_mut Int
-    ; hamt Int
+      (* ; hamt Int *)
     ]
 
   let modules_string =
@@ -483,7 +590,7 @@ module Tbl = struct
     ; wbt Str
     ; hashtrie Str
     ; persistent_hashtbl Str
-    ; hamt Str
+    (* ; hamt Str *)
     ; trie
     ]
 
@@ -685,97 +792,6 @@ module Iter = struct
       [ "fold" @>> app_ints bench_fold [100; 1_000; 10_000; 1_000_000]
       ; "flat_map" @>> app_ints bench_flat_map [1_000; 10_000]
       ; "iter" @>> app_ints bench_iter [1_000; 10_000]
-      ])
-end
-
-module Batch = struct
-  (** benchmark CCBatch *)
-
-  module type COLL = sig
-    val name : string
-    include CCBatch.COLLECTION
-    val doubleton : 'a -> 'a -> 'a t
-    val (--) : int -> int -> int t
-    val equal : int t -> int t -> bool
-  end
-
-  module Make(C : COLL) = struct
-    let f1 x = x mod 2 = 0
-    let f2 x = -x
-    let f3 x = C.doubleton x (x+1)
-    let f4 x = -x
-    let collect a = C.fold (+) 0 a
-
-    let naive a =
-      let a = C.filter f1 a in
-      let a = C.flat_map f3 a in
-      let a = C.filter f1 a in
-      let a = C.map f2 a in
-      let a = C.flat_map f3 a in
-      let a = C.map f4 a in
-      ignore (collect a);
-      a
-
-    module BA = CCBatch.Make(C)
-
-    let ops =
-      BA.(filter f1 >>> flat_map f3 >>> filter f1 >>>
-          map f2 >>> flat_map f3 >>> map f4)
-
-    let batch a =
-      let a = BA.apply ops a in
-      ignore (collect a);
-      a
-
-    let bench_for ~time n =
-      let a = C.(0 -- n) in
-      (* debug
-      CCPrint.printf "naive: %a\n" (CCArray.pp CCInt.pp) (naive a);
-      CCPrint.printf "simple: %a\n" (CCArray.pp CCInt.pp) (batch_simple a);
-      CCPrint.printf "batch: %a\n" (CCArray.pp CCInt.pp) (batch a);
-      *)
-      assert (C.equal (batch a) (naive a));
-      B.throughputN time ~repeat
-        [ C.name ^ "_naive", naive, a
-        ; C.name ^ "_batch", batch, a
-        ]
-
-    let bench =
-      C.name @>> B.Tree.concat
-      [ app_int (bench_for ~time:1) 100
-      ; app_int (bench_for ~time:4) 100_000
-      ; app_int (bench_for ~time:4) 1_000_000
-      ]
-  end
-
-  module BenchArray = Make(struct
-    include CCArray
-    let name = "array"
-    let equal a b = a=b
-    let doubleton x y = [| x; y |]
-    let fold = Array.fold_left
-  end)
-
-  module BenchList = Make(struct
-    include CCList
-    let name = "list"
-    let equal a b = a=b
-    let doubleton x y = [ x; y ]
-    let fold = List.fold_left
-  end)
-
-  module BenchKList = Make(struct
-    include CCKList
-    let name = "klist"
-    let equal a b = equal (=) a b
-    let doubleton x y = CCKList.of_list [ x; y ]
-  end)
-
-  let () = B.Tree.register (
-    "batch" @>> B.Tree.concat
-      [ BenchKList.bench
-      ; BenchArray.bench
-      ; BenchList.bench
       ])
 end
 
@@ -983,133 +999,6 @@ module Deque = struct
   )
 end
 
-module Thread = struct
-  module Q = CCBlockingQueue
-
-  module type TAKE_PUSH = sig
-    val take : 'a Q.t -> 'a
-    val push : 'a Q.t -> 'a -> unit
-    val take_list: 'a Q.t -> int -> 'a list
-    val push_list : 'a Q.t -> 'a list -> unit
-  end
-
-  let cur = (module Q : TAKE_PUSH)
-  let naive =
-    let module Q = struct
-      let take = Q.take
-      let push = Q.push
-      let push_list q l = List.iter (push q) l
-      let rec take_list q n =
-        if n=0 then []
-        else
-          let x = take q in
-          x :: take_list q (n-1)
-    end in
-    (module Q : TAKE_PUSH)
-
-  (* n senders, n receivers *)
-  let bench_queue ~size ~senders ~receivers n =
-    let make (module TP : TAKE_PUSH) =
-      let l = CCList.(1 -- n) in
-      fun () ->
-        let q = Q.create size in
-        let res = CCLock.create 0 in
-        let expected_res = 2 * senders * Sequence.(1 -- n |> fold (+) 0) in
-        let a_senders = CCThread.Arr.spawn senders
-          (fun _ ->
-            TP.push_list q l;
-            TP.push_list q l
-          )
-        and a_receivers = CCThread.Arr.spawn receivers
-          (fun _ ->
-            let l1 = TP.take_list q n in
-            let l2 = TP.take_list q n in
-            let n = List.fold_left (+) 0 l1 + List.fold_left (+) 0 l2 in
-            CCLock.update res ((+) n);
-            ()
-          )
-        in
-        CCThread.Arr.join a_senders;
-        CCThread.Arr.join a_receivers;
-        assert (expected_res = CCLock.get res);
-        ()
-    in
-    B.throughputN 3 ~repeat
-      [ "cur", make cur, ()
-      ; "naive", make naive, ()
-      ]
-
-  let fib_pool_ ~size n =
-    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
-    let open P.Fut.Infix in
-    let rec fib n =
-      if n<=1 then P.Fut.return 1
-      else
-        let f1 = fib (n-1)
-        and f2 = fib (n-2) in
-        P.Fut.return (+) <*> f1 <*> f2
-    in
-    P.Fut.get (fib n)
-
-  let fib_manual n =
-    let rec fib n =
-      if n<= 1  then 1
-      else fib (n-1) + fib (n-2)
-    in
-    fib n
-
-  (* pool of size [size] *)
-  let bench_pool ~size n =
-    assert (fib_manual n = fib_pool_ ~size n);
-    B.throughputN 3 ~repeat
-      [ "sequential", fib_manual, n
-      ; "pool", fib_pool_ ~size, n
-      ]
-
-  let bench_sequence ~size n =
-    let module P = CCPool.Make(struct let min_size = 0 let max_size = size end) in
-    let id_ x = Thread.delay 0.0001; x in
-    let mk_list() = CCList.init n (P.Fut.make1 id_) in
-    let mk_sequence () =
-      let l = mk_list() in
-      P.Fut.sequence_l l |> P.Fut.get
-    (* reserves a thread for the computation *)
-    and mk_blocking () =
-      let l = mk_list() in
-      P.Fut.make (fun () -> List.map P.Fut.get l) |> P.Fut.get
-    in
-    B.throughputN 3 ~repeat
-      [ "sequence", mk_sequence, ()
-      ; "blocking", mk_blocking, ()
-      ]
-
-  let () = B.Tree.register (
-    let take_push = CCList.map
-      (fun (size,senders,receivers) ->
-        Printf.sprintf "queue.take/push (size=%d,senders=%d,receivers=%d)"
-          size senders receivers
-        @>>
-        app_ints (bench_queue ~size ~senders ~receivers)
-          [100; 1_000]
-      ) [ 2, 3, 3
-        ; 5, 3, 3
-        ; 1, 5, 5
-        ; 2, 10, 10
-        ; 5, 10, 10
-        ; 20, 10, 10
-      ]
-    in
-
-    "thread" @>>>
-      ( take_push @
-      [ "fib_size5" @>> app_ints (bench_pool ~size:5) [10; 15; 30; 35]
-      ; "fib_size15" @>> app_ints (bench_pool ~size:15) [10; 15; 30; 35]
-      ; "sequence" @>> app_ints (bench_sequence ~size:15) [100; 500; 10_000; 100_000]
-      ]
-      )
-  )
-end
-
 module Graph = struct
   (* divisors graph *)
   let div_children_ i =
@@ -1123,11 +1012,7 @@ module Graph = struct
     in
     aux 1 i
 
-  let div_graph_ = {CCGraph.
-    origin=fst;
-    dest=snd;
-    children=div_children_
-  }
+  let div_graph_ = CCGraph.divisors_graph
 
   module H = Hashtbl.Make(CCInt)
 
@@ -1316,72 +1201,6 @@ module Str = struct
           ];
       ])
 
-end
-
-module Alloc = struct
-  module type ALLOC_ARR = sig
-    type 'a t
-    val name : string
-    val create : int -> 'a t
-    val make : 'a t -> int -> 'a -> 'a array
-    val free : 'a t -> 'a array -> unit
-  end
-
-  let dummy =
-    let module A = struct
-      type _ t = unit
-      let name = "dummy"
-      let create _ = ()
-      let make _ i x = Array.make i x
-      let free _ _ = ()
-    end in
-    (module A : ALLOC_ARR)
-
-  let alloc_cache ~buck_size =
-    let module A = struct
-      type 'a t = 'a CCAllocCache.Arr.t
-      let name = Printf.sprintf "alloc_cache(%d)" buck_size
-      let create n = CCAllocCache.Arr.create ~buck_size n
-      let make = CCAllocCache.Arr.make
-      let free = CCAllocCache.Arr.free
-    end in
-    (module A : ALLOC_ARR)
-
-  (* repeat [n] times:
-    - repeat [batch] times:
-      - allocate [batch] arrays of size from 1 to batch+1
-    - free those arrays
-  *)
-  let bench1 ~batch n =
-    let make (module C : ALLOC_ARR) () =
-      let c = C.create (batch*2) in
-      let tmp = Array.make (batch * batch) [||] in (* temporary storage *)
-      for _ = 1 to n do
-        for j = 0 to batch-1 do
-          for k = 0 to batch-1 do
-            tmp.(j*batch + k) <- C.make c (k+1) '_';
-          done;
-        done;
-        Array.iter (C.free c) tmp (* free the whole array *)
-      done
-    in
-    B.throughputN 3 ~repeat
-      [ "dummy", make dummy, ()
-      ; "cache(5)", make (alloc_cache ~buck_size:5), ()
-      ; "cache(20)", make (alloc_cache ~buck_size:20), ()
-      ; "cache(50)", make (alloc_cache ~buck_size:50), ()
-      ]
-
-  let () = B.Tree.register (
-    "alloc" @>>>
-      [ "bench1(batch=5)" @>>
-          app_ints (bench1 ~batch:5) [100; 1_000]
-      ; "bench1(batch=15)" @>>
-          app_ints (bench1 ~batch:15) [100; 1_000]
-      ; "bench1(batch=50)" @>>
-          app_ints (bench1 ~batch:50) [100; 1_000]
-      ]
-    )
 end
 
 let () =

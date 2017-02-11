@@ -2,9 +2,9 @@
 
 (** {1 Int64}
 
- Helpers for in64.
+    Helpers for in64.
 
- @since 0.13 *)
+    @since 0.13 *)
 
 type t = int64
 

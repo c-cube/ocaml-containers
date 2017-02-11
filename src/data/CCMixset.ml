@@ -4,9 +4,9 @@
 (** {1 Set of Heterogeneous Values} *)
 
 module IMap = Map.Make(struct
-  type t = int
-  let compare : int -> int -> int = compare
-end)
+    type t = int
+    let compare : int -> int -> int = compare
+  end)
 
 (*$R
   let k1 : int key = newkey () in

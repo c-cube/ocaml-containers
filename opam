@@ -6,11 +6,9 @@ maintainer: "simon.cruanes@inria.fr"
 build: [
     ["./configure"
         "--prefix" prefix
-        "--%{base-threads:enable}%-thread"
         "--disable-bench"
         "--disable-tests"
         "--%{base-bigarray:enable}%-bigarray"
-        "--%{sequence:enable}%-advanced"
         "--%{base-unix:enable}%-unix"
         "--enable-docs"
     ]
@@ -25,14 +23,19 @@ remove: [
     ["ocamlfind" "remove" "containers"]
 ]
 depends: [
-    "ocamlfind" {build}
-    "oasis" {build}
-    "base-bytes"
-    "result"
-    "cppo" {build}
-    "ocamlbuild" {build}
+  "ocamlfind" {build}
+  "oasis" {build}
+  "base-bytes"
+  "result"
+  "cppo" {build}
+  "ocamlbuild" {build}
 ]
-depopts: [ "sequence" "base-bigarray" "base-unix" "base-threads" "qtest" { test } ]
+depopts: [
+  "base-bigarray"
+  "base-unix"
+  "base-threads"
+  "qtest" { test }
+]
 conflicts: [
   "sequence" { < "0.5" }
 ]

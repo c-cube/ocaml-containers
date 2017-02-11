@@ -18,12 +18,12 @@
         |> M.add ~inj:inj_str 2 "2"
         |> M.add ~inj:inj_list_int 3 [3;3;3]
 
-      assert (M.get ~inj:inj_int 1 m = Some 1)
-      assert (M.get ~inj:inj_str 1 m = None)
-      assert (M.get ~inj:inj_str 2 m = Some "2")
-      assert (M.get ~inj:inj_int 2 m = None)
-      assert (M.get ~inj:inj_list_int 3 m = Some [3;3;3])
-      assert (M.get ~inj:inj_str 3 m = None)
+          assert (M.get ~inj:inj_int 1 m = Some 1)
+          assert (M.get ~inj:inj_str 1 m = None)
+          assert (M.get ~inj:inj_str 2 m = Some "2")
+          assert (M.get ~inj:inj_int 2 m = None)
+          assert (M.get ~inj:inj_list_int 3 m = Some [3;3;3])
+          assert (M.get ~inj:inj_str 3 m = None)
     ]}
 
     @since 0.9

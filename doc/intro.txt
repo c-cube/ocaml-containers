@@ -26,24 +26,26 @@ by ocamlfind).
 
 {!modules:
 CCArray
+CCArrayLabels
+CCArray_slice
 CCBool
 CCChar
-CCError
 CCFloat
-CCFun
 CCFormat
+CCFun
 CCHash
 CCHashtbl
 CCHeap
+CCIO
 CCInt
 CCInt64
-CCIO
 CCList
+CCListLabels
 CCMap
 CCOpt
 CCOrd
 CCPair
-CCPrint
+CCParse
 CCRandom
 CCRef
 CCResult
@@ -70,9 +72,7 @@ such as:
 Various data structures.
 
 {!modules:
-CCAllocCache
 CCBitField
-CCBloom
 CCBV
 CCCache
 CCDeque
@@ -96,10 +96,6 @@ CCTrie
 CCWBTree
 }
 
-{4 Containers.io}
-
-{b deprecated} use {!CCIO} directly from the set of core modules.
-
 {4 Containers.unix}
 
 Helpers that depend on {!Unix}, e.g. to spawn sub-processes.
@@ -113,7 +109,6 @@ the main type ([CCSexp.t]) isn't.
 
 {!modules:
 CCSexp
-CCSexpM
 }
 
 {4 Containers.iter}
@@ -127,30 +122,18 @@ CCLazy_list}
 
 {4 String}
 
-{b findlib name}: containers.string
-
-{!modules:
-CCApp_parse
-CCKMP
-CCLevenshtein
-CCParse
-}
+containers.string has been removed. Some of its functionality is present
+in {!CCString}; some in other libraries such as [Spelll].
 
 {4 Bigarrays}
 
-{b deprecated} (use package bigstring instead)
-Use bigarrays to hold large strings and map files directly into memory.
-
-{!modules: CCBigstring CCArray1}
+containers.bigarray has been removed. Use the [Bigstring] library for
+arrays of bytes.
 
 {4 Advanced}
 
-{b findlib name}: containers.advanced
-
-This module is qualified with [Containers_advanced]. It
-requires {{:https://github.com/c-cube/sequence} Sequence}.
-
-{!modules: CCLinq CCCat CCBatch}
+containers.advanced has been removed. Use [OLinq] to replace some of its
+functionality.
 
 {4 Misc}
 

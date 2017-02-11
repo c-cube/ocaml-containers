@@ -3,7 +3,7 @@
 
 (** {1 High-level Functions on top of Unix} *)
 
-type 'a or_error = [`Ok of 'a | `Error of string]
+type 'a or_error = ('a, string) Result.result
 type 'a gen = unit -> 'a option
 
 (** {2 Calling Commands} *)
@@ -34,10 +34,12 @@ let finally_ f x ~h =
     raise e
 
 (* print a string, but escaped if required *)
-let escape_str buf s =
-  if str_exists s
+let escape_str s =
+  if
+    str_exists s
       (function ' ' | '"' | '\'' | '\n' | '\t'-> true | _ -> false)
   then (
+    let buf = Buffer.create (String.length s) in
     Buffer.add_char buf '\'';
     String.iter
       (function
@@ -45,7 +47,8 @@ let escape_str buf s =
         | c -> Buffer.add_char buf c
       ) s;
     Buffer.add_char buf '\'';
-  ) else Buffer.add_string buf s
+    Buffer.contents buf
+  ) else s
 
 let read_all ?(size=1024) ic =
   let buf = ref (Bytes.create size) in
@@ -74,30 +77,43 @@ type call_result =
 
 let kbprintf' buf fmt k = Printf.kbprintf k buf fmt
 
-let call ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) cmd =
+let call_full_inner ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) ~f cmd =
   (* render the command *)
   let buf = Buffer.create 256 in
   kbprintf' buf cmd
     (fun buf ->
        let cmd = Buffer.contents buf in
-        let oc, ic, errc = Unix.open_process_full cmd env in
-        (* send stdin *)
-        begin match stdin with
-          | `Str s -> output_string ic s
-          | `Gen g -> iter_gen (output_string ic) g
-        end;
-        close_out ic;
-        (* read out and err *)
-        let out = read_all ~size:bufsize oc in
-        let err = read_all ~size:bufsize errc in
-        let status = Unix.close_process_full (oc, ic, errc) in
-        object
-          method stdout = out
-          method stderr = err
-          method status = status
-          method errcode = int_of_process_status status
-        end
+       let oc, ic, errc = Unix.open_process_full cmd env in
+       (* send stdin *)
+       begin match stdin with
+         | `Str s -> output_string ic s
+         | `Gen g -> iter_gen (output_string ic) g
+       end;
+       close_out ic;
+       (* read out and err *)
+       let out = read_all ~size:bufsize oc in
+       let err = read_all ~size:bufsize errc in
+       let status = Unix.close_process_full (oc, ic, errc) in
+       f (out,err,status)
     )
+
+let call_full ?bufsize ?stdin ?env cmd =
+  call_full_inner ?bufsize ?stdin ?env cmd
+    ~f:(fun (out,err,status) ->
+      object
+        method stdout = out
+        method stderr = err
+        method status = status
+        method errcode = int_of_process_status status
+      end)
+
+let call ?bufsize ?stdin ?env cmd =
+  call_full_inner ?bufsize ?stdin ?env cmd
+    ~f:(fun (out,err,status) -> out, err, int_of_process_status status)
+
+let call_stdout ?bufsize ?stdin ?env cmd =
+  call_full_inner ?bufsize ?stdin ?env cmd
+    ~f:(fun (out,_err,_status) -> out)
 
 type line = string
 
@@ -209,7 +225,7 @@ let establish_server sockaddr ~f =
   done
 
 module Infix = struct
-  let (?|) fmt = call fmt
+  let (?|) fmt = call_full fmt
 
   let (?|&) fmt = async_call fmt
 end

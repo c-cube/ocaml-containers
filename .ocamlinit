@@ -1,5 +1,6 @@
 #use "topfind";;
 #thread
+#require "result";;
 #require "bigarray";;
 #require "unix";;
 #require "sequence";;

@@ -7,9 +7,9 @@ type job =
   | Job : float * (unit -> 'a) -> job
 
 module TaskHeap = CCHeap.Make(struct
-  type t = job
-  let leq (Job(f1,_)) (Job (f2,_)) = f1 <= f2
-end)
+    type t = job
+    let leq (Job(f1,_)) (Job (f2,_)) = f1 <= f2
+  end)
 
 exception Stopped
 
@@ -61,12 +61,12 @@ let next_task_ timer = match TaskHeap.find_min timer.tasks with
   | _ when timer.stop -> Quit
   | None -> Wait standby_wait
   | Some Job (time, f) ->
-      let now = Unix.gettimeofday () in
-      if now +. epsilon > time then (
-        (* now! *)
-        pop_task_ timer;
-        Run f
-      ) else Wait (time -. now)
+    let now = Unix.gettimeofday () in
+    if now +. epsilon > time then (
+      (* now! *)
+      pop_task_ timer;
+      Run f
+    ) else Wait (time -. now)
 
 (* The main thread function: wait for next event, run it, and loop *)
 let serve timer =
@@ -75,8 +75,8 @@ let serve timer =
   let rec next () = match with_lock_ timer next_task_ with
     | Quit -> ()
     | Run f ->
-        call_ timer f; (* call outside of any lock *)
-        next ()
+      call_ timer f; (* call outside of any lock *)
+      next ()
     | Wait delay -> wait delay
   (* wait for [delay] seconds, or until something happens on [fifo_in] *)
   and wait delay =
@@ -118,16 +118,16 @@ let at timer time ~f =
   else
     with_lock_ timer
       (fun timer ->
-        if timer.stop then raise Stopped;
-        (* time of the next scheduled event *)
-        let next_time = match TaskHeap.find_min timer.tasks with
-          | None -> max_float
-          | Some Job (d, _) -> d
-        in
-        (* insert task *)
-        timer.tasks <- TaskHeap.insert (Job (time, f)) timer.tasks;
-        (* see if the timer thread needs to be awaken earlier *)
-        if time < next_time then awaken_ timer
+         if timer.stop then raise Stopped;
+         (* time of the next scheduled event *)
+         let next_time = match TaskHeap.find_min timer.tasks with
+           | None -> max_float
+           | Some Job (d, _) -> d
+         in
+         (* insert task *)
+         timer.tasks <- TaskHeap.insert (Job (time, f)) timer.tasks;
+         (* see if the timer thread needs to be awaken earlier *)
+         if time < next_time then awaken_ timer
       )
 
 let after timer delay ~f =
@@ -145,8 +145,8 @@ let every ?delay timer d ~f =
     with ExitEvery -> () (* stop *)
   and schedule () = after timer d ~f:run in
   match delay with
-  | None -> run()
-  | Some d -> after timer d ~f:run
+    | None -> run()
+    | Some d -> after timer d ~f:run
 
 (*$R
   let start = Unix.gettimeofday() in
@@ -170,13 +170,13 @@ let active timer = not timer.stop
 let stop timer =
   with_lock_ timer
     (fun timer ->
-      if not timer.stop then (
-        timer.stop <- true;
-        (* empty heap of tasks *)
-        timer.tasks <- TaskHeap.empty;
-        (* tell the thread to stop *)
-        awaken_ timer;
-      )
+       if not timer.stop then (
+         timer.stop <- true;
+         (* empty heap of tasks *)
+         timer.tasks <- TaskHeap.empty;
+         (* tell the thread to stop *)
+         awaken_ timer;
+       )
     )
 
 (*$R

@@ -36,8 +36,8 @@ let length l =
 let rec map ~f l =
   lazy (
     match l with
-    | lazy Nil -> Nil
-    | lazy (Cons (x,tl)) -> Cons (f x, map ~f tl)
+      | lazy Nil -> Nil
+      | lazy (Cons (x,tl)) -> Cons (f x, map ~f tl)
   )
 
 let filter ~f l =
@@ -76,10 +76,10 @@ let rec append a b =
 let rec flat_map ~f l =
   lazy (
     match l with
-    | lazy Nil -> Nil
-    | lazy (Cons (x,tl)) ->
-      let res = append (f x) (flat_map ~f tl) in
-      Lazy.force res
+      | lazy Nil -> Nil
+      | lazy (Cons (x,tl)) ->
+        let res = append (f x) (flat_map ~f tl) in
+        Lazy.force res
   )
 
 module Infix = struct

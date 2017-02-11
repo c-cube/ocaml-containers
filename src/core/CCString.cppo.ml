@@ -36,17 +36,17 @@ let compare = String.compare
 
 let hash s = Hashtbl.hash s
 
-#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+    #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
 
 let init = String.init
 
-#else
+  #else
 
-let init n f =
-  let buf = Bytes.init n f in
-  Bytes.unsafe_to_string buf
+  let init n f =
+    let buf = Bytes.init n f in
+    Bytes.unsafe_to_string buf
 
-#endif
+      #endif
 
 let length = String.length
 
@@ -61,8 +61,8 @@ let rec _to_list s acc i len =
 let _is_sub ~sub i s j ~len =
   let rec check k =
     if k = len
-      then true
-      else sub.[i+k] = s.[j+k] && check (k+1)
+    then true
+    else sub.[i+k] = s.[j+k] && check (k+1)
   in
   j+len <= String.length s && check 0
 
@@ -81,7 +81,7 @@ module Find = struct
     str : string;
   }
   (* invariant: [length failure = length str].
-   We use a phantom type to avoid mixing the directions. *)
+     We use a phantom type to avoid mixing the directions. *)
 
   let kmp_pattern_length p = String.length p.str
 
@@ -89,51 +89,51 @@ module Find = struct
   let get_
     : type a. dir:a direction -> string -> int -> char
     = fun ~dir -> match dir with
-    | Direct -> String.get
-    | Reverse -> (fun s i -> s.[String.length s - i - 1])
+      | Direct -> String.get
+      | Reverse -> (fun s i -> s.[String.length s - i - 1])
 
   let kmp_compile_
-  : type a. dir:a direction -> string -> a kmp_pattern
-  = fun ~dir str ->
-    let len = length str in
-    let get = get_ ~dir in (* how to read elements of the string *)
-    match len with
-    | 0 -> {failure=[| |]; str;}
-    | 1 -> {failure=[| -1 |]; str;}
-    | _ ->
-      (* at least 2 elements, the algorithm can work *)
-      let failure = Array.make len 0 in
-      failure.(0) <- -1;
-      (* i: current index in str *)
-      let i = ref 2 in
-      (* j: index of candidate substring *)
-      let j = ref 0 in
-      while !i < len do
-        match !j with
-        | _ when get str (!i-1) = get str !j ->
-          (* substring starting at !j continues matching current char *)
-          incr j;
-          failure.(!i) <- !j;
-          incr i;
-        | 0 ->
-          (* back to the beginning *)
-          failure.(!i) <- 0;
-          incr i;
+    : type a. dir:a direction -> string -> a kmp_pattern
+    = fun ~dir str ->
+      let len = length str in
+      let get = get_ ~dir in (* how to read elements of the string *)
+      match len with
+        | 0 -> {failure=[| |]; str;}
+        | 1 -> {failure=[| -1 |]; str;}
         | _ ->
-          (* fallback for the prefix string *)
-          assert (!j > 0);
-          j := failure.(!j)
-      done;
-      (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
-      { failure; str; }
+          (* at least 2 elements, the algorithm can work *)
+          let failure = Array.make len 0 in
+          failure.(0) <- -1;
+          (* i: current index in str *)
+          let i = ref 2 in
+          (* j: index of candidate substring *)
+          let j = ref 0 in
+          while !i < len do
+            match !j with
+              | _ when get str (!i-1) = get str !j ->
+                (* substring starting at !j continues matching current char *)
+                incr j;
+                failure.(!i) <- !j;
+                incr i;
+              | 0 ->
+                (* back to the beginning *)
+                failure.(!i) <- 0;
+                incr i;
+              | _ ->
+                (* fallback for the prefix string *)
+                assert (!j > 0);
+                j := failure.(!j)
+          done;
+          (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
+          { failure; str; }
 
   let kmp_compile s = kmp_compile_ ~dir:Direct s
   let kmp_rcompile s = kmp_compile_ ~dir:Reverse s
 
   (* proper search function.
-    [i] index in [s]
-    [j] index in [pattern]
-    [len] length of [s] *)
+     [i] index in [s]
+     [j] index in [pattern]
+     [len] length of [s] *)
   let kmp_find ~pattern s idx =
     let len = length s in
     let i = ref idx in
@@ -166,9 +166,9 @@ module Find = struct
     else -1
 
   (* proper search function, from the right.
-    [i] index in [s]
-    [j] index in [pattern]
-    [len] length of [s] *)
+     [i] index in [s]
+     [j] index in [pattern]
+     [len] length of [s] *)
   let kmp_rfind ~pattern s idx =
     let len = length s in
     let i = ref (len - idx - 1) in
@@ -212,37 +212,42 @@ module Find = struct
     | P_char _ -> 1
     | P_KMP p -> kmp_pattern_length p
 
-  let compile ~sub : [`Direct] pattern =
+  let compile sub : [`Direct] pattern =
     if length sub=1
     then P_char sub.[0]
     else P_KMP (kmp_compile sub)
 
-  let rcompile ~sub : [`Reverse] pattern =
+  let rcompile sub : [`Reverse] pattern =
     if length sub=1
     then P_char sub.[0]
     else P_KMP (kmp_rcompile sub)
 
-  let find ~pattern s start = match pattern with
+  let find ?(start=0) ~(pattern:[`Direct] pattern) s = match pattern with
     | P_char c ->
-        (try String.index_from s start c with Not_found -> -1)
+      (try String.index_from s start c with Not_found -> -1)
     | P_KMP pattern -> kmp_find ~pattern s start
 
-  let rfind ~pattern s start = match pattern with
-    | P_char c ->
+  let rfind ?start ~(pattern:[`Reverse] pattern) s =
+    let start = match start with
+      | Some n -> n
+      | None -> String.length s - 1
+    in
+    match pattern with
+      | P_char c ->
         (try String.rindex_from s start c with Not_found -> -1)
-    | P_KMP pattern -> kmp_rfind ~pattern s start
+      | P_KMP pattern -> kmp_rfind ~pattern s start
 end
 
 let find ?(start=0) ~sub =
-  let pattern = Find.compile ~sub in
-  fun s -> Find.find ~pattern s start
+  let pattern = Find.compile sub in
+  fun s -> Find.find ~pattern s ~start
 
 let find_all ?(start=0) ~sub =
-  let pattern = Find.compile ~sub in
+  let pattern = Find.compile sub in
   fun s ->
     let i = ref start in
     fun () ->
-      let res = Find.find ~pattern s !i in
+      let res = Find.find ~pattern s ~start:!i in
       if res = ~-1 then None
       else (
         i := res + 1; (* possible overlap *)
@@ -259,8 +264,8 @@ let find_all_l ?start ~sub s =
 let mem ?start ~sub s = find ?start ~sub s >= 0
 
 let rfind ~sub =
-  let pattern = Find.rcompile ~sub in
-  fun s -> Find.rfind ~pattern s (String.length s-1)
+  let pattern = Find.rcompile sub in
+  fun s -> Find.rfind ~pattern s ~start:(String.length s-1)
 
 (* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -273,19 +278,19 @@ let replace_at_ ~pos ~len ~by s =
 let replace ?(which=`All) ~sub ~by s =
   if sub="" then invalid_arg "CCString.replace";
   match which with
-  | `Left ->
+    | `Left ->
       let i = find ~sub s ~start:0 in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
-  | `Right ->
+    | `Right ->
       let i = rfind ~sub s in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
-  | `All ->
+    | `All ->
       (* compile search pattern only once *)
-      let pattern = Find.compile ~sub in
+      let pattern = Find.compile sub in
       let b = Buffer.create (String.length s) in
       let start = ref 0 in
       while !start < String.length s do
-        let i = Find.find ~pattern s !start in
+        let i = Find.find ~pattern s ~start:!start in
         if i>=0 then (
           (* between last and cur occurrences *)
           Buffer.add_substring b s !start (i- !start);
@@ -308,33 +313,33 @@ module Split = struct
     | SplitStop -> None
     | SplitAt prev -> _split_search ~by s prev
   and _split_search ~by s prev =
-    let j = Find.find ~pattern:by s prev in
+    let j = Find.find ~pattern:by s ~start:prev in
     if j < 0
-      then Some (SplitStop, prev, String.length s - prev)
-      else Some (SplitAt (j+Find.pattern_length by), prev, j-prev)
+    then Some (SplitStop, prev, String.length s - prev)
+    else Some (SplitAt (j+Find.pattern_length by), prev, j-prev)
 
   let _tuple3 x y z = x,y,z
 
   let _mkgen ~by s k =
     let state = ref (SplitAt 0) in
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     fun () ->
       match _split ~by s !state with
         | None -> None
         | Some (state', i, len) ->
-            state := state';
-            Some (k s i len)
+          state := state';
+          Some (k s i len)
 
   let gen ~by s = _mkgen ~by s _tuple3
 
   let gen_cpy ~by s = _mkgen ~by s String.sub
 
   let _mklist ~by s k =
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     let rec build acc state = match _split ~by s state with
       | None -> List.rev acc
       | Some (state', i, len) ->
-          build (k s i len ::acc) state'
+        build (k s i len ::acc) state'
     in
     build [] (SplitAt 0)
 
@@ -343,11 +348,11 @@ module Split = struct
   let list_cpy ~by s = _mklist ~by s String.sub
 
   let _mkklist ~by s k =
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     let rec make state () = match _split ~by s state with
       | None -> `Nil
       | Some (state', i, len) ->
-          `Cons (k s i len , make state')
+        `Cons (k s i len , make state')
     in make (SplitAt 0)
 
   let klist ~by s = _mkklist ~by s _tuple3
@@ -355,7 +360,7 @@ module Split = struct
   let klist_cpy ~by s = _mkklist ~by s String.sub
 
   let _mkseq ~by s f k =
-    let by = Find.compile ~sub:by in
+    let by = Find.compile by in
     let rec aux state = match _split ~by s state with
       | None -> ()
       | Some (state', i, len) -> k (f s i len); aux state'
@@ -390,17 +395,49 @@ let compare_versions a b =
     | Some _, None -> 1
     | None, Some _ -> -1
     | Some x, Some y ->
-        match of_int x, of_int y with
+      match of_int x, of_int y with
         | None, None ->
-            let c = String.compare x y in
-            if c<>0 then c else cmp_rec a b
+          let c = String.compare x y in
+          if c<>0 then c else cmp_rec a b
         | Some _, None -> 1
         | None, Some _ -> -1
         | Some x, Some y ->
-            let c = Pervasives.compare x y in
-            if c<>0 then c else cmp_rec a b
+          let c = Pervasives.compare x y in
+          if c<>0 then c else cmp_rec a b
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
+
+let edit_distance s1 s2 =
+  if length s1 = 0
+  then length s2
+  else if length s2 = 0
+  then length s1
+  else if s1 = s2
+  then 0
+  else begin
+    (* distance vectors (v0=previous, v1=current) *)
+    let v0 = Array.make (length s2 + 1) 0 in
+    let v1 = Array.make (length s2 + 1) 0 in
+    (* initialize v0: v0(i) = A(0)(i) = delete i chars from t *)
+    for i = 0 to length s2 do
+      v0.(i) <- i
+    done;
+    (* main loop for the bottom up dynamic algorithm *)
+    for i = 0 to length s1 - 1 do
+      (* first edit distance is the deletion of i+1 elements from s *)
+      v1.(0) <- i+1;
+
+      (* try add/delete/replace operations *)
+      for j = 0 to length s2 - 1 do
+        let cost = if Char.compare (String.get s1 i) (String.get s2 j) = 0 then 0 else 1 in
+        v1.(j+1) <- min (v1.(j) + 1) (min (v0.(j+1) + 1) (v0.(j) + cost));
+      done;
+
+      (* copy v1 into v0 for next iteration *)
+      Array.blit v1 0 v0 0 (length s2 + 1);
+    done;
+    v1.(length s2)
+  end
 
 let repeat s n =
   assert (n>=0);
@@ -411,16 +448,16 @@ let repeat s n =
 let prefix ~pre s =
   String.length pre <= String.length s &&
   (let i = ref 0 in
-    while !i < String.length pre && s.[!i] = pre.[!i] do incr i done;
-    !i = String.length pre
+   while !i < String.length pre && s.[!i] = pre.[!i] do incr i done;
+   !i = String.length pre
   )
 
 let suffix ~suf s =
   String.length suf <= String.length s &&
   let off = String.length s - String.length suf in
   (let i = ref 0 in
-    while !i < String.length suf && s.[off + !i] = suf.[!i] do incr i done;
-    !i = String.length suf
+   while !i < String.length suf && s.[off + !i] = suf.[!i] do incr i done;
+   !i = String.length suf
   )
 
 let take n s =
@@ -498,10 +535,10 @@ let of_klist l =
   let b = Buffer.create 15 in
   let rec aux l = match l() with
     | `Nil ->
-        Buffer.contents b
+      Buffer.contents b
     | `Cons (x,l') ->
-        Buffer.add_char b x;
-        aux l'
+      Buffer.add_char b x;
+      aux l'
   in aux l
 
 let to_klist s = _to_klist s 0 (String.length s)
@@ -543,31 +580,31 @@ let set s i c =
 
 let iter = String.iter
 
-#if OCAML_MAJOR >= 4
+  #if OCAML_MAJOR >= 4
 
 let map = String.map
 let iteri = String.iteri
 
-#else
+  #else
 
-let map f s = init (length s) (fun i -> f s.[i])
+  let map f s = init (length s) (fun i -> f s.[i])
 
 let iteri f s =
   for i = 0 to String.length s - 1 do
     f i s.[i]
   done
 
-#endif
+  #endif
 
-#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+  #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
 
 let mapi = String.mapi
 
-#else
+  #else
 
-let mapi f s = init (length s) (fun i -> f i s.[i])
+  let mapi f s = init (length s) (fun i -> f i s.[i])
 
-#endif
+      #endif
 
 let filter_map f s =
   let buf = Buffer.create (String.length s) in
@@ -590,9 +627,9 @@ let flat_map ?sep f s =
   iteri
     (fun i c ->
        begin match sep with
-       | Some _ when i=0 -> ()
-       | None -> ()
-       | Some sep -> Buffer.add_string buf sep
+         | Some _ when i=0 -> ()
+         | None -> ()
+         | Some sep -> Buffer.add_string buf sep
        end;
        Buffer.add_string buf (f c)
     ) s;
@@ -640,22 +677,22 @@ let exists2 p s1 s2 =
   try iter2 (fun c1 c2 -> if p c1 c2 then raise MyExit) s1 s2; false
   with MyExit -> true
 
-(** {2 Ascii functions} *)
+    (** {2 Ascii functions} *)
 
-#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
+    #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
 
 let capitalize_ascii = String.capitalize_ascii
 let uncapitalize_ascii = String.uncapitalize_ascii
 let uppercase_ascii = String.uppercase_ascii
 let lowercase_ascii = String.lowercase_ascii
 
-#else
+  #else
 
-let capitalize_ascii s =
-  mapi
-    (fun i c -> if i=0 then CCChar.uppercase_ascii c else c)
-    s
-    
+  let capitalize_ascii s =
+    mapi
+      (fun i c -> if i=0 then CCChar.uppercase_ascii c else c)
+      s
+
 
 let uncapitalize_ascii s =
   mapi
@@ -666,7 +703,7 @@ let uppercase_ascii = map CCChar.uppercase_ascii
 
 let lowercase_ascii = map CCChar.lowercase_ascii
 
-#endif
+    #endif
 
 
 

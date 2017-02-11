@@ -4,8 +4,7 @@
 (** {1 Wrapper around Set} *)
 
 type 'a sequence = ('a -> unit) -> unit
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a formatter = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   include Set.S
@@ -27,10 +26,6 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
-
-  val print :
-    ?start:string -> ?stop:string -> ?sep:string ->
-    elt formatter -> t formatter
 end
 
 module Make(O : Map.OrderedType) = struct
@@ -51,17 +46,7 @@ module Make(O : Map.OrderedType) = struct
 
   let to_list = elements
 
-  let pp ?(start="") ?(stop="") ?(sep=", ") pp_x buf m =
-    let first = ref true in
-    Buffer.add_string buf start;
-    iter
-      (fun x ->
-         if !first then first := false else Buffer.add_string buf sep;
-         pp_x buf x)
-      m;
-    Buffer.add_string buf stop
-
-  let print ?(start="") ?(stop="") ?(sep=", ") pp_x fmt m =
+  let pp ?(start="") ?(stop="") ?(sep=", ") pp_x fmt m =
     Format.pp_print_string fmt start;
     let first = ref true in
     iter

@@ -67,13 +67,15 @@ let with_acquire ~n t ~f =
   let n = CCLock.create 0 in
   let a = Array.init 100 (fun i ->
     Thread.create (fun _ ->
-      with_acquire ~n:(1 + (i mod 5)) s
-        ~f:(fun () -> CCLock.incr n)
-    ) ())
+      for _i = 1 to 100 do
+        with_acquire ~n:(1 + (i mod 5)) s
+          ~f:(fun () -> Thread.yield(); CCLock.incr n)
+      done)
+    ())
   in
   Array.iter Thread.join a;
   assert_equal ~printer:CCInt.to_string 5 (get s);
-  assert_equal ~printer:CCInt.to_string 100 (CCLock.get n)
+  assert_equal ~printer:CCInt.to_string 10_000 (CCLock.get n)
 *)
 
 let wait_until_at_least ~n t ~f =

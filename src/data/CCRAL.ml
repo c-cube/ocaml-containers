@@ -35,8 +35,8 @@ and tree_lookup_ size t i = match t, i with
   | Node (_, t1, t2), _ ->
     let size' = size / 2 in
     if i <= size'
-      then tree_lookup_ size' t1 (i-1)
-      else tree_lookup_ size' t2 (i-1-size')
+    then tree_lookup_ size' t1 (i-1)
+    else tree_lookup_ size' t2 (i-1-size')
 
 let get l i = try Some (get_exn l i) with Invalid_argument _ -> None
 
@@ -44,15 +44,15 @@ let rec set l i v = match l with
   | Nil -> invalid_arg "RAL.set"
   | Cons (size,t, l') when i < size -> Cons (size, tree_update_ size t i v, l')
   | Cons (size,t, l') -> Cons (size, t, set l' (i - size) v)
-  and tree_update_ size t i v =match t, i with
+and tree_update_ size t i v =match t, i with
   | Leaf _, 0 -> Leaf v
   | Leaf _, _ -> invalid_arg "RAL.set"
   | Node (_, t1, t2), 0 -> Node (v, t1, t2)
   | Node (x, t1, t2), _ ->
     let size' = size / 2 in
     if i <= size'
-      then Node (x, tree_update_ size' t1 (i-1) v, t2)
-      else Node (x, t1, tree_update_ size' t2 (i-1-size') v)
+    then Node (x, tree_update_ size' t1 (i-1) v, t2)
+    else Node (x, t1, tree_update_ size' t2 (i-1-size') v)
 
 (*$Q & ~small:(CCFun.compose snd List.length)
    Q.(pair (pair small_int int) (list int)) (fun ((i,v),l) -> \
@@ -65,13 +65,13 @@ let rec set l i v = match l with
 (*$Q & ~small:List.length
    Q.(list small_int) (fun l -> \
     let l1 = of_list l in \
-    CCList.Idx.mapi (fun i x -> i,x) l \
+    CCList.mapi (fun i x -> i,x) l \
       |> List.for_all (fun (i,x) -> get_exn l1 i = x))
 *)
 
 let cons x l = match l with
   | Cons (size1, t1, Cons (size2, t2, l')) when size1=size2 ->
-      Cons (1 + size1 + size2, Node (x, t1, t2), l')
+    Cons (1 + size1 + size2, Node (x, t1, t2), l')
   | _ -> Cons (1, Leaf x, l)
 
 let cons' l x = cons x l
@@ -116,8 +116,8 @@ let front_exn l = match l with
 let rec _remove prefix l i =
   let x, l' = front_exn l in
   if i=0
-    then List.fold_left (fun l x -> cons x l) l prefix
-    else _remove (x::prefix) l' (i-1)
+  then List.fold_left (fun l x -> cons x l) l prefix
+  else _remove (x::prefix) l' (i-1)
 
 let remove l i = _remove [] l i
 
@@ -136,9 +136,9 @@ let mapi ~f l =
   and aux_t f ~size i t = match t with
     | Leaf x -> Leaf (f i x)
     | Node (x, l, r) ->
-        let x = f i x in
-        let l = aux_t f ~size:(size/2) (i+1) l in
-        Node (x, l, aux_t f ~size:(size/2) (i+1+size/2) r)
+      let x = f i x in
+      let l = aux_t f ~size:(size/2) (i+1) l in
+      Node (x, l, aux_t f ~size:(size/2) (i+1+size/2) r)
   in
   aux f 0 l
 
@@ -171,15 +171,15 @@ let iteri ~f l =
   let rec aux f i l = match l with
     | Nil -> ()
     | Cons (size, t, l') ->
-        aux_t ~size f i t;
-        aux f (i+size) l'
+      aux_t ~size f i t;
+      aux f (i+size) l'
   and aux_t f ~size i t = match t with
     | Leaf x -> f i x
     | Node (x, l, r) ->
-        f i x;
-        let size' = size/2 in
-        aux_t ~size:size' f (i+1) l;
-        aux_t ~size:size' f (i+1+size') r
+      f i x;
+      let size' = size/2 in
+      aux_t ~size:size' f (i+1) l;
+      aux_t ~size:size' f (i+1+size') r
   in
   aux f 0 l
 
@@ -288,17 +288,17 @@ let rec stack_to_list = function
 let rec take n l = match l with
   | Nil -> Nil
   | Cons (size, t, tl) ->
-      if size <= n
-      then append_tree_ t (take (n-size) tl)
-      else take_tree_ ~size n t
+    if size <= n
+    then append_tree_ t (take (n-size) tl)
+    else take_tree_ ~size n t
 and take_tree_ ~size n t = match t with
   | _ when n=0 -> Nil
   | Leaf x -> cons x Nil
   | Node (x, l, r) ->
-      let size' = size/2 in
-      if size' <= n-1
-      then cons x (append_tree_ l (take_tree_ ~size:size' (n-size'-1) r))
-      else cons x (take_tree_ ~size:size' (n-1) l)
+    let size' = size/2 in
+    if size' <= n-1
+    then cons x (append_tree_ l (take_tree_ ~size:size' (n-size'-1) r))
+    else cons x (take_tree_ ~size:size' (n-1) l)
 
 (*$T
   take 3 (of_list CCList.(1--10)) |> to_list = [1;2;3]
@@ -313,9 +313,9 @@ let take_while ~f l =
     | St_list (Nil, st') -> aux p st'
     | St_list (Cons (_, t, tl), st') -> aux p (St_tree (t, St_list (tl, st')))
     | St_tree (Leaf x, st') ->
-        if p x then cons x (aux p st') else Nil
+      if p x then cons x (aux p st') else Nil
     | St_tree (Node (x,l,r), st') ->
-        if p x then cons x (aux p (St_tree (l, St_tree (r, st')))) else Nil
+      if p x then cons x (aux p (St_tree (l, St_tree (r, st')))) else Nil
   in aux f (St_list (l, St_nil))
 
 (*$Q
@@ -328,31 +328,31 @@ let rec drop n l = match l with
   | _ when n=0 -> l
   | Nil -> Nil
   | Cons (size, t, tl) ->
-      if n >= size then drop (n-size) tl
-      else drop_tree_ ~size n t tl
+    if n >= size then drop (n-size) tl
+    else drop_tree_ ~size n t tl
 and drop_tree_ ~size n t tail = match t with
   | _ when n=0 -> tail
   | Leaf _ -> tail
   | Node (_,l,r) ->
-      if n=1 then append_tree_ l (append_tree_ r tail)
-      else
-        let size' = size/2 in
-        if n-1 < size'
-          then drop_tree_ ~size:size' (n-1) l (append_tree_ r tail)
-          else drop_tree_ ~size:size' (n-1-size') r tail
+    if n=1 then append_tree_ l (append_tree_ r tail)
+    else
+      let size' = size/2 in
+      if n-1 < size'
+      then drop_tree_ ~size:size' (n-1) l (append_tree_ r tail)
+      else drop_tree_ ~size:size' (n-1-size') r tail
 
 let drop_while ~f l =
   let rec aux p st = match st with
     | St_nil -> Nil
     | St_list (Nil, st') -> aux p st'
     | St_list (Cons (_, t, tail), st') ->
-        aux p (St_tree (t, St_list (tail, st')))
+      aux p (St_tree (t, St_list (tail, st')))
     | St_tree (Leaf x, st') ->
-        if p x then aux p st' else cons x (stack_to_list st')
+      if p x then aux p st' else cons x (stack_to_list st')
     | St_tree (Node (x,l,r) as tree, st') ->
-        if p x
-        then aux p (St_tree (l, St_tree (r, st')))
-        else append_tree_ tree (stack_to_list st')
+      if p x
+      then aux p (St_tree (l, St_tree (r, st')))
+      else append_tree_ tree (stack_to_list st')
   in aux f (St_list (l, St_nil))
 
 (*$T
@@ -372,17 +372,17 @@ let take_drop n l = take n l, drop n l
 
 let equal ?(eq=(=)) l1 l2 =
   let rec aux ~eq l1 l2 = match l1, l2 with
-  | Nil, Nil -> true
-  | Cons (size1, t1, l1'), Cons (size2, t2, l2') ->
+    | Nil, Nil -> true
+    | Cons (size1, t1, l1'), Cons (size2, t2, l2') ->
       size1 = size2 && aux_t ~eq t1 t2 && aux ~eq l1' l2'
-  | Nil, Cons _
-  | Cons _, Nil -> false
+    | Nil, Cons _
+    | Cons _, Nil -> false
   and aux_t ~eq t1 t2 = match t1, t2 with
-  | Leaf x, Leaf y -> eq x y
-  | Node (x1, l1, r1), Node (x2, l2, r2) ->
+    | Leaf x, Leaf y -> eq x y
+    | Node (x1, l1, r1), Node (x2, l2, r2) ->
       eq x1 x2 && aux_t ~eq l1 l2 && aux_t ~eq r1 r2
-  | Leaf _, Node _
-  | Node _, Leaf _ -> false
+    | Leaf _, Node _
+    | Node _, Leaf _ -> false
   in
   aux ~eq l1 l2
 
@@ -409,7 +409,7 @@ let range i j =
   let rec aux i j acc =
     if i=j then cons i acc
     else if i<j
-      then aux i (j-1) (cons j acc)
+    then aux i (j-1) (cons j acc)
     else
       aux i (j+1) (cons j acc)
   in
@@ -456,7 +456,7 @@ let to_list l = fold_rev ~f:(fun acc x -> x :: acc) ~x:[] l
 
 (*$Q
   Q.(list int) (fun l -> to_list (of_list l) = l)
-  *)
+*)
 
 let add_array l a = Array.fold_right cons a l
 
@@ -466,10 +466,10 @@ let to_array l = match l with
   | Nil -> [||]
   | Cons (_, Leaf x, _)
   | Cons (_, Node (x, _,_), _) ->
-      let len = length l in
-      let arr = Array.make len x in
-      iteri ~f:(fun i x -> Array.set arr i x) l;
-      arr
+    let len = length l in
+    let arr = Array.make len x in
+    iteri ~f:(fun i x -> Array.set arr i x) l;
+    arr
 
 (*$Q
   Q.(array int) (fun a -> \
@@ -516,17 +516,17 @@ let to_gen l =
   let rec next () =
     if Stack.is_empty st
     then match !l with
-    | Nil -> None
-    | Cons (_, t, tl) ->
+      | Nil -> None
+      | Cons (_, t, tl) ->
         l := tl;
         Stack.push t st;
         next()
     else match Stack.pop st with
       | Leaf x -> Some x
       | Node (x, l, r) ->
-          Stack.push r st;
-          Stack.push l st;
-          Some x
+        Stack.push r st;
+        Stack.push l st;
+        Some x
   in
   next
 
@@ -539,15 +539,15 @@ let to_gen l =
 let rec of_list_map ~f l = match l with
   | [] -> empty
   | x::l' ->
-      let y = f x in
-      cons y (of_list_map ~f l')
+    let y = f x in
+    cons y (of_list_map ~f l')
 
 let compare ?(cmp=Pervasives.compare) l1 l2 =
   let rec cmp_gen ~cmp g1 g2 = match g1(), g2() with
-  | None, None -> 0
-  | Some _, None -> 1
-  | None, Some _ -> -1
-  | Some x, Some y ->
+    | None, None -> 0
+    | Some _, None -> 1
+    | None, Some _ -> -1
+    | Some x, Some y ->
       let c = cmp x y in
       if c<> 0 then c else cmp_gen ~cmp g1 g2
   in

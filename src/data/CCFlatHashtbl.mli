@@ -26,10 +26,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Open-Addressing Hash-table}
 
-This module was previously named [CCHashtbl], but the name is now used for
-an extension of the standard library's hashtables.
+    This module was previously named [CCHashtbl], but the name is now used for
+    an extension of the standard library's hashtables.
 
-@since 0.4 *)
+    @since 0.4 *)
 
 type 'a sequence = ('a -> unit) -> unit
 

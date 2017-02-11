@@ -138,9 +138,9 @@ let keys_seq tbl yield =
 let bindings_of ~inj tbl yield =
   Hashtbl.iter
     (fun k value ->
-      match inj.get value with
-      | None -> ()
-      | Some v -> yield (k, v)
+       match inj.get value with
+         | None -> ()
+         | Some v -> yield (k, v)
     ) tbl
 
 type value =

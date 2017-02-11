@@ -147,8 +147,7 @@ end
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a printer = Buffer.t -> 'a -> unit
-type 'a fmt = Format.formatter -> 'a -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 let random g st =
@@ -159,11 +158,11 @@ exception ExitChoice
 let choice_seq s =
   let r = ref None in
   begin try
-    s (function
-    | None -> ()
-    | (Some _) as o -> r := o; raise ExitChoice
-    )
-  with ExitChoice -> ()
+      s (function
+        | None -> ()
+        | (Some _) as o -> r := o; raise ExitChoice
+      )
+    with ExitChoice -> ()
   end;
   !r
 
@@ -175,19 +174,15 @@ let choice_seq s =
 
 let to_gen o =
   match o with
-  | None -> (fun () -> None)
-  | Some _ ->
-    let first = ref true in
-    fun () -> if !first then (first:=false; o) else None
+    | None -> (fun () -> None)
+    | Some _ ->
+      let first = ref true in
+      fun () -> if !first then (first:=false; o) else None
 
 let to_seq o k = match o with
   | None -> ()
   | Some x -> k x
 
-let pp ppx buf o = match o with
-  | None -> Buffer.add_string buf "None"
-  | Some x -> Buffer.add_string buf "Some "; ppx buf x
-
-let print ppx out = function
+let pp ppx out = function
   | None -> Format.pp_print_string out "None"
   | Some x -> Format.fprintf out "@[Some %a@]" ppx x

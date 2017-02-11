@@ -3,8 +3,8 @@
 
 (** {1 Basic String Utils}
 
-Consider using {!Containers_string.KMP} for pattern search, or Regex
-libraries. *)
+    Consider using {!Containers_string.KMP} for pattern search, or Regex
+    libraries. *)
 
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
@@ -399,6 +399,28 @@ val uppercase_ascii : string -> string
 val lowercase_ascii : string -> string
 (** See {!String}. @since 0.18 *)
 
+(** {2 Finding}
+
+    A relatively efficient algorithm for finding sub-strings
+    @since 1.0 *)
+
+module Find : sig
+  type _ pattern
+
+  val compile : string -> [ `Direct ] pattern
+
+  val rcompile : string -> [ `Reverse ] pattern
+
+  val find : ?start:int -> pattern:[`Direct] pattern -> string -> int
+  (** Search for [pattern] in the string, left-to-right
+      @return the offset of the first match, -1 otherwise
+      @param start offset in string at which we start *)
+
+  val rfind : ?start:int -> pattern:[`Reverse] pattern -> string -> int
+  (** Search for [pattern] in the string, right-to-left
+      @return the offset of the start of the first match from the right, -1 otherwise
+      @param start right-offset in string at which we start *)
+end
 
 (** {2 Splitting} *)
 
@@ -420,8 +442,8 @@ module Split : sig
 
   (** {6 Copying functions}
 
-  Those split functions actually copy the substrings, which can be
-  more convenient but less efficient in general *)
+      Those split functions actually copy the substrings, which can be
+      more convenient but less efficient in general *)
 
   val list_cpy : by:string -> string -> string list
 
@@ -494,6 +516,40 @@ val compare_versions : string -> string -> int
     CCOrd.equiv (compare_versions a b) (CCOrd.opp compare_versions b a))
 *)
 
+
+val edit_distance : string -> string -> int
+(** Edition distance between two strings. This satisfies the classical
+    distance axioms: it is always positive, symmetric, and satisfies
+    the formula [distance a b + distance b c >= distance a c] *)
+
+(*$Q
+  Q.(string_of_size Gen.(0 -- 30)) (fun s -> \
+    edit_distance s s = 0)
+*)
+
+(* test that building a from s, and mutating one char of s, yields
+   a string s' that is accepted by a.
+
+   --> generate triples (s, i, c) where c is a char, s a non empty string
+   and i a valid index in s
+*)
+
+(*$QR
+  (
+    let gen = Q.Gen.(
+      3 -- 10 >>= fun len ->
+      0 -- (len-1) >>= fun i ->
+      string_size (return len) >>= fun s ->
+      char >|= fun c -> (s,i,c)
+    ) in
+    let small (s,_,_) = String.length s in
+    Q.make ~small gen
+  )
+  (fun (s,i,c) ->
+    let s' = Bytes.of_string s in
+    Bytes.set s' i c;
+    edit_distance s (Bytes.to_string s') <= 1)
+*)
 
 (** {2 Slices} A contiguous part of a string *)
 
