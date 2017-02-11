@@ -3,7 +3,7 @@
 :source-highlighter: pygments
 
 What is _containers_? (take a look at the link:TUTORIAL.adoc[tutorial]!
-or the http://cedeela.fr/~simon/software/containers[current documentation])
+or the http://c-cube.github.io/ocaml-containers/[current documentation])
 In `containers` and `containers.data`, all modules abide by
 _pay for what you use_: only modules that are used are linked (there are no
 cross-module dependencies).
@@ -23,11 +23,12 @@ cross-module dependencies).
     equivalent in the standard library;
   containers.iter:: with list-like and tree-like iterators;
 
-- A sub-library with complicated abstractions, `containers.advanced` (with
-  a LINQ-like query module, batch operations using GADTs, and others).
 - Utilities around the `unix` library in `containers.unix` (mainly to spawn
-  sub-processes)
+  sub-processes easily and deal with resources safely)
 - A lightweight S-expression printer and streaming parser in `containers.sexp`
+- A library for threaded programming in `containers.thread`,
+  including a blocking queue, semaphores, an extension of `Mutex`, and
+  thread-pool based futures.
 
 Some of the modules have been moved to their own repository (e.g. `sequence`,
 `gen`, `qcheck`) and are on opam for great fun and profit.
@@ -36,15 +37,13 @@ image:https://ci.cedeela.fr/buildStatus/icon?job=containers[alt="Build Status", 
 
 toc::[]
 
-image::media/logo.png[logo]
-
 == Change Log
 
 See link:CHANGELOG.adoc[this file].
 
 == Finding help
 
-- *new*: http://lists.ocaml.org/listinfo/containers-users[Mailing List]
+- http://lists.ocaml.org/listinfo/containers-users[Mailing List]
   the address is mailto:containers-users@lists.ocaml.org[]
 - the https://github.com/c-cube/ocaml-containers/wiki[github wiki]
 - on IRC, ask `companion_cube` on `#ocaml@freenode.net`
@@ -79,9 +78,6 @@ If you have comments, requests, or bugfixes, please share them! :-)
 
 This code is free, under the BSD license.
 
-The logo (`media/logo.png`) is
-CC-SA3 http://en.wikipedia.org/wiki/File:Hypercube.svg[wikimedia].
-
 == Contents
 
 The library contains a <<core,Core part>> that mostly extends the stdlib
@@ -96,10 +92,8 @@ sequence:: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
   It is easier to define on data structures than `gen`, but it a bit less
   powerful.  The opam library https://github.com/c-cube/sequence[sequence]
   can be used to consume and produce values of this type.
-error:: (DEPRECATED) `'a or_error = [`Error of string | `Ok of 'a]` is a error type
-  that is used in other libraries, too. It is now deprecated and
-  replaced with `('a, string) Result.result`, supported in
-  `CCResult`.
+error:: `'a or_error = ('a, string) result = Error of string | Ok of 'a`
+  using the standard `result` type, supported in `CCResult`.
 klist:: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
   without memoization, used as a persistent iterator. The reference
   module is `CCKList` (in `containers.iter`).
@@ -114,7 +108,7 @@ the core library, `containers`, now depends on
 https://github.com/mjambon/cppo[cppo] and `base-bytes` (provided
 by ocamlfind).
 
-Documentation http://cedeela.fr/~simon/software/containers[here].
+http://c-cube.github.io/ocaml-containers/[Documentation here].
 
 - `CCHeap`, a purely functional heap structure
 - `CCVector`, a growable array (pure OCaml, no C) with mutability annotations
@@ -190,14 +184,6 @@ In the library `containers.thread`, for preemptive system threads:
 - `CCSemaphore`, a simple implementation of semaphores
 - `CCThread` basic wrappers for `Thread`
 
-=== Misc
-
-The library has moved to https://github.com/c-cube/containers-misc .
-
-=== Others
-
-`containers.lwt` has moved to https://github.com/c-cube/containers-lwt .
-
 [[build]]
 
 == Documentation
@@ -208,12 +194,13 @@ http://cedeela.fr/~simon/software/containers
 by version:
 
 - http://c-cube.github.io/ocaml-containers/dev/[dev branch]
-- http://c-cube.github.io/ocaml-containers/0.17/[0.17]
+- http://c-cube.github.io/ocaml-containers/1.0/[1.0]
 - http://c-cube.github.io/ocaml-containers/0.19/[0.19]
+- http://c-cube.github.io/ocaml-containers/0.17/[0.17]
 
 == Build
 
-You will need OCaml `>=` 4.00.0.
+You will need OCaml `>=` 4.01.0.
 
 === Via opam
 
