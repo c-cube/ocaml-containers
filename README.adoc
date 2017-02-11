@@ -215,7 +215,7 @@ map =
 
 ----
 
-=== New types: `CCVector`, `CCHeap`, `CCError`, `CCResult`
+=== New types: `CCVector`, `CCHeap`, `CCResult`
 
 Containers also contains (!) a few datatypes that are not from the standard
 library but that are useful in a lot of situations:
@@ -231,17 +231,13 @@ CCHeap::
   A priority queue (currently, leftist heaps) functorized over
   a module `sig val t val leq : t -> t -> bool` that provides a type `t`
   and a partial order `leq` on `t`.
-CCError::
-  An error type for making error handling more explicit (an error monad,
-  really, if you're not afraid of the "M"-word). It is similar to the
-  more recent `CCResult`, but works with polymorphic variants for
-  compatibility with the numerous libraries that use the same type,
-  that is, `type ('a, 'b) CCError.t = [`Ok of 'a | `Error of 'b]`.
 CCResult::
+  An error type for making error handling more explicit (an error monad,
+  really, if you're not afraid of the "M"-word).
+  Subsumes and replaces the old `CCError`.
   It uses the new `result` type from the standard library (or from
-  the retrocompatibility package on opam), and presents an interface
-  similar to `CCError`. In an indeterminate amount of time, it will
-  totally replace `CCError`.
+  the retrocompatibility package on opam) and provides
+  many combinators for dealing with `result`.
 
 Now for a few examples:
 
