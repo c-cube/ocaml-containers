@@ -252,16 +252,16 @@ module Traverse = struct
              bag.push (`Enter (v, []));
              while not (bag.is_empty ()) do
                match bag.pop () with
-                 | `Enter (x, path) ->
-                   if not (tags.get_tag x) then (
+                 | `Enter (v, path) ->
+                   if not (tags.get_tag v) then (
                      let num = !n in
                      incr n;
-                     tags.set_tag x;
-                     k (`Enter (x, num, path));
-                     bag.push (`Exit x);
+                     tags.set_tag v;
+                     k (`Enter (v, num, path));
+                     bag.push (`Exit v);
                      Seq.iter
                        (fun (e,v') -> bag.push (`Edge (v,e,v',(v,e,v') :: path)))
-                       (graph x);
+                       (graph v);
                    )
                  | `Exit x -> k (`Exit x)
                  | `Edge (v,e,v', path) ->
