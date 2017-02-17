@@ -92,9 +92,11 @@ and <<tutorial,the tutorial below>> for a gentle introduction.
 == Documentation
 
 In general, see http://c-cube.github.io/ocaml-containers/ or
-http://cedeela.fr/~simon/software/containers
+http://cedeela.fr/~simon/software/containers for the **API documentation**.
 
-by version:
+Some examples can be found link:doc/containers.adoc[there].
+
+API documentation by version:
 
 - http://c-cube.github.io/ocaml-containers/dev/[dev branch]
 - http://c-cube.github.io/ocaml-containers/1.0/[1.0]
@@ -433,38 +435,6 @@ printer:: `'a printer = Format.formatter -> 'a -> unit` is a pretty-printer
   to be used with the standard module `Format`. In particular, in many cases,
   `"foo: %a" Foo.print foo` will type-check.
 
-=== Parser Combinator
+=== Extended Documentation
 
-The module `CCParse` defines basic parser combinators on strings.
-Adapting https://github.com/inhabitedtype/angstrom#usage[angstrom's tutorial example] gives the following snippet.
-Note that backtracking is explicit in `CCParse`, hence
-the use of `try_` to allow it in some places.
-Explicit memoization with `memo` and `fix_memo` is also possible.
-
-[source,OCaml]
-----
-open CCParse.Infix;;
-module P = CCParse;;
-
-let parens p = P.try_ (P.char '(') *> p <* P.char ')' ;;
-let add = P.char '+' *> P.return (+) ;;
-let sub = P.char '-' *> P.return (-) ;;
-let mul = P.char '*' *> P.return ( * ) ;;
-let div = P.char '/' *> P.return ( / ) ;;
-let integer =
-  P.chars1_if (function '0'..'9'->true|_->false) >|= int_of_string ;;
-
-let chainl1 e op =
-  P.fix (fun r ->
-    e >>= fun x -> P.try_ (op <*> P.return x <*> r) <|> P.return x) ;;
-
-let expr : int P.t =
-  P.fix (fun expr ->
-    let factor = parens expr <|> integer in
-    let term = chainl1 factor (mul <|> div) in
-    chainl1 term (add <|> sub)) ;;
-
-P.parse_string expr "4*1+2";; (* Ok 6 *)
-P.parse_string expr "4*(1+2)";; (* Ok 12 *)
-
-----
+See link:doc/containers.adoc[the extended documentation] for more examples.
