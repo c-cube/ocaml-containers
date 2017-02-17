@@ -202,6 +202,11 @@ module File : sig
       symlinks, etc.)
       @raise Sys_error in case of error (e.g. permission denied) during iteration *)
 
+  val walk_l : t -> walk_item list
+  (** Same as {!walk} but returns a list (therefore it's eager and might
+      take some time on large directories)
+      @since NEXT_RELEASE *)
+
   val show_walk_item : walk_item -> string
 
   val with_temp :
