@@ -92,6 +92,10 @@ module type S = sig
 
   val to_seq : t -> elt sequence
 
+  val to_seq_sorted : t -> elt sequence
+  (** Iterate on the elements, in increasing order
+      @since NEXT_RELEASE *)
+
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
   val of_klist : elt klist -> t

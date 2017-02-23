@@ -69,6 +69,15 @@ end
   )
 *)
 
+(*$QR
+  Q.(list_of_size Gen.(return 1_000) int) (fun l ->
+    (* put elements into a heap *)
+    let h = H.of_seq (Sequence.of_list l) in
+    let l' = H.to_seq_sorted h |> Sequence.to_list in
+    is_sorted l'
+  )
+*)
+
 module type S = sig
   type elt
   type t
@@ -145,6 +154,10 @@ module type S = sig
   val of_seq : elt sequence -> t
 
   val to_seq : t -> elt sequence
+
+  val to_seq_sorted : t -> elt sequence
+  (** Iterate on the elements, in increasing order
+      @since NEXT_RELEASE *)
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
@@ -272,6 +285,13 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let of_seq seq = add_seq empty seq
 
   let to_seq h k = iter k h
+
+  let to_seq_sorted heap =
+    let rec recurse h k = match take h with
+      | None -> ()
+      | Some (h',x) -> k x; recurse h' k
+    in
+    fun k -> recurse heap k
 
   let rec add_klist h l = match l() with
     | `Nil -> h
