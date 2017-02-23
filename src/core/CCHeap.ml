@@ -26,15 +26,7 @@ end
     | [] -> true
     | x::((y::_) as l') -> x <= y && is_sorted l'
 
-  let extract_list heap =
-    let rec recurse acc h =
-      if H.is_empty h
-        then List.rev acc
-        else
-          let h', x = H.take_exn h in
-          recurse (x::acc) h'
-    in
-    recurse [] heap
+  let extract_list = H.to_list_sorted
 *)
 
 (*$R
@@ -133,12 +125,22 @@ module type S = sig
       are now [add_seq], [add_gen], [add_klist]) *)
 
   val to_list : t -> elt list
+  (** Return the elements of the heap, in no particular order. *)
 
-  val add_list : t -> elt list -> t (** @since 0.16 *)
+  val to_list_sorted : t -> elt list
+  (** Return the elements in increasing order
+      @since NEXT_RELEASE *)
+
+  val add_list : t -> elt list -> t
+  (** Add the elements of the list to the heap. An element occurring several
+      times will be added that many times to the heap.
+      @since 0.16 *)
 
   val of_list : elt list -> t
+  (** [of_list l = add_list empty l] *)
 
   val add_seq : t -> elt sequence -> t (** @since 0.16 *)
+  (** Similar to {!add_list} *)
 
   val of_seq : elt sequence -> t
 
@@ -250,6 +252,13 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
       | N(_,x,l,r) ->
         x::aux (aux acc l) r
     in aux [] h
+
+  let to_list_sorted heap =
+    let rec recurse acc h = match take h with
+      | None -> List.rev acc
+      | Some (h',x) -> recurse (x::acc) h'
+    in
+    recurse [] heap
 
   let add_list h l = List.fold_left add h l
 
