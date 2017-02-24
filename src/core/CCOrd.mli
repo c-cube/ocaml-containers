@@ -23,7 +23,7 @@ val float : float t
 (** {2 Lexicographic Combination} *)
 
 val (<?>) : int -> ('a t * 'a * 'a) -> int
-(** [c1 @@? (ord, x, y)] returns the same as [c1] if [c1] is not [0];
+(** [c1 <?> (ord, x, y)] returns the same as [c1] if [c1] is not [0];
     otherwise it uses [ord] to compare the two values [x] and [y],
     of type ['a].
 
