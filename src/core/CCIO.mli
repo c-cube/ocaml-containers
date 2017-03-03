@@ -205,7 +205,7 @@ module File : sig
   val walk_l : t -> walk_item list
   (** Same as {!walk} but returns a list (therefore it's eager and might
       take some time on large directories)
-      @since NEXT_RELEASE *)
+      @since 1.1 *)
 
   val show_walk_item : walk_item -> string
 

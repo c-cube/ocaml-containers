@@ -138,7 +138,7 @@ module type S = sig
 
   val to_list_sorted : t -> elt list
   (** Return the elements in increasing order
-      @since NEXT_RELEASE *)
+      @since 1.1 *)
 
   val add_list : t -> elt list -> t
   (** Add the elements of the list to the heap. An element occurring several
@@ -157,7 +157,7 @@ module type S = sig
 
   val to_seq_sorted : t -> elt sequence
   (** Iterate on the elements, in increasing order
-      @since NEXT_RELEASE *)
+      @since 1.1 *)
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
