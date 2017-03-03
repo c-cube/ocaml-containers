@@ -67,7 +67,13 @@ let map2 f o1 o2 = match o1, o2 with
 
 let filter p = function
   | Some x as o when p x -> o
-  | o -> o
+  | _ -> None
+
+(*$=
+  None (filter ((=) 0) (Some 1))
+  (Some 0) (filter ((=) 0) (Some 0))
+  None (filter (fun _ -> true) None)
+*)
 
 let if_ p x = if p x then Some x else None
 
