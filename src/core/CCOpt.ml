@@ -13,8 +13,6 @@ let map_or ~default f = function
   | None -> default
   | Some x -> f x
 
-let maybe f default = map_or ~default f
-
 let is_some = function
   | None -> false
   | Some _ -> true
@@ -69,7 +67,13 @@ let map2 f o1 o2 = match o1, o2 with
 
 let filter p = function
   | Some x as o when p x -> o
-  | o -> o
+  | _ -> None
+
+(*$=
+  None (filter ((=) 0) (Some 1))
+  (Some 0) (filter ((=) 0) (Some 0))
+  None (filter (fun _ -> true) None)
+*)
 
 let if_ p x = if p x then Some x else None
 
@@ -88,10 +92,6 @@ let iter f o = match o with
 let fold f acc o = match o with
   | None -> acc
   | Some x -> f acc x
-
-let get default x = match x with
-  | None -> default
-  | Some y -> y
 
 let get_or ~default x = match x with
   | None -> default

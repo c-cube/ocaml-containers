@@ -252,16 +252,16 @@ module Traverse = struct
              bag.push (`Enter (v, []));
              while not (bag.is_empty ()) do
                match bag.pop () with
-                 | `Enter (x, path) ->
-                   if not (tags.get_tag x) then (
+                 | `Enter (v, path) ->
+                   if not (tags.get_tag v) then (
                      let num = !n in
                      incr n;
-                     tags.set_tag x;
-                     k (`Enter (x, num, path));
-                     bag.push (`Exit x);
+                     tags.set_tag v;
+                     k (`Enter (v, num, path));
+                     bag.push (`Exit v);
                      Seq.iter
                        (fun (e,v') -> bag.push (`Edge (v,e,v',(v,e,v') :: path)))
-                       (graph x);
+                       (graph v);
                    )
                  | `Exit x -> k (`Exit x)
                  | `Edge (v,e,v', path) ->
@@ -286,6 +286,21 @@ module Traverse = struct
       } in
       dfs_tag ?eq ~tags ~graph seq
   end
+
+  (*$R
+    let l =
+      Traverse.Event.dfs ~graph:divisors_graph (Sequence.return 345614)
+      |> Sequence.to_list in
+    let expected =
+    [`Enter (345614, 0, []); `Edge (345614, (), 172807, `Forward);
+     `Enter (172807, 1, [(345614, (), 172807)]); `Edge (172807, (), 1, `Forward);
+     `Enter (1, 2, [(172807, (), 1); (345614, (), 172807)]); `Exit 1; `Exit 172807;
+     `Edge (345614, (), 2, `Forward); `Enter (2, 3, [(345614, (), 2)]);
+     `Edge (2, (), 1, `Cross); `Exit 2; `Edge (345614, (), 1, `Cross);
+     `Exit 345614]
+    in
+    assert_equal expected l
+    *)
 end
 
 (** {2 Cycles} *)

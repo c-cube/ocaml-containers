@@ -320,6 +320,14 @@ module File = struct
       )
   *)
 
+  let walk_l d =
+    let l = ref [] in
+    let g = walk d in
+    let rec aux () = match g() with
+      | None -> !l
+      | Some x -> l := x :: !l; aux ()
+    in aux ()
+
   type walk_item = [`File | `Dir] * t
 
   let read_dir ?(recurse=false) d =

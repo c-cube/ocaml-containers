@@ -498,6 +498,19 @@ module Make(P : PARAM) = struct
       OUnit.assert_raises Exit (fun () -> Fut.get l')
     *)
 
+    (*$R
+      let rec fib x = if x<2 then 1 else fib (x-1)+fib(x-2) in
+      let l =
+        CCList.(1--10_000)
+        |> List.rev_map
+          (fun x-> Fut.make (fun () -> Thread.yield(); fib (x mod 30)))
+        |> Fut.(map_l (fun x->x>|= fun x->x+1))
+      in
+      OUnit.assert_bool "not done" (Fut.state l = Waiting);
+      let l' = Fut.get l in
+      OUnit.assert_equal 10_000 (List.length l');
+    *)
+
     let choose_
       : type a. a t array_or_list -> a t
       = fun aol ->

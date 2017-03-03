@@ -1,14 +1,9 @@
 S src/core
 S src/data/
-S src/io
 S src/iter/
-S src/advanced/
-S src/lwt/
 S src/sexp/
 S src/threads/
-S src/misc
 S src/string
-S src/bigarray
 S benchs
 S examples
 S tests
@@ -22,8 +17,5 @@ PKG result
 PKG threads
 PKG threads.posix
 PKG lwt
-PKG bigarray
-PKG sequence
-PKG gen
 PKG qcheck
 FLG -w +a -w -4 -w -44

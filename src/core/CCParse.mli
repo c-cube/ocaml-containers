@@ -118,6 +118,34 @@
 
 *)
 
+(*$R
+  let open CCParse.Infix in
+  let module P = CCParse in
+
+  let parens p = P.try_ (P.char '(') *> p <* P.char ')' in
+  let add = P.char '+' *> P.return (+) in
+  let sub = P.char '-' *> P.return (-) in
+  let mul = P.char '*' *> P.return ( * ) in
+  let div = P.char '/' *> P.return ( / ) in
+  let integer =
+  P.chars1_if (function '0'..'9'->true|_->false) >|= int_of_string in
+
+  let chainl1 e op =
+  P.fix (fun r ->
+    e >>= fun x -> P.try_ (op <*> P.return x <*> r) <|> P.return x) in
+
+  let expr : int P.t =
+  P.fix (fun expr ->
+    let factor = parens expr <|> integer in
+    let term = chainl1 factor (mul <|> div) in
+    chainl1 term (add <|> sub)) in
+
+  assert_equal (Ok 6) (P.parse_string expr "4*1+2");
+  assert_equal (Ok 12) (P.parse_string expr "4*(1+2)");
+  ()
+*)
+
+
 type 'a or_error = ('a, string) Result.result
 
 type line_num = int

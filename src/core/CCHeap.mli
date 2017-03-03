@@ -71,6 +71,11 @@ module type S = sig
       are now [add_seq], [add_gen], [add_klist]) *)
 
   val to_list : t -> elt list
+  (** Return the elements of the heap, in no particular order. *)
+
+  val to_list_sorted : t -> elt list
+  (** Return the elements in increasing order
+      @since 1.1 *)
 
   val add_list : t -> elt list -> t
   (** Add the elements of the list to the heap. An element occurring several
@@ -86,6 +91,10 @@ module type S = sig
   val of_seq : elt sequence -> t
 
   val to_seq : t -> elt sequence
+
+  val to_seq_sorted : t -> elt sequence
+  (** Iterate on the elements, in increasing order
+      @since 1.1 *)
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
