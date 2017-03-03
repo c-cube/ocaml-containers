@@ -13,8 +13,6 @@ let map_or ~default f = function
   | None -> default
   | Some x -> f x
 
-let maybe f default = map_or ~default f
-
 let is_some = function
   | None -> false
   | Some _ -> true
@@ -88,10 +86,6 @@ let iter f o = match o with
 let fold f acc o = match o with
   | None -> acc
   | Some x -> f acc x
-
-let get default x = match x with
-  | None -> default
-  | Some y -> y
 
 let get_or ~default x = match x with
   | None -> default
