@@ -12,7 +12,7 @@ map/fold_right/append, and additional functions on lists).
 Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
 
-image:https://ci.cedeela.fr/buildStatus/icon?job=containers[alt="Build Status", link="http://ci.cedeela.fr/job/containers/"]
+image::https://ci.cedeela.fr/buildStatus/icon?job=containers[alt="Build Status", link="http://ci.cedeela.fr/job/containers/"]
 
 toc::[]
 
