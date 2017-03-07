@@ -37,6 +37,7 @@ let int32 fmt n = Format.fprintf fmt "%ld" n
 let int64 fmt n = Format.fprintf fmt "%Ld" n
 let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
+let flush = Format.pp_print_flush
 
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
