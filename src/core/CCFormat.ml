@@ -135,6 +135,18 @@ let fprintf = Format.fprintf
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter
 
+let of_chan = Format.formatter_of_out_channel
+
+let with_out_chan oc f =
+  let fmt = of_chan oc in
+  try
+    let x = f fmt in
+    Format.pp_print_flush fmt ();
+    x
+  with e ->
+    Format.pp_print_flush fmt ();
+    raise e
+
 let tee a b =
   let fa = Format.pp_get_formatter_out_functions a () in
   let fb = Format.pp_get_formatter_out_functions b () in

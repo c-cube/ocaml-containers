@@ -184,6 +184,16 @@ val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
 val output : t -> 'a printer -> 'a -> unit
 val to_string : 'a printer -> 'a -> string
 
+val of_chan : out_channel -> t
+(** Alias to {!Format.formatter_of_out_channel}
+    @since NEXT_RELEASE *)
+
+val with_out_chan : out_channel -> (t -> 'a) -> 'a
+(** [with_out_chan oc f] turns [oc] into a formatter [fmt], and call [f fmt].
+    Behaves like [f fmt] from then on, but whether the call to [f] fails
+    or returns, [fmt] is flushed before the call terminates.
+    @since NEXT_RELEASE *)
+
 val stdout : t
 val stderr : t
 
