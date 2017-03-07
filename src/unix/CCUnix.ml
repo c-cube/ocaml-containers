@@ -224,6 +224,49 @@ let establish_server sockaddr ~f =
       continue := false
   done
 
+
+(** {6 Locking} *)
+
+let with_file_lock ~kind filename f =
+  let lock_file = Unix.openfile filename [Unix.O_CREAT; Unix.O_WRONLY] 0o644 in
+  let lock_action = match kind with
+    | `Read -> Unix.F_RLOCK
+    | `Write -> Unix.F_LOCK
+  in
+  Unix.lockf lock_file lock_action 0;
+  try
+    let x = f () in
+    Unix.lockf lock_file Unix.F_ULOCK 0;
+    Unix.close lock_file;
+    x
+  with e ->
+    Unix.lockf lock_file Unix.F_ULOCK 0;
+    Unix.close lock_file;
+    raise e
+
+(*$R
+  let m = 200 in
+  let n = 50 in
+  let write_atom filename s =
+    with_file_lock ~kind:`Write filename
+      (fun () ->
+        CCIO.with_out ~flags:[Open_append; Open_creat]
+          filename (fun oc -> output_string oc s; flush oc))
+  in
+  let f filename =
+    for j=1 to m do
+      write_atom filename "foo\n"
+    done
+  in
+  CCIO.File.with_temp ~prefix:"containers_" ~suffix:".txt"
+    (fun filename ->
+        let a = Array.init n (fun _ -> Thread.create f filename) in
+        Array.iter Thread.join a;
+        let lines = CCIO.with_in filename CCIO.read_lines_l in
+        assert_equal ~printer:string_of_int (n * m) (List.length lines);
+        assert_bool "all valid" (List.for_all ((=) "foo") lines))
+*)
+
 module Infix = struct
   let (?|) fmt = call_full fmt
 
