@@ -277,8 +277,8 @@ let fold_product f acc l1 l2 =
     (fun acc x1 ->
        List.fold_left
          (fun acc x2 -> f acc x1 x2)
-         acc l2
-    ) acc l1
+         acc l2)
+    acc l1
 
 let diagonal l =
   let rec gen acc l = match l with
@@ -328,6 +328,44 @@ let (<$>) = map
 let pure = return
 
 let (<*>) funs l = product (fun f x -> f x) funs l
+
+let cartesian_product l =
+  (* [left]: elements picked so far
+     [right]: sets to pick elements from
+     [acc]: accumulator for the result, to pass to continuation
+     [k]: continuation *)
+  let rec prod_rec left right k acc = match right with
+    | [] -> k acc (List.rev left)
+    | l1 :: tail ->
+      List.fold_left
+        (fun acc x -> prod_rec (x::left) tail k acc)
+        acc l1
+  in
+  prod_rec [] l (fun acc l' -> l' :: acc) []
+
+(*$inject
+  let cmp_lii_unord l1 l2 : bool =
+    List.sort CCOrd.compare l1 = List.sort CCOrd.compare l2
+*)
+
+(*$= & ~printer:Q.Print.(list (list int)) ~cmp:cmp_lii_unord
+  [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]] \
+    (cartesian_product [[1;2];[3];[4;5;6]])
+  [] (cartesian_product [[1;2];[];[4;5;6]])
+  [[]] (cartesian_product [])
+  [[1;3;4;5;6];[2;3;4;5;6]] \
+    (cartesian_product [[1;2];[3];[4];[5];[6]])
+*)
+
+(* cartesian product of lists of lists *)
+let map_product_l f l =
+  let l = List.map f l in
+  cartesian_product l
+
+(*$Q
+  Q.(list_of_size Gen.(1--4) (list_of_size Gen.(0--4) small_int)) (fun l-> \
+    cmp_lii_unord (cartesian_product l) (map_product_l CCFun.id l))
+*)
 
 let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
   let rec recurse cmp acc l1 l2 = match l1,l2 with

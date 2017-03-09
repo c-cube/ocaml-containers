@@ -83,6 +83,26 @@ val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 (** Fold on the cartesian product *)
 
+val cartesian_product : 'a t t -> 'a t t
+(**
+    For example:
+    {[
+      # cartesian_product [[1;2];[3];[4;5;6]] =
+          [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
+      # cartesian_product [[1;2];[];[4;5;6]] = [];;
+      # cartesian_product [[1;2];[3];[4];[5];[6]] =
+          [[1;3;4;5;6];[2;3;4;5;6]];;
+    ]}
+    invariant: [cartesian_product l = map_product id l].
+    @since NEXT_RELEASE *)
+
+val map_product_l : ('a -> 'b list) -> 'a list -> 'b list list
+(** [map_product_l f l] maps each element of [l] to a list of
+    objects of type ['b] using [f].
+    We obtain [[l1;l2;…;ln]] where [length l=n] and [li : 'b list].
+    Then, it returns all the ways of picking exactly one element per [li].
+    @since NEXT_RELEASE *)
+
 val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
