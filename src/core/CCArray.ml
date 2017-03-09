@@ -71,6 +71,48 @@ let fold_while f acc a =
   fold_while (fun acc b -> if b then acc+1, `Continue else acc, `Stop) 0 (Array.of_list [true;true;false;true]) = 2
 *)
 
+let fold_map f acc a =
+  let n = length a in
+  (* need special case for initializing the result *)
+  if n = 0 then acc, [||]
+  else (
+    let acc, b0 = f acc a.(0) in
+    let res = Array.make n b0 in
+    let acc = ref acc in
+    for i = 1 to n-1 do
+      let new_acc, b = f !acc a.(i) in
+      acc := new_acc;
+      res.(i) <- b;
+    done;
+    !acc, res
+  )
+
+(*$=
+  (6, [|"1"; "2"; "3"|]) \
+    (fold_map (fun acc x->acc+x, string_of_int x) 0 [|1;2;3|])
+*)
+
+(*$Q
+  Q.(array int) (fun a -> \
+    fold_map (fun acc x -> x::acc, x) [] a = (List.rev @@ Array.to_list a, a))
+*)
+
+let scan_left f acc a =
+  let n = length a in
+  let res = Array.make (n+1) acc in
+  Array.iteri
+    (fun i x ->
+       let new_acc = f res.(i) x in
+       res.(i+1) <- new_acc)
+    a;
+  res
+
+(*$= & ~printer:Q.Print.(array int)
+  [|0;1;3;6|] (scan_left (+) 0 [|1;2;3|])
+  [|0|] (scan_left (+) 0 [||])
+*)
+
+
 let iter = Array.iter
 
 let iteri = Array.iteri

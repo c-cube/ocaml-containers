@@ -41,6 +41,17 @@ val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
     indicated by the accumulator
     @since 0.8 *)
 
+val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a t -> 'acc * 'b t
+(** [fold_map f acc a] is a [fold_left]-like function, but it also maps the
+    array to another array.
+    @since NEXT_RELEASE *)
+
+val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc t
+(** [scan_left f acc a] returns the array
+    [ [|acc; f acc x0; f (f acc a.(0)) a.(1); …|] ]
+    @since NEXT_RELEASE *)
+
+
 val iter : ('a -> unit) -> 'a t -> unit
 
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
