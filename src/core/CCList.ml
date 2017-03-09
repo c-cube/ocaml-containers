@@ -152,6 +152,26 @@ let fold_map f acc l =
     fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
 *)
 
+let scan_left f acc l =
+  let rec aux f acc l_acc l = match l with
+    | [] -> List.rev l_acc
+    | x :: tail ->
+      let acc = f acc x in
+      let l_acc = acc :: l_acc in
+      aux f acc l_acc tail
+  in
+  aux f acc [acc] l
+
+(*$= & ~printer:Q.Print.(list int)
+  [0;1;3;6] (scan_left (+) 0 [1;2;3])
+  [0] (scan_left (+) 0 [])
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    List.length l + 1 = List.length (scan_left (+) 0 l))
+*)
+
 let fold_map2 f acc l1 l2 =
   let rec aux f acc map_acc l1 l2 = match l1, l2 with
     | [], [] -> acc, List.rev map_acc

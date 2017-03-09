@@ -48,6 +48,11 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
     list to another list.
     @since 0.14 *)
 
+val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc list
+(** [scan_left f acc l] returns the list [[acc; f acc x0; f (f acc x0) x1; …]]
+    where [x0], [x1], etc. are the elements of [l]
+    @since NEXT_RELEASE *)
+
 val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
 (** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length
