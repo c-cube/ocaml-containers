@@ -388,6 +388,20 @@ module Split = struct
   let right ~by s = try Some (right_exn ~by s) with Not_found -> None
 end
 
+let split_on_char c s: _ list =
+  Split.list_cpy ~by:(String.make 1 c) s
+
+(*$= & ~printer:Q.Print.(list string)
+  ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
+    (split_on_char ' ' "a few words from our sponsors")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    let s = split_on_char ' ' s |> String.concat " " in \
+    s = split_on_char ' ' s |> String.concat " ")
+*)
+
 let compare_versions a b =
   let of_int s = try Some (int_of_string s) with _ -> None in
   let rec cmp_rec a b = match a(), b() with

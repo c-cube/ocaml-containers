@@ -495,6 +495,10 @@ module Split : sig
   *)
 end
 
+val split_on_char : char -> string -> string list
+(** Split the string along the given char
+    @since NEXT_RELEASE *)
+
 (** {2 Utils} *)
 
 val compare_versions : string -> string -> int
