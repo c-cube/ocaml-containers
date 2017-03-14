@@ -384,12 +384,12 @@ module Dump = struct
   let option pp out x = match x with
     | None -> Format.pp_print_string out "None"
     | Some x -> Format.fprintf out "Some %a" pp x
-  let pair p1 p2 = within "(" ")" (pair p1 p2)
-  let triple p1 p2 p3 = within "(" ")" (triple p1 p2 p3)
-  let quad p1 p2 p3 p4 = within "(" ")" (quad p1 p2 p3 p4)
+  let pair p1 p2 = within "(" ")" (hovbox (pair p1 p2))
+  let triple p1 p2 p3 = within "(" ")" (hovbox (triple p1 p2 p3))
+  let quad p1 p2 p3 p4 = within "(" ")" (hovbox (quad p1 p2 p3 p4))
   let result' pok perror out = function
-    | Result.Ok x -> Format.fprintf out "(Ok %a)" pok x
-    | Result.Error e -> Format.fprintf out "(Error %a)" perror e
+    | Result.Ok x -> Format.fprintf out "(@[Ok %a@])" pok x
+    | Result.Error e -> Format.fprintf out "(@[Error %a@])" perror e
   let result pok = result' pok string
   let to_string = to_string
 end
