@@ -503,7 +503,7 @@ module Make(P : PARAM) = struct
       let l =
         CCList.(1--10_000)
         |> List.rev_map
-          (fun x-> Fut.make (fun () -> Thread.yield(); fib (x mod 30)))
+          (fun x-> Fut.make (fun () -> Thread.yield(); fib (x mod 20)))
         |> Fut.(map_l (fun x->x>|= fun x->x+1))
       in
       OUnit.assert_bool "not done" (Fut.state l = Waiting);

@@ -183,7 +183,7 @@ let sort_ranking cmp a =
 *)
 
 (*$Q
-  Q.(array printable_string) (fun a -> \
+  Q.(array_of_size Gen.(0--50) printable_string) (fun a -> \
     let b = sort_ranking String.compare a in \
     let a_sorted = sorted String.compare a in \
     a = Array.map (Array.get a_sorted) b)
