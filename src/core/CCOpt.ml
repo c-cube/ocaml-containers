@@ -148,16 +148,16 @@ let of_list = function
   | [] -> None
 
 let to_result err = function
-  | None -> Error err
-  | Some x -> Ok x
+  | None -> Result.Error err
+  | Some x -> Result.Ok x
 
 let to_result_lazy err_fn = function
-  | None -> Error (err_fn ())
-  | Some x -> Ok x
+  | None -> Result.Error (err_fn ())
+  | Some x -> Result.Ok x
 
 let of_result = function
-  | Error _ -> None
-  | Ok x -> Some x
+  | Result.Error _ -> None
+  | Result.Ok x -> Some x
 
 module Infix = struct
   let (>|=) = (>|=)
