@@ -42,6 +42,20 @@ val fail_fprintf : ('a, Format.formatter, unit, ('a, string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
     and then returns [Error msg] *)
 
+val add_ctx : string -> ('a, string) t -> ('a, string) t
+(** [add_ctx msg] leaves [Ok x] untouched, but transforms
+    [Error s] into [Error s'] where [s'] contains the additional
+    context given by [msg]
+    @since NEXT_RELEASE *)
+
+val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) format4 -> 'a
+(** [add_ctxf format_message] is similar to {!add_ctx} but with
+    {!Format} for printing the message (eagerly).
+    Example: {[
+      add_ctxf "message(number %d, foo: %B)" 42 true (Error "error)"
+    ]}
+    @since NEXT_RELEASE *)
+
 val map : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
 (** Map on success *)
 

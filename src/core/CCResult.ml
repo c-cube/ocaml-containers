@@ -31,6 +31,22 @@ let fail_fprintf format =
     (fun out -> Format.pp_print_flush out (); fail (Buffer.contents buf))
     out format
 
+let add_ctx msg x = match x with
+  | Error e -> Error (e ^ "\ncontext:" ^ msg)
+  | Ok x -> Ok x
+
+let add_ctxf msg =
+  let buf = Buffer.create 64 in
+  let out = Format.formatter_of_buffer buf in
+  Format.kfprintf
+    (fun out e -> Format.pp_print_flush out (); add_ctx (Buffer.contents buf) e)
+    out msg
+
+(*$=
+   (Error "error\ncontext:message(number 42, foo: true)") \
+     (add_ctxf "message(number %d, foo: %B)" 42 true (Error "error"))
+*)
+
 let of_exn e =
   let msg = Printexc.to_string e in
   Error msg
