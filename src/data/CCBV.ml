@@ -378,6 +378,13 @@ type 'a sequence = ('a -> unit) -> unit
 
 let to_seq bv k = iter_true bv k
 
+(*$Q
+  Q.(small_int) (fun i -> \
+      let i = max 1 i in \
+      let bv = create ~size:i true in \
+      i = (to_seq bv |> Sequence.length))
+  *)
+
 let of_seq seq =
   let l = ref [] and maxi = ref 0 in
   seq (fun x -> l := x :: !l; maxi := max !maxi x);
