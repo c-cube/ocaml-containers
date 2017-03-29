@@ -25,6 +25,7 @@ val pow : t -> t -> t
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
+type 'a sequence = ('a -> unit) -> unit
 
 val random : int -> t random_gen
 val random_small : t random_gen
@@ -51,6 +52,23 @@ val min : t -> t -> t
 val max : t -> t -> t
 (** @since 0.17 *)
 
+val range_by : step:t -> t -> t -> t sequence
+(** [range_by ~step i j] iterates on integers from [i] to [j] included,
+    where the difference between successive elements is [step].
+    use a negative [step] for a decreasing list.
+    @raise Invalid_argument if [step=0]
+    @since NEXT_RELEASE *)
+
+val range : t -> t -> t sequence
+(** [range i j] iterates on integers from [i] to [j] included . It works
+    both for decreasing and increasing ranges
+    @since NEXT_RELEASE *)
+
+val range' : t -> t -> t sequence
+(** Same as {!range} but the second bound is excluded.
+    For instance [range' 0 5 = Sequence.of_list [0;1;2;3;4]]
+    @since NEXT_RELEASE *)
+
 (** {2 Infix Operators}
 
     @since 0.17 *)
@@ -72,6 +90,14 @@ module Infix : sig
 
   val (>=) : t -> t -> bool
   (** @since 0.17 *)
+
+  val (--) : t -> t -> t sequence
+  (** Alias to {!range}
+      @since NEXT_RELEASE *)
+
+  val (--^) : t -> t -> t sequence
+  (** Alias to {!range'}
+      @since NEXT_RELEASE *)
 end
 
 include module type of Infix

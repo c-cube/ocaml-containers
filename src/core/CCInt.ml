@@ -39,6 +39,7 @@ let pow a b =
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
+type 'a sequence = ('a -> unit) -> unit
 
 let random n st = Random.State.int st n
 let random_small = random 100
@@ -96,6 +97,76 @@ let to_string_binary n =
   Q.int (fun n -> n = int_of_string (to_string_binary n))
 *)
 
+let range_by ~step i j yield =
+  let rec range i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      range (i+step) j yield
+    )
+  in
+  if step = 0 then
+    raise (Invalid_argument "CCList.range_by")
+  else if (if step > 0 then i>j else i<j) then ()
+  else range i ((j-i)/step*step + i) yield
+
+(* note: the last test checks that no error occurs due to overflows. *)
+(*$= & ~printer:Q.Print.(list int)
+  [0]     (range_by ~step:1   0 0     |> Sequence.to_list)
+  []      (range_by ~step:1   5 0     |> Sequence.to_list)
+  []      (range_by ~step:2   1 0     |> Sequence.to_list)
+  [0;2;4] (range_by ~step:2   0 4     |> Sequence.to_list)
+  [0;2;4] (range_by ~step:2   0 5     |> Sequence.to_list)
+  [0]     (range_by ~step:~-1 0 0     |> Sequence.to_list)
+  []      (range_by ~step:~-1 0 5     |> Sequence.to_list)
+  []      (range_by ~step:~-2 0 1     |> Sequence.to_list)
+  [5;3;1] (range_by ~step:~-2 5 1     |> Sequence.to_list)
+  [5;3;1] (range_by ~step:~-2 5 0     |> Sequence.to_list)
+  [0]     (range_by ~step:max_int 0 2 |> Sequence.to_list)
+*)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (i,j) -> \
+    let i = min i j and j = max i j in \
+    CCList.equal CCInt.equal \
+      (CCInt.range_by ~step:1 i j |> Sequence.to_list) \
+      (CCInt.range i j |> Sequence.to_list) )
+*)
+
+let range i j yield =
+  let rec up i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      up (i+1) j yield
+    )
+  and down i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      down (i-1) j yield
+    )
+  in
+  if i<=j then up i j yield else down i j yield
+
+(*$= & ~printer:Q.Print.(list int)
+  [0;1;2;3;4;5] (range 0 5 |> Sequence.to_list)
+  [0]           (range 0 0 |> Sequence.to_list)
+  [5;4;3;2]     (range 5 2 |> Sequence.to_list)
+*)
+
+let range' i j yield =
+  if i<j then range i (j-1) yield
+  else if i=j then ()
+  else range i (j+1) yield
+
+(*$= & ~printer:Q.Print.(list int)
+  []          (range' 0 0 |> Sequence.to_list)
+  [0;1;2;3;4] (range' 0 5 |> Sequence.to_list)
+  [5;4;3]     (range' 5 2 |> Sequence.to_list)
+*)
+
+
 module Infix = struct
   let (=) = Pervasives.(=)
   let (<>) = Pervasives.(<>)
@@ -103,6 +174,8 @@ module Infix = struct
   let (>) = Pervasives.(>)
   let (<=) = Pervasives.(<=)
   let (>=) = Pervasives.(>=)
+  let (--) = range
+  let (--^) = range'
 end
 include Infix
 let min = min
