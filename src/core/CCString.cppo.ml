@@ -748,6 +748,10 @@ module Sub = struct
 
   let length (_,_,l) = l
 
+  let get (s,i,l) j =
+    if j<0 || j>= l then invalid_arg "CCString.Sub.get";
+    String.unsafe_get s (i+j)
+
   let blit (a1,i1,len1) o1 a2 o2 len =
     if o1+len>len1 then invalid_arg "CCString.Sub.blit";
     blit a1 (i1+o1) a2 o2 len

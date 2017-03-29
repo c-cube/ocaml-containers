@@ -574,6 +574,11 @@ module Sub : sig
   val sub : t -> int -> int -> t
   (** Sub-slice *)
 
+  val get : t -> int -> char
+  (** [get s i] gets the [i]-th element, or fails
+      @raise Invalid_argument if the index is not within [0... length -1]
+      @since NEXT_RELEASE *)
+
   include S with type t := t
 
   (*$T
@@ -587,4 +592,23 @@ module Sub : sig
     let sub = Sub.make " abc " 1 ~len:3 in \
     "\"abc\"" = (CCFormat.to_string Sub.print sub)
   *)
+
+  (*$= & ~printer:(String.make 1)
+    'b' Sub.(get (make "abc" 1 ~len:2) 0)
+    'c' Sub.(get (make "abc" 1 ~len:2) 1)
+    *)
+
+  (*$QR
+    Q.(printable_string_of_size Gen.(3--10)) (fun s ->
+      let open Sequence.Infix in
+      begin
+        (0 -- (length s-2)
+          >|= fun i -> i, Sub.make s i ~len:(length s-i))
+        >>= fun (i,sub) ->
+        (0 -- (Sub.length sub-1) >|= fun j -> i,j,sub)
+      end
+      |> Sequence.for_all
+        (fun (i,j,sub) -> Sub.get sub j = s.[i+j]))
+  *)
+
 end
