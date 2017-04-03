@@ -324,7 +324,7 @@ let sprintf_ c format =
     fmt
     format
 
-let with_color_sf s fmt =
+let with_color_ksf ~f s fmt =
   let buf = Buffer.create 64 in
   let out = Format.formatter_of_buffer buf in
   if !color_enabled then set_color_tag_handling out;
@@ -333,8 +333,10 @@ let with_color_sf s fmt =
     (fun out ->
        Format.pp_close_tag out ();
        Format.pp_print_flush out ();
-       Buffer.contents buf)
+       f (Buffer.contents buf))
     out fmt
+
+let with_color_sf s fmt = with_color_ksf ~f:(fun s->s) s fmt
 
 let sprintf fmt = sprintf_ true fmt
 let sprintf_no_color fmt = sprintf_ false fmt

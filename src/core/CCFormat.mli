@@ -179,6 +179,16 @@ val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
     {b status: experimental}
     @since 0.21 *)
 
+val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 'a
+(** [with_color_ksf "Blue" ~f "%s %d" "yolo" 42] will behave like
+    {!ksprintf}, but wrapping the content with the given style
+    Example:
+    the following with raise [Failure] with a colored message
+    {[
+      CCFormat.with_color_ksf "red" ~f:failwith "%a" CCFormat.Dump.(list int) [1;2;3];;
+    ]}
+    @since NEXT_RELEASE *)
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit
