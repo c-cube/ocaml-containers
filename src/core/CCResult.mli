@@ -101,9 +101,13 @@ val fold : ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) t -> 'b
 (** [fold ~ok ~error e] opens [e] and, if [e = Ok x], returns
     [ok x], otherwise [e = Error s] and it returns [error s]. *)
 
-val is_ok : ('a, 'err) t -> bool
-(** Return true if Ok/
+val fold_ok : ('a -> 'b -> 'a) -> 'a -> ('b, _) t -> 'a
+(** [fold_ok f acc r] will compute [f acc x] if [r=Ok x],
+    and return [acc] otherwise, as if the result were a mere option.
+    @since NEXT_RELEASE *)
 
+val is_ok : ('a, 'err) t -> bool
+(** Return true if Ok
     @since 1.0 *)
 
 val is_error : ('a, 'err) t -> bool

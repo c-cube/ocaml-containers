@@ -114,6 +114,15 @@ let fold ~ok ~error x = match x with
   | Ok x -> ok x
   | Error s -> error s
 
+let fold_ok f acc r = match r with
+  | Ok x -> f acc x
+  | Error _ -> acc
+
+(*$=
+  42 (fold_ok (+) 2 (Ok 40))
+  40 (fold_ok (+) 40 (Error "foo"))
+  *)
+
 let is_ok = function
   | Ok _ -> true
   | Error _ -> false
