@@ -30,6 +30,7 @@ CCArrayLabels
 CCArray_slice
 CCBool
 CCChar
+CCEqual
 CCFloat
 CCFormat
 CCFun
