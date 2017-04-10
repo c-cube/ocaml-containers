@@ -26,6 +26,7 @@ module Char = struct
   include Char
   include (CCChar : module type of CCChar with type t := t)
 end
+module Equal = CCEqual
 module Float = CCFloat
 module Format = struct
   include Format
