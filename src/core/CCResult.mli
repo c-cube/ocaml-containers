@@ -34,11 +34,11 @@ val of_exn_trace : exn -> ('a, string) t
     Remember to call [Printexc.record_backtrace true] and compile with the
     debug flag for this to work. *)
 
-val fail_printf : ('a, Buffer.t, unit, ('a, string) t) format4 -> 'a
+val fail_printf : ('a, Buffer.t, unit, ('b, string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
     and then returns [Error msg] *)
 
-val fail_fprintf : ('a, Format.formatter, unit, ('a, string) t) format4 -> 'a
+val fail_fprintf : ('a, Format.formatter, unit, ('b, string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
     and then returns [Error msg] *)
 

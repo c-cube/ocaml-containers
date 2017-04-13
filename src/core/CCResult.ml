@@ -24,12 +24,20 @@ let fail_printf format =
     (fun buf -> fail (Buffer.contents buf))
     buf format
 
+(*$T
+  (Error "ohno 42") = (fail_printf "ohno %d" 42)
+*)
+
 let fail_fprintf format =
   let buf = Buffer.create 64 in
   let out = Format.formatter_of_buffer buf in
   Format.kfprintf
     (fun out -> Format.pp_print_flush out (); fail (Buffer.contents buf))
     out format
+
+(*$T
+  (Error "ohno 42") = (fail_fprintf "ohno %d" 42)
+*)
 
 let add_ctx msg x = match x with
   | Error e -> Error (e ^ "\ncontext:" ^ msg)
