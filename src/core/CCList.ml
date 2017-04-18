@@ -359,6 +359,13 @@ let combine l1 l2 =
   combine (1 -- 100_000) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
 *)
 
+(*$Q
+  Q.(let p = small_list int in pair p p)(fun (l1,l2) -> \
+    if List.length l1=List.length l2 \
+    then CCList.combine l1 l2 = List.combine l1 l2 \
+    else Q.assume_fail() )
+  *)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l
