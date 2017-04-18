@@ -72,6 +72,10 @@ val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
     @since 0.6 *)
 
+val combine : ('a list) -> ('b list) -> ('a * 'b) list
+(** Similar to {!List.combine} but tail-recursive
+    @since NEXT_RELEASE *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
