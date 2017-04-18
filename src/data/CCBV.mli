@@ -3,9 +3,13 @@
 
 (** {2 Imperative Bitvectors}
 
-    The size of the bitvector is rounded up to the multiple of 30 or  62.
-    In other words some functions such as {!iter} might iterate on more
-    bits than what was originally asked for.
+    {b BREAKING CHANGES} since NEXT_RELEASE:
+    size is now stored along with the bitvector. Some functions have
+    a new signature.
+
+    The size of the bitvector used to be rounded up to the multiple of 30 or 62.
+    In other words some functions such as {!iter} would iterate on more
+    bits than what was originally asked for. This is not the case anymore.
 *)
 
 type t
@@ -21,23 +25,25 @@ val copy : t -> t
 (** Copy of bitvector *)
 
 val cardinal : t -> int
-(** Number of bits set *)
+(** Number of bits set to one, seen as a set of bits *)
 
 val length : t -> int
-(** Length of underlying array *)
+(** Size of the bitvector.
+    This is not related to the underlying implementation.
+    Changed at NEXT_RELEASE
+*)
 
 val resize : t -> int -> unit
-(** Resize the BV so that it has at least the given physical length
-    [resize bv n] should make [bv] able to store [(Sys.word_size - 2)* n] bits *)
+(** Resize the BV so that it has at least the given {!length}. *)
 
 val is_empty : t -> bool
-(** Any bit set? *)
+(** Is there any true bit? *)
 
 val set : t -> int -> unit
-(** Set i-th bit. *)
+(** Set i-th bit, extending the bitvector if needed. *)
 
 val get : t -> int -> bool
-(** Is the i-th bit true? Returns false if the index is too high*)
+(** Is the i-th bit true? Returns false if the index is too high *)
 
 val reset : t -> int -> unit
 (** Set i-th bit to 0 *)
@@ -64,19 +70,26 @@ val to_sorted_list : t -> int list
 val of_list : int list -> t
 (** From a list of true bits *)
 
-val first : t -> int
+val first: t -> int option
+(** First set bit, or return [None]
+    changed type at NEXT_RELEASE *)
+
+val first_exn : t -> int
 (** First set bit, or
-    @raise Not_found if all bits are 0 *)
+    @raise Not_found if all bits are 0
+    @since NEXT_RELEASE *)
 
 val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]
     satisfies [p index] *)
 
 val union_into : into:t -> t -> unit
-(** [union ~into bv] sets [into] to the union of itself and [bv]. *)
+(** [union ~into bv] sets [into] to the union of itself and [bv].
+    Also updates the length of [into] to be at least [length bv]. *)
 
 val inter_into : into:t -> t -> unit
-(** [inter ~into bv] sets [into] to the intersection of itself and [bv] *)
+(** [inter ~into bv] sets [into] to the intersection of itself and [bv].
+    Also updates the length of [into] to be at most [length bv] *)
 
 val union : t -> t -> t
 (** [union bv1 bv2] returns the union of the two sets *)
