@@ -402,6 +402,8 @@ let split_on_char c s: _ list =
     s = split_on_char ' ' s |> String.concat " ")
 *)
 
+let split = Split.list_cpy
+
 let compare_versions a b =
   let of_int s = try Some (int_of_string s) with _ -> None in
   let rec cmp_rec a b = match a(), b() with

@@ -499,6 +499,10 @@ val split_on_char : char -> string -> string list
 (** Split the string along the given char
     @since NEXT_RELEASE *)
 
+val split : by:string -> string -> string list
+(** Alias to {!Split.list_cpy}
+    @since NEXT_RELEASE *)
+
 (** {2 Utils} *)
 
 val compare_versions : string -> string -> int
