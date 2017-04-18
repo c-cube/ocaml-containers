@@ -366,6 +366,25 @@ let combine l1 l2 =
     else Q.assume_fail() )
   *)
 
+let combine_gen l1 l2 =
+  let l1 = ref l1 in
+  let l2 = ref l2 in
+  fun () -> match !l1, !l2 with
+    | [], _
+    | _, [] -> None
+    | x1 :: tail1, x2 :: tail2 ->
+      l1 := tail1;
+      l2 := tail2;
+      Some (x1,x2)
+
+(*$Q
+  Q.(let p = small_list int in pair p p)(fun (l1,l2) -> \
+    let n = min (List.length l1) (List.length l2) in \
+    let res1 = combine (take n l1) (take n l2) in \
+    let res2 = combine_gen l1 l2 |> of_gen in \
+    res1 = res2)
+  *)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l

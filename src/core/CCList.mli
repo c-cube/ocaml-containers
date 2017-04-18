@@ -83,6 +83,13 @@ val combine : 'a list -> 'b list -> ('a * 'b) list
     @raise Invalid_argument if the lists have distinct lengths.
     @since NEXT_RELEASE *)
 
+val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
+(** Lazy version of {!combine}.
+    Unlike {!combine}, it does not fail if the lists have different
+    lengths;
+    instead, the output has as many pairs as the smallest input list.
+    @since NEXT_RELEASE *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
