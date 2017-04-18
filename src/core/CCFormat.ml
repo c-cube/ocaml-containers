@@ -79,12 +79,6 @@ let text out (s:string): unit =
   "a b\nc" (sprintf_no_color "@[<h>%a@]%!" text "a b\nc")
   *)
 
-(*$Q
-  Q.(printable_string) (fun s -> \
-    sprintf_no_color "@[<hv2>%a@]%!" text s = \
-    sprintf_no_color "@[<hv2>%a@]%!" Format.pp_print_text s)
-*)
-
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
     | x::((_::_) as l) ->
