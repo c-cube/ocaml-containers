@@ -339,6 +339,26 @@ let partition_map f l =
   assert_equal [1;3] l2
 *)
 
+let combine l1 l2 =
+  let rec direct i l1 l2 = match l1, l2 with
+    | ([], []) -> []
+    | _ when i=0 -> safe l1 l2 []
+    | (x1::l1', x2::l2') -> (x1, x2) :: direct (i-1) l1' l2'
+    | (_, _) -> invalid_arg "CCList.combine"
+  and safe l1 l2 acc = match l1, l2 with
+    | ([], []) -> List.rev acc
+    | (x1::l1', x2::l2') -> safe l1' l2' @@ (x1, x2) :: acc
+    | (_, _) -> invalid_arg "CCList.combine"
+  in
+  direct direct_depth_default_ l1 l2
+
+(*$T
+  try ignore (combine [1] []); false with Invalid_argument _ -> true
+  try ignore (combine (1--1001) (1--1002)); false with Invalid_argument _ -> true
+  combine [1;2;3] [3;2;1] = List.combine [1;2;3] [3;2;1]
+  combine (1 -- 100_000) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
+*)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l
