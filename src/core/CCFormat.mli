@@ -34,6 +34,12 @@ val substring : (string * int * int) printer
     describe a proper substring.
     @since NEXT_RELEASE *)
 
+val text : string printer
+(** Print string, but replacing spaces with breaks and newlines
+    with {!newline}.
+    See [pp_print_text] on recent versions of OCaml.
+    @since NEXT_RELEASE *)
+
 val char : char printer (** @since 0.14 *)
 val int32 : int32 printer (** @since 0.14 *)
 val int64 : int64 printer (** @since 0.14 *)
