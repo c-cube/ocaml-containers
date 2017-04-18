@@ -3,6 +3,12 @@
 
 (** {1 complements to list} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a printer = Format.formatter -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
 type 'a t = 'a list
 
 val empty : 'a t
@@ -72,8 +78,9 @@ val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
     @since 0.6 *)
 
-val combine : ('a list) -> ('b list) -> ('a * 'b) list
-(** Similar to {!List.combine} but tail-recursive
+val combine : 'a list -> 'b list -> ('a * 'b) list
+(** Similar to {!List.combine} but tail-recursive.
+    @raise Invalid_argument if the lists have distinct lengths.
     @since NEXT_RELEASE *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
@@ -436,12 +443,6 @@ module Traverse(M : MONAD) : sig
 end
 
 (** {2 Conversions} *)
-
-type 'a sequence = ('a -> unit) -> unit
-type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Format.formatter -> 'a -> unit
-type 'a random_gen = Random.State.t -> 'a
 
 val random : 'a random_gen -> 'a t random_gen
 val random_non_empty : 'a random_gen -> 'a t random_gen
