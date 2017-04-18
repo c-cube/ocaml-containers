@@ -718,7 +718,7 @@ let equal_caseless s1 s2: bool =
   in
   String.length s1 = String.length s2 &&
   for_all2
-    (fun c1 c2 -> Char.equal (char_lower c1) (char_lower c2))
+    (fun c1 c2 -> char_lower c1 = char_lower c2)
     s1 s2
 
 let pp buf s =
