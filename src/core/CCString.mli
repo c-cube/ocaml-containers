@@ -399,6 +399,22 @@ val uppercase_ascii : string -> string
 val lowercase_ascii : string -> string
 (** See {!String}. @since 0.18 *)
 
+val equal_caseless : string -> string -> bool
+(** Comparison without respect to {b ascii} lowercase.
+    @since NEXT_RELEASE *)
+
+(*$T
+  equal_caseless "foo" "FoO"
+  equal_caseless "helLo" "HEllO"
+*)
+
+(*$Q
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    equal_caseless s1 s2 = equal (lowercase_ascii s1)(lowercase_ascii s2))
+  Q.(printable_string) (fun s -> equal_caseless s s)
+  Q.(printable_string) (fun s -> equal_caseless (uppercase_ascii s) s)
+*)
+
 (** {2 Finding}
 
     A relatively efficient algorithm for finding sub-strings
@@ -498,6 +514,17 @@ end
 val split_on_char : char -> string -> string list
 (** Split the string along the given char
     @since NEXT_RELEASE *)
+
+(*$= & ~printer:Q.Print.(list string)
+  ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
+    (split_on_char ' ' "a few words from our sponsors")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    let s = split_on_char ' ' s |> String.concat " " in \
+    s = (split_on_char ' ' s |> String.concat " "))
+*)
 
 val split : by:string -> string -> string list
 (** Alias to {!Split.list_cpy}

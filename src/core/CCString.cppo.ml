@@ -391,17 +391,6 @@ end
 let split_on_char c s: _ list =
   Split.list_cpy ~by:(String.make 1 c) s
 
-(*$= & ~printer:Q.Print.(list string)
-  ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
-    (split_on_char ' ' "a few words from our sponsors")
-*)
-
-(*$Q
-  Q.(printable_string) (fun s -> \
-    let s = split_on_char ' ' s |> String.concat " " in \
-    s = split_on_char ' ' s |> String.concat " ")
-*)
-
 let split = Split.list_cpy
 
 let compare_versions a b =
@@ -721,7 +710,16 @@ let lowercase_ascii = map CCChar.lowercase_ascii
 
     #endif
 
-
+let equal_caseless s1 s2: bool =
+  let char_lower c =
+    if c >= 'A' && c <= 'Z'
+    then Char.unsafe_chr (Char. code c + 32)
+    else c
+  in
+  String.length s1 = String.length s2 &&
+  for_all2
+    (fun c1 c2 -> Char.equal (char_lower c1) (char_lower c2))
+    s1 s2
 
 let pp buf s =
   Buffer.add_char buf '"';
