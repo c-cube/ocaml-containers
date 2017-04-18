@@ -39,6 +39,11 @@ let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 let flush = Format.pp_print_flush
 
+let newline = Format.pp_force_newline
+
+let substring out (s,i,len): unit =
+  string out (String.sub s i len)
+
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
     | x::((_::_) as l) ->
