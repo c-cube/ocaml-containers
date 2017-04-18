@@ -410,7 +410,7 @@ val equal_caseless : string -> string -> bool
 
 (*$Q
   Q.(pair printable_string printable_string) (fun (s1,s2) -> \
-    equal_caseless s1 s2 = equal (lowercase_ascii s1)(lowercase_ascii s2))
+    equal_caseless s1 s2 = (lowercase_ascii s1=lowercase_ascii s2))
   Q.(printable_string) (fun s -> equal_caseless s s)
   Q.(printable_string) (fun s -> equal_caseless (uppercase_ascii s) s)
 *)
