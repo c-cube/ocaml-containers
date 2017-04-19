@@ -3,9 +3,13 @@
 
 (** {2 Imperative Bitvectors}
 
-    The size of the bitvector is rounded up to the multiple of 30 or  62.
-    In other words some functions such as {!iter} might iterate on more
-    bits than what was originally asked for.
+    {b BREAKING CHANGES} since NEXT_RELEASE:
+    size is now stored along with the bitvector. Some functions have
+    a new signature.
+
+    The size of the bitvector used to be rounded up to the multiple of 30 or 62.
+    In other words some functions such as {!iter} would iterate on more
+    bits than what was originally asked for. This is not the case anymore.
 *)
 
 type t
@@ -21,13 +25,18 @@ val copy : t -> t
 (** Copy of bitvector *)
 
 val cardinal : t -> int
-(** Number of set bits. *)
+(** Number of bits set to one, seen as a set of bits. *)
 
 val length : t -> int
-(** Length of underlying bitvector. *)
+(** Size of underlying bitvector.
+    This is not related to the underlying implementation.
+    Changed at NEXT_RELEASE
+*)
 
 val capacity : t -> int
-(** The number of bits this bitvector can store without resizing. *)
+(** The number of bits this bitvector can store without resizing.
+
+    @since NEXT_RELEASE *)
 
 val resize : t -> int -> unit
 (** Resize the BV so that it has the specified length. This can grow or shrink
@@ -36,19 +45,19 @@ val resize : t -> int -> unit
     @raise Invalid_arg on negative sizes. *)
 
 val is_empty : t -> bool
-(** Any bit set? *)
+(** Are there any true bits? *)
 
 val set : t -> int -> unit
-(** Set i-th bit. *)
+(** Set i-th bit, extending the bitvector if needed. *)
 
 val get : t -> int -> bool
 (** Is the i-th bit true? Returns false if the index is too high*)
 
 val reset : t -> int -> unit
-(** Set i-th bit to 0 *)
+(** Set i-th bit to 0, extending the bitvector if needed. *)
 
 val flip : t -> int -> unit
-(** Flip i-th bit *)
+(** Flip i-th bit, extending the bitvector if needed. *)
 
 val clear : t -> unit
 (** Set every bit to 0 *)
@@ -72,16 +81,23 @@ val of_list : int list -> t
     The bits are interpreted as indices into the returned bitvector, so the final
     bitvector will have [length t] equal to 1 more than max of list indices. *)
 
-val first : t -> int
-(** First set bit, or
-    @raise Not_found if all bits are 0 *)
+val first : t -> int option
+(** First set bit, or return None.
+    changed type at NEXT_RELEASE *)
+
+val first_exn : t -> int
+ (** First set bit, or
+     @raise Not_found if all bits are 0
+     @since NEXT_RELEASE *)
 
 val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]
     satisfies [p index] *)
 
 val negate_self : t -> unit
-(** [negate_self t] flips all of the bits in [t]. *)
+(** [negate_self t] flips all of the bits in [t].
+
+    @since NEXT_RELEASE *)
 
 val negate : t -> t
 (** [negate t] returns a copy of [t] with all of the bits flipped. *)
@@ -89,12 +105,12 @@ val negate : t -> t
 val union_into : into:t -> t -> unit
 (** [union ~into bv] sets [into] to the union of itself and [bv].
 
-    Note that [into] will grow to accammodate the union. *)
+    Also updates the length of [into] to be at least [length bv]. *)
 
 val inter_into : into:t -> t -> unit
 (** [inter ~into bv] sets [into] to the intersection of itself and [bv]
 
-    Note that [into] will shrink to accammodate the union. *)
+    Also updates the length of [into] to be at most [length bv]. *)
 
 val union : t -> t -> t
 (** [union bv1 bv2] returns the union of the two sets *)
@@ -103,10 +119,14 @@ val inter : t -> t -> t
 (** [inter bv1 bv2] returns the intersection of the two sets *)
 
 val diff_into : into:t -> t -> unit
-(** [diff ~into t] Modify [into] with only the bits set but not in [t]. *)
+(** [diff ~into t] Modify [into] with only the bits set but not in [t].
 
-val diff : in_:t -> t -> t
-(** [diff ~in_ t] Return those bits found [in_] but not in [t]. *)
+    @since NEXT_RELEASE *)
+
+val diff : t -> t -> t
+(** [diff t1 t2] Return those bits found [t1] but not in [t2].
+
+    @since NEXT_RELEASE *)
 
 val select : t -> 'a array -> 'a list
 (** [select arr bv] selects the elements of [arr] whose index
