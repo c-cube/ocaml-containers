@@ -3,36 +3,44 @@
 
 (** {2 Imperative Bitvectors} *)
 
-let __width = Sys.word_size - 2
+let width_ = Sys.word_size - 2
 
 (* int with [n] ones *)
-let rec __shift bv n =
+let rec shift_ bv n =
   if n = 0
   then bv
-  else __shift ((bv lsl 1) lor 1) (n-1)
+  else shift_ ((bv lsl 1) lor 1) (n-1)
 
 (* only ones *)
-let __all_ones = __shift 0 __width
+let all_ones_ = shift_ 0 width_
 
 type t = {
   mutable a : int array;
+  mutable size: int;
 }
+(* invariant: [size * __width <= Array.length a] *)
 
-let empty () = { a = [| |] }
+let empty () = { a = [| |]; size=0; }
+
+let capa_of_size n =
+  if n mod width_ = 0
+  then n / width_
+  else n / width_ + 1
 
 let create ~size default =
-  if size = 0 then { a = [| |] }
-  else begin
-    let n = if size mod __width = 0 then size / __width else (size / __width) + 1 in
-    let arr = if default
-      then Array.make n __all_ones
-      else Array.make n 0
+  if size = 0 then { a = [| |]; size; }
+  else (
+    let capa = capa_of_size size in
+    let a = if default
+      then Array.make capa all_ones_
+      else Array.make capa 0
     in
     (* adjust last bits *)
-    if default && (size mod __width) <> 0
-    then arr.(n-1) <- __shift 0 (size - (n-1) * __width);
-    { a = arr }
-  end
+    if default && (size mod width_) <> 0 then (
+      a.(capa-1) <- shift_ 0 (size - (capa-1) * width_);
+    );
+    { a; size }
+  )
 
 (*$T
   create ~size:17 true |> cardinal = 17
@@ -42,25 +50,31 @@ let create ~size default =
   create ~size:29 true |> to_sorted_list = CCList.range 0 28
 *)
 
-let copy bv = { a=Array.copy bv.a; }
+let copy bv = { bv with a=Array.copy bv.a; }
 
 (*$Q
   (Q.list Q.small_int) (fun l -> \
     let bv = of_list l in to_list bv = to_list (copy bv))
 *)
 
-let length bv = Array.length bv.a
+let length bv = bv.size
+
+let length_arr bv = Array.length bv.a
 
 let resize bv len =
-  if len > Array.length bv.a
-  then begin
-    let a' = Array.make len 0 in
+  if len > bv.size then (
+    bv.size <- len;
+  );
+  (* resize underlying array if needed *)
+  let new_capa = capa_of_size len in
+  if new_capa > Array.length bv.a then (
+    let a' = Array.make new_capa 0 in
     Array.blit bv.a 0 a' 0 (Array.length bv.a);
     bv.a <- a'
-  end
+  )
 
 (* count the 1 bits in [n]. See https://en.wikipedia.org/wiki/Hamming_weight *)
-let __count_bits n =
+let count_bits_ n =
   let rec recurse count n =
     if n = 0 then count else recurse (count+1) (n land (n-1))
   in
@@ -68,12 +82,28 @@ let __count_bits n =
   then recurse 1 (n lsr 1)   (* only on unsigned *)
   else recurse 0 n
 
+(* iterate on words of width (at most) [width_] *)
+let iter_words ~f bv: unit =
+  if bv.size = 0 then ()
+  else (
+    let len = capa_of_size bv.size in
+    assert (len>0);
+    for i = 0 to len-2 do
+      let word = bv.a.(i) in
+      f i word
+    done;
+    (* last word *)
+    let mask = shift_ 0 (bv.size - width_ * (len-2)) in
+    f (len-1) (bv.a.(len-1) land mask)
+  )
+
 let cardinal bv =
-  let n = ref 0 in
-  for i = 0 to length bv - 1 do
-    n := !n + __count_bits bv.a.(i)
-  done;
-  !n
+  if bv.size = 0 then 0
+  else (
+    let n = ref 0 in
+    iter_words bv ~f:(fun _ word -> n := !n + count_bits_ word);
+    !n
+  )
 
 (*$R
   let bv1 = CCBV.create ~size:87 true in
@@ -86,20 +116,17 @@ let cardinal bv =
 
 let is_empty bv =
   try
-    for i = 0 to Array.length bv.a - 1 do
-      if bv.a.(i) <> 0 then raise Exit
-    done;
+    iter_words bv ~f:(fun _ w -> if w<>0 then raise Exit);
     true
   with Exit ->
     false
 
 let get bv i =
-  let n = i / __width in
-  if n < Array.length bv.a
-  then
-    let i = i - n * __width in
+  let n = i / width_ in
+  if n < Array.length bv.a then (
+    let i = i - n * width_ in
     bv.a.(n) land (1 lsl i) <> 0
-  else false
+  ) else false
 
 (*$R
   let bv = CCBV.create ~size:99 false in
@@ -118,10 +145,9 @@ let get bv i =
 *)
 
 let set bv i =
-  let n = i / __width in
-  if n >= Array.length bv.a
-  then resize bv (n+1);
-  let i = i - n * __width in
+  resize bv (i+1);
+  let n = i / width_ in
+  let i = i - n * width_ in
   bv.a.(n) <- bv.a.(n) lor (1 lsl i)
 
 (*$T
@@ -130,10 +156,9 @@ let set bv i =
 *)
 
 let reset bv i =
-  let n = i / __width in
-  if n >= Array.length bv.a
-  then resize bv (n+1);
-  let i = i - n * __width in
+  resize bv i;
+  let n = i / width_ in
+  let i = i - n * width_ in
   bv.a.(n) <- bv.a.(n) land (lnot (1 lsl i))
 
 (*$T
@@ -141,29 +166,27 @@ let reset bv i =
 *)
 
 let flip bv i =
-  let n = i / __width in
-  if n >= Array.length bv.a
-  then resize bv (n+1);
-  let i = i - n * __width in
+  resize bv i;
+  let n = i / width_ in
+  let i = i - n * width_ in
   bv.a.(n) <- bv.a.(n) lxor (1 lsl i)
 
 (*$R
-  let bv = of_list [1;10; 11; 30] in
+  let bv = of_list [1;10;11;30] in
   flip bv 10;
-  assert_equal [1;11;30] (to_sorted_list bv);
-  assert_equal false (get bv 10);
+  assert_equal ~printer:Q.Print.(list int) [1;11;30] (to_sorted_list bv);
+  assert_equal ~printer:Q.Print.bool false (get bv 10);
   flip bv 10;
-  assert_equal true (get bv 10);
+  assert_equal ~printer:Q.Print.bool true (get bv 10);
   flip bv 5;
-  assert_equal [1;5;10;11;30] (to_sorted_list bv);
-  assert_equal true (get bv 5);
+  assert_equal ~printer:Q.Print.(list int) [1;5;10;11;30] (to_sorted_list bv);
+  assert_equal ~printer:Q.Print.bool true (get bv 5);
   flip bv 100;
-  assert_equal [1;5;10;11;30;100] (to_sorted_list bv);
-  assert_equal true (get bv 100);
+  assert_equal ~printer:Q.Print.(list int) [1;5;10;11;30;100] (to_sorted_list bv);
+  assert_equal ~printer:Q.Print.bool true (get bv 100);
 *)
 
-let clear bv =
-  Array.iteri (fun i _ -> bv.a.(i) <- 0) bv.a
+let clear bv = Array.fill bv.a 0 (Array.length bv.a) 0
 
 (*$T
   let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
@@ -178,13 +201,12 @@ let clear bv =
 *)
 
 let iter bv f =
-  let len = Array.length bv.a in
-  for n = 0 to len - 1 do
-    let j = __width * n in
-    for i = 0 to __width - 1 do
-      f (j+i) (bv.a.(n) land (1 lsl i) <> 0)
-    done
-  done
+  iter_words bv
+    ~f:(fun i w ->
+      let j = width_ * i in
+      for k = 0 to width_ - 1 do
+        f (j+k) (w land (1 lsl k) <> 0)
+      done)
 
 (*$R
   let bv = create ~size:30 false in
@@ -195,14 +217,12 @@ let iter bv f =
 *)
 
 let iter_true bv f =
-  let len = Array.length bv.a in
-  for n = 0 to len - 1 do
-    let j = __width * n in
-    for i = 0 to __width - 1 do
-      if bv.a.(n) land (1 lsl i) <> 0
-      then f (j+i)
-    done
-  done
+  iter_words bv
+    ~f:(fun i w ->
+      let j = width_ * i in
+      for k = 0 to width_ - 1 do
+        if w land (1 lsl k) <> 0 then f (j+k)
+      done)
 
 (*$T
   of_list [1;5;7] |> iter_true |> Sequence.to_list |> List.sort CCOrd.compare = [1;5;7]
@@ -256,15 +276,19 @@ let of_list l =
 
 exception FoundFirst of int
 
-let first bv =
+let first_exn bv =
   try
     iter_true bv (fun i -> raise (FoundFirst i));
     raise Not_found
   with FoundFirst i ->
     i
 
+let first bv =
+  try Some (first_exn bv)
+  with Not_found -> None
+
 (*$T
-  of_list [50; 10; 17; 22; 3; 12] |> first = 3
+  of_list [50; 10; 17; 22; 3; 12] |> first = Some 3
 *)
 
 let filter bv p =
@@ -277,8 +301,10 @@ let filter bv p =
 *)
 
 let union_into ~into bv =
-  if length into < length bv
-  then resize into (length bv);
+  if into.size < bv.size then (
+    resize into bv.size;
+  );
+  assert (Array.length into.a >= Array.length bv.a);
   let len = Array.length bv.a in
   for i = 0 to len - 1 do
     into.a.(i) <- into.a.(i) lor bv.a.(i)
@@ -303,21 +329,23 @@ let union bv1 bv2 =
 *)
 
 let inter_into ~into bv =
-  let n = min (length into) (length bv) in
+  into.size <- min into.size bv.size;
+  let n = min (length_arr into) (length_arr bv) in
   for i = 0 to n - 1 do
     into.a.(i) <- into.a.(i) land bv.a.(i)
   done
 
 let inter bv1 bv2 =
-  if length bv1 < length bv2
-  then
+  if length_arr bv1 < length_arr bv2
+  then (
     let bv = copy bv1 in
     let () = inter_into ~into:bv bv2 in
     bv
-  else
+  ) else (
     let bv = copy bv2 in
     let () = inter_into ~into:bv bv1 in
     bv
+  )
 
 (*$T
   inter (of_list [1;2;3;4]) (of_list [2;4;6;1]) |> to_sorted_list = [1;2;4]
@@ -352,7 +380,8 @@ let select bv arr =
 
 let selecti bv arr =
   let l = ref [] in
-  begin try
+  begin
+    try
       iter_true bv
         (fun i ->
            if i >= Array.length arr
@@ -369,9 +398,9 @@ let selecti bv arr =
   assert_equal [("b",1); ("c",2); ("f",5)] l;
 *)
 
-(*$T
-  selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
-    |> List.sort CCOrd.compare = [1, 1; 3,3; 4,4]
+(*$= & ~printer:Q.Print.(list (pair int int))
+  [1,1; 3,3; 4,4] (selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
+    |> List.sort CCOrd.compare)
 *)
 
 type 'a sequence = ('a -> unit) -> unit
