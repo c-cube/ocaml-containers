@@ -143,6 +143,9 @@ A few guidelines:
 - add `@since` tags for new functions;
 - add tests if possible (using `qtest`).
 
+It is helpful to run `make devel` to enable everything. Some dependencies
+are required, you'll need `opam install benchmark qcheck qtest sequence`. 
+
 Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
 
 [[tutorial]]
