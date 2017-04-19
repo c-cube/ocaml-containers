@@ -19,4 +19,5 @@
 - Malcolm Matalka (`orbitz`)
 - David Sheets (@dsheets)
 - Glenn Slotte (glennsl)
+- @LemonBoy
 - Leonid Rozenberg (@rleonid)

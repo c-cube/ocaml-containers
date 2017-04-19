@@ -339,6 +339,52 @@ let partition_map f l =
   assert_equal [1;3] l2
 *)
 
+let combine l1 l2 =
+  let rec direct i l1 l2 = match l1, l2 with
+    | ([], []) -> []
+    | _ when i=0 -> safe l1 l2 []
+    | (x1::l1', x2::l2') -> (x1, x2) :: direct (i-1) l1' l2'
+    | (_, _) -> invalid_arg "CCList.combine"
+  and safe l1 l2 acc = match l1, l2 with
+    | ([], []) -> List.rev acc
+    | (x1::l1', x2::l2') -> safe l1' l2' @@ (x1, x2) :: acc
+    | (_, _) -> invalid_arg "CCList.combine"
+  in
+  direct direct_depth_default_ l1 l2
+
+(*$T
+  try ignore (combine [1] []); false with Invalid_argument _ -> true
+  try ignore (combine (1--1001) (1--1002)); false with Invalid_argument _ -> true
+  combine [1;2;3] [3;2;1] = List.combine [1;2;3] [3;2;1]
+  combine (1 -- 100_000) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
+*)
+
+(*$Q
+  Q.(let p = small_list int in pair p p)(fun (l1,l2) -> \
+    if List.length l1=List.length l2 \
+    then CCList.combine l1 l2 = List.combine l1 l2 \
+    else Q.assume_fail() )
+  *)
+
+let combine_gen l1 l2 =
+  let l1 = ref l1 in
+  let l2 = ref l2 in
+  fun () -> match !l1, !l2 with
+    | [], _
+    | _, [] -> None
+    | x1 :: tail1, x2 :: tail2 ->
+      l1 := tail1;
+      l2 := tail2;
+      Some (x1,x2)
+
+(*$Q
+  Q.(let p = small_list int in pair p p)(fun (l1,l2) -> \
+    let n = min (List.length l1) (List.length l2) in \
+    let res1 = combine (take n l1) (take n l2) in \
+    let res2 = combine_gen l1 l2 |> of_gen in \
+    res1 = res2)
+  *)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l

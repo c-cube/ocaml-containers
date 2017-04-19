@@ -39,6 +39,46 @@ let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 let flush = Format.pp_print_flush
 
+let newline = Format.pp_force_newline
+
+let substring out (s,i,len): unit =
+  string out (String.sub s i len)
+
+let text out (s:string): unit =
+  let len = String.length s in
+  let i = ref 0 in
+  let search_ c =
+    try Some (String.index_from s !i c) with Not_found -> None
+  in
+  while !i < len do
+    let j_newline = search_ '\n' in
+    let j_space = search_ ' ' in
+    let on_newline j =
+      substring out (s, !i, j - !i);
+      newline out ();
+      i := j + 1
+    and on_space j =
+      substring out (s, !i, j - !i);
+      Format.pp_print_space out ();
+      i := j + 1
+    in
+    begin match j_newline, j_space with
+      | None, None ->
+        (* done *)
+        substring out (s, !i, len - !i);
+        i := len
+      | Some j, None -> on_newline j
+      | None, Some j -> on_space j
+      | Some j1, Some j2 ->
+        if j1<j2 then on_newline j1 else on_space j2
+    end
+  done
+
+(*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
+  "a\nb\nc" (sprintf_no_color "@[<v>%a@]%!" text "a b c")
+  "a b\nc" (sprintf_no_color "@[<h>%a@]%!" text "a b\nc")
+  *)
+
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
     | x::((_::_) as l) ->

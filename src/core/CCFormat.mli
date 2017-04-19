@@ -23,6 +23,23 @@ val bool : bool printer
 val float3 : float printer (* 3 digits after . *)
 val float : float printer
 
+val newline : unit printer
+(** Force newline (see {!Format.pp_force_newline})
+    @since NEXT_RELEASE *)
+
+val substring : (string * int * int) printer
+(** Print the substring [(s,i,len)], where [i] is the offset
+    in [s] and [len] the number of bytes in the substring.
+    @raise Invalid_argument if the triple [(s,i,len)] does not
+    describe a proper substring.
+    @since NEXT_RELEASE *)
+
+val text : string printer
+(** Print string, but replacing spaces with breaks and newlines
+    with {!newline}.
+    See [pp_print_text] on recent versions of OCaml.
+    @since NEXT_RELEASE *)
+
 val char : char printer (** @since 0.14 *)
 val int32 : int32 printer (** @since 0.14 *)
 val int64 : int64 printer (** @since 0.14 *)
