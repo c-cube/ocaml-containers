@@ -451,6 +451,14 @@ let diff in_ not_in =
   diff_into ~into not_in;
   into
 
+(*$T
+  diff (of_list [1;2;3])    (of_list [1;2;3])   |> to_list = [];
+  diff (of_list [1;2;3])    (of_list [1;2;3;4]) |> to_list = [];
+  diff (of_list [1;2;3;4])  (of_list [1;2;3])   |> to_list = [4];
+  diff (of_list [1;2;3])      (of_list [1;2;3;400]) |> to_list = [];
+  diff (of_list [1;2;3;400])  (of_list [1;2;3])     |> to_list = [400];
+*)
+
 let select bv arr =
   let l = ref [] in
   begin try
