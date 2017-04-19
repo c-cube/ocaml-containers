@@ -42,7 +42,7 @@ let array_length_of_size size =
 let create ~size default =
   if size = 0 then { a = [| |]; size }
   else (
-    let n = capa_of_size size in
+    let n = array_length_of_size size in
     let a = if default
       then Array.make n all_ones_
       else Array.make n 0
@@ -75,19 +75,6 @@ let copy bv = { bv with a = Array.copy bv.a }
 *)
 
 let capacity bv = width_ * Array.length bv.a
-
-(* iterate on words of width (at most) [width_] *)
-let iter_words ~f bv: unit =
-  if bv.size = 0 then ()
-  else (
-    let len = array_length_of_size bv.size in
-    assert (len>0);
-    for i = 0 to len-1 do
-      let word = Array.unsafe_get a i in
-      f i word
-    done;
-    if r <> 0 then f (len-1) (Array.unsafe_get a (len-1) land lsb_masks_.(r));
-  )
 
 let cardinal bv =
   if bv.size = 0 then 0
@@ -178,7 +165,7 @@ let set bv i =
   else (
     let n = i / width_ in
     let j = i mod width_ in
-    if i >= bv.size then grow_ bv i;
+    if i >= bv.size then grow_ bv (i+1);
     Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lor (1 lsl j))
   )
 
@@ -192,7 +179,7 @@ let reset bv i =
   else (
     let n = i / width_ in
     let j = i mod width_ in
-    if i >= bv.size then grow_ bv i;
+    if i >= bv.size then grow_ bv (i+1);
     Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) land (lnot (1 lsl j)))
   )
 
@@ -205,7 +192,7 @@ let flip bv i =
   else (
     let n = i / width_ in
     let j = i mod width_ in
-    if i >= bv.size then grow_ bv i;
+    if i >= bv.size then grow_ bv (i+1);
     Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lxor (1 lsl j))
   )
 
@@ -247,11 +234,11 @@ let iter bv f =
       f (j+i) (bv.a.(n) land (1 lsl i) <> 0)
     done
   done;
-  let j = max 0 (width_ * (len - 2)) in
-  let r = size mod width_ in
+  let j = width_ * (len - 1) in
+  let r = bv.size mod width_ in
   let final_length = if r = 0 then width_ else r in
   for i = 0 to final_length - 1 do
-    f (j + i) (bv.a.(len - 1) land (i lsl i) <> 0)
+    f (j + i) (bv.a.(len - 1) land (1 lsl i) <> 0)
   done
 
 (*$R
@@ -503,9 +490,7 @@ let selecti bv arr =
 *)
 
 (*$= & ~printer:Q.Print.(list (pair int int))
-  selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
   [1,1; 3,3; 4,4] (selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
-    |> List.sort CCOrd.compare = [1, 1; 3,3; 4,4]
     |> List.sort CCOrd.compare)
  *)
 
