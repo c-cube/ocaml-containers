@@ -15,6 +15,7 @@ val int : int t
 val string : string t
 val bool : bool t
 val float : float t
+val unit : unit t
 
 val list : 'a t -> 'a list t
 val array : 'a t -> 'a array t
