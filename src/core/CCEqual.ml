@@ -7,10 +7,10 @@ type 'a t = 'a -> 'a -> bool
 
 let poly = (=)
 
-let int = (=)
-let string = (=)
-let bool = (=)
-let float = (=)
+let int : int t = (=)
+let string : string t = (=)
+let bool : bool t = (=)
+let float : float t = (=)
 
 let rec list f l1 l2 = match l1, l2 with
   | [], [] -> true
