@@ -21,14 +21,19 @@ val copy : t -> t
 (** Copy of bitvector *)
 
 val cardinal : t -> int
-(** Number of bits set *)
+(** Number of set bits. *)
 
 val length : t -> int
-(** Length of underlying array *)
+(** Length of underlying bitvector. *)
+
+val capacity : t -> int
+(** The number of bits this bitvector can store without resizing. *)
 
 val resize : t -> int -> unit
-(** Resize the BV so that it has at least the given physical length
-    [resize bv n] should make [bv] able to store [(Sys.word_size - 2)* n] bits *)
+(** Resize the BV so that it has the specified length. This can grow or shrink
+    the underlying bitvector.
+
+    @raise Invalid_arg on negative sizes. *)
 
 val is_empty : t -> bool
 (** Any bit set? *)
@@ -62,7 +67,10 @@ val to_sorted_list : t -> int list
     increasing order *)
 
 val of_list : int list -> t
-(** From a list of true bits *)
+(** From a list of true bits.
+
+    The bits are interpreted as indices into the returned bitvector, so the final
+    bitvector will have [length t] equal to 1 more than max of list indices. *)
 
 val first : t -> int
 (** First set bit, or
@@ -72,17 +80,33 @@ val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]
     satisfies [p index] *)
 
+val negate_self : t -> unit
+(** [negate_self t] flips all of the bits in [t]. *)
+
+val negate : t -> t
+(** [negate t] returns a copy of [t] with all of the bits flipped. *)
+
 val union_into : into:t -> t -> unit
-(** [union ~into bv] sets [into] to the union of itself and [bv]. *)
+(** [union ~into bv] sets [into] to the union of itself and [bv].
+
+    Note that [into] will grow to accammodate the union. *)
 
 val inter_into : into:t -> t -> unit
-(** [inter ~into bv] sets [into] to the intersection of itself and [bv] *)
+(** [inter ~into bv] sets [into] to the intersection of itself and [bv]
+
+    Note that [into] will shrink to accammodate the union. *)
 
 val union : t -> t -> t
 (** [union bv1 bv2] returns the union of the two sets *)
 
 val inter : t -> t -> t
 (** [inter bv1 bv2] returns the intersection of the two sets *)
+
+val diff_into : into:t -> t -> unit
+(** [diff ~into t] Modify [into] with only the bits set but not in [t]. *)
+
+val diff : in_:t -> t -> t
+(** [diff ~in_ t] Return those bits found [in_] but not in [t]. *)
 
 val select : t -> 'a array -> 'a list
 (** [select arr bv] selects the elements of [arr] whose index

@@ -1,79 +1,116 @@
 
-(* This file is free software, part of containers. See file "license" for more details. *)
-
 (** {2 Imperative Bitvectors} *)
 
-let __width = Sys.word_size - 2
+let __width = Sys.word_size - 1
 
-(* int with [n] ones *)
-let rec __shift bv n =
-  if n = 0
-  then bv
-  else __shift ((bv lsl 1) lor 1) (n-1)
+(** We use OCamls ints to store the bits. We index them from the
+    least significant bit. We create masks to zero out the most significant
+    bits that aren't used to store values. *)
+let __lsb_masks =
+  let a = Array.make (__width + 1) 0 in
+  for i = 1 to __width do
+    a.(i) <- a.(i-1) lor (1 lsl (i - 1))
+  done;
+  a
 
-(* only ones *)
-let __all_ones = __shift 0 __width
-
-type t = {
-  mutable a : int array;
-}
-
-let empty () = { a = [| |] }
-
-let create ~size default =
-  if size = 0 then { a = [| |] }
-  else begin
-    let n = if size mod __width = 0 then size / __width else (size / __width) + 1 in
-    let arr = if default
-      then Array.make n __all_ones
-      else Array.make n 0
-    in
-    (* adjust last bits *)
-    if default && (size mod __width) <> 0
-    then arr.(n-1) <- __shift 0 (size - (n-1) * __width);
-    { a = arr }
-  end
-
-(*$T
-  create ~size:17 true |> cardinal = 17
-  create ~size:32 true |> cardinal= 32
-  create ~size:132 true |> cardinal = 132
-  create ~size:200 false |> cardinal = 0
-  create ~size:29 true |> to_sorted_list = CCList.range 0 28
-*)
-
-let copy bv = { a=Array.copy bv.a; }
-
-(*$Q
-  (Q.list Q.small_int) (fun l -> \
-    let bv = of_list l in to_list bv = to_list (copy bv))
-*)
-
-let length bv = Array.length bv.a
-
-let resize bv len =
-  if len > Array.length bv.a
-  then begin
-    let a' = Array.make len 0 in
-    Array.blit bv.a 0 a' 0 (Array.length bv.a);
-    bv.a <- a'
-  end
+let __all_ones = __lsb_masks.(__width)
 
 (* count the 1 bits in [n]. See https://en.wikipedia.org/wiki/Hamming_weight *)
 let __count_bits n =
   let rec recurse count n =
     if n = 0 then count else recurse (count+1) (n land (n-1))
   in
-  if n < 0
-  then recurse 1 (n lsr 1)   (* only on unsigned *)
-  else recurse 0 n
+  recurse 0 n
+
+(*  Can I access the "private" members in testing? $Q
+  (Q.int_bound (Sys.word_size - 1)) (fun i -> __count_bits __lsb_masks.(i) = i)
+*)
+
+type t = {
+  mutable a : int array;
+  mutable size : int;
+}
+
+let length t = t.size
+
+let empty () = { a = [| |] ; size = 0 }
+
+let __to_array_legnth size =
+  if size mod __width = 0 then size / __width else (size / __width) + 1
+
+let create ~size default =
+  if size = 0 then { a = [| |] ; size }
+  else begin
+    let n = __to_array_legnth size in
+    let arr = if default
+      then Array.make n __all_ones
+      else Array.make n 0
+    in
+    (* adjust last bits *)
+    let r = size mod __width in
+    if default && r <> 0
+    then Array.unsafe_set arr (n-1) __lsb_masks.(r);
+    { a = arr; size }
+  end
+
+(*$Q
+  (Q.pair Q.small_int Q.bool) (fun (size, b) -> create ~size b |> length = size)
+*)
+
+(*$T
+  create ~size:17 true |> cardinal = 17
+  create ~size:32 true |> cardinal = 32
+  create ~size:132 true |> cardinal = 132
+  create ~size:200 false |> cardinal = 0
+  create ~size:29 true |> to_sorted_list = CCList.range 0 28
+*)
+
+let copy bv = { a = Array.copy bv.a ; size = bv.size }
+
+(*$Q
+  (Q.list Q.small_int) (fun l -> \
+    let bv = of_list l in to_list bv = to_list (copy bv))
+*)
+
+let capacity bv = __width * Array.length bv.a
 
 let cardinal bv =
   let n = ref 0 in
-  for i = 0 to length bv - 1 do
+  for i = 0 to Array.length bv.a - 1 do
     n := !n + __count_bits bv.a.(i)
   done;
   !n
+
+(*$Q
+  Q.small_int (fun size -> create ~size true |> cardinal = size)
+*)
+
+let __really_resize bv ~desired ~current size =
+  let a' = Array.make desired 0 in
+  Array.blit bv.a 0 a' 0 current;
+  bv.a <- a';
+  bv.size <- size
+
+let __grow bv size =
+  if size <= capacity bv                                   (* within capacity *)
+  then bv.size <- size
+  else                                                     (* beyond capacity *)
+    let desired = __to_array_legnth size in
+    let current = Array.length bv.a in
+    __really_resize bv ~desired ~current size
+
+let __shrink bv size =
+  let desired = __to_array_legnth size in
+  let current = Array.length bv.a in
+  __really_resize bv ~desired ~current size
+
+let resize bv size =
+  if size < 0 then invalid_arg "resize: negative size" else
+  if size < bv.size                                                 (* shrink *)
+  then __shrink bv size
+  else if size = bv.size
+  then ()
+  else __grow bv size
 
 (*$R
   let bv1 = CCBV.create ~size:87 true in
@@ -94,12 +131,12 @@ let is_empty bv =
     false
 
 let get bv i =
-  let n = i / __width in
-  if n < Array.length bv.a
-  then
-    let i = i - n * __width in
-    bv.a.(n) land (1 lsl i) <> 0
-  else false
+  if i < 0 then invalid_arg "get: negative index" else
+    let n = i / __width in
+    let i = i mod __width in
+    if n < Array.length bv.a
+    then (Array.unsafe_get bv.a n) land (1 lsl i) <> 0
+    else false
 
 (*$R
   let bv = CCBV.create ~size:99 false in
@@ -118,11 +155,11 @@ let get bv i =
 *)
 
 let set bv i =
-  let n = i / __width in
-  if n >= Array.length bv.a
-  then resize bv (n+1);
-  let i = i - n * __width in
-  bv.a.(n) <- bv.a.(n) lor (1 lsl i)
+  if i < 0 then invalid_arg "set: negative index" else
+    let n = i / __width in
+    let j = i mod __width in
+    if i >= bv.size then __grow bv i;
+    Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lor (1 lsl j))
 
 (*$T
   let bv = create ~size:3 false in set bv 0; get bv 0
@@ -130,22 +167,22 @@ let set bv i =
 *)
 
 let reset bv i =
-  let n = i / __width in
-  if n >= Array.length bv.a
-  then resize bv (n+1);
-  let i = i - n * __width in
-  bv.a.(n) <- bv.a.(n) land (lnot (1 lsl i))
+  if i < 0 then invalid_arg "reset: negative index" else
+    let n = i / __width in
+    let j = i mod __width in
+    if i >= bv.size then __grow bv i;
+    Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) land (lnot (1 lsl j)))
 
 (*$T
   let bv = create ~size:3 false in set bv 0; reset bv 0; not (get bv 0)
 *)
 
 let flip bv i =
-  let n = i / __width in
-  if n >= Array.length bv.a
-  then resize bv (n+1);
-  let i = i - n * __width in
-  bv.a.(n) <- bv.a.(n) lxor (1 lsl i)
+  if i < 0 then invalid_arg "reset: negative index" else
+    let n = i / __width in
+    let j = i mod __width in
+    if i >= bv.size then __grow bv i;
+    Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lxor (1 lsl j))
 
 (*$R
   let bv = of_list [1;10; 11; 30] in
@@ -163,7 +200,7 @@ let flip bv i =
 *)
 
 let clear bv =
-  Array.iteri (fun i _ -> bv.a.(i) <- 0) bv.a
+  Array.fill bv.a 0 (Array.length bv.a) 0
 
 (*$T
   let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
@@ -242,8 +279,9 @@ let to_list bv =
 let to_sorted_list bv =
   List.rev (to_list bv)
 
+(* Interpret these as indices. *)
 let of_list l =
-  let size = List.fold_left max 0 l in
+  let size = (List.fold_left max 0 l) + 1 in
   let bv = create ~size false in
   List.iter (fun i -> set bv i) l;
   bv
@@ -276,18 +314,61 @@ let filter bv p =
     to_sorted_list bv = [2;4;6]
 *)
 
+let negate_self b =
+  let len = Array.length b.a in
+  for n = 0 to len - 1 do
+    Array.unsafe_set b.a n (lnot (Array.unsafe_get b.a n))
+  done;
+  let r = b.size mod __width in
+  if r <> 0 then
+    let l = Array.length b.a - 1 in
+    Array.unsafe_set b.a l (__lsb_masks.(r) land (Array.unsafe_get b.a l))
+
+(*$T
+  let v = of_list [1;2;5;7;] in negate_self v; \
+    cardinal v = (List.length [0;3;4;6])
+*)
+
+let negate b =
+  let a =  Array.map (lnot) b.a in
+  let r = b.size mod __width in
+  if r <> 0 then begin
+    let l = Array.length b.a - 1 in
+    Array.unsafe_set a l (__lsb_masks.(r) land (Array.unsafe_get a l))
+  end;
+  { a ; size = b.size }
+
+(*$Q
+  Q.small_int (fun size -> create ~size false |> negate |> cardinal = size)
+*)
+
+(* Underlying size grows for union. *)
 let union_into ~into bv =
-  if length into < length bv
-  then resize into (length bv);
-  let len = Array.length bv.a in
-  for i = 0 to len - 1 do
-    into.a.(i) <- into.a.(i) lor bv.a.(i)
+  if into.size < bv.size
+  then __grow into bv.size;
+  for i = 0 to (Array.length into.a) - 1 do
+    Array.unsafe_set into.a i
+      ((Array.unsafe_get into.a i) lor (Array.unsafe_get bv.a i))
   done
 
-let union bv1 bv2 =
-  let bv = copy bv1 in
-  union_into ~into:bv bv2;
-  bv
+(* To avoid potentially 2 passes, figure out what we need to copy. *)
+let union b1 b2 =
+  if b1.size <= b2.size
+  then begin
+    let into = copy b2 in
+    for i = 0 to (Array.length b1.a) - 1 do
+      Array.unsafe_set into.a i
+        ((Array.unsafe_get into.a i) lor (Array.unsafe_get b1.a i))
+    done;
+    into
+  end else begin
+    let into = copy b1 in
+    for i = 0 to (Array.length b1.a) - 1 do
+      Array.unsafe_set into.a i
+        ((Array.unsafe_get into.a i) lor (Array.unsafe_get b2.a i))
+    done;
+    into
+  end
 
 (*$R
   let bv1 = CCBV.of_list [1;2;3;4] in
@@ -302,22 +383,32 @@ let union bv1 bv2 =
   union (of_list [1;2;3;4;5]) (of_list [7;3;5;6]) |> to_sorted_list = CCList.range 1 7
 *)
 
+(* Underlying size shrinks for inter. *)
 let inter_into ~into bv =
-  let n = min (length into) (length bv) in
-  for i = 0 to n - 1 do
-    into.a.(i) <- into.a.(i) land bv.a.(i)
+  if into.size > bv.size
+  then __shrink into bv.size;
+  for i = 0 to (Array.length into.a) - 1 do
+    Array.unsafe_set into.a i
+      ((Array.unsafe_get into.a i) land (Array.unsafe_get bv.a i))
   done
 
-let inter bv1 bv2 =
-  if length bv1 < length bv2
-  then
-    let bv = copy bv1 in
-    let () = inter_into ~into:bv bv2 in
-    bv
-  else
-    let bv = copy bv2 in
-    let () = inter_into ~into:bv bv1 in
-    bv
+let inter b1 b2 =
+  if b1.size <= b2.size
+  then begin
+    let into = copy b1 in
+    for i = 0 to (Array.length b1.a) - 1 do
+      Array.unsafe_set into.a i
+        ((Array.unsafe_get into.a i) land (Array.unsafe_get b2.a i))
+    done;
+    into
+  end else begin
+    let into = copy b2 in
+    for i = 0 to (Array.length b2.a) - 1 do
+      Array.unsafe_set into.a i
+        ((Array.unsafe_get into.a i) land (Array.unsafe_get b1.a i))
+    done;
+    into
+  end
 
 (*$T
   inter (of_list [1;2;3;4]) (of_list [2;4;6;1]) |> to_sorted_list = [1;2;4]
@@ -330,6 +421,20 @@ let inter bv1 bv2 =
   let l = List.sort compare (CCBV.to_list bv1) in
   assert_equal [3;4] l;
 *)
+
+(* Underlying size depends on the 'in_' set for diff, so we don't change
+  it's size! *)
+let diff_into ~into bv =
+  let n = min (Array.length into.a) (Array.length bv.a) in
+  for i = 0 to n - 1 do
+    Array.unsafe_set into.a i
+      ((Array.unsafe_get into.a i) land (lnot (Array.unsafe_get bv.a i)))
+  done
+
+let diff ~in_ not_in =
+  let into = copy in_ in
+  diff_into ~into not_in;
+  into
 
 let select bv arr =
   let l = ref [] in
