@@ -73,6 +73,7 @@ let to_int (a:float) = Pervasives.int_of_float a
 let of_int (a:int) = Pervasives.float_of_int a
 
 let to_string (a:float) = Pervasives.string_of_float a
+let of_string_exn (a:string) = Pervasives.float_of_string a
 let of_string (a:string) = Pervasives.float_of_string a
 
 
