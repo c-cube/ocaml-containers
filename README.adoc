@@ -23,7 +23,7 @@ Containers is:
 - A usable, reasonably well-designed library that extends OCaml's standard
   library (in 'src/core/', packaged under `containers` in ocamlfind. Modules
   are totally independent and are prefixed with `CC` (for "containers-core"
-  or "companion-cube" because I'm megalomaniac). This part should be
+  or "companion-cube" because I'm a megalomaniac). This part should be
   usable and should work. For instance, `CCList` contains functions and
   lists including safe versions of `map` and `append`. It also
   provides a drop-in replacement to the standard library, in the module
