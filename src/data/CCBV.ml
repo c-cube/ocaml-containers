@@ -24,7 +24,7 @@ let count_bits_ n =
   recurse 0 n
 
 (*  Can I access the "private" members in testing? $Q
-  (Q.int_bound (Sys.word_size - 1)) (fun i -> count_bits_ lsb_masks_.(i) = i)
+    (Q.int_bound (Sys.word_size - 1)) (fun i -> count_bits_ lsb_masks_.(i) = i)
 *)
 
 type t = {
@@ -81,7 +81,7 @@ let cardinal bv =
   else (
     let n = ref 0 in
     for i = 0 to Array.length bv.a - 1 do
-      n := !n + count_bits_ bv.a.(i)         (* MSB of last element are all 0 *)
+      n := !n + count_bits_ bv.a.(i) (* MSB of last element are all 0 *)
     done;
     !n
   )
@@ -97,11 +97,13 @@ let really_resize_ bv ~desired ~current size =
   bv.size <- size
 
 let grow_ bv size =
-  if size <= capacity bv                                   (* within capacity *)
+  if size <= capacity bv (* within capacity *)
   then bv.size <- size
-  else (                                                   (* beyond capacity *)
+  else (
+    (* beyond capacity *)
     let desired = array_length_of_size size in
     let current = Array.length bv.a in
+    assert (desired > current);
     really_resize_ bv ~desired ~current size
   )
 
@@ -111,8 +113,8 @@ let shrink_ bv size =
   really_resize_ bv ~desired ~current size
 
 let resize bv size =
-  if size < 0 then invalid_arg "resize: negative size" else
-  if size < bv.size                                                 (* shrink *)
+  if size < 0 then invalid_arg "resize: negative size";
+  if size < bv.size (* shrink *)
   then shrink_ bv size
   else if size = bv.size
   then ()
@@ -347,10 +349,10 @@ let negate_self b =
 let negate b =
   let a =  Array.map (lnot) b.a in
   let r = b.size mod width_ in
-  if r <> 0 then begin
+  if r <> 0 then (
     let l = Array.length b.a - 1 in
     Array.unsafe_set a l (lsb_masks_.(r) land (Array.unsafe_get a l))
-  end;
+  );
   { a ; size = b.size }
 
 (*$Q
@@ -359,8 +361,9 @@ let negate b =
 
 (* Underlying size grows for union. *)
 let union_into ~into bv =
-  if into.size < bv.size
-  then grow_ into bv.size;
+  if into.size < bv.size then (
+    grow_ into bv.size;
+  );
   for i = 0 to (Array.length into.a) - 1 do
     Array.unsafe_set into.a i
       ((Array.unsafe_get into.a i) lor (Array.unsafe_get bv.a i))
@@ -400,8 +403,9 @@ let union b1 b2 =
 
 (* Underlying size shrinks for inter. *)
 let inter_into ~into bv =
-  if into.size > bv.size
-  then shrink_ into bv.size;
+  if into.size > bv.size then (
+    shrink_ into bv.size;
+  );
   for i = 0 to (Array.length into.a) - 1 do
     Array.unsafe_set into.a i
       ((Array.unsafe_get into.a i) land (Array.unsafe_get bv.a i))
@@ -438,7 +442,7 @@ let inter b1 b2 =
 *)
 
 (* Underlying size depends on the 'in_' set for diff, so we don't change
-  it's size! *)
+   it's size! *)
 let diff_into ~into bv =
   let n = min (Array.length into.a) (Array.length bv.a) in
   for i = 0 to n - 1 do
@@ -500,7 +504,7 @@ let selecti bv arr =
 (*$= & ~printer:Q.Print.(list (pair int int))
   [1,1; 3,3; 4,4] (selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
     |> List.sort CCOrd.compare)
- *)
+*)
 
 type 'a sequence = ('a -> unit) -> unit
 
@@ -511,7 +515,7 @@ let to_seq bv k = iter_true bv k
       let i = max 1 i in \
       let bv = create ~size:i true in \
       i = (to_seq bv |> Sequence.length))
-  *)
+*)
 
 let of_seq seq =
   let l = ref [] and maxi = ref 0 in
