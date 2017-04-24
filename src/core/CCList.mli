@@ -197,6 +197,10 @@ val take_while : ('a -> bool) -> 'a t -> 'a t
 val drop_while : ('a -> bool) -> 'a t -> 'a t
 (** @since 0.13 *)
 
+val take_drop_while : ('a -> bool) -> 'a t -> 'a t * 'a t
+(** [take_drop_while p l = take_while p l, drop_while p l]
+    @since NEXT_RELEASE *)
+
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements *)

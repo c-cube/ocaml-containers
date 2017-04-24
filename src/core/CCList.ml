@@ -700,6 +700,29 @@ let rec drop_while p l = match l with
     take_while f l @ drop_while f l = l)
 *)
 
+let take_drop_while p l =
+  let rec direct i p l = match l with
+    | [] -> [], []
+    | _ when i=0 -> safe p [] l
+    | x :: tail ->
+      if p x
+      then
+        let l1, l2 = direct (i-1) p tail in
+        x :: l1, l2
+      else [], l
+  and safe p acc l = match l with
+    | [] -> List.rev acc, []
+    | x :: tail ->
+      if p x then safe p (x::acc) tail else List.rev acc, l
+  in
+  direct direct_depth_default_ p l
+
+(*$Q
+  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
+    let l1,l2 = take_drop_while f l in \
+    (l1 = take_while f l) && (l2 = drop_while f l))
+*)
+
 let last n l =
   let len = List.length l in
   if len < n then l else drop (len-n) l
