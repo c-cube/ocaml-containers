@@ -229,27 +229,47 @@ let clear bv =
 *)
 
 let iter bv f =
-  let len = Array.length bv.a in
+  let len = array_length_of_size bv.size in
+  assert (len <= Array.length bv.a);
   for n = 0 to len - 2 do
     let j = width_ * n in
     for i = 0 to width_ - 1 do
       f (j+i) (bv.a.(n) land (1 lsl i) <> 0)
     done
   done;
-  let j = width_ * (len - 1) in
-  let r = bv.size mod width_ in
-  let final_length = if r = 0 then width_ else r in
-  for i = 0 to final_length - 1 do
-    f (j + i) (bv.a.(len - 1) land (1 lsl i) <> 0)
-  done
+  if bv.size > 0 then (
+    let j = width_ * (len - 1) in
+    let r = bv.size mod width_ in
+    let final_length = if r = 0 then width_ else r in
+    for i = 0 to final_length - 1 do
+      f (j + i) (bv.a.(len - 1) land (1 lsl i) <> 0)
+    done
+  )
 
 (*$R
-  let bv = create ~size:30 false in
-  set bv 5;
-  let n = ref 0 in
-  iter bv (fun i b -> incr n; assert_equal b (i=5));
-  assert_bool "at least 30" (!n >= 30)
+  List.iter
+    (fun size ->
+      let bv = create ~size false in
+      set bv 5;
+      let n = ref 0 in
+      iter bv (fun i b -> incr n; assert_equal b (i=5));
+      assert_bool "exactly size" (!n = size))
+    [30; 100; 255; 256;10_000]
 *)
+
+(*$= & ~printer:Q.Print.(list (pair int bool))
+  [] (iter (create ~size:0 false) |> Sequence.zip |> Sequence.to_list)
+  [0, false; 1, true; 2, false] \
+    (iter (let bv = create ~size:3 false in set bv 1; bv) |> Sequence.zip |> Sequence.to_list)
+*)
+
+(*$Q
+  Q.(small_int) (fun n -> \
+    assert (n >= 0); \
+    let bv = create ~size:n true in \
+    let l = iter bv |> Sequence.zip |> Sequence.to_list in \
+    List.length l = n && List.for_all (fun (_,b) -> b) l)
+  *)
 
 let iter_true bv f =
   iter bv (fun i b -> if b then f i else ())
