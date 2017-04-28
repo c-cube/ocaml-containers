@@ -48,6 +48,7 @@ let floor_div a n =
 (*$T
   (floor_div 3 5 = 0)
   (floor_div 5 5 = 1)
+  (floor_div 20 5 = 4)
   (floor_div 12 5 = 2)
   (floor_div 0 5 = 0)
   (floor_div (-1) 5 = -1)
@@ -58,8 +59,10 @@ let floor_div a n =
   (floor_div 3 (-5) = -1)
   (floor_div 5 (-5) = -1)
   (floor_div 9 (-5) = -2)
+  (floor_div 20 (-5) = -4)
   (floor_div (-2) (-5) = 0)
   (floor_div (-8) (-5) = 1)
+  (floor_div (-35) (-5) = 7)
 
   try ignore (floor_div 12 0); false with Division_by_zero -> true
   try ignore (floor_div (-12) 0); false with Division_by_zero -> true
@@ -85,6 +88,7 @@ let rem a n =
   (rem 9 5 = 4)
   (rem (-1) 5 = 4)
   (rem (-5) 5 = 0)
+  (rem (-20) 5 = 0)
   (rem (-9) 5 = 1)
   (rem 0 5 = 0)
 
@@ -94,6 +98,7 @@ let rem a n =
   (rem 9 (-5) = -1)
   (rem (-2) (-5) = -2)
   (rem (-8) (-5) = -3)
+  (rem (-35) (-5) = 0)
 
   try ignore (rem 12 0); false with Division_by_zero -> true
   try ignore (rem (-12) 0); false with Division_by_zero -> true
