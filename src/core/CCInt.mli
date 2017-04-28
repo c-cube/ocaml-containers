@@ -23,6 +23,16 @@ val pow : t -> t -> t
     Raises [Invalid_argument] if [a = b = 0] or [b] < 0.
     @since 0.11 *)
 
+val floor_div : t -> t -> t
+(** [floor_div a n] is integer division rounding towards negative infinity.
+    It satisfies [a = m * floor_div a n + rem a n].
+    @since NEXT_RELEASE *)
+
+val rem : t -> t -> t
+(** [rem a n] is the remainder of dividing [a] by [n], with the same
+    sign as [n].
+    @since NEXT_RELEASE *)
+
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 type 'a sequence = ('a -> unit) -> unit

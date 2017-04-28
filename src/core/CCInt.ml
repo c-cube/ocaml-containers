@@ -37,6 +37,78 @@ let pow a b =
   pow 0 1 = 0
 *)
 
+let floor_div a n =
+  if a < 0 && n >= 0 then
+    (a + 1) / n - 1
+  else if a > 0 && n < 0 then
+    (a - 1) / n - 1
+  else
+    a / n
+
+(*$T
+  (floor_div 3 5 = 0)
+  (floor_div 5 5 = 1)
+  (floor_div 12 5 = 2)
+  (floor_div 0 5 = 0)
+  (floor_div (-1) 5 = -1)
+  (floor_div (-5) 5 = -1)
+  (floor_div (-12) 5 = -3)
+
+  (floor_div 0 (-5) = 0)
+  (floor_div 3 (-5) = -1)
+  (floor_div 5 (-5) = -1)
+  (floor_div 9 (-5) = -2)
+  (floor_div (-2) (-5) = 0)
+  (floor_div (-8) (-5) = 1)
+
+  try ignore (floor_div 12 0); false with Division_by_zero -> true
+  try ignore (floor_div (-12) 0); false with Division_by_zero -> true
+*)
+
+(*$Q
+  (Q.pair Q.small_signed_int Q.pos_int) \
+      (fun (n, m) -> floor_div n m = int_of_float @@ floor (float n /. float m))
+  (Q.pair Q.small_signed_int Q.pos_int) \
+      (fun (n, m) -> floor_div n (-m) = int_of_float @@ floor (float n /. float (-m)))
+*)
+
+let rem a n =
+  let y = a mod n in
+  if (y < 0) <> (n < 0) && y <> 0 then
+    y + n
+  else
+    y
+
+(*$T
+  (rem 3 5 = 3)
+  (rem 5 5 = 0)
+  (rem 9 5 = 4)
+  (rem (-1) 5 = 4)
+  (rem (-5) 5 = 0)
+  (rem (-9) 5 = 1)
+  (rem 0 5 = 0)
+
+  (rem 0 (-5) = 0)
+  (rem 3 (-5) = -2)
+  (rem 5 (-5) = 0)
+  (rem 9 (-5) = -1)
+  (rem (-2) (-5) = -2)
+  (rem (-8) (-5) = -3)
+
+  try ignore (rem 12 0); false with Division_by_zero -> true
+  try ignore (rem (-12) 0); false with Division_by_zero -> true
+*)
+
+(*$Q
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> let y = rem n m in y >= 0 && y < m)
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> let y = rem n (-m) in y > (-m) && y <= 0)
+*)
+
+(*$Q
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> n = m * floor_div n m + rem n m)
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> n = (-m) * floor_div n (-m) + rem n (-m))
+*)
+
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 type 'a sequence = ('a -> unit) -> unit
