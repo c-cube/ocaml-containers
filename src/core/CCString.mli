@@ -114,8 +114,7 @@ val of_array : char array -> string
 val to_array : string -> char array
 
 val find : ?start:int -> sub:string -> string -> int
-(** Find [sub] in string, returns its first index or [-1].
-    Should only be used with very small [sub] *)
+(** Find [sub] in string, returns its first index or [-1]. *)
 
 (*$= & ~printer:string_of_int
   1 (find ~sub:"bc" "abcd")
@@ -643,5 +642,4 @@ module Sub : sig
       |> Sequence.for_all
         (fun (i,j,sub) -> Sub.get sub j = s.[i+j]))
   *)
-
 end
