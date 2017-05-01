@@ -1,0 +1,522 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="CCHeap.html">
+<link rel="next" href="CCOpt.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="CCVector" rel="Chapter" href="CCVector.html">
+<link title="CCHeap" rel="Chapter" href="CCHeap.html">
+<link title="CCList" rel="Chapter" href="CCList.html">
+<link title="CCOpt" rel="Chapter" href="CCOpt.html">
+<link title="CCPair" rel="Chapter" href="CCPair.html">
+<link title="CCFun" rel="Chapter" href="CCFun.html">
+<link title="CCHash" rel="Chapter" href="CCHash.html">
+<link title="CCInt" rel="Chapter" href="CCInt.html">
+<link title="CCBool" rel="Chapter" href="CCBool.html">
+<link title="CCFloat" rel="Chapter" href="CCFloat.html">
+<link title="CCArray" rel="Chapter" href="CCArray.html">
+<link title="CCRef" rel="Chapter" href="CCRef.html">
+<link title="CCSet" rel="Chapter" href="CCSet.html">
+<link title="CCOrd" rel="Chapter" href="CCOrd.html">
+<link title="CCRandom" rel="Chapter" href="CCRandom.html">
+<link title="CCString" rel="Chapter" href="CCString.html">
+<link title="CCHashtbl" rel="Chapter" href="CCHashtbl.html">
+<link title="CCMap" rel="Chapter" href="CCMap.html">
+<link title="CCFormat" rel="Chapter" href="CCFormat.html">
+<link title="CCIO" rel="Chapter" href="CCIO.html">
+<link title="CCInt64" rel="Chapter" href="CCInt64.html">
+<link title="CCChar" rel="Chapter" href="CCChar.html">
+<link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="Containers" rel="Chapter" href="Containers.html">
+<link title="CCKTree" rel="Chapter" href="CCKTree.html">
+<link title="CCKList" rel="Chapter" href="CCKList.html">
+<link title="CCLazy_list" rel="Chapter" href="CCLazy_list.html">
+<link title="CCMultiMap" rel="Chapter" href="CCMultiMap.html">
+<link title="CCMultiSet" rel="Chapter" href="CCMultiSet.html">
+<link title="CCTrie" rel="Chapter" href="CCTrie.html">
+<link title="CCFlatHashtbl" rel="Chapter" href="CCFlatHashtbl.html">
+<link title="CCCache" rel="Chapter" href="CCCache.html">
+<link title="CCPersistentHashtbl" rel="Chapter" href="CCPersistentHashtbl.html">
+<link title="CCDeque" rel="Chapter" href="CCDeque.html">
+<link title="CCFQueue" rel="Chapter" href="CCFQueue.html">
+<link title="CCBV" rel="Chapter" href="CCBV.html">
+<link title="CCMixtbl" rel="Chapter" href="CCMixtbl.html">
+<link title="CCMixmap" rel="Chapter" href="CCMixmap.html">
+<link title="CCRingBuffer" rel="Chapter" href="CCRingBuffer.html">
+<link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
+<link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
+<link title="CCMixset" rel="Chapter" href="CCMixset.html">
+<link title="CCGraph" rel="Chapter" href="CCGraph.html">
+<link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
+<link title="CCBitField" rel="Chapter" href="CCBitField.html">
+<link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
+<link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
+<link title="CCRAL" rel="Chapter" href="CCRAL.html">
+<link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
+<link title="CCHet" rel="Chapter" href="CCHet.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
+<link title="CCPool" rel="Chapter" href="CCPool.html">
+<link title="CCLock" rel="Chapter" href="CCLock.html">
+<link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
+<link title="CCThread" rel="Chapter" href="CCThread.html">
+<link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
+<link title="CCTimer" rel="Chapter" href="CCTimer.html">
+<link title="CCUnix" rel="Chapter" href="CCUnix.html">
+<link title="CCSexp" rel="Chapter" href="CCSexp.html">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Indices" rel="Section" href="#2_Indices">
+<link title="Set Operators" rel="Section" href="#2_SetOperators">
+<link title="Other Constructors" rel="Section" href="#2_OtherConstructors">
+<link title="Association Lists" rel="Section" href="#2_AssociationLists">
+<link title="References on Lists" rel="Section" href="#2_ReferencesonLists">
+<link title="Conversions" rel="Section" href="#2_Conversions">
+<link title="Infix Operators" rel="Section" href="#2_InfixOperators">
+<link title="IO" rel="Section" href="#2_IO">
+<title>Containers doc : CCList</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="CCHeap.html" title="CCHeap">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="CCOpt.html" title="CCOpt">Next</a>
+</div>
+<h1>Module <a href="type_CCList.html">CCList</a></h1>
+
+<pre><span class="keyword">module</span> CCList: <code class="code"><span class="keyword">sig</span></code> <a href="CCList.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+<h1 id="1_complementstolist">complements to list</h1><br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type">'a</code> t</span> = <code class="type">'a list</code> </pre>
+
+
+<pre><span id="VALempty"><span class="keyword">val</span> empty</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VALis_empty"><span class="keyword">val</span> is_empty</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+<code class="code">is_empty l</code> returns <code class="code"><span class="keyword">true</span></code> iff <code class="code">l = []</code><br>
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALmap"><span class="keyword">val</span> map</span> : <code class="type">('a -> 'b) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Safe version of map<br>
+</div>
+
+<pre><span id="VAL(>|=)"><span class="keyword">val</span> (&gt;|=)</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> ('a -> 'b) -> 'b <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Infix version of <code class="code">map</code> with reversed arguments<br>
+<b>Since</b> 0.5<br>
+</div>
+
+<pre><span id="VALcons"><span class="keyword">val</span> cons</span> : <code class="type">'a -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">cons x l</code> is <code class="code">x::l</code><br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALappend"><span class="keyword">val</span> append</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Safe version of append<br>
+</div>
+
+<pre><span id="VALcons_maybe"><span class="keyword">val</span> cons_maybe</span> : <code class="type">'a option -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">cons_maybe (<span class="constructor">Some</span> x) l</code> is <code class="code">x :: l</code>
+    <code class="code">cons_maybe <span class="constructor">None</span> l</code> is <code class="code">l</code><br>
+<b>Since</b> 0.13<br>
+</div>
+
+<pre><span id="VAL(@)"><span class="keyword">val</span> (@)</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfilter"><span class="keyword">val</span> filter</span> : <code class="type">('a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Safe version of <code class="code"><span class="constructor">List</span>.filter</code><br>
+</div>
+
+<pre><span id="VALfold_right"><span class="keyword">val</span> fold_right</span> : <code class="type">('a -> 'b -> 'b) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b -> 'b</code></pre><div class="info ">
+Safe version of <code class="code">fold_right</code><br>
+</div>
+
+<pre><span id="VALfold_while"><span class="keyword">val</span> fold_while</span> : <code class="type">('a -> 'b -> 'a * [ `Continue | `Stop ]) -> 'a -> 'b <a href="CCList.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+Fold until a stop condition via <code class="code">(<span class="keywordsign">'</span>a, <span class="keywordsign">`</span><span class="constructor">Stop</span>)</code> is
+    indicated by the accumulator<br>
+<b>Since</b> 0.8<br>
+</div>
+
+<pre><span id="VALfold_map"><span class="keyword">val</span> fold_map</span> : <code class="type">('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list</code></pre><div class="info ">
+<code class="code">fold_map f acc l</code> is a <code class="code">fold_left</code>-like function, but it also maps the
+    list to another list.<br>
+<b>Since</b> 0.14<br>
+</div>
+
+<pre><span id="VALfold_map2"><span class="keyword">val</span> fold_map2</span> : <code class="type">('acc -> 'a -> 'b -> 'acc * 'c) -><br>       'acc -> 'a list -> 'b list -> 'acc * 'c list</code></pre><div class="info ">
+<code class="code">fold_map2</code> is to <code class="code">fold_map</code> what <code class="code"><span class="constructor">List</span>.map2</code> is to <code class="code"><span class="constructor">List</span>.map</code>.<br>
+<b>Since</b> 0.16<br>
+<b>Raises</b> <code>Invalid_argument</code> if the lists do not have the same length<br>
+</div>
+
+<pre><span id="VALfold_filter_map"><span class="keyword">val</span> fold_filter_map</span> : <code class="type">('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list</code></pre><div class="info ">
+<code class="code">fold_filter_map f acc l</code> is a <code class="code">fold_left</code>-like function, but also
+    generates a list of output in a way similar to <a href="CCList.html#VALfilter_map"><code class="code"><span class="constructor">CCList</span>.filter_map</code></a><br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALfold_flat_map"><span class="keyword">val</span> fold_flat_map</span> : <code class="type">('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list</code></pre><div class="info ">
+<code class="code">fold_flat_map f acc l</code> is a <code class="code">fold_left</code>-like function, but it also maps the
+    list to a list of lists that is then <code class="code">flatten</code>'d..<br>
+<b>Since</b> 0.14<br>
+</div>
+
+<pre><span id="VALinit"><span class="keyword">val</span> init</span> : <code class="type">int -> (int -> 'a) -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Similar to <code class="code"><span class="constructor">Array</span>.init</code><br>
+<b>Since</b> 0.6<br>
+</div>
+
+<pre><span id="VALcompare"><span class="keyword">val</span> compare</span> : <code class="type">('a -> 'a -> int) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> int</code></pre>
+<pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type">('a -> 'a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALflat_map"><span class="keyword">val</span> flat_map</span> : <code class="type">('a -> 'b <a href="CCList.html#TYPEt">t</a>) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Map and flatten at the same time (safe). Evaluation order is not guaranteed.<br>
+</div>
+
+<pre><span id="VALflatten"><span class="keyword">val</span> flatten</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Safe flatten<br>
+</div>
+
+<pre><span id="VALproduct"><span class="keyword">val</span> product</span> : <code class="type">('a -> 'b -> 'c) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a> -> 'c <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Cartesian product of the two lists, with the given combinator<br>
+</div>
+
+<pre><span id="VALfold_product"><span class="keyword">val</span> fold_product</span> : <code class="type">('c -> 'a -> 'b -> 'c) -> 'c -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a> -> 'c</code></pre><div class="info ">
+Fold on the cartesian product<br>
+</div>
+
+<pre><span id="VALdiagonal"><span class="keyword">val</span> diagonal</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> ('a * 'a) <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+All pairs of distinct positions of the list. <code class="code">list_diagonal l</code> will
+    return the list of <code class="code"><span class="constructor">List</span>.nth i l, <span class="constructor">List</span>.nth j l</code> if <code class="code">i &lt; j</code>.<br>
+</div>
+
+<pre><span id="VALpartition_map"><span class="keyword">val</span> partition_map</span> : <code class="type">('a -> [< `Drop | `Left of 'b | `Right of 'c ]) -><br>       'a list -> 'b list * 'c list</code></pre><div class="info ">
+<code class="code">partition_map f l</code> maps <code class="code">f</code> on <code class="code">l</code> and gather results in lists:<ul>
+<li>if <code class="code">f x = <span class="keywordsign">`</span><span class="constructor">Left</span> y</code>, adds <code class="code">y</code> to the first list</li>
+<li>if <code class="code">f x = <span class="keywordsign">`</span><span class="constructor">Right</span> z</code>, adds <code class="code">z</code> to the second list</li>
+<li>if <code class="code">f x = <span class="keywordsign">`</span><span class="constructor">Drop</span></code>, ignores <code class="code">x</code></li>
+</ul>
+<br>
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALsublists_of_len"><span class="keyword">val</span> sublists_of_len</span> : <code class="type">?last:('a list -> 'a list option) -><br>       ?offset:int -> int -> 'a list -> 'a list list</code></pre><div class="info ">
+<code class="code">sublists_of_len n l</code> returns sub-lists of <code class="code">l</code> that have length <code class="code">n</code>.
+    By default, these sub-lists are non overlapping:
+    <code class="code">sublists_of_len 2 [1;2;3;4;5;6]</code> returns <code class="code">[1;2]; [3;4]; [5;6]</code>
+<p>
+
+    Examples:
+<p>
+<ul>
+<li><code class="code">sublists_of_len 2 [1;2;3;4;5;6] = [[1;2]; [3;4]; [5;6]]</code></li>
+<li><code class="code">sublists_of_len 2 ~offset:3 [1;2;3;4;5;6] = [1;2];[4;5]</code></li>
+<li><code class="code">sublists_of_len 3 ~last:<span class="constructor">CCOpt</span>.return [1;2;3;4] = [1;2;3];[4]</code></li>
+<li><code class="code">sublists_of_len 2 [1;2;3;4;5] = [[1;2]; [3;4]]</code></li>
+</ul>
+<br>
+<b>Since</b> 1.0<br>
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">offset &lt;= 0</code> or <code class="code">n &lt;= 0</code><br>
+</div>
+<div class="param_info"><code class="code">last</code> : if provided and the last group of elements <code class="code">g</code> is such
+      that <code class="code">length g &lt; n</code>, <code class="code">last g</code> is called. If <code class="code">last g = <span class="constructor">Some</span> g'</code>,
+      <code class="code">g'</code> is appended; otherwise <code class="code">g</code> is dropped.
+      If <code class="code">last = <span class="constructor">CCOpt</span>.return</code>, it will simply keep the last group.
+      By default, <code class="code">last = <span class="keyword">fun</span> _ <span class="keywordsign">-&gt;</span> <span class="constructor">None</span></code>, i.e. the last group is dropped if shorter than <code class="code">n</code>.</div>
+<div class="param_info"><code class="code">offset</code> : the number of elements skipped between two consecutive
+      sub-lists. By default it is <code class="code">n</code>. If <code class="code">offset &lt; n</code>, the sub-lists
+      will overlap; if <code class="code">offset &gt; n</code>, some elements will not appear at all.</div>
+
+<pre><span id="VALpure"><span class="keyword">val</span> pure</span> : <code class="type">'a -> 'a <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VAL(<*>)"><span class="keyword">val</span> (&lt;*&gt;)</span> : <code class="type">('a -> 'b) <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VAL(<$>)"><span class="keyword">val</span> (&lt;$&gt;)</span> : <code class="type">('a -> 'b) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VALreturn"><span class="keyword">val</span> return</span> : <code class="type">'a -> 'a <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VAL(>>=)"><span class="keyword">val</span> (&gt;&gt;=)</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> ('a -> 'b <a href="CCList.html#TYPEt">t</a>) -> 'b <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtake"><span class="keyword">val</span> take</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Take the <code class="code">n</code> first elements, drop the rest<br>
+</div>
+
+<pre><span id="VALdrop"><span class="keyword">val</span> drop</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Drop the <code class="code">n</code> first elements, keep the rest<br>
+</div>
+
+<pre><span id="VALhd_tl"><span class="keyword">val</span> hd_tl</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a * 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">hd_tl (x :: l)</code> returns <code class="code">hd, l</code>.<br>
+<b>Since</b> 0.16<br>
+<b>Raises</b> <code>Failure</code> if the list is empty<br>
+</div>
+
+<pre><span id="VALtake_drop"><span class="keyword">val</span> take_drop</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> * 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">take_drop n l</code> returns <code class="code">l1, l2</code> such that <code class="code">l1 @ l2 = l</code> and
+    <code class="code">length l1 = min (length l) n</code><br>
+</div>
+
+<pre><span id="VALtake_while"><span class="keyword">val</span> take_while</span> : <code class="type">('a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<b>Since</b> 0.13<br>
+</div>
+
+<pre><span id="VALdrop_while"><span class="keyword">val</span> drop_while</span> : <code class="type">('a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<b>Since</b> 0.13<br>
+</div>
+
+<pre><span id="VALlast"><span class="keyword">val</span> last</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">last n l</code> takes the last <code class="code">n</code> elements of <code class="code">l</code> (or less if
+    <code class="code">l</code> doesn't have that many elements<br>
+</div>
+
+<pre><span id="VALhead_opt"><span class="keyword">val</span> head_opt</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a option</code></pre><div class="info ">
+First element.<br>
+<b>Since</b> 0.20<br>
+</div>
+
+<pre><span id="VALlast_opt"><span class="keyword">val</span> last_opt</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a option</code></pre><div class="info ">
+Last element.<br>
+<b>Since</b> 0.20<br>
+</div>
+
+<pre><span id="VALfind_pred"><span class="keyword">val</span> find_pred</span> : <code class="type">('a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a option</code></pre><div class="info ">
+<code class="code">find_pred p l</code> finds the first element of <code class="code">l</code> that satisfies <code class="code">p</code>,
+    or returns <code class="code"><span class="constructor">None</span></code> if no element satisfies <code class="code">p</code><br>
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALfind_pred_exn"><span class="keyword">val</span> find_pred_exn</span> : <code class="type">('a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+Unsafe version of <a href="CCList.html#VALfind_pred"><code class="code"><span class="constructor">CCList</span>.find_pred</code></a><br>
+<b>Since</b> 0.11<br>
+<b>Raises</b> <code>Not_found</code> if no such element is found<br>
+</div>
+
+<pre><span id="VALfind_map"><span class="keyword">val</span> find_map</span> : <code class="type">('a -> 'b option) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b option</code></pre><div class="info ">
+<code class="code">find_map f l</code> traverses <code class="code">l</code>, applying <code class="code">f</code> to each element. If for
+    some element <code class="code">x</code>, <code class="code">f x = <span class="constructor">Some</span> y</code>, then <code class="code"><span class="constructor">Some</span> y</code> is returned. Otherwise
+    the call returns <code class="code"><span class="constructor">None</span></code><br>
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALfind_mapi"><span class="keyword">val</span> find_mapi</span> : <code class="type">(int -> 'a -> 'b option) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b option</code></pre><div class="info ">
+Like <a href="CCList.html#VALfind_map"><code class="code"><span class="constructor">CCList</span>.find_map</code></a>, but also pass the index to the predicate function.<br>
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALfind_idx"><span class="keyword">val</span> find_idx</span> : <code class="type">('a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> (int * 'a) option</code></pre><div class="info ">
+<code class="code">find_idx p x</code> returns <code class="code"><span class="constructor">Some</span> (i,x)</code> where <code class="code">x</code> is the <code class="code">i</code>-th element of <code class="code">l</code>,
+    and <code class="code">p x</code> holds. Otherwise returns <code class="code"><span class="constructor">None</span></code><br>
+</div>
+
+<pre><span id="VALremove"><span class="keyword">val</span> remove</span> : <code class="type">?eq:('a -> 'a -> bool) -> x:'a -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">remove ~x l</code> removes every instance of <code class="code">x</code> from <code class="code">l</code>. Tailrec.<br>
+<b>Since</b> 0.11<br>
+</div>
+<div class="param_info"><code class="code">eq</code> : equality function</div>
+
+<pre><span id="VALfilter_map"><span class="keyword">val</span> filter_map</span> : <code class="type">('a -> 'b option) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Map and remove elements at the same time<br>
+</div>
+
+<pre><span id="VALsorted_merge"><span class="keyword">val</span> sorted_merge</span> : <code class="type">?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list</code></pre><div class="info ">
+Merges elements from both sorted list<br>
+</div>
+
+<pre><span id="VALsort_uniq"><span class="keyword">val</span> sort_uniq</span> : <code class="type">?cmp:('a -> 'a -> int) -> 'a list -> 'a list</code></pre><div class="info ">
+Sort the list and remove duplicate elements<br>
+</div>
+
+<pre><span id="VALsorted_merge_uniq"><span class="keyword">val</span> sorted_merge_uniq</span> : <code class="type">?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list</code></pre><div class="info ">
+<code class="code">sorted_merge_uniq l1 l2</code> merges the sorted lists <code class="code">l1</code> and <code class="code">l2</code> and
+    removes duplicates<br>
+<b>Since</b> 0.10<br>
+</div>
+
+<pre><span id="VALis_sorted"><span class="keyword">val</span> is_sorted</span> : <code class="type">?cmp:('a -> 'a -> int) -> 'a list -> bool</code></pre><div class="info ">
+<code class="code">is_sorted l</code> returns <code class="code"><span class="keyword">true</span></code> iff <code class="code">l</code> is sorted (according to given order)<br>
+<b>Since</b> 0.17<br>
+</div>
+<div class="param_info"><code class="code">cmp</code> : the comparison function (default <code class="code"><span class="constructor">Pervasives</span>.compare</code>)</div>
+
+<pre><span id="VALsorted_insert"><span class="keyword">val</span> sorted_insert</span> : <code class="type">?cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list</code></pre><div class="info ">
+<code class="code">sorted_insert x l</code> inserts <code class="code">x</code> into <code class="code">l</code> such that, if <code class="code">l</code> was sorted,
+    then <code class="code">sorted_insert x l</code> is sorted too.<br>
+<b>Since</b> 0.17<br>
+</div>
+<div class="param_info"><code class="code">uniq</code> : if true and <code class="code">x</code> is already in sorted position in <code class="code">l</code>, then
+      <code class="code">x</code> is not duplicated. Default <code class="code"><span class="keyword">false</span></code> (<code class="code">x</code> will be inserted in any case).</div>
+
+<pre><span id="VALuniq_succ"><span class="keyword">val</span> uniq_succ</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a list -> 'a list</code></pre><div class="info ">
+<code class="code">uniq_succ l</code> removes duplicate elements that occur one next to the other.
+    Examples:
+    <code class="code">uniq_succ [1;2;1] = [1;2;1]</code>
+    <code class="code">uniq_succ [1;1;2] = [1;2]</code><br>
+<b>Since</b> 0.10<br>
+</div>
+
+<pre><span id="VALgroup_succ"><span class="keyword">val</span> group_succ</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a list -> 'a list list</code></pre><div class="info ">
+<code class="code">group_succ ~eq l</code> groups together consecutive elements that are equal
+    according to <code class="code">eq</code><br>
+<b>Since</b> 0.11<br>
+</div>
+<br>
+<h2 id="2_Indices">Indices</h2><br>
+
+<pre><span id="VALmapi"><span class="keyword">val</span> mapi</span> : <code class="type">(int -> 'a -> 'b) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VALiteri"><span class="keyword">val</span> iteri</span> : <code class="type">(int -> 'a -> unit) -> 'a <a href="CCList.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALfoldi"><span class="keyword">val</span> foldi</span> : <code class="type">('b -> int -> 'a -> 'b) -> 'b -> 'a <a href="CCList.html#TYPEt">t</a> -> 'b</code></pre><div class="info ">
+Fold on list, with index<br>
+</div>
+
+<pre><span id="VALget_at_idx"><span class="keyword">val</span> get_at_idx</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a option</code></pre>
+<pre><span id="VALget_at_idx_exn"><span class="keyword">val</span> get_at_idx_exn</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+Get the i-th element, or<br>
+<b>Raises</b> <code>Not_found</code> if the index is invalid<br>
+</div>
+
+<pre><span id="VALset_at_idx"><span class="keyword">val</span> set_at_idx</span> : <code class="type">int -> 'a -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Set i-th element (removes the old one), or does nothing if
+    index is too high<br>
+</div>
+
+<pre><span id="VALinsert_at_idx"><span class="keyword">val</span> insert_at_idx</span> : <code class="type">int -> 'a -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Insert at i-th position, between the two existing elements. If the
+    index is too high, append at the end of the list<br>
+</div>
+
+<pre><span id="VALremove_at_idx"><span class="keyword">val</span> remove_at_idx</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Remove element at given index. Does nothing if the index is
+    too high.<br>
+</div>
+<br>
+<h2 id="2_SetOperators">Set Operators</h2>
+<p>
+
+    Those operations maintain the invariant that the list does not
+    contain duplicates (if it already satisfies it)<br>
+
+<pre><span id="VALadd_nodup"><span class="keyword">val</span> add_nodup</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">add_nodup x set</code> adds <code class="code">x</code> to <code class="code">set</code> if it was not already present. Linear time.<br>
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALremove_one"><span class="keyword">val</span> remove_one</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">remove_one x set</code> removes one occurrence of <code class="code">x</code> from <code class="code">set</code>. Linear time.<br>
+<b>Since</b> 0.11<br>
+</div>
+
+<pre><span id="VALmem"><span class="keyword">val</span> mem</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a -> 'a <a href="CCList.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+Membership to the list. Linear time<br>
+</div>
+
+<pre><span id="VALsubset"><span class="keyword">val</span> subset</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+Test for inclusion<br>
+</div>
+
+<pre><span id="VALuniq"><span class="keyword">val</span> uniq</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Remove duplicates w.r.t the equality predicate.
+    Complexity is quadratic in the length of the list, but the order
+    of elements is preserved. If you wish for a faster de-duplication
+    but do not care about the order, use <a href="CCList.html#VALsort_uniq"><code class="code"><span class="constructor">CCList</span>.sort_uniq</code></a><br>
+</div>
+
+<pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+List union. Complexity is product of length of inputs.<br>
+</div>
+
+<pre><span id="VALinter"><span class="keyword">val</span> inter</span> : <code class="type">?eq:('a -> 'a -> bool) -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+List intersection. Complexity is product of length of inputs.<br>
+</div>
+<br>
+<h2 id="2_OtherConstructors">Other Constructors</h2><br>
+
+<pre><span id="VALrange_by"><span class="keyword">val</span> range_by</span> : <code class="type">step:int -> int -> int -> int <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">range_by ~step i j</code> iterates on integers from <code class="code">i</code> to <code class="code">j</code> included,
+    where the difference between successive elements is <code class="code">step</code>.
+    use a negative <code class="code">step</code> for a decreasing list.<br>
+<b>Since</b> 0.18<br>
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">step=0</code><br>
+</div>
+
+<pre><span id="VALrange"><span class="keyword">val</span> range</span> : <code class="type">int -> int -> int <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">range i j</code> iterates on integers from <code class="code">i</code> to <code class="code">j</code> included . It works
+    both for decreasing and increasing ranges<br>
+</div>
+
+<pre><span id="VALrange'"><span class="keyword">val</span> range'</span> : <code class="type">int -> int -> int <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Same as <a href="CCList.html#VALrange"><code class="code"><span class="constructor">CCList</span>.range</code></a> but the second bound is excluded.
+    For instance <code class="code">range' 0 5 = [0;1;2;3;4]</code><br>
+</div>
+
+<pre><span id="VAL(--)"><span class="keyword">val</span> (--)</span> : <code class="type">int -> int -> int <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Infix alias for <code class="code">range</code><br>
+</div>
+
+<pre><span id="VAL(--^)"><span class="keyword">val</span> (--^)</span> : <code class="type">int -> int -> int <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Infix alias for <code class="code">range'</code><br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALreplicate"><span class="keyword">val</span> replicate</span> : <code class="type">int -> 'a -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Replicate the given element <code class="code">n</code> times<br>
+</div>
+
+<pre><span id="VALrepeat"><span class="keyword">val</span> repeat</span> : <code class="type">int -> 'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
+Concatenate the list with itself <code class="code">n</code> times<br>
+</div>
+<br>
+<h2 id="2_AssociationLists">Association Lists</h2><br>
+
+<pre><span class="keyword">module</span> <a href="CCList.Assoc.html">Assoc</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCList.Assoc.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_ReferencesonLists">References on Lists</h2><br>
+
+<pre><span class="keyword">module</span> <a href="CCList.Ref.html">Ref</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCList.Ref.html">..</a> <code class="code"><span class="keyword">end</span></code></pre>
+<pre><span class="keyword">module type</span> <a href="CCList.MONAD.html">MONAD</a> = <code class="code"><span class="keyword">sig</span></code> <a href="CCList.MONAD.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info">
+Monadic Operations
+</div>
+
+<pre><span class="keyword">module</span> <a href="CCList.Traverse.html">Traverse</a> <code class="code">(</code><code class="code"><span class="constructor">M</span></code><code class="code"> : </code><code class="type"><a href="CCList.MONAD.html">MONAD</a></code><code class="code">) </code>: <code class="code"><span class="keyword">sig</span></code> <a href="CCList.Traverse.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_Conversions">Conversions</h2><br>
+
+<pre><span id="TYPEsequence"><span class="keyword">type</span> <code class="type">'a</code> sequence</span> = <code class="type">('a -> unit) -> unit</code> </pre>
+
+
+<pre><span id="TYPEgen"><span class="keyword">type</span> <code class="type">'a</code> gen</span> = <code class="type">unit -> 'a option</code> </pre>
+
+
+<pre><span id="TYPEklist"><span class="keyword">type</span> <code class="type">'a</code> klist</span> = <code class="type">unit -> [ `Cons of 'a * 'a <a href="CCList.html#TYPEklist">klist</a> | `Nil ]</code> </pre>
+
+
+<pre><span id="TYPEprinter"><span class="keyword">type</span> <code class="type">'a</code> printer</span> = <code class="type">Format.formatter -> 'a -> unit</code> </pre>
+
+
+<pre><span id="TYPErandom_gen"><span class="keyword">type</span> <code class="type">'a</code> random_gen</span> = <code class="type">Random.State.t -> 'a</code> </pre>
+
+
+<pre><span id="VALrandom"><span class="keyword">val</span> random</span> : <code class="type">'a <a href="CCList.html#TYPErandom_gen">random_gen</a> -> 'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPErandom_gen">random_gen</a></code></pre>
+<pre><span id="VALrandom_non_empty"><span class="keyword">val</span> random_non_empty</span> : <code class="type">'a <a href="CCList.html#TYPErandom_gen">random_gen</a> -> 'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPErandom_gen">random_gen</a></code></pre>
+<pre><span id="VALrandom_len"><span class="keyword">val</span> random_len</span> : <code class="type">int -> 'a <a href="CCList.html#TYPErandom_gen">random_gen</a> -> 'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPErandom_gen">random_gen</a></code></pre>
+<pre><span id="VALrandom_choose"><span class="keyword">val</span> random_choose</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPErandom_gen">random_gen</a></code></pre><div class="info ">
+Randomly choose an element in the list.<br>
+<b>Raises</b> <code>Not_found</code> if the list is empty<br>
+</div>
+
+<pre><span id="VALrandom_sequence"><span class="keyword">val</span> random_sequence</span> : <code class="type">'a <a href="CCList.html#TYPErandom_gen">random_gen</a> <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPErandom_gen">random_gen</a></code></pre>
+<pre><span id="VALto_seq"><span class="keyword">val</span> to_seq</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEsequence">sequence</a></code></pre>
+<pre><span id="VALof_seq"><span class="keyword">val</span> of_seq</span> : <code class="type">'a <a href="CCList.html#TYPEsequence">sequence</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VALto_gen"><span class="keyword">val</span> to_gen</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEgen">gen</a></code></pre>
+<pre><span id="VALof_gen"><span class="keyword">val</span> of_gen</span> : <code class="type">'a <a href="CCList.html#TYPEgen">gen</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre>
+<pre><span id="VALto_klist"><span class="keyword">val</span> to_klist</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEklist">klist</a></code></pre>
+<pre><span id="VALof_klist"><span class="keyword">val</span> of_klist</span> : <code class="type">'a <a href="CCList.html#TYPEklist">klist</a> -> 'a <a href="CCList.html#TYPEt">t</a></code></pre><br>
+<h2 id="2_InfixOperators">Infix Operators</h2>
+    It is convenient to <code class="code"><span class="keyword">open</span> <span class="constructor">CCList</span>.<span class="constructor">Infix</span></code> to access the infix operators
+    without cluttering  the scope too much.<br>
+
+<pre><span class="keyword">module</span> <a href="CCList.Infix.html">Infix</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCList.Infix.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_IO">IO</h2><br>
+
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">?start:string -><br>       ?stop:string -><br>       ?sep:string -> 'a <a href="CCList.html#TYPEprinter">printer</a> -> 'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPEprinter">printer</a></code></pre></body></html>

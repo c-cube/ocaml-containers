@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="CCBlockingQueue.html">
+<link rel="next" href="CCUnix.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="CCVector" rel="Chapter" href="CCVector.html">
+<link title="CCHeap" rel="Chapter" href="CCHeap.html">
+<link title="CCList" rel="Chapter" href="CCList.html">
+<link title="CCOpt" rel="Chapter" href="CCOpt.html">
+<link title="CCPair" rel="Chapter" href="CCPair.html">
+<link title="CCFun" rel="Chapter" href="CCFun.html">
+<link title="CCHash" rel="Chapter" href="CCHash.html">
+<link title="CCInt" rel="Chapter" href="CCInt.html">
+<link title="CCBool" rel="Chapter" href="CCBool.html">
+<link title="CCFloat" rel="Chapter" href="CCFloat.html">
+<link title="CCArray" rel="Chapter" href="CCArray.html">
+<link title="CCRef" rel="Chapter" href="CCRef.html">
+<link title="CCSet" rel="Chapter" href="CCSet.html">
+<link title="CCOrd" rel="Chapter" href="CCOrd.html">
+<link title="CCRandom" rel="Chapter" href="CCRandom.html">
+<link title="CCString" rel="Chapter" href="CCString.html">
+<link title="CCHashtbl" rel="Chapter" href="CCHashtbl.html">
+<link title="CCMap" rel="Chapter" href="CCMap.html">
+<link title="CCFormat" rel="Chapter" href="CCFormat.html">
+<link title="CCIO" rel="Chapter" href="CCIO.html">
+<link title="CCInt64" rel="Chapter" href="CCInt64.html">
+<link title="CCChar" rel="Chapter" href="CCChar.html">
+<link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
+<link title="Containers" rel="Chapter" href="Containers.html">
+<link title="CCKTree" rel="Chapter" href="CCKTree.html">
+<link title="CCKList" rel="Chapter" href="CCKList.html">
+<link title="CCLazy_list" rel="Chapter" href="CCLazy_list.html">
+<link title="CCMultiMap" rel="Chapter" href="CCMultiMap.html">
+<link title="CCMultiSet" rel="Chapter" href="CCMultiSet.html">
+<link title="CCTrie" rel="Chapter" href="CCTrie.html">
+<link title="CCFlatHashtbl" rel="Chapter" href="CCFlatHashtbl.html">
+<link title="CCCache" rel="Chapter" href="CCCache.html">
+<link title="CCPersistentHashtbl" rel="Chapter" href="CCPersistentHashtbl.html">
+<link title="CCDeque" rel="Chapter" href="CCDeque.html">
+<link title="CCFQueue" rel="Chapter" href="CCFQueue.html">
+<link title="CCBV" rel="Chapter" href="CCBV.html">
+<link title="CCMixtbl" rel="Chapter" href="CCMixtbl.html">
+<link title="CCMixmap" rel="Chapter" href="CCMixmap.html">
+<link title="CCRingBuffer" rel="Chapter" href="CCRingBuffer.html">
+<link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
+<link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
+<link title="CCMixset" rel="Chapter" href="CCMixset.html">
+<link title="CCGraph" rel="Chapter" href="CCGraph.html">
+<link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
+<link title="CCBitField" rel="Chapter" href="CCBitField.html">
+<link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
+<link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
+<link title="CCRAL" rel="Chapter" href="CCRAL.html">
+<link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
+<link title="CCHet" rel="Chapter" href="CCHet.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
+<link title="CCPool" rel="Chapter" href="CCPool.html">
+<link title="CCLock" rel="Chapter" href="CCLock.html">
+<link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
+<link title="CCThread" rel="Chapter" href="CCThread.html">
+<link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
+<link title="CCTimer" rel="Chapter" href="CCTimer.html">
+<link title="CCUnix" rel="Chapter" href="CCUnix.html">
+<link title="CCSexp" rel="Chapter" href="CCSexp.html">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><title>Containers doc : CCTimer</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="CCBlockingQueue.html" title="CCBlockingQueue">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="CCUnix.html" title="CCUnix">Next</a>
+</div>
+<h1>Module <a href="type_CCTimer.html">CCTimer</a></h1>
+
+<pre><span class="keyword">module</span> CCTimer: <code class="code"><span class="keyword">sig</span></code> <a href="CCTimer.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+<h1 id="1_Eventtimer">Event timer</h1>
+<p>
+
+    Used to be part of <code class="code"><span class="constructor">CCFuture</span></code><br>
+<b>Since</b> 0.16<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+A scheduler for events. It runs in its own thread.<br>
+</div>
+
+
+<pre><span id="VALcreate"><span class="keyword">val</span> create</span> : <code class="type">unit -> <a href="CCTimer.html#TYPEt">t</a></code></pre><div class="info ">
+A new timer.<br>
+</div>
+
+<pre><span id="VALset_exn_handler"><span class="keyword">val</span> set_exn_handler</span> : <code class="type"><a href="CCTimer.html#TYPEt">t</a> -> (exn -> unit) -> unit</code></pre><div class="info ">
+<code class="code">set_exn_handler timer f</code> registers <code class="code">f</code> so that any exception
+    raised by a task scheduled in <code class="code">timer</code> is given to <code class="code">f</code><br>
+</div>
+
+<pre><span id="EXCEPTIONStopped"><span class="keyword">exception</span> Stopped</span></pre>
+
+<pre><span id="VALafter"><span class="keyword">val</span> after</span> : <code class="type"><a href="CCTimer.html#TYPEt">t</a> -> float -> f:(unit -> 'a) -> unit</code></pre><div class="info ">
+Call the callback <code class="code">f</code> after the given number of seconds.<br>
+<b>Raises</b> <code>Stopped</code> if the timer was stopped<br>
+</div>
+
+<pre><span id="VALat"><span class="keyword">val</span> at</span> : <code class="type"><a href="CCTimer.html#TYPEt">t</a> -> float -> f:(unit -> 'a) -> unit</code></pre><div class="info ">
+Create a future that evaluates to <code class="code">()</code> at the given Unix timestamp<br>
+<b>Raises</b> <code>Stopped</code> if the timer was stopped<br>
+</div>
+
+<pre><span id="EXCEPTIONExitEvery"><span class="keyword">exception</span> ExitEvery</span></pre>
+
+<pre><span id="VALevery"><span class="keyword">val</span> every</span> : <code class="type">?delay:float -> <a href="CCTimer.html#TYPEt">t</a> -> float -> f:(unit -> 'a) -> unit</code></pre><div class="info ">
+<code class="code">every timer n ~f</code> calls <code class="code">f ()</code> every <code class="code">n</code> seconds.
+    <code class="code">f()</code> can raise ExitEvery to stop the cycle.<br>
+<b>Raises</b> <code>Stopped</code> if the timer was stopped<br>
+</div>
+<div class="param_info"><code class="code">delay</code> : if provided, the first call to <code class="code">f ()</code> is delayed by
+      that many seconds.</div>
+
+<pre><span id="VALstop"><span class="keyword">val</span> stop</span> : <code class="type"><a href="CCTimer.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Stop the given timer, cancelling pending tasks. Idempotent.
+    From now on, calling most other operations on the timer will raise Stopped.<br>
+</div>
+
+<pre><span id="VALactive"><span class="keyword">val</span> active</span> : <code class="type"><a href="CCTimer.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+Returns <code class="code"><span class="keyword">true</span></code> until <code class="code">stop t</code> has been called.<br>
+</div>
+</body></html>
