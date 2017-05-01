@@ -353,11 +353,11 @@ include S with type t := string
 
 val ltrim : t -> t
 (** trim space on the left (see {!String.trim} for more details)
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val rtrim : t -> t
 (** trim space on the right (see {!String.trim} for more details)
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 (*$= & ~printer:id
   "abc " (ltrim " abc ")
@@ -428,7 +428,7 @@ val lowercase_ascii : string -> string
 
 val equal_caseless : string -> string -> bool
 (** Comparison without respect to {b ascii} lowercase.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 (*$T
   equal_caseless "foo" "FoO"
@@ -540,7 +540,7 @@ end
 
 val split_on_char : char -> string -> string list
 (** Split the string along the given char
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 (*$= & ~printer:Q.Print.(list string)
   ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
@@ -555,7 +555,7 @@ val split_on_char : char -> string -> string list
 
 val split : by:string -> string -> string list
 (** Alias to {!Split.list_cpy}
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 (** {2 Utils} *)
 
@@ -635,7 +635,7 @@ module Sub : sig
   val get : t -> int -> char
   (** [get s i] gets the [i]-th element, or fails
       @raise Invalid_argument if the index is not within [0... length -1]
-      @since NEXT_RELEASE *)
+      @since 1.2 *)
 
   include S with type t := t
 

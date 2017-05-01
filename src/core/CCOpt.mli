@@ -14,7 +14,7 @@ val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
 
 val map_lazy : (unit -> 'b) -> ('a -> 'b) -> 'a t -> 'b
 (** [map_lazy default_fn f o] if [f o] if [o = Some x], [default_fn ()] otherwise 
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val is_some : _ t -> bool
 
@@ -100,11 +100,11 @@ val (<$>) : ('a -> 'b) -> 'a t -> 'b t
 
 val or_ : else_:('a t) -> 'a t -> 'a t
 (** [or_ ~else_ a] is [a] if [a] is [Some _], [else_] otherwise
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val or_lazy : else_:(unit -> 'a t) -> 'a t -> 'a t
 (** [or_lazy else_ a] is [a] if [a] is [Some _], [else_ ()] otherwise
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val (<+>) : 'a t -> 'a t -> 'a t
 (** [a <+> b] is [a] if [a] is [Some _], [b] otherwise *)
@@ -131,13 +131,13 @@ val of_list : 'a list -> 'a t
 (** Head of list, or [None] *)
 
 val to_result : 'e -> 'a t -> ('a, 'e) Result.result
-(** @since NEXT_RELEASE *)
+(** @since 1.2 *)
 
 val to_result_lazy : (unit -> 'e) -> 'a t -> ('a, 'e) Result.result
-(** @since NEXT_RELEASE *)
+(** @since 1.2 *)
 
 val of_result : ('a, _) Result.result -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 1.2 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option

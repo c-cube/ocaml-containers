@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     1.1
+Version:     1.2
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause

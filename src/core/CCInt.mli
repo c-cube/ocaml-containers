@@ -26,12 +26,12 @@ val pow : t -> t -> t
 val floor_div : t -> t -> t
 (** [floor_div a n] is integer division rounding towards negative infinity.
     It satisfies [a = m * floor_div a n + rem a n].
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val rem : t -> t -> t
 (** [rem a n] is the remainder of dividing [a] by [n], with the same
     sign as [n].
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
@@ -67,17 +67,17 @@ val range_by : step:t -> t -> t -> t sequence
     where the difference between successive elements is [step].
     use a negative [step] for a decreasing list.
     @raise Invalid_argument if [step=0]
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val range : t -> t -> t sequence
 (** [range i j] iterates on integers from [i] to [j] included . It works
     both for decreasing and increasing ranges
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val range' : t -> t -> t sequence
 (** Same as {!range} but the second bound is excluded.
     For instance [range' 0 5 = Sequence.of_list [0;1;2;3;4]]
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 (** {2 Infix Operators}
 
@@ -103,11 +103,11 @@ module Infix : sig
 
   val (--) : t -> t -> t sequence
   (** Alias to {!range}
-      @since NEXT_RELEASE *)
+      @since 1.2 *)
 
   val (--^) : t -> t -> t sequence
   (** Alias to {!range'}
-      @since NEXT_RELEASE *)
+      @since 1.2 *)
 end
 
 include module type of Infix

@@ -3,7 +3,7 @@
 
 (** {2 Imperative Bitvectors}
 
-    {b BREAKING CHANGES} since NEXT_RELEASE:
+    {b BREAKING CHANGES} since 1.2:
     size is now stored along with the bitvector. Some functions have
     a new signature.
 
@@ -30,13 +30,13 @@ val cardinal : t -> int
 val length : t -> int
 (** Size of underlying bitvector.
     This is not related to the underlying implementation.
-    Changed at NEXT_RELEASE
+    Changed at 1.2
 *)
 
 val capacity : t -> int
 (** The number of bits this bitvector can store without resizing.
 
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val resize : t -> int -> unit
 (** Resize the BV so that it has the specified length. This can grow or shrink
@@ -83,12 +83,12 @@ val of_list : int list -> t
 
 val first : t -> int option
 (** First set bit, or return None.
-    changed type at NEXT_RELEASE *)
+    changed type at 1.2 *)
 
 val first_exn : t -> int
  (** First set bit, or
      @raise Not_found if all bits are 0
-     @since NEXT_RELEASE *)
+     @since 1.2 *)
 
 val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]
@@ -97,7 +97,7 @@ val filter : t -> (int -> bool) -> unit
 val negate_self : t -> unit
 (** [negate_self t] flips all of the bits in [t].
 
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val negate : t -> t
 (** [negate t] returns a copy of [t] with all of the bits flipped. *)
@@ -121,12 +121,12 @@ val inter : t -> t -> t
 val diff_into : into:t -> t -> unit
 (** [diff ~into t] Modify [into] with only the bits set but not in [t].
 
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val diff : t -> t -> t
 (** [diff t1 t2] Return those bits found [t1] but not in [t2].
 
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val select : t -> 'a array -> 'a list
 (** [select arr bv] selects the elements of [arr] whose index

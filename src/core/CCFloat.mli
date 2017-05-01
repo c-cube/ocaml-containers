@@ -79,11 +79,11 @@ val to_string : t -> string
 val of_string_exn : string -> t
 (** Alias to {!float_of_string}
     @raise Failure in case of failure
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val of_string : string -> t
 (** Alias to {!float_of_string}.
-    @deprecated since NEXT_RELEASE, use {!of_string_exn} instead
+    @deprecated since 1.2, use {!of_string_exn} instead
     @raise Failure in case of failure *)
 
 val equal_precision : epsilon:t -> t -> t -> bool

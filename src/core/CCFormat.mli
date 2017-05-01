@@ -25,20 +25,20 @@ val float : float printer
 
 val newline : unit printer
 (** Force newline (see {!Format.pp_force_newline})
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val substring : (string * int * int) printer
 (** Print the substring [(s,i,len)], where [i] is the offset
     in [s] and [len] the number of bytes in the substring.
     @raise Invalid_argument if the triple [(s,i,len)] does not
     describe a proper substring.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val text : string printer
 (** Print string, but replacing spaces with breaks and newlines
     with {!newline}.
     See [pp_print_text] on recent versions of OCaml.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val char : char printer (** @since 0.14 *)
 val int32 : int32 printer (** @since 0.14 *)
@@ -47,7 +47,7 @@ val nativeint : nativeint printer (** @since 0.14 *)
 
 val flush : unit printer
 (** Alias to {!Format.pp_print_flush}.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val string_quoted : string printer
 (** Similar to {!CCString.print}.
@@ -204,7 +204,7 @@ val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 
     {[
       CCFormat.with_color_ksf "red" ~f:failwith "%a" CCFormat.Dump.(list int) [1;2;3];;
     ]}
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 (** {2 IO} *)
 
@@ -213,13 +213,13 @@ val to_string : 'a printer -> 'a -> string
 
 val of_chan : out_channel -> t
 (** Alias to {!Format.formatter_of_out_channel}
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val with_out_chan : out_channel -> (t -> 'a) -> 'a
 (** [with_out_chan oc f] turns [oc] into a formatter [fmt], and call [f fmt].
     Behaves like [f fmt] from then on, but whether the call to [f] fails
     or returns, [fmt] is flushed before the call terminates.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val stdout : t
 val stderr : t

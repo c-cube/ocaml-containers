@@ -3,7 +3,7 @@
 
 (** {1 Equality Combinators} *)
 
-(** @since NEXT_RELEASE *)
+(** @since 1.2 *)
 
 type 'a t = 'a -> 'a -> bool
 (** Equality function. Must be transitive, symmetric, and reflexive. *)

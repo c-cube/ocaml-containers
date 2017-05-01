@@ -168,7 +168,7 @@ val with_file_lock : kind:[`Read|`Write] -> string -> (unit -> 'a) -> 'a
     re-raised after the file is unlocked.
 
     @param kind specifies whether the lock is read-only or read-write.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 (** {2 Infix Functions} *)
 

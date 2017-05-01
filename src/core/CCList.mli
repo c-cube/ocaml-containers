@@ -59,7 +59,7 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
 val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc list
 (** [scan_left f acc l] returns the list [[acc; f acc x0; f (f acc x0) x1; …]]
     where [x0], [x1], etc. are the elements of [l]
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
 (** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
@@ -83,14 +83,14 @@ val init : int -> (int -> 'a) -> 'a t
 val combine : 'a list -> 'b list -> ('a * 'b) list
 (** Similar to {!List.combine} but tail-recursive.
     @raise Invalid_argument if the lists have distinct lengths.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
 (** Lazy version of {!combine}.
     Unlike {!combine}, it does not fail if the lists have different
     lengths;
     instead, the output has as many pairs as the smallest input list.
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
@@ -119,14 +119,14 @@ val cartesian_product : 'a t t -> 'a t t
           [[1;3;4;5;6];[2;3;4;5;6]];;
     ]}
     invariant: [cartesian_product l = map_product id l].
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val map_product_l : ('a -> 'b list) -> 'a list -> 'b list list
 (** [map_product_l f l] maps each element of [l] to a list of
     objects of type ['b] using [f].
     We obtain [[l1;l2;…;ln]] where [length l=n] and [li : 'b list].
     Then, it returns all the ways of picking exactly one element per [li].
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
@@ -201,7 +201,7 @@ val drop_while : ('a -> bool) -> 'a t -> 'a t
 
 val take_drop_while : ('a -> bool) -> 'a t -> 'a t * 'a t
 (** [take_drop_while p l = take_while p l, drop_while p l]
-    @since NEXT_RELEASE *)
+    @since 1.2 *)
 
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if

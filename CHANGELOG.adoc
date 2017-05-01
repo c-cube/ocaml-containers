@@ -1,5 +1,41 @@
 = Changelog
 
+== 1.2
+
+- make many modules extensions of stdlib (close #109)
+  the modules are: `String List ListLabels Array ArrayLabels Char Random`
+- add `CCString.{l,r}trim` (close #121)
+- add `CCInt.floor_div` and `CCInt.rem`
+- add test and bugfix for `CCBV`
+- add `CCList.take_drop_while` (close #120)
+- add `CCstring.equal_caseless` (close #112)
+- add alias `CCString.split` (close #115)
+- add `CCFormat.text` (close #111)
+- add `CCFormat.{newline,substring}`
+- add `CCList.combine_gen` (close #110)
+- add module `CCEqual`
+- add `CCResult.fold_ok` (closes #107)
+- add `CCFormat.with_color_ksf` for colored printing
+- add `CCInt.range{,',by}` for iterating on integer ranges
+- add `CCString.Sub.get`
+- add `CCResult.add_ctx{,f}` for replacing stack traces
+- add `CCString.split_on_char`
+- add `CCArray.{fold_map,scan_left}` (close #101)
+- add `CCList.scan_left`
+- add `CCList.{cartesian_product,map_product_l}`
+- add `CCUnix.with_file_lock` for locking whole files
+- add `CCFormat.of_chan`
+- add `CCFormat.flush`
+- Add `{map_lazy, or_, or_lazy, to_result, to_result_lazy, of_result}` to `CCOpt`
+
+- annotations in `CCEqual`, for optimization
+- Add a tail-recursive implementation of `List.combine`
+- fix too restrictive type in `CCResult`
+- build unix support by default
+- bugfix and test for `CCZipper.is_focused` (closes #102)
+- use boxes in `CCFormat.Dump` for tuples
+- update header, and use more `(==)` in `CCIntMap`
+
 == 1.1
 
 **bugfixes**:
