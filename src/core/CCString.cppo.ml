@@ -652,6 +652,21 @@ let exists p s =
   try iter (fun c -> if p c then raise MyExit) s; false
   with MyExit -> true
 
+(* notion of whitespace for trim *)
+let is_space_ = function
+  | ' ' | '\012' | '\n' | '\r' | '\t' -> true
+  | _ -> false
+
+let ltrim s =
+  let i = ref 0 in
+  while !i < length s && is_space_ (unsafe_get s !i) do incr i done;
+  if !i > 0 then sub s !i (length s - !i) else s
+
+let rtrim s =
+  let i = ref (length s-1) in
+  while !i >= 0 && is_space_ (unsafe_get s !i) do decr i done;
+  if !i < length s-1 then sub s 0 (!i+1) else s
+
 let map2 f s1 s2 =
   if length s1 <> length s2 then invalid_arg "CCString.map2";
   init (String.length s1) (fun i -> f s1.[i] s2.[i])

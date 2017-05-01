@@ -351,6 +351,32 @@ val exists : (char -> bool) -> string -> bool
 
 include S with type t := string
 
+val ltrim : t -> t
+(** trim space on the left (see {!String.trim} for more details)
+    @since NEXT_RELEASE *)
+
+val rtrim : t -> t
+(** trim space on the right (see {!String.trim} for more details)
+    @since NEXT_RELEASE *)
+
+(*$= & ~printer:id
+  "abc " (ltrim " abc ")
+  " abc" (rtrim " abc ")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    String.trim s = (s |> ltrim |> rtrim))
+  Q.(printable_string) (fun s -> ltrim s = ltrim (ltrim s))
+  Q.(printable_string) (fun s -> rtrim s = rtrim (rtrim s))
+  Q.(printable_string) (fun s -> \
+    let s' = ltrim s in \
+    if s'="" then Q.assume_fail() else s'.[0] <> ' ')
+  Q.(printable_string) (fun s -> \
+    let s' = rtrim s in \
+    if s'="" then Q.assume_fail() else s'.[String.length s'-1] <> ' ')
+  *)
+
 (** {2 Operations on 2 strings} *)
 
 val map2 : (char -> char -> char) -> string -> string -> string
