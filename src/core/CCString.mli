@@ -48,6 +48,8 @@ end
 
 (** {2 Strings} *)
 
+include module type of String
+
 val equal : string -> string -> bool
 
 val compare : string -> string -> int
@@ -112,8 +114,7 @@ val of_array : char array -> string
 val to_array : string -> char array
 
 val find : ?start:int -> sub:string -> string -> int
-(** Find [sub] in string, returns its first index or [-1].
-    Should only be used with very small [sub] *)
+(** Find [sub] in string, returns its first index or [-1]. *)
 
 (*$= & ~printer:string_of_int
   1 (find ~sub:"bc" "abcd")
@@ -350,6 +351,32 @@ val exists : (char -> bool) -> string -> bool
 
 include S with type t := string
 
+val ltrim : t -> t
+(** trim space on the left (see {!String.trim} for more details)
+    @since 1.2 *)
+
+val rtrim : t -> t
+(** trim space on the right (see {!String.trim} for more details)
+    @since 1.2 *)
+
+(*$= & ~printer:id
+  "abc " (ltrim " abc ")
+  " abc" (rtrim " abc ")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    String.trim s = (s |> ltrim |> rtrim))
+  Q.(printable_string) (fun s -> ltrim s = ltrim (ltrim s))
+  Q.(printable_string) (fun s -> rtrim s = rtrim (rtrim s))
+  Q.(printable_string) (fun s -> \
+    let s' = ltrim s in \
+    if s'="" then Q.assume_fail() else s'.[0] <> ' ')
+  Q.(printable_string) (fun s -> \
+    let s' = rtrim s in \
+    if s'="" then Q.assume_fail() else s'.[String.length s'-1] <> ' ')
+  *)
+
 (** {2 Operations on 2 strings} *)
 
 val map2 : (char -> char -> char) -> string -> string -> string
@@ -398,6 +425,22 @@ val uppercase_ascii : string -> string
 
 val lowercase_ascii : string -> string
 (** See {!String}. @since 0.18 *)
+
+val equal_caseless : string -> string -> bool
+(** Comparison without respect to {b ascii} lowercase.
+    @since 1.2 *)
+
+(*$T
+  equal_caseless "foo" "FoO"
+  equal_caseless "helLo" "HEllO"
+*)
+
+(*$Q
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    equal_caseless s1 s2 = (lowercase_ascii s1=lowercase_ascii s2))
+  Q.(printable_string) (fun s -> equal_caseless s s)
+  Q.(printable_string) (fun s -> equal_caseless (uppercase_ascii s) s)
+*)
 
 (** {2 Finding}
 
@@ -495,6 +538,25 @@ module Split : sig
   *)
 end
 
+val split_on_char : char -> string -> string list
+(** Split the string along the given char
+    @since 1.2 *)
+
+(*$= & ~printer:Q.Print.(list string)
+  ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
+    (split_on_char ' ' "a few words from our sponsors")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    let s = split_on_char ' ' s |> String.concat " " in \
+    s = (split_on_char ' ' s |> String.concat " "))
+*)
+
+val split : by:string -> string -> string list
+(** Alias to {!Split.list_cpy}
+    @since 1.2 *)
+
 (** {2 Utils} *)
 
 val compare_versions : string -> string -> int
@@ -570,6 +632,11 @@ module Sub : sig
   val sub : t -> int -> int -> t
   (** Sub-slice *)
 
+  val get : t -> int -> char
+  (** [get s i] gets the [i]-th element, or fails
+      @raise Invalid_argument if the index is not within [0... length -1]
+      @since 1.2 *)
+
   include S with type t := t
 
   (*$T
@@ -582,5 +649,23 @@ module Sub : sig
   (*$T
     let sub = Sub.make " abc " 1 ~len:3 in \
     "\"abc\"" = (CCFormat.to_string Sub.print sub)
+  *)
+
+  (*$= & ~printer:(String.make 1)
+    'b' Sub.(get (make "abc" 1 ~len:2) 0)
+    'c' Sub.(get (make "abc" 1 ~len:2) 1)
+    *)
+
+  (*$QR
+    Q.(printable_string_of_size Gen.(3--10)) (fun s ->
+      let open Sequence.Infix in
+      begin
+        (0 -- (length s-2)
+          >|= fun i -> i, Sub.make s i ~len:(length s-i))
+        >>= fun (i,sub) ->
+        (0 -- (Sub.length sub-1) >|= fun j -> i,j,sub)
+      end
+      |> Sequence.for_all
+        (fun (i,j,sub) -> Sub.get sub j = s.[i+j]))
   *)
 end

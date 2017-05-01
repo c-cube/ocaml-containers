@@ -37,8 +37,86 @@ let pow a b =
   pow 0 1 = 0
 *)
 
+let floor_div a n =
+  if a < 0 && n >= 0 then
+    (a + 1) / n - 1
+  else if a > 0 && n < 0 then
+    (a - 1) / n - 1
+  else
+    a / n
+
+(*$T
+  (floor_div 3 5 = 0)
+  (floor_div 5 5 = 1)
+  (floor_div 20 5 = 4)
+  (floor_div 12 5 = 2)
+  (floor_div 0 5 = 0)
+  (floor_div (-1) 5 = -1)
+  (floor_div (-5) 5 = -1)
+  (floor_div (-12) 5 = -3)
+
+  (floor_div 0 (-5) = 0)
+  (floor_div 3 (-5) = -1)
+  (floor_div 5 (-5) = -1)
+  (floor_div 9 (-5) = -2)
+  (floor_div 20 (-5) = -4)
+  (floor_div (-2) (-5) = 0)
+  (floor_div (-8) (-5) = 1)
+  (floor_div (-35) (-5) = 7)
+
+  try ignore (floor_div 12 0); false with Division_by_zero -> true
+  try ignore (floor_div (-12) 0); false with Division_by_zero -> true
+*)
+
+(*$Q
+  (Q.pair Q.small_signed_int Q.pos_int) \
+      (fun (n, m) -> floor_div n m = int_of_float @@ floor (float n /. float m))
+  (Q.pair Q.small_signed_int Q.pos_int) \
+      (fun (n, m) -> floor_div n (-m) = int_of_float @@ floor (float n /. float (-m)))
+*)
+
+let rem a n =
+  let y = a mod n in
+  if (y < 0) <> (n < 0) && y <> 0 then
+    y + n
+  else
+    y
+
+(*$T
+  (rem 3 5 = 3)
+  (rem 5 5 = 0)
+  (rem 9 5 = 4)
+  (rem (-1) 5 = 4)
+  (rem (-5) 5 = 0)
+  (rem (-20) 5 = 0)
+  (rem (-9) 5 = 1)
+  (rem 0 5 = 0)
+
+  (rem 0 (-5) = 0)
+  (rem 3 (-5) = -2)
+  (rem 5 (-5) = 0)
+  (rem 9 (-5) = -1)
+  (rem (-2) (-5) = -2)
+  (rem (-8) (-5) = -3)
+  (rem (-35) (-5) = 0)
+
+  try ignore (rem 12 0); false with Division_by_zero -> true
+  try ignore (rem (-12) 0); false with Division_by_zero -> true
+*)
+
+(*$Q
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> let y = rem n m in y >= 0 && y < m)
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> let y = rem n (-m) in y > (-m) && y <= 0)
+*)
+
+(*$Q
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> n = m * floor_div n m + rem n m)
+  (Q.pair Q.int Q.pos_int) (fun (n, m) -> n = (-m) * floor_div n (-m) + rem n (-m))
+*)
+
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
+type 'a sequence = ('a -> unit) -> unit
 
 let random n st = Random.State.int st n
 let random_small = random 100
@@ -96,6 +174,76 @@ let to_string_binary n =
   Q.int (fun n -> n = int_of_string (to_string_binary n))
 *)
 
+let range_by ~step i j yield =
+  let rec range i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      range (i+step) j yield
+    )
+  in
+  if step = 0 then
+    raise (Invalid_argument "CCList.range_by")
+  else if (if step > 0 then i>j else i<j) then ()
+  else range i ((j-i)/step*step + i) yield
+
+(* note: the last test checks that no error occurs due to overflows. *)
+(*$= & ~printer:Q.Print.(list int)
+  [0]     (range_by ~step:1   0 0     |> Sequence.to_list)
+  []      (range_by ~step:1   5 0     |> Sequence.to_list)
+  []      (range_by ~step:2   1 0     |> Sequence.to_list)
+  [0;2;4] (range_by ~step:2   0 4     |> Sequence.to_list)
+  [0;2;4] (range_by ~step:2   0 5     |> Sequence.to_list)
+  [0]     (range_by ~step:~-1 0 0     |> Sequence.to_list)
+  []      (range_by ~step:~-1 0 5     |> Sequence.to_list)
+  []      (range_by ~step:~-2 0 1     |> Sequence.to_list)
+  [5;3;1] (range_by ~step:~-2 5 1     |> Sequence.to_list)
+  [5;3;1] (range_by ~step:~-2 5 0     |> Sequence.to_list)
+  [0]     (range_by ~step:max_int 0 2 |> Sequence.to_list)
+*)
+
+(*$Q
+  Q.(pair small_int small_int) (fun (i,j) -> \
+    let i = min i j and j = max i j in \
+    CCList.equal CCInt.equal \
+      (CCInt.range_by ~step:1 i j |> Sequence.to_list) \
+      (CCInt.range i j |> Sequence.to_list) )
+*)
+
+let range i j yield =
+  let rec up i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      up (i+1) j yield
+    )
+  and down i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      down (i-1) j yield
+    )
+  in
+  if i<=j then up i j yield else down i j yield
+
+(*$= & ~printer:Q.Print.(list int)
+  [0;1;2;3;4;5] (range 0 5 |> Sequence.to_list)
+  [0]           (range 0 0 |> Sequence.to_list)
+  [5;4;3;2]     (range 5 2 |> Sequence.to_list)
+*)
+
+let range' i j yield =
+  if i<j then range i (j-1) yield
+  else if i=j then ()
+  else range i (j+1) yield
+
+(*$= & ~printer:Q.Print.(list int)
+  []          (range' 0 0 |> Sequence.to_list)
+  [0;1;2;3;4] (range' 0 5 |> Sequence.to_list)
+  [5;4;3]     (range' 5 2 |> Sequence.to_list)
+*)
+
+
 module Infix = struct
   let (=) = Pervasives.(=)
   let (<>) = Pervasives.(<>)
@@ -103,6 +251,8 @@ module Infix = struct
   let (>) = Pervasives.(>)
   let (<=) = Pervasives.(<=)
   let (>=) = Pervasives.(>=)
+  let (--) = range
+  let (--^) = range'
 end
 include Infix
 let min = min

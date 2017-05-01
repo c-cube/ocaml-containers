@@ -24,12 +24,36 @@ let fail_printf format =
     (fun buf -> fail (Buffer.contents buf))
     buf format
 
+(*$T
+  (Error "ohno 42") = (fail_printf "ohno %d" 42)
+*)
+
 let fail_fprintf format =
   let buf = Buffer.create 64 in
   let out = Format.formatter_of_buffer buf in
   Format.kfprintf
     (fun out -> Format.pp_print_flush out (); fail (Buffer.contents buf))
     out format
+
+(*$T
+  (Error "ohno 42") = (fail_fprintf "ohno %d" 42)
+*)
+
+let add_ctx msg x = match x with
+  | Error e -> Error (e ^ "\ncontext:" ^ msg)
+  | Ok x -> Ok x
+
+let add_ctxf msg =
+  let buf = Buffer.create 64 in
+  let out = Format.formatter_of_buffer buf in
+  Format.kfprintf
+    (fun out e -> Format.pp_print_flush out (); add_ctx (Buffer.contents buf) e)
+    out msg
+
+(*$=
+   (Error "error\ncontext:message(number 42, foo: true)") \
+     (add_ctxf "message(number %d, foo: %B)" 42 true (Error "error"))
+*)
 
 let of_exn e =
   let msg = Printexc.to_string e in
@@ -97,6 +121,15 @@ let compare ?(err=Pervasives.compare) cmp a b = match a, b with
 let fold ~ok ~error x = match x with
   | Ok x -> ok x
   | Error s -> error s
+
+let fold_ok f acc r = match r with
+  | Ok x -> f acc x
+  | Error _ -> acc
+
+(*$=
+  42 (fold_ok (+) 2 (Ok 40))
+  40 (fold_ok (+) 40 (Error "foo"))
+  *)
 
 let is_ok = function
   | Ok _ -> true

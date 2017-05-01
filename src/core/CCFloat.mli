@@ -68,11 +68,23 @@ val sign_exn : t -> int
     @since 0.7 *)
 
 val to_int : t -> int
+(** Alias to {!int_of_float}.
+    Unspecified if outside of the range of integers. *)
+
 val of_int : int -> t
+(** Alias to {!float_of_int} *)
 
 val to_string : t -> string
-val of_string : string -> t
 
+val of_string_exn : string -> t
+(** Alias to {!float_of_string}
+    @raise Failure in case of failure
+    @since 1.2 *)
+
+val of_string : string -> t
+(** Alias to {!float_of_string}.
+    @deprecated since 1.2, use {!of_string_exn} instead
+    @raise Failure in case of failure *)
 
 val equal_precision : epsilon:t -> t -> t -> bool
 (** Equality with allowed error up to a non negative epsilon value *)

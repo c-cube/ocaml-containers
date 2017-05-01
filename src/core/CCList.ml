@@ -9,6 +9,8 @@
 
 type 'a t = 'a list
 
+include List
+
 let empty = []
 
 let is_empty = function
@@ -152,6 +154,26 @@ let fold_map f acc l =
     fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
 *)
 
+let scan_left f acc l =
+  let rec aux f acc l_acc l = match l with
+    | [] -> List.rev l_acc
+    | x :: tail ->
+      let acc = f acc x in
+      let l_acc = acc :: l_acc in
+      aux f acc l_acc tail
+  in
+  aux f acc [acc] l
+
+(*$= & ~printer:Q.Print.(list int)
+  [0;1;3;6] (scan_left (+) 0 [1;2;3])
+  [0] (scan_left (+) 0 [])
+*)
+
+(*$Q
+  Q.(list int) (fun l -> \
+    List.length l + 1 = List.length (scan_left (+) 0 l))
+*)
+
 let fold_map2 f acc l1 l2 =
   let rec aux f acc map_acc l1 l2 = match l1, l2 with
     | [], [] -> acc, List.rev map_acc
@@ -277,8 +299,8 @@ let fold_product f acc l1 l2 =
     (fun acc x1 ->
        List.fold_left
          (fun acc x2 -> f acc x1 x2)
-         acc l2
-    ) acc l1
+         acc l2)
+    acc l1
 
 let diagonal l =
   let rec gen acc l = match l with
@@ -319,6 +341,52 @@ let partition_map f l =
   assert_equal [1;3] l2
 *)
 
+let combine l1 l2 =
+  let rec direct i l1 l2 = match l1, l2 with
+    | ([], []) -> []
+    | _ when i=0 -> safe l1 l2 []
+    | (x1::l1', x2::l2') -> (x1, x2) :: direct (i-1) l1' l2'
+    | (_, _) -> invalid_arg "CCList.combine"
+  and safe l1 l2 acc = match l1, l2 with
+    | ([], []) -> List.rev acc
+    | (x1::l1', x2::l2') -> safe l1' l2' @@ (x1, x2) :: acc
+    | (_, _) -> invalid_arg "CCList.combine"
+  in
+  direct direct_depth_default_ l1 l2
+
+(*$T
+  try ignore (combine [1] []); false with Invalid_argument _ -> true
+  try ignore (combine (1--1001) (1--1002)); false with Invalid_argument _ -> true
+  combine [1;2;3] [3;2;1] = List.combine [1;2;3] [3;2;1]
+  combine (1 -- 100_000) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
+*)
+
+(*$Q
+  Q.(let p = small_list int in pair p p)(fun (l1,l2) -> \
+    if List.length l1=List.length l2 \
+    then CCList.combine l1 l2 = List.combine l1 l2 \
+    else Q.assume_fail() )
+  *)
+
+let combine_gen l1 l2 =
+  let l1 = ref l1 in
+  let l2 = ref l2 in
+  fun () -> match !l1, !l2 with
+    | [], _
+    | _, [] -> None
+    | x1 :: tail1, x2 :: tail2 ->
+      l1 := tail1;
+      l2 := tail2;
+      Some (x1,x2)
+
+(*$Q
+  Q.(let p = small_list int in pair p p)(fun (l1,l2) -> \
+    let n = min (List.length l1) (List.length l2) in \
+    let res1 = combine (take n l1) (take n l2) in \
+    let res2 = combine_gen l1 l2 |> of_gen in \
+    res1 = res2)
+  *)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l
@@ -328,6 +396,44 @@ let (<$>) = map
 let pure = return
 
 let (<*>) funs l = product (fun f x -> f x) funs l
+
+let cartesian_product l =
+  (* [left]: elements picked so far
+     [right]: sets to pick elements from
+     [acc]: accumulator for the result, to pass to continuation
+     [k]: continuation *)
+  let rec prod_rec left right k acc = match right with
+    | [] -> k acc (List.rev left)
+    | l1 :: tail ->
+      List.fold_left
+        (fun acc x -> prod_rec (x::left) tail k acc)
+        acc l1
+  in
+  prod_rec [] l (fun acc l' -> l' :: acc) []
+
+(*$inject
+  let cmp_lii_unord l1 l2 : bool =
+    List.sort CCOrd.compare l1 = List.sort CCOrd.compare l2
+*)
+
+(*$= & ~printer:Q.Print.(list (list int)) ~cmp:cmp_lii_unord
+  [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]] \
+    (cartesian_product [[1;2];[3];[4;5;6]])
+  [] (cartesian_product [[1;2];[];[4;5;6]])
+  [[]] (cartesian_product [])
+  [[1;3;4;5;6];[2;3;4;5;6]] \
+    (cartesian_product [[1;2];[3];[4];[5];[6]])
+*)
+
+(* cartesian product of lists of lists *)
+let map_product_l f l =
+  let l = List.map f l in
+  cartesian_product l
+
+(*$Q
+  Q.(list_of_size Gen.(1--4) (list_of_size Gen.(0--4) small_int)) (fun l-> \
+    cmp_lii_unord (cartesian_product l) (map_product_l CCFun.id l))
+*)
 
 let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
   let rec recurse cmp acc l1 l2 = match l1,l2 with
@@ -594,6 +700,29 @@ let rec drop_while p l = match l with
 (*$Q
   Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
     take_while f l @ drop_while f l = l)
+*)
+
+let take_drop_while p l =
+  let rec direct i p l = match l with
+    | [] -> [], []
+    | _ when i=0 -> safe p [] l
+    | x :: tail ->
+      if p x
+      then
+        let l1, l2 = direct (i-1) p tail in
+        x :: l1, l2
+      else [], l
+  and safe p acc l = match l with
+    | [] -> List.rev acc, []
+    | x :: tail ->
+      if p x then safe p (x::acc) tail else List.rev acc, l
+  in
+  direct direct_depth_default_ p l
+
+(*$Q
+  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
+    let l1,l2 = take_drop_while f l in \
+    (l1 = take_while f l) && (l2 = drop_while f l))
 *)
 
 let last n l =

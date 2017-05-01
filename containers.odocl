@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 00cb4b9b72c4140588c3e040b056e79e)
+# DO NOT EDIT (digest: 97e963a89adef885748c84195b76d95c)
 src/core/CCVector
 src/core/CCHeap
 src/core/CCList
@@ -27,6 +27,7 @@ src/core/CCParse
 src/core/CCArray_slice
 src/core/CCListLabels
 src/core/CCArrayLabels
+src/core/CCEqual
 src/core/Containers
 src/iter/CCKTree
 src/iter/CCKList

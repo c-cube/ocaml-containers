@@ -306,7 +306,7 @@ let sort_ranking cmp a =
 *)
 
 (*$Q
-  Q.(array printable_string) (fun a -> \
+  Q.(array_of_size Gen.(0--50) printable_string) (fun a -> \
   Array.length a > 10 ==> ( Array.length a > 10 && \
   let s = make a 5 ~len:5 in \
   let b = sort_indices String.compare s in \
@@ -325,7 +325,7 @@ let sort_indices cmp a = _sort_indices cmp a.arr a.i a.j
 *)
 
 (*$Q
-  Q.(array printable_string) (fun a -> \
+  Q.(array_of_size Gen.(0--60) printable_string) (fun a -> \
   Array.length a > 10 ==> ( Array.length a > 10 && \
   let s = make a 5 ~len:5 in \
   let b = sort_ranking String.compare s in \

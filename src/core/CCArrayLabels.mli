@@ -13,6 +13,8 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
+include module type of ArrayLabels
+
 type 'a t = 'a array
 
 val empty : 'a t

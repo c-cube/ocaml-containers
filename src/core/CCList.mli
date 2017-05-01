@@ -3,6 +3,14 @@
 
 (** {1 complements to list} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a printer = Format.formatter -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
+include module type of List
+
 type 'a t = 'a list
 
 val empty : 'a t
@@ -48,6 +56,11 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
     list to another list.
     @since 0.14 *)
 
+val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc list
+(** [scan_left f acc l] returns the list [[acc; f acc x0; f (f acc x0) x1; …]]
+    where [x0], [x1], etc. are the elements of [l]
+    @since 1.2 *)
+
 val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
 (** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length
@@ -67,6 +80,18 @@ val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
     @since 0.6 *)
 
+val combine : 'a list -> 'b list -> ('a * 'b) list
+(** Similar to {!List.combine} but tail-recursive.
+    @raise Invalid_argument if the lists have distinct lengths.
+    @since 1.2 *)
+
+val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
+(** Lazy version of {!combine}.
+    Unlike {!combine}, it does not fail if the lists have different
+    lengths;
+    instead, the output has as many pairs as the smallest input list.
+    @since 1.2 *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
@@ -82,6 +107,26 @@ val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 
 val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 (** Fold on the cartesian product *)
+
+val cartesian_product : 'a t t -> 'a t t
+(**
+    For example:
+    {[
+      # cartesian_product [[1;2];[3];[4;5;6]] =
+          [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
+      # cartesian_product [[1;2];[];[4;5;6]] = [];;
+      # cartesian_product [[1;2];[3];[4];[5];[6]] =
+          [[1;3;4;5;6];[2;3;4;5;6]];;
+    ]}
+    invariant: [cartesian_product l = map_product id l].
+    @since 1.2 *)
+
+val map_product_l : ('a -> 'b list) -> 'a list -> 'b list list
+(** [map_product_l f l] maps each element of [l] to a list of
+    objects of type ['b] using [f].
+    We obtain [[l1;l2;…;ln]] where [length l=n] and [li : 'b list].
+    Then, it returns all the ways of picking exactly one element per [li].
+    @since 1.2 *)
 
 val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
@@ -153,6 +198,10 @@ val take_while : ('a -> bool) -> 'a t -> 'a t
 
 val drop_while : ('a -> bool) -> 'a t -> 'a t
 (** @since 0.13 *)
+
+val take_drop_while : ('a -> bool) -> 'a t -> 'a t * 'a t
+(** [take_drop_while p l = take_while p l, drop_while p l]
+    @since 1.2 *)
 
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
@@ -407,12 +456,6 @@ module Traverse(M : MONAD) : sig
 end
 
 (** {2 Conversions} *)
-
-type 'a sequence = ('a -> unit) -> unit
-type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Format.formatter -> 'a -> unit
-type 'a random_gen = Random.State.t -> 'a
 
 val random : 'a random_gen -> 'a t random_gen
 val random_non_empty : 'a random_gen -> 'a t random_gen

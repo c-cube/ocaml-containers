@@ -37,6 +37,47 @@ let int32 fmt n = Format.fprintf fmt "%ld" n
 let int64 fmt n = Format.fprintf fmt "%Ld" n
 let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
+let flush = Format.pp_print_flush
+
+let newline = Format.pp_force_newline
+
+let substring out (s,i,len): unit =
+  string out (String.sub s i len)
+
+let text out (s:string): unit =
+  let len = String.length s in
+  let i = ref 0 in
+  let search_ c =
+    try Some (String.index_from s !i c) with Not_found -> None
+  in
+  while !i < len do
+    let j_newline = search_ '\n' in
+    let j_space = search_ ' ' in
+    let on_newline j =
+      substring out (s, !i, j - !i);
+      newline out ();
+      i := j + 1
+    and on_space j =
+      substring out (s, !i, j - !i);
+      Format.pp_print_space out ();
+      i := j + 1
+    in
+    begin match j_newline, j_space with
+      | None, None ->
+        (* done *)
+        substring out (s, !i, len - !i);
+        i := len
+      | Some j, None -> on_newline j
+      | None, Some j -> on_space j
+      | Some j1, Some j2 ->
+        if j1<j2 then on_newline j1 else on_space j2
+    end
+  done
+
+(*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
+  "a\nb\nc" (sprintf_no_color "@[<v>%a@]%!" text "a b c")
+  "a b\nc" (sprintf_no_color "@[<h>%a@]%!" text "a b\nc")
+  *)
 
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
@@ -133,6 +174,18 @@ let fprintf = Format.fprintf
 
 let stdout = Format.std_formatter
 let stderr = Format.err_formatter
+
+let of_chan = Format.formatter_of_out_channel
+
+let with_out_chan oc f =
+  let fmt = of_chan oc in
+  try
+    let x = f fmt in
+    Format.pp_print_flush fmt ();
+    x
+  with e ->
+    Format.pp_print_flush fmt ();
+    raise e
 
 let tee a b =
   let fa = Format.pp_get_formatter_out_functions a () in
@@ -311,7 +364,7 @@ let sprintf_ c format =
     fmt
     format
 
-let with_color_sf s fmt =
+let with_color_ksf ~f s fmt =
   let buf = Buffer.create 64 in
   let out = Format.formatter_of_buffer buf in
   if !color_enabled then set_color_tag_handling out;
@@ -320,8 +373,10 @@ let with_color_sf s fmt =
     (fun out ->
        Format.pp_close_tag out ();
        Format.pp_print_flush out ();
-       Buffer.contents buf)
+       f (Buffer.contents buf))
     out fmt
+
+let with_color_sf s fmt = with_color_ksf ~f:(fun s->s) s fmt
 
 let sprintf fmt = sprintf_ true fmt
 let sprintf_no_color fmt = sprintf_ false fmt
@@ -371,12 +426,12 @@ module Dump = struct
   let option pp out x = match x with
     | None -> Format.pp_print_string out "None"
     | Some x -> Format.fprintf out "Some %a" pp x
-  let pair p1 p2 = within "(" ")" (pair p1 p2)
-  let triple p1 p2 p3 = within "(" ")" (triple p1 p2 p3)
-  let quad p1 p2 p3 p4 = within "(" ")" (quad p1 p2 p3 p4)
+  let pair p1 p2 = within "(" ")" (hovbox (pair p1 p2))
+  let triple p1 p2 p3 = within "(" ")" (hovbox (triple p1 p2 p3))
+  let quad p1 p2 p3 p4 = within "(" ")" (hovbox (quad p1 p2 p3 p4))
   let result' pok perror out = function
-    | Result.Ok x -> Format.fprintf out "(Ok %a)" pok x
-    | Result.Error e -> Format.fprintf out "(Error %a)" perror e
+    | Result.Ok x -> Format.fprintf out "(@[Ok %a@])" pok x
+    | Result.Error e -> Format.fprintf out "(@[Error %a@])" perror e
   let result pok = result' pok string
   let to_string = to_string
 end

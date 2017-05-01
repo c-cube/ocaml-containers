@@ -161,6 +161,15 @@ val establish_server : Unix.sockaddr -> f:(in_channel -> out_channel -> _) -> un
     The callback should raise {!ExitServer} to stop the loop.
     @since 0.16 *)
 
+val with_file_lock : kind:[`Read|`Write] -> string -> (unit -> 'a) -> 'a
+(** [with_file_lock ~kind filename f] puts a lock on the offset 0
+    of the file named [filename], calls [f] and returns its result after
+    the file is unlocked. If [f ()] raises an exception the exception is
+    re-raised after the file is unlocked.
+
+    @param kind specifies whether the lock is read-only or read-write.
+    @since 1.2 *)
+
 (** {2 Infix Functions} *)
 
 module Infix : sig

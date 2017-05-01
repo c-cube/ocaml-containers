@@ -34,13 +34,27 @@ val of_exn_trace : exn -> ('a, string) t
     Remember to call [Printexc.record_backtrace true] and compile with the
     debug flag for this to work. *)
 
-val fail_printf : ('a, Buffer.t, unit, ('a, string) t) format4 -> 'a
+val fail_printf : ('a, Buffer.t, unit, ('b, string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
     and then returns [Error msg] *)
 
-val fail_fprintf : ('a, Format.formatter, unit, ('a, string) t) format4 -> 'a
+val fail_fprintf : ('a, Format.formatter, unit, ('b, string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
     and then returns [Error msg] *)
+
+val add_ctx : string -> ('a, string) t -> ('a, string) t
+(** [add_ctx msg] leaves [Ok x] untouched, but transforms
+    [Error s] into [Error s'] where [s'] contains the additional
+    context given by [msg]
+    @since 1.2 *)
+
+val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) format4 -> 'a
+(** [add_ctxf format_message] is similar to {!add_ctx} but with
+    {!Format} for printing the message (eagerly).
+    Example: {[
+      add_ctxf "message(number %d, foo: %B)" 42 true (Error "error)"
+    ]}
+    @since 1.2 *)
 
 val map : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
 (** Map on success *)
@@ -87,9 +101,13 @@ val fold : ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) t -> 'b
 (** [fold ~ok ~error e] opens [e] and, if [e = Ok x], returns
     [ok x], otherwise [e = Error s] and it returns [error s]. *)
 
-val is_ok : ('a, 'err) t -> bool
-(** Return true if Ok/
+val fold_ok : ('a -> 'b -> 'a) -> 'a -> ('b, _) t -> 'a
+(** [fold_ok f acc r] will compute [f acc x] if [r=Ok x],
+    and return [acc] otherwise, as if the result were a mere option.
+    @since 1.2 *)
 
+val is_ok : ('a, 'err) t -> bool
+(** Return true if Ok
     @since 1.0 *)
 
 val is_error : ('a, 'err) t -> bool

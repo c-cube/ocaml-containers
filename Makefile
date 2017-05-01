@@ -123,7 +123,7 @@ update_next_tag:
 
 devel:
 	./configure --enable-bench --enable-tests --enable-unix \
-		--enable-bigarray --enable-thread --enable-advanced
+		--enable-thread
 	make all
 
 watch:

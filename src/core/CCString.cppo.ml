@@ -7,6 +7,8 @@ type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
+include String
+
 module type S = sig
   type t
 
@@ -388,6 +390,11 @@ module Split = struct
   let right ~by s = try Some (right_exn ~by s) with Not_found -> None
 end
 
+let split_on_char c s: _ list =
+  Split.list_cpy ~by:(String.make 1 c) s
+
+let split = Split.list_cpy
+
 let compare_versions a b =
   let of_int s = try Some (int_of_string s) with _ -> None in
   let rec cmp_rec a b = match a(), b() with
@@ -645,6 +652,21 @@ let exists p s =
   try iter (fun c -> if p c then raise MyExit) s; false
   with MyExit -> true
 
+(* notion of whitespace for trim *)
+let is_space_ = function
+  | ' ' | '\012' | '\n' | '\r' | '\t' -> true
+  | _ -> false
+
+let ltrim s =
+  let i = ref 0 in
+  while !i < length s && is_space_ (unsafe_get s !i) do incr i done;
+  if !i > 0 then sub s !i (length s - !i) else s
+
+let rtrim s =
+  let i = ref (length s-1) in
+  while !i >= 0 && is_space_ (unsafe_get s !i) do decr i done;
+  if !i < length s-1 then sub s 0 (!i+1) else s
+
 let map2 f s1 s2 =
   if length s1 <> length s2 then invalid_arg "CCString.map2";
   init (String.length s1) (fun i -> f s1.[i] s2.[i])
@@ -705,7 +727,16 @@ let lowercase_ascii = map CCChar.lowercase_ascii
 
     #endif
 
-
+let equal_caseless s1 s2: bool =
+  let char_lower c =
+    if c >= 'A' && c <= 'Z'
+    then Char.unsafe_chr (Char. code c + 32)
+    else c
+  in
+  String.length s1 = String.length s2 &&
+  for_all2
+    (fun c1 c2 -> char_lower c1 = char_lower c2)
+    s1 s2
 
 let pp buf s =
   Buffer.add_char buf '"';
@@ -733,6 +764,10 @@ module Sub = struct
     (s, i+i',len')
 
   let length (_,_,l) = l
+
+  let get (s,i,l) j =
+    if j<0 || j>= l then invalid_arg "CCString.Sub.get";
+    String.unsafe_get s (i+j)
 
   let blit (a1,i1,len1) o1 a2 o2 len =
     if o1+len>len1 then invalid_arg "CCString.Sub.blit";

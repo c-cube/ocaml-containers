@@ -15,8 +15,12 @@ let to_list (l,r) = List.rev_append l r
 
 let to_rev_list (l,r) = List.rev_append r l
 
+(*$inject
+  let zip_gen = Q.(pair (small_list int)(small_list int))
+  *)
+
 (*$Q
-  Q.(pair (list small_int)(list small_int)) (fun z -> \
+  zip_gen (fun z -> \
     to_list z = List.rev (to_rev_list z))
 *)
 
@@ -51,12 +55,17 @@ let modify f z = match z with
     end
 
 let is_focused = function
-  | _, [] -> true
-  | _ -> false
+  | _, _::_ -> true
+  | _, [] -> false
 
 let focused = function
   | _, x::_ -> Some x
   | _, [] -> None
+
+(*$Q
+  zip_gen (fun g -> \
+    is_focused g = (focused g |> CCOpt.is_some))
+*)
 
 let focused_exn = function
   | _, x::_ -> x

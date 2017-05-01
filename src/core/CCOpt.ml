@@ -13,6 +13,10 @@ let map_or ~default f = function
   | None -> default
   | Some x -> f x
 
+let map_lazy default_fn f = function
+  | None -> default_fn ()
+  | Some x -> f x
+
 let is_some = function
   | None -> false
   | Some _ -> true
@@ -54,9 +58,15 @@ let (<*>) f x = match f, x with
 
 let (<$>) = map
 
-let (<+>) a b = match a with
-  | None -> b
+let or_ ~else_ a = match a with
+  | None -> else_
   | Some _ -> a
+
+let or_lazy ~else_ a = match a with
+  | None -> else_ ()
+  | Some _ -> a
+
+let (<+>) a b = or_ ~else_:b a
 
 let choice l = List.fold_left (<+>) None l
 
@@ -136,6 +146,18 @@ let to_list o = match o with
 let of_list = function
   | x::_ -> Some x
   | [] -> None
+
+let to_result err = function
+  | None -> Result.Error err
+  | Some x -> Result.Ok x
+
+let to_result_lazy err_fn = function
+  | None -> Result.Error (err_fn ())
+  | Some x -> Result.Ok x
+
+let of_result = function
+  | Result.Error _ -> None
+  | Result.Ok x -> Some x
 
 module Infix = struct
   let (>|=) = (>|=)

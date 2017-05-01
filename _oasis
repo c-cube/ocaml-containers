@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        containers
-Version:     1.1
+Version:     1.2
 Homepage:    https://github.com/c-cube/ocaml-containers
 Authors:     Simon Cruanes
 License:     BSD-2-clause
@@ -26,7 +26,7 @@ Description:
 
 Flag "unix"
   Description:  Build the containers.unix library (depends on Unix)
-  Default:      false
+  Default:      true
 
 Flag "thread"
   Description:  Build modules that depend on threads
@@ -42,7 +42,7 @@ Library "containers"
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
                     CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
                     CCInt64, CCChar, CCResult, CCParse, CCArray_slice,
-                    CCListLabels, CCArrayLabels,
+                    CCListLabels, CCArrayLabels, CCEqual,
                     Containers
   BuildDepends:     bytes, result
   # BuildDepends:     bytes, bisect_ppx

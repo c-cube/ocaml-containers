@@ -4,10 +4,9 @@
 
     @since 0.14 *)
 
-type t = char
+include Char
 
 let equal (a:char) b = a=b
-let compare = Char.compare
 
 let pp = Buffer.add_char
 let print = Format.pp_print_char
