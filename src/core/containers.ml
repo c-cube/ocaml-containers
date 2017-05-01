@@ -1,25 +1,10 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Drop-In replacement to Stdlib}
+(** {1 Drop-In replacement to Stdlib} *)
 
-    This module is meant to be opened if one doesn't want to use both, say,
-    [List] and [CCList]. Instead, [List] is now an alias to
-    {[struct
-      include List
-      include CCList
-    end
-    ]}
-*)
-
-module Array = struct
-  include Array
-  include CCArray
-end
-module ArrayLabels = struct
-  include ArrayLabels
-  include CCArrayLabels
-end
+module Array = CCArray
+module ArrayLabels = CCArrayLabels
 module Array_slice = CCArray_slice
 module Bool = CCBool
 module Char = struct
@@ -50,14 +35,8 @@ module Hashtbl = struct
   module Make' = CCHashtbl.Make
 end
 module Heap = CCHeap
-module List = struct
-  include List
-  include CCList
-end
-module ListLabels = struct
-  include ListLabels
-  include CCListLabels
-end
+module List = CCList
+module ListLabels = CCListLabels
 module Map = struct
   module type OrderedType = Map.OrderedType
   include CCMap
@@ -66,10 +45,7 @@ module Option = CCOpt
 module Ord = CCOrd
 module Pair = CCPair
 module Parse = CCParse
-module Random = struct
-  include Random
-  include CCRandom
-end
+module Random = CCRandom
 module Ref = CCRef
 module Result = struct
   include Result
@@ -79,8 +55,5 @@ module Set = struct
   module type OrderedType = Set.OrderedType
   include CCSet
 end
-module String = struct
-  include String
-  include CCString
-end
+module String = CCString
 module Vector = CCVector

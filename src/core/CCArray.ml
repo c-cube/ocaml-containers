@@ -18,6 +18,8 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
+include Array
+
 type 'a t = 'a array
 
 let empty = [| |]

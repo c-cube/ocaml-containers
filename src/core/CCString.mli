@@ -48,6 +48,8 @@ end
 
 (** {2 Strings} *)
 
+include module type of String
+
 val equal : string -> string -> bool
 
 val compare : string -> string -> int

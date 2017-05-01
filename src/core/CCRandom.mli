@@ -3,6 +3,8 @@
 
 (** {1 Random Generators} *)
 
+include module type of Random
+
 type state = Random.State.t
 
 type 'a t = state -> 'a

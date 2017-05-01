@@ -3,6 +3,8 @@
 
 (** {1 Random Generators} *)
 
+include Random
+
 type state = Random.State.t
 
 type 'a t = state -> 'a

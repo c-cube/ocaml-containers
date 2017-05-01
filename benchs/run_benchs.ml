@@ -432,9 +432,7 @@ module Tbl = struct
   let arg_make : type a. a key_type -> (module KEY with type t = a) * string
   = function
     | Int -> (module CCInt), "int"
-    | Str ->
-        let module S = struct type t = string include CCString end in
-        (module S : KEY with type t = string), "string"
+    | Str -> (module CCString : KEY with type t = string), "string"
 
   let sprintf = Printf.sprintf
 

@@ -9,6 +9,8 @@
 
 type 'a t = 'a list
 
+include List
+
 let empty = []
 
 let is_empty = function

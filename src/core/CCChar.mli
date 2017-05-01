@@ -4,7 +4,7 @@
 
     @since 0.14 *)
 
-type t = char
+include module type of Char
 
 val equal : t -> t -> bool
 val compare : t -> t -> int

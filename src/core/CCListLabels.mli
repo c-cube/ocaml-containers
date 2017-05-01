@@ -3,6 +3,8 @@
 
 (** {1 complements to list} *)
 
+include module type of ListLabels
+
 type 'a t = 'a list
 
 val empty : 'a t

@@ -9,6 +9,8 @@ type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
+include module type of List
+
 type 'a t = 'a list
 
 val empty : 'a t
