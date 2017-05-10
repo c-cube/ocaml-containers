@@ -6,6 +6,11 @@
 (** Simple implementation of functional queues
     @since NEXT_RELEASE *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a printer = Format.formatter -> 'a -> unit
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a gen = unit -> 'a option
+
 type +'a t
 (** Queue containing elements of type 'a *)
 
@@ -44,16 +49,42 @@ val append : 'a t -> 'a t -> 'a t
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Map values *)
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+val rev : 'a t -> 'a t
+(** Reverse the queue. Constant time. *)
 
-val size : 'a t -> int
+val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+
+module Infix : sig
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t (** Alias to {!map} *)
+  val (@) : 'a t -> 'a t -> 'a t (** Alias to {!append} *)
+  val (<::) : 'a t -> 'a -> 'a t (** Alias to {!snoc} *)
+end
+
+include module type of Infix
+
+val length : 'a t -> int
 (** Number of elements in the queue (linear in time) *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 
 val iter : ('a -> unit) -> 'a t -> unit
 
-type 'a sequence = ('a -> unit) -> unit
+val to_list : 'a t -> 'a list
+val add_list : 'a t -> 'a list -> 'a t
+val of_list : 'a list -> 'a t
+
 val to_seq : 'a t -> 'a sequence
+val add_seq : 'a t -> 'a sequence -> 'a t
 val of_seq : 'a sequence -> 'a t
 
+val to_klist : 'a t -> 'a klist
+val add_klist : 'a t -> 'a klist -> 'a t
+val of_klist : 'a klist -> 'a t
+
+val of_gen : 'a gen -> 'a t
+val add_gen : 'a t -> 'a gen -> 'a t
+val to_gen : 'a t -> 'a gen
+
+(** {2 IO} *)
+
+val pp : ?sep:unit printer -> 'a printer -> 'a t printer
