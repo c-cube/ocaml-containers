@@ -361,8 +361,8 @@ let rec inter f a b =
       else inter f r1 b
     else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
     then if Bit.is_0 p1 ~bit:m2
-      then inter f l2 a
-      else inter f r2 a
+      then inter f a l2
+      else inter f a r2
     else E
 
 (*$R
