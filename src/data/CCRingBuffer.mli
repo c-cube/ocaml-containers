@@ -1,6 +1,8 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
+(* Copyright (C) 2015 Simon Cruanes, Carmelo Piccione *)
+
 (** {1 Circular Buffer (Deque)}
 
     Useful for IO, or as a general-purpose alternative to {!Queue} when

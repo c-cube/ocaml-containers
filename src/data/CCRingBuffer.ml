@@ -1,6 +1,8 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
+(* Copyright (C) 2015 Simon Cruanes, Carmelo Piccione *)
+
 (** Polymorphic Circular Buffer for IO *)
 
 module Array = struct
@@ -289,14 +291,13 @@ module MakeFromArray(A:Array.S) = struct
     assert (cap >= A.length b.buf);
     let buf' = A.make cap elem in
     (* copy into buf' *)
-    if b.stop >= b.start
-    then
+    if b.stop >= b.start then (
       A.blit b.buf b.start buf' 0 (b.stop - b.start)
-    else begin
+    ) else (
       let len_end = A.length b.buf - b.start in
       A.blit b.buf b.start buf' 0 len_end;
       A.blit b.buf 0 buf' len_end b.stop;
-    end;
+    );
     b.buf <- buf'
 
   let blit_from_bounded b from_buf o len =
@@ -329,21 +330,24 @@ module MakeFromArray(A:Array.S) = struct
     let good = capacity b - length b >= len in
     assert good;
     if b.stop >= b.start
-    then (*  [_______ start xxxxxxxxx stop ______] *)
+    then (
+      (*  [_______ start xxxxxxxxx stop ______] *)
       let len_end = A.length b.buf - b.stop in
       if len_end >= len
       then (A.blit from_buf o b.buf b.stop len;
         b.stop <- b.stop + len)
-      else (A.blit from_buf o b.buf b.stop len_end;
+      else (
+        A.blit from_buf o b.buf b.stop len_end;
         A.blit from_buf (o+len_end) b.buf 0 (len-len_end);
-        b.stop <- len-len_end)
-    else begin (* [xxxxx stop ____________ start xxxxxx] *)
+        b.stop <- len-len_end
+      )
+    ) else (
+      (* [xxxxx stop ____________ start xxxxxx] *)
       let len_middle = b.start - b.stop in
       assert (len_middle >= len);
       A.blit from_buf o b.buf b.stop len;
       b.stop <- b.stop + len
-    end;
-    ()
+    )
 
   let blit_from b from_buf o len =
     if A.length from_buf = 0 then () else
@@ -375,22 +379,21 @@ module MakeFromArray(A:Array.S) = struct
   let blit_into b to_buf o len =
     if o+len > A.length to_buf
     then invalid_arg "CCRingBuffer.blit_into";
-    if b.stop >= b.start
-    then
+    if b.stop >= b.start then (
       let n = min (b.stop - b.start) len in
       let _ = A.blit b.buf b.start to_buf o n in
       n
-    else begin
+    ) else (
       let len_end = A.length b.buf - b.start in
       A.blit b.buf b.start to_buf o (min len_end len);
       if len_end >= len
       then len  (* done *)
-      else begin
+      else (
         let n = min b.stop (len - len_end) in
         A.blit b.buf 0 to_buf (o+len_end) n;
         n + len_end
-      end
-    end
+      )
+    )
 
   (*$Q
     Q.printable_string (fun s -> let s = Bytes.of_string s in \
@@ -509,15 +512,17 @@ module MakeFromArray(A:Array.S) = struct
   *)
 
   let skip b len =
-    if len > length b then
+    if len > length b then (
       invalid_arg ("CCRingBuffer.skip: " ^ string_of_int len);
+    );
     if b.stop >= b.start
     then b.start <- b.start + len
-    else
+    else (
       let len_end = A.length b.buf - b.start in
       if len > len_end
       then b.start <- len-len_end  (* wrap to the beginning *)
       else b.start <- b.start + len
+    )
 
   (*$Q
     (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
@@ -690,3 +695,21 @@ end
 module Byte = MakeFromArray(Array.Byte)
 
 module Make(Elt:sig type t end) = MakeFromArray(Array.Make(Elt))
+
+
+(*$inject
+  module BI = CCRingBuffer.Make(struct type t = int end)
+*)
+
+(* try to trigger an error on resize
+   see issue #126 *)
+(*$R
+  let b = BI.create ~bounded:true 50 in
+  let st = Random.State.make [| 0 |] in
+  for _i = 1 to 100_000 do
+    if Random.State.float st 1.0 < 0.5 then
+      BI.push_back b 0
+    else
+      let _ = BI.take_front b in ()
+  done
+*)
