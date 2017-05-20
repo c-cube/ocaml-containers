@@ -88,13 +88,24 @@ val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
     [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
     @since 1.0 *)
 
+val find_map : ('a -> 'b option) -> 'a t -> 'b option
+(** [find_map f a] returns [Some y] if there is an element [x] such
+    that [f x = Some y], else it returns [None]
+    @since NEXT_RELEASE
+*)
+
 val find : ('a -> 'b option) -> 'a t -> 'b option
-(** [find f a] returns [Some y] if there is an element [x] such
-    that [f x = Some y], else it returns [None] *)
+(** Alias to {!find_map}
+    @deprecated since NEXT_RELEASE *)
+
+val find_map_i : (int -> 'a -> 'b option) -> 'a t -> 'b option
+(** Like {!find_map}, but also pass the index to the predicate function.
+    @since NEXT_RELEASE *)
 
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
-(** Like {!find}, but also pass the index to the predicate function.
-    @since 0.3.4 *)
+(** Alias to {!find_map_i}
+    @since 0.3.4
+    @deprecated since NEXT_RELEASE *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],

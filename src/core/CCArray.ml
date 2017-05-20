@@ -212,11 +212,13 @@ let rec find_aux f a i =
     | Some _ as res -> res
     | None -> find_aux f a (i+1)
 
-let find f a =
-  find_aux (fun _ -> f ) a 0
+let find_map f a = find_aux (fun _ -> f ) a 0
 
-let findi f a =
-  find_aux f a 0
+let find = find_map
+
+let find_map_i f a = find_aux f a 0
+
+let findi = find_map_i
 
 let find_idx p a =
   find_aux (fun i x -> if p x then Some (i,x) else None) a 0
