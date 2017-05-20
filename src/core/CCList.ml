@@ -811,6 +811,48 @@ let filter_map f l =
       [ 1; 2; 3; 4; 5; 6 ])
 *)
 
+let keep_some l = filter_map (fun x->x) l
+
+let keep_ok l =
+  filter_map
+    (function
+      | Result.Ok x -> Some x
+      | Result.Error _ -> None)
+    l
+
+let all_some l =
+  try Some (map (function Some x -> x | None -> raise Exit) l)
+  with Exit -> None
+
+(*$=
+  (Some []) (all_some [])
+  (Some [1;2;3]) (all_some [Some 1; Some 2; Some 3])
+  None (all_some [Some 1; None; None; Some 4])
+*)
+
+let all_ok l =
+  let err = ref None in
+  try
+    Result.Ok
+      (map
+         (function Result.Ok x -> x | Error e -> err := Some e; raise Exit)
+         l)
+  with Exit ->
+    begin match !err with
+      | None -> assert false
+      | Some e -> Result.Error e
+    end
+
+(*$inject
+  open Result
+*)
+
+(*$=
+  (Ok []) (all_ok [])
+  (Ok [1;2;3]) (all_ok [Ok 1; Ok 2; Ok 3])
+  (Error "e2") (all_ok [Ok 1; Error "e2"; Error "e3"; Ok 4])
+*)
+
 let mem ?(eq=(=)) x l =
   let rec search eq x l = match l with
     | [] -> false
