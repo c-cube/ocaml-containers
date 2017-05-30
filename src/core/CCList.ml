@@ -688,9 +688,9 @@ let take_while p l =
 *)
 
 (*$Q
-  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
-    let l1 = take_while f l in \
-    List.for_all f l1)
+  Q.(pair (fun1 Observable.int bool) (list small_int)) (fun (f,l) -> \
+    let l1 = take_while (Q.Fn.apply f) l in \
+    List.for_all (Q.Fn.apply f) l1)
 *)
 
 let rec drop_while p l = match l with
@@ -698,8 +698,8 @@ let rec drop_while p l = match l with
   | x :: l' -> if p x then drop_while p l' else l
 
 (*$Q
-  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
-    take_while f l @ drop_while f l = l)
+  Q.(pair (fun1 Observable.int bool) (list small_int)) (fun (f,l) -> \
+    take_while (Q.Fn.apply f) l @ drop_while (Q.Fn.apply f) l = l)
 *)
 
 let take_drop_while p l =
@@ -720,9 +720,9 @@ let take_drop_while p l =
   direct direct_depth_default_ p l
 
 (*$Q
-  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
-    let l1,l2 = take_drop_while f l in \
-    (l1 = take_while f l) && (l2 = drop_while f l))
+  Q.(pair (fun1 Observable.int bool) (list small_int)) (fun (f,l) -> \
+    let l1,l2 = take_drop_while (Q.Fn.apply f) l in \
+    (l1 = take_while (Q.Fn.apply f) l) && (l2 = drop_while (Q.Fn.apply f) l))
 *)
 
 let last n l =
