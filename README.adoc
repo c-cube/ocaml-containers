@@ -12,6 +12,8 @@ map/fold_right/append, and additional functions on lists).
 Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
 
+https://c-cube.github.io/ocaml-containers/last/[Current documentation].
+
 image::https://ci.cedeela.fr/buildStatus/icon?job=containers[alt="Build Status", link="http://ci.cedeela.fr/job/containers/"]
 
 toc::[]
@@ -91,7 +93,7 @@ and <<tutorial,the tutorial below>> for a gentle introduction.
 
 == Documentation
 
-In general, see http://c-cube.github.io/ocaml-containers/ or
+In general, see http://c-cube.github.io/ocaml-containers/last/ or
 http://cedeela.fr/~simon/software/containers for the **API documentation**.
 
 Some examples can be found link:doc/containers.adoc[there].
