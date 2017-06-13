@@ -1,6 +1,8 @@
 = OCaml-containers
 
-Documentation:
+link:last[Current documentation]
+
+Other versions:
 
 - link:dev[dev]
 - link:1.2[1.2]
