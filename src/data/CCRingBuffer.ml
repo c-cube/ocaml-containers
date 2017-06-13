@@ -3,7 +3,11 @@
 
 (* Copyright (C) 2015 Simon Cruanes, Carmelo Piccione *)
 
-(** Polymorphic Circular Buffer for IO *)
+(** Generic Circular Buffer for IO, with bulk operations.
+    The bulk operations (e.g. based on {!Array.blit} or {!Bytes.blit})
+    are more efficient than item-by-item copy.
+
+    See https://en.wikipedia.org/wiki/Circular_buffer for an overview. *)
 
 module Array = struct
   (** The abstract type for arrays *)
@@ -14,11 +18,8 @@ module Array = struct
     (** The type of an array instance *)
     type t
 
-    val empty : t
-    (** The empty array *)
-
-    val make: int -> elt -> t
-    (** [make s e] makes an array of size [s] with [e] elements *)
+    val create : int -> t
+    (** Make an array of the given size, filled with dummy elements *)
 
     val length: t -> int
     (** [length t] gets the total number of elements currently in [t] *)
@@ -51,11 +52,11 @@ module Array = struct
     include Bytes
   end
 
-  module Make(Elt:sig type t end) :
+  module Make(Elt:sig type t val dummy : t end) :
     S with type elt = Elt.t and type t = Elt.t array = struct
     type elt = Elt.t
     type t = Elt.t array
-    let make = Array.make
+    let create size = Array.make size Elt.dummy
     let length = Array.length
     let get = Array.get
     let set = Array.set
@@ -63,7 +64,6 @@ module Array = struct
     let blit = Array.blit
     let iter = Array.iter
     let sub = Array.sub
-    let empty = Array.of_list []
   end
 end
 
@@ -71,16 +71,16 @@ module type S = sig
   (** The module type of Array for this ring buffer *)
   module Array : Array.S
 
-  (** Defines the ring buffer type, with both bounded and
-      unbounded flavors *)
+  (** Defines the bounded ring buffer type *)
   type t
 
   (** Raised in querying functions when the buffer is empty *)
   exception Empty
 
-  val create : ?bounded:bool -> int -> t
-  (** [create ?bounded size] creates a new buffer with given size.
-      Defaults to [bounded=false]. *)
+  val create : int -> t
+  (** [create size] creates a new bounded buffer with given size.
+      The underlying array is allocated immediately and no further (large)
+      allocation will happen from now on. *)
 
   val copy : t -> t
   (** Make a fresh copy of the buffer. *)
@@ -88,35 +88,31 @@ module type S = sig
   val capacity : t -> int
   (** Length of the inner buffer. *)
 
-  val max_capacity : t -> int option
-  (** Maximum length of the inner buffer, or [None] if unbounded. *)
-
   val length : t -> int
   (** Number of elements currently stored in the buffer. *)
 
   val blit_from : t -> Array.t -> int -> int -> unit
   (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
       a input buffer [from_buf] to the end of the buffer.
+      If the slice is too large for the buffer, only the last part of the array
+      will be copied.
       @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
-  val blit_into : t ->  Array.t -> int -> int -> int
+  val blit_into : t -> Array.t -> int -> int -> int
   (** [blit_into buf to_buf o len] copies at most [len] elements from [buf]
       into [to_buf] starting at offset [o] in [s].
       @return the number of elements actually copied ([min len (length buf)]).
-      @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
+      @raise Invalid_argument if [o,len] is not a valid slice of [s]. *)
 
   val append : t -> into:t -> unit
   (** [append b ~into] copies all data from [b] and adds it at the
-      end of [into] *)
+      end of [into]. Erases data of [into] if there is not enough room. *)
 
   val to_list : t -> Array.elt list
   (** Extract the current content into a list *)
 
   val clear : t -> unit
   (** Clear the content of the buffer. Doesn't actually destroy the content. *)
-
-  val reset : t -> unit
-  (** Clear the content of the buffer, and also resize it to a default size *)
 
   val is_empty :t -> bool
   (** Is the buffer empty (i.e. contains no elements)? *)
@@ -179,45 +175,41 @@ module type S = sig
 
   val of_array : Array.t -> t
   (** Create a buffer from an initial array, but doesn't take ownership
-      of it (stills allocates a new internal array) *)
+      of it (stills allocates a new internal array)
+      @since 0.11 *)
 
   val to_array : t -> Array.t
   (** Create an array from the elements, in order.
       @since 0.11 *)
 end
 
-module MakeFromArray(A:Array.S) = struct
+(*$inject
+  open Q.Gen
+  let g_char = map Char.chr (Char.code 'A' -- Char.code 'z')
+  let g_str = string_size ~gen:g_char (0--10)
+  let a_str = {Q.string with Q.gen=g_str}
+  *)
+
+module MakeFromArray(A:Array.S) : S with module Array = A = struct
   module Array = A
 
   type t = {
     mutable start : int;
     mutable stop : int; (* excluded *)
-    mutable buf : Array.t;
-    bounded : bool;
-    size : int
+    buf : Array.t;
   }
 
   exception Empty
 
-  let create ?(bounded=false) size =
+  let create size =
+    if size < 1 then invalid_arg "CCRingBuffer.create";
     { start=0;
       stop=0;
-      bounded;
-      size;
-      buf = A.empty
+      buf = A.create (size+1);  (* keep room for extra slot *)
     }
 
   let copy b =
     { b with buf=A.copy b.buf; }
-
-  (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
-    Byte.blit_from b s 0 s_len; \
-    let b' = Byte.copy b in \
-    try Byte.iteri b (fun i c -> if Byte.get_front b' i <> c then raise Exit); true with Exit -> false)
-  *)
 
   (*$T
     let b = Byte.of_array (Bytes.of_string "abc") in \
@@ -231,36 +223,11 @@ module MakeFromArray(A:Array.S) = struct
     match len with 0 -> 0 | l -> l - 1
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     Byte.capacity b >= s_len)
-  *)
-
-  (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> let s = Bytes.of_string s in \
-    let i = abs i in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create ~bounded:true i in \
-    Byte.blit_from b s 0 s_len; \
-    Byte.capacity b <= i)
-  *)
-
-  let max_capacity b = if b.bounded then Some b.size else None
-
-  (*$Q
-    Q.small_int (fun i -> \
-    let i = abs i in \
-    let b = Byte.create i in \
-    Byte.max_capacity b = None)
-  *)
-
-  (*$Q
-    Q.small_int (fun i -> \
-    let i = abs i in \
-    let b = Byte.create ~bounded:true i in \
-    Byte.max_capacity b = Some i)
   *)
 
   let length b =
@@ -268,120 +235,73 @@ module MakeFromArray(A:Array.S) = struct
     then b.stop - b.start
     else (A.length b.buf - b.start) + b.stop
 
-  (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> let s = Bytes.of_string s in \
-    let i = abs i in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create i in \
-    Byte.blit_from b s 0 s_len; \
-    Byte.length b = s_len)
-  *)
+  let next_ b i =
+    let j = i+1 in
+    if j = A.length b.buf then 0 else j
 
-  (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> let s = Bytes.of_string s in \
-    let i = abs i in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create ~bounded:true i in \
-    Byte.blit_from b s 0 s_len; \
-    Byte.length b >= 0 && Byte.length b <= i)
-  *)
+  let incr_start_ b = b.start <- next_ b b.start
+  let incr_stop_ b = b.stop <- next_ b b.stop
 
-  (* resize [b] so that inner capacity is [cap] *)
-  let resize b cap elem =
-    assert (cap >= A.length b.buf);
-    let buf' = A.make cap elem in
-    (* copy into buf' *)
-    if b.stop >= b.start then (
-      A.blit b.buf b.start buf' 0 (b.stop - b.start)
-    ) else (
-      let len_end = A.length b.buf - b.start in
-      A.blit b.buf b.start buf' 0 len_end;
-      A.blit b.buf 0 buf' len_end b.stop;
-    );
-    b.buf <- buf'
-
-  let blit_from_bounded b from_buf o len =
-    let cap = capacity b - length b in
-    (* resize if needed, with a constant to amortize *)
-    if cap < len then (
-      let new_size =
-        let desired = A.length b.buf + len + 24 in
-        min (b.size+1) desired in
-      resize b new_size (A.get from_buf 0);
-      let good = capacity b = b.size || capacity b - length b >= len in
-      assert good;
-    );
-    let sub = A.sub from_buf o len in
-    let iter x =
-      let capacity = A.length b.buf in
-      A.set b.buf b.stop x;
-      if b.stop = capacity-1 then b.stop <- 0 else b.stop <- b.stop + 1;
-      if b.start = b.stop then
-        if b.start = capacity-1 then b.start <- 0 else b.start <- b.start + 1
-    in
-    A.iter iter sub
-
-
-  let blit_from_unbounded b from_buf o len =
-    let cap = capacity b - length b in
-    (* resize if needed, with a constant to amortize *)
-    if cap < len
-    then resize b (max (b.size+1) (A.length b.buf + len + 24)) (A.get from_buf 0);
-    let good = capacity b - length b >= len in
-    assert good;
-    if b.stop >= b.start
-    then (
-      (*  [_______ start xxxxxxxxx stop ______] *)
-      let len_end = A.length b.buf - b.stop in
-      if len_end >= len
-      then (A.blit from_buf o b.buf b.stop len;
-        b.stop <- b.stop + len)
-      else (
-        A.blit from_buf o b.buf b.stop len_end;
-        A.blit from_buf (o+len_end) b.buf 0 (len-len_end);
-        b.stop <- len-len_end
-      )
-    ) else (
-      (* [xxxxx stop ____________ start xxxxxx] *)
-      let len_middle = b.start - b.stop in
-      assert (len_middle >= len);
-      A.blit from_buf o b.buf b.stop len;
-      b.stop <- b.stop + len
-    )
+  let push_back b e =
+    A.set b.buf b.stop e;
+    incr_stop_ b;
+    if b.start = b.stop then incr_start_ b; (* overwritten one element *)
+    ()
 
   let blit_from b from_buf o len =
-    if A.length from_buf = 0 then () else
-    if b.bounded then
-      blit_from_bounded b from_buf o len
-    else
-      blit_from_unbounded b from_buf o len
+    if len = 0 then ()
+    else if o + len > A.length from_buf then invalid_arg "CCRingBuffer.blit_from"
+    else (
+      for i=o to o+len-1 do
+        push_back b (A.get from_buf i)
+      done
+    )
 
   (*$Q
-    (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    a_str (fun s -> let s = Bytes.of_string s in \
+    let s_len = Bytes.length s in \
+    let b = Byte.create (max s_len 64) in \
+    Byte.blit_from b s 0 s_len; \
+    let b' = Byte.copy b in \
+    try Byte.iteri b (fun i c -> if Byte.get_front b' i <> c then raise Exit); true with Exit -> false)
+  *)
+
+  (*$Q
+    a_str (fun s -> let s = Bytes.of_string s in \
+    let s_len = Bytes.length s in \
+    let b = Byte.create (max s_len 64) in \
+    Byte.blit_from b s 0 s_len; \
+    Byte.push_back b 'X'; \
+    Byte.peek_back b = 'X')
+  *)
+
+  (*$Q
+    (Q.pair a_str a_str) (fun (s,s') -> \
+    let b = Byte.create (max (String.length s+String.length s') 64) in \
     let s = Bytes.of_string s in let s' = Bytes.of_string s' in  \
-    (let b = Byte.create 24 in \
     Byte.blit_from b s 0 (Bytes.length s); \
     Byte.blit_from b s' 0 (Bytes.length s'); \
-    Byte.length b = Bytes.length s + Bytes.length s'))
+    Byte.length b = Bytes.length s + Bytes.length s')
   *)
 
 
   (*$Q
-    (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    (Q.pair a_str a_str) (fun (s,s') -> \
     let s = Bytes.of_string s in let s' = Bytes.of_string s' in  \
-    (let b = Byte.create ~bounded:true (Bytes.length s + Bytes.length s') in \
+    let b = Byte.create (max (Bytes.length s + Bytes.length s') 64) in \
     Byte.blit_from b s 0 (Bytes.length s); \
     Byte.blit_from b s' 0 (Bytes.length s'); \
-    Byte.length b = Bytes.length s + Bytes.length s'))
+    Byte.length b = Bytes.length s + Bytes.length s')
   *)
 
 
   let blit_into b to_buf o len =
-    if o+len > A.length to_buf
-    then invalid_arg "CCRingBuffer.blit_into";
+    if o+len > A.length to_buf then (
+      invalid_arg "CCRingBuffer.blit_into";
+    );
     if b.stop >= b.start then (
       let n = min (b.stop - b.start) len in
-      let _ = A.blit b.buf b.start to_buf o n in
+      A.blit b.buf b.start to_buf o n;
       n
     ) else (
       let len_end = A.length b.buf - b.start in
@@ -396,8 +316,8 @@ module MakeFromArray(A:Array.S) = struct
     )
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
-    let b = Byte.create (Bytes.length s) in \
+    a_str (fun s -> let s = Bytes.of_string s in \
+    let b = Byte.create (max 64 (Bytes.length s)) in \
     Byte.blit_from b s 0 (Bytes.length s); \
     let to_buf = Bytes.create (Bytes.length s) in \
     let len = Byte.blit_into b to_buf 0 (Bytes.length s) in \
@@ -410,35 +330,20 @@ module MakeFromArray(A:Array.S) = struct
     ()
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     Byte.clear b; \
     Byte.length b = 0)
   *)
 
-
-  let reset b =
-    clear b;
-    b.buf <- A.empty
-
-  (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
-    Byte.blit_from b s 0 s_len; \
-    Byte.reset b; \
-    Byte.length b = 0 && Byte.capacity b = 0)
-  *)
-
-
   let is_empty b = b.start = b.stop
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     Byte.skip b s_len; \
     Byte.is_empty b)
@@ -447,17 +352,15 @@ module MakeFromArray(A:Array.S) = struct
   let take_front_exn b =
     if b.start = b.stop then raise Empty;
     let c = A.get b.buf b.start in
-    if b.start + 1 = A.length b.buf
-    then b.start <- 0
-    else b.start <- b.start + 1;
+    b.start <- next_ b b.start;
     c
 
   let take_front b = try Some (take_front_exn b) with Empty -> None
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     try let front = Byte.take_front_exn b in \
     front = Bytes.get s 0 with Byte.Empty -> s_len = 0)
@@ -465,7 +368,7 @@ module MakeFromArray(A:Array.S) = struct
 
   let take_back_exn b =
     if b.start = b.stop then raise Empty;
-    if b.stop - 1 = 0
+    if b.stop = 0
     then b.stop <- A.length b.buf - 1
     else b.stop <- b.stop - 1;
     A.get b.buf b.stop
@@ -473,12 +376,13 @@ module MakeFromArray(A:Array.S) = struct
   let take_back b = try Some (take_back_exn b) with Empty -> None
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     try let back = Byte.take_back_exn b in \
-    back = Bytes.get s (Bytes.length s - 1) with Byte.Empty -> s_len = 0)
+        back = Bytes.get s (Bytes.length s - 1) \
+     with Byte.Empty -> s_len = 0)
   *)
 
   let junk_front b =
@@ -488,9 +392,9 @@ module MakeFromArray(A:Array.S) = struct
     else b.start <- b.start + 1
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     try let () = Byte.junk_front b in \
     s_len - 1 = Byte.length b with Byte.Empty -> s_len = 0)
@@ -503,9 +407,9 @@ module MakeFromArray(A:Array.S) = struct
     else b.stop <- b.stop - 1
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     try let () = Byte.junk_back b in \
     s_len - 1 = Byte.length b with Byte.Empty -> s_len = 0)
@@ -513,7 +417,7 @@ module MakeFromArray(A:Array.S) = struct
 
   let skip b len =
     if len > length b then (
-      invalid_arg ("CCRingBuffer.skip: " ^ string_of_int len);
+      invalid_arg "CCRingBuffer.skip";
     );
     if b.stop >= b.start
     then b.start <- b.start + len
@@ -525,15 +429,15 @@ module MakeFromArray(A:Array.S) = struct
     )
 
   (*$Q
-    (Q.pair Q.printable_string Q.printable_string) (fun (s,s') -> \
+    (Q.pair a_str a_str) (fun (s,s') -> \
     let s = Bytes.of_string s in let s' = Bytes.of_string s' in  \
-    (let b = Byte.create 24 in \
+    let b = Byte.create (max (Bytes.length s+Bytes.length s') 64) in \
     Byte.blit_from b s 0 (Bytes.length s); \
     Byte.blit_from b s' 0 (Bytes.length s'); \
     let h = Bytes.of_string "hello world" in \
     Byte.blit_from b h 0 (Bytes.length h); (* big enough *) \
     let l = Byte.length b in let l' = l/2 in Byte.skip b l'; \
-    Byte.length b + l' = l))
+    Byte.length b + l' = l)
   *)
 
   let iter b ~f =
@@ -553,9 +457,9 @@ module MakeFromArray(A:Array.S) = struct
     )
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     try Byte.iteri b (fun i c -> if Byte.get_front b i <> c then raise Exit); \
       true with Exit -> false)
@@ -563,29 +467,28 @@ module MakeFromArray(A:Array.S) = struct
 
   let get b i =
     if b.stop >= b.start
-    then
-      if i >= b.stop - b.start
-      then invalid_arg ("CCRingBuffer.get:" ^ string_of_int i)
-      else A.get b.buf (b.start + i)
-    else
+    then (
+      if i >= b.stop - b.start then (
+        invalid_arg "CCRingBuffer.get"
+      ) else A.get b.buf (b.start + i)
+    ) else (
       let len_end = A.length b.buf - b.start in
-      if i < len_end
-      then A.get b.buf (b.start + i)
-      else if i - len_end > b.stop
-      then invalid_arg ("CCRingBuffer.get: " ^ string_of_int i)
-      else A.get b.buf (i - len_end)
+      if i < len_end then A.get b.buf (b.start + i)
+      else if i - len_end > b.stop then (
+        invalid_arg "CCRingBuffer.get"
+      ) else A.get b.buf (i - len_end)
+    )
 
   let get_front b i =
-    if is_empty b then
-      invalid_arg ("CCRingBuffer.get_front: " ^ string_of_int i)
-    else
-      get b i
+    if is_empty b then (
+      invalid_arg "CCRingBuffer.get_front"
+    ) else get b i
 
   (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+    (Q.pair Q.small_int a_str) (fun (i, s) -> \
     let s = Bytes.of_string (s ^ " ") in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     let index = abs (i mod Byte.length b) in \
     let front = Byte.get_front b index in \
@@ -594,15 +497,15 @@ module MakeFromArray(A:Array.S) = struct
 
   let get_back b i =
     let offset = ((length b) - i - 1) in
-    if offset < 0 then
-      raise (Invalid_argument ("CCRingBuffer.get_back:" ^ string_of_int i))
-    else get b offset
+    if offset < 0 then (
+      invalid_arg "CCRingBuffer.get_back"
+    ) else get b offset
 
   (*$Q
-    (Q.pair Q.small_int Q.printable_string) (fun (i, s) -> \
+    (Q.pair Q.small_int a_str) (fun (i, s) -> \
     let s = Bytes.of_string (s ^ " ") in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     let index = abs (i mod Byte.length b) in \
     let back = Byte.get_back b index in \
@@ -613,14 +516,14 @@ module MakeFromArray(A:Array.S) = struct
   let to_list b =
     let len = length b in
     let rec build l i =
-      if i < 0 then l else
-        build ((get_front b i)::l) (i-1) in
+      if i < 0 then l else build ((get_front b i)::l) (i-1)
+    in
     build [] (len-1)
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     let l = Byte.to_list b in \
     let explode s = let rec exp i l = \
@@ -629,18 +532,7 @@ module MakeFromArray(A:Array.S) = struct
     explode s = l)
   *)
 
-  let push_back b e = blit_from b (A.make 1 e) 0 1
-
-  (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
-    Byte.blit_from b s 0 s_len; \
-    Byte.push_back b 'X'; \
-    Byte.peek_back b = 'X')
-  *)
-
-  (* TODO: more efficient version *)
+  (* TODO: more efficient version, with one or two blit *)
   let append b ~into =
     iter b ~f:(push_back into)
 
@@ -649,9 +541,9 @@ module MakeFromArray(A:Array.S) = struct
     else A.get b.buf b.start
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     try let back = Byte.peek_front b in \
     back = Bytes.get s 0 with Byte.Empty -> s_len = 0)
@@ -659,13 +551,15 @@ module MakeFromArray(A:Array.S) = struct
 
   let peek_back b = if is_empty b
     then raise Empty
-    else A.get b.buf
-        (if b.stop = 0 then capacity b - 1 else b.stop-1)
+    else (
+      let i = if b.stop = 0 then A.length b.buf - 1 else b.stop-1 in
+      A.get b.buf i
+    )
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
-    let b = Byte.create s_len in \
+    let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     try let back = Byte.peek_back b in \
     back = Bytes.get s (s_len - 1) with Byte.Empty -> s_len = 0)
@@ -677,16 +571,13 @@ module MakeFromArray(A:Array.S) = struct
     b
 
   let to_array b =
-    if is_empty b then A.empty
-    else (
-      let a = A.make (length b) (peek_front b) in
-      let n = blit_into b a 0 (length b) in
-      assert (n = length b);
-      a
-    )
+    let a = A.create (length b) in
+    let n = blit_into b a 0 (length b) in
+    assert (n = length b);
+    a
 
   (*$Q
-    Q.printable_string (fun s -> let s = Bytes.of_string s in \
+    a_str (fun s -> let s = Bytes.of_string s in \
       let b = Byte.of_array s in let s' = Byte.to_array b in \
       s = s')
   *)
@@ -694,17 +585,20 @@ end
 
 module Byte = MakeFromArray(Array.Byte)
 
-module Make(Elt:sig type t end) = MakeFromArray(Array.Make(Elt))
+module Make(Elt:sig
+    type t
+    val dummy : t
+  end) = MakeFromArray(Array.Make(Elt))
 
 
 (*$inject
-  module BI = CCRingBuffer.Make(struct type t = int end)
+  module BI = CCRingBuffer.Make(struct type t = int let dummy=0 end)
 *)
 
 (* try to trigger an error on resize
    see issue #126 *)
 (*$R
-  let b = BI.create ~bounded:true 50 in
+  let b = BI.create 50 in
   let st = Random.State.make [| 0 |] in
   for _i = 1 to 100_000 do
     if Random.State.float st 1.0 < 0.5 then
@@ -712,4 +606,143 @@ module Make(Elt:sig type t end) = MakeFromArray(Array.Make(Elt))
     else
       let _ = BI.take_front b in ()
   done
+*)
+
+(*$inject
+module BS = CCRingBuffer.Byte
+
+type op =
+  | Push_back of char
+  | Take_front
+  | Take_back
+  | Blit of string * int * int
+
+let str_of_op = function
+  | Push_back c -> Printf.sprintf "push_back(%C)" c
+  | Take_front -> Printf.sprintf "take_front"
+  | Take_back -> Printf.sprintf "take_back"
+  | Blit (s,i,len) -> Printf.sprintf "blit(%S,%d,%d)" s i len
+
+let push_back c = Push_back c
+let blit s i len =
+  if i<0 || len<0 || i+len > String.length s then (
+    failwith ("wrong blit: " ^ str_of_op (Blit (s,i,len)));
+  );
+  Blit (s,i,len)
+
+let shrink_op =
+  let open Q.Iter in
+  function
+    | Push_back c -> Q.Shrink.char c >|= push_back
+    | Take_front | Take_back -> empty
+    | Blit (s,i,len) ->
+      let s_i =
+        Q.Shrink.int i >>= fun i' ->
+        assert (i' <= i && i' + len <= String.length s);
+        if i' <= 0 then empty else return (blit s i' len)
+      and s_len =
+        Q.Shrink.int len >>= fun len'->
+        assert (len' <= len && i + len' <= String.length s);
+        if len' <= 0 then empty else return (blit s i len')
+      and s_s =
+        Q.Shrink.string s >>= fun s' ->
+        if i+len > String.length s' then empty else return (blit s' i len)
+      in
+      append s_i (append s_len s_s)
+
+let rec len_op size acc = function
+  | Push_back _ -> min size (acc + 1)
+  | Take_front | Take_back -> max (acc-1) 0
+  | Blit (_,_,len) -> min size (acc + len)
+
+let apply_op b = function
+  | Push_back c -> BS.push_back b c; None
+  | Take_front -> BS.take_front b
+  | Take_back -> BS.take_back b
+  | Blit (s,i,len) ->
+    assert(i+len <= String.length s);
+    BS.blit_from b (Bytes.unsafe_of_string s) i len; None
+
+let gen_op =
+  let open Q.Gen in
+  let g_blit =
+    string_size ~gen:g_char (5--20) >>= fun s ->
+    (0 -- String.length s) >>= fun len ->
+    assert (len >= 0 && len <= String.length s);
+    (0--(String.length s-len)) >|= fun i ->
+    blit s i len
+  in
+  frequency
+    [ 3, return Take_back;
+      3, return Take_front;
+      1, g_blit;
+      2, map push_back g_char;
+    ]
+
+let arb_op =
+  Q.make
+    ~shrink:shrink_op
+    ~print:str_of_op
+    gen_op
+
+let arb_ops = Q.list arb_op
+
+module L_impl = struct
+  type t = {
+    size: int;
+    mutable l: char list;
+  }
+
+  let create size = {size; l=[]}
+
+  let normalize_ b =
+    let n = List.length b.l in
+    if n>b.size then b.l <- CCList.drop (n-b.size) b.l
+
+  let push_back b c = b.l <- b.l @ [c]; normalize_ b
+  let take_front b = match b.l with
+    | [] -> None
+    | c :: l -> b.l <- l; Some c
+  let take_back b =
+    let n = List.length b.l in
+    if n=0 then None
+    else (
+      let init, last = CCList.take_drop (n-1) b.l in
+      let x = List.hd last in
+      b.l <- init;
+      Some x
+    )
+
+  let blit b s i len =
+    for j=i to i+len-1 do push_back b (String.get s j) done
+
+  let apply_op b = function
+    | Push_back c -> push_back b c; None
+    | Take_front -> take_front b
+    | Take_back -> take_back b
+    | Blit (s,i,len) -> blit b s i len; None
+
+  let to_list b = b.l
+end
+*)
+
+(* check that a lot of operations can be applied without failure,
+  and that the result has correct length *)
+(*$QR
+  arb_ops (fun ops ->
+    let size = 64 in
+    let b = BS.create size in
+    List.iter (fun o-> ignore (apply_op b o)) ops;
+    BS.length b = List.fold_left (len_op size) 0 ops)
+*)
+
+(* check identical behavior with list implem *)
+(*$QR
+  arb_ops (fun ops ->
+    let size = 64 in
+    let b = BS.create size in
+    let l = L_impl.create size in
+    let l1 = CCList.filter_map (apply_op b) ops in
+    let l2 = CCList.filter_map (L_impl.apply_op l) ops in
+    l1=l2 && BS.to_list b = L_impl.to_list l)
 *)
