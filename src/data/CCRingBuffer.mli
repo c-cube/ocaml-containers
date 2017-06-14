@@ -93,6 +93,10 @@ module type S = sig
   val length : t -> int
   (** Number of elements currently stored in the buffer. *)
 
+  val is_full : t -> bool
+  (** true if pushing an element would erase another element.
+      @since NEXT_RELEASE *)
+
   val blit_from : t -> Array.t -> int -> int -> unit
   (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
       a input buffer [from_buf] to the end of the buffer.

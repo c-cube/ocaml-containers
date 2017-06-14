@@ -80,7 +80,8 @@ module type S = sig
   val create : int -> t
   (** [create size] creates a new bounded buffer with given size.
       The underlying array is allocated immediately and no further (large)
-      allocation will happen from now on. *)
+      allocation will happen from now on.
+      @raise Invalid_argument if the arguments is [< 1] *)
 
   val copy : t -> t
   (** Make a fresh copy of the buffer. *)
@@ -90,6 +91,10 @@ module type S = sig
 
   val length : t -> int
   (** Number of elements currently stored in the buffer. *)
+
+  val is_full : t -> bool
+  (** true if pushing an element would erase another element.
+      @since NEXT_RELEASE *)
 
   val blit_from : t -> Array.t -> int -> int -> unit
   (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
@@ -152,25 +157,25 @@ module type S = sig
       otherwise the oldest elements are replaced first. *)
 
   val peek_front : t -> Array.elt
-  (** First value from front of [t].
+  (** First value from front of [t], without modification.
       @raise Empty if buffer is empty. *)
 
   val peek_back : t -> Array.elt
-  (** Get the last value from back of [t].
+  (** Get the last value from back of [t], without modification.
       @raise Empty if buffer is empty. *)
 
   val take_back : t -> Array.elt option
-  (** Take the last value from back of [t], if any *)
+  (** Take and remove the last value from back of [t], if any *)
 
   val take_back_exn : t -> Array.elt
-  (** Take the last value from back of [t].
+  (** Take and remove the last value from back of [t].
       @raise Empty if buffer is already empty. *)
 
   val take_front : t -> Array.elt option
-  (** Take the first value from front of [t], if any *)
+  (** Take and remove the first value from front of [t], if any *)
 
   val take_front_exn : t -> Array.elt
-  (** Take the first value from front of [t].
+  (** Take and remove the first value from front of [t].
       @raise Empty if buffer is already empty. *)
 
   val of_array : Array.t -> t
@@ -234,6 +239,8 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     if b.stop >= b.start
     then b.stop - b.start
     else (A.length b.buf - b.start) + b.stop
+
+  let is_full b = length b + 1 = Array.length b.buf
 
   let next_ b i =
     let j = i+1 in
@@ -629,6 +636,7 @@ type op =
   | Junk_back
   | Skip of int
   | Blit of string * int * int
+  | Z_if_full
 
 let str_of_op = function
   | Push_back c -> Printf.sprintf "push_back(%C)" c
@@ -638,6 +646,7 @@ let str_of_op = function
   | Junk_back -> Printf.sprintf "junk_back"
   | Skip n -> Printf.sprintf "skip(%d)" n
   | Blit (s,i,len) -> Printf.sprintf "blit(%S,%d,%d)" s i len
+  | Z_if_full -> "zero_if_full"
 
 let push_back c = Push_back c
 let skip n = assert (n>=0); Skip n
@@ -651,7 +660,9 @@ let shrink_op =
   let open Q.Iter in
   function
     | Push_back c -> Q.Shrink.char c >|= push_back
-    | Take_front | Take_back | Junk_back | Junk_front -> empty
+    | Take_front | Take_back | Junk_back | Junk_front
+    | Z_if_full
+    -> empty
     | Skip n -> Q.Shrink.int n >|= skip
     | Blit (s,i,len) ->
       let s_i =
@@ -672,6 +683,7 @@ let rec len_op size acc = function
   | Push_back _ -> min size (acc + 1)
   | Take_front | Take_back | Junk_front | Junk_back -> max (acc-1) 0
   | Skip n -> if acc >= n then acc-n else acc
+  | Z_if_full -> acc
   | Blit (_,_,len) -> min size (acc + len)
 
 let apply_op b = function
@@ -684,6 +696,7 @@ let apply_op b = function
   | Blit (s,i,len) ->
     assert(i+len <= String.length s);
     BS.blit_from b (Bytes.unsafe_of_string s) i len; None
+  | Z_if_full -> if BS.is_full b then Some '0' else None
 
 let gen_op =
   let open Q.Gen in
@@ -702,6 +715,7 @@ let gen_op =
       2, g_blit;
       1, (0--5 >|= skip);
       2, map push_back g_char;
+      1, return Z_if_full;
     ]
 
 let arb_op =
@@ -755,6 +769,7 @@ module L_impl = struct
     | Junk_front -> junk_front b; None
     | Skip n -> skip b n; None
     | Blit (s,i,len) -> blit b s i len; None
+    | Z_if_full -> if b.size = List.length b.l then Some '0' else None
 
   let to_list b = b.l
 end
