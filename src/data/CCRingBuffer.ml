@@ -419,11 +419,12 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     if len > length b then (
       invalid_arg "CCRingBuffer.skip";
     );
-    if b.stop >= b.start
-    then b.start <- b.start + len
-    else (
+    if b.stop >= b.start then (
+      b.start <- b.start + len;
+      assert (b.stop >= b.start);
+    ) else (
       let len_end = A.length b.buf - b.start in
-      if len > len_end
+      if len >= len_end
       then b.start <- len-len_end  (* wrap to the beginning *)
       else b.start <- b.start + len
     )
@@ -608,6 +609,15 @@ module Make(Elt:sig
   done
 *)
 
+(* Test against reference implementation (lists) on a succession of
+   operations.
+
+   Remarks on semantics:
+
+   JUNK_FRONT/JUNK_BACK: try to remove if not empty
+   SKIP: if at least n elements, skip; else nop
+*)
+
 (*$inject
 module BS = CCRingBuffer.Byte
 
@@ -615,15 +625,22 @@ type op =
   | Push_back of char
   | Take_front
   | Take_back
+  | Junk_front
+  | Junk_back
+  | Skip of int
   | Blit of string * int * int
 
 let str_of_op = function
   | Push_back c -> Printf.sprintf "push_back(%C)" c
   | Take_front -> Printf.sprintf "take_front"
   | Take_back -> Printf.sprintf "take_back"
+  | Junk_front -> Printf.sprintf "junk_front"
+  | Junk_back -> Printf.sprintf "junk_back"
+  | Skip n -> Printf.sprintf "skip(%d)" n
   | Blit (s,i,len) -> Printf.sprintf "blit(%S,%d,%d)" s i len
 
 let push_back c = Push_back c
+let skip n = assert (n>=0); Skip n
 let blit s i len =
   if i<0 || len<0 || i+len > String.length s then (
     failwith ("wrong blit: " ^ str_of_op (Blit (s,i,len)));
@@ -634,7 +651,8 @@ let shrink_op =
   let open Q.Iter in
   function
     | Push_back c -> Q.Shrink.char c >|= push_back
-    | Take_front | Take_back -> empty
+    | Take_front | Take_back | Junk_back | Junk_front -> empty
+    | Skip n -> Q.Shrink.int n >|= skip
     | Blit (s,i,len) ->
       let s_i =
         Q.Shrink.int i >>= fun i' ->
@@ -652,13 +670,17 @@ let shrink_op =
 
 let rec len_op size acc = function
   | Push_back _ -> min size (acc + 1)
-  | Take_front | Take_back -> max (acc-1) 0
+  | Take_front | Take_back | Junk_front | Junk_back -> max (acc-1) 0
+  | Skip n -> if acc >= n then acc-n else acc
   | Blit (_,_,len) -> min size (acc + len)
 
 let apply_op b = function
   | Push_back c -> BS.push_back b c; None
   | Take_front -> BS.take_front b
   | Take_back -> BS.take_back b
+  | Junk_front -> (try BS.junk_front b with BS.Empty -> ()); None
+  | Junk_back -> (try BS.junk_back b with BS.Empty -> ()); None
+  | Skip n -> if n <= BS.length b then BS.skip b n; None
   | Blit (s,i,len) ->
     assert(i+len <= String.length s);
     BS.blit_from b (Bytes.unsafe_of_string s) i len; None
@@ -675,7 +697,10 @@ let gen_op =
   frequency
     [ 3, return Take_back;
       3, return Take_front;
-      1, g_blit;
+      1, return Junk_back;
+      1, return Junk_front;
+      2, g_blit;
+      1, (0--5 >|= skip);
       2, map push_back g_char;
     ]
 
@@ -712,6 +737,12 @@ module L_impl = struct
       b.l <- init;
       Some x
     )
+  let junk_front b = ignore (take_front b)
+  let junk_back b = ignore (take_back b)
+  let skip b n =
+    if n <= List.length b.l then (
+      CCInt.range' 0 n (fun _ -> junk_front b)
+    )
 
   let blit b s i len =
     for j=i to i+len-1 do push_back b (String.get s j) done
@@ -720,15 +751,19 @@ module L_impl = struct
     | Push_back c -> push_back b c; None
     | Take_front -> take_front b
     | Take_back -> take_back b
+    | Junk_back -> junk_back b; None
+    | Junk_front -> junk_front b; None
+    | Skip n -> skip b n; None
     | Blit (s,i,len) -> blit b s i len; None
 
   let to_list b = b.l
 end
+
 *)
 
 (* check that a lot of operations can be applied without failure,
   and that the result has correct length *)
-(*$QR
+(*$QR & ~count:1_000
   arb_ops (fun ops ->
     let size = 64 in
     let b = BS.create size in
@@ -737,7 +772,7 @@ end
 *)
 
 (* check identical behavior with list implem *)
-(*$QR
+(*$QR & ~count:1_000
   arb_ops (fun ops ->
     let size = 64 in
     let b = BS.create size in
