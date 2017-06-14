@@ -157,13 +157,21 @@ module type S = sig
       If [t.bounded=false], the buffer will grow as needed,
       otherwise the oldest elements are replaced first. *)
 
-  val peek_front : t -> Array.elt
-  (** First value from front of [t], without modification.
-      @raise Empty if buffer is empty. *)
+  val peek_front : t -> Array.elt option
+  (** First value from front of [t], without modification. *)
 
-  val peek_back : t -> Array.elt
+  val peek_front_exn : t -> Array.elt
+  (** First value from front of [t], without modification.
+      @raise Empty if buffer is empty.
+      @since NEXT_RELEASE *)
+
+  val peek_back : t -> Array.elt option
+  (** Get the last value from back of [t], without modification. *)
+
+  val peek_back_exn : t -> Array.elt
   (** Get the last value from back of [t], without modification.
-      @raise Empty if buffer is empty. *)
+      @raise Empty if buffer is empty.
+      @since NEXT_RELEASE *)
 
   val take_back : t -> Array.elt option
   (** Take and remove the last value from back of [t], if any *)

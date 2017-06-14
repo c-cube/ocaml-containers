@@ -156,13 +156,21 @@ module type S = sig
       If [t.bounded=false], the buffer will grow as needed,
       otherwise the oldest elements are replaced first. *)
 
-  val peek_front : t -> Array.elt
-  (** First value from front of [t], without modification.
-      @raise Empty if buffer is empty. *)
+  val peek_front : t -> Array.elt option
+  (** First value from front of [t], without modification. *)
 
-  val peek_back : t -> Array.elt
+  val peek_front_exn : t -> Array.elt
+  (** First value from front of [t], without modification.
+      @raise Empty if buffer is empty.
+      @since NEXT_RELEASE *)
+
+  val peek_back : t -> Array.elt option
+  (** Get the last value from back of [t], without modification. *)
+
+  val peek_back_exn : t -> Array.elt
   (** Get the last value from back of [t], without modification.
-      @raise Empty if buffer is empty. *)
+      @raise Empty if buffer is empty.
+      @since NEXT_RELEASE *)
 
   val take_back : t -> Array.elt option
   (** Take and remove the last value from back of [t], if any *)
@@ -279,7 +287,7 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     Byte.push_back b 'X'; \
-    Byte.peek_back b = 'X')
+    Byte.peek_back_exn b = 'X')
   *)
 
   (*$Q
@@ -544,32 +552,36 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
   let append b ~into =
     iter b ~f:(push_back into)
 
-  let peek_front b =
+  let peek_front_exn b =
     if is_empty b then raise Empty
     else A.get b.buf b.start
+
+  let peek_front b = try Some (peek_front_exn b) with Empty -> None
 
   (*$Q
     a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
-    try let back = Byte.peek_front b in \
+    try let back = Byte.peek_front_exn b in \
     back = Bytes.get s 0 with Byte.Empty -> s_len = 0)
   *)
 
-  let peek_back b = if is_empty b
+  let peek_back_exn b = if is_empty b
     then raise Empty
     else (
       let i = if b.stop = 0 then A.length b.buf - 1 else b.stop-1 in
       A.get b.buf i
     )
 
+  let peek_back b = try Some (peek_back_exn b) with Empty -> None
+
   (*$Q
     a_str (fun s -> let s = Bytes.of_string s in \
     let s_len = Bytes.length s in \
     let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
-    try let back = Byte.peek_back b in \
+    try let back = Byte.peek_back_exn b in \
     back = Bytes.get s (s_len - 1) with Byte.Empty -> s_len = 0)
   *)
 
@@ -632,6 +644,8 @@ type op =
   | Push_back of char
   | Take_front
   | Take_back
+  | Peek_front
+  | Peek_back
   | Junk_front
   | Junk_back
   | Skip of int
@@ -642,6 +656,8 @@ let str_of_op = function
   | Push_back c -> Printf.sprintf "push_back(%C)" c
   | Take_front -> Printf.sprintf "take_front"
   | Take_back -> Printf.sprintf "take_back"
+  | Peek_front -> Printf.sprintf "peek_front"
+  | Peek_back -> Printf.sprintf "peek_back"
   | Junk_front -> Printf.sprintf "junk_front"
   | Junk_back -> Printf.sprintf "junk_back"
   | Skip n -> Printf.sprintf "skip(%d)" n
@@ -661,7 +677,7 @@ let shrink_op =
   function
     | Push_back c -> Q.Shrink.char c >|= push_back
     | Take_front | Take_back | Junk_back | Junk_front
-    | Z_if_full
+    | Z_if_full | Peek_front | Peek_back
     -> empty
     | Skip n -> Q.Shrink.int n >|= skip
     | Blit (s,i,len) ->
@@ -683,7 +699,7 @@ let rec len_op size acc = function
   | Push_back _ -> min size (acc + 1)
   | Take_front | Take_back | Junk_front | Junk_back -> max (acc-1) 0
   | Skip n -> if acc >= n then acc-n else acc
-  | Z_if_full -> acc
+  | Z_if_full | Peek_front | Peek_back -> acc
   | Blit (_,_,len) -> min size (acc + len)
 
 let apply_op b = function
@@ -692,6 +708,8 @@ let apply_op b = function
   | Take_back -> BS.take_back b
   | Junk_front -> (try BS.junk_front b with BS.Empty -> ()); None
   | Junk_back -> (try BS.junk_back b with BS.Empty -> ()); None
+  | Peek_front -> BS.peek_front b
+  | Peek_back -> BS.peek_back b
   | Skip n -> if n <= BS.length b then BS.skip b n; None
   | Blit (s,i,len) ->
     assert(i+len <= String.length s);
@@ -712,6 +730,8 @@ let gen_op =
       3, return Take_front;
       1, return Junk_back;
       1, return Junk_front;
+      1, return Peek_front;
+      1, return Peek_back;
       2, g_blit;
       1, (0--5 >|= skip);
       2, map push_back g_char;
@@ -742,6 +762,7 @@ module L_impl = struct
   let take_front b = match b.l with
     | [] -> None
     | c :: l -> b.l <- l; Some c
+  let peek_front b = match b.l with [] -> None | x::_ -> Some x
   let take_back b =
     let n = List.length b.l in
     if n=0 then None
@@ -751,6 +772,7 @@ module L_impl = struct
       b.l <- init;
       Some x
     )
+  let peek_back b = match b.l with [] -> None | l -> Some (List.hd (List.rev l))
   let junk_front b = ignore (take_front b)
   let junk_back b = ignore (take_back b)
   let skip b n =
@@ -765,6 +787,8 @@ module L_impl = struct
     | Push_back c -> push_back b c; None
     | Take_front -> take_front b
     | Take_back -> take_back b
+    | Peek_front -> peek_front b
+    | Peek_back -> peek_back b
     | Junk_back -> junk_back b; None
     | Junk_front -> junk_front b; None
     | Skip n -> skip b n; None
@@ -778,7 +802,7 @@ end
 
 (* check that a lot of operations can be applied without failure,
   and that the result has correct length *)
-(*$QR & ~count:1_000
+(*$QR & ~count:3_000
   arb_ops (fun ops ->
     let size = 64 in
     let b = BS.create size in
@@ -787,7 +811,7 @@ end
 *)
 
 (* check identical behavior with list implem *)
-(*$QR & ~count:1_000
+(*$QR & ~count:3_000
   arb_ops (fun ops ->
     let size = 64 in
     let b = BS.create size in
