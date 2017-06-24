@@ -83,7 +83,7 @@ val reverse_in_place : 'a t -> unit
 val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
 (** [sorted cmp a] makes a copy of [a] and sorts it with [cmp].
     @since 1.0 *)
-    
+
 val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index at which the [i]-th element of [sorted cmp a] 
