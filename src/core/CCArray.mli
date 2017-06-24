@@ -72,10 +72,11 @@ val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
 val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index at which the [i]-th element of [sorted cmp a] 
-    appears in [a]. 
+    appears in [a]. [a] is not modified.
     
     In other words, [map (fun i -> a.(i)) (sort_indices cmp a) = sorted cmp a]. 
-    [a] is not modified.
+    [sort_indices] yields the inverse permutation of {!sort_ranking}.
+    
     @since 1.0 *)
 
 val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
@@ -84,7 +85,7 @@ val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
     in [sorted cmp a]. [a] is not modified.
 
     In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a]. 
-    [sort_ranking] gives the inverse permutation of {!sort_indices}.
+    [sort_ranking] yields the inverse permutation of {!sort_indices}.
 
     In the absence of duplicate elements in [a], we also have
     [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
