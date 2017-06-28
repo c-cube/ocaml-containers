@@ -1393,3 +1393,18 @@ let split l =
   in 
     direct direct_depth_default_ l
 
+(*$Q 
+  (Q.(list (pair int string))) (fun l -> \
+    let (l1, l2) = split l in \
+    List.length l1 = List.length l \
+    && List.length l2 = List.length l)
+
+  (Q.(list (pair string int))) (fun l -> \
+    let l = ("hello", 10) :: l in \
+    let (l1, l2) = split l in \
+    let i = Random.int @@ List.length l in \
+    let l1_x = List.nth l1 i in \
+    let l2_y = List.nth l2 i in \
+    let (x,y) = List.nth l i in \
+    l1_x = x && l2_y = y)
+*)
