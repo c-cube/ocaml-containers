@@ -1353,3 +1353,43 @@ let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
         (CCFormat.hbox(CCList.pp ~start:"[" ~stop:"]" CCFormat.int)) \
         [1;2;3])
 *)
+
+let split l = 
+  let rec direct i l = match l with 
+    | [] -> ([],[])
+    | [(x1,y1)] -> ([x1], [y1])
+    | [i1; i2] -> 
+      let (x1, y1) = i1 in 
+      let (x2, y2) = i2 in 
+      ([x1;x2], [y1;y2]) 
+    | [i1; i2; i3] -> 
+      let (x1, y1) = i1 in 
+      let (x2, y2) = i2 in 
+      let (x3, y3) = i3 in 
+      ([x1;x2;x3], [y1;y2;y3])
+    | [i1; i2; i3; i4] -> 
+      let (x1, y1) = i1 in 
+      let (x2, y2) = i2 in 
+      let (x3, y3) = i3 in 
+      let (x4, y4) = i4 in 
+      ([x1;x2;x3;x4], [y1;y2;y3;y4])
+    | _ when i=0 -> split_slow ([], []) l 
+    | i1 :: i2 :: i3 :: i4 :: i5 :: l' -> 
+      let (x1, y1) = i1 in 
+      let (x2, y2) = i2 in 
+      let (x3, y3) = i3 in 
+      let (x4, y4) = i4 in 
+      let (x5, y5) = i5 in 
+      let (rx, ry) = direct (i-1) l' in 
+      (x1 :: x2 :: x3 :: x4 :: x5 :: rx
+      ,y1 :: y2 :: y3 :: y4 :: y5 :: ry)
+  and split_slow acc l = match l with
+    | [] -> acc 
+    | (x1, y1) :: l' ->
+      let (x_acc, y_acc) = acc in
+      let x_acc = x1 :: x_acc in 
+      let y_acc = y1 :: y_acc in 
+      split_slow (x_acc, y_acc) l'
+  in 
+    direct direct_depth_default_ l
+

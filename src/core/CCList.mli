@@ -518,3 +518,8 @@ end
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> 'a t printer
+
+(** {2 Lists of pairs} *)
+
+val split : ('a * 'b) t -> 'a t * 'b t 
+(** Safe version of split *)
