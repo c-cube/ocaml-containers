@@ -92,6 +92,9 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
     instead, the output has as many pairs as the smallest input list.
     @since 1.2 *)
 
+val split : ('a * 'b) t -> 'a t * 'b t 
+(** A tail-recursive version of {!List.split}. *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
@@ -520,6 +523,3 @@ val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> 'a t printer
 
 (** {2 Lists of pairs} *)
-
-val split : ('a * 'b) t -> 'a t * 'b t 
-(** Safe version of split *)
