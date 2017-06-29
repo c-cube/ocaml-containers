@@ -387,6 +387,48 @@ let combine_gen l1 l2 =
     res1 = res2)
   *)
 
+let split l = 
+  let rec direct i l = match l with 
+    | [] -> ([],[])
+    | [x1, y1] -> [x1], [y1]
+    | [x1, y1; x2, y2] -> [x1;x2], [y1;y2]
+    | [x1, y1; x2, y2; x3, y3] -> [x1;x2;x3], [y1;y2;y3]
+    | [x1, y1; x2, y2; x3, y3; x4, y4] -> [x1;x2;x3;x4], [y1;y2;y3;y4]
+    | _ when i=0 -> split_slow ([], []) l
+    | (x1, y1) ::
+      (x2, y2) ::
+      (x3, y3) ::
+      (x4, y4) ::
+      (x5, y5) :: l' ->
+      let rx, ry = direct (i-1) l'
+      in 
+      (x1 :: x2 :: x3 :: x4 :: x5 :: rx,
+       y1 :: y2 :: y3 :: y4 :: y5 :: ry)
+  and split_slow acc l = match l with
+    | [] -> acc 
+    | (x1, y1) :: l' ->
+      let acc = (x1 :: fst acc, y1 :: snd acc)
+      in 
+      split_slow acc l'
+  in 
+    direct direct_depth_default_ l
+
+(*$Q 
+  (Q.(list (pair int string))) (fun l -> \
+    let (l1, l2) = split l in \
+    List.length l1 = List.length l \
+    && List.length l2 = List.length l)
+
+  (Q.(list (pair string int))) (fun l -> \
+    let l = ("hello", 10) :: l in \
+    let (l1, l2) = split l in \
+    let i = Random.int @@ List.length l in \
+    let l1_x = List.nth l1 i in \
+    let l2_y = List.nth l2 i in \
+    let (x,y) = List.nth l i in \
+    l1_x = x && l2_y = y)
+*)
+
 let return x = [x]
 
 let (>>=) l f = flat_map f l
