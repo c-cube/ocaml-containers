@@ -400,15 +400,13 @@ let split l =
       (x3, y3) ::
       (x4, y4) ::
       (x5, y5) :: l' ->
-      let rx, ry = direct (i-1) l'
-      in 
-      (x1 :: x2 :: x3 :: x4 :: x5 :: rx,
-       y1 :: y2 :: y3 :: y4 :: y5 :: ry)
+      let rx, ry = direct (i-1) l' in 
+      x1 :: x2 :: x3 :: x4 :: x5 :: rx,
+      y1 :: y2 :: y3 :: y4 :: y5 :: ry
   and split_slow acc l = match l with
     | [] -> acc 
     | (x1, y1) :: l' ->
-      let acc = (x1 :: fst acc, y1 :: snd acc)
-      in 
+      let acc = x1 :: fst acc, y1 :: snd acc in 
       split_slow acc l'
   in 
     direct direct_depth_default_ l
@@ -427,6 +425,9 @@ let split l =
     let l2_y = List.nth l2 i in \
     let (x,y) = List.nth l i in \
     l1_x = x && l2_y = y)
+
+  Q.(list (pair int int)) (fun l -> \
+    split l = List.split l)
 *)
 
 let return x = [x]
