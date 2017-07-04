@@ -114,13 +114,13 @@ val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 val cartesian_product : 'a t t -> 'a t t
 (**
     For example:
-    {[
-      # cartesian_product [[1;2];[3];[4;5;6]] =
-          [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
-      # cartesian_product [[1;2];[];[4;5;6]] = [];;
-      # cartesian_product [[1;2];[3];[4];[5];[6]] =
-          [[1;3;4;5;6];[2;3;4;5;6]];;
-    ]}
+   {[
+     # cartesian_product [[1;2];[3];[4;5;6]] =
+     [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
+     # cartesian_product [[1;2];[];[4;5;6]] = [];;
+     # cartesian_product [[1;2];[3];[4];[5];[6]] =
+     [[1;3;4;5;6];[2;3;4;5;6]];;
+   ]}
     invariant: [cartesian_product l = map_product id l].
     @since 1.2 *)
 

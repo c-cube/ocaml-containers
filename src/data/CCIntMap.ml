@@ -238,13 +238,13 @@ let update k f t =
 let doubleton k1 v1 k2 v2 = add k1 v1 (singleton k2 v2)
 
 let rec equal ~eq a b = a==b || match a, b with
-  | E, E -> true
-  | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
-  | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
-    pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
-  | E, _
-  | N _, _
-  | L _, _ -> false
+    | E, E -> true
+    | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
+    | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
+      pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
+    | E, _
+    | N _, _
+    | L _, _ -> false
 
 (*$Q
   Q.(list (pair int bool)) ( fun l -> \
@@ -289,23 +289,23 @@ let choose t =
 let rec union f t1 t2 =
   if t1==t2 then t1
   else match t1, t2 with
-  | E, o | o, E -> o
-  | L (k, v), o
-  | o, L (k, v) ->
-    (* insert k, v into o *)
-    insert_ (fun ~old v -> f k old v) k v o
-  | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-    if p1 = p2 && m1 = m2
-    then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
-    else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
-    then if Bit.is_0 p2 ~bit:m1
-      then N (p1, m1, union f l1 t2, r1)
-      else N (p1, m1, l1, union f r1 t2)
-    else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
-    then if Bit.is_0 p1 ~bit:m2
-      then N (p2, m2, union f t1 l2, r2)
-      else N (p2, m2, l2, union f t1 r2)
-    else join_ t1 p1 t2 p2
+    | E, o | o, E -> o
+    | L (k, v), o
+    | o, L (k, v) ->
+      (* insert k, v into o *)
+      insert_ (fun ~old v -> f k old v) k v o
+    | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
+      if p1 = p2 && m1 = m2
+      then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
+      else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
+      then if Bit.is_0 p2 ~bit:m1
+        then N (p1, m1, union f l1 t2, r1)
+        else N (p1, m1, l1, union f r1 t2)
+      else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
+      then if Bit.is_0 p1 ~bit:m2
+        then N (p2, m2, union f t1 l2, r2)
+        else N (p2, m2, l2, union f t1 r2)
+      else join_ t1 p1 t2 p2
 
 (*$Q & ~small:(fun (a,b) -> List.length a + List.length b)
   Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1,l2) -> \
@@ -344,26 +344,26 @@ let rec union f t1 t2 =
 let rec inter f a b =
   if a==b then a
   else match a, b with
-  | E, _ | _, E -> E
-  | L (k, v), o
-  | o, L (k, v) ->
-    begin try
-        let v' = find_exn k o in
-        L (k, f k v v')
-      with Not_found -> E
-    end
-  | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-    if p1 = p2 && m1 = m2
-    then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
-    else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
-    then if Bit.is_0 p2 ~bit:m1
-      then inter f l1 b
-      else inter f r1 b
-    else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
-    then if Bit.is_0 p1 ~bit:m2
-      then inter f a l2
-      else inter f a r2
-    else E
+    | E, _ | _, E -> E
+    | L (k, v), o
+    | o, L (k, v) ->
+      begin try
+          let v' = find_exn k o in
+          L (k, f k v v')
+        with Not_found -> E
+      end
+    | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
+      if p1 = p2 && m1 = m2
+      then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
+      else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
+      then if Bit.is_0 p2 ~bit:m1
+        then inter f l1 b
+        else inter f r1 b
+      else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
+      then if Bit.is_0 p1 ~bit:m2
+        then inter f a l2
+        else inter f a r2
+      else E
 
 (*$R
   assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (print CCString.print))
@@ -544,7 +544,7 @@ let print pp_x out m =
 
 (* Some thorough tests from Jan Midtgaar
    https://github.com/jmid/qc-ptrees
-   *)
+*)
 
 (*$inject
   let test_count = 2_500
@@ -684,14 +684,14 @@ let print pp_x out m =
     (fun (t,k,v) ->
       let s = interpret t in
       abstract (add k v s) = add_m k v (abstract s))
-  *)
+*)
 
 (*$QR & ~count:test_count
   (pair arb_tree arb_int)
     (fun (t,n) ->
       let s = interpret t in
       abstract (remove n s) = remove_m n (abstract s))
-  *)
+*)
 
 (*$QR & ~count:test_count
   (pair arb_tree arb_tree)
@@ -699,7 +699,7 @@ let print pp_x out m =
     let s  = interpret t in
     let s' = interpret t' in
     abstract (union merge_f s s') = union_m (abstract s) (abstract s'))
-  *)
+*)
 
 (*$QR & ~count:test_count
   Q.(pair arb_tree arb_tree)

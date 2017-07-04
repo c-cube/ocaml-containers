@@ -53,7 +53,7 @@ let pop q =
   Q.(list small_int) (fun l -> \
     let q = of_list l in \
     equal CCInt.equal (Gen.unfold pop q |> of_gen) q)
-  *)
+*)
 
 let junk q =
   try
@@ -180,7 +180,7 @@ let append q1 q2 =
     equal CCInt.equal \
       (append (of_list l1)(of_list l2)) \
       (of_list (List.append l1 l2)))
-  *)
+*)
 
 module Infix = struct
   let (>|=) q f = map f q

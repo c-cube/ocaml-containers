@@ -366,7 +366,7 @@ let combine l1 l2 =
     if List.length l1=List.length l2 \
     then CCList.combine l1 l2 = List.combine l1 l2 \
     else Q.assume_fail() )
-  *)
+*)
 
 let combine_gen l1 l2 =
   let l1 = ref l1 in
@@ -385,7 +385,7 @@ let combine_gen l1 l2 =
     let res1 = combine (take n l1) (take n l2) in \
     let res2 = combine_gen l1 l2 |> of_gen in \
     res1 = res2)
-  *)
+*)
 
 let split l = 
   let rec direct i l = match l with 
@@ -396,10 +396,10 @@ let split l =
     | [x1, y1; x2, y2; x3, y3; x4, y4] -> [x1;x2;x3;x4], [y1;y2;y3;y4]
     | _ when i=0 -> split_slow ([], []) l
     | (x1, y1) ::
-      (x2, y2) ::
-      (x3, y3) ::
-      (x4, y4) ::
-      (x5, y5) :: l' ->
+        (x2, y2) ::
+        (x3, y3) ::
+        (x4, y4) ::
+        (x5, y5) :: l' ->
       let rx, ry = direct (i-1) l' in 
       x1 :: x2 :: x3 :: x4 :: x5 :: rx,
       y1 :: y2 :: y3 :: y4 :: y5 :: ry
@@ -409,7 +409,7 @@ let split l =
       let acc = x1 :: fst acc, y1 :: snd acc in 
       split_slow acc l'
   in 
-    direct direct_depth_default_ l
+  direct direct_depth_default_ l
 
 (*$Q 
   (Q.(list (pair int string))) (fun l -> \

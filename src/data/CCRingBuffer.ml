@@ -201,7 +201,7 @@ end
   let g_char = map Char.chr (Char.code 'A' -- Char.code 'z')
   let g_str = string_size ~gen:g_char (0--10)
   let a_str = {Q.string with Q.gen=g_str}
-  *)
+*)
 
 module MakeFromArray(A:Array.S) : S with module Array = A = struct
   module Array = A
@@ -638,9 +638,9 @@ module Make(Elt:sig
 *)
 
 (*$inject
-module BS = CCRingBuffer.Byte
+  module BS = CCRingBuffer.Byte
 
-type op =
+  type op =
   | Push_back of char
   | Take_front
   | Take_back
@@ -652,7 +652,7 @@ type op =
   | Blit of string * int * int
   | Z_if_full
 
-let str_of_op = function
+  let str_of_op = function
   | Push_back c -> Printf.sprintf "push_back(%C)" c
   | Take_front -> Printf.sprintf "take_front"
   | Take_back -> Printf.sprintf "take_back"
@@ -664,15 +664,15 @@ let str_of_op = function
   | Blit (s,i,len) -> Printf.sprintf "blit(%S,%d,%d)" s i len
   | Z_if_full -> "zero_if_full"
 
-let push_back c = Push_back c
-let skip n = assert (n>=0); Skip n
-let blit s i len =
+  let push_back c = Push_back c
+  let skip n = assert (n>=0); Skip n
+  let blit s i len =
   if i<0 || len<0 || i+len > String.length s then (
     failwith ("wrong blit: " ^ str_of_op (Blit (s,i,len)));
   );
   Blit (s,i,len)
 
-let shrink_op =
+  let shrink_op =
   let open Q.Iter in
   function
     | Push_back c -> Q.Shrink.char c >|= push_back
@@ -695,14 +695,14 @@ let shrink_op =
       in
       append s_i (append s_len s_s)
 
-let rec len_op size acc = function
+  let rec len_op size acc = function
   | Push_back _ -> min size (acc + 1)
   | Take_front | Take_back | Junk_front | Junk_back -> max (acc-1) 0
   | Skip n -> if acc >= n then acc-n else acc
   | Z_if_full | Peek_front | Peek_back -> acc
   | Blit (_,_,len) -> min size (acc + len)
 
-let apply_op b = function
+  let apply_op b = function
   | Push_back c -> BS.push_back b c; None
   | Take_front -> BS.take_front b
   | Take_back -> BS.take_back b
@@ -716,7 +716,7 @@ let apply_op b = function
     BS.blit_from b (Bytes.unsafe_of_string s) i len; None
   | Z_if_full -> if BS.is_full b then Some '0' else None
 
-let gen_op =
+  let gen_op =
   let open Q.Gen in
   let g_blit =
     string_size ~gen:g_char (5--20) >>= fun s ->
@@ -738,15 +738,15 @@ let gen_op =
       1, return Z_if_full;
     ]
 
-let arb_op =
+  let arb_op =
   Q.make
     ~shrink:shrink_op
     ~print:str_of_op
     gen_op
 
-let arb_ops = Q.list arb_op
+  let arb_ops = Q.list arb_op
 
-module L_impl = struct
+  module L_impl = struct
   type t = {
     size: int;
     mutable l: char list;
@@ -796,12 +796,12 @@ module L_impl = struct
     | Z_if_full -> if b.size = List.length b.l then Some '0' else None
 
   let to_list b = b.l
-end
+  end
 
 *)
 
 (* check that a lot of operations can be applied without failure,
-  and that the result has correct length *)
+   and that the result has correct length *)
 (*$QR & ~count:3_000
   arb_ops (fun ops ->
     let size = 64 in

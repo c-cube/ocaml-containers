@@ -129,7 +129,7 @@ let fold_ok f acc r = match r with
 (*$=
   42 (fold_ok (+) 2 (Ok 40))
   40 (fold_ok (+) 40 (Error "foo"))
-  *)
+*)
 
 let is_ok = function
   | Ok _ -> true

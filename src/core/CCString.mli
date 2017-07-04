@@ -375,7 +375,7 @@ val rtrim : t -> t
   Q.(printable_string) (fun s -> \
     let s' = rtrim s in \
     if s'="" then Q.assume_fail() else s'.[String.length s'-1] <> ' ')
-  *)
+*)
 
 (** {2 Operations on 2 strings} *)
 
@@ -654,7 +654,7 @@ module Sub : sig
   (*$= & ~printer:(String.make 1)
     'b' Sub.(get (make "abc" 1 ~len:2) 0)
     'c' Sub.(get (make "abc" 1 ~len:2) 1)
-    *)
+  *)
 
   (*$QR
     Q.(printable_string_of_size Gen.(3--10)) (fun s ->

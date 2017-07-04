@@ -300,7 +300,7 @@ module Traverse = struct
      `Exit 345614]
     in
     assert_equal expected l
-    *)
+  *)
 end
 
 (** {2 Cycles} *)
