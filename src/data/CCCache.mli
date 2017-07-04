@@ -31,13 +31,22 @@ type ('a, 'b) t
 val clear : (_,_) t -> unit
 (** Clear the content of the cache *)
 
-val with_cache : ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
+type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
+(** Type of the callback that is called once a cached value is found
+    or not.
+    Should never raise.
+    @param in_cache is [true] if the value was in cache, [false]
+      if the value was just produced.
+    @since NEXT_RELEASE *)
+
+val with_cache : ?cb:('a, 'b) callback -> ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
 (** [with_cache c f] behaves like [f], but caches calls to [f] in the
     cache [c]. It always returns the same value as
     [f x], if [f x] returns, or raise the same exception.
-    However, [f] may not be called if [x] is in the cache. *)
+    However, [f] may not be called if [x] is in the cache.
+    @param cb called after the value is generated or retrieved *)
 
-val with_cache_rec : ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
+val with_cache_rec : ?cb:('a, 'b) callback -> ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
 (** [with_cache_rec c f] is a function that first, applies [f] to
     some [f' = fix f], such that recursive calls to [f'] are cached in [c].
     It is similar to {!with_cache} but with a function that takes as
@@ -52,6 +61,7 @@ val with_cache_rec : ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
 
       fib 70;;
     ]}
+    @param cb called after the value is generated or retrieved
 *)
 
 val size : (_,_) t -> int

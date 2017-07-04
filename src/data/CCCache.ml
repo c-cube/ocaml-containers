@@ -26,18 +26,25 @@ type ('a,'b) t = {
   clear : unit -> unit;
 }
 
+type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
+
 let clear c = c.clear ()
 
-let with_cache c f x =
+let default_callback_ ~in_cache:_ _ _ = ()
+
+let with_cache ?(cb=default_callback_) c f x =
   try
-    c.get x
+    let y = c.get x in
+    cb ~in_cache:true x y;
+    y
   with Not_found ->
     let y = f x in
     c.set x y;
+    cb ~in_cache:false x y;
     y
 
-let with_cache_rec c f =
-  let rec f' x = with_cache c (f f') x in
+let with_cache_rec ?(cb=default_callback_) c f =
+  let rec f' x = with_cache ~cb c (f f') x in
   f'
 
 (*$R
