@@ -7,7 +7,7 @@ let equal (a:bool) b = a=b
 
 let compare (a:bool) b = Pervasives.compare a b
 
-let negate x = not x
+let negate = not
 
 type 'a printer = Format.formatter -> 'a -> unit
 
