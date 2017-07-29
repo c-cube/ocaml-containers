@@ -414,6 +414,44 @@ let compare_versions a b =
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
 
+type nat_chunk =
+  | NC_char of char
+  | NC_int of int
+
+let compare_natural a b =
+  (* stream of chunks *)
+  let chunks s : unit -> nat_chunk option =
+    let i = ref 0 in
+    let rec next () =
+      if !i = length s then None
+      else match String.get s !i with
+        | '0'..'9' as c -> incr i; read_int (Char.code c - Char.code '0')
+        | c -> incr i; Some (NC_char c)
+    and read_int n =
+      if !i = length s then Some (NC_int n)
+      else match String.get s !i with
+        | '0'..'9' as c -> incr i; read_int (10 * n + Char.code c - Char.code '0')
+        | _ -> Some (NC_int n)
+    in
+    next
+  in
+  let rec cmp_rec a b = match a(), b() with
+    | None, None -> 0
+    | Some _, None -> 1
+    | None, Some _ -> -1
+    | Some x, Some y ->
+      match x, y with
+        | NC_char x, NC_char y ->
+          let c = Char.compare x y in
+          if c<>0 then c else cmp_rec a b
+        | NC_int _, NC_char _ -> 1
+        | NC_char _, NC_int _ -> -1
+        | NC_int x, NC_int y ->
+          let c = Pervasives.compare x y in
+          if c<>0 then c else cmp_rec a b
+  in
+  cmp_rec (chunks a) (chunks b)
+
 let edit_distance s1 s2 =
   if length s1 = 0
   then length s2

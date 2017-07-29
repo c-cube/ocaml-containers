@@ -92,6 +92,9 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
     instead, the output has as many pairs as the smallest input list.
     @since 1.2 *)
 
+val split : ('a * 'b) t -> 'a t * 'b t 
+(** A tail-recursive version of {!List.split}. *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
@@ -111,13 +114,13 @@ val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 val cartesian_product : 'a t t -> 'a t t
 (**
     For example:
-    {[
-      # cartesian_product [[1;2];[3];[4;5;6]] =
-          [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
-      # cartesian_product [[1;2];[];[4;5;6]] = [];;
-      # cartesian_product [[1;2];[3];[4];[5];[6]] =
-          [[1;3;4;5;6];[2;3;4;5;6]];;
-    ]}
+   {[
+     # cartesian_product [[1;2];[3];[4;5;6]] =
+     [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
+     # cartesian_product [[1;2];[];[4;5;6]] = [];;
+     # cartesian_product [[1;2];[3];[4];[5];[6]] =
+     [[1;3;4;5;6];[2;3;4;5;6]];;
+   ]}
     invariant: [cartesian_product l = map_product id l].
     @since 1.2 *)
 
@@ -246,6 +249,26 @@ val remove : ?eq:('a -> 'a -> bool) -> x:'a -> 'a t -> 'a t
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
+
+val keep_some : 'a option t -> 'a t
+(** [filter_some l] retains only elements of the form [Some x].
+    Same as [filter_map CCFun.id]
+    @since 1.3 *)
+
+val keep_ok : ('a, _) Result.result t -> 'a t
+(** [filter_some l] retains only elements of the form [Some x].
+    Same as [filter_map CCFun.id]
+    @since 1.3 *)
+
+val all_some : 'a option t -> 'a t option
+(** [all_some l] returns [Some l'] if all elements of [l] are of the form [Some x],
+    or [None] otherwise.
+    @since 1.3 *)
+
+val all_ok : ('a, 'err) Result.result t -> ('a t, 'err) Result.result
+(** [all_ok l] returns [Ok l'] if all elements of [l] are of the form [Ok x],
+    or [Error e] otherwise (with the first error met).
+    @since 1.3 *)
 
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** Merges elements from both sorted list *)
@@ -498,3 +521,5 @@ end
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> 'a t printer
+
+(** {2 Lists of pairs} *)

@@ -77,7 +77,7 @@ let text out (s:string): unit =
 (*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
   "a\nb\nc" (sprintf_no_color "@[<v>%a@]%!" text "a b c")
   "a b\nc" (sprintf_no_color "@[<h>%a@]%!" text "a b\nc")
-  *)
+*)
 
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with

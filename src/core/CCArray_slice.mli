@@ -86,20 +86,23 @@ val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
 
 val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
-    such that [b.(i)] is the index of the [i]-th element of [a] in [sort cmp a].
-    In other words, [map (fun i -> a.(i)) (sort_indices a) = sorted cmp a].
-    [a] is not modified.
+    such that [b.(i)] is the index at which the [i]-th element of [sorted cmp a] 
+    appears in [a]. [a] is not modified.
+
+    In other words, [map (fun i -> a.(i)) (sort_indices cmp a) = sorted cmp a]. 
+    [sort_indices] yields the inverse permutation of {!sort_ranking}.
+
     @since 1.0 *)
 
 val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
-    such that [b.(i)] is the position in [sorted cmp a] of the [i]-th
-    element of [a].
-    [a] is not modified.
+    such that [b.(i)] is the index at which the [i]-the element of [a] appears
+    in [sorted cmp a]. [a] is not modified.
 
-    In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].
+    In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a]. 
+    [sort_ranking] yields the inverse permutation of {!sort_indices}.
 
-    Without duplicates, we also have
+    In the absence of duplicate elements in [a], we also have
     [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)]
     @since 1.0 *)
 
@@ -122,7 +125,7 @@ val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
       [Some i] ([i] the index of the key) otherwise *)
 
 val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
-(** Same as {!lookup_exn}, but
+(** Same as {!lookup}, but
     @raise Not_found if the key is not present *)
 
 val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->

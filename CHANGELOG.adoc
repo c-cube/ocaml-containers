@@ -1,5 +1,23 @@
 = Changelog
 
+== 1.3
+
+- deprecate `CCBool.negate`
+- add `CCString.compare_natural` (closes #146)
+- add callbacks in `CCCache.with_cache{,_rec}` (closes #140)
+- tail-rec `CCList.split` (by @bikalgurung, see #138)
+- change `CCRingBuffer.peek_{front,back}` to return options (closes #127)
+- add `CCRingBuffer.is_full`
+- add `CCArray.find_map{,_i}`, deprecated older names (closes #129)
+- add `CCList.{keep,all}_{some,ok}` (closes #124)
+- large refactor of `CCSimple_queue` (close #125)
+- add `CCSimple_queue` to containers.data
+- small change for consistency in `CCIntMap`
+
+- bugfix in `CCRingBuffer.skip`, and corresponding tests
+- cleanup and refactor of `CCRingBuffer` (see #126). Add strong tests.
+- add rich testsuite to `CCIntMap`, based on @jmid's work
+
 == 1.2
 
 - make many modules extensions of stdlib (close #109)

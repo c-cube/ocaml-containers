@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 97e963a89adef885748c84195b76d95c)
+# DO NOT EDIT (digest: fe2373b07664be05f7322781403afad6)
 src/core/CCVector
 src/core/CCHeap
 src/core/CCList
@@ -53,6 +53,7 @@ src/data/CCBitField
 src/data/CCHashTrie
 src/data/CCWBTree
 src/data/CCRAL
+src/data/CCSimple_queue
 src/data/CCImmutArray
 src/data/CCHet
 src/data/CCZipper

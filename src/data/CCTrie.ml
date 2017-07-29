@@ -684,25 +684,27 @@ module Make(W : WORD)
       | [] | [_] -> true
       | x :: ((y ::_) as tl) ->
         (if rev then x >= y else x <= y) && sorted ~rev tl
+
+    let gen_str = Q.small_printable_string
   *)
 
   (*$Q & ~count:200
-    Q.(list_of_size Gen.(1 -- 20) (pair printable_string small_int)) \
+    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
           String.above k t |> Sequence.for_all (fun (k',v) -> k' >= k)) \
           l)
-    Q.(list_of_size Gen.(1 -- 20) (pair printable_string small_int)) \
+    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
           String.below k t |> Sequence.for_all (fun (k',v) -> k' <= k)) \
           l)
-    Q.(list_of_size Gen.(1 -- 20) (pair printable_string small_int)) \
+    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
           String.above k t |> Sequence.to_list |> sorted ~rev:false) \
           l)
-    Q.(list_of_size Gen.(1 -- 20) (pair printable_string small_int)) \
+    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
           String.below k t |> Sequence.to_list |> sorted ~rev:true) \

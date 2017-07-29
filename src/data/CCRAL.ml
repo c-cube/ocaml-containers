@@ -151,7 +151,8 @@ let mapi ~f l =
 *)
 
 (*$Q
-  Q.(pair (list small_int)(fun2 int int bool)) (fun (l,f) -> \
+  Q.(pair (list small_int)(fun2 Observable.int Observable.int bool)) (fun (l,f) -> \
+    let f = Q.Fn.apply f in \
     mapi ~f (of_list l) |> to_list = List.mapi f l )
 *)
 

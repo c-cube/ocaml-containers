@@ -269,7 +269,7 @@ let iter bv f =
     let bv = create ~size:n true in \
     let l = iter bv |> Sequence.zip |> Sequence.to_list in \
     List.length l = n && List.for_all (fun (_,b) -> b) l)
-  *)
+*)
 
 let iter_true bv f =
   iter bv (fun i b -> if b then f i else ())

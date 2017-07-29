@@ -366,7 +366,7 @@ let combine l1 l2 =
     if List.length l1=List.length l2 \
     then CCList.combine l1 l2 = List.combine l1 l2 \
     else Q.assume_fail() )
-  *)
+*)
 
 let combine_gen l1 l2 =
   let l1 = ref l1 in
@@ -385,7 +385,38 @@ let combine_gen l1 l2 =
     let res1 = combine (take n l1) (take n l2) in \
     let res2 = combine_gen l1 l2 |> of_gen in \
     res1 = res2)
-  *)
+*)
+
+let split l = 
+  let rec direct i l = match l with 
+    | [] -> [], []
+    | [x1, y1] -> [x1], [y1]
+    | [x1, y1; x2, y2] -> [x1;x2], [y1;y2]
+    | [x1, y1; x2, y2; x3, y3] -> [x1;x2;x3], [y1;y2;y3]
+    | [x1, y1; x2, y2; x3, y3; x4, y4] -> [x1;x2;x3;x4], [y1;y2;y3;y4]
+    | _ when i=0 -> split_slow [] [] l
+    | (x1, y1) :: (x2, y2) :: (x3, y3) :: (x4, y4) :: (x5, y5) :: l' ->
+      let rx, ry = direct (i-1) l' in 
+      x1 :: x2 :: x3 :: x4 :: x5 :: rx,
+      y1 :: y2 :: y3 :: y4 :: y5 :: ry
+  and split_slow acc1 acc2 l = match l with
+    | [] -> List.rev acc1, List.rev acc2
+    | (x1, x2) :: tail ->
+      let acc1 = x1 :: acc1
+      and acc2 = x2 :: acc2 in 
+      split_slow acc1 acc2 tail
+  in 
+  direct direct_depth_default_ l
+
+(*$Q 
+  (Q.(list_of_size Gen.(0--10_000) (pair small_int small_string))) (fun l -> \
+    let (l1, l2) = split l in \
+    List.length l1 = List.length l \
+    && List.length l2 = List.length l)
+
+  Q.(list_of_size Gen.(0--10_000) (pair small_int small_int)) (fun l -> \
+    split l = List.split l)
+*)
 
 let return x = [x]
 
@@ -688,9 +719,9 @@ let take_while p l =
 *)
 
 (*$Q
-  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
-    let l1 = take_while f l in \
-    List.for_all f l1)
+  Q.(pair (fun1 Observable.int bool) (list small_int)) (fun (f,l) -> \
+    let l1 = take_while (Q.Fn.apply f) l in \
+    List.for_all (Q.Fn.apply f) l1)
 *)
 
 let rec drop_while p l = match l with
@@ -698,8 +729,8 @@ let rec drop_while p l = match l with
   | x :: l' -> if p x then drop_while p l' else l
 
 (*$Q
-  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
-    take_while f l @ drop_while f l = l)
+  Q.(pair (fun1 Observable.int bool) (list small_int)) (fun (f,l) -> \
+    take_while (Q.Fn.apply f) l @ drop_while (Q.Fn.apply f) l = l)
 *)
 
 let take_drop_while p l =
@@ -720,9 +751,9 @@ let take_drop_while p l =
   direct direct_depth_default_ p l
 
 (*$Q
-  Q.(pair (fun1 small_int bool) (list small_int)) (fun (f,l) -> \
-    let l1,l2 = take_drop_while f l in \
-    (l1 = take_while f l) && (l2 = drop_while f l))
+  Q.(pair (fun1 Observable.int bool) (list small_int)) (fun (f,l) -> \
+    let l1,l2 = take_drop_while (Q.Fn.apply f) l in \
+    (l1 = take_while (Q.Fn.apply f) l) && (l2 = drop_while (Q.Fn.apply f) l))
 *)
 
 let last n l =
@@ -809,6 +840,48 @@ let filter_map f l =
   [ "2"; "4"; "6" ] \
     (filter_map (fun x -> if x mod 2 = 0 then Some (string_of_int x) else None) \
       [ 1; 2; 3; 4; 5; 6 ])
+*)
+
+let keep_some l = filter_map (fun x->x) l
+
+let keep_ok l =
+  filter_map
+    (function
+      | Result.Ok x -> Some x
+      | Result.Error _ -> None)
+    l
+
+let all_some l =
+  try Some (map (function Some x -> x | None -> raise Exit) l)
+  with Exit -> None
+
+(*$=
+  (Some []) (all_some [])
+  (Some [1;2;3]) (all_some [Some 1; Some 2; Some 3])
+  None (all_some [Some 1; None; None; Some 4])
+*)
+
+let all_ok l =
+  let err = ref None in
+  try
+    Result.Ok
+      (map
+         (function Result.Ok x -> x | Error e -> err := Some e; raise Exit)
+         l)
+  with Exit ->
+    begin match !err with
+      | None -> assert false
+      | Some e -> Result.Error e
+    end
+
+(*$inject
+  open Result
+*)
+
+(*$=
+  (Ok []) (all_ok [])
+  (Ok [1;2;3]) (all_ok [Ok 1; Ok 2; Ok 3])
+  (Error "e2") (all_ok [Ok 1; Error "e2"; Error "e3"; Ok 4])
 *)
 
 let mem ?(eq=(=)) x l =

@@ -20,16 +20,24 @@ module L = struct
 
   let f_ x = x+1
 
+  let rec map_naive f l = match l with
+    | [] -> []
+    | x :: tail ->
+      let y = f x in
+      y :: map_naive f tail
+
   let bench_map ?(time=2) n =
     let l = CCList.(1 -- n) in
     let ral = CCRAL.of_list l in
     let map_naive () = ignore (try  List.map f_ l with Stack_overflow -> [])
+    and map_naive2 () = ignore (try  map_naive f_ l with Stack_overflow -> [])
     and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
     and ccmap () = ignore (CCList.map f_ l)
     and ralmap () = ignore (CCRAL.map ~f:f_ ral)
     in
     B.throughputN time ~repeat
       [ "List.map", map_naive, ()
+      ; "List.map(inline)", map_naive2, ()
       ; "List.rev_map o rev", map_tailrec, ()
       ; "CCList.map", ccmap, ()
       ; "CCRAL.map", ralmap, ()

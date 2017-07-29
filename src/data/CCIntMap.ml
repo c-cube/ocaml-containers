@@ -238,13 +238,13 @@ let update k f t =
 let doubleton k1 v1 k2 v2 = add k1 v1 (singleton k2 v2)
 
 let rec equal ~eq a b = a==b || match a, b with
-  | E, E -> true
-  | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
-  | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
-    pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
-  | E, _
-  | N _, _
-  | L _, _ -> false
+    | E, E -> true
+    | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
+    | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
+      pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
+    | E, _
+    | N _, _
+    | L _, _ -> false
 
 (*$Q
   Q.(list (pair int bool)) ( fun l -> \
@@ -289,23 +289,23 @@ let choose t =
 let rec union f t1 t2 =
   if t1==t2 then t1
   else match t1, t2 with
-  | E, o | o, E -> o
-  | L (k, v), o
-  | o, L (k, v) ->
-    (* insert k, v into o *)
-    insert_ (fun ~old v -> f k old v) k v o
-  | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-    if p1 = p2 && m1 = m2
-    then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
-    else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
-    then if Bit.is_0 p2 ~bit:m1
-      then N (p1, m1, union f l1 t2, r1)
-      else N (p1, m1, l1, union f r1 t2)
-    else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
-    then if Bit.is_0 p1 ~bit:m2
-      then N (p2, m2, union f t1 l2, r2)
-      else N (p2, m2, l2, union f t1 r2)
-    else join_ t1 p1 t2 p2
+    | E, o | o, E -> o
+    | L (k, v), o
+    | o, L (k, v) ->
+      (* insert k, v into o *)
+      insert_ (fun ~old v -> f k old v) k v o
+    | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
+      if p1 = p2 && m1 = m2
+      then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
+      else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
+      then if Bit.is_0 p2 ~bit:m1
+        then N (p1, m1, union f l1 t2, r1)
+        else N (p1, m1, l1, union f r1 t2)
+      else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
+      then if Bit.is_0 p1 ~bit:m2
+        then N (p2, m2, union f t1 l2, r2)
+        else N (p2, m2, l2, union f t1 r2)
+      else join_ t1 p1 t2 p2
 
 (*$Q & ~small:(fun (a,b) -> List.length a + List.length b)
   Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1,l2) -> \
@@ -344,26 +344,26 @@ let rec union f t1 t2 =
 let rec inter f a b =
   if a==b then a
   else match a, b with
-  | E, _ | _, E -> E
-  | L (k, v), o
-  | o, L (k, v) ->
-    begin try
-        let v' = find_exn k o in
-        L (k, f k v v')
-      with Not_found -> E
-    end
-  | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-    if p1 = p2 && m1 = m2
-    then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
-    else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
-    then if Bit.is_0 p2 ~bit:m1
-      then inter f l1 b
-      else inter f r1 b
-    else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
-    then if Bit.is_0 p1 ~bit:m2
-      then inter f l2 a
-      else inter f r2 a
-    else E
+    | E, _ | _, E -> E
+    | L (k, v), o
+    | o, L (k, v) ->
+      begin try
+          let v' = find_exn k o in
+          L (k, f k v v')
+        with Not_found -> E
+      end
+    | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
+      if p1 = p2 && m1 = m2
+      then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
+      else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
+      then if Bit.is_0 p2 ~bit:m1
+        then inter f l1 b
+        else inter f r1 b
+      else if Bit.lt m1 m2 && is_prefix_ ~prefix:p2 p1 ~bit:m2
+      then if Bit.is_0 p1 ~bit:m2
+        then inter f a l2
+        else inter f a r2
+      else E
 
 (*$R
   assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (print CCString.print))
@@ -541,3 +541,170 @@ let print pp_x out m =
        Format.pp_print_cut out ()
     ) m;
   Format.fprintf out "}@]"
+
+(* Some thorough tests from Jan Midtgaar
+   https://github.com/jmid/qc-ptrees
+*)
+
+(*$inject
+  let test_count = 2_500
+
+  open QCheck
+
+  type instr_tree =
+    | Empty
+    | Singleton of int * int
+    | Add of int * int * instr_tree
+    | Remove of int * instr_tree
+    | Union of instr_tree * instr_tree
+    | Inter of instr_tree * instr_tree
+
+  let rec to_string (a:instr_tree): string =
+    let int_to_string = string_of_int in
+    match a with
+    | Empty -> "Empty"
+    | Singleton (k,v) -> Printf.sprintf "Singleton(%d,%d)" k v
+    | Add (k,v,t) -> Printf.sprintf "Add(%d,%d," k v ^ (to_string t) ^ ")"
+    | Remove (n,t) -> "Remove (" ^ (int_to_string n) ^ ", " ^ (to_string t) ^ ")"
+    | Union (t,t') -> "Union (" ^ (to_string t) ^ ", " ^ (to_string t') ^ ")"
+    | Inter (t,t') -> "Inter (" ^ (to_string t) ^ ", " ^ (to_string t') ^ ")"
+
+  let merge_f _ x y = min x y
+
+  let rec interpret t : _ t = match t with
+    | Empty -> empty
+    | Singleton (k,v)  -> singleton k v
+    | Add (k,v,t) -> add k v (interpret t)
+    | Remove (n,t) -> remove n (interpret t)
+    | Union (t,t') ->
+      let s  = interpret t in
+      let s' = interpret t' in
+      union merge_f s s'
+    | Inter (t,t') ->
+      let s  = interpret t in
+      let s' = interpret t' in
+      inter merge_f s s'
+
+  let tree_gen int_gen : instr_tree Q.Gen.t =
+    let open Gen in
+    sized
+      (fix (fun recgen n -> match n with
+        | 0 -> oneof [return Empty;
+                      Gen.map2 (fun i j -> Singleton (i,j)) int_gen int_gen]
+        | _ ->
+          frequency
+            [ (1, return Empty);
+              (1, map2 (fun k v -> Singleton (k,v)) int_gen int_gen);
+              (2, map3 (fun i j t -> Add (i,j,t)) int_gen int_gen (recgen (n-1)));
+              (2, map2 (fun i t -> Remove (i,t)) int_gen (recgen (n-1)));
+              (2, map2 (fun l r -> Union (l,r)) (recgen (n/2)) (recgen (n/2)));
+              (2, map2 (fun l r -> Inter (l,r)) (recgen (n/2)) (recgen (n/2)));
+            ]))
+
+  let (<+>) = Q.Iter.(<+>)
+
+  let rec tshrink t : instr_tree Q.Iter.t = match t with
+    | Empty -> Iter.empty
+    | Singleton (k,v) ->
+      (Iter.return Empty)
+      <+> (Iter.map (fun k' -> Singleton (k',v)) (Shrink.int k))
+      <+> (Iter.map (fun v' -> Singleton (k,v')) (Shrink.int v))
+    | Add (k,v,t) ->
+      (Iter.of_list [Empty; t; Singleton (k,v)])
+      <+> (Iter.map (fun t' -> Add (k,v,t')) (tshrink t))
+      <+> (Iter.map (fun k' -> Add (k',v,t)) (Shrink.int k))
+      <+> (Iter.map (fun v' -> Add (k,v',t)) (Shrink.int v))
+    | Remove (i,t) ->
+      (Iter.of_list [Empty; t])
+      <+> (Iter.map (fun t' -> Remove (i,t')) (tshrink t))
+      <+> (Iter.map (fun i' -> Remove (i',t)) (Shrink.int i))
+    | Union (t0,t1) ->
+      (Iter.of_list [Empty;t0;t1])
+      <+> (Iter.map (fun t0' -> Union (t0',t1)) (tshrink t0))
+      <+> (Iter.map (fun t1' -> Union (t0,t1')) (tshrink t1))
+    | Inter (t0,t1) ->
+      (Iter.of_list [Empty;t0;t1])
+      <+> (Iter.map (fun t0' -> Inter (t0',t1)) (tshrink t0))
+      <+> (Iter.map (fun t1' -> Inter (t0,t1')) (tshrink t1))
+
+  let arb_int =
+    frequency
+      [(5,small_signed_int);
+       (3,int);
+       (1, oneofl [min_int;max_int])]
+
+  let arb_tree =
+    make ~print:to_string ~shrink:tshrink
+      (tree_gen arb_int.gen)
+
+  let empty_m = []
+  let singleton_m k v = [k,v]
+  let mem_m i s = List.mem_assoc i s
+  let rec remove_m i s = match s with
+    | [] -> []
+    | (j,v)::s' -> if i=j then s' else (j,v)::(remove_m i s')
+  let add_m k v s = List.sort Pervasives.compare ((k,v)::remove_m k s)
+  let rec union_m s s' = match s,s' with
+    | [], _ -> s'
+    | _, [] -> s
+    | (k1,v1)::is,(k2,v2)::js ->
+        if k1<k2 then (k1,v1)::(union_m is s') else
+        if k1>k2 then (k2,v2)::(union_m s js) else
+        (k1,min v1 v2)::(union_m is js)
+  let rec inter_m s s' = match s with
+    | [] -> []
+    | (k,v)::s ->
+      if List.mem_assoc k s'
+      then (k,min v (List.assoc k s'))::(inter_m s s')
+      else inter_m s s'
+
+  let abstract s = List.sort Pervasives.compare (fold (fun k v acc -> (k,v)::acc) s [])
+*)
+
+(* A bunch of agreement properties *)
+
+(*$=
+  empty_m (let s = empty in abstract s)
+*)
+
+(*$QR & ~count:test_count
+  (Q.pair arb_int arb_int) (fun (k,v) ->
+    abstract (singleton k v) = singleton_m k v)
+*)
+
+(*$QR & ~count:test_count
+  Q.(pair arb_tree arb_int)
+      (fun (t,n) ->
+        let s = interpret t in
+        mem n s = mem_m n (abstract s))
+*)
+
+(*$QR & ~count:test_count
+  (triple arb_tree arb_int arb_int)
+    (fun (t,k,v) ->
+      let s = interpret t in
+      abstract (add k v s) = add_m k v (abstract s))
+*)
+
+(*$QR & ~count:test_count
+  (pair arb_tree arb_int)
+    (fun (t,n) ->
+      let s = interpret t in
+      abstract (remove n s) = remove_m n (abstract s))
+*)
+
+(*$QR & ~count:test_count
+  (pair arb_tree arb_tree)
+  (fun (t,t') ->
+    let s  = interpret t in
+    let s' = interpret t' in
+    abstract (union merge_f s s') = union_m (abstract s) (abstract s'))
+*)
+
+(*$QR & ~count:test_count
+  Q.(pair arb_tree arb_tree)
+    (fun (t,t') ->
+      let s  = interpret t in
+      let s' = interpret t' in
+      abstract (inter merge_f s s') = inter_m (abstract s) (abstract s'))
+*)

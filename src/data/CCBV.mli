@@ -86,9 +86,9 @@ val first : t -> int option
     changed type at 1.2 *)
 
 val first_exn : t -> int
- (** First set bit, or
-     @raise Not_found if all bits are 0
-     @since 1.2 *)
+(** First set bit, or
+    @raise Not_found if all bits are 0
+    @since 1.2 *)
 
 val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]

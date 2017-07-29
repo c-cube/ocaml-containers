@@ -375,7 +375,7 @@ val rtrim : t -> t
   Q.(printable_string) (fun s -> \
     let s' = rtrim s in \
     if s'="" then Q.assume_fail() else s'.[String.length s'-1] <> ' ')
-  *)
+*)
 
 (** {2 Operations on 2 strings} *)
 
@@ -578,6 +578,29 @@ val compare_versions : string -> string -> int
     CCOrd.equiv (compare_versions a b) (CCOrd.opp compare_versions b a))
 *)
 
+val compare_natural : string -> string -> int
+(** Natural Sort Order, comparing chunks of digits as natural numbers.
+    https://en.wikipedia.org/wiki/Natural_sort_order
+    @since 1.3 *)
+
+(*$T
+  compare_natural "foo1" "foo2" < 0
+  compare_natural "foo11" "foo2" > 0
+  compare_natural "foo11" "foo11" = 0
+  compare_natural "foo011" "foo11" = 0
+  compare_natural "foo1a" "foo1b" < 0
+  compare_natural "foo1a1" "foo1a2" < 0
+  compare_natural "foo1a17" "foo1a2" > 0
+*)
+
+(*Q
+  (Q.pair printable_string printable_string) (fun (a,b) -> \
+    CCOrd.opp (compare_natural a b) = compare_natural b a)
+  (Q.printable_string) (fun a -> compare_natural a a = 0)
+  (Q.triple printable_string printable_string printable_string) (fun (a,b,c) -> \
+    if compare_natural a b < 0 && compare_natural b c < 0 \
+    then compare_natural a c < 0 else Q.assume_fail())
+*)
 
 val edit_distance : string -> string -> int
 (** Edition distance between two strings. This satisfies the classical
@@ -654,7 +677,7 @@ module Sub : sig
   (*$= & ~printer:(String.make 1)
     'b' Sub.(get (make "abc" 1 ~len:2) 0)
     'c' Sub.(get (make "abc" 1 ~len:2) 1)
-    *)
+  *)
 
   (*$QR
     Q.(printable_string_of_size Gen.(3--10)) (fun s ->

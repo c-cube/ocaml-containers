@@ -4,6 +4,8 @@
 
 A modular, clean and powerful extension of the OCaml standard library.
 
+https://c-cube.github.io/ocaml-containers/last/[(Jump to the current API documentation)].
+
 Containers is an extension of OCaml's standard library (under BSD license)
 focused on data structures, combinators and iterators, without dependencies on
 unix, str or num. Every module is independent and is prefixed with 'CC' in the
@@ -91,7 +93,7 @@ and <<tutorial,the tutorial below>> for a gentle introduction.
 
 == Documentation
 
-In general, see http://c-cube.github.io/ocaml-containers/ or
+In general, see http://c-cube.github.io/ocaml-containers/last/ or
 http://cedeela.fr/~simon/software/containers for the **API documentation**.
 
 Some examples can be found link:doc/containers.adoc[there].
@@ -135,18 +137,54 @@ To build the small benchmarking suite (requires https://github.com/chris00/ocaml
 
 == Contributing
 
-PRs on github are welcome (patches by email too, if you prefer so).
+PRs on github are very welcome (patches by email too, if you prefer so).
 
-A few guidelines:
+[[first-time-contribute]]
+=== First-Time Contributors
+
+Assuming your are in a clone of the repository:
+
+. Some dependencies are required, you'll need
+  `opam install benchmark qcheck qtest sequence`. 
+. run `make devel` to enable everything (including tests).
+. make your changes, commit, push, and open a PR.
+. use `make test` without moderation! It must pass before a PR
+  is merged.  There are around 900 tests right now, and new
+  features should come with their own tests.
+
+If you feel like writing new tests, that is totally worth a PR
+(and my gratefulness).
+
+=== General Guidelines
+
+A few guidelines to follow the philosophy of containers:
 
 - no dependencies between basic modules (even just for signatures);
 - add `@since` tags for new functions;
-- add tests if possible (using `qtest`).
+- add tests if possible (using https://github.com/vincent-hugot/iTeML/[qtest]). There are numerous inline tests already,
+to see what it looks like search for comments starting with `(*$`
+in source files.
 
-It is helpful to run `make devel` to enable everything. Some dependencies
-are required, you'll need `opam install benchmark qcheck qtest sequence`. 
+=== For Total Beginners
 
-Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
+Thanks for wanting to contribute!
+To contribute a change, here are the steps (roughly):
+
+. click "fork" on https://github.com/c-cube/ocaml-containers on the top right of the page. This will create a copy of the repository on your own github account.
+. click the big green "clone or download" button, with "SSH". Copy the URL (which should look like `git@github.com:<your username>/ocaml-containers.git`) into a terminal to enter the command:
++
+[source,sh]
+----
+$ git clone git@github.com:<your username>/ocaml-containers.git
+----
++
+. then, `cd` into the newly created directory.
+. make the changes you want. See <<first-time-contribute>> for
+  more details about what to do in particular.
+. use `git add` and `git commit` to commit these changes.
+. `git push origin master` to push the new change(s) onto your
+  copy of the repository
+. on github, open a "pull request" (PR). Et voilà !
 
 [[tutorial]]
 == Tutorial
@@ -441,3 +479,6 @@ printer:: `'a printer = Format.formatter -> 'a -> unit` is a pretty-printer
 === Extended Documentation
 
 See link:doc/containers.adoc[the extended documentation] for more examples.
+
+Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
+

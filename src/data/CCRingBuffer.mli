@@ -1,31 +1,19 @@
-(*
- * CCRingBuffer - Polymorphic Circular Buffer
- * Copyright (C) 2015 Simon Cruanes, Carmelo Piccione
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version,
- * with the special exception on linking described in file LICENSE.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *)
+
+(* This file is free software, part of containers. See file "license" for more details. *)
+
+(* Copyright (C) 2015 Simon Cruanes, Carmelo Piccione *)
 
 (** {1 Circular Buffer (Deque)}
 
-    Useful for IO, or as a general-purpose alternative to {!Queue} when
+    Useful for IO, or as a bounded-size alternative to {!Queue} when
     batch operations are needed.
 
     {b status: experimental}
 
     @since 0.9
+
+    Change in the API to provide only a bounded buffer
+    @since 1.3
 *)
 
 (** {2 Underlying Array} *)
@@ -39,11 +27,8 @@ module Array : sig
     (** The type of an array instance *)
     type t
 
-    val empty : t
-    (** The empty array *)
-
-    val make: int -> elt -> t
-    (** [make s e] makes an array of size [s] with [e] elements *)
+    val create : int -> t
+    (** Make an array of the given size, filled with dummy elements *)
 
     val length: t -> int
     (** [length t] gets the total number of elements currently in [t] *)
@@ -75,7 +60,7 @@ module Array : sig
     S with type elt = char and type t = Bytes.t
 
   (** Makes an array given an arbitrary element type *)
-  module Make(Elt:sig type t end) :
+  module Make(Elt:sig type t val dummy : t end) :
     S with type elt = Elt.t and type t = Elt.t array
 end
 
@@ -87,16 +72,17 @@ module type S = sig
   (** The module type of Array for this ring buffer *)
   module Array : Array.S
 
-  (** Defines the ring buffer type, with both bounded and
-      unbounded flavors *)
+  (** Defines the bounded ring buffer type *)
   type t
 
   (** Raised in querying functions when the buffer is empty *)
   exception Empty
 
-  val create : ?bounded:bool -> int -> t
-  (** [create ?bounded size] creates a new buffer with given size.
-      Defaults to [bounded=false]. *)
+  val create : int -> t
+  (** [create size] creates a new bounded buffer with given size.
+      The underlying array is allocated immediately and no further (large)
+      allocation will happen from now on.
+      @raise Invalid_argument if the arguments is [< 1] *)
 
   val copy : t -> t
   (** Make a fresh copy of the buffer. *)
@@ -104,35 +90,35 @@ module type S = sig
   val capacity : t -> int
   (** Length of the inner buffer. *)
 
-  val max_capacity : t -> int option
-  (** Maximum length of the inner buffer, or [None] if unbounded. *)
-
   val length : t -> int
   (** Number of elements currently stored in the buffer. *)
+
+  val is_full : t -> bool
+  (** true if pushing an element would erase another element.
+      @since 1.3 *)
 
   val blit_from : t -> Array.t -> int -> int -> unit
   (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
       a input buffer [from_buf] to the end of the buffer.
+      If the slice is too large for the buffer, only the last part of the array
+      will be copied.
       @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
 
-  val blit_into : t ->  Array.t -> int -> int -> int
+  val blit_into : t -> Array.t -> int -> int -> int
   (** [blit_into buf to_buf o len] copies at most [len] elements from [buf]
       into [to_buf] starting at offset [o] in [s].
       @return the number of elements actually copied ([min len (length buf)]).
-      @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
+      @raise Invalid_argument if [o,len] is not a valid slice of [s]. *)
 
   val append : t -> into:t -> unit
   (** [append b ~into] copies all data from [b] and adds it at the
-      end of [into] *)
+      end of [into]. Erases data of [into] if there is not enough room. *)
 
   val to_list : t -> Array.elt list
   (** Extract the current content into a list *)
 
   val clear : t -> unit
   (** Clear the content of the buffer. Doesn't actually destroy the content. *)
-
-  val reset : t -> unit
-  (** Clear the content of the buffer, and also resize it to a default size *)
 
   val is_empty :t -> bool
   (** Is the buffer empty (i.e. contains no elements)? *)
@@ -171,26 +157,34 @@ module type S = sig
       If [t.bounded=false], the buffer will grow as needed,
       otherwise the oldest elements are replaced first. *)
 
-  val peek_front : t -> Array.elt
-  (** First value from front of [t].
-      @raise Empty if buffer is empty. *)
+  val peek_front : t -> Array.elt option
+  (** First value from front of [t], without modification. *)
 
-  val peek_back : t -> Array.elt
-  (** Get the last value from back of [t].
-      @raise Empty if buffer is empty. *)
+  val peek_front_exn : t -> Array.elt
+  (** First value from front of [t], without modification.
+      @raise Empty if buffer is empty.
+      @since 1.3 *)
+
+  val peek_back : t -> Array.elt option
+  (** Get the last value from back of [t], without modification. *)
+
+  val peek_back_exn : t -> Array.elt
+  (** Get the last value from back of [t], without modification.
+      @raise Empty if buffer is empty.
+      @since 1.3 *)
 
   val take_back : t -> Array.elt option
-  (** Take the last value from back of [t], if any *)
+  (** Take and remove the last value from back of [t], if any *)
 
   val take_back_exn : t -> Array.elt
-  (** Take the last value from back of [t].
+  (** Take and remove the last value from back of [t].
       @raise Empty if buffer is already empty. *)
 
   val take_front : t -> Array.elt option
-  (** Take the first value from front of [t], if any *)
+  (** Take and remove the first value from front of [t], if any *)
 
   val take_front_exn : t -> Array.elt
-  (** Take the first value from front of [t].
+  (** Take and remove the first value from front of [t].
       @raise Empty if buffer is already empty. *)
 
   val of_array : Array.t -> t
@@ -210,4 +204,7 @@ module Byte : S with module Array = Array.Byte
 module MakeFromArray(A : Array.S) : S with module Array = A
 
 (** Buffer using regular arrays *)
-module Make(X : sig type t end) : S with type Array.elt = X.t and type Array.t = X.t array
+module Make(X : sig
+    type t
+    val dummy : t
+  end) : S with type Array.elt = X.t and type Array.t = X.t array

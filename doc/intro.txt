@@ -93,6 +93,7 @@ CCPersistentArray
 CCPersistentHashtbl
 CCRAL
 CCRingBuffer
+CCSimple_queue
 CCTrie
 CCWBTree
 }

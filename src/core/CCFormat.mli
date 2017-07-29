@@ -311,5 +311,5 @@ module Dump : sig
   val result : 'a t -> ('a, string) Result.result t
   val result' : 'a t -> 'e t -> ('a, 'e) Result.result t
   val to_string : 'a t -> 'a -> string
-  (** Alias to {!to_string} *)
+  (** Alias to {!CCFormat.to_string} *)
 end

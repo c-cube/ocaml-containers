@@ -1,27 +1,5 @@
-(*
-Copyright (c) 2013, Simon Cruanes
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  Redistributions in binary
-form must reproduce the above copyright notice, this list of conditions and the
-following disclaimer in the documentation and/or other materials provided with
-the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*)
+(* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Caches}
 
@@ -53,13 +31,22 @@ type ('a, 'b) t
 val clear : (_,_) t -> unit
 (** Clear the content of the cache *)
 
-val with_cache : ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
+type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
+(** Type of the callback that is called once a cached value is found
+    or not.
+    Should never raise.
+    @param in_cache is [true] if the value was in cache, [false]
+      if the value was just produced.
+    @since 1.3 *)
+
+val with_cache : ?cb:('a, 'b) callback -> ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
 (** [with_cache c f] behaves like [f], but caches calls to [f] in the
     cache [c]. It always returns the same value as
     [f x], if [f x] returns, or raise the same exception.
-    However, [f] may not be called if [x] is in the cache. *)
+    However, [f] may not be called if [x] is in the cache.
+    @param cb called after the value is generated or retrieved *)
 
-val with_cache_rec : ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
+val with_cache_rec : ?cb:('a, 'b) callback -> ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
 (** [with_cache_rec c f] is a function that first, applies [f] to
     some [f' = fix f], such that recursive calls to [f'] are cached in [c].
     It is similar to {!with_cache} but with a function that takes as
@@ -74,6 +61,7 @@ val with_cache_rec : ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
 
       fib 70;;
     ]}
+    @param cb called after the value is generated or retrieved
 *)
 
 val size : (_,_) t -> int
