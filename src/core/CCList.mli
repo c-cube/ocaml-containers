@@ -253,22 +253,22 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 val keep_some : 'a option t -> 'a t
 (** [filter_some l] retains only elements of the form [Some x].
     Same as [filter_map CCFun.id]
-    @since NEXT_RELEASE *)
+    @since 1.3 *)
 
 val keep_ok : ('a, _) Result.result t -> 'a t
 (** [filter_some l] retains only elements of the form [Some x].
     Same as [filter_map CCFun.id]
-    @since NEXT_RELEASE *)
+    @since 1.3 *)
 
 val all_some : 'a option t -> 'a t option
 (** [all_some l] returns [Some l'] if all elements of [l] are of the form [Some x],
     or [None] otherwise.
-    @since NEXT_RELEASE *)
+    @since 1.3 *)
 
 val all_ok : ('a, 'err) Result.result t -> ('a t, 'err) Result.result
 (** [all_ok l] returns [Ok l'] if all elements of [l] are of the form [Ok x],
     or [Error e] otherwise (with the first error met).
-    @since NEXT_RELEASE *)
+    @since 1.3 *)
 
 val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** Merges elements from both sorted list *)

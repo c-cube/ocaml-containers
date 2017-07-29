@@ -581,7 +581,7 @@ val compare_versions : string -> string -> int
 val compare_natural : string -> string -> int
 (** Natural Sort Order, comparing chunks of digits as natural numbers.
     https://en.wikipedia.org/wiki/Natural_sort_order
-    @since NEXT_RELEASE *)
+    @since 1.3 *)
 
 (*$T
   compare_natural "foo1" "foo2" < 0

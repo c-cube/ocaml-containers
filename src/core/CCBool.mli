@@ -12,7 +12,7 @@ val equal : t -> t -> bool
 
 val negate : t -> t
 (** Negation on booleans (functional version of [not])
-    @deprecate since NEXT_RELEASE, simply use {!not} instead *)
+    @deprecate since 1.3, simply use {!not} instead *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 

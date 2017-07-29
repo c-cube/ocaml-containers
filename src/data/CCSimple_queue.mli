@@ -4,7 +4,7 @@
 (** {1 Functional queues (fifo)} *)
 
 (** Simple implementation of functional queues
-    @since NEXT_RELEASE *)
+    @since 1.3 *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit

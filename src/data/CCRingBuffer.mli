@@ -13,7 +13,7 @@
     @since 0.9
 
     Change in the API to provide only a bounded buffer
-    @since NEXT_RELEASE
+    @since 1.3
 *)
 
 (** {2 Underlying Array} *)
@@ -95,7 +95,7 @@ module type S = sig
 
   val is_full : t -> bool
   (** true if pushing an element would erase another element.
-      @since NEXT_RELEASE *)
+      @since 1.3 *)
 
   val blit_from : t -> Array.t -> int -> int -> unit
   (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
@@ -163,7 +163,7 @@ module type S = sig
   val peek_front_exn : t -> Array.elt
   (** First value from front of [t], without modification.
       @raise Empty if buffer is empty.
-      @since NEXT_RELEASE *)
+      @since 1.3 *)
 
   val peek_back : t -> Array.elt option
   (** Get the last value from back of [t], without modification. *)
@@ -171,7 +171,7 @@ module type S = sig
   val peek_back_exn : t -> Array.elt
   (** Get the last value from back of [t], without modification.
       @raise Empty if buffer is empty.
-      @since NEXT_RELEASE *)
+      @since 1.3 *)
 
   val take_back : t -> Array.elt option
   (** Take and remove the last value from back of [t], if any *)

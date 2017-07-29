@@ -37,7 +37,7 @@ type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
     Should never raise.
     @param in_cache is [true] if the value was in cache, [false]
       if the value was just produced.
-    @since NEXT_RELEASE *)
+    @since 1.3 *)
 
 val with_cache : ?cb:('a, 'b) callback -> ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
 (** [with_cache c f] behaves like [f], but caches calls to [f] in the
