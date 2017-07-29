@@ -387,8 +387,8 @@ let combine_gen l1 l2 =
     res1 = res2)
 *)
 
-let split l = 
-  let rec direct i l = match l with 
+let split l =
+  let rec direct i l = match l with
     | [] -> [], []
     | [x1, y1] -> [x1], [y1]
     | [x1, y1; x2, y2] -> [x1;x2], [y1;y2]
@@ -396,19 +396,19 @@ let split l =
     | [x1, y1; x2, y2; x3, y3; x4, y4] -> [x1;x2;x3;x4], [y1;y2;y3;y4]
     | _ when i=0 -> split_slow [] [] l
     | (x1, y1) :: (x2, y2) :: (x3, y3) :: (x4, y4) :: (x5, y5) :: l' ->
-      let rx, ry = direct (i-1) l' in 
+      let rx, ry = direct (i-1) l' in
       x1 :: x2 :: x3 :: x4 :: x5 :: rx,
       y1 :: y2 :: y3 :: y4 :: y5 :: ry
   and split_slow acc1 acc2 l = match l with
     | [] -> List.rev acc1, List.rev acc2
     | (x1, x2) :: tail ->
       let acc1 = x1 :: acc1
-      and acc2 = x2 :: acc2 in 
+      and acc2 = x2 :: acc2 in
       split_slow acc1 acc2 tail
-  in 
+  in
   direct direct_depth_default_ l
 
-(*$Q 
+(*$Q
   (Q.(list_of_size Gen.(0--10_000) (pair small_int small_string))) (fun l -> \
     let (l1, l2) = split l in \
     List.length l1 = List.length l \
