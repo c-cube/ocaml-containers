@@ -47,14 +47,10 @@ module type S = sig
   val nth_exn : int -> 'a t -> key * 'a
   (** @raise Not_found if the index is invalid *)
 
-  val get_rank : key -> 'a t -> int option
+  val get_rank : key -> 'a t -> [`At of int | `After of int | `First]
   (** [get_rank k m] looks for the rank of [k] in [m], i.e. the index
       of [k] in the sorted list of bindings of [m].
-      [nth_exn (get_rank k m |> Opt.get_exn) m = get m k] should hold.
-      @since NEXT_RELEASE *)
-
-  val get_rank_exn : key -> 'a t -> int
-  (** Unsafe version of {!get_rank}
+      [let (`At n) = get_rank k m in nth_exn n m = get m k] should hold.
       @since NEXT_RELEASE *)
 
   val add : key -> 'a -> 'a t -> 'a t
