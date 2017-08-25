@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="Up" href="CCPool.Make.html">
 <link title="Index of types" rel=Appendix href="index_types.html">
@@ -13,8 +14,6 @@
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="CCVector" rel="Chapter" href="CCVector.html">
-<link title="CCPrint" rel="Chapter" href="CCPrint.html">
-<link title="CCError" rel="Chapter" href="CCError.html">
 <link title="CCHeap" rel="Chapter" href="CCHeap.html">
 <link title="CCList" rel="Chapter" href="CCList.html">
 <link title="CCOpt" rel="Chapter" href="CCOpt.html">
@@ -37,6 +36,11 @@
 <link title="CCInt64" rel="Chapter" href="CCInt64.html">
 <link title="CCChar" rel="Chapter" href="CCChar.html">
 <link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
 <link title="Containers" rel="Chapter" href="Containers.html">
 <link title="CCKTree" rel="Chapter" href="CCKTree.html">
 <link title="CCKList" rel="Chapter" href="CCKList.html">
@@ -56,39 +60,25 @@
 <link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
 <link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
 <link title="CCMixset" rel="Chapter" href="CCMixset.html">
-<link title="CCHashconsedSet" rel="Chapter" href="CCHashconsedSet.html">
 <link title="CCGraph" rel="Chapter" href="CCGraph.html">
 <link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
 <link title="CCBitField" rel="Chapter" href="CCBitField.html">
 <link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
-<link title="CCBloom" rel="Chapter" href="CCBloom.html">
 <link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
 <link title="CCRAL" rel="Chapter" href="CCRAL.html">
-<link title="CCAllocCache" rel="Chapter" href="CCAllocCache.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
 <link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
 <link title="CCHet" rel="Chapter" href="CCHet.html">
-<link title="Containers_string" rel="Chapter" href="Containers_string.html">
-<link title="CCKMP" rel="Chapter" href="CCKMP.html">
-<link title="CCLevenshtein" rel="Chapter" href="CCLevenshtein.html">
-<link title="CCApp_parse" rel="Chapter" href="CCApp_parse.html">
-<link title="CCParse" rel="Chapter" href="CCParse.html">
-<link title="CCBigstring" rel="Chapter" href="CCBigstring.html">
-<link title="CCArray1" rel="Chapter" href="CCArray1.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
 <link title="CCPool" rel="Chapter" href="CCPool.html">
 <link title="CCLock" rel="Chapter" href="CCLock.html">
 <link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
 <link title="CCThread" rel="Chapter" href="CCThread.html">
 <link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
 <link title="CCTimer" rel="Chapter" href="CCTimer.html">
-<link title="Containers_advanced" rel="Chapter" href="Containers_advanced.html">
-<link title="CCLinq" rel="Chapter" href="CCLinq.html">
-<link title="CCBatch" rel="Chapter" href="CCBatch.html">
-<link title="CCCat" rel="Chapter" href="CCCat.html">
-<link title="CCMonadIO" rel="Chapter" href="CCMonadIO.html">
-<link title="Containers_io_is_deprecated" rel="Chapter" href="Containers_io_is_deprecated.html">
 <link title="CCUnix" rel="Chapter" href="CCUnix.html">
 <link title="CCSexp" rel="Chapter" href="CCSexp.html">
-<link title="CCSexpM" rel="Chapter" href="CCSexpM.html"><link title="Constructors" rel="Section" href="#2_Constructors">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Constructors" rel="Section" href="#2_Constructors">
 <link title="Basics" rel="Section" href="#2_Basics">
 <link title="Combinators" rel="Section" href="#2_Combinators">
 <title>Containers doc : CCPool.Make.Fut</title>
@@ -179,21 +169,21 @@ Wait for the first future to succeed, then launch the second<br>
 
 <pre><span id="VALsequence_a"><span class="keyword">val</span> sequence_a</span> : <code class="type">'a <a href="CCPool.Make.Fut.html#TYPEt">t</a> array -> 'a array <a href="CCPool.Make.Fut.html#TYPEt">t</a></code></pre><div class="info ">
 Future that waits for all previous futures to terminate. If any future
-        in the array fails, <code class="code">sequence_a l</code> fails too.<br>
+        in the array fails, <code class="code">sequence_a&nbsp;l</code> fails too.<br>
 </div>
 
 <pre><span id="VALmap_a"><span class="keyword">val</span> map_a</span> : <code class="type">('a -> 'b <a href="CCPool.Make.Fut.html#TYPEt">t</a>) -> 'a array -> 'b array <a href="CCPool.Make.Fut.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">map_l f a</code> maps <code class="code">f</code> on every element of <code class="code">a</code>, and will return
+<code class="code">map_l&nbsp;f&nbsp;a</code> maps <code class="code">f</code> on every element of <code class="code">a</code>, and will return
         the array of every result if all calls succeed, or an error otherwise.<br>
 </div>
 
 <pre><span id="VALsequence_l"><span class="keyword">val</span> sequence_l</span> : <code class="type">'a <a href="CCPool.Make.Fut.html#TYPEt">t</a> list -> 'a list <a href="CCPool.Make.Fut.html#TYPEt">t</a></code></pre><div class="info ">
 Future that waits for all previous futures to terminate. If any future
-        in the list fails, <code class="code">sequence_l l</code> fails too.<br>
+        in the list fails, <code class="code">sequence_l&nbsp;l</code> fails too.<br>
 </div>
 
 <pre><span id="VALmap_l"><span class="keyword">val</span> map_l</span> : <code class="type">('a -> 'b <a href="CCPool.Make.Fut.html#TYPEt">t</a>) -> 'a list -> 'b list <a href="CCPool.Make.Fut.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">map_l f l</code> maps <code class="code">f</code> on every element of <code class="code">l</code>, and will return
+<code class="code">map_l&nbsp;f&nbsp;l</code> maps <code class="code">f</code> on every element of <code class="code">l</code>, and will return
         the list of every result if all calls succeed, or an error otherwise.<br>
 </div>
 
@@ -217,11 +207,11 @@ Maps the value inside the future, to be computed in a separated job.<br>
 </div>
 
 <pre><span id="VALapp"><span class="keyword">val</span> app</span> : <code class="type">('a -> 'b) <a href="CCPool.Make.Fut.html#TYPEt">t</a> -> 'a <a href="CCPool.Make.Fut.html#TYPEt">t</a> -> 'b <a href="CCPool.Make.Fut.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">app f x</code> applies the result of <code class="code">f</code> to the result of <code class="code">x</code><br>
+<code class="code">app&nbsp;f&nbsp;x</code> applies the result of <code class="code">f</code> to the result of <code class="code">x</code><br>
 </div>
 
 <pre><span id="VALapp_async"><span class="keyword">val</span> app_async</span> : <code class="type">('a -> 'b) <a href="CCPool.Make.Fut.html#TYPEt">t</a> -> 'a <a href="CCPool.Make.Fut.html#TYPEt">t</a> -> 'b <a href="CCPool.Make.Fut.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">app f x</code> applies the result of <code class="code">f</code> to the result of <code class="code">x</code>, in
+<code class="code">app&nbsp;f&nbsp;x</code> applies the result of <code class="code">f</code> to the result of <code class="code">x</code>, in
         a separated job scheduled in the pool<br>
 </div>
 

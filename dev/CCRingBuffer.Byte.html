@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="previous" href="CCRingBuffer.Array.html">
 <link rel="next" href="CCRingBuffer.MakeFromArray.html">
@@ -15,8 +16,6 @@
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="CCVector" rel="Chapter" href="CCVector.html">
-<link title="CCPrint" rel="Chapter" href="CCPrint.html">
-<link title="CCError" rel="Chapter" href="CCError.html">
 <link title="CCHeap" rel="Chapter" href="CCHeap.html">
 <link title="CCList" rel="Chapter" href="CCList.html">
 <link title="CCOpt" rel="Chapter" href="CCOpt.html">
@@ -39,6 +38,11 @@
 <link title="CCInt64" rel="Chapter" href="CCInt64.html">
 <link title="CCChar" rel="Chapter" href="CCChar.html">
 <link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
 <link title="Containers" rel="Chapter" href="Containers.html">
 <link title="CCKTree" rel="Chapter" href="CCKTree.html">
 <link title="CCKList" rel="Chapter" href="CCKList.html">
@@ -58,39 +62,25 @@
 <link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
 <link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
 <link title="CCMixset" rel="Chapter" href="CCMixset.html">
-<link title="CCHashconsedSet" rel="Chapter" href="CCHashconsedSet.html">
 <link title="CCGraph" rel="Chapter" href="CCGraph.html">
 <link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
 <link title="CCBitField" rel="Chapter" href="CCBitField.html">
 <link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
-<link title="CCBloom" rel="Chapter" href="CCBloom.html">
 <link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
 <link title="CCRAL" rel="Chapter" href="CCRAL.html">
-<link title="CCAllocCache" rel="Chapter" href="CCAllocCache.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
 <link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
 <link title="CCHet" rel="Chapter" href="CCHet.html">
-<link title="Containers_string" rel="Chapter" href="Containers_string.html">
-<link title="CCKMP" rel="Chapter" href="CCKMP.html">
-<link title="CCLevenshtein" rel="Chapter" href="CCLevenshtein.html">
-<link title="CCApp_parse" rel="Chapter" href="CCApp_parse.html">
-<link title="CCParse" rel="Chapter" href="CCParse.html">
-<link title="CCBigstring" rel="Chapter" href="CCBigstring.html">
-<link title="CCArray1" rel="Chapter" href="CCArray1.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
 <link title="CCPool" rel="Chapter" href="CCPool.html">
 <link title="CCLock" rel="Chapter" href="CCLock.html">
 <link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
 <link title="CCThread" rel="Chapter" href="CCThread.html">
 <link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
 <link title="CCTimer" rel="Chapter" href="CCTimer.html">
-<link title="Containers_advanced" rel="Chapter" href="Containers_advanced.html">
-<link title="CCLinq" rel="Chapter" href="CCLinq.html">
-<link title="CCBatch" rel="Chapter" href="CCBatch.html">
-<link title="CCCat" rel="Chapter" href="CCCat.html">
-<link title="CCMonadIO" rel="Chapter" href="CCMonadIO.html">
-<link title="Containers_io_is_deprecated" rel="Chapter" href="Containers_io_is_deprecated.html">
 <link title="CCUnix" rel="Chapter" href="CCUnix.html">
 <link title="CCSexp" rel="Chapter" href="CCSexp.html">
-<link title="CCSexpM" rel="Chapter" href="CCSexpM.html"><title>Containers doc : CCRingBuffer.Byte</title>
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><title>Containers doc : CCRingBuffer.Byte</title>
 </head>
 <body>
 <div class="navbar"><a class="pre" href="CCRingBuffer.Array.html" title="CCRingBuffer.Array">Previous</a>
@@ -110,8 +100,7 @@ The module type of Array for this ring buffer
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
 <div class="info ">
-Defines the ring buffer type, with both bounded and
-      unbounded flavors<br>
+Defines the bounded ring buffer type<br>
 </div>
 
 
@@ -120,9 +109,11 @@ Defines the ring buffer type, with both bounded and
 Raised in querying functions when the buffer is empty<br>
 </div>
 
-<pre><span id="VALcreate"><span class="keyword">val</span> create</span> : <code class="type">?bounded:bool -> int -> <a href="CCRingBuffer.S.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">create ?bounded size</code> creates a new buffer with given size.
-      Defaults to <code class="code">bounded=<span class="keyword">false</span></code>.<br>
+<pre><span id="VALcreate"><span class="keyword">val</span> create</span> : <code class="type">int -> <a href="CCRingBuffer.S.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">create&nbsp;size</code> creates a new bounded buffer with given size.
+      The underlying array is allocated immediately and no further (large)
+      allocation will happen from now on.<br>
+<b>Raises</b> <code>Invalid_argument</code> if the arguments is <code class="code">&lt;&nbsp;1</code><br>
 </div>
 
 <pre><span id="VALcopy"><span class="keyword">val</span> copy</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> <a href="CCRingBuffer.S.html#TYPEt">t</a></code></pre><div class="info ">
@@ -133,30 +124,33 @@ Make a fresh copy of the buffer.<br>
 Length of the inner buffer.<br>
 </div>
 
-<pre><span id="VALmax_capacity"><span class="keyword">val</span> max_capacity</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> int option</code></pre><div class="info ">
-Maximum length of the inner buffer, or <code class="code"><span class="constructor">None</span></code> if unbounded.<br>
-</div>
-
 <pre><span id="VALlength"><span class="keyword">val</span> length</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> int</code></pre><div class="info ">
 Number of elements currently stored in the buffer.<br>
 </div>
 
+<pre><span id="VALis_full"><span class="keyword">val</span> is_full</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+true if pushing an element would erase another element.<br>
+<b>Since</b> 1.3<br>
+</div>
+
 <pre><span id="VALblit_from"><span class="keyword">val</span> blit_from</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.t -> int -> int -> unit</code></pre><div class="info ">
-<code class="code">blit_from buf from_buf o len</code> copies the slice <code class="code">o, ... o + len - 1</code> from
-      a input buffer <code class="code">from_buf</code> to the end of the buffer.<br>
+<code class="code">blit_from&nbsp;buf&nbsp;from_buf&nbsp;o&nbsp;len</code> copies the slice <code class="code">o,&nbsp;...&nbsp;o&nbsp;+&nbsp;len&nbsp;-&nbsp;1</code> from
+      a input buffer <code class="code">from_buf</code> to the end of the buffer.
+      If the slice is too large for the buffer, only the last part of the array
+      will be copied.<br>
 <b>Raises</b> <code>Invalid_argument</code> if <code class="code">o,len</code> is not a valid slice of <code class="code">s</code><br>
 </div>
 
 <pre><span id="VALblit_into"><span class="keyword">val</span> blit_into</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.t -> int -> int -> int</code></pre><div class="info ">
-<code class="code">blit_into buf to_buf o len</code> copies at most <code class="code">len</code> elements from <code class="code">buf</code>
+<code class="code">blit_into&nbsp;buf&nbsp;to_buf&nbsp;o&nbsp;len</code> copies at most <code class="code">len</code> elements from <code class="code">buf</code>
       into <code class="code">to_buf</code> starting at offset <code class="code">o</code> in <code class="code">s</code>.<br>
-<b>Raises</b> <code>Invalid_argument</code> if <code class="code">o,len</code> is not a valid slice of <code class="code">s</code><br>
-<b>Returns</b> the number of elements actually copied (<code class="code">min len (length buf)</code>).<br>
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">o,len</code> is not a valid slice of <code class="code">s</code>.<br>
+<b>Returns</b> the number of elements actually copied (<code class="code">min&nbsp;len&nbsp;(length&nbsp;buf)</code>).<br>
 </div>
 
 <pre><span id="VALappend"><span class="keyword">val</span> append</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> into:<a href="CCRingBuffer.S.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
-<code class="code">append b ~into</code> copies all data from <code class="code">b</code> and adds it at the
-      end of <code class="code">into</code><br>
+<code class="code">append&nbsp;b&nbsp;~into</code> copies all data from <code class="code">b</code> and adds it at the
+      end of <code class="code">into</code>. Erases data of <code class="code">into</code> if there is not enough room.<br>
 </div>
 
 <pre><span id="VALto_list"><span class="keyword">val</span> to_list</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt list</code></pre><div class="info ">
@@ -165,10 +159,6 @@ Extract the current content into a list<br>
 
 <pre><span id="VALclear"><span class="keyword">val</span> clear</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
 Clear the content of the buffer. Doesn't actually destroy the content.<br>
-</div>
-
-<pre><span id="VALreset"><span class="keyword">val</span> reset</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
-Clear the content of the buffer, and also resize it to a default size<br>
 </div>
 
 <pre><span id="VALis_empty"><span class="keyword">val</span> is_empty</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
@@ -186,29 +176,29 @@ Drop the back element from <code class="code">t</code>.<br>
 </div>
 
 <pre><span id="VALskip"><span class="keyword">val</span> skip</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> int -> unit</code></pre><div class="info ">
-<code class="code">skip b len</code> removes <code class="code">len</code> elements from the front of <code class="code">b</code>.<br>
-<b>Raises</b> <code>Invalid_argument</code> if <code class="code">len &gt; length b</code>.<br>
+<code class="code">skip&nbsp;b&nbsp;len</code> removes <code class="code">len</code> elements from the front of <code class="code">b</code>.<br>
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">len&nbsp;&gt;&nbsp;length&nbsp;b</code>.<br>
 </div>
 
 <pre><span id="VALiter"><span class="keyword">val</span> iter</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> f:(Array.elt -> unit) -> unit</code></pre><div class="info ">
-<code class="code">iter b ~f</code> calls <code class="code">f i t</code> for each element <code class="code">t</code> in <code class="code">buf</code><br>
+<code class="code">iter&nbsp;b&nbsp;~f</code> calls <code class="code">f&nbsp;i&nbsp;t</code> for each element <code class="code">t</code> in <code class="code">buf</code><br>
 </div>
 
 <pre><span id="VALiteri"><span class="keyword">val</span> iteri</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> f:(int -> Array.elt -> unit) -> unit</code></pre><div class="info ">
-<code class="code">iteri b ~f</code> calls <code class="code">f i t</code> for each element <code class="code">t</code> in <code class="code">buf</code>, with <code class="code">i</code>
+<code class="code">iteri&nbsp;b&nbsp;~f</code> calls <code class="code">f&nbsp;i&nbsp;t</code> for each element <code class="code">t</code> in <code class="code">buf</code>, with <code class="code">i</code>
       being its relative index within <code class="code">buf</code>.<br>
 </div>
 
 <pre><span id="VALget_front"><span class="keyword">val</span> get_front</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> int -> Array.elt</code></pre><div class="info ">
-<code class="code">get_front buf i</code> returns the <code class="code">i</code>-th element of <code class="code">buf</code> from the front, ie
-      the one returned by <code class="code">take_front buf</code> after <code class="code">i-1</code> calls to <code class="code">junk_front buf</code>.<br>
-<b>Raises</b> <code>Invalid_argument</code> if the index is invalid (&gt; <code class="code">length buf</code>)<br>
+<code class="code">get_front&nbsp;buf&nbsp;i</code> returns the <code class="code">i</code>-th element of <code class="code">buf</code> from the front, ie
+      the one returned by <code class="code">take_front&nbsp;buf</code> after <code class="code">i-1</code> calls to <code class="code">junk_front&nbsp;buf</code>.<br>
+<b>Raises</b> <code>Invalid_argument</code> if the index is invalid (&gt; <code class="code">length&nbsp;buf</code>)<br>
 </div>
 
 <pre><span id="VALget_back"><span class="keyword">val</span> get_back</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> int -> Array.elt</code></pre><div class="info ">
-<code class="code">get_back buf i</code> returns the <code class="code">i</code>-th element of <code class="code">buf</code> from the back, ie
-      the one returned by <code class="code">take_back buf</code> after <code class="code">i-1</code> calls to <code class="code">junk_back buf</code>.<br>
-<b>Raises</b> <code>Invalid_argument</code> if the index is invalid (&gt; <code class="code">length buf</code>)<br>
+<code class="code">get_back&nbsp;buf&nbsp;i</code> returns the <code class="code">i</code>-th element of <code class="code">buf</code> from the back, ie
+      the one returned by <code class="code">take_back&nbsp;buf</code> after <code class="code">i-1</code> calls to <code class="code">junk_back&nbsp;buf</code>.<br>
+<b>Raises</b> <code>Invalid_argument</code> if the index is invalid (&gt; <code class="code">length&nbsp;buf</code>)<br>
 </div>
 
 <pre><span id="VALpush_back"><span class="keyword">val</span> push_back</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt -> unit</code></pre><div class="info ">
@@ -217,31 +207,41 @@ Push value at the back of <code class="code">t</code>.
       otherwise the oldest elements are replaced first.<br>
 </div>
 
-<pre><span id="VALpeek_front"><span class="keyword">val</span> peek_front</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt</code></pre><div class="info ">
-First value from front of <code class="code">t</code>.<br>
+<pre><span id="VALpeek_front"><span class="keyword">val</span> peek_front</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt option</code></pre><div class="info ">
+First value from front of <code class="code">t</code>, without modification.<br>
+</div>
+
+<pre><span id="VALpeek_front_exn"><span class="keyword">val</span> peek_front_exn</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt</code></pre><div class="info ">
+First value from front of <code class="code">t</code>, without modification.<br>
+<b>Since</b> 1.3<br>
 <b>Raises</b> <code>Empty</code> if buffer is empty.<br>
 </div>
 
-<pre><span id="VALpeek_back"><span class="keyword">val</span> peek_back</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt</code></pre><div class="info ">
-Get the last value from back of <code class="code">t</code>.<br>
+<pre><span id="VALpeek_back"><span class="keyword">val</span> peek_back</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt option</code></pre><div class="info ">
+Get the last value from back of <code class="code">t</code>, without modification.<br>
+</div>
+
+<pre><span id="VALpeek_back_exn"><span class="keyword">val</span> peek_back_exn</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt</code></pre><div class="info ">
+Get the last value from back of <code class="code">t</code>, without modification.<br>
+<b>Since</b> 1.3<br>
 <b>Raises</b> <code>Empty</code> if buffer is empty.<br>
 </div>
 
 <pre><span id="VALtake_back"><span class="keyword">val</span> take_back</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt option</code></pre><div class="info ">
-Take the last value from back of <code class="code">t</code>, if any<br>
+Take and remove the last value from back of <code class="code">t</code>, if any<br>
 </div>
 
 <pre><span id="VALtake_back_exn"><span class="keyword">val</span> take_back_exn</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt</code></pre><div class="info ">
-Take the last value from back of <code class="code">t</code>.<br>
+Take and remove the last value from back of <code class="code">t</code>.<br>
 <b>Raises</b> <code>Empty</code> if buffer is already empty.<br>
 </div>
 
 <pre><span id="VALtake_front"><span class="keyword">val</span> take_front</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt option</code></pre><div class="info ">
-Take the first value from front of <code class="code">t</code>, if any<br>
+Take and remove the first value from front of <code class="code">t</code>, if any<br>
 </div>
 
 <pre><span id="VALtake_front_exn"><span class="keyword">val</span> take_front_exn</span> : <code class="type"><a href="CCRingBuffer.S.html#TYPEt">t</a> -> Array.elt</code></pre><div class="info ">
-Take the first value from front of <code class="code">t</code>.<br>
+Take and remove the first value from front of <code class="code">t</code>.<br>
 <b>Raises</b> <code>Empty</code> if buffer is already empty.<br>
 </div>
 

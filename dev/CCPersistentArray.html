@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="previous" href="CCIntMap.html">
 <link rel="next" href="CCMixset.html">
@@ -15,8 +16,6 @@
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="CCVector" rel="Chapter" href="CCVector.html">
-<link title="CCPrint" rel="Chapter" href="CCPrint.html">
-<link title="CCError" rel="Chapter" href="CCError.html">
 <link title="CCHeap" rel="Chapter" href="CCHeap.html">
 <link title="CCList" rel="Chapter" href="CCList.html">
 <link title="CCOpt" rel="Chapter" href="CCOpt.html">
@@ -39,6 +38,11 @@
 <link title="CCInt64" rel="Chapter" href="CCInt64.html">
 <link title="CCChar" rel="Chapter" href="CCChar.html">
 <link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
 <link title="Containers" rel="Chapter" href="Containers.html">
 <link title="CCKTree" rel="Chapter" href="CCKTree.html">
 <link title="CCKList" rel="Chapter" href="CCKList.html">
@@ -58,39 +62,25 @@
 <link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
 <link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
 <link title="CCMixset" rel="Chapter" href="CCMixset.html">
-<link title="CCHashconsedSet" rel="Chapter" href="CCHashconsedSet.html">
 <link title="CCGraph" rel="Chapter" href="CCGraph.html">
 <link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
 <link title="CCBitField" rel="Chapter" href="CCBitField.html">
 <link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
-<link title="CCBloom" rel="Chapter" href="CCBloom.html">
 <link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
 <link title="CCRAL" rel="Chapter" href="CCRAL.html">
-<link title="CCAllocCache" rel="Chapter" href="CCAllocCache.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
 <link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
 <link title="CCHet" rel="Chapter" href="CCHet.html">
-<link title="Containers_string" rel="Chapter" href="Containers_string.html">
-<link title="CCKMP" rel="Chapter" href="CCKMP.html">
-<link title="CCLevenshtein" rel="Chapter" href="CCLevenshtein.html">
-<link title="CCApp_parse" rel="Chapter" href="CCApp_parse.html">
-<link title="CCParse" rel="Chapter" href="CCParse.html">
-<link title="CCBigstring" rel="Chapter" href="CCBigstring.html">
-<link title="CCArray1" rel="Chapter" href="CCArray1.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
 <link title="CCPool" rel="Chapter" href="CCPool.html">
 <link title="CCLock" rel="Chapter" href="CCLock.html">
 <link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
 <link title="CCThread" rel="Chapter" href="CCThread.html">
 <link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
 <link title="CCTimer" rel="Chapter" href="CCTimer.html">
-<link title="Containers_advanced" rel="Chapter" href="Containers_advanced.html">
-<link title="CCLinq" rel="Chapter" href="CCLinq.html">
-<link title="CCBatch" rel="Chapter" href="CCBatch.html">
-<link title="CCCat" rel="Chapter" href="CCCat.html">
-<link title="CCMonadIO" rel="Chapter" href="CCMonadIO.html">
-<link title="Containers_io_is_deprecated" rel="Chapter" href="Containers_io_is_deprecated.html">
 <link title="CCUnix" rel="Chapter" href="CCUnix.html">
 <link title="CCSexp" rel="Chapter" href="CCSexp.html">
-<link title="CCSexpM" rel="Chapter" href="CCSexpM.html"><link title="Conversions" rel="Section" href="#2_Conversions">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Conversions" rel="Section" href="#2_Conversions">
 <link title="IO" rel="Section" href="#2_IO">
 <title>Containers doc : CCPersistentArray</title>
 </head>
@@ -105,9 +95,9 @@
 <h1 id="1_PersistentArrays">Persistent Arrays</h1>
 <p>
 
-From the paper by Jean-Christophe Filliâtre,
-"A persistent Union-Find data structure", see
-<a href=" https://www.lri.fr/~filliatr/ftp/publis/puf-wml07.ps"> the ps version</a><br>
+    From the paper by Jean-Christophe Filliâtre,
+    "A persistent Union-Find data structure", see
+    <a href=" https://www.lri.fr/~filliatr/ftp/publis/puf-wml07.ps"> the ps version</a><br>
 <b>Since</b> 0.10<br>
 </div>
 <hr width="100%">
@@ -119,34 +109,34 @@ The type of persistent arrays<br>
 
 
 <pre><span id="VALmake"><span class="keyword">val</span> make</span> : <code class="type">int -> 'a -> 'a <a href="CCPersistentArray.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">make n x</code> returns a persistent array of length n, with <code class="code">x</code>. All the
+<code class="code">make&nbsp;n&nbsp;x</code> returns a persistent array of length n, with <code class="code">x</code>. All the
     elements of this new array are initially physically equal to x
     (in the sense of the == predicate). Consequently, if x is mutable, it is
     shared among all elements of the array, and modifying x through one of the
     array entries will modify all other entries at the same time.<br>
-<b>Raises</b> <code>Invalid_argument</code> if <code class="code">n &lt; 0</code> or <code class="code">n &gt; <span class="constructor">Sys</span>.max_array_length</code>.
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">n&nbsp;&lt;&nbsp;0</code> or <code class="code">n&nbsp;&gt;&nbsp;<span class="constructor">Sys</span>.max_array_length</code>.
     If the value of x is a floating-point number, then the maximum size is
-    only <code class="code"><span class="constructor">Sys</span>.max_array_length / 2</code>.<br>
+    only <code class="code"><span class="constructor">Sys</span>.max_array_length&nbsp;/&nbsp;2</code>.<br>
 </div>
 
 <pre><span id="VALinit"><span class="keyword">val</span> init</span> : <code class="type">int -> (int -> 'a) -> 'a <a href="CCPersistentArray.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">make n f</code> returns a persistent array of length n, with element
-    <code class="code">i</code> initialized to the result of <code class="code">f i</code>.<br>
-<b>Raises</b> <code>Invalid_argument</code> if <code class="code">n &lt; 0</code> or <code class="code">n &gt; <span class="constructor">Sys</span>.max_array_length</code>.
+<code class="code">make&nbsp;n&nbsp;f</code> returns a persistent array of length n, with element
+    <code class="code">i</code> initialized to the result of <code class="code">f&nbsp;i</code>.<br>
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">n&nbsp;&lt;&nbsp;0</code> or <code class="code">n&nbsp;&gt;&nbsp;<span class="constructor">Sys</span>.max_array_length</code>.
     If the value of x is a floating-point number, then the maximum size is
-    only <code class="code"><span class="constructor">Sys</span>.max_array_length / 2</code>.<br>
+    only <code class="code"><span class="constructor">Sys</span>.max_array_length&nbsp;/&nbsp;2</code>.<br>
 </div>
 
 <pre><span id="VALget"><span class="keyword">val</span> get</span> : <code class="type">'a <a href="CCPersistentArray.html#TYPEt">t</a> -> int -> 'a</code></pre><div class="info ">
-<code class="code">get a i</code> returns the element with index <code class="code">i</code> from the array <code class="code">a</code>.<br>
+<code class="code">get&nbsp;a&nbsp;i</code> returns the element with index <code class="code">i</code> from the array <code class="code">a</code>.<br>
 <b>Raises</b> <code>Invalid_argument</code> "index out of bounds" if <code class="code">n</code> is outside the
-    range <code class="code">0</code> to <code class="code"><span class="constructor">Array</span>.length a - 1</code>.<br>
+    range <code class="code">0</code> to <code class="code"><span class="constructor">Array</span>.length&nbsp;a&nbsp;-&nbsp;1</code>.<br>
 </div>
 
 <pre><span id="VALset"><span class="keyword">val</span> set</span> : <code class="type">'a <a href="CCPersistentArray.html#TYPEt">t</a> -> int -> 'a -> 'a <a href="CCPersistentArray.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">set a i v</code> sets the element index <code class="code">i</code> from the array <code class="code">a</code> to <code class="code">v</code>.<br>
+<code class="code">set&nbsp;a&nbsp;i&nbsp;v</code> sets the element index <code class="code">i</code> from the array <code class="code">a</code> to <code class="code">v</code>.<br>
 <b>Raises</b> <code>Invalid_argument</code> "index out of bounds" if <code class="code">n</code> is outside the
-    range <code class="code">0</code> to <code class="code"><span class="constructor">Array</span>.length a - 1</code>.<br>
+    range <code class="code">0</code> to <code class="code"><span class="constructor">Array</span>.length&nbsp;a&nbsp;-&nbsp;1</code>.<br>
 </div>
 
 <pre><span id="VALlength"><span class="keyword">val</span> length</span> : <code class="type">'a <a href="CCPersistentArray.html#TYPEt">t</a> -> int</code></pre><div class="info ">
@@ -154,7 +144,7 @@ Returns the length of the persistent array.<br>
 </div>
 
 <pre><span id="VALcopy"><span class="keyword">val</span> copy</span> : <code class="type">'a <a href="CCPersistentArray.html#TYPEt">t</a> -> 'a <a href="CCPersistentArray.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">copy a</code> returns a fresh copy of <code class="code">a</code>. Both copies are independent.<br>
+<code class="code">copy&nbsp;a</code> returns a fresh copy of <code class="code">a</code>. Both copies are independent.<br>
 </div>
 
 <pre><span id="VALmap"><span class="keyword">val</span> map</span> : <code class="type">('a -> 'b) -> 'a <a href="CCPersistentArray.html#TYPEt">t</a> -> 'b <a href="CCPersistentArray.html#TYPEt">t</a></code></pre>
@@ -162,13 +152,13 @@ Returns the length of the persistent array.<br>
 Applies the given function to all elements of the array, and returns
     a persistent array initialized by the results of f. In the case of <code class="code">mapi</code>,
     the function is also given the index of the element.
-    It is equivalent to <code class="code"><span class="keyword">fun</span> f t <span class="keywordsign">-&gt;</span> init (<span class="keyword">fun</span> i <span class="keywordsign">-&gt;</span> f (get t i))</code>.<br>
+    It is equivalent to <code class="code"><span class="keyword">fun</span>&nbsp;f&nbsp;t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;init&nbsp;(<span class="keyword">fun</span>&nbsp;i&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;f&nbsp;(get&nbsp;t&nbsp;i))</code>.<br>
 </div>
 
 <pre><span id="VALiter"><span class="keyword">val</span> iter</span> : <code class="type">('a -> unit) -> 'a <a href="CCPersistentArray.html#TYPEt">t</a> -> unit</code></pre>
 <pre><span id="VALiteri"><span class="keyword">val</span> iteri</span> : <code class="type">(int -> 'a -> unit) -> 'a <a href="CCPersistentArray.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
-<code class="code">iter f t</code> applies function <code class="code">f</code> to all elements of the persistent array,
-    in order from element <code class="code">0</code> to element <code class="code">length t - 1</code>.<br>
+<code class="code">iter&nbsp;f&nbsp;t</code> applies function <code class="code">f</code> to all elements of the persistent array,
+    in order from element <code class="code">0</code> to element <code class="code">length&nbsp;t&nbsp;-&nbsp;1</code>.<br>
 </div>
 
 <pre><span id="VALfold_left"><span class="keyword">val</span> fold_left</span> : <code class="type">('a -> 'b -> 'a) -> 'a -> 'b <a href="CCPersistentArray.html#TYPEt">t</a> -> 'a</code></pre>
@@ -192,23 +182,23 @@ Flat map (map + concatenation)<br>
 </div>
 
 <pre><span id="VALto_array"><span class="keyword">val</span> to_array</span> : <code class="type">'a <a href="CCPersistentArray.html#TYPEt">t</a> -> 'a array</code></pre><div class="info ">
-<code class="code">to_array t</code> returns a mutable copy of <code class="code">t</code>.<br>
+<code class="code">to_array&nbsp;t</code> returns a mutable copy of <code class="code">t</code>.<br>
 </div>
 
 <pre><span id="VALof_array"><span class="keyword">val</span> of_array</span> : <code class="type">'a array -> 'a <a href="CCPersistentArray.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">from_array a</code> returns an immutable copy of <code class="code">a</code>.<br>
+<code class="code">from_array&nbsp;a</code> returns an immutable copy of <code class="code">a</code>.<br>
 </div>
 
 <pre><span id="VALto_list"><span class="keyword">val</span> to_list</span> : <code class="type">'a <a href="CCPersistentArray.html#TYPEt">t</a> -> 'a list</code></pre><div class="info ">
-<code class="code">to_list t</code> returns the list of elements in <code class="code">t</code>.<br>
+<code class="code">to_list&nbsp;t</code> returns the list of elements in <code class="code">t</code>.<br>
 </div>
 
 <pre><span id="VALof_list"><span class="keyword">val</span> of_list</span> : <code class="type">'a list -> 'a <a href="CCPersistentArray.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">of_list l</code> returns a fresh persistent array containing the elements of <code class="code">l</code>.<br>
+<code class="code">of_list&nbsp;l</code> returns a fresh persistent array containing the elements of <code class="code">l</code>.<br>
 </div>
 
 <pre><span id="VALof_rev_list"><span class="keyword">val</span> of_rev_list</span> : <code class="type">'a list -> 'a <a href="CCPersistentArray.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">of_rev_list l</code> is the same as <code class="code">of_list (<span class="constructor">List</span>.rev l)</code> but more efficient<br>
+<code class="code">of_rev_list&nbsp;l</code> is the same as <code class="code">of_list&nbsp;(<span class="constructor">List</span>.rev&nbsp;l)</code> but more efficient<br>
 <b>Since</b> 0.13<br>
 </div>
 <br>

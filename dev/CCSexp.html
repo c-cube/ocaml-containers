@@ -3,9 +3,10 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="previous" href="CCUnix.html">
-<link rel="next" href="CCSexpM.html">
+<link rel="next" href="CCSexp_lex.html">
 <link rel="Up" href="index.html">
 <link title="Index of types" rel=Appendix href="index_types.html">
 <link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
@@ -15,8 +16,6 @@
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="CCVector" rel="Chapter" href="CCVector.html">
-<link title="CCPrint" rel="Chapter" href="CCPrint.html">
-<link title="CCError" rel="Chapter" href="CCError.html">
 <link title="CCHeap" rel="Chapter" href="CCHeap.html">
 <link title="CCList" rel="Chapter" href="CCList.html">
 <link title="CCOpt" rel="Chapter" href="CCOpt.html">
@@ -39,6 +38,11 @@
 <link title="CCInt64" rel="Chapter" href="CCInt64.html">
 <link title="CCChar" rel="Chapter" href="CCChar.html">
 <link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
 <link title="Containers" rel="Chapter" href="Containers.html">
 <link title="CCKTree" rel="Chapter" href="CCKTree.html">
 <link title="CCKList" rel="Chapter" href="CCKList.html">
@@ -58,59 +62,56 @@
 <link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
 <link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
 <link title="CCMixset" rel="Chapter" href="CCMixset.html">
-<link title="CCHashconsedSet" rel="Chapter" href="CCHashconsedSet.html">
 <link title="CCGraph" rel="Chapter" href="CCGraph.html">
 <link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
 <link title="CCBitField" rel="Chapter" href="CCBitField.html">
 <link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
-<link title="CCBloom" rel="Chapter" href="CCBloom.html">
 <link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
 <link title="CCRAL" rel="Chapter" href="CCRAL.html">
-<link title="CCAllocCache" rel="Chapter" href="CCAllocCache.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
 <link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
 <link title="CCHet" rel="Chapter" href="CCHet.html">
-<link title="Containers_string" rel="Chapter" href="Containers_string.html">
-<link title="CCKMP" rel="Chapter" href="CCKMP.html">
-<link title="CCLevenshtein" rel="Chapter" href="CCLevenshtein.html">
-<link title="CCApp_parse" rel="Chapter" href="CCApp_parse.html">
-<link title="CCParse" rel="Chapter" href="CCParse.html">
-<link title="CCBigstring" rel="Chapter" href="CCBigstring.html">
-<link title="CCArray1" rel="Chapter" href="CCArray1.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
 <link title="CCPool" rel="Chapter" href="CCPool.html">
 <link title="CCLock" rel="Chapter" href="CCLock.html">
 <link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
 <link title="CCThread" rel="Chapter" href="CCThread.html">
 <link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
 <link title="CCTimer" rel="Chapter" href="CCTimer.html">
-<link title="Containers_advanced" rel="Chapter" href="Containers_advanced.html">
-<link title="CCLinq" rel="Chapter" href="CCLinq.html">
-<link title="CCBatch" rel="Chapter" href="CCBatch.html">
-<link title="CCCat" rel="Chapter" href="CCCat.html">
-<link title="CCMonadIO" rel="Chapter" href="CCMonadIO.html">
-<link title="Containers_io_is_deprecated" rel="Chapter" href="Containers_io_is_deprecated.html">
 <link title="CCUnix" rel="Chapter" href="CCUnix.html">
 <link title="CCSexp" rel="Chapter" href="CCSexp.html">
-<link title="CCSexpM" rel="Chapter" href="CCSexpM.html"><link title="Basics" rel="Section" href="#2_Basics">
-<link title="Traversal of S-exp" rel="Subsection" href="#6_TraversalofSexp">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Basics" rel="Section" href="#2_Basics">
+<link title="Printing" rel="Section" href="#2_Printing">
+<link title="Parsing" rel="Section" href="#2_Parsing">
 <title>Containers doc : CCSexp</title>
 </head>
 <body>
 <div class="navbar"><a class="pre" href="CCUnix.html" title="CCUnix">Previous</a>
 &nbsp;<a class="up" href="index.html" title="Index">Up</a>
-&nbsp;<a class="post" href="CCSexpM.html" title="CCSexpM">Next</a>
+&nbsp;<a class="post" href="CCSexp_lex.html" title="CCSexp_lex">Next</a>
 </div>
 <h1>Module <a href="type_CCSexp.html">CCSexp</a></h1>
 
 <pre><span class="keyword">module</span> CCSexp: <code class="code"><span class="keyword">sig</span></code> <a href="CCSexp.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
 <h1 id="1_HandlingSexpressions">Handling S-expressions</h1><br>
-<b>Since</b> 0.7
-Moved the streaming parser to CCSexpStream<br>
 </div>
 <hr width="100%">
+
+<pre><span id="TYPEor_error"><span class="keyword">type</span> <code class="type">'a</code> or_error</span> = <code class="type">('a, string) Result.result</code> </pre>
+
+
+<pre><span id="TYPEsequence"><span class="keyword">type</span> <code class="type">'a</code> sequence</span> = <code class="type">('a -> unit) -> unit</code> </pre>
+
+
+<pre><span id="TYPEgen"><span class="keyword">type</span> <code class="type">'a</code> gen</span> = <code class="type">unit -> 'a option</code> </pre>
+
 <br>
 <h2 id="2_Basics">Basics</h2><br>
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = <code class="type">[ `Atom of string | `List of <a href="CCSexp.html#TYPEt">t</a> list ]</code> </pre>
+
+
+<pre><span id="TYPEsexp"><span class="keyword">type</span> <code class="type"></code>sexp</span> = <code class="type"><a href="CCSexp.html#TYPEt">t</a></code> </pre>
 
 
 <pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type"><a href="CCSexp.html#TYPEt">t</a> -> <a href="CCSexp.html#TYPEt">t</a> -> bool</code></pre>
@@ -133,9 +134,9 @@ Reverse the list<br>
 <pre><span id="VALof_triple"><span class="keyword">val</span> of_triple</span> : <code class="type"><a href="CCSexp.html#TYPEt">t</a> * <a href="CCSexp.html#TYPEt">t</a> * <a href="CCSexp.html#TYPEt">t</a> -> <a href="CCSexp.html#TYPEt">t</a></code></pre>
 <pre><span id="VALof_quad"><span class="keyword">val</span> of_quad</span> : <code class="type"><a href="CCSexp.html#TYPEt">t</a> * <a href="CCSexp.html#TYPEt">t</a> * <a href="CCSexp.html#TYPEt">t</a> * <a href="CCSexp.html#TYPEt">t</a> -> <a href="CCSexp.html#TYPEt">t</a></code></pre>
 <pre><span id="VALof_variant"><span class="keyword">val</span> of_variant</span> : <code class="type">string -> <a href="CCSexp.html#TYPEt">t</a> list -> <a href="CCSexp.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">of_variant name args</code> is used to encode algebraic variants
-    into a S-expr. For instance <code class="code">of_variant <span class="string">"some"</span> [of_int 1]</code>
-    represents the value <code class="code"><span class="constructor">Some</span> 1</code><br>
+<code class="code">of_variant&nbsp;name&nbsp;args</code> is used to encode algebraic variants
+    into a S-expr. For instance <code class="code">of_variant&nbsp;<span class="string">"some"</span>&nbsp;[of_int&nbsp;1]</code>
+    represents the value <code class="code"><span class="constructor">Some</span>&nbsp;1</code><br>
 </div>
 
 <pre><span id="VALof_field"><span class="keyword">val</span> of_field</span> : <code class="type">string -> <a href="CCSexp.html#TYPEt">t</a> -> <a href="CCSexp.html#TYPEt">t</a></code></pre><div class="info ">
@@ -146,26 +147,77 @@ Used to represent one record field<br>
 Represent a record by its named fields<br>
 </div>
 <br>
-<h6 id="6_TraversalofSexp">Traversal of S-exp</h6>
-<p>
+<h2 id="2_Printing">Printing</h2><br>
 
-Example: serializing 2D points
-<pre class="codepre"><code class="code"><span class="keyword">type</span>&nbsp;pt&nbsp;=&nbsp;{x:int;&nbsp;y:int&nbsp;};;<br>
-<br>
-<span class="keyword">let</span>&nbsp;pt_of_sexp&nbsp;e&nbsp;=<br>
-&nbsp;&nbsp;<span class="constructor">Sexp</span>.<span class="constructor">Traverse</span>.(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;field&nbsp;<span class="string">"x"</span>&nbsp;to_int&nbsp;e&nbsp;&gt;&gt;=&nbsp;<span class="keyword">fun</span>&nbsp;x&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;field&nbsp;<span class="string">"y"</span>&nbsp;to_int&nbsp;e&nbsp;&gt;&gt;=&nbsp;<span class="keyword">fun</span>&nbsp;y&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;{x;y}<br>
-&nbsp;&nbsp;);;<br>
-<br>
-<span class="keyword">let</span>&nbsp;sexp_of_pt&nbsp;pt&nbsp;=&nbsp;<span class="constructor">Sexp</span>.(of_record&nbsp;[<span class="string">"x"</span>,&nbsp;of_int&nbsp;pt.x;&nbsp;<span class="string">"y"</span>,&nbsp;of_int&nbsp;pt.y]);;<br>
-<br>
-<span class="keyword">let</span>&nbsp;l&nbsp;=&nbsp;[{x=1;y=1};&nbsp;{x=2;y=10}];;<br>
-<br>
-<span class="keyword">let</span>&nbsp;sexp&nbsp;=&nbsp;<span class="constructor">Sexp</span>.(of_list&nbsp;(<span class="constructor">List</span>.map&nbsp;sexp_of_pt&nbsp;l));;<br>
-<br>
-<span class="constructor">Sexp</span>.<span class="constructor">Traverse</span>.list_all&nbsp;pt_of_sexp&nbsp;sexp;;<br>
-</code></pre><br>
+<pre><span id="VALto_buf"><span class="keyword">val</span> to_buf</span> : <code class="type">Buffer.t -> <a href="CCSexp.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALto_string"><span class="keyword">val</span> to_string</span> : <code class="type"><a href="CCSexp.html#TYPEt">t</a> -> string</code></pre>
+<pre><span id="VALto_file"><span class="keyword">val</span> to_file</span> : <code class="type">string -> <a href="CCSexp.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALto_file_seq"><span class="keyword">val</span> to_file_seq</span> : <code class="type">string -> <a href="CCSexp.html#TYPEt">t</a> <a href="CCSexp.html#TYPEsequence">sequence</a> -> unit</code></pre><div class="info ">
+Print the given sequence of expressions to a file<br>
+</div>
 
-<pre><span class="keyword">module</span> <a href="CCSexp.Traverse.html">Traverse</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCSexp.Traverse.html">..</a> <code class="code"><span class="keyword">end</span></code></pre></body></html>
+<pre><span id="VALto_chan"><span class="keyword">val</span> to_chan</span> : <code class="type">Pervasives.out_channel -> <a href="CCSexp.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Format.formatter -> <a href="CCSexp.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Pretty-printer nice on human eyes (including indentation)<br>
+</div>
+
+<pre><span id="VALpp_noindent"><span class="keyword">val</span> pp_noindent</span> : <code class="type">Format.formatter -> <a href="CCSexp.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Raw, direct printing as compact as possible<br>
+</div>
+<br>
+<h2 id="2_Parsing">Parsing</h2><br>
+
+<pre><code><span id="TYPEparse_result"><span class="keyword">type</span> <code class="type">'a</code> parse_result</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTparse_result.Yield"><span class="constructor">Yield</span></span> <span class="keyword">of</span> <code class="type">'a</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTparse_result.Fail"><span class="constructor">Fail</span></span> <span class="keyword">of</span> <code class="type">string</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTparse_result.End"><span class="constructor">End</span></span></code></td>
+
+</tr></table>
+
+<div class="info ">
+A parser of <code class="code"><span class="keywordsign">'</span>a</code> can return <code class="code"><span class="constructor">Yield</span>&nbsp;x</code> when it parsed a value,
+    or <code class="code"><span class="constructor">Fail</span>&nbsp;e</code> when a parse error was encountered, or
+    <code class="code"><span class="constructor">End</span></code> if the input was empty<br>
+</div>
+
+
+<pre><span class="keyword">module</span> <a href="CCSexp.Decoder.html">Decoder</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCSexp.Decoder.html">..</a> <code class="code"><span class="keyword">end</span></code></pre>
+<pre><span id="VALparse_string"><span class="keyword">val</span> parse_string</span> : <code class="type">string -> <a href="CCSexp.html#TYPEt">t</a> <a href="CCSexp.html#TYPEor_error">or_error</a></code></pre><div class="info ">
+Parse a string<br>
+</div>
+
+<pre><span id="VALparse_chan"><span class="keyword">val</span> parse_chan</span> : <code class="type">Pervasives.in_channel -> <a href="CCSexp.html#TYPEt">t</a> <a href="CCSexp.html#TYPEor_error">or_error</a></code></pre><div class="info ">
+Parse a S-expression from the given channel. Can read more data than
+    necessary, so don't use this if you need finer-grained control (e.g.
+    to read something else <b>after</b> the S-exp)<br>
+</div>
+
+<pre><span id="VALparse_chan_gen"><span class="keyword">val</span> parse_chan_gen</span> : <code class="type">Pervasives.in_channel -> <a href="CCSexp.html#TYPEt">t</a> <a href="CCSexp.html#TYPEor_error">or_error</a> <a href="CCSexp.html#TYPEgen">gen</a></code></pre><div class="info ">
+Parse a channel into a generator of S-expressions<br>
+</div>
+
+<pre><span id="VALparse_chan_list"><span class="keyword">val</span> parse_chan_list</span> : <code class="type">Pervasives.in_channel -> <a href="CCSexp.html#TYPEt">t</a> list <a href="CCSexp.html#TYPEor_error">or_error</a></code></pre>
+<pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">string -> <a href="CCSexp.html#TYPEt">t</a> <a href="CCSexp.html#TYPEor_error">or_error</a></code></pre><div class="info ">
+Open the file and read a S-exp from it<br>
+</div>
+
+<pre><span id="VALparse_file_list"><span class="keyword">val</span> parse_file_list</span> : <code class="type">string -> <a href="CCSexp.html#TYPEt">t</a> list <a href="CCSexp.html#TYPEor_error">or_error</a></code></pre><div class="info ">
+Open the file and read a S-exp from it<br>
+</div>
+</body></html>

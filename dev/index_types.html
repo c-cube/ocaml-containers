@@ -2,6 +2,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link title="Index of types" rel=Appendix href="index_types.html">
 <link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
@@ -11,8 +12,6 @@
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="CCVector" rel="Chapter" href="CCVector.html">
-<link title="CCPrint" rel="Chapter" href="CCPrint.html">
-<link title="CCError" rel="Chapter" href="CCError.html">
 <link title="CCHeap" rel="Chapter" href="CCHeap.html">
 <link title="CCList" rel="Chapter" href="CCList.html">
 <link title="CCOpt" rel="Chapter" href="CCOpt.html">
@@ -35,6 +34,11 @@
 <link title="CCInt64" rel="Chapter" href="CCInt64.html">
 <link title="CCChar" rel="Chapter" href="CCChar.html">
 <link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
 <link title="Containers" rel="Chapter" href="Containers.html">
 <link title="CCKTree" rel="Chapter" href="CCKTree.html">
 <link title="CCKList" rel="Chapter" href="CCKList.html">
@@ -54,39 +58,25 @@
 <link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
 <link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
 <link title="CCMixset" rel="Chapter" href="CCMixset.html">
-<link title="CCHashconsedSet" rel="Chapter" href="CCHashconsedSet.html">
 <link title="CCGraph" rel="Chapter" href="CCGraph.html">
 <link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
 <link title="CCBitField" rel="Chapter" href="CCBitField.html">
 <link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
-<link title="CCBloom" rel="Chapter" href="CCBloom.html">
 <link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
 <link title="CCRAL" rel="Chapter" href="CCRAL.html">
-<link title="CCAllocCache" rel="Chapter" href="CCAllocCache.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
 <link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
 <link title="CCHet" rel="Chapter" href="CCHet.html">
-<link title="Containers_string" rel="Chapter" href="Containers_string.html">
-<link title="CCKMP" rel="Chapter" href="CCKMP.html">
-<link title="CCLevenshtein" rel="Chapter" href="CCLevenshtein.html">
-<link title="CCApp_parse" rel="Chapter" href="CCApp_parse.html">
-<link title="CCParse" rel="Chapter" href="CCParse.html">
-<link title="CCBigstring" rel="Chapter" href="CCBigstring.html">
-<link title="CCArray1" rel="Chapter" href="CCArray1.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
 <link title="CCPool" rel="Chapter" href="CCPool.html">
 <link title="CCLock" rel="Chapter" href="CCLock.html">
 <link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
 <link title="CCThread" rel="Chapter" href="CCThread.html">
 <link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
 <link title="CCTimer" rel="Chapter" href="CCTimer.html">
-<link title="Containers_advanced" rel="Chapter" href="Containers_advanced.html">
-<link title="CCLinq" rel="Chapter" href="CCLinq.html">
-<link title="CCBatch" rel="Chapter" href="CCBatch.html">
-<link title="CCCat" rel="Chapter" href="CCCat.html">
-<link title="CCMonadIO" rel="Chapter" href="CCMonadIO.html">
-<link title="Containers_io_is_deprecated" rel="Chapter" href="Containers_io_is_deprecated.html">
 <link title="CCUnix" rel="Chapter" href="CCUnix.html">
 <link title="CCSexp" rel="Chapter" href="CCSexp.html">
-<link title="CCSexpM" rel="Chapter" href="CCSexpM.html"><title>Containers doc : Index of types</title>
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><title>Containers doc : Index of types</title>
 </head>
 <body>
 <div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
@@ -94,10 +84,6 @@
 <h1>Index of types</h1>
 <table>
 <tr><td align="left"><br>A</td></tr>
-<tr><td><a href="CCBitField.S.html#TYPEany_field">any_field</a> [<a href="CCBitField.S.html">CCBitField.S</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCArray1.html#TYPEarray_">array_</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCUnix.html#TYPEasync_call_result">async_call_result</a> [<a href="CCUnix.html">CCUnix</a>]</td>
 <td><div class="info">
 A subprocess for interactive usage (read/write channels line by line)
@@ -113,11 +99,6 @@ Dot attribute
 Dot attributes for nodes
 </div>
 </td></tr>
-<tr><td><a href="CCLevenshtein.S.html#TYPEautomaton">automaton</a> [<a href="CCLevenshtein.S.html">CCLevenshtein.S</a>]</td>
-<td><div class="info">
-Levenshtein automaton
-</div>
-</td></tr>
 <tr><td align="left"><br>B</td></tr>
 <tr><td><a href="CCGraph.html#TYPEbag">bag</a> [<a href="CCGraph.html">CCGraph</a>]</td>
 <td><div class="info">
@@ -127,35 +108,22 @@ Bag of elements of type <code class="code"><span class="keywordsign">'</span>a</
 <tr><td align="left"><br>C</td></tr>
 <tr><td><a href="CCUnix.html#TYPEcall_result">call_result</a> [<a href="CCUnix.html">CCUnix</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCKMP.STRING.html#TYPEchar">char</a> [<a href="CCKMP.STRING.html">CCKMP.STRING</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.STRING.html#TYPEchar_">char_</a> [<a href="CCLevenshtein.STRING.html">CCLevenshtein.STRING</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.S.html#TYPEchar_">char_</a> [<a href="CCLevenshtein.S.html">CCLevenshtein.S</a>]</td>
-<td></td></tr>
+<tr><td><a href="CCCache.html#TYPEcallback">callback</a> [<a href="CCCache.html">CCCache</a>]</td>
+<td><div class="info">
+Type of the callback that is called once a cached value is found
+    or not.
+</div>
+</td></tr>
 <tr><td><a href="CCTrie.WORD.html#TYPEchar_">char_</a> [<a href="CCTrie.WORD.html">CCTrie.WORD</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCTrie.S.html#TYPEchar_">char_</a> [<a href="CCTrie.S.html">CCTrie.S</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCParse.html#TYPEcol_num">col_num</a> [<a href="CCParse.html">CCParse</a>]</td>
-<td><div class="info">
-</div>
-</td></tr>
-<tr><td><a href="CCSexp.Traverse.html#TYPEconv">conv</a> [<a href="CCSexp.Traverse.html">CCSexp.Traverse</a>]</td>
-<td><div class="info">
-A converter from S-expressions to 'a is a function <code class="code">sexp <span class="keywordsign">-&gt;</span> <span class="keywordsign">'</span>a option</code>.
-</div>
-</td></tr>
+<td></td></tr>
 <tr><td align="left"><br>E</td></tr>
 <tr><td><a href="CCGraph.Traverse.Event.html#TYPEedge_kind">edge_kind</a> [<a href="CCGraph.Traverse.Event.html">CCGraph.Traverse.Event</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCArray1.View.S.html#TYPEelt">elt</a> [<a href="CCArray1.View.S.html">CCArray1.View.S</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCArray1.S.html#TYPEelt">elt</a> [<a href="CCArray1.S.html">CCArray1.S</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCHashSet.S.html#TYPEelt">elt</a> [<a href="CCHashSet.S.html">CCHashSet.S</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCHashconsedSet.S.html#TYPEelt">elt</a> [<a href="CCHashconsedSet.S.html">CCHashconsedSet.S</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCRingBuffer.Array.S.html#TYPEelt">elt</a> [<a href="CCRingBuffer.Array.S.html">CCRingBuffer.Array.S</a>]</td>
 <td><div class="info">
@@ -164,11 +132,8 @@ The element type
 </td></tr>
 <tr><td><a href="CCMultiSet.S.html#TYPEelt">elt</a> [<a href="CCMultiSet.S.html">CCMultiSet.S</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCHashtbl.COUNTER.html#TYPEelt">elt</a> [<a href="CCHashtbl.COUNTER.html">CCHashtbl.COUNTER</a>]</td>
-<td><div class="info">
-Elements that are to be counted
-</div>
-</td></tr>
+<tr><td><a href="CCArrayLabels.MONO_ARRAY.html#TYPEelt">elt</a> [<a href="CCArrayLabels.MONO_ARRAY.html">CCArrayLabels.MONO_ARRAY</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCArray.MONO_ARRAY.html#TYPEelt">elt</a> [<a href="CCArray.MONO_ARRAY.html">CCArray.MONO_ARRAY</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCHeap.S.html#TYPEelt">elt</a> [<a href="CCHeap.S.html">CCHeap.S</a>]</td>
@@ -176,8 +141,6 @@ Elements that are to be counted
 <tr><td><a href="CCHashtbl.html#TYPEeq">eq</a> [<a href="CCHashtbl.html">CCHashtbl</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCRef.html#TYPEeq">eq</a> [<a href="CCRef.html">CCRef</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLinq.html#TYPEequal">equal</a> [<a href="CCLinq.html">CCLinq</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCFQueue.html#TYPEequal">equal</a> [<a href="CCFQueue.html">CCFQueue</a>]</td>
 <td></td></tr>
@@ -187,81 +150,41 @@ Elements that are to be counted
 <td></td></tr>
 <tr><td><a href="CCKList.html#TYPEequal">equal</a> [<a href="CCKList.html">CCKList</a>]</td>
 <td></td></tr>
+<tr><td><a href="CCArrayLabels.html#TYPEequal">equal</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPEequal">equal</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCResult.html#TYPEequal">equal</a> [<a href="CCResult.html">CCResult</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCArray.html#TYPEequal">equal</a> [<a href="CCArray.html">CCArray</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCError.html#TYPEequal">equal</a> [<a href="CCError.html">CCError</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCVector.html#TYPEequal">equal</a> [<a href="CCVector.html">CCVector</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCApp_parse.html#TYPEerror">error</a> [<a href="CCApp_parse.html">CCApp_parse</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCResult.html#TYPEerror">error</a> [<a href="CCResult.html">CCResult</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>F</td></tr>
 <tr><td><a href="CCBitField.S.html#TYPEfield">field</a> [<a href="CCBitField.S.html">CCBitField.S</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCBitField.S.html#TYPEfield_kind">field_kind</a> [<a href="CCBitField.S.html">CCBitField.S</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCOpt.html#TYPEfmt">fmt</a> [<a href="CCOpt.html">CCOpt</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCPersistentHashtbl.html#TYPEformatter">formatter</a> [<a href="CCPersistentHashtbl.html">CCPersistentHashtbl</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCKList.html#TYPEformatter">formatter</a> [<a href="CCKList.html">CCKList</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCKTree.html#TYPEformatter">formatter</a> [<a href="CCKTree.html">CCKTree</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCResult.html#TYPEformatter">formatter</a> [<a href="CCResult.html">CCResult</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCMap.html#TYPEformatter">formatter</a> [<a href="CCMap.html">CCMap</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCSet.html#TYPEformatter">formatter</a> [<a href="CCSet.html">CCSet</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCFloat.html#TYPEformatter">formatter</a> [<a href="CCFloat.html">CCFloat</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBool.html#TYPEformatter">formatter</a> [<a href="CCBool.html">CCBool</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCInt.html#TYPEformatter">formatter</a> [<a href="CCInt.html">CCInt</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCPair.html#TYPEformatter">formatter</a> [<a href="CCPair.html">CCPair</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCList.html#TYPEformatter">formatter</a> [<a href="CCList.html">CCList</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCError.html#TYPEformatter">formatter</a> [<a href="CCError.html">CCError</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCVector.html#TYPEformatter">formatter</a> [<a href="CCVector.html">CCVector</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCFloat.html#TYPEfpclass">fpclass</a> [<a href="CCFloat.html">CCFloat</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCPool.Make.Fut.html#TYPEfuture">future</a> [<a href="CCPool.Make.Fut.html">CCPool.Make.Fut</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>G</td></tr>
-<tr><td><a href="CCSexpM.html#TYPEgen">gen</a> [<a href="CCSexpM.html">CCSexpM</a>]</td>
+<tr><td><a href="CCSexp.html#TYPEgen">gen</a> [<a href="CCSexp.html">CCSexp</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCUnix.html#TYPEgen">gen</a> [<a href="CCUnix.html">CCUnix</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCMonadIO.Seq.html#TYPEgen">gen</a> [<a href="CCMonadIO.Seq.html">CCMonadIO.Seq</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBigstring.html#TYPEgen">gen</a> [<a href="CCBigstring.html">CCBigstring</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.html#TYPEgen">gen</a> [<a href="CCLevenshtein.html">CCLevenshtein</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCKMP.html#TYPEgen">gen</a> [<a href="CCKMP.html">CCKMP</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCHet.html#TYPEgen">gen</a> [<a href="CCHet.html">CCHet</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCImmutArray.html#TYPEgen">gen</a> [<a href="CCImmutArray.html">CCImmutArray</a>]</td>
 <td></td></tr>
+<tr><td><a href="CCSimple_queue.html#TYPEgen">gen</a> [<a href="CCSimple_queue.html">CCSimple_queue</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCRAL.html#TYPEgen">gen</a> [<a href="CCRAL.html">CCRAL</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCWBTree.html#TYPEgen">gen</a> [<a href="CCWBTree.html">CCWBTree</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCBloom.html#TYPEgen">gen</a> [<a href="CCBloom.html">CCBloom</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCHashTrie.html#TYPEgen">gen</a> [<a href="CCHashTrie.html">CCHashTrie</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCHashconsedSet.S.html#TYPEgen">gen</a> [<a href="CCHashconsedSet.S.html">CCHashconsedSet.S</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCPersistentArray.html#TYPEgen">gen</a> [<a href="CCPersistentArray.html">CCPersistentArray</a>]</td>
 <td></td></tr>
@@ -274,6 +197,12 @@ Elements that are to be counted
 <tr><td><a href="CCKList.html#TYPEgen">gen</a> [<a href="CCKList.html">CCKList</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCKTree.html#TYPEgen">gen</a> [<a href="CCKTree.html">CCKTree</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArrayLabels.html#TYPEgen">gen</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.html#TYPEgen">gen</a> [<a href="CCListLabels.html">CCListLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPEgen">gen</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCIO.html#TYPEgen">gen</a> [<a href="CCIO.html">CCIO</a>]</td>
 <td><div class="info">
@@ -302,23 +231,13 @@ A dot graph is a name, plus a list of trees labelled with attributes
 </div>
 </td></tr>
 <tr><td align="left"><br>H</td></tr>
-<tr><td><a href="CCLinq.html#TYPEhash">hash</a> [<a href="CCLinq.html">CCLinq</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCCache.html#TYPEhash">hash</a> [<a href="CCCache.html">CCCache</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCHashtbl.html#TYPEhash">hash</a> [<a href="CCHashtbl.html">CCHashtbl</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCHash.S.html#TYPEhash_fun">hash_fun</a> [<a href="CCHash.S.html">CCHash.S</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCHash.html#TYPEhash_fun">hash_fun</a> [<a href="CCHash.html">CCHash</a>]</td>
+<tr><td><a href="CCHash.html#TYPEhash">hash</a> [<a href="CCHash.html">CCHash</a>]</td>
 <td><div class="info">
-Hash function for values of type <code class="code"><span class="keywordsign">'</span>a</code>, merging a fingerprint of the
-    value into the state of type <code class="code">t</code>
-</div>
-</td></tr>
-<tr><td><a href="CCBloom.html#TYPEhash_funs">hash_funs</a> [<a href="CCBloom.html">CCBloom</a>]</td>
-<td><div class="info">
-An array of <code class="code">k</code> hash functions on values of type <code class="code"><span class="keywordsign">'</span>a</code>.
+A hash value is a positive integer
 </div>
 </td></tr>
 <tr><td align="left"><br>I</td></tr>
@@ -332,16 +251,6 @@ An accessor for values of type 'a in any map.
 An accessor for values of type 'b in any table.
 </div>
 </td></tr>
-<tr><td><a href="CCParse.html#TYPEinput">input</a> [<a href="CCParse.html">CCParse</a>]</td>
-<td><div class="info">
-The type of input, which must allow for backtracking somehow.
-</div>
-</td></tr>
-<tr><td><a href="CCMonadIO.html#TYPEio">io</a> [<a href="CCMonadIO.html">CCMonadIO</a>]</td>
-<td></td></tr>
-<tr><td align="left"><br>J</td></tr>
-<tr><td><a href="CCArray1.html#TYPEjson">json</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td></td></tr>
 <tr><td align="left"><br>K</td></tr>
 <tr><td><a href="CCWBTree.S.html#TYPEkey">key</a> [<a href="CCWBTree.S.html">CCWBTree.S</a>]</td>
 <td></td></tr>
@@ -362,15 +271,19 @@ A unique "key" to access a value of type <code class="code"><span class="keyword
 <td></td></tr>
 <tr><td><a href="CCMultiMap.S.html#TYPEkey">key</a> [<a href="CCMultiMap.S.html">CCMultiMap.S</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCHashtbl.DEFAULT.html#TYPEkey">key</a> [<a href="CCHashtbl.DEFAULT.html">CCHashtbl.DEFAULT</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.html#TYPEklist">klist</a> [<a href="CCLevenshtein.html">CCLevenshtein</a>]</td>
+<tr><td><a href="CCSimple_queue.html#TYPEklist">klist</a> [<a href="CCSimple_queue.html">CCSimple_queue</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCIntMap.html#TYPEklist">klist</a> [<a href="CCIntMap.html">CCIntMap</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCFQueue.html#TYPEklist">klist</a> [<a href="CCFQueue.html">CCFQueue</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCKTree.html#TYPEklist">klist</a> [<a href="CCKTree.html">CCKTree</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArrayLabels.html#TYPEklist">klist</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.html#TYPEklist">klist</a> [<a href="CCListLabels.html">CCListLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPEklist">klist</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCString.html#TYPEklist">klist</a> [<a href="CCString.html">CCString</a>]</td>
 <td></td></tr>
@@ -396,9 +309,7 @@ A unique "key" to access a value of type <code class="code"><span class="keyword
 <tr><td><a href="CCUnix.html#TYPEline">line</a> [<a href="CCUnix.html">CCUnix</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCParse.html#TYPEline_num">line_num</a> [<a href="CCParse.html">CCParse</a>]</td>
-<td><div class="info">
-</div>
-</td></tr>
+<td></td></tr>
 <tr><td align="left"><br>M</td></tr>
 <tr><td><a href="CCGraph.html#TYPEmut_graph">mut_graph</a> [<a href="CCGraph.html">CCGraph</a>]</td>
 <td></td></tr>
@@ -406,28 +317,19 @@ A unique "key" to access a value of type <code class="code"><span class="keyword
 <tr><td><a href="CCLazy_list.html#TYPEnode">node</a> [<a href="CCLazy_list.html">CCLazy_list</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>O</td></tr>
-<tr><td><a href="CCArray1.html#TYPEof_json">of_json</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBatch.S.html#TYPEop">op</a> [<a href="CCBatch.S.html">CCBatch.S</a>]</td>
-<td><div class="info">
-Operation that converts a <code class="code"><span class="keywordsign">'</span>a t</code> into a <code class="code"><span class="keywordsign">'</span>b t</code>
-</div>
-</td></tr>
-<tr><td><a href="CCSexpM.html#TYPEor_error">or_error</a> [<a href="CCSexpM.html">CCSexpM</a>]</td>
+<tr><td><a href="CCSexp.html#TYPEor_error">or_error</a> [<a href="CCSexp.html">CCSexp</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCUnix.html#TYPEor_error">or_error</a> [<a href="CCUnix.html">CCUnix</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCMonadIO.html#TYPEor_error">or_error</a> [<a href="CCMonadIO.html">CCMonadIO</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCArray1.html#TYPEor_error">or_error</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCParse.html#TYPEor_error">or_error</a> [<a href="CCParse.html">CCParse</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCIO.File.html#TYPEor_error">or_error</a> [<a href="CCIO.File.html">CCIO.File</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLinq.html#TYPEord">ord</a> [<a href="CCLinq.html">CCLinq</a>]</td>
+<tr><td><a href="CCIO.html#TYPEor_error">or_error</a> [<a href="CCIO.html">CCIO</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCKList.html#TYPEord">ord</a> [<a href="CCKList.html">CCKList</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArrayLabels.html#TYPEord">ord</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPEord">ord</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCResult.html#TYPEord">ord</a> [<a href="CCResult.html">CCResult</a>]</td>
 <td></td></tr>
@@ -435,41 +337,29 @@ Operation that converts a <code class="code"><span class="keywordsign">'</span>a
 <td></td></tr>
 <tr><td><a href="CCArray.html#TYPEord">ord</a> [<a href="CCArray.html">CCArray</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCError.html#TYPEord">ord</a> [<a href="CCError.html">CCError</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCVector.html#TYPEord">ord</a> [<a href="CCVector.html">CCVector</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCPrint.MONAD_IO.html#TYPEoutput">output</a> [<a href="CCPrint.MONAD_IO.html">CCPrint.MONAD_IO</a>]</td>
-<td><div class="info">
-Output channels
-</div>
-</td></tr>
 <tr><td align="left"><br>P</td></tr>
 <tr><td><a href="CCHet.html#TYPEpair">pair</a> [<a href="CCHet.html">CCHet</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCSexpM.html#TYPEparse_result">parse_result</a> [<a href="CCSexpM.html">CCSexpM</a>]</td>
+<tr><td><a href="CCParse.html#TYPEparse_branch">parse_branch</a> [<a href="CCParse.html">CCParse</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCSexp.html#TYPEparse_result">parse_result</a> [<a href="CCSexp.html">CCSexp</a>]</td>
 <td><div class="info">
-A parser of <code class="code"><span class="keywordsign">'</span>a</code> can return <code class="code"><span class="keywordsign">`</span><span class="constructor">Ok</span> x</code> when it parsed a value,
-    or <code class="code"><span class="keywordsign">`</span><span class="constructor">Error</span> e</code> when a parse error was encountered, or
-    <code class="code"><span class="keywordsign">`</span><span class="constructor">End</span></code> if the input was empty
+A parser of <code class="code"><span class="keywordsign">'</span>a</code> can return <code class="code"><span class="constructor">Yield</span>&nbsp;x</code> when it parsed a value,
+    or <code class="code"><span class="constructor">Fail</span>&nbsp;e</code> when a parse error was encountered, or
+    <code class="code"><span class="constructor">End</span></code> if the input was empty
 </div>
 </td></tr>
 <tr><td><a href="CCGraph.Traverse.html#TYPEpath">path</a> [<a href="CCGraph.Traverse.html">CCGraph.Traverse</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCKMP.S.html#TYPEpattern">pattern</a> [<a href="CCKMP.S.html">CCKMP.S</a>]</td>
-<td><div class="info">
-Compiled pattern (needle: string to search in another string)
-</div>
-</td></tr>
-<tr><td><a href="CCRef.html#TYPEpp">pp</a> [<a href="CCRef.html">CCRef</a>]</td>
+<tr><td><a href="CCString.Find.html#TYPEpattern">pattern</a> [<a href="CCString.Find.html">CCString.Find</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCRef.html#TYPEprint">print</a> [<a href="CCRef.html">CCRef</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCArray1.html#TYPEprinter">printer</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBigstring.html#TYPEprinter">printer</a> [<a href="CCBigstring.html">CCBigstring</a>]</td>
+<tr><td><a href="CCParse.html#TYPEposition">position</a> [<a href="CCParse.html">CCParse</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCImmutArray.html#TYPEprinter">printer</a> [<a href="CCImmutArray.html">CCImmutArray</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCSimple_queue.html#TYPEprinter">printer</a> [<a href="CCSimple_queue.html">CCSimple_queue</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCRAL.html#TYPEprinter">printer</a> [<a href="CCRAL.html">CCRAL</a>]</td>
 <td></td></tr>
@@ -493,6 +383,12 @@ Compiled pattern (needle: string to search in another string)
 <td></td></tr>
 <tr><td><a href="CCKTree.html#TYPEprinter">printer</a> [<a href="CCKTree.html">CCKTree</a>]</td>
 <td></td></tr>
+<tr><td><a href="CCArrayLabels.html#TYPEprinter">printer</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.html#TYPEprinter">printer</a> [<a href="CCListLabels.html">CCListLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPEprinter">printer</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCResult.html#TYPEprinter">printer</a> [<a href="CCResult.html">CCResult</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCFormat.html#TYPEprinter">printer</a> [<a href="CCFormat.html">CCFormat</a>]</td>
@@ -502,6 +398,10 @@ Compiled pattern (needle: string to search in another string)
 <tr><td><a href="CCHashtbl.html#TYPEprinter">printer</a> [<a href="CCHashtbl.html">CCHashtbl</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCSet.html#TYPEprinter">printer</a> [<a href="CCSet.html">CCSet</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCRef.html#TYPEprinter">printer</a> [<a href="CCRef.html">CCRef</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray.html#TYPEprinter">printer</a> [<a href="CCArray.html">CCArray</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCFloat.html#TYPEprinter">printer</a> [<a href="CCFloat.html">CCFloat</a>]</td>
 <td></td></tr>
@@ -517,8 +417,6 @@ Compiled pattern (needle: string to search in another string)
 <td></td></tr>
 <tr><td><a href="CCHeap.html#TYPEprinter">printer</a> [<a href="CCHeap.html">CCHeap</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCError.html#TYPEprinter">printer</a> [<a href="CCError.html">CCError</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCVector.html#TYPEprinter">printer</a> [<a href="CCVector.html">CCVector</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCUnix.html#TYPEprocess_full">process_full</a> [<a href="CCUnix.html">CCUnix</a>]</td>
@@ -527,7 +425,11 @@ Handle to a subprocess.
 </div>
 </td></tr>
 <tr><td align="left"><br>R</td></tr>
-<tr><td><a href="CCArray1.html#TYPErandom">random</a> [<a href="CCArray1.html">CCArray1</a>]</td>
+<tr><td><a href="CCArrayLabels.html#TYPErandom_gen">random_gen</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.html#TYPErandom_gen">random_gen</a> [<a href="CCListLabels.html">CCListLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPErandom_gen">random_gen</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCRandom.html#TYPErandom_gen">random_gen</a> [<a href="CCRandom.html">CCRandom</a>]</td>
 <td></td></tr>
@@ -540,8 +442,6 @@ Handle to a subprocess.
 <tr><td><a href="CCOpt.html#TYPErandom_gen">random_gen</a> [<a href="CCOpt.html">CCOpt</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCList.html#TYPErandom_gen">random_gen</a> [<a href="CCList.html">CCList</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCApp_parse.html#TYPEresult">result</a> [<a href="CCApp_parse.html">CCApp_parse</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCMultiMap.BIDIR.html#TYPEright">right</a> [<a href="CCMultiMap.BIDIR.html">CCMultiMap.BIDIR</a>]</td>
 <td></td></tr>
@@ -560,32 +460,17 @@ Alias for immutable vectors.
 Hidden state for <a href="CCGraph.html#VALscc"><code class="code"><span class="constructor">CCGraph</span>.scc</code></a>
 </div>
 </td></tr>
-<tr><td><a href="CCSexpM.html#TYPEsequence">sequence</a> [<a href="CCSexpM.html">CCSexpM</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLinq.html#TYPEsequence">sequence</a> [<a href="CCLinq.html">CCLinq</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCCat.html#TYPEsequence">sequence</a> [<a href="CCCat.html">CCCat</a>]</td>
-<td><div class="info">
-Cheating: use an equivalent of "to List" with a sequence
-</div>
-</td></tr>
-<tr><td><a href="CCArray1.html#TYPEsequence">sequence</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBigstring.html#TYPEsequence">sequence</a> [<a href="CCBigstring.html">CCBigstring</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.html#TYPEsequence">sequence</a> [<a href="CCLevenshtein.html">CCLevenshtein</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCKMP.html#TYPEsequence">sequence</a> [<a href="CCKMP.html">CCKMP</a>]</td>
+<tr><td><a href="CCSexp.html#TYPEsequence">sequence</a> [<a href="CCSexp.html">CCSexp</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCHet.html#TYPEsequence">sequence</a> [<a href="CCHet.html">CCHet</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCImmutArray.html#TYPEsequence">sequence</a> [<a href="CCImmutArray.html">CCImmutArray</a>]</td>
 <td></td></tr>
+<tr><td><a href="CCSimple_queue.html#TYPEsequence">sequence</a> [<a href="CCSimple_queue.html">CCSimple_queue</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCRAL.html#TYPEsequence">sequence</a> [<a href="CCRAL.html">CCRAL</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCWBTree.html#TYPEsequence">sequence</a> [<a href="CCWBTree.html">CCWBTree</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBloom.html#TYPEsequence">sequence</a> [<a href="CCBloom.html">CCBloom</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCHashTrie.html#TYPEsequence">sequence</a> [<a href="CCHashTrie.html">CCHashTrie</a>]</td>
 <td></td></tr>
@@ -596,8 +481,6 @@ Cheating: use an equivalent of "to List" with a sequence
 A sequence of items of type <code class="code"><span class="keywordsign">'</span>a</code>, possibly infinite
 </div>
 </td></tr>
-<tr><td><a href="CCHashconsedSet.S.html#TYPEsequence">sequence</a> [<a href="CCHashconsedSet.S.html">CCHashconsedSet.S</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCPersistentArray.html#TYPEsequence">sequence</a> [<a href="CCPersistentArray.html">CCPersistentArray</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCIntMap.html#TYPEsequence">sequence</a> [<a href="CCIntMap.html">CCIntMap</a>]</td>
@@ -626,6 +509,12 @@ A sequence of items of type <code class="code"><span class="keywordsign">'</span
 <td></td></tr>
 <tr><td><a href="CCKTree.html#TYPEsequence">sequence</a> [<a href="CCKTree.html">CCKTree</a>]</td>
 <td></td></tr>
+<tr><td><a href="CCArrayLabels.html#TYPEsequence">sequence</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.html#TYPEsequence">sequence</a> [<a href="CCListLabels.html">CCListLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPEsequence">sequence</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCResult.html#TYPEsequence">sequence</a> [<a href="CCResult.html">CCResult</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCFormat.html#TYPEsequence">sequence</a> [<a href="CCFormat.html">CCFormat</a>]</td>
@@ -642,6 +531,8 @@ A sequence of items of type <code class="code"><span class="keywordsign">'</span
 <td></td></tr>
 <tr><td><a href="CCArray.html#TYPEsequence">sequence</a> [<a href="CCArray.html">CCArray</a>]</td>
 <td></td></tr>
+<tr><td><a href="CCInt.html#TYPEsequence">sequence</a> [<a href="CCInt.html">CCInt</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCHash.html#TYPEsequence">sequence</a> [<a href="CCHash.html">CCHash</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCOpt.html#TYPEsequence">sequence</a> [<a href="CCOpt.html">CCOpt</a>]</td>
@@ -649,10 +540,6 @@ A sequence of items of type <code class="code"><span class="keywordsign">'</span
 <tr><td><a href="CCList.html#TYPEsequence">sequence</a> [<a href="CCList.html">CCList</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCHeap.html#TYPEsequence">sequence</a> [<a href="CCHeap.html">CCHeap</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCError.html#TYPEsequence">sequence</a> [<a href="CCError.html">CCError</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCPrint.html#TYPEsequence">sequence</a> [<a href="CCPrint.html">CCPrint</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCVector.html#TYPEsequence">sequence</a> [<a href="CCVector.html">CCVector</a>]</td>
 <td></td></tr>
@@ -666,80 +553,21 @@ Sequence that should be used only once
 Mutable set
 </div>
 </td></tr>
-<tr><td><a href="CCSexpM.html#TYPEsexp">sexp</a> [<a href="CCSexpM.html">CCSexpM</a>]</td>
+<tr><td><a href="CCSexp.html#TYPEsexp">sexp</a> [<a href="CCSexp.html">CCSexp</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCApp_parse.READER.html#TYPEsource">source</a> [<a href="CCApp_parse.READER.html">CCApp_parse.READER</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCApp_parse.S.html#TYPEsource">source</a> [<a href="CCApp_parse.S.html">CCApp_parse.S</a>]</td>
-<td><div class="info">
-Source of characters
-</div>
-</td></tr>
 <tr><td><a href="CCPool.html#TYPEstate">state</a> [<a href="CCPool.html">CCPool</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCParse.html#TYPEstate">state</a> [<a href="CCParse.html">CCParse</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCRandom.html#TYPEstate">state</a> [<a href="CCRandom.html">CCRandom</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCHash.HASH.html#TYPEstate">state</a> [<a href="CCHash.HASH.html">CCHash.HASH</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCHash.html#TYPEstate">state</a> [<a href="CCHash.html">CCHash</a>]</td>
-<td><div class="info">
-State required by the hash function.
-</div>
-</td></tr>
-<tr><td><a href="CCMonadIO.Seq.html#TYPEstep_result">step_result</a> [<a href="CCMonadIO.Seq.html">CCMonadIO.Seq</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCKMP.S.html#TYPEstring">string</a> [<a href="CCKMP.S.html">CCKMP.S</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.S.html#TYPEstring_">string_</a> [<a href="CCLevenshtein.S.html">CCLevenshtein.S</a>]</td>
-<td></td></tr>
 <tr><td align="left"><br>T</td></tr>
-<tr><td><a href="CCSexpM.MONAD.html#TYPEt">t</a> [<a href="CCSexpM.MONAD.html">CCSexpM.MONAD</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCSexpM.MakeDecode.html#TYPEt">t</a> [<a href="CCSexpM.MakeDecode.html">CCSexpM.MakeDecode</a>]</td>
+<tr><td><a href="CCSexp.Decoder.html#TYPEt">t</a> [<a href="CCSexp.Decoder.html">CCSexp.Decoder</a>]</td>
 <td><div class="info">
 Decoder
 </div>
 </td></tr>
-<tr><td><a href="CCSexpM.html#TYPEt">t</a> [<a href="CCSexpM.html">CCSexpM</a>]</td>
-<td></td></tr>
 <tr><td><a href="CCSexp.html#TYPEt">t</a> [<a href="CCSexp.html">CCSexp</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCMonadIO.File.html#TYPEt">t</a> [<a href="CCMonadIO.File.html">CCMonadIO.File</a>]</td>
-<td><div class="info">
-A file is always represented by its absolute path
-</div>
-</td></tr>
-<tr><td><a href="CCMonadIO.Seq.html#TYPEt">t</a> [<a href="CCMonadIO.Seq.html">CCMonadIO.Seq</a>]</td>
-<td><div class="info">
-An IO stream of values of type 'a, consumable (iterable only once)
-</div>
-</td></tr>
-<tr><td><a href="CCMonadIO.html#TYPEt">t</a> [<a href="CCMonadIO.html">CCMonadIO</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLinq.PMap.html#TYPEt">t</a> [<a href="CCLinq.PMap.html">CCLinq.PMap</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLinq.html#TYPEt">t</a> [<a href="CCLinq.html">CCLinq</a>]</td>
-<td><div class="info">
-Type of a query that returns zero, one or more values of type 'a
-</div>
-</td></tr>
-<tr><td><a href="CCCat.TRAVERSE.html#TYPEt">t</a> [<a href="CCCat.TRAVERSE.html">CCCat.TRAVERSE</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCCat.MONAD_BARE.html#TYPEt">t</a> [<a href="CCCat.MONAD_BARE.html">CCCat.MONAD_BARE</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCCat.APPLICATIVE.html#TYPEt">t</a> [<a href="CCCat.APPLICATIVE.html">CCCat.APPLICATIVE</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCCat.MONOID.html#TYPEt">t</a> [<a href="CCCat.MONOID.html">CCCat.MONOID</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCCat.FOLDABLE.html#TYPEt">t</a> [<a href="CCCat.FOLDABLE.html">CCCat.FOLDABLE</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCCat.FUNCTOR.html#TYPEt">t</a> [<a href="CCCat.FUNCTOR.html">CCCat.FUNCTOR</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCCat.FREE_MONAD.html#TYPEt">t</a> [<a href="CCCat.FREE_MONAD.html">CCCat.FREE_MONAD</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBatch.COLLECTION.html#TYPEt">t</a> [<a href="CCBatch.COLLECTION.html">CCBatch.COLLECTION</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCBatch.S.html#TYPEt">t</a> [<a href="CCBatch.S.html">CCBatch.S</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCTimer.html#TYPEt">t</a> [<a href="CCTimer.html">CCTimer</a>]</td>
 <td><div class="info">
@@ -775,51 +603,10 @@ A value surrounded with a lock
 A future value of type 'a
 </div>
 </td></tr>
-<tr><td><a href="CCArray1.View.html#TYPEt">t</a> [<a href="CCArray1.View.html">CCArray1.View</a>]</td>
+<tr><td><a href="CCZipper.html#TYPEt">t</a> [<a href="CCZipper.html">CCZipper</a>]</td>
 <td><div class="info">
-A view on an array or part of an array
-</div>
-</td></tr>
-<tr><td><a href="CCArray1.S.html#TYPEt">t</a> [<a href="CCArray1.S.html">CCArray1.S</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCArray1.Bool.html#TYPEt">t</a> [<a href="CCArray1.Bool.html">CCArray1.Bool</a>]</td>
-<td><div class="info">
-A simple bitvector based on some integral type <code class="code"><span class="keywordsign">'</span>b</code>
-</div>
-</td></tr>
-<tr><td><a href="CCArray1.html#TYPEt">t</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td><div class="info">
-Array of OCaml values of type <code class="code"><span class="keywordsign">'</span>a</code> with C representation of type <code class="code">b'</code>
-    with permissions <code class="code"><span class="keywordsign">'</span>perm</code>
-</div>
-</td></tr>
-<tr><td><a href="CCBigstring.html#TYPEt">t</a> [<a href="CCBigstring.html">CCBigstring</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.STRING.html#TYPEt">t</a> [<a href="CCLevenshtein.STRING.html">CCLevenshtein.STRING</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCLevenshtein.S.Index.html#TYPEt">t</a> [<a href="CCLevenshtein.S.Index.html">CCLevenshtein.S.Index</a>]</td>
-<td><div class="info">
-Index that maps strings to values of type 'b.
-</div>
-</td></tr>
-<tr><td><a href="CCKMP.STRING.html#TYPEt">t</a> [<a href="CCKMP.STRING.html">CCKMP.STRING</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCParse.MemoTbl.html#TYPEt">t</a> [<a href="CCParse.MemoTbl.html">CCParse.MemoTbl</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCParse.html#TYPEt">t</a> [<a href="CCParse.html">CCParse</a>]</td>
-<td><div class="info">
-Takes the input and two continuations:
-     <code class="code">ok</code> to call with the result when it's done, <code class="code">err</code> to call when the parser met an error
-    The type definition changed since 0.14 to avoid stack overflows
-</div>
-</td></tr>
-<tr><td><a href="CCApp_parse.READER.html#TYPEt">t</a> [<a href="CCApp_parse.READER.html">CCApp_parse.READER</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCApp_parse.INPUT.html#TYPEt">t</a> [<a href="CCApp_parse.INPUT.html">CCApp_parse.INPUT</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCApp_parse.html#TYPEt">t</a> [<a href="CCApp_parse.html">CCApp_parse</a>]</td>
-<td><div class="info">
-Parser that yields an error or a value of type 'a
+The pair <code class="code">l,&nbsp;r</code> represents the list <code class="code"><span class="constructor">List</span>.rev_append&nbsp;l&nbsp;r</code>, but
+      with the focus on <code class="code">r</code>.
 </div>
 </td></tr>
 <tr><td><a href="CCHet.Map.html#TYPEt">t</a> [<a href="CCHet.Map.html">CCHet.Map</a>]</td>
@@ -833,9 +620,9 @@ Parser that yields an error or a value of type 'a
 Array of values of type 'a.
 </div>
 </td></tr>
-<tr><td><a href="CCAllocCache.Arr.html#TYPEt">t</a> [<a href="CCAllocCache.Arr.html">CCAllocCache.Arr</a>]</td>
+<tr><td><a href="CCSimple_queue.html#TYPEt">t</a> [<a href="CCSimple_queue.html">CCSimple_queue</a>]</td>
 <td><div class="info">
-Cache for 'a arrays
+Queue containing elements of type 'a
 </div>
 </td></tr>
 <tr><td><a href="CCRAL.html#TYPEt">t</a> [<a href="CCRAL.html">CCRAL</a>]</td>
@@ -847,11 +634,6 @@ List containing elements of type 'a
 <td></td></tr>
 <tr><td><a href="CCWBTree.S.html#TYPEt">t</a> [<a href="CCWBTree.S.html">CCWBTree.S</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCBloom.html#TYPEt">t</a> [<a href="CCBloom.html">CCBloom</a>]</td>
-<td><div class="info">
-Bloom filter containing values of type <code class="code"><span class="keywordsign">'</span>a</code>
-</div>
-</td></tr>
 <tr><td><a href="CCHashTrie.KEY.html#TYPEt">t</a> [<a href="CCHashTrie.KEY.html">CCHashTrie.KEY</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCHashTrie.S.html#TYPEt">t</a> [<a href="CCHashTrie.S.html">CCHashTrie.S</a>]</td>
@@ -872,7 +654,7 @@ Generative type of bitfields.
 <td></td></tr>
 <tr><td><a href="CCGraph.MAP.html#TYPEt">t</a> [<a href="CCGraph.MAP.html">CCGraph.MAP</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCGraph.LazyTree.html#TYPEt">t</a> [<a href="CCGraph.LazyTree.html">CCGraph.LazyTree</a>]</td>
+<tr><td><a href="CCGraph.Lazy_tree.html#TYPEt">t</a> [<a href="CCGraph.Lazy_tree.html">CCGraph.Lazy_tree</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCGraph.Traverse.Event.html#TYPEt">t</a> [<a href="CCGraph.Traverse.Event.html">CCGraph.Traverse.Event</a>]</td>
 <td><div class="info">
@@ -883,14 +665,7 @@ A traversal is a sequence of such events
 <td></td></tr>
 <tr><td><a href="CCGraph.html#TYPEt">t</a> [<a href="CCGraph.html">CCGraph</a>]</td>
 <td><div class="info">
-Directed graph with vertices of type <code class="code"><span class="keywordsign">'</span>v</code> and edges of type <code class="code">e'</code>
-</div>
-</td></tr>
-<tr><td><a href="CCHashconsedSet.ELT.html#TYPEt">t</a> [<a href="CCHashconsedSet.ELT.html">CCHashconsedSet.ELT</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCHashconsedSet.S.html#TYPEt">t</a> [<a href="CCHashconsedSet.S.html">CCHashconsedSet.S</a>]</td>
-<td><div class="info">
-Set of elements
+Directed graph with vertices of type <code class="code"><span class="keywordsign">'</span>v</code> and edges labeled with <code class="code">e'</code>
 </div>
 </td></tr>
 <tr><td><a href="CCMixset.html#TYPEt">t</a> [<a href="CCMixset.html">CCMixset</a>]</td>
@@ -907,8 +682,7 @@ The type of persistent arrays
 <td></td></tr>
 <tr><td><a href="CCRingBuffer.S.html#TYPEt">t</a> [<a href="CCRingBuffer.S.html">CCRingBuffer.S</a>]</td>
 <td><div class="info">
-Defines the ring buffer type, with both bounded and
-      unbounded flavors
+Defines the bounded ring buffer type
 </div>
 </td></tr>
 <tr><td><a href="CCRingBuffer.Array.S.html#TYPEt">t</a> [<a href="CCRingBuffer.Array.S.html">CCRingBuffer.Array.S</a>]</td>
@@ -975,11 +749,37 @@ Contains 'a elements, queue in both ways
 <td></td></tr>
 <tr><td><a href="CCKTree.html#TYPEt">t</a> [<a href="CCKTree.html">CCKTree</a>]</td>
 <td></td></tr>
+<tr><td><a href="CCEqual.html#TYPEt">t</a> [<a href="CCEqual.html">CCEqual</a>]</td>
+<td><div class="info">
+Equality function.
+</div>
+</td></tr>
+<tr><td><a href="CCArrayLabels.MONO_ARRAY.html#TYPEt">t</a> [<a href="CCArrayLabels.MONO_ARRAY.html">CCArrayLabels.MONO_ARRAY</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArrayLabels.html#TYPEt">t</a> [<a href="CCArrayLabels.html">CCArrayLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.MONAD.html#TYPEt">t</a> [<a href="CCListLabels.MONAD.html">CCListLabels.MONAD</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.Ref.html#TYPEt">t</a> [<a href="CCListLabels.Ref.html">CCListLabels.Ref</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.Assoc.html#TYPEt">t</a> [<a href="CCListLabels.Assoc.html">CCListLabels.Assoc</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCListLabels.html#TYPEt">t</a> [<a href="CCListLabels.html">CCListLabels</a>]</td>
+<td></td></tr>
+<tr><td><a href="CCArray_slice.html#TYPEt">t</a> [<a href="CCArray_slice.html">CCArray_slice</a>]</td>
+<td><div class="info">
+Array slice, containing elements of type <code class="code"><span class="keywordsign">'</span>a</code>
+</div>
+</td></tr>
+<tr><td><a href="CCParse.html#TYPEt">t</a> [<a href="CCParse.html">CCParse</a>]</td>
+<td><div class="info">
+Takes the input and two continuations:
+     <code class="code">ok</code> to call with the result when it's done, <code class="code">err</code> to call when the parser met an error
+</div>
+</td></tr>
 <tr><td><a href="CCResult.MONAD.html#TYPEt">t</a> [<a href="CCResult.MONAD.html">CCResult.MONAD</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCResult.html#TYPEt">t</a> [<a href="CCResult.html">CCResult</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCChar.html#TYPEt">t</a> [<a href="CCChar.html">CCChar</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCInt64.html#TYPEt">t</a> [<a href="CCInt64.html">CCInt64</a>]</td>
 <td></td></tr>
@@ -989,15 +789,10 @@ A file should be represented by its absolute path, but currently
       this is not enforced.
 </div>
 </td></tr>
+<tr><td><a href="CCFormat.Dump.html#TYPEt">t</a> [<a href="CCFormat.Dump.html">CCFormat.Dump</a>]</td>
+<td></td></tr>
 <tr><td><a href="CCFormat.html#TYPEt">t</a> [<a href="CCFormat.html">CCFormat</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCHashtbl.COUNTER.html#TYPEt">t</a> [<a href="CCHashtbl.COUNTER.html">CCHashtbl.COUNTER</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCHashtbl.DEFAULT.html#TYPEt">t</a> [<a href="CCHashtbl.DEFAULT.html">CCHashtbl.DEFAULT</a>]</td>
-<td><div class="info">
-A hashtable for keys of type <code class="code">key</code> and values of type <code class="code"><span class="keywordsign">'</span>a</code>
-</div>
-</td></tr>
 <tr><td><a href="CCString.S.html#TYPEt">t</a> [<a href="CCString.S.html">CCString.S</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCString.Sub.html#TYPEt">t</a> [<a href="CCString.Sub.html">CCString.Sub</a>]</td>
@@ -1019,16 +814,6 @@ Comparison (total ordering) between two elements, that returns an int
 <td></td></tr>
 <tr><td><a href="CCArray.MONO_ARRAY.html#TYPEt">t</a> [<a href="CCArray.MONO_ARRAY.html">CCArray.MONO_ARRAY</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCArray.S.html#TYPEt">t</a> [<a href="CCArray.S.html">CCArray.S</a>]</td>
-<td><div class="info">
-Array, or sub-array, containing elements of type <code class="code"><span class="keywordsign">'</span>a</code>
-</div>
-</td></tr>
-<tr><td><a href="CCArray.Sub.html#TYPEt">t</a> [<a href="CCArray.Sub.html">CCArray.Sub</a>]</td>
-<td><div class="info">
-A slice is an array, an offset, and a length
-</div>
-</td></tr>
 <tr><td><a href="CCArray.html#TYPEt">t</a> [<a href="CCArray.html">CCArray</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCFloat.html#TYPEt">t</a> [<a href="CCFloat.html">CCFloat</a>]</td>
@@ -1039,7 +824,7 @@ A slice is an array, an offset, and a length
 <td></td></tr>
 <tr><td><a href="CCHash.html#TYPEt">t</a> [<a href="CCHash.html">CCHash</a>]</td>
 <td><div class="info">
-A hash value is a positive integer
+A hash function for values of type <code class="code"><span class="keywordsign">'</span>a</code>
 </div>
 </td></tr>
 <tr><td><a href="CCFun.Monad.html#TYPEt">t</a> [<a href="CCFun.Monad.html">CCFun.Monad</a>]</td>
@@ -1052,12 +837,6 @@ A hash value is a positive integer
 <td></td></tr>
 <tr><td><a href="CCList.Ref.html#TYPEt">t</a> [<a href="CCList.Ref.html">CCList.Ref</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCList.Zipper.html#TYPEt">t</a> [<a href="CCList.Zipper.html">CCList.Zipper</a>]</td>
-<td><div class="info">
-The pair <code class="code">l, r</code> represents the list <code class="code"><span class="constructor">List</span>.rev_append l r</code>, but
-      with the focus on <code class="code">r</code>.
-</div>
-</td></tr>
 <tr><td><a href="CCList.Assoc.html#TYPEt">t</a> [<a href="CCList.Assoc.html">CCList.Assoc</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCList.html#TYPEt">t</a> [<a href="CCList.html">CCList</a>]</td>
@@ -1066,20 +845,6 @@ The pair <code class="code">l, r</code> represents the list <code class="code"><
 <td></td></tr>
 <tr><td><a href="CCHeap.S.html#TYPEt">t</a> [<a href="CCHeap.S.html">CCHeap.S</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCError.MONAD.html#TYPEt">t</a> [<a href="CCError.MONAD.html">CCError.MONAD</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCError.html#TYPEt">t</a> [<a href="CCError.html">CCError</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCPrint.MONAD_IO.html#TYPEt">t</a> [<a href="CCPrint.MONAD_IO.html">CCPrint.MONAD_IO</a>]</td>
-<td><div class="info">
-the IO monad
-</div>
-</td></tr>
-<tr><td><a href="CCPrint.html#TYPEt">t</a> [<a href="CCPrint.html">CCPrint</a>]</td>
-<td><div class="info">
-A printer for the type <code class="code"><span class="keywordsign">'</span>a</code>
-</div>
-</td></tr>
 <tr><td><a href="CCVector.html#TYPEt">t</a> [<a href="CCVector.html">CCVector</a>]</td>
 <td><div class="info">
 The type of a vector of elements of type <code class="code"><span class="keywordsign">'</span>a</code>, with
@@ -1088,26 +853,22 @@ The type of a vector of elements of type <code class="code"><span class="keyword
 </td></tr>
 <tr><td><a href="CCGraph.html#TYPEtable">table</a> [<a href="CCGraph.html">CCGraph</a>]</td>
 <td><div class="info">
-Mutable table with keys <code class="code"><span class="keywordsign">'</span>k</code> and values <code class="code"><span class="keywordsign">'</span>a</code>
+Table
 </div>
 </td></tr>
 <tr><td><a href="CCGraph.html#TYPEtag_set">tag_set</a> [<a href="CCGraph.html">CCGraph</a>]</td>
 <td><div class="info">
-Mutable tags from values of type <code class="code"><span class="keywordsign">'</span>v</code> to tags of type <code class="code">bool</code>
+Tags
 </div>
 </td></tr>
-<tr><td><a href="CCArray1.html#TYPEto_json">to_json</a> [<a href="CCArray1.html">CCArray1</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCApp_parse.html#TYPEtoken">token</a> [<a href="CCApp_parse.html">CCApp_parse</a>]</td>
+<tr><td><a href="CCSexp_lex.html#TYPEtoken">token</a> [<a href="CCSexp_lex.html">CCSexp_lex</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCIntMap.html#TYPEtree">tree</a> [<a href="CCIntMap.html">CCIntMap</a>]</td>
 <td></td></tr>
+<tr><td align="left"><br>U</td></tr>
+<tr><td><a href="CCSexp_lex.html#TYPEunescape_state">unescape_state</a> [<a href="CCSexp_lex.html">CCSexp_lex</a>]</td>
+<td></td></tr>
 <tr><td align="left"><br>V</td></tr>
-<tr><td><a href="CCBitField.S.FIELD.html#TYPEvalue">value</a> [<a href="CCBitField.S.FIELD.html">CCBitField.S.FIELD</a>]</td>
-<td><div class="info">
-Values contained in the field
-</div>
-</td></tr>
 <tr><td><a href="CCMixmap.S.html#TYPEvalue">value</a> [<a href="CCMixmap.S.html">CCMixmap.S</a>]</td>
 <td></td></tr>
 <tr><td><a href="CCMixtbl.html#TYPEvalue">value</a> [<a href="CCMixtbl.html">CCMixtbl</a>]</td>
@@ -1116,7 +877,7 @@ Values contained in the field
 <td></td></tr>
 <tr><td><a href="CCVector.html#TYPEvector">vector</a> [<a href="CCVector.html">CCVector</a>]</td>
 <td><div class="info">
-Type synonym: a <code class="code"><span class="keywordsign">'</span>a vector</code> is mutable.
+Type synonym: a <code class="code"><span class="keywordsign">'</span>a&nbsp;vector</code> is mutable.
 </div>
 </td></tr>
 <tr><td><a href="CCGraph.MAP.html#TYPEvertex">vertex</a> [<a href="CCGraph.MAP.html">CCGraph.MAP</a>]</td>
@@ -1129,14 +890,6 @@ Hidden state associated to a vertex
 <tr><td align="left"><br>W</td></tr>
 <tr><td><a href="CCIO.File.html#TYPEwalk_item">walk_item</a> [<a href="CCIO.File.html">CCIO.File</a>]</td>
 <td></td></tr>
-<tr><td><a href="CCLinq.html#TYPEwith_err">with_err</a> [<a href="CCLinq.html">CCLinq</a>]</td>
-<td></td></tr>
-<tr><td><a href="CCMonadIO.html#TYPEwith_finalizer">with_finalizer</a> [<a href="CCMonadIO.html">CCMonadIO</a>]</td>
-<td><div class="info">
-A value of type <code class="code"><span class="keywordsign">'</span>a with_finalizer</code> is similar to a value <code class="code"><span class="keywordsign">'</span>a t</code> but
-    also contains a finalizer that must be run to cleanup.
-</div>
-</td></tr>
 </table>
 </body>
 </html>

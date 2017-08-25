@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="previous" href="CCFQueue.html">
 <link rel="next" href="CCMixtbl.html">
@@ -15,8 +16,6 @@
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="CCVector" rel="Chapter" href="CCVector.html">
-<link title="CCPrint" rel="Chapter" href="CCPrint.html">
-<link title="CCError" rel="Chapter" href="CCError.html">
 <link title="CCHeap" rel="Chapter" href="CCHeap.html">
 <link title="CCList" rel="Chapter" href="CCList.html">
 <link title="CCOpt" rel="Chapter" href="CCOpt.html">
@@ -39,6 +38,11 @@
 <link title="CCInt64" rel="Chapter" href="CCInt64.html">
 <link title="CCChar" rel="Chapter" href="CCChar.html">
 <link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
 <link title="Containers" rel="Chapter" href="Containers.html">
 <link title="CCKTree" rel="Chapter" href="CCKTree.html">
 <link title="CCKList" rel="Chapter" href="CCKList.html">
@@ -58,39 +62,25 @@
 <link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
 <link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
 <link title="CCMixset" rel="Chapter" href="CCMixset.html">
-<link title="CCHashconsedSet" rel="Chapter" href="CCHashconsedSet.html">
 <link title="CCGraph" rel="Chapter" href="CCGraph.html">
 <link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
 <link title="CCBitField" rel="Chapter" href="CCBitField.html">
 <link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
-<link title="CCBloom" rel="Chapter" href="CCBloom.html">
 <link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
 <link title="CCRAL" rel="Chapter" href="CCRAL.html">
-<link title="CCAllocCache" rel="Chapter" href="CCAllocCache.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
 <link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
 <link title="CCHet" rel="Chapter" href="CCHet.html">
-<link title="Containers_string" rel="Chapter" href="Containers_string.html">
-<link title="CCKMP" rel="Chapter" href="CCKMP.html">
-<link title="CCLevenshtein" rel="Chapter" href="CCLevenshtein.html">
-<link title="CCApp_parse" rel="Chapter" href="CCApp_parse.html">
-<link title="CCParse" rel="Chapter" href="CCParse.html">
-<link title="CCBigstring" rel="Chapter" href="CCBigstring.html">
-<link title="CCArray1" rel="Chapter" href="CCArray1.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
 <link title="CCPool" rel="Chapter" href="CCPool.html">
 <link title="CCLock" rel="Chapter" href="CCLock.html">
 <link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
 <link title="CCThread" rel="Chapter" href="CCThread.html">
 <link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
 <link title="CCTimer" rel="Chapter" href="CCTimer.html">
-<link title="Containers_advanced" rel="Chapter" href="Containers_advanced.html">
-<link title="CCLinq" rel="Chapter" href="CCLinq.html">
-<link title="CCBatch" rel="Chapter" href="CCBatch.html">
-<link title="CCCat" rel="Chapter" href="CCCat.html">
-<link title="CCMonadIO" rel="Chapter" href="CCMonadIO.html">
-<link title="Containers_io_is_deprecated" rel="Chapter" href="Containers_io_is_deprecated.html">
 <link title="CCUnix" rel="Chapter" href="CCUnix.html">
 <link title="CCSexp" rel="Chapter" href="CCSexp.html">
-<link title="CCSexpM" rel="Chapter" href="CCSexpM.html"><title>Containers doc : CCBV</title>
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><title>Containers doc : CCBV</title>
 </head>
 <body>
 <div class="navbar"><a class="pre" href="CCFQueue.html" title="CCFQueue">Previous</a>
@@ -103,9 +93,14 @@
 <h2 id="2_ImperativeBitvectors">Imperative Bitvectors</h2>
 <p>
 
-The size of the bitvector is rounded up to the multiple of 30 or  62.
-In other words some functions such as <a href="CCBV.html#VALiter"><code class="code"><span class="constructor">CCBV</span>.iter</code></a> might iterate on more
-bits than what was originally asked for.<br>
+    <b>BREAKING CHANGES</b> since 1.2:
+    size is now stored along with the bitvector. Some functions have
+    a new signature.
+<p>
+
+    The size of the bitvector used to be rounded up to the multiple of 30 or 62.
+    In other words some functions such as <a href="CCBV.html#VALiter"><code class="code"><span class="constructor">CCBV</span>.iter</code></a> would iterate on more
+    bits than what was originally asked for. This is not the case anymore.<br>
 </div>
 <hr width="100%">
 
@@ -128,24 +123,32 @@ Copy of bitvector<br>
 </div>
 
 <pre><span id="VALcardinal"><span class="keyword">val</span> cardinal</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int</code></pre><div class="info ">
-Number of bits set<br>
+Number of bits set to one, seen as a set of bits.<br>
 </div>
 
 <pre><span id="VALlength"><span class="keyword">val</span> length</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int</code></pre><div class="info ">
-Length of underlying array<br>
+Size of underlying bitvector.
+    This is not related to the underlying implementation.
+    Changed at 1.2<br>
+</div>
+
+<pre><span id="VALcapacity"><span class="keyword">val</span> capacity</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int</code></pre><div class="info ">
+The number of bits this bitvector can store without resizing.<br>
+<b>Since</b> 1.2<br>
 </div>
 
 <pre><span id="VALresize"><span class="keyword">val</span> resize</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int -> unit</code></pre><div class="info ">
-Resize the BV so that it has at least the given physical length
-    <code class="code">resize bv n</code> should make <code class="code">bv</code> able to store <code class="code">(<span class="constructor">Sys</span>.word_size - 2)* n</code> bits<br>
+Resize the BV so that it has the specified length. This can grow or shrink
+    the underlying bitvector.<br>
+<b>Raises</b> <code>Invalid_arg</code> on negative sizes.<br>
 </div>
 
 <pre><span id="VALis_empty"><span class="keyword">val</span> is_empty</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
-Any bit set?<br>
+Are there any true bits?<br>
 </div>
 
 <pre><span id="VALset"><span class="keyword">val</span> set</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int -> unit</code></pre><div class="info ">
-Set i-th bit.<br>
+Set i-th bit, extending the bitvector if needed.<br>
 </div>
 
 <pre><span id="VALget"><span class="keyword">val</span> get</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int -> bool</code></pre><div class="info ">
@@ -153,11 +156,11 @@ Is the i-th bit true? Returns false if the index is too high<br>
 </div>
 
 <pre><span id="VALreset"><span class="keyword">val</span> reset</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int -> unit</code></pre><div class="info ">
-Set i-th bit to 0<br>
+Set i-th bit to 0, extending the bitvector if needed.<br>
 </div>
 
 <pre><span id="VALflip"><span class="keyword">val</span> flip</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int -> unit</code></pre><div class="info ">
-Flip i-th bit<br>
+Flip i-th bit, extending the bitvector if needed.<br>
 </div>
 
 <pre><span id="VALclear"><span class="keyword">val</span> clear</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
@@ -182,37 +185,72 @@ Same as <a href="CCBV.html#VALto_list"><code class="code"><span class="construct
 </div>
 
 <pre><span id="VALof_list"><span class="keyword">val</span> of_list</span> : <code class="type">int list -> <a href="CCBV.html#TYPEt">t</a></code></pre><div class="info ">
-From a list of true bits<br>
+From a list of true bits.
+<p>
+
+    The bits are interpreted as indices into the returned bitvector, so the final
+    bitvector will have <code class="code">length&nbsp;t</code> equal to 1 more than max of list indices.<br>
 </div>
 
-<pre><span id="VALfirst"><span class="keyword">val</span> first</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int</code></pre><div class="info ">
+<pre><span id="VALfirst"><span class="keyword">val</span> first</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int option</code></pre><div class="info ">
+First set bit, or return None.
+    changed type at 1.2<br>
+</div>
+
+<pre><span id="VALfirst_exn"><span class="keyword">val</span> first_exn</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> int</code></pre><div class="info ">
 First set bit, or<br>
+<b>Since</b> 1.2<br>
 <b>Raises</b> <code>Not_found</code> if all bits are 0<br>
 </div>
 
 <pre><span id="VALfilter"><span class="keyword">val</span> filter</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> (int -> bool) -> unit</code></pre><div class="info ">
-<code class="code">filter bv p</code> only keeps the true bits of <code class="code">bv</code> whose <code class="code">index</code>
-    satisfies <code class="code">p index</code><br>
+<code class="code">filter&nbsp;bv&nbsp;p</code> only keeps the true bits of <code class="code">bv</code> whose <code class="code">index</code>
+    satisfies <code class="code">p&nbsp;index</code><br>
+</div>
+
+<pre><span id="VALnegate_self"><span class="keyword">val</span> negate_self</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+<code class="code">negate_self&nbsp;t</code> flips all of the bits in <code class="code">t</code>.<br>
+<b>Since</b> 1.2<br>
+</div>
+
+<pre><span id="VALnegate"><span class="keyword">val</span> negate</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">negate&nbsp;t</code> returns a copy of <code class="code">t</code> with all of the bits flipped.<br>
 </div>
 
 <pre><span id="VALunion_into"><span class="keyword">val</span> union_into</span> : <code class="type">into:<a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
-<code class="code">union ~into bv</code> sets <code class="code">into</code> to the union of itself and <code class="code">bv</code>.<br>
+<code class="code">union&nbsp;~into&nbsp;bv</code> sets <code class="code">into</code> to the union of itself and <code class="code">bv</code>.
+<p>
+
+    Also updates the length of <code class="code">into</code> to be at least <code class="code">length&nbsp;bv</code>.<br>
 </div>
 
 <pre><span id="VALinter_into"><span class="keyword">val</span> inter_into</span> : <code class="type">into:<a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
-<code class="code">inter ~into bv</code> sets <code class="code">into</code> to the intersection of itself and <code class="code">bv</code><br>
+<code class="code">inter&nbsp;~into&nbsp;bv</code> sets <code class="code">into</code> to the intersection of itself and <code class="code">bv</code>
+<p>
+
+    Also updates the length of <code class="code">into</code> to be at most <code class="code">length&nbsp;bv</code>.<br>
 </div>
 
 <pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">union bv1 bv2</code> returns the union of the two sets<br>
+<code class="code">union&nbsp;bv1&nbsp;bv2</code> returns the union of the two sets<br>
 </div>
 
 <pre><span id="VALinter"><span class="keyword">val</span> inter</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a></code></pre><div class="info ">
-<code class="code">inter bv1 bv2</code> returns the intersection of the two sets<br>
+<code class="code">inter&nbsp;bv1&nbsp;bv2</code> returns the intersection of the two sets<br>
+</div>
+
+<pre><span id="VALdiff_into"><span class="keyword">val</span> diff_into</span> : <code class="type">into:<a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+<code class="code">diff&nbsp;~into&nbsp;t</code> Modify <code class="code">into</code> with only the bits set but not in <code class="code">t</code>.<br>
+<b>Since</b> 1.2<br>
+</div>
+
+<pre><span id="VALdiff"><span class="keyword">val</span> diff</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a> -> <a href="CCBV.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">diff&nbsp;t1&nbsp;t2</code> Return those bits found <code class="code">t1</code> but not in <code class="code">t2</code>.<br>
+<b>Since</b> 1.2<br>
 </div>
 
 <pre><span id="VALselect"><span class="keyword">val</span> select</span> : <code class="type"><a href="CCBV.html#TYPEt">t</a> -> 'a array -> 'a list</code></pre><div class="info ">
-<code class="code">select arr bv</code> selects the elements of <code class="code">arr</code> whose index
+<code class="code">select&nbsp;arr&nbsp;bv</code> selects the elements of <code class="code">arr</code> whose index
     corresponds to a true bit in <code class="code">bv</code>. If <code class="code">bv</code> is too short, elements of <code class="code">arr</code>
     with too high an index cannot be selected and are therefore not
     selected.<br>

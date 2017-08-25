@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="previous" href="Containers.html">
 <link rel="next" href="CCKList.html">
@@ -15,8 +16,6 @@
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="CCVector" rel="Chapter" href="CCVector.html">
-<link title="CCPrint" rel="Chapter" href="CCPrint.html">
-<link title="CCError" rel="Chapter" href="CCError.html">
 <link title="CCHeap" rel="Chapter" href="CCHeap.html">
 <link title="CCList" rel="Chapter" href="CCList.html">
 <link title="CCOpt" rel="Chapter" href="CCOpt.html">
@@ -39,6 +38,11 @@
 <link title="CCInt64" rel="Chapter" href="CCInt64.html">
 <link title="CCChar" rel="Chapter" href="CCChar.html">
 <link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
 <link title="Containers" rel="Chapter" href="Containers.html">
 <link title="CCKTree" rel="Chapter" href="CCKTree.html">
 <link title="CCKList" rel="Chapter" href="CCKList.html">
@@ -58,39 +62,25 @@
 <link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
 <link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
 <link title="CCMixset" rel="Chapter" href="CCMixset.html">
-<link title="CCHashconsedSet" rel="Chapter" href="CCHashconsedSet.html">
 <link title="CCGraph" rel="Chapter" href="CCGraph.html">
 <link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
 <link title="CCBitField" rel="Chapter" href="CCBitField.html">
 <link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
-<link title="CCBloom" rel="Chapter" href="CCBloom.html">
 <link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
 <link title="CCRAL" rel="Chapter" href="CCRAL.html">
-<link title="CCAllocCache" rel="Chapter" href="CCAllocCache.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
 <link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
 <link title="CCHet" rel="Chapter" href="CCHet.html">
-<link title="Containers_string" rel="Chapter" href="Containers_string.html">
-<link title="CCKMP" rel="Chapter" href="CCKMP.html">
-<link title="CCLevenshtein" rel="Chapter" href="CCLevenshtein.html">
-<link title="CCApp_parse" rel="Chapter" href="CCApp_parse.html">
-<link title="CCParse" rel="Chapter" href="CCParse.html">
-<link title="CCBigstring" rel="Chapter" href="CCBigstring.html">
-<link title="CCArray1" rel="Chapter" href="CCArray1.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
 <link title="CCPool" rel="Chapter" href="CCPool.html">
 <link title="CCLock" rel="Chapter" href="CCLock.html">
 <link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
 <link title="CCThread" rel="Chapter" href="CCThread.html">
 <link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
 <link title="CCTimer" rel="Chapter" href="CCTimer.html">
-<link title="Containers_advanced" rel="Chapter" href="Containers_advanced.html">
-<link title="CCLinq" rel="Chapter" href="CCLinq.html">
-<link title="CCBatch" rel="Chapter" href="CCBatch.html">
-<link title="CCCat" rel="Chapter" href="CCCat.html">
-<link title="CCMonadIO" rel="Chapter" href="CCMonadIO.html">
-<link title="Containers_io_is_deprecated" rel="Chapter" href="Containers_io_is_deprecated.html">
 <link title="CCUnix" rel="Chapter" href="CCUnix.html">
 <link title="CCSexp" rel="Chapter" href="CCSexp.html">
-<link title="CCSexpM" rel="Chapter" href="CCSexpM.html"><link title="Basics" rel="Section" href="#2_Basics">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Basics" rel="Section" href="#2_Basics">
 <link title="Graph Traversals" rel="Section" href="#2_GraphTraversals">
 <link title="Pretty-printing" rel="Section" href="#2_Prettyprinting">
 <link title="Pretty printing in the DOT (graphviz) format" rel="Section" href="#2_PrettyprintingintheDOTgraphvizformat">
@@ -105,9 +95,9 @@
 
 <pre><span class="keyword">module</span> CCKTree: <code class="code"><span class="keyword">sig</span></code> <a href="CCKTree.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
 <h1 id="1_LazyTreeStructure">Lazy Tree Structure</h1>
-This structure can be used to represent trees and directed
-graphs (as infinite trees) in a lazy fashion. Like <a href="CCKList.html"><code class="code"><span class="constructor">CCKList</span></code></a>, it
-is a structural type.<br>
+    This structure can be used to represent trees and directed
+    graphs (as infinite trees) in a lazy fashion. Like <a href="CCKList.html"><code class="code"><span class="constructor">CCKList</span></code></a>, it
+    is a structural type.<br>
 </div>
 <hr width="100%">
 
@@ -120,10 +110,7 @@ is a structural type.<br>
 <pre><span id="TYPEklist"><span class="keyword">type</span> <code class="type">'a</code> klist</span> = <code class="type">unit -> [ `Cons of 'a * 'a <a href="CCKTree.html#TYPEklist">klist</a> | `Nil ]</code> </pre>
 
 
-<pre><span id="TYPEprinter"><span class="keyword">type</span> <code class="type">'a</code> printer</span> = <code class="type">Buffer.t -> 'a -> unit</code> </pre>
-
-
-<pre><span id="TYPEformatter"><span class="keyword">type</span> <code class="type">'a</code> formatter</span> = <code class="type">Format.formatter -> 'a -> unit</code> </pre>
+<pre><span id="TYPEprinter"><span class="keyword">type</span> <code class="type">'a</code> printer</span> = <code class="type">Format.formatter -> 'a -> unit</code> </pre>
 
 <br>
 <h2 id="2_Basics">Basics</h2><br>
@@ -188,36 +175,36 @@ Breadth-first traversal of the tree<br>
 </div>
 
 <pre><span id="VALforce"><span class="keyword">val</span> force</span> : <code class="type">'a <a href="CCKTree.html#TYPEt">t</a> -> ([ `Nil | `Node of 'a * 'b list ] as 'b)</code></pre><div class="info ">
-<code class="code">force t</code> evaluates <code class="code">t</code> completely and returns a regular tree
+<code class="code">force&nbsp;t</code> evaluates <code class="code">t</code> completely and returns a regular tree
     structure<br>
 <b>Since</b> 0.13<br>
 </div>
 
 <pre><span id="VALfind"><span class="keyword">val</span> find</span> : <code class="type">?pset:'a <a href="CCKTree.pset-c.html">pset</a> -> ('a -> 'b option) -> 'a <a href="CCKTree.html#TYPEt">t</a> -> 'b option</code></pre><div class="info ">
-Look for an element that maps to <code class="code"><span class="constructor">Some</span> _</code><br>
+Look for an element that maps to <code class="code"><span class="constructor">Some</span>&nbsp;_</code><br>
 </div>
 <br>
 <h2 id="2_Prettyprinting">Pretty-printing</h2>
 <p>
 
-Example (tree of calls for naive Fibonacci function):
-<pre class="codepre"><code class="code">&nbsp;&nbsp;<span class="keyword">let</span>&nbsp;mk_fib&nbsp;n&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let</span>&nbsp;<span class="keyword">rec</span>&nbsp;fib'&nbsp;l&nbsp;r&nbsp;i&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span>&nbsp;i=n&nbsp;<span class="keyword">then</span>&nbsp;r&nbsp;<span class="keyword">else</span>&nbsp;fib'&nbsp;r&nbsp;(l+r)&nbsp;(i+1)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">in</span>&nbsp;fib'&nbsp;1&nbsp;1&nbsp;1;;<br>
-<br>
-&nbsp;&nbsp;<span class="keyword">let</span>&nbsp;<span class="keyword">rec</span>&nbsp;fib&nbsp;n&nbsp;=&nbsp;<span class="keyword">match</span>&nbsp;n&nbsp;<span class="keyword">with</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;0&nbsp;<span class="keywordsign">|</span>&nbsp;1&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">CCKTree</span>.singleton&nbsp;(<span class="keywordsign">`</span><span class="constructor">Cst</span>&nbsp;n)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;_&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">CCKTree</span>.node2&nbsp;(<span class="keywordsign">`</span><span class="constructor">Plus</span>&nbsp;(mk_fib&nbsp;n))&nbsp;(fib&nbsp;(n-1))&nbsp;(fib&nbsp;(n-2));;<br>
-<br>
-&nbsp;&nbsp;<span class="keyword">let</span>&nbsp;pp_node&nbsp;fmt&nbsp;=&nbsp;<span class="keyword">function</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Cst</span>&nbsp;n&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Format</span>.fprintf&nbsp;fmt&nbsp;<span class="string">"%d"</span>&nbsp;n<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Plus</span>&nbsp;n&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Format</span>.fprintf&nbsp;fmt&nbsp;<span class="string">"%d"</span>&nbsp;n;;<br>
-<br>
-&nbsp;&nbsp;<span class="constructor">Format</span>.printf&nbsp;<span class="string">"%a@."</span>&nbsp;(<span class="constructor">CCKTree</span>.print&nbsp;pp_node)&nbsp;(fib&nbsp;8);;<br>
-</code></pre><br>
+    Example (tree of calls for naive Fibonacci function):
+    <pre class="codepre"><code class="code">      <span class="keyword">let</span> mk_fib n =
+        <span class="keyword">let</span> <span class="keyword">rec</span> fib' l r i =
+          <span class="keyword">if</span> i=n <span class="keyword">then</span> r <span class="keyword">else</span> fib' r (l+r) (i+1)
+        <span class="keyword">in</span> fib' 1 1 1;;
 
-<pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">'a <a href="CCKTree.html#TYPEformatter">formatter</a> -> 'a <a href="CCKTree.html#TYPEt">t</a> <a href="CCKTree.html#TYPEformatter">formatter</a></code></pre><div class="info ">
+      <span class="keyword">let</span> <span class="keyword">rec</span> fib n = <span class="keyword">match</span> n <span class="keyword">with</span>
+        <span class="keywordsign">|</span> 0 <span class="keywordsign">|</span> 1 <span class="keywordsign">-&gt;</span> <span class="constructor">CCKTree</span>.singleton (<span class="keywordsign">`</span><span class="constructor">Cst</span> n)
+        <span class="keywordsign">|</span> _ <span class="keywordsign">-&gt;</span> <span class="constructor">CCKTree</span>.node2 (<span class="keywordsign">`</span><span class="constructor">Plus</span> (mk_fib n)) (fib (n-1)) (fib (n-2));;
+
+      <span class="keyword">let</span> pp_node fmt = <span class="keyword">function</span>
+        <span class="keywordsign">|</span> <span class="keywordsign">`</span><span class="constructor">Cst</span> n <span class="keywordsign">-&gt;</span> <span class="constructor">Format</span>.fprintf fmt <span class="string">"%d"</span> n
+        <span class="keywordsign">|</span> <span class="keywordsign">`</span><span class="constructor">Plus</span> n <span class="keywordsign">-&gt;</span> <span class="constructor">Format</span>.fprintf fmt <span class="string">"%d"</span> n;;
+
+      <span class="constructor">Format</span>.printf <span class="string">"%a@."</span> (<span class="constructor">CCKTree</span>.print pp_node) (fib 8);;
+    </code></pre><br>
+
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">'a <a href="CCKTree.html#TYPEprinter">printer</a> -> 'a <a href="CCKTree.html#TYPEt">t</a> <a href="CCKTree.html#TYPEprinter">printer</a></code></pre><div class="info ">
 A pretty-printer using S-expressions and boxes to render the tree.
     Empty nodes are not rendered; sharing is ignored.<br>
 <b>Since</b> 0.9<br>
