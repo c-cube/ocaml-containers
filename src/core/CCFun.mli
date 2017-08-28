@@ -40,7 +40,7 @@ val tap : ('a -> _) -> 'a -> 'a
     in a pipeline, for instance:
     {[CCArray.(1 -- 10)
       |> tap CCArray.shuffle
-      |> tap CCArray.sort Pervasives.compare
+      |> tap @@ CCArray.sort Pervasives.compare
     ]}
 *)
 
