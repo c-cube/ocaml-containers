@@ -38,7 +38,8 @@ val take_front_exn : 'a t -> ('a * 'a t)
 
 val take_front_l : int -> 'a t -> 'a list * 'a t
 (** [take_front_l n q] takes at most [n] elements from the front
-    of [q], and returns them wrapped in a list *)
+    of [q], and returns them wrapped in a list
+    @raise Invalid_argument if n<0 *)
 
 val take_front_while : ('a -> bool) -> 'a t -> 'a list * 'a t
 
@@ -51,7 +52,8 @@ val take_back_l : int -> 'a t -> 'a t * 'a list
 (** [take_back_l n q] removes and returns the last [n] elements of [q]. The
     elements are in the order of the queue, that is, the head of the returned
     list is the first element to appear via {!take_front}.
-    [take_back_l 2 (of_list [1;2;3;4]) = of_list [1;2], [3;4]] *)
+    [take_back_l 2 (of_list [1;2;3;4]) = of_list [1;2], [3;4]]
+    @raise Invalid_argument if n<0 *)
 
 val take_back_while : ('a -> bool) -> 'a t -> 'a t * 'a list
 

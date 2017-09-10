@@ -132,6 +132,9 @@ let take_front q =
   with Empty -> None
 
 let take_front_l n q =
+  if n<0 then (
+    invalid_arg "take_back_l: cannot take negative number of arguments"
+  );
   let rec aux acc q n =
     if n=0 || is_empty q then List.rev acc, q
     else
@@ -183,6 +186,9 @@ let take_back q =
   with Empty -> None
 
 let take_back_l n q =
+  if n<0 then (
+    invalid_arg "take_back_l: cannot take negative number of arguments"
+  );
   let rec aux acc q n =
     if n=0 || is_empty q then q, acc
     else
