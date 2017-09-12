@@ -1178,7 +1178,7 @@ module Str = struct
   let bench_rfind  = bench_find_ ~dir:`Reverse
 
   module Pre = struct
-    let prefix_pure ~pre s =
+    let prefix_rec ~pre s =
       let rec same s1 s2 i =
         if i = String.length s1 then true
         else (
@@ -1200,7 +1200,7 @@ module Str = struct
 
     exception Exit_false
 
-    let prefix_loop ~pre s =
+    let prefix_for_exn ~pre s =
       String.length pre <= String.length s &&
       try
         for i=0 to String.length pre-1 do
@@ -1249,7 +1249,7 @@ module Str = struct
       in
       let output =
         Array.map
-          (fun (pre, str) -> prefix_pure ~pre str)
+          (fun (pre, str) -> prefix_rec ~pre str)
           input
       in
       let test f () =
@@ -1263,8 +1263,8 @@ module Str = struct
         [
           "containers", test CCString.prefix, ();
           "while_unsafe", test prefix_while, ();
-          "loop_unsafe", test prefix_pure, ();
-          "for_unsafe", test prefix_loop, ();
+          "rec_unsafe", test prefix_rec, ();
+          "for_exn_unsafe", test prefix_for_exn, ();
           "sub_eq", test prefix_sub, ();
           "bat_prefix", test bat_prefix, ();
         ]
@@ -1301,6 +1301,7 @@ module Str = struct
         "prefix" @>>>
         [ "max_len:1000,max_pre_len:15" @>> app_ints (Pre.make ~max_len:1000 ~max_len_prefix:15) [100; 1_000];
           "max_len:1000,max_pre_len:100" @>> app_ints (Pre.make ~max_len:1000 ~max_len_prefix:100) [100; 1_000];
+          "max_len:1000,max_pre_len:300" @>> app_ints (Pre.make ~max_len:1000 ~max_len_prefix:300) [100; 1_000];
         ]
       ])
 

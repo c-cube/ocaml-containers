@@ -490,28 +490,30 @@ let repeat s n =
   assert(len > 0);
   init (len * n) (fun i -> s.[i mod len])
 
-exception Exit_false
-
 let prefix ~pre s =
-  String.length pre <= String.length s &&
-  try
-    for i=0 to String.length pre-1 do
-      if String.unsafe_get s i != String.unsafe_get pre i
-      then raise Exit_false
-    done;
-    true
-  with Exit_false -> false
+  let len = String.length pre in
+  if len > String.length s then false
+  else (
+    let rec check i =
+      if i=len then true
+      else if String.unsafe_get s i != String.unsafe_get pre i then false
+      else check (i+1)
+    in
+    check 0
+  )
 
 let suffix ~suf s =
-  String.length suf <= String.length s &&
-  try
-    let off = String.length s - String.length suf in
-    for i=0 to String.length suf-1 do
-      if String.unsafe_get s (off+i) != String.unsafe_get suf i
-      then raise Exit_false
-    done;
-    true
-  with Exit_false -> false
+  let len = String.length suf in
+  if len > String.length s then false
+  else (
+    let off = String.length s - len in
+    let rec check i =
+      if i=len then true
+      else if String.unsafe_get s (off+i) != String.unsafe_get suf i then false
+      else check (i+1)
+    in
+    check 0
+  )
 
 let take n s =
   if n < String.length s
