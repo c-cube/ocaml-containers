@@ -1177,6 +1177,99 @@ module Str = struct
   let bench_find  = bench_find_ ~dir:`Direct
   let bench_rfind  = bench_find_ ~dir:`Reverse
 
+  module Pre = struct
+    let prefix_pure ~pre s =
+      let rec same s1 s2 i =
+        if i = String.length s1 then true
+        else (
+          String.unsafe_get s1 i = String.unsafe_get s2 i && same s1 s2 (i+1)
+        )
+      in
+      String.length pre <= String.length s &&
+      same pre s 0
+
+    let prefix_while ~pre s =
+      String.length pre <= String.length s &&
+      begin
+        let i = ref 0 in
+        while !i < String.length pre &&
+              String.unsafe_get s !i = String.unsafe_get pre !i
+        do incr i done;
+        !i = String.length pre
+      end
+
+    exception Exit_false
+
+    let prefix_loop ~pre s =
+      String.length pre <= String.length s &&
+      try
+        for i=0 to String.length pre-1 do
+          if String.unsafe_get s i != String.unsafe_get pre i
+          then raise Exit_false
+        done;
+        true
+      with Exit_false -> false
+
+    let prefix_sub ~pre:prfx s =
+      let len_s = String.length s in
+      let len_p = String.length prfx in
+      if len_s < len_p then
+        false
+      else
+        let sub = String.sub s 0 len_p in
+        String.equal prfx sub
+
+    let bat_prefix ~pre:p str =
+      let len = String.length p in
+      if String.length str < len then false
+      else
+        let rec loop str p i =
+          if i = len then true
+          else if String.unsafe_get str i <> String.unsafe_get p i then false
+          else loop str p (i + 1)
+        in loop str p 0
+
+    let make ~max_len ~max_len_prefix n =
+      let rand = Random.State.make_self_init () in
+      let input =
+        Array.init n
+          (fun _ ->
+             let str =
+               QCheck.Gen.(string_size ~gen:printable (10 -- max_len))
+               |> QCheck.Gen.generate1 ~rand
+             in
+             let prfx_len = Random.State.int rand (min max_len_prefix (String.length str + 1)) in
+             let prfx =
+               if Random.State.bool rand then
+                 String.sub str 0 prfx_len
+               else
+                 String.sub str (String.length str - prfx_len) prfx_len
+             in
+             (prfx, str))
+      in
+      let output =
+        Array.map
+          (fun (pre, str) -> prefix_pure ~pre str)
+          input
+      in
+      let test f () =
+        Array.iteri
+          (fun i (pre, y) ->
+             let res = f ~pre y in
+             assert (res = output.(i)))
+          input
+      in
+      Benchmark.throughputN 3
+        [
+          "containers", test CCString.prefix, ();
+          "while_unsafe", test prefix_while, ();
+          "loop_unsafe", test prefix_pure, ();
+          "for_unsafe", test prefix_loop, ();
+          "sub_eq", test prefix_sub, ();
+          "bat_prefix", test bat_prefix, ();
+        ]
+  end
+
   let () = B.Tree.register (
     "string" @>>>
       [ "find" @>>>
@@ -1205,6 +1298,10 @@ module Str = struct
           ; "50" @>> app_ints (bench_rfind ~size:50) [100; 100_000; 500_000]
           ; "500" @>> app_ints (bench_rfind ~size:500) [100_000; 500_000]
           ];
+        "prefix" @>>>
+        [ "max_len:1000,max_pre_len:15" @>> app_ints (Pre.make ~max_len:1000 ~max_len_prefix:15) [100; 1_000];
+          "max_len:1000,max_pre_len:100" @>> app_ints (Pre.make ~max_len:1000 ~max_len_prefix:100) [100; 1_000];
+        ]
       ])
 
 end
