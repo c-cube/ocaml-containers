@@ -205,9 +205,15 @@ let append_seq a seq =
 
 let append_array a b =
   let len_b = Array.length b in
-  ensure a (a.size + len_b);
-  Array.blit b 0 a.vec a.size len_b;
-  a.size <- a.size + len_b
+  if _empty_array a then (
+    a.vec <- Array.copy b;
+    a.size <- len_b;
+  )
+  else (
+    ensure a (a.size + len_b);
+    Array.blit b 0 a.vec a.size len_b;
+    a.size <- a.size + len_b
+  )
 
 (*$T
   let v1 = init 5 (fun i->i) and v2 = Array.init 5 (fun i->i+5) in \
