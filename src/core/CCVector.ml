@@ -156,7 +156,7 @@ let append a b =
       a.size <- b.size
     )
   else (
-    ensure a (a.size + b.size);
+    ensure_not_empty_ a (a.size + b.size);
     assert (Array.length a.vec >= a.size + b.size);
     Array.blit b.vec 0 a.vec a.size b.size;
     a.size <- a.size + b.size
@@ -210,7 +210,7 @@ let append_array a b =
     a.size <- len_b;
   )
   else (
-    ensure a (a.size + len_b);
+    ensure_not_empty_ a (a.size + len_b);
     Array.blit b 0 a.vec a.size len_b;
     a.size <- a.size + len_b
   )
