@@ -67,14 +67,14 @@ let init n f = {
   vec=Array.init n f;
 }
 
-(* is the underlying empty? *)
-let _empty_array v =
+(* is the underlying array empty? *)
+let array_is_empty_ v =
   Array.length v.vec = 0
 
 (* assuming the underlying array isn't empty, resize it *)
-let _resize v newcapacity =
+let resize_ v newcapacity =
   assert (newcapacity >= v.size);
-  assert (not (_empty_array v));
+  assert (not (array_is_empty_ v));
   let new_vec = Array.make newcapacity v.vec.(0) in
   Array.blit v.vec 0 new_vec 0 v.size;
   v.vec <- new_vec;
@@ -86,38 +86,38 @@ let _resize v newcapacity =
 *)
 
 (* grow the array, using [x] as a filler if required *)
-let _grow v x =
-  if _empty_array v
+let grow_with_ v ~filler:x =
+  if array_is_empty_ v
   then v.vec <- Array.make 32 x
   else (
     let n = Array.length v.vec in
     let size = min (2 * n + 10) Sys.max_array_length in
     if size = n then failwith "vec: can't grow any further";
-    _resize v size
+    resize_ v size
   )
 
 (* v is not empty; ensure it has at least [size] slots.
 
    Use a doubling-size strategy so that calling many times [ensure] will
    behave well *)
-let ensure_not_empty_ v size =
+let ensure_assuming_not_empty_ v ~size =
   if size > Sys.max_array_length
   then failwith "vec.ensure: size too big"
   else (
     let n = ref (max 16 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;
-    _resize v !n
+    resize_ v !n
   )
 
 let ensure_with ~init v size =
   if Array.length v.vec = 0
   then v.vec <- Array.make size init
-  else ensure_not_empty_ v size
+  else ensure_assuming_not_empty_ v ~size
 
 let ensure v size =
   if Array.length v.vec = 0
   then ()
-  else ensure_not_empty_  v size
+  else ensure_assuming_not_empty_  v ~size
 
 let clear v =
   v.size <- 0
@@ -137,8 +137,7 @@ let push_unsafe_ v x =
   v.size <- v.size + 1
 
 let push v x =
-  if v.size = Array.length v.vec
-  then _grow v x;
+  if v.size = Array.length v.vec then grow_with_ v ~filler:x;
   push_unsafe_ v x
 
 (*$T
@@ -148,15 +147,14 @@ let push v x =
 
 (** Add all elements of b to a *)
 let append a b =
-  if _empty_array a
-  then if _empty_array b
-    then ()
+  if array_is_empty_ a then (
+    if array_is_empty_ b then ()
     else (
       a.vec <- Array.copy b.vec;
       a.size <- b.size
     )
-  else (
-    ensure_not_empty_ a (a.size + b.size);
+  ) else (
+    ensure_assuming_not_empty_ a ~size:(a.size + b.size);
     assert (Array.length a.vec >= a.size + b.size);
     Array.blit b.vec 0 a.vec a.size b.size;
     a.size <- a.size + b.size
@@ -205,12 +203,11 @@ let append_seq a seq =
 
 let append_array a b =
   let len_b = Array.length b in
-  if _empty_array a then (
+  if array_is_empty_ a then (
     a.vec <- Array.copy b;
     a.size <- len_b;
-  )
-  else (
-    ensure_not_empty_ a (a.size + len_b);
+  ) else (
+    ensure_assuming_not_empty_ a ~size:(a.size + len_b);
     Array.blit b 0 a.vec a.size len_b;
     a.size <- a.size + len_b
   )
@@ -441,7 +438,7 @@ let iteri k v =
 *)
 
 let map f v =
-  if _empty_array v
+  if array_is_empty_ v
   then create ()
   else (
     let vec = Array.init v.size (fun i -> f (Array.unsafe_get v.vec i)) in
@@ -474,7 +471,7 @@ let filter' p v =
 *)
 
 let filter p v =
-  if _empty_array v
+  if array_is_empty_ v
   then create ()
   else (
     let v' = create_with ~capacity:v.size v.vec.(0) in
