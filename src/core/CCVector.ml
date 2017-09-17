@@ -156,7 +156,7 @@ let append a b =
       a.size <- b.size
     )
   else (
-    ensure a (a.size + b.size);
+    ensure_not_empty_ a (a.size + b.size);
     assert (Array.length a.vec >= a.size + b.size);
     Array.blit b.vec 0 a.vec a.size b.size;
     a.size <- a.size + b.size
@@ -165,6 +165,14 @@ let append a b =
 (*$T
   let v1 = init 5 (fun i->i) and v2 = init 5 (fun i->i+5) in \
   append v1 v2; to_list v1 = CCList.(0--9)
+  let empty = create () and v2 = init 5 (fun i->i) in \
+  append empty v2; to_list empty = CCList.(0--4)
+  let v1 = init 5 (fun i->i) and empty = create () in \
+  append v1 empty; to_list v1 = CCList.(0--4)
+  let v = init 3 (fun i->i) in \
+  append v v; to_list v = [0; 1; 2; 0; 1; 2]
+  let empty = create () in \
+  append empty empty; to_list empty = []
 *)
 
 (*$R
@@ -197,13 +205,25 @@ let append_seq a seq =
 
 let append_array a b =
   let len_b = Array.length b in
-  ensure a (a.size + len_b);
-  Array.blit b 0 a.vec a.size len_b;
-  a.size <- a.size + len_b
+  if _empty_array a then (
+    a.vec <- Array.copy b;
+    a.size <- len_b;
+  )
+  else (
+    ensure_not_empty_ a (a.size + len_b);
+    Array.blit b 0 a.vec a.size len_b;
+    a.size <- a.size + len_b
+  )
 
 (*$T
   let v1 = init 5 (fun i->i) and v2 = Array.init 5 (fun i->i+5) in \
   append_array v1 v2; to_list v1 = CCList.(0--9)
+  let empty = create () in \
+  append_array empty CCArray.(0--5); to_list empty = CCList.(0--5)
+  let v1 = init 5 (fun i->i) in \
+  append_array v1 [| |]; to_list v1 = CCList.(0--4)
+  let empty = create () in \
+  append_array empty [| |]; to_list empty = []
 *)
 
 let append_list a b = match b with
