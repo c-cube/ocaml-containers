@@ -47,6 +47,8 @@ val take_back : 'a t -> ('a t * 'a) option
 (** Take last element *)
 
 val take_back_exn : 'a t -> ('a t * 'a)
+(** Same as {!take_back}, but fails on empty queues.
+    @raise Empty if the queue is empty *)
 
 val take_back_l : int -> 'a t -> 'a t * 'a list
 (** [take_back_l n q] removes and returns the last [n] elements of [q]. The
