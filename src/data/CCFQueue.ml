@@ -131,6 +131,10 @@ let take_front q =
   try Some (take_front_exn q)
   with Empty -> None
 
+(*$T
+  take_front empty = None
+*)
+
 let take_front_l n q =
   if n<0 then (
     invalid_arg "take_back_l: cannot take negative number of arguments"
@@ -161,7 +165,7 @@ let take_front_while p q =
 
 let rec take_back_exn : 'a. 'a t -> 'a t * 'a
   = fun q -> match q with
-    | Shallow Zero -> invalid_arg "FQueue.take_back_exn"
+    | Shallow Zero -> raise Empty
     | Shallow (One x) -> empty, x
     | Shallow (Two (x,y)) -> _single x, y
     | Shallow (Three (x,y,z)) -> Shallow (Two(x,y)), z
@@ -184,6 +188,10 @@ let rec take_back_exn : 'a. 'a t -> 'a t * 'a
 let take_back q =
   try Some (take_back_exn q)
   with Empty -> None
+
+(*$T
+  take_back empty = None
+*)
 
 let take_back_l n q =
   if n<0 then (
