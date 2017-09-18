@@ -1217,7 +1217,7 @@ module Str = struct
         false
       else
         let sub = String.sub s 0 len_p in
-        String.equal prfx sub
+        CCString.equal prfx sub
 
     let bat_prefix ~pre:p str =
       let len = String.length p in
