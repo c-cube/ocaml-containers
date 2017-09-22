@@ -32,6 +32,11 @@ let compare f r1 r2 = f !r1 !r2
 
 let equal f r1 r2 = f !r1 !r2
 
+let swap a b =
+  let x = !a in
+  a := !b;
+  b := x
+
 let to_list r = [!r]
 let to_seq r yield = yield !r
 
