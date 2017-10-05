@@ -20,13 +20,33 @@ let is_empty = function
 (* max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
+let tail_map f l =
+  (* Unwind the list of tuples, reconstructing the full list front-to-back *)
+  let rec rise ys = function
+    | [] -> ys
+    | (y0, y1, y2, y3, y4, y5, y6, y7, y8) :: bs ->
+        rise (y0 :: y1 :: y2 :: y3 :: y4 :: y5 :: y6 :: y7 :: y8 :: ys) bs
+  in
+  (* Create a compressed reverse-list representation using tuples *)
+  let rec dive acc = function
+    | x0 :: x1 :: x2 :: x3 :: x4 :: x5 :: x6 :: x7 :: x8 :: xs ->
+        let y0 = f x0 in let y1 = f x1 in let y2 = f x2 in
+        let y3 = f x3 in let y4 = f x4 in let y5 = f x5 in
+        let y6 = f x6 in let y7 = f x7 in
+        dive ((y0, y1, y2, y3, y4, y5, y6, y7, f x8) :: acc) xs
+    | xs ->
+        (* Reverse direction, finishing off with a direct map *)
+        rise (List.map f xs) acc 
+  in
+  dive [] l
+
 let map f l =
   let rec direct f i l = match l with
     | [] -> []
     | [x] -> [f x]
     | [x1;x2] -> let y1 = f x1 in [y1; f x2]
     | [x1;x2;x3] -> let y1 = f x1 in let y2 = f x2 in [y1; y2; f x3]
-    | _ when i=0 -> List.rev (List.rev_map f l)
+    | _ when i=0 -> tail_map f l
     | x1::x2::x3::x4::l' ->
       let y1 = f x1 in
       let y2 = f x2 in
