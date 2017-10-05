@@ -950,6 +950,11 @@ let uniq ?(eq=(=)) l =
   uniq [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
 *)
 
+(*$Q
+  Q.(small_list small_int) (fun l -> \
+    sort_uniq l = (uniq l |> sort Pervasives.compare))
+  *)
+
 let union ?(eq=(=)) l1 l2 =
   let rec union eq acc l1 l2 = match l1 with
     | [] -> List.rev_append acc l2
