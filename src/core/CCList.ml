@@ -21,22 +21,26 @@ let is_empty = function
 let direct_depth_default_ = 1000
 
 let tail_map f l =
-  (* Unwind the list of tuples, reconstructing the full list front-to-back *)
-  let rec rise ys = function
-    | [] -> ys
+  (* Unwind the list of tuples, reconstructing the full list front-to-back.
+     @param tail_acc a suffix of the final list; we append tuples' content
+     at the front of it *)
+  let rec rebuild tail_acc = function
+    | [] -> tail_acc
     | (y0, y1, y2, y3, y4, y5, y6, y7, y8) :: bs ->
-        rise (y0 :: y1 :: y2 :: y3 :: y4 :: y5 :: y6 :: y7 :: y8 :: ys) bs
+      rebuild (y0 :: y1 :: y2 :: y3 :: y4 :: y5 :: y6 :: y7 :: y8 :: tail_acc) bs
   in
-  (* Create a compressed reverse-list representation using tuples *)
-  let rec dive acc = function
+  (* Create a compressed reverse-list representation using tuples
+     @param tuple_acc a reverse list of chunks mapped with [f] *)
+  let rec dive tuple_acc = function
     | x0 :: x1 :: x2 :: x3 :: x4 :: x5 :: x6 :: x7 :: x8 :: xs ->
-        let y0 = f x0 in let y1 = f x1 in let y2 = f x2 in
-        let y3 = f x3 in let y4 = f x4 in let y5 = f x5 in
-        let y6 = f x6 in let y7 = f x7 in
-        dive ((y0, y1, y2, y3, y4, y5, y6, y7, f x8) :: acc) xs
+      let y0 = f x0 in let y1 = f x1 in let y2 = f x2 in
+      let y3 = f x3 in let y4 = f x4 in let y5 = f x5 in
+      let y6 = f x6 in let y7 = f x7 in let y8 = f x8 in
+      dive ((y0, y1, y2, y3, y4, y5, y6, y7, y8) :: tuple_acc) xs
     | xs ->
-        (* Reverse direction, finishing off with a direct map *)
-        rise (List.map f xs) acc 
+      (* Reverse direction, finishing off with a direct map *)
+      let tail = List.map f xs in
+      rebuild tail tuple_acc
   in
   dive [] l
 
