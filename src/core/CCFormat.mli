@@ -162,7 +162,7 @@ val some : 'a printer -> 'a option printer
         "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@.";;
     ]}
 
-    {b status: experimental}
+    {b status: unstable}
     @since 0.15 *)
 
 val set_color_tag_handling : t -> unit
@@ -177,13 +177,13 @@ val set_color_default : bool -> unit
 val with_color : string -> 'a printer -> 'a printer
 (** [with_color "Blue" pp] behaves like the printer [pp], but with the given
     style.
-    {b status: experimental}
+    {b status: unstable}
     @since 0.16 *)
 
 val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
 (** [with_colorf "Blue" out "%s %d" "yolo" 42] will behave like {!Format.fprintf},
     but wrapping the content with the given style
-    {b status: experimental}
+    {b status: unstable}
     @since 0.16 *)
 
 val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
@@ -193,7 +193,7 @@ val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
     {[
       CCFormat.with_color_sf "red" "%a" CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
     ]}
-    {b status: experimental}
+    {b status: unstable}
     @since 0.21 *)
 
 val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 'a

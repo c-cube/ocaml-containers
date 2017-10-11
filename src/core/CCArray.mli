@@ -25,7 +25,7 @@ val compare : 'a ord -> 'a t ord
 
 val swap : 'a t -> int -> int -> unit
 (** [swap arr i j] swaps elements at indices [i] and [j].
-    @since NEXT_RELEASE *)
+    @since 1.4 *)
 
 val get : 'a t -> int -> 'a
 

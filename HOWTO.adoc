@@ -10,7 +10,7 @@ can be removed.
 . `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
 . check status of modules (`{b status: foo}`) and update if required;
    removed deprecated functions, etc.
-. update `CHANGELOG.md` (see its end to find the right git command)
+. update `CHANGELOG.adoc` (see its end to find the right git command)
 . commit the changes
 . `git checkout stable`
 . `git merge master`

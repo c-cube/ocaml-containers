@@ -33,7 +33,7 @@ val get_then_incr : int t -> int
 
 val swap : 'a t -> 'a t -> unit
 (** Swap values.
-    @since NEXT_RELEASE *)
+    @since 1.4 *)
 
 val compare : 'a ord -> 'a t ord
 

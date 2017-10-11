@@ -86,7 +86,7 @@ module type S = sig
   (** [get_rank k m] looks for the rank of [k] in [m], i.e. the index
       of [k] in the sorted list of bindings of [m].
       [let (`At n) = get_rank k m in nth_exn n m = get m k] should hold.
-      @since NEXT_RELEASE *)
+      @since 1.4 *)
 
   val add : key -> 'a -> 'a t -> 'a t
 

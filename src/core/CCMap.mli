@@ -35,7 +35,7 @@ module type S = sig
   val union : (key -> 'a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t
   (** Union of both maps, using the function to combine bindings
       that belong to both inputs
-      @since NEXT_RELEASE *)
+      @since 1.4 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
   (** Same as {!of_list} *)
