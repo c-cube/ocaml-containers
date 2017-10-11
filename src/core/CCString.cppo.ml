@@ -491,18 +491,28 @@ let repeat s n =
   init (len * n) (fun i -> s.[i mod len])
 
 let prefix ~pre s =
-  String.length pre <= String.length s &&
-  (let i = ref 0 in
-   while !i < String.length pre && s.[!i] = pre.[!i] do incr i done;
-   !i = String.length pre
+  let len = String.length pre in
+  if len > String.length s then false
+  else (
+    let rec check i =
+      if i=len then true
+      else if String.unsafe_get s i != String.unsafe_get pre i then false
+      else check (i+1)
+    in
+    check 0
   )
 
 let suffix ~suf s =
-  String.length suf <= String.length s &&
-  let off = String.length s - String.length suf in
-  (let i = ref 0 in
-   while !i < String.length suf && s.[off + !i] = suf.[!i] do incr i done;
-   !i = String.length suf
+  let len = String.length suf in
+  if len > String.length s then false
+  else (
+    let off = String.length s - len in
+    let rec check i =
+      if i=len then true
+      else if String.unsafe_get s (off+i) != String.unsafe_get suf i then false
+      else check (i+1)
+    in
+    check 0
   )
 
 let take n s =

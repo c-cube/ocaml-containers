@@ -212,6 +212,10 @@ val prefix : pre:string -> string -> bool
   prefix ~pre:"aab" "aabcd"
   not (prefix ~pre:"ab" "aabcd")
   not (prefix ~pre:"abcd" "abc")
+  prefix ~pre:"abc" "abcde"
+  prefix ~pre:"" ""
+  prefix ~pre:"" "abc"
+  prefix ~pre:"abc" "abc"
 *)
 
 val suffix : suf:string -> string -> bool
@@ -220,6 +224,8 @@ val suffix : suf:string -> string -> bool
 
 (*$T
   suffix ~suf:"cd" "abcd"
+  suffix ~suf:"" ""
+  suffix ~suf:"" "abc"
   not (suffix ~suf:"cd" "abcde")
   not (suffix ~suf:"abcd" "cd")
 *)

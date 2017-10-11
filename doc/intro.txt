@@ -82,6 +82,7 @@ CCFlatHashtbl
 CCGraph
 CCHashSet
 CCHashTrie
+CCHet
 CCImmutArray
 CCIntMap
 CCMixmap

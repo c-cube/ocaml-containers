@@ -468,6 +468,35 @@ let compare cmp a b =
   compare CCOrd.compare [| 1; 2; 3 |] [| 1; 2; |] > 0
 *)
 
+(* swap elements of array *)
+let swap a i j =
+  if i<>j then (
+    let tmp = a.(i) in
+    a.(i) <- a.(j);
+    a.(j) <- tmp;
+  )
+
+(*$T
+  let a = [| 1;2;3 |] in \
+    swap a 0 1; \
+    a = [| 2;1;3 |]
+  let a = [| 1;2;3 |] in \
+    swap a 0 2; \
+    a = [| 3;2;1 |]
+*)
+
+(*$QR
+  Q.(array small_int) (fun a ->
+    let b = Array.copy a in
+    for i = 0 to Array.length a-1 do
+      for j = i+1 to Array.length a-1 do
+        swap a i j; done; done;
+    for i = 0 to Array.length a-1 do
+      for j = i+1 to Array.length a-1 do
+        swap a i j; done; done;
+    a=b)
+*)
+
 (* shuffle a[i...j[ using the given int random generator
    See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
 let _shuffle _rand_int a i j =

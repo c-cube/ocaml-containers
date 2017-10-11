@@ -82,6 +82,12 @@ module type S = sig
   val nth_exn : int -> 'a t -> key * 'a
   (** @raise Not_found if the index is invalid *)
 
+  val get_rank : key -> 'a t -> [`At of int | `After of int | `First]
+  (** [get_rank k m] looks for the rank of [k] in [m], i.e. the index
+      of [k] in the sorted list of bindings of [m].
+      [let (`At n) = get_rank k m in nth_exn n m = get m k] should hold.
+      @since 1.4 *)
+
   val add : key -> 'a -> 'a t -> 'a t
 
   val remove : key -> 'a t -> 'a t
@@ -98,8 +104,14 @@ module type S = sig
   val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
   val mapi : f:(key -> 'a -> 'b) -> 'a t -> 'b t
+  (** Map values, giving both key and value. Will use {!WORD.of_list} to rebuild keys.
+      @since 0.17
+  *)
 
   val map : f:('a -> 'b) -> 'a t -> 'b t
+  (** Map values, giving only the value.
+      @since 0.17
+  *)
 
   val iter : f:(key -> 'a -> unit) -> 'a t -> unit
 
@@ -363,6 +375,28 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   (*$T
     let m = CCList.(0 -- 1000 |> map (fun i->i,i) |> M.of_list) in \
     List.for_all (fun i -> M.nth_exn i m = (i,i)) CCList.(0--1000)
+  *)
+
+  let get_rank k m =
+    let rec aux i k m = match m with
+      | E -> if i=0 then `First else `After i
+      | N (k', _, l, r, _) ->
+        match K.compare k k' with
+          | 0 -> `At (i + weight l)
+          | n when n<0 -> aux i k l
+          | _ -> aux (1 + weight l + i) k r
+    in
+    aux 0 k m
+
+  (*$QR & ~count:1_000
+    Q.(list_of_size Gen.(0 -- 30) (pair small_int small_int)) (fun l ->
+      let l = CCList.sort_uniq ~cmp:(CCFun.compose_binop fst compare) l in
+      let m = M.of_list l in
+      List.for_all
+        (fun (k,v) -> match M.get_rank k m with
+          | `First | `After _ -> true
+          | `At n -> (k,v) = M.nth_exn n m)
+        l)
   *)
 
   let rec fold ~f ~x:acc m = match m with

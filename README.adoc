@@ -96,14 +96,8 @@ and <<tutorial,the tutorial below>> for a gentle introduction.
 In general, see http://c-cube.github.io/ocaml-containers/last/ or
 http://cedeela.fr/~simon/software/containers for the **API documentation**.
 
-Some examples can be found link:doc/containers.adoc[there].
-
-API documentation by version:
-
-- http://c-cube.github.io/ocaml-containers/dev/[dev branch]
-- http://c-cube.github.io/ocaml-containers/1.0/[1.0]
-- http://c-cube.github.io/ocaml-containers/0.19/[0.19]
-- http://c-cube.github.io/ocaml-containers/0.17/[0.17]
+Some examples can be found link:doc/containers.adoc[there],
+per-version doc http://c-cube.github.io/ocaml-containers/[there].
 
 [[build]]
 == Build

@@ -29,6 +29,11 @@ module type S = sig
   (** [merge_safe ~f a b] merges the maps [a] and [b] together.
       @since 0.17 *)
 
+  val union : (key -> 'a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t
+  (** Union of both maps, using the function to combine bindings
+      that belong to both inputs
+      @since 1.4 *)
+
   val of_seq : (key * 'a) sequence -> 'a t
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
@@ -83,6 +88,15 @@ module Make(O : Map.OrderedType) = struct
          | Some v1, None -> f k (`Left v1)
          | None, Some v2 -> f k (`Right v2)
          | Some v1, Some v2 -> f k (`Both (v1,v2)))
+      a b
+
+  let union f a b =
+    merge
+      (fun k v1 v2 -> match v1, v2 with
+         | None, None -> assert false
+         | None, (Some _ as r) -> r
+         | Some _ as r, None -> r
+         | Some v1, Some v2 -> f k v1 v2)
       a b
 
   let add_seq m s =

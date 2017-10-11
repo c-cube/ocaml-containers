@@ -31,6 +31,10 @@ val get_then_incr : int t -> int
 (** [get_then_incr r] increments [r] and returns its old value, think [r++]
     @since 0.17 *)
 
+val swap : 'a t -> 'a t -> unit
+(** Swap values.
+    @since 1.4 *)
+
 val compare : 'a ord -> 'a t ord
 
 val equal : 'a eq -> 'a t eq
