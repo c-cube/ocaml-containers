@@ -112,13 +112,15 @@ val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 (** Fold on the cartesian product *)
 
 val cartesian_product : 'a t t -> 'a t t
-(**
+(** Produce the cartesian product of this list of lists,
+    by returning all the ways of picking one element per sublist.
+    {b NOTE} the order of the returned list is unspecified.
     For example:
    {[
-     # cartesian_product [[1;2];[3];[4;5;6]] =
+     # cartesian_product [[1;2];[3];[4;5;6]] |> sort =
      [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
      # cartesian_product [[1;2];[];[4;5;6]] = [];;
-     # cartesian_product [[1;2];[3];[4];[5];[6]] =
+     # cartesian_product [[1;2];[3];[4];[5];[6]] |> sort =
      [[1;3;4;5;6];[2;3;4;5;6]];;
    ]}
     invariant: [cartesian_product l = map_product id l].
