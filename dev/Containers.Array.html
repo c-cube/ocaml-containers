@@ -123,6 +123,11 @@
 <pre><span id="VALempty"><span class="keyword">val</span> empty</span> : <code class="type">'a <a href="CCArray.html#TYPEt">t</a></code></pre>
 <pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type">'a <a href="CCArray.html#TYPEequal">equal</a> -> 'a <a href="CCArray.html#TYPEt">t</a> <a href="CCArray.html#TYPEequal">equal</a></code></pre>
 <pre><span id="VALcompare"><span class="keyword">val</span> compare</span> : <code class="type">'a <a href="CCArray.html#TYPEord">ord</a> -> 'a <a href="CCArray.html#TYPEt">t</a> <a href="CCArray.html#TYPEord">ord</a></code></pre>
+<pre><span id="VALswap"><span class="keyword">val</span> swap</span> : <code class="type">'a <a href="CCArray.html#TYPEt">t</a> -> int -> int -> unit</code></pre><div class="info ">
+<code class="code">swap&nbsp;arr&nbsp;i&nbsp;j</code> swaps elements at indices <code class="code">i</code> and <code class="code">j</code>.<br>
+<b>Since</b> 1.4<br>
+</div>
+
 <pre><span id="VALget"><span class="keyword">val</span> get</span> : <code class="type">'a <a href="CCArray.html#TYPEt">t</a> -> int -> 'a</code></pre>
 <pre><span id="VALget_safe"><span class="keyword">val</span> get_safe</span> : <code class="type">'a <a href="CCArray.html#TYPEt">t</a> -> int -> 'a option</code></pre><div class="info ">
 <code class="code">get_safe&nbsp;a&nbsp;i</code> returns <code class="code"><span class="constructor">Some</span>&nbsp;a.(i)</code> if <code class="code">i</code> is a valid index<br>
@@ -172,11 +177,11 @@ Reverse the array in place<br>
 
 <pre><span id="VALsort_indices"><span class="keyword">val</span> sort_indices</span> : <code class="type">('a -> 'a -> int) -> 'a <a href="CCArray.html#TYPEt">t</a> -> int array</code></pre><div class="info ">
 <code class="code">sort_indices&nbsp;cmp&nbsp;a</code> returns a new array <code class="code">b</code>, with the same length as <code class="code">a</code>,
-    such that <code class="code">b.(i)</code> is the index at which the <code class="code">i</code>-th element of <code class="code">sorted&nbsp;cmp&nbsp;a</code> 
+    such that <code class="code">b.(i)</code> is the index at which the <code class="code">i</code>-th element of <code class="code">sorted&nbsp;cmp&nbsp;a</code>
     appears in <code class="code">a</code>. <code class="code">a</code> is not modified.
 <p>
 
-    In other words, <code class="code">map&nbsp;(<span class="keyword">fun</span>&nbsp;i&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;a.(i))&nbsp;(sort_indices&nbsp;cmp&nbsp;a)&nbsp;=&nbsp;sorted&nbsp;cmp&nbsp;a</code>. 
+    In other words, <code class="code">map&nbsp;(<span class="keyword">fun</span>&nbsp;i&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;a.(i))&nbsp;(sort_indices&nbsp;cmp&nbsp;a)&nbsp;=&nbsp;sorted&nbsp;cmp&nbsp;a</code>.
     <code class="code">sort_indices</code> yields the inverse permutation of <a href="CCArray.html#VALsort_ranking"><code class="code"><span class="constructor">CCArray</span>.sort_ranking</code></a>.<br>
 <b>Since</b> 1.0<br>
 </div>
@@ -187,7 +192,7 @@ Reverse the array in place<br>
     in <code class="code">sorted&nbsp;cmp&nbsp;a</code>. <code class="code">a</code> is not modified.
 <p>
 
-    In other words, <code class="code">map&nbsp;(<span class="keyword">fun</span>&nbsp;i&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(sorted&nbsp;cmp&nbsp;a).(i))&nbsp;(sort_ranking&nbsp;cmp&nbsp;a)&nbsp;=&nbsp;a</code>. 
+    In other words, <code class="code">map&nbsp;(<span class="keyword">fun</span>&nbsp;i&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(sorted&nbsp;cmp&nbsp;a).(i))&nbsp;(sort_ranking&nbsp;cmp&nbsp;a)&nbsp;=&nbsp;a</code>.
     <code class="code">sort_ranking</code> yields the inverse permutation of <a href="CCArray.html#VALsort_indices"><code class="code"><span class="constructor">CCArray</span>.sort_indices</code></a>.
 <p>
 

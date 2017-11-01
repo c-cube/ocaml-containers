@@ -240,11 +240,14 @@ Fold on the cartesian product<br>
 </div>
 
 <pre><span id="VALcartesian_product"><span class="keyword">val</span> cartesian_product</span> : <code class="type">'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPEt">t</a> -> 'a <a href="CCList.html#TYPEt">t</a> <a href="CCList.html#TYPEt">t</a></code></pre><div class="info ">
-For example:
-   <pre class="codepre"><code class="code">     <span class="keywordsign">#</span> cartesian_product [[1;2];[3];[4;5;6]] =
+Produce the cartesian product of this list of lists,
+    by returning all the ways of picking one element per sublist.
+    <b>NOTE</b> the order of the returned list is unspecified.
+    For example:
+   <pre class="codepre"><code class="code">     <span class="keywordsign">#</span> cartesian_product [[1;2];[3];[4;5;6]] |&gt; sort =
      [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
      <span class="keywordsign">#</span> cartesian_product [[1;2];[];[4;5;6]] = [];;
-     <span class="keywordsign">#</span> cartesian_product [[1;2];[3];[4];[5];[6]] =
+     <span class="keywordsign">#</span> cartesian_product [[1;2];[3];[4];[5];[6]] |&gt; sort =
      [[1;3;4;5;6];[2;3;4;5;6]];;
    </code></pre>
     invariant: <code class="code">cartesian_product&nbsp;l&nbsp;=&nbsp;map_product&nbsp;id&nbsp;l</code>.<br>

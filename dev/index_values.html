@@ -714,6 +714,11 @@ Bind the key to the value, using <code class="code">inj</code>
 Add the binding to the table, returning a new table.
 </div>
 </td></tr>
+<tr><td><a href="CCCache.html#VALadd">add</a> [<a href="CCCache.html">CCCache</a>]</td>
+<td><div class="info">
+Manually add a cached value.
+</div>
+</td></tr>
 <tr><td><a href="CCFlatHashtbl.S.html#VALadd">add</a> [<a href="CCFlatHashtbl.S.html">CCFlatHashtbl.S</a>]</td>
 <td><div class="info">
 <code class="code">add&nbsp;tbl&nbsp;k&nbsp;v</code> adds <code class="code">k&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;v</code> to <code class="code">tbl</code>, possibly replacing the old
@@ -1306,14 +1311,8 @@ Number of distinct right keys
 </td></tr>
 <tr><td><a href="CCList.html#VALcartesian_product">cartesian_product</a> [<a href="CCList.html">CCList</a>]</td>
 <td><div class="info">
-For example:
-   <pre class="codepre"><code class="code">     <span class="keywordsign">#</span> cartesian_product [[1;2];[3];[4;5;6]] =
-     [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
-     <span class="keywordsign">#</span> cartesian_product [[1;2];[];[4;5;6]] = [];;
-     <span class="keywordsign">#</span> cartesian_product [[1;2];[3];[4];[5];[6]] =
-     [[1;3;4;5;6];[2;3;4;5;6]];;
-   </code></pre>
-    invariant: <code class="code">cartesian_product&nbsp;l&nbsp;=&nbsp;map_product&nbsp;id&nbsp;l</code>.
+Produce the cartesian product of this list of lists,
+    by returning all the ways of picking one element per sublist.
 </div>
 </td></tr>
 <tr><td><a href="CCResult.html#VALcatch">catch</a> [<a href="CCResult.html">CCResult</a>]</td>
@@ -7378,7 +7377,7 @@ Sort the array, without allocating (eats stack space though).
 <tr><td><a href="CCArray.html#VALsort_indices">sort_indices</a> [<a href="CCArray.html">CCArray</a>]</td>
 <td><div class="info">
 <code class="code">sort_indices&nbsp;cmp&nbsp;a</code> returns a new array <code class="code">b</code>, with the same length as <code class="code">a</code>,
-    such that <code class="code">b.(i)</code> is the index at which the <code class="code">i</code>-th element of <code class="code">sorted&nbsp;cmp&nbsp;a</code> 
+    such that <code class="code">b.(i)</code> is the index at which the <code class="code">i</code>-th element of <code class="code">sorted&nbsp;cmp&nbsp;a</code>
     appears in <code class="code">a</code>.
 </div>
 </td></tr>
@@ -7664,6 +7663,16 @@ Print the substring <code class="code">(s,i,len)</code>, where <code class="code
     when needed
 </div>
 </td></tr>
+<tr><td><a href="CCRef.html#VALswap">swap</a> [<a href="CCRef.html">CCRef</a>]</td>
+<td><div class="info">
+Swap values.
+</div>
+</td></tr>
+<tr><td><a href="CCArray.html#VALswap">swap</a> [<a href="CCArray.html">CCArray</a>]</td>
+<td><div class="info">
+<code class="code">swap&nbsp;arr&nbsp;i&nbsp;j</code> swaps elements at indices <code class="code">i</code> and <code class="code">j</code>.
+</div>
+</td></tr>
 <tr><td><a href="CCPair.html#VALswap">swap</a> [<a href="CCPair.html">CCPair</a>]</td>
 <td><div class="info">
 Swap the components of the tuple
@@ -7741,7 +7750,10 @@ Take and remove the last value from back of <code class="code">t</code>.
 </div>
 </td></tr>
 <tr><td><a href="CCFQueue.html#VALtake_back_exn">take_back_exn</a> [<a href="CCFQueue.html">CCFQueue</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Same as <a href="CCFQueue.html#VALtake_back"><code class="code"><span class="constructor">CCFQueue</span>.take_back</code></a>, but fails on empty queues.
+</div>
+</td></tr>
 <tr><td><a href="CCFQueue.html#VALtake_back_l">take_back_l</a> [<a href="CCFQueue.html">CCFQueue</a>]</td>
 <td><div class="info">
 <code class="code">take_back_l&nbsp;n&nbsp;q</code> removes and returns the last <code class="code">n</code> elements of <code class="code">q</code>.
@@ -8392,6 +8404,12 @@ Union of multimaps
 List union.
 </div>
 </td></tr>
+<tr><td><a href="CCMap.S.html#VALunion">union</a> [<a href="CCMap.S.html">CCMap.S</a>]</td>
+<td><div class="info">
+Union of both maps, using the function to combine bindings
+      that belong to both inputs
+</div>
+</td></tr>
 <tr><td><a href="CCList.html#VALunion">union</a> [<a href="CCList.html">CCList</a>]</td>
 <td><div class="info">
 List union.
@@ -8694,14 +8712,14 @@ Tab or space or newline
     Example:
     <pre class="codepre"><code class="code">      <span class="constructor">CCFormat</span>.with_color_sf <span class="string">"red"</span> <span class="string">"%a"</span> <span class="constructor">CCFormat</span>.<span class="constructor">Dump</span>.(list int) [1;2;3] |&gt; print_endline;;
     </code></pre>
-    <b>status: experimental</b>
+    <b>status: unstable</b>
 </div>
 </td></tr>
 <tr><td><a href="CCFormat.html#VALwith_colorf">with_colorf</a> [<a href="CCFormat.html">CCFormat</a>]</td>
 <td><div class="info">
 <code class="code">with_colorf&nbsp;<span class="string">"Blue"</span>&nbsp;out&nbsp;<span class="string">"%s&nbsp;%d"</span>&nbsp;<span class="string">"yolo"</span>&nbsp;42</code> will behave like <code class="code"><span class="constructor">Format</span>.fprintf</code>,
     but wrapping the content with the given style
-    <b>status: experimental</b>
+    <b>status: unstable</b>
 </div>
 </td></tr>
 <tr><td><a href="CCUnix.html#VALwith_connection">with_connection</a> [<a href="CCUnix.html">CCUnix</a>]</td>

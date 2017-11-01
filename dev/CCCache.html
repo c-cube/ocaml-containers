@@ -170,6 +170,12 @@ Size of the cache (number of entries). At most linear in the number
 Iterate on cached values. Should yield <code class="code">size&nbsp;cache</code> pairs.<br>
 </div>
 
+<pre><span id="VALadd"><span class="keyword">val</span> add</span> : <code class="type">('a, 'b) <a href="CCCache.html#TYPEt">t</a> -> 'a -> 'b -> bool</code></pre><div class="info ">
+Manually add a cached value. Returns <code class="code"><span class="keyword">true</span></code> if the value has succesfully
+    been added, and <code class="code"><span class="keyword">false</span></code> if the value was already bound.<br>
+<b>Since</b> NEXT_RELEASE<br>
+</div>
+
 <pre><span id="VALdummy"><span class="keyword">val</span> dummy</span> : <code class="type">('a, 'b) <a href="CCCache.html#TYPEt">t</a></code></pre><div class="info ">
 Dummy cache, never stores any value<br>
 </div>

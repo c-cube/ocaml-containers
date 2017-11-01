@@ -290,7 +290,7 @@ Wrap the printer in an horizontal box<br>
     </code></pre>
 <p>
 
-    <b>status: experimental</b><br>
+    <b>status: unstable</b><br>
 
 <pre><span id="VALset_color_tag_handling"><span class="keyword">val</span> set_color_tag_handling</span> : <code class="type"><a href="CCFormat.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
 adds functions to support color tags to the given formatter.<br>
@@ -306,14 +306,14 @@ adds functions to support color tags to the given formatter.<br>
 <pre><span id="VALwith_color"><span class="keyword">val</span> with_color</span> : <code class="type">string -> 'a <a href="CCFormat.html#TYPEprinter">printer</a> -> 'a <a href="CCFormat.html#TYPEprinter">printer</a></code></pre><div class="info ">
 <code class="code">with_color&nbsp;<span class="string">"Blue"</span>&nbsp;pp</code> behaves like the printer <code class="code">pp</code>, but with the given
     style.
-    <b>status: experimental</b><br>
+    <b>status: unstable</b><br>
 <b>Since</b> 0.16<br>
 </div>
 
 <pre><span id="VALwith_colorf"><span class="keyword">val</span> with_colorf</span> : <code class="type">string -> <a href="CCFormat.html#TYPEt">t</a> -> ('a, <a href="CCFormat.html#TYPEt">t</a>, unit, unit) Pervasives.format4 -> 'a</code></pre><div class="info ">
 <code class="code">with_colorf&nbsp;<span class="string">"Blue"</span>&nbsp;out&nbsp;<span class="string">"%s&nbsp;%d"</span>&nbsp;<span class="string">"yolo"</span>&nbsp;42</code> will behave like <code class="code"><span class="constructor">Format</span>.fprintf</code>,
     but wrapping the content with the given style
-    <b>status: experimental</b><br>
+    <b>status: unstable</b><br>
 <b>Since</b> 0.16<br>
 </div>
 
@@ -323,7 +323,7 @@ adds functions to support color tags to the given formatter.<br>
     Example:
     <pre class="codepre"><code class="code">      <span class="constructor">CCFormat</span>.with_color_sf <span class="string">"red"</span> <span class="string">"%a"</span> <span class="constructor">CCFormat</span>.<span class="constructor">Dump</span>.(list int) [1;2;3] |&gt; print_endline;;
     </code></pre>
-    <b>status: experimental</b><br>
+    <b>status: unstable</b><br>
 <b>Since</b> 0.21<br>
 </div>
 

@@ -144,6 +144,7 @@ Same as <a href="CCFQueue.html#VALtake_front"><code class="code"><span class="co
 <pre><span id="VALtake_front_l"><span class="keyword">val</span> take_front_l</span> : <code class="type">int -> 'a <a href="CCFQueue.html#TYPEt">t</a> -> 'a list * 'a <a href="CCFQueue.html#TYPEt">t</a></code></pre><div class="info ">
 <code class="code">take_front_l&nbsp;n&nbsp;q</code> takes at most <code class="code">n</code> elements from the front
     of <code class="code">q</code>, and returns them wrapped in a list<br>
+<b>Raises</b> <code>Invalid_argument</code> if n&lt;0<br>
 </div>
 
 <pre><span id="VALtake_front_while"><span class="keyword">val</span> take_front_while</span> : <code class="type">('a -> bool) -> 'a <a href="CCFQueue.html#TYPEt">t</a> -> 'a list * 'a <a href="CCFQueue.html#TYPEt">t</a></code></pre>
@@ -151,12 +152,17 @@ Same as <a href="CCFQueue.html#VALtake_front"><code class="code"><span class="co
 Take last element<br>
 </div>
 
-<pre><span id="VALtake_back_exn"><span class="keyword">val</span> take_back_exn</span> : <code class="type">'a <a href="CCFQueue.html#TYPEt">t</a> -> 'a <a href="CCFQueue.html#TYPEt">t</a> * 'a</code></pre>
+<pre><span id="VALtake_back_exn"><span class="keyword">val</span> take_back_exn</span> : <code class="type">'a <a href="CCFQueue.html#TYPEt">t</a> -> 'a <a href="CCFQueue.html#TYPEt">t</a> * 'a</code></pre><div class="info ">
+Same as <a href="CCFQueue.html#VALtake_back"><code class="code"><span class="constructor">CCFQueue</span>.take_back</code></a>, but fails on empty queues.<br>
+<b>Raises</b> <code>Empty</code> if the queue is empty<br>
+</div>
+
 <pre><span id="VALtake_back_l"><span class="keyword">val</span> take_back_l</span> : <code class="type">int -> 'a <a href="CCFQueue.html#TYPEt">t</a> -> 'a <a href="CCFQueue.html#TYPEt">t</a> * 'a list</code></pre><div class="info ">
 <code class="code">take_back_l&nbsp;n&nbsp;q</code> removes and returns the last <code class="code">n</code> elements of <code class="code">q</code>. The
     elements are in the order of the queue, that is, the head of the returned
     list is the first element to appear via <a href="CCFQueue.html#VALtake_front"><code class="code"><span class="constructor">CCFQueue</span>.take_front</code></a>.
     <code class="code">take_back_l&nbsp;2&nbsp;(of_list&nbsp;[1;2;3;4])&nbsp;=&nbsp;of_list&nbsp;[1;2],&nbsp;[3;4]</code><br>
+<b>Raises</b> <code>Invalid_argument</code> if n&lt;0<br>
 </div>
 
 <pre><span id="VALtake_back_while"><span class="keyword">val</span> take_back_while</span> : <code class="type">('a -> bool) -> 'a <a href="CCFQueue.html#TYPEt">t</a> -> 'a <a href="CCFQueue.html#TYPEt">t</a> * 'a list</code></pre><br>

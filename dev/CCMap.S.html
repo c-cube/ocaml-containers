@@ -111,6 +111,12 @@ Safe version of <code class="code">find</code><br>
 <b>Since</b> 0.17<br>
 </div>
 
+<pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type">(key -> 'a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t</code></pre><div class="info ">
+Union of both maps, using the function to combine bindings
+      that belong to both inputs<br>
+<b>Since</b> 1.4<br>
+</div>
+
 <pre><span id="VALof_seq"><span class="keyword">val</span> of_seq</span> : <code class="type">(key * 'a) <a href="CCMap.html#TYPEsequence">CCMap.sequence</a> -> 'a t</code></pre><div class="info ">
 Same as <a href="CCMap.S.html#VALof_list"><code class="code"><span class="constructor">CCMap</span>.<span class="constructor">S</span>.of_list</code></a><br>
 </div>

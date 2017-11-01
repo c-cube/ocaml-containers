@@ -138,7 +138,7 @@ Flip arguments<br>
     in a pipeline, for instance:
     <pre class="codepre"><code class="code"><span class="constructor">CCArray</span>.(1 -- 10)
       |&gt; tap <span class="constructor">CCArray</span>.shuffle
-      |&gt; tap <span class="constructor">CCArray</span>.sort <span class="constructor">Pervasives</span>.compare
+      |&gt; tap @@ <span class="constructor">CCArray</span>.sort <span class="constructor">Pervasives</span>.compare
     </code></pre><br>
 </div>
 
@@ -180,7 +180,7 @@ Lexicographic combination of comparison functions<br>
 
     Functions with a fixed domain are monads in their codomain<br>
 
-<pre><span class="keyword">module</span> <a href="CCFun.Monad.html">Monad</a> <code class="code">(</code><code class="code"><span class="constructor">X</span></code><code class="code">&nbsp;:&nbsp;</code><code class="code"><span class="keyword">sig</span></code><div class="sig_block">
+<pre><span class="keyword">module</span> <a href="CCFun.Monad.html">Monad</a> <code class="code">(</code><code class="code"><span class="constructor">X</span></code><code class="code">&nbsp;:&nbsp;</code><code class="code"><span class="keyword">sig</span></code></pre><div class="sig_block">
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
 
-</div><code class="code"><span class="keyword">end</span></code><code class="code">)&nbsp;</code>: <code class="code"><span class="keyword">sig</span></code> <a href="CCFun.Monad.html">..</a> <code class="code"><span class="keyword">end</span></code></pre></body></html>
+</div><pre><code class="code"><span class="keyword">end</span></code><code class="code">)&nbsp;</code>: <code class="code"><span class="keyword">sig</span></code> <a href="CCFun.Monad.html">..</a> <code class="code"><span class="keyword">end</span></code></pre></body></html>
