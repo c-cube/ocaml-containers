@@ -77,7 +77,7 @@ let replicate n g st =
   in aux [] n
 
 (* Sample without replacement using rejection sampling. *)
-let sample_without_replacement (type elt)  ?(compare=compare) k (rng:elt t) st=
+let sample_without_replacement (type elt) ~compare k (rng:elt t) st=
   let module S = Set.Make(struct type t=elt let compare = compare end) in
   let rec aux s k =
     if k <= 0 then
@@ -118,7 +118,7 @@ let _diff_list ~last l =
 let split_list i ~len st =
   if len <= 1 then invalid_arg "Random.split_list";
   if i >= len then
-    let xs = sample_without_replacement (len-1) (int_range 1 (i-1)) st in
+    let xs = sample_without_replacement ~compare:CCInt.compare (len-1) (int_range 1 (i-1)) st in
     _diff_list ( 0::xs ) ~last:i
   else
     None
@@ -221,7 +221,7 @@ let uniformity_test ?(size_hint=10) k rng st =
   let confidence = 4. in
   let std = confidence *. (sqrt (kf *. variance)) in
   let predicate _key n acc =
-    acc && abs_float (average -. float_of_int n) < std in
+    CCFloat.Infix.(acc && abs_float (average -. float_of_int n) < std) in
   Hashtbl.fold predicate histogram true
 
 (*$T split_list

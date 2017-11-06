@@ -19,6 +19,7 @@ module type WORD = sig
   val compare : char_ -> char_ -> int
   val to_seq : t -> char_ sequence
   val of_list : char_ list -> t
+  val equal : t -> t -> bool
 end
 
 module type S = sig
@@ -527,7 +528,7 @@ module Make(W : WORD)
     | Empty -> 0
     | Cons (_, t') -> size t'
     | Node (v, map) ->
-      let s = if v=None then 0 else 1 in
+      let s = if CCOpt.is_none v then 0 else 1 in
       M.fold
         (fun _ t' acc -> size t' + acc)
         map s
@@ -745,6 +746,7 @@ module MakeArray(X : ORDERED) = Make(struct
     let compare = X.compare
     let to_seq a k = Array.iter k a
     let of_list = Array.of_list
+    let equal = CCArray.equal (fun x y -> X.compare x y = 0)
   end)
 
 module MakeList(X : ORDERED) = Make(struct
@@ -753,6 +755,7 @@ module MakeList(X : ORDERED) = Make(struct
     let compare = X.compare
     let to_seq a k = List.iter k a
     let of_list l = l
+    let equal = CCList.equal (fun x y -> X.compare x y = 0)
   end)
 
 module String = Make(struct
@@ -764,4 +767,5 @@ module String = Make(struct
       let buf = Buffer.create (List.length l) in
       List.iter (fun c -> Buffer.add_char buf c) l;
       Buffer.contents buf
+    let equal = CCString.equal
   end)

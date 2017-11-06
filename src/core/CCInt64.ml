@@ -28,7 +28,7 @@ let (lsr) = shift_right_logical
 
 let (asr) = shift_right
 
-let equal (x:t) y = x=y
+let equal (x:t) y = Pervasives.(=) x y
 
 let hash x = Pervasives.abs (to_int x)
 

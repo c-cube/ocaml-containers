@@ -76,7 +76,7 @@ let is_zero_ n = match n.cell with
 
 let is_empty d =
   let res = d.size = 0 in
-  assert (res = is_zero_ d.cur);
+  assert (CCBool.equal res (is_zero_ d.cur));
   res
 
 let push_front d x =
@@ -377,7 +377,7 @@ let copy d =
   assert_equal ~cmp q q'
 *)
 
-let equal ?(eq=(=)) a b =
+let equal ~eq a b =
   let rec aux eq a b = match a() , b() with
     | None, None -> true
     | None, Some _
@@ -385,7 +385,7 @@ let equal ?(eq=(=)) a b =
     | Some x, Some y -> eq x y && aux eq a b
   in aux eq (to_gen a) (to_gen b)
 
-let compare ?(cmp=Pervasives.compare) a b =
+let compare ~cmp a b =
   let rec aux cmp a b = match a() , b() with
     | None, None -> 0
     | None, Some _ -> -1
@@ -412,4 +412,3 @@ let print pp_x out d =
        pp_x out x
     ) d;
   Format.fprintf out "}@]"
-

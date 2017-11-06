@@ -513,7 +513,7 @@ let for_all p v =
     else p v.vec.(i) && check (i+1)
   in check 0
 
-let member ?(eq=(=)) x v =
+let member ~eq x v =
   exists (eq x) v
 
 let find_exn p v =

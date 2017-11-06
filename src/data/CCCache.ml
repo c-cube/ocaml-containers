@@ -161,9 +161,13 @@ module Replacing = struct
       | Pair _
       | Empty -> raise Not_found
 
+  let is_empty = function
+    | Empty -> true
+    | Pair _ -> false
+
   let set c x y =
     let i = c.hash x mod Array.length c.arr in
-    if c.arr.(i) = Empty then c.c_size <- c.c_size + 1;
+    if is_empty c.arr.(i) then c.c_size <- c.c_size + 1;
     c.arr.(i) <- Pair (x,y)
 
   let iter c f =

@@ -5,12 +5,12 @@
 
 type 'a t = 'a -> 'a -> bool
 
-let poly = (=)
+let poly = Pervasives.(=)
 
-let int : int t = (=)
-let string : string t = (=)
-let bool : bool t = (=)
-let float : float t = (=)
+let int : int t = CCInt.equal
+let string : string t = CCString.equal
+let bool : bool t = CCBool.equal
+let float : float t = CCFloat.equal
 let unit () () = true
 
 let rec list f l1 l2 = match l1, l2 with

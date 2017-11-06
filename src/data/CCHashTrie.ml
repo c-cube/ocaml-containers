@@ -291,6 +291,7 @@ module Make(Key : KEY)
     type t = private int
     val make : Key.t -> t
     val zero : t (* special "hash" *)
+    val equal : t -> t -> bool
     val is_0 : t -> bool
     val rem : t -> int (* [A.length_log] last bits *)
     val quotient : t -> t (* remove [A.length_log] last bits *)
@@ -298,6 +299,7 @@ module Make(Key : KEY)
     type t = int
     let make = Key.hash
     let zero = 0
+    let equal = (=)
     let is_0 h = h==0
     let rem h = h land (A.length - 1)
     let quotient h = h lsr A.length_log
@@ -407,14 +409,14 @@ module Make(Key : KEY)
   let rec add_ ~id k v ~h m = match m with
     | E -> S (h, k, v)
     | S (h', k', v') ->
-      if h=h'
+      if Hash.equal h h'
       then if Key.equal k k'
         then S (h, k, v)  (* replace *)
         else L (h, Cons (k, v, Cons (k', v', Nil)))
       else
         make_array_ ~id ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
     | L (h', l) ->
-      if h=h'
+      if Hash.equal h h'
       then L (h, add_list_ k v l)
       else (* split into N *)
         make_array_ ~id ~leaf:l ~h_leaf:h' k v ~h

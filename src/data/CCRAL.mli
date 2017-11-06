@@ -109,9 +109,9 @@ val rev_map : f:('a -> 'b) -> 'a t -> 'b t
 val rev : 'a t -> 'a t
 (** Reverse the list *)
 
-val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+val equal : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
-val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
+val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
 (** Lexicographic comparison *)
 
 (** {2 Utils} *)

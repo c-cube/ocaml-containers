@@ -87,7 +87,7 @@ let next st ~ok ~err =
   else (
     let c = st.str.[st.i] in
     st.i <- st.i + 1;
-    if c='\n'
+    if CCChar.equal c '\n'
     then (st.lnum <- st.lnum + 1; st.cnum <- 1)
     else st.cnum <- st.cnum + 1;
     ok c
@@ -146,7 +146,7 @@ let char c =
   let msg = Printf.sprintf "expected '%c'" c in
   fun st ~ok ~err ->
     next st ~err
-      ~ok:(fun c' -> if c=c' then ok c else fail_ ~err st (const_ msg))
+      ~ok:(fun c' -> if CCChar.equal c c' then ok c else fail_ ~err st (const_ msg))
 
 let char_if p st ~ok ~err =
   next st ~err
@@ -164,7 +164,7 @@ let chars_if p st ~ok ~err:_ =
 let chars1_if p st ~ok ~err =
   chars_if p st ~err
     ~ok:(fun s ->
-      if s = ""
+      if CCString.is_empty s
       then fail_ ~err st (const_ "unexpected sequence of chars")
       else ok s)
 
@@ -231,7 +231,7 @@ let string s st ~ok ~err =
     else
       next st ~err
         ~ok:(fun c ->
-          if c = s.[i]
+          if CCChar.equal c s.[i]
           then check (i+1)
           else fail_ ~err st (fun () -> Printf.sprintf "expected \"%s\"" s))
   in
@@ -386,7 +386,7 @@ module U = struct
       skip_white <* string stop
 
   let int =
-    chars1_if (fun c -> is_num c || c='-')
+    chars1_if (fun c -> is_num c || CCChar.equal c '-')
     >>= fun s ->
     try return (int_of_string s)
     with Failure _ -> fail "expected an int"

@@ -22,7 +22,7 @@
 
   (* remove quotes + unescape *)
   let remove_quotes lexbuf s =
-    assert (s.[0] = '"' && s.[String.length s - 1] = '"');
+    assert (CCChar.equal s.[0] '"' && CCChar.equal s.[String.length s - 1] '"');
     let buf = Buffer.create (String.length s) in
     let st = ref Not_escaped in
     for i = 1 to String.length s-2 do
@@ -72,4 +72,3 @@ rule token = parse
   | string { ATOM (remove_quotes lexbuf (Lexing.lexeme lexbuf)) }
   | _ as c
     { error lexbuf (Printf.sprintf "lexing failed on char `%c`" c) }
-
