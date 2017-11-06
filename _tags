@@ -161,3 +161,4 @@ true: annot, bin_annot
 <src/**/*.ml> and not <src/misc/*.ml>: warn(+a-4-44-58-60@8)
 true: no_alias_deps, safe_string, short_paths
 <src/**/*Labels.cm*>: nolabels
+not <src/core/CCPervasives.*>: open(CCPervasives)
