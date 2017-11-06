@@ -449,12 +449,24 @@ module Assoc : sig
       @since 0.17 *)
 end
 
-val assoc_opt : 'a -> ('a * 'b) t -> 'b option
-(** Safe version of {!assoc}
+val assoc : eq:('a -> 'a -> bool) -> 'a -> ('a * 'b) t -> 'b
+(** Same as [Assoc.get_exn]
+    @since NEXT_RELEASE *)
+
+val assoc_opt : eq:('a -> 'a -> bool) -> 'a -> ('a * 'b) t -> 'b option
+(** Same as [Assoc.get]
     @since NEXT_RELEASE *)
 
 val assq_opt : 'a -> ('a * 'b) t -> 'b option
 (** Safe version of {!assq}
+    @since NEXT_RELEASE *)
+
+val mem_assoc : eq:('a -> 'a -> bool) -> 'a -> ('a * _) t -> bool
+(** Same as [Assoc.mem]
+    @since NEXT_RELEASE *)
+
+val remove_assoc : eq:('a -> 'a -> bool) -> 'a -> ('a * 'b) t -> ('a * 'b) t
+(** Same as [Assoc.remove]
     @since NEXT_RELEASE *)
 
 (** {2 References on Lists}

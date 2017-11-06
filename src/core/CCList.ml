@@ -1278,6 +1278,11 @@ module Assoc = struct
   *)
 end
 
+let assoc = Assoc.get_exn
+let assoc_opt = Assoc.get
+let mem_assoc = Assoc.mem
+let remove_assoc = Assoc.remove
+
 (** {2 References on Lists} *)
 
 module Ref = struct
