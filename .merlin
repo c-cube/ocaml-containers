@@ -19,3 +19,4 @@ PKG threads.posix
 PKG lwt
 PKG qcheck
 FLG -w +a-4-44-48-60
+FLG -open CCPervasives
