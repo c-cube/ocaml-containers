@@ -680,6 +680,21 @@ module Make(W : WORD)
       (T.below [1;1] t1 |> Sequence.to_list)
   *)
 
+  (* NOTE: Regression test. See #158 *)
+  (*$T
+    let module TPoly = Make (struct \
+        type t = (unit -> char) list \
+        type char_ = char \
+        let compare = compare \
+        let to_seq a k = List.iter (fun c -> k (c ())) a \
+        let of_list l = List.map (fun c -> (fun () -> c)) l \
+      end) \
+    in \
+    let trie = TPoly.of_list [[fun () -> 'a'], 1; [fun () -> 'b'], 2] in \
+    ignore (TPoly.below [fun () -> 'a'] trie |> Sequence.to_list); \
+    true
+  *)
+
   (*$Q & ~count:30
     Q.(list_of_size Gen.(0--100) (pair printable_string small_int)) (fun l -> \
       let t = S.of_list l in \
