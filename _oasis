@@ -42,22 +42,28 @@ Library "containers"
                     CCFun, CCHash, CCInt, CCBool, CCFloat, CCArray, CCRef, CCSet,
                     CCOrd, CCRandom, CCString, CCHashtbl, CCMap, CCFormat, CCIO,
                     CCInt64, CCChar, CCResult, CCParse, CCArray_slice,
-                    CCListLabels, CCArrayLabels, CCEqual, CCPervasives,
+                    CCListLabels, CCArrayLabels, CCEqual,
                     Containers
-  BuildDepends:     bytes, result
+  BuildDepends:     bytes, result, containers.pervasives
   # BuildDepends:     bytes, bisect_ppx
+
+Library "containers_pervasives"
+  Path:             src/pervasives
+  Modules:          CCPervasives
+  FindlibParent:    containers
+  FindlibName:      pervasives
 
 Library "containers_unix"
   Path:             src/unix
   Modules:          CCUnix
-  BuildDepends:     containers, unix
+  BuildDepends:     bytes, result, unix, containers.pervasives
   FindlibParent:    containers
   FindlibName:      unix
 
 Library "containers_sexp"
   Path:             src/sexp
   Modules:          CCSexp, CCSexp_lex
-  BuildDepends:     containers
+  BuildDepends:     bytes, result, containers.pervasives
   FindlibParent:    containers
   FindlibName:      sexp
 
@@ -71,7 +77,7 @@ Library "containers_data"
                     CCHashSet, CCBitField,
                     CCHashTrie, CCWBTree, CCRAL, CCSimple_queue,
                     CCImmutArray, CCHet, CCZipper
-  BuildDepends:     containers
+  BuildDepends:     bytes, containers.pervasives
   # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
   FindlibName:      data
@@ -79,7 +85,7 @@ Library "containers_data"
 Library "containers_iter"
   Path:             src/iter
   Modules:          CCKTree, CCKList, CCLazy_list
-  BuildDepends:     containers
+  BuildDepends:     containers.pervasives
   FindlibParent:    containers
   FindlibName:      iter
 

@@ -125,7 +125,9 @@ module Make(X : ORD) : S with type key = X.t = struct
 
   let mem ~inj x map =
     try
-      CCOpt.is_some (inj.get (M.find x map))
+      match inj.get (M.find x map) with
+        | Some _ -> true
+        | None -> false
     with Not_found -> false
 
   let iter_keys ~f map =

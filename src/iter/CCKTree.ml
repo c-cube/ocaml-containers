@@ -141,13 +141,17 @@ module FQ = struct
 
   let empty = _make [] []
 
-  let is_empty q = CCList.is_empty q.hd
+  let list_is_empty = function
+    | [] -> true
+    | _::_ -> false
+
+  let is_empty q = list_is_empty q.hd
 
   let push q x = _make q.hd (x::q.tl)
 
   let pop_exn q =
     match q.hd with
-      | [] -> assert (CCList.is_empty q.tl); raise Empty
+      | [] -> assert (list_is_empty q.tl); raise Empty
       | x::hd' ->
         let q' = _make hd' q.tl in
         x, q'

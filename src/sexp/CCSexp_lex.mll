@@ -20,9 +20,11 @@
     | Escaped_int_1 of int
     | Escaped_int_2 of int
 
+  let char_eq (c1 : char) c2 = Pervasives.(=) c1 c2
+
   (* remove quotes + unescape *)
   let remove_quotes lexbuf s =
-    assert (CCChar.equal s.[0] '"' && CCChar.equal s.[String.length s - 1] '"');
+    assert (char_eq s.[0] '"' && char_eq s.[String.length s - 1] '"');
     let buf = Buffer.create (String.length s) in
     let st = ref Not_escaped in
     for i = 1 to String.length s-2 do

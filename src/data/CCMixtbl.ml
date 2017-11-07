@@ -86,7 +86,9 @@ let copy tbl = Hashtbl.copy tbl
 
 let mem ~inj tbl x =
   try
-    CCOpt.is_some (inj.get (Hashtbl.find tbl x))
+    match inj.get (Hashtbl.find tbl x) with
+      | Some _ -> true
+      | None -> false
   with Not_found -> false
 
 (*$R

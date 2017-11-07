@@ -19,7 +19,6 @@ module type WORD = sig
   val compare : char_ -> char_ -> int
   val to_seq : t -> char_ sequence
   val of_list : char_ list -> t
-  val equal : t -> t -> bool
 end
 
 module type S = sig
