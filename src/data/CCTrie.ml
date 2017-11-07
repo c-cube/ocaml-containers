@@ -593,6 +593,13 @@ module Make(W : WORD)
       in
       List.iter (explore ~dir k) l'
 
+  let _list_eq l1 l2 =
+    try List.for_all2 (fun x y -> W.compare x y = 0) l1 l2
+    with Invalid_argument _ -> false
+
+  let _key_to_list key =
+    List.rev (_seq_append_list_rev [] (W.to_seq key))
+
   (* range above (if [above = true]) or below a threshold .
      [p c c'] must return [true] if [c'], in the tree, meets some criterion
      w.r.t [c] which is a part of the key. *)
@@ -646,7 +653,7 @@ module Make(W : WORD)
           _iter_prefix ~prefix (fun key' v -> k (key', v)) t
         | Some (Node (Some v, _), prefix), Below ->
           (* yield the value for key *)
-          assert (W.of_list (prefix []) = key);
+          assert (_list_eq (prefix []) (_key_to_list key));
           k (key, v)
         | Some _, _
         | None, _ -> ()
