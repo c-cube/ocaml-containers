@@ -97,6 +97,20 @@ val partition_map : f:('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
     - if [f x = `Drop], ignores [x]
     @since 0.11 *)
 
+val sublists_of_len :
+  ?last:('a list -> 'a list option) ->
+  ?offset:int ->
+  len:int ->
+  'a list ->
+  'a list list
+(** [sublists_of_len n l] returns sub-lists of [l] that have length [n].
+    By default, these sub-lists are non overlapping:
+    [sublists_of_len 2 [1;2;3;4;5;6]] returns [[1;2]; [3;4]; [5;6]].
+
+    See {!CCList.sublists_of_len} for more details.
+
+    @since NEXT_RELEASE *)
+
 val pure : 'a -> 'a t
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
