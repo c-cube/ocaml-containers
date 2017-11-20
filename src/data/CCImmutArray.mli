@@ -36,6 +36,11 @@ val get : 'a t -> int -> 'a
 val set : 'a t -> int -> 'a -> 'a t
 (** Copy the array and modify its copy *)
 
+val sub : 'a t -> int -> int -> 'a t
+(** [sub a start len] returns a fresh array of length len, containing the elements number start to start + len - 1 of array a.
+    Raises [Invalid_argument "Array.sub"] if start and len do not designate a valid subarray of a; that is, if start < 0, or len < 0, or start + len > Array.length a. *)
+ 
+
 val map : ('a -> 'b) -> 'a t -> 'b t
 
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
