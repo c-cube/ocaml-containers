@@ -38,7 +38,7 @@ val set : 'a t -> int -> 'a -> 'a t
 
 val sub : 'a t -> int -> int -> 'a t
 (** [sub a start len] returns a fresh array of length len, containing the elements
-    from [start] to pstart + len - 1] of array a.
+    from [start] to [pstart + len - 1] of array a.
 
     Raises [Invalid_argument "Array.sub"] if [start] and [len] do not designate a
     valid subarray of a; that is, if start < 0, or len < 0, or start + len > Array.length a.
