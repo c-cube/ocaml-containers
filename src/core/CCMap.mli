@@ -26,6 +26,31 @@ module type S = sig
       [k] is removed from [m], and if the result is [Some v'] then
       [add k v' m] is returned. *)
 
+  val choose_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!choose}
+      @since NEXT_RELEASE *)
+
+  val min_binding_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!min_binding}
+      @since NEXT_RELEASE *)
+
+  val max_binding_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!max_binding}
+      @since NEXT_RELEASE *)
+
+  val find_opt : key -> 'a t -> 'a option
+  (** Safe version of {!find}
+      @since NEXT_RELEASE *)
+
+  val find_first : (key -> bool) -> 'a t -> key * 'a
+  (** Find smallest binding satisfying the monotonic predicate.
+      See {!Map.S.find_first}.
+      @since NEXT_RELEASE *)
+
+  val find_first_opt : (key -> bool) -> 'a t -> (key * 'a) option
+  (** Safe version of {!find_first}
+      @since NEXT_RELEASE *)
+
   val merge_safe :
     f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
     'a t -> 'b t -> 'c t

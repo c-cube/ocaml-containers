@@ -11,6 +11,38 @@ type 'a printer = Format.formatter -> 'a -> unit
 module type S = sig
   include Set.S
 
+  val min_elt_opt : t -> elt option
+  (** Safe version of {!min_elt}
+      @since NEXT_RELEASE *)
+
+  val max_elt_opt : t -> elt option
+  (** Safe version of {!max_elt}
+      @since NEXT_RELEASE *)
+
+  val choose_opt : t -> elt option
+  (** Safe version of {!choose}
+      @since NEXT_RELEASE *)
+
+  val find_opt : elt -> t -> elt option
+  (** Safe version of {!find}
+      @since NEXT_RELEASE *)
+
+  val find_first : (elt -> bool) -> t -> elt
+  (** Find minimum element satisfying predicate
+      @since NEXT_RELEASE *)
+
+  val find_first_opt : (elt -> bool) -> t -> elt option
+  (** Safe version of {!find_first}
+      @since NEXT_RELEASE *)
+
+  val find_last : (elt -> bool) -> t -> elt
+  (** Find maximum element satisfying predicate
+      @since NEXT_RELEASE *)
+
+  val find_last_opt : (elt -> bool) -> t -> elt option
+  (** Safe version of {!find_last}
+      @since NEXT_RELEASE *)
+
   val of_seq : elt sequence -> t
 
   val add_seq : t -> elt sequence -> t
