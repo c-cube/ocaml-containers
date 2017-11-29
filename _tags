@@ -157,7 +157,7 @@ true: annot, bin_annot
 <src/threads/*.ml{,i}>: thread
 <src/core/CCVector.cmx> or <src/core/CCString.cmx>: inline(25)
 <src/data/CCFlatHashtbl.cm*> or <src/data/CCHashTrie.cm*> or <src/data/CCPersistent*>: inline(15)
-<src/core/CCMap.*> or <src/core/CCSet.*>: warn(-32)
+<src/core/CCMap.*> or <src/core/CCSet.*> or <src/core/CCList.*>: warn(-32)
 <src/**/*.ml> and not <src/misc/*.ml>: warn(+a-4-44-58-60@8)
 true: no_alias_deps, safe_string, short_paths
 <src/**/*Labels.cm*>: nolabels

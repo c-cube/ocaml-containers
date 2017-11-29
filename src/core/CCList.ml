@@ -9,6 +9,53 @@
 
 type 'a t = 'a list
 
+(* backport new functions from stdlib here *)
+
+let nth_opt l n =
+  if n<0 then invalid_arg "nth_opt";
+  let rec aux l n = match l, n with
+    | [], _ -> None
+    | x::_, 0 -> Some x
+    | _::l, _ -> aux l (n-1)
+  in
+  aux l n
+
+(*$Q
+  Q.(pair small_nat (list int)) (fun (i,l) -> \
+    nth_opt l i = get_at_idx i l)
+*)
+
+let rec find_opt p l = match l with
+  | [] -> None
+  | x :: _ when p x -> Some x
+  | _ :: tl -> find_opt p tl
+
+let rec compare_lengths l1 l2 = match l1, l2 with
+  | [], [] -> 0
+  | [], _::_ -> 1
+  | _::_, [] -> -1
+  | _::tail1, _::tail2 -> compare_lengths tail1 tail2
+
+(*$Q
+  Q.(pair (list int) (list int)) (fun (l1,l2) -> \
+    CCOrd.equiv (compare_lengths l1 l2) \
+      (Pervasives.compare (length l1)(length l2)))
+*)
+
+let rec compare_length_with l n = match l, n with
+  | _ when n<0 -> -1
+  | [], 0 -> 0
+  | [], _ -> 1
+  | _::tail, _ -> compare_length_with tail (n-1)
+
+(*$Q
+  Q.(pair (list int) small_nat) (fun (l,n) -> \
+    CCOrd.equiv (compare_length_with l n) \
+      (Pervasives.compare (length l)n))
+*)
+
+(* end of backport *)
+
 include List
 
 let empty = []
@@ -802,10 +849,7 @@ let rec last_opt = function
   None (last_opt [])
 *)
 
-let rec find_pred p l = match l with
-  | [] -> None
-  | x :: _ when p x -> Some x
-  | _ :: tl -> find_pred p tl
+let find_pred = find_opt
 
 let find_pred_exn p l = match find_pred p l with
   | None -> raise Not_found
