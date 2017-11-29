@@ -65,6 +65,9 @@ end
 module Make(O : Map.OrderedType) = struct
   module S = Set.Make(O)
 
+  (* backport functions from recent stdlib.
+     they will be shadowed by inclusion of [S] if present. *)
+
   let find_opt x s =
     try Some (S.find x s)
     with Not_found -> None

@@ -94,7 +94,9 @@ end
 module Make(O : Map.OrderedType) = struct
   module M = Map.Make(O)
 
-  (* overload [union] if it's not in [M] *)
+  (* backport functions from recent stdlib.
+     they will be shadowed by inclusion of [S] if present. *)
+
   let union f a b =
     M.merge
       (fun k v1 v2 -> match v1, v2 with
