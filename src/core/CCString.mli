@@ -54,6 +54,9 @@ val equal : string -> string -> bool
 
 val compare : string -> string -> int
 
+val is_empty : string -> bool
+(** @since NEXT_RELEASE *)
+
 val hash : string -> int
 
 val init : int -> (int -> char) -> string
