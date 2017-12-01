@@ -6,7 +6,10 @@
 type job =
   | Job : float * (unit -> 'a) -> job
 
-open CCFloat.Infix
+let (<=) (a : float) b = Pervasives.(<=) a b
+let (>=) (a : float) b = Pervasives.(>=) a b
+let (<) (a : float) b = Pervasives.(<) a b
+let (>) (a : float) b = Pervasives.(>) a b
 
 module TaskHeap = CCHeap.Make(struct
     type t = job

@@ -7,10 +7,10 @@ type 'a t = 'a -> 'a -> bool
 
 let poly = Pervasives.(=)
 
-let int : int t = CCInt.equal
-let string : string t = CCString.equal
-let bool : bool t = CCBool.equal
-let float : float t = CCFloat.equal
+let int : int t = Pervasives.(=)
+let string : string t = Pervasives.(=)
+let bool : bool t = Pervasives.(=)
+let float : float t = Pervasives.(=)
 let unit () () = true
 
 let rec list f l1 l2 = match l1, l2 with

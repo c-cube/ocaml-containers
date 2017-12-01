@@ -108,6 +108,7 @@ let _diff_list ~last l =
   in
   diff_list [] l
 
+let int_cmp (a : int) b = Pervasives.compare a b
 
 (* Partition of an int into [len] integers uniformly.
    We first sample (len-1) points from the set {1,..i-1} without replacement.
@@ -118,7 +119,7 @@ let _diff_list ~last l =
 let split_list i ~len st =
   if len <= 1 then invalid_arg "Random.split_list";
   if i >= len then
-    let xs = sample_without_replacement ~compare:CCInt.compare (len-1) (int_range 1 (i-1)) st in
+    let xs = sample_without_replacement ~compare:int_cmp (len-1) (int_range 1 (i-1)) st in
     _diff_list ( 0::xs ) ~last:i
   else
     None
@@ -221,7 +222,8 @@ let uniformity_test ?(size_hint=10) k rng st =
   let confidence = 4. in
   let std = confidence *. (sqrt (kf *. variance)) in
   let predicate _key n acc =
-    CCFloat.Infix.(acc && abs_float (average -. float_of_int n) < std) in
+    let (<) (a : float) b = Pervasives.(<) a b in
+    acc && abs_float (average -. float_of_int n) < std in
   Hashtbl.fold predicate histogram true
 
 (*$T split_list
