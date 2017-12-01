@@ -52,6 +52,8 @@ let init = String.init
 
 let length = String.length
 
+let is_empty s = equal s ""
+
 let rev s =
   let n = length s in
   init n (fun i -> s.[n-i-1])
