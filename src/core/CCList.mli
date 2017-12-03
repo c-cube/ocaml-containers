@@ -261,6 +261,11 @@ val remove : ?eq:('a -> 'a -> bool) -> x:'a -> 'a t -> 'a t
     @param eq equality function
     @since 0.11 *)
 
+val remove_last : 'a list -> 'a list
+(** [remove_last l] removes the last element of [l]. If [l] is empty,
+    an empty list will be returned.
+    @since NEXT_RELEASE *)
+
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
 
