@@ -76,6 +76,10 @@ val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 
     list to a list of lists that is then [flatten]'d..
     @since 0.14 *)
 
+val count : ('a -> bool) -> 'a list -> int
+(** [count f l] counts how much element of [l] comply with the function [f].
+    @since NEXT_RELEASE *)
+
 val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
     @since 0.6 *)

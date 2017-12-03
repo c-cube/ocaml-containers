@@ -362,6 +362,16 @@ let flatten l = fold_right append l []
   flatten (init 300_001 (fun x->[x])) = 0--300_000
 *)
 
+let count f l =
+  fold_left (fun n x -> if f x then succ n else n) 0 l
+
+(*$T
+  count (fun x -> x mod 2 = 0) [] = 0
+  count (fun x -> x mod 2 = 0) [0; 0; 2; 4] = 4
+  count (fun x -> x mod 2 = 0) [1; 3; 5; 7] = 0
+  count (fun x -> x mod 2 = 0) [2; 6; 9; 4] = 3
+*)
+
 let product f l1 l2 =
   flat_map (fun x -> map (fun y -> f x y) l2) l1
 
