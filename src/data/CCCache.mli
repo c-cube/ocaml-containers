@@ -79,13 +79,13 @@ val add : ('a, 'b) t -> 'a -> 'b -> bool
 val dummy : ('a,'b) t
 (** Dummy cache, never stores any value *)
 
-val linear : ?eq:'a equal -> int -> ('a, 'b) t
+val linear : eq:'a equal -> int -> ('a, 'b) t
 (** Linear cache with the given size. It stores key/value pairs in
     an array and does linear search at every call, so it should only be used
     with small size.
     @param eq optional equality predicate for keys *)
 
-val replacing : ?eq:'a equal -> ?hash:'a hash ->
+val replacing : eq:'a equal -> ?hash:'a hash ->
   int -> ('a,'b) t
 (** Replacing cache of the given size. Equality and hash functions can be
     parametrized. It's a hash table that handles collisions by replacing
@@ -93,12 +93,12 @@ val replacing : ?eq:'a equal -> ?hash:'a hash ->
     entry with the same hash (modulo size) is added).
     Never grows wider than the given size. *)
 
-val lru : ?eq:'a equal -> ?hash:'a hash ->
+val lru : eq:'a equal -> ?hash:'a hash ->
   int -> ('a,'b) t
 (** LRU cache of the given size ("Least Recently Used": keys that have not been
     used recently are deleted first). Never grows wider than the given size. *)
 
-val unbounded : ?eq:'a equal -> ?hash:'a hash ->
+val unbounded : eq:'a equal -> ?hash:'a hash ->
   int -> ('a,'b) t
 (** Unbounded cache, backed by a Hash table. Will grow forever
     unless {!clear} is called manually. *)

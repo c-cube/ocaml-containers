@@ -3,7 +3,7 @@
 
 type t = bool
 
-let equal (a:bool) b = a=b
+let equal (a:bool) b = Pervasives.(=) a b
 
 let compare (a:bool) b = Pervasives.compare a b
 

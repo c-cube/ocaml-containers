@@ -11,6 +11,7 @@ module Bit : sig
   type t = private int
   val highest : int -> t
   val min_int : t
+  val equal : t -> t -> bool
   val is_0 : bit:t -> int -> bool
   val is_1 : bit:t -> int -> bool
   val mask : mask:t -> int -> int   (* zeroes the bit, puts all lower bits to 1 *)
@@ -20,6 +21,7 @@ end = struct
   type t = int
 
   let min_int = min_int
+  let equal = (=)
 
   let rec highest_bit_naive x m =
     if x=m then m
@@ -241,7 +243,7 @@ let rec equal ~eq a b = a==b || match a, b with
     | E, E -> true
     | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
     | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
-      pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
+      pa=pb && Bit.equal sa sb && equal ~eq la lb && equal ~eq ra rb
     | E, _
     | N _, _
     | L _, _ -> false
@@ -295,7 +297,7 @@ let rec union f t1 t2 =
       (* insert k, v into o *)
       insert_ (fun ~old v -> f k old v) k v o
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-      if p1 = p2 && m1 = m2
+      if p1 = p2 && Bit.equal m1 m2
       then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
       else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
       then if Bit.is_0 p2 ~bit:m1
@@ -353,7 +355,7 @@ let rec inter f a b =
         with Not_found -> E
       end
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-      if p1 = p2 && m1 = m2
+      if p1 = p2 && Bit.equal m1 m2
       then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
       else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
       then if Bit.is_0 p2 ~bit:m1

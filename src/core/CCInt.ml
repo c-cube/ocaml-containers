@@ -77,7 +77,8 @@ let floor_div a n =
 
 let rem a n =
   let y = a mod n in
-  if (y < 0) <> (n < 0) && y <> 0 then
+  let bool_neq (a : bool) b = Pervasives.(<>) a b in
+  if bool_neq (y < 0) (n < 0) && y <> 0 then
     y + n
   else
     y

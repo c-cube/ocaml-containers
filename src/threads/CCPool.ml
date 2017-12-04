@@ -314,11 +314,15 @@ module Make(P : PARAM) = struct
       | Run cell ->
         with_lock_ cell (fun cell -> cell.state)
 
+    let not_waiting = function
+      | Waiting -> false
+      | _ -> true
+
     let is_done = function
       | Return _
       | FailNow _ -> true
       | Run cell ->
-        with_lock_ cell (fun c -> c.state <> Waiting)
+        with_lock_ cell (fun c -> not_waiting c.state)
 
     (** {2 Combinators *)
 

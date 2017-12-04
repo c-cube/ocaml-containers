@@ -527,7 +527,7 @@ module Make(W : WORD)
     | Empty -> 0
     | Cons (_, t') -> size t'
     | Node (v, map) ->
-      let s = if v=None then 0 else 1 in
+      let s = match v with None -> 0 | Some _ -> 1 in
       M.fold
         (fun _ t' acc -> size t' + acc)
         map s

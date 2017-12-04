@@ -280,7 +280,7 @@ module Arr = struct
          let a2 = Array.copy a1 in
          sort_std a1;
          quicksort ~limit:10 a2;
-         assert (a1 = a2))
+         assert (CCArray.equal CCInt.equal a1 a2))
       [ 10; 100; 1000]
 
   let bench_sort ?(time=2) n =
@@ -366,16 +366,16 @@ module Cache = struct
 
   let bench_fib n =
     let l =
-      [ "replacing_fib (128)", make_fib (C.replacing 128), n
-      ; "LRU_fib (128)", make_fib (C.lru 128), n
-      ; "replacing_fib (16)", make_fib (C.replacing 16), n
-      ; "LRU_fib (16)", make_fib (C.lru 16), n
-      ; "unbounded", make_fib (C.unbounded 32), n
+      [ "replacing_fib (128)", make_fib (C.replacing ~eq:CCInt.equal 128), n
+      ; "LRU_fib (128)", make_fib (C.lru ~eq:CCInt.equal 128), n
+      ; "replacing_fib (16)", make_fib (C.replacing ~eq:CCInt.equal 16), n
+      ; "LRU_fib (16)", make_fib (C.lru ~eq:CCInt.equal 16), n
+      ; "unbounded", make_fib (C.unbounded ~eq:CCInt.equal 32), n
       ]
     in
     let l = if n <= 20
-      then  [ "linear_fib (5)", make_fib (C.linear 5), n
-            ; "linear_fib (32)", make_fib (C.linear 32), n
+      then  [ "linear_fib (5)", make_fib (C.linear ~eq:CCInt.equal 5), n
+            ; "linear_fib (32)", make_fib (C.linear ~eq:CCInt.equal 32), n
             ; "dummy_fib", make_fib C.dummy, n
             ] @ l
       else l
@@ -1154,7 +1154,7 @@ module Str = struct
     and mk_current () = CCString.find_all_l ~sub:needle haystack
     and mk_current_compiled =
       let f = CCString.find_all_l ~start:0 ~sub:needle in fun () -> f haystack in
-    assert (mk_naive () = mk_current ());
+    assert (CCList.equal CCInt.equal (mk_naive ()) (mk_current ()));
     B.throughputN 3 ~repeat
       [ "naive", mk_naive, ()
       ; "current", mk_current, ()
@@ -1168,7 +1168,7 @@ module Str = struct
     pp_pb needle haystack;
     let mk_naive () = find_all_l ~sub:needle haystack
     and mk_current () = CCString.find_all_l ~sub:needle haystack in
-    assert (mk_naive () = mk_current ());
+    assert (CCList.equal CCInt.equal (mk_naive ()) (mk_current ()));
     B.throughputN 3 ~repeat
       [ "naive", mk_naive, ()
       ; "current", mk_current, ()
@@ -1182,7 +1182,7 @@ module Str = struct
       let rec same s1 s2 i =
         if i = String.length s1 then true
         else (
-          String.unsafe_get s1 i = String.unsafe_get s2 i && same s1 s2 (i+1)
+          CCChar.equal (String.unsafe_get s1 i) (String.unsafe_get s2 i) && same s1 s2 (i+1)
         )
       in
       String.length pre <= String.length s &&
@@ -1193,7 +1193,7 @@ module Str = struct
       begin
         let i = ref 0 in
         while !i < String.length pre &&
-              String.unsafe_get s !i = String.unsafe_get pre !i
+              CCChar.equal (String.unsafe_get s !i) (String.unsafe_get pre !i)
         do incr i done;
         !i = String.length pre
       end
@@ -1225,7 +1225,7 @@ module Str = struct
       else
         let rec loop str p i =
           if i = len then true
-          else if String.unsafe_get str i <> String.unsafe_get p i then false
+          else if not (CCChar.equal (String.unsafe_get str i) (String.unsafe_get p i)) then false
           else loop str p (i + 1)
         in loop str p 0
 
@@ -1256,7 +1256,7 @@ module Str = struct
         Array.iteri
           (fun i (pre, y) ->
              let res = f ~pre y in
-             assert (res = output.(i)))
+             assert (CCBool.equal res output.(i)))
           input
       in
       Benchmark.throughputN 3

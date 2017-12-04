@@ -6,7 +6,6 @@
 type 'a equal = 'a -> 'a -> bool
 type 'a hash = 'a -> int
 
-let default_eq_ = Pervasives.(=)
 let default_hash_ = Hashtbl.hash
 
 (** {2 Value interface} *)
@@ -124,7 +123,7 @@ module Linear = struct
     !r
 end
 
-let linear ?(eq=default_eq_) size =
+let linear ~eq size =
   let size = max size 1 in
   let arr = Linear.make eq size in
   { get=(fun x -> Linear.get arr x);
@@ -161,9 +160,13 @@ module Replacing = struct
       | Pair _
       | Empty -> raise Not_found
 
+  let is_empty = function
+    | Empty -> true
+    | Pair _ -> false
+
   let set c x y =
     let i = c.hash x mod Array.length c.arr in
-    if c.arr.(i) = Empty then c.c_size <- c.c_size + 1;
+    if is_empty c.arr.(i) then c.c_size <- c.c_size + 1;
     c.arr.(i) <- Pair (x,y)
 
   let iter c f =
@@ -172,7 +175,7 @@ module Replacing = struct
   let size c () = c.c_size
 end
 
-let replacing ?(eq=default_eq_) ?(hash=default_hash_) size =
+let replacing ~eq ?(hash=default_hash_) size =
   let c = Replacing.make eq hash size in
   { get=(fun x -> Replacing.get c x);
     set=(fun x y -> Replacing.set c x y);
@@ -294,7 +297,7 @@ module LRU(X:HASH) = struct
     H.iter (fun x node -> f x node.value) c.table
 end
 
-let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+let lru (type a) ~eq ?(hash=default_hash_) size =
   let module L = LRU(struct
       type t = a
       let equal = eq
@@ -356,7 +359,7 @@ module UNBOUNDED(X:HASH) = struct
   let iter c f = H.iter f c
 end
 
-let unbounded (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+let unbounded (type a) ~eq ?(hash=default_hash_) size =
   let module C = UNBOUNDED(struct
       type t = a
       let equal = eq

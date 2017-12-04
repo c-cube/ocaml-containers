@@ -44,20 +44,26 @@ Library "containers"
                     CCInt64, CCChar, CCResult, CCParse, CCArray_slice,
                     CCListLabels, CCArrayLabels, CCEqual,
                     Containers
-  BuildDepends:     bytes, result
+  BuildDepends:     bytes, result, containers.pervasives
   # BuildDepends:     bytes, bisect_ppx
+
+Library "containers_pervasives"
+  Path:             src/pervasives
+  Modules:          CCPervasives
+  FindlibParent:    containers
+  FindlibName:      pervasives
 
 Library "containers_unix"
   Path:             src/unix
   Modules:          CCUnix
-  BuildDepends:     bytes, result, unix
+  BuildDepends:     bytes, result, unix, containers.pervasives
   FindlibParent:    containers
   FindlibName:      unix
 
 Library "containers_sexp"
   Path:             src/sexp
   Modules:          CCSexp, CCSexp_lex
-  BuildDepends:     bytes, result
+  BuildDepends:     bytes, result, containers.pervasives
   FindlibParent:    containers
   FindlibName:      sexp
 
@@ -66,10 +72,12 @@ Library "containers_data"
   Modules:          CCMultiMap, CCMultiSet, CCTrie, CCFlatHashtbl, CCCache,
                     CCPersistentHashtbl, CCDeque, CCFQueue, CCBV, CCMixtbl,
                     CCMixmap, CCRingBuffer, CCIntMap, CCPersistentArray,
-                    CCMixset, CCGraph, CCHashSet, CCBitField,
+                    CCMixset,
+                    #CCGraph,
+                    CCHashSet, CCBitField,
                     CCHashTrie, CCWBTree, CCRAL, CCSimple_queue,
                     CCImmutArray, CCHet, CCZipper
-  BuildDepends:     bytes
+  BuildDepends:     bytes, containers.pervasives
   # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
   FindlibName:      data
@@ -77,6 +85,7 @@ Library "containers_data"
 Library "containers_iter"
   Path:             src/iter
   Modules:          CCKTree, CCKList, CCLazy_list
+  BuildDepends:     containers.pervasives
   FindlibParent:    containers
   FindlibName:      iter
 

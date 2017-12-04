@@ -57,3 +57,5 @@ module Set = struct
 end
 module String = CCString
 module Vector = CCVector
+
+include CCPervasives

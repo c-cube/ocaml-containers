@@ -81,13 +81,15 @@ let fail_ ~err st msg =
   let b = (st.lnum, st.cnum, None) :: st.branch in
   err (ParseError (b, msg))
 
+let char_eq (a : char) b = Pervasives.(=) a b
+
 let next st ~ok ~err =
   if st.i = String.length st.str
   then fail_ st ~err (const_ "unexpected end of input")
   else (
     let c = st.str.[st.i] in
     st.i <- st.i + 1;
-    if c='\n'
+    if char_eq c '\n'
     then (st.lnum <- st.lnum + 1; st.cnum <- 1)
     else st.cnum <- st.cnum + 1;
     ok c
@@ -146,7 +148,7 @@ let char c =
   let msg = Printf.sprintf "expected '%c'" c in
   fun st ~ok ~err ->
     next st ~err
-      ~ok:(fun c' -> if c=c' then ok c else fail_ ~err st (const_ msg))
+      ~ok:(fun c' -> if char_eq c c' then ok c else fail_ ~err st (const_ msg))
 
 let char_if p st ~ok ~err =
   next st ~err
@@ -161,10 +163,12 @@ let chars_if p st ~ok ~err:_ =
   while not (is_done st) && p (cur st) do junk_ st; incr len done;
   ok (String.sub st.str i !len)
 
+let string_is_empty (s : string) = Pervasives.(=) s ""
+
 let chars1_if p st ~ok ~err =
   chars_if p st ~err
     ~ok:(fun s ->
-      if s = ""
+      if string_is_empty s
       then fail_ ~err st (const_ "unexpected sequence of chars")
       else ok s)
 
@@ -231,7 +235,7 @@ let string s st ~ok ~err =
     else
       next st ~err
         ~ok:(fun c ->
-          if c = s.[i]
+          if char_eq c s.[i]
           then check (i+1)
           else fail_ ~err st (fun () -> Printf.sprintf "expected \"%s\"" s))
   in
@@ -386,7 +390,7 @@ module U = struct
       skip_white <* string stop
 
   let int =
-    chars1_if (fun c -> is_num c || c='-')
+    chars1_if (fun c -> is_num c || char_eq c '-')
     >>= fun s ->
     try return (int_of_string s)
     with Failure _ -> fail "expected an int"

@@ -21,13 +21,13 @@ val clear : _ t -> unit
 val is_empty : 'a t -> bool
 (** Is the deque empty? *)
 
-val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+val equal : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 (** [equal a b] checks whether [a] and [b] contain the same sequence of
     elements.
     @param eq comparison function for elements
     @since 0.13 *)
 
-val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
+val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
 (** [compare a b] compares lexicographically [a] and [b]
     @param cmp comparison function for elements
     @since 0.13 *)

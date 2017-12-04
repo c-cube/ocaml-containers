@@ -125,7 +125,9 @@ module Make(X : ORD) : S with type key = X.t = struct
 
   let mem ~inj x map =
     try
-      inj.get (M.find x map) <> None
+      match inj.get (M.find x map) with
+        | Some _ -> true
+        | None -> false
     with Not_found -> false
 
   let iter_keys ~f map =

@@ -371,7 +371,7 @@ let drop_while ~f l =
 
 let take_drop n l = take n l, drop n l
 
-let equal ?(eq=(=)) l1 l2 =
+let equal ~eq l1 l2 =
   let rec aux ~eq l1 l2 = match l1, l2 with
     | Nil, Nil -> true
     | Cons (size1, t1, l1'), Cons (size2, t2, l2') ->
@@ -543,7 +543,7 @@ let rec of_list_map ~f l = match l with
     let y = f x in
     cons y (of_list_map ~f l')
 
-let compare ?(cmp=Pervasives.compare) l1 l2 =
+let compare ~cmp l1 l2 =
   let rec cmp_gen ~cmp g1 g2 = match g1(), g2() with
     | None, None -> 0
     | Some _, None -> 1
