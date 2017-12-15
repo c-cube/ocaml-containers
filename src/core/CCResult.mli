@@ -14,6 +14,9 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
+include module type of Result
+(** @since NEXT_RELEASE *)
+
 type (+'good, +'bad) t = ('good, 'bad) Result.result =
   | Ok of 'good
   | Error of 'bad

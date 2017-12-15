@@ -10,6 +10,8 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
+include Result
+
 type (+'good, +'bad) t = ('good, 'bad) Result.result =
   | Ok of 'good
   | Error of 'bad

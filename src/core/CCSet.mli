@@ -8,6 +8,9 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
+module type OrderedType = Set.OrderedType
+(** @since NEXT_RELEASE *)
+
 module type S = sig
   include Set.S
 

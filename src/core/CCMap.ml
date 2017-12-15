@@ -6,6 +6,8 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
+module type OrderedType = Map.OrderedType
+
 module type S = sig
   include Map.S
 
