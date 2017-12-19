@@ -159,5 +159,5 @@ true: annot, bin_annot
 <src/data/CCFlatHashtbl.cm*> or <src/data/CCHashTrie.cm*> or <src/data/CCPersistent*>: inline(15)
 <src/core/CCMap.*> or <src/core/CCSet.*> or <src/core/CCList.*>: warn(-32)
 <src/**/*.ml> and not <src/misc/*.ml>: warn(+a-4-44-58-60@8)
-true: no_alias_deps, safe_string, short_paths
+true: no_alias_deps, safe_string, short_paths, color(always)
 <src/**/*Labels.cm*>: nolabels
