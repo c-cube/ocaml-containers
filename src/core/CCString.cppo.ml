@@ -309,6 +309,14 @@ let replace ?(which=`All) ~sub ~by s =
       Buffer.contents b
 
 module Split = struct
+  type drop_if_empty = {
+    first: bool;
+    last: bool;
+  }
+
+  let no_drop = {first=false; last=false}
+  let default_drop = no_drop
+
   type split_state =
     | SplitStop
     | SplitAt of int (* previous *)
@@ -316,6 +324,7 @@ module Split = struct
   let rec _split ~by s state = match state with
     | SplitStop -> None
     | SplitAt prev -> _split_search ~by s prev
+
   and _split_search ~by s prev =
     let j = Find.find ~pattern:by s ~start:prev in
     if j < 0
@@ -324,54 +333,64 @@ module Split = struct
 
   let _tuple3 x y z = x,y,z
 
-  let _mkgen ~by s k =
+  let _mkgen ~drop ~by s k =
     let state = ref (SplitAt 0) in
     let by = Find.compile by in
-    fun () ->
+    let rec next() =
       match _split ~by s !state with
         | None -> None
+        | Some (state', 0, 0) when drop.first -> state := state'; next()
+        | Some (_, i, 0) when drop.last && i = length s -> None
         | Some (state', i, len) ->
           state := state';
           Some (k s i len)
+    in
+    next
 
-  let gen ~by s = _mkgen ~by s _tuple3
+  let gen ?(drop=default_drop) ~by s = _mkgen ~drop ~by s _tuple3
 
-  let gen_cpy ~by s = _mkgen ~by s String.sub
+  let gen_cpy ?(drop=default_drop) ~by s = _mkgen ~drop ~by s String.sub
 
-  let _mklist ~by s k =
+  let _mklist ~drop ~by s k =
     let by = Find.compile by in
     let rec build acc state = match _split ~by s state with
       | None -> List.rev acc
+      | Some (state',0,0) when drop.first -> build acc state'
+      | Some (_, i, 0) when drop.last && i=length s -> List.rev acc
       | Some (state', i, len) ->
         build (k s i len ::acc) state'
     in
     build [] (SplitAt 0)
 
-  let list_ ~by s = _mklist ~by s _tuple3
+  let list_ ?(drop=default_drop) ~by s = _mklist ~drop ~by s _tuple3
 
-  let list_cpy ~by s = _mklist ~by s String.sub
+  let list_cpy ?(drop=default_drop) ~by s = _mklist ~drop ~by s String.sub
 
-  let _mkklist ~by s k =
+  let _mkklist ~drop ~by s k =
     let by = Find.compile by in
     let rec make state () = match _split ~by s state with
       | None -> `Nil
+      | Some (state', 0, 0) when drop.first -> make state' ()
+      | Some (_, i, 0) when drop.last && i=length s -> `Nil
       | Some (state', i, len) ->
         `Cons (k s i len , make state')
     in make (SplitAt 0)
 
-  let klist ~by s = _mkklist ~by s _tuple3
+  let klist ?(drop=default_drop) ~by s = _mkklist ~drop ~by s _tuple3
 
-  let klist_cpy ~by s = _mkklist ~by s String.sub
+  let klist_cpy ?(drop=default_drop) ~by s = _mkklist ~drop ~by s String.sub
 
-  let _mkseq ~by s f k =
+  let _mkseq ~drop ~by s f k =
     let by = Find.compile by in
     let rec aux state = match _split ~by s state with
       | None -> ()
+      | Some (state', 0, 0) when drop.first -> aux state'
+      | Some (_, i, 0) when drop.last && i=length s -> ()
       | Some (state', i, len) -> k (f s i len); aux state'
     in aux (SplitAt 0)
 
-  let seq ~by s = _mkseq ~by s _tuple3
-  let seq_cpy ~by s = _mkseq ~by s String.sub
+  let seq ?(drop=default_drop) ~by s = _mkseq ~drop ~by s _tuple3
+  let seq_cpy ?(drop=default_drop) ~by s = _mkseq ~drop ~by s String.sub
 
   let left_exn ~by s =
     let i = find ~sub:by s in
@@ -393,9 +412,9 @@ module Split = struct
 end
 
 let split_on_char c s: _ list =
-  Split.list_cpy ~by:(String.make 1 c) s
+  Split.list_cpy ~drop:Split.no_drop ~by:(String.make 1 c) s
 
-let split = Split.list_cpy
+let split ~by s = Split.list_cpy ~by s
 
 let compare_versions a b =
   let of_int s = try Some (int_of_string s) with _ -> None in
@@ -613,23 +632,43 @@ let of_array a =
 let to_array s =
   Array.init (String.length s) (fun i -> s.[i])
 
-let lines_gen s = Split.gen_cpy ~by:"\n" s
+let lines_gen s = Split.gen_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
 
-let lines s = Split.list_cpy ~by:"\n" s
+let lines s = Split.list_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
 
-let concat_gen ~sep g =
+let concat_gen_buf ~sep g : Buffer.t =
   let b = Buffer.create 256 in
   let rec aux ~first () = match g () with
-    | None -> Buffer.contents b
+    | None -> b
     | Some s ->
       if not first then Buffer.add_string b sep;
       Buffer.add_string b s;
       aux ~first:false ()
   in aux ~first:true ()
 
-let unlines l = String.concat "\n" l
+let concat_gen ~sep g =
+  let buf = concat_gen_buf ~sep g in
+  Buffer.contents buf
 
-let unlines_gen g = concat_gen ~sep:"\n" g
+let unlines l =
+  let len = List.fold_left (fun n s -> n + 1 + String.length s) 0 l in
+  let buf = Bytes.create len in
+  let rec aux_blit i l = match l with
+    | [] ->
+      assert (i=len);
+      Bytes.to_string buf
+    | s :: tail ->
+      let len_s = String.length s in
+      Bytes.blit_string s 0 buf i len_s;
+      Bytes.set buf (i+len_s) '\n';
+      aux_blit (i+len_s+1) tail
+  in
+  aux_blit 0 l
+
+let unlines_gen g =
+  let buf = concat_gen_buf ~sep:"\n" g in
+  Buffer.add_char buf '\n';
+  Buffer.contents buf
 
 let set s i c =
   if i<0 || i>= String.length s then invalid_arg "CCString.set";
