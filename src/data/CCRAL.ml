@@ -371,7 +371,7 @@ let drop_while ~f l =
 
 let take_drop n l = take n l, drop n l
 
-let equal ?(eq=(=)) l1 l2 =
+let equal ?(eq=Pervasives.(=)) l1 l2 =
   let rec aux ~eq l1 l2 = match l1, l2 with
     | Nil, Nil -> true
     | Cons (size1, t1, l1'), Cons (size2, t2, l2') ->

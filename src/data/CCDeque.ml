@@ -74,9 +74,11 @@ let is_zero_ n = match n.cell with
   | Two _
   | Three _ -> false
 
+let bool_eq (a : bool) b = Pervasives.(=) a b
+
 let is_empty d =
   let res = d.size = 0 in
-  assert (res = is_zero_ d.cur);
+  assert (bool_eq res (is_zero_ d.cur));
   res
 
 let push_front d x =
@@ -377,7 +379,7 @@ let copy d =
   assert_equal ~cmp q q'
 *)
 
-let equal ?(eq=(=)) a b =
+let equal ?(eq=Pervasives.(=)) a b =
   let rec aux eq a b = match a() , b() with
     | None, None -> true
     | None, Some _
@@ -412,4 +414,3 @@ let print pp_x out d =
        pp_x out x
     ) d;
   Format.fprintf out "}@]"
-

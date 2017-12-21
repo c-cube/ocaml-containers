@@ -77,7 +77,7 @@ let replicate n g st =
   in aux [] n
 
 (* Sample without replacement using rejection sampling. *)
-let sample_without_replacement (type elt)  ?(compare=compare) k (rng:elt t) st=
+let sample_without_replacement (type elt)  ?(compare=Pervasives.compare) k (rng:elt t) st=
   let module S = Set.Make(struct type t=elt let compare = compare end) in
   let rec aux s k =
     if k <= 0 then
@@ -221,6 +221,7 @@ let uniformity_test ?(size_hint=10) k rng st =
   let confidence = 4. in
   let std = confidence *. (sqrt (kf *. variance)) in
   let predicate _key n acc =
+    let (<) (a : float) b = Pervasives.(<) a b in
     acc && abs_float (average -. float_of_int n) < std in
   Hashtbl.fold predicate histogram true
 

@@ -75,9 +75,11 @@ let floor_div a n =
       (fun (n, m) -> floor_div n (-m) = int_of_float @@ floor (float n /. float (-m)))
 *)
 
+let bool_neq (a : bool) b = Pervasives.(<>) a b
+
 let rem a n =
   let y = a mod n in
-  if (y < 0) <> (n < 0) && y <> 0 then
+  if bool_neq (y < 0) (n < 0) && y <> 0 then
     y + n
   else
     y

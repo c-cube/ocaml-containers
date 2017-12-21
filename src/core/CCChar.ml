@@ -6,7 +6,7 @@
 
 include Char
 
-let equal (a:char) b = a=b
+let equal (a:char) b = Pervasives.(=) a b
 
 let pp = Buffer.add_char
 let print = Format.pp_print_char
@@ -15,12 +15,10 @@ let of_int_exn = Char.chr
 let of_int c = try Some (of_int_exn c) with _ -> None
 let to_int = Char.code
 
-let lowercase_ascii c =
-  if c >= 'A' && c <= 'Z'
-  then Char.unsafe_chr (Char. code c + 32)
-  else c
+let lowercase_ascii = function
+  | 'A'..'Z' as c -> Char.unsafe_chr (Char.code c + 32)
+  | c -> c
 
-let uppercase_ascii c =
-  if c >= 'a' && c <= 'z'
-  then Char.unsafe_chr (Char.code c - 32)
-  else c
+let uppercase_ascii = function
+  | 'a'..'z' as c -> Char.unsafe_chr (Char.code c - 32)
+  | c -> c

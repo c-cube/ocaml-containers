@@ -13,7 +13,7 @@ type t = [
 ]
 type sexp = t
 
-let equal a b = a = b
+let equal (a : sexp) b = Pervasives.(=) a b
 
 let compare a b = Pervasives.compare a b
 

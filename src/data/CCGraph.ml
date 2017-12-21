@@ -56,7 +56,7 @@ type ('k, 'a) table = {
 (** Mutable set *)
 type 'a set = ('a, unit) table
 
-let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
+let mk_table (type k) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) size =
   let module H = Hashtbl.Make(struct
       type t = k
       let equal = eq
@@ -240,7 +240,7 @@ module Traverse = struct
       | (v1,_,_) :: path' ->
         eq v v1 || list_mem_ ~eq ~graph v path'
 
-    let dfs_tag ?(eq=(=)) ~tags ~graph seq =
+    let dfs_tag ?(eq=Pervasives.(=)) ~tags ~graph seq =
       let first = ref true in
       fun k ->
         if !first then first := false else raise Sequence_once;
@@ -316,7 +316,7 @@ let is_dag ?(tbl=mk_table 128) ~graph vs =
 
 exception Has_cycle
 
-let topo_sort_tag ?(eq=(=)) ?(rev=false) ~tags ~graph seq =
+let topo_sort_tag ?(eq=Pervasives.(=)) ?(rev=false) ~tags ~graph seq =
   (* use DFS *)
   let l =
     Traverse.Event.dfs_tag ~eq ~tags ~graph seq
@@ -542,7 +542,7 @@ module Dot = struct
   (** Print an enum of Full.traverse_event *)
   let pp_seq
       ?(tbl=mk_table 128)
-      ?(eq=(=))
+      ?(eq=Pervasives.(=))
       ?(attrs_v=fun _ -> [])
       ?(attrs_e=fun _ -> [])
       ?(name="graph")
@@ -622,7 +622,7 @@ type ('v, 'e) mut_graph = {
   remove : 'v -> unit;
 }
 
-let mk_mut_tbl (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
+let mk_mut_tbl (type k) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) size =
   let module Tbl = Hashtbl.Make(struct
       type t = k
       let hash = hash
@@ -757,7 +757,7 @@ end
 
 (** {2 Misc} *)
 
-let of_list ?(eq=(=)) l =
+let of_list ?(eq=Pervasives.(=)) l =
   (fun v yield -> List.iter (fun (a,b) -> if eq a v then yield ((),b)) l)
 
 let of_fun f =
