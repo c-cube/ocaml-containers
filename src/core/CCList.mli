@@ -359,7 +359,9 @@ val insert_at_idx : int -> 'a -> 'a t -> 'a t
 
 val remove_at_idx : int -> 'a t -> 'a t
 (** Remove element at given index. Does nothing if the index is
-    too high. *)
+    too high.
+    If the index is negative, it will remove element starting from the end
+    of the list. *)
 
 (** {2 Set Operators}
 
