@@ -16,8 +16,7 @@ CC-SA3 {{:http://en.wikipedia.org/wiki/File:Hypercube.svg} wikimedia}
 The design is mostly centered around polymorphism rather than functors. Such
 structures comprise (some modules in misc/, some other in core/):
 
-the core library, containers, now depends on
-{{:https://github.com/mjambon/cppo}cppo} and base-bytes (provided
+the core library, containers, now depends on base-bytes (provided
 by ocamlfind).
 
 {4 Core Modules (extension of the standard library)}

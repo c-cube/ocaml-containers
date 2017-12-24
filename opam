@@ -26,7 +26,6 @@ depends: [
   "oasis" {build}
   "base-bytes"
   "result"
-  "cppo" {build}
   "ocamlbuild" {build}
 ]
 depopts: [
