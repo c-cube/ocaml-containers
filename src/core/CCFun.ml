@@ -3,27 +3,17 @@
 
 (** {1 Basic Functions} *)
 
-#if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
+(* default implem for some operators *)
 
-external (|>) : 'a -> ('a -> 'b) -> 'b = "%revapply"
-external (@@) : ('a -> 'b) -> 'a -> 'b = "%apply"
-
-  #else
-
-  let (|>) x f = f x
+let (|>) x f = f x
 let (@@) f x = f x
 
-    #endif
+let opaque_identity x = x
 
-    #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
+(* import standard implementations, if any *)
 
-let opaque_identity = Sys.opaque_identity
-
-  #else
-
-  let opaque_identity x = x
-
-    #endif
+include Sys
+include Pervasives
 
 let compose f g x = g (f x)
 

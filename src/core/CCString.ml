@@ -7,6 +7,30 @@ type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
+(* compatibility implementations *)
+
+let init n f =
+  let buf = Bytes.init n f in
+  Bytes.unsafe_to_string buf
+
+let uppercase_ascii = String.map CCChar.uppercase_ascii
+
+let lowercase_ascii = String.map CCChar.lowercase_ascii
+
+let mapi f s = init (String.length s) (fun i -> f i s.[i])
+
+let capitalize_ascii s =
+  mapi
+    (fun i c -> if i=0 then CCChar.uppercase_ascii c else c)
+    s
+
+let uncapitalize_ascii s =
+  mapi
+    (fun i c -> if i=0 then CCChar.lowercase_ascii c else c)
+    s
+
+(* standard implementations *)
+
 include String
 
 module type S = sig
@@ -37,18 +61,6 @@ let equal (a:string) b = a=b
 let compare = String.compare
 
 let hash s = Hashtbl.hash s
-
-    #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
-
-let init = String.init
-
-  #else
-
-  let init n f =
-    let buf = Bytes.init n f in
-    Bytes.unsafe_to_string buf
-
-      #endif
 
 let length = String.length
 
@@ -676,32 +688,6 @@ let set s i c =
 
 let iter = String.iter
 
-  #if OCAML_MAJOR >= 4
-
-let map = String.map
-let iteri = String.iteri
-
-  #else
-
-  let map f s = init (length s) (fun i -> f s.[i])
-
-let iteri f s =
-  for i = 0 to String.length s - 1 do
-    f i s.[i]
-  done
-
-  #endif
-
-  #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 2
-
-let mapi = String.mapi
-
-  #else
-
-  let mapi f s = init (length s) (fun i -> f i s.[i])
-
-      #endif
-
 let filter_map f s =
   let buf = Buffer.create (String.length s) in
   iter
@@ -789,32 +775,6 @@ let exists2 p s1 s2 =
   with MyExit -> true
 
     (** {2 Ascii functions} *)
-
-    #if OCAML_MAJOR >= 4 && OCAML_MINOR >= 3
-
-let capitalize_ascii = String.capitalize_ascii
-let uncapitalize_ascii = String.uncapitalize_ascii
-let uppercase_ascii = String.uppercase_ascii
-let lowercase_ascii = String.lowercase_ascii
-
-  #else
-
-  let capitalize_ascii s =
-    mapi
-      (fun i c -> if i=0 then CCChar.uppercase_ascii c else c)
-      s
-
-
-let uncapitalize_ascii s =
-  mapi
-    (fun i c -> if i=0 then CCChar.lowercase_ascii c else c)
-    s
-
-let uppercase_ascii = map CCChar.uppercase_ascii
-
-let lowercase_ascii = map CCChar.lowercase_ascii
-
-    #endif
 
 let equal_caseless s1 s2: bool =
   let char_lower c =
