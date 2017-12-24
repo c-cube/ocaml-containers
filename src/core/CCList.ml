@@ -54,6 +54,16 @@ let rec compare_length_with l n = match l, n with
       (Pervasives.compare (length l)n))
 *)
 
+let rec assoc_opt x = function
+  | [] -> None
+  | (y,v) :: _ when Pervasives.(=) x y -> Some v
+  | _ :: tail -> assoc_opt x tail
+
+let rec assq_opt x = function
+  | [] -> None
+  | (y,v) :: _ when Pervasives.(==) x y -> Some v
+  | _ :: tail -> assq_opt x tail
+
 (* end of backport *)
 
 include List
