@@ -1,0 +1,351 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="CCChar.html">
+<link rel="next" href="CCParse.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="CCVector" rel="Chapter" href="CCVector.html">
+<link title="CCHeap" rel="Chapter" href="CCHeap.html">
+<link title="CCList" rel="Chapter" href="CCList.html">
+<link title="CCOpt" rel="Chapter" href="CCOpt.html">
+<link title="CCPair" rel="Chapter" href="CCPair.html">
+<link title="CCFun" rel="Chapter" href="CCFun.html">
+<link title="CCHash" rel="Chapter" href="CCHash.html">
+<link title="CCInt" rel="Chapter" href="CCInt.html">
+<link title="CCBool" rel="Chapter" href="CCBool.html">
+<link title="CCFloat" rel="Chapter" href="CCFloat.html">
+<link title="CCArray" rel="Chapter" href="CCArray.html">
+<link title="CCRef" rel="Chapter" href="CCRef.html">
+<link title="CCSet" rel="Chapter" href="CCSet.html">
+<link title="CCOrd" rel="Chapter" href="CCOrd.html">
+<link title="CCRandom" rel="Chapter" href="CCRandom.html">
+<link title="CCString" rel="Chapter" href="CCString.html">
+<link title="CCHashtbl" rel="Chapter" href="CCHashtbl.html">
+<link title="CCMap" rel="Chapter" href="CCMap.html">
+<link title="CCFormat" rel="Chapter" href="CCFormat.html">
+<link title="CCIO" rel="Chapter" href="CCIO.html">
+<link title="CCInt64" rel="Chapter" href="CCInt64.html">
+<link title="CCChar" rel="Chapter" href="CCChar.html">
+<link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
+<link title="Containers" rel="Chapter" href="Containers.html">
+<link title="CCKTree" rel="Chapter" href="CCKTree.html">
+<link title="CCKList" rel="Chapter" href="CCKList.html">
+<link title="CCLazy_list" rel="Chapter" href="CCLazy_list.html">
+<link title="CCMultiMap" rel="Chapter" href="CCMultiMap.html">
+<link title="CCMultiSet" rel="Chapter" href="CCMultiSet.html">
+<link title="CCTrie" rel="Chapter" href="CCTrie.html">
+<link title="CCFlatHashtbl" rel="Chapter" href="CCFlatHashtbl.html">
+<link title="CCCache" rel="Chapter" href="CCCache.html">
+<link title="CCPersistentHashtbl" rel="Chapter" href="CCPersistentHashtbl.html">
+<link title="CCDeque" rel="Chapter" href="CCDeque.html">
+<link title="CCFQueue" rel="Chapter" href="CCFQueue.html">
+<link title="CCBV" rel="Chapter" href="CCBV.html">
+<link title="CCMixtbl" rel="Chapter" href="CCMixtbl.html">
+<link title="CCMixmap" rel="Chapter" href="CCMixmap.html">
+<link title="CCRingBuffer" rel="Chapter" href="CCRingBuffer.html">
+<link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
+<link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
+<link title="CCMixset" rel="Chapter" href="CCMixset.html">
+<link title="CCGraph" rel="Chapter" href="CCGraph.html">
+<link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
+<link title="CCBitField" rel="Chapter" href="CCBitField.html">
+<link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
+<link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
+<link title="CCRAL" rel="Chapter" href="CCRAL.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
+<link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
+<link title="CCHet" rel="Chapter" href="CCHet.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
+<link title="CCPool" rel="Chapter" href="CCPool.html">
+<link title="CCLock" rel="Chapter" href="CCLock.html">
+<link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
+<link title="CCThread" rel="Chapter" href="CCThread.html">
+<link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
+<link title="CCTimer" rel="Chapter" href="CCTimer.html">
+<link title="CCUnix" rel="Chapter" href="CCUnix.html">
+<link title="CCSexp" rel="Chapter" href="CCSexp.html">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Basics" rel="Section" href="#2_Basics">
+<link title="Wrappers" rel="Section" href="#2_Wrappers">
+<link title="Applicative" rel="Section" href="#2_Applicative">
+<link title="Infix" rel="Section" href="#2_Infix">
+<link title="Collections" rel="Section" href="#2_Collections">
+<link title="Misc" rel="Section" href="#2_Misc">
+<link title="Conversions" rel="Section" href="#2_Conversions">
+<link title="IO" rel="Section" href="#2_IO">
+<title>Containers doc : CCResult</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="CCChar.html" title="CCChar">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="CCParse.html" title="CCParse">Next</a>
+</div>
+<h1>Module <a href="type_CCResult.html">CCResult</a></h1>
+
+<pre><span class="keyword">module</span> CCResult: <code class="code"><span class="keyword">sig</span></code> <a href="CCResult.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+<h1 id="1_ErrorMonad">Error Monad</h1>
+<p>
+
+    Uses the new "result" type from OCaml 4.03.<br>
+<b>Since</b> 0.16<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEsequence"><span class="keyword">type</span> <code class="type">'a</code> sequence</span> = <code class="type">('a -> unit) -> unit</code> </pre>
+
+
+<pre><span id="TYPEequal"><span class="keyword">type</span> <code class="type">'a</code> equal</span> = <code class="type">'a -> 'a -> bool</code> </pre>
+
+
+<pre><span id="TYPEord"><span class="keyword">type</span> <code class="type">'a</code> ord</span> = <code class="type">'a -> 'a -> int</code> </pre>
+
+
+<pre><span id="TYPEprinter"><span class="keyword">type</span> <code class="type">'a</code> printer</span> = <code class="type">Format.formatter -> 'a -> unit</code> </pre>
+
+<br>
+<h2 id="2_Basics">Basics</h2><br>
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type">('good, 'bad)</code> t</span> = <code class="type">('good, 'bad) Result.result</code> = </pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.Ok"><span class="constructor">Ok</span></span> <span class="keyword">of</span> <code class="type">'good</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.Error"><span class="constructor">Error</span></span> <span class="keyword">of</span> <code class="type">'bad</code></code></td>
+
+</tr></table>
+
+
+
+<pre><span id="VALreturn"><span class="keyword">val</span> return</span> : <code class="type">'a -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Successfully return a value<br>
+</div>
+
+<pre><span id="VALfail"><span class="keyword">val</span> fail</span> : <code class="type">'err -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Fail with an error<br>
+</div>
+
+<pre><span id="VALof_exn"><span class="keyword">val</span> of_exn</span> : <code class="type">exn -> ('a, string) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">of_exn&nbsp;e</code> uses <code class="code"><span class="constructor">Printexc</span></code> to print the exception as a string<br>
+</div>
+
+<pre><span id="VALof_exn_trace"><span class="keyword">val</span> of_exn_trace</span> : <code class="type">exn -> ('a, string) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">of_exn_trace&nbsp;e</code> is similar to <code class="code">of_exn&nbsp;e</code>, but it adds the stacktrace
+    to the error message.
+<p>
+
+    Remember to call <code class="code"><span class="constructor">Printexc</span>.record_backtrace&nbsp;<span class="keyword">true</span></code> and compile with the
+    debug flag for this to work.<br>
+</div>
+
+<pre><span id="VALfail_printf"><span class="keyword">val</span> fail_printf</span> : <code class="type">('a, Buffer.t, unit, ('b, string) <a href="CCResult.html#TYPEt">t</a>) Pervasives.format4 -> 'a</code></pre><div class="info ">
+<code class="code">fail_printf&nbsp;format</code> uses <code class="code">format</code> to obtain an error message
+    and then returns <code class="code"><span class="constructor">Error</span>&nbsp;msg</code><br>
+</div>
+
+<pre><span id="VALfail_fprintf"><span class="keyword">val</span> fail_fprintf</span> : <code class="type">('a, Format.formatter, unit, ('b, string) <a href="CCResult.html#TYPEt">t</a>) Pervasives.format4 -><br>       'a</code></pre><div class="info ">
+<code class="code">fail_printf&nbsp;format</code> uses <code class="code">format</code> to obtain an error message
+    and then returns <code class="code"><span class="constructor">Error</span>&nbsp;msg</code><br>
+</div>
+
+<pre><span id="VALadd_ctx"><span class="keyword">val</span> add_ctx</span> : <code class="type">string -> ('a, string) <a href="CCResult.html#TYPEt">t</a> -> ('a, string) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">add_ctx&nbsp;msg</code> leaves <code class="code"><span class="constructor">Ok</span>&nbsp;x</code> untouched, but transforms
+    <code class="code"><span class="constructor">Error</span>&nbsp;s</code> into <code class="code"><span class="constructor">Error</span>&nbsp;s'</code> where <code class="code">s'</code> contains the additional
+    context given by <code class="code">msg</code><br>
+<b>Since</b> 1.2<br>
+</div>
+
+<pre><span id="VALadd_ctxf"><span class="keyword">val</span> add_ctxf</span> : <code class="type">('a, Format.formatter, unit,<br>        ('b, string) <a href="CCResult.html#TYPEt">t</a> -> ('b, string) <a href="CCResult.html#TYPEt">t</a>)<br>       Pervasives.format4 -> 'a</code></pre><div class="info ">
+<code class="code">add_ctxf&nbsp;format_message</code> is similar to <a href="CCResult.html#VALadd_ctx"><code class="code"><span class="constructor">CCResult</span>.add_ctx</code></a> but with
+    <code class="code"><span class="constructor">Format</span></code> for printing the message (eagerly).
+    Example: <pre class="codepre"><code class="code">      add_ctxf <span class="string">"message(number %d, foo: %B)"</span> 42 <span class="keyword">true</span> (<span class="constructor">Error</span> <span class="string">"error)"</span>
+    </code></pre><br>
+<b>Since</b> 1.2<br>
+</div>
+
+<pre><span id="VALmap"><span class="keyword">val</span> map</span> : <code class="type">('a -> 'b) -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Map on success<br>
+</div>
+
+<pre><span id="VALmap_err"><span class="keyword">val</span> map_err</span> : <code class="type">('err1 -> 'err2) -> ('a, 'err1) <a href="CCResult.html#TYPEt">t</a> -> ('a, 'err2) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Map on the error variant<br>
+</div>
+
+<pre><span id="VALmap2"><span class="keyword">val</span> map2</span> : <code class="type">('a -> 'b) -><br>       ('err1 -> 'err2) -> ('a, 'err1) <a href="CCResult.html#TYPEt">t</a> -> ('b, 'err2) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Same as <a href="CCResult.html#VALmap"><code class="code"><span class="constructor">CCResult</span>.map</code></a>, but also with a function that can transform
+    the error message in case of failure<br>
+</div>
+
+<pre><span id="VALiter"><span class="keyword">val</span> iter</span> : <code class="type">('a -> unit) -> ('a, 'b) <a href="CCResult.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Apply the function only in case of Ok<br>
+</div>
+
+<pre><span id="EXCEPTIONGet_error"><span class="keyword">exception</span> Get_error</span></pre>
+
+<pre><span id="VALget_exn"><span class="keyword">val</span> get_exn</span> : <code class="type">('a, 'b) <a href="CCResult.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+Extract the value <code class="code">x</code> from <code class="code"><span class="constructor">Ok</span>&nbsp;x</code>, fails otherwise.
+    You should be careful with this function, and favor other combinators
+    whenever possible.<br>
+<b>Raises</b> <code>Get_error</code> if the value is an error.<br>
+</div>
+
+<pre><span id="VALget_or"><span class="keyword">val</span> get_or</span> : <code class="type">('a, 'b) <a href="CCResult.html#TYPEt">t</a> -> default:'a -> 'a</code></pre><div class="info ">
+<code class="code">get_or&nbsp;e&nbsp;~default</code> returns <code class="code">x</code> if <code class="code">e&nbsp;=&nbsp;<span class="constructor">Ok</span>&nbsp;x</code>, <code class="code">default</code> otherwise<br>
+</div>
+
+<pre><span id="VALmap_or"><span class="keyword">val</span> map_or</span> : <code class="type">('a -> 'b) -> ('a, 'c) <a href="CCResult.html#TYPEt">t</a> -> default:'b -> 'b</code></pre><div class="info ">
+<code class="code">map_or&nbsp;f&nbsp;e&nbsp;~default</code> returns <code class="code">f&nbsp;x</code> if <code class="code">e&nbsp;=&nbsp;<span class="constructor">Ok</span>&nbsp;x</code>, <code class="code">default</code> otherwise<br>
+</div>
+
+<pre><span id="VALcatch"><span class="keyword">val</span> catch</span> : <code class="type">('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b</code></pre><div class="info ">
+<code class="code">catch&nbsp;e&nbsp;~ok&nbsp;~err</code> calls either <code class="code">ok</code> or <code class="code">err</code> depending on
+    the value of <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALflat_map"><span class="keyword">val</span> flat_map</span> : <code class="type">('a -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a>) -><br>       ('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre>
+<pre><span id="VAL(>|=)"><span class="keyword">val</span> (&gt;|=)</span> : <code class="type">('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('a -> 'b) -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre>
+<pre><span id="VAL(>>=)"><span class="keyword">val</span> (&gt;&gt;=)</span> : <code class="type">('a, 'err) <a href="CCResult.html#TYPEt">t</a> -><br>       ('a -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a>) -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre>
+<pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type">?err:'err <a href="CCResult.html#TYPEequal">equal</a> -><br>       'a <a href="CCResult.html#TYPEequal">equal</a> -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a> <a href="CCResult.html#TYPEequal">equal</a></code></pre>
+<pre><span id="VALcompare"><span class="keyword">val</span> compare</span> : <code class="type">?err:'err <a href="CCResult.html#TYPEord">ord</a> -><br>       'a <a href="CCResult.html#TYPEord">ord</a> -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a> <a href="CCResult.html#TYPEord">ord</a></code></pre>
+<pre><span id="VALfold"><span class="keyword">val</span> fold</span> : <code class="type">ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> 'b</code></pre><div class="info ">
+<code class="code">fold&nbsp;~ok&nbsp;~error&nbsp;e</code> opens <code class="code">e</code> and, if <code class="code">e&nbsp;=&nbsp;<span class="constructor">Ok</span>&nbsp;x</code>, returns
+    <code class="code">ok&nbsp;x</code>, otherwise <code class="code">e&nbsp;=&nbsp;<span class="constructor">Error</span>&nbsp;s</code> and it returns <code class="code">error&nbsp;s</code>.<br>
+</div>
+
+<pre><span id="VALfold_ok"><span class="keyword">val</span> fold_ok</span> : <code class="type">('a -> 'b -> 'a) -> 'a -> ('b, 'c) <a href="CCResult.html#TYPEt">t</a> -> 'a</code></pre><div class="info ">
+<code class="code">fold_ok&nbsp;f&nbsp;acc&nbsp;r</code> will compute <code class="code">f&nbsp;acc&nbsp;x</code> if <code class="code">r=<span class="constructor">Ok</span>&nbsp;x</code>,
+    and return <code class="code">acc</code> otherwise, as if the result were a mere option.<br>
+<b>Since</b> 1.2<br>
+</div>
+
+<pre><span id="VALis_ok"><span class="keyword">val</span> is_ok</span> : <code class="type">('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+Return true if Ok<br>
+<b>Since</b> 1.0<br>
+</div>
+
+<pre><span id="VALis_error"><span class="keyword">val</span> is_error</span> : <code class="type">('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+Return true if Error<br>
+<b>Since</b> 1.0<br>
+</div>
+<br>
+<h2 id="2_Wrappers">Wrappers</h2><br>
+
+<pre><span id="VALguard"><span class="keyword">val</span> guard</span> : <code class="type">(unit -> 'a) -> ('a, exn) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">guard&nbsp;f</code> runs <code class="code">f&nbsp;()</code> and returns its result wrapped in <code class="code"><span class="constructor">Ok</span></code>. If
+    <code class="code">f&nbsp;()</code> raises some exception <code class="code">e</code>, then it fails with <code class="code"><span class="constructor">Error</span>&nbsp;e</code><br>
+</div>
+
+<pre><span id="VALguard_str"><span class="keyword">val</span> guard_str</span> : <code class="type">(unit -> 'a) -> ('a, string) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Same as <a href="CCResult.html#VALguard"><code class="code"><span class="constructor">CCResult</span>.guard</code></a> but uses <a href="CCResult.html#VALof_exn"><code class="code"><span class="constructor">CCResult</span>.of_exn</code></a> to print the exception.<br>
+</div>
+
+<pre><span id="VALguard_str_trace"><span class="keyword">val</span> guard_str_trace</span> : <code class="type">(unit -> 'a) -> ('a, string) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Same as <a href="CCResult.html#VALguard_str"><code class="code"><span class="constructor">CCResult</span>.guard_str</code></a> but uses <a href="CCResult.html#VALof_exn_trace"><code class="code"><span class="constructor">CCResult</span>.of_exn_trace</code></a> instead of <a href="CCResult.html#VALof_exn"><code class="code"><span class="constructor">CCResult</span>.of_exn</code></a> so
+    that the stack trace is printed.<br>
+</div>
+
+<pre><span id="VALwrap1"><span class="keyword">val</span> wrap1</span> : <code class="type">('a -> 'b) -> 'a -> ('b, exn) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Same as <a href="CCResult.html#VALguard"><code class="code"><span class="constructor">CCResult</span>.guard</code></a> but gives the function one argument.<br>
+</div>
+
+<pre><span id="VALwrap2"><span class="keyword">val</span> wrap2</span> : <code class="type">('a -> 'b -> 'c) -> 'a -> 'b -> ('c, exn) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Same as <a href="CCResult.html#VALguard"><code class="code"><span class="constructor">CCResult</span>.guard</code></a> but gives the function two arguments.<br>
+</div>
+
+<pre><span id="VALwrap3"><span class="keyword">val</span> wrap3</span> : <code class="type">('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> ('d, exn) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Same as <a href="CCResult.html#VALguard"><code class="code"><span class="constructor">CCResult</span>.guard</code></a> but gives the function three arguments.<br>
+</div>
+<br>
+<h2 id="2_Applicative">Applicative</h2><br>
+
+<pre><span id="VALpure"><span class="keyword">val</span> pure</span> : <code class="type">'a -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+Synonym of <a href="CCResult.html#VALreturn"><code class="code"><span class="constructor">CCResult</span>.return</code></a><br>
+</div>
+
+<pre><span id="VAL(<*>)"><span class="keyword">val</span> (&lt;*&gt;)</span> : <code class="type">('a -> 'b, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">a&nbsp;&lt;*&gt;&nbsp;b</code> evaluates <code class="code">a</code> and <code class="code">b</code>, and, in case of success, returns
+    <code class="code"><span class="constructor">Ok</span>&nbsp;(a&nbsp;b)</code>. Otherwise, it fails, and the error of <code class="code">a</code> is chosen
+    over the error of <code class="code">b</code> if both fail.<br>
+</div>
+
+<pre><span id="VALjoin"><span class="keyword">val</span> join</span> : <code class="type">(('a, 'err) <a href="CCResult.html#TYPEt">t</a>, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">join&nbsp;t</code>, in case of success, returns <code class="code"><span class="constructor">Ok</span>&nbsp;o</code> from <code class="code"><span class="constructor">Ok</span>&nbsp;(<span class="constructor">Ok</span>&nbsp;o)</code>. Otherwise,
+    it fails with <code class="code"><span class="constructor">Error</span>&nbsp;e</code> where <code class="code">e</code> is the unwrapped error of <code class="code">t</code>.<br>
+</div>
+
+<pre><span id="VALboth"><span class="keyword">val</span> both</span> : <code class="type">('a, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a> -> ('a * 'b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">both&nbsp;a&nbsp;b</code>, in case of success, returns <code class="code"><span class="constructor">Ok</span>&nbsp;(o,&nbsp;o')</code> with the ok values
+    of <code class="code">a</code> and <code class="code">b</code>. Otherwise, it fails, and the error of <code class="code">a</code> is chosen over the
+    error of <code class="code">b</code> if both fail.<br>
+</div>
+<br>
+<h2 id="2_Infix">Infix</h2><br>
+
+<pre><span class="keyword">module</span> <a href="CCResult.Infix.html">Infix</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCResult.Infix.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_Collections">Collections</h2><br>
+
+<pre><span id="VALmap_l"><span class="keyword">val</span> map_l</span> : <code class="type">('a -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a>) -> 'a list -> ('b list, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfold_l"><span class="keyword">val</span> fold_l</span> : <code class="type">('b -> 'a -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a>) -> 'b -> 'a list -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfold_seq"><span class="keyword">val</span> fold_seq</span> : <code class="type">('b -> 'a -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a>) -><br>       'b -> 'a <a href="CCResult.html#TYPEsequence">sequence</a> -> ('b, 'err) <a href="CCResult.html#TYPEt">t</a></code></pre><br>
+<h2 id="2_Misc">Misc</h2><br>
+
+<pre><span id="VALchoose"><span class="keyword">val</span> choose</span> : <code class="type">('a, 'err) <a href="CCResult.html#TYPEt">t</a> list -> ('a, 'err list) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">choose&nbsp;l</code> selects a member of <code class="code">l</code> that is a <code class="code"><span class="constructor">Ok</span>&nbsp;_</code> value,
+    or returns <code class="code"><span class="constructor">Error</span>&nbsp;l</code> otherwise, where <code class="code">l</code> is the list of errors.<br>
+</div>
+
+<pre><span id="VALretry"><span class="keyword">val</span> retry</span> : <code class="type">int -> (unit -> ('a, 'err) <a href="CCResult.html#TYPEt">t</a>) -> ('a, 'err list) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">retry&nbsp;n&nbsp;f</code> calls <code class="code">f</code> at most <code class="code">n</code> times, returning the first result
+    of <code class="code">f&nbsp;()</code> that doesn't fail. If <code class="code">f</code> fails <code class="code">n</code> times, <code class="code">retry&nbsp;n&nbsp;f</code> fails
+    with the list of successive errors.<br>
+</div>
+
+<pre><span class="keyword">module type</span> <a href="CCResult.MONAD.html">MONAD</a> = <code class="code"><span class="keyword">sig</span></code> <a href="CCResult.MONAD.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info">
+Monadic Operations
+</div>
+
+<pre><span class="keyword">module</span> <a href="CCResult.Traverse.html">Traverse</a> <code class="code">(</code><code class="code"><span class="constructor">M</span></code><code class="code">&nbsp;:&nbsp;</code><code class="type"><a href="CCResult.MONAD.html">MONAD</a></code><code class="code">)&nbsp;</code>: <code class="code"><span class="keyword">sig</span></code> <a href="CCResult.Traverse.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_Conversions">Conversions</h2><br>
+
+<pre><span id="VALto_opt"><span class="keyword">val</span> to_opt</span> : <code class="type">('a, 'b) <a href="CCResult.html#TYPEt">t</a> -> 'a option</code></pre>
+<pre><span id="VALof_opt"><span class="keyword">val</span> of_opt</span> : <code class="type">'a option -> ('a, string) <a href="CCResult.html#TYPEt">t</a></code></pre>
+<pre><span id="VALto_seq"><span class="keyword">val</span> to_seq</span> : <code class="type">('a, 'b) <a href="CCResult.html#TYPEt">t</a> -> 'a <a href="CCResult.html#TYPEsequence">sequence</a></code></pre>
+<pre><span id="TYPEerror"><span class="keyword">type</span> <code class="type">('a, 'b)</code> error</span> = <code class="type">[ `Error of 'b | `Ok of 'a ]</code> </pre>
+
+
+<pre><span id="VALof_err"><span class="keyword">val</span> of_err</span> : <code class="type">('a, 'b) <a href="CCResult.html#TYPEerror">error</a> -> ('a, 'b) <a href="CCResult.html#TYPEt">t</a></code></pre><div class="info ">
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALto_err"><span class="keyword">val</span> to_err</span> : <code class="type">('a, 'b) <a href="CCResult.html#TYPEt">t</a> -> ('a, 'b) <a href="CCResult.html#TYPEerror">error</a></code></pre><div class="info ">
+<b>Since</b> 0.17<br>
+</div>
+<br>
+<h2 id="2_IO">IO</h2><br>
+
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">'a <a href="CCResult.html#TYPEprinter">printer</a> -> ('a, string) <a href="CCResult.html#TYPEt">t</a> <a href="CCResult.html#TYPEprinter">printer</a></code></pre>
+<pre><span id="VALpp'"><span class="keyword">val</span> pp'</span> : <code class="type">'a <a href="CCResult.html#TYPEprinter">printer</a> -><br>       'e <a href="CCResult.html#TYPEprinter">printer</a> -> ('a, 'e) <a href="CCResult.html#TYPEt">t</a> <a href="CCResult.html#TYPEprinter">printer</a></code></pre><div class="info ">
+Printer that is generic on the error type<br>
+</div>
+</body></html>

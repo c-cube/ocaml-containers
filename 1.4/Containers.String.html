@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Containers.Set.html">
+<link rel="next" href="Containers.Vector.html">
+<link rel="Up" href="Containers.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="CCVector" rel="Chapter" href="CCVector.html">
+<link title="CCHeap" rel="Chapter" href="CCHeap.html">
+<link title="CCList" rel="Chapter" href="CCList.html">
+<link title="CCOpt" rel="Chapter" href="CCOpt.html">
+<link title="CCPair" rel="Chapter" href="CCPair.html">
+<link title="CCFun" rel="Chapter" href="CCFun.html">
+<link title="CCHash" rel="Chapter" href="CCHash.html">
+<link title="CCInt" rel="Chapter" href="CCInt.html">
+<link title="CCBool" rel="Chapter" href="CCBool.html">
+<link title="CCFloat" rel="Chapter" href="CCFloat.html">
+<link title="CCArray" rel="Chapter" href="CCArray.html">
+<link title="CCRef" rel="Chapter" href="CCRef.html">
+<link title="CCSet" rel="Chapter" href="CCSet.html">
+<link title="CCOrd" rel="Chapter" href="CCOrd.html">
+<link title="CCRandom" rel="Chapter" href="CCRandom.html">
+<link title="CCString" rel="Chapter" href="CCString.html">
+<link title="CCHashtbl" rel="Chapter" href="CCHashtbl.html">
+<link title="CCMap" rel="Chapter" href="CCMap.html">
+<link title="CCFormat" rel="Chapter" href="CCFormat.html">
+<link title="CCIO" rel="Chapter" href="CCIO.html">
+<link title="CCInt64" rel="Chapter" href="CCInt64.html">
+<link title="CCChar" rel="Chapter" href="CCChar.html">
+<link title="CCResult" rel="Chapter" href="CCResult.html">
+<link title="CCParse" rel="Chapter" href="CCParse.html">
+<link title="CCArray_slice" rel="Chapter" href="CCArray_slice.html">
+<link title="CCListLabels" rel="Chapter" href="CCListLabels.html">
+<link title="CCArrayLabels" rel="Chapter" href="CCArrayLabels.html">
+<link title="CCEqual" rel="Chapter" href="CCEqual.html">
+<link title="Containers" rel="Chapter" href="Containers.html">
+<link title="CCKTree" rel="Chapter" href="CCKTree.html">
+<link title="CCKList" rel="Chapter" href="CCKList.html">
+<link title="CCLazy_list" rel="Chapter" href="CCLazy_list.html">
+<link title="CCMultiMap" rel="Chapter" href="CCMultiMap.html">
+<link title="CCMultiSet" rel="Chapter" href="CCMultiSet.html">
+<link title="CCTrie" rel="Chapter" href="CCTrie.html">
+<link title="CCFlatHashtbl" rel="Chapter" href="CCFlatHashtbl.html">
+<link title="CCCache" rel="Chapter" href="CCCache.html">
+<link title="CCPersistentHashtbl" rel="Chapter" href="CCPersistentHashtbl.html">
+<link title="CCDeque" rel="Chapter" href="CCDeque.html">
+<link title="CCFQueue" rel="Chapter" href="CCFQueue.html">
+<link title="CCBV" rel="Chapter" href="CCBV.html">
+<link title="CCMixtbl" rel="Chapter" href="CCMixtbl.html">
+<link title="CCMixmap" rel="Chapter" href="CCMixmap.html">
+<link title="CCRingBuffer" rel="Chapter" href="CCRingBuffer.html">
+<link title="CCIntMap" rel="Chapter" href="CCIntMap.html">
+<link title="CCPersistentArray" rel="Chapter" href="CCPersistentArray.html">
+<link title="CCMixset" rel="Chapter" href="CCMixset.html">
+<link title="CCGraph" rel="Chapter" href="CCGraph.html">
+<link title="CCHashSet" rel="Chapter" href="CCHashSet.html">
+<link title="CCBitField" rel="Chapter" href="CCBitField.html">
+<link title="CCHashTrie" rel="Chapter" href="CCHashTrie.html">
+<link title="CCWBTree" rel="Chapter" href="CCWBTree.html">
+<link title="CCRAL" rel="Chapter" href="CCRAL.html">
+<link title="CCSimple_queue" rel="Chapter" href="CCSimple_queue.html">
+<link title="CCImmutArray" rel="Chapter" href="CCImmutArray.html">
+<link title="CCHet" rel="Chapter" href="CCHet.html">
+<link title="CCZipper" rel="Chapter" href="CCZipper.html">
+<link title="CCPool" rel="Chapter" href="CCPool.html">
+<link title="CCLock" rel="Chapter" href="CCLock.html">
+<link title="CCSemaphore" rel="Chapter" href="CCSemaphore.html">
+<link title="CCThread" rel="Chapter" href="CCThread.html">
+<link title="CCBlockingQueue" rel="Chapter" href="CCBlockingQueue.html">
+<link title="CCTimer" rel="Chapter" href="CCTimer.html">
+<link title="CCUnix" rel="Chapter" href="CCUnix.html">
+<link title="CCSexp" rel="Chapter" href="CCSexp.html">
+<link title="CCSexp_lex" rel="Chapter" href="CCSexp_lex.html"><link title="Common Signature" rel="Section" href="#2_CommonSignature">
+<link title="Strings" rel="Section" href="#2_Strings">
+<link title="Operations on 2 strings" rel="Section" href="#2_Operationson2strings">
+<link title="Ascii functions" rel="Section" href="#2_Asciifunctions">
+<link title="Finding" rel="Section" href="#2_Finding">
+<link title="Splitting" rel="Section" href="#2_Splitting">
+<link title="Utils" rel="Section" href="#2_Utils">
+<link title="Slices" rel="Section" href="#2_Slices">
+<title>Containers doc : Containers.String</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Containers.Set.html" title="Containers.Set">Previous</a>
+&nbsp;<a class="up" href="Containers.html" title="Containers">Up</a>
+&nbsp;<a class="post" href="Containers.Vector.html" title="Containers.Vector">Next</a>
+</div>
+<h1>Module <a href="type_Containers.String.html">Containers.String</a></h1>
+
+<pre><span class="keyword">module</span> String: <code class="type"><a href="CCString.html">CCString</a></code></pre><hr width="100%">
+
+<pre><span id="TYPEgen"><span class="keyword">type</span> <code class="type">'a</code> gen</span> = <code class="type">unit -> 'a option</code> </pre>
+
+
+<pre><span id="TYPEsequence"><span class="keyword">type</span> <code class="type">'a</code> sequence</span> = <code class="type">('a -> unit) -> unit</code> </pre>
+
+
+<pre><span id="TYPEklist"><span class="keyword">type</span> <code class="type">'a</code> klist</span> = <code class="type">unit -> [ `Cons of 'a * 'a <a href="CCString.html#TYPEklist">klist</a> | `Nil ]</code> </pre>
+
+<br>
+<h2 id="2_CommonSignature">Common Signature</h2><br>
+
+<pre><span class="keyword">module type</span> <a href="CCString.S.html">S</a> = <code class="code"><span class="keyword">sig</span></code> <a href="CCString.S.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_Strings">Strings</h2><br>
+
+<pre><span class="keyword">include</span> String</pre>
+
+<pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type">string -> string -> bool</code></pre>
+<pre><span id="VALcompare"><span class="keyword">val</span> compare</span> : <code class="type">string -> string -> int</code></pre>
+<pre><span id="VALhash"><span class="keyword">val</span> hash</span> : <code class="type">string -> int</code></pre>
+<pre><span id="VALinit"><span class="keyword">val</span> init</span> : <code class="type">int -> (int -> char) -> string</code></pre><div class="info ">
+Analog to <code class="code"><span class="constructor">Array</span>.init</code>.<br>
+<b>Since</b> 0.3.3<br>
+</div>
+
+<pre><span id="VALrev"><span class="keyword">val</span> rev</span> : <code class="type">string -> string</code></pre><div class="info ">
+<code class="code">rev&nbsp;s</code> returns the reverse of <code class="code">s</code><br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALpad"><span class="keyword">val</span> pad</span> : <code class="type">?side:[ `Left | `Right ] -> ?c:char -> int -> string -> string</code></pre><div class="info ">
+<code class="code">pad&nbsp;n&nbsp;str</code> ensures that <code class="code">str</code> is at least <code class="code">n</code> bytes long,
+    and pads it on the <code class="code">side</code> with <code class="code">c</code> if it's not the case.<br>
+<b>Since</b> 0.17<br>
+</div>
+<div class="param_info"><code class="code">side</code> : determines where padding occurs (default: <code class="code"><span class="keywordsign">`</span><span class="constructor">Left</span></code>)</div>
+<div class="param_info"><code class="code">c</code> : the char used to pad (default: ' ')</div>
+
+<pre><span id="VALof_char"><span class="keyword">val</span> of_char</span> : <code class="type">char -> string</code></pre><div class="info ">
+<code class="code">of_char&nbsp;<span class="string">'a'</span>&nbsp;=&nbsp;<span class="string">"a"</span></code><br>
+<b>Since</b> 0.19<br>
+</div>
+
+<pre><span id="VALof_gen"><span class="keyword">val</span> of_gen</span> : <code class="type">char <a href="CCString.html#TYPEgen">gen</a> -> string</code></pre>
+<pre><span id="VALof_seq"><span class="keyword">val</span> of_seq</span> : <code class="type">char <a href="CCString.html#TYPEsequence">sequence</a> -> string</code></pre>
+<pre><span id="VALof_klist"><span class="keyword">val</span> of_klist</span> : <code class="type">char <a href="CCString.html#TYPEklist">klist</a> -> string</code></pre>
+<pre><span id="VALof_list"><span class="keyword">val</span> of_list</span> : <code class="type">char list -> string</code></pre>
+<pre><span id="VALof_array"><span class="keyword">val</span> of_array</span> : <code class="type">char array -> string</code></pre>
+<pre><span id="VALto_array"><span class="keyword">val</span> to_array</span> : <code class="type">string -> char array</code></pre>
+<pre><span id="VALfind"><span class="keyword">val</span> find</span> : <code class="type">?start:int -> sub:string -> string -> int</code></pre><div class="info ">
+Find <code class="code">sub</code> in string, returns its first index or <code class="code">-1</code>.<br>
+</div>
+
+<pre><span id="VALfind_all"><span class="keyword">val</span> find_all</span> : <code class="type">?start:int -> sub:string -> string -> int <a href="CCString.html#TYPEgen">gen</a></code></pre><div class="info ">
+<code class="code">find_all&nbsp;~sub&nbsp;s</code> finds all occurrences of <code class="code">sub</code> in <code class="code">s</code>, even overlapping
+    instances.<br>
+<b>Since</b> 0.17<br>
+</div>
+<div class="param_info"><code class="code">start</code> : starting position in <code class="code">s</code></div>
+
+<pre><span id="VALfind_all_l"><span class="keyword">val</span> find_all_l</span> : <code class="type">?start:int -> sub:string -> string -> int list</code></pre><div class="info ">
+<code class="code">find_all&nbsp;~sub&nbsp;s</code> finds all occurrences of <code class="code">sub</code> in <code class="code">s</code> and returns
+    them in a list<br>
+<b>Since</b> 0.17<br>
+</div>
+<div class="param_info"><code class="code">start</code> : starting position in <code class="code">s</code></div>
+
+<pre><span id="VALmem"><span class="keyword">val</span> mem</span> : <code class="type">?start:int -> sub:string -> string -> bool</code></pre><div class="info ">
+<code class="code">mem&nbsp;~sub&nbsp;s</code> is true iff <code class="code">sub</code> is a substring of <code class="code">s</code><br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALrfind"><span class="keyword">val</span> rfind</span> : <code class="type">sub:string -> string -> int</code></pre><div class="info ">
+Find <code class="code">sub</code> in string from the right, returns its first index or <code class="code">-1</code>.
+    Should only be used with very small <code class="code">sub</code><br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALreplace"><span class="keyword">val</span> replace</span> : <code class="type">?which:[ `All | `Left | `Right ] -><br>       sub:string -> by:string -> string -> string</code></pre><div class="info ">
+<code class="code">replace&nbsp;~sub&nbsp;~by&nbsp;s</code> replaces some occurrences of <code class="code">sub</code> by <code class="code">by</code> in <code class="code">s</code><br>
+<b>Since</b> 0.14<br>
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">sub&nbsp;=&nbsp;<span class="string">""</span></code><br>
+</div>
+<div class="param_info"><code class="code">which</code> : decides whether the occurrences to replace are:
+      <ul>
+<li><code class="code"><span class="keywordsign">`</span><span class="constructor">Left</span></code> first occurrence from the left (beginning)</li>
+<li><code class="code"><span class="keywordsign">`</span><span class="constructor">Right</span></code> first occurrence from the right (end)</li>
+<li><code class="code"><span class="keywordsign">`</span><span class="constructor">All</span></code> all occurrences (default)</li>
+</ul>
+</div>
+
+<pre><span id="VALis_sub"><span class="keyword">val</span> is_sub</span> : <code class="type">sub:string -> int -> string -> int -> len:int -> bool</code></pre><div class="info ">
+<code class="code">is_sub&nbsp;~sub&nbsp;i&nbsp;s&nbsp;j&nbsp;~len</code> returns <code class="code"><span class="keyword">true</span></code> iff the substring of
+    <code class="code">sub</code> starting at position <code class="code">i</code> and of length <code class="code">len</code> is a substring
+    of <code class="code">s</code> starting at position <code class="code">j</code><br>
+</div>
+
+<pre><span id="VALrepeat"><span class="keyword">val</span> repeat</span> : <code class="type">string -> int -> string</code></pre><div class="info ">
+The same string, repeated n times<br>
+</div>
+
+<pre><span id="VALprefix"><span class="keyword">val</span> prefix</span> : <code class="type">pre:string -> string -> bool</code></pre><div class="info ">
+<code class="code">prefix&nbsp;~pre&nbsp;s</code> returns <code class="code"><span class="keyword">true</span></code> iff <code class="code">pre</code> is a prefix of <code class="code">s</code><br>
+</div>
+
+<pre><span id="VALsuffix"><span class="keyword">val</span> suffix</span> : <code class="type">suf:string -> string -> bool</code></pre><div class="info ">
+<code class="code">suffix&nbsp;~suf&nbsp;s</code> returns <code class="code"><span class="keyword">true</span></code> iff <code class="code">suf</code> is a suffix of <code class="code">s</code><br>
+<b>Since</b> 0.7<br>
+</div>
+
+<pre><span id="VALchop_prefix"><span class="keyword">val</span> chop_prefix</span> : <code class="type">pre:string -> string -> string option</code></pre><div class="info ">
+<code class="code">chop_pref&nbsp;~pre&nbsp;s</code> removes <code class="code">pre</code> from <code class="code">s</code> if <code class="code">pre</code> really is a prefix
+    of <code class="code">s</code>, returns <code class="code"><span class="constructor">None</span></code> otherwise<br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALchop_suffix"><span class="keyword">val</span> chop_suffix</span> : <code class="type">suf:string -> string -> string option</code></pre><div class="info ">
+<code class="code">chop_suffix&nbsp;~suf&nbsp;s</code> removes <code class="code">suf</code> from <code class="code">s</code> if <code class="code">suf</code> really is a suffix
+    of <code class="code">s</code>, returns <code class="code"><span class="constructor">None</span></code> otherwise<br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALtake"><span class="keyword">val</span> take</span> : <code class="type">int -> string -> string</code></pre><div class="info ">
+<code class="code">take&nbsp;n&nbsp;s</code> keeps only the <code class="code">n</code> first chars of <code class="code">s</code><br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALdrop"><span class="keyword">val</span> drop</span> : <code class="type">int -> string -> string</code></pre><div class="info ">
+<code class="code">drop&nbsp;n&nbsp;s</code> removes the <code class="code">n</code> first chars of <code class="code">s</code><br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALtake_drop"><span class="keyword">val</span> take_drop</span> : <code class="type">int -> string -> string * string</code></pre><div class="info ">
+<code class="code">take_drop&nbsp;n&nbsp;s&nbsp;=&nbsp;take&nbsp;n&nbsp;s,&nbsp;drop&nbsp;n&nbsp;s</code><br>
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALlines"><span class="keyword">val</span> lines</span> : <code class="type">string -> string list</code></pre><div class="info ">
+<code class="code">lines&nbsp;s</code> returns a list of the lines of <code class="code">s</code> (splits along '\n')<br>
+<b>Since</b> 0.10<br>
+</div>
+
+<pre><span id="VALlines_gen"><span class="keyword">val</span> lines_gen</span> : <code class="type">string -> string <a href="CCString.html#TYPEgen">gen</a></code></pre><div class="info ">
+<code class="code">lines_gen&nbsp;s</code> returns a generator of the lines of <code class="code">s</code> (splits along '\n')<br>
+<b>Since</b> 0.10<br>
+</div>
+
+<pre><span id="VALconcat_gen"><span class="keyword">val</span> concat_gen</span> : <code class="type">sep:string -> string <a href="CCString.html#TYPEgen">gen</a> -> string</code></pre><div class="info ">
+<code class="code">concat_gen&nbsp;~sep&nbsp;g</code> concatenates all strings of <code class="code">g</code>, separated with <code class="code">sep</code>.<br>
+<b>Since</b> 0.10<br>
+</div>
+
+<pre><span id="VALunlines"><span class="keyword">val</span> unlines</span> : <code class="type">string list -> string</code></pre><div class="info ">
+<code class="code">unlines&nbsp;l</code> concatenates all strings of <code class="code">l</code>, separated with '\n'<br>
+<b>Since</b> 0.10<br>
+</div>
+
+<pre><span id="VALunlines_gen"><span class="keyword">val</span> unlines_gen</span> : <code class="type">string <a href="CCString.html#TYPEgen">gen</a> -> string</code></pre><div class="info ">
+<code class="code">unlines_gen&nbsp;g</code> concatenates all strings of <code class="code">g</code>, separated with '\n'<br>
+<b>Since</b> 0.10<br>
+</div>
+
+<pre><span id="VALset"><span class="keyword">val</span> set</span> : <code class="type">string -> int -> char -> string</code></pre><div class="info ">
+<code class="code">set&nbsp;s&nbsp;i&nbsp;c</code> creates a new string which is a copy of <code class="code">s</code>, except
+    for index <code class="code">i</code>, which becomes <code class="code">c</code>.<br>
+<b>Since</b> 0.12<br>
+<b>Raises</b> <code>Invalid_argument</code> if <code class="code">i</code> is an invalid index<br>
+</div>
+
+<pre><span id="VALiter"><span class="keyword">val</span> iter</span> : <code class="type">(char -> unit) -> string -> unit</code></pre><div class="info ">
+Alias to <code class="code"><span class="constructor">String</span>.iter</code><br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALiteri"><span class="keyword">val</span> iteri</span> : <code class="type">(int -> char -> unit) -> string -> unit</code></pre><div class="info ">
+Iter on chars with their index<br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALmap"><span class="keyword">val</span> map</span> : <code class="type">(char -> char) -> string -> string</code></pre><div class="info ">
+Map chars<br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALmapi"><span class="keyword">val</span> mapi</span> : <code class="type">(int -> char -> char) -> string -> string</code></pre><div class="info ">
+Map chars with their index<br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALfilter_map"><span class="keyword">val</span> filter_map</span> : <code class="type">(char -> char option) -> string -> string</code></pre><div class="info ">
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALfilter"><span class="keyword">val</span> filter</span> : <code class="type">(char -> bool) -> string -> string</code></pre><div class="info ">
+<b>Since</b> 0.17<br>
+</div>
+
+<pre><span id="VALflat_map"><span class="keyword">val</span> flat_map</span> : <code class="type">?sep:string -> (char -> string) -> string -> string</code></pre><div class="info ">
+Map each chars to a string, then concatenates them all<br>
+<b>Since</b> 0.12<br>
+</div>
+<div class="param_info"><code class="code">sep</code> : optional separator between each generated string</div>
+
+<pre><span id="VALfor_all"><span class="keyword">val</span> for_all</span> : <code class="type">(char -> bool) -> string -> bool</code></pre><div class="info ">
+True for all chars?<br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">(char -> bool) -> string -> bool</code></pre><div class="info ">
+True for some char?<br>
+<b>Since</b> 0.12<br>
+</div>
+
+<pre><span class="keyword">include</span> <a href="CCString.S.html">CCString.S</a></pre>
+
+<pre><span id="VALltrim"><span class="keyword">val</span> ltrim</span> : <code class="type">t -> t</code></pre><div class="info ">
+trim space on the left (see <code class="code"><span class="constructor">String</span>.trim</code> for more details)<br>
+<b>Since</b> 1.2<br>
+</div>
+
+<pre><span id="VALrtrim"><span class="keyword">val</span> rtrim</span> : <code class="type">t -> t</code></pre><div class="info ">
+trim space on the right (see <code class="code"><span class="constructor">String</span>.trim</code> for more details)<br>
+<b>Since</b> 1.2<br>
+</div>
+<br>
+<h2 id="2_Operationson2strings">Operations on 2 strings</h2><br>
+
+<pre><span id="VALmap2"><span class="keyword">val</span> map2</span> : <code class="type">(char -> char -> char) -> string -> string -> string</code></pre><div class="info ">
+Map pairs of chars<br>
+<b>Since</b> 0.12<br>
+<b>Raises</b> <code>Invalid_argument</code> if the strings have not the same length<br>
+</div>
+
+<pre><span id="VALiter2"><span class="keyword">val</span> iter2</span> : <code class="type">(char -> char -> unit) -> string -> string -> unit</code></pre><div class="info ">
+Iterate on pairs of chars<br>
+<b>Since</b> 0.12<br>
+<b>Raises</b> <code>Invalid_argument</code> if the strings have not the same length<br>
+</div>
+
+<pre><span id="VALiteri2"><span class="keyword">val</span> iteri2</span> : <code class="type">(int -> char -> char -> unit) -> string -> string -> unit</code></pre><div class="info ">
+Iterate on pairs of chars with their index<br>
+<b>Since</b> 0.12<br>
+<b>Raises</b> <code>Invalid_argument</code> if the strings have not the same length<br>
+</div>
+
+<pre><span id="VALfold2"><span class="keyword">val</span> fold2</span> : <code class="type">('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a</code></pre><div class="info ">
+Fold on pairs of chars<br>
+<b>Since</b> 0.12<br>
+<b>Raises</b> <code>Invalid_argument</code> if the strings have not the same length<br>
+</div>
+
+<pre><span id="VALfor_all2"><span class="keyword">val</span> for_all2</span> : <code class="type">(char -> char -> bool) -> string -> string -> bool</code></pre><div class="info ">
+All pairs of chars respect the predicate?<br>
+<b>Since</b> 0.12<br>
+<b>Raises</b> <code>Invalid_argument</code> if the strings have not the same length<br>
+</div>
+
+<pre><span id="VALexists2"><span class="keyword">val</span> exists2</span> : <code class="type">(char -> char -> bool) -> string -> string -> bool</code></pre><div class="info ">
+Exists a pair of chars?<br>
+<b>Since</b> 0.12<br>
+<b>Raises</b> <code>Invalid_argument</code> if the strings have not the same length<br>
+</div>
+<br>
+<h2 id="2_Asciifunctions">Ascii functions</h2>
+<p>
+
+    Those functions are deprecated in <code class="code"><span class="constructor">String</span></code> since 4.03, so we provide
+    a stable alias for them even in older versions<br>
+
+<pre><span id="VALcapitalize_ascii"><span class="keyword">val</span> capitalize_ascii</span> : <code class="type">string -> string</code></pre><div class="info ">
+See <code class="code"><span class="constructor">String</span></code>.<br>
+<b>Since</b> 0.18<br>
+</div>
+
+<pre><span id="VALuncapitalize_ascii"><span class="keyword">val</span> uncapitalize_ascii</span> : <code class="type">string -> string</code></pre><div class="info ">
+See <code class="code"><span class="constructor">String</span></code>.<br>
+<b>Since</b> 0.18<br>
+</div>
+
+<pre><span id="VALuppercase_ascii"><span class="keyword">val</span> uppercase_ascii</span> : <code class="type">string -> string</code></pre><div class="info ">
+See <code class="code"><span class="constructor">String</span></code>.<br>
+<b>Since</b> 0.18<br>
+</div>
+
+<pre><span id="VALlowercase_ascii"><span class="keyword">val</span> lowercase_ascii</span> : <code class="type">string -> string</code></pre><div class="info ">
+See <code class="code"><span class="constructor">String</span></code>.<br>
+<b>Since</b> 0.18<br>
+</div>
+
+<pre><span id="VALequal_caseless"><span class="keyword">val</span> equal_caseless</span> : <code class="type">string -> string -> bool</code></pre><div class="info ">
+Comparison without respect to <b>ascii</b> lowercase.<br>
+<b>Since</b> 1.2<br>
+</div>
+<br>
+<h2 id="2_Finding">Finding</h2>
+<p>
+
+    A relatively efficient algorithm for finding sub-strings<br>
+
+<pre><span class="keyword">module</span> <a href="CCString.Find.html">Find</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCString.Find.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><br>
+<h2 id="2_Splitting">Splitting</h2><br>
+
+<pre><span class="keyword">module</span> <a href="CCString.Split.html">Split</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCString.Split.html">..</a> <code class="code"><span class="keyword">end</span></code></pre>
+<pre><span id="VALsplit_on_char"><span class="keyword">val</span> split_on_char</span> : <code class="type">char -> string -> string list</code></pre><div class="info ">
+Split the string along the given char<br>
+<b>Since</b> 1.2<br>
+</div>
+
+<pre><span id="VALsplit"><span class="keyword">val</span> split</span> : <code class="type">by:string -> string -> string list</code></pre><div class="info ">
+Alias to <a href="CCString.Split.html#VALlist_cpy"><code class="code"><span class="constructor">CCString</span>.<span class="constructor">Split</span>.list_cpy</code></a><br>
+<b>Since</b> 1.2<br>
+</div>
+<br>
+<h2 id="2_Utils">Utils</h2><br>
+
+<pre><span id="VALcompare_versions"><span class="keyword">val</span> compare_versions</span> : <code class="type">string -> string -> int</code></pre><div class="info ">
+<code class="code">compare_versions&nbsp;a&nbsp;b</code> compares <i>version strings</i> <code class="code">a</code> and <code class="code">b</code>,
+    considering that numbers are above text.<br>
+<b>Since</b> 0.13<br>
+</div>
+
+<pre><span id="VALcompare_natural"><span class="keyword">val</span> compare_natural</span> : <code class="type">string -> string -> int</code></pre><div class="info ">
+Natural Sort Order, comparing chunks of digits as natural numbers.
+    https://en.wikipedia.org/wiki/Natural_sort_order<br>
+<b>Since</b> 1.3<br>
+</div>
+
+<pre><span id="VALedit_distance"><span class="keyword">val</span> edit_distance</span> : <code class="type">string -> string -> int</code></pre><div class="info ">
+Edition distance between two strings. This satisfies the classical
+    distance axioms: it is always positive, symmetric, and satisfies
+    the formula <code class="code">distance&nbsp;a&nbsp;b&nbsp;+&nbsp;distance&nbsp;b&nbsp;c&nbsp;&gt;=&nbsp;distance&nbsp;a&nbsp;c</code><br>
+</div>
+<br>
+<h2 id="2_Slices">Slices</h2> A contiguous part of a string<br>
+
+<pre><span class="keyword">module</span> <a href="CCString.Sub.html">Sub</a>: <code class="code"><span class="keyword">sig</span></code> <a href="CCString.Sub.html">..</a> <code class="code"><span class="keyword">end</span></code></pre></body></html>
