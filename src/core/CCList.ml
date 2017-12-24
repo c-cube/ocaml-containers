@@ -944,7 +944,7 @@ let all_ok l =
   try
     Result.Ok
       (map
-         (function Result.Ok x -> x | Error e -> err := Some e; raise Exit)
+         (function Result.Ok x -> x | Result.Error e -> err := Some e; raise Exit)
          l)
   with Exit ->
     begin match !err with
