@@ -29,7 +29,9 @@ install:
   - opam install oasis
   - opam install --deps-only containers
 script:
+  - ./configure --enable-unix --enable-thread --disable-tests --disable-bench
   - make build
   - opam install sequence qcheck qtest gen
-  - ./configure --enable-unix --enable-thread --enable-tests --disable-bench
+  - ./configure --enable-unix --enable-thread --enable-tests --enable-docs --disable-bench
   - make test
+  - make doc
