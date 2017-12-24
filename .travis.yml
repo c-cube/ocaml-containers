@@ -1,0 +1,34 @@
+language: c
+env:
+  - OCAML_VERSION=4.01.0
+  - OCAML_VERSION=4.02.3
+  - OCAML_VERSION=4.04.2
+  - OCAML_VERSION=4.05.0
+  - OCAML_VERSION=4.05.0+flambda
+  - OCAML_VERSION=4.06.0
+addons:
+  apt:
+    sources:
+      - avsm
+    packages:
+      - opam
+# Caching may take a lot of space with so many ocaml versions
+#cache:
+#  directories:
+#    - $HOME/.opam
+before_install:
+  # Some opam boilerplate
+  - export OPAMYES=1
+  - export OPAMVERBOSE=1
+  - opam init
+  - opam switch ${OCAML_VERSION}
+  - eval `opam config env`
+install:
+  # Install dependencies
+  - opam pin add --no-action containers .
+  - opam install oasis
+  - opam install --deps-only containers
+script:
+  - make build
+  - ./configure --enable-unix --enable-thread --enable-tests
+  - make test
