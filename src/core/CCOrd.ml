@@ -25,6 +25,13 @@ let equiv i j =
   not (equiv 1 0)
 *)
 
+(*$Q
+  Q.(pair int int) (fun (x,y) -> \
+    (equiv x y) = (equiv y x))
+  Q.(triple int int int) (fun (x,y,z) -> \
+    if (equiv x y && equiv y z) then (equiv x z) else true)
+*)
+
 let int (x:int) y = Pervasives.compare x y
 let string (x:string) y = Pervasives.compare x y
 let bool (x:bool) y = Pervasives.compare x y
