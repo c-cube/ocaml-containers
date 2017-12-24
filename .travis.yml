@@ -30,5 +30,6 @@ install:
   - opam install --deps-only containers
 script:
   - make build
-  - ./configure --enable-unix --enable-thread --enable-tests
+  - opam install sequence qcheck qtest gen
+  - ./configure --enable-unix --enable-thread --enable-tests --disable-bench
   - make test
