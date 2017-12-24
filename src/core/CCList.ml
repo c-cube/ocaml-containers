@@ -32,26 +32,26 @@ let rec find_opt p l = match l with
 
 let rec compare_lengths l1 l2 = match l1, l2 with
   | [], [] -> 0
-  | [], _::_ -> 1
-  | _::_, [] -> -1
+  | [], _::_ -> -1
+  | _::_, [] -> 1
   | _::tail1, _::tail2 -> compare_lengths tail1 tail2
 
 (*$Q
   Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    CCOrd.equiv (compare_lengths l1 l2) \
-      (Pervasives.compare (length l1)(length l2)))
+    CCOrd.equiv (CCList.compare_lengths l1 l2) \
+      (CCInt.compare (length l1)(length l2)))
 *)
 
 let rec compare_length_with l n = match l, n with
-  | _ when n<0 -> -1
+  | _ when n<0 -> 1
   | [], 0 -> 0
-  | [], _ -> 1
+  | [], _ -> -1
   | _::tail, _ -> compare_length_with tail (n-1)
 
 (*$Q
-  Q.(pair (list int) small_nat) (fun (l,n) -> \
-    CCOrd.equiv (compare_length_with l n) \
-      (Pervasives.compare (length l)n))
+  Q.(pair (list int) small_int) (fun (l,n) -> \
+    CCOrd.equiv (CCList.compare_length_with l n) \
+      (CCInt.compare (length l) n))
 *)
 
 let rec assoc_opt x = function
