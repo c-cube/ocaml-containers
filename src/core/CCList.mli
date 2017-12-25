@@ -339,6 +339,9 @@ val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** Fold on list, with index *)
 
 val get_at_idx : int -> 'a t -> 'a option
+(** Get by index in the list.
+    If the index is negative, it will get element starting from the end
+    of the list. *)
 
 val nth_opt : 'a t -> int -> 'a option
 (** Safe version of {!nth}.
@@ -347,15 +350,21 @@ val nth_opt : 'a t -> int -> 'a option
 
 val get_at_idx_exn : int -> 'a t -> 'a
 (** Get the i-th element, or
-    @raise Not_found if the index is invalid *)
+    @raise Not_found if the index is invalid
+    If the index is negative, it will get element starting from the end
+    of the list. *)
 
 val set_at_idx : int -> 'a -> 'a t -> 'a t
 (** Set i-th element (removes the old one), or does nothing if
-    index is too high *)
+    index is too high.
+    If the index is negative, it will set element starting from the end
+    of the list. *)
 
 val insert_at_idx : int -> 'a -> 'a t -> 'a t
 (** Insert at i-th position, between the two existing elements. If the
-    index is too high, append at the end of the list *)
+    index is too high, append at the end of the list.
+    If the index is negative, it will insert element starting from the end
+    of the list. *)
 
 val remove_at_idx : int -> 'a t -> 'a t
 (** Remove element at given index. Does nothing if the index is

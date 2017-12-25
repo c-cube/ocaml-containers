@@ -1068,10 +1068,14 @@ let foldi f acc l =
   in
   foldi f acc 0 l
 
-let rec get_at_idx_exn i l = match l with
+let rec get_at_idx_rec i l = match l with
   | [] -> raise Not_found
   | x::_ when i=0 -> x
-  | _::l' -> get_at_idx_exn (i-1) l'
+  | _::l' -> get_at_idx_rec (i-1) l'
+
+let get_at_idx_exn i l =
+  let i = if i<0 then length l + i else i in
+  get_at_idx_rec i l
 
 let get_at_idx i l =
   try Some (get_at_idx_exn i l)
@@ -1081,7 +1085,9 @@ let get_at_idx i l =
   get_at_idx 0 (range 0 10) = Some 0
   get_at_idx 5 (range 0 10) = Some 5
   get_at_idx 11 (range 0 10) = None
+  get_at_idx (-1) (range 0 10) = Some 10
   get_at_idx 0 [] = None
+  get_at_idx (-1) [] = None
 *)
 
 let set_at_idx i x l0 =
@@ -1091,12 +1097,14 @@ let set_at_idx i x l0 =
     | y::l' ->
       aux l' (y::acc) (i-1)
   in
+  let i = if i<0 then length l0 + i else i in
   aux l0 [] i
 
 (*$T
   set_at_idx 0 10 [1;2;3] = [10;2;3]
   set_at_idx 4 10 [1;2;3] = [1;2;3]
   set_at_idx 1 10 [1;2;3] = [1;10;3]
+  set_at_idx (-2) 10 [1;2;3] = [1;10;3]
 *)
 
 let insert_at_idx i x l =
@@ -1106,12 +1114,14 @@ let insert_at_idx i x l =
     | y::l' ->
       aux l' (y::acc) (i-1) x
   in
+  let i = if i<0 then length l + i else i in
   aux l [] i x
 
 (*$T
   insert_at_idx 0 10 [1;2;3] = [10;1;2;3]
   insert_at_idx 4 10 [1;2;3] = [1;2;3;10]
   insert_at_idx 1 10 [1;2;3] = [1;10;2;3]
+  insert_at_idx (-2) 10 [1;2;3] = [1;10;2;3]
 *)
 
 let remove_at_idx i l0 =
@@ -1121,10 +1131,8 @@ let remove_at_idx i l0 =
     | y::l' ->
       aux l' (y::acc) (i-1)
   in
-  if i < 0 then
-    aux l0 [] (List.length l0 + i)
-  else
-    aux l0 [] i
+  let i = if i<0 then length l0 + i else i in
+  aux l0 [] i
 
 (*$T
   remove_at_idx 0 [1;2;3;4] = [2;3;4]
