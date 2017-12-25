@@ -1136,6 +1136,17 @@ let remove_at_idx i l0 =
   remove_at_idx (-4) [1;2;3;4] = [2;3;4]
 *)
 
+let rec remove_last = function
+  | [] | [_] -> []
+  | x::xs -> x::remove_last xs
+
+(*$T
+  remove_last [] = []
+  remove_last [1] = []
+  remove_last [1; 2] = [1]
+  remove_last [1; 2; 3] = [1; 2]
+*)
+
 let range_by ~step i j =
   let rec range i j acc =
     if i=j then i::acc else range i (j-step) (j::acc)
