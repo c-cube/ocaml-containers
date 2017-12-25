@@ -1121,12 +1121,19 @@ let remove_at_idx i l0 =
     | y::l' ->
       aux l' (y::acc) (i-1)
   in
-  aux l0 [] i
+  if i < 0 then
+    aux l0 [] (List.length l0 + i)
+  else
+    aux l0 [] i
 
 (*$T
   remove_at_idx 0 [1;2;3;4] = [2;3;4]
   remove_at_idx 3 [1;2;3;4] = [1;2;3]
   remove_at_idx 5 [1;2;3;4] = [1;2;3;4]
+  remove_at_idx (-1) [1;2;3;4] = [1;2;3]
+  remove_at_idx (-2) [1;2;3;4] = [1;2;4]
+  remove_at_idx (-3) [1;2;3;4] = [1;3;4]
+  remove_at_idx (-4) [1;2;3;4] = [2;3;4]
 *)
 
 let range_by ~step i j =
