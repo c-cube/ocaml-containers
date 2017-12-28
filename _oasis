@@ -127,6 +127,7 @@ Executable run_benchs
   MainIs:           run_benchs.ml
   BuildDepends:     containers, qcheck,
                     containers.data, containers.iter, containers.thread,
+                    containers.monomorphic,
                     sequence, gen, benchmark
 
 Executable run_bench_hash
