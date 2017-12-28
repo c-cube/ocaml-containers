@@ -58,6 +58,7 @@ end
 
 let equal (a:string) b = Pervasives.(=) a b
 
+let compare_int (a : int) b = Pervasives.compare a b
 let compare = String.compare
 
 let hash s = Hashtbl.hash s
@@ -442,7 +443,7 @@ let compare_versions a b =
         | Some _, None -> 1
         | None, Some _ -> -1
         | Some x, Some y ->
-          let c = Pervasives.compare x y in
+          let c = compare_int x y in
           if c<>0 then c else cmp_rec a b
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
@@ -480,7 +481,7 @@ let compare_natural a b =
         | NC_int _, NC_char _ -> 1
         | NC_char _, NC_int _ -> -1
         | NC_int x, NC_int y ->
-          let c = Pervasives.compare x y in
+          let c = compare_int x y in
           if c<>0 then c else cmp_rec a b
   in
   cmp_rec (chunks a) (chunks b)

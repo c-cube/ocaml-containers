@@ -5,7 +5,7 @@ type t = int
 
 let equal (a:int) b = a=b
 
-let compare (a:int) b = Pervasives.compare a b
+let compare a b = compare a b
 
 let hash i = i land max_int
 
@@ -247,12 +247,12 @@ let range' i j yield =
 
 
 module Infix = struct
-  let (=) = Pervasives.(=)
-  let (<>) = Pervasives.(<>)
-  let (<) = Pervasives.(<)
-  let (>) = Pervasives.(>)
-  let (<=) = Pervasives.(<=)
-  let (>=) = Pervasives.(>=)
+  let (=) = (=)
+  let (<>) = (<>)
+  let (<) = (<)
+  let (>) = (>)
+  let (<=) = (<=)
+  let (>=) = (>=)
   let (--) = range
   let (--^) = range'
 end

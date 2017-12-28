@@ -77,10 +77,10 @@ type ('k, 'a) table = {
 (** Mutable set *)
 type 'a set = ('a, unit) table
 
-val mk_table: ?eq:('k -> 'k -> bool) -> ?hash:('k -> int) -> int -> ('k, 'a) table
+val mk_table: eq:('k -> 'k -> bool) -> ?hash:('k -> int) -> int -> ('k, 'a) table
 (** Default implementation for {!table}: a {!Hashtbl.t} *)
 
-val mk_map: ?cmp:('k -> 'k -> int) -> unit -> ('k, 'a) table
+val mk_map: cmp:('k -> 'k -> int) -> unit -> ('k, 'a) table
 (** Use a {!Map.S} underneath *)
 
 (** {2 Bags of vertices} *)
@@ -104,7 +104,7 @@ val mk_heap: leq:('a -> 'a -> bool) -> 'a bag
 module Traverse : sig
   type ('v, 'e) path = ('v * 'e * 'v) list
 
-  val generic: ?tbl:'v set ->
+  val generic: tbl:'v set ->
     bag:'v bag ->
     graph:('v, 'e) t ->
     'v sequence ->
@@ -120,7 +120,7 @@ module Traverse : sig
     'v sequence_once
   (** One-shot traversal of the graph using a tag set and the given bag *)
 
-  val dfs: ?tbl:'v set ->
+  val dfs: tbl:'v set ->
     graph:('v, 'e) t ->
     'v sequence ->
     'v sequence_once
@@ -130,7 +130,7 @@ module Traverse : sig
     'v sequence ->
     'v sequence_once
 
-  val bfs: ?tbl:'v set ->
+  val bfs: tbl:'v set ->
     graph:('v, 'e) t ->
     'v sequence ->
     'v sequence_once
@@ -140,7 +140,7 @@ module Traverse : sig
     'v sequence ->
     'v sequence_once
 
-  val dijkstra : ?tbl:'v set ->
+  val dijkstra : tbl:'v set ->
     ?dist:('e -> int) ->
     graph:('v, 'e) t ->
     'v sequence ->
@@ -174,15 +174,15 @@ module Traverse : sig
     val get_edge : ('v, 'e) t -> ('v * 'e * 'v) option
     val get_edge_kind : ('v, 'e) t -> ('v * 'e * 'v * edge_kind) option
 
-    val dfs: ?tbl:'v set ->
-      ?eq:('v -> 'v -> bool) ->
+    val dfs: tbl:'v set ->
+      eq:('v -> 'v -> bool) ->
       graph:('v, 'e) graph ->
       'v sequence ->
       ('v,'e) t sequence_once
     (** Full version of DFS.
         @param eq equality predicate on vertices *)
 
-    val dfs_tag: ?eq:('v -> 'v -> bool) ->
+    val dfs_tag: eq:('v -> 'v -> bool) ->
       tags:'v tag_set ->
       graph:('v, 'e) graph ->
       'v sequence ->
@@ -195,7 +195,8 @@ end
 (** {2 Cycles} *)
 
 val is_dag :
-  ?tbl:'v set ->
+  tbl:'v set ->
+  eq:('v -> 'v -> bool) ->
   graph:('v, _) t ->
   'v sequence ->
   bool
@@ -207,9 +208,9 @@ val is_dag :
 
 exception Has_cycle
 
-val topo_sort : ?eq:('v -> 'v -> bool) ->
+val topo_sort : eq:('v -> 'v -> bool) ->
   ?rev:bool ->
-  ?tbl:'v set ->
+  tbl:'v set ->
   graph:('v, 'e) t ->
   'v sequence ->
   'v list
@@ -224,7 +225,7 @@ val topo_sort : ?eq:('v -> 'v -> bool) ->
       [v'] occurs before [v])
     @raise Has_cycle if the graph is not a DAG *)
 
-val topo_sort_tag : ?eq:('v -> 'v -> bool) ->
+val topo_sort_tag : eq:('v -> 'v -> bool) ->
   ?rev:bool ->
   tags:'v tag_set ->
   graph:('v, 'e) t ->
@@ -245,7 +246,7 @@ module Lazy_tree : sig
   val fold_v : ('acc -> 'v -> 'acc) -> 'acc -> ('v, _) t -> 'acc
 end
 
-val spanning_tree : ?tbl:'v set ->
+val spanning_tree : tbl:'v set ->
   graph:('v, 'e) t ->
   'v ->
   ('v, 'e) Lazy_tree.t
@@ -262,7 +263,7 @@ val spanning_tree_tag : tags:'v tag_set ->
 type 'v scc_state
 (** Hidden state for {!scc} *)
 
-val scc : ?tbl:('v, 'v scc_state) table ->
+val scc : tbl:('v, 'v scc_state) table ->
   graph:('v, 'e) t ->
   'v sequence ->
   'v list sequence_once
@@ -304,8 +305,8 @@ module Dot : sig
   type vertex_state
   (** Hidden state associated to a vertex *)
 
-  val pp : ?tbl:('v,vertex_state) table ->
-    ?eq:('v -> 'v -> bool) ->
+  val pp : tbl:('v,vertex_state) table ->
+    eq:('v -> 'v -> bool) ->
     ?attrs_v:('v -> attribute list) ->
     ?attrs_e:('e -> attribute list) ->
     ?name:string ->
@@ -318,8 +319,8 @@ module Dot : sig
       @param attrs_e attributes for edges
       @param name name of the graph *)
 
-  val pp_seq : ?tbl:('v,vertex_state) table ->
-    ?eq:('v -> 'v -> bool) ->
+  val pp_seq : tbl:('v,vertex_state) table ->
+    eq:('v -> 'v -> bool) ->
     ?attrs_v:('v -> attribute list) ->
     ?attrs_e:('e -> attribute list) ->
     ?name:string ->
@@ -340,7 +341,7 @@ type ('v, 'e) mut_graph = {
   remove : 'v -> unit;
 }
 
-val mk_mut_tbl : ?eq:('v -> 'v -> bool) ->
+val mk_mut_tbl : eq:('v -> 'v -> bool) ->
   ?hash:('v -> int) ->
   int ->
   ('v, 'a) mut_graph
@@ -397,7 +398,7 @@ module Map(O : Map.OrderedType) : MAP with type vertex = O.t
 
 (** {2 Misc} *)
 
-val of_list : ?eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, unit) t
+val of_list : eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, unit) t
 (** [of_list l] makes a graph from a list of pairs of vertices.
     Each pair [(a,b)] is an edge from [a] to [b].
     @param eq equality used to compare vertices *)

@@ -178,7 +178,7 @@ val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None] *)
 
-val remove : ?eq:('a -> 'a -> bool) -> key:'a -> 'a t -> 'a t
+val remove : eq:('a -> 'a -> bool) -> key:'a -> 'a t -> 'a t
 (** [remove ~key l] removes every instance of [key] from [l]. Tailrec.
     @param eq equality function
     @since 0.11 *)
@@ -186,23 +186,23 @@ val remove : ?eq:('a -> 'a -> bool) -> key:'a -> 'a t -> 'a t
 val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 (** Map and remove elements at the same time *)
 
-val sorted_merge : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
+val sorted_merge : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** Merges elements from both sorted list *)
 
-val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
+val sort_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list
 (** Sort the list and remove duplicate elements *)
 
-val sorted_merge_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
+val sorted_merge_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** [sorted_merge_uniq l1 l2] merges the sorted lists [l1] and [l2] and
     removes duplicates
     @since 0.10 *)
 
-val is_sorted : ?cmp:('a -> 'a -> int) -> 'a list -> bool
+val is_sorted : cmp:('a -> 'a -> int) -> 'a list -> bool
 (** [is_sorted l] returns [true] iff [l] is sorted (according to given order)
     @param cmp the comparison function (default [Pervasives.compare])
     @since 0.17 *)
 
-val sorted_insert : ?cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
+val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
 (** [sorted_insert x l] inserts [x] into [l] such that, if [l] was sorted,
     then [sorted_insert x l] is sorted too.
     @param uniq if true and [x] is already in sorted position in [l], then
@@ -215,14 +215,14 @@ val sorted_insert : ?cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a 
       is_sorted (sorted_insert x l))
 *)
 
-val uniq_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list
+val uniq_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list
 (** [uniq_succ l] removes duplicate elements that occur one next to the other.
     Examples:
     [uniq_succ [1;2;1] = [1;2;1]]
     [uniq_succ [1;1;2] = [1;2]]
     @since 0.10 *)
 
-val group_succ : ?eq:('a -> 'a -> bool) -> 'a list -> 'a list list
+val group_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list list
 (** [group_succ ~eq l] groups together consecutive elements that are equal
     according to [eq]
     @since 0.11 *)
@@ -259,30 +259,30 @@ val remove_at_idx : int -> 'a t -> 'a t
     Those operations maintain the invariant that the list does not
     contain duplicates (if it already satisfies it) *)
 
-val add_nodup : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+val add_nodup : eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
 (** [add_nodup x set] adds [x] to [set] if it was not already present. Linear time.
     @since 0.11 *)
 
-val remove_one : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+val remove_one : eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
 (** [remove_one x set] removes one occurrence of [x] from [set]. Linear time.
     @since 0.11 *)
 
-val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
+val mem : eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
 (** Membership to the list. Linear time *)
 
-val subset : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+val subset : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 (** Test for inclusion *)
 
-val uniq : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t
+val uniq : eq:('a -> 'a -> bool) -> 'a t -> 'a t
 (** Remove duplicates w.r.t the equality predicate.
     Complexity is quadratic in the length of the list, but the order
     of elements is preserved. If you wish for a faster de-duplication
     but do not care about the order, use {!sort_uniq}*)
 
-val union : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+val union : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
 (** List union. Complexity is product of length of inputs. *)
 
-val inter : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
+val inter : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
 (** List intersection. Complexity is product of length of inputs. *)
 
 (** {2 Other Constructors} *)
@@ -320,28 +320,28 @@ val repeat : int -> 'a t -> 'a t
 module Assoc : sig
   type ('a, 'b) t = ('a*'b) list
 
-  val get : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b option
+  val get : eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b option
   (** Find the element *)
 
-  val get_exn : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b
+  val get_exn : eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b
   (** Same as [get], but unsafe
       @raise Not_found if the element is not present *)
 
-  val set : ?eq:('a->'a->bool) -> 'a -> 'b -> ('a,'b) t -> ('a,'b) t
+  val set : eq:('a->'a->bool) -> 'a -> 'b -> ('a,'b) t -> ('a,'b) t
   (** Add the binding into the list (erase it if already present) *)
 
-  val mem : ?eq:('a->'a->bool) -> 'a -> ('a,_) t -> bool
+  val mem : eq:('a->'a->bool) -> 'a -> ('a,_) t -> bool
   (** [mem x l] returns [true] iff [x] is a key in [l]
       @since 0.16 *)
 
   val update :
-    ?eq:('a->'a->bool) -> f:('b option -> 'b option) -> 'a -> ('a,'b) t -> ('a,'b) t
+    eq:('a->'a->bool) -> f:('b option -> 'b option) -> 'a -> ('a,'b) t -> ('a,'b) t
   (** [update k ~f l] updates [l] on the key [k], by calling [f (get l k)]
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v']
       @since 0.16 *)
 
-  val remove : ?eq:('a->'a->bool) -> 'a -> ('a,'b) t -> ('a,'b) t
+  val remove : eq:('a->'a->bool) -> 'a -> ('a,'b) t -> ('a,'b) t
   (** [remove x l] removes the first occurrence of [k] from [l].
       @since 0.17 *)
 end

@@ -22,7 +22,7 @@ end = struct
 
   let min_int = min_int
 
-  let equal (a : int) b = Pervasives.(=) a b
+  let equal = (=)
 
   let rec highest_bit_naive x m =
     if x=m then m
@@ -469,7 +469,7 @@ let compare ~cmp a b =
       then
         let c = cmp va vb in
         if c=0 then cmp_gen cmp a b else c
-      else Pervasives.compare ka kb
+      else compare ka kb
   in
   cmp_gen cmp (to_gen a) (to_gen b)
 

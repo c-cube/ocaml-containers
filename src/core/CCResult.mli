@@ -96,9 +96,9 @@ val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
 
 val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
 
-val equal : ?err:'err equal -> 'a equal -> ('a, 'err) t equal
+val equal : err:'err equal -> 'a equal -> ('a, 'err) t equal
 
-val compare : ?err:'err ord -> 'a ord -> ('a, 'err) t ord
+val compare : err:'err ord -> 'a ord -> ('a, 'err) t ord
 
 val fold : ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) t -> 'b
 (** [fold ~ok ~error e] opens [e] and, if [e = Ok x], returns

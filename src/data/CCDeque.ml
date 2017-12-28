@@ -379,7 +379,7 @@ let copy d =
   assert_equal ~cmp q q'
 *)
 
-let equal ?(eq=Pervasives.(=)) a b =
+let equal ~eq a b =
   let rec aux eq a b = match a() , b() with
     | None, None -> true
     | None, Some _
@@ -387,7 +387,7 @@ let equal ?(eq=Pervasives.(=)) a b =
     | Some x, Some y -> eq x y && aux eq a b
   in aux eq (to_gen a) (to_gen b)
 
-let compare ?(cmp=Pervasives.compare) a b =
+let compare ~cmp a b =
   let rec aux cmp a b = match a() , b() with
     | None, None -> 0
     | None, Some _ -> -1

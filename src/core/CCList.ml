@@ -557,7 +557,7 @@ let map_product_l f l =
     cmp_lii_unord (cartesian_product l) (map_product_l CCFun.id l))
 *)
 
-let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
+let sorted_merge ~cmp l1 l2 =
   let rec recurse cmp acc l1 l2 = match l1,l2 with
     | [], _ -> List.rev_append acc l2
     | _, [] -> List.rev_append acc l1
@@ -572,15 +572,15 @@ let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
 (*$T
   List.sort Pervasives.compare ([(( * )2); ((+)1)] <*> [10;100]) \
     = [11; 20; 101; 200]
-  sorted_merge [1;1;2] [1;2;3] = [1;1;1;2;2;3]
+  sorted_merge ~cmp:CCInt.compare [1;1;2] [1;2;3] = [1;1;1;2;2;3]
 *)
 
 (*$Q
   Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    List.length (sorted_merge l1 l2) = List.length l1 + List.length l2)
+    List.length (sorted_merge ~cmp:CCInt.compare l1 l2) = List.length l1 + List.length l2)
 *)
 
-let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
+let sort_uniq (type elt) ~cmp l =
   let module S = Set.Make(struct
       type t = elt
       let compare = cmp
@@ -589,12 +589,12 @@ let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
   S.elements set
 
 (*$T
-  sort_uniq [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
-  sort_uniq [] = []
-  sort_uniq [10;10;10;10;1;10] = [1;10]
+  sort_uniq ~cmp:CCInt.compare [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
+  sort_uniq ~cmp:CCInt.compare [] = []
+  sort_uniq ~cmp:CCInt.compare [10;10;10;10;1;10] = [1;10]
 *)
 
-let is_sorted ?(cmp=Pervasives.compare) l =
+let is_sorted ~cmp l =
   let rec aux cmp = function
     | [] | [_] -> true
     | x :: ((y :: _) as tail) -> cmp x y <= 0 && aux cmp tail
@@ -603,10 +603,10 @@ let is_sorted ?(cmp=Pervasives.compare) l =
 
 (*$Q
   Q.(list small_int) (fun l -> \
-    is_sorted (List.sort Pervasives.compare l))
+    is_sorted ~cmp:CCInt.compare (List.sort Pervasives.compare l))
 *)
 
-let sorted_insert ?(cmp=Pervasives.compare) ?(uniq=false) x l =
+let sorted_insert ~cmp ?(uniq=false) x l =
   let rec aux cmp uniq x left l = match l with
     | [] -> List.rev_append left [x]
     | y :: tail ->
@@ -622,20 +622,20 @@ let sorted_insert ?(cmp=Pervasives.compare) ?(uniq=false) x l =
 (*$Q
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      is_sorted (sorted_insert ~uniq:true x l))
+      is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare ~uniq:true x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      is_sorted (sorted_insert ~uniq:false x l))
+      is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare ~uniq:false x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      let l' = sorted_insert ~uniq:false x l in \
+      let l' = sorted_insert ~cmp:CCInt.compare ~uniq:false x l in \
       List.length l' = List.length l + 1)
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      List.mem x (sorted_insert x l))
+      List.mem x (sorted_insert ~cmp:CCInt.compare x l))
 *)
 
-let uniq_succ ?(eq=Pervasives.(=)) l =
+let uniq_succ ~eq l =
   let rec f acc l = match l with
     | [] -> List.rev acc
     | [x] -> List.rev (x::acc)
@@ -645,10 +645,10 @@ let uniq_succ ?(eq=Pervasives.(=)) l =
   f [] l
 
 (*$T
-  uniq_succ [1;1;2;3;1;6;6;4;6;1] = [1;2;3;1;6;4;6;1]
+  uniq_succ ~eq:CCInt.equal [1;1;2;3;1;6;6;4;6;1] = [1;2;3;1;6;4;6;1]
 *)
 
-let group_succ ?(eq=Pervasives.(=)) l =
+let group_succ ~eq l =
   let rec f ~eq acc cur l = match cur, l with
     | [], [] -> List.rev acc
     | _::_, [] -> List.rev (List.rev cur :: acc)
@@ -659,15 +659,15 @@ let group_succ ?(eq=Pervasives.(=)) l =
   f ~eq [] [] l
 
 (*$T
-  group_succ [1;2;3;1;1;2;4] = [[1]; [2]; [3]; [1;1]; [2]; [4]]
-  group_succ [] = []
-  group_succ [1;1;1] = [[1;1;1]]
-  group_succ [1;2;2;2] = [[1]; [2;2;2]]
+  group_succ ~eq:CCInt.equal [1;2;3;1;1;2;4] = [[1]; [2]; [3]; [1;1]; [2]; [4]]
+  group_succ ~eq:CCInt.equal [] = []
+  group_succ ~eq:CCInt.equal [1;1;1] = [[1;1;1]]
+  group_succ ~eq:CCInt.equal [1;2;2;2] = [[1]; [2;2;2]]
   group_succ ~eq:(fun (x,_)(y,_)-> x=y) [1, 1; 1, 2; 1, 3; 2, 0] \
     = [[1, 1; 1, 2; 1, 3]; [2, 0]]
 *)
 
-let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
+let sorted_merge_uniq ~cmp l1 l2 =
   let push ~cmp acc x = match acc with
     | [] -> [x]
     | y :: _ when cmp x y > 0 -> x :: acc
@@ -687,21 +687,21 @@ let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
   recurse ~cmp [] l1 l2
 
 (*$T
-  sorted_merge_uniq [1; 1; 2; 3; 5; 8] [1; 2; 3; 4; 6; 8; 9; 9] = [1;2;3;4;5;6;8;9]
+  sorted_merge_uniq ~cmp:CCInt.compare [1; 1; 2; 3; 5; 8] [1; 2; 3; 4; 6; 8; 9; 9] = [1;2;3;4;5;6;8;9]
 *)
 
 (*$Q
   Q.(list int) (fun l -> \
     let l = List.sort Pervasives.compare l in \
-    sorted_merge_uniq l [] = uniq_succ l)
+    sorted_merge_uniq ~cmp:CCInt.compare l [] = uniq_succ ~eq:CCInt.equal l)
   Q.(list int) (fun l -> \
     let l = List.sort Pervasives.compare l in \
-    sorted_merge_uniq [] l = uniq_succ l)
+    sorted_merge_uniq ~cmp:CCInt.compare [] l = uniq_succ ~eq:CCInt.equal l)
   Q.(pair (list int) (list int)) (fun (l1, l2) -> \
     let l1 = List.sort Pervasives.compare l1 \
     and l2 = List.sort Pervasives.compare l2 in \
-    let l3 = sorted_merge_uniq l1 l2 in \
-    uniq_succ l3 = l3)
+    let l3 = sorted_merge_uniq ~cmp:CCInt.compare l1 l2 in \
+    uniq_succ ~eq:CCInt.equal l3 = l3)
 *)
 
 let take n l =
@@ -900,7 +900,7 @@ let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
   find_map (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
 *)
 
-let remove ?(eq=Pervasives.(=)) ~x l =
+let remove ~eq ~x l =
   let rec remove' eq x acc l = match l with
     | [] -> List.rev acc
     | y :: tail when eq x y -> remove' eq x acc tail
@@ -909,8 +909,8 @@ let remove ?(eq=Pervasives.(=)) ~x l =
   remove' eq x [] l
 
 (*$T
-  remove ~x:1 [2;1;3;3;2;1] = [2;3;3;2]
-  remove ~x:10 [1;2;3] = [1;2;3]
+  remove ~eq:CCInt.equal ~x:1 [2;1;3;3;2;1] = [2;3;3;2]
+  remove ~eq:CCInt.equal ~x:10 [1;2;3] = [1;2;3]
 *)
 
 let filter_map f l =
@@ -972,16 +972,16 @@ let all_ok l =
   (Error "e2") (all_ok [Ok 1; Error "e2"; Error "e3"; Ok 4])
 *)
 
-let mem ?(eq=Pervasives.(=)) x l =
+let mem ~eq x l =
   let rec search eq x l = match l with
     | [] -> false
     | y::l' -> eq x y || search eq x l'
   in search eq x l
 
-let add_nodup ?(eq=Pervasives.(=)) x l =
+let add_nodup ~eq x l =
   if mem ~eq x l then l else x::l
 
-let remove_one ?(eq=Pervasives.(=)) x l =
+let remove_one ~eq x l =
   let rec remove_one ~eq x acc l = match l with
     | [] -> assert false
     | y :: tl when eq x y -> List.rev_append acc tl
@@ -998,12 +998,12 @@ let remove_one ?(eq=Pervasives.(=)) x l =
     not (mem x l) || List.length (remove_one x l) = List.length l - 1)
 *)
 
-let subset ?(eq=Pervasives.(=)) l1 l2 =
+let subset ~eq l1 l2 =
   List.for_all
     (fun t -> mem ~eq t l2)
     l1
 
-let uniq ?(eq=Pervasives.(=)) l =
+let uniq ~eq l =
   let rec uniq eq acc l = match l with
     | [] -> List.rev acc
     | x::xs when List.exists (eq x) xs -> uniq eq acc xs
@@ -1019,7 +1019,7 @@ let uniq ?(eq=Pervasives.(=)) l =
     sort_uniq l = (uniq l |> sort Pervasives.compare))
   *)
 
-let union ?(eq=Pervasives.(=)) l1 l2 =
+let union ~eq l1 l2 =
   let rec union eq acc l1 l2 = match l1 with
     | [] -> List.rev_append acc l2
     | x::xs when mem ~eq x l2 -> union eq acc xs l2
@@ -1030,7 +1030,7 @@ let union ?(eq=Pervasives.(=)) l1 l2 =
   union [1;2;4] [2;3;4;5] = [1;2;3;4;5]
 *)
 
-let inter ?(eq=Pervasives.(=)) l1 l2 =
+let inter ~eq l1 l2 =
   let rec inter eq acc l1 l2 = match l1 with
     | [] -> List.rev acc
     | x::xs when mem ~eq x l2 -> inter eq (x::acc) xs l2
@@ -1236,9 +1236,9 @@ module Assoc = struct
     | (y,z)::l' ->
       if eq x y then z else search_exn eq l' x
 
-  let get_exn ?(eq=Pervasives.(=)) x l = search_exn eq l x
+  let get_exn ~eq x l = search_exn eq l x
 
-  let get ?(eq=Pervasives.(=)) x l =
+  let get ~eq x l =
     try Some (search_exn eq l x)
     with Not_found -> None
 
@@ -1259,7 +1259,7 @@ module Assoc = struct
       then f x (Some y') (List.rev_append acc l')
       else search_set eq ((x',y')::acc) l' x ~f
 
-  let set ?(eq=Pervasives.(=)) x y l =
+  let set ~eq x y l =
     search_set eq [] l x
       ~f:(fun x _ l -> (x,y)::l)
 
@@ -1270,7 +1270,7 @@ module Assoc = struct
       = [1, "1"; 2, "2"; 3, "3"]
   *)
 
-  let mem ?(eq=Pervasives.(=)) x l =
+  let mem ~eq x l =
     try ignore (search_exn eq l x); true
     with Not_found -> false
 
@@ -1279,7 +1279,7 @@ module Assoc = struct
     not (Assoc.mem 4 [1,"1"; 2,"2"; 3, "3"])
   *)
 
-  let update ?(eq=Pervasives.(=)) ~f x l =
+  let update ~eq ~f x l =
     search_set eq [] l x
       ~f:(fun x opt_y rest ->
         match f opt_y with
@@ -1297,7 +1297,7 @@ module Assoc = struct
         ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
   *)
 
-  let remove ?(eq=Pervasives.(=)) x l =
+  let remove ~eq x l =
     search_set eq [] l x
       ~f:(fun _ opt_y rest -> match opt_y with
         | None -> l  (* keep as is *)

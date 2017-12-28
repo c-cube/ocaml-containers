@@ -109,12 +109,12 @@ let (>|=) e f = map f e
 
 let (>>=) e f = flat_map f e
 
-let equal ?(err=Pervasives.(=)) eq a b = match a, b with
+let equal ~err eq a b = match a, b with
   | Ok x, Ok y -> eq x y
   | Error s, Error s' -> err s s'
   | _ -> false
 
-let compare ?(err=Pervasives.compare) cmp a b = match a, b with
+let compare ~err cmp a b = match a, b with
   | Ok x, Ok y -> cmp x y
   | Ok _, _  -> 1
   | _, Ok _ -> -1

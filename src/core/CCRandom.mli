@@ -56,7 +56,7 @@ val replicate : int -> 'a t -> 'a list t
     randomly using [g] *)
 
 val sample_without_replacement:
-  ?compare:('a -> 'a -> int) -> int -> 'a t -> 'a list t
+  compare:('a -> 'a -> int) -> int -> 'a t -> 'a list t
 (** [sample_without_replacement n g] makes a list of [n] elements which are all
     generated randomly using [g] with the added constraint that none of the generated
     random values are equal

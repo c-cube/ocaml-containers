@@ -366,16 +366,16 @@ module Cache = struct
 
   let bench_fib n =
     let l =
-      [ "replacing_fib (128)", make_fib (C.replacing 128), n
-      ; "LRU_fib (128)", make_fib (C.lru 128), n
-      ; "replacing_fib (16)", make_fib (C.replacing 16), n
-      ; "LRU_fib (16)", make_fib (C.lru 16), n
-      ; "unbounded", make_fib (C.unbounded 32), n
+      [ "replacing_fib (128)", make_fib (C.replacing ~eq:CCInt.equal 128), n
+      ; "LRU_fib (128)", make_fib (C.lru ~eq:CCInt.equal 128), n
+      ; "replacing_fib (16)", make_fib (C.replacing ~eq:CCInt.equal 16), n
+      ; "LRU_fib (16)", make_fib (C.lru ~eq:CCInt.equal 16), n
+      ; "unbounded", make_fib (C.unbounded ~eq:CCInt.equal 32), n
       ]
     in
     let l = if n <= 20
-      then  [ "linear_fib (5)", make_fib (C.linear 5), n
-            ; "linear_fib (32)", make_fib (C.linear 32), n
+      then  [ "linear_fib (5)", make_fib (C.linear ~eq:CCInt.equal 5), n
+            ; "linear_fib (32)", make_fib (C.linear ~eq:CCInt.equal 32), n
             ; "dummy_fib", make_fib C.dummy, n
             ] @ l
       else l
@@ -1045,7 +1045,7 @@ module Graph = struct
 
   let dfs_event n () =
     let tbl = CCGraph.mk_table ~eq:CCInt.equal ~hash:CCInt.hash (n+10) in
-    CCGraph.Traverse.Event.dfs ~tbl ~graph:div_graph_
+    CCGraph.Traverse.Event.dfs ~tbl ~eq:CCInt.equal ~graph:div_graph_
       (Sequence.return n)
     |> Sequence.fold
       (fun acc -> function

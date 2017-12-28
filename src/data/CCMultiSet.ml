@@ -5,6 +5,9 @@
 
 type 'a sequence = ('a -> unit) -> unit
 
+let max_int = max
+let min_int = min
+
 module type S = sig
   type elt
   type t
@@ -172,7 +175,7 @@ module Make(O : Set.OrderedType) = struct
       (fun _ n1 n2 -> match n1, n2 with
          | None, None -> assert false
          | Some n, None | None, Some n -> Some n
-         | Some n1, Some n2 -> Some (Pervasives.max n1 n2))
+         | Some n1, Some n2 -> Some (max_int n1 n2))
       m1 m2
 
   let intersection m1 m2 =
@@ -181,7 +184,7 @@ module Make(O : Set.OrderedType) = struct
          | None, None -> assert false
          | Some _, None
          | None, Some _ -> None
-         | Some n1, Some n2 -> Some (Pervasives.min n1 n2))
+         | Some n1, Some n2 -> Some (min_int n1 n2))
       m1 m2
 
   let diff m1 m2 =

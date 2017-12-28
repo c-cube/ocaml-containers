@@ -176,8 +176,7 @@ let sort_indices cmp a =
 *)
 
 let sort_ranking cmp a =
-  let cmp_int : int -> int -> int = Pervasives.compare in
-  sort_indices cmp_int (sort_indices cmp a)
+  sort_indices compare (sort_indices cmp a)
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
   [||] (sort_ranking Pervasives.compare [||])
@@ -297,10 +296,10 @@ let _lookup_exn ~cmp k a i j =
         | n when n<0 -> _lookup_rec ~cmp k a (i+1) (j-1)
         | _ -> raise Not_found  (* too high *)
 
-let lookup_exn ?(cmp=Pervasives.compare) k a =
+let lookup_exn ~cmp k a =
   _lookup_exn ~cmp k a 0 (Array.length a-1)
 
-let lookup ?(cmp=Pervasives.compare) k a =
+let lookup ~cmp k a =
   try Some (_lookup_exn ~cmp k a 0 (Array.length a-1))
   with Not_found -> None
 
@@ -314,7 +313,7 @@ let lookup ?(cmp=Pervasives.compare) k a =
   lookup 2 [| 1 |] = None
 *)
 
-let bsearch ?(cmp=Pervasives.compare) k a =
+let bsearch ~cmp k a =
   let rec aux i j =
     if i > j
     then `Just_after j
@@ -664,7 +663,7 @@ end
 
 let sort_generic (type arr)(type elt)
     (module A : MONO_ARRAY with type t = arr and type elt = elt)
-    ?(cmp=Pervasives.compare) a
+    ~cmp a
   =
   let module S = SortGeneric(A) in
   S.sort ~cmp a
