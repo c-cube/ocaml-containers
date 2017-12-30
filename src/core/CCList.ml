@@ -991,11 +991,11 @@ let remove_one ~eq x l =
 
 (*$Q
   Q.(pair int (list int)) (fun (x,l) -> \
-    remove_one x (add_nodup x l) = l)
+    remove_one ~eq:CCInt.equal x (add_nodup ~eq:CCInt.equal x l) = l)
   Q.(pair int (list int)) (fun (x,l) -> \
-    mem x l || List.length (add_nodup x l) = List.length l + 1)
+    mem ~eq:CCInt.equal x l || List.length (add_nodup ~eq:CCInt.equal x l) = List.length l + 1)
   Q.(pair int (list int)) (fun (x,l) -> \
-    not (mem x l) || List.length (remove_one x l) = List.length l - 1)
+    not (mem ~eq:CCInt.equal x l) || List.length (remove_one ~eq:CCInt.equal x l) = List.length l - 1)
 *)
 
 let subset ~eq l1 l2 =
@@ -1011,12 +1011,12 @@ let uniq ~eq l =
   in uniq eq [] l
 
 (*$T
-  uniq [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
+  uniq ~eq:CCInt.equal [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
 *)
 
 (*$Q
   Q.(small_list small_int) (fun l -> \
-    sort_uniq l = (uniq l |> sort Pervasives.compare))
+    sort_uniq ~cmp:CCInt.compare l = (uniq ~eq:CCInt.equal l |> sort Pervasives.compare))
   *)
 
 let union ~eq l1 l2 =
@@ -1027,7 +1027,7 @@ let union ~eq l1 l2 =
   in union eq [] l1 l2
 
 (*$T
-  union [1;2;4] [2;3;4;5] = [1;2;3;4;5]
+  union ~eq:CCInt.equal [1;2;4] [2;3;4;5] = [1;2;3;4;5]
 *)
 
 let inter ~eq l1 l2 =
@@ -1038,7 +1038,7 @@ let inter ~eq l1 l2 =
   in inter eq [] l1 l2
 
 (*$T
-  inter [1;2;4] [2;3;4;5] = [2;4]
+  inter ~eq:CCInt.equal [1;2;4] [2;3;4;5] = [2;4]
 *)
 
 let mapi f l =
@@ -1243,10 +1243,10 @@ module Assoc = struct
     with Not_found -> None
 
   (*$T
-    Assoc.get 1 [1, "1"; 2, "2"] = Some "1"
-    Assoc.get 2 [1, "1"; 2, "2"] = Some "2"
-    Assoc.get 3 [1, "1"; 2, "2"] = None
-    Assoc.get 42 [] = None
+    Assoc.get ~eq:CCInt.equal 1 [1, "1"; 2, "2"] = Some "1"
+    Assoc.get ~eq:CCInt.equal 2 [1, "1"; 2, "2"] = Some "2"
+    Assoc.get ~eq:CCInt.equal 3 [1, "1"; 2, "2"] = None
+    Assoc.get ~eq:CCInt.equal 42 [] = None
   *)
 
   (* search for a binding for [x] in [l], and calls [f x (Some v) rest]
@@ -1264,9 +1264,9 @@ module Assoc = struct
       ~f:(fun x _ l -> (x,y)::l)
 
   (*$T
-    Assoc.set 2 "two" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
+    Assoc.set ~eq:CCInt.equal 2 "two" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
       = [1, "1"; 2, "two"]
-    Assoc.set 3 "3" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
+    Assoc.set ~eq:CCInt.equal 3 "3" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
       = [1, "1"; 2, "2"; 3, "3"]
   *)
 
@@ -1275,8 +1275,8 @@ module Assoc = struct
     with Not_found -> false
 
   (*$T
-    Assoc.mem 1 [1,"1"; 2,"2"; 3, "3"]
-    not (Assoc.mem 4 [1,"1"; 2,"2"; 3, "3"])
+    Assoc.mem ~eq:CCInt.equal 1 [1,"1"; 2,"2"; 3, "3"]
+    not (Assoc.mem ~eq:CCInt.equal 4 [1,"1"; 2,"2"; 3, "3"])
   *)
 
   let update ~eq ~f x l =
@@ -1287,13 +1287,13 @@ module Assoc = struct
           | Some y' -> (x,y') :: rest)
   (*$=
     [1,"1"; 2,"22"] \
-      (Assoc.update 2 [1,"1"; 2,"2"] \
+      (Assoc.update ~eq:CCInt.equal 2 [1,"1"; 2,"2"] \
         ~f:(function Some "2" -> Some "22" | _ -> assert false) |> lsort)
     [1,"1"; 3,"3"] \
-      (Assoc.update 2 [1,"1"; 2,"2"; 3,"3"] \
+      (Assoc.update ~eq:CCInt.equal 2 [1,"1"; 2,"2"; 3,"3"] \
         ~f:(function Some "2" -> None | _ -> assert false) |> lsort)
     [1,"1"; 2,"2"; 3,"3"] \
-      (Assoc.update 3 [1,"1"; 2,"2"] \
+      (Assoc.update ~eq:CCInt.equal 3 [1,"1"; 2,"2"] \
         ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
   *)
 
@@ -1305,11 +1305,11 @@ module Assoc = struct
 
   (*$=
     [1,"1"] \
-      (Assoc.remove 2 [1,"1"; 2,"2"] |> lsort)
+      (Assoc.remove ~eq:CCInt.equal 2 [1,"1"; 2,"2"] |> lsort)
     [1,"1"; 3,"3"] \
-      (Assoc.remove 2 [1,"1"; 2,"2"; 3,"3"] |> lsort)
+      (Assoc.remove ~eq:CCInt.equal 2 [1,"1"; 2,"2"; 3,"3"] |> lsort)
     [1,"1"; 2,"2"] \
-      (Assoc.remove 3 [1,"1"; 2,"2"] |> lsort)
+      (Assoc.remove ~eq:CCInt.equal 3 [1,"1"; 2,"2"] |> lsort)
   *)
 end
 

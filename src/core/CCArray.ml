@@ -304,13 +304,13 @@ let lookup ~cmp k a =
   with Not_found -> None
 
 (*$T
-  lookup 2 [|0;1;2;3;4;5|] = Some 2
-  lookup 4 [|0;1;2;3;4;5|] = Some 4
-  lookup 0 [|1;2;3;4;5|] = None
-  lookup 6 [|1;2;3;4;5|] = None
-  lookup 3 [| |] = None
-  lookup 1 [| 1 |] = Some 0
-  lookup 2 [| 1 |] = None
+  lookup ~cmp:CCInt.compare 2 [|0;1;2;3;4;5|] = Some 2
+  lookup ~cmp:CCInt.compare 4 [|0;1;2;3;4;5|] = Some 4
+  lookup ~cmp:CCInt.compare 0 [|1;2;3;4;5|] = None
+  lookup ~cmp:CCInt.compare 6 [|1;2;3;4;5|] = None
+  lookup ~cmp:CCInt.compare 3 [| |] = None
+  lookup ~cmp:CCInt.compare 1 [| 1 |] = Some 0
+  lookup ~cmp:CCInt.compare 2 [| 1 |] = None
 *)
 
 let bsearch ~cmp k a =
@@ -332,13 +332,13 @@ let bsearch ~cmp k a =
     | _ -> aux 0 (n-1)
 
 (*$T bsearch
-  bsearch 3 [|1; 2; 2; 3; 4; 10|] = `At 3
-  bsearch 5 [|1; 2; 2; 3; 4; 10|] = `Just_after 4
-  bsearch 1 [|1; 2; 5; 5; 11; 12|] = `At 0
-  bsearch 12 [|1; 2; 5; 5; 11; 12|] = `At 5
-  bsearch 10 [|1; 2; 2; 3; 4; 9|] = `All_lower
-  bsearch 0 [|1; 2; 2; 3; 4; 9|] = `All_bigger
-  bsearch 3 [| |] = `Empty
+  bsearch ~cmp:CCInt.compare 3 [|1; 2; 2; 3; 4; 10|] = `At 3
+  bsearch ~cmp:CCInt.compare 5 [|1; 2; 2; 3; 4; 10|] = `Just_after 4
+  bsearch ~cmp:CCInt.compare 1 [|1; 2; 5; 5; 11; 12|] = `At 0
+  bsearch ~cmp:CCInt.compare 12 [|1; 2; 5; 5; 11; 12|] = `At 5
+  bsearch ~cmp:CCInt.compare 10 [|1; 2; 2; 3; 4; 9|] = `All_lower
+  bsearch ~cmp:CCInt.compare 0 [|1; 2; 2; 3; 4; 9|] = `All_bigger
+  bsearch ~cmp:CCInt.compare 3 [| |] = `Empty
 *)
 
 let (>>=) a f = flat_map f a

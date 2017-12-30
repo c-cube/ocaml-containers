@@ -289,7 +289,8 @@ module Traverse = struct
 
   (*$R
     let l =
-      Traverse.Event.dfs ~graph:divisors_graph (Sequence.return 345614)
+      let tbl = mk_table ~eq:CCInt.equal 128 in
+      Traverse.Event.dfs ~tbl ~eq:CCInt.equal ~graph:divisors_graph (Sequence.return 345614)
       |> Sequence.to_list in
     let expected =
     [`Enter (345614, 0, []); `Edge (345614, (), 172807, `Forward);
@@ -339,13 +340,15 @@ let topo_sort ~eq ?rev ~tbl ~graph seq =
   topo_sort_tag ~eq ?rev ~tags ~graph seq
 
 (*$T
-  let l = topo_sort ~graph:divisors_graph (Seq.return 42) in \
+  let tbl = mk_table ~eq:CCInt.equal 128 in \
+  let l = topo_sort ~tbl ~eq:CCInt.equal ~graph:divisors_graph (Seq.return 42) in \
   List.for_all (fun (i,j) -> \
     let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
     let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
     idx_i < idx_j) \
     [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
-  let l = topo_sort ~rev:true ~graph:divisors_graph (Seq.return 42) in \
+  let tbl = mk_table ~eq:CCInt.equal 128 in \
+  let l = topo_sort ~tbl ~eq:CCInt.equal ~rev:true ~graph:divisors_graph (Seq.return 42) in \
   List.for_all (fun (i,j) -> \
     let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
     let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
@@ -487,7 +490,7 @@ let scc ~tbl ~graph seq = SCC.explore ~tbl ~graph seq
 (* example from https://en.wikipedia.org/wiki/Strongly_connected_component *)
 (*$R
   let set_eq ?(eq=(=)) l1 l2 = CCList.subset ~eq l1 l2 && CCList.subset ~eq l2 l1 in
-  let graph = of_list
+  let graph = of_list ~eq:CCString.equal
     [ "a", "b"
     ; "b", "e"
     ; "e", "a"
@@ -503,7 +506,8 @@ let scc ~tbl ~graph seq = SCC.explore ~tbl ~graph seq
     ; "h", "d"
     ; "h", "g"
   ] in
-  let res = scc ~graph (Seq.return "a") |> Seq.to_list in
+  let tbl = mk_table ~eq:CCString.equal 128 in
+  let res = scc ~tbl ~graph (Seq.return "a") |> Seq.to_list in
   assert_bool "scc"
     (set_eq ~eq:(set_eq ?eq:None) res
       [ [ "a"; "b"; "e" ]

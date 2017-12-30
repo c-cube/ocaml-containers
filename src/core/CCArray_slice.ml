@@ -353,7 +353,7 @@ let lookup ~cmp k a =
   with Not_found -> None
 
 (*$=
-  (Some 1) (lookup "c" (make [| "a"; "b"; "c" |] 1 2))
+  (Some 1) (lookup ~cmp:CCString.compare "c" (make [| "a"; "b"; "c" |] 1 2))
 *)
 
 let bsearch ~cmp k a =

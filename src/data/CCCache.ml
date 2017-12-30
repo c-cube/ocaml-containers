@@ -56,7 +56,7 @@ let with_cache_rec ?(cb=default_callback_) c f =
   f'
 
 (*$R
-  let c = unbounded 256 in
+  let c = unbounded ~eq:CCInt.equal 256 in
   let fib = with_cache_rec c
     (fun self n -> match n with
       | 1 | 2 -> 1
@@ -321,7 +321,7 @@ let lru (type a) ~eq ?(hash=default_hash_) size =
 
 (*$T
   let f = (let r = ref 0 in fun _ -> incr r; !r) in \
-  let c = lru 2 in \
+  let c = lru ~eq:CCInt.equal 2 in \
   let res1 = with_cache c f 1 in \
   let res2 = with_cache c f 2 in \
   let res3 = with_cache c f 3 in \
@@ -331,7 +331,7 @@ let lru (type a) ~eq ?(hash=default_hash_) size =
 
 (*$R
   let f = (let r = ref 0 in fun _ -> incr r; !r) in
-  let c = lru 2 in
+  let c = lru ~eq:CCEqual.unit 2 in
   let x = with_cache c f () in
   assert_equal 1 x;
   assert_equal 1 (size c);

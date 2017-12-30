@@ -96,7 +96,7 @@ let tl l = match l with
 (*$Q
   Q.(list_of_size Gen.(1--100) int) (fun l -> \
     let l' =  of_list l in \
-    (not (is_empty l')) ==> (equal l' (cons (hd l') (tl l'))) )
+    (not (is_empty l')) ==> (equal ~eq:CCInt.equal l' (cons (hd l') (tl l'))) )
 *)
 
 let front l = match l with
@@ -389,7 +389,7 @@ let equal ~eq l1 l2 =
 
 (*$Q
   Q.(pair (list int)(list int)) (fun (l1,l2) -> \
-    equal (of_list l1) (of_list l2) = (l1=l2))
+    equal ~eq:CCInt.equal (of_list l1) (of_list l2) = (l1=l2))
 *)
 
 (** {2 Utils} *)
@@ -556,7 +556,7 @@ let compare ~cmp l1 l2 =
 
 (*$Q
   Q.(pair (list int)(list int)) (fun (l1,l2) -> \
-    compare (of_list l1) (of_list l2) = (Pervasives.compare l1 l2))
+    compare ~cmp:CCInt.compare (of_list l1) (of_list l2) = (Pervasives.compare l1 l2))
 *)
 
 (** {2 Infix} *)

@@ -369,7 +369,7 @@ let copy d =
   let q = of_list [1;2;3;4] in
   assert_equal 4 (length q);
   let q' = copy q in
-  let cmp = equal ?eq:None in
+  let cmp = equal ~eq:CCInt.equal in
   assert_equal 4 (length q');
   assert_equal ~cmp q q';
   push_front q 0;
@@ -399,7 +399,7 @@ let compare ~cmp a b =
 
 (*$Q
    Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    CCOrd.equiv (compare (of_list l1) (of_list l2)) \
+    CCOrd.equiv (compare ~cmp:Pervasives.compare (of_list l1) (of_list l2)) \
       (CCList.compare Pervasives.compare l1 l2))
 *)
 

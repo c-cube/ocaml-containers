@@ -313,7 +313,7 @@ val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a l
 (*$Q
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      is_sorted (sorted_insert x l))
+      is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare x l))
 *)
 
 val uniq_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list
