@@ -240,7 +240,7 @@ let update k f t =
 
 let doubleton k1 v1 k2 v2 = add k1 v1 (singleton k2 v2)
 
-let rec equal ~eq a b = a==b || match a, b with
+let rec equal ~eq a b = Pervasives.(==) a b || match a, b with
     | E, E -> true
     | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
     | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
@@ -290,7 +290,7 @@ let choose t =
   with Not_found -> None
 
 let rec union f t1 t2 =
-  if t1==t2 then t1
+  if Pervasives.(==) t1 t2 then t1
   else match t1, t2 with
     | E, o | o, E -> o
     | L (k, v), o
@@ -345,7 +345,7 @@ let rec union f t1 t2 =
 *)
 
 let rec inter f a b =
-  if a==b then a
+  if Pervasives.(==) a b then a
   else match a, b with
     | E, _ | _, E -> E
     | L (k, v), o

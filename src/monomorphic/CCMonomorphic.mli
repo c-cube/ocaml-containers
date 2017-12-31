@@ -14,3 +14,6 @@ val (>=) : int -> int -> bool
 val compare : int -> int -> int
 val min : int -> int -> int
 val max : int -> int -> int
+
+val (==) : [`Consider_using_CCEqual_physical]
+[@@ocaml.deprecated "Please use CCEqual.physical instead."]

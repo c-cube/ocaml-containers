@@ -24,7 +24,7 @@ module Transient = struct
   type state = { mutable frozen: bool }
   type t = Nil | St of state
   let empty = Nil
-  let equal a b = a==b
+  let equal a b = Pervasives.(==) a b
   let create () = St {frozen=false}
   let active = function Nil -> false | St st -> not st.frozen
   let frozen = function Nil -> true | St st -> st.frozen
@@ -299,7 +299,7 @@ module Make(Key : KEY)
     type t = int
     let make = Key.hash
     let zero = 0
-    let is_0 h = h==0
+    let is_0 h = h = 0
     let equal (a : int) b = Pervasives.(=) a b
     let rem h = h land (A.length - 1)
     let quotient h = h lsr A.length_log

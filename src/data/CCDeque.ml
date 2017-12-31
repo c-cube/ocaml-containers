@@ -163,7 +163,7 @@ let take_back_node_ n = match n.cell with
 
 let take_back d =
   if is_empty d then raise Empty
-  else if d.cur == d.cur.prev
+  else if Pervasives.(==) d.cur d.cur.prev
   then (
     (* only one cell *)
     decr_size_ d;
@@ -196,7 +196,7 @@ let take_front_node_ n = match n.cell with
 
 let take_front d =
   if is_empty d then raise Empty
-  else if d.cur.prev == d.cur
+  else if Pervasives.(==) d.cur.prev d.cur
   then (
     (* only one cell *)
     decr_size_ d;
@@ -255,7 +255,7 @@ let fold f acc d =
       | Two (x,y) -> f (f acc x) y
       | Three (x,y,z) -> f (f (f acc x) y) z
     in
-    if n.next == first then acc else aux ~first f acc n.next
+    if Pervasives.(==) n.next first then acc else aux ~first f acc n.next
   in
   aux ~first:d.cur f acc d.cur
 
@@ -337,7 +337,7 @@ let to_gen q =
   let cell = ref q.cur.cell in
   let cur = ref q.cur in
   let rec next () = match !cell with
-    | Zero when (!cur).next == first -> None
+    | Zero when Pervasives.(==) (!cur).next first -> None
     | Zero ->
       (* go to next node *)
       let n = !cur in
