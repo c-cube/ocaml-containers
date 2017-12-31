@@ -6,6 +6,7 @@
 type 'a t = 'a -> 'a -> bool
 
 let poly = Pervasives.(=)
+let physical = Pervasives.(==)
 
 let int : int t = (=)
 let string : string t = Pervasives.(=)
