@@ -16,4 +16,4 @@ val min : int -> int -> int
 val max : int -> int -> int
 
 val (==) : [`Consider_using_CCEqual_physical]
-[@@ocaml.deprecated "Please use CCEqual.physical instead."]
+[@@ocaml.deprecated "Please use CCEqual.physical or Pervasives.(==) instead."]
