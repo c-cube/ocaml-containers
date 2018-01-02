@@ -7,6 +7,8 @@
 
 type 'a sequence = ('a -> unit) -> unit
 
+include module type of Format
+
 type t = Format.formatter
 type 'a printer = t -> 'a -> unit
 
