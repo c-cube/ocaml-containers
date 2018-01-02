@@ -13,35 +13,35 @@ module type S = sig
 
   val min_elt_opt : t -> elt option
   (** Safe version of {!min_elt}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val max_elt_opt : t -> elt option
   (** Safe version of {!max_elt}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val choose_opt : t -> elt option
   (** Safe version of {!choose}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_opt : elt -> t -> elt option
   (** Safe version of {!find}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_first : (elt -> bool) -> t -> elt
   (** Find minimum element satisfying predicate
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_first_opt : (elt -> bool) -> t -> elt option
   (** Safe version of {!find_first}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_last : (elt -> bool) -> t -> elt
   (** Find maximum element satisfying predicate
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_last_opt : (elt -> bool) -> t -> elt option
   (** Safe version of {!find_last}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val of_seq : elt sequence -> t
 

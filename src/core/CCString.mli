@@ -55,7 +55,7 @@ val equal : string -> string -> bool
 val compare : string -> string -> int
 
 val is_empty : string -> bool
-(** @since NEXT_RELEASE *)
+(** @since 1.5 *)
 
 val hash : string -> int
 
@@ -504,7 +504,7 @@ module Split : sig
       - [{first=true; last=true}] will return ["a"; "b"]
 
       The default value of all remaining functions is [Drop_none].
-      @since NEXT_RELEASE
+      @since 1.5
   *)
   type drop_if_empty = {
     first: bool;
@@ -513,7 +513,7 @@ module Split : sig
 
   val no_drop : drop_if_empty
   (** Do not drop any group, even empty and on borders
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val list_ : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) list
   (** Eplit the given string along the given separator [by]. Should only

@@ -78,7 +78,7 @@ val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 
 
 val count : ('a -> bool) -> 'a list -> int
 (** [count f l] counts how much element of [l] comply with the function [f].
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
@@ -103,11 +103,11 @@ val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val compare_lengths : 'a t -> 'b t -> int
 (** equivalent to [compare (length l1) (length l2)] but more efficient.
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val compare_length_with : 'a t -> int -> int
 (** equivalent to [compare (length l) x] but more efficient.
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
@@ -239,7 +239,7 @@ val find_pred : ('a -> bool) -> 'a t -> 'a option
 
 val find_opt : ('a -> bool) -> 'a t -> 'a option
 (** Safe version of {!find}
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val find_pred_exn : ('a -> bool) -> 'a t -> 'a
 (** Unsafe version of {!find_pred}
@@ -346,7 +346,7 @@ val get_at_idx : int -> 'a t -> 'a option
 val nth_opt : 'a t -> int -> 'a option
 (** Safe version of {!nth}.
     @raise Invalid_argument if the int is negative.
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val get_at_idx_exn : int -> 'a t -> 'a
 (** Get the i-th element, or
@@ -466,11 +466,11 @@ end
 
 val assoc_opt : 'a -> ('a * 'b) t -> 'b option
 (** Safe version of {!assoc}
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val assq_opt : 'a -> ('a * 'b) t -> 'b option
 (** Safe version of {!assq}
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 (** {2 References on Lists}
     @since 0.3.3 *)

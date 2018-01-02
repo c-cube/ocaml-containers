@@ -109,7 +109,7 @@ val sublists_of_len :
 
     See {!CCList.sublists_of_len} for more details.
 
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val pure : 'a -> 'a t
 

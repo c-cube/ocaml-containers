@@ -1,5 +1,27 @@
 = Changelog
 
+== 1.5
+
+- have `CCList.{get,insert,set}_at_idx` work with negative indices
+- Add CCCache.add
+- missing function in `CCListLabels`
+- Allow negative indexes in CCList.remove_at_idx
+- add an optional `drop` parameter to string-splitting functions
+- add `Hash.const0` for trivial hash function that ignores its input
+- improve compatibility with the stdlib
+- Add List.count
+- Add String.is_empty
+- add missing compatibility functions: `{assoc_opt,assq_opt}`
+- backport some functions added in 4.05 in `CCList`
+- add functions from 4.05 into `CC{Map,Set}`
+- Implement `CCImmutArray.sub`
+- bugfix in `CCTrie.Make`: Remove polymorphic comparison
+
+- remove dependency on cppo
+- add travis support
+- update doc of `CCList.cartesian_product`, which returns results in unspecified order (close #154)
+- fix containers.top (closes #155)
+
 == 1.4
 
 - add `CCMap.union`

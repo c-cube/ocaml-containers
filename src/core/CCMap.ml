@@ -27,28 +27,28 @@ module type S = sig
 
   val choose_opt : 'a t -> (key * 'a) option
   (** Safe version of {!choose}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val min_binding_opt : 'a t -> (key * 'a) option
   (** Safe version of {!min_binding}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val max_binding_opt : 'a t -> (key * 'a) option
   (** Safe version of {!max_binding}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_opt : key -> 'a t -> 'a option
   (** Safe version of {!find}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_first : (key -> bool) -> 'a t -> key * 'a
   (** Find smallest binding satisfying the monotonic predicate.
       See {!Map.S.find_first}.
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val find_first_opt : (key -> bool) -> 'a t -> (key * 'a) option
   (** Safe version of {!find_first}
-      @since NEXT_RELEASE *)
+      @since 1.5 *)
 
   val merge_safe :
     f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->

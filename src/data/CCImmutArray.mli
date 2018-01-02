@@ -43,7 +43,7 @@ val sub : 'a t -> int -> int -> 'a t
     Raises [Invalid_argument "Array.sub"] if [start] and [len] do not designate a
     valid subarray of a; that is, if start < 0, or len < 0, or start + len > Array.length a.
 
-    @since NEXT_RELEASE *)
+    @since 1.5 *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 
