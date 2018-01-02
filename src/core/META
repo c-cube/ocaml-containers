@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3a776cf70f415cc6c1505c02b13044b5)
-version = "1.4"
+# DO NOT EDIT (digest: fb895e43d7bf196a6016effa48011802)
+version = "1.5"
 description = "A modular standard library focused on data structures."
 requires = "bytes result"
 archive(byte) = "containers.cma"
@@ -9,7 +9,7 @@ archive(native) = "containers.cmxa"
 archive(native, plugin) = "containers.cmxs"
 exists_if = "containers.cma"
 package "unix" (
- version = "1.4"
+ version = "1.5"
  description = "A modular standard library focused on data structures."
  requires = "bytes result unix"
  archive(byte) = "containers_unix.cma"
@@ -20,7 +20,7 @@ package "unix" (
 )
 
 package "top" (
- version = "1.4"
+ version = "1.5"
  description = "A modular standard library focused on data structures."
  requires =
  "compiler-libs.common containers containers.data containers.unix containers.sexp containers.iter"
@@ -32,7 +32,7 @@ package "top" (
 )
 
 package "thread" (
- version = "1.4"
+ version = "1.5"
  description = "A modular standard library focused on data structures."
  requires = "containers threads"
  archive(byte) = "containers_thread.cma"
@@ -43,7 +43,7 @@ package "thread" (
 )
 
 package "sexp" (
- version = "1.4"
+ version = "1.5"
  description = "A modular standard library focused on data structures."
  requires = "bytes result"
  archive(byte) = "containers_sexp.cma"
@@ -54,7 +54,7 @@ package "sexp" (
 )
 
 package "iter" (
- version = "1.4"
+ version = "1.5"
  description = "A modular standard library focused on data structures."
  archive(byte) = "containers_iter.cma"
  archive(byte, plugin) = "containers_iter.cma"
@@ -64,7 +64,7 @@ package "iter" (
 )
 
 package "data" (
- version = "1.4"
+ version = "1.5"
  description = "A modular standard library focused on data structures."
  requires = "bytes"
  archive(byte) = "containers_data.cma"
