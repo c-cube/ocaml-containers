@@ -54,6 +54,9 @@ val equal : string -> string -> bool
 
 val compare : string -> string -> int
 
+val is_empty : string -> bool
+(** @since 1.5 *)
+
 val hash : string -> int
 
 val init : int -> (int -> char) -> string
@@ -278,6 +281,14 @@ val lines_gen : string -> string gen
 (** [lines_gen s] returns a generator of the lines of [s] (splits along '\n')
     @since 0.10 *)
 
+(*$= & ~printer:Q.Print.(list @@ Printf.sprintf "%S")
+  ["ab"; "c"] (lines "ab\nc")
+  ["ab"; "c"] (lines "ab\nc\n")
+  [] (lines "")
+  [""] (lines "\n")
+  [""; "a"] (lines "\na")
+*)
+
 val concat_gen : sep:string -> string gen -> string
 (** [concat_gen ~sep g] concatenates all strings of [g], separated with [sep].
     @since 0.10 *)
@@ -290,9 +301,20 @@ val unlines_gen : string gen -> string
 (** [unlines_gen g] concatenates all strings of [g], separated with '\n'
     @since 0.10 *)
 
+(*$= & ~printer:CCFun.id
+  "" (unlines [])
+  "ab\nc\n" (unlines ["ab"; "c"])
+*)
+
 (*$Q
-  Q.printable_string (fun s -> unlines (lines s) = s)
-  Q.printable_string (fun s -> unlines_gen (lines_gen s) = s)
+  Q.printable_string (fun s -> trim (unlines (lines s)) = trim s)
+  Q.printable_string (fun s -> trim (unlines_gen (lines_gen s)) = trim s)
+*)
+
+(*$Q
+  Q.(list string) (fun l -> \
+    let l = unlines l |> lines in \
+    l = (unlines l |> lines))
 *)
 
 val set : string -> int -> char -> string
@@ -474,7 +496,26 @@ end
 (** {2 Splitting} *)
 
 module Split : sig
-  val list_ : by:string -> string -> (string*int*int) list
+  (** Specification of what to do with empty blocks, as in [split ~by:"-" "-a-b-"].
+
+      - [{first=false; last=false}] will return [""; "a"; "b"; ""]
+      - [{first=true; last=false}] will return ["a"; "b" ""]
+      - [{first=false; last=true}] will return [""; "a"; "b"]
+      - [{first=true; last=true}] will return ["a"; "b"]
+
+      The default value of all remaining functions is [Drop_none].
+      @since 1.5
+  *)
+  type drop_if_empty = {
+    first: bool;
+    last: bool;
+  }
+
+  val no_drop : drop_if_empty
+  (** Do not drop any group, even empty and on borders
+      @since 1.5 *)
+
+  val list_ : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) list
   (** Eplit the given string along the given separator [by]. Should only
       be used with very small separators, otherwise
       use {!Containers_string.KMP}.
@@ -483,18 +524,18 @@ module Split : sig
       a string from the slice.
       @raise Failure if [by = ""] *)
 
-  val gen : by:string -> string -> (string*int*int) gen
+  val gen : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) gen
 
-  val seq : by:string -> string -> (string*int*int) sequence
+  val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) sequence
 
-  val klist : by:string -> string -> (string*int*int) klist
+  val klist : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) klist
 
   (** {6 Copying functions}
 
       Those split functions actually copy the substrings, which can be
       more convenient but less efficient in general *)
 
-  val list_cpy : by:string -> string -> string list
+  val list_cpy : ?drop:drop_if_empty -> by:string -> string -> string list
 
   (*$T
     Split.list_cpy ~by:"," "aa,bb,cc" = ["aa"; "bb"; "cc"]
@@ -502,11 +543,11 @@ module Split : sig
     Split.list_cpy ~by:" " "hello  world aie" = ["hello"; ""; "world"; "aie"]
   *)
 
-  val gen_cpy : by:string -> string -> string gen
+  val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
 
-  val seq_cpy : by:string -> string -> string sequence
+  val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
 
-  val klist_cpy : by:string -> string -> string klist
+  val klist_cpy : ?drop:drop_if_empty -> by:string -> string -> string klist
 
   val left : by:string -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the leftmost part of

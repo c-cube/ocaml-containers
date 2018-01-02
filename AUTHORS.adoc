@@ -23,3 +23,4 @@
 - Leonid Rozenberg (@rleonid)
 - Bikal Gurung (@bikalgurung)
 - Fabian Hemmer (copy)
+- Maciej Woś (@lostman)

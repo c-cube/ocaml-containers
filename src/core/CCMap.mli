@@ -9,6 +9,9 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
+module type OrderedType = Map.OrderedType
+(** @since 1.5 *)
+
 module type S = sig
   include Map.S
 
@@ -25,6 +28,31 @@ module type S = sig
       otherwise it calls [f None]. In any case, if the result is [None]
       [k] is removed from [m], and if the result is [Some v'] then
       [add k v' m] is returned. *)
+
+  val choose_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!choose}
+      @since 1.5 *)
+
+  val min_binding_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!min_binding}
+      @since 1.5 *)
+
+  val max_binding_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!max_binding}
+      @since 1.5 *)
+
+  val find_opt : key -> 'a t -> 'a option
+  (** Safe version of {!find}
+      @since 1.5 *)
+
+  val find_first : (key -> bool) -> 'a t -> key * 'a
+  (** Find smallest binding satisfying the monotonic predicate.
+      See {!Map.S.find_first}.
+      @since 1.5 *)
+
+  val find_first_opt : (key -> bool) -> 'a t -> (key * 'a) option
+  (** Safe version of {!find_first}
+      @since 1.5 *)
 
   val merge_safe :
     f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->

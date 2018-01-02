@@ -76,6 +76,10 @@ val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 
     list to a list of lists that is then [flatten]'d..
     @since 0.14 *)
 
+val count : ('a -> bool) -> 'a list -> int
+(** [count f l] counts how much element of [l] comply with the function [f].
+    @since 1.5 *)
+
 val init : int -> (int -> 'a) -> 'a t
 (** Similar to {!Array.init}
     @since 0.6 *)
@@ -97,6 +101,14 @@ val split : ('a * 'b) t -> 'a t * 'b t
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
+val compare_lengths : 'a t -> 'b t -> int
+(** equivalent to [compare (length l1) (length l2)] but more efficient.
+    @since 1.5 *)
+
+val compare_length_with : 'a t -> int -> int
+(** equivalent to [compare (length l) x] but more efficient.
+    @since 1.5 *)
+
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
@@ -112,13 +124,15 @@ val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 (** Fold on the cartesian product *)
 
 val cartesian_product : 'a t t -> 'a t t
-(**
+(** Produce the cartesian product of this list of lists,
+    by returning all the ways of picking one element per sublist.
+    {b NOTE} the order of the returned list is unspecified.
     For example:
    {[
-     # cartesian_product [[1;2];[3];[4;5;6]] =
+     # cartesian_product [[1;2];[3];[4;5;6]] |> sort =
      [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
      # cartesian_product [[1;2];[];[4;5;6]] = [];;
-     # cartesian_product [[1;2];[3];[4];[5];[6]] =
+     # cartesian_product [[1;2];[3];[4];[5];[6]] |> sort =
      [[1;3;4;5;6];[2;3;4;5;6]];;
    ]}
     invariant: [cartesian_product l = map_product id l].
@@ -223,6 +237,10 @@ val find_pred : ('a -> bool) -> 'a t -> 'a option
     or returns [None] if no element satisfies [p]
     @since 0.11 *)
 
+val find_opt : ('a -> bool) -> 'a t -> 'a option
+(** Safe version of {!find}
+    @since 1.5 *)
+
 val find_pred_exn : ('a -> bool) -> 'a t -> 'a
 (** Unsafe version of {!find_pred}
     @raise Not_found if no such element is found
@@ -321,22 +339,38 @@ val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** Fold on list, with index *)
 
 val get_at_idx : int -> 'a t -> 'a option
+(** Get by index in the list.
+    If the index is negative, it will get element starting from the end
+    of the list. *)
+
+val nth_opt : 'a t -> int -> 'a option
+(** Safe version of {!nth}.
+    @raise Invalid_argument if the int is negative.
+    @since 1.5 *)
 
 val get_at_idx_exn : int -> 'a t -> 'a
 (** Get the i-th element, or
-    @raise Not_found if the index is invalid *)
+    @raise Not_found if the index is invalid
+    If the index is negative, it will get element starting from the end
+    of the list. *)
 
 val set_at_idx : int -> 'a -> 'a t -> 'a t
 (** Set i-th element (removes the old one), or does nothing if
-    index is too high *)
+    index is too high.
+    If the index is negative, it will set element starting from the end
+    of the list. *)
 
 val insert_at_idx : int -> 'a -> 'a t -> 'a t
 (** Insert at i-th position, between the two existing elements. If the
-    index is too high, append at the end of the list *)
+    index is too high, append at the end of the list.
+    If the index is negative, it will insert element starting from the end
+    of the list. *)
 
 val remove_at_idx : int -> 'a t -> 'a t
 (** Remove element at given index. Does nothing if the index is
-    too high. *)
+    too high.
+    If the index is negative, it will remove element starting from the end
+    of the list. *)
 
 (** {2 Set Operators}
 
@@ -429,6 +463,14 @@ module Assoc : sig
   (** [remove x l] removes the first occurrence of [k] from [l].
       @since 0.17 *)
 end
+
+val assoc_opt : 'a -> ('a * 'b) t -> 'b option
+(** Safe version of {!assoc}
+    @since 1.5 *)
+
+val assq_opt : 'a -> ('a * 'b) t -> 'b option
+(** Safe version of {!assq}
+    @since 1.5 *)
 
 (** {2 References on Lists}
     @since 0.3.3 *)

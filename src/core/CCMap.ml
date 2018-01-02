@@ -6,6 +6,8 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
+module type OrderedType = Map.OrderedType
+
 module type S = sig
   include Map.S
 
@@ -23,6 +25,31 @@ module type S = sig
       [k] is removed from [m], and if the result is [Some v'] then
       [add k v' m] is returned. *)
 
+  val choose_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!choose}
+      @since 1.5 *)
+
+  val min_binding_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!min_binding}
+      @since 1.5 *)
+
+  val max_binding_opt : 'a t -> (key * 'a) option
+  (** Safe version of {!max_binding}
+      @since 1.5 *)
+
+  val find_opt : key -> 'a t -> 'a option
+  (** Safe version of {!find}
+      @since 1.5 *)
+
+  val find_first : (key -> bool) -> 'a t -> key * 'a
+  (** Find smallest binding satisfying the monotonic predicate.
+      See {!Map.S.find_first}.
+      @since 1.5 *)
+
+  val find_first_opt : (key -> bool) -> 'a t -> (key * 'a) option
+  (** Safe version of {!find_first}
+      @since 1.5 *)
+
   val merge_safe :
     f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
     'a t -> 'b t -> 'c t
@@ -35,6 +62,7 @@ module type S = sig
       @since 1.4 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
+  (** Same as {!of_list} *)
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
   (** @since 0.14 *)
@@ -42,6 +70,10 @@ module type S = sig
   val to_seq : 'a t -> (key * 'a) sequence
 
   val of_list : (key * 'a) list -> 'a t
+  (** Build a map from the given list of bindings [k_i -> v_i],
+      added in order using {!add}.
+      If a key occurs several times, only its last binding
+      will be present in the result. *)
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
   (** @since 0.14 *)
@@ -62,11 +94,71 @@ module type S = sig
 end
 
 module Make(O : Map.OrderedType) = struct
-  include Map.Make(O)
+  module M = Map.Make(O)
 
-  let get k m =
-    try Some (find k m)
+  (* backport functions from recent stdlib.
+     they will be shadowed by inclusion of [S] if present. *)
+
+  let union f a b =
+    M.merge
+      (fun k v1 v2 -> match v1, v2 with
+         | None, None -> assert false
+         | None, (Some _ as r) -> r
+         | Some _ as r, None -> r
+         | Some v1, Some v2 -> f k v1 v2)
+      a b
+
+  let choose_opt m =
+    try Some (M.choose m)
     with Not_found -> None
+
+  let find_opt k m =
+    try Some (M.find k m)
+    with Not_found -> None
+
+  let max_binding_opt m =
+    try Some (M.max_binding m)
+    with Not_found -> None
+
+  let min_binding_opt m =
+    try Some (M.min_binding m)
+    with Not_found -> None
+
+  exception Find_binding_exit
+
+  let find_first_opt f m =
+    let res = ref None in
+    try
+      M.iter
+        (fun k v ->
+           if f k then (
+             res := Some (k,v);
+             raise Find_binding_exit
+           ))
+        m;
+      None
+    with Find_binding_exit ->
+      !res
+
+  let find_first f m = match find_first_opt f m with
+    | None -> raise Not_found
+    | Some (k,v) -> k, v
+
+  (* linear time, must traverse the whole map… *)
+  let find_last_opt f m =
+    let res = ref None in
+    M.iter
+      (fun k v -> if f k then res := Some (k,v))
+      m;
+    !res
+
+  let find_last f m = match find_last_opt f m with
+    | None -> raise Not_found
+    | Some (k,v) -> k, v
+
+  include M
+
+  let get = find_opt
 
   let get_or k m ~default =
     try find k m
@@ -88,15 +180,6 @@ module Make(O : Map.OrderedType) = struct
          | Some v1, None -> f k (`Left v1)
          | None, Some v2 -> f k (`Right v2)
          | Some v1, Some v2 -> f k (`Both (v1,v2)))
-      a b
-
-  let union f a b =
-    merge
-      (fun k v1 v2 -> match v1, v2 with
-         | None, None -> assert false
-         | None, (Some _ as r) -> r
-         | Some _ as r, None -> r
-         | Some v1, Some v2 -> f k v1 v2)
       a b
 
   let add_seq m s =

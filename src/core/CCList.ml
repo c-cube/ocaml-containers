@@ -9,6 +9,63 @@
 
 type 'a t = 'a list
 
+(* backport new functions from stdlib here *)
+
+let nth_opt l n =
+  if n<0 then invalid_arg "nth_opt";
+  let rec aux l n = match l, n with
+    | [], _ -> None
+    | x::_, 0 -> Some x
+    | _::l, _ -> aux l (n-1)
+  in
+  aux l n
+
+(*$Q
+  Q.(pair small_nat (list int)) (fun (i,l) -> \
+    nth_opt l i = get_at_idx i l)
+*)
+
+let rec find_opt p l = match l with
+  | [] -> None
+  | x :: _ when p x -> Some x
+  | _ :: tl -> find_opt p tl
+
+let rec compare_lengths l1 l2 = match l1, l2 with
+  | [], [] -> 0
+  | [], _::_ -> -1
+  | _::_, [] -> 1
+  | _::tail1, _::tail2 -> compare_lengths tail1 tail2
+
+(*$Q
+  Q.(pair (list int) (list int)) (fun (l1,l2) -> \
+    CCOrd.equiv (CCList.compare_lengths l1 l2) \
+      (CCInt.compare (length l1)(length l2)))
+*)
+
+let rec compare_length_with l n = match l, n with
+  | _ when n<0 -> 1
+  | [], 0 -> 0
+  | [], _ -> -1
+  | _::tail, _ -> compare_length_with tail (n-1)
+
+(*$Q
+  Q.(pair (list int) small_int) (fun (l,n) -> \
+    CCOrd.equiv (CCList.compare_length_with l n) \
+      (CCInt.compare (length l) n))
+*)
+
+let rec assoc_opt x = function
+  | [] -> None
+  | (y,v) :: _ when Pervasives.(=) x y -> Some v
+  | _ :: tail -> assoc_opt x tail
+
+let rec assq_opt x = function
+  | [] -> None
+  | (y,v) :: _ when Pervasives.(==) x y -> Some v
+  | _ :: tail -> assq_opt x tail
+
+(* end of backport *)
+
 include List
 
 let empty = []
@@ -313,6 +370,16 @@ let flatten l = fold_right append l []
 (*$T
   flatten [[1]; [2;3;4]; []; []; [5;6]] = 1--6
   flatten (init 300_001 (fun x->[x])) = 0--300_000
+*)
+
+let count f l =
+  fold_left (fun n x -> if f x then succ n else n) 0 l
+
+(*$T
+  count (fun x -> x mod 2 = 0) [] = 0
+  count (fun x -> x mod 2 = 0) [0; 0; 2; 4] = 4
+  count (fun x -> x mod 2 = 0) [1; 3; 5; 7] = 0
+  count (fun x -> x mod 2 = 0) [2; 6; 9; 4] = 3
 *)
 
 let product f l1 l2 =
@@ -802,10 +869,7 @@ let rec last_opt = function
   None (last_opt [])
 *)
 
-let rec find_pred p l = match l with
-  | [] -> None
-  | x :: _ when p x -> Some x
-  | _ :: tl -> find_pred p tl
+let find_pred = find_opt
 
 let find_pred_exn p l = match find_pred p l with
   | None -> raise Not_found
@@ -890,7 +954,7 @@ let all_ok l =
   try
     Result.Ok
       (map
-         (function Result.Ok x -> x | Error e -> err := Some e; raise Exit)
+         (function Result.Ok x -> x | Result.Error e -> err := Some e; raise Exit)
          l)
   with Exit ->
     begin match !err with
@@ -1004,10 +1068,14 @@ let foldi f acc l =
   in
   foldi f acc 0 l
 
-let rec get_at_idx_exn i l = match l with
+let rec get_at_idx_rec i l = match l with
   | [] -> raise Not_found
   | x::_ when i=0 -> x
-  | _::l' -> get_at_idx_exn (i-1) l'
+  | _::l' -> get_at_idx_rec (i-1) l'
+
+let get_at_idx_exn i l =
+  let i = if i<0 then length l + i else i in
+  get_at_idx_rec i l
 
 let get_at_idx i l =
   try Some (get_at_idx_exn i l)
@@ -1017,7 +1085,9 @@ let get_at_idx i l =
   get_at_idx 0 (range 0 10) = Some 0
   get_at_idx 5 (range 0 10) = Some 5
   get_at_idx 11 (range 0 10) = None
+  get_at_idx (-1) (range 0 10) = Some 10
   get_at_idx 0 [] = None
+  get_at_idx (-1) [] = None
 *)
 
 let set_at_idx i x l0 =
@@ -1027,12 +1097,14 @@ let set_at_idx i x l0 =
     | y::l' ->
       aux l' (y::acc) (i-1)
   in
+  let i = if i<0 then length l0 + i else i in
   aux l0 [] i
 
 (*$T
   set_at_idx 0 10 [1;2;3] = [10;2;3]
   set_at_idx 4 10 [1;2;3] = [1;2;3]
   set_at_idx 1 10 [1;2;3] = [1;10;3]
+  set_at_idx (-2) 10 [1;2;3] = [1;10;3]
 *)
 
 let insert_at_idx i x l =
@@ -1042,12 +1114,14 @@ let insert_at_idx i x l =
     | y::l' ->
       aux l' (y::acc) (i-1) x
   in
+  let i = if i<0 then length l + i else i in
   aux l [] i x
 
 (*$T
   insert_at_idx 0 10 [1;2;3] = [10;1;2;3]
   insert_at_idx 4 10 [1;2;3] = [1;2;3;10]
   insert_at_idx 1 10 [1;2;3] = [1;10;2;3]
+  insert_at_idx (-2) 10 [1;2;3] = [1;10;2;3]
 *)
 
 let remove_at_idx i l0 =
@@ -1057,12 +1131,17 @@ let remove_at_idx i l0 =
     | y::l' ->
       aux l' (y::acc) (i-1)
   in
+  let i = if i<0 then length l0 + i else i in
   aux l0 [] i
 
 (*$T
   remove_at_idx 0 [1;2;3;4] = [2;3;4]
   remove_at_idx 3 [1;2;3;4] = [1;2;3]
   remove_at_idx 5 [1;2;3;4] = [1;2;3;4]
+  remove_at_idx (-1) [1;2;3;4] = [1;2;3]
+  remove_at_idx (-2) [1;2;3;4] = [1;2;4]
+  remove_at_idx (-3) [1;2;3;4] = [1;3;4]
+  remove_at_idx (-4) [1;2;3;4] = [2;3;4]
 *)
 
 let range_by ~step i j =

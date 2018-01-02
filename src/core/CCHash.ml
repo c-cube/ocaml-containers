@@ -24,6 +24,7 @@ let combine4 a b c d =
 (** {2 Combinators} *)
 
 let const h _ = h
+let const0 _ = 0
 
 let int i = i land max_int
 let bool b = if b then 1 else 2

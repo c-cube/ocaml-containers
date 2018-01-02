@@ -27,6 +27,8 @@ let set a n x =
   a'.(n) <- x;
   a'
 
+let sub = Array.sub (* Would this not be better implemented with CCArray_slice *)
+
 let map = Array.map
 
 let mapi = Array.mapi

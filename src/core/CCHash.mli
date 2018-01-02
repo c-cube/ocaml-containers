@@ -14,6 +14,12 @@ type 'a t = 'a -> hash
 val const : hash -> _ t
 (** [return h] hashes any value into [h]. Use with caution!. *)
 
+val const0 : _ t
+(** Always return 0. Useful for ignoring elements.
+    Example: [Hash.(pair string const0)] will map pairs [("a", 1)]
+    and [("a", 2)] to the same hash, but not the same as [("b", 1)]
+    @since 1.5 *)
+
 val int : int t
 val bool : bool t
 val char : char t

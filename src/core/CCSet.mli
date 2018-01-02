@@ -8,8 +8,43 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
+module type OrderedType = Set.OrderedType
+(** @since 1.5 *)
+
 module type S = sig
   include Set.S
+
+  val min_elt_opt : t -> elt option
+  (** Safe version of {!min_elt}
+      @since 1.5 *)
+
+  val max_elt_opt : t -> elt option
+  (** Safe version of {!max_elt}
+      @since 1.5 *)
+
+  val choose_opt : t -> elt option
+  (** Safe version of {!choose}
+      @since 1.5 *)
+
+  val find_opt : elt -> t -> elt option
+  (** Safe version of {!find}
+      @since 1.5 *)
+
+  val find_first : (elt -> bool) -> t -> elt
+  (** Find minimum element satisfying predicate
+      @since 1.5 *)
+
+  val find_first_opt : (elt -> bool) -> t -> elt option
+  (** Safe version of {!find_first}
+      @since 1.5 *)
+
+  val find_last : (elt -> bool) -> t -> elt
+  (** Find maximum element satisfying predicate
+      @since 1.5 *)
+
+  val find_last_opt : (elt -> bool) -> t -> elt option
+  (** Safe version of {!find_last}
+      @since 1.5 *)
 
   val of_seq : elt sequence -> t
 

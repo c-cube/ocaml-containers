@@ -30,6 +30,15 @@ type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
 
 let clear c = c.clear ()
 
+let add c x y =
+  try
+    (* check that x is not bound (see invariants) *)
+    let _ = c.get x in
+    false
+  with Not_found ->
+    c.set x y;
+    true
+
 let default_callback_ ~in_cache:_ _ _ = ()
 
 let with_cache ?(cb=default_callback_) c f x =

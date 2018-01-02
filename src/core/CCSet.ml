@@ -6,8 +6,42 @@
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
+module type OrderedType = Set.OrderedType
+
 module type S = sig
   include Set.S
+
+  val min_elt_opt : t -> elt option
+  (** Safe version of {!min_elt}
+      @since 1.5 *)
+
+  val max_elt_opt : t -> elt option
+  (** Safe version of {!max_elt}
+      @since 1.5 *)
+
+  val choose_opt : t -> elt option
+  (** Safe version of {!choose}
+      @since 1.5 *)
+
+  val find_opt : elt -> t -> elt option
+  (** Safe version of {!find}
+      @since 1.5 *)
+
+  val find_first : (elt -> bool) -> t -> elt
+  (** Find minimum element satisfying predicate
+      @since 1.5 *)
+
+  val find_first_opt : (elt -> bool) -> t -> elt option
+  (** Safe version of {!find_first}
+      @since 1.5 *)
+
+  val find_last : (elt -> bool) -> t -> elt
+  (** Find maximum element satisfying predicate
+      @since 1.5 *)
+
+  val find_last_opt : (elt -> bool) -> t -> elt option
+  (** Safe version of {!find_last}
+      @since 1.5 *)
 
   val of_seq : elt sequence -> t
 
@@ -17,6 +51,8 @@ module type S = sig
   val to_seq : t -> elt sequence
 
   val of_list : elt list -> t
+  (** Build a set from the given list of elements,
+      added in order using {!add}. *)
 
   val add_list : t -> elt list -> t
   (** @since 0.14 *)
@@ -29,7 +65,60 @@ module type S = sig
 end
 
 module Make(O : Map.OrderedType) = struct
-  include Set.Make(O)
+  module S = Set.Make(O)
+
+  (* backport functions from recent stdlib.
+     they will be shadowed by inclusion of [S] if present. *)
+
+  let find_opt x s =
+    try Some (S.find x s)
+    with Not_found -> None
+
+  let choose_opt s =
+    try Some (S.choose s)
+    with Not_found -> None
+
+  let min_elt_opt s =
+    try Some (S.min_elt s)
+    with Not_found -> None
+
+  let max_elt_opt s =
+    try Some (S.max_elt s)
+    with Not_found -> None
+
+  exception Find_binding_exit
+
+  let find_first_opt f m =
+    let res = ref None in
+    try
+      S.iter
+        (fun x ->
+           if f x then (
+             res := Some x;
+             raise Find_binding_exit
+           ))
+        m;
+      None
+    with Find_binding_exit ->
+      !res
+
+  let find_first f m = match find_first_opt f m with
+    | None -> raise Not_found
+    | Some x -> x
+
+  (* linear time, must traverse the whole set… *)
+  let find_last_opt f m =
+    let res = ref None in
+    S.iter
+      (fun x -> if f x then res := Some x)
+      m;
+    !res
+
+  let find_last f m = match find_last_opt f m with
+    | None -> raise Not_found
+    | Some x -> x
+
+  include S
 
   let add_seq set seq =
     let set = ref set in
