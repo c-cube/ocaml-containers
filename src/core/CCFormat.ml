@@ -5,6 +5,8 @@
 
 type 'a sequence = ('a -> unit) -> unit
 
+include Format
+
 type t = Format.formatter
 type 'a printer = t -> 'a -> unit
 
