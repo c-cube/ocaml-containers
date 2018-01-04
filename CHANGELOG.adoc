@@ -1,5 +1,9 @@
 = Changelog
 
+== 1.5.1
+
+- re-export `Format` types and functions in `CCFormat`
+
 == 1.5
 
 - have `CCList.{get,insert,set}_at_idx` work with negative indices
