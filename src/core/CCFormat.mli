@@ -8,6 +8,10 @@
 type 'a sequence = ('a -> unit) -> unit
 
 include module type of Format
+  with type formatter = Format.formatter
+   and type formatter_out_functions = Format.formatter_out_functions
+   and type formatter_tag_functions = Format.formatter_tag_functions
+
 
 type t = Format.formatter
 type 'a printer = t -> 'a -> unit
