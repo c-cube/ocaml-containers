@@ -121,6 +121,8 @@ val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 
 val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
 (** Lookup the index of some value in a sorted array.
+    Undefined behavior if the array is not sorted wrt [cmp].
+    Complexity: [O(log (n))] (dichotomic search).
     @return [None] if the key is not present, or
       [Some i] ([i] the index of the key) otherwise *)
 
@@ -134,7 +136,7 @@ val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
     the result is not specified (may raise Invalid_argument).
 
-    Complexity: O(log n) where n is the length of the array
+    Complexity: [O(log n)] where n is the length of the array
     (dichotomic search).
 
     @return
