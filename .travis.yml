@@ -26,12 +26,10 @@ before_install:
 install:
   # Install dependencies
   - opam pin add --no-action containers .
-  - opam install oasis
+  - opam install jbuilder
   - opam install --deps-only containers
 script:
-  - ./configure --enable-unix --enable-thread --disable-tests --disable-bench
   - make build
   - opam install sequence qcheck qtest gen
-  - ./configure --enable-unix --enable-thread --enable-tests --enable-docs --disable-bench
   - make test
   - make doc
