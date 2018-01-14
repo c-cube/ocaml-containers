@@ -274,8 +274,7 @@ val keep_some : 'a option t -> 'a t
     @since 1.3 *)
 
 val keep_ok : ('a, _) Result.result t -> 'a t
-(** [filter_some l] retains only elements of the form [Some x].
-    Same as [filter_map CCFun.id]
+(** [keep_ok l] retains only elements of the form [Ok x].
     @since 1.3 *)
 
 val all_some : 'a option t -> 'a t option
