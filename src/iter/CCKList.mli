@@ -164,12 +164,12 @@ val unzip : ('a * 'b) t -> 'a t * 'b t
 
 (** {2 Misc} *)
 
-val sort : ?cmp:'a ord -> 'a t -> 'a t
+val sort : cmp:'a ord -> 'a t -> 'a t
 (** Eager sort. Requires the iterator to be finite. O(n ln(n)) time
     and space.
     @since 0.3.3 *)
 
-val sort_uniq : ?cmp:'a ord -> 'a t -> 'a t
+val sort_uniq : cmp:'a ord -> 'a t -> 'a t
 (** Eager sort that removes duplicate values. Requires the iterator to be
     finite. O(n ln(n)) time and space.
     @since 0.3.3 *)

@@ -119,18 +119,18 @@ val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
     and [p x] holds. Otherwise returns [None]
     @since 0.3.4 *)
 
-val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
+val lookup : cmp:'a ord -> 'a -> 'a t -> int option
 (** Lookup the index of some value in a sorted array.
     Undefined behavior if the array is not sorted wrt [cmp].
     Complexity: [O(log (n))] (dichotomic search).
     @return [None] if the key is not present, or
       [Some i] ([i] the index of the key) otherwise *)
 
-val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
+val lookup_exn : cmp:'a ord -> 'a -> 'a t -> int
 (** Same as {!lookup}, but
     @raise Not_found if the key is not present *)
 
-val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
@@ -256,7 +256,7 @@ end
 
 val sort_generic :
   (module MONO_ARRAY with type t = 'arr and type elt = 'elt) ->
-  ?cmp:('elt -> 'elt -> int) -> 'arr -> unit
+  cmp:('elt -> 'elt -> int) -> 'arr -> unit
 (** Sort the array, without allocating (eats stack space though). Performance
     might be lower than {!Array.sort}.
     @since 0.14 *)

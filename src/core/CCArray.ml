@@ -176,8 +176,7 @@ let sort_indices cmp a =
 *)
 
 let sort_ranking cmp a =
-  let cmp_int : int -> int -> int = Pervasives.compare in
-  sort_indices cmp_int (sort_indices cmp a)
+  sort_indices compare (sort_indices cmp a)
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
   [||] (sort_ranking Pervasives.compare [||])
@@ -297,24 +296,24 @@ let _lookup_exn ~cmp k a i j =
         | n when n<0 -> _lookup_rec ~cmp k a (i+1) (j-1)
         | _ -> raise Not_found  (* too high *)
 
-let lookup_exn ?(cmp=Pervasives.compare) k a =
+let lookup_exn ~cmp k a =
   _lookup_exn ~cmp k a 0 (Array.length a-1)
 
-let lookup ?(cmp=Pervasives.compare) k a =
+let lookup ~cmp k a =
   try Some (_lookup_exn ~cmp k a 0 (Array.length a-1))
   with Not_found -> None
 
 (*$T
-  lookup 2 [|0;1;2;3;4;5|] = Some 2
-  lookup 4 [|0;1;2;3;4;5|] = Some 4
-  lookup 0 [|1;2;3;4;5|] = None
-  lookup 6 [|1;2;3;4;5|] = None
-  lookup 3 [| |] = None
-  lookup 1 [| 1 |] = Some 0
-  lookup 2 [| 1 |] = None
+  lookup ~cmp:CCInt.compare 2 [|0;1;2;3;4;5|] = Some 2
+  lookup ~cmp:CCInt.compare 4 [|0;1;2;3;4;5|] = Some 4
+  lookup ~cmp:CCInt.compare 0 [|1;2;3;4;5|] = None
+  lookup ~cmp:CCInt.compare 6 [|1;2;3;4;5|] = None
+  lookup ~cmp:CCInt.compare 3 [| |] = None
+  lookup ~cmp:CCInt.compare 1 [| 1 |] = Some 0
+  lookup ~cmp:CCInt.compare 2 [| 1 |] = None
 *)
 
-let bsearch ?(cmp=Pervasives.compare) k a =
+let bsearch ~cmp k a =
   let rec aux i j =
     if i > j
     then `Just_after j
@@ -333,13 +332,13 @@ let bsearch ?(cmp=Pervasives.compare) k a =
     | _ -> aux 0 (n-1)
 
 (*$T bsearch
-  bsearch 3 [|1; 2; 2; 3; 4; 10|] = `At 3
-  bsearch 5 [|1; 2; 2; 3; 4; 10|] = `Just_after 4
-  bsearch 1 [|1; 2; 5; 5; 11; 12|] = `At 0
-  bsearch 12 [|1; 2; 5; 5; 11; 12|] = `At 5
-  bsearch 10 [|1; 2; 2; 3; 4; 9|] = `All_lower
-  bsearch 0 [|1; 2; 2; 3; 4; 9|] = `All_bigger
-  bsearch 3 [| |] = `Empty
+  bsearch ~cmp:CCInt.compare 3 [|1; 2; 2; 3; 4; 10|] = `At 3
+  bsearch ~cmp:CCInt.compare 5 [|1; 2; 2; 3; 4; 10|] = `Just_after 4
+  bsearch ~cmp:CCInt.compare 1 [|1; 2; 5; 5; 11; 12|] = `At 0
+  bsearch ~cmp:CCInt.compare 12 [|1; 2; 5; 5; 11; 12|] = `At 5
+  bsearch ~cmp:CCInt.compare 10 [|1; 2; 2; 3; 4; 9|] = `All_lower
+  bsearch ~cmp:CCInt.compare 0 [|1; 2; 2; 3; 4; 9|] = `All_bigger
+  bsearch ~cmp:CCInt.compare 3 [| |] = `Empty
 *)
 
 let (>>=) a f = flat_map f a
@@ -664,7 +663,7 @@ end
 
 let sort_generic (type arr)(type elt)
     (module A : MONO_ARRAY with type t = arr and type elt = elt)
-    ?(cmp=Pervasives.compare) a
+    ~cmp a
   =
   let module S = SortGeneric(A) in
   S.sort ~cmp a

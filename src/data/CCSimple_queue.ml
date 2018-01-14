@@ -23,7 +23,11 @@ let make_ hd tl = match hd with
   | [] -> {hd=List.rev tl; tl=[] }
   | _::_ -> {hd; tl; }
 
-let is_empty q = q.hd = []
+let list_is_empty = function
+  | [] -> true
+  | _::_ -> false
+
+let is_empty q = list_is_empty q.hd
 
 let push x q = make_ q.hd (x :: q.tl)
 
@@ -31,7 +35,7 @@ let snoc q x = push x q
 
 let peek_exn q =
   match q.hd with
-    | [] -> assert (q.tl = []); invalid_arg "Queue.peek"
+    | [] -> assert (list_is_empty q.tl); invalid_arg "Queue.peek"
     | x::_ -> x
 
 let peek q = match q.hd with
@@ -40,7 +44,7 @@ let peek q = match q.hd with
 
 let pop_exn q =
   match q.hd with
-    | [] -> assert (q.tl = []); invalid_arg "Queue.peek"
+    | [] -> assert (list_is_empty q.tl); invalid_arg "Queue.peek"
     | x::hd' ->
       let q' = make_ hd' q.tl in
       x, q'

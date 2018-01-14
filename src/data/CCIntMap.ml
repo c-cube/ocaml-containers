@@ -11,6 +11,7 @@ module Bit : sig
   type t = private int
   val highest : int -> t
   val min_int : t
+  val equal : t -> t -> bool
   val is_0 : bit:t -> int -> bool
   val is_1 : bit:t -> int -> bool
   val mask : mask:t -> int -> int   (* zeroes the bit, puts all lower bits to 1 *)
@@ -20,6 +21,8 @@ end = struct
   type t = int
 
   let min_int = min_int
+
+  let equal = (=)
 
   let rec highest_bit_naive x m =
     if x=m then m
@@ -237,11 +240,11 @@ let update k f t =
 
 let doubleton k1 v1 k2 v2 = add k1 v1 (singleton k2 v2)
 
-let rec equal ~eq a b = a==b || match a, b with
+let rec equal ~eq a b = Pervasives.(==) a b || match a, b with
     | E, E -> true
     | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
     | N (pa, sa, la, ra), N (pb, sb, lb, rb) ->
-      pa=pb && sa=sb && equal ~eq la lb && equal ~eq ra rb
+      pa=pb && Bit.equal sa sb && equal ~eq la lb && equal ~eq ra rb
     | E, _
     | N _, _
     | L _, _ -> false
@@ -287,7 +290,7 @@ let choose t =
   with Not_found -> None
 
 let rec union f t1 t2 =
-  if t1==t2 then t1
+  if Pervasives.(==) t1 t2 then t1
   else match t1, t2 with
     | E, o | o, E -> o
     | L (k, v), o
@@ -295,7 +298,7 @@ let rec union f t1 t2 =
       (* insert k, v into o *)
       insert_ (fun ~old v -> f k old v) k v o
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-      if p1 = p2 && m1 = m2
+      if p1 = p2 && Bit.equal m1 m2
       then mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
       else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
       then if Bit.is_0 p2 ~bit:m1
@@ -342,7 +345,7 @@ let rec union f t1 t2 =
 *)
 
 let rec inter f a b =
-  if a==b then a
+  if Pervasives.(==) a b then a
   else match a, b with
     | E, _ | _, E -> E
     | L (k, v), o
@@ -353,7 +356,7 @@ let rec inter f a b =
         with Not_found -> E
       end
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
-      if p1 = p2 && m1 = m2
+      if p1 = p2 && Bit.equal m1 m2
       then mk_node_ p1 m1 (inter f l1 l2) (inter f r1 r2)
       else if Bit.gt m1 m2 && is_prefix_ ~prefix:p1 p2 ~bit:m1
       then if Bit.is_0 p2 ~bit:m1
@@ -466,7 +469,7 @@ let compare ~cmp a b =
       then
         let c = cmp va vb in
         if c=0 then cmp_gen cmp a b else c
-      else Pervasives.compare ka kb
+      else compare ka kb
   in
   cmp_gen cmp (to_gen a) (to_gen b)
 

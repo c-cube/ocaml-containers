@@ -5,7 +5,7 @@ type t = int
 
 let equal (a:int) b = a=b
 
-let compare (a:int) b = Pervasives.compare a b
+let compare a b = compare a b
 
 let hash i = i land max_int
 
@@ -75,9 +75,11 @@ let floor_div a n =
       (fun (n, m) -> floor_div n (-m) = int_of_float @@ floor (float n /. float (-m)))
 *)
 
+let bool_neq (a : bool) b = Pervasives.(<>) a b
+
 let rem a n =
   let y = a mod n in
-  if (y < 0) <> (n < 0) && y <> 0 then
+  if bool_neq (y < 0) (n < 0) && y <> 0 then
     y + n
   else
     y
@@ -245,12 +247,12 @@ let range' i j yield =
 
 
 module Infix = struct
-  let (=) = Pervasives.(=)
-  let (<>) = Pervasives.(<>)
-  let (<) = Pervasives.(<)
-  let (>) = Pervasives.(>)
-  let (<=) = Pervasives.(<=)
-  let (>=) = Pervasives.(>=)
+  let (=) = (=)
+  let (<>) = (<>)
+  let (<) = (<)
+  let (>) = (>)
+  let (<=) = (<=)
+  let (>=) = (>=)
   let (--) = range
   let (--^) = range'
 end

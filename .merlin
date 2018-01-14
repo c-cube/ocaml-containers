@@ -4,6 +4,7 @@ S src/iter/
 S src/sexp/
 S src/threads/
 S src/string
+S src/monomorphic
 S benchs
 S examples
 S tests
@@ -19,3 +20,4 @@ PKG threads.posix
 PKG lwt
 PKG qcheck
 FLG -w +a-4-44-48-60@8
+FLG -open CCMonomorphic

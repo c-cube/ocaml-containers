@@ -123,9 +123,13 @@ module Make(X : ORD) : S with type key = X.t = struct
 
   let remove = M.remove
 
+  let is_some = function
+    | None -> false
+    | Some _ -> true
+
   let mem ~inj x map =
     try
-      inj.get (M.find x map) <> None
+      is_some (inj.get (M.find x map))
     with Not_found -> false
 
   let iter_keys ~f map =

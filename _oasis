@@ -44,20 +44,26 @@ Library "containers"
                     CCInt64, CCChar, CCResult, CCParse, CCArray_slice,
                     CCListLabels, CCArrayLabels, CCEqual,
                     Containers
-  BuildDepends:     bytes, result
+  BuildDepends:     bytes, result, containers.monomorphic
   # BuildDepends:     bytes, bisect_ppx
+
+Library "containers_monomorphic"
+  Path:             src/monomorphic
+  Modules:          CCMonomorphic
+  FindlibParent:    containers
+  FindlibName:      monomorphic
 
 Library "containers_unix"
   Path:             src/unix
   Modules:          CCUnix
-  BuildDepends:     bytes, result, unix
+  BuildDepends:     bytes, result, unix, containers.monomorphic
   FindlibParent:    containers
   FindlibName:      unix
 
 Library "containers_sexp"
   Path:             src/sexp
   Modules:          CCSexp, CCSexp_lex
-  BuildDepends:     bytes, result
+  BuildDepends:     bytes, result, containers.monomorphic
   FindlibParent:    containers
   FindlibName:      sexp
 
@@ -69,7 +75,7 @@ Library "containers_data"
                     CCMixset, CCGraph, CCHashSet, CCBitField,
                     CCHashTrie, CCWBTree, CCRAL, CCSimple_queue,
                     CCImmutArray, CCHet, CCZipper
-  BuildDepends:     bytes
+  BuildDepends:     bytes, containers.monomorphic
   # BuildDepends:     bytes, bisect_ppx
   FindlibParent:    containers
   FindlibName:      data
@@ -77,6 +83,7 @@ Library "containers_data"
 Library "containers_iter"
   Path:             src/iter
   Modules:          CCKTree, CCKList, CCLazy_list
+  BuildDepends:     containers.monomorphic
   FindlibParent:    containers
   FindlibName:      iter
 
@@ -120,6 +127,7 @@ Executable run_benchs
   MainIs:           run_benchs.ml
   BuildDepends:     containers, qcheck,
                     containers.data, containers.iter, containers.thread,
+                    containers.monomorphic,
                     sequence, gen, benchmark
 
 Executable run_bench_hash

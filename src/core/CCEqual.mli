@@ -11,6 +11,10 @@ type 'a t = 'a -> 'a -> bool
 val poly : 'a t
 (** Standard polymorphic equality *)
 
+val physical : 'a t
+(** Standard physical equality
+    @since NEXT_RELEASE *)
+
 val int : int t
 val string : string t
 val bool : bool t

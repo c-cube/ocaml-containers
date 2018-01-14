@@ -80,13 +80,13 @@ class type ['a] pset = object
   method mem : 'a -> bool
 end
 
-val set_of_cmp : ?cmp:('a -> 'a -> int) -> unit -> 'a pset
+val set_of_cmp : cmp:('a -> 'a -> int) -> unit -> 'a pset
 (** Build a set structure given a total ordering *)
 
-val dfs : ?pset:'a pset -> 'a t -> [ `Enter of 'a | `Exit of 'a ] klist
+val dfs : pset:'a pset -> 'a t -> [ `Enter of 'a | `Exit of 'a ] klist
 (** Depth-first traversal of the tree *)
 
-val bfs : ?pset:'a pset -> 'a t -> 'a klist
+val bfs : pset:'a pset -> 'a t -> 'a klist
 (** Breadth-first traversal of the tree *)
 
 val force : 'a t -> ([ `Nil | `Node of 'a * 'b list ] as 'b)
@@ -94,7 +94,7 @@ val force : 'a t -> ([ `Nil | `Node of 'a * 'b list ] as 'b)
     structure
     @since 0.13 *)
 
-val find : ?pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
+val find : pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
 (** Look for an element that maps to [Some _] *)
 
 (** {2 Pretty-printing}

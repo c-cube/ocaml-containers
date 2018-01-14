@@ -86,10 +86,10 @@ val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
 
 val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_indices cmp a] returns a new array [b], with the same length as [a],
-    such that [b.(i)] is the index at which the [i]-th element of [sorted cmp a] 
+    such that [b.(i)] is the index at which the [i]-th element of [sorted cmp a]
     appears in [a]. [a] is not modified.
 
-    In other words, [map (fun i -> a.(i)) (sort_indices cmp a) = sorted cmp a]. 
+    In other words, [map (fun i -> a.(i)) (sort_indices cmp a) = sorted cmp a].
     [sort_indices] yields the inverse permutation of {!sort_ranking}.
 
     @since 1.0 *)
@@ -99,7 +99,7 @@ val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
     such that [b.(i)] is the index at which the [i]-the element of [a] appears
     in [sorted cmp a]. [a] is not modified.
 
-    In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a]. 
+    In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].
     [sort_ranking] yields the inverse permutation of {!sort_indices}.
 
     In the absence of duplicate elements in [a], we also have
@@ -119,16 +119,16 @@ val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
     and [p x] holds. Otherwise returns [None]
     @since 0.3.4 *)
 
-val lookup : ?cmp:'a ord -> 'a -> 'a t -> int option
+val lookup : cmp:'a ord -> 'a -> 'a t -> int option
 (** Lookup the index of some value in a sorted array.
     @return [None] if the key is not present, or
       [Some i] ([i] the index of the key) otherwise *)
 
-val lookup_exn : ?cmp:'a ord -> 'a -> 'a t -> int
+val lookup_exn : cmp:'a ord -> 'a -> 'a t -> int
 (** Same as {!lookup}, but
     @raise Not_found if the key is not present *)
 
-val bsearch : ?cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,

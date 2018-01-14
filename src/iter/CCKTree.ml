@@ -91,7 +91,7 @@ class type ['a] pset = object
   method mem : 'a -> bool
 end
 
-let set_of_cmp (type elt) ?(cmp=Pervasives.compare) () =
+let set_of_cmp (type elt) ~cmp () =
   let module S = Set.Make(struct
       type t = elt
       let compare = cmp
@@ -105,7 +105,7 @@ let set_of_cmp (type elt) ?(cmp=Pervasives.compare) () =
 let _nil () = `Nil
 let _cons x l = `Cons (x, l)
 
-let dfs ?(pset=set_of_cmp ()) t =
+let dfs ~pset t =
   let rec dfs pset stack () = match stack with
     | [] -> `Nil
     | `Explore t :: stack' ->
@@ -141,19 +141,23 @@ module FQ = struct
 
   let empty = _make [] []
 
-  let is_empty q = q.hd = []
+  let list_is_empty = function
+    | [] -> true
+    | _::_ -> false
+
+  let is_empty q = list_is_empty q.hd
 
   let push q x = _make q.hd (x::q.tl)
 
   let pop_exn q =
     match q.hd with
-      | [] -> assert (q.tl = []); raise Empty
+      | [] -> assert (list_is_empty q.tl); raise Empty
       | x::hd' ->
         let q' = _make hd' q.tl in
         x, q'
 end
 
-let bfs ?(pset=set_of_cmp ()) t =
+let bfs ~pset t =
   let rec bfs pset q () =
     if FQ.is_empty q then `Nil
     else
@@ -173,7 +177,7 @@ let rec force t : ([`Nil | `Node of 'a * 'b list] as 'b) = match t() with
   | `Nil -> `Nil
   | `Node (x, l) -> `Node (x, List.map force l)
 
-let find ?pset f t =
+let find ~pset f t =
   let rec _find_kl f l = match l() with
     | `Nil -> None
     | `Cons (x, l') ->
@@ -181,7 +185,7 @@ let find ?pset f t =
         | None -> _find_kl f l'
         | Some _ as res -> res
   in
-  _find_kl f (bfs ?pset t)
+  _find_kl f (bfs ~pset t)
 
 (** {2 Pretty-printing} *)
 

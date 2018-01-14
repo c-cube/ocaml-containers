@@ -6,7 +6,6 @@
 type 'a equal = 'a -> 'a -> bool
 type 'a hash = 'a -> int
 
-let default_eq_ = Pervasives.(=)
 let default_hash_ = Hashtbl.hash
 
 (** {2 Value interface} *)
@@ -57,7 +56,7 @@ let with_cache_rec ?(cb=default_callback_) c f =
   f'
 
 (*$R
-  let c = unbounded 256 in
+  let c = unbounded ~eq:CCInt.equal 256 in
   let fib = with_cache_rec c
     (fun self n -> match n with
       | 1 | 2 -> 1
@@ -124,7 +123,7 @@ module Linear = struct
     !r
 end
 
-let linear ?(eq=default_eq_) size =
+let linear ~eq size =
   let size = max size 1 in
   let arr = Linear.make eq size in
   { get=(fun x -> Linear.get arr x);
@@ -161,9 +160,13 @@ module Replacing = struct
       | Pair _
       | Empty -> raise Not_found
 
+  let is_empty = function
+    | Empty -> true
+    | Pair _ -> false
+
   let set c x y =
     let i = c.hash x mod Array.length c.arr in
-    if c.arr.(i) = Empty then c.c_size <- c.c_size + 1;
+    if is_empty c.arr.(i) then c.c_size <- c.c_size + 1;
     c.arr.(i) <- Pair (x,y)
 
   let iter c f =
@@ -172,7 +175,7 @@ module Replacing = struct
   let size c () = c.c_size
 end
 
-let replacing ?(eq=default_eq_) ?(hash=default_hash_) size =
+let replacing ~eq ?(hash=default_hash_) size =
   let c = Replacing.make eq hash size in
   { get=(fun x -> Replacing.get c x);
     set=(fun x y -> Replacing.set c x y);
@@ -219,7 +222,7 @@ module LRU(X:HASH) = struct
   (* take first from queue *)
   let take_ c =
     match c.first with
-      | Some n when n.next == n ->
+      | Some n when Pervasives.(==) n.next n ->
         (* last element *)
         c.first <- None;
         n
@@ -238,7 +241,7 @@ module LRU(X:HASH) = struct
         n.next <- n;
         n.prev <- n;
         c.first <- Some n
-      | Some n1 when n1==n -> ()
+      | Some n1 when Pervasives.(==) n1 n -> ()
       | Some n1 ->
         n.prev <- n1.prev;
         n.next <- n1;
@@ -294,7 +297,7 @@ module LRU(X:HASH) = struct
     H.iter (fun x node -> f x node.value) c.table
 end
 
-let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+let lru (type a) ~eq ?(hash=default_hash_) size =
   let module L = LRU(struct
       type t = a
       let equal = eq
@@ -318,7 +321,7 @@ let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
 
 (*$T
   let f = (let r = ref 0 in fun _ -> incr r; !r) in \
-  let c = lru 2 in \
+  let c = lru ~eq:CCInt.equal 2 in \
   let res1 = with_cache c f 1 in \
   let res2 = with_cache c f 2 in \
   let res3 = with_cache c f 3 in \
@@ -328,7 +331,7 @@ let lru (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
 
 (*$R
   let f = (let r = ref 0 in fun _ -> incr r; !r) in
-  let c = lru 2 in
+  let c = lru ~eq:CCEqual.unit 2 in
   let x = with_cache c f () in
   assert_equal 1 x;
   assert_equal 1 (size c);
@@ -356,7 +359,7 @@ module UNBOUNDED(X:HASH) = struct
   let iter c f = H.iter f c
 end
 
-let unbounded (type a) ?(eq=default_eq_) ?(hash=default_hash_) size =
+let unbounded (type a) ~eq ?(hash=default_hash_) size =
   let module C = UNBOUNDED(struct
       type t = a
       let equal = eq

@@ -84,9 +84,13 @@ let remove tbl x = Hashtbl.remove tbl x
 
 let copy tbl = Hashtbl.copy tbl
 
+let is_some = function
+  | None -> false
+  | Some _ -> true
+
 let mem ~inj tbl x =
   try
-    inj.get (Hashtbl.find tbl x) <> None
+    is_some (inj.get (Hashtbl.find tbl x))
   with Not_found -> false
 
 (*$R

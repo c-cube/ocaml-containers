@@ -6,6 +6,11 @@
 type job =
   | Job : float * (unit -> 'a) -> job
 
+let (<=) (a : float) b = Pervasives.(<=) a b
+let (>=) (a : float) b = Pervasives.(>=) a b
+let (<) (a : float) b = Pervasives.(<) a b
+let (>) (a : float) b = Pervasives.(>) a b
+
 module TaskHeap = CCHeap.Make(struct
     type t = job
     let leq (Job(f1,_)) (Job (f2,_)) = f1 <= f2

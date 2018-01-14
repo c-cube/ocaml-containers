@@ -56,7 +56,7 @@ type ('k, 'a) table = {
 (** Mutable set *)
 type 'a set = ('a, unit) table
 
-let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
+let mk_table (type k) ~eq ?(hash=Hashtbl.hash) size =
   let module H = Hashtbl.Make(struct
       type t = k
       let equal = eq
@@ -68,7 +68,7 @@ let mk_table (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
   ; add=(fun k v -> H.replace tbl k v)
   }
 
-let mk_map (type k) ?(cmp=Pervasives.compare) () =
+let mk_map (type k) ~cmp () =
   let module M = Map.Make(struct
       type t = k
       let compare = cmp
@@ -160,15 +160,15 @@ module Traverse = struct
         )
       done
 
-  let generic ?(tbl=mk_table 128) ~bag ~graph seq =
+  let generic ~tbl ~bag ~graph seq =
     let tags = {
       get_tag=tbl.mem;
       set_tag=(fun v -> tbl.add v ());
     } in
     generic_tag ~tags ~bag ~graph seq
 
-  let bfs ?tbl ~graph seq =
-    generic ?tbl ~bag:(mk_queue ()) ~graph seq
+  let bfs ~tbl ~graph seq =
+    generic ~tbl ~bag:(mk_queue ()) ~graph seq
 
   let bfs_tag ~tags ~graph seq =
     generic_tag ~tags ~bag:(mk_queue()) ~graph seq
@@ -186,15 +186,15 @@ module Traverse = struct
     let bag = mk_heap ~leq:(fun (_,d1,_) (_,d2,_) -> d1 <= d2) in
     generic_tag ~tags:tags' ~bag ~graph:graph' seq'
 
-  let dijkstra ?(tbl=mk_table 128) ?dist ~graph seq =
+  let dijkstra ~tbl ?dist ~graph seq =
     let tags = {
       get_tag=tbl.mem;
       set_tag=(fun v -> tbl.add v ());
     } in
     dijkstra_tag ~tags ?dist ~graph seq
 
-  let dfs ?tbl ~graph seq =
-    generic ?tbl ~bag:(mk_stack ()) ~graph seq
+  let dfs ~tbl ~graph seq =
+    generic ~tbl ~bag:(mk_stack ()) ~graph seq
 
   let dfs_tag ~tags ~graph seq =
     generic_tag ~tags ~bag:(mk_stack()) ~graph seq
@@ -240,7 +240,7 @@ module Traverse = struct
       | (v1,_,_) :: path' ->
         eq v v1 || list_mem_ ~eq ~graph v path'
 
-    let dfs_tag ?(eq=(=)) ~tags ~graph seq =
+    let dfs_tag ~eq ~tags ~graph seq =
       let first = ref true in
       fun k ->
         if !first then first := false else raise Sequence_once;
@@ -279,17 +279,18 @@ module Traverse = struct
              done
           ) seq
 
-    let dfs ?(tbl=mk_table 128) ?eq ~graph seq =
+    let dfs ~tbl ~eq ~graph seq =
       let tags = {
         set_tag=(fun v -> tbl.add v ());
         get_tag=tbl.mem;
       } in
-      dfs_tag ?eq ~tags ~graph seq
+      dfs_tag ~eq ~tags ~graph seq
   end
 
   (*$R
     let l =
-      Traverse.Event.dfs ~graph:divisors_graph (Sequence.return 345614)
+      let tbl = mk_table ~eq:CCInt.equal 128 in
+      Traverse.Event.dfs ~tbl ~eq:CCInt.equal ~graph:divisors_graph (Sequence.return 345614)
       |> Sequence.to_list in
     let expected =
     [`Enter (345614, 0, []); `Edge (345614, (), 172807, `Forward);
@@ -305,8 +306,8 @@ end
 
 (** {2 Cycles} *)
 
-let is_dag ?(tbl=mk_table 128) ~graph vs =
-  Traverse.Event.dfs ~tbl ~graph vs
+let is_dag ~tbl ~eq ~graph vs =
+  Traverse.Event.dfs ~tbl ~eq ~graph vs
   |> Seq.exists_
     (function
       | `Edge (_, _, _, `Back) -> true
@@ -316,7 +317,7 @@ let is_dag ?(tbl=mk_table 128) ~graph vs =
 
 exception Has_cycle
 
-let topo_sort_tag ?(eq=(=)) ?(rev=false) ~tags ~graph seq =
+let topo_sort_tag ~eq ?(rev=false) ~tags ~graph seq =
   (* use DFS *)
   let l =
     Traverse.Event.dfs_tag ~eq ~tags ~graph seq
@@ -331,21 +332,23 @@ let topo_sort_tag ?(eq=(=)) ?(rev=false) ~tags ~graph seq =
   in
   if rev then List.rev l else l
 
-let topo_sort ?eq ?rev ?(tbl=mk_table 128) ~graph seq =
+let topo_sort ~eq ?rev ~tbl ~graph seq =
   let tags = {
     get_tag=tbl.mem;
     set_tag=(fun v -> tbl.add v ());
   } in
-  topo_sort_tag ?eq ?rev ~tags ~graph seq
+  topo_sort_tag ~eq ?rev ~tags ~graph seq
 
 (*$T
-  let l = topo_sort ~graph:divisors_graph (Seq.return 42) in \
+  let tbl = mk_table ~eq:CCInt.equal 128 in \
+  let l = topo_sort ~tbl ~eq:CCInt.equal ~graph:divisors_graph (Seq.return 42) in \
   List.for_all (fun (i,j) -> \
     let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
     let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
     idx_i < idx_j) \
     [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
-  let l = topo_sort ~rev:true ~graph:divisors_graph (Seq.return 42) in \
+  let tbl = mk_table ~eq:CCInt.equal 128 in \
+  let l = topo_sort ~tbl ~eq:CCInt.equal ~rev:true ~graph:divisors_graph (Seq.return 42) in \
   List.for_all (fun (i,j) -> \
     let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
     let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
@@ -393,7 +396,7 @@ let spanning_tree_tag ~tags ~graph v =
   in
   mk_node v
 
-let spanning_tree ?(tbl=mk_table 128) ~graph v =
+let spanning_tree ~tbl ~graph v =
   let tags = {
     get_tag=tbl.mem;
     set_tag=(fun v -> tbl.add v ());
@@ -482,12 +485,12 @@ end
 
 type 'v scc_state = 'v SCC.state
 
-let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
+let scc ~tbl ~graph seq = SCC.explore ~tbl ~graph seq
 
 (* example from https://en.wikipedia.org/wiki/Strongly_connected_component *)
 (*$R
   let set_eq ?(eq=(=)) l1 l2 = CCList.subset ~eq l1 l2 && CCList.subset ~eq l2 l1 in
-  let graph = of_list
+  let graph = of_list ~eq:CCString.equal
     [ "a", "b"
     ; "b", "e"
     ; "e", "a"
@@ -503,7 +506,8 @@ let scc ?(tbl=mk_table 128) ~graph seq = SCC.explore ~tbl ~graph seq
     ; "h", "d"
     ; "h", "g"
   ] in
-  let res = scc ~graph (Seq.return "a") |> Seq.to_list in
+  let tbl = mk_table ~eq:CCString.equal 128 in
+  let res = scc ~tbl ~graph (Seq.return "a") |> Seq.to_list in
   assert_bool "scc"
     (set_eq ~eq:(set_eq ?eq:None) res
       [ [ "a"; "b"; "e" ]
@@ -541,8 +545,8 @@ module Dot = struct
 
   (** Print an enum of Full.traverse_event *)
   let pp_seq
-      ?(tbl=mk_table 128)
-      ?(eq=(=))
+      ~tbl
+      ~eq
       ?(attrs_v=fun _ -> [])
       ?(attrs_e=fun _ -> [])
       ?(name="graph")
@@ -598,8 +602,8 @@ module Dot = struct
     Format.fprintf out "}@]@;@?";
     ()
 
-  let pp ?tbl ?eq ?attrs_v ?attrs_e ?name ~graph fmt v =
-    pp_seq ?tbl ?eq ?attrs_v ?attrs_e ?name ~graph fmt (Seq.return v)
+  let pp ~tbl ~eq ?attrs_v ?attrs_e ?name ~graph fmt v =
+    pp_seq ~tbl ~eq ?attrs_v ?attrs_e ?name ~graph fmt (Seq.return v)
 
   let with_out filename f =
     let oc = open_out filename in
@@ -622,7 +626,7 @@ type ('v, 'e) mut_graph = {
   remove : 'v -> unit;
 }
 
-let mk_mut_tbl (type k) ?(eq=(=)) ?(hash=Hashtbl.hash) size =
+let mk_mut_tbl (type k) ~eq ?(hash=Hashtbl.hash) size =
   let module Tbl = Hashtbl.Make(struct
       type t = k
       let hash = hash
@@ -757,7 +761,7 @@ end
 
 (** {2 Misc} *)
 
-let of_list ?(eq=(=)) l =
+let of_list ~eq l =
   (fun v yield -> List.iter (fun (a,b) -> if eq a v then yield ((),b)) l)
 
 let of_fun f =

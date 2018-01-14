@@ -56,8 +56,9 @@ module type S = sig
   val print : Format.formatter -> t -> unit
 end
 
-let equal (a:string) b = a=b
+let equal (a:string) b = Pervasives.(=) a b
 
+let compare_int (a : int) b = Pervasives.compare a b
 let compare = String.compare
 
 let hash s = Hashtbl.hash s
@@ -78,7 +79,7 @@ let _is_sub ~sub i s j ~len =
   let rec check k =
     if k = len
     then true
-    else sub.[i+k] = s.[j+k] && check (k+1)
+    else CCChar.equal sub.[i+k] s.[j+k] && check (k+1)
   in
   j+len <= String.length s && check 0
 
@@ -126,7 +127,7 @@ module Find = struct
           let j = ref 0 in
           while !i < len do
             match !j with
-              | _ when get str (!i-1) = get str !j ->
+              | _ when CCChar.equal (get str (!i-1)) (get str !j) ->
                 (* substring starting at !j continues matching current char *)
                 incr j;
                 failure.(!i) <- !j;
@@ -158,7 +159,7 @@ module Find = struct
     while !j < pat_len && !i + !j < len do
       let c = String.get s (!i + !j) in
       let expected = String.get pattern.str !j in
-      if c = expected
+      if CCChar.equal c expected
       then (
         (* char matches *)
         incr j;
@@ -193,7 +194,7 @@ module Find = struct
     while !j < pat_len && !i + !j < len do
       let c = String.get s (len - !i - !j - 1) in
       let expected = String.get pattern.str (String.length pattern.str - !j - 1) in
-      if c = expected
+      if CCChar.equal c expected
       then (
         (* char matches *)
         incr j;
@@ -292,7 +293,7 @@ let replace_at_ ~pos ~len ~by s =
   Buffer.contents b
 
 let replace ?(which=`All) ~sub ~by s =
-  if sub="" then invalid_arg "CCString.replace";
+  if is_empty sub then invalid_arg "CCString.replace";
   match which with
     | `Left ->
       let i = find ~sub s ~start:0 in
@@ -442,7 +443,7 @@ let compare_versions a b =
         | Some _, None -> 1
         | None, Some _ -> -1
         | Some x, Some y ->
-          let c = Pervasives.compare x y in
+          let c = compare_int x y in
           if c<>0 then c else cmp_rec a b
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
@@ -480,7 +481,7 @@ let compare_natural a b =
         | NC_int _, NC_char _ -> 1
         | NC_char _, NC_int _ -> -1
         | NC_int x, NC_int y ->
-          let c = Pervasives.compare x y in
+          let c = compare_int x y in
           if c<>0 then c else cmp_rec a b
   in
   cmp_rec (chunks a) (chunks b)
@@ -490,7 +491,7 @@ let edit_distance s1 s2 =
   then length s2
   else if length s2 = 0
   then length s1
-  else if s1 = s2
+  else if equal s1 s2
   then 0
   else begin
     (* distance vectors (v0=previous, v1=current) *)
@@ -777,14 +778,9 @@ let exists2 p s1 s2 =
     (** {2 Ascii functions} *)
 
 let equal_caseless s1 s2: bool =
-  let char_lower c =
-    if c >= 'A' && c <= 'Z'
-    then Char.unsafe_chr (Char. code c + 32)
-    else c
-  in
   String.length s1 = String.length s2 &&
   for_all2
-    (fun c1 c2 -> char_lower c1 = char_lower c2)
+    (fun c1 c2 -> CCChar.equal (CCChar.lowercase_ascii c1) (CCChar.lowercase_ascii c2))
     s1 s2
 
 let pp buf s =
