@@ -86,7 +86,7 @@ let fail_ ~err st msg =
 
 let next st ~ok ~err =
   if st.i = String.length st.str
-  then fail_ st ~err (const_ "unexpected end of input")
+  then fail_ ~err st (const_ "unexpected end of input")
   else (
     let c = st.str.[st.i] in
     st.i <- st.i + 1;
@@ -110,24 +110,24 @@ type 'a t = state -> ok:('a -> unit) -> err:(exn -> unit) -> unit
 let return : 'a -> 'a t = fun x _st ~ok ~err:_ -> ok x
 let pure = return
 let (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  = fun p f st ~ok ~err -> p st ~err ~ok:(fun x -> ok (f x))
+  = fun p f st ~ok ~err -> p st ~ok:(fun x -> ok (f x)) ~err
 let (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  = fun p f st ~ok ~err -> p st ~err ~ok:(fun x -> f x st ~err ~ok)
+  = fun p f st ~ok ~err -> p st ~ok:(fun x -> f x st ~ok ~err) ~err
 let (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   = fun f x st ~ok ~err ->
-    f st ~err ~ok:(fun f' -> x st ~err ~ok:(fun x' -> ok (f' x')))
+    f st ~ok:(fun f' -> x st ~ok:(fun x' -> ok (f' x')) ~err) ~err
 let (<* ) : 'a t -> _ t -> 'a t
   = fun x y st ~ok ~err ->
-    x st ~err ~ok:(fun res -> y st ~err ~ok:(fun _ -> ok res))
+    x st ~ok:(fun res -> y st ~ok:(fun _ -> ok res) ~err) ~err
 let ( *>) : _ t -> 'a t -> 'a t
   = fun x y st ~ok ~err ->
-    x st ~err ~ok:(fun _ -> y st ~err ~ok)
+    x st ~ok:(fun _ -> y st ~ok ~err) ~err
 
 let map f x = x >|= f
 let map2 f x y = pure f <*> x <*> y
 let map3 f x y z = pure f <*> x <*> y <*> z
 
-let junk_ st = next st ~err:(fun _ -> assert false) ~ok:ignore
+let junk_ st = next st ~ok:ignore ~err:(fun _ -> assert false)
 
 let eoi st ~ok ~err =
   if is_done st
@@ -148,15 +148,15 @@ let nop _ ~ok ~err:_ = ok()
 let char c =
   let msg = Printf.sprintf "expected '%c'" c in
   fun st ~ok ~err ->
-    next st ~err
-      ~ok:(fun c' -> if char_equal c c' then ok c else fail_ ~err st (const_ msg))
+    next st
+      ~ok:(fun c' -> if char_equal c c' then ok c else fail_ ~err st (const_ msg)) ~err
 
 let char_if p st ~ok ~err =
-  next st ~err
+  next st
     ~ok:(fun c ->
       if p c then ok c
       else fail_ ~err st (fun () -> Printf.sprintf "unexpected char '%c'" c)
-    )
+    ) ~err
 
 let chars_if p st ~ok ~err:_ =
   let i = st.i in
@@ -165,11 +165,12 @@ let chars_if p st ~ok ~err:_ =
   ok (String.sub st.str i !len)
 
 let chars1_if p st ~ok ~err =
-  chars_if p st ~err
+  chars_if p st
     ~ok:(fun s ->
       if string_equal s ""
       then fail_ ~err st (const_ "unexpected sequence of chars")
       else ok s)
+    ~err
 
 let rec skip_chars p st ~ok ~err =
   if not (is_done st) && p (cur st) then (
@@ -191,10 +192,11 @@ let space = char_if is_space
 let white = char_if is_white
 
 let endline st ~ok ~err =
-  next st ~err
+  next st
     ~ok:(function
       | '\n' as c -> ok c
       | _ -> fail_ ~err st (const_ "expected end-of-line"))
+    ~err
 
 let skip_space = skip_chars is_space
 let skip_white = skip_chars is_white
@@ -232,32 +234,33 @@ let string s st ~ok ~err =
   let rec check i =
     if i = String.length s then ok s
     else
-      next st ~err
+      next st
         ~ok:(fun c ->
           if char_equal c s.[i]
           then check (i+1)
           else fail_ ~err st (fun () -> Printf.sprintf "expected \"%s\"" s))
+        ~err
   in
   check 0
 
 let rec many_rec : 'a t -> 'a list -> 'a list t = fun p acc st ~ok ~err ->
   if is_done st then ok(List.rev acc)
   else
-    p st ~err
+    p st
       ~ok:(fun x ->
         let i = pos st in
         many_rec p (x :: acc) st ~ok
           ~err:(fun _ ->
             backtrack st i;
             ok(List.rev acc))
-      )
+      ) ~err
 
 let many : 'a t -> 'a list t
   = fun p st ~ok ~err -> many_rec p [] st ~ok ~err
 
 let many1 : 'a t -> 'a list t =
   fun p st ~ok ~err ->
-    p st ~err ~ok:(fun x -> many_rec p [x] st ~err ~ok)
+    p st ~ok:(fun x -> many_rec p [x] st ~ok ~err) ~err
 
 let rec skip p st ~ok ~err =
   let i = pos st in
@@ -306,12 +309,12 @@ let memo (type a) (p:a t):a t =
     with Not_found ->
       (* parse, and save *)
       p st
-        ~err:(fun e ->
-          MemoTbl.H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Fail e));
-          err e)
         ~ok:(fun x ->
           MemoTbl.H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Ok x));
           ok x)
+        ~err:(fun e ->
+          MemoTbl.H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Fail e));
+          err e)
 
 let fix_memo f =
   let rec p =

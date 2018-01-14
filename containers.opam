@@ -23,10 +23,9 @@ remove: [
 ]
 depends: [
   "ocamlfind" {build}
-  "oasis" {build}
+  "jbuilder" {build}
   "base-bytes"
   "result"
-  "ocamlbuild" {build}
 ]
 depopts: [
   "base-unix"

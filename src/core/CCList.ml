@@ -570,9 +570,9 @@ let sorted_merge ~cmp l1 l2 =
   recurse cmp [] l1 l2
 
 (*$T
-  List.sort Pervasives.compare ([(( * )2); ((+)1)] <*> [10;100]) \
-    = [11; 20; 101; 200]
-  sorted_merge ~cmp:CCInt.compare [1;1;2] [1;2;3] = [1;1;1;2;2;3]
+  equal CCInt.equal (List.sort CCInt.compare ([(( * )2); ((+)1)] <*> [10;100])) \
+    [11; 20; 101; 200]
+  equal CCInt.equal (sorted_merge ~cmp:CCInt.compare [1;1;2] [1;2;3]) [1;1;1;2;2;3]
 *)
 
 (*$Q

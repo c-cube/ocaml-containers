@@ -1,2 +1,5 @@
+B ../../_build/default/src/unix
+FLG -w -40 -w +a-4-42-44-48-50-58-32-60@8 -safe-string -color always
+PKG bytes
+PKG result
 PKG unix
-REC

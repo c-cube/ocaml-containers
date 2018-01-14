@@ -117,10 +117,10 @@ let _diff_list ~last l =
    ∑_k y_k = ∑_k (x_{k+1} - x_k ) = x_{len} - x_0 = i. *)
 let split_list i ~len st =
   if len <= 1 then invalid_arg "Random.split_list";
-  if i >= len then
+  if i >= len then (
     let xs = sample_without_replacement ~compare (len-1) (int_range 1 (i-1)) st in
-    _diff_list ( 0::xs ) ~last:i
-  else
+    _diff_list ~last:i (0::xs)
+  ) else
     None
 
 (*$Q

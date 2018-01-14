@@ -257,14 +257,14 @@ end
 
 let find ?(start=0) ~sub =
   let pattern = Find.compile sub in
-  fun s -> Find.find ~pattern s ~start
+  fun s -> Find.find ~start ~pattern s
 
 let find_all ?(start=0) ~sub =
   let pattern = Find.compile sub in
   fun s ->
     let i = ref start in
     fun () ->
-      let res = Find.find ~pattern s ~start:!i in
+      let res = Find.find ~start:!i ~pattern s in
       if res = ~-1 then None
       else (
         i := res + 1; (* possible overlap *)
@@ -282,7 +282,7 @@ let mem ?start ~sub s = find ?start ~sub s >= 0
 
 let rfind ~sub =
   let pattern = Find.rcompile sub in
-  fun s -> Find.rfind ~pattern s ~start:(String.length s-1)
+  fun s -> Find.rfind ~start:(String.length s-1) ~pattern s
 
 (* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -296,7 +296,7 @@ let replace ?(which=`All) ~sub ~by s =
   if is_empty sub then invalid_arg "CCString.replace";
   match which with
     | `Left ->
-      let i = find ~sub s ~start:0 in
+      let i = find ~start:0 ~sub s in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
     | `Right ->
       let i = rfind ~sub s in
@@ -307,7 +307,7 @@ let replace ?(which=`All) ~sub ~by s =
       let b = Buffer.create (String.length s) in
       let start = ref 0 in
       while !start < String.length s do
-        let i = Find.find ~pattern s ~start:!start in
+        let i = Find.find ~start:!start ~pattern s in
         if i>=0 then (
           (* between last and cur occurrences *)
           Buffer.add_substring b s !start (i- !start);
@@ -339,7 +339,7 @@ module Split = struct
     | SplitAt prev -> _split_search ~by s prev
 
   and _split_search ~by s prev =
-    let j = Find.find ~pattern:by s ~start:prev in
+    let j = Find.find ~start:prev ~pattern:by s in
     if j < 0
     then Some (SplitStop, prev, String.length s - prev)
     else Some (SplitAt (j+Find.pattern_length by), prev, j-prev)
