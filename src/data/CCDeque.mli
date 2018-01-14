@@ -124,6 +124,6 @@ val to_rev_list : 'a t -> 'a list
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val print : 'a printer -> 'a t printer
+val pp : 'a printer -> 'a t printer
 (** Print the elements
     @since 0.13 *)

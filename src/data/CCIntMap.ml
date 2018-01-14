@@ -326,14 +326,14 @@ let rec union f t1 t2 =
 *)
 
 (*$R
-  assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (print CCString.print))
+  assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (pp CCString.pp))
     (of_list [1, "1"; 2, "2"; 3, "3"; 4, "4"])
     (union (fun _ a b -> a)
       (of_list [1, "1"; 3, "3"]) (of_list [2, "2"; 4, "4"]));
 *)
 
 (*$R
-  assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (print CCString.print))
+  assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (pp CCString.pp))
     (of_list [1, "1"; 2, "2"; 3, "3"; 4, "4"])
     (union (fun _ a b -> a)
       (of_list [1, "1"; 2, "2"; 3, "3"]) (of_list [2, "2"; 4, "4"]))
@@ -369,7 +369,7 @@ let rec inter f a b =
       else E
 
 (*$R
-  assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (print CCString.print))
+  assert_equal ~cmp:(equal ~eq:(=)) ~printer:(CCFormat.to_string (pp CCString.pp))
     (singleton 2 "2")
     (inter (fun _ a b -> a)
       (of_list [1, "1"; 2, "2"; 3, "3"]) (of_list [2, "2"; 4, "4"]))
@@ -533,7 +533,7 @@ let rec as_tree t () = match t with
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let print pp_x out m =
+let pp pp_x out m =
   Format.fprintf out "@[<hov2>intmap {@,";
   let first = ref true in
   iter

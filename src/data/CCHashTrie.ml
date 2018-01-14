@@ -126,7 +126,7 @@ module type S = sig
 
   (** {6 IO} *)
 
-  val print : key printer -> 'a printer -> 'a t printer
+  val pp : key printer -> 'a printer -> 'a t printer
 
   val as_tree : 'a t -> [`L of int * (key * 'a) list | `N ] ktree
   (** For debugging purpose: explore the structure of the tree,
@@ -698,7 +698,7 @@ module Make(Key : KEY)
     | None -> raise Not_found
     | Some (k,v) -> k, v
 
-  let print ppk ppv out m =
+  let pp ppk ppv out m =
     let first = ref true in
     iter m
       ~f:(fun k v ->

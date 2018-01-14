@@ -161,7 +161,7 @@ module type S = sig
 
   val to_gen : 'a t -> (key * 'a) gen
 
-  val print : key printer -> 'a printer -> 'a t printer
+  val pp : key printer -> 'a printer -> 'a t printer
 
   (**/**)
   val node_ : key -> 'a -> 'a t -> 'a t -> 'a t
@@ -588,7 +588,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
           Some (k,v)
     in next
 
-  let print pp_k pp_v fmt m =
+  let pp pp_k pp_v fmt m =
     let start = "[" and stop = "]" and arrow = "->" and sep = ","in
     Format.pp_print_string fmt start;
     let first = ref true in

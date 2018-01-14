@@ -107,7 +107,7 @@ val as_tree : 'a t -> [`Node of int * int | `Leaf of int * 'a ] tree
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val print : 'a printer -> 'a t printer
+val pp : 'a printer -> 'a t printer
 (** @since 0.13 *)
 
 (** Helpers *)

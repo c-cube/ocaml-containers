@@ -41,9 +41,12 @@ module type S = sig
   val to_klist : t -> char klist
   val to_list : t -> char list
 
-  val pp : Buffer.t -> t -> unit
-  val print : Format.formatter -> t -> unit
-  (** Print the string within quotes *)
+  val pp_buf : Buffer.t -> t -> unit
+  (** Renamed from [pp] @since NEXT_RELEASE *)
+
+  val pp : Format.formatter -> t -> unit
+  (** Print the string within quotes
+      Renamed from [print] @since NEXT_RELEASE *)
 end
 
 (** {2 Strings} *)
@@ -718,7 +721,7 @@ module Sub : sig
 
   (*$T
     let sub = Sub.make " abc " 1 ~len:3 in \
-    "\"abc\"" = (CCFormat.to_string Sub.print sub)
+    "\"abc\"" = (CCFormat.to_string Sub.pp sub)
   *)
 
   (*$= & ~printer:(String.make 1)

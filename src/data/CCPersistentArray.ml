@@ -163,7 +163,7 @@ let to_gen a =
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let print pp_item out v =
+let pp pp_item out v =
   Format.fprintf out "[|";
   iteri
     (fun i x ->

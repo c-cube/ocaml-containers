@@ -52,8 +52,8 @@ module type S = sig
   val to_klist : t -> char klist
   val to_list : t -> char list
 
-  val pp : Buffer.t -> t -> unit
-  val print : Format.formatter -> t -> unit
+  val pp_buf : Buffer.t -> t -> unit
+  val pp : Format.formatter -> t -> unit
 end
 
 let equal (a:string) b = Pervasives.(=) a b
@@ -783,12 +783,12 @@ let equal_caseless s1 s2: bool =
     (fun c1 c2 -> CCChar.equal (CCChar.lowercase_ascii c1) (CCChar.lowercase_ascii c2))
     s1 s2
 
-let pp buf s =
+let pp_buf buf s =
   Buffer.add_char buf '"';
   Buffer.add_string buf s;
   Buffer.add_char buf '"'
 
-let print fmt s =
+let pp fmt s =
   Format.fprintf fmt "\"%s\"" s
 
 module Sub = struct
@@ -830,11 +830,11 @@ module Sub = struct
   let to_klist (s,i,len) = _to_klist s i len
   let to_list (s,i,len) = _to_list s [] i len
 
-  let pp buf (s,i,len) =
+  let pp_buf buf (s,i,len) =
     Buffer.add_char buf '"';
     Buffer.add_substring buf s i len;
     Buffer.add_char buf '"'
 
-  let print fmt s =
+  let pp fmt s =
     Format.fprintf fmt "\"%s\"" (copy s)
 end

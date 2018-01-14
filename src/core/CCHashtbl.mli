@@ -102,9 +102,10 @@ module Poly : sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val print : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
+  val pp : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
   (** Printer for table
-      @since 0.13 *)
+      @since 0.13
+      Renamed from [print] @since NEXT_RELEASE *)
 end
 
 include module type of Poly
@@ -201,9 +202,10 @@ module type S = sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val print : key printer -> 'a printer -> 'a t printer
+  val pp : key printer -> 'a printer -> 'a t printer
   (** Printer for tables
-      @since 0.13 *)
+      @since 0.13
+      Renamed from {!print} @since NEXT_RELEASE *)
 end
 
 module Make(X : Hashtbl.HashedType) :

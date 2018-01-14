@@ -187,4 +187,4 @@ include module type of Infix
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val print : ?sep:string -> 'a printer -> 'a t printer
+val pp : ?sep:string -> 'a printer -> 'a t printer

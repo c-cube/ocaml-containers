@@ -405,7 +405,7 @@ let compare ~cmp a b =
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let print pp_x out d =
+let pp pp_x out d =
   let first = ref true in
   Format.fprintf out "@[<hov2>deque {";
   iter

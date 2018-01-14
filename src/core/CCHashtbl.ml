@@ -124,7 +124,7 @@ module Poly = struct
     ()
   *)
 
-  let print pp_k pp_v fmt m =
+  let pp pp_k pp_v fmt m =
     Format.fprintf fmt "@[<hov2>tbl {@,";
     let first = ref true in
     Hashtbl.iter
@@ -232,9 +232,10 @@ module type S = sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val print : key printer -> 'a printer -> 'a t printer
-  (** Printer for tables
-      @since 0.13 *)
+  val pp : key printer -> 'a printer -> 'a t printer
+  (** Printer for table
+      @since 0.13
+      Renamed from [print] @since NEXT_RELEASE *)
 end
 
 (*$inject
@@ -344,7 +345,7 @@ module Make(X : Hashtbl.HashedType)
     List.iter (fun (k,v) -> add tbl k v) l;
     tbl
 
-  let print pp_k pp_v fmt m =
+  let pp pp_k pp_v fmt m =
     Format.fprintf fmt "@[<hov2>tbl {@,";
     let first = ref true in
     iter

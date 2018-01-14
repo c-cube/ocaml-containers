@@ -576,7 +576,7 @@ include Infix
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let print ?(sep=", ") pp_item fmt l =
+let pp ?(sep=", ") pp_item fmt l =
   let first = ref true in
   iter l
     ~f:(fun x ->

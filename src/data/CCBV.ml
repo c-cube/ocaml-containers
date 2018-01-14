@@ -549,7 +549,7 @@ let of_seq seq =
     |> CCList.of_seq |> List.sort CCOrd.compare = CCList.range 0 10
 *)
 
-let print out bv =
+let pp out bv =
   Format.pp_print_string out "bv {";
   iter bv
     (fun _i b ->

@@ -88,7 +88,7 @@ val to_gen : 'a t -> 'a gen
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val print :
+val pp :
   ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> 'a t printer
 

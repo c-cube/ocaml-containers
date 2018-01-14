@@ -131,5 +131,5 @@ val to_gen : 'a t -> 'a gen
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val print : 'a printer -> 'a t printer
+val pp : 'a printer -> 'a t printer
 (** @since 0.13 *)

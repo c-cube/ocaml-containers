@@ -515,7 +515,7 @@ let (--^) a b =
   0 --^ 0 |> to_list = []
 *)
 
-let print pp_x out d =
+let pp pp_x out d =
   let first = ref true in
   Format.fprintf out "@[<hov2>queue {";
   iter

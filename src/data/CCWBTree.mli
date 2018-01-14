@@ -126,7 +126,8 @@ module type S = sig
 
   val to_gen : 'a t -> (key * 'a) gen
 
-  val print : key printer -> 'a printer -> 'a t printer
+  val pp : key printer -> 'a printer -> 'a t printer
+  (** Renamed from [val print] @since NEXT_RELEASE *)
 
   (**/**)
   val node_ : key -> 'a -> 'a t -> 'a t -> 'a t
