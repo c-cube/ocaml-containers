@@ -26,7 +26,7 @@ before_install:
 install:
   # Install dependencies
   - opam pin add --no-action containers .
-  - opam install jbuilder
+  - opam install jbuilder base-bytes result
   - opam install --deps-only containers
 script:
   - make build
