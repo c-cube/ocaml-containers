@@ -32,4 +32,3 @@ script:
   - make build
   - opam install sequence qcheck qtest gen
   - make test
-  - make doc
