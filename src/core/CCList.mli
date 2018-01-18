@@ -334,8 +334,17 @@ val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
 
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
+val iteri2 : (int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
+(** @raise Invalid_argument when lists do not have the same length
+    @since NEXT_RELEASE *)
+
 val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** Fold on list, with index *)
+
+val foldi2 : ('c -> int -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
+(** Fold on two lists, with index
+    @raise Invalid_argument when lists do not have the same length
+    @since NEXT_RELEASE *)
 
 val get_at_idx : int -> 'a t -> 'a option
 (** Get by index in the list.

@@ -1059,6 +1059,16 @@ let iteri f l =
     | x::l' -> f i x; aux f (i+1) l'
   in aux f 0 l
 
+let iteri2 f l1 l2 =
+  let rec aux f i l1 l2 = match l1, l2 with
+    | [], [] -> ()
+    | [], _
+    | _, [] -> invalid_arg "iteri2"
+    | x1::l1', x2::l2' ->
+       f i x1 x2;
+       aux f (i+1) l1' l2'
+  in aux f 0 l1 l2
+
 let foldi f acc l =
   let rec foldi f acc i l = match l with
     | [] -> acc
@@ -1067,6 +1077,17 @@ let foldi f acc l =
       foldi f acc (i+1) l'
   in
   foldi f acc 0 l
+
+let foldi2 f acc l1 l2 =
+  let rec foldi f acc i l1 l2 = match l1, l2 with
+    | [], [] -> acc
+    | [], _
+    | _, [] -> invalid_arg "foldi2"
+    | x1::l1', x2::l2' ->
+      let acc = f acc i x1 x2 in
+      foldi f acc (i+1) l1' l2'
+  in
+  foldi f acc 0 l1 l2
 
 let rec get_at_idx_rec i l = match l with
   | [] -> raise Not_found
