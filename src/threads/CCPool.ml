@@ -9,9 +9,6 @@ type +'a state =
   | Failed of exn
 
 module type PARAM = sig
-  val min_size : int
-  (** Minimum number of threads in the pool *)
-
   val max_size : int
   (** Maximum number of threads in the pool *)
 end
@@ -19,8 +16,8 @@ end
 exception Stopped
 
 (*$inject
-  module P = Make(struct let min_size = 0 let max_size = 30 end)
-  module P2 = Make(struct let min_size = 1 let max_size = 15 end)
+  module P = Make(struct let max_size = 30 end)
+  module P2 = Make(struct let max_size = 15 end)
   module Fut = P.Fut
   module Fut2 = P2.Fut
 *)
@@ -82,11 +79,10 @@ module Make(P : PARAM) = struct
   (* thread: seek what to do next (including dying).
      Assumes the pool is locked. *)
   let get_next_ pool =
-    (*Printf.printf "get_next (cur=%d, min=%d, idle=%d, stop=%B)\n%!" pool.cur_size P.min_size pool.cur_idle pool.stop;*)
-    if pool.stop || (Queue.is_empty pool.jobs && pool.cur_size > P.min_size) then (
+    (*Printf.printf "get_next (cur=%d, idle=%d, stop=%B)\n%!" pool.cur_size pool.cur_idle pool.stop;*)
+    if pool.stop || (Queue.is_empty pool.jobs && pool.cur_size > 0) then (
       (* die: the thread would be idle otherwise  *)
-      assert (pool.cur_size > 0);
-      (*Printf.printf "time… to die (cur=%d, min=%d, idle=%d, stop=%B)\n%!" pool.cur_size P.min_size pool.cur_idle pool.stop;*)
+      (*Printf.printf "time… to die (cur=%d, idle=%d, stop=%B)\n%!" pool.cur_size pool.cur_idle pool.stop;*)
       decr_size_ pool;
       Die
     ) else if Queue.is_empty pool.jobs then (
@@ -128,12 +124,6 @@ module Make(P : PARAM) = struct
       (fun pool ->
          incr_size_ pool;
          ignore (Thread.create serve pool))
-
-  (* launch the minimum required number of threads *)
-  let () =
-    if P.min_size < 0 then invalid_arg "CCPool: min_size must be >= 0";
-    if P.min_size > P.max_size then invalid_arg "CCPool: min_size must be <= max_size";
-    for _i = 1 to P.min_size do launch_worker_ pool done
 
   (* heuristic criterion for starting a new thread. *)
   let can_start_thread_ p = p.cur_size < P.max_size

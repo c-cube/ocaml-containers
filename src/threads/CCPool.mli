@@ -12,9 +12,6 @@ type +'a state =
   | Failed of exn
 
 module type PARAM = sig
-  val min_size : int
-  (** Minimum number of threads in the pool *)
-
   val max_size : int
   (** Maximum number of threads in the pool *)
 end
