@@ -4,7 +4,7 @@ all: build test
 build:
 	jbuilder build @install
 
-test:
+test: build
 	jbuilder runtest --no-buffer
 
 clean:
