@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 complements to list} *)
+(** {1 Complements to list} *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option

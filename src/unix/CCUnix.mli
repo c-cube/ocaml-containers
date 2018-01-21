@@ -40,8 +40,8 @@ val call_full :
     returning.
     @param stdin if provided, the generator or string is consumed and fed to
       the subprocess input channel, which is then closed.
-    @param bufsize buffer size used to read stdout and stderr
-    @param env environment to run the command in
+    @param bufsize buffer size used to read stdout and stderr.
+    @param env environment to run the command in.
 *)
 
 (*$T
@@ -94,7 +94,7 @@ val async_call : ?env:string array ->
   'a
 (** Spawns a subprocess, like {!call}, but the subprocess's channels are
     line generators and line sinks (for stdin).
-    if [p] is [async_call "cmd"], then [p#wait] waits for the subprocess
+    If [p] is [async_call "cmd"], then [p#wait] waits for the subprocess
     to die. Channels can be closed independently.
     @since 0.11 *)
 
@@ -114,25 +114,25 @@ val with_in : ?mode:int -> ?flags:Unix.open_flag list ->
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
-    @param flags opening flags. [Unix.O_RDONLY] is used in any cases
+    @param flags opening flags. [Unix.O_RDONLY] is used in any cases.
     @since 0.16 *)
 
 val with_out : ?mode:int -> ?flags:Unix.open_flag list ->
   string -> f:(out_channel -> 'a) -> 'a
-(** Same as {!with_in} but for an output channel
+(** Same as {!with_in} but for an output channel.
     @param flags opening flags (default [[Unix.O_CREAT; Unix.O_TRUNC]])
       [Unix.O_WRONLY] is used in any cases.
     @since 0.16 *)
 
 val with_process_in : string -> f:(in_channel -> 'a) -> 'a
-(** Open a subprocess and obtain a handle to its stdout
+(** Open a subprocess and obtain a handle to its stdout.
     {[
       CCUnix.with_process_in "ls /tmp" ~f:CCIO.read_lines_l;;
     ]}
     @since 0.16 *)
 
 val with_process_out : string -> f:(out_channel -> 'a) -> 'a
-(** Open a subprocess and obtain a handle to its stdin
+(** Open a subprocess and obtain a handle to its stdin.
     @since 0.16 *)
 
 (** Handle to a subprocess.
@@ -150,7 +150,7 @@ val with_process_full : ?env:string array -> string -> f:(process_full -> 'a) ->
     @since 0.16 *)
 
 val with_connection : Unix.sockaddr -> f:(in_channel -> out_channel -> 'a) -> 'a
-(** Wrap {!Unix.open_connection} with a handler
+(** Wrap {!Unix.open_connection} with a handler.
     @since 0.16 *)
 
 exception ExitServer
@@ -174,11 +174,11 @@ val with_file_lock : kind:[`Read|`Write] -> string -> (unit -> 'a) -> 'a
 
 module Infix : sig
   val (?|) : ('a, Buffer.t, unit, call_result) format4 -> 'a
-  (** Infix version of {!call}
+  (** Infix version of {!call}.
       @since 0.11 *)
 
   val (?|&) : ('a, Buffer.t, unit, async_call_result) format4 -> 'a
-  (** Infix version of {!async_call}
+  (** Infix version of {!async_call}.
       @since 0.11 *)
 end
 

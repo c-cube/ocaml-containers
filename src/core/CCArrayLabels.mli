@@ -134,7 +134,7 @@ val lookup_exn : cmp:'a ord -> key:'a -> 'a t -> int
 
 val bsearch : cmp:('a -> 'a -> int) -> key:'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
-(** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
+(** [bsearch ?cmp key arr] finds the index of the object [key] in the array [arr],
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
     the result is not specified (may raise Invalid_argument).
 
@@ -145,7 +145,7 @@ val bsearch : cmp:('a -> 'a -> int) -> key:'a -> 'a t ->
     - [`At i] if [cmp arr.(i) key = 0] (for some i)
     - [`All_lower] if all elements of [arr] are lower than [key]
     - [`All_bigger] if all elements of [arr] are bigger than [key]
-    - [`Just_after i] if [arr.(i) < x < arr.(i+1)]
+    - [`Just_after i] if [arr.(i) < key < arr.(i+1)]
     - [`Empty] if the array is empty.
 
     @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp].
