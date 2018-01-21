@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>CCBitField (containers.data.CCBitField)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="generator" content="doc-ock-html v1.0.0-1-g1fc9bf0"/></head><body><nav id="top"><a href="../index.html">Up</a> &mdash; <span class="package">package <a href="../index.html">containers.data</a></span></nav><header><h1><span class="keyword">Module</span> <span class="module-path">CCBitField</span></h1></header><h2>Bit Field</h2><p>This module defines efficient bitfields
+up to 30 or 62 bits (depending on the architecture) in
+a relatively type-safe way.</p><pre><code class="code">      module B = CCBitField.Make(struct end);;
+
+      #install_printer B.pp;;
+
+      let x = B.mk_field ()
+      let y = B.mk_field ()
+      let z = B.mk_field ()
+
+      let f = B.empty |&gt; B.set x true |&gt; B.set y true;;
+
+      assert (not (B.get z f)) ;;
+
+      assert (f |&gt; B.set z true |&gt; B.get z);;
+</code></pre><div class="spec exception" id="exception-TooManyFields"><a href="#exception-TooManyFields" class="anchor"></a><div class="def exception"><code><span class="keyword">exception </span></code><code><span class="exception">TooManyFields</span></code></div><div class="doc"><p>Raised when too many fields are packed into one bitfield.</p></div></div><div class="spec exception" id="exception-Frozen"><a href="#exception-Frozen" class="anchor"></a><div class="def exception"><code><span class="keyword">exception </span></code><code><span class="exception">Frozen</span></code></div><div class="doc"><p>Raised when a frozen bitfield is modified.</p></div></div><div class="spec val" id="val-max_width"><a href="#val-max_width" class="anchor"></a><div class="def val"><code><span class="keyword">val </span>max_width : int</code></div><div class="doc"><p>System-dependent maximum width for a bitfield, typically 30 or 62.</p></div></div><div class="spec module-type" id="module-type-S"><a href="#module-type-S" class="anchor"></a><div class="def module-type"><code><span class="keyword">module type </span><a href="module-type-S/index.html">S</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span></code></div><div class="doc"><h3>Bitfield Signature</h3></div></div><div class="spec module" id="module-Make"><a href="#module-Make" class="anchor"></a><div class="def module"><code><span class="keyword">module </span><a href="Make/index.html">Make</a> : <span class="keyword">functor</span> (<a href="Make/argument-1-X/index.html">X</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span>) -&gt; <a href="index.html#module-type-S">S</a></code></div><div class="doc"><p>Create a new bitfield type</p></div></div></body></html>
