@@ -32,17 +32,17 @@ module type S = sig
   val is_empty : _ t -> bool
 
   val add : key -> 'a -> 'a t -> 'a t
-  (** Add a binding to the trie (possibly erasing the previous one) *)
+  (** Add a binding to the trie (possibly erasing the previous one). *)
 
   val remove : key -> 'a t -> 'a t
-  (** Remove the key, if present *)
+  (** Remove the key, if present. *)
 
   val find : key -> 'a t -> 'a option
-  (** Find the value associated with the key, if any *)
+  (** Find the value associated with the key, if any. *)
 
   val find_exn : key -> 'a t -> 'a
   (** Same as {!find} but can fail.
-      @raise Not_found if the key is not present *)
+      @raise Not_found if the key is not present. *)
 
   val longest_prefix : key -> 'a t -> key
   (** [longest_prefix k m] finds the longest prefix of [k] that leads to
@@ -50,7 +50,7 @@ module type S = sig
       a value.
 
       Example: if [m] has keys "abc0" and "abcd", then [longest_prefix "abc2" m]
-      will return "abc"
+      will return "abc".
 
       @since 0.17 *)
 
@@ -58,7 +58,7 @@ module type S = sig
   (** Update the binding for the given key. The function is given
       [None] if the key is absent, or [Some v] if [key] is bound to [v];
       if it returns [None] the key is removed, otherwise it
-      returns [Some y] and [key] becomes bound to [y] *)
+      returns [Some y] and [key] becomes bound to [y]. *)
 
   val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** Fold on key/value bindings. Will use {!WORD.of_list} to rebuild keys. *)
@@ -72,19 +72,19 @@ module type S = sig
       @since 0.17  *)
 
   val iter : (key -> 'a -> unit) -> 'a t -> unit
-  (** Same as {!fold}, but for effectful functions *)
+  (** Same as {!fold}, but for effectful functions. *)
 
   val fold_values : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** More efficient version of {!fold}, that doesn't keep keys *)
+  (** More efficient version of {!fold}, that doesn't keep keys. *)
 
   val iter_values : ('a -> unit) -> 'a t -> unit
 
   val merge : ('a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t
   (** Merge two tries together. The function is used in
-      case of conflicts, when a key belongs to both tries *)
+      case of conflicts, when a key belongs to both tries. *)
 
   val size : _ t -> int
-  (** Number of bindings *)
+  (** Number of bindings. *)
 
   (** {6 Conversions} *)
 
@@ -104,11 +104,11 @@ module type S = sig
 
   val above : key -> 'a t -> (key * 'a) sequence
   (** All bindings whose key is bigger or equal to the given key, in
-      ascending order *)
+      ascending order. *)
 
   val below : key -> 'a t -> (key * 'a) sequence
   (** All bindings whose key is smaller or equal to the given key,
-      in decreasing order *)
+      in decreasing order. *)
 
   (**/**)
   val check_invariants: _ t -> bool

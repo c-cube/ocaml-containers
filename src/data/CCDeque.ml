@@ -74,9 +74,11 @@ let is_zero_ n = match n.cell with
   | Two _
   | Three _ -> false
 
+let bool_eq (a : bool) b = Pervasives.(=) a b
+
 let is_empty d =
   let res = d.size = 0 in
-  assert (res = is_zero_ d.cur);
+  assert (bool_eq res (is_zero_ d.cur));
   res
 
 let push_front d x =
@@ -161,7 +163,7 @@ let take_back_node_ n = match n.cell with
 
 let take_back d =
   if is_empty d then raise Empty
-  else if d.cur == d.cur.prev
+  else if Pervasives.(==) d.cur d.cur.prev
   then (
     (* only one cell *)
     decr_size_ d;
@@ -194,7 +196,7 @@ let take_front_node_ n = match n.cell with
 
 let take_front d =
   if is_empty d then raise Empty
-  else if d.cur.prev == d.cur
+  else if Pervasives.(==) d.cur.prev d.cur
   then (
     (* only one cell *)
     decr_size_ d;
@@ -253,7 +255,7 @@ let fold f acc d =
       | Two (x,y) -> f (f acc x) y
       | Three (x,y,z) -> f (f (f acc x) y) z
     in
-    if n.next == first then acc else aux ~first f acc n.next
+    if Pervasives.(==) n.next first then acc else aux ~first f acc n.next
   in
   aux ~first:d.cur f acc d.cur
 
@@ -335,7 +337,7 @@ let to_gen q =
   let cell = ref q.cur.cell in
   let cur = ref q.cur in
   let rec next () = match !cell with
-    | Zero when (!cur).next == first -> None
+    | Zero when Pervasives.(==) (!cur).next first -> None
     | Zero ->
       (* go to next node *)
       let n = !cur in
@@ -367,7 +369,7 @@ let copy d =
   let q = of_list [1;2;3;4] in
   assert_equal 4 (length q);
   let q' = copy q in
-  let cmp = equal ?eq:None in
+  let cmp = equal ~eq:CCInt.equal in
   assert_equal 4 (length q');
   assert_equal ~cmp q q';
   push_front q 0;
@@ -377,7 +379,7 @@ let copy d =
   assert_equal ~cmp q q'
 *)
 
-let equal ?(eq=(=)) a b =
+let equal ~eq a b =
   let rec aux eq a b = match a() , b() with
     | None, None -> true
     | None, Some _
@@ -385,7 +387,7 @@ let equal ?(eq=(=)) a b =
     | Some x, Some y -> eq x y && aux eq a b
   in aux eq (to_gen a) (to_gen b)
 
-let compare ?(cmp=Pervasives.compare) a b =
+let compare ~cmp a b =
   let rec aux cmp a b = match a() , b() with
     | None, None -> 0
     | None, Some _ -> -1
@@ -397,13 +399,13 @@ let compare ?(cmp=Pervasives.compare) a b =
 
 (*$Q
    Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    CCOrd.equiv (compare (of_list l1) (of_list l2)) \
+    CCOrd.equiv (compare ~cmp:Pervasives.compare (of_list l1) (of_list l2)) \
       (CCList.compare Pervasives.compare l1 l2))
 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let print pp_x out d =
+let pp pp_x out d =
   let first = ref true in
   Format.fprintf out "@[<hov2>deque {";
   iter
@@ -412,4 +414,3 @@ let print pp_x out d =
        pp_x out x
     ) d;
   Format.fprintf out "}@]"
-

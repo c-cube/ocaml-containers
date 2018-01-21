@@ -118,7 +118,7 @@ let to_gen a =
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let print ?(start="") ?(stop="") ?(sep=", ") pp_item out a =
+let pp ?(start="") ?(stop="") ?(sep=", ") pp_item out a =
   Format.pp_print_string out start;
   for k = 0 to Array.length a - 1 do
     if k > 0 then (

@@ -34,10 +34,14 @@ let empty = Shallow Zero
 
 exception Empty
 
+let is_not_zero = function
+  | Zero -> false
+  | One _ | Two _ | Three _ -> true
+
 let _single x = Shallow (One x)
 let _double x y = Shallow (Two (x,y))
 let _deep n hd middle tl =
-  assert (hd<>Zero && tl<>Zero);
+  assert (is_not_zero hd && is_not_zero tl);
   Deep (n, hd, middle, tl)
 
 let is_empty = function
@@ -511,7 +515,7 @@ let (--^) a b =
   0 --^ 0 |> to_list = []
 *)
 
-let print pp_x out d =
+let pp pp_x out d =
   let first = ref true in
   Format.fprintf out "@[<hov2>queue {";
   iter

@@ -257,17 +257,21 @@ let iter bv f =
     [30; 100; 255; 256;10_000]
 *)
 
+(*$inject
+  let seq_zip s k = s (fun x y -> k(x,y))
+*)
+
 (*$= & ~printer:Q.Print.(list (pair int bool))
-  [] (iter (create ~size:0 false) |> Sequence.zip |> Sequence.to_list)
+  [] (iter (create ~size:0 false) |> seq_zip |> Sequence.to_list)
   [0, false; 1, true; 2, false] \
-    (iter (let bv = create ~size:3 false in set bv 1; bv) |> Sequence.zip |> Sequence.to_list)
+    (iter (let bv = create ~size:3 false in set bv 1; bv) |> seq_zip |> Sequence.to_list)
 *)
 
 (*$Q
   Q.(small_int) (fun n -> \
     assert (n >= 0); \
     let bv = create ~size:n true in \
-    let l = iter bv |> Sequence.zip |> Sequence.to_list in \
+    let l = iter bv |> seq_zip |> Sequence.to_list in \
     List.length l = n && List.for_all (fun (_,b) -> b) l)
 *)
 
@@ -549,7 +553,7 @@ let of_seq seq =
     |> CCList.of_seq |> List.sort CCOrd.compare = CCList.range 0 10
 *)
 
-let print out bv =
+let pp out bv =
   Format.pp_print_string out "bv {";
   iter bv
     (fun _i b ->

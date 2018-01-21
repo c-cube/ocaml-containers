@@ -28,28 +28,28 @@ module Transient : sig
       is called, [r] cannot be used to modify the structure again. *)
 
   val create : unit -> t
-  (** Create a new, active ID *)
+  (** Create a new, active ID. *)
 
   val equal : t -> t -> bool
-  (** Equality between IDs *)
+  (** Equality between IDs. *)
 
   val frozen : t -> bool
   (** [frozen i] returns [true] if [freeze i] was called before. In this case,
       the ID cannot be used for modifications again. *)
 
   val active : t -> bool
-  (** [active i] is [not (frozen i)] *)
+  (** [active i] is [not (frozen i)]. *)
 
   val freeze : t -> unit
   (** [freeze i] makes [i] unusable for new modifications. The values
       created with [i] will now be immutable. *)
 
   val with_ : (t -> 'a) -> 'a
-  (** [Transient.with_ f] creates a transient ID [i], calls [f i],
+  (** [with_ f] creates a transient ID [i], calls [f i],
       freezes the ID [i] and returns the result of [f i]. *)
 
   exception Frozen
-  (** Raised when a frozen ID is used *)
+  (** Raised when a frozen ID is used. *)
 end
 
 (** {2 Signature} *)
@@ -71,7 +71,7 @@ module type S = sig
   val get : key -> 'a t -> 'a option
 
   val get_exn : key -> 'a t -> 'a
-  (** @raise Not_found if key not present *)
+  (** @raise Not_found if key not present. *)
 
   val remove : key -> 'a t -> 'a t
   (** Remove the key, if present. *)
@@ -79,29 +79,29 @@ module type S = sig
   val update : key -> f:('a option -> 'a option) -> 'a t -> 'a t
   (** [update k ~f m] calls [f (Some v)] if [get k m = Some v], [f None]
       otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
-      if [f] returns [None] it removes [k] *)
+      if [f] returns [None] it removes [k]. *)
 
   val add_mut : id:Transient.t -> key -> 'a -> 'a t -> 'a t
   (** [add_mut ~id k v m] behaves like [add k v m], except it will mutate
       in place whenever possible. Changes done with an [id] might affect all
       versions of the structure obtained with the same [id] (but not
       other versions).
-      @raise Transient.Frozen if [id] is frozen *)
+      @raise Transient.Frozen if [id] is frozen. *)
 
   val remove_mut : id:Transient.t -> key -> 'a t -> 'a t
-  (** Same as {!remove}, but modifies in place whenever possible
-      @raise Transient.Frozen if [id] is frozen *)
+  (** Same as {!remove}, but modifies in place whenever possible.
+      @raise Transient.Frozen if [id] is frozen. *)
 
   val update_mut : id:Transient.t -> key -> f:('a option -> 'a option) -> 'a t -> 'a t
-  (** Same as {!update} but with mutability
-      @raise Transient.Frozen if [id] is frozen *)
+  (** Same as {!update} but with mutability.
+      @raise Transient.Frozen if [id] is frozen. *)
 
   val cardinal : _ t -> int
 
   val choose : 'a t -> (key * 'a) option
 
   val choose_exn : 'a t -> key * 'a
-  (** @raise Not_found if not pair was found *)
+  (** @raise Not_found if not pair was found. *)
 
   val iter : f:(key -> 'a -> unit) -> 'a t -> unit
 
@@ -114,14 +114,14 @@ module type S = sig
   val add_list : 'a t -> (key * 'a) list -> 'a t
 
   val add_list_mut : id:Transient.t -> 'a t -> (key * 'a) list -> 'a t
-  (** @raise Frozen if the ID is frozen *)
+  (** @raise Frozen if the ID is frozen. *)
 
   val of_list : (key * 'a) list -> 'a t
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
 
   val add_seq_mut : id:Transient.t -> 'a t -> (key * 'a) sequence -> 'a t
-  (** @raise Frozen if the ID is frozen *)
+  (** @raise Frozen if the ID is frozen. *)
 
   val of_seq : (key * 'a) sequence -> 'a t
 
@@ -130,7 +130,7 @@ module type S = sig
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
 
   val add_gen_mut : id:Transient.t -> 'a t -> (key * 'a) gen -> 'a t
-  (** @raise Frozen if the ID is frozen *)
+  (** @raise Frozen if the ID is frozen. *)
 
   val of_gen : (key * 'a) gen -> 'a t
 
@@ -138,12 +138,14 @@ module type S = sig
 
   (** {6 IO} *)
 
-  val print : key printer -> 'a printer -> 'a t printer
+  val pp : key printer -> 'a printer -> 'a t printer
+  (** Renamed from [val print].
+      @since NEXT_RELEASE *)
 
   val as_tree : 'a t -> [`L of int * (key * 'a) list | `N ] ktree
   (** For debugging purpose: explore the structure of the tree,
       with [`L (h,l)] being a leaf (with shared hash [h])
-      and [`N] an inner node *)
+      and [`N] an inner node. *)
 end
 
 (** {2 Type for keys} *)

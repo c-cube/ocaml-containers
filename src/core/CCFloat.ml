@@ -9,6 +9,16 @@ type fpclass = Pervasives.fpclass =
   | FP_infinite
   | FP_nan
 
+module Infix = struct
+  let (=) = Pervasives.(=)
+  let (<>) = Pervasives.(<>)
+  let (<) = Pervasives.(<)
+  let (>) = Pervasives.(>)
+  let (<=) = Pervasives.(<=)
+  let (>=) = Pervasives.(>=)
+end
+include Infix
+
 let nan = Pervasives.nan
 
 let infinity = Pervasives.infinity
@@ -84,13 +94,3 @@ let random_range i j st = i +. random (j-.i) st
 let equal_precision ~epsilon a b = abs_float (a-.b) < epsilon
 
 let classify = Pervasives.classify_float
-
-module Infix = struct
-  let (=) = Pervasives.(=)
-  let (<>) = Pervasives.(<>)
-  let (<) = Pervasives.(<)
-  let (>) = Pervasives.(>)
-  let (<=) = Pervasives.(<=)
-  let (>=) = Pervasives.(>=)
-end
-include Infix

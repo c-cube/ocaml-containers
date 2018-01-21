@@ -1,6 +1,5 @@
 language: c
 env:
-  - OCAML_VERSION=4.01.0
   - OCAML_VERSION=4.02.3
   - OCAML_VERSION=4.04.2
   - OCAML_VERSION=4.05.0
@@ -26,12 +25,9 @@ before_install:
 install:
   # Install dependencies
   - opam pin add --no-action containers .
-  - opam install oasis
+  - opam install jbuilder base-bytes result
   - opam install --deps-only containers
 script:
-  - ./configure --enable-unix --enable-thread --disable-tests --disable-bench
   - make build
   - opam install sequence qcheck qtest gen
-  - ./configure --enable-unix --enable-thread --enable-tests --enable-docs --disable-bench
   - make test
-  - make doc

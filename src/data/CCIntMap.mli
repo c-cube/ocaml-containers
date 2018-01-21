@@ -19,8 +19,8 @@ val mem : int -> _ t -> bool
 val find : int -> 'a t -> 'a option
 
 val find_exn : int -> 'a t -> 'a
-(** Same as {!find} but unsafe
-    @raise Not_found if key not present *)
+(** Same as {!find} but unsafe.
+    @raise Not_found if key is not present. *)
 
 val add : int -> 'a -> 'a t -> 'a t
 
@@ -28,17 +28,17 @@ val remove : int -> 'a t -> 'a t
 
 val equal : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 (** [equal ~eq a b] checks whether [a] and [b] have the same set of pairs
-    (key, value), comparing values with [eq]
+    (key, value), comparing values with [eq].
     @since 0.13 *)
 
 val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
-(** Total order between maps; the precise order is unspecified .
+(** Total order between maps; the precise order is unspecified.
     @since 0.13 *)
 
 val update : int -> ('a option -> 'a option) -> 'a t -> 'a t
 
 val cardinal : _ t -> int
-(** Number of bindings in the map. Linear time *)
+(** Number of bindings in the map. Linear time. *)
 
 val iter : (int -> 'a -> unit) -> 'a t -> unit
 
@@ -53,7 +53,7 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 val choose : 'a t -> (int * 'a) option
 
 val choose_exn : 'a t -> int * 'a
-(** @raise Not_found if not pair was found *)
+(** @raise Not_found if not pair was found. *)
 
 val union : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
 
@@ -107,7 +107,7 @@ val as_tree : 'a t -> [`Node of int * int | `Leaf of int * 'a ] tree
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val print : 'a printer -> 'a t printer
+val pp : 'a printer -> 'a t printer
 (** @since 0.13 *)
 
 (** Helpers *)

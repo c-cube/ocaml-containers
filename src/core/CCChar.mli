@@ -7,27 +7,37 @@
 include module type of Char
 
 val equal : t -> t -> bool
+(** The equal function for chars. *)
+
 val compare : t -> t -> int
+(** The comparison function for characters, with the same specification as
+    {!Pervasives.compare}.  Along with the type [t], this function [compare]
+    allows the module [Char] to be passed as argument to the functors
+    {!Set.Make} and {!Map.Make}. *)
 
 val lowercase_ascii : t -> t
-(** See {!Char}
+(** Convert the given character to its equivalent lowercase character,
+    using the US-ASCII character set.
     @since 0.20 *)
 
 val uppercase_ascii : t -> t
-(** See {!Char}
+(** Convert the given character to its equivalent uppercase character,
+    using the US-ASCII character set.
     @since 0.20 *)
 
 val of_int_exn : int -> t
-(** Alias to {!Char.chr}
-    @raise Invalid_argument if the int is not within [0,...,255]
+(** Alias to {!Char.chr}.
+    Return the character with the given ASCII code.
+    @raise Invalid_argument if the int is not within [0,...,255].
     @since 1.0 *)
 
 val of_int : int -> t option
-(** Safe version of {!of_int}
+(** Safe version of {!of_int_exn}.
     @since 1.0 *)
 
 val to_int : t -> int
-(** Alias to {!Char.code}
+(** Alias to {!Char.code}.
+    Return the ASCII code of the argument.
     @since 1.0 *)
 
 val pp : Buffer.t -> t -> unit

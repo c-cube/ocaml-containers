@@ -42,3 +42,6 @@ module Result = CCResult
 module Set = CCSet
 module String = CCString
 module Vector = CCVector
+module Monomorphic = CCMonomorphic
+
+include Monomorphic

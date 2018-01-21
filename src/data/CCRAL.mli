@@ -18,50 +18,50 @@ type +'a t
 (** List containing elements of type 'a *)
 
 val empty : 'a t
-(** Empty list *)
+(** Empty list. *)
 
 val is_empty : _ t -> bool
-(** Check whether the list is empty *)
+(** Check whether the list is empty. *)
 
 val cons : 'a -> 'a t -> 'a t
-(** Add an element at the front of the list *)
+(** Add an element at the front of the list. *)
 
 val return : 'a -> 'a t
-(** Singleton *)
+(** Singleton. *)
 
 val map : f:('a -> 'b) -> 'a t -> 'b t
-(** Map on elements *)
+(** Map on elements. *)
 
 val mapi : f:(int -> 'a -> 'b) -> 'a t -> 'b t
-(** Map with index *)
+(** Map with index. *)
 
 val hd : 'a t -> 'a
 (** First element of the list, or
-    @raise Invalid_argument if the list is empty *)
+    @raise Invalid_argument if the list is empty. *)
 
 val tl : 'a t -> 'a t
 (** Remove the first element from the list, or
-    @raise Invalid_argument if the list is empty *)
+    @raise Invalid_argument if the list is empty. *)
 
 val front : 'a t -> ('a * 'a t) option
-(** Remove and return the first element of the list *)
+(** Remove and return the first element of the list. *)
 
 val front_exn : 'a t -> 'a * 'a t
 (** Unsafe version of {!front}.
-    @raise Invalid_argument if the list is empty *)
+    @raise Invalid_argument if the list is empty. *)
 
 val length : 'a t -> int
-(** Number of elements. Complexity O(ln n) where n=number of elements *)
+(** Number of elements. Complexity [O(ln n)] where n=number of elements. *)
 
 val get : 'a t -> int -> 'a option
-(** [get l i] accesses the [i]-th element of the list. O(log(n)). *)
+(** [get l i] accesses the [i]-th element of the list. [O(log(n))]. *)
 
 val get_exn : 'a t -> int -> 'a
-(** Unsafe version of {!get}
+(** Unsafe version of {!get}.
     @raise Invalid_argument if the list has less than [i+1] elements. *)
 
 val set : 'a t -> int -> 'a -> 'a t
-(** [set l i v] sets the [i]-th element of the list to [v]. O(log(n)).
+(** [set l i v] sets the [i]-th element of the list to [v]. [O(log(n))].
     @raise Invalid_argument if the list has less than [i+1] elements. *)
 
 val remove : 'a t -> int -> 'a t
@@ -90,39 +90,39 @@ val drop_while : f:('a -> bool) -> 'a t -> 'a t
 
 val take_drop : int -> 'a t -> 'a t * 'a t
 (** [take_drop n l] splits [l] into [a, b] such that [length a = n]
-    if [length l >= n], and such that [append a b = l] *)
+    if [length l >= n], and such that [append a b = l]. *)
 
 val iter : f:('a -> unit) -> 'a t -> unit
-(** Iterate on the list's elements *)
+(** Iterate on the list's elements. *)
 
 val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 
 val fold : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
-(** Fold on the list's elements *)
+(** Fold on the list's elements. *)
 
 val fold_rev : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
-(** Fold on the list's elements, in reverse order (starting from the tail) *)
+(** Fold on the list's elements, in reverse order (starting from the tail). *)
 
 val rev_map : f:('a -> 'b) -> 'a t -> 'b t
-(** [rev_map f l] is the same as [map f (rev l)] *)
+(** [rev_map f l] is the same as [map f (rev l)]. *)
 
 val rev : 'a t -> 'a t
-(** Reverse the list *)
+(** Reverse the list. *)
 
-val equal : ?eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+val equal : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
-val compare : ?cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
-(** Lexicographic comparison *)
+val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
+(** Lexicographic comparison. *)
 
 (** {2 Utils} *)
 
 val make : int -> 'a -> 'a t
 
 val repeat : int -> 'a t -> 'a t
-(** [repeat n l] is [append l (append l ... l)] [n] times *)
+(** [repeat n l] is [append l (append l ... l)] [n] times. *)
 
 val range : int -> int -> int t
-(** [range i j] is [i; i+1; ... ; j] or [j; j-1; ...; i] *)
+(** [range i j] is [i; i+1; ... ; j] or [j; j-1; ...; i]. *)
 
 (** {2 Conversions} *)
 
@@ -132,19 +132,19 @@ type 'a gen = unit -> 'a option
 val add_list : 'a t -> 'a list -> 'a t
 
 val of_list : 'a list -> 'a t
-(** Convert a list to a RAL. {b Caution}: non tail-rec *)
+(** Convert a list to a RAL. {b Caution}: non tail-rec. *)
 
 val to_list : 'a t -> 'a list
 
 val of_list_map : f:('a -> 'b) -> 'a list -> 'b t
-(** Combination of {!of_list} and {!map} *)
+(** Combination of {!of_list} and {!map}. *)
 
 val of_array : 'a array -> 'a t
 
 val add_array : 'a t -> 'a array -> 'a t
 
 val to_array : 'a t -> 'a array
-(** More efficient than on usual lists *)
+(** More efficient than on usual lists. *)
 
 val add_seq : 'a t -> 'a sequence -> 'a t
 
@@ -162,22 +162,22 @@ val to_gen : 'a t -> 'a gen
 
 module Infix : sig
   val (@+) : 'a -> 'a t -> 'a t
-  (** Cons (alias to {!cons}) *)
+  (** Cons (alias to {!cons}). *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  (** Alias to {!flat_map} *)
+  (** Alias to {!flat_map}. *)
 
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  (** Alias to {!map} *)
+  (** Alias to {!map}. *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   (** Alias to {!app} *)
 
   val (--) : int -> int -> int t
-  (** Alias to {!range} *)
+  (** Alias to {!range}. *)
 
   val (--^) : int -> int -> int t
-  (** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
+  (** [a --^ b] is the integer range from [a] to [b], where [b] is excluded.
       @since 0.17 *)
 end
 
@@ -187,4 +187,4 @@ include module type of Infix
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val print : ?sep:string -> 'a printer -> 'a t printer
+val pp : ?sep:string -> 'a printer -> 'a t printer

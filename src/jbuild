@@ -1,0 +1,10 @@
+
+
+(rule
+  ((targets (flambda.flags))
+   (deps ((file mkflags.ml)))
+   (fallback)
+   (action
+     (run ocaml ./mkflags.ml))
+  ))
+

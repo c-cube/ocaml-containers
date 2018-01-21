@@ -32,7 +32,7 @@ type 'a sequence_once = 'a sequence
 (** Sequence that should be used only once *)
 
 exception Sequence_once
-(** Raised when a sequence meant to be used once is used several times *)
+(** Raised when a sequence meant to be used once is used several times. *)
 
 module Seq : sig
   type 'a t = 'a sequence
@@ -55,7 +55,7 @@ type ('v, 'e) t = ('v -> ('e * 'v) sequence)
 type ('v, 'e) graph = ('v, 'e) t
 
 val make : ('v -> ('e * 'v) sequence) -> ('v, 'e) t
-(** Make a graph by providing the children function *)
+(** Make a graph by providing the children function. *)
 
 (** {2 Tags}
 
@@ -77,11 +77,11 @@ type ('k, 'a) table = {
 (** Mutable set *)
 type 'a set = ('a, unit) table
 
-val mk_table: ?eq:('k -> 'k -> bool) -> ?hash:('k -> int) -> int -> ('k, 'a) table
-(** Default implementation for {!table}: a {!Hashtbl.t} *)
+val mk_table: eq:('k -> 'k -> bool) -> ?hash:('k -> int) -> int -> ('k, 'a) table
+(** Default implementation for {!table}: a {!Hashtbl.t}. *)
 
-val mk_map: ?cmp:('k -> 'k -> int) -> unit -> ('k, 'a) table
-(** Use a {!Map.S} underneath *)
+val mk_map: cmp:('k -> 'k -> int) -> unit -> ('k, 'a) table
+(** Use a {!Map.S} underneath. *)
 
 (** {2 Bags of vertices} *)
 
@@ -97,14 +97,14 @@ val mk_stack: unit -> 'a bag
 
 val mk_heap: leq:('a -> 'a -> bool) -> 'a bag
 (** [mk_heap ~leq] makes a priority queue where [leq x y = true] means that
-    [x] is smaller than [y] and should be prioritary *)
+    [x] is smaller than [y] and should be prioritary. *)
 
 (** {2 Traversals} *)
 
 module Traverse : sig
   type ('v, 'e) path = ('v * 'e * 'v) list
 
-  val generic: ?tbl:'v set ->
+  val generic: tbl:'v set ->
     bag:'v bag ->
     graph:('v, 'e) t ->
     'v sequence ->
@@ -120,7 +120,7 @@ module Traverse : sig
     'v sequence_once
   (** One-shot traversal of the graph using a tag set and the given bag *)
 
-  val dfs: ?tbl:'v set ->
+  val dfs: tbl:'v set ->
     graph:('v, 'e) t ->
     'v sequence ->
     'v sequence_once
@@ -130,7 +130,7 @@ module Traverse : sig
     'v sequence ->
     'v sequence_once
 
-  val bfs: ?tbl:'v set ->
+  val bfs: tbl:'v set ->
     graph:('v, 'e) t ->
     'v sequence ->
     'v sequence_once
@@ -140,7 +140,7 @@ module Traverse : sig
     'v sequence ->
     'v sequence_once
 
-  val dijkstra : ?tbl:'v set ->
+  val dijkstra : tbl:'v set ->
     ?dist:('e -> int) ->
     graph:('v, 'e) t ->
     'v sequence ->
@@ -149,7 +149,7 @@ module Traverse : sig
       Yields each vertex paired with its distance to the set of initial vertices
       (the smallest distance needed to reach the node from the initial vertices)
       @param dist distance from origin of the edge to destination,
-        must be strictly positive. Default is 1 for every edge *)
+        must be strictly positive. Default is 1 for every edge. *)
 
   val dijkstra_tag : ?dist:('e -> int) ->
     tags:'v tag_set ->
@@ -174,28 +174,29 @@ module Traverse : sig
     val get_edge : ('v, 'e) t -> ('v * 'e * 'v) option
     val get_edge_kind : ('v, 'e) t -> ('v * 'e * 'v * edge_kind) option
 
-    val dfs: ?tbl:'v set ->
-      ?eq:('v -> 'v -> bool) ->
+    val dfs: tbl:'v set ->
+      eq:('v -> 'v -> bool) ->
       graph:('v, 'e) graph ->
       'v sequence ->
       ('v,'e) t sequence_once
     (** Full version of DFS.
-        @param eq equality predicate on vertices *)
+        @param eq equality predicate on vertices. *)
 
-    val dfs_tag: ?eq:('v -> 'v -> bool) ->
+    val dfs_tag: eq:('v -> 'v -> bool) ->
       tags:'v tag_set ->
       graph:('v, 'e) graph ->
       'v sequence ->
       ('v,'e) t sequence_once
-      (** Full version of DFS using integer tags
-          @param eq equality predicate on vertices *)
+      (** Full version of DFS using integer tags.
+          @param eq equality predicate on vertices. *)
   end
 end
 
 (** {2 Cycles} *)
 
 val is_dag :
-  ?tbl:'v set ->
+  tbl:'v set ->
+  eq:('v -> 'v -> bool) ->
   graph:('v, _) t ->
   'v sequence ->
   bool
@@ -207,9 +208,9 @@ val is_dag :
 
 exception Has_cycle
 
-val topo_sort : ?eq:('v -> 'v -> bool) ->
+val topo_sort : eq:('v -> 'v -> bool) ->
   ?rev:bool ->
-  ?tbl:'v set ->
+  tbl:'v set ->
   graph:('v, 'e) t ->
   'v sequence ->
   'v list
@@ -217,20 +218,20 @@ val topo_sort : ?eq:('v -> 'v -> bool) ->
     element of [l] is reachable from [seq].
     The list is sorted in a way such that if [v -> v'] in the graph, then
     [v] comes before [v'] in the list (i.e. has a smaller index).
-    Basically [v -> v'] means that [v] is smaller than [v']
-    see {{: https://en.wikipedia.org/wiki/Topological_sorting} wikipedia}
-    @param eq equality predicate on vertices (default [(=)])
+    Basically [v -> v'] means that [v] is smaller than [v'].
+    See {{: https://en.wikipedia.org/wiki/Topological_sorting} wikipedia}.
+    @param eq equality predicate on vertices (default [(=)]).
     @param rev if true, the dependency relation is inverted ([v -> v'] means
-      [v'] occurs before [v])
-    @raise Has_cycle if the graph is not a DAG *)
+      [v'] occurs before [v]).
+    @raise Has_cycle if the graph is not a DAG. *)
 
-val topo_sort_tag : ?eq:('v -> 'v -> bool) ->
+val topo_sort_tag : eq:('v -> 'v -> bool) ->
   ?rev:bool ->
   tags:'v tag_set ->
   graph:('v, 'e) t ->
   'v sequence ->
   'v list
-(** Same as {!topo_sort} but uses an explicit tag set *)
+(** Same as {!topo_sort} but uses an explicit tag set. *)
 
 (** {2 Lazy Spanning Tree} *)
 
@@ -245,12 +246,12 @@ module Lazy_tree : sig
   val fold_v : ('acc -> 'v -> 'acc) -> 'acc -> ('v, _) t -> 'acc
 end
 
-val spanning_tree : ?tbl:'v set ->
+val spanning_tree : tbl:'v set ->
   graph:('v, 'e) t ->
   'v ->
   ('v, 'e) Lazy_tree.t
 (** [spanning_tree ~graph v] computes a lazy spanning tree that has [v]
-    as a root. The table [tbl] is used for the memoization part *)
+    as a root. The table [tbl] is used for the memoization part. *)
 
 val spanning_tree_tag : tags:'v tag_set ->
   graph:('v, 'e) t ->
@@ -260,9 +261,9 @@ val spanning_tree_tag : tags:'v tag_set ->
 (** {2 Strongly Connected Components} *)
 
 type 'v scc_state
-(** Hidden state for {!scc} *)
+(** Hidden state for {!scc}. *)
 
-val scc : ?tbl:('v, 'v scc_state) table ->
+val scc : tbl:('v, 'v scc_state) table ->
   graph:('v, 'e) t ->
   'v sequence ->
   'v list sequence_once
@@ -271,8 +272,8 @@ val scc : ?tbl:('v, 'v scc_state) table ->
     in the graph.
     The components are explored in a topological order (if C1 and C2 are
     components, and C1 points to C2, then C2 will be yielded before C1).
-    Uses {{: https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm} Tarjan's algorithm}
-    @param tbl table used to map nodes to some hidden state
+    Uses {{: https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm} Tarjan's algorithm}.
+    @param tbl table used to map nodes to some hidden state.
     @raise Sequence_once if the result is iterated on more than once.
 *)
 
@@ -304,8 +305,8 @@ module Dot : sig
   type vertex_state
   (** Hidden state associated to a vertex *)
 
-  val pp : ?tbl:('v,vertex_state) table ->
-    ?eq:('v -> 'v -> bool) ->
+  val pp : tbl:('v,vertex_state) table ->
+    eq:('v -> 'v -> bool) ->
     ?attrs_v:('v -> attribute list) ->
     ?attrs_e:('e -> attribute list) ->
     ?name:string ->
@@ -313,13 +314,13 @@ module Dot : sig
     Format.formatter ->
     'v ->
     unit
-  (** Print the graph, starting from given vertex, on the formatter
-      @param attrs_v attributes for vertices
-      @param attrs_e attributes for edges
-      @param name name of the graph *)
+  (** Print the graph, starting from given vertex, on the formatter.
+      @param attrs_v attributes for vertices.
+      @param attrs_e attributes for edges.
+      @param name name of the graph. *)
 
-  val pp_seq : ?tbl:('v,vertex_state) table ->
-    ?eq:('v -> 'v -> bool) ->
+  val pp_seq : tbl:('v,vertex_state) table ->
+    eq:('v -> 'v -> bool) ->
     ?attrs_v:('v -> attribute list) ->
     ?attrs_e:('e -> attribute list) ->
     ?name:string ->
@@ -329,7 +330,7 @@ module Dot : sig
     unit
 
   val with_out : string -> (Format.formatter -> 'a) -> 'a
-  (** Shortcut to open a file and write to it *)
+  (** Shortcut to open a file and write to it. *)
 end
 
 (** {2 Mutable Graph} *)
@@ -340,11 +341,11 @@ type ('v, 'e) mut_graph = {
   remove : 'v -> unit;
 }
 
-val mk_mut_tbl : ?eq:('v -> 'v -> bool) ->
+val mk_mut_tbl : eq:('v -> 'v -> bool) ->
   ?hash:('v -> int) ->
   int ->
   ('v, 'a) mut_graph
-(** Make a new mutable graph from a Hashtbl. Edges are labelled with type ['a] *)
+(** Make a new mutable graph from a Hashtbl. Edges are labelled with type ['a]. *)
 
 (** {2 Immutable Graph}
 
@@ -358,7 +359,7 @@ module type MAP = sig
   type 'a t
 
   val as_graph : 'a t -> (vertex, 'a) graph
-  (** Graph view of the map *)
+  (** Graph view of the map. *)
 
   val empty : 'a t
 
@@ -367,12 +368,12 @@ module type MAP = sig
   val remove_edge : vertex -> vertex -> 'a t -> 'a t
 
   val add : vertex -> 'a t -> 'a t
-  (** Add a vertex, possibly with no outgoing edge *)
+  (** Add a vertex, possibly with no outgoing edge. *)
 
   val remove : vertex -> 'a t -> 'a t
   (** Remove the vertex and all its outgoing edges.
       Edges that point to the vertex are {b NOT} removed, they must be
-      manually removed with {!remove_edge} *)
+      manually removed with {!remove_edge}. *)
 
   val union : 'a t -> 'a t -> 'a t
 
@@ -397,18 +398,18 @@ module Map(O : Map.OrderedType) : MAP with type vertex = O.t
 
 (** {2 Misc} *)
 
-val of_list : ?eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, unit) t
+val of_list : eq:('v -> 'v -> bool) -> ('v * 'v) list -> ('v, unit) t
 (** [of_list l] makes a graph from a list of pairs of vertices.
     Each pair [(a,b)] is an edge from [a] to [b].
-    @param eq equality used to compare vertices *)
+    @param eq equality used to compare vertices. *)
 
 val of_hashtbl : ('v, 'v list) Hashtbl.t -> ('v, unit) t
 (** [of_hashtbl tbl] makes a graph from a hashtable that maps vertices
-    to lists of children *)
+    to lists of children. *)
 
 val of_fun : ('v -> 'v list) -> ('v, unit) t
 (** [of_fun f] makes a graph out of a function that maps a vertex to
     the list of its children. The function is assumed to be deterministic. *)
 
 val divisors_graph : (int, unit) t
-(** [n] points to all its strict divisors *)
+(** [n] points to all its strict divisors. *)

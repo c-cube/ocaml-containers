@@ -118,7 +118,7 @@ val shrink : ('a, rw) t -> int -> unit
 (** Shrink to the given size (remove elements above this size).
     Does nothing if the parameter is bigger than the current size. *)
 
-val member : ?eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
+val member : eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 (** Is the element a member of the vector? *)
 
 val sort : ('a -> 'a -> int) -> ('a, _) t -> ('a, 'mut) t

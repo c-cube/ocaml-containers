@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 complements to list} *)
+(** {1 Complements to list} *)
 
 (*$inject
   let lsort l = List.sort Pervasives.compare l
@@ -557,7 +557,7 @@ let map_product_l f l =
     cmp_lii_unord (cartesian_product l) (map_product_l CCFun.id l))
 *)
 
-let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
+let sorted_merge ~cmp l1 l2 =
   let rec recurse cmp acc l1 l2 = match l1,l2 with
     | [], _ -> List.rev_append acc l2
     | _, [] -> List.rev_append acc l1
@@ -570,17 +570,17 @@ let sorted_merge ?(cmp=Pervasives.compare) l1 l2 =
   recurse cmp [] l1 l2
 
 (*$T
-  List.sort Pervasives.compare ([(( * )2); ((+)1)] <*> [10;100]) \
-    = [11; 20; 101; 200]
-  sorted_merge [1;1;2] [1;2;3] = [1;1;1;2;2;3]
+  equal CCInt.equal (List.sort CCInt.compare ([(( * )2); ((+)1)] <*> [10;100])) \
+    [11; 20; 101; 200]
+  equal CCInt.equal (sorted_merge ~cmp:CCInt.compare [1;1;2] [1;2;3]) [1;1;1;2;2;3]
 *)
 
 (*$Q
   Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    List.length (sorted_merge l1 l2) = List.length l1 + List.length l2)
+    List.length (sorted_merge ~cmp:CCInt.compare l1 l2) = List.length l1 + List.length l2)
 *)
 
-let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
+let sort_uniq (type elt) ~cmp l =
   let module S = Set.Make(struct
       type t = elt
       let compare = cmp
@@ -589,12 +589,12 @@ let sort_uniq (type elt) ?(cmp=Pervasives.compare) l =
   S.elements set
 
 (*$T
-  sort_uniq [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
-  sort_uniq [] = []
-  sort_uniq [10;10;10;10;1;10] = [1;10]
+  sort_uniq ~cmp:CCInt.compare [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
+  sort_uniq ~cmp:CCInt.compare [] = []
+  sort_uniq ~cmp:CCInt.compare [10;10;10;10;1;10] = [1;10]
 *)
 
-let is_sorted ?(cmp=Pervasives.compare) l =
+let is_sorted ~cmp l =
   let rec aux cmp = function
     | [] | [_] -> true
     | x :: ((y :: _) as tail) -> cmp x y <= 0 && aux cmp tail
@@ -603,10 +603,10 @@ let is_sorted ?(cmp=Pervasives.compare) l =
 
 (*$Q
   Q.(list small_int) (fun l -> \
-    is_sorted (List.sort Pervasives.compare l))
+    is_sorted ~cmp:CCInt.compare (List.sort Pervasives.compare l))
 *)
 
-let sorted_insert ?(cmp=Pervasives.compare) ?(uniq=false) x l =
+let sorted_insert ~cmp ?(uniq=false) x l =
   let rec aux cmp uniq x left l = match l with
     | [] -> List.rev_append left [x]
     | y :: tail ->
@@ -622,20 +622,20 @@ let sorted_insert ?(cmp=Pervasives.compare) ?(uniq=false) x l =
 (*$Q
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      is_sorted (sorted_insert ~uniq:true x l))
+      is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare ~uniq:true x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      is_sorted (sorted_insert ~uniq:false x l))
+      is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare ~uniq:false x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      let l' = sorted_insert ~uniq:false x l in \
+      let l' = sorted_insert ~cmp:CCInt.compare ~uniq:false x l in \
       List.length l' = List.length l + 1)
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
-      List.mem x (sorted_insert x l))
+      List.mem x (sorted_insert ~cmp:CCInt.compare x l))
 *)
 
-let uniq_succ ?(eq=(=)) l =
+let uniq_succ ~eq l =
   let rec f acc l = match l with
     | [] -> List.rev acc
     | [x] -> List.rev (x::acc)
@@ -645,10 +645,10 @@ let uniq_succ ?(eq=(=)) l =
   f [] l
 
 (*$T
-  uniq_succ [1;1;2;3;1;6;6;4;6;1] = [1;2;3;1;6;4;6;1]
+  uniq_succ ~eq:CCInt.equal [1;1;2;3;1;6;6;4;6;1] = [1;2;3;1;6;4;6;1]
 *)
 
-let group_succ ?(eq=(=)) l =
+let group_succ ~eq l =
   let rec f ~eq acc cur l = match cur, l with
     | [], [] -> List.rev acc
     | _::_, [] -> List.rev (List.rev cur :: acc)
@@ -659,15 +659,15 @@ let group_succ ?(eq=(=)) l =
   f ~eq [] [] l
 
 (*$T
-  group_succ [1;2;3;1;1;2;4] = [[1]; [2]; [3]; [1;1]; [2]; [4]]
-  group_succ [] = []
-  group_succ [1;1;1] = [[1;1;1]]
-  group_succ [1;2;2;2] = [[1]; [2;2;2]]
+  group_succ ~eq:CCInt.equal [1;2;3;1;1;2;4] = [[1]; [2]; [3]; [1;1]; [2]; [4]]
+  group_succ ~eq:CCInt.equal [] = []
+  group_succ ~eq:CCInt.equal [1;1;1] = [[1;1;1]]
+  group_succ ~eq:CCInt.equal [1;2;2;2] = [[1]; [2;2;2]]
   group_succ ~eq:(fun (x,_)(y,_)-> x=y) [1, 1; 1, 2; 1, 3; 2, 0] \
     = [[1, 1; 1, 2; 1, 3]; [2, 0]]
 *)
 
-let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
+let sorted_merge_uniq ~cmp l1 l2 =
   let push ~cmp acc x = match acc with
     | [] -> [x]
     | y :: _ when cmp x y > 0 -> x :: acc
@@ -687,21 +687,21 @@ let sorted_merge_uniq ?(cmp=Pervasives.compare) l1 l2 =
   recurse ~cmp [] l1 l2
 
 (*$T
-  sorted_merge_uniq [1; 1; 2; 3; 5; 8] [1; 2; 3; 4; 6; 8; 9; 9] = [1;2;3;4;5;6;8;9]
+  sorted_merge_uniq ~cmp:CCInt.compare [1; 1; 2; 3; 5; 8] [1; 2; 3; 4; 6; 8; 9; 9] = [1;2;3;4;5;6;8;9]
 *)
 
 (*$Q
   Q.(list int) (fun l -> \
     let l = List.sort Pervasives.compare l in \
-    sorted_merge_uniq l [] = uniq_succ l)
+    sorted_merge_uniq ~cmp:CCInt.compare l [] = uniq_succ ~eq:CCInt.equal l)
   Q.(list int) (fun l -> \
     let l = List.sort Pervasives.compare l in \
-    sorted_merge_uniq [] l = uniq_succ l)
+    sorted_merge_uniq ~cmp:CCInt.compare [] l = uniq_succ ~eq:CCInt.equal l)
   Q.(pair (list int) (list int)) (fun (l1, l2) -> \
     let l1 = List.sort Pervasives.compare l1 \
     and l2 = List.sort Pervasives.compare l2 in \
-    let l3 = sorted_merge_uniq l1 l2 in \
-    uniq_succ l3 = l3)
+    let l3 = sorted_merge_uniq ~cmp:CCInt.compare l1 l2 in \
+    uniq_succ ~eq:CCInt.equal l3 = l3)
 *)
 
 let take n l =
@@ -766,7 +766,7 @@ let sublists_of_len ?(last=fun _ -> None) ?offset n l =
   (* add sub-lists of [l] to [acc] *)
   let rec aux acc l =
     let group = take n l in
-    if group=[] then acc (* this was the last group, we are done *)
+    if is_empty group then acc (* this was the last group, we are done *)
     else if List.length group < n (* last group, with missing elements *)
     then match last group with
       | None -> acc
@@ -900,7 +900,7 @@ let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
   find_map (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
 *)
 
-let remove ?(eq=(=)) ~x l =
+let remove ~eq ~x l =
   let rec remove' eq x acc l = match l with
     | [] -> List.rev acc
     | y :: tail when eq x y -> remove' eq x acc tail
@@ -909,8 +909,8 @@ let remove ?(eq=(=)) ~x l =
   remove' eq x [] l
 
 (*$T
-  remove ~x:1 [2;1;3;3;2;1] = [2;3;3;2]
-  remove ~x:10 [1;2;3] = [1;2;3]
+  remove ~eq:CCInt.equal ~x:1 [2;1;3;3;2;1] = [2;3;3;2]
+  remove ~eq:CCInt.equal ~x:10 [1;2;3] = [1;2;3]
 *)
 
 let filter_map f l =
@@ -972,16 +972,16 @@ let all_ok l =
   (Error "e2") (all_ok [Ok 1; Error "e2"; Error "e3"; Ok 4])
 *)
 
-let mem ?(eq=(=)) x l =
+let mem ~eq x l =
   let rec search eq x l = match l with
     | [] -> false
     | y::l' -> eq x y || search eq x l'
   in search eq x l
 
-let add_nodup ?(eq=(=)) x l =
+let add_nodup ~eq x l =
   if mem ~eq x l then l else x::l
 
-let remove_one ?(eq=(=)) x l =
+let remove_one ~eq x l =
   let rec remove_one ~eq x acc l = match l with
     | [] -> assert false
     | y :: tl when eq x y -> List.rev_append acc tl
@@ -991,19 +991,19 @@ let remove_one ?(eq=(=)) x l =
 
 (*$Q
   Q.(pair int (list int)) (fun (x,l) -> \
-    remove_one x (add_nodup x l) = l)
+    remove_one ~eq:CCInt.equal x (add_nodup ~eq:CCInt.equal x l) = l)
   Q.(pair int (list int)) (fun (x,l) -> \
-    mem x l || List.length (add_nodup x l) = List.length l + 1)
+    mem ~eq:CCInt.equal x l || List.length (add_nodup ~eq:CCInt.equal x l) = List.length l + 1)
   Q.(pair int (list int)) (fun (x,l) -> \
-    not (mem x l) || List.length (remove_one x l) = List.length l - 1)
+    not (mem ~eq:CCInt.equal x l) || List.length (remove_one ~eq:CCInt.equal x l) = List.length l - 1)
 *)
 
-let subset ?(eq=(=)) l1 l2 =
+let subset ~eq l1 l2 =
   List.for_all
     (fun t -> mem ~eq t l2)
     l1
 
-let uniq ?(eq=(=)) l =
+let uniq ~eq l =
   let rec uniq eq acc l = match l with
     | [] -> List.rev acc
     | x::xs when List.exists (eq x) xs -> uniq eq acc xs
@@ -1011,15 +1011,15 @@ let uniq ?(eq=(=)) l =
   in uniq eq [] l
 
 (*$T
-  uniq [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
+  uniq ~eq:CCInt.equal [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
 *)
 
 (*$Q
   Q.(small_list small_int) (fun l -> \
-    sort_uniq l = (uniq l |> sort Pervasives.compare))
-  *)
+    sort_uniq ~cmp:CCInt.compare l = (uniq ~eq:CCInt.equal l |> sort Pervasives.compare))
+*)
 
-let union ?(eq=(=)) l1 l2 =
+let union ~eq l1 l2 =
   let rec union eq acc l1 l2 = match l1 with
     | [] -> List.rev_append acc l2
     | x::xs when mem ~eq x l2 -> union eq acc xs l2
@@ -1027,10 +1027,10 @@ let union ?(eq=(=)) l1 l2 =
   in union eq [] l1 l2
 
 (*$T
-  union [1;2;4] [2;3;4;5] = [1;2;3;4;5]
+  union ~eq:CCInt.equal [1;2;4] [2;3;4;5] = [1;2;3;4;5]
 *)
 
-let inter ?(eq=(=)) l1 l2 =
+let inter ~eq l1 l2 =
   let rec inter eq acc l1 l2 = match l1 with
     | [] -> List.rev acc
     | x::xs when mem ~eq x l2 -> inter eq (x::acc) xs l2
@@ -1038,7 +1038,7 @@ let inter ?(eq=(=)) l1 l2 =
   in inter eq [] l1 l2
 
 (*$T
-  inter [1;2;4] [2;3;4;5] = [2;4]
+  inter ~eq:CCInt.equal [1;2;4] [2;3;4;5] = [2;4]
 *)
 
 let mapi f l =
@@ -1059,6 +1059,16 @@ let iteri f l =
     | x::l' -> f i x; aux f (i+1) l'
   in aux f 0 l
 
+let iteri2 f l1 l2 =
+  let rec aux f i l1 l2 = match l1, l2 with
+    | [], [] -> ()
+    | [], _
+    | _, [] -> invalid_arg "iteri2"
+    | x1::l1', x2::l2' ->
+      f i x1 x2;
+      aux f (i+1) l1' l2'
+  in aux f 0 l1 l2
+
 let foldi f acc l =
   let rec foldi f acc i l = match l with
     | [] -> acc
@@ -1067,6 +1077,17 @@ let foldi f acc l =
       foldi f acc (i+1) l'
   in
   foldi f acc 0 l
+
+let foldi2 f acc l1 l2 =
+  let rec foldi f acc i l1 l2 = match l1, l2 with
+    | [], [] -> acc
+    | [], _
+    | _, [] -> invalid_arg "foldi2"
+    | x1::l1', x2::l2' ->
+      let acc = f acc i x1 x2 in
+      foldi f acc (i+1) l1' l2'
+  in
+  foldi f acc 0 l1 l2
 
 let rec get_at_idx_rec i l = match l with
   | [] -> raise Not_found
@@ -1236,17 +1257,17 @@ module Assoc = struct
     | (y,z)::l' ->
       if eq x y then z else search_exn eq l' x
 
-  let get_exn ?(eq=(=)) x l = search_exn eq l x
+  let get_exn ~eq x l = search_exn eq l x
 
-  let get ?(eq=(=)) x l =
+  let get ~eq x l =
     try Some (search_exn eq l x)
     with Not_found -> None
 
   (*$T
-    Assoc.get 1 [1, "1"; 2, "2"] = Some "1"
-    Assoc.get 2 [1, "1"; 2, "2"] = Some "2"
-    Assoc.get 3 [1, "1"; 2, "2"] = None
-    Assoc.get 42 [] = None
+    Assoc.get ~eq:CCInt.equal 1 [1, "1"; 2, "2"] = Some "1"
+    Assoc.get ~eq:CCInt.equal 2 [1, "1"; 2, "2"] = Some "2"
+    Assoc.get ~eq:CCInt.equal 3 [1, "1"; 2, "2"] = None
+    Assoc.get ~eq:CCInt.equal 42 [] = None
   *)
 
   (* search for a binding for [x] in [l], and calls [f x (Some v) rest]
@@ -1259,27 +1280,27 @@ module Assoc = struct
       then f x (Some y') (List.rev_append acc l')
       else search_set eq ((x',y')::acc) l' x ~f
 
-  let set ?(eq=(=)) x y l =
+  let set ~eq x y l =
     search_set eq [] l x
       ~f:(fun x _ l -> (x,y)::l)
 
   (*$T
-    Assoc.set 2 "two" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
+    Assoc.set ~eq:CCInt.equal 2 "two" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
       = [1, "1"; 2, "two"]
-    Assoc.set 3 "3" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
+    Assoc.set ~eq:CCInt.equal 3 "3" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
       = [1, "1"; 2, "2"; 3, "3"]
   *)
 
-  let mem ?(eq=(=)) x l =
+  let mem ~eq x l =
     try ignore (search_exn eq l x); true
     with Not_found -> false
 
   (*$T
-    Assoc.mem 1 [1,"1"; 2,"2"; 3, "3"]
-    not (Assoc.mem 4 [1,"1"; 2,"2"; 3, "3"])
+    Assoc.mem ~eq:CCInt.equal 1 [1,"1"; 2,"2"; 3, "3"]
+    not (Assoc.mem ~eq:CCInt.equal 4 [1,"1"; 2,"2"; 3, "3"])
   *)
 
-  let update ?(eq=(=)) ~f x l =
+  let update ~eq ~f x l =
     search_set eq [] l x
       ~f:(fun x opt_y rest ->
         match f opt_y with
@@ -1287,17 +1308,17 @@ module Assoc = struct
           | Some y' -> (x,y') :: rest)
   (*$=
     [1,"1"; 2,"22"] \
-      (Assoc.update 2 [1,"1"; 2,"2"] \
+      (Assoc.update ~eq:CCInt.equal 2 [1,"1"; 2,"2"] \
         ~f:(function Some "2" -> Some "22" | _ -> assert false) |> lsort)
     [1,"1"; 3,"3"] \
-      (Assoc.update 2 [1,"1"; 2,"2"; 3,"3"] \
+      (Assoc.update ~eq:CCInt.equal 2 [1,"1"; 2,"2"; 3,"3"] \
         ~f:(function Some "2" -> None | _ -> assert false) |> lsort)
     [1,"1"; 2,"2"; 3,"3"] \
-      (Assoc.update 3 [1,"1"; 2,"2"] \
+      (Assoc.update ~eq:CCInt.equal 3 [1,"1"; 2,"2"] \
         ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
   *)
 
-  let remove ?(eq=(=)) x l =
+  let remove ~eq x l =
     search_set eq [] l x
       ~f:(fun _ opt_y rest -> match opt_y with
         | None -> l  (* keep as is *)
@@ -1305,13 +1326,18 @@ module Assoc = struct
 
   (*$=
     [1,"1"] \
-      (Assoc.remove 2 [1,"1"; 2,"2"] |> lsort)
+      (Assoc.remove ~eq:CCInt.equal 2 [1,"1"; 2,"2"] |> lsort)
     [1,"1"; 3,"3"] \
-      (Assoc.remove 2 [1,"1"; 2,"2"; 3,"3"] |> lsort)
+      (Assoc.remove ~eq:CCInt.equal 2 [1,"1"; 2,"2"; 3,"3"] |> lsort)
     [1,"1"; 2,"2"] \
-      (Assoc.remove 3 [1,"1"; 2,"2"] |> lsort)
+      (Assoc.remove ~eq:CCInt.equal 3 [1,"1"; 2,"2"] |> lsort)
   *)
 end
+
+let assoc = Assoc.get_exn
+let assoc_opt = Assoc.get
+let mem_assoc = Assoc.mem
+let remove_assoc = Assoc.remove
 
 (** {2 References on Lists} *)
 

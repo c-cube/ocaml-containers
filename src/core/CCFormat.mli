@@ -7,11 +7,10 @@
 
 type 'a sequence = ('a -> unit) -> unit
 
-include module type of Format
-  with type formatter = Format.formatter
-   and type formatter_out_functions = Format.formatter_out_functions
-   and type formatter_tag_functions = Format.formatter_tag_functions
-
+(* include Format, and alias all its types.
+   see https://discuss.ocaml.org/t/extend-existing-module/1389/4
+*)
+include module type of struct include Format end
 
 type t = Format.formatter
 type 'a printer = t -> 'a -> unit

@@ -28,31 +28,31 @@ module Array : sig
     type t
 
     val create : int -> t
-    (** Make an array of the given size, filled with dummy elements *)
+    (** Make an array of the given size, filled with dummy elements. *)
 
     val length: t -> int
-    (** [length t] gets the total number of elements currently in [t] *)
+    (** [length t] gets the total number of elements currently in [t]. *)
 
     val get: t -> int -> elt
-    (** [get t i] gets the element at position [i] *)
+    (** [get t i] gets the element at position [i]. *)
 
     val set: t -> int -> elt -> unit
-    (** [set t i e] sets the element at position [i] to [e] *)
+    (** [set t i e] sets the element at position [i] to [e]. *)
 
     val sub: t -> int -> int -> t
-    (** [sub t i len] gets the subarray of [t] from
-        position [i] to [i + len] *)
+    (** [sub t i len] gets the sub-array of [t] from
+        position [i] to [i + len]. *)
 
     val copy : t -> t
-    (** [copy t] makes a fresh copy of the array [t] *)
+    (** [copy t] makes a fresh copy of the array [t]. *)
 
     val blit : t -> int -> t -> int -> int -> unit
     (** [blit t s arr i len] copies [len] elements from [arr] starting at [i]
-        to position [s] from [t] *)
+        to position [s] from [t]. *)
 
     val iter : (elt -> unit) -> t -> unit
     (** [iter f t] iterates over the array [t] invoking [f] with
-        the current element, in array order *)
+        the current element, in array order. *)
   end
 
   (** Efficient array version for the [char] type *)
@@ -82,7 +82,7 @@ module type S = sig
   (** [create size] creates a new bounded buffer with given size.
       The underlying array is allocated immediately and no further (large)
       allocation will happen from now on.
-      @raise Invalid_argument if the arguments is [< 1] *)
+      @raise Invalid_argument if the arguments is [< 1]. *)
 
   val copy : t -> t
   (** Make a fresh copy of the buffer. *)
@@ -102,7 +102,7 @@ module type S = sig
       a input buffer [from_buf] to the end of the buffer.
       If the slice is too large for the buffer, only the last part of the array
       will be copied.
-      @raise Invalid_argument if [o,len] is not a valid slice of [s] *)
+      @raise Invalid_argument if [o,len] is not a valid slice of [s]. *)
 
   val blit_into : t -> Array.t -> int -> int -> int
   (** [blit_into buf to_buf o len] copies at most [len] elements from [buf]
@@ -115,7 +115,7 @@ module type S = sig
       end of [into]. Erases data of [into] if there is not enough room. *)
 
   val to_list : t -> Array.elt list
-  (** Extract the current content into a list *)
+  (** Extract the current content into a list. *)
 
   val clear : t -> unit
   (** Clear the content of the buffer. Doesn't actually destroy the content. *)
@@ -136,7 +136,7 @@ module type S = sig
       @raise Invalid_argument if [len > length b]. *)
 
   val iter : t -> f:(Array.elt -> unit) -> unit
-  (** [iter b ~f] calls [f i t] for each element [t] in [buf] *)
+  (** [iter b ~f] calls [f i t] for each element [t] in [buf]. *)
 
   val iteri : t -> f:(int -> Array.elt -> unit) -> unit
   (** [iteri b ~f] calls [f i t] for each element [t] in [buf], with [i]
@@ -145,12 +145,12 @@ module type S = sig
   val get_front : t -> int -> Array.elt
   (** [get_front buf i] returns the [i]-th element of [buf] from the front, ie
       the one returned by [take_front buf] after [i-1] calls to [junk_front buf].
-      @raise Invalid_argument if the index is invalid (> [length buf]) *)
+      @raise Invalid_argument if the index is invalid (> [length buf]). *)
 
   val get_back : t -> int -> Array.elt
   (** [get_back buf i] returns the [i]-th element of [buf] from the back, ie
       the one returned by [take_back buf] after [i-1] calls to [junk_back buf].
-      @raise Invalid_argument if the index is invalid (> [length buf]) *)
+      @raise Invalid_argument if the index is invalid (> [length buf]). *)
 
   val push_back : t -> Array.elt -> unit
   (** Push value at the back of [t].
@@ -174,14 +174,14 @@ module type S = sig
       @since 1.3 *)
 
   val take_back : t -> Array.elt option
-  (** Take and remove the last value from back of [t], if any *)
+  (** Take and remove the last value from back of [t], if any. *)
 
   val take_back_exn : t -> Array.elt
   (** Take and remove the last value from back of [t].
       @raise Empty if buffer is already empty. *)
 
   val take_front : t -> Array.elt option
-  (** Take and remove the first value from front of [t], if any *)
+  (** Take and remove the first value from front of [t], if any. *)
 
   val take_front_exn : t -> Array.elt
   (** Take and remove the first value from front of [t].
@@ -189,7 +189,7 @@ module type S = sig
 
   val of_array : Array.t -> t
   (** Create a buffer from an initial array, but doesn't take ownership
-      of it (stills allocates a new internal array)
+      of it (still allocates a new internal array).
       @since 0.11 *)
 
   val to_array : t -> Array.t

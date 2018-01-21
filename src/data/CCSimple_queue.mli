@@ -19,24 +19,24 @@ val empty : 'a t
 val is_empty : 'a t -> bool
 
 val push : 'a -> 'a t -> 'a t
-(** Push element at the end of the queue *)
+(** Push element at the end of the queue. *)
 
 val snoc : 'a t -> 'a -> 'a t
-(** Flip version of {!push} *)
+(** Flip version of {!push}. *)
 
 val peek : 'a t -> 'a option
-(** First element of the queue *)
+(** First element of the queue. *)
 
 val peek_exn : 'a t -> 'a
 (** Same as {!peek} but
-    @raise Invalid_argument if the queue is empty *)
+    @raise Invalid_argument if the queue is empty. *)
 
 val pop : 'a t -> ('a * 'a t) option
-(** Get and remove the first element *)
+(** Get and remove the first element. *)
 
 val pop_exn : 'a t -> ('a * 'a t)
 (** Same as {!pop}, but fails on empty queues.
-    @raise Invalid_argument if the queue is empty *)
+    @raise Invalid_argument if the queue is empty. *)
 
 val junk : 'a t -> 'a t
 (** Remove first element. If the queue is empty, do nothing. *)
@@ -47,7 +47,7 @@ val append : 'a t -> 'a t -> 'a t
     Linear in the size of the second queue. *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-(** Map values *)
+(** Map values. *)
 
 val rev : 'a t -> 'a t
 (** Reverse the queue. Constant time. *)
@@ -55,15 +55,15 @@ val rev : 'a t -> 'a t
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t (** Alias to {!map} *)
-  val (@) : 'a t -> 'a t -> 'a t (** Alias to {!append} *)
-  val (<::) : 'a t -> 'a -> 'a t (** Alias to {!snoc} *)
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t (** Alias to {!map}. *)
+  val (@) : 'a t -> 'a t -> 'a t (** Alias to {!append}. *)
+  val (<::) : 'a t -> 'a -> 'a t (** Alias to {!snoc}. *)
 end
 
 include module type of Infix
 
 val length : 'a t -> int
-(** Number of elements in the queue (linear in time) *)
+(** Number of elements in the queue (linear in time). *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 

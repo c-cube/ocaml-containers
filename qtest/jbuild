@@ -1,0 +1,23 @@
+
+(rule
+  ((targets (run_qtest.ml))
+   (deps ((file Makefile)))
+   (fallback)
+   ;(libraries (qtest qcheck))
+   (action
+     (run make qtest-gen))
+  ))
+
+(executable
+  ((name run_qtest)
+   (libraries (sequence gen qcheck containers containers.unix
+               containers.data containers.thread containers.iter
+               containers.sexp))
+  ))
+
+(alias
+ ((name    runtest)
+  (deps    (run_qtest.exe))
+  (action  (run ${<}))
+  ))
+

@@ -24,7 +24,7 @@ module Transient = struct
   type state = { mutable frozen: bool }
   type t = Nil | St of state
   let empty = Nil
-  let equal a b = a==b
+  let equal a b = Pervasives.(==) a b
   let create () = St {frozen=false}
   let active = function Nil -> false | St st -> not st.frozen
   let frozen = function Nil -> true | St st -> st.frozen
@@ -126,7 +126,7 @@ module type S = sig
 
   (** {6 IO} *)
 
-  val print : key printer -> 'a printer -> 'a t printer
+  val pp : key printer -> 'a printer -> 'a t printer
 
   val as_tree : 'a t -> [`L of int * (key * 'a) list | `N ] ktree
   (** For debugging purpose: explore the structure of the tree,
@@ -292,13 +292,15 @@ module Make(Key : KEY)
     val make : Key.t -> t
     val zero : t (* special "hash" *)
     val is_0 : t -> bool
+    val equal : t -> t -> bool
     val rem : t -> int (* [A.length_log] last bits *)
     val quotient : t -> t (* remove [A.length_log] last bits *)
   end = struct
     type t = int
     let make = Key.hash
     let zero = 0
-    let is_0 h = h==0
+    let is_0 h = h = 0
+    let equal (a : int) b = Pervasives.(=) a b
     let rem h = h land (A.length - 1)
     let quotient h = h lsr A.length_log
   end
@@ -407,14 +409,14 @@ module Make(Key : KEY)
   let rec add_ ~id k v ~h m = match m with
     | E -> S (h, k, v)
     | S (h', k', v') ->
-      if h=h'
+      if Hash.equal h h'
       then if Key.equal k k'
         then S (h, k, v)  (* replace *)
         else L (h, Cons (k, v, Cons (k', v', Nil)))
       else
         make_array_ ~id ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
     | L (h', l) ->
-      if h=h'
+      if Hash.equal h h'
       then L (h, add_list_ k v l)
       else (* split into N *)
         make_array_ ~id ~leaf:l ~h_leaf:h' k v ~h
@@ -696,7 +698,7 @@ module Make(Key : KEY)
     | None -> raise Not_found
     | Some (k,v) -> k, v
 
-  let print ppk ppv out m =
+  let pp ppk ppv out m =
     let first = ref true in
     iter m
       ~f:(fun k v ->

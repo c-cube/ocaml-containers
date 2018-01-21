@@ -12,11 +12,8 @@ type +'a state =
   | Failed of exn
 
 module type PARAM = sig
-  val min_size : int
-  (** Minimum number of threads in the pool *)
-
   val max_size : int
-  (** Maximum number of threads in the pool *)
+  (** Maximum number of threads in the pool. *)
 end
 
 exception Stopped
@@ -24,10 +21,10 @@ exception Stopped
 (** {2 Create a new Pool} *)
 module Make(P : PARAM) : sig
   val run : (unit -> _) -> unit
-  (** [run f] schedules [f] for being executed in the thread pool *)
+  (** [run f] schedules [f] for being executed in the thread pool. *)
 
   val run1 : ('a -> _) -> 'a -> unit
-  (** [run1 f x] is similar to [run (fun () -> f x)] *)
+  (** [run1 f x] is similar to [run (fun () -> f x)]. *)
 
   val run2 : ('a -> 'b -> _) -> 'a -> 'b -> unit
 
@@ -36,7 +33,7 @@ module Make(P : PARAM) : sig
   val set_exn_handler : (exn -> unit) -> unit
 
   val active : unit -> bool
-  (** [active ()] is true as long as [stop()] has not been called yet *)
+  (** [active ()] is true as long as [stop()] has not been called yet. *)
 
   val stop : unit -> unit
   (** After calling [stop ()], Most functions will raise Stopped.
@@ -55,10 +52,10 @@ module Make(P : PARAM) : sig
     (** {2 Constructors} *)
 
     val return : 'a -> 'a t
-    (** Future that is already computed *)
+    (** Future that is already computed. *)
 
     val fail : exn -> 'a t
-    (** Future that fails immediately *)
+    (** Future that fails immediately. *)
 
     val make : (unit -> 'a) -> 'a t
     (** Create a future, representing a value that will be computed by
@@ -73,10 +70,10 @@ module Make(P : PARAM) : sig
     val get : 'a t -> 'a
     (** Blocking get: wait for the future to be evaluated, and get the value,
         or the exception that failed the future is returned.
-        raise e if the future failed with e *)
+        raise e if the future failed with e. *)
 
     val state : 'a t -> 'a state
-    (** State of the future *)
+    (** State of the future. *)
 
     val is_done : 'a t -> bool
     (** Is the future evaluated (success/failure)? *)
@@ -99,10 +96,10 @@ module Make(P : PARAM) : sig
         Might be evaluated now if the future is already done. *)
 
     val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-    (** Monadic combination of futures *)
+    (** Monadic combination of futures. *)
 
     val and_then : 'a t -> (unit -> 'b t) -> 'b t
-    (** Wait for the first future to succeed, then launch the second *)
+    (** Wait for the first future to succeed, then launch the second. *)
 
     val sequence_a : 'a t array -> 'a array t
     (** Future that waits for all previous futures to terminate. If any future
@@ -122,25 +119,25 @@ module Make(P : PARAM) : sig
 
     val choose_a : 'a t array -> 'a t
     (** Choose among those futures (the first to terminate). Behaves like
-        the first future that terminates, by failing if the future fails *)
+        the first future that terminates, by failing if the future fails. *)
 
     val choose_l : 'a t list -> 'a t
     (** Choose among those futures (the first to terminate). Behaves like
-        the first future that terminates, by failing if the future fails *)
+        the first future that terminates, by failing if the future fails. *)
 
     val map : ('a -> 'b) -> 'a t -> 'b t
-    (** Maps the value inside the future. The function doesn't run in its
-        own task; if it can take time, use {!flat_map} or {!map_async} *)
+    (** Map the value inside the future. The function doesn't run in its
+        own task; if it can take time, use {!flat_map} or {!map_async}. *)
 
     val map_async : ('a -> 'b) -> 'a t -> 'b t
-    (** Maps the value inside the future, to be computed in a separated job. *)
+    (** Map the value inside the future, to be computed in a separated job. *)
 
     val app : ('a -> 'b) t -> 'a t -> 'b t
-    (** [app f x] applies the result of [f] to the result of [x] *)
+    (** [app f x] applies the result of [f] to the result of [x]. *)
 
     val app_async : ('a -> 'b) t -> 'a t -> 'b t
-    (** [app f x] applies the result of [f] to the result of [x], in
-        a separated job scheduled in the pool *)
+    (** [app_async f x] applies the result of [f] to the result of [x], in
+        a separated job scheduled in the pool. *)
 
     val sleep : float -> unit t
     (** Future that returns with success in the given amount of seconds. Blocks
@@ -159,9 +156,9 @@ module Make(P : PARAM) : sig
     val (>>) : 'a t -> (unit -> 'b t) -> 'b t
 
     val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-    (** Alias to {!map} *)
+    (** Alias to {!map}. *)
 
     val (<*>): ('a -> 'b) t -> 'a t -> 'b t
-    (** Alias to {!app} *)
+    (** Alias to {!app}. *)
   end
 end

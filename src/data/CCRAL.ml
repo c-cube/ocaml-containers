@@ -96,7 +96,7 @@ let tl l = match l with
 (*$Q
   Q.(list_of_size Gen.(1--100) int) (fun l -> \
     let l' =  of_list l in \
-    (not (is_empty l')) ==> (equal l' (cons (hd l') (tl l'))) )
+    (not (is_empty l')) ==> (equal ~eq:CCInt.equal l' (cons (hd l') (tl l'))) )
 *)
 
 let front l = match l with
@@ -371,7 +371,7 @@ let drop_while ~f l =
 
 let take_drop n l = take n l, drop n l
 
-let equal ?(eq=(=)) l1 l2 =
+let equal ~eq l1 l2 =
   let rec aux ~eq l1 l2 = match l1, l2 with
     | Nil, Nil -> true
     | Cons (size1, t1, l1'), Cons (size2, t2, l2') ->
@@ -389,7 +389,7 @@ let equal ?(eq=(=)) l1 l2 =
 
 (*$Q
   Q.(pair (list int)(list int)) (fun (l1,l2) -> \
-    equal (of_list l1) (of_list l2) = (l1=l2))
+    equal ~eq:CCInt.equal (of_list l1) (of_list l2) = (l1=l2))
 *)
 
 (** {2 Utils} *)
@@ -543,7 +543,7 @@ let rec of_list_map ~f l = match l with
     let y = f x in
     cons y (of_list_map ~f l')
 
-let compare ?(cmp=Pervasives.compare) l1 l2 =
+let compare ~cmp l1 l2 =
   let rec cmp_gen ~cmp g1 g2 = match g1(), g2() with
     | None, None -> 0
     | Some _, None -> 1
@@ -556,7 +556,7 @@ let compare ?(cmp=Pervasives.compare) l1 l2 =
 
 (*$Q
   Q.(pair (list int)(list int)) (fun (l1,l2) -> \
-    compare (of_list l1) (of_list l2) = (Pervasives.compare l1 l2))
+    compare ~cmp:CCInt.compare (of_list l1) (of_list l2) = (Pervasives.compare l1 l2))
 *)
 
 (** {2 Infix} *)
@@ -576,7 +576,7 @@ include Infix
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let print ?(sep=", ") pp_item fmt l =
+let pp ?(sep=", ") pp_item fmt l =
   let first = ref true in
   iter l
     ~f:(fun x ->

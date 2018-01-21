@@ -422,11 +422,11 @@ let of_gen g =
   assert_equal [11;12] (drop 10 l |> take 2 |> to_list);
 *)
 
-let sort ?(cmp=Pervasives.compare) l =
+let sort ~cmp l =
   let l = to_list l in
   of_list (List.sort cmp l)
 
-let sort_uniq ?(cmp=Pervasives.compare) l =
+let sort_uniq ~cmp l =
   let l = to_list l in
   uniq (fun x y -> cmp x y = 0) (of_list (List.sort cmp l))
 

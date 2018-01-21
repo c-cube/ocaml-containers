@@ -297,7 +297,7 @@ let compare cmp v1 v2 =
   let n = min v1.size v2.size in
   let rec check i =
     if i = n
-    then Pervasives.compare v1.size v2.size
+    then compare v1.size v2.size
     else
       let c = cmp (get v1 i) (get v2 i) in
       if c = 0 then check (i+1) else c
@@ -513,7 +513,7 @@ let for_all p v =
     else p v.vec.(i) && check (i+1)
   in check 0
 
-let member ?(eq=(=)) x v =
+let member ~eq x v =
   exists (eq x) v
 
 let find_exn p v =

@@ -16,13 +16,13 @@ type t
 (** A resizable bitvector *)
 
 val empty : unit -> t
-(** Empty bitvector *)
+(** Empty bitvector. *)
 
 val create : size:int -> bool -> t
-(** Create a bitvector of given size, with given default value *)
+(** Create a bitvector of given size, with given default value. *)
 
 val copy : t -> t
-(** Copy of bitvector *)
+(** Copy of bitvector. *)
 
 val cardinal : t -> int
 (** Number of bits set to one, seen as a set of bits. *)
@@ -51,7 +51,7 @@ val set : t -> int -> unit
 (** Set i-th bit, extending the bitvector if needed. *)
 
 val get : t -> int -> bool
-(** Is the i-th bit true? Returns false if the index is too high*)
+(** Is the i-th bit true? Returns false if the index is too high. *)
 
 val reset : t -> int -> unit
 (** Set i-th bit to 0, extending the bitvector if needed. *)
@@ -60,20 +60,20 @@ val flip : t -> int -> unit
 (** Flip i-th bit, extending the bitvector if needed. *)
 
 val clear : t -> unit
-(** Set every bit to 0 *)
+(** Set every bit to 0. *)
 
 val iter : t -> (int -> bool -> unit) -> unit
-(** Iterate on all bits *)
+(** Iterate on all bits. *)
 
 val iter_true : t -> (int -> unit) -> unit
-(** Iterate on bits set to 1 *)
+(** Iterate on bits set to 1. *)
 
 val to_list : t -> int list
-(** List of indexes that are true *)
+(** List of indexes that are true. *)
 
 val to_sorted_list : t -> int list
 (** Same as {!to_list}, but also guarantees the list is sorted in
-    increasing order *)
+    increasing order. *)
 
 val of_list : int list -> t
 (** From a list of true bits.
@@ -87,12 +87,12 @@ val first : t -> int option
 
 val first_exn : t -> int
 (** First set bit, or
-    @raise Not_found if all bits are 0
+    @raise Not_found if all bits are 0.
     @since 1.2 *)
 
 val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]
-    satisfies [p index] *)
+    satisfies [p index]. *)
 
 val negate_self : t -> unit
 (** [negate_self t] flips all of the bits in [t].
@@ -103,28 +103,26 @@ val negate : t -> t
 (** [negate t] returns a copy of [t] with all of the bits flipped. *)
 
 val union_into : into:t -> t -> unit
-(** [union ~into bv] sets [into] to the union of itself and [bv].
-
+(** [union_into ~into bv] sets [into] to the union of itself and [bv].
     Also updates the length of [into] to be at least [length bv]. *)
 
 val inter_into : into:t -> t -> unit
-(** [inter ~into bv] sets [into] to the intersection of itself and [bv]
-
+(** [inter_into ~into bv] sets [into] to the intersection of itself and [bv].
     Also updates the length of [into] to be at most [length bv]. *)
 
 val union : t -> t -> t
-(** [union bv1 bv2] returns the union of the two sets *)
+(** [union bv1 bv2] returns the union of the two sets. *)
 
 val inter : t -> t -> t
-(** [inter bv1 bv2] returns the intersection of the two sets *)
+(** [inter bv1 bv2] returns the intersection of the two sets. *)
 
 val diff_into : into:t -> t -> unit
-(** [diff ~into t] Modify [into] with only the bits set but not in [t].
+(** [diff_into ~into t] modifies [into] with only the bits set but not in [t].
 
     @since 1.2 *)
 
 val diff : t -> t -> t
-(** [diff t1 t2] Return those bits found [t1] but not in [t2].
+(** [diff t1 t2] returns those bits found in [t1] but not in [t2].
 
     @since 1.2 *)
 
@@ -135,13 +133,13 @@ val select : t -> 'a array -> 'a list
     selected. *)
 
 val selecti : t -> 'a array -> ('a * int) list
-(** Same as {!select}, but selected elements are paired with their index *)
+(** Same as {!select}, but selected elements are paired with their indexes. *)
 
 type 'a sequence = ('a -> unit) -> unit
 
 val to_seq : t -> int sequence
 val of_seq : int sequence -> t
 
-val print : Format.formatter -> t -> unit
-(** Print the bitvector as a string of bits
+val pp : Format.formatter -> t -> unit
+(** Print the bitvector as a string of bits.
     @since 0.13 *)

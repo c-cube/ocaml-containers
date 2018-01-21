@@ -17,7 +17,7 @@ module Key : sig
   val create : unit -> 'a t
 
   val equal : 'a t -> 'a t -> bool
-  (** Compare two keys that have compatible types *)
+  (** Compare two keys that have compatible types. *)
 end
 
 type pair =
@@ -38,7 +38,7 @@ module Tbl : sig
   val find : t -> 'a Key.t -> 'a option
 
   val find_exn : t -> 'a Key.t -> 'a
-  (** @raise Not_found if the key is not in the table *)
+  (** @raise Not_found if the key is not in the table. *)
 
   val iter : (pair -> unit) -> t -> unit
 
@@ -72,7 +72,7 @@ module Map : sig
   val find : 'a Key.t -> t -> 'a option
 
   val find_exn : 'a Key.t -> t -> 'a
-  (** @raise Not_found if the key is not in the table *)
+  (** @raise Not_found if the key is not in the table. *)
 
   val iter : (pair -> unit) -> t -> unit
 

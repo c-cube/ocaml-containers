@@ -52,12 +52,13 @@ module type S = sig
   val to_klist : t -> char klist
   val to_list : t -> char list
 
-  val pp : Buffer.t -> t -> unit
-  val print : Format.formatter -> t -> unit
+  val pp_buf : Buffer.t -> t -> unit
+  val pp : Format.formatter -> t -> unit
 end
 
-let equal (a:string) b = a=b
+let equal (a:string) b = Pervasives.(=) a b
 
+let compare_int (a : int) b = Pervasives.compare a b
 let compare = String.compare
 
 let hash s = Hashtbl.hash s
@@ -78,7 +79,7 @@ let _is_sub ~sub i s j ~len =
   let rec check k =
     if k = len
     then true
-    else sub.[i+k] = s.[j+k] && check (k+1)
+    else CCChar.equal sub.[i+k] s.[j+k] && check (k+1)
   in
   j+len <= String.length s && check 0
 
@@ -126,7 +127,7 @@ module Find = struct
           let j = ref 0 in
           while !i < len do
             match !j with
-              | _ when get str (!i-1) = get str !j ->
+              | _ when CCChar.equal (get str (!i-1)) (get str !j) ->
                 (* substring starting at !j continues matching current char *)
                 incr j;
                 failure.(!i) <- !j;
@@ -158,7 +159,7 @@ module Find = struct
     while !j < pat_len && !i + !j < len do
       let c = String.get s (!i + !j) in
       let expected = String.get pattern.str !j in
-      if c = expected
+      if CCChar.equal c expected
       then (
         (* char matches *)
         incr j;
@@ -193,7 +194,7 @@ module Find = struct
     while !j < pat_len && !i + !j < len do
       let c = String.get s (len - !i - !j - 1) in
       let expected = String.get pattern.str (String.length pattern.str - !j - 1) in
-      if c = expected
+      if CCChar.equal c expected
       then (
         (* char matches *)
         incr j;
@@ -256,14 +257,14 @@ end
 
 let find ?(start=0) ~sub =
   let pattern = Find.compile sub in
-  fun s -> Find.find ~pattern s ~start
+  fun s -> Find.find ~start ~pattern s
 
 let find_all ?(start=0) ~sub =
   let pattern = Find.compile sub in
   fun s ->
     let i = ref start in
     fun () ->
-      let res = Find.find ~pattern s ~start:!i in
+      let res = Find.find ~start:!i ~pattern s in
       if res = ~-1 then None
       else (
         i := res + 1; (* possible overlap *)
@@ -281,7 +282,7 @@ let mem ?start ~sub s = find ?start ~sub s >= 0
 
 let rfind ~sub =
   let pattern = Find.rcompile sub in
-  fun s -> Find.rfind ~pattern s ~start:(String.length s-1)
+  fun s -> Find.rfind ~start:(String.length s-1) ~pattern s
 
 (* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -292,10 +293,10 @@ let replace_at_ ~pos ~len ~by s =
   Buffer.contents b
 
 let replace ?(which=`All) ~sub ~by s =
-  if sub="" then invalid_arg "CCString.replace";
+  if is_empty sub then invalid_arg "CCString.replace";
   match which with
     | `Left ->
-      let i = find ~sub s ~start:0 in
+      let i = find ~start:0 ~sub s in
       if i>=0 then replace_at_ ~pos:i ~len:(String.length sub) ~by s else s
     | `Right ->
       let i = rfind ~sub s in
@@ -306,7 +307,7 @@ let replace ?(which=`All) ~sub ~by s =
       let b = Buffer.create (String.length s) in
       let start = ref 0 in
       while !start < String.length s do
-        let i = Find.find ~pattern s ~start:!start in
+        let i = Find.find ~start:!start ~pattern s in
         if i>=0 then (
           (* between last and cur occurrences *)
           Buffer.add_substring b s !start (i- !start);
@@ -338,7 +339,7 @@ module Split = struct
     | SplitAt prev -> _split_search ~by s prev
 
   and _split_search ~by s prev =
-    let j = Find.find ~pattern:by s ~start:prev in
+    let j = Find.find ~start:prev ~pattern:by s in
     if j < 0
     then Some (SplitStop, prev, String.length s - prev)
     else Some (SplitAt (j+Find.pattern_length by), prev, j-prev)
@@ -442,7 +443,7 @@ let compare_versions a b =
         | Some _, None -> 1
         | None, Some _ -> -1
         | Some x, Some y ->
-          let c = Pervasives.compare x y in
+          let c = compare_int x y in
           if c<>0 then c else cmp_rec a b
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
@@ -480,7 +481,7 @@ let compare_natural a b =
         | NC_int _, NC_char _ -> 1
         | NC_char _, NC_int _ -> -1
         | NC_int x, NC_int y ->
-          let c = Pervasives.compare x y in
+          let c = compare_int x y in
           if c<>0 then c else cmp_rec a b
   in
   cmp_rec (chunks a) (chunks b)
@@ -490,7 +491,7 @@ let edit_distance s1 s2 =
   then length s2
   else if length s2 = 0
   then length s1
-  else if s1 = s2
+  else if equal s1 s2
   then 0
   else begin
     (* distance vectors (v0=previous, v1=current) *)
@@ -774,25 +775,20 @@ let exists2 p s1 s2 =
   try iter2 (fun c1 c2 -> if p c1 c2 then raise MyExit) s1 s2; false
   with MyExit -> true
 
-    (** {2 Ascii functions} *)
+(** {2 Ascii functions} *)
 
 let equal_caseless s1 s2: bool =
-  let char_lower c =
-    if c >= 'A' && c <= 'Z'
-    then Char.unsafe_chr (Char. code c + 32)
-    else c
-  in
   String.length s1 = String.length s2 &&
   for_all2
-    (fun c1 c2 -> char_lower c1 = char_lower c2)
+    (fun c1 c2 -> CCChar.equal (CCChar.lowercase_ascii c1) (CCChar.lowercase_ascii c2))
     s1 s2
 
-let pp buf s =
+let pp_buf buf s =
   Buffer.add_char buf '"';
   Buffer.add_string buf s;
   Buffer.add_char buf '"'
 
-let print fmt s =
+let pp fmt s =
   Format.fprintf fmt "\"%s\"" s
 
 module Sub = struct
@@ -834,11 +830,11 @@ module Sub = struct
   let to_klist (s,i,len) = _to_klist s i len
   let to_list (s,i,len) = _to_list s [] i len
 
-  let pp buf (s,i,len) =
+  let pp_buf buf (s,i,len) =
     Buffer.add_char buf '"';
     Buffer.add_substring buf s i len;
     Buffer.add_char buf '"'
 
-  let print fmt s =
+  let pp fmt s =
     Format.fprintf fmt "\"%s\"" (copy s)
 end

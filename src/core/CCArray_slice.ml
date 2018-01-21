@@ -85,6 +85,7 @@ let rec _compare cmp a1 i1 j1 a2 i2 j2 =
 let equal eq a b =
   length a = length b && _equal eq a.arr a.i a.j b.arr b.i b.j
 
+let compare_int (a : int) b = Pervasives.compare a b
 let compare cmp a b =
   _compare cmp a.arr a.i a.j b.arr b.i b.j
 
@@ -292,9 +293,8 @@ let sorted cmp a = _sorted cmp a.arr a.i a.j
 
 let sort_ranking cmp a =
   let idx = _sort_indices cmp a.arr a.i a.j in
-  let cmp_int : int -> int -> int = Pervasives.compare in
   let sort_indices cmp a = _sort_indices cmp a 0 (Array.length a) in
-  sort_indices cmp_int idx
+  sort_indices compare_int idx
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
   [||] \
@@ -345,18 +345,18 @@ let find_idx p a =
   (Some (1,"c")) (find_idx ((=) "c") (make [| "a"; "b"; "c" |] 1 2))
 *)
 
-let lookup_exn ?(cmp=Pervasives.compare) k a =
+let lookup_exn ~cmp k a =
   _lookup_exn ~cmp k a.arr a.i (a.j-1) - a.i
 
-let lookup ?(cmp=Pervasives.compare) k a =
+let lookup ~cmp k a =
   try Some (_lookup_exn ~cmp k a.arr a.i (a.j-1) - a.i)
   with Not_found -> None
 
 (*$=
-  (Some 1) (lookup "c" (make [| "a"; "b"; "c" |] 1 2))
+  (Some 1) (lookup ~cmp:CCString.compare "c" (make [| "a"; "b"; "c" |] 1 2))
 *)
 
-let bsearch ?(cmp=Pervasives.compare) k a =
+let bsearch ~cmp k a =
   match bsearch_ ~cmp k a.arr a.i (a.j - 1) with
     | `At m -> `At (m - a.i)
     | `Just_after m -> `Just_after (m - a.i)
