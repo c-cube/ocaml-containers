@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "containers"
-version: "2.0~alpha1"
+version: "2.0+alpha1"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 build: [
@@ -35,5 +35,5 @@ These changes belong to 3 categories:
 - make most optional arguments relying on polymorphic operators mandatory
 - improve consistency of printers
 
-changelog: https://github.com/c-cube/ocaml-containers/blob/2.0~alpha1/CHANGELOG.adoc"
+changelog: https://github.com/c-cube/ocaml-containers/blob/2.0+alpha1/CHANGELOG.adoc"
 ]

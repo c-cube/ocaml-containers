@@ -128,7 +128,7 @@ module type S = sig
 
   val pp : key printer -> 'a printer -> 'a t printer
   (** Renamed from [val print].
-      @since NEXT_RELEASE *)
+      @since 2.0 *)
 
   (**/**)
   val node_ : key -> 'a -> 'a t -> 'a t -> 'a t

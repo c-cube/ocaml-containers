@@ -235,7 +235,7 @@ module type S = sig
   val pp : key printer -> 'a printer -> 'a t printer
   (** Printer for table
       @since 0.13
-      Renamed from [print] @since NEXT_RELEASE *)
+      Renamed from [print] @since 2.0 *)
 end
 
 (*$inject

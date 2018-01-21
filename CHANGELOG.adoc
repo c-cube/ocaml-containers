@@ -1,6 +1,29 @@
 = Changelog
 
-== 1.5.1
+== 2.0
+
+=== breaking
+
+- move to jbuilder (closes #165), requiring at least OCaml 4.02
+- become defensive w.r.t polymorphic operators:
+  * Internally shadow polymorphic operators and functions from Pervasives
+    by `include CCMonomorphic` in `Containers` module
+  * Shadow the physical equality operator
+  * Shadow polymorphic functions in `CCList`
+- rename `print` to `pp` for Format printers (closes #153)
+- remove `CCFlatHashtbl`
+
+=== others
+
+- many typos and style fixes  (from Fourchaux)
+- Add `CCList.iteri2` and `CCList.foldi2`
+- remove `PARAM.min_size` in `CCPool`
+- Add `CCEqual.physical`
+- Avoid uses of the polymorphic operators
+- Add a `CCMonomorphic` module shipped into a `containers.monomorphic` library
+- make complexity of `Array.lookup` explicit (closes #174)
+
+== 1.5.1, 1.5.2
 
 - re-export `Format` types and functions in `CCFormat`
 

@@ -363,7 +363,7 @@ val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
 val iteri2 : (int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
 (** @raise Invalid_argument when lists do not have the same length.
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** Fold on list, with index. *)
@@ -371,7 +371,7 @@ val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 val foldi2 : ('c -> int -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 (** Fold on two lists, with index.
     @raise Invalid_argument when lists do not have the same length.
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 val get_at_idx : int -> 'a t -> 'a option
 (** Get by index in the list.
@@ -501,7 +501,7 @@ end
 
 val assoc : eq:('a -> 'a -> bool) -> 'a -> ('a * 'b) t -> 'b
 (** Same as [Assoc.get_exn].
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 val assoc_opt : eq:('a -> 'a -> bool) -> 'a -> ('a * 'b) t -> 'b option
 (** Same as [Assoc.get].
@@ -513,11 +513,11 @@ val assq_opt : 'a -> ('a * 'b) t -> 'b option
 
 val mem_assoc : eq:('a -> 'a -> bool) -> 'a -> ('a * _) t -> bool
 (** Same as [Assoc.mem].
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 val remove_assoc : eq:('a -> 'a -> bool) -> 'a -> ('a * 'b) t -> ('a * 'b) t
 (** Same as [Assoc.remove].
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 (** {2 References on Lists}
     @since 0.3.3 *)

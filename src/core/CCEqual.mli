@@ -13,7 +13,7 @@ val poly : 'a t
 
 val physical : 'a t
 (** Standard physical equality
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 val int : int t
 val string : string t

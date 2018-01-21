@@ -140,7 +140,7 @@ module type S = sig
 
   val pp : key printer -> 'a printer -> 'a t printer
   (** Renamed from [val print].
-      @since NEXT_RELEASE *)
+      @since 2.0 *)
 
   val as_tree : 'a t -> [`L of int * (key * 'a) list | `N ] ktree
   (** For debugging purpose: explore the structure of the tree,

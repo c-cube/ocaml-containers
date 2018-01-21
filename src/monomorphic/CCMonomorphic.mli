@@ -2,7 +2,7 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Shadow unsafe functions and operators from Pervasives} *)
-(** @since NEXT_RELEASE *)
+(** @since 2.0 *)
 
 val (=) : int -> int -> bool
 val (<>) : int -> int -> bool
