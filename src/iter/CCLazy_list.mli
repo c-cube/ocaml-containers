@@ -11,25 +11,25 @@ and +'a node =
   | Cons of 'a * 'a t
 
 val empty : 'a t
-(** Empty list *)
+(** Empty list. *)
 
 val return : 'a -> 'a t
-(** Return a computed value *)
+(** Return a computed value. *)
 
 val is_empty : _ t -> bool
-(** Evaluates the head *)
+(** Evaluates the head. *)
 
 val length : _ t -> int
 (** [length l] returns the number of elements in [l], eagerly (linear time).
-    Caution, will not terminate if [l] is infinite *)
+    Caution, will not terminate if [l] is infinite. *)
 
 val cons : 'a -> 'a t -> 'a t
 
 val head : 'a t -> ('a * 'a t) option
-(** Evaluate head, return it, or [None] if the list is empty *)
+(** Evaluate head, return it, or [None] if the list is empty. *)
 
 val map : f:('a -> 'b) -> 'a t -> 'b t
-(** Lazy map *)
+(** Lazy map. *)
 
 val filter : f:('a -> bool) -> 'a t -> 'a t
 (** Filter values.
@@ -40,10 +40,10 @@ val take : int -> 'a t -> 'a t
     @since 0.18 *)
 
 val append : 'a t -> 'a t -> 'a t
-(** Lazy concatenation *)
+(** Lazy concatenation. *)
 
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
-(** Monadic flatten + map *)
+(** Monadic flatten + map. *)
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t

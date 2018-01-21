@@ -16,11 +16,11 @@ module type S = sig
   include Map.S
 
   val get : key -> 'a t -> 'a option
-  (** Safe version of {!find} *)
+  (** Safe version of {!find}. *)
 
   val get_or : key -> 'a t -> default:'a -> 'a
   (** [get_or k m ~default] returns the value associated to [k] if present,
-      and returns [default] otherwise (if [k] doesn't belong in [m])
+      and returns [default] otherwise (if [k] doesn't belong in [m]).
       @since 0.16 *)
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
@@ -30,19 +30,19 @@ module type S = sig
       [add k v' m] is returned. *)
 
   val choose_opt : 'a t -> (key * 'a) option
-  (** Safe version of {!choose}
+  (** Safe version of {!choose}.
       @since 1.5 *)
 
   val min_binding_opt : 'a t -> (key * 'a) option
-  (** Safe version of {!min_binding}
+  (** Safe version of {!min_binding}.
       @since 1.5 *)
 
   val max_binding_opt : 'a t -> (key * 'a) option
-  (** Safe version of {!max_binding}
+  (** Safe version of {!max_binding}.
       @since 1.5 *)
 
   val find_opt : key -> 'a t -> 'a option
-  (** Safe version of {!find}
+  (** Safe version of {!find}.
       @since 1.5 *)
 
   val find_first : (key -> bool) -> 'a t -> key * 'a
@@ -51,7 +51,7 @@ module type S = sig
       @since 1.5 *)
 
   val find_first_opt : (key -> bool) -> 'a t -> (key * 'a) option
-  (** Safe version of {!find_first}
+  (** Safe version of {!find_first}.
       @since 1.5 *)
 
   val merge_safe :
@@ -62,11 +62,11 @@ module type S = sig
 
   val union : (key -> 'a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t
   (** Union of both maps, using the function to combine bindings
-      that belong to both inputs
+      that belong to both inputs.
       @since 1.4 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
-  (** Same as {!of_list} *)
+  (** Same as {!of_list}. *)
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
   (** @since 0.14 *)
@@ -83,11 +83,11 @@ module type S = sig
   (** @since 0.14 *)
 
   val keys : _ t -> key sequence
-  (** Iterate on keys only
+  (** Iterate on keys only.
       @since 0.15 *)
 
   val values : 'a t -> 'a sequence
-  (** Iterate on values only
+  (** Iterate on values only.
       @since 0.15 *)
 
   val to_list : 'a t -> (key * 'a) list
