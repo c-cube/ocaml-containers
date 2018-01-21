@@ -43,24 +43,24 @@ val make : int -> 'a -> 'a t
     array entries will modify all other entries at the same time.
     @raise Invalid_argument if [n < 0] or [n > Sys.max_array_length].
     If the value of x is a floating-point number, then the maximum size is
-    only [Sys.max_array_length / 2].*)
+    only [Sys.max_array_length / 2]. *)
 
 val init : int -> (int -> 'a) -> 'a t
-(** [make n f] returns a persistent array of length n, with element
+(** [init n f] returns a persistent array of length n, with element
     [i] initialized to the result of [f i].
     @raise Invalid_argument if [n < 0] or [n > Sys.max_array_length].
     If the value of x is a floating-point number, then the maximum size is
-    only [Sys.max_array_length / 2].*)
+    only [Sys.max_array_length / 2]. *)
 
 val get  : 'a t -> int -> 'a
 (** [get a i] returns the element with index [i] from the array [a].
     @raise Invalid_argument "index out of bounds" if [n] is outside the
-    range [0] to [Array.length a - 1].*)
+    range [0] to [Array.length a - 1]. *)
 
 val set  : 'a t -> int -> 'a -> 'a t
 (** [set a i v] sets the element index [i] from the array [a] to [v].
     @raise Invalid_argument "index out of bounds" if [n] is outside the
-    range [0] to [Array.length a - 1].*)
+    range [0] to [Array.length a - 1]. *)
 
 val length : 'a t -> int
 (** Returns the length of the persistent array. *)
@@ -76,31 +76,31 @@ val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
     It is equivalent to [fun f t -> init (fun i -> f (get t i))]. *)
 
 val iter : ('a -> unit) -> 'a t -> unit
-val iteri : (int -> 'a -> unit) -> 'a t -> unit
 (** [iter f t] applies function [f] to all elements of the persistent array,
     in order from element [0] to element [length t - 1]. *)
+val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
 val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Fold on the elements of the array. *)
 
 val append : 'a t -> 'a t -> 'a t
-(** Append the two arrays
+(** Append the two arrays.
     @since 0.13 *)
 
 val flatten : 'a t t -> 'a t
-(** Concatenates all the sub-arrays
+(** Concatenates all the sub-arrays.
     @since 0.13 *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** Flat map (map + concatenation)
+(** Flat map (map + concatenation).
     @since 0.13 *)
 
 val to_array : 'a t -> 'a array
 (** [to_array t] returns a mutable copy of [t]. *)
 
 val of_array : 'a array -> 'a t
-(** [from_array a] returns an immutable copy of [a]. *)
+(** [of_array a] returns an immutable copy of [a]. *)
 
 val to_list : 'a t -> 'a list
 (** [to_list t] returns the list of elements in [t]. *)
@@ -109,7 +109,7 @@ val of_list : 'a list -> 'a t
 (** [of_list l] returns a fresh persistent array containing the elements of [l]. *)
 
 val of_rev_list : 'a list -> 'a t
-(** [of_rev_list l] is the same as [of_list (List.rev l)] but more efficient
+(** [of_rev_list l] is the same as [of_list (List.rev l)] but more efficient.
     @since 0.13 *)
 
 (** {2 Conversions} *)

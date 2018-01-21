@@ -38,14 +38,14 @@ module type S = sig
   val get : key -> 'a t -> 'a option
 
   val get_exn : key -> 'a t -> 'a
-  (** @raise Not_found if the key is not present *)
+  (** @raise Not_found if the key is not present. *)
 
   val nth : int -> 'a t -> (key * 'a) option
   (** [nth i m] returns the [i]-th [key, value] in the ascending
-      order. Complexity is [O(log (cardinal m))] *)
+      order. Complexity is [O(log (cardinal m))]. *)
 
   val nth_exn : int -> 'a t -> key * 'a
-  (** @raise Not_found if the index is invalid *)
+  (** @raise Not_found if the index is invalid. *)
 
   val get_rank : key -> 'a t -> [`At of int | `After of int | `First]
   (** [get_rank k m] looks for the rank of [k] in [m], i.e. the index
@@ -60,7 +60,7 @@ module type S = sig
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   (** [update k f m] calls [f (Some v)] if [get k m = Some v], [f None]
       otherwise. Then, if [f] returns [Some v'] it binds [k] to [v'],
-      if [f] returns [None] it removes [k] *)
+      if [f] returns [None] it removes [k]. *)
 
   val cardinal : _ t -> int
 
@@ -83,30 +83,30 @@ module type S = sig
   val split : key -> 'a t -> 'a t * 'a option * 'a t
   (** [split k t] returns [l, o, r] where [l] is the part of the map
       with keys smaller than [k], [r] has keys bigger than [k],
-      and [o = Some v] if [k, v] belonged to the map *)
+      and [o = Some v] if [k, v] belonged to the map. *)
 
   val merge : f:(key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
-  (** Similar to {!Map.S.merge} *)
+  (** Similar to {!Map.S.merge}. *)
 
   val extract_min : 'a t -> key * 'a * 'a t
   (** [extract_min m] returns [k, v, m'] where [k,v] is the pair with the
       smallest key in [m], and [m'] does not contain [k].
-      @raise Not_found if the map is empty *)
+      @raise Not_found if the map is empty. *)
 
   val extract_max : 'a t -> key * 'a * 'a t
   (** [extract_max m] returns [k, v, m'] where [k,v] is the pair with the
       highest key in [m], and [m'] does not contain [k].
-      @raise Not_found if the map is empty *)
+      @raise Not_found if the map is empty. *)
 
   val choose : 'a t -> (key * 'a) option
 
   val choose_exn : 'a t -> key * 'a
-  (** @raise Not_found if the tree is empty *)
+  (** @raise Not_found if the tree is empty. *)
 
   val random_choose : Random.State.t -> 'a t -> key * 'a
   (** Randomly choose a (key,value) pair within the tree, using weights
-      as probability weights
-      @raise Not_found if the tree is empty *)
+      as probability weights.
+      @raise Not_found if the tree is empty. *)
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
 
@@ -127,7 +127,8 @@ module type S = sig
   val to_gen : 'a t -> (key * 'a) gen
 
   val pp : key printer -> 'a printer -> 'a t printer
-  (** Renamed from [val print] @since NEXT_RELEASE *)
+  (** Renamed from [val print].
+    @since NEXT_RELEASE *)
 
   (**/**)
   val node_ : key -> 'a -> 'a t -> 'a t -> 'a t

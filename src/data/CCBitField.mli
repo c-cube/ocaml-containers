@@ -25,13 +25,13 @@
 *)
 
 exception TooManyFields
-(** Raised when too many fields are packed into one bitfield *)
+(** Raised when too many fields are packed into one bitfield. *)
 
 exception Frozen
-(** Raised when a frozen bitfield is modified *)
+(** Raised when a frozen bitfield is modified. *)
 
 val max_width : int
-(** System-dependent maximum width for a bitfield, typically 30 or 62 *)
+(** System-dependent maximum width for a bitfield, typically 30 or 62. *)
 
 (** {2 Bitfield Signature} *)
 module type S = sig
@@ -40,25 +40,25 @@ module type S = sig
       should create a new, incompatible type *)
 
   val empty : t
-  (** Empty bitfields (all bits 0) *)
+  (** Empty bitfields (all bits 0). *)
 
   type field
 
   val get : field -> t -> bool
-  (** Get the value of this field *)
+  (** Get the value of this field. *)
 
   val set : field -> bool -> t -> t
-  (** Set the value of this field *)
+  (** Set the value of this field. *)
 
   val mk_field : unit -> field
-  (** Make a new field *)
+  (** Make a new field. *)
 
   val freeze : unit -> unit
   (** Prevent new fields from being added. From now on, creating
-      a field will raise Frozen *)
+      a field will raise Frozen. *)
 
   val total_width : unit -> int
-  (** Current width of the bitfield *)
+  (** Current width of the bitfield. *)
 end
 
 (** Create a new bitfield type *)

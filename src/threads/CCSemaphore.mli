@@ -8,23 +8,23 @@ type t
 (** A semaphore *)
 
 val create : int -> t
-(** [create n] creates a semaphore with initial value [n]
-    @raise Invalid_argument if [n <= 0] *)
+(** [create n] creates a semaphore with initial value [n].
+    @raise Invalid_argument if [n <= 0]. *)
 
 val get : t -> int
-(** Current value *)
+(** Current value. *)
 
 val acquire : int -> t -> unit
 (** [acquire n s] blocks until [get s >= n], then atomically
-    sets [s := !s - n] *)
+    sets [s := !s - n]. *)
 
 val release : int -> t -> unit
-(** [release n s] atomically sets [s := !s + n] *)
+(** [release n s] atomically sets [s := !s + n]. *)
 
 val with_acquire : n:int -> t -> f:(unit -> 'a) -> 'a
 (** [with_acquire ~n s ~f] first acquires [s] with [n] units,
-    calls [f ()], and then release [s] with [n] units.
-    Safely release the semaphore even if [f ()] fails *)
+    calls [f ()], and then releases [s] with [n] units.
+    Safely release the semaphore even if [f ()] fails. *)
 
 val wait_until_at_least : n:int -> t -> f:(unit -> 'a) -> 'a
 (** [wait_until_at_least ~n s ~f] waits until [get s >= n], then calls [f ()]

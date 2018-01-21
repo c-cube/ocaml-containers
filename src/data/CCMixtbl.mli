@@ -53,49 +53,49 @@ val create_inj : unit -> 'b injection
 
 val get : inj:'b injection -> 'a t  -> 'a -> 'b option
 (** Get the value corresponding to this key, if it exists and
-    belongs to the same key *)
+    belongs to the same key. *)
 
 val set : inj:'b injection -> 'a t -> 'a -> 'b -> unit
-(** Bind the key to the value, using [inj] *)
+(** Bind the key to the value, using [inj]. *)
 
 val find : inj:'b injection -> 'a t -> 'a -> 'b
 (** Find the value for the given key, which must be of the right type.
     @raise Not_found if either the key is not found, or if its value
-      doesn't belong to the right type *)
+      doesn't belong to the right type. *)
 
 val length : 'a t -> int
-(** Number of bindings *)
+(** Number of bindings. *)
 
 val clear : 'a t -> unit
-(** Clear content of the hashtable *)
+(** Clear content of the hashtable. *)
 
 val remove : 'a t -> 'a -> unit
-(** Remove the binding for this key *)
+(** Remove the binding for this key. *)
 
 val copy : 'a t -> 'a t
-(** Copy of the table *)
+(** Copy of the table. *)
 
 val mem : inj:_ injection-> 'a t -> 'a -> bool
 (** Is the given key in the table, with the right type? *)
 
 val iter_keys : 'a t -> ('a -> unit) -> unit
-(** Iterate on the keys of this table *)
+(** Iterate on the keys of this table. *)
 
 val fold_keys : 'a t -> 'b -> ('b -> 'a -> 'b) -> 'b
-(** Fold over the keys *)
+(** Fold over the keys. *)
 
 (** {2 Iterators} *)
 
 type 'a sequence = ('a -> unit) -> unit
 
 val keys_seq : 'a t -> 'a sequence
-(** All the keys *)
+(** All the keys. *)
 
 val bindings_of : inj:'b injection -> 'a t -> ('a * 'b) sequence
-(** All the bindings that come from the corresponding injection *)
+(** All the bindings that come from the corresponding injection. *)
 
 type value =
   | Value : ('b injection -> 'b option) -> value
 
 val bindings : 'a t -> ('a *  value) sequence
-(** Iterate on all bindings *)
+(** Iterate on all bindings. *)
