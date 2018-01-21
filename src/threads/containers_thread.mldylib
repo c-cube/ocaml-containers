@@ -1,9 +1,0 @@
-# OASIS_START
-# DO NOT EDIT (digest: 5cf3cd134d141ea5acafb464c2b3e927)
-CCPool
-CCLock
-CCSemaphore
-CCThread
-CCBlockingQueue
-CCTimer
-# OASIS_STOP
