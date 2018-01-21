@@ -17,6 +17,9 @@ depopts: [
   "base-unix"
   "base-threads"
   "qtest" { test }
+  "qcheck" { test }
+  "oUnit" { test }
+  "odoc" { doc }
 ]
 conflicts: [
   "sequence" { < "0.5" }
