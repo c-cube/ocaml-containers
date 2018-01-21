@@ -43,12 +43,12 @@ module type S = sig
 
   val pp_buf : Buffer.t -> t -> unit
   (** Renamed from [pp]. 
-      @since NEXT_RELEASE *)
+      @since 2.0 *)
 
   val pp : Format.formatter -> t -> unit
   (** Print the string within quotes.
       Renamed from [print].
-      @since NEXT_RELEASE *)
+      @since 2.0 *)
 end
 
 (** {2 Strings} *)

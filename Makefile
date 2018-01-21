@@ -1,5 +1,3 @@
-# OASIS_START
-# DO NOT EDIT (digest: 4c293511860bb966e727ba6f0ecc8197)
 
 all: build test
 
@@ -27,8 +25,8 @@ VERSION=$(shell awk '/^version:/ {print $$2}' containers.opam)
 
 update_next_tag:
 	@echo "update version to $(VERSION)..."
-	sed -i "s/NEXT_VERSION/$(VERSION)/g" src/*.ml src/*.mli
-	sed -i "s/NEXT_RELEASE/$(VERSION)/g" src/*.ml src/*.mli
+	sed -i "s/NEXT_VERSION/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
+	sed -i "s/NEXT_RELEASE/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
 
 watch:
 	while find src/ benchs/ -print0 | xargs -0 inotifywait -e delete_self -e modify ; do \
