@@ -22,12 +22,12 @@ val compare : 'a ord -> 'a t ord
 
 val get : 'a t -> int -> 'a
 (** [get a n] returns the element number [n] of array [a].
-   The first element has number 0.
-   The last element has number [length a - 1].
-   You can also write [a.(n)] instead of [get a n].
+    The first element has number 0.
+    The last element has number [length a - 1].
+    You can also write [a.(n)] instead of [get a n].
 
-   Raise [Invalid_argument "index out of bounds"]
-   if [n] is outside the range 0 to [(length a - 1)]. *)
+    Raise [Invalid_argument "index out of bounds"]
+    if [n] is outside the range 0 to [(length a - 1)]. *)
 
 val get_safe : 'a t -> int -> 'a option
 (** [get_safe a i] returns [Some a.(i)] if [i] is a valid index.
@@ -64,18 +64,18 @@ val sub : 'a t -> int -> int -> 'a t
 
 val set : 'a t -> int -> 'a -> unit
 (** [set a n x] modifies array [a] in place, replacing
-   element number [n] with [x].
-   You can also write [a.(n) <- x] instead of [set a n x].
+    element number [n] with [x].
+    You can also write [a.(n) <- x] instead of [set a n x].
 
-   Raise [Invalid_argument "index out of bounds"]
-   if [n] is outside the range 0 to [length a - 1]. *)
+    Raise [Invalid_argument "index out of bounds"]
+    if [n] is outside the range 0 to [length a - 1]. *)
 
 val length : _ t -> int
 (** Return the length (number of elements) of the given array. *)
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** [fold f x a] computes [f (... (f (f x a.(0)) a.(1)) ...) a.(n-1)],
-   where [n] is the length of the array [a]. *)
+    where [n] is the length of the array [a]. *)
 
 val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** Fold left on array, with index. *)
@@ -87,24 +87,24 @@ val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
 
 val iter : ('a -> unit) -> 'a t -> unit
 (** [iter f a] applies function [f] in turn to all
-   the elements of [a].  It is equivalent to
-   [f a.(0); f a.(1); ...; f a.(length a - 1); ()]. *)
+    the elements of [a].  It is equivalent to
+    [f a.(0); f a.(1); ...; f a.(length a - 1); ()]. *)
 
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
 (** Same as {!Array.iter}, but the
-   function is applied with the index of the element as first argument,
-   and the element itself as second argument. *)
+    function is applied with the index of the element as first argument,
+    and the element itself as second argument. *)
 
 val blit : 'a t -> int -> 'a t -> int -> int -> unit
 (** [blit v1 o1 v2 o2 len] copies [len] elements
-   from array [v1], starting at element number [o1], to array [v2],
-   starting at element number [o2]. It works correctly even if
-   [v1] and [v2] are the same array, and the source and
-   destination chunks overlap.
+    from array [v1], starting at element number [o1], to array [v2],
+    starting at element number [o2]. It works correctly even if
+    [v1] and [v2] are the same array, and the source and
+    destination chunks overlap.
 
-   Raise [Invalid_argument "Array.blit"] if [o1] and [len] do not
-   designate a valid subarray of [v1], or if [o2] and [len] do not
-   designate a valid subarray of [v2]. *)
+    Raise [Invalid_argument "Array.blit"] if [o1] and [len] do not
+    designate a valid subarray of [v1], or if [o2] and [len] do not
+    designate a valid subarray of [v2]. *)
 
 val reverse_in_place : 'a t -> unit
 (** Reverse the array in place. *)
@@ -177,8 +177,8 @@ val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
 
 val for_all : ('a -> bool) -> 'a t -> bool
 (** [for_all p [|a1; ...; an|]] checks if all elements of the array
-   satisfy the predicate [p]. That is, it returns
-   [(p a1) && (p a2) && ... && (p an)]. *)
+    satisfy the predicate [p]. That is, it returns
+    [(p a1) && (p a2) && ... && (p an)]. *)
 
 val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (** Forall on pairs of arrays.

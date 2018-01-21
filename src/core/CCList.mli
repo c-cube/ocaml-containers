@@ -32,7 +32,7 @@ val cons : 'a -> 'a t -> 'a t
 
 val append : 'a t -> 'a t -> 'a t
 (** Safe version of {!List.append}.
-   Concatenate two lists. *)
+    Concatenate two lists. *)
 
 val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l].
@@ -41,18 +41,18 @@ val cons_maybe : 'a option -> 'a t -> 'a t
 
 val (@) : 'a t -> 'a t -> 'a t
 (** Same as [append].
-   Concatenate two lists. *)
+    Concatenate two lists. *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
 (** Safe version of {!List.filter}. 
-   [filter p l] returns all the elements of the list [l]
-   that satisfy the predicate [p].  The order of the elements
-   in the input list is preserved. *)
+    [filter p l] returns all the elements of the list [l]
+    that satisfy the predicate [p].  The order of the elements
+    in the input list is preserved. *)
 
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Safe version of [fold_right].
-   [fold_right f [a1; ...; an] b] is
-   [f a1 (f a2 (... (f an b) ...))].  Not tail-recursive. *)
+    [fold_right f [a1; ...; an] b] is
+    [f a1 (f a2 (... (f an b) ...))].  Not tail-recursive. *)
 
 val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
 (** Fold until a stop condition via [('a, `Stop)] is
@@ -95,9 +95,9 @@ val init : int -> (int -> 'a) -> 'a t
 
 val combine : 'a list -> 'b list -> ('a * 'b) list
 (** Similar to {!List.combine} but tail-recursive.
-   Transform a pair of lists into a list of pairs:
-   [combine [a1; ...; an] [b1; ...; bn]] is
-   [[(a1,b1); ...; (an,bn)]].
+    Transform a pair of lists into a list of pairs:
+    [combine [a1; ...; an] [b1; ...; bn]] is
+    [[(a1,b1); ...; (an,bn)]].
     @raise Invalid_argument if the lists have distinct lengths.
     @since 1.2 *)
 
@@ -110,20 +110,20 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
 
 val split : ('a * 'b) t -> 'a t * 'b t
 (** A tail-recursive version of {!List.split}.
-   Transform a list of pairs into a pair of lists:
-   [split [(a1,b1); ...; (an,bn)]] is [([a1; ...; an], [b1; ...; bn])]. *)
+    Transform a list of pairs into a pair of lists:
+    [split [(a1,b1); ...; (an,bn)]] is [([a1; ...; an], [b1; ...; bn])]. *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val compare_lengths : 'a t -> 'b t -> int
 (** Equivalent to [compare (length l1) (length l2)] but more efficient.
-   Compare the lengths of two lists.
-   @since 1.5 *)
+    Compare the lengths of two lists.
+    @since 1.5 *)
 
 val compare_length_with : 'a t -> int -> int
 (** Equivalent to [compare (length l) x] but more efficient.
-   Compare the length of a list to an integer.
-   @since 1.5 *)
+    Compare the length of a list to an integer.
+    @since 1.5 *)
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
@@ -144,13 +144,13 @@ val cartesian_product : 'a t t -> 'a t t
     by returning all the ways of picking one element per sublist.
     {b NOTE} the order of the returned list is unspecified.
     For example:
-   {[
-     # cartesian_product [[1;2];[3];[4;5;6]] |> sort =
-     [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
-     # cartesian_product [[1;2];[];[4;5;6]] = [];;
-     # cartesian_product [[1;2];[3];[4];[5];[6]] |> sort =
-     [[1;3;4;5;6];[2;3;4;5;6]];;
-   ]}
+    {[
+      # cartesian_product [[1;2];[3];[4;5;6]] |> sort =
+      [[1;3;4];[1;3;5];[1;3;6];[2;3;4];[2;3;5];[2;3;6]];;
+      # cartesian_product [[1;2];[];[4;5;6]] = [];;
+      # cartesian_product [[1;2];[3];[4];[5];[6]] |> sort =
+      [[1;3;4;5;6];[2;3;4;5;6]];;
+    ]}
     invariant: [cartesian_product l = map_product id l].
     @since 1.2 *)
 
@@ -353,13 +353,13 @@ val group_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list list
 
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
 (** Same as {!map}, but the function is applied to the index of
-   the element as first argument (counting from 0), and the element
-   itself as second argument. *)
-   
+    the element as first argument (counting from 0), and the element
+    itself as second argument. *)
+
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
 (** Same as {!iter}, but the function is applied to the index of
-   the element as first argument (counting from 0), and the element
-   itself as second argument. *)
+    the element as first argument (counting from 0), and the element
+    itself as second argument. *)
 
 val iteri2 : (int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
 (** @raise Invalid_argument when lists do not have the same length.
@@ -591,7 +591,7 @@ val of_klist : 'a klist -> 'a t
 (** {2 Infix Operators}
     It is convenient to {!open CCList.Infix} to access the infix operators
     without cluttering the scope too much.
-    
+
     @since 0.16 *)
 
 module Infix : sig

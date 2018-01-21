@@ -26,7 +26,7 @@ val cons : 'a -> 'a t -> 'a t
 
 val append : 'a t -> 'a t -> 'a t
 (** Safe version of {!List.append}.
-   Concatenate two lists. *)
+    Concatenate two lists. *)
 
 val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l].
@@ -35,7 +35,7 @@ val cons_maybe : 'a option -> 'a t -> 'a t
 
 val (@) : 'a t -> 'a t -> 'a t
 (** Same as [append].
-   Concatenate two lists. *)
+    Concatenate two lists. *)
 
 val filter : f:('a -> bool) -> 'a t -> 'a t
 (** Safe version of {!List.filter}. *)
@@ -240,13 +240,13 @@ val group_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list list
 
 val mapi : f:(int -> 'a -> 'b) -> 'a t -> 'b t
 (** Same as {!map}, but the function is applied to the index of
-   the element as first argument (counting from 0), and the element
-   itself as second argument. *)
+    the element as first argument (counting from 0), and the element
+    itself as second argument. *)
 
 val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 (** Same as {!iter}, but the function is applied to the index of
-   the element as first argument (counting from 0), and the element
-   itself as second argument. *)
+    the element as first argument (counting from 0), and the element
+    itself as second argument. *)
 
 val foldi : f:('b -> int -> 'a -> 'b) -> init:'b -> 'a t -> 'b
 (** Fold on list, with index. *)

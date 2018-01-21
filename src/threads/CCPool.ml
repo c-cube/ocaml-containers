@@ -146,8 +146,8 @@ module Make(P : PARAM) = struct
            Condition.broadcast pool.cond; (* wake up some worker, if any *)
            (* might want to process in the background, if all threads are busy *)
            if not (Queue.is_empty pool.jobs)
-              && pool.cur_idle = 0
-              && can_start_thread_ pool then (
+           && pool.cur_idle = 0
+           && can_start_thread_ pool then (
              launch_worker_ pool;
            )
          ))

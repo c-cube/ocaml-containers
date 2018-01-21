@@ -775,7 +775,7 @@ let exists2 p s1 s2 =
   try iter2 (fun c1 c2 -> if p c1 c2 then raise MyExit) s1 s2; false
   with MyExit -> true
 
-    (** {2 Ascii functions} *)
+(** {2 Ascii functions} *)
 
 let equal_caseless s1 s2: bool =
   String.length s1 = String.length s2 &&

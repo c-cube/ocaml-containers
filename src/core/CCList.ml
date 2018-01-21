@@ -1017,7 +1017,7 @@ let uniq ~eq l =
 (*$Q
   Q.(small_list small_int) (fun l -> \
     sort_uniq ~cmp:CCInt.compare l = (uniq ~eq:CCInt.equal l |> sort Pervasives.compare))
-  *)
+*)
 
 let union ~eq l1 l2 =
   let rec union eq acc l1 l2 = match l1 with
@@ -1065,8 +1065,8 @@ let iteri2 f l1 l2 =
     | [], _
     | _, [] -> invalid_arg "iteri2"
     | x1::l1', x2::l2' ->
-       f i x1 x2;
-       aux f (i+1) l1' l2'
+      f i x1 x2;
+      aux f (i+1) l1' l2'
   in aux f 0 l1 l2
 
 let foldi f acc l =

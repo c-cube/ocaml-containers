@@ -22,12 +22,12 @@ val ( * ) : t -> t -> t
 
 val (/) : t -> t -> t
 (** Integer division.  Raise [Division_by_zero] if the second
-   argument is zero.  This division rounds the real quotient of
-   its arguments towards zero, as specified for {!Pervasives.(/)}. *)
+    argument is zero.  This division rounds the real quotient of
+    its arguments towards zero, as specified for {!Pervasives.(/)}. *)
 
 val (mod) : t -> t -> t
 (** Integer remainder.
-   If [y = 0], [x mod y] raises [Division_by_zero]. *)
+    If [y = 0], [x mod y] raises [Division_by_zero]. *)
 
 val abs : t -> t
 (** Return the absolute value of its argument. *)
@@ -52,29 +52,29 @@ val lnot : t -> t
 
 val (lsl) : t -> int -> t
 (** [ x lsl y] shifts [x] to the left by [y] bits.
-   The result is unspecified if [y < 0] or [y >= 64]. *)
+    The result is unspecified if [y < 0] or [y >= 64]. *)
 
 val (lsr) : t -> int -> t
 (** [x lsr y] shifts [x] to the right by [y] bits.
-   This is a logical shift: zeroes are inserted in the vacated bits
-   regardless of the sign of [x].
-   The result is unspecified if [y < 0] or [y >= 64]. *)
+    This is a logical shift: zeroes are inserted in the vacated bits
+    regardless of the sign of [x].
+    The result is unspecified if [y < 0] or [y >= 64]. *)
 
 val (asr) : t -> int -> t
 (** [x asr y] shifts [x] to the right by [y] bits.
-   This is an arithmetic shift: the sign bit of [x] is replicated
-   and inserted in the vacated bits.
-   The result is unspecified if [y < 0] or [y >= 64]. *)
+    This is an arithmetic shift: the sign bit of [x] is replicated
+    and inserted in the vacated bits.
+    The result is unspecified if [y < 0] or [y >= 64]. *)
 
 val equal : t -> t -> bool
 (** The equal function for int64s.
-   Same as {!Pervasives.(=) x y)}. *)
+    Same as {!Pervasives.(=) x y)}. *)
 
 val compare : t -> t -> int
 (** The comparison function for 64-bit integers, with the same specification as
-   {!Pervasives.compare}.  Along with the type [t], this function [compare]
-   allows the module [CCInt64] to be passed as argument to the functors
-   {!Set.Make} and {!Map.Make}. *)
+    {!Pervasives.compare}.  Along with the type [t], this function [compare]
+    allows the module [CCInt64] to be passed as argument to the functors
+    {!Set.Make} and {!Map.Make}. *)
 
 val hash : t -> int
 (** Same as {!Pervasives.abs (to_int x)}. *)
@@ -83,50 +83,50 @@ val hash : t -> int
 
 val to_int : t -> int
 (** Convert the given 64-bit integer (type [int64]) to an
-   integer (type [int]).  On 64-bit platforms, the 64-bit integer
-   is taken modulo 2{^63}, i.e. the high-order bit is lost
-   during the conversion.  On 32-bit platforms, the 64-bit integer
-   is taken modulo 2{^31}, i.e. the top 33 bits are lost
-   during the conversion. *)
+    integer (type [int]).  On 64-bit platforms, the 64-bit integer
+    is taken modulo 2{^63}, i.e. the high-order bit is lost
+    during the conversion.  On 32-bit platforms, the 64-bit integer
+    is taken modulo 2{^31}, i.e. the top 33 bits are lost
+    during the conversion. *)
 
 val of_int : int -> t option
 (** Safe version of {!of_int_exn}. *)
 
 val of_int_exn : int -> t
 (** Alias to {!Int64.of_int}.
-   Convert the given integer (type [int]) to a 64-bit integer
-   (type [int64]).
-   @raise Failure in case of failure. *)
+    Convert the given integer (type [int]) to a 64-bit integer
+    (type [int64]).
+    @raise Failure in case of failure. *)
 
 val to_int32 : t -> int32
 (** Convert the given 64-bit integer (type [int64]) to a
-   32-bit integer (type [int32]). The 64-bit integer
-   is taken modulo 2{^32}, i.e. the top 32 bits are lost
-   during the conversion.  *)
+    32-bit integer (type [int32]). The 64-bit integer
+    is taken modulo 2{^32}, i.e. the top 32 bits are lost
+    during the conversion.  *)
 
 val of_int32 : int32 -> t option
 (** Safe version of {!of_int32_exn}. *)
 
 val of_int32_exn : int32 -> t
 (** Alias to {!Int64.of_int32}
-   Convert the given 32-bit integer (type [int32])
-   to a 64-bit integer (type [int64]).
-   @raise Failure in case of failure. *)
+    Convert the given 32-bit integer (type [int32])
+    to a 64-bit integer (type [int64]).
+    @raise Failure in case of failure. *)
 
 val to_nativeint : t -> nativeint
 (** Convert the given 64-bit integer (type [int64]) to a
-   native integer.  On 32-bit platforms, the 64-bit integer
-   is taken modulo 2{^32}.  On 64-bit platforms,
-   the conversion is exact. *)
+    native integer.  On 32-bit platforms, the 64-bit integer
+    is taken modulo 2{^32}.  On 64-bit platforms,
+    the conversion is exact. *)
 
 val of_nativeint : nativeint -> t option
 (** Safe version of {!of_nativeint_exn}. *)
 
 val of_nativeint_exn : nativeint -> t
 (** Alias to {!Int64.of_nativeint}.
-   Convert the given native integer (type [nativeint])
-   to a 64-bit integer (type [int64]).
-   @raise Failure in case of failure. *)
+    Convert the given native integer (type [nativeint])
+    to a 64-bit integer (type [int64]).
+    @raise Failure in case of failure. *)
 
 val to_float : t -> float
 (** Convert the given 64-bit integer to a floating-point number. *)
@@ -136,10 +136,10 @@ val of_float : float -> t option
 
 val of_float_exn : float -> t
 (** Alias to {!Int64.of_float}.
-   Convert the given floating-point number to a 64-bit integer,
-   discarding the fractional part (truncate towards 0).
-   The result of the conversion is undefined if, after truncation,
-   the number is outside the range \[{!CCInt64.min_int}, {!CCInt64.max_int}\].
+    Convert the given floating-point number to a 64-bit integer,
+    discarding the fractional part (truncate towards 0).
+    The result of the conversion is undefined if, after truncation,
+    the number is outside the range \[{!CCInt64.min_int}, {!CCInt64.max_int}\].
     @raise Failure in case of failure. *)
 
 val to_string : t -> string
@@ -150,18 +150,18 @@ val of_string : string -> t option
 
 val of_string_exn : string -> t
 (** Alias to {!Int64.of_string}.
-   Convert the given string to a 64-bit integer.
-   The string is read in decimal (by default, or if the string 
-   begins with [0u]) or in hexadecimal, octal or binary if the
-   string begins with [0x], [0o] or [0b] respectively.
+    Convert the given string to a 64-bit integer.
+    The string is read in decimal (by default, or if the string 
+    begins with [0u]) or in hexadecimal, octal or binary if the
+    string begins with [0x], [0o] or [0b] respectively.
 
-   The [0u] prefix reads the input as an unsigned integer in the range
-   [[0, 2*CCInt64.max_int+1]]. If the input exceeds {!CCInt64.max_int}
-   it is converted to the signed integer
-   [CCInt64.min_int + input - CCInt64.max_int - 1].
+    The [0u] prefix reads the input as an unsigned integer in the range
+    [[0, 2*CCInt64.max_int+1]]. If the input exceeds {!CCInt64.max_int}
+    it is converted to the signed integer
+    [CCInt64.min_int + input - CCInt64.max_int - 1].
 
-   The [_] (underscore) character can appear anywhere in the string
-   and is ignored.
-   Raise [Failure "Int64.of_string"] if the given string is not
-   a valid representation of an integer, or if the integer represented
-   exceeds the range of integers representable in type [int64]. *)
+    The [_] (underscore) character can appear anywhere in the string
+    and is ignored.
+    Raise [Failure "Int64.of_string"] if the given string is not
+    a valid representation of an integer, or if the integer represented
+    exceeds the range of integers representable in type [int64]. *)

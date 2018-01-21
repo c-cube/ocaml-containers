@@ -17,12 +17,12 @@ val compare : t -> t -> int
 
 val lowercase_ascii : t -> t
 (** Convert the given character to its equivalent lowercase character,
-   using the US-ASCII character set.
+    using the US-ASCII character set.
     @since 0.20 *)
 
 val uppercase_ascii : t -> t
 (** Convert the given character to its equivalent uppercase character,
-   using the US-ASCII character set.
+    using the US-ASCII character set.
     @since 0.20 *)
 
 val of_int_exn : int -> t
