@@ -24,17 +24,17 @@ val singleton : 'a -> 'a t
 val doubleton : 'a -> 'a -> 'a t
 
 val make : int -> 'a -> 'a t
-(** [make n x] makes an array of [n] times [x] *)
+(** [make n x] makes an array of [n] times [x]. *)
 
 val init : int -> (int -> 'a) -> 'a t
 (** [init n f] makes the array [[| f 0; f 1; ... ; f (n-1) |]].
-    @raise Invalid_argument if [n < 0] *)
+    @raise Invalid_argument if [n < 0]. *)
 
 val get : 'a t -> int -> 'a
-(** Access the element *)
+(** Access the element. *)
 
 val set : 'a t -> int -> 'a -> 'a t
-(** Copy the array and modify its copy *)
+(** Copy the array and modify its copy. *)
 
 val sub : 'a t -> int -> int -> 'a t
 (** [sub a start len] returns a fresh array of length len, containing the elements

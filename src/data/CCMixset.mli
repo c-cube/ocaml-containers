@@ -45,8 +45,8 @@ val get : key:'a key -> t -> 'a option
 (** [get ~key set] obtains the value for [key] in [set], if any. *)
 
 val get_exn : key:'a key -> t -> 'a
-(** Same as {!get}, but can fail
-    @raise Not_found if the key is not present *)
+(** Same as {!get}, but can fail.
+    @raise Not_found if the key is not present. *)
 
 val cardinal : t -> int
-(** Number of mappings *)
+(** Number of mappings. *)

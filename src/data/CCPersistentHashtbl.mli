@@ -27,29 +27,29 @@ module type S = sig
   type 'a t
 
   val empty : unit -> 'a t
-  (** Empty table. The table will be allocated at the first binding *)
+  (** Empty table. The table will be allocated at the first binding. *)
 
   val create : int -> 'a t
-  (** Create a new hashtable, with the given initial capacity *)
+  (** Create a new hashtable, with the given initial capacity. *)
 
   val is_empty : 'a t -> bool
   (** Is the table empty? *)
 
   val find : 'a t -> key -> 'a
-  (** Find the value for this key, or fails
-      @raise Not_found if the key is not present in the table *)
+  (** Find the value for this key, or fails.
+      @raise Not_found if the key is not present in the table. *)
 
   val get_exn : key -> 'a t -> 'a
-  (** Synonym to {!find} with flipped arguments *)
+  (** Synonym to {!find} with flipped arguments. *)
 
   val get : key -> 'a t -> 'a option
-  (** Safe version of !{get_exn} *)
+  (** Safe version of !{get_exn}. *)
 
   val mem : 'a t -> key -> bool
   (** Is the key bound? *)
 
   val length : _ t -> int
-  (** Number of bindings *)
+  (** Number of bindings. *)
 
   val add : 'a t -> key -> 'a -> 'a t
   (** Add the binding to the table, returning a new table. The old binding
@@ -67,11 +67,11 @@ module type S = sig
       [key] is removed, else it returns [Some v'] and [key -> v'] is added. *)
 
   val remove : 'a t -> key -> 'a t
-  (** Remove the key *)
+  (** Remove the key. *)
 
   val copy : 'a t -> 'a t
   (** Fresh copy of the table; the underlying structure is not shared
-      anymore, so using both tables alternatively will be efficient *)
+      anymore, so using both tables alternatively will be efficient. *)
 
   val merge :
     f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
@@ -81,13 +81,13 @@ module type S = sig
       function returns [None] the key will not appear in the result. *)
 
   val iter : 'a t -> (key -> 'a -> unit) -> unit
-  (** Iterate over bindings *)
+  (** Iterate over bindings. *)
 
   val fold : ('b -> key -> 'a -> 'b) -> 'b -> 'a t -> 'b
-  (** Fold over bindings *)
+  (** Fold over bindings. *)
 
   val map : (key -> 'a -> 'b) -> 'a t -> 'b t
-  (** Map all values *)
+  (** Map all values. *)
 
   val filter : (key -> 'a -> bool) -> 'a t -> 'a t
 
@@ -100,7 +100,7 @@ module type S = sig
   (** {3 Conversions} *)
 
   val of_seq : (key * 'a) sequence -> 'a t
-  (** Add (replace) bindings from the sequence to the table *)
+  (** Add (replace) bindings from the sequence to the table. *)
 
   val of_list : (key * 'a) list -> 'a t
 
@@ -109,7 +109,7 @@ module type S = sig
   val add_list : 'a t -> (key  * 'a) list -> 'a t
 
   val to_seq : 'a t -> (key * 'a) sequence
-  (** Sequence of the bindings of the table *)
+  (** Sequence of the bindings of the table. *)
 
   val to_list : 'a t -> (key * 'a) list
 

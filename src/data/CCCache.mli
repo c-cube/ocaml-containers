@@ -29,7 +29,7 @@ type 'a hash = 'a -> int
 type ('a, 'b) t
 
 val clear : (_,_) t -> unit
-(** Clear the content of the cache *)
+(** Clear the content of the cache. *)
 
 type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
 (** Type of the callback that is called once a cached value is found
@@ -44,7 +44,7 @@ val with_cache : ?cb:('a, 'b) callback -> ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
     cache [c]. It always returns the same value as
     [f x], if [f x] returns, or raise the same exception.
     However, [f] may not be called if [x] is in the cache.
-    @param cb called after the value is generated or retrieved *)
+    @param cb called after the value is generated or retrieved. *)
 
 val with_cache_rec : ?cb:('a, 'b) callback -> ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
 (** [with_cache_rec c f] is a function that first, applies [f] to
@@ -61,7 +61,7 @@ val with_cache_rec : ?cb:('a, 'b) callback -> ('a,'b) t -> (('a -> 'b) -> 'a -> 
 
       fib 70;;
     ]}
-    @param cb called after the value is generated or retrieved
+    @param cb called after the value is generated or retrieved.
 *)
 
 val size : (_,_) t -> int
@@ -72,18 +72,18 @@ val iter : ('a,'b) t -> ('a -> 'b -> unit) -> unit
 (** Iterate on cached values. Should yield [size cache] pairs. *)
 
 val add : ('a, 'b) t -> 'a -> 'b -> bool
-(** Manually add a cached value. Returns [true] if the value has succesfully
+(** Manually add a cached value. Returns [true] if the value has successfully
     been added, and [false] if the value was already bound.
     @since 1.5 *)
 
 val dummy : ('a,'b) t
-(** Dummy cache, never stores any value *)
+(** Dummy cache, never stores any value. *)
 
 val linear : eq:'a equal -> int -> ('a, 'b) t
 (** Linear cache with the given size. It stores key/value pairs in
     an array and does linear search at every call, so it should only be used
     with small size.
-    @param eq optional equality predicate for keys *)
+    @param eq optional equality predicate for keys. *)
 
 val replacing : eq:'a equal -> ?hash:'a hash ->
   int -> ('a,'b) t
