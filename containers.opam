@@ -10,7 +10,6 @@ build-doc: [ "jbuilder" "doc" ]
 build-test: [ "jbuilder" "runtest" ]
 depends: [
   "jbuilder" {build}
-  "base-bytes"
   "result"
 ]
 depopts: [
