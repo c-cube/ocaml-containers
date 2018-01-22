@@ -6,8 +6,8 @@ maintainer: "simon.cruanes.2007@m4x.org"
 build: [
     ["jbuilder" "build" "-p" name "-j" jobs]
 ]
-build-doc: [ make "doc" ]
-build-test: [ make "test" ]
+build-doc: [ "jbuilder" "doc" ]
+build-test: [ "jbuilder" "runtest" ]
 depends: [
   "jbuilder" {build}
   "base-bytes"
