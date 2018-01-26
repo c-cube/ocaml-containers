@@ -6,7 +6,7 @@ maintainer: "simon.cruanes.2007@m4x.org"
 build: [
     ["jbuilder" "build" "-p" name "-j" jobs]
 ]
-build-doc: [ "jbuilder" "doc" ]
+build-doc: [ "jbuilder" "build" "@doc" ]
 build-test: [ "jbuilder" "runtest" ]
 depends: [
   "jbuilder" {build}
