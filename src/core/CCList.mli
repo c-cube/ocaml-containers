@@ -249,6 +249,10 @@ val head_opt : 'a t -> 'a option
 (** First element.
     @since 0.20 *)
 
+val tail_opt : 'a t -> 'a t option
+(** Return the given list without its first element.
+    @since NEXT_RELEASE *)
+    
 val last_opt : 'a t -> 'a option
 (** Last element.
     @since 0.20 *)
