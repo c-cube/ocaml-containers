@@ -118,6 +118,10 @@ module type S = sig
   (** Same as {!take}, but can fail.
       @raise Empty if the heap is empty *)
 
+  val delete_all : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete value if it exist in the heap.
+      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them *)
+
   val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements *)
 
@@ -242,6 +246,16 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let take_exn = function
     | E -> raise Empty
     | N (_, x, l, r) -> merge l r, x
+
+  let rec delete_all eq x = function
+    | E -> E
+    | N (_, y, l, r) as h ->
+      if eq x y then merge (delete_all eq x l) (delete_all eq x r)
+      else begin
+        if E.leq y x
+        then _make_node y (delete_all eq x l) (delete_all eq x r)
+        else h
+      end
 
   let rec iter f h = match h with
     | E -> ()

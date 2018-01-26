@@ -55,6 +55,10 @@ module type S = sig
   (** Same as {!take}, but can fail.
       @raise Empty if the heap is empty *)
 
+  val delete_all : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete value if it exist in the heap.
+      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them *)
+
   val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements *)
 
