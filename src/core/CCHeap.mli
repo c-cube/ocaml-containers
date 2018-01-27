@@ -57,7 +57,8 @@ module type S = sig
 
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
   (** Delete value if it exist in the heap.
-      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them *)
+      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them
+      @since NEXT_RELEASE *)
 
   val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements *)
