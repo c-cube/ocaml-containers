@@ -118,9 +118,9 @@ module type S = sig
   (** Same as {!take}, but can fail.
       @raise Empty if the heap is empty *)
 
-  val delete_once : (elt -> elt -> bool) -> elt -> t -> t
+  val delete_one : (elt -> elt -> bool) -> elt -> t -> t
   (** Delete one occurence of a value if it exist in the heap.
-      [delete_once eq x h], use [eq] to find one [x] in [h] and delete it.
+      [delete_one eq x h], use [eq] to find one [x] in [h] and delete it.
       If [h] do not contain [x] then it return [h]. *)
 
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
@@ -255,7 +255,7 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     | E -> raise Empty
     | N (_, x, l, r) -> merge l r, x
 
-  let delete_once eq x h =
+  let delete_one eq x h =
     let rec aux = function
       | E -> false, E
       | N(_, y, l, r) as h -> begin
