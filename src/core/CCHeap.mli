@@ -55,6 +55,20 @@ module type S = sig
   (** Same as {!take}, but can fail.
       @raise Empty if the heap is empty *)
 
+  val delete_one : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete one occurence of a value if it exist in the heap.
+      [delete_one eq x h], use [eq] to find one [x] in [h] and delete it.
+      If [h] do not contain [x] then it return [h].
+      @since NEXT_RELEASE *)
+
+  val delete_all : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete all occurrences of a value in the heap.
+      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them.
+      If [h] do not contain [x] then it return [h].
+      The difference with {!filter} is that [delete_all] stops as soon as
+      it enters a subtree whose root is bigger than the element
+      @since NEXT_RELEASE *)
+
   val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements *)
 

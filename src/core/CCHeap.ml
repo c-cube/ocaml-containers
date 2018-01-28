@@ -118,6 +118,18 @@ module type S = sig
   (** Same as {!take}, but can fail.
       @raise Empty if the heap is empty *)
 
+  val delete_one : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete one occurence of a value if it exist in the heap.
+      [delete_one eq x h], use [eq] to find one [x] in [h] and delete it.
+      If [h] do not contain [x] then it return [h]. *)
+
+  val delete_all : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete all occurrences of a value in the heap.
+      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them.
+      If [h] do not contain [x] then it return [h].
+      The difference with {!filter} is that [delete_all] stops as soon as
+      it enters a subtree whose root is bigger than the element *)
+
   val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements *)
 
@@ -242,6 +254,36 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let take_exn = function
     | E -> raise Empty
     | N (_, x, l, r) -> merge l r, x
+
+  let delete_one eq x h =
+    let rec aux = function
+      | E -> false, E
+      | N(_, y, l, r) as h -> begin
+        if eq x y then true, merge l r
+        else begin
+          if E.leq y x
+          then begin
+            let found_left, l1 = aux l in
+            let found, r1 = if found_left then true, r else aux r in
+            if found
+            then true, _make_node y l1 r1
+            else false, h
+          end
+          else false, h
+        end
+      end
+    in
+    snd (aux h)
+
+  let rec delete_all eq x = function
+    | E -> E
+    | N (_, y, l, r) as h ->
+      if eq x y then merge (delete_all eq x l) (delete_all eq x r)
+      else begin
+        if E.leq y x
+        then _make_node y (delete_all eq x l) (delete_all eq x r)
+        else h
+      end
 
   let rec iter f h = match h with
     | E -> ()
