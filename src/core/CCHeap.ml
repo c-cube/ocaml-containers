@@ -258,20 +258,19 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let delete_one eq x h =
     let rec aux = function
       | E -> false, E
-      | N(_, y, l, r) as h -> begin
+      | N(_, y, l, r) as h ->
         if eq x y then true, merge l r
-        else begin
+        else (
           if E.leq y x
-          then begin
+          then (
             let found_left, l1 = aux l in
             let found, r1 = if found_left then true, r else aux r in
             if found
             then true, _make_node y l1 r1
             else false, h
-          end
+          )
           else false, h
-        end
-      end
+        )
     in
     snd (aux h)
 
@@ -279,11 +278,11 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     | E -> E
     | N (_, y, l, r) as h ->
       if eq x y then merge (delete_all eq x l) (delete_all eq x r)
-      else begin
+      else (
         if E.leq y x
         then _make_node y (delete_all eq x l) (delete_all eq x r)
         else h
-      end
+      )
 
   let rec iter f h = match h with
     | E -> ()
