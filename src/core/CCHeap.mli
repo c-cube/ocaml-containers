@@ -55,6 +55,12 @@ module type S = sig
   (** Same as {!take}, but can fail.
       @raise Empty if the heap is empty *)
 
+  val delete_once : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete one occurence of a value if it exist in the heap.
+      [delete_once eq x h], use [eq] to find one [x] in [h] and delete it.
+      If [h] do not contain [x] then it return [h].
+      @since NEXT_RELEASE *)
+
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
   (** Delete all occurrences of a value in the heap.
       [delete_all eq x h], use [eq] to find all [x] in [h] and delete them.
