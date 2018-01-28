@@ -858,7 +858,13 @@ let head_opt = function
 let tail_opt = function
   | [] -> None
   | _ :: tail -> Some tail
-
+                   
+(*$= & ~printer:Q.Print.(option (list int))
+  (Some [2;3]) (tail_opt [1;2;3])
+  (Some []) (tail_opt [1])
+  None (tail_opt [])
+*)
+                   
 let rec last_opt = function
   | [] -> None
   | [x] -> Some x
@@ -868,9 +874,6 @@ let rec last_opt = function
   (Some 1) (head_opt [1;2;3])
   (Some 1) (head_opt [1])
   None (head_opt [])
-  (Some [2;3]) (tail_opt [1;2;3])
-  (Some []) (tail_opt [1])
-  None (tail_opt [])
   (Some 3) (last_opt [1;2;3])
   (Some 1) (last_opt [1])
   None (last_opt [])
