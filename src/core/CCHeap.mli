@@ -124,8 +124,9 @@ module type S = sig
 
   val to_tree : t -> elt ktree
 
-  val print : ?sep:string -> elt printer -> t printer
-  (** @since 0.16 *)
+  val pp : ?sep:string -> elt printer -> t printer
+  (** @since 0.16
+      Renamed from {!print} @since NEXT_RELEASE *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t

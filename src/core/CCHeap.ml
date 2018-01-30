@@ -186,8 +186,9 @@ module type S = sig
 
   val to_tree : t -> elt ktree
 
-  val print : ?sep:string -> elt printer -> t printer
-  (** @since 0.16 *)
+  val pp : ?sep:string -> elt printer -> t printer
+  (** @since 0.16
+      Renamed from {!print} @since NEXT_RELEASE *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
@@ -387,7 +388,7 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     | E -> `Nil
     | N (_, x, l, r) -> `Node(x, [to_tree l; to_tree r])
 
-  let print ?(sep=",") pp_elt out h =
+  let pp ?(sep=",") pp_elt out h =
     let first=ref true in
     iter
       (fun x ->
