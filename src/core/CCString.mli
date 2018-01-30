@@ -382,7 +382,7 @@ val filter_map : (char -> char option) -> string -> string
 *)
 
 val filter : (char -> bool) -> string -> string
-(** [filter f s] discards characters not satisfying [f]. *)
+(** [filter f s] discards characters not satisfying [f].
     @since 0.17 *)
 
 (*$= & ~printer:Q.Print.string
