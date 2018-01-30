@@ -2,7 +2,7 @@
 
 (** {1 Int64}
 
-    Helpers for in64.
+    Helpers for 64-bit integers.
 
     @since 0.13 *)
 
@@ -33,10 +33,10 @@ val abs : t -> t
 (** Return the absolute value of its argument. *)
 
 val max_int : t
-(** The greatest representable 64-bit integer, 2{^63} - 1. *)
+(** The greatest representable 64-bit integer, 2{^63} - 1 = [9_223_372_036_854_775_807]. *)
 
 val min_int : t
-(** The smallest representable 64-bit integer, -2{^63}. *)
+(** The smallest representable 64-bit integer, -2{^63} = [-9_223_372_036_854_775_808]. *)
 
 val (land) : t -> t -> t
 (** Bitwise logical and. *)
@@ -51,7 +51,7 @@ val lnot : t -> t
 (** Bitwise logical negation. *)
 
 val (lsl) : t -> int -> t
-(** [ x lsl y] shifts [x] to the left by [y] bits.
+(** [ x lsl y] shifts [x] to the left by [y] bits, filling in with zeroes.
     The result is unspecified if [y < 0] or [y >= 64]. *)
 
 val (lsr) : t -> int -> t
@@ -67,8 +67,8 @@ val (asr) : t -> int -> t
     The result is unspecified if [y < 0] or [y >= 64]. *)
 
 val equal : t -> t -> bool
-(** The equal function for int64s.
-    Same as {!Pervasives.(=) x y)}. *)
+(** The equal function for 64-bit integers.
+    Like {!Pervasives.(=) x y)}. *)
 
 val compare : t -> t -> int
 (** The comparison function for 64-bit integers, with the same specification as
@@ -77,7 +77,7 @@ val compare : t -> t -> int
     {!Set.Make} and {!Map.Make}. *)
 
 val hash : t -> int
-(** Same as {!Pervasives.abs (to_int x)}. *)
+(** Like {!Pervasives.abs (to_int x)}. *)
 
 (** {2 Conversion} *)
 

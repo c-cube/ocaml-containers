@@ -9,10 +9,10 @@ type 'a t = 'a -> 'a -> bool
 (** Equality function. Must be transitive, symmetric, and reflexive. *)
 
 val poly : 'a t
-(** Standard polymorphic equality *)
+(** Standard polymorphic equality. *)
 
 val physical : 'a t
-(** Standard physical equality
+(** Standard physical equality.
     @since 2.0 *)
 
 val int : int t
@@ -37,8 +37,9 @@ val map : ('a -> 'b) -> 'b t -> 'a t
       first component. *)
 
 val (>|=) : 'b t -> ('a -> 'b) -> 'a t
-(** Infix equivalent of {!map} *)
+(** Infix equivalent of {!map}. *)
 
 module Infix : sig
   val (>|=) : 'b t -> ('a -> 'b) -> 'a t
+  (** Infix equivalent of {!map}. *)
 end

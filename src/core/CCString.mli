@@ -16,6 +16,7 @@ module type S = sig
   type t
 
   val length : t -> int
+  (** Return the length (number of characters) of the given string. *)
 
   val blit : t -> int -> Bytes.t -> int -> int -> unit
   (** Similar to {!String.blit}.
@@ -37,12 +38,19 @@ module type S = sig
   (** {2 Conversions} *)
 
   val to_gen : t -> char gen
+  (** Return the [gen] of characters contained in the string *)
+
   val to_seq : t -> char sequence
+  (** Return the [sequence] of characters contained in the string *)
+
   val to_klist : t -> char klist
+  (** Return the [klist] of characters contained in the string *)
+
   val to_list : t -> char list
+  (** Return the list of characters contained in the string. *)
 
   val pp_buf : Buffer.t -> t -> unit
-  (** Renamed from [pp]. 
+  (** Renamed from [pp].
       @since 2.0 *)
 
   val pp : Format.formatter -> t -> unit
@@ -56,11 +64,13 @@ end
 include module type of String
 
 val equal : string -> string -> bool
+(** Equality function on strings. *)
 
 val compare : string -> string -> int
 
 val is_empty : string -> bool
-(** @since 1.5 *)
+(** [is_empty s] returns [true] iff [s] is empty (i.e. its length is 0).
+    @since 1.5 *)
 
 val hash : string -> int
 
@@ -105,14 +115,23 @@ val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
 *)
 
 val of_char : char -> string
-(** [of_char 'a' = "a"].
+(** [of_char 'a'] is ["a"].
     @since 0.19 *)
 
 val of_gen : char gen -> string
+(** Convert a [gen] of characters to a string. *)
+
 val of_seq : char sequence -> string
+(** Convert a [sequence] of characters to a string. *)
+
 val of_klist : char klist -> string
+(** Convert a [klist] of characters to a string. *)
+
 val of_list : char list -> string
+(** Convert a list of characters to a string. *)
+
 val of_array : char array -> string
+(** Convert an array of characters to a string. *)
 
 (*$T
   of_list ['a'; 'b'; 'c'] = "abc"
@@ -120,6 +139,7 @@ val of_array : char array -> string
 *)
 
 val to_array : string -> char array
+(** Return the array of characters contained in the string. *)
 
 val find : ?start:int -> sub:string -> string -> int
 (** Find [sub] in string, returns its first index or [-1]. *)
@@ -144,7 +164,7 @@ val find_all : ?start:int -> sub:string -> string -> int gen
     @since 0.17 *)
 
 val find_all_l : ?start:int -> sub:string -> string -> int list
-(** [find_all ~sub s] finds all occurrences of [sub] in [s] and returns
+(** [find_all_l ~sub s] finds all occurrences of [sub] in [s] and returns
     them in a list.
     @param start starting position in [s].
     @since 0.17 *)
@@ -351,7 +371,10 @@ val mapi : (int -> char -> char) -> string -> string
     @since 0.12 *)
 
 val filter_map : (char -> char option) -> string -> string
-(** @since 0.17 *)
+(** [filter_map f s] calls [(f a0) (f a1) ... (f an)] where [a0 ... an] are the characters of s.
+    It returns the string of characters [ci] such as [f ai = Some ci] (when [f] returns [None],
+    the corresponding element of [s] is discarded).
+    @since 0.17 *)
 
 (*$= & ~printer:Q.Print.string
   "bcef" (filter_map \
@@ -359,7 +382,8 @@ val filter_map : (char -> char option) -> string -> string
 *)
 
 val filter : (char -> bool) -> string -> string
-(** @since 0.17 *)
+(** [filter f s] discards characters not satisfying [f]. *)
+    @since 0.17 *)
 
 (*$= & ~printer:Q.Print.string
   "abde" (filter (function 'c' -> false | _ -> true) "abcdec")

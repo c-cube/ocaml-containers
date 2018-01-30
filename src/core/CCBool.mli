@@ -6,13 +6,13 @@
 type t = bool
 
 val compare : t -> t -> int
-(** Total ordering on booleans, similar to {!Pervasives.compare} *)
+(** Total ordering on booleans, similar to {!Pervasives.compare}. *)
 
 val equal : t -> t -> bool
 
 val negate : t -> t
-(** Negation on booleans (functional version of [not])
-    @deprecated since 1.3, simply use {!not} instead *)
+(** Negation on booleans (functional version of [not]).
+    @deprecated since 1.3, simply use {!not} instead. *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 

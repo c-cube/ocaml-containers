@@ -20,7 +20,7 @@ type 'a printer = t -> 'a -> unit
 val silent : 'a printer (** Prints nothing *)
 
 val unit : unit printer
-(** Prints "()" *)
+(** Prints "()". *)
 
 val int : int printer
 val string : string printer
@@ -29,7 +29,7 @@ val float3 : float printer (* 3 digits after . *)
 val float : float printer
 
 val newline : unit printer
-(** Force newline (see {!Format.pp_force_newline})
+(** Force newline (see {!Format.pp_force_newline}).
     @since 1.2 *)
 
 val substring : (string * int * int) printer
@@ -65,10 +65,10 @@ val seq : ?sep:unit printer -> 'a printer -> 'a sequence printer
 
 val opt : 'a printer -> 'a option printer
 (** [opt pp] prints options as follows:
-    [Some x] will become "some foo" if [pp x ---> "foo"]
-    [None] will become "none" *)
+    [Some x] will become "some foo" if [pp x ---> "foo"].
+    [None] will become "none". *)
 
-(** In the tuple printers, the [sep] argument is only available
+(** In the tuple printers, the [sep] argument is only available.
     @since 0.17 *)
 
 val pair : ?sep:unit printer -> 'a printer -> 'b printer -> ('a * 'b) printer
@@ -84,48 +84,48 @@ val within : string -> string -> 'a printer -> 'a printer
 val map : ('a -> 'b) -> 'b printer -> 'a printer
 
 val vbox : ?i:int -> 'a printer -> 'a printer
-(** Wrap the printer in a vertical box
-    @param i level of indentation within the box (default 0)
+(** Wrap the printer in a vertical box.
+    @param i level of indentation within the box (default 0).
     @since 0.16 *)
 
 val hvbox : ?i:int -> 'a printer -> 'a printer
-(** Wrap the printer in a horizontal/vertical box
-    @param i level of indentation within the box (default 0)
+(** Wrap the printer in a horizontal/vertical box.
+    @param i level of indentation within the box (default 0).
     @since 0.16 *)
 
 val hovbox : ?i:int -> 'a printer -> 'a printer
-(** Wrap the printer in a horizontal or vertical box
-    @param i level of indentation within the box (default 0)
+(** Wrap the printer in a horizontal or vertical box.
+    @param i level of indentation within the box (default 0).
     @since 0.16 *)
 
 val hbox : 'a printer -> 'a printer
-(** Wrap the printer in an horizontal box
+(** Wrap the printer in an horizontal box.
     @since 0.16 *)
 
 val return : ('a, _, _, 'a) format4 -> unit printer
 (** [return "some_format_string"] takes a argument-less format string
     and returns a printer actionable by [()].
     Examples:
-    - [return ",@ "]
-    - [return "@{<Red>and then@}@,"]
-    - [return "@[<v>a@ b@]"]
+    - [return ",@ "].
+    - [return "@{<Red>and then@}@,"].
+    - [return "@[<v>a@ b@]"].
 
     @since 1.0
 *)
 
 val of_to_string : ('a -> string) -> 'a printer
 (** [of_to_string f] converts its input to a string using [f],
-    then prints the string
+    then prints the string.
     @since 1.0 *)
 
 val const : 'a printer -> 'a -> unit printer
-(** [const pp x] is a unit printer that uses [pp] on [x]
+(** [const pp x] is a unit printer that uses [pp] on [x].
     @since 1.0 *)
 
 val some : 'a printer -> 'a option printer
 (** [some pp] will print options as follows:
-    - [Some x] is printed using [pp] on [x]
-    - [None] is not printed at all
+    - [Some x] is printed using [pp] on [x].
+    - [None] is not printed at all.
     @since 1.0
 *)
 
@@ -171,7 +171,7 @@ val some : 'a printer -> 'a option printer
     @since 0.15 *)
 
 val set_color_tag_handling : t -> unit
-(** adds functions to support color tags to the given formatter.
+(** Add functions to support color tags to the given formatter.
     @since 0.15 *)
 
 val set_color_default : bool -> unit
@@ -187,13 +187,13 @@ val with_color : string -> 'a printer -> 'a printer
 
 val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
 (** [with_colorf "Blue" out "%s %d" "yolo" 42] will behave like {!Format.fprintf},
-    but wrapping the content with the given style
+    but wrapping the content with the given style.
     {b status: unstable}
     @since 0.16 *)
 
 val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
 (** [with_color_sf "Blue" out "%s %d" "yolo" 42] will behave like
-    {!sprintf}, but wrapping the content with the given style
+    {!sprintf}, but wrapping the content with the given style.
     Example:
     {[
       CCFormat.with_color_sf "red" "%a" CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
@@ -203,7 +203,7 @@ val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
 
 val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 'a
 (** [with_color_ksf "Blue" ~f "%s %d" "yolo" 42] will behave like
-    {!ksprintf}, but wrapping the content with the given style
+    {!ksprintf}, but wrapping the content with the given style.
     Example:
     the following with raise [Failure] with a colored message
     {[
@@ -217,7 +217,7 @@ val output : t -> 'a printer -> 'a -> unit
 val to_string : 'a printer -> 'a -> string
 
 val of_chan : out_channel -> t
-(** Alias to {!Format.formatter_of_out_channel}
+(** Alias to {!Format.formatter_of_out_channel}.
     @since 1.2 *)
 
 val with_out_chan : out_channel -> (t -> 'a) -> 'a
@@ -238,7 +238,7 @@ val sprintf : ('a, t, unit, string) format4 -> 'a
     with {!fprintf}. Similar to {!Format.asprintf}. *)
 
 val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
-(** Similar to {!sprintf} but never prints colors
+(** Similar to {!sprintf} but never prints colors.
     @since 0.16 *)
 
 val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
@@ -256,11 +256,11 @@ val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
     @since 0.21 *)
 
 val fprintf : t -> ('a, t, unit ) format -> 'a
-(** Alias to {!Format.fprintf}
+(** Alias to {!Format.fprintf}.
     @since 0.14 *)
 
 val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit ) format -> 'a
-(** Similar to {!fprintf} but enable/disable colors depending on [colors]
+(** Similar to {!fprintf} but enable/disable colors depending on [colors].
     @since 0.21 *)
 
 val ksprintf :
@@ -277,7 +277,7 @@ val ksprintf :
 *)
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
-(** Print to the given file *)
+(** Print to the given file. *)
 
 (** {2 Dump}
 
@@ -316,5 +316,5 @@ module Dump : sig
   val result : 'a t -> ('a, string) Result.result t
   val result' : 'a t -> 'e t -> ('a, 'e) Result.result t
   val to_string : 'a t -> 'a -> string
-  (** Alias to {!CCFormat.to_string} *)
+  (** Alias to {!CCFormat.to_string}. *)
 end

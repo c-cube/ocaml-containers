@@ -18,8 +18,12 @@ include module type of Array
 type 'a t = 'a array
 
 val empty : 'a t
+(** The empty array, physically equal to [||]. *)
 
 val equal : 'a equal -> 'a t equal
+(** Hoist an equality test for elements to arrays.
+    Arrays are only equal if their lengths are the same and
+    corresponding elements test equal. *)
 
 val compare : 'a ord -> 'a t ord
 
@@ -70,7 +74,7 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a t -> 'acc * 'b t
 
 val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc t
 (** [scan_left f acc a] returns the array
-    [ [|acc; f acc x0; f (f acc a.(0)) a.(1); …|] ].
+    [ [|acc; f acc x0; f (f acc a.(0)) a.(1); ...|] ].
     @since 1.2 *)
 
 val iter : ('a -> unit) -> 'a t -> unit
@@ -79,9 +83,8 @@ val iter : ('a -> unit) -> 'a t -> unit
     [f a.(0); f a.(1); ...; f a.(length a - 1); ()]. *)
 
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
-(** Same as {!Array.iter}, but the
-    function is applied with the index of the element as first argument,
-    and the element itself as second argument. *)
+(** Like {!Array.iter}, but the function is applied to the index of the
+    element as first argument, and the element itself as second argument. *)
 
 val blit : 'a t -> int -> 'a t -> int -> int -> unit
 (** [blit v1 o1 v2 o2 len] copies [len] elements
@@ -153,23 +156,23 @@ val lookup : cmp:'a ord -> 'a -> 'a t -> int option
       [Some i] ([i] the index of the key) otherwise. *)
 
 val lookup_exn : cmp:'a ord -> 'a -> 'a t -> int
-(** Same as {!lookup}, but
+(** Like {!lookup}, but
     @raise Not_found if the key is not present. *)
 
 val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
-    the result is not specified (may raise Invalid_argument).
+    the result is not specified (may @raise Invalid_argument).
 
     Complexity: [O(log n)] where n is the length of the array
     (dichotomic search).
 
     @return
-    - [`At i] if [cmp arr.(i) x = 0] (for some i)
-    - [`All_lower] if all elements of [arr] are lower than [x]
-    - [`All_bigger] if all elements of [arr] are bigger than [x]
-    - [`Just_after i] if [arr.(i) < x < arr.(i+1)]
+    - [`At i] if [cmp arr.(i) x = 0] (for some i).
+    - [`All_lower] if all elements of [arr] are lower than [x].
+    - [`All_bigger] if all elements of [arr] are bigger than [x].
+    - [`Just_after i] if [arr.(i) < x < arr.(i+1)].
     - [`Empty] if the array is empty.
 
     @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp].
@@ -182,8 +185,8 @@ val for_all : ('a -> bool) -> 'a t -> bool
 
 val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (** Forall on pairs of arrays.
-    @raise Invalid_argument if they have distinct lengths
-    allow different types.
+    @raise Invalid_argument if they have distinct lengths.
+    Allow different types.
     @since 0.20 *)
 
 val exists : ('a -> bool) -> 'a t -> bool
@@ -193,8 +196,8 @@ val exists : ('a -> bool) -> 'a t -> bool
 
 val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (** Exists on pairs of arrays.
-    @raise Invalid_argument if they have distinct lengths
-    allow different types.
+    @raise Invalid_argument if they have distinct lengths.
+    Allow different types.
     @since 0.20 *)
 
 val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
@@ -211,15 +214,20 @@ val shuffle : 'a t -> unit
 (** Shuffle randomly the array, in place. *)
 
 val shuffle_with : Random.State.t -> 'a t -> unit
-(** Like shuffle but using a specialized random state. *)
+(** Like {!shuffle} but using a specialized random state. *)
 
 val random_choose : 'a t -> 'a random_gen
 (** Choose an element randomly.
     @raise Not_found if the array/slice is empty. *)
 
 val to_seq : 'a t -> 'a sequence
+(** Return a [sequence] of the elements of an array. *)
+
 val to_gen : 'a t -> 'a gen
+(** Return a [gen] of the elements of an array. *)
+
 val to_klist : 'a t -> 'a klist
+(** Return a [klist] of the elements of an array. *)
 
 (** {2 IO} *)
 
@@ -270,7 +278,7 @@ val except_idx : 'a t -> int -> 'a list
 (** Remove given index, obtaining the list of the other elements. *)
 
 val (--) : int -> int -> int t
-(** Range array. *)
+(** Range array. Bounds included. *)
 
 val (--^) : int -> int -> int t
 (** Range array, excluding right bound.
