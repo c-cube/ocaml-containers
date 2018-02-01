@@ -20,7 +20,8 @@ let do_not_test file =
   str_sub ~sub:"Label" file ||
   is_suffix ~sub:"containers.ml" file ||
   is_suffix ~sub:"containers_top.ml" file ||
-  is_suffix ~sub:"mkflags.ml" file
+  is_suffix ~sub:"mkflags.ml" file ||
+  is_suffix ~sub:"utop.ml" file
 
 let prefix = "src"
 let dirs = List.map (fun s-> Filename.concat prefix s)
