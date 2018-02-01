@@ -9,7 +9,7 @@
    (deps (make.bc))
    ;(libraries (qtest qcheck))
    (action
-     (run ${exe:make.bc} -target ${@}))
+     (run ./make.bc -target ${@}))
   ))
 
 (executable
