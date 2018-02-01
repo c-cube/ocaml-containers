@@ -74,7 +74,8 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a t -> 'acc * 'b t
 
 val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc t
 (** [scan_left f acc a] returns the array
-    [ [|acc; f acc x0; f (f acc a.(0)) a.(1); ...|] ].
+    [ [|acc; f acc x0; f (f acc a.(0)) a.(1); …|] ].
+
     @since 1.2 *)
 
 val iter : ('a -> unit) -> 'a t -> unit

@@ -106,9 +106,9 @@ val return : ('a, _, _, 'a) format4 -> unit printer
 (** [return "some_format_string"] takes a argument-less format string
     and returns a printer actionable by [()].
     Examples:
-    - [return ",@ "].
-    - [return "@{<Red>and then@}@,"].
-    - [return "@[<v>a@ b@]"].
+    - [return ",@ "]
+    - [return "@{<Red>and then@}@,"]
+    - [return "@[<v>a@ b@]"]
 
     @since 1.0
 *)
