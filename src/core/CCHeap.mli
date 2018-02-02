@@ -12,7 +12,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 module type PARTIAL_ORD = sig
   type t
   val leq : t -> t -> bool
-  (** [leq x y] shall return [true] iff [x] is lower or equal to [y] *)
+  (** [leq x y] shall return [true] iff [x] is lower or equal to [y]. *)
 end
 
 module type S = sig
@@ -20,7 +20,7 @@ module type S = sig
   type t
 
   val empty : t
-  (** Empty heap *)
+  (** Empty heap. *)
 
   val is_empty : t -> bool
   (** Is the heap empty? *)
@@ -28,53 +28,67 @@ module type S = sig
   exception Empty
 
   val merge : t -> t -> t
-  (** Merge two heaps *)
+  (** Merge two heaps. *)
 
   val insert : elt -> t -> t
-  (** Insert a value in the heap *)
+  (** Insert a value in the heap. *)
 
   val add : t -> elt -> t
-  (** Synonym to {!insert} *)
+  (** Synonym to {!insert}. *)
 
   val filter :  (elt -> bool) -> t -> t
   (** Filter values, only retaining the ones that satisfy the predicate.
       Linear time at least. *)
 
   val find_min : t -> elt option
-  (** Find minimal element *)
+  (** Find minimal element. *)
 
   val find_min_exn : t -> elt
-  (** Same as {!find_min} but can fail
-      @raise Empty if the heap is empty *)
+  (** Like {!find_min} but can fail.
+      @raise Empty if the heap is empty. *)
 
   val take : t -> (t * elt) option
   (** Extract and return the minimum element, and the new heap (without
-      this element), or [None] if the heap is empty *)
+      this element), or [None] if the heap is empty. *)
 
   val take_exn : t -> t * elt
-  (** Same as {!take}, but can fail.
-      @raise Empty if the heap is empty *)
+  (** Like {!take}, but can fail.
+      @raise Empty if the heap is empty. *)
+
+  val delete_one : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete one occurrence of a value if it exist in the heap.
+      [delete_one eq x h], use [eq] to find one [x] in [h] and delete it.
+      If [h] do not contain [x] then it return [h].
+      @since 2.0 *)
+
+  val delete_all : (elt -> elt -> bool) -> elt -> t -> t
+  (** Delete all occurrences of a value in the heap.
+      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them.
+      If [h] do not contain [x] then it return [h].
+      The difference with {!filter} is that [delete_all] stops as soon as
+      it enters a subtree whose root is bigger than the element.
+      @since 2.0 *)
 
   val iter : (elt -> unit) -> t -> unit
-  (** Iterate on elements *)
+  (** Iterate on elements. *)
 
   val fold : ('a -> elt -> 'a) -> 'a -> t -> 'a
-  (** Fold on all values *)
+  (** Fold on all values. *)
 
   val size : t -> int
-  (** Number of elements (linear complexity) *)
+  (** Number of elements (linear complexity). *)
 
   (** {2 Conversions}
 
       The interface of [of_gen], [of_seq], [of_klist]
       has changed @since 0.16 (the old signatures
-      are now [add_seq], [add_gen], [add_klist]) *)
+      are now [add_seq], [add_gen], [add_klist]). *)
 
   val to_list : t -> elt list
   (** Return the elements of the heap, in no particular order. *)
 
   val to_list_sorted : t -> elt list
-  (** Return the elements in increasing order
+  (** Return the elements in increasing order.
       @since 1.1 *)
 
   val add_list : t -> elt list -> t
@@ -83,35 +97,43 @@ module type S = sig
       @since 0.16 *)
 
   val of_list : elt list -> t
-  (** [of_list l = add_list empty l] *)
+  (** [of_list l] is [add_list empty l]. *)
 
   val add_seq : t -> elt sequence -> t (** @since 0.16 *)
-  (** Similar to {!add_list} *)
+  (** Similar to {!add_list}. *)
 
   val of_seq : elt sequence -> t
+  (** Build a heap from a given [sequence]. *)
 
   val to_seq : t -> elt sequence
+  (** Return a [sequence] of the elements of the heap. *)
 
   val to_seq_sorted : t -> elt sequence
-  (** Iterate on the elements, in increasing order
+  (** Iterate on the elements, in increasing order.
       @since 1.1 *)
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
   val of_klist : elt klist -> t
+  (** Build a heap from a given [klist]. *)
 
   val to_klist : t -> elt klist
+  (** Return a [klist] of the elements of the heap. *)
 
   val add_gen : t -> elt gen -> t (** @since 0.16 *)
 
   val of_gen : elt gen -> t
+  (** Build a heap from a given [gen]. *)
 
   val to_gen : t -> elt gen
+  (** Return a [gen] of the elements of the heap. *)
 
   val to_tree : t -> elt ktree
+  (** Return a [ktree] of the elements of the heap. *)
 
-  val print : ?sep:string -> elt printer -> t printer
-  (** @since 0.16 *)
+  val pp : ?sep:string -> elt printer -> t printer
+  (** @since 0.16
+      Renamed from {!print} @since 2.0 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t

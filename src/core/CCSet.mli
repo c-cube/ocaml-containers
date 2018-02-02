@@ -47,11 +47,13 @@ module type S = sig
       @since 1.5 *)
 
   val of_seq : elt sequence -> t
+  (** Build a set from the given [sequence] of elements. *)
 
   val add_seq : t -> elt sequence -> t
   (** @since 0.14 *)
 
   val to_seq : t -> elt sequence
+  (** [to_seq t] converts the set [t] to a [sequence] of the elements. *)
 
   val of_list : elt list -> t
   (** Build a set from the given list of elements,
@@ -61,10 +63,13 @@ module type S = sig
   (** @since 0.14 *)
 
   val to_list : t -> elt list
+  (** [to_list t] converts the set [t] to a list of the elements. *)
 
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
+    (** Print the set *)
+
 end
 
 module Make(O : Set.OrderedType) : S

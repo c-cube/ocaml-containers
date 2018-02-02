@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Basic Float functions}
+(** {1 Basic operations on floating-point numbers}
     @since 0.6.1 *)
 
 type t = float
@@ -13,25 +13,39 @@ type fpclass = Pervasives.fpclass =
   | FP_nan
 
 val nan : t
+(** Equal to {!Pervasives.nan}. *)
 
 val max_value : t
+(** Positive infinity. Equal to {!Pervasives.infinity}. *)
+
 val min_value : t
+(** Negative infinity. Equal to {!Pervasives.neg_infinity}. *)
 
 val max_finite_value : t
+(** Equal to {!Pervasives.max_float}. *)
 
 val epsilon : t
+(** The smallest positive float x such that [1.0 +. x <> 1.0].
+    Equal to {!Pervasives.epsilon_float}. *)
 
 val is_nan : t -> bool
+(** [is_nan f] returns [true] if f is NaN, [false] otherwise. *)
 
 val add : t -> t -> t
+(** Equal to [(+.)]. *)
 
 val sub : t -> t -> t
+(** Equal to [(-.)]. *)
 
 val neg : t -> t
+(** Equal to [(~-.)]. *)
 
 val abs : t -> t
+(** The absolute value of a floating-point number.
+    Equal to {!Pervasives.abs_float}. *)
 
 val scale : t -> t -> t
+(** Equal to [( *. )]. *)
 
 val min : t -> t -> t
 
@@ -57,13 +71,14 @@ val fsign : t -> t
     @since 0.7 *)
 
 val round : t -> t
-(** [round f] returns the closest integer value, either above or below
+(** [round f] returns the closest integer value, either above or below.
     @since 0.20 *)
 
 exception TrapNaN of string
+
 val sign_exn : t -> int
 (** [sign_exn x] will return the sign of [x] as [1, 0] or [-1], or raise an
-    exception [TrapNaN] if [x] is a NaN.
+    exception [TrapNaN] if [x] is NaN.
     Note that infinities have defined signs in OCaml.
     @since 0.7 *)
 
@@ -72,28 +87,31 @@ val to_int : t -> int
     Unspecified if outside of the range of integers. *)
 
 val of_int : int -> t
-(** Alias to {!float_of_int} *)
+(** Alias to {!float_of_int}. *)
 
 val to_string : t -> string
 
 val of_string_exn : string -> t
-(** Alias to {!float_of_string}
-    @raise Failure in case of failure
+(** Alias to {!float_of_string}.
+    @raise Failure in case of failure.
     @since 1.2 *)
 
 val of_string : string -> t
 (** Alias to {!float_of_string}.
-    @deprecated since 1.2, use {!of_string_exn} instead
-    @raise Failure in case of failure *)
+    @deprecated since 1.2, use {!of_string_exn} instead.
+    @raise Failure in case of failure. *)
 
 val equal_precision : epsilon:t -> t -> t -> bool
-(** Equality with allowed error up to a non negative epsilon value *)
+(** Equality with allowed error up to a non negative epsilon value. *)
 
 val classify : t -> fpclass
+(** Return the class of the given floating-point number:
+    normal, subnormal, zero, infinite or nan (not a number). *)
 
 (** {2 Infix Operators}
 
     @since 0.17 *)
+
 module Infix : sig
   val (=) : t -> t -> bool
   (** @since 0.17 *)

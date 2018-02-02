@@ -513,19 +513,6 @@ module Tbl = struct
     let module U = MUT_OF_IMMUT(T) in
     (module U : MUT with type key = a)
 
-  let flat_hashtbl =
-    let module T = CCFlatHashtbl.Make(CCInt) in
-    let module U = struct
-      type key = int
-      type 'a t = 'a T.t
-      let name = "ccflat_hashtbl"
-      let create = T.create
-      let find = T.find_exn
-      let add = T.add
-      let replace = T.add
-    end in
-    (module U : INT_MUT)
-
   let trie : (module MUT with type key = string) =
     let module T = struct
       let name = "trie(string)"
@@ -584,7 +571,6 @@ module Tbl = struct
     (* ; poly_hashtbl *)
     ; map Int
     ; wbt Int
-    ; flat_hashtbl
     ; hashtrie Int
     ; hashtrie_mut Int
       (* ; hamt Int *)

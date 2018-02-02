@@ -4,7 +4,7 @@ all: build test
 build:
 	jbuilder build @install
 
-test:
+test: build
 	jbuilder runtest --no-buffer
 
 clean:
@@ -16,7 +16,7 @@ doc:
 BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
 
 benchs:
-	jbuilder build $(addprefix bench/, $(BENCH_TARGETS))
+	jbuilder build $(addprefix benchs/, $(BENCH_TARGETS))
 
 examples:
 	jbuilder build examples/id_sexp.exe
@@ -39,4 +39,4 @@ reindent:
 	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 echo "reindenting: "
 	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 ocp-indent -i
 
-.PHONY: all test clean build doc update_next_tag watch
+.PHONY: all benchs test clean build doc update_next_tag watch

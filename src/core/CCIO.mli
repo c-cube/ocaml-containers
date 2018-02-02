@@ -37,7 +37,7 @@
 *)
 
 type 'a or_error = ('a, string) Result.result
-type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library *)
+type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library. *)
 
 (** {2 Input} *)
 
@@ -46,11 +46,11 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
-    @raise Sys_error in case of error (same as {!open_in} and {!close_in})
-    @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases *)
+    @raise Sys_error in case of error (same as {!open_in} and {!close_in}).
+    @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases. *)
 
 val read_chunks : ?size:int -> in_channel -> string gen
-(** Read the channel's content into chunks of size [size] *)
+(** Read the channel's content into chunks of size [size]. *)
 
 val read_line : in_channel -> string option
 (** Read a line from the channel. Returns [None] if the input is terminated.
@@ -60,39 +60,39 @@ val read_lines : in_channel -> string gen
 (** Read all lines. The generator should be traversed only once. *)
 
 val read_lines_l : in_channel -> string list
-(** Read all lines into a list *)
+(** Read all lines into a list. *)
 
 val read_all : ?size:int -> in_channel -> string
 (** Read the whole channel into a buffer, then converted into a string.
-    @param size the internal buffer size
+    @param size the internal buffer size.
     @since 0.7 *)
 
 val read_all_bytes : ?size:int -> in_channel -> Bytes.t
-(** Read the whole channel into a mutable byte array
-    @param size the internal buffer size
+(** Read the whole channel into a mutable byte array.
+    @param size the internal buffer size.
     @since 0.12 *)
 
 (** {2 Output} *)
 
 val with_out : ?mode:int -> ?flags:open_flag list ->
   string -> (out_channel -> 'a) -> 'a
-(** Same as {!with_in} but for an output channel
+(** Like {!with_in} but for an output channel.
     @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]).
-    @raise Sys_error in case of error (same as {!open_out} and {!close_out})
-    [Open_wronly] is used in any cases *)
+    @raise Sys_error in case of error (same as {!open_out} and {!close_out}).
+    [Open_wronly] is used in any cases. *)
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
   string -> (out_channel -> 'a) -> 'a
 (** Similar to {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
     flags activated, to append to the file.
-    @raise Sys_error in case of error (same as {!open_out} and {!close_out}) *)
+    @raise Sys_error in case of error (same as {!open_out} and {!close_out}). *)
 
 val write_line : out_channel -> string -> unit
-(** Write the given string on the channel, followed by "\n" *)
+(** Write the given string on the channel, followed by "\n". *)
 
 val write_gen : ?sep:string -> out_channel -> string gen -> unit
 (** Write the given strings on the output. If provided, add [sep] between
-    every two strings (but not at the end) *)
+    every two strings (but not at the end). *)
 
 val write_lines : out_channel -> string gen -> unit
 (** Write every string on the output, followed by "\n". *)
@@ -104,8 +104,8 @@ val write_lines_l : out_channel -> string list -> unit
 val with_in_out : ?mode:int -> ?flags:open_flag list ->
   string -> (in_channel -> out_channel -> 'a) -> 'a
 (** Combines {!with_in} and {!with_out}.
-    @param flags opening flags (default [[Open_creat]])
-    @raise Sys_error in case of error
+    @param flags opening flags (default [[Open_creat]]).
+    @raise Sys_error in case of error.
     @since 0.12 *)
 
 (** {2 Misc for Generators} *)
@@ -138,7 +138,7 @@ module File : sig
   val to_string : t -> string
 
   val make : string -> t
-  (** Build a file representation from a path (absolute or relative) *)
+  (** Build a file representation from a path (absolute or relative). *)
 
   val exists : t -> bool
 
@@ -161,36 +161,36 @@ module File : sig
 
   val read_dir : ?recurse:bool -> t -> t gen
   (** [read_dir d] returns a sequence of files and directory contained
-      in the directory [d] (or an empty stream if [d] is not a directory)
-      @raise Sys_error in case of error (e.g. permission denied)
+      in the directory [d] (or an empty stream if [d] is not a directory).
+      @raise Sys_error in case of error (e.g. permission denied).
       @param recurse if true (default [false]), sub-directories are also
-        explored *)
+        explored. *)
 
   val read_exn : t -> string
-  (** Read the content of the given file, or raises some exception
-      @raise Sys_error in case of error
+  (** Read the content of the given file, or raises some exception.
+      @raise Sys_error in case of error.
       @since 0.16 *)
 
   val read : t -> string or_error
-  (** Read the content of the given file
+  (** Read the content of the given file.
       @since 0.16 *)
 
   val append_exn : t -> string -> unit
-  (** Append the given string into the given file, possibly raising
-      @raise Sys_error in case of error
+  (** Append the given string into the given file, possibly raising.
+      @raise Sys_error in case of error.
       @since 0.16 *)
 
   val append : t -> string -> unit or_error
-  (** Append the given string into the given file
+  (** Append the given string into the given file.
       @since 0.16 *)
 
   val write_exn : t -> string -> unit
-  (** Write the given string into the given file, possibly raising
-      @raise Sys_error in case of error
+  (** Write the given string into the given file, possibly raising.
+      @raise Sys_error in case of error.
       @since 0.16 *)
 
   val write : t -> string -> unit or_error
-  (** Write the given string into the given file
+  (** Write the given string into the given file.
       @since 0.16 *)
 
   type walk_item = [`File | `Dir] * t
@@ -200,11 +200,11 @@ module File : sig
       a directory recursively and yields either files or directories.
       Is a file anything that doesn't satisfy {!is_directory} (including
       symlinks, etc.)
-      @raise Sys_error in case of error (e.g. permission denied) during iteration *)
+      @raise Sys_error in case of error (e.g. permission denied) during iteration. *)
 
   val walk_l : t -> walk_item list
-  (** Same as {!walk} but returns a list (therefore it's eager and might
-      take some time on large directories)
+  (** Like {!walk} but returns a list (therefore it's eager and might
+      take some time on large directories).
       @since 1.1 *)
 
   val show_walk_item : walk_item -> string
@@ -216,6 +216,6 @@ module File : sig
         temporary file (located in [temp_dir]).
         After [f] returns, the file is deleted. Best to be used in
         combination with {!with_out}.
-        See {!Filename.temp_file}
+        See {!Filename.temp_file}.
         @since 0.17 *)
 end

@@ -1,15 +1,21 @@
 
+(executable
+  ((name make)
+   (modules (make))
+   ))
+
 (rule
   ((targets (run_qtest.ml))
-   (deps ((file Makefile)))
-   (fallback)
+   (deps (make.bc))
    ;(libraries (qtest qcheck))
    (action
-     (run make qtest-gen))
+     (run ./make.bc -target ${@}))
   ))
 
 (executable
   ((name run_qtest)
+   (modes (native))
+   (modules (run_qtest))
    (libraries (sequence gen qcheck containers containers.unix
                containers.data containers.thread containers.iter
                containers.sexp))

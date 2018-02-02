@@ -7,6 +7,5 @@ _build
 TAGS
 *.docdir
 setup.*
-qtest*
 *.html
 .merlin

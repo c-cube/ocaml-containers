@@ -8,8 +8,8 @@ include Char
 
 let equal (a:char) b = Pervasives.(=) a b
 
-let pp = Buffer.add_char
-let print = Format.pp_print_char
+let pp_buf = Buffer.add_char
+let pp = Format.pp_print_char
 
 let of_int_exn = Char.chr
 let of_int c = try Some (of_int_exn c) with _ -> None

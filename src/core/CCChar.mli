@@ -40,5 +40,8 @@ val to_int : t -> int
     Return the ASCII code of the argument.
     @since 1.0 *)
 
-val pp : Buffer.t -> t -> unit
-val print : Format.formatter -> t -> unit
+val pp_buf : Buffer.t -> t -> unit
+(** Used to be {!pp}, changed name @since 2.0 *)
+
+val pp : Format.formatter -> t -> unit
+(** Used to be {!print}, changed name @since 2.0 *)

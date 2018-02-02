@@ -855,6 +855,16 @@ let head_opt = function
   | [] -> None
   | x::_ -> Some x
 
+let tail_opt = function
+  | [] -> None
+  | _ :: tail -> Some tail
+
+(*$= & ~printer:Q.Print.(option (list int))
+  (Some [2;3]) (tail_opt [1;2;3])
+  (Some []) (tail_opt [1])
+  None (tail_opt [])
+*)
+
 let rec last_opt = function
   | [] -> None
   | [x] -> Some x
@@ -1011,6 +1021,7 @@ let uniq ~eq l =
   in uniq eq [] l
 
 (*$T
+  uniq ~eq:CCInt.equal [1;2;3] |> List.sort Pervasives.compare = [1;2;3]
   uniq ~eq:CCInt.equal [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
 *)
 
@@ -1448,6 +1459,10 @@ let of_seq seq =
   seq (fun x -> l := x :: !l);
   List.rev !l
 
+(*$Q
+  Q.(list int) (fun l -> of_seq (to_seq l) = l)
+*)
+
 let to_gen l =
   let l = ref l in
   fun () ->
@@ -1467,6 +1482,10 @@ let of_gen g =
     | Some x -> safe (x::acc) g
   in
   direct direct_depth_default_ g
+
+(*$Q
+  Q.(list int) (fun l -> of_gen(to_gen l) = l)
+*)
 
 let to_klist l =
   let rec make l () = match l with
