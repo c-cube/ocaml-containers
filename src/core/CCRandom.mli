@@ -17,12 +17,13 @@ val return : 'a -> 'a t
     Example:  [let random_int = return 4 (* fair dice roll *)]. *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** [flat_map f g st] = [f (g st) st]. *)
+(** [flat_map f g st] is [f (g st) st]. *)
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+(** Monadic [bind]. *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-(** [map f g st] = [f (g st)]. *)
+(** [map f g st] is [f (g st)]. *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 
@@ -44,14 +45,15 @@ val choose : 'a t list -> 'a option t
 (** Choose a generator within the list. *)
 
 val choose_exn : 'a t list -> 'a t
-(** Same as {!choose} but without option.
+(** Like {!choose} but without option.
     @raise Invalid_argument if the list is empty. *)
 
 val choose_array : 'a t array -> 'a option t
+(** Choose a generator within the array. *)
 
 val choose_return : 'a list -> 'a t
 (** Choose among the list.
-    @raise Invalid_argument if the list is empty *)
+    @raise Invalid_argument if the list is empty. *)
 
 val replicate : int -> 'a t -> 'a list t
 (** [replicate n g] makes a list of [n] elements which are all generated
@@ -83,14 +85,16 @@ val pick_array : 'a array -> 'a t
     @since 0.16 *)
 
 val small_int : int t
+(** A small int (100). *)
 
 val int : int -> int t
+(** Random int within the given range. *)
 
 val int_range : int -> int -> int t
 (** Inclusive range. *)
 
 val small_float : float t
-(** A reasonably small float.
+(** A reasonably small float (100.0).
     @since 0.6.1 *)
 
 val float : float -> float t

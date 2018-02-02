@@ -22,13 +22,13 @@ type (+'good, +'bad) t = ('good, 'bad) Result.result =
   | Error of 'bad
 
 val return : 'a -> ('a, 'err) t
-(** Successfully return a value *)
+(** Successfully return a value. *)
 
 val fail : 'err -> ('a, 'err) t
-(** Fail with an error *)
+(** Fail with an error. *)
 
 val of_exn : exn -> ('a, string) t
-(** [of_exn e] uses {!Printexc} to print the exception as a string *)
+(** [of_exn e] uses {!Printexc} to print the exception as a string. *)
 
 val of_exn_trace : exn -> ('a, string) t
 (** [of_exn_trace e] is similar to [of_exn e], but it adds the stacktrace
@@ -39,16 +39,16 @@ val of_exn_trace : exn -> ('a, string) t
 
 val fail_printf : ('a, Buffer.t, unit, ('b, string) t) format4 -> 'a
 (** [fail_printf format] uses [format] to obtain an error message
-    and then returns [Error msg] *)
+    and then returns [Error msg]. *)
 
 val fail_fprintf : ('a, Format.formatter, unit, ('b, string) t) format4 -> 'a
-(** [fail_printf format] uses [format] to obtain an error message
-    and then returns [Error msg] *)
+(** [fail_fprintf format] uses [format] to obtain an error message
+    and then returns [Error msg]. *)
 
 val add_ctx : string -> ('a, string) t -> ('a, string) t
 (** [add_ctx msg] leaves [Ok x] untouched, but transforms
     [Error s] into [Error s'] where [s'] contains the additional
-    context given by [msg]
+    context given by [msg].
     @since 1.2 *)
 
 val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) format4 -> 'a
@@ -60,17 +60,17 @@ val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) fo
     @since 1.2 *)
 
 val map : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
-(** Map on success *)
+(** Map on success. *)
 
 val map_err : ('err1 -> 'err2) -> ('a, 'err1) t -> ('a, 'err2) t
-(** Map on the error variant *)
+(** Map on the error variant. *)
 
 val map2 : ('a -> 'b) -> ('err1 -> 'err2) -> ('a, 'err1) t -> ('b, 'err2) t
-(** Same as {!map}, but also with a function that can transform
-    the error message in case of failure *)
+(** Like {!map}, but also with a function that can transform
+    the error message in case of failure. *)
 
 val iter : ('a -> unit) -> ('a, _) t -> unit
-(** Apply the function only in case of Ok *)
+(** Apply the function only in case of [Ok]. *)
 
 exception Get_error
 
@@ -81,10 +81,10 @@ val get_exn : ('a, _) t -> 'a
     @raise Get_error if the value is an error. *)
 
 val get_or : ('a, _) t -> default:'a -> 'a
-(** [get_or e ~default] returns [x] if [e = Ok x], [default] otherwise *)
+(** [get_or e ~default] returns [x] if [e = Ok x], [default] otherwise. *)
 
 val map_or : ('a -> 'b) ->  ('a, 'c) t -> default:'b -> 'b
-(** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise *)
+(** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise. *)
 
 val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
 (** [catch e ~ok ~err] calls either [ok] or [err] depending on
@@ -95,6 +95,8 @@ val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
 val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
 
 val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
+(** Monadic composition. [e >>= f] proceeds as [f x] if [e] is [Ok x]
+    or returns [e] if [e] is an [Error]. *)
 
 val equal : err:'err equal -> 'a equal -> ('a, 'err) t equal
 
@@ -110,40 +112,39 @@ val fold_ok : ('a -> 'b -> 'a) -> 'a -> ('b, _) t -> 'a
     @since 1.2 *)
 
 val is_ok : ('a, 'err) t -> bool
-(** Return true if Ok
+(** Return true if [Ok].
     @since 1.0 *)
 
 val is_error : ('a, 'err) t -> bool
-(** Return true if Error
-
+(** Return true if [Error].
     @since 1.0 *)
 
 (** {2 Wrappers} *)
 
 val guard : (unit -> 'a) -> ('a, exn) t
 (** [guard f] runs [f ()] and returns its result wrapped in [Ok]. If
-    [f ()] raises some exception [e], then it fails with [Error e] *)
+    [f ()] raises some exception [e], then it fails with [Error e]. *)
 
 val guard_str : (unit -> 'a) -> ('a, string) t
-(** Same as {!guard} but uses {!of_exn} to print the exception. *)
+(** Like {!guard} but uses {!of_exn} to print the exception. *)
 
 val guard_str_trace : (unit -> 'a) -> ('a, string) t
-(** Same as {!guard_str} but uses {!of_exn_trace} instead of {!of_exn} so
+(** Like {!guard_str} but uses {!of_exn_trace} instead of {!of_exn} so
     that the stack trace is printed. *)
 
 val wrap1 : ('a -> 'b) -> 'a -> ('b, exn) t
-(** Same as {!guard} but gives the function one argument. *)
+(** Like {!guard} but gives the function one argument. *)
 
 val wrap2 : ('a -> 'b -> 'c) -> 'a -> 'b -> ('c, exn) t
-(** Same as {!guard} but gives the function two arguments. *)
+(** Like {!guard} but gives the function two arguments. *)
 
 val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> ('d, exn) t
-(** Same as {!guard} but gives the function three arguments. *)
+(** Like {!guard} but gives the function three arguments. *)
 
 (** {2 Applicative} *)
 
 val pure : 'a -> ('a, 'err) t
-(** Synonym of {!return} *)
+(** Synonym of {!return}. *)
 
 val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
 (** [a <*> b] evaluates [a] and [b], and, in case of success, returns
@@ -163,8 +164,15 @@ val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
 
 module Infix : sig
   val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
+
   val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
+  (** Monadic composition. [e >>= f] proceeds as [f x] if [e] is [Ok x]
+    or returns [e] if [e] is an [Error]. *)
+
   val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
+  (** [a <*> b] evaluates [a] and [b], and, in case of success, returns
+    [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
+    over the error of [b] if both fail. *)
 end
 
 (** {2 Collections} *)
@@ -190,7 +198,10 @@ val retry : int -> (unit -> ('a, 'err) t) -> ('a, 'err list) t
 module type MONAD = sig
   type 'a t
   val return : 'a -> 'a t
+  (** Monadic [return]. *)
+
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  (** Monadic [bind]. *)
 end
 
 module Traverse(M : MONAD) : sig
@@ -206,8 +217,10 @@ end
 (** {2 Conversions} *)
 
 val to_opt : ('a, _) t -> 'a option
+(** Convert a result to an option. *)
 
 val of_opt : 'a option -> ('a, string) t
+(** Convert an option to a result. *)
 
 val to_seq : ('a, _) t -> 'a sequence
 
@@ -224,4 +237,4 @@ val to_err : ('a, 'b) t -> ('a, 'b) error
 val pp : 'a printer -> ('a, string) t printer
 
 val pp': 'a printer -> 'e printer -> ('a, 'e) t printer
-(** Printer that is generic on the error type *)
+(** Printer that is generic on the error type. *)

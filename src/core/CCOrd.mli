@@ -4,16 +4,16 @@
 (** {1 Comparisons} *)
 
 type 'a t = 'a -> 'a -> int
-(** Comparison (total ordering) between two elements, that returns an int *)
+(** Comparison (total ordering) between two elements, that returns an int. *)
 
 val compare : 'a t
-(** Polymorphic "magic" comparison *)
+(** Polymorphic "magic" comparison. *)
 
 val opp : 'a t -> 'a t
-(** Opposite order *)
+(** Opposite order. *)
 
 val equiv : int -> int -> bool
-(** Returns [true] iff the two comparison results are the same *)
+(** Returns [true] iff the two comparison results are the same. *)
 
 val int : int t
 val string : string t
@@ -47,7 +47,7 @@ val pair : 'a t -> 'b t -> ('a * 'b) t
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 
 val list : 'a t -> 'a list t
-(** Lexicographic combination on lists *)
+(** Lexicographic combination on lists. *)
 
 val array : 'a t -> 'a array t
 
@@ -60,9 +60,15 @@ val map : ('a -> 'b) -> 'b t -> 'a t
       first component. *)
 
 val (>|=) : 'b t -> ('a -> 'b) -> 'a t
-(** Infix equivalent of {!map} *)
+(** Infix equivalent of {!map}. *)
 
 module Infix : sig
   val (<?>) : int -> ('a t * 'a * 'a) -> int
+  (** [c1 <?> (ord, x, y)] returns the same as [c1] if [c1] is not [0];
+      otherwise it uses [ord] to compare the two values [x] and [y],
+      of type ['a]. *)
+
   val (>|=) : 'b t -> ('a -> 'b) -> 'a t
+  (** Infix equivalent of {!map}. *)
+
 end

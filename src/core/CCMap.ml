@@ -62,7 +62,7 @@ module type S = sig
       @since 1.4 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
-  (** Same as {!of_list} *)
+  (** Like {!of_list} *)
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
   (** @since 0.14 *)
