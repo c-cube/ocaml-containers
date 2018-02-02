@@ -7,7 +7,7 @@ build: [
     ["jbuilder" "build" "-p" name "-j" jobs]
 ]
 build-doc: [ "jbuilder" "build" "@doc" ]
-build-test: [ "jbuilder" "runtest" ]
+build-test: [ "jbuilder" "runtest" "-p" name "-j" jobs]
 depends: [
   "jbuilder" {build}
   "result"
