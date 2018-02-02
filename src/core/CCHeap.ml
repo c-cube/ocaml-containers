@@ -195,7 +195,7 @@ module type S = sig
 
   val pp : ?sep:string -> elt printer -> t printer
   (** @since 0.16
-      Renamed from {!print} @since NEXT_RELEASE *)
+      Renamed from {!print} @since 2.0 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct

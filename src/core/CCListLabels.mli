@@ -169,7 +169,7 @@ val head_opt : 'a t -> 'a option
 
 val tail_opt : 'a t -> 'a t option
 (** Return the given list without its first element.
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 val last_opt : 'a t -> 'a option
 (** Last element.

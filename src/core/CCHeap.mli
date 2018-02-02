@@ -59,7 +59,7 @@ module type S = sig
   (** Delete one occurrence of a value if it exist in the heap.
       [delete_one eq x h], use [eq] to find one [x] in [h] and delete it.
       If [h] do not contain [x] then it return [h].
-      @since NEXT_RELEASE *)
+      @since 2.0 *)
 
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
   (** Delete all occurrences of a value in the heap.
@@ -67,7 +67,7 @@ module type S = sig
       If [h] do not contain [x] then it return [h].
       The difference with {!filter} is that [delete_all] stops as soon as
       it enters a subtree whose root is bigger than the element.
-      @since NEXT_RELEASE *)
+      @since 2.0 *)
 
   val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements. *)
@@ -133,7 +133,7 @@ module type S = sig
 
   val pp : ?sep:string -> elt printer -> t printer
   (** @since 0.16
-      Renamed from {!print} @since NEXT_RELEASE *)
+      Renamed from {!print} @since 2.0 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t
