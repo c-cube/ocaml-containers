@@ -18,6 +18,8 @@ depopts: [
   "qtest" { test }
   "qcheck" { test }
   "oUnit" { test }
+  "sequence" { test }
+  "gen" { test }
   "odoc" { doc }
 ]
 conflicts: [
