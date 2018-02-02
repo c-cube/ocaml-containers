@@ -49,7 +49,7 @@ module type S = sig
   val of_seq : elt sequence -> t
   (** Build a set from the given [sequence] of elements. *)
 
- val add_seq : t -> elt sequence -> t
+  val add_seq : t -> elt sequence -> t
   (** @since 0.14 *)
 
   val to_seq : t -> elt sequence
@@ -68,7 +68,7 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
-  (** Print the set *)
+    (** Print the set *)
 
 end
 

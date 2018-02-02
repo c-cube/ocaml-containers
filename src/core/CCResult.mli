@@ -167,12 +167,12 @@ module Infix : sig
 
   val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
   (** Monadic composition. [e >>= f] proceeds as [f x] if [e] is [Ok x]
-    or returns [e] if [e] is an [Error]. *)
+      or returns [e] if [e] is an [Error]. *)
 
   val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
   (** [a <*> b] evaluates [a] and [b], and, in case of success, returns
-    [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
-    over the error of [b] if both fail. *)
+      [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
+      over the error of [b] if both fail. *)
 end
 
 (** {2 Collections} *)

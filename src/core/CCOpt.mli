@@ -141,7 +141,7 @@ module Infix : sig
   val (<+>) : 'a t -> 'a t -> 'a t
   (** [a <+> b] is [a] if [a] is [Some _], [b] otherwise. *)
 
-  end
+end
 
 (** {2 Conversion and IO} *)
 

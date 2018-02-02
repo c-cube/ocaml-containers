@@ -33,12 +33,12 @@ val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
 (** Reverse the order of arguments for a binary function. *)
 
 val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
- (** Convert a function which accepts a pair of arguments into a function which accepts two arguments.
+(** Convert a function which accepts a pair of arguments into a function which accepts two arguments.
     [curry f x y] is [f (x,y)]. *)
 
 val uncurry : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
- (** Convert a function which accepts a two arguments into a function which accepts a pair of arguments.
-     [uncurry f (x,y)] is  [f x y]. *)
+(** Convert a function which accepts a two arguments into a function which accepts a pair of arguments.
+    [uncurry f (x,y)] is  [f x y]. *)
 
 val tap : ('a -> _) -> 'a -> 'a
 (** [tap f x] evaluates [f x], discards it, then returns [x]. Useful

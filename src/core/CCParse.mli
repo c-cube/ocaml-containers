@@ -370,7 +370,7 @@ module Infix : sig
       in case of success, applies [f] to the result. *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
- (** Applicative. *)
+  (** Applicative. *)
 
   val (<* ) : 'a t -> _ t -> 'a t
   (** [a <* b] parses [a] into [x], parses [b] and ignores its result,
@@ -382,10 +382,10 @@ module Infix : sig
 
   val (<|>) : 'a t -> 'a t -> 'a t
   (** [a <|> b] tries to parse [a], and if [a] fails without
-    consuming any input, backtracks and tries
-    to parse [b], otherwise it fails as [a].
-    See {!try_} to ensure [a] does not consume anything (but it is best
-    to avoid wrapping large parsers with {!try_}). *)
+      consuming any input, backtracks and tries
+      to parse [b], otherwise it fails as [a].
+      See {!try_} to ensure [a] does not consume anything (but it is best
+      to avoid wrapping large parsers with {!try_}). *)
 
   val (<?>) : 'a t -> string -> 'a t
   (** [a <?> msg] behaves like [a], but if [a] fails without
