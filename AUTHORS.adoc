@@ -25,3 +25,4 @@
 - Fabian Hemmer (copy)
 - Maciej Woś (@lostman)
 - Orbifx (Stavros Polymenis)
+- Rand (@rand00)
