@@ -337,10 +337,14 @@ and drop_tree_ ~size n t tail = match t with
   | Node (_,l,r) ->
     if n=1 then append_tree_ l (append_tree_ r tail)
     else
-      let size' = size/2 in
+      let size' = if size mod 2 <> 0 then (size/2)+1 else size/2 in
       if n-1 < size'
       then drop_tree_ ~size:size' (n-1) l (append_tree_ r tail)
       else drop_tree_ ~size:size' (n-1-size') r tail
+
+(*$T
+  of_list [1;2;3] |> drop 2 |> length = 1
+*)
 
 let drop_while ~f l =
   let rec aux p st = match st with
