@@ -257,12 +257,24 @@ let flat_map f l =
       append l acc
     )
 
+(*$Q
+  Q.(pair (fun1 Observable.int (list int)) (list int)) (fun (f,l) -> \
+    let f x = Q.Fn.apply f x in \
+    let f' x = f x |> of_list in \
+    of_list l |> flat_map f' |> to_list = CCList.(flat_map f l))
+  *)
+
 let flatten l = fold_rev ~f:(fun acc l -> append l acc) ~x:empty l
 
 (*$T
   flatten (of_list [of_list [1]; of_list []; of_list [2;3]]) = \
     of_list [1;2;3;]
 *)
+
+(*$Q
+  Q.(small_list (small_list int)) (fun l -> \
+    of_list l |> map ~f:of_list |> flatten |> to_list = CCList.flatten l)
+  *)
 
 let app funs l =
   fold_rev ~x:empty funs
@@ -307,6 +319,11 @@ and take_tree_ ~size n t = match t with
   take 0 (of_list CCList.(1--10)) |> to_list = []
 *)
 
+(*$Q
+  Q.(pair small_int (list int)) (fun (n,l) -> \
+    of_list l |> take n |> to_list = CCList.take n l)
+*)
+
 let take_while ~f l =
   (* st: stack of subtrees *)
   let rec aux p st = match st with
@@ -322,6 +339,9 @@ let take_while ~f l =
 (*$Q
   Q.(list int) (fun l -> \
     let f x = x mod 7 <> 0 in \
+    of_list l |> take_while ~f |> to_list = CCList.take_while f l)
+  Q.(pair (fun1 Observable.int bool) (list int)) (fun (f,l) -> \
+    let f x = Q.Fn.apply f x in \
     of_list l |> take_while ~f |> to_list = CCList.take_while f l)
 *)
 
@@ -344,6 +364,11 @@ and drop_tree_ ~size n t tail = match t with
 
 (*$T
   of_list [1;2;3] |> drop 2 |> length = 1
+*)
+
+(*$Q
+  Q.(pair small_int (list int)) (fun (n,l) -> \
+    of_list l |> drop n |> to_list = CCList.drop n l)
 *)
 
 let drop_while ~f l =
@@ -409,6 +434,12 @@ let repeat n l =
     if n<=0 then acc else aux (n-1) l (append l acc)
   in
   aux n l empty
+
+
+(*$Q
+  Q.(pair small_int (list int)) (fun (n,l) -> \
+    of_list l |> repeat n |> to_list = CCList.(repeat n l))
+  *)
 
 let range i j =
   let rec aux i j acc =

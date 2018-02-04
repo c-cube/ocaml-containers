@@ -1259,7 +1259,7 @@ let replicate i x =
 *)
 
 (*$Q
-  Q.(pair small_int (list int)) (fun (n,l) -> \
+  Q.(pair small_int (small_list int)) (fun (n,l) -> \
     if n>0 then repeat n l = flat_map (fun _ -> l) (1--n) \
     else Q.assume_fail())
   *)
