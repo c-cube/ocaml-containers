@@ -1258,6 +1258,12 @@ let replicate i x =
   repeat 2 [1;2;3] = [1;2;3;1;2;3]
 *)
 
+(*$Q
+  Q.(pair small_int (list int)) (fun (n,l) -> \
+    if n>0 then repeat n l = flat_map (fun _ -> l) (1--n) \
+    else Q.assume_fail())
+  *)
+
 let repeat i l =
   let rec aux acc i =
     if i = 0 then List.rev acc
