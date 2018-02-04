@@ -1253,11 +1253,21 @@ let replicate i x =
     else aux (x::acc) (i-1)
   in aux [] i
 
+
+(*$T
+  repeat 2 [1;2;3] = [1;2;3;1;2;3]
+*)
+
+(*$Q
+  Q.(pair small_int (list int)) (fun (n,l) -> \
+    if n>0 then repeat n l = flat_map (fun _ -> l) (1--n) \
+    else Q.assume_fail())
+  *)
+
 let repeat i l =
-  let l' = List.rev l in
   let rec aux acc i =
     if i = 0 then List.rev acc
-    else aux (List.rev_append l' acc) (i-1)
+    else aux (List.rev_append l acc) (i-1)
   in aux [] i
 
 module Assoc = struct
