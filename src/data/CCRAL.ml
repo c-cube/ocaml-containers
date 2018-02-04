@@ -345,22 +345,35 @@ let take_while ~f l =
     of_list l |> take_while ~f |> to_list = CCList.take_while f l)
 *)
 
+(* drop [n < size] elements from [t] *)
+let rec drop_tree_ ~size n t tail = match t with
+  | _ when n=0 -> tail
+  | Leaf _ ->
+    assert (n=1);
+    tail
+  | Node (_,left,right) ->
+    if n=1 then append_tree_ left (append_tree_ right tail)
+    else (
+      assert (size mod 2 = 1);
+      let size_sub = size/2 in (* size of subtrees *)
+      let n = n-1 in
+      if n = size_sub then (
+        append_tree_ right tail (* drop element and left tree *)
+      ) else if n < size_sub then (
+        (* drop element and part of left tree *)
+        drop_tree_ ~size:size_sub n left (append_tree_ right tail)
+      ) else (
+        (* drop element, left tree, and part of right tree *)
+        drop_tree_ ~size:size_sub (n-size_sub) right tail
+      )
+    )
+
 let rec drop n l = match l with
   | _ when n=0 -> l
   | Nil -> Nil
   | Cons (size, t, tl) ->
     if n >= size then drop (n-size) tl
     else drop_tree_ ~size n t tl
-and drop_tree_ ~size n t tail = match t with
-  | _ when n=0 -> tail
-  | Leaf _ -> tail
-  | Node (_,l,r) ->
-    if n=1 then append_tree_ l (append_tree_ r tail)
-    else
-      let size' = if size mod 2 <> 0 then (size/2)+1 else size/2 in
-      if n-1 < size'
-      then drop_tree_ ~size:size' (n-1) l (append_tree_ r tail)
-      else drop_tree_ ~size:size' (n-1-size') r tail
 
 (*$T
   of_list [1;2;3] |> drop 2 |> length = 1
