@@ -1253,11 +1253,15 @@ let replicate i x =
     else aux (x::acc) (i-1)
   in aux [] i
 
+
+(*$T
+  repeat 2 [1;2;3] = [1;2;3;1;2;3]
+*)
+
 let repeat i l =
-  let l' = List.rev l in
   let rec aux acc i =
     if i = 0 then List.rev acc
-    else aux (List.rev_append l' acc) (i-1)
+    else aux (List.rev_append l acc) (i-1)
   in aux [] i
 
 module Assoc = struct
