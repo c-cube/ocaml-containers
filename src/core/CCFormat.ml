@@ -238,6 +238,8 @@ let ansi_l_to_str_ = function
     Buffer.add_string buf "m";
     Buffer.contents buf
 
+exception No_such_style
+
 (* parse a tag *)
 let style_of_tag_ s = match String.trim s with
   | "reset" -> [`Reset]
@@ -258,7 +260,7 @@ let style_of_tag_ s = match String.trim s with
   | "Magenta" -> [`FG `Magenta; `Bold]
   | "Cyan" -> [`FG `Cyan; `Bold]
   | "White" -> [`FG `White; `Bold]
-  | s -> failwith ("unknown style: " ^ s)
+  | _ -> raise No_such_style
 
 let color_enabled = ref false
 
@@ -268,20 +270,21 @@ let mark_open_tag st ~or_else s =
     let style = style_of_tag_ s in
     Stack.push style st;
     if !color_enabled then ansi_l_to_str_ style else ""
-  with Not_found -> or_else s
+  with No_such_style -> or_else s
 
 let mark_close_tag st ~or_else s =
-  try
-    let _ = style_of_tag_ s in (* check if it's indeed about color *)
-    let style =
-      try
-        ignore (Stack.pop st); (* pop current style (if well-scoped...) *)
-        Stack.top st (* look at previous style *)
-      with Stack.Empty ->
-        [`Reset]
-    in
-    if !color_enabled then ansi_l_to_str_ style else ""
-  with Not_found -> or_else s
+  (* check if it's indeed about color *)
+  match style_of_tag_ s with
+    | _ ->
+      let style =
+        try
+          ignore (Stack.pop st); (* pop current style (if well-scoped...) *)
+          Stack.top st (* look at previous style *)
+        with Stack.Empty ->
+          [`Reset]
+      in
+      if !color_enabled then ansi_l_to_str_ style else ""
+    | exception No_such_style -> or_else s
 
 (* add color handling to formatter [ppf] *)
 let set_color_tag_handling ppf =
