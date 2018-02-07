@@ -31,6 +31,7 @@ module Poly : sig
 
   val keys_list : ('a, 'b) Hashtbl.t -> 'a list
   (** [keys_list t] is the list of keys in [t].
+      If the key is in the Hashtable multiple times, all occurrences will be returned.
       @since 0.8 *)
 
   val values_list : ('a, 'b) Hashtbl.t -> 'b list
@@ -150,6 +151,7 @@ module type S = sig
 
   val keys_list : _ t -> key list
   (** [keys_list t] is the list of keys in [t].
+      If the key is in the Hashtable multiple times, all occurrences will be returned.
       @since 0.8 *)
 
   val values_list : 'a t -> 'a list

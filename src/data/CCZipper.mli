@@ -15,11 +15,6 @@ val empty : 'a t
 val is_empty : _ t -> bool
 (** Empty zipper? Returns true iff the two lists are empty. *)
 
-(*$T
-  (is_empty empty)
-  not ([42] |> make |> right |> is_empty)
-*)
-
 val to_list : 'a t -> 'a list
 (** Convert the zipper back to a list.
     [to_list (l,r)] is [List.rev_append l r]. *)
@@ -79,9 +74,4 @@ val drop_after_and_focused : 'a t -> 'a t
 (** Drop every element on the "right" (calling {!right} then will do nothing),
     {i including} the focused element if it is present. *)
 
-(*$=
-  ([1], [2]) (drop_after ([1], [2;3]))
-  ([1], []) (drop_after ([1], []))
-  ([1], []) (drop_after_and_focused ([1], [2;3]))
-*)
 

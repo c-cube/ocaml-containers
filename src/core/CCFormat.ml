@@ -386,7 +386,11 @@ let ksprintf ~f fmt =
     (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
     out fmt
 
-
+(*$= & ~printer:CCFormat.(to_string (opt string))
+  (Some "hello world") \
+    (ksprintf "hello %a" CCFormat.string "world" ~f:(fun s -> Some s))
+*)
+    
 module Dump = struct
   type 'a t = 'a printer
   let unit = unit

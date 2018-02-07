@@ -622,6 +622,9 @@ let sorted_insert ~cmp ?(uniq=false) x l =
 (*$Q
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \
+      is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Pervasives.compare l in \
       is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare ~uniq:true x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Pervasives.compare l in \

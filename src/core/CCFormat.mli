@@ -271,11 +271,6 @@ val ksprintf :
     and then calls [f] on the resulting string.
     @since 0.14 *)
 
-(*$= & ~printer:CCFormat.(to_string (opt string))
-  (Some "hello world") \
-    (ksprintf "hello %a" CCFormat.string "world" ~f:(fun s -> Some s))
-*)
-
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
 (** Print to the given file. *)
 

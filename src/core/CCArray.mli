@@ -222,7 +222,9 @@ val random_choose : 'a t -> 'a random_gen
     @raise Not_found if the array/slice is empty. *)
 
 val to_seq : 'a t -> 'a sequence
-(** Return a [sequence] of the elements of an array. *)
+(** Return a [sequence] of the elements of an array.
+    The input array is shared with the sequence and modifications of it will result
+    in modification of the sequence. *)
 
 val to_gen : 'a t -> 'a gen
 (** Return a [gen] of the elements of an array. *)
