@@ -339,7 +339,7 @@ val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a l
     @param uniq if true and [x] is already in sorted position in [l], then
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
     @since 0.17 *)
-    
+
 val uniq_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list
 (** [uniq_succ l] removes duplicate elements that occur one next to the other.
     Examples:

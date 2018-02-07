@@ -390,7 +390,7 @@ let ksprintf ~f fmt =
   (Some "hello world") \
     (ksprintf "hello %a" CCFormat.string "world" ~f:(fun s -> Some s))
 *)
-    
+
 module Dump = struct
   type 'a t = 'a printer
   let unit = unit

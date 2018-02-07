@@ -287,7 +287,7 @@ let find ?(start=0) ~sub =
     let i = find ~sub:s2 s1 in \
     i < 0 || String.sub s1 i (length s2) = s2)
 *)
-      
+
 let find_all ?(start=0) ~sub =
   let pattern = Find.compile sub in
   fun s ->
@@ -313,14 +313,14 @@ let find_all_l ?start ~sub s =
   [76] (find_all_l ~sub:"aaaaaa" \
     "aabbaabbaaaaabbbbabababababbbbabbbabbaaababbbaaabaabbaabbaaaabbababaaaabbaabaaaaaabbbaaaabababaabaaabbaabaaaabbababbaabbaaabaabbabababbbaabababaaabaaababbbaaaabbbaabaaababbabaababbaabbaaaaabababbabaababbbaaabbabbabababaaaabaaababaaaaabbabbaabbabbbbbbbbbbbbbbaabbabbbbbabbaaabbabbbbabaaaaabbababbbaaaa")
 *)
-    
+
 let mem ?start ~sub s = find ?start ~sub s >= 0
 
 (*$T
    mem ~sub:"bc" "abcd"
    not (mem ~sub:"a b" "abcd")
 *)
-                        
+
 let rfind ~sub =
   let pattern = Find.rcompile sub in
   fun s -> Find.rfind ~start:(String.length s-1) ~pattern s
@@ -508,7 +508,7 @@ module Split = struct
     Split.right ~by:"_" "abcde" = None
     Split.right ~by:"a_" "abcde" = None
   *)
-    
+
 end
 
 let split_on_char c s: _ list =
@@ -848,10 +848,10 @@ let of_list l =
   of_list ['a'; 'b'; 'c'] = "abc"
   of_list [] = ""
 *)
-    
+
 let of_array a =
   init (Array.length a) (fun i -> a.(i))
-    
+
 let to_array s =
   Array.init (String.length s) (fun i -> s.[i])
 
@@ -1136,7 +1136,7 @@ module Sub = struct
       |> Sequence.for_all
         (fun (i,j,sub) -> Sub.get sub j = s.[i+j]))
   *)
-      
+
   let to_gen (s,i,len) = _to_gen s i len
   let to_seq (s,i,len) k =
     for i=i to i+len-1 do k s.[i] done

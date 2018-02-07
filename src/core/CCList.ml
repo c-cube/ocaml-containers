@@ -1265,7 +1265,7 @@ let replicate i x =
   Q.(pair small_int (small_list int)) (fun (n,l) -> \
     if n>0 then repeat n l = flat_map (fun _ -> l) (1--n) \
     else Q.assume_fail())
-  *)
+*)
 
 let repeat i l =
   let rec aux acc i =

@@ -107,13 +107,13 @@ val of_list : char list -> string
 
 val of_array : char array -> string
 (** Convert an array of characters to a string. *)
-  
+
 val to_array : string -> char array
 (** Return the array of characters contained in the string. *)
 
 val find : ?start:int -> sub:string -> string -> int
 (** Find [sub] in string, returns its first index or [-1]. *)
-  
+
 val find_all : ?start:int -> sub:string -> string -> int gen
 (** [find_all ~sub s] finds all occurrences of [sub] in [s], even overlapping
     instances.
@@ -125,11 +125,11 @@ val find_all_l : ?start:int -> sub:string -> string -> int list
     them in a list.
     @param start starting position in [s].
     @since 0.17 *)
-    
+
 val mem : ?start:int -> sub:string -> string -> bool
 (** [mem ~sub s] is true iff [sub] is a substring of [s].
     @since 0.12 *)
-  
+
 val rfind : sub:string -> string -> int
 (** Find [sub] in string from the right, returns its first index or [-1].
     Should only be used with very small [sub].

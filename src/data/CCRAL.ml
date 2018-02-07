@@ -262,7 +262,7 @@ let flat_map f l =
     let f x = Q.Fn.apply f x in \
     let f' x = f x |> of_list in \
     of_list l |> flat_map f' |> to_list = CCList.(flat_map f l))
-  *)
+*)
 
 let flatten l = fold_rev ~f:(fun acc l -> append l acc) ~x:empty l
 
@@ -274,7 +274,7 @@ let flatten l = fold_rev ~f:(fun acc l -> append l acc) ~x:empty l
 (*$Q
   Q.(small_list (small_list int)) (fun l -> \
     of_list l |> map ~f:of_list |> flatten |> to_list = CCList.flatten l)
-  *)
+*)
 
 let app funs l =
   fold_rev ~x:empty funs
@@ -452,7 +452,7 @@ let repeat n l =
 (*$Q
   Q.(pair small_int (list int)) (fun (n,l) -> \
     of_list l |> repeat n |> to_list = CCList.(repeat n l))
-  *)
+*)
 
 let range i j =
   let rec aux i j acc =
