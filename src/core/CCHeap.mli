@@ -97,13 +97,13 @@ module type S = sig
       @since 0.16 *)
 
   val of_list : elt list -> t
-  (** [of_list l] is [add_list empty l]. *)
+  (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
 
   val add_seq : t -> elt sequence -> t (** @since 0.16 *)
   (** Similar to {!add_list}. *)
 
   val of_seq : elt sequence -> t
-  (** Build a heap from a given [sequence]. *)
+  (** Build a heap from a given [sequence]. Complexity: [O(n log n)]. *)
 
   val to_seq : t -> elt sequence
   (** Return a [sequence] of the elements of the heap. *)
@@ -115,7 +115,7 @@ module type S = sig
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
   val of_klist : elt klist -> t
-  (** Build a heap from a given [klist]. *)
+  (** Build a heap from a given [klist]. Complexity: [O(n log n)]. *)
 
   val to_klist : t -> elt klist
   (** Return a [klist] of the elements of the heap. *)
@@ -123,7 +123,7 @@ module type S = sig
   val add_gen : t -> elt gen -> t (** @since 0.16 *)
 
   val of_gen : elt gen -> t
-  (** Build a heap from a given [gen]. *)
+  (** Build a heap from a given [gen]. Complexity: [O(n log n)]. *)
 
   val to_gen : t -> elt gen
   (** Return a [gen] of the elements of the heap. *)

@@ -239,7 +239,7 @@ val (--^) : int -> int -> (int, 'mut) t
     @since 0.17 *)
 
 val of_array : 'a array -> ('a, 'mut) t
-(** [of_array a] returns a vector corresponding to the array [a]. *)
+(** [of_array a] returns a vector corresponding to the array [a]. Operates in [O(n)] time. *)
 
 val of_list : 'a list -> ('a, 'mut) t
 

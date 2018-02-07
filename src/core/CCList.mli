@@ -339,13 +339,7 @@ val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a l
     @param uniq if true and [x] is already in sorted position in [l], then
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
     @since 0.17 *)
-
-(*$Q
-    Q.(pair small_int (list small_int)) (fun (x,l) -> \
-      let l = List.sort Pervasives.compare l in \
-      is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare x l))
-*)
-
+    
 val uniq_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list
 (** [uniq_succ l] removes duplicate elements that occur one next to the other.
     Examples:
@@ -376,7 +370,7 @@ val iteri2 : (int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
     @since 2.0 *)
 
 val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-(** Like [fold] but it also passes in the index of each element to the folded function. *)
+(** Like [fold] but it also passes in the index of each element to the folded function. Tail-recursive. *)
 
 val foldi2 : ('c -> int -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
 (** Fold on two lists, with index.
@@ -596,19 +590,22 @@ val to_seq : 'a t -> 'a sequence
 (** Return a [sequence] of the elements of the list. *)
 
 val of_seq : 'a sequence -> 'a t
-(** Build a list from a given [sequence]. *)
+(** Build a list from a given [sequence].
+    In the result, elements appear in the same order as they did in the source [sequence]. *)
 
 val to_gen : 'a t -> 'a gen
 (** Return a [gen] of the elements of the list. *)
 
 val of_gen : 'a gen -> 'a t
-(** Build a list from a given [gen]. *)
+(** Build a list from a given [gen].
+    In the result, elements appear in the same order as they did in the source [gen]. *)
 
 val to_klist : 'a t -> 'a klist
 (** Return a [klist] of the elements of the list. *)
 
 val of_klist : 'a klist -> 'a t
-(** Build a list from a given [klist]. *)
+(** Build a list from a given [klist].
+    In the result, elements appear in the same order as they did in the source [klist]. *)
 
 (** {2 Infix Operators}
     It is convenient to {!open CCList.Infix} to access the infix operators
@@ -646,5 +643,3 @@ end
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> 'a t printer
 (** Print the contents of a list. *)
-
-(** {2 Lists of pairs} *)

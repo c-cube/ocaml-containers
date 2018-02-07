@@ -50,6 +50,12 @@ let escape_str s =
     Buffer.contents buf
   ) else s
 
+(*$T
+  escape_str "foo" = "foo"
+  escape_str "foo bar" = "'foo bar'"
+  escape_str "fo'o b'ar" = "'fo'\\''o b'\\''ar'"
+*)
+
 let read_all ?(size=1024) ic =
   let buf = ref (Bytes.create size) in
   let len = ref 0 in
@@ -107,6 +113,12 @@ let call_full ?bufsize ?stdin ?env cmd =
         method errcode = int_of_process_status status
       end)
 
+(*$T
+  call_full ~stdin:(`Str "abc") "cat" |> stdout = "abc"
+  call_full "echo %s" (escape_str "a'b'c") |> stdout = "a'b'c\n"
+  call_full "echo %s" "a'b'c" |> stdout = "abc\n"
+*)
+
 let call ?bufsize ?stdin ?env cmd =
   call_full_inner ?bufsize ?stdin ?env cmd
     ~f:(fun (out,err,status) -> out, err, int_of_process_status status)
@@ -114,6 +126,12 @@ let call ?bufsize ?stdin ?env cmd =
 let call_stdout ?bufsize ?stdin ?env cmd =
   call_full_inner ?bufsize ?stdin ?env cmd
     ~f:(fun (out,_err,_status) -> out)
+
+(*$T
+  call_stdout ~stdin:(`Str "abc") "cat" = "abc"
+  call_stdout "echo %s" (escape_str "a'b'c") = "a'b'c\n"
+  call_stdout "echo %s" "a'b'c" = "abc\n"
+*)
 
 type line = string
 

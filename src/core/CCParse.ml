@@ -3,6 +3,103 @@
 
 (** {1 Very Simple Parser Combinators} *)
 
+(*$inject
+  module T = struct
+    type tree = L of int | N of tree * tree
+  end
+  open T
+  open Result
+
+  let mk_leaf x = L x
+  let mk_node x y = N(x,y)
+
+  let ptree = fix @@ fun self ->
+    skip_space *>
+    ( (try_ (char '(') *> (pure mk_node <*> self <*> self) <* char ')')
+      <|>
+      (U.int >|= mk_leaf) )
+
+  let ptree' = fix_memo @@ fun self ->
+    skip_space *>
+    ( (try_ (char '(') *> (pure mk_node <*> self <*> self) <* char ')')
+      <|>
+      (U.int >|= mk_leaf) )
+
+  let rec pptree = function
+    | N (a,b) -> Printf.sprintf "N (%s, %s)" (pptree a) (pptree b)
+    | L x -> Printf.sprintf "L %d" x
+
+  let errpptree = function
+    | Ok x -> "Ok " ^ pptree x
+    | Error s -> "Error " ^ s
+*)
+
+(*$= & ~printer:errpptree
+  (Ok (N (L 1, N (L 2, L 3)))) \
+    (parse_string ptree "(1 (2 3))" )
+  (Ok (N (N (L 1, L 2), N (L 3, N (L 4, L 5))))) \
+    (parse_string ptree "((1 2) (3 (4 5)))" )
+  (Ok (N (L 1, N (L 2, L 3)))) \
+    (parse_string ptree' "(1 (2 3))" )
+  (Ok (N (N (L 1, L 2), N (L 3, N (L 4, L 5))))) \
+    (parse_string ptree' "((1 2) (3 (4 5)))" )
+*)
+
+(*$R
+  let p = U.list ~sep:"," U.word in
+  let printer = function
+    | Ok l -> "Ok " ^ CCFormat.(to_string (list string)) l
+    | Error s -> "Error " ^ s
+  in
+  assert_equal ~printer
+    (Ok ["abc"; "de"; "hello"; "world"])
+    (parse_string p "[abc , de, hello ,world  ]");
+*)
+
+(*$R
+  let test n =
+    let p = CCParse.(U.list ~sep:"," U.int) in
+
+    let l = CCList.(1 -- n) in
+    let l_printed =
+      CCFormat.(to_string (within "[" "]" (list ~sep:(return ",") int))) l in
+
+    let l' = CCParse.parse_string_exn p l_printed in
+
+    assert_equal ~printer:Q.Print.(list int) l l'
+  in
+  test 100_000;
+  test 400_000;
+
+*)
+
+(*$R
+  let open CCParse.Infix in
+  let module P = CCParse in
+
+  let parens p = P.try_ (P.char '(') *> p <* P.char ')' in
+  let add = P.char '+' *> P.return (+) in
+  let sub = P.char '-' *> P.return (-) in
+  let mul = P.char '*' *> P.return ( * ) in
+  let div = P.char '/' *> P.return ( / ) in
+  let integer =
+  P.chars1_if (function '0'..'9'->true|_->false) >|= int_of_string in
+
+  let chainl1 e op =
+  P.fix (fun r ->
+    e >>= fun x -> P.try_ (op <*> P.return x <*> r) <|> P.return x) in
+
+  let expr : int P.t =
+  P.fix (fun expr ->
+    let factor = parens expr <|> integer in
+    let term = chainl1 factor (mul <|> div) in
+    chainl1 term (add <|> sub)) in
+
+  assert_equal (Ok 6) (P.parse_string expr "4*1+2");
+  assert_equal (Ok 12) (P.parse_string expr "4*(1+2)");
+  ()
+*)
+
 type 'a or_error = ('a, string) Result.result
 
 type line_num = int
