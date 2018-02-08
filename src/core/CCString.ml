@@ -81,6 +81,12 @@ let rev s =
   Q.printable_string (fun s -> length s = length (rev s))
 *)
 
+(*$Q
+  Q.printable_string (fun s -> \
+    rev s = (to_list s |> List.rev |> of_list))
+  *)
+
+
 (*$=
   "abc" (rev "cba")
   "" (rev "")

@@ -200,7 +200,7 @@ end
   open Q.Gen
   let g_char = map Char.chr (Char.code 'A' -- Char.code 'z')
   let g_str = string_size ~gen:g_char (0--10)
-  let a_str = {Q.string with Q.gen=g_str}
+  let a_str = Q.set_gen g_str Q.string
 *)
 
 module MakeFromArray(A:Array.S) : S with module Array = A = struct
