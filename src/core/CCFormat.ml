@@ -133,6 +133,11 @@ let some pp out = function
   | None -> ()
   | Some x -> pp out x
 
+let lazy_force pp out (lazy x) = pp out x
+
+let lazy_or ?(default=return "<lazy>") pp out x =
+  if Lazy.is_val x then pp out (Lazy.force x) else default out ()
+
 (** {2 IO} *)
 
 let output fmt pp x = pp fmt x
