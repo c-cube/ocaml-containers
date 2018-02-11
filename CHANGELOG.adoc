@@ -10,7 +10,7 @@
     by `include CCMonomorphic` in `Containers` module
   * Shadow the physical equality operator
   * Shadow polymorphic functions in `CCList`
-- rename `print` to `pp` for Format printers (closes #153)
+- rename `print` to `pp` for Format printers (closes #153, #181)
 - remove `CCFlatHashtbl`
 
 === others
@@ -22,6 +22,17 @@
 - Avoid uses of the polymorphic operators
 - Add a `CCMonomorphic` module shipped into a `containers.monomorphic` library
 - make complexity of `Array.lookup` explicit (closes #174)
+- add `CCFormat.lazy_{or,force}` for printing thunks
+- now that ocaml >= 4.02 is required, use `Format.pp_print_text` directly
+- add `CCHeap.delete_{one,all}`
+- add `CCList.tail_opt`
+
+
+- remove qtest makefile and use a script instead
+- add many tests
+- fix bug in `CCRAL.drop` (see #184)
+- `CCFormat`: fix support of unrecognized styles
+- fix bug: don't reverse twice in `CCList.repeat`
 
 == 1.5.1, 1.5.2
 

@@ -131,12 +131,12 @@ val some : 'a printer -> 'a option printer
 
 val lazy_force : 'a printer -> 'a lazy_t printer
 (** [lazy_force pp out x] forces [x] and prints the result with [pp]
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 val lazy_or : ?default:unit printer -> 'a printer -> 'a lazy_t printer
 (** [lazy_or ?default pp out x] prints [default] if [x] is not
     evaluated yet, or uses [pp] otherwise
-    @since NEXT_RELEASE *)
+    @since 2.0 *)
 
 (** {2 ANSI codes}
 
