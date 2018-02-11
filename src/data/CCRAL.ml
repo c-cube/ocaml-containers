@@ -257,11 +257,23 @@ let flat_map f l =
       append l acc
     )
 
+(*$Q
+  Q.(pair (fun1 Observable.int (small_list int)) (small_list int)) (fun (f,l) -> \
+    let f x = Q.Fn.apply f x in \
+    let f' x = f x |> of_list in \
+    of_list l |> flat_map f' |> to_list = CCList.(flat_map f l))
+*)
+
 let flatten l = fold_rev ~f:(fun acc l -> append l acc) ~x:empty l
 
 (*$T
   flatten (of_list [of_list [1]; of_list []; of_list [2;3]]) = \
     of_list [1;2;3;]
+*)
+
+(*$Q
+  Q.(small_list (small_list int)) (fun l -> \
+    of_list l |> map ~f:of_list |> flatten |> to_list = CCList.flatten l)
 *)
 
 let app funs l =
@@ -307,6 +319,11 @@ and take_tree_ ~size n t = match t with
   take 0 (of_list CCList.(1--10)) |> to_list = []
 *)
 
+(*$Q
+  Q.(pair small_int (list int)) (fun (n,l) -> \
+    of_list l |> take n |> to_list = CCList.take n l)
+*)
+
 let take_while ~f l =
   (* st: stack of subtrees *)
   let rec aux p st = match st with
@@ -323,7 +340,33 @@ let take_while ~f l =
   Q.(list int) (fun l -> \
     let f x = x mod 7 <> 0 in \
     of_list l |> take_while ~f |> to_list = CCList.take_while f l)
+  Q.(pair (fun1 Observable.int bool) (list int)) (fun (f,l) -> \
+    let f x = Q.Fn.apply f x in \
+    of_list l |> take_while ~f |> to_list = CCList.take_while f l)
 *)
+
+(* drop [n < size] elements from [t] *)
+let rec drop_tree_ ~size n t tail = match t with
+  | _ when n=0 -> tail
+  | Leaf _ ->
+    assert (n=1);
+    tail
+  | Node (_,left,right) ->
+    if n=1 then append_tree_ left (append_tree_ right tail)
+    else (
+      assert (size mod 2 = 1);
+      let size_sub = size/2 in (* size of subtrees *)
+      let n = n-1 in
+      if n = size_sub then (
+        append_tree_ right tail (* drop element and left tree *)
+      ) else if n < size_sub then (
+        (* drop element and part of left tree *)
+        drop_tree_ ~size:size_sub n left (append_tree_ right tail)
+      ) else (
+        (* drop element, left tree, and part of right tree *)
+        drop_tree_ ~size:size_sub (n-size_sub) right tail
+      )
+    )
 
 let rec drop n l = match l with
   | _ when n=0 -> l
@@ -331,16 +374,15 @@ let rec drop n l = match l with
   | Cons (size, t, tl) ->
     if n >= size then drop (n-size) tl
     else drop_tree_ ~size n t tl
-and drop_tree_ ~size n t tail = match t with
-  | _ when n=0 -> tail
-  | Leaf _ -> tail
-  | Node (_,l,r) ->
-    if n=1 then append_tree_ l (append_tree_ r tail)
-    else
-      let size' = size/2 in
-      if n-1 < size'
-      then drop_tree_ ~size:size' (n-1) l (append_tree_ r tail)
-      else drop_tree_ ~size:size' (n-1-size') r tail
+
+(*$T
+  of_list [1;2;3] |> drop 2 |> length = 1
+*)
+
+(*$Q
+  Q.(pair small_int (list int)) (fun (n,l) -> \
+    of_list l |> drop n |> to_list = CCList.drop n l)
+*)
 
 let drop_while ~f l =
   let rec aux p st = match st with
@@ -405,6 +447,12 @@ let repeat n l =
     if n<=0 then acc else aux (n-1) l (append l acc)
   in
   aux n l empty
+
+
+(*$Q
+  Q.(pair small_int (small_list int)) (fun (n,l) -> \
+    of_list l |> repeat n |> to_list = CCList.(repeat n l))
+*)
 
 let range i j =
   let rec aux i j acc =

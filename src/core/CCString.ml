@@ -13,6 +13,11 @@ let init n f =
   let buf = Bytes.init n f in
   Bytes.unsafe_to_string buf
 
+(*$T
+  init 3 (fun i -> [|'a'; 'b'; 'c'|].(i)) = "abc"
+  init 0 (fun _ -> assert false) = ""
+*)
+
 let uppercase_ascii = String.map CCChar.uppercase_ascii
 
 let lowercase_ascii = String.map CCChar.lowercase_ascii
@@ -70,6 +75,23 @@ let is_empty s = equal s ""
 let rev s =
   let n = length s in
   init n (fun i -> s.[n-i-1])
+
+(*$Q
+  Q.printable_string (fun s -> s = rev (rev s))
+  Q.printable_string (fun s -> length s = length (rev s))
+*)
+
+(*$Q
+  Q.printable_string (fun s -> \
+    rev s = (to_list s |> List.rev |> of_list))
+  *)
+
+
+(*$=
+  "abc" (rev "cba")
+  "" (rev "")
+  " " (rev " ")
+*)
 
 let rec _to_list s acc i len =
   if len=0 then List.rev acc
@@ -259,6 +281,19 @@ let find ?(start=0) ~sub =
   let pattern = Find.compile sub in
   fun s -> Find.find ~start ~pattern s
 
+(*$= & ~printer:string_of_int
+  1 (find ~sub:"bc" "abcd")
+  ~-1 (find ~sub:"bc" "abd")
+  1 (find ~sub:"a" "_a_a_a_")
+  6 (find ~sub:"a" ~start:5 "a1a234a")
+*)
+
+(*$Q & ~count:10_000
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    let i = find ~sub:s2 s1 in \
+    i < 0 || String.sub s1 i (length s2) = s2)
+*)
+
 let find_all ?(start=0) ~sub =
   let pattern = Find.compile sub in
   fun s ->
@@ -278,11 +313,37 @@ let find_all_l ?start ~sub s =
   in
   aux [] (find_all ?start ~sub s)
 
+(*$= & ~printer:Q.Print.(list int)
+  [1; 6] (find_all_l ~sub:"bc" "abc aabc  aab")
+  [] (find_all_l ~sub:"bc" "abd")
+  [76] (find_all_l ~sub:"aaaaaa" \
+    "aabbaabbaaaaabbbbabababababbbbabbbabbaaababbbaaabaabbaabbaaaabbababaaaabbaabaaaaaabbbaaaabababaabaaabbaabaaaabbababbaabbaaabaabbabababbbaabababaaabaaababbbaaaabbbaabaaababbabaababbaabbaaaaabababbabaababbbaaabbabbabababaaaabaaababaaaaabbabbaabbabbbbbbbbbbbbbbaabbabbbbbabbaaabbabbbbabaaaaabbababbbaaaa")
+*)
+
 let mem ?start ~sub s = find ?start ~sub s >= 0
+
+(*$T
+   mem ~sub:"bc" "abcd"
+   not (mem ~sub:"a b" "abcd")
+*)
 
 let rfind ~sub =
   let pattern = Find.rcompile sub in
   fun s -> Find.rfind ~start:(String.length s-1) ~pattern s
+
+(*$= & ~printer:string_of_int
+  1 (rfind ~sub:"bc" "abcd")
+  ~-1 (rfind ~sub:"bc" "abd")
+  5 (rfind ~sub:"a" "_a_a_a_")
+  4 (rfind ~sub:"bc" "abcdbcd")
+  6 (rfind ~sub:"a" "a1a234a")
+*)
+
+(*$Q & ~count:10_000
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    let i = rfind ~sub:s2 s1 in \
+    i < 0 || String.sub s1 i (length s2) = s2)
+*)
 
 (* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -320,6 +381,16 @@ let replace ?(which=`All) ~sub ~by s =
         )
       done;
       Buffer.contents b
+
+(*$= & ~printer:CCFun.id
+  (replace ~which:`All ~sub:"a" ~by:"b" "abcdabcd") "bbcdbbcd"
+  (replace ~which:`Left ~sub:"a" ~by:"b" "abcdabcd") "bbcdabcd"
+  (replace ~which:`Right ~sub:"a" ~by:"b" "abcdabcd") "abcdbbcd"
+  (replace ~which:`All ~sub:"ab" ~by:"hello" "  abab cdabb a") \
+    "  hellohello cdhellob a"
+  (replace ~which:`Left ~sub:"ab" ~by:"nope" " a b c d ") " a b c d "
+  (replace ~sub:"a" ~by:"b" "1aa234a") "1bb234b"
+*)
 
 module Split = struct
   type drop_if_empty = {
@@ -379,6 +450,12 @@ module Split = struct
 
   let list_cpy ?(drop=default_drop) ~by s = _mklist ~drop ~by s String.sub
 
+  (*$T
+    Split.list_cpy ~by:"," "aa,bb,cc" = ["aa"; "bb"; "cc"]
+    Split.list_cpy ~by:"--" "a--b----c--" = ["a"; "b"; ""; "c"; ""]
+    Split.list_cpy ~by:" " "hello  world aie" = ["hello"; ""; "world"; "aie"]
+  *)
+
   let _mkklist ~drop ~by s k =
     let by = Find.compile by in
     let rec make state () = match _split ~by s state with
@@ -414,6 +491,14 @@ module Split = struct
 
   let left ~by s = try Some (left_exn ~by s) with Not_found -> None
 
+  (*$T
+    Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ")
+    Split.left ~by:"__" "a__c__e_f" = Some ("a", "c__e_f")
+    Split.left ~by:"_" "abcde" = None
+    Split.left ~by:"bb" "abbc" = Some ("a", "c")
+    Split.left ~by:"a_" "abcde" = None
+  *)
+
   let right_exn ~by s =
     let i = rfind ~sub:by s in
     if i = ~-1 then raise Not_found
@@ -422,10 +507,29 @@ module Split = struct
       String.sub s 0 i, String.sub s right (String.length s - right)
 
   let right ~by s = try Some (right_exn ~by s) with Not_found -> None
+
+  (*$T
+    Split.right ~by:" " "ab cde f g" = Some ("ab cde f", "g")
+    Split.right ~by:"__" "a__c__e_f" = Some ("a__c", "e_f")
+    Split.right ~by:"_" "abcde" = None
+    Split.right ~by:"a_" "abcde" = None
+  *)
+
 end
 
 let split_on_char c s: _ list =
   Split.list_cpy ~drop:Split.no_drop ~by:(String.make 1 c) s
+
+(*$= & ~printer:Q.Print.(list string)
+  ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
+    (split_on_char ' ' "a few words from our sponsors")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    let s = split_on_char ' ' s |> String.concat " " in \
+    s = (split_on_char ' ' s |> String.concat " "))
+*)
 
 let split ~by s = Split.list_cpy ~by s
 
@@ -447,6 +551,20 @@ let compare_versions a b =
           if c<>0 then c else cmp_rec a b
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
+
+(*$T
+  compare_versions "0.1.3" "0.1" > 0
+  compare_versions "10.1" "2.0" > 0
+  compare_versions "0.1.alpha" "0.1" > 0
+  compare_versions "0.3.dev" "0.4" < 0
+  compare_versions "0.foo" "0.0" < 0
+  compare_versions "1.2.3.4" "01.2.4.3" < 0
+*)
+
+(*$Q
+  Q.(pair printable_string printable_string) (fun (a,b) -> \
+    CCOrd.equiv (compare_versions a b) (CCOrd.opp compare_versions b a))
+*)
 
 type nat_chunk =
   | NC_char of char
@@ -486,6 +604,25 @@ let compare_natural a b =
   in
   cmp_rec (chunks a) (chunks b)
 
+(*$T
+  compare_natural "foo1" "foo2" < 0
+  compare_natural "foo11" "foo2" > 0
+  compare_natural "foo11" "foo11" = 0
+  compare_natural "foo011" "foo11" = 0
+  compare_natural "foo1a" "foo1b" < 0
+  compare_natural "foo1a1" "foo1a2" < 0
+  compare_natural "foo1a17" "foo1a2" > 0
+*)
+
+(*Q
+  (Q.pair printable_string printable_string) (fun (a,b) -> \
+    CCOrd.opp (compare_natural a b) = compare_natural b a)
+  (Q.printable_string) (fun a -> compare_natural a a = 0)
+  (Q.triple printable_string printable_string printable_string) (fun (a,b,c) -> \
+    if compare_natural a b < 0 && compare_natural b c < 0 \
+    then compare_natural a c < 0 else Q.assume_fail())
+*)
+
 let edit_distance s1 s2 =
   if length s1 = 0
   then length s2
@@ -518,6 +655,35 @@ let edit_distance s1 s2 =
     v1.(length s2)
   end
 
+(*$Q
+  Q.(string_of_size Gen.(0 -- 30)) (fun s -> \
+    edit_distance s s = 0)
+*)
+
+(* test that building a from s, and mutating one char of s, yields
+   a string s' that is accepted by a.
+
+   --> generate triples (s, i, c) where c is a char, s a non empty string
+   and i a valid index in s.
+*)
+
+(*$QR
+  (
+    let gen = Q.Gen.(
+      3 -- 10 >>= fun len ->
+      0 -- (len-1) >>= fun i ->
+      string_size (return len) >>= fun s ->
+      char >|= fun c -> (s,i,c)
+    ) in
+    let small (s,_,_) = String.length s in
+    Q.make ~small gen
+  )
+  (fun (s,i,c) ->
+    let s' = Bytes.of_string s in
+    Bytes.set s' i c;
+    edit_distance s (Bytes.to_string s') <= 1)
+*)
+
 let repeat s n =
   assert (n>=0);
   let len = String.length s in
@@ -536,6 +702,16 @@ let prefix ~pre s =
     check 0
   )
 
+(*$T
+  prefix ~pre:"aab" "aabcd"
+  not (prefix ~pre:"ab" "aabcd")
+  not (prefix ~pre:"abcd" "abc")
+  prefix ~pre:"abc" "abcde"
+  prefix ~pre:"" ""
+  prefix ~pre:"" "abc"
+  prefix ~pre:"abc" "abc"
+*)
+
 let suffix ~suf s =
   let len = String.length suf in
   if len > String.length s then false
@@ -549,6 +725,14 @@ let suffix ~suf s =
     check 0
   )
 
+(*$T
+  suffix ~suf:"cd" "abcd"
+  suffix ~suf:"" ""
+  suffix ~suf:"" "abc"
+  not (suffix ~suf:"cd" "abcde")
+  not (suffix ~suf:"abcd" "cd")
+*)
+
 let take n s =
   if n < String.length s
   then String.sub s 0 n
@@ -561,15 +745,33 @@ let drop n s =
 
 let take_drop n s = take n s, drop n s
 
+(*$=
+  ("ab", "cd") (take_drop 2 "abcd")
+  ("abc", "") (take_drop 3 "abc")
+  ("abc", "") (take_drop 5 "abc")
+*)
+
 let chop_suffix ~suf s =
   if suffix ~suf s
   then Some (String.sub s 0 (String.length s-String.length suf))
   else None
 
+(*$= & ~printer:Q.Print.(option string)
+  (Some "ab") (chop_suffix ~suf:"cd" "abcd")
+  None (chop_suffix ~suf:"cd" "abcde")
+  None (chop_suffix ~suf:"abcd" "cd")
+*)
+
 let chop_prefix ~pre s =
   if prefix ~pre s
   then Some (String.sub s (String.length pre) (String.length s-String.length pre))
   else None
+
+(*$= & ~printer:Q.Print.(option string)
+  (Some "cd") (chop_prefix ~pre:"aab" "aabcd")
+  None (chop_prefix ~pre:"ab" "aabcd")
+  None (chop_prefix ~pre:"abcd" "abc")
+*)
 
 let blit = String.blit
 
@@ -587,6 +789,15 @@ let pad ?(side=`Left) ?(c=' ') n s =
     match side with
       | `Left -> init n (fun i -> if i < pad_len then c else s.[i-pad_len])
       | `Right -> init n (fun i -> if i < len_s then s.[i] else c)
+
+(*$= & ~printer:Q.Print.string
+  "  42" (pad 4 "42")
+  "0042" (pad ~c:'0' 4 "42")
+  "4200" (pad ~side:`Right ~c:'0' 4 "42")
+  "hello" (pad 4 "hello")
+  "aaa" (pad ~c:'a' 3 "")
+  "aaa" (pad ~side:`Right ~c:'a' 3 "")
+*)
 
 let _to_gen s i0 len =
   let i = ref i0 in
@@ -639,6 +850,11 @@ let of_list l =
   List.iter (Buffer.add_char buf) l;
   Buffer.contents buf
 
+(*$T
+  of_list ['a'; 'b'; 'c'] = "abc"
+  of_list [] = ""
+*)
+
 let of_array a =
   init (Array.length a) (fun i -> a.(i))
 
@@ -648,6 +864,14 @@ let to_array s =
 let lines_gen s = Split.gen_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
 
 let lines s = Split.list_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
+
+(*$= & ~printer:Q.Print.(list @@ Printf.sprintf "%S")
+  ["ab"; "c"] (lines "ab\nc")
+  ["ab"; "c"] (lines "ab\nc\n")
+  [] (lines "")
+  [""] (lines "\n")
+  [""; "a"] (lines "\na")
+*)
 
 let concat_gen_buf ~sep g : Buffer.t =
   let b = Buffer.create 256 in
@@ -683,9 +907,31 @@ let unlines_gen g =
   Buffer.add_char buf '\n';
   Buffer.contents buf
 
+(*$= & ~printer:CCFun.id
+  "" (unlines [])
+  "ab\nc\n" (unlines ["ab"; "c"])
+*)
+
+(*$Q
+  Q.printable_string (fun s -> trim (unlines (lines s)) = trim s)
+  Q.printable_string (fun s -> trim (unlines_gen (lines_gen s)) = trim s)
+*)
+
+(*$Q
+  Q.(list string) (fun l -> \
+    let l = unlines l |> lines in \
+    l = (unlines l |> lines))
+*)
+
 let set s i c =
   if i<0 || i>= String.length s then invalid_arg "CCString.set";
   init (String.length s) (fun j -> if i=j then c else s.[j])
+
+(*$T
+  set "abcd" 1 '_' = "a_cd"
+  set "abcd" 0 '-' = "-bcd"
+  (try ignore (set "abc" 5 '_'); false with Invalid_argument _ -> true)
+*)
 
 let iter = String.iter
 
@@ -698,12 +944,25 @@ let filter_map f s =
     s;
   Buffer.contents buf
 
+(*$= & ~printer:Q.Print.string
+  "bcef" (filter_map \
+     (function 'c' -> None | c -> Some (Char.chr (Char.code c + 1))) "abcde")
+*)
+
 let filter f s =
   let buf = Buffer.create (String.length s) in
   iter
     (fun c -> if f c then Buffer.add_char buf c)
     s;
   Buffer.contents buf
+
+(*$= & ~printer:Q.Print.string
+  "abde" (filter (function 'c' -> false | _ -> true) "abcdec")
+*)
+
+(*$Q
+  Q.printable_string (fun s -> filter (fun _ -> true) s = s)
+*)
 
 let flat_map ?sep f s =
   let buf = Buffer.create (String.length s) in
@@ -742,6 +1001,24 @@ let rtrim s =
   let i = ref (length s-1) in
   while !i >= 0 && is_space_ (unsafe_get s !i) do decr i done;
   if !i < length s-1 then sub s 0 (!i+1) else s
+
+(*$= & ~printer:id
+  "abc " (ltrim " abc ")
+  " abc" (rtrim " abc ")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    String.trim s = (s |> ltrim |> rtrim))
+  Q.(printable_string) (fun s -> ltrim s = ltrim (ltrim s))
+  Q.(printable_string) (fun s -> rtrim s = rtrim (rtrim s))
+  Q.(printable_string) (fun s -> \
+    let s' = ltrim s in \
+    if s'="" then Q.assume_fail() else s'.[0] <> ' ')
+  Q.(printable_string) (fun s -> \
+    let s' = rtrim s in \
+    if s'="" then Q.assume_fail() else s'.[String.length s'-1] <> ' ')
+*)
 
 let map2 f s1 s2 =
   if length s1 <> length s2 then invalid_arg "CCString.map2";
@@ -783,6 +1060,18 @@ let equal_caseless s1 s2: bool =
     (fun c1 c2 -> CCChar.equal (CCChar.lowercase_ascii c1) (CCChar.lowercase_ascii c2))
     s1 s2
 
+(*$T
+  equal_caseless "foo" "FoO"
+  equal_caseless "helLo" "HEllO"
+*)
+
+(*$Q
+  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
+    equal_caseless s1 s2 = (lowercase_ascii s1=lowercase_ascii s2))
+  Q.(printable_string) (fun s -> equal_caseless s s)
+  Q.(printable_string) (fun s -> equal_caseless (uppercase_ascii s) s)
+*)
+
 let pp_buf buf s =
   Buffer.add_char buf '"';
   Buffer.add_string buf s;
@@ -823,6 +1112,36 @@ module Sub = struct
       if i = j then acc
       else fold_rec f (f acc s.[i]) s (i+1) j
     in fold_rec f acc s i (i+len)
+
+  (*$T
+    let s = Sub.make "abcde" 1 3 in \
+      Sub.fold (fun acc x -> x::acc) [] s = ['d'; 'c'; 'b']
+    Sub.make "abcde" 1 3 |> Sub.copy = "bcd"
+    Sub.full "abcde" |> Sub.copy = "abcde"
+  *)
+
+  (*$T
+    let sub = Sub.make " abc " 1 ~len:3 in \
+    "\"abc\"" = (CCFormat.to_string Sub.pp sub)
+  *)
+
+  (*$= & ~printer:(String.make 1)
+    'b' Sub.(get (make "abc" 1 ~len:2) 0)
+    'c' Sub.(get (make "abc" 1 ~len:2) 1)
+  *)
+
+  (*$QR
+    Q.(printable_string_of_size Gen.(3--10)) (fun s ->
+      let open Sequence.Infix in
+      begin
+        (0 -- (length s-2)
+          >|= fun i -> i, Sub.make s i ~len:(length s-i))
+        >>= fun (i,sub) ->
+        (0 -- (Sub.length sub-1) >|= fun j -> i,j,sub)
+      end
+      |> Sequence.for_all
+        (fun (i,j,sub) -> Sub.get sub j = s.[i+j]))
+  *)
 
   let to_gen (s,i,len) = _to_gen s i len
   let to_seq (s,i,len) k =

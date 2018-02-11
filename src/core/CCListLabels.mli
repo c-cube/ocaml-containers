@@ -232,12 +232,6 @@ val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a l
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
     @since 0.17 *)
 
-(*$Q
-    Q.(pair small_int (list small_int)) (fun (x,l) -> \
-      let l = List.sort Pervasives.compare l in \
-      is_sorted (sorted_insert x l))
-*)
-
 val uniq_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list
 (** [uniq_succ l] removes duplicate elements that occur one next to the other.
     Examples:
@@ -263,7 +257,7 @@ val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
     itself as second argument. *)
 
 val foldi : f:('b -> int -> 'a -> 'b) -> init:'b -> 'a t -> 'b
-(** Like [fold] but it also passes in the index of each element to the folded function. *)
+(** Like [fold] but it also passes in the index of each element to the folded function. Tail-recursive. *)
 
 val get_at_idx : int -> 'a t -> 'a option
 (** Get by index in the list.

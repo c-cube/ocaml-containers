@@ -484,7 +484,7 @@ Beforehand, check `grep deprecated -r src` to see whether some functions
 can be removed.
 
 . `make test`
-. update version in `_oasis`
+. update version in `containers.opam`
 . `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
 . check status of modules (`{b status: foo}`) and update if required;
    removed deprecated functions, etc.
@@ -492,8 +492,7 @@ can be removed.
 . commit the changes
 . `git checkout stable`
 . `git merge master`
-. `oasis setup; make test doc`
-. update `opam` (the version field; remove `oasis` in deps)
+. `make test doc`
 . tag, and push both to github
 . `opam pin add containers https://github.com/c-cube/ocaml-containers.git#<release>`
 . new opam package: `opam publish prepare; opam publish submit`

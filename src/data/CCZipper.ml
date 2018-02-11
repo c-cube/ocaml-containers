@@ -11,6 +11,11 @@ let is_empty = function
   | [], [] -> true
   | _ -> false
 
+(*$T
+  (is_empty empty)
+  not ([42] |> make |> right |> is_empty)
+*)
+
 let to_list (l,r) = List.rev_append l r
 
 let to_rev_list (l,r) = List.rev_append r l
@@ -89,3 +94,9 @@ let drop_after (l, r) = match r with
   | x :: _ -> l, [x]
 
 let drop_after_and_focused (l, _) = l, []
+
+(*$=
+  ([1], [2]) (drop_after ([1], [2;3]))
+  ([1], []) (drop_after ([1], []))
+  ([1], []) (drop_after_and_focused ([1], [2;3]))
+*)

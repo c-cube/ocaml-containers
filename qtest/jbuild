@@ -6,7 +6,7 @@
 
 (rule
   ((targets (run_qtest.ml))
-   (deps (make.bc))
+   (deps (make.bc (files_recursively_in ../src)))
    ;(libraries (qtest qcheck))
    (action
      (run ./make.bc -target ${@}))

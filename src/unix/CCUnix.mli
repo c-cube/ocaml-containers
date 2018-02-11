@@ -16,12 +16,6 @@ type 'a gen = unit -> 'a option
 val escape_str : string -> string
 (** Escape a string so it can be a shell argument. *)
 
-(*$T
-  escape_str "foo" = "foo"
-  escape_str "foo bar" = "'foo bar'"
-  escape_str "fo'o b'ar" = "'fo'\\''o b'\\''ar'"
-*)
-
 type call_result =
   < stdout:string;
     stderr:string;
@@ -44,12 +38,6 @@ val call_full :
     @param env environment to run the command in.
 *)
 
-(*$T
-  call_full ~stdin:(`Str "abc") "cat" |> stdout = "abc"
-  call_full "echo %s" (escape_str "a'b'c") |> stdout = "a'b'c\n"
-  call_full "echo %s" "a'b'c" |> stdout = "abc\n"
-*)
-
 val call :
   ?bufsize:int ->
   ?stdin:[`Gen of string gen | `Str of string] ->
@@ -65,12 +53,6 @@ val call_stdout :
   ?env:string array ->
   ('a, Buffer.t, unit, string) format4 ->
   'a
-
-(*$T
-  call_stdout ~stdin:(`Str "abc") "cat" = "abc"
-  call_stdout "echo %s" (escape_str "a'b'c") = "a'b'c\n"
-  call_stdout "echo %s" "a'b'c" = "abc\n"
-*)
 
 type line = string
 

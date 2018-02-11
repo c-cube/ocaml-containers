@@ -5,7 +5,7 @@ build:
 	jbuilder build @install
 
 test: build
-	jbuilder runtest --no-buffer
+	jbuilder runtest --no-buffer --force
 
 clean:
 	jbuilder clean
@@ -27,6 +27,12 @@ update_next_tag:
 	@echo "update version to $(VERSION)..."
 	sed -i "s/NEXT_VERSION/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
 	sed -i "s/NEXT_RELEASE/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
+
+release: update_next_tag
+	@echo "release version $(VERSION)..."
+	git tag -f $(VERSION) ; git push origin :$(VERSION) ; git push origin $(VERSION)
+	opam publish prepare https://github.com/c-cube/qcheck/archive/$(VERSION).tar.gz
+	@echo "review the release, then type 'opam publish submit qcheck.$(VERSION)/'"
 
 watch:
 	while find src/ benchs/ -print0 | xargs -0 inotifywait -e delete_self -e modify ; do \

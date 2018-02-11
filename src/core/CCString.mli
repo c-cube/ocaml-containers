@@ -78,25 +78,9 @@ val init : int -> (int -> char) -> string
 (** Analog to [Array.init].
     @since 0.3.3 *)
 
-(*$T
-  init 3 (fun i -> [|'a'; 'b'; 'c'|].(i)) = "abc"
-  init 0 (fun _ -> assert false) = ""
-*)
-
 val rev : string -> string
 (** [rev s] returns the reverse of [s].
     @since 0.17 *)
-
-(*$Q
-  Q.printable_string (fun s -> s = rev (rev s))
-  Q.printable_string (fun s -> length s = length (rev s))
-*)
-
-(*$=
-  "abc" (rev "cba")
-  "" (rev "")
-  " " (rev " ")
-*)
 
 val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
 (** [pad n str] ensures that [str] is at least [n] bytes long,
@@ -104,15 +88,6 @@ val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
     @param side determines where padding occurs (default: [`Left]).
     @param c the char used to pad (default: ' ').
     @since 0.17 *)
-
-(*$= & ~printer:Q.Print.string
-  "  42" (pad 4 "42")
-  "0042" (pad ~c:'0' 4 "42")
-  "4200" (pad ~side:`Right ~c:'0' 4 "42")
-  "hello" (pad 4 "hello")
-  "aaa" (pad ~c:'a' 3 "")
-  "aaa" (pad ~side:`Right ~c:'a' 3 "")
-*)
 
 val of_char : char -> string
 (** [of_char 'a'] is ["a"].
@@ -133,29 +108,11 @@ val of_list : char list -> string
 val of_array : char array -> string
 (** Convert an array of characters to a string. *)
 
-(*$T
-  of_list ['a'; 'b'; 'c'] = "abc"
-  of_list [] = ""
-*)
-
 val to_array : string -> char array
 (** Return the array of characters contained in the string. *)
 
 val find : ?start:int -> sub:string -> string -> int
 (** Find [sub] in string, returns its first index or [-1]. *)
-
-(*$= & ~printer:string_of_int
-  1 (find ~sub:"bc" "abcd")
-  ~-1 (find ~sub:"bc" "abd")
-  1 (find ~sub:"a" "_a_a_a_")
-  6 (find ~sub:"a" ~start:5 "a1a234a")
-*)
-
-(*$Q & ~count:10_000
-  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
-    let i = find ~sub:s2 s1 in \
-    i < 0 || String.sub s1 i (length s2) = s2)
-*)
 
 val find_all : ?start:int -> sub:string -> string -> int gen
 (** [find_all ~sub s] finds all occurrences of [sub] in [s], even overlapping
@@ -169,40 +126,14 @@ val find_all_l : ?start:int -> sub:string -> string -> int list
     @param start starting position in [s].
     @since 0.17 *)
 
-(*$= & ~printer:Q.Print.(list int)
-  [1; 6] (find_all_l ~sub:"bc" "abc aabc  aab")
-  [] (find_all_l ~sub:"bc" "abd")
-  [76] (find_all_l ~sub:"aaaaaa" \
-    "aabbaabbaaaaabbbbabababababbbbabbbabbaaababbbaaabaabbaabbaaaabbababaaaabbaabaaaaaabbbaaaabababaabaaabbaabaaaabbababbaabbaaabaabbabababbbaabababaaabaaababbbaaaabbbaabaaababbabaababbaabbaaaaabababbabaababbbaaabbabbabababaaaabaaababaaaaabbabbaabbabbbbbbbbbbbbbbaabbabbbbbabbaaabbabbbbabaaaaabbababbbaaaa")
-*)
-
 val mem : ?start:int -> sub:string -> string -> bool
 (** [mem ~sub s] is true iff [sub] is a substring of [s].
     @since 0.12 *)
-
-(*$T
-   mem ~sub:"bc" "abcd"
-   not (mem ~sub:"a b" "abcd")
-*)
 
 val rfind : sub:string -> string -> int
 (** Find [sub] in string from the right, returns its first index or [-1].
     Should only be used with very small [sub].
     @since 0.12 *)
-
-(*$= & ~printer:string_of_int
-  1 (rfind ~sub:"bc" "abcd")
-  ~-1 (rfind ~sub:"bc" "abd")
-  5 (rfind ~sub:"a" "_a_a_a_")
-  4 (rfind ~sub:"bc" "abcdbcd")
-  6 (rfind ~sub:"a" "a1a234a")
-*)
-
-(*$Q & ~count:10_000
-  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
-    let i = rfind ~sub:s2 s1 in \
-    i < 0 || String.sub s1 i (length s2) = s2)
-*)
 
 val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string -> string
 (** [replace ~sub ~by s] replaces some occurrences of [sub] by [by] in [s].
@@ -215,16 +146,6 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
     @raise Invalid_argument if [sub = ""].
     @since 0.14 *)
 
-(*$= & ~printer:CCFun.id
-  (replace ~which:`All ~sub:"a" ~by:"b" "abcdabcd") "bbcdbbcd"
-  (replace ~which:`Left ~sub:"a" ~by:"b" "abcdabcd") "bbcdabcd"
-  (replace ~which:`Right ~sub:"a" ~by:"b" "abcdabcd") "abcdbbcd"
-  (replace ~which:`All ~sub:"ab" ~by:"hello" "  abab cdabb a") \
-    "  hellohello cdhellob a"
-  (replace ~which:`Left ~sub:"ab" ~by:"nope" " a b c d ") " a b c d "
-  (replace ~sub:"a" ~by:"b" "1aa234a") "1bb234b"
-*)
-
 val is_sub : sub:string -> int -> string -> int -> len:int -> bool
 (** [is_sub ~sub i s j ~len] returns [true] iff the substring of
     [sub] starting at position [i] and of length [len] is a substring
@@ -236,49 +157,19 @@ val repeat : string -> int -> string
 val prefix : pre:string -> string -> bool
 (** [prefix ~pre s] returns [true] iff [pre] is a prefix of [s]. *)
 
-(*$T
-  prefix ~pre:"aab" "aabcd"
-  not (prefix ~pre:"ab" "aabcd")
-  not (prefix ~pre:"abcd" "abc")
-  prefix ~pre:"abc" "abcde"
-  prefix ~pre:"" ""
-  prefix ~pre:"" "abc"
-  prefix ~pre:"abc" "abc"
-*)
-
 val suffix : suf:string -> string -> bool
 (** [suffix ~suf s] returns [true] iff [suf] is a suffix of [s].
     @since 0.7 *)
-
-(*$T
-  suffix ~suf:"cd" "abcd"
-  suffix ~suf:"" ""
-  suffix ~suf:"" "abc"
-  not (suffix ~suf:"cd" "abcde")
-  not (suffix ~suf:"abcd" "cd")
-*)
 
 val chop_prefix : pre:string -> string -> string option
 (** [chop_prefix ~pre s] removes [pre] from [s] if [pre] really is a prefix
     of [s], returns [None] otherwise.
     @since 0.17 *)
 
-(*$= & ~printer:Q.Print.(option string)
-  (Some "cd") (chop_prefix ~pre:"aab" "aabcd")
-  None (chop_prefix ~pre:"ab" "aabcd")
-  None (chop_prefix ~pre:"abcd" "abc")
-*)
-
 val chop_suffix : suf:string -> string -> string option
 (** [chop_suffix ~suf s] removes [suf] from [s] if [suf] really is a suffix
     of [s], returns [None] otherwise.
     @since 0.17 *)
-
-(*$= & ~printer:Q.Print.(option string)
-  (Some "ab") (chop_suffix ~suf:"cd" "abcd")
-  None (chop_suffix ~suf:"cd" "abcde")
-  None (chop_suffix ~suf:"abcd" "cd")
-*)
 
 val take : int -> string -> string
 (** [take n s] keeps only the [n] first chars of [s].
@@ -292,12 +183,6 @@ val take_drop : int -> string -> string * string
 (** [take_drop n s = take n s, drop n s].
     @since 0.17 *)
 
-(*$=
-  ("ab", "cd") (take_drop 2 "abcd")
-  ("abc", "") (take_drop 3 "abc")
-  ("abc", "") (take_drop 5 "abc")
-*)
-
 val lines : string -> string list
 (** [lines s] returns a list of the lines of [s] (splits along '\n').
     @since 0.10 *)
@@ -305,14 +190,6 @@ val lines : string -> string list
 val lines_gen : string -> string gen
 (** [lines_gen s] returns a generator of the lines of [s] (splits along '\n').
     @since 0.10 *)
-
-(*$= & ~printer:Q.Print.(list @@ Printf.sprintf "%S")
-  ["ab"; "c"] (lines "ab\nc")
-  ["ab"; "c"] (lines "ab\nc\n")
-  [] (lines "")
-  [""] (lines "\n")
-  [""; "a"] (lines "\na")
-*)
 
 val concat_gen : sep:string -> string gen -> string
 (** [concat_gen ~sep g] concatenates all strings of [g], separated with [sep].
@@ -326,33 +203,11 @@ val unlines_gen : string gen -> string
 (** [unlines_gen g] concatenates all strings of [g], separated with '\n'.
     @since 0.10 *)
 
-(*$= & ~printer:CCFun.id
-  "" (unlines [])
-  "ab\nc\n" (unlines ["ab"; "c"])
-*)
-
-(*$Q
-  Q.printable_string (fun s -> trim (unlines (lines s)) = trim s)
-  Q.printable_string (fun s -> trim (unlines_gen (lines_gen s)) = trim s)
-*)
-
-(*$Q
-  Q.(list string) (fun l -> \
-    let l = unlines l |> lines in \
-    l = (unlines l |> lines))
-*)
-
 val set : string -> int -> char -> string
 (** [set s i c] creates a new string which is a copy of [s], except
     for index [i], which becomes [c].
     @raise Invalid_argument if [i] is an invalid index.
     @since 0.12 *)
-
-(*$T
-  set "abcd" 1 '_' = "a_cd"
-  set "abcd" 0 '-' = "-bcd"
-  (try ignore (set "abc" 5 '_'); false with Invalid_argument _ -> true)
-*)
 
 val iter : (char -> unit) -> string -> unit
 (** Alias to {!String.iter}.
@@ -376,22 +231,9 @@ val filter_map : (char -> char option) -> string -> string
     the corresponding element of [s] is discarded).
     @since 0.17 *)
 
-(*$= & ~printer:Q.Print.string
-  "bcef" (filter_map \
-     (function 'c' -> None | c -> Some (Char.chr (Char.code c + 1))) "abcde")
-*)
-
 val filter : (char -> bool) -> string -> string
 (** [filter f s] discards characters not satisfying [f].
     @since 0.17 *)
-
-(*$= & ~printer:Q.Print.string
-  "abde" (filter (function 'c' -> false | _ -> true) "abcdec")
-*)
-
-(*$Q
-  Q.printable_string (fun s -> filter (fun _ -> true) s = s)
-*)
 
 val flat_map : ?sep:string -> (char -> string) -> string -> string
 (** Map each chars to a string, then concatenates them all.
@@ -415,24 +257,6 @@ val ltrim : t -> t
 val rtrim : t -> t
 (** Trim space on the right (see {!String.trim} for more details).
     @since 1.2 *)
-
-(*$= & ~printer:id
-  "abc " (ltrim " abc ")
-  " abc" (rtrim " abc ")
-*)
-
-(*$Q
-  Q.(printable_string) (fun s -> \
-    String.trim s = (s |> ltrim |> rtrim))
-  Q.(printable_string) (fun s -> ltrim s = ltrim (ltrim s))
-  Q.(printable_string) (fun s -> rtrim s = rtrim (rtrim s))
-  Q.(printable_string) (fun s -> \
-    let s' = ltrim s in \
-    if s'="" then Q.assume_fail() else s'.[0] <> ' ')
-  Q.(printable_string) (fun s -> \
-    let s' = rtrim s in \
-    if s'="" then Q.assume_fail() else s'.[String.length s'-1] <> ' ')
-*)
 
 (** {2 Operations on 2 strings} *)
 
@@ -486,18 +310,6 @@ val lowercase_ascii : string -> string
 val equal_caseless : string -> string -> bool
 (** Comparison without respect to {b ascii} lowercase.
     @since 1.2 *)
-
-(*$T
-  equal_caseless "foo" "FoO"
-  equal_caseless "helLo" "HEllO"
-*)
-
-(*$Q
-  Q.(pair printable_string printable_string) (fun (s1,s2) -> \
-    equal_caseless s1 s2 = (lowercase_ascii s1=lowercase_ascii s2))
-  Q.(printable_string) (fun s -> equal_caseless s s)
-  Q.(printable_string) (fun s -> equal_caseless (uppercase_ascii s) s)
-*)
 
 (** {2 Finding}
 
@@ -566,12 +378,6 @@ module Split : sig
 
   val list_cpy : ?drop:drop_if_empty -> by:string -> string -> string list
 
-  (*$T
-    Split.list_cpy ~by:"," "aa,bb,cc" = ["aa"; "bb"; "cc"]
-    Split.list_cpy ~by:"--" "a--b----c--" = ["a"; "b"; ""; "c"; ""]
-    Split.list_cpy ~by:" " "hello  world aie" = ["hello"; ""; "world"; "aie"]
-  *)
-
   val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
 
   val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
@@ -588,14 +394,6 @@ module Split : sig
       @raise Not_found if [by] is not part of the string.
       @since 0.16 *)
 
-  (*$T
-    Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ")
-    Split.left ~by:"__" "a__c__e_f" = Some ("a", "c__e_f")
-    Split.left ~by:"_" "abcde" = None
-    Split.left ~by:"bb" "abbc" = Some ("a", "c")
-    Split.left ~by:"a_" "abcde" = None
-  *)
-
   val right : by:string -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the rightmost part of
       the string.
@@ -606,28 +404,11 @@ module Split : sig
       @raise Not_found if [by] is not part of the string.
       @since 0.16 *)
 
-  (*$T
-    Split.right ~by:" " "ab cde f g" = Some ("ab cde f", "g")
-    Split.right ~by:"__" "a__c__e_f" = Some ("a__c", "e_f")
-    Split.right ~by:"_" "abcde" = None
-    Split.right ~by:"a_" "abcde" = None
-  *)
 end
 
 val split_on_char : char -> string -> string list
 (** Split the string along the given char.
     @since 1.2 *)
-
-(*$= & ~printer:Q.Print.(list string)
-  ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
-    (split_on_char ' ' "a few words from our sponsors")
-*)
-
-(*$Q
-  Q.(printable_string) (fun s -> \
-    let s = split_on_char ' ' s |> String.concat " " in \
-    s = (split_on_char ' ' s |> String.concat " "))
-*)
 
 val split : by:string -> string -> string list
 (** Alias to {!Split.list_cpy}.
@@ -640,77 +421,15 @@ val compare_versions : string -> string -> int
     considering that numbers are above text.
     @since 0.13 *)
 
-(*$T
-  compare_versions "0.1.3" "0.1" > 0
-  compare_versions "10.1" "2.0" > 0
-  compare_versions "0.1.alpha" "0.1" > 0
-  compare_versions "0.3.dev" "0.4" < 0
-  compare_versions "0.foo" "0.0" < 0
-  compare_versions "1.2.3.4" "01.2.4.3" < 0
-*)
-
-(*$Q
-  Q.(pair printable_string printable_string) (fun (a,b) -> \
-    CCOrd.equiv (compare_versions a b) (CCOrd.opp compare_versions b a))
-*)
-
 val compare_natural : string -> string -> int
 (** Natural Sort Order, comparing chunks of digits as natural numbers.
     https://en.wikipedia.org/wiki/Natural_sort_order
     @since 1.3 *)
 
-(*$T
-  compare_natural "foo1" "foo2" < 0
-  compare_natural "foo11" "foo2" > 0
-  compare_natural "foo11" "foo11" = 0
-  compare_natural "foo011" "foo11" = 0
-  compare_natural "foo1a" "foo1b" < 0
-  compare_natural "foo1a1" "foo1a2" < 0
-  compare_natural "foo1a17" "foo1a2" > 0
-*)
-
-(*Q
-  (Q.pair printable_string printable_string) (fun (a,b) -> \
-    CCOrd.opp (compare_natural a b) = compare_natural b a)
-  (Q.printable_string) (fun a -> compare_natural a a = 0)
-  (Q.triple printable_string printable_string printable_string) (fun (a,b,c) -> \
-    if compare_natural a b < 0 && compare_natural b c < 0 \
-    then compare_natural a c < 0 else Q.assume_fail())
-*)
-
 val edit_distance : string -> string -> int
 (** Edition distance between two strings. This satisfies the classical
     distance axioms: it is always positive, symmetric, and satisfies
     the formula [distance a b + distance b c >= distance a c]. *)
-
-(*$Q
-  Q.(string_of_size Gen.(0 -- 30)) (fun s -> \
-    edit_distance s s = 0)
-*)
-
-(* test that building a from s, and mutating one char of s, yields
-   a string s' that is accepted by a.
-
-   --> generate triples (s, i, c) where c is a char, s a non empty string
-   and i a valid index in s.
-*)
-
-(*$QR
-  (
-    let gen = Q.Gen.(
-      3 -- 10 >>= fun len ->
-      0 -- (len-1) >>= fun i ->
-      string_size (return len) >>= fun s ->
-      char >|= fun c -> (s,i,c)
-    ) in
-    let small (s,_,_) = String.length s in
-    Q.make ~small gen
-  )
-  (fun (s,i,c) ->
-    let s' = Bytes.of_string s in
-    Bytes.set s' i c;
-    edit_distance s (Bytes.to_string s') <= 1)
-*)
 
 (** {2 Slices} A contiguous part of a string *)
 
@@ -738,33 +457,4 @@ module Sub : sig
 
   include S with type t := t
 
-  (*$T
-    let s = Sub.make "abcde" 1 3 in \
-      Sub.fold (fun acc x -> x::acc) [] s = ['d'; 'c'; 'b']
-    Sub.make "abcde" 1 3 |> Sub.copy = "bcd"
-    Sub.full "abcde" |> Sub.copy = "abcde"
-  *)
-
-  (*$T
-    let sub = Sub.make " abc " 1 ~len:3 in \
-    "\"abc\"" = (CCFormat.to_string Sub.pp sub)
-  *)
-
-  (*$= & ~printer:(String.make 1)
-    'b' Sub.(get (make "abc" 1 ~len:2) 0)
-    'c' Sub.(get (make "abc" 1 ~len:2) 1)
-  *)
-
-  (*$QR
-    Q.(printable_string_of_size Gen.(3--10)) (fun s ->
-      let open Sequence.Infix in
-      begin
-        (0 -- (length s-2)
-          >|= fun i -> i, Sub.make s i ~len:(length s-i))
-        >>= fun (i,sub) ->
-        (0 -- (Sub.length sub-1) >|= fun j -> i,j,sub)
-      end
-      |> Sequence.for_all
-        (fun (i,j,sub) -> Sub.get sub j = s.[i+j]))
-  *)
 end

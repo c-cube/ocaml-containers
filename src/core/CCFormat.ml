@@ -46,35 +46,7 @@ let newline = Format.pp_force_newline
 let substring out (s,i,len): unit =
   string out (String.sub s i len)
 
-let text out (s:string): unit =
-  let len = String.length s in
-  let i = ref 0 in
-  let search_ c =
-    try Some (String.index_from s !i c) with Not_found -> None
-  in
-  while !i < len do
-    let j_newline = search_ '\n' in
-    let j_space = search_ ' ' in
-    let on_newline j =
-      substring out (s, !i, j - !i);
-      newline out ();
-      i := j + 1
-    and on_space j =
-      substring out (s, !i, j - !i);
-      Format.pp_print_space out ();
-      i := j + 1
-    in
-    begin match j_newline, j_space with
-      | None, None ->
-        (* done *)
-        substring out (s, !i, len - !i);
-        i := len
-      | Some j, None -> on_newline j
-      | None, Some j -> on_space j
-      | Some j1, Some j2 ->
-        if j1<j2 then on_newline j1 else on_space j2
-    end
-  done
+let text = Format.pp_print_text
 
 (*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
   "a\nb\nc" (sprintf_no_color "@[<v>%a@]%!" text "a b c")
@@ -160,6 +132,11 @@ let const pp x out () = pp out x
 let some pp out = function
   | None -> ()
   | Some x -> pp out x
+
+let lazy_force pp out (lazy x) = pp out x
+
+let lazy_or ?(default=return "<lazy>") pp out x =
+  if Lazy.is_val x then pp out (Lazy.force x) else default out ()
 
 (** {2 IO} *)
 
@@ -266,6 +243,8 @@ let ansi_l_to_str_ = function
     Buffer.add_string buf "m";
     Buffer.contents buf
 
+exception No_such_style
+
 (* parse a tag *)
 let style_of_tag_ s = match String.trim s with
   | "reset" -> [`Reset]
@@ -286,7 +265,7 @@ let style_of_tag_ s = match String.trim s with
   | "Magenta" -> [`FG `Magenta; `Bold]
   | "Cyan" -> [`FG `Cyan; `Bold]
   | "White" -> [`FG `White; `Bold]
-  | s -> failwith ("unknown style: " ^ s)
+  | _ -> raise No_such_style
 
 let color_enabled = ref false
 
@@ -296,20 +275,21 @@ let mark_open_tag st ~or_else s =
     let style = style_of_tag_ s in
     Stack.push style st;
     if !color_enabled then ansi_l_to_str_ style else ""
-  with Not_found -> or_else s
+  with No_such_style -> or_else s
 
 let mark_close_tag st ~or_else s =
-  try
-    let _ = style_of_tag_ s in (* check if it's indeed about color *)
-    let style =
-      try
-        ignore (Stack.pop st); (* pop current style (if well-scoped...) *)
-        Stack.top st (* look at previous style *)
-      with Stack.Empty ->
-        [`Reset]
-    in
-    if !color_enabled then ansi_l_to_str_ style else ""
-  with Not_found -> or_else s
+  (* check if it's indeed about color *)
+  match style_of_tag_ s with
+    | _ ->
+      let style =
+        try
+          ignore (Stack.pop st); (* pop current style (if well-scoped...) *)
+          Stack.top st (* look at previous style *)
+        with Stack.Empty ->
+          [`Reset]
+      in
+      if !color_enabled then ansi_l_to_str_ style else ""
+    | exception No_such_style -> or_else s
 
 (* add color handling to formatter [ppf] *)
 let set_color_tag_handling ppf =
@@ -411,6 +391,10 @@ let ksprintf ~f fmt =
     (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
     out fmt
 
+(*$= & ~printer:CCFormat.(to_string (opt string))
+  (Some "hello world") \
+    (ksprintf "hello %a" CCFormat.string "world" ~f:(fun s -> Some s))
+*)
 
 module Dump = struct
   type 'a t = 'a printer
