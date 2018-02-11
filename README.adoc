@@ -45,6 +45,27 @@ Containers is:
 Some of the modules have been moved to their own repository (e.g. `sequence`,
 `gen`, `qcheck`) and are on opam for great fun and profit.
 
+== Migration Guide
+
+=== To 2.0
+
+- The type system should detect issues related to `print` renamed into `pp` easily.
+  If you are lucky, a call to `sed -i 's/print/pp/g'` on the concerned files
+  might help rename all the calls
+  properly.
+
+- many optional arguments have become mandatory, because their default value
+  would be a polymorphic "magic" operator such as `(=)` or `(>=)`.
+  Now these have to be specified explicitly, but during the transition
+  you can use `Pervasives.(=)` and `Pervasives.(>=)` as explicit arguments.
+
+- if your code contains `open Containers`, the biggest hurdle you face
+  might be that operators have become monomorphic by default.
+  We believe this is a useful change that prevents many subtle bugs.
+  However, during migration and until you use proper combinators for
+  equality (`CCEqual`), comparison (`CCOrd`), and hashing (`CCHash`),
+  you might want to add `open Pervasives` just after the `open Containers`.
+
 == Change Log
 
 See link:CHANGELOG.adoc[this file].
