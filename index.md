@@ -2,8 +2,20 @@
 
 [Current documentation](last)
 
-Other versions:
+Containers is an extension of OCaml's standard library (under BSD license)
+focused on data structures, combinators and iterators, without dependencies on
+unix, str or num. Every module is independent and is prefixed with 'CC' in the
+global namespace. Some modules extend the stdlib (e.g. CCList provides safe
+map/fold_right/append, and additional functions on lists).
+Alternatively, `open Containers` will bring enhanced versions of the standard
+modules into scope.
 
+The [README](https://github.com/c-cube/ocaml-containers/blob/master/README.adoc)
+contains a tutorial and more explanations about what Containers is about.
+
+## by version
+
+- [current](last)
 - [dev](dev)
 - [2.0](2.0)
 - [1.4](1.4)
