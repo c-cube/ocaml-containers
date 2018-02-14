@@ -9,7 +9,7 @@ build: [
 build-doc: [ "jbuilder" "build" "@doc" ]
 build-test: [ "jbuilder" "runtest" "-p" name "-j" jobs]
 depends: [
-  "jbuilder" {build}
+  "jbuilder" {build & >= "1.0+beta12"}
   "result"
 ]
 depopts: [
