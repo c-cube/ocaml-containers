@@ -27,3 +27,4 @@
 - Orbifx (Stavros Polymenis)
 - Rand (@rand00)
 - Dave Aitken (@actionshrimp)
+- Etienne Millon (@emillon)
