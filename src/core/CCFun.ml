@@ -66,6 +66,26 @@ let finally2 ~h f x y =
     ignore (h ());
     raise e
 
+let rec iterate n f x =
+  if n < 0 then
+    invalid_arg "CCFun.iterate"
+  else if n = 0 then
+    x
+  else
+    iterate (n - 1) f (f x)
+
+(*$= iterate & ~printer:Q.Print.int
+  10 (iterate 0 succ 10)
+  11 (iterate 1 succ 10)
+  12 (iterate 2 succ 10)
+  15 (iterate 5 succ 10)
+*)
+(*$R
+  assert_raises
+  (Invalid_argument "CCFun.iterate")
+  (fun () -> iterate (-1) succ 10)
+*)
+
 module Monad(X : sig type t end) = struct
   type 'a t = X.t -> 'a
   let return x _ = x
