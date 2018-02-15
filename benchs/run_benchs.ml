@@ -111,17 +111,21 @@ module L = struct
     let l = CCList.(1 -- n) in
     let ral = CCRAL.of_list l in
     let v = CCFun_vec.of_list l in
+    let bv = BatVect.of_list l in
     let bench_list l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (List.nth l i)) done
     and bench_ral l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.get_exn l i)) done
     and bench_funvec l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (CCFun_vec.get_exn i l)) done
+    and bench_batvec l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.get l i)) done
     in
     B.throughputN time ~repeat
       [ "List.nth", bench_list l, ()
       ; "RAL.get", bench_ral ral, ()
       ; "funvec.get", bench_funvec v, ()
+      ; "batvec.get", bench_batvec bv, ()
       ]
 
   (* MAIN *)
