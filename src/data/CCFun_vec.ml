@@ -156,17 +156,8 @@ let length {size;_} = size
 let return x = {leaves=A.return x; subs=A.empty; size=1}
 
 type idx_l =
-  | L1 of int
-  | L2 of int * int
-  | L3 of int * int * int
-  | L4 of int * int * int * int
-  | L_cons of int * idx_l
-
-let cons_idx x1 l = match l with
-  | L1 x2 -> L2 (x1,x2)
-  | L2 (x2,x3) -> L3 (x1,x2,x3)
-  | L3 (x2,x3,x4) -> L4 (x1,x2,x3,x4)
-  | L4 _ | L_cons _ -> L_cons (x1, l)
+  | I_one of int
+  | I_cons of int * idx_l
 
 (* split an index into a low and high parts *)
 let low_idx_ i = i land A.mask
@@ -179,20 +170,17 @@ let combine_idx i j = (i lsl A.length_log) lor j
 let split_idx i : idx_l =
   let rec aux high low =
     if high = 0 then low
-    else if high < A.max_length then cons_idx (high-1) low
-    else aux (high_idx_ high) (cons_idx (low_idx_ high) low)
+    else if high < A.max_length then I_cons (high-1, low)
+    else aux (high_idx_ high) (I_cons (low_idx_ high, low))
   in
-  aux (high_idx_ i) (L1 (low_idx_ i))
+  aux (high_idx_ i) (I_one(low_idx_ i))
 
 let get_ (i:int) (m:'a t) : 'a =
   let rec aux l m = match l with
-    | L1 x1 ->
-      assert (x1 < A.length m.leaves);
-      A.get m.leaves x1
-    | L2 (x1,x2) -> aux (L1 x2) (A.get m.subs x1)
-    | L3 (x1,x2,x3) -> aux (L2 (x2,x3)) (A.get m.subs x1)
-    | L4 (x1,x2,x3,x4) -> aux (L3 (x2,x3,x4)) (A.get m.subs x1)
-    | L_cons (x1,x2) -> aux x2 (A.get m.subs x1)
+    | I_one x ->
+      assert (x < A.length m.leaves);
+      A.get m.leaves x
+    | I_cons (x, tl) -> aux tl (A.get m.subs x)
   in
   aux (split_idx i) m
 
@@ -210,15 +198,12 @@ let get i v =
 
 let push_ (i:int) (x:'a) (m:'a t) : 'a t =
   let rec aux l m = match l with
-    | L1 x1 ->
-      assert (x1=A.length m.leaves);
+    | I_one i ->
+      assert (i=A.length m.leaves);
       assert (A.length m.leaves < A.max_length);
       assert (A.is_empty m.subs);
       {m with size=m.size+1; leaves=A.push x m.leaves}
-    | L2 (x1,x2) -> aux_replace_sub (L1 x2) m x1
-    | L3 (x1,x2,x3) -> aux_replace_sub (L2 (x2,x3)) m x1
-    | L4 (x1,x2,x3,x4) -> aux_replace_sub (L3 (x2,x3,x4)) m x1
-    | L_cons (x1,x2) -> aux_replace_sub x2 m x1
+    | I_cons (i,tl) -> aux_replace_sub tl m i
   and aux_replace_sub l m x =
     assert (x <= A.length m.subs);
     (* insert in subtree, possibly a new one *)
@@ -234,14 +219,11 @@ let push x (v:_ t) : _ t = push_ v.size x v
 
 let pop_ i (m:'a t) : 'a * 'a t =
   let rec aux l m = match l with
-    | L1 x1 ->
-      assert (x1+1 = A.length m.leaves); (* last one *)
-      let x = A.get m.leaves x1 in
+    | I_one x ->
+      assert (x+1 = A.length m.leaves); (* last one *)
+      let x = A.get m.leaves x in
       x, {m with size=m.size-1; leaves=A.pop m.leaves}
-    | L2 (x1,x2) -> aux_remove_sub (L1 x2) m x1
-    | L3 (x1,x2,x3) -> aux_remove_sub (L2 (x2,x3)) m x1
-    | L4 (x1,x2,x3,x4) -> aux_remove_sub (L3 (x2,x3,x4)) m x1
-    | L_cons (x1,x2) -> aux_remove_sub x2 m x1
+    | I_cons (x,tl) -> aux_remove_sub tl m x
   and aux_remove_sub l m x =
     let sub = A.get m.subs x in
     let y, sub' = aux l sub in
