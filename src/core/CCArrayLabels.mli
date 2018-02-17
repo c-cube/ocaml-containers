@@ -27,6 +27,10 @@ val equal : 'a equal -> 'a t equal
 
 val compare : 'a ord -> 'a t ord
 
+val swap : 'a t -> int -> int -> unit
+(** [swap arr i j] swaps elements at indices [i] and [j].
+    @since 1.4 *)
+
 val get : 'a t -> int -> 'a
 (** [get a n] returns the element number [n] of array [a].
     The first element has number 0.
@@ -62,6 +66,18 @@ val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 
 (** Fold left on array until a stop condition via [('a, `Stop)] is
     indicated by the accumulator.
     @since 0.8 *)
+
+val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a t -> 'acc * 'b t
+(** [fold_map f acc a] is a [fold_left]-like function, but it also maps the
+    array to another array.
+    @since NEXT_RELEASE *)
+
+val scan_left : f:('acc -> 'a -> 'acc) -> init:'acc -> 'a t -> 'acc t
+(** [scan_left f acc a] returns the array
+    [ [|acc; f acc x0; f (f acc a.(0)) a.(1); …|] ].
+
+    @since NEXT_RELEASE *)
+
 
 val iter : f:('a -> unit) -> 'a t -> unit
 (** [iter f a] applies function [f] in turn to all
@@ -111,13 +127,24 @@ val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
     [lookup_exn a.(i) (sorted a) = (sorted_ranking a).(i)].
     @since 1.0 *)
 
+val find_map : f:('a -> 'b option) -> 'a t -> 'b option
+(** [find_map f a] returns [Some y] if there is an element [x] such
+    that [f x = Some y], else it returns [None].
+    @since NEXT_RELEASE *)
+
 val find : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find f a] returns [Some y] if there is an element [x] such
-    that [f x = Some y], else it returns [None]. *)
+    that [f x = Some y], else it returns [None].
+    @deprecated since NEXT_RELEASE *)
+
+val find_map_i : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
+(** Like {!find_map}, but also pass the index to the predicate function.
+    @since NEXT_RELEASE *)
 
 val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find}, but also pass the index to the predicate function.
-    @since 0.3.4 *)
+    @since 0.3.4
+    @deprecated since NEXT_RELEASE *)
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
