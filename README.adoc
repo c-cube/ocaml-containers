@@ -72,7 +72,7 @@ Some of the modules have been moved to their own repository (e.g. `sequence`,
 
 === Why shadow polymorphic operators by default?
 
-To quote @bluddy in #196:
+To quote @bluddy in https://github.com/c-cube/ocaml-containers/issues/196[#196]:
 
 The main problem with polymorphic comparison is that many data structures will
 give one result for structural comparison, and a different result for semantic
@@ -108,7 +108,9 @@ Another bonus is that `Hashtbl.Make(Foo)` or `Map.Make(Foo)` will just work™.
 
 === Further discussions
 
-See issues #196, #197
+See issues
+https://github.com/c-cube/ocaml-containers/issues/196[#196],
+https://github.com/c-cube/ocaml-containers/issues/197[#197]
 
 == Change Log
 
