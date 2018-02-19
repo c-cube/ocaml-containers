@@ -93,6 +93,11 @@ you use polymorphic comparison where the type of data being compared may vary
 (e.g. it's an int now, but it may be a map later), you're planting a bug for
 the future.
 
+See also:
+
+- https://blog.janestreet.com/the-perils-of-polymorphic-compare/
+- https://blog.janestreet.com/building-a-better-compare/
+
 === Sometimes polymorphic operators still make sense!
 
 If you just want to use polymorphic operators, it's fine! You can access them
