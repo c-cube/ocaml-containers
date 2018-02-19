@@ -65,6 +65,50 @@ Some of the modules have been moved to their own repository (e.g. `sequence`,
   However, during migration and until you use proper combinators for
   equality (`CCEqual`), comparison (`CCOrd`), and hashing (`CCHash`),
   you might want to add `open Pervasives` just after the `open Containers`.
+  See <<mono-ops,the section on monomorphic operators>> for more details.
+
+[[mono-ops]]
+== Monomorphic operators: why, and how?
+
+=== Why shadow polymorphic operators by default?
+
+To quote @bluddy in #196:
+
+The main problem with polymorphic comparison is that many data structures will
+give one result for structural comparison, and a different result for semantic
+comparison. The classic example is comparing maps. If you have a list of maps
+and try to use comparison to sort them, you'll get the wrong result: multiple
+map structures can represent the same semantic mapping from key to value, and
+comparing them in terms of structure is simply wrong. A far more pernicious bug
+occurs with hashtables. Identical hashtables will seem to be identical for a
+while, as before they've had a key clash, the outer array is likely to be the
+same. Once you get a key clash though, you start getting lists inside the
+arrays (or maps inside the arrays if you try to make a smarter hashtable) and
+that will cause comparison errors ie. identical hashtables will be seen as
+different or vice versa.
+
+Every time you use a polymorphic comparison where you're using a data type
+where structural comparison != semantic comparison, it's a bug. And ever time
+you use polymorphic comparison where the type of data being compared may vary
+(e.g. it's an int now, but it may be a map later), you're planting a bug for
+the future.
+
+=== Sometimes polymorphic operators still make sense!
+
+If you just want to use polymorphic operators, it's fine! You can access them
+easily by using `Pervasives.(=)`, `Pervasives.max`, etc.
+
+When migrating a module, you can add `open Pervasives` on top of it to restore
+the default behavior. It is, however, recommended to export an `equal` function
+(and `compare`, and `hash`) for all the public types, even if their internal
+definition is just the corresponding polymorphic operator.
+This way, other modules can refer to `Foo.equal` and will not have to be
+updated the day `Foo.equal` is no longer just polymorphic equality.
+Another bonus is that `Hashtbl.Make(Foo)` or `Map.Make(Foo)` will just work™.
+
+=== Further discussions
+
+See issues #196, #197
 
 == Change Log
 
