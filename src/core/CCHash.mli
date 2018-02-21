@@ -64,6 +64,12 @@ val combine2 : hash -> hash -> hash
 val combine3 : hash -> hash -> hash -> hash
 val combine4 : hash -> hash -> hash -> hash -> hash
 
+val combine5 : hash -> hash -> hash -> hash -> hash -> hash
+(** @since NEXT_RELEASE *)
+
+val combine6 : hash -> hash -> hash -> hash -> hash -> hash -> hash
+(** @since NEXT_RELEASE *)
+
 (** {2 Iterators} *)
 
 type 'a sequence = ('a -> unit) -> unit
