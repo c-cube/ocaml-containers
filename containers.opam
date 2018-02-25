@@ -13,7 +13,7 @@ depends: [
   "result"
   "qtest" { test }
   "qcheck" { test }
-  "oUnit" { test }
+  "ounit" { test }
   "sequence" { test }
   "gen" { test }
   "odoc" { doc }
