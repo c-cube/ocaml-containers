@@ -40,6 +40,10 @@ module Transient = struct
   exception Frozen
 end
 
+(* TODO: move transient from A.t to 'a t, as nodes can be owned by a transient,
+   not arrays.
+   Then do mutable push, and use it for append/filter/flatten/flat_map… *)
+
 (* function array *)
 module A = struct
   type 'a t = {

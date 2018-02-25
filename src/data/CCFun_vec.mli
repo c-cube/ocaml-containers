@@ -5,7 +5,7 @@
 (** Tree with a large branching factor for logarithmic operations with
     a low multiplicative factor.
 
-    {b status: unstable}
+    {b status: experimental. DO NOT USE (yet)}
 
     @since NEXT_RELEASE
 *)
