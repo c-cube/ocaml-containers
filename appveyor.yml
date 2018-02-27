@@ -17,7 +17,7 @@ environment:
     PACKAGE: containers
   - OPAM_SWITCH: 4.06.0+mingw64c
     PACKAGE: containers
-  - CYG_ROOT: C:\cygwin32
+  - CYG_ROOT: C:\cygwin
     OPAM_SWITCH: 4.06.0+mingw32c
     PACKAGE: containers
 install:
