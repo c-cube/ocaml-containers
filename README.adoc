@@ -14,7 +14,8 @@ map/fold_right/append, and additional functions on lists).
 Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
 
-image::https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master[alt="Build Status", link="https://travis-ci.org/c-cube/ocaml-containers"]
+image::https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master[alt="Build Status on Travis", link="https://travis-ci.org/c-cube/ocaml-containers"]
+image::https://ci.appveyor.com/api/projects/status/tftx9q8auil4cv4c?svg=true[alt="Build Status on AppVeyor", link="https://ci.appveyor.com/project/c-cube/ocaml-containers"]
 
 toc::[]
 
