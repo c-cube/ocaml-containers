@@ -1,9 +1,16 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
+module Infix = struct
+  include Pervasives
+  let (--) = range
+  let (--^) = range'
+end
+include Infix
+
 type t = int
 
-let equal (a:int) b = a=b
+let equal (a:int) b = Pervasives.(=) a b
 
 let compare a b = compare a b
 
@@ -245,17 +252,3 @@ let range' i j yield =
   [5;4;3]     (range' 5 2 |> Sequence.to_list)
 *)
 
-
-module Infix = struct
-  let (=) = (=)
-  let (<>) = (<>)
-  let (<) = (<)
-  let (>) = (>)
-  let (<=) = (<=)
-  let (>=) = (>=)
-  let (--) = range
-  let (--^) = range'
-end
-include Infix
-let min = min
-let max = max
