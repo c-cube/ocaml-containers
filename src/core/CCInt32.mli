@@ -9,8 +9,8 @@
     32-bit wide on all platforms. All arithmetic operations over int32 are taken
     modulo 2{^32}.
 
-    Performance notice: values of type int32 occupy more memory space than values 
-    of type int, and arithmetic operations on int32 are generally slower than 
+    Performance notice: values of type int32 occupy more memory space than values
+    of type int, and arithmetic operations on int32 are generally slower than
     those on int. Use int32 only when the application requires exact 32-bit arithmetic.
 
     @since NEXT_RELEASE *)
@@ -67,6 +67,28 @@ val ( asr ) : t -> int -> t
     This is an arithmetic shift: the sign bit of [x] is replicated
     and inserted in the vacated bits.
     The result is unspecified if [y < 0] or [y >= 32]. *)
+
+module Infix : sig
+  val (+) : t -> t -> t
+  val (-) : t -> t -> t
+  val (~-) : t -> t
+  val ( * ) : t -> t -> t
+  val (/) : t -> t -> t
+  val (mod) : t -> t -> t
+  val (land) : t -> t -> t
+  val (lor) : t -> t -> t
+  val (lxor) : t -> t -> t
+  val lnot : t -> t
+  val (lsl) : t -> int -> t
+  val (lsr) : t -> int -> t
+  val (asr) : t -> int -> t
+  val (=) : t -> t -> bool
+  val (<>) : t -> t -> bool
+  val (>) : t -> t -> bool
+  val (>=) : t -> t -> bool
+  val (<=) : t -> t -> bool
+  val (<) : t -> t -> bool
+end
 
 val equal : t -> t -> bool
 (** The equal function for 32-bit integers.

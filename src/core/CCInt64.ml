@@ -2,33 +2,45 @@
 
 include Int64
 
-let (+) = add
-
-let (-) = sub
-
-let (~-) = neg
-
-let ( * ) = mul
-
-let (/) = div
-
-let (mod) = rem
-
-let (land) = logand
-
-let (lor) = logor
-
-let (lxor) = logxor
-
-let lnot = lognot
-
-let (lsl) = shift_left
-
-let (lsr) = shift_right_logical
-
-let (asr) = shift_right
-
 let equal (x:t) y = Pervasives.(=) x y
+
+module Infix = struct
+  let (+) = add
+
+  let (-) = sub
+
+  let (~-) = neg
+
+  let ( * ) = mul
+
+  let (/) = div
+
+  let (mod) = rem
+
+  let (land) = logand
+
+  let (lor) = logor
+
+  let (lxor) = logxor
+
+  let lnot = lognot
+
+  let (lsl) = shift_left
+
+  let (lsr) = shift_right_logical
+
+  let (asr) = shift_right
+
+  let (=) = equal
+
+  let (<>) = Pervasives.(<>)
+  let (<) = Pervasives.(<)
+  let (<=) = Pervasives.(<=)
+  let (>) = Pervasives.(>)
+  let (>=) = Pervasives.(>=)
+end
+
+include Infix
 
 let hash x = Pervasives.abs (to_int x)
 

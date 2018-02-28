@@ -66,6 +66,30 @@ val (asr) : t -> int -> t
     and inserted in the vacated bits.
     The result is unspecified if [y < 0] or [y >= 64]. *)
 
+(** Infix operators
+    @since NEXT_RELEASE *)
+module Infix : sig
+  val (+) : t -> t -> t
+  val (-) : t -> t -> t
+  val (~-) : t -> t
+  val ( * ) : t -> t -> t
+  val (/) : t -> t -> t
+  val (mod) : t -> t -> t
+  val (land) : t -> t -> t
+  val (lor) : t -> t -> t
+  val (lxor) : t -> t -> t
+  val lnot : t -> t
+  val (lsl) : t -> int -> t
+  val (lsr) : t -> int -> t
+  val (asr) : t -> int -> t
+  val (=) : t -> t -> bool
+  val (<>) : t -> t -> bool
+  val (>) : t -> t -> bool
+  val (>=) : t -> t -> bool
+  val (<=) : t -> t -> bool
+  val (<) : t -> t -> bool
+end
+
 val equal : t -> t -> bool
 (** The equal function for 64-bit integers.
     Like {!Pervasives.(=) x y)}. *)
