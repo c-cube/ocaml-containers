@@ -45,7 +45,7 @@ val append : 'a t -> 'a t -> 'a t
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
 (** Monadic flatten + map. *)
 
-val default : 'a t -> 'a t -> 'a t
+val default : default:'a t -> 'a t -> 'a t
 (** Choice operator.
     @since NEXT_RELEASE *)
 
