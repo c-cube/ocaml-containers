@@ -102,9 +102,9 @@ let rec of_gen g =
   Q.(list int) (fun l -> l = (Gen.of_list l |> of_gen |> to_list))
 *)
 
-let rec of_list = function
+let rec of_list ?(f = fun x -> x) = function
   | [] -> empty
-  | x :: tl -> cons x (of_list tl)
+  | x :: tl -> cons (f x) (of_list ~f tl)
 
 let to_list_rev l =
   let rec aux acc = function
