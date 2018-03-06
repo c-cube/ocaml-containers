@@ -52,7 +52,7 @@ val default : default:'a t -> 'a t -> 'a t
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val (<|>) : 'a t -> 'a t -> 'a t
+  val (<|>) : 'a t -> 'a t -> 'a t (** Alias to {!default}. @since NEXT_RELEASE *)
 end
 
 include module type of Infix
