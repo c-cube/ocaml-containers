@@ -45,9 +45,14 @@ val append : 'a t -> 'a t -> 'a t
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
 (** Monadic flatten + map. *)
 
+val default : 'a t -> 'a t -> 'a t
+(** Choice operator.
+    @since NEXT_RELEASE *)
+
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (<|>) : 'a t -> 'a t -> 'a t
 end
 
 include module type of Infix
