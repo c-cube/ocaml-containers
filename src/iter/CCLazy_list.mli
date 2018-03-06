@@ -56,7 +56,7 @@ type 'a gen = unit -> 'a option
 
 val of_gen : 'a gen -> 'a t
 
-val of_list : 'a list -> 'a t
+val of_list : ?f:('a -> 'b) -> 'a list -> 'b t
 
 val to_list : 'a t -> 'a list
 
