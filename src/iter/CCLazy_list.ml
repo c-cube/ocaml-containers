@@ -82,11 +82,11 @@ let rec flat_map ~f l =
         Lazy.force res
   )
 
-let default b a =
+let default ~default l =
   lazy (
-      match a with
-      | lazy Nil -> Lazy.force b
-      | lazy a -> a
+      match l with
+      | lazy Nil -> Lazy.force default
+      | lazy l -> l
     )
 
 (*$=
@@ -96,7 +96,7 @@ let default b a =
 module Infix = struct
   let (>|=) x f = map ~f x
   let (>>=) x f = flat_map ~f x
-  let (<|>) = default
+  let (<|>) a b = default ~default:b a
 end
 
 include Infix
