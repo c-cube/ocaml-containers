@@ -75,10 +75,20 @@ val pop_exn : 'a t -> 'a * 'a t
 val iter : f:('a -> unit) -> 'a t -> unit
 
 val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
+(** Iterate on elements with their index, in increasing order *)
+
+val iteri_rev : f:(int -> 'a -> unit) -> 'a t -> unit
+(** Iterate on elements with their index, but starting from the end *)
 
 val fold : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
 val foldi : f:('b -> int -> 'a -> 'b) -> x:'b -> 'a t -> 'b
+
+val append : 'a t -> 'a t -> 'a t
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+
+val choose : 'a t -> 'a option
 
 (* TODO
 
@@ -93,11 +103,7 @@ val pop_mut : id:Transient.t -> 'a t -> 'a * 'a t
 (** Same as {!remove}, but modifies in place whenever possible.
     @raise Transient.Frozen if [id] is frozen. *)
 
-val append : 'a t -> 'a t -> 'a t
-
 val append_mut : id:Transient.t -> into:'a t -> 'a t -> 'a t
-
-val map : ('a -> 'b) -> 'a t -> 'b t
     *)
 
 (** {6 Conversions} *)
@@ -106,17 +112,9 @@ val to_list : 'a t -> 'a list
 
 val of_list : 'a list -> 'a t
 
-(* TODO
-
 val add_list : 'a t -> 'a list -> 'a t
 
-val add_list_mut : id:Transient.t -> 'a t -> 'a list -> 'a t
-(** @raise Frozen if the ID is frozen. *)
-
 val add_seq : 'a t -> 'a sequence -> 'a t
-
-val add_seq_mut : id:Transient.t -> 'a t -> 'a sequence -> 'a t
-(** @raise Frozen if the ID is frozen. *)
 
 val of_seq : 'a sequence -> 'a t
 
@@ -124,21 +122,22 @@ val to_seq : 'a t -> 'a sequence
 
 val add_gen : 'a t -> 'a gen -> 'a t
 
-val add_gen_mut : id:Transient.t -> 'a t -> 'a gen -> 'a t
-(** @raise Frozen if the ID is frozen. *)
-
 val of_gen : 'a gen -> 'a t
 
 val to_gen : 'a t -> 'a gen
 
+(* TODO
+
+val add_list_mut : id:Transient.t -> 'a t -> 'a list -> 'a t
+(** @raise Frozen if the ID is frozen. *)
+
+val add_seq_mut : id:Transient.t -> 'a t -> 'a sequence -> 'a t
+(** @raise Frozen if the ID is frozen. *)
+
+val add_gen_mut : id:Transient.t -> 'a t -> 'a gen -> 'a t
+(** @raise Frozen if the ID is frozen. *)
+   *)
+
 (** {6 IO} *)
 
 val pp : 'a printer -> 'a t printer
-
-val as_tree : 'a t -> [`L of int * 'a list | `N ] ktree
-(** For debugging purpose: explore the structure of the tree,
-    with [`L (h,l)] being a leaf (with shared hash [h])
-    and [`N] an inner node. *)
-
-   *)
-

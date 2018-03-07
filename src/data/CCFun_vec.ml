@@ -54,7 +54,12 @@ module A = struct
 
   let length = Array.length
   let iteri = Array.iteri
+  let iter = Array.iter
   let fold = Array.fold_left
+  let map = Array.map
+
+  let iteri_rev f a =
+    for i = length a-1 downto 0 do f i a.(i) done
 
   let create () = [| |]
 
@@ -247,9 +252,24 @@ let iteri ~f (m : 'a t) : unit =
     A.iteri (fun i sub -> Queue.push (combine_idx i high, sub) q) m.subs;
   done
 
+let iteri_rev ~f (m : 'a t) : unit =
+  (* like {!iteri} but last element comes first *)
+  let rec aux high m =
+    A.iteri_rev (fun i sub -> aux (combine_idx i high) sub) m.subs;
+    (* only now, explore current leaves *)
+    A.iteri_rev (fun i x -> f (combine_idx high i) x) m.leaves;
+  in
+  aux 0 m
+
 let foldi ~f ~x m =
   let acc = ref x in
   iteri m
+    ~f:(fun i x -> acc := f !acc i x);
+  !acc
+
+let foldi_rev ~f ~x m =
+  let acc = ref x in
+  iteri_rev m
     ~f:(fun i x -> acc := f !acc i x);
   !acc
 
@@ -257,260 +277,50 @@ let iter ~f m = iteri ~f:(fun _ x -> f x) m
 
 let fold ~f ~x m = foldi ~f:(fun acc _ x -> f acc x) ~x m
 
-let of_list l = List.fold_left (fun v x -> push x v) empty l
+let fold_rev ~f ~x m = foldi_rev ~f:(fun acc _ x -> f acc x) ~x m
 
-let to_list m = fold m ~f:(fun acc x -> x::acc) ~x:[] |> List.rev
-
-(* TODO
-
-(* add [k,v] to the list [l], removing old binding if any *)
-let rec add_list_ k v l = match l with
-  | Nil -> One (k,v)
-  | One (k1, v1) ->
-    if Key.equal k k1 then One (k, v) else Two (k,v,k1,v1)
-  | Two (k1, v1, k2, v2) ->
-    if Key.equal k k1 then Two (k, v, k2, v2)
-    else if Key.equal k k2 then Two (k, v, k1, v1)
-    else Cons (k, v, l)
-  | Cons (k', v', tail) ->
-    if Key.equal k k'
-    then Cons (k, v, tail) (* replace *)
-    else Cons (k', v', add_list_ k v tail)
-
-let node_ leaf a = N (leaf, a)
-
-
-(* [h]: hash, with the part required to reach this leaf removed
-    [id] is the transient ID used for mutability *)
-let rec add_ ~id k v ~h m = match m with
-  | E -> S (h, k, v)
-  | S (h', k', v') ->
-    if Hash.equal h h'
-    then if Key.equal k k'
-      then S (h, k, v)  (* replace *)
-      else L (h, Cons (k, v, Cons (k', v', Nil)))
-    else
-      make_array_ ~id ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
-  | L (h', l) ->
-    if Hash.equal h h'
-    then L (h, add_list_ k v l)
-    else (* split into N *)
-      make_array_ ~id ~leaf:l ~h_leaf:h' k v ~h
-  | N (leaf, a) ->
-    if Hash.is_0 h
-    then node_ (add_list_ k v leaf) a
-    else
-      let mut = A.owns ~id a in (* can we modify [a] in place? *)
-      node_ leaf (add_to_array_ ~id ~mut k v ~h a)
-
-(* make an array containing a leaf, and insert (k,v) in it *)
-and make_array_ ~id ~leaf ~h_leaf:h' k v ~h =
-  let a = A.create ~id in
-  let a, leaf =
-    if Hash.is_0 h' then a, leaf
-    else
-      (* put leaf in the right bucket *)
-      let i = Hash.rem h' in
-      let h'' = Hash.quotient h' in
-      A.set ~mut:true a i (L (h'', leaf)), Nil
-  in
-  (* then add new node *)
-  let a, leaf =
-    if Hash.is_0 h then a, add_list_ k v leaf
-    else add_to_array_ ~id ~mut:true k v ~h a, leaf
-  in
-  N (leaf, a)
-
-(* add k->v to [a] *)
-and add_to_array_ ~id ~mut k v ~h a =
-  (* insert in a bucket *)
-  let i = Hash.rem h in
-  let h' = Hash.quotient h in
-  A.update ~default:E ~mut a i (fun x -> add_ ~id k v ~h:h' x)
-
-let add k v m = add_ ~id:Transient.empty k v ~h:(hash_ k) m
-
-(*$Q
-   _listuniq (fun l -> \
-      let m = List.fold_left (fun m (x,y) -> add x y m) empty l in \
-      List.for_all (fun (x,y) -> get_exn x m = y) l)
-*)
-
-let add_mut ~id k v m =
-  if Transient.frozen id then raise Transient.Frozen;
-  add_ ~id k v ~h:(hash_ k) m
-
-(*$R
-  let lsort = List.sort Pervasives.compare in
-  let m = of_list [1, 1; 2, 2] in
-  let id = Transient.create() in
-  let m' = add_mut ~id 3 3 m in
-  let m' = add_mut ~id 4 4 m' in
-  assert_equal [1, 1; 2, 2] (to_list m |> lsort);
-  assert_equal [1, 1; 2, 2; 3,3; 4,4] (to_list m' |> lsort);
-  Transient.freeze id;
-  assert_bool "must raise"
-    (try ignore(add_mut ~id 5 5 m'); false with Transient.Frozen -> true)
-*)
-
-
-exception LocalExit
-
-let is_empty_arr_ a =
-  try
-    A.iter (fun t -> if not (is_empty t) then raise LocalExit) a;
-    true
-  with LocalExit -> false
-
-let is_empty_list_ = function
-  | Nil -> true
-  | One _
-  | Two _
-  | Cons _ -> false
-
-let rec remove_list_ k l = match l with
-  | Nil -> Nil
-  | One (k', _) ->
-    if Key.equal k k' then Nil else l
-  | Two (k1, v1, k2, v2) ->
-    if Key.equal k k1 then One (k2, v2)
-    else if Key.equal k k2 then One (k1, v1)
-    else l
-  | Cons (k', v', tail) ->
-    if Key.equal k k'
-    then tail
-    else Cons (k', v', remove_list_ k tail)
-
-let rec remove_rec_ ~id k ~h m = match m with
-  | E -> E
-  | S (_, k', _) ->
-    if Key.equal k k' then E else m
-  | L (h, l) ->
-    let l = remove_list_ k l in
-    if is_empty_list_ l then E else L (h, l)
-  | N (leaf, a) ->
-    let leaf, a =
-      if Hash.is_0 h
-      then remove_list_ k leaf, a
-      else
-        let i = Hash.rem h in
-        let h' = Hash.quotient h in
-        let new_t = remove_rec_ ~id k ~h:h' (A.get ~default:E a i) in
-        if is_empty new_t
-        then leaf, A.remove a i (* remove sub-tree *)
-        else
-          let mut = A.owns ~id a in
-          leaf, A.set ~mut a i new_t
-    in
-    if is_empty_list_ leaf && is_empty_arr_ a
-    then E
-    else N (leaf, a)
-
-let remove k m = remove_rec_ ~id:Transient.empty k ~h:(hash_ k) m
-
-let remove_mut ~id k m =
-  if Transient.frozen id then raise Transient.Frozen;
-  remove_rec_ ~id k ~h:(hash_ k) m
+let rec map f m : _ t =
+  { subs=A.map (map f) m.subs;
+    leaves=A.map f m.leaves;
+    size=m.size;
+  }
 
 (*$QR
-  _listuniq (fun l ->
-    let m = of_list l in
-    List.for_all
-      (fun (x,_) ->
-        let m' = remove x m in
-        not (mem x m') &&
-        cardinal m' = cardinal m - 1 &&
-        List.for_all
-          (fun (y,v) -> y = x || get_exn y m' = v)
-          l
-    ) l
+  Q.(pair (fun1 Observable.int bool)(small_list int)) (fun (f,l) ->
+    let f = Q.Fn.apply f in
+    (List.map f l) = (of_list l |> map f |> to_list)
   )
-*)
+  *)
 
-let update_ ~id k f m =
-  let h = hash_ k in
-  let opt_v = try Some (get_ k ~h m) with Not_found -> None in
-  match opt_v, f opt_v with
-    | None, None -> m
-    | Some _, Some v
-    | None, Some v -> add_ ~id k v ~h m
-    | Some _, None -> remove_rec_ ~id k ~h m
+let append a b =
+  if is_empty b then a
+  else fold ~f:(fun v x -> push x v) ~x:a b
 
-let update k ~f m = update_ ~id:Transient.empty k f m
+(*$QR
+  Q.(pair (small_list int)(small_list int)) (fun (l1,l2) ->
+    (l1 @ l2) = (append (of_list l1)(of_list l2) |> to_list)
+  )
+  *)
 
-let update_mut ~id k ~f m =
-  if Transient.frozen id then raise Transient.Frozen;
-  update_ ~id k f m
-
-(*$R
-  let m = of_list [1, 1; 2, 2; 5, 5] in
-  let m' = update 4
-    (function
-    | None -> Some 4
-    | Some _ -> Some 0
-    ) m
-  in
-  assert_equal [1,1; 2,2; 4,4; 5,5] (to_list m' |> List.sort Pervasives.compare);
-*)
-
-let iter ~f t =
-  let rec aux = function
-    | E -> ()
-    | S (_, k, v) -> f k v
-    | L (_,l) -> aux_list l
-    | N (l,a) -> aux_list l; A.iter aux a
-  and aux_list = function
-    | Nil -> ()
-    | One (k,v) -> f k v
-    | Two (k1,v1,k2,v2) -> f k1 v1; f k2 v2
-    | Cons (k, v, tl) -> f k v; aux_list tl
-  in
-  aux t
-
-let fold ~f ~x:acc t =
-  let rec aux acc t = match t with
-    | E -> acc
-    | S (_,k,v) -> f acc k v
-    | L (_,l) -> aux_list acc l
-    | N (l,a) -> let acc = aux_list acc l in A.fold aux acc a
-  and aux_list acc l = match l with
-    | Nil -> acc
-    | One (k,v) -> f acc k v
-    | Two (k1,v1,k2,v2) -> f (f acc k1 v1) k2 v2
-    | Cons (k, v, tl) -> let acc = f acc k v in aux_list acc tl
-  in
-  aux acc t
-
-(*$T
-  let l = CCList.(1 -- 10 |> map (fun x->x,x)) in  \
-  of_list l \
-    |> fold ~f:(fun acc x y -> (x,y)::acc) ~x:[] \
-    |> List.sort Pervasives.compare = l
-*)
-
-let cardinal m = fold ~f:(fun n _ _ -> n+1) ~x:0 m
-
-let to_list m = fold ~f:(fun acc k v -> (k,v)::acc) ~x:[] m
-
-let add_list_mut ~id m l =
-  List.fold_left (fun acc (k,v) -> add_mut ~id k v acc) m l
-
-let add_list m l =
-  Transient.with_ (fun id -> add_list_mut ~id m l)
+let add_list v l = List.fold_left (fun v x -> push x v) v l
 
 let of_list l = add_list empty l
 
-let add_seq_mut ~id m seq =
-  let m = ref m in
-  seq (fun (k,v) -> m := add_mut ~id k v !m);
-  !m
+let to_list m = fold_rev m ~f:(fun acc x -> x::acc) ~x:[]
 
-let add_seq m seq =
-  Transient.with_ (fun id -> add_seq_mut ~id m seq)
+(*$QR
+  Q.(small_list int) (fun l ->
+    l = to_list (of_list l))
+*)
+
+let add_seq v seq =
+  let v = ref v in
+  seq (fun x -> v := push x !v);
+  !v
 
 let of_seq s = add_seq empty s
 
-let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
+let to_seq m yield = iteri ~f:(fun _ v -> yield v) m
 
 (*$Q
   _listuniq (fun l -> \
@@ -519,12 +329,9 @@ let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
         |> List.sort Pervasives.compare) )
 *)
 
-let rec add_gen_mut ~id m g = match g() with
+let rec add_gen m g = match g() with
   | None -> m
-  | Some (k,v) -> add_gen_mut ~id (add_mut ~id k v m) g
-
-let add_gen m g =
-  Transient.with_ (fun id -> add_gen_mut ~id m g)
+  | Some x -> add_gen (push x m) g
 
 let of_gen g = add_gen empty g
 
@@ -532,29 +339,19 @@ let of_gen g = add_gen empty g
    hashes lexicographically by A.length_log-wide chunks of bits,
    least-significant chunks first *)
 let to_gen m =
-  let st = Stack.create() in
-  Stack.push m st;
+  let q_cur : 'a Queue.t = Queue.create() in
+  let q_sub : 'a t Queue.t = Queue.create() in
+  Queue.push m q_sub;
   let rec next() =
-    if Stack.is_empty st then None
-    else match Stack.pop st with
-      | E -> next ()
-      | S (_,k,v) -> Some (k,v)
-      | L (_, Nil) -> next()
-      | L (_, One (k,v)) -> Some (k,v)
-      | L (h, Two (k1,v1,k2,v2)) ->
-        Stack.push (L (h, One (k2,v2))) st;
-        Some (k1,v1)
-      | L (h, Cons(k,v,tl)) ->
-        Stack.push (L (h, tl)) st;  (* tail *)
-        Some (k,v)
-      | N (l, a) ->
-        A.iter
-          (fun sub -> Stack.push sub st)
-          a;
-        Stack.push (L (Hash.zero, l)) st;  (* leaf *)
-        next()
-  in
-  next
+    if not (Queue.is_empty q_cur) then (
+      Some (Queue.pop q_cur)
+    ) else if not (Queue.is_empty q_sub) then (
+      let m = Queue.pop q_sub in
+      A.iter (fun x -> Queue.push x q_cur) m.leaves;
+      A.iter (fun sub -> Queue.push sub q_sub) m.subs;
+      next()
+    ) else None
+  in next
 
 (*$Q
   _listuniq (fun l -> \
@@ -574,38 +371,10 @@ let choose_exn m = match choose m with
   | None -> raise Not_found
   | Some (k,v) -> k, v
 
-let pp ppk ppv out m =
+let pp ppv out m =
   let first = ref true in
   iter m
-    ~f:(fun k v ->
+    ~f:(fun v ->
       if !first then first := false else Format.fprintf out ";@ ";
-      ppk out k;
-      Format.pp_print_string out " -> ";
       ppv out v
     )
-
-let rec as_tree m () = match m with
-  | E -> `Nil
-  | S (h,k,v) -> `Node (`L ((h:>int), [k,v]), [])
-  | L (h,l) -> `Node (`L ((h:>int), list_as_tree_ l), [])
-  | N (l,a) -> `Node (`N, as_tree (L (Hash.zero, l)) :: array_as_tree_ a)
-and list_as_tree_ l = match l with
-  | Nil -> []
-  | One (k,v) -> [k,v]
-  | Two (k1,v1,k2,v2) -> [k1,v1; k2,v2]
-  | Cons (k, v, tail) -> (k,v) :: list_as_tree_ tail
-and array_as_tree_ a = A.fold (fun acc t -> as_tree t :: acc) [] a
-   *)
-
-(*   TODO: $R again?
-  let m = of_list CCList.( (501 -- 1000) @ (500 -- 1) |> map (fun i->i,i)) in
-  assert_equal ~printer:CCInt.to_string 1000 (length m);
-  assert_bool "check all get"
-    (Sequence.for_all (fun i -> i = get_exn i m) Sequence.(1 -- 1000));
-  let m = Sequence.(501 -- 1000 |> fold (fun m i -> remove i m) m) in
-  assert_equal ~printer:CCInt.to_string 500 (length m);
-  assert_bool "check all get after remove"
-    (Sequence.for_all (fun i -> i = get_exn i m) Sequence.(1 -- 500));
-  assert_bool "check all get after remove"
-    (Sequence.for_all (fun i -> None = get i m) Sequence.(501 -- 1000));
-*)
