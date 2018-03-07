@@ -11,11 +11,13 @@ build-test: [ "jbuilder" "runtest" "-p" name "-j" jobs]
 depends: [
   "jbuilder" {build & >= "1.0+beta12"}
   "result"
+  "uchar"
   "qtest" { test }
   "qcheck" { test }
   "ounit" { test }
   "sequence" { test }
   "gen" { test }
+  "uutf" { test }
   "odoc" { doc }
 ]
 depopts: [

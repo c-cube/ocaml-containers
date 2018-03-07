@@ -45,5 +45,6 @@ module Set = CCSet
 module String = CCString
 module Vector = CCVector
 module Monomorphic = CCMonomorphic
+module Utf8_string = CCUtf8_string
 
 include Monomorphic

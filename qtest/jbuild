@@ -18,7 +18,7 @@
    (modules (run_qtest))
    (libraries (sequence gen qcheck containers containers.unix
                containers.data containers.thread containers.iter
-               containers.sexp))
+               containers.sexp uutf))
   ))
 
 (alias
