@@ -37,15 +37,20 @@ exception Malformed of string * int
    @raise Malformed if an invalid substring is met *)
 let next_ (type a) (st : Dec.t) ~(yield:uchar -> a) ~(stop:unit -> a) () : a =
   let open Dec in
+  let malformed st = raise (Malformed (st.s,st.i)) in
   (* read a multi-byte character.
-       @param acc the accumulator (containing the first byte of the char)
-       @param n_bytes number of bytes to read (i.e. [width char - 1]) *)
-  let read_multi n_bytes acc =
+     @param acc the accumulator (containing the first byte of the char)
+     @param n_bytes number of bytes to read (i.e. [width char - 1])
+     @param overlong minimal bound on second byte (to detect overlong encoding)
+  *)
+  let read_multi ?(overlong=0) n_bytes acc =
     (* inner loop j = 1..jmax *)
     let rec aux j acc =
       let c = Char.code st.s.[ st.i + j] in
       (* check that c is in 0b10xxxxxx *)
-      if c lsr 6 <> 0b10 then raise (Malformed (st.s,st.i));
+      if c lsr 6 <> 0b10 then malformed st;
+      (* overlong encoding? *)
+      if j=1 && overlong<>0 && (c land 0b111111) < overlong then malformed st;
       (* except for first, each char gives 6 bits *)
       let next = (acc lsl 6) lor (c land 0b111111) in
       if j = n_bytes then (
@@ -54,7 +59,7 @@ let next_ (type a) (st : Dec.t) ~(yield:uchar -> a) ~(stop:unit -> a) () : a =
           st.i <- st.i + j + 1; (* +1 for first char *)
           yield (Uchar.unsafe_of_int next)
         ) else (
-          raise (Malformed (st.s,st.i))
+          malformed st;
         )
       ) else (
         aux (j+1) next
@@ -66,7 +71,7 @@ let next_ (type a) (st : Dec.t) ~(yield:uchar -> a) ~(stop:unit -> a) () : a =
       aux 1 acc (* start with j=1, first char is already proccessed! *)
     ) else (
       (* char is truncated *)
-      raise (Malformed (st.s,st.i))
+      malformed st;
     )
   in
   if st.i >= st.len then (
@@ -80,11 +85,18 @@ let next_ (type a) (st : Dec.t) ~(yield:uchar -> a) ~(stop:unit -> a) () : a =
         st.i <- 1 + st.i;
         yield (Uchar.of_int @@ Char.code c) (* 0xxxxxxx *)
       | '\194' .. '\223' -> read_multi 1 ((Char.code c) land 0b11111)  (* 110yyyyy *)
-      | '\224' .. '\239' -> read_multi 2 ((Char.code c) land 0b1111)   (* 1110zzzz *)
-      | '\240' .. '\244' -> read_multi 3 ((Char.code c) land 0b111)    (* 11110uuu *)
+      | '\225' .. '\239' -> read_multi 2 ((Char.code c) land 0b1111)   (* 1110zzzz *)
+      | '\241' .. '\244' -> read_multi 3 ((Char.code c) land 0b111)    (* 11110uuu *)
+      | '\224'           ->
+        (* overlong: if next byte is < than [0b001000000] then the char
+           would fit in 1 byte *)
+        read_multi ~overlong:0b00100000 2 ((Char.code c) land 0b1111)   (* 1110zzzz *)
+      | '\240'           ->
+        (* overlong: if next byte is < than [0b000100000] then the char
+           would fit in 2 bytes *)
+        read_multi ~overlong:0b00010000 3 ((Char.code c) land 0b111)    (* 11110uuu *)
       | '\128' .. '\193' (* 192,193 are forbidden *)
-      | '\245' .. '\255' ->
-        raise (Malformed (st.s,st.i))
+      | '\245' .. '\255' -> malformed st;
   )
 
 let to_gen ?(idx=0) str : uchar gen =
@@ -248,6 +260,9 @@ let uutf_to_seq s f =
 (*$T
   not (is_valid "\192\181")
   not (is_valid "\193\143")
+  not (is_valid "\224\151\167")
+  not (is_valid "\224\137\165")
+  is_valid "\240\151\189\163"
 *)
 
 (*$QR & ~long_factor:40
@@ -272,7 +287,7 @@ let uutf_to_seq s f =
 
 (* compare with uutf *)
 
-(*$QR & ~long_factor:40 ~count:10_000
+(*$QR & ~long_factor:40 ~count:100_000
   Q.string (fun s ->
     let v1 = is_valid s in
     let v2 = uutf_is_valid s in
@@ -281,7 +296,7 @@ let uutf_to_seq s f =
   )
 *)
 
-(*$QR & ~long_factor:40 ~count:10_000
+(*$QR & ~long_factor:40 ~count:100_000
   Q.string (fun s ->
     Q.assume (is_valid s && uutf_is_valid s);
     let pp s = Q.Print.(list pp_uchar) s in
