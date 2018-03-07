@@ -73,15 +73,17 @@ let next_ (type a) (st : Dec.t) ~(yield:uchar -> a) ~(stop:unit -> a) () : a =
     stop ()
   ) else (
     let c = st.s.[ st.i ] in
+    (* find leading byte, and detect some impossible cases
+       according to https://en.wikipedia.org/wiki/Utf8#Codepage_layout *)
     match c with
       | '\000' .. '\127' ->
         st.i <- 1 + st.i;
         yield (Uchar.of_int @@ Char.code c) (* 0xxxxxxx *)
-      | '\192' .. '\223' -> read_multi 1 ((Char.code c) land 0b11111)  (* 110yyyyy *)
+      | '\194' .. '\223' -> read_multi 1 ((Char.code c) land 0b11111)  (* 110yyyyy *)
       | '\224' .. '\239' -> read_multi 2 ((Char.code c) land 0b1111)   (* 1110zzzz *)
-      | '\240' .. '\247' -> read_multi 3 ((Char.code c) land 0b111)    (* 11110uuu *)
-      | '\128' .. '\191'
-      | '\248' .. '\255' ->
+      | '\240' .. '\244' -> read_multi 3 ((Char.code c) land 0b111)    (* 11110uuu *)
+      | '\128' .. '\193' (* 192,193 are forbidden *)
+      | '\245' .. '\255' ->
         raise (Malformed (st.s,st.i))
   )
 
@@ -229,21 +231,26 @@ let uutf_to_seq s f =
     is_valid s)
 *)
 
-(*$QR
+(*$QR & ~long_factor:10
   Q.string (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
     s = (of_string_exn s |> to_seq |> of_seq |> to_string)
   )
 *)
 
-(*$QR
+(*$QR & ~long_factor:10
   Q.string (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
     String.length s = List.length (of_string_exn s |> to_list)
   )
 *)
 
-(*$QR
+(*$T
+  not (is_valid "\192\181")
+  not (is_valid "\193\143")
+*)
+
+(*$QR & ~long_factor:40
   Q.string (fun s ->
     Q.assume (is_valid s);
     let s = of_string_exn s in
@@ -253,7 +260,7 @@ let uutf_to_seq s f =
   )
 *)
 
-(*$QR
+(*$QR & ~long_factor:40
   Q.string (fun s ->
     Q.assume (is_valid s);
     let s = of_string_exn s in
@@ -265,7 +272,7 @@ let uutf_to_seq s f =
 
 (* compare with uutf *)
 
-(*$QR
+(*$QR & ~long_factor:40 ~count:10_000
   Q.string (fun s ->
     let v1 = is_valid s in
     let v2 = uutf_is_valid s in
@@ -274,7 +281,7 @@ let uutf_to_seq s f =
   )
 *)
 
-(*$QR
+(*$QR & ~long_factor:40 ~count:10_000
   Q.string (fun s ->
     Q.assume (is_valid s && uutf_is_valid s);
     let pp s = Q.Print.(list pp_uchar) s in
