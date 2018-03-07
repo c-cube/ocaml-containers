@@ -9,14 +9,13 @@ type uchar = Uchar.t
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 
-type t = string
+let equal (a:string) b = Pervasives.(=) a b
+let hash : string -> int = Hashtbl.hash
+let pp = Format.pp_print_string
+
+include String
 
 let to_string x = x
-
-let pp = Format.pp_print_string
-let equal = String.equal
-let compare = String.compare
-let hash : t -> int = Hashtbl.hash
 
 (** State for decoding *)
 module Dec = struct
