@@ -53,6 +53,22 @@ val fold : ?idx:int -> ('a -> uchar -> 'a) -> 'a -> t -> 'a
 
 val iter : ?idx:int -> (uchar -> unit) -> t -> unit
 
+val n_chars : t -> int
+(** Number of characters *)
+
+val n_bytes : t -> int
+(** Number of bytes *)
+
+val map : (uchar -> uchar) -> t -> t
+
+val filter_map : (uchar -> uchar option) -> t -> t
+
+val flat_map : (uchar -> t) -> t -> t
+
+val append : t -> t -> t
+
+val concat : t -> t list -> t
+
 val of_seq : uchar sequence -> t
 
 val of_gen : uchar gen -> t

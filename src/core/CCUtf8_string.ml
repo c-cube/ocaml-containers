@@ -29,6 +29,8 @@ module Dec = struct
     { s=s; i=idx; len=String.length s; }
 end
 
+let n_bytes = length
+
 exception Malformed of string * int
 (** Malformed string at given offset *)
 
@@ -134,6 +136,8 @@ let fold ?idx f acc s =
   in
   aux acc
 
+let n_chars = fold (fun x _ -> x+1) 0
+
 let to_list ?(idx=0) s : uchar list =
   fold ~idx (fun acc x -> x :: acc) [] s |> List.rev
 
@@ -184,6 +188,27 @@ let of_list l : t =
   let buf = Buffer.create 32 in
   List.iter (code_to_string buf) l;
   Buffer.contents buf
+
+let map f s : t =
+  let buf = Buffer.create (n_bytes s) in
+  iter (fun c -> code_to_string buf (f c)) s;
+  Buffer.contents buf
+
+let filter_map f s : t =
+  let buf = Buffer.create (n_bytes s) in
+  iter
+    (fun c -> match f c with
+       | None -> ()
+       | Some c -> code_to_string buf c)
+    s;
+  Buffer.contents buf
+
+let flat_map f s : t =
+  let buf = Buffer.create (n_bytes s) in
+  iter (fun c -> iter (code_to_string buf) (f c)) s;
+  Buffer.contents buf
+
+let append = Pervasives.(^)
 
 let unsafe_of_string s = s
 
