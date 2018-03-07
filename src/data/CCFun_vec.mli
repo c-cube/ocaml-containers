@@ -15,6 +15,7 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
+(* TODO: restore this
 (** {2 Transient Identifiers} *)
 module Transient : sig
   type t
@@ -46,6 +47,7 @@ module Transient : sig
   exception Frozen
   (** Raised when a frozen ID is used. *)
 end
+*)
 
 (** {2 Signature} *)
 

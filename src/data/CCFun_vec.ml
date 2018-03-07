@@ -18,6 +18,7 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
+(* TODO
 (** {2 Transient IDs} *)
 module Transient = struct
   type state = { mutable frozen: bool }
@@ -39,17 +40,11 @@ module Transient = struct
       raise e
   exception Frozen
 end
-
-(* TODO: move transient from A.t to 'a t, as nodes can be owned by a transient,
-   not arrays.
-   Then do mutable push, and use it for append/filter/flatten/flat_map… *)
+   *)
 
 (* function array *)
 module A = struct
-  type 'a t = {
-    arr: 'a array;
-    id: Transient.t;
-  }
+  type 'a t = 'a array
 
   let length_log = 5
   let max_length = 32
@@ -57,35 +52,33 @@ module A = struct
 
   let () = assert (max_length = 1 lsl length_log)
 
-  let length a = Array.length a.arr
+  let length = Array.length
+  let iteri = Array.iteri
+  let fold = Array.fold_left
 
-  let create ~id = { arr= [| |]; id; }
+  let create () = [| |]
 
-  let empty = {arr=[| |]; id=Transient.empty}
+  let empty = [| |]
   let is_empty a = length a = 0
 
-  let return x = { arr=[| x |]; id=Transient.empty}
-
-  let owns ~id a =
-    Transient.active id && Transient.equal id a.id
+  let return x = [| x |]
 
   let get a i =
     if i<0 || i >= length a then invalid_arg "A.get";
-    Array.unsafe_get a.arr i
+    Array.unsafe_get a i
 
   (* push at the back *)
   let push x a =
     let n = length a in
     if n = max_length then invalid_arg "A.push";
     let arr = Array.make (n+1) x in
-    Array.blit a.arr 0 arr 0 n;
-    {a with arr;}
+    Array.blit a 0 arr 0 n;
+    arr
 
   let pop a =
     let n = length a in
     if n=0 then invalid_arg "A.pop";
-    let arr = Array.sub a.arr 0 (n-1) in
-    {a with arr}
+    Array.sub a 0 (n-1)
 
   let append a b =
     let n_a = length a in
@@ -94,10 +87,10 @@ module A = struct
     if n_a = 0 then b
     else if n_b = 0 then a
     else (
-      let arr = Array.make (n_a+n_b) (a.arr.(0)) in
-      Array.blit a.arr 0 arr 0 n_a;
-      Array.blit b.arr 0 arr n_a n_b;
-      {id=Transient.empty; arr}
+      let arr = Array.make (n_a+n_b) (a.(0)) in
+      Array.blit a 0 arr 0 n_a;
+      Array.blit b 0 arr n_a n_b;
+      arr
     )
 
   let set ~mut a i x =
@@ -105,22 +98,18 @@ module A = struct
     if i=length a then (
       (* insert in a longer copy *)
       let arr = Array.make (i+1) x in
-      Array.blit a.arr 0 arr 0 i;
-      {a with arr}
+      Array.blit a 0 arr 0 i;
+      arr
     ) else if mut then (
       (* replace element at [i] in place *)
-      a.arr.(i) <- x;
+      a.(i) <- x;
       a
     ) else (
       (* replace element at [i] in copy *)
-      let arr = Array.copy a.arr in
+      let arr = Array.copy a in
       arr.(i) <- x;
-      {a with arr}
+      arr
     )
-
-  let iteri f a = Array.iteri f a.arr
-
-  let fold f acc a = Array.fold_left f acc a.arr
 end
 
 (** {2 Functors} *)
