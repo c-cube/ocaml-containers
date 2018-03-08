@@ -10,10 +10,9 @@
 
     {b status: experimental}
 
-    @since 0.9
+    Change in the API to provide only a bounded buffer since 1.3
 
-    Change in the API to provide only a bounded buffer
-    @since 1.3
+    @since 0.9
 *)
 
 (** {2 Underlying Array} *)

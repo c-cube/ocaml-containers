@@ -79,8 +79,8 @@ type 'a sequence = ('a -> unit) -> unit
 
 val of_seq : 'a sequence -> 'a t
 (** Create a deque from the sequence.
-    @since 0.13 optional argument [deque] disappears, use
-      {!add_seq_back} instead. *)
+    optional argument [deque] disappears, use {!add_seq_back} instead since
+    0.13 *)
 
 val to_seq : 'a t -> 'a sequence
 (** Iterate on the elements. *)
