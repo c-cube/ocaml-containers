@@ -273,11 +273,13 @@ val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit ) format -> 'a
     @since 0.21 *)
 
 val ksprintf :
+  ?margin:int ->
   f:(string -> 'b) ->
   ('a, Format.formatter, unit, 'b) format4 ->
   'a
 (** [ksprintf fmt ~f] formats using [fmt], in a way similar to {!sprintf},
     and then calls [f] on the resulting string.
+    @param margin set margin (since NEXT_RELEASE)
     @since 0.14 *)
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a
