@@ -70,7 +70,7 @@ let next_ (type a) (st : Dec.t) ~(yield:uchar -> a) ~(stop:unit -> a) () : a =
     assert (n_bytes >= 1);
     (* is the string long enough to contain the whole codepoint? *)
     if st.i + n_bytes < st.len then (
-      aux 1 acc (* start with j=1, first char is already proccessed! *)
+      aux 1 acc (* start with j=1, first char is already processed! *)
     ) else (
       (* char is truncated *)
       malformed st;

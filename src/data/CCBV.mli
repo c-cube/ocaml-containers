@@ -51,7 +51,7 @@ val set : t -> int -> unit
 (** Set i-th bit, extending the bitvector if needed. *)
 
 val get : t -> int -> bool
-(** Is the i-th bit true? Returns false if the index is too high. *)
+(** Is the i-th bit true? Return false if the index is too high. *)
 
 val reset : t -> int -> unit
 (** Set i-th bit to 0, extending the bitvector if needed. *)
@@ -82,8 +82,8 @@ val of_list : int list -> t
     bitvector will have [length t] equal to 1 more than max of list indices. *)
 
 val first : t -> int option
-(** First set bit, or return None.
-    changed type at 1.2 *)
+(** First set bit, or return [None].
+    Changed type at 1.2 *)
 
 val first_exn : t -> int
 (** First set bit, or

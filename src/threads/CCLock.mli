@@ -24,7 +24,7 @@ val try_with_lock : 'a t -> ('a -> 'b) -> 'b option
     fails, [try_with_lock l f] fails too but the lock is released.
     @since 0.22 *)
 
-(** Type allowing to manipulate the lock as a reference
+(** Type allowing to manipulate the lock as a reference.
     @since 0.13 *)
 module LockRef : sig
   type 'a t

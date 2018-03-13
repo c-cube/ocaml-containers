@@ -32,32 +32,32 @@ val compare : t -> t -> int
 val pp : Format.formatter -> t -> unit
 
 val to_string : t -> string
-(** Identity *)
+(** Identity. *)
 
 exception Malformed of string * int
 (** Malformed string at given offset *)
 
 val to_gen : ?idx:int -> t -> uchar gen
 (** Generator of unicode codepoints.
-    @param idx offset where to start the decoding *)
+    @param idx offset where to start the decoding. *)
 
 val to_seq : ?idx:int -> t -> uchar sequence
 (** Sequence of unicode codepoints.
-    @param idx offset where to start the decoding *)
+    @param idx offset where to start the decoding. *)
 
 val to_list : ?idx:int -> t -> uchar list
 (** List of unicode codepoints.
-    @param idx offset where to start the decoding *)
+    @param idx offset where to start the decoding. *)
 
 val fold : ?idx:int -> ('a -> uchar -> 'a) -> 'a -> t -> 'a
 
 val iter : ?idx:int -> (uchar -> unit) -> t -> unit
 
 val n_chars : t -> int
-(** Number of characters *)
+(** Number of characters. *)
 
 val n_bytes : t -> int
-(** Number of bytes *)
+(** Number of bytes. *)
 
 val map : (uchar -> uchar) -> t -> t
 
@@ -76,16 +76,16 @@ val of_gen : uchar gen -> t
 val of_list : uchar list -> t
 
 val of_string_exn : string -> t
-(** Validate string by checking it is valid UTF8
-    @raise Invalid_argument if the string is not valid UTF8 *)
+(** Validate string by checking it is valid UTF8.
+    @raise Invalid_argument if the string is not valid UTF8. *)
 
 val of_string : string -> t option
-(** Safe version of {!of_string_exn} *)
+(** Safe version of {!of_string_exn}. *)
 
 val is_valid : string -> bool
 (** Valid UTF8? *)
 
 val unsafe_of_string : string -> t
 (** Conversion from a string without validating.
-    Upon iteration, if an invalid substring is met, Malformed will be raised *)
+    Upon iteration, if an invalid substring is met, Malformed will be raised. *)
 

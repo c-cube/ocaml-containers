@@ -4,7 +4,7 @@
 (** {1 Imperative deque}
 
     This structure provides fast access to its front and back elements,
-    with O(1) operations *)
+    with O(1) operations. *)
 
 type 'a t
 (** Contains 'a elements, queue in both ways *)
@@ -79,7 +79,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 val of_seq : 'a sequence -> 'a t
 (** Create a deque from the sequence.
-    optional argument [deque] disappears, use {!add_seq_back} instead since
+    Optional argument [deque] disappears, use {!add_seq_back} instead since
     0.13 *)
 
 val to_seq : 'a t -> 'a sequence
@@ -90,7 +90,7 @@ val of_gen : 'a gen -> 'a t
     @since 0.13 *)
 
 val to_gen : 'a t -> 'a gen
-(** Iterate on elements of the deque.
+(** Iterate on the elements of the deque.
     @since 0.13 *)
 
 val add_seq_front : 'a t -> 'a sequence -> unit

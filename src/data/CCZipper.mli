@@ -7,13 +7,13 @@
 
 type 'a t = 'a list * 'a list
 (** The pair [l, r] represents the list [List.rev_append l r], but
-      with the focus on [r]. *)
+      with the focus on [r] *)
 
 val empty : 'a t
 (** Empty zipper. *)
 
 val is_empty : _ t -> bool
-(** Empty zipper? Returns true iff the two lists are empty. *)
+(** Empty zipper? Returns [true] iff the two lists are empty. *)
 
 val to_list : 'a t -> 'a list
 (** Convert the zipper back to a list.

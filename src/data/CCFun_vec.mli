@@ -62,7 +62,7 @@ val return : 'a -> 'a t
 val length : _ t -> int
 
 val push : 'a -> 'a t -> 'a t
-(** Add element at the end *)
+(** Add element at the end. *)
 
 val get : int -> 'a t -> 'a option
 
@@ -70,15 +70,15 @@ val get_exn : int -> 'a t -> 'a
 (** @raise Not_found if key not present. *)
 
 val pop_exn : 'a t -> 'a * 'a t
-(** Pop last element *)
+(** Pop last element. *)
 
 val iter : f:('a -> unit) -> 'a t -> unit
 
 val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
-(** Iterate on elements with their index, in increasing order *)
+(** Iterate on elements with their index, in increasing order. *)
 
 val iteri_rev : f:(int -> 'a -> unit) -> 'a t -> unit
-(** Iterate on elements with their index, but starting from the end *)
+(** Iterate on elements with their index, but starting from the end. *)
 
 val fold : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 

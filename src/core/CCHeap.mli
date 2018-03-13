@@ -81,7 +81,7 @@ module type S = sig
   (** {2 Conversions}
 
       The interface of [of_gen], [of_seq], [of_klist]
-      has changed @since 0.16 (the old signatures
+      has changed since 0.16 (the old signatures
       are now [add_seq], [add_gen], [add_klist]). *)
 
   val to_list : t -> elt list
@@ -100,7 +100,7 @@ module type S = sig
   (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
 
   val add_seq : t -> elt sequence -> t (** @since 0.16 *)
-  (** Similar to {!add_list}. *)
+  (** Like {!add_list}. *)
 
   val of_seq : elt sequence -> t
   (** Build a heap from a given [sequence]. Complexity: [O(n log n)]. *)
@@ -133,7 +133,7 @@ module type S = sig
 
   val pp : ?sep:string -> elt printer -> t printer
   (** @since 0.16
-      Renamed from {!print} @since 2.0 *)
+      Renamed from {!print} since 2.0 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t

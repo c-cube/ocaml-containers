@@ -95,7 +95,7 @@ val init : int -> (int -> 'a) -> 'a t
     @since 0.6 *)
 
 val combine : 'a list -> 'b list -> ('a * 'b) list
-(** Similar to {!List.combine} but tail-recursive.
+(** Like {!List.combine} but tail-recursive.
     Transform a pair of lists into a list of pairs:
     [combine [a1; ...; an] [b1; ...; bn]] is
     [[(a1,b1); ...; (an,bn)]].
