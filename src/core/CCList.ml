@@ -580,13 +580,7 @@ let sorted_merge ~cmp l1 l2 =
     List.length (sorted_merge ~cmp:CCInt.compare l1 l2) = List.length l1 + List.length l2)
 *)
 
-let sort_uniq (type elt) ~cmp l =
-  let module S = Set.Make(struct
-      type t = elt
-      let compare = cmp
-    end) in
-  let set = fold_right S.add l S.empty in
-  S.elements set
+let sort_uniq (type elt) ~cmp l = List.sort_uniq cmp l
 
 (*$T
   sort_uniq ~cmp:CCInt.compare [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
