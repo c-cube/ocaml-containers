@@ -121,7 +121,7 @@ module type S = sig
       and [o = Some v] if [k, v] belonged to the map *)
 
   val merge : f:(key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
-  (** Similar to {!Map.S.merge} *)
+  (** Like {!Map.S.merge} *)
 
   val extract_min : 'a t -> key * 'a * 'a t
   (** [extract_min m] returns [k, v, m'] where [k,v] is the pair with the

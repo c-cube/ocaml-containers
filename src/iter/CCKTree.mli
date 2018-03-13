@@ -91,7 +91,7 @@ val find : pset:'a pset -> ('a -> 'b option) -> 'a t -> 'b option
         | `Cst n -> Format.fprintf fmt "%d" n
         | `Plus n -> Format.fprintf fmt "%d" n;;
 
-      Format.printf "%a@." (CCKTree.print pp_node) (fib 8);;
+      Format.printf "%a@." (CCKTree.pp pp_node) (fib 8);;
     ]}
 *)
 
@@ -114,7 +114,7 @@ module Dot : sig
   ] (** Dot attributes for nodes *)
 
   type graph = (string * attribute list t list)
-  (** A dot graph is a name, plus a list of trees labelled with attributes. *)
+  (** A dot graph is a name, plus a list of trees labelled with attributes *)
 
   val mk_id : ('a, Buffer.t, unit, attribute) format4 -> 'a
   (** Using a formatter string, build an ID. *)

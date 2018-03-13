@@ -161,7 +161,7 @@ module type S = sig
   (** [of_list l] is [add_list empty l]. *)
 
   val add_seq : t -> elt sequence -> t
-  (** Similar to {!add_list}.
+  (** Like {!add_list}.
       @since 0.16 *)
 
   val of_seq : elt sequence -> t

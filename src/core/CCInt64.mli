@@ -2,7 +2,7 @@
 
 (** {1 Int64}
 
-    Helpers for 64-bit integers.
+    Helpers for 64-bit integers
 
     @since 0.13 *)
 
@@ -114,8 +114,8 @@ val to_int : t -> int
     during the conversion. *)
 
 val of_int : int -> t
-(** Alias to {!Int64.of_int}
-    NOTE: used to return an option, but the function actually never fails *)
+(** Alias to {!Int64.of_int}.
+    NOTE: used to return an option, but the function actually never fails. *)
 
 val of_int_exn : int -> t
 (** Alias to {!Int64.of_int}.
@@ -128,11 +128,11 @@ val to_int32 : t -> int32
     during the conversion.  *)
 
 val of_int32 : int32 -> t
-(** Alias to {!Int64.of_int32}
+(** Alias to {!Int64.of_int32}.
     NOTE: use to return an option, but the function actually never fails. *)
 
 val of_int32_exn : int32 -> t
-(** Alias to {!Int64.of_int32}
+(** Alias to {!Int64.of_int32}.
     @deprecated since NEXT_RELEASE *)
 
 val to_nativeint : t -> nativeint
@@ -146,7 +146,7 @@ val of_nativeint : nativeint -> t
     NOTE: use to return an option, but the function actually never fails. *)
 
 val of_nativeint_exn : nativeint -> t
-(** Alias to {!Int64.of_nativeint}
+(** Alias to {!Int64.of_nativeint}.
     @deprecated since NEXT_RELEASE *)
 
 val to_float : t -> float
@@ -158,7 +158,7 @@ val of_float : float -> t
     discarding the fractional part (truncate towards 0).
     The result of the conversion is undefined if, after truncation,
     the number is outside the range \[{!CCInt64.min_int}, {!CCInt64.max_int}\].
-    NOTE: used to return an option, but the function never fails *)
+    NOTE: used to return an option, but the function never fails. *)
 
 val of_float_exn : float -> t
 (** Alias to {!Int64.of_float}.
@@ -171,7 +171,7 @@ val of_string : string -> t option
 (** Safe version of {!of_string_exn}. *)
 
 val of_string_opt : string -> t option
-(** Alias to {!of_string}
+(** Alias to {!of_string}.
     @since NEXT_RELEASE *)
 
 val of_string_exn : string -> t

@@ -76,7 +76,7 @@ module Poly : sig
       @since 0.16 *)
 
   val of_seq_count : 'a sequence -> ('a, int) Hashtbl.t
-  (** Similar to {!add_seq_count}, but allocates a new table and returns it.
+  (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 0.16 *)
 
   val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
@@ -106,8 +106,7 @@ module Poly : sig
   val pp : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
   (** Printer for table.
       @since 0.13
-      Renamed from [print].
-      @since 2.0 *)
+      Renamed from [print] since 2.0. *)
 end
 
 include module type of Poly
@@ -178,7 +177,7 @@ module type S = sig
       @since 0.16 *)
 
   val of_seq_count : key sequence -> int t
-  (** Similar to {!add_seq_count}, but allocates a new table and returns it.
+  (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 0.16 *)
 
   val to_list : 'a t -> (key * 'a) list
@@ -208,8 +207,7 @@ module type S = sig
   val pp : key printer -> 'a printer -> 'a t printer
   (** Printer for tables.
       @since 0.13
-      Renamed from {!print}.
-      @since 2.0 *)
+      Renamed from [print] since 2.0. *)
 end
 
 module Make(X : Hashtbl.HashedType) :

@@ -17,7 +17,7 @@ val return : 'a -> 'a t
 (** Return a computed value. *)
 
 val is_empty : _ t -> bool
-(** Evaluates the head. *)
+(** Evaluate the head. *)
 
 val length : _ t -> int
 (** [length l] returns the number of elements in [l], eagerly (linear time).

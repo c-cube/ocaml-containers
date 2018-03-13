@@ -171,7 +171,7 @@ module Infix : sig
   (** Alias to {!map}. *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  (** Alias to {!app} *)
+  (** Alias to {!app}. *)
 
   val (--) : int -> int -> int t
   (** Alias to {!range}. *)

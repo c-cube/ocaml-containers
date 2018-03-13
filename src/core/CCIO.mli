@@ -83,7 +83,7 @@ val with_out : ?mode:int -> ?flags:open_flag list ->
 
 val with_out_a : ?mode:int -> ?flags:open_flag list ->
   string -> (out_channel -> 'a) -> 'a
-(** Similar to {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
+(** Like {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
     flags activated, to append to the file.
     @raise Sys_error in case of error (same as {!open_out} and {!close_out}). *)
 
@@ -196,7 +196,7 @@ module File : sig
   type walk_item = [`File | `Dir] * t
 
   val walk : t -> walk_item gen
-  (** Similar to {!read_dir} (with [recurse=true]), this function walks
+  (** Like {!read_dir} (with [recurse=true]), this function walks
       a directory recursively and yields either files or directories.
       Is a file anything that doesn't satisfy {!is_directory} (including
       symlinks, etc.)
