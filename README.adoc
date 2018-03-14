@@ -185,8 +185,7 @@ The prefered way to install is through http://opam.ocaml.org/[opam].
 
 === From Sources
 
-On the branch `master` you will need `oasis` to build the library. On the
-branch `stable` it is not necessary.
+You need dune (formerly jbuilder).
 
     $ make
 
@@ -546,8 +545,6 @@ printer:: `'a printer = Format.formatter -> 'a -> unit` is a pretty-printer
 === Extended Documentation
 
 See link:doc/containers.adoc[the extended documentation] for more examples.
-
-Powered by image:http://oasis.forge.ocamlcore.org/oasis-badge.png[alt="OASIS", style="border: none;", link="http://oasis.forge.ocamlcore.org/"]
 
 == HOWTO (for contributors)
 
