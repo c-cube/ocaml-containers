@@ -56,7 +56,7 @@ val flush : unit printer
     @since 1.2 *)
 
 val string_quoted : string printer
-(** Like {!CCString.print}.
+(** Similar to {!CCString.print}.
     @since 0.14 *)
 
 val list : ?sep:unit printer -> 'a printer -> 'a list printer
