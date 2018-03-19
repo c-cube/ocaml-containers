@@ -9,8 +9,6 @@
     {[
       module B = CCBitField.Make(struct end);;
 
-      #install_printer B.pp;;
-
       let x = B.mk_field ()
       let y = B.mk_field ()
       let z = B.mk_field ()
