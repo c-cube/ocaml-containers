@@ -3,7 +3,7 @@
 
 (** {1 Random Generators} *)
 
-include module type of Random
+include module type of struct include Random end
 
 type state = Random.State.t
 

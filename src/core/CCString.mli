@@ -60,7 +60,7 @@ end
 
 (** {2 Strings} *)
 
-include module type of String
+include module type of struct include String end
 
 val equal : string -> string -> bool
 (** Equality function on strings. *)

@@ -4,7 +4,7 @@
 
     @since 0.14 *)
 
-include module type of Char
+include module type of struct include Char end
 
 val equal : t -> t -> bool
 (** The equal function for chars. *)
