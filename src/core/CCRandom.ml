@@ -228,3 +228,8 @@ let uniformity_test ?(size_hint=10) k rng st =
 (*$T split_list
   run ~st:(QCheck_runner.random_state()) ( uniformity_test 50_000 (split_list 10 ~len:3) )
 *)
+
+(*$R
+  let open Containers in
+  ignore @@ List.random_choose [1;2;3] (Random.get_state()) 
+*)
