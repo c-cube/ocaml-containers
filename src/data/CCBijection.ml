@@ -45,9 +45,10 @@ module Make(L : OrderedType)(R : OrderedType) = struct
       right = MapR.empty;
     }
 
-  let is_empty m = match MapL.is_empty m.left, MapR.is_empty m.right with
-    | l, r when l = r -> l
-    | l, r -> raise (Incoherence ("is_empty left: " ^ string_of_bool l ^ ", right: " ^ string_of_bool r))
+  let is_empty m =
+    let res = MapL.is_empty m.left in
+    assert (res = MapR.is_empty m.right);
+    res
 
   let add a b m = {
       left =
