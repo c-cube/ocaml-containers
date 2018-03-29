@@ -19,7 +19,7 @@ module type S = sig
   (** Return the length (number of characters) of the given string. *)
 
   val blit : t -> int -> Bytes.t -> int -> int -> unit
-  (** Similar to {!String.blit}.
+  (** Like {!String.blit}.
       Compatible with the [-safe-string] option.
       @raise Invalid_argument if indices are not valid. *)
 
@@ -38,30 +38,29 @@ module type S = sig
   (** {2 Conversions} *)
 
   val to_gen : t -> char gen
-  (** Return the [gen] of characters contained in the string *)
+  (** Return the [gen] of characters contained in the string. *)
 
   val to_seq : t -> char sequence
-  (** Return the [sequence] of characters contained in the string *)
+  (** Return the [sequence] of characters contained in the string. *)
 
   val to_klist : t -> char klist
-  (** Return the [klist] of characters contained in the string *)
+  (** Return the [klist] of characters contained in the string. *)
 
   val to_list : t -> char list
   (** Return the list of characters contained in the string. *)
 
   val pp_buf : Buffer.t -> t -> unit
-  (** Renamed from [pp].
-      @since 2.0 *)
+  (** Renamed from [pp] since 2.0. *)
 
   val pp : Format.formatter -> t -> unit
   (** Print the string within quotes.
-      Renamed from [print].
-      @since 2.0 *)
+
+      Renamed from [print] since 2.0. *)
 end
 
 (** {2 Strings} *)
 
-include module type of String
+include module type of struct include String end
 
 val equal : string -> string -> bool
 (** Equality function on strings. *)
@@ -75,7 +74,7 @@ val is_empty : string -> bool
 val hash : string -> int
 
 val init : int -> (int -> char) -> string
-(** Analog to [Array.init].
+(** Like [Array.init].
     @since 0.3.3 *)
 
 val rev : string -> string
@@ -127,7 +126,7 @@ val find_all_l : ?start:int -> sub:string -> string -> int list
     @since 0.17 *)
 
 val mem : ?start:int -> sub:string -> string -> bool
-(** [mem ~sub s] is true iff [sub] is a substring of [s].
+(** [mem ~sub s] is [true] iff [sub] is a substring of [s].
     @since 0.12 *)
 
 val rfind : sub:string -> string -> int
@@ -339,10 +338,10 @@ end
 module Split : sig
   (** Specification of what to do with empty blocks, as in [split ~by:"-" "-a-b-"].
 
-      - [{first=false; last=false}] will return [""; "a"; "b"; ""].
-      - [{first=true; last=false}] will return ["a"; "b" ""].
-      - [{first=false; last=true}] will return [""; "a"; "b"].
-      - [{first=true; last=true}] will return ["a"; "b"].
+      - [{first=false; last=false}] will return [""; "a"; "b"; ""]
+      - [{first=true; last=false}] will return ["a"; "b" ""]
+      - [{first=false; last=true}] will return [""; "a"; "b"]
+      - [{first=true; last=true}] will return ["a"; "b"]
 
       The default value of all remaining functions is [Drop_none].
       @since 1.5

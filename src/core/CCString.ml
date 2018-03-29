@@ -44,7 +44,7 @@ module type S = sig
   val length : t -> int
 
   val blit : t -> int -> Bytes.t -> int -> int -> unit
-  (** Similar to {!String.blit}.
+  (** Like {!String.blit}.
       Compatible with the [-safe-string] option.
       @raise Invalid_argument if indices are not valid *)
 
@@ -84,7 +84,7 @@ let rev s =
 (*$Q
   Q.printable_string (fun s -> \
     rev s = (to_list s |> List.rev |> of_list))
-  *)
+*)
 
 
 (*$=
@@ -696,7 +696,7 @@ let prefix ~pre s =
   else (
     let rec check i =
       if i=len then true
-      else if String.unsafe_get s i != String.unsafe_get pre i then false
+      else if Pervasives.(<>) (String.unsafe_get s i) (String.unsafe_get pre i) then false
       else check (i+1)
     in
     check 0
@@ -719,7 +719,7 @@ let suffix ~suf s =
     let off = String.length s - len in
     let rec check i =
       if i=len then true
-      else if String.unsafe_get s (off+i) != String.unsafe_get suf i then false
+      else if Pervasives.(<>) (String.unsafe_get s (off+i)) (String.unsafe_get suf i) then false
       else check (i+1)
     in
     check 0

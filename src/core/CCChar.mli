@@ -4,7 +4,7 @@
 
     @since 0.14 *)
 
-include module type of Char
+include module type of struct include Char end
 
 val equal : t -> t -> bool
 (** The equal function for chars. *)
@@ -41,7 +41,7 @@ val to_int : t -> int
     @since 1.0 *)
 
 val pp_buf : Buffer.t -> t -> unit
-(** Used to be {!pp}, changed name @since 2.0 *)
+(** Renamed from [pp] since 2.0. *)
 
 val pp : Format.formatter -> t -> unit
-(** Used to be {!print}, changed name @since 2.0 *)
+(** Renamed from [print] since 2.0. *)

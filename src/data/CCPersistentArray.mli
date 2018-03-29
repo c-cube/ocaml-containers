@@ -63,14 +63,14 @@ val set  : 'a t -> int -> 'a -> 'a t
     range [0] to [Array.length a - 1]. *)
 
 val length : 'a t -> int
-(** Returns the length of the persistent array. *)
+(** Return the length of the persistent array. *)
 
 val copy : 'a t -> 'a t
 (** [copy a] returns a fresh copy of [a]. Both copies are independent. *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
-(** Applies the given function to all elements of the array, and returns
+(** Apply the given function to all elements of the array, and return
     a persistent array initialized by the results of f. In the case of [mapi],
     the function is also given the index of the element.
     It is equivalent to [fun f t -> init (fun i -> f (get t i))]. *)

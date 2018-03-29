@@ -52,7 +52,7 @@ module type S = sig
   (** Intersection of multimaps. *)
 
   val diff : t -> t -> t
-  (** Difference of maps, ie bindings of the first that are not
+  (** Difference of maps, i.e. bindings of the first that are not
       in the second. *)
 
   val equal : t -> t -> bool
@@ -62,7 +62,7 @@ module type S = sig
   (** Total order on multimaps. *)
 
   val submap : t -> t -> bool
-  (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2]. *)
+  (** [submap m1 m2] is [true] iff all bindings of [m1] are also in [m2]. *)
 
   val to_seq : t -> (key * value) sequence
 

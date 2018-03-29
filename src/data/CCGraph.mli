@@ -118,7 +118,7 @@ module Traverse : sig
     graph:('v, 'e) t ->
     'v sequence ->
     'v sequence_once
-  (** One-shot traversal of the graph using a tag set and the given bag *)
+  (** One-shot traversal of the graph using a tag set and the given bag. *)
 
   val dfs: tbl:'v set ->
     graph:('v, 'e) t ->
@@ -147,7 +147,7 @@ module Traverse : sig
     ('v * int * ('v,'e) path) sequence_once
   (** Dijkstra algorithm, traverses a graph in increasing distance order.
       Yields each vertex paired with its distance to the set of initial vertices
-      (the smallest distance needed to reach the node from the initial vertices)
+      (the smallest distance needed to reach the node from the initial vertices).
       @param dist distance from origin of the edge to destination,
         must be strictly positive. Default is 1 for every edge. *)
 

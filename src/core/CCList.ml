@@ -580,13 +580,7 @@ let sorted_merge ~cmp l1 l2 =
     List.length (sorted_merge ~cmp:CCInt.compare l1 l2) = List.length l1 + List.length l2)
 *)
 
-let sort_uniq (type elt) ~cmp l =
-  let module S = Set.Make(struct
-      type t = elt
-      let compare = cmp
-    end) in
-  let set = fold_right S.add l S.empty in
-  S.elements set
+let sort_uniq ~cmp l = List.sort_uniq cmp l
 
 (*$T
   sort_uniq ~cmp:CCInt.compare [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
@@ -790,6 +784,54 @@ let sublists_of_len ?(last=fun _ -> None) ?offset n l =
   [[1;2];[4;5]] (subs 2 ~offset:3 [1;2;3;4;5;6])
   [[1;2;3];[4]] (subs 3 ~last:CCOpt.return [1;2;3;4])
   [[1;2]; [3;4]] (subs 2 [1;2;3;4;5])
+*)
+
+let intersperse x l =
+  let rec aux_direct i x l = match l with
+    | [] -> []
+    | [_] -> l
+    | _ when i=0 -> aux_tailrec [] x l
+    | y :: tail -> y :: x :: aux_direct (i-1) x tail
+  and aux_tailrec acc x l = match l with
+    | [] -> List.rev acc
+    | [y] -> List.rev (y::acc)
+    | y :: tail -> aux_tailrec (x :: y :: acc) x tail
+  in
+  aux_direct 1_000 x l
+
+(*$=
+  [] (intersperse 0 [])
+  [1] (intersperse 0 [1])
+  [1;0;2;0;3;0;4] (intersperse 0 [1;2;3;4])
+*)
+
+(*$Q
+  Q.(pair int (list int)) (fun (x,l) -> \
+    length (intersperse x l) = (if length l <= 1 then length l else 2 * length l-1))
+  Q.(pair int (list int)) (fun (x,l) -> \
+    rev (intersperse x l) = intersperse x (rev l))
+*)
+
+let interleave l1 l2 : _ list =
+  let rec aux acc l1 l2 = match l1, l2 with
+    | [], [] -> List.rev acc
+    | [], _ -> List.rev (List.rev_append l2 acc)
+    | _, [] -> List.rev (List.rev_append l1 acc)
+    | x1 :: tl1, x2 :: tl2 ->
+      aux (x2 :: x1 :: acc) tl1 tl2
+  in
+  aux [] l1 l2
+
+(*$=
+  [1;2;3;4;5]  (interleave [1;3] [2;4;5])
+  [1;2;3] (interleave [1] [2;3])
+*)
+
+(*$Q
+  Q.(pair (small_list int)(small_list int)) (fun (l1,l2) -> \
+    length (interleave l1 l2) = length l1 + length l2)
+  Q.(small_list int) (fun l -> l = interleave [] l)
+  Q.(small_list int) (fun l -> l = interleave l [])
 *)
 
 let take_while p l =

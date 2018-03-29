@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Associative containers with Heterogenerous Values}
+(** {1 Associative containers with Heterogeneous Values}
 
     This is similar to {!CCMixtbl}, but the injection is directly used as
     a key.

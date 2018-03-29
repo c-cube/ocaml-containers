@@ -45,7 +45,7 @@ val (@) : 'a t -> 'a t -> 'a t
     Concatenate two lists. *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
-(** Safe version of {!List.filter}. 
+(** Safe version of {!List.filter}.
     [filter p l] returns all the elements of the list [l]
     that satisfy the predicate [p].  The order of the elements
     in the input list is preserved. *)
@@ -95,7 +95,7 @@ val init : int -> (int -> 'a) -> 'a t
     @since 0.6 *)
 
 val combine : 'a list -> 'b list -> ('a * 'b) list
-(** Similar to {!List.combine} but tail-recursive.
+(** Like {!List.combine} but tail-recursive.
     Transform a pair of lists into a list of pairs:
     [combine [a1; ...; an] [b1; ...; bn]] is
     [[(a1,b1); ...; (an,bn)]].
@@ -201,6 +201,15 @@ val sublists_of_len :
       By default, [last = fun _ -> None], i.e. the last group is dropped if shorter than [n].
     @raise Invalid_argument if [offset <= 0] or [n <= 0].
     @since 1.0 *)
+
+val intersperse : 'a -> 'a list -> 'a list
+(** Insert the first argument between every element of the list
+    @since 2.1 *)
+
+val interleave : 'a list -> 'a list -> 'a list
+(** [interleave [x1…xn] [y1…ym]] is [x1,y1,x2,y2,…] and finishes with
+    the suffix of the longest list
+    @since 2.1 *)
 
 val pure : 'a -> 'a t
 (** [pure] is [return]. *)

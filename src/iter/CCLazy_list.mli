@@ -17,7 +17,7 @@ val return : 'a -> 'a t
 (** Return a computed value. *)
 
 val is_empty : _ t -> bool
-(** Evaluates the head. *)
+(** Evaluate the head. *)
 
 val length : _ t -> int
 (** [length l] returns the number of elements in [l], eagerly (linear time).
@@ -45,9 +45,14 @@ val append : 'a t -> 'a t -> 'a t
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
 (** Monadic flatten + map. *)
 
+val default : default:'a t -> 'a t -> 'a t
+(** Choice operator.
+    @since 2.1 *)
+
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (<|>) : 'a t -> 'a t -> 'a t (** Alias to {!default}. @since 2.1 *)
 end
 
 include module type of Infix

@@ -383,10 +383,11 @@ let fprintf_dyn_color ~colors out fmt =
   assert_equal "yolo" (sprintf_no_color "@{<red>yolo@}");
 *)
 
-let ksprintf ~f fmt =
+let ksprintf ?margin ~f fmt =
   let buf = Buffer.create 32 in
   let out = Format.formatter_of_buffer buf in
   if !color_enabled then set_color_tag_handling out;
+  begin match margin with None -> () | Some m -> pp_set_margin out m end;
   Format.kfprintf
     (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
     out fmt

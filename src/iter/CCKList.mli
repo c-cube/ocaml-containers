@@ -155,22 +155,22 @@ val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator. *)
 
 val zip : 'a t -> 'b t -> ('a * 'b) t
-(** Combine elements pairwise. Stops as soon as one of the lists stops.
+(** Combine elements pairwise. Stop as soon as one of the lists stops.
     @since 0.13 *)
 
 val unzip : ('a * 'b) t -> 'a t * 'b t
-(** Splits each tuple in the list.
+(** Split each tuple in the list.
     @since 0.13 *)
 
 (** {2 Misc} *)
 
 val sort : cmp:'a ord -> 'a t -> 'a t
-(** Eager sort. Requires the iterator to be finite. [O(n ln(n))] time
+(** Eager sort. Require the iterator to be finite. [O(n ln(n))] time
     and space.
     @since 0.3.3 *)
 
 val sort_uniq : cmp:'a ord -> 'a t -> 'a t
-(** Eager sort that removes duplicate values. Requires the iterator to be
+(** Eager sort that removes duplicate values. Require the iterator to be
     finite. [O(n ln(n))] time and space.
     @since 0.3.3 *)
 
@@ -243,14 +243,14 @@ end
 val of_list : 'a list -> 'a t
 
 val to_list : 'a t -> 'a list
-(** Gather all values into a list *)
+(** Gather all values into a list. *)
 
 val of_array : 'a array -> 'a t
 (** Iterate on the array.
     @since 0.13 *)
 
 val to_array : 'a t -> 'a array
-(** Convert into array. Iterates twice.
+(** Convert into array. Iterate twice.
     @since 0.13 *)
 
 val to_rev_list : 'a t -> 'a list
@@ -268,4 +268,4 @@ val of_gen : 'a gen -> 'a t
 
 val pp : ?sep:string -> 'a printer -> 'a t printer
 (** Print the list with the given separator (default ",").
-    Does not print opening/closing delimiters. *)
+    Do not print opening/closing delimiters. *)

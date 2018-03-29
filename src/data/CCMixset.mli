@@ -35,7 +35,7 @@ val newkey : unit -> 'a key
     Not thread-safe. *)
 
 val empty : t
-(** Empty set *)
+(** Empty set. *)
 
 val set : key:'a key -> 'a -> t -> t
 (** [set ~key v set] maps [key] to [v] in [set]. It means that

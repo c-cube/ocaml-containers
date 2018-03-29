@@ -653,7 +653,7 @@ let to_seq_rev v k =
 let slice_seq v start len =
   assert (start >= 0 && len >= 0);
   fun k ->
-    assert (start+len < v.size);
+    assert (start+len <= v.size);
     for i = start to start+len-1 do
       let x = Array.unsafe_get v.vec i in
       k x
@@ -661,6 +661,8 @@ let slice_seq v start len =
 
 (*$T
   slice_seq (of_list [0;1;2;3;4]) 1 3 |> CCList.of_seq = [1;2;3]
+  slice_seq (of_list [0;1;2;3;4]) 1 4 |> CCList.of_seq = [1;2;3;4]
+  slice_seq (of_list [0;1;2;3;4]) 0 5 |> CCList.of_seq = [0;1;2;3;4]
 *)
 
 let slice v = (v.vec, 0, v.size)

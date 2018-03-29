@@ -130,6 +130,21 @@ module Infix : sig
 
   val (>=) : t -> t -> bool
   (** @since 0.17 *)
+
+  val (+) : t -> t -> t
+  (** Addition. @since 2.1 *)
+
+  val (-) : t -> t -> t
+  (** Subtraction. @since 2.1 *)
+
+  val (~-) : t -> t
+  (** Unary negation. @since 2.1 *)
+
+  val ( * ) : t -> t -> t
+  (** Multiplication. @since 2.1 *)
+
+  val (/) : t -> t -> t
+  (** Division. @since 2.1 *)
 end
 
 include module type of Infix

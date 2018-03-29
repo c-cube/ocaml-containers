@@ -76,6 +76,11 @@ val opaque_identity : 'a -> 'a
     in OCaml >= 4.03).
     @since 0.18 *)
 
+val iterate : int -> ('a -> 'a) -> 'a -> 'a
+(** [iterate n f] is [f] iterated [n] times. That is to say, [iterate 0 f x] is
+    [x], [iterate 1 f x] is [f x], [iterate 2 f x] is [f (f x)], etc.
+    @since 2.1 *)
+
 (** {2 Monad}
 
     Functions with a fixed domain are monads in their codomain. *)

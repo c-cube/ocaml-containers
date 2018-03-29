@@ -3,7 +3,7 @@
 
 (** {1 Event timer}
 
-    Used to be part of [CCFuture]
+    Used to be part of [CCFuture].
     @since 0.16 *)
 
 type t

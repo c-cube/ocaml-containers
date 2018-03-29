@@ -10,10 +10,9 @@
 
     {b status: experimental}
 
-    @since 0.9
+    Change in the API to provide only a bounded buffer since 1.3
 
-    Change in the API to provide only a bounded buffer
-    @since 1.3
+    @since 0.9
 *)
 
 (** {2 Underlying Array} *)
@@ -82,7 +81,7 @@ module type S = sig
   (** [create size] creates a new bounded buffer with given size.
       The underlying array is allocated immediately and no further (large)
       allocation will happen from now on.
-      @raise Invalid_argument if the arguments is [< 1]. *)
+      @raise Invalid_argument if the argument is [< 1]. *)
 
   val copy : t -> t
   (** Make a fresh copy of the buffer. *)
@@ -94,12 +93,12 @@ module type S = sig
   (** Number of elements currently stored in the buffer. *)
 
   val is_full : t -> bool
-  (** true if pushing an element would erase another element.
+  (** [true] if pushing an element would erase another element.
       @since 1.3 *)
 
   val blit_from : t -> Array.t -> int -> int -> unit
   (** [blit_from buf from_buf o len] copies the slice [o, ... o + len - 1] from
-      a input buffer [from_buf] to the end of the buffer.
+      an input buffer [from_buf] to the end of the buffer.
       If the slice is too large for the buffer, only the last part of the array
       will be copied.
       @raise Invalid_argument if [o,len] is not a valid slice of [s]. *)
@@ -143,12 +142,12 @@ module type S = sig
       being its relative index within [buf]. *)
 
   val get_front : t -> int -> Array.elt
-  (** [get_front buf i] returns the [i]-th element of [buf] from the front, ie
+  (** [get_front buf i] returns the [i]-th element of [buf] from the front, i.e.
       the one returned by [take_front buf] after [i-1] calls to [junk_front buf].
       @raise Invalid_argument if the index is invalid (> [length buf]). *)
 
   val get_back : t -> int -> Array.elt
-  (** [get_back buf i] returns the [i]-th element of [buf] from the back, ie
+  (** [get_back buf i] returns the [i]-th element of [buf] from the back, i.e.
       the one returned by [take_back buf] after [i-1] calls to [junk_back buf].
       @raise Invalid_argument if the index is invalid (> [length buf]). *)
 
@@ -200,7 +199,7 @@ end
 (** An efficient byte based ring buffer *)
 module Byte : S with module Array = Array.Byte
 
-(** Makes a ring buffer module with the given array type. *)
+(** Makes a ring buffer module with the given array type *)
 module MakeFromArray(A : Array.S) : S with module Array = A
 
 (** Buffer using regular arrays *)

@@ -16,6 +16,11 @@ module Infix = struct
   let (>) = Pervasives.(>)
   let (<=) = Pervasives.(<=)
   let (>=) = Pervasives.(>=)
+  let (~-) = Pervasives.(~-.)
+  let (+) = Pervasives.(+.)
+  let (-) = Pervasives.(-.)
+  let ( * ) = Pervasives.( *. )
+  let (/) = Pervasives.(/.)
 end
 include Infix
 
@@ -35,6 +40,8 @@ let is_nan x = (x : t) <> x
 
 let add = (+.)
 let sub = (-.)
+let mul = ( *. )
+let div = (/.)
 let neg = (~-.)
 let abs = Pervasives.abs_float
 let scale = ( *. )

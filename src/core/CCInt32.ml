@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-include Int64
+include Int32
 
 let equal (x:t) y = Pervasives.(=) x y
 
@@ -39,17 +39,11 @@ module Infix = struct
   let (>) = Pervasives.(>)
   let (>=) = Pervasives.(>=)
 end
-
 include Infix
 
 let hash x = Pervasives.abs (to_int x)
 
 (** {2 Conversion} *)
-
-let of_int_exn = of_int
-let of_nativeint_exn = of_nativeint
-let of_int32_exn = of_int32
-let of_float_exn = of_float
 
 let of_string_exn = of_string
 

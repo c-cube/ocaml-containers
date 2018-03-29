@@ -2,11 +2,11 @@
 
 (** {1 Int64}
 
-    Helpers for 64-bit integers.
+    Helpers for 64-bit integers
 
     @since 0.13 *)
 
-type t = int64
+include module type of struct include Int64 end
 
 val (+) : t -> t -> t
 (** Addition. *)
@@ -66,6 +66,30 @@ val (asr) : t -> int -> t
     and inserted in the vacated bits.
     The result is unspecified if [y < 0] or [y >= 64]. *)
 
+(** Infix operators
+    @since 2.1 *)
+module Infix : sig
+  val (+) : t -> t -> t
+  val (-) : t -> t -> t
+  val (~-) : t -> t
+  val ( * ) : t -> t -> t
+  val (/) : t -> t -> t
+  val (mod) : t -> t -> t
+  val (land) : t -> t -> t
+  val (lor) : t -> t -> t
+  val (lxor) : t -> t -> t
+  val lnot : t -> t
+  val (lsl) : t -> int -> t
+  val (lsr) : t -> int -> t
+  val (asr) : t -> int -> t
+  val (=) : t -> t -> bool
+  val (<>) : t -> t -> bool
+  val (>) : t -> t -> bool
+  val (>=) : t -> t -> bool
+  val (<=) : t -> t -> bool
+  val (<) : t -> t -> bool
+end
+
 val equal : t -> t -> bool
 (** The equal function for 64-bit integers.
     Like {!Pervasives.(=) x y)}. *)
@@ -89,14 +113,13 @@ val to_int : t -> int
     is taken modulo 2{^31}, i.e. the top 33 bits are lost
     during the conversion. *)
 
-val of_int : int -> t option
-(** Safe version of {!of_int_exn}. *)
+val of_int : int -> t
+(** Alias to {!Int64.of_int}.
+    NOTE: used to return an option, but the function actually never fails. *)
 
 val of_int_exn : int -> t
 (** Alias to {!Int64.of_int}.
-    Convert the given integer (type [int]) to a 64-bit integer
-    (type [int64]).
-    @raise Failure in case of failure. *)
+    @deprecated since 2.1 *)
 
 val to_int32 : t -> int32
 (** Convert the given 64-bit integer (type [int64]) to a
@@ -104,14 +127,13 @@ val to_int32 : t -> int32
     is taken modulo 2{^32}, i.e. the top 32 bits are lost
     during the conversion.  *)
 
-val of_int32 : int32 -> t option
-(** Safe version of {!of_int32_exn}. *)
+val of_int32 : int32 -> t
+(** Alias to {!Int64.of_int32}.
+    NOTE: use to return an option, but the function actually never fails. *)
 
 val of_int32_exn : int32 -> t
-(** Alias to {!Int64.of_int32}
-    Convert the given 32-bit integer (type [int32])
-    to a 64-bit integer (type [int64]).
-    @raise Failure in case of failure. *)
+(** Alias to {!Int64.of_int32}.
+    @deprecated since 2.1 *)
 
 val to_nativeint : t -> nativeint
 (** Convert the given 64-bit integer (type [int64]) to a
@@ -119,28 +141,28 @@ val to_nativeint : t -> nativeint
     is taken modulo 2{^32}.  On 64-bit platforms,
     the conversion is exact. *)
 
-val of_nativeint : nativeint -> t option
-(** Safe version of {!of_nativeint_exn}. *)
+val of_nativeint : nativeint -> t
+(** Alias to {!Int64.of_nativeint}.
+    NOTE: use to return an option, but the function actually never fails. *)
 
 val of_nativeint_exn : nativeint -> t
 (** Alias to {!Int64.of_nativeint}.
-    Convert the given native integer (type [nativeint])
-    to a 64-bit integer (type [int64]).
-    @raise Failure in case of failure. *)
+    @deprecated since 2.1 *)
 
 val to_float : t -> float
 (** Convert the given 64-bit integer to a floating-point number. *)
 
-val of_float : float -> t option
-(** Safe version of {!of_float_exn}. *)
-
-val of_float_exn : float -> t
+val of_float : float -> t
 (** Alias to {!Int64.of_float}.
     Convert the given floating-point number to a 64-bit integer,
     discarding the fractional part (truncate towards 0).
     The result of the conversion is undefined if, after truncation,
     the number is outside the range \[{!CCInt64.min_int}, {!CCInt64.max_int}\].
-    @raise Failure in case of failure. *)
+    NOTE: used to return an option, but the function never fails. *)
+
+val of_float_exn : float -> t
+(** Alias to {!Int64.of_float}.
+    @deprecated since 2.1 *)
 
 val to_string : t -> string
 (** Return the string representation of its argument, in decimal. *)
@@ -148,10 +170,14 @@ val to_string : t -> string
 val of_string : string -> t option
 (** Safe version of {!of_string_exn}. *)
 
+val of_string_opt : string -> t option
+(** Alias to {!of_string}.
+    @since 2.1 *)
+
 val of_string_exn : string -> t
 (** Alias to {!Int64.of_string}.
     Convert the given string to a 64-bit integer.
-    The string is read in decimal (by default, or if the string 
+    The string is read in decimal (by default, or if the string
     begins with [0u]) or in hexadecimal, octal or binary if the
     string begins with [0x], [0o] or [0b] respectively.
 

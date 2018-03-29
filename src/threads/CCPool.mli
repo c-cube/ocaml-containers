@@ -3,7 +3,7 @@
 
 (** {1 Thread Pool, and Futures}
 
-    Renamed and heavily updated from [CCFuture]
+    Renamed and heavily updated from [CCFuture].
     @since 0.16 *)
 
 type +'a state =
@@ -36,7 +36,7 @@ module Make(P : PARAM) : sig
   (** [active ()] is true as long as [stop()] has not been called yet. *)
 
   val stop : unit -> unit
-  (** After calling [stop ()], Most functions will raise Stopped.
+  (** After calling [stop ()], most functions will raise Stopped.
       This has the effect of preventing new tasks from being executed. *)
 
   (** {6 Futures}
@@ -45,7 +45,7 @@ module Make(P : PARAM) : sig
       that are executed in the pool using {!run}. *)
   module Fut : sig
     type 'a t
-    (** A future value of type 'a *)
+    (** A future value of type ['a] *)
 
     type 'a future = 'a t
 
@@ -70,7 +70,7 @@ module Make(P : PARAM) : sig
     val get : 'a t -> 'a
     (** Blocking get: wait for the future to be evaluated, and get the value,
         or the exception that failed the future is returned.
-        raise e if the future failed with e. *)
+        Raise e if the future failed with e. *)
 
     val state : 'a t -> 'a state
     (** State of the future. *)
@@ -106,7 +106,7 @@ module Make(P : PARAM) : sig
         in the array fails, [sequence_a l] fails too. *)
 
     val map_a : ('a -> 'b t) -> 'a array -> 'b array t
-    (** [map_l f a] maps [f] on every element of [a], and will return
+    (** [map_a f a] maps [f] on every element of [a], and will return
         the array of every result if all calls succeed, or an error otherwise. *)
 
     val sequence_l : 'a t list -> 'a list t

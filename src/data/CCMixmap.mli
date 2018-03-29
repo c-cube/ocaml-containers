@@ -26,9 +26,10 @@
           assert (M.get ~inj:inj_str 3 m = None)
     ]}
 
+    change of API, the map is last argument to make piping with [|>] easier since 0.16.
+
     @since 0.9
-    @since 0.16 change of API, the map is last argument to
-      make piping with [|>] easier. *)
+*)
 
 type 'a injection
 (** An accessor for values of type 'a in any map. Values put

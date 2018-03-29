@@ -72,7 +72,7 @@ val iter : ('a,'b) t -> ('a -> 'b -> unit) -> unit
 (** Iterate on cached values. Should yield [size cache] pairs. *)
 
 val add : ('a, 'b) t -> 'a -> 'b -> bool
-(** Manually add a cached value. Returns [true] if the value has successfully
+(** Manually add a cached value. Return [true] if the value has successfully
     been added, and [false] if the value was already bound.
     @since 1.5 *)
 

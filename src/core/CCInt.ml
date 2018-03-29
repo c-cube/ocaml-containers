@@ -3,11 +3,51 @@
 
 type t = int
 
-let equal (a:int) b = a=b
+let equal (a:int) b = Pervasives.(=) a b
 
 let compare a b = compare a b
 
 let hash i = i land max_int
+
+let range i j yield =
+  let rec up i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      up (i+1) j yield
+    )
+  and down i j yield =
+    if i=j then yield i
+    else (
+      yield i;
+      down (i-1) j yield
+    )
+  in
+  if i<=j then up i j yield else down i j yield
+
+(*$= & ~printer:Q.Print.(list int)
+  [0;1;2;3;4;5] (range 0 5 |> Sequence.to_list)
+  [0]           (range 0 0 |> Sequence.to_list)
+  [5;4;3;2]     (range 5 2 |> Sequence.to_list)
+*)
+
+let range' i j yield =
+  if i<j then range i (j-1) yield
+  else if i=j then ()
+  else range i (j+1) yield
+
+(*$= & ~printer:Q.Print.(list int)
+  []          (range' 0 0 |> Sequence.to_list)
+  [0;1;2;3;4] (range' 0 5 |> Sequence.to_list)
+  [5;4;3]     (range' 5 2 |> Sequence.to_list)
+*)
+
+module Infix = struct
+  include Pervasives
+  let (--) = range
+  let (--^) = range'
+end
+include Infix
 
 let sign i =
   if i < 0 then -1
@@ -211,51 +251,3 @@ let range_by ~step i j yield =
       (CCInt.range_by ~step:1 i j |> Sequence.to_list) \
       (CCInt.range i j |> Sequence.to_list) )
 *)
-
-let range i j yield =
-  let rec up i j yield =
-    if i=j then yield i
-    else (
-      yield i;
-      up (i+1) j yield
-    )
-  and down i j yield =
-    if i=j then yield i
-    else (
-      yield i;
-      down (i-1) j yield
-    )
-  in
-  if i<=j then up i j yield else down i j yield
-
-(*$= & ~printer:Q.Print.(list int)
-  [0;1;2;3;4;5] (range 0 5 |> Sequence.to_list)
-  [0]           (range 0 0 |> Sequence.to_list)
-  [5;4;3;2]     (range 5 2 |> Sequence.to_list)
-*)
-
-let range' i j yield =
-  if i<j then range i (j-1) yield
-  else if i=j then ()
-  else range i (j+1) yield
-
-(*$= & ~printer:Q.Print.(list int)
-  []          (range' 0 0 |> Sequence.to_list)
-  [0;1;2;3;4] (range' 0 5 |> Sequence.to_list)
-  [5;4;3]     (range' 5 2 |> Sequence.to_list)
-*)
-
-
-module Infix = struct
-  let (=) = (=)
-  let (<>) = (<>)
-  let (<) = (<)
-  let (>) = (>)
-  let (<=) = (<=)
-  let (>=) = (>=)
-  let (--) = range
-  let (--^) = range'
-end
-include Infix
-let min = min
-let max = max

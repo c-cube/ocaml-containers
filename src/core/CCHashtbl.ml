@@ -205,7 +205,7 @@ module type S = sig
       @since 0.16 *)
 
   val of_seq_count : key sequence -> int t
-  (** Similar to {!add_seq_count}, but allocates a new table and returns it
+  (** Like {!add_seq_count}, but allocates a new table and returns it
       @since 0.16 *)
 
   val to_list : 'a t -> (key * 'a) list

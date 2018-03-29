@@ -17,7 +17,8 @@ type 'a printer = t -> 'a -> unit
 
 (** {2 Combinators} *)
 
-val silent : 'a printer (** Prints nothing *)
+val silent : 'a printer
+(** Prints nothing. *)
 
 val unit : unit printer
 (** Prints "()". *)
@@ -65,8 +66,8 @@ val seq : ?sep:unit printer -> 'a printer -> 'a sequence printer
 
 val opt : 'a printer -> 'a option printer
 (** [opt pp] prints options as follows:
-    [Some x] will become "some foo" if [pp x ---> "foo"].
-    [None] will become "none". *)
+    - [Some x] will become "some foo" if [pp x ---> "foo"].
+    - [None] will become "none". *)
 
 (** In the tuple printers, the [sep] argument is only available.
     @since 0.17 *)
@@ -124,18 +125,18 @@ val const : 'a printer -> 'a -> unit printer
 
 val some : 'a printer -> 'a option printer
 (** [some pp] will print options as follows:
-    - [Some x] is printed using [pp] on [x].
-    - [None] is not printed at all.
+    - [Some x] is printed using [pp] on [x]
+    - [None] is not printed at all
     @since 1.0
 *)
 
 val lazy_force : 'a printer -> 'a lazy_t printer
-(** [lazy_force pp out x] forces [x] and prints the result with [pp]
+(** [lazy_force pp out x] forces [x] and prints the result with [pp].
     @since 2.0 *)
 
 val lazy_or : ?default:unit printer -> 'a printer -> 'a lazy_t printer
 (** [lazy_or ?default pp out x] prints [default] if [x] is not
-    evaluated yet, or uses [pp] otherwise
+    evaluated yet, or uses [pp] otherwise.
     @since 2.0 *)
 
 (** {2 ANSI codes}
@@ -191,28 +192,33 @@ val set_color_default : bool -> unit
 val with_color : string -> 'a printer -> 'a printer
 (** [with_color "Blue" pp] behaves like the printer [pp], but with the given
     style.
+
     {b status: unstable}
     @since 0.16 *)
 
 val with_colorf : string -> t -> ('a, t, unit, unit) format4 -> 'a
 (** [with_colorf "Blue" out "%s %d" "yolo" 42] will behave like {!Format.fprintf},
     but wrapping the content with the given style.
+
     {b status: unstable}
     @since 0.16 *)
 
 val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
 (** [with_color_sf "Blue" out "%s %d" "yolo" 42] will behave like
     {!sprintf}, but wrapping the content with the given style.
+
     Example:
     {[
       CCFormat.with_color_sf "red" "%a" CCFormat.Dump.(list int) [1;2;3] |> print_endline;;
     ]}
+
     {b status: unstable}
     @since 0.21 *)
 
 val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 'a
 (** [with_color_ksf "Blue" ~f "%s %d" "yolo" 42] will behave like
     {!ksprintf}, but wrapping the content with the given style.
+
     Example:
     the following with raise [Failure] with a colored message
     {[
@@ -244,14 +250,15 @@ val tee : t -> t -> t
 
 val sprintf : ('a, t, unit, string) format4 -> 'a
 (** Print into a string any format string that would usually be compatible
-    with {!fprintf}. Similar to {!Format.asprintf}. *)
+    with {!fprintf}. Like {!Format.asprintf}. *)
 
 val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
-(** Similar to {!sprintf} but never prints colors.
+(** Like {!sprintf} but never prints colors.
     @since 0.16 *)
 
 val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
-(** Similar to {!sprintf} but enable/disable colors depending on [colors].
+(** Like {!sprintf} but enable/disable colors depending on [colors].
+
     Example:
     {[
       (* with colors *)
@@ -269,15 +276,17 @@ val fprintf : t -> ('a, t, unit ) format -> 'a
     @since 0.14 *)
 
 val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit ) format -> 'a
-(** Similar to {!fprintf} but enable/disable colors depending on [colors].
+(** Like {!fprintf} but enable/disable colors depending on [colors].
     @since 0.21 *)
 
 val ksprintf :
+  ?margin:int ->
   f:(string -> 'b) ->
   ('a, Format.formatter, unit, 'b) format4 ->
   'a
 (** [ksprintf fmt ~f] formats using [fmt], in a way similar to {!sprintf},
     and then calls [f] on the resulting string.
+    @param margin set margin (since 2.1)
     @since 0.14 *)
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a

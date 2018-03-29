@@ -21,6 +21,12 @@ let combine3 a b c =
 let combine4 a b c d =
   combine2 (combine2 a b) (combine2 c d)
 
+let combine5 a b c d e =
+  combine2 (combine2 a b) (combine2 (combine2 c d) e)
+
+let combine6 a b c d e f =
+  combine2 (combine2 a b) (combine2 (combine2 c d) (combine2 e f))
+
 (** {2 Combinators} *)
 
 let const h _ = h
