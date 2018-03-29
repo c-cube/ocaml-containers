@@ -16,37 +16,37 @@ type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (* TODO: restore this
-(** {2 Transient Identifiers} *)
-module Transient : sig
-  type t
-  (** Identifiers for transient modifications. A transient modification
+   (** {2 Transient Identifiers} *)
+   module Transient : sig
+   type t
+   (** Identifiers for transient modifications. A transient modification
       is uniquely identified by a [Transient.t]. Once [Transient.freeze r]
       is called, [r] cannot be used to modify the structure again. *)
 
-  val create : unit -> t
-  (** Create a new, active ID. *)
+   val create : unit -> t
+   (** Create a new, active ID. *)
 
-  val equal : t -> t -> bool
-  (** Equality between IDs. *)
+   val equal : t -> t -> bool
+   (** Equality between IDs. *)
 
-  val frozen : t -> bool
-  (** [frozen i] returns [true] if [freeze i] was called before. In this case,
+   val frozen : t -> bool
+   (** [frozen i] returns [true] if [freeze i] was called before. In this case,
       the ID cannot be used for modifications again. *)
 
-  val active : t -> bool
-  (** [active i] is [not (frozen i)]. *)
+   val active : t -> bool
+   (** [active i] is [not (frozen i)]. *)
 
-  val freeze : t -> unit
-  (** [freeze i] makes [i] unusable for new modifications. The values
+   val freeze : t -> unit
+   (** [freeze i] makes [i] unusable for new modifications. The values
       created with [i] will now be immutable. *)
 
-  val with_ : (t -> 'a) -> 'a
-  (** [with_ f] creates a transient ID [i], calls [f i],
+   val with_ : (t -> 'a) -> 'a
+   (** [with_ f] creates a transient ID [i], calls [f i],
       freezes the ID [i] and returns the result of [f i]. *)
 
-  exception Frozen
-  (** Raised when a frozen ID is used. *)
-end
+   exception Frozen
+   (** Raised when a frozen ID is used. *)
+   end
 *)
 
 (** {2 Signature} *)
@@ -92,19 +92,19 @@ val choose : 'a t -> 'a option
 
 (* TODO
 
-val push_mut : id:Transient.t -> 'a -> 'a t -> 'a t
-(** [add_mut ~id k v m] behaves like [add k v m], except it will mutate
+   val push_mut : id:Transient.t -> 'a -> 'a t -> 'a t
+   (** [add_mut ~id k v m] behaves like [add k v m], except it will mutate
     in place whenever possible. Changes done with an [id] might affect all
     versions of the structure obtained with the same [id] (but not
     other versions).
     @raise Transient.Frozen if [id] is frozen. *)
 
-val pop_mut : id:Transient.t -> 'a t -> 'a * 'a t
-(** Same as {!remove}, but modifies in place whenever possible.
+   val pop_mut : id:Transient.t -> 'a t -> 'a * 'a t
+   (** Same as {!remove}, but modifies in place whenever possible.
     @raise Transient.Frozen if [id] is frozen. *)
 
-val append_mut : id:Transient.t -> into:'a t -> 'a t -> 'a t
-    *)
+   val append_mut : id:Transient.t -> into:'a t -> 'a t -> 'a t
+*)
 
 (** {6 Conversions} *)
 
@@ -128,15 +128,15 @@ val to_gen : 'a t -> 'a gen
 
 (* TODO
 
-val add_list_mut : id:Transient.t -> 'a t -> 'a list -> 'a t
-(** @raise Frozen if the ID is frozen. *)
+   val add_list_mut : id:Transient.t -> 'a t -> 'a list -> 'a t
+   (** @raise Frozen if the ID is frozen. *)
 
-val add_seq_mut : id:Transient.t -> 'a t -> 'a sequence -> 'a t
-(** @raise Frozen if the ID is frozen. *)
+   val add_seq_mut : id:Transient.t -> 'a t -> 'a sequence -> 'a t
+   (** @raise Frozen if the ID is frozen. *)
 
-val add_gen_mut : id:Transient.t -> 'a t -> 'a gen -> 'a t
-(** @raise Frozen if the ID is frozen. *)
-   *)
+   val add_gen_mut : id:Transient.t -> 'a t -> 'a gen -> 'a t
+   (** @raise Frozen if the ID is frozen. *)
+*)
 
 (** {6 IO} *)
 

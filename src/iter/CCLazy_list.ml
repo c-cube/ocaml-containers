@@ -84,10 +84,10 @@ let rec flat_map ~f l =
 
 let default ~default l =
   lazy (
-      match l with
+    match l with
       | lazy Nil -> Lazy.force default
       | lazy l -> l
-    )
+  )
 
 (*$=
   [1] (default (return 1) empty |> to_list)

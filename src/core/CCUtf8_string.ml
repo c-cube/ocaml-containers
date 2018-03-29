@@ -237,7 +237,7 @@ let of_string s = if is_valid s then Some s else None
   let printer s = String.escaped (to_string s)
   let pp_uchar (c:Uchar.t) = Printf.sprintf "0x%x" (Uchar.to_int c)
 
-let uutf_is_valid s =
+  let uutf_is_valid s =
   try
     Uutf.String.fold_utf_8
       (fun () _ -> function
@@ -248,7 +248,7 @@ let uutf_is_valid s =
   with Exit ->
     false
 
-let uutf_to_seq s f =
+  let uutf_to_seq s f =
   Uutf.String.fold_utf_8
     (fun () _ -> function
        | `Malformed _ -> f (Uchar.of_int 0xfffd)
@@ -331,4 +331,4 @@ let uutf_to_seq s f =
     else Q.Test.fail_reportf "uutf: '%s', containers: '%s', is_valid %B, uutf_is_valid %B"
       (pp l_uutf) (pp l_co) (is_valid s) (uutf_is_valid s)
   )
-  *)
+*)

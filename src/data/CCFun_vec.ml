@@ -19,17 +19,17 @@ type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (* TODO
-(** {2 Transient IDs} *)
-module Transient = struct
-  type state = { mutable frozen: bool }
-  type t = Nil | St of state
-  let empty = Nil
-  let equal a b = Pervasives.(==) a b
-  let create () = St {frozen=false}
-  let active = function Nil -> false | St st -> not st.frozen
-  let frozen = function Nil -> true | St st -> st.frozen
-  let freeze = function Nil -> () | St st -> st.frozen <- true
-  let with_ f =
+   (** {2 Transient IDs} *)
+   module Transient = struct
+   type state = { mutable frozen: bool }
+   type t = Nil | St of state
+   let empty = Nil
+   let equal a b = Pervasives.(==) a b
+   let create () = St {frozen=false}
+   let active = function Nil -> false | St st -> not st.frozen
+   let frozen = function Nil -> true | St st -> st.frozen
+   let freeze = function Nil -> () | St st -> st.frozen <- true
+   let with_ f =
     let r = create() in
     try
       let x = f r in
@@ -38,9 +38,9 @@ module Transient = struct
     with e ->
       freeze r;
       raise e
-  exception Frozen
-end
-   *)
+   exception Frozen
+   end
+*)
 
 (* function array *)
 module A = struct
@@ -133,7 +133,7 @@ type 'a t = {
         (forall j>=i, sub[j].size<32^{n+1}-1)]
     (prefix of subs has size of complete binary tree; suffix has
      smaller size (actually decreasing))
-  *)
+*)
 
 
 let empty = {size=0; leaves=A.empty; subs=A.empty}
@@ -290,7 +290,7 @@ let rec map f m : _ t =
     let f = Q.Fn.apply f in
     (List.map f l) = (of_list l |> map f |> to_list)
   )
-  *)
+*)
 
 let append a b =
   if is_empty b then a
@@ -300,7 +300,7 @@ let append a b =
   Q.(pair (small_list int)(small_list int)) (fun (l1,l2) ->
     (l1 @ l2) = (append (of_list l1)(of_list l2) |> to_list)
   )
-  *)
+*)
 
 let add_list v l = List.fold_left (fun v x -> push x v) v l
 

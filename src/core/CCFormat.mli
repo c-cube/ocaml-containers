@@ -258,7 +258,7 @@ val sprintf_no_color : ('a, t, unit, string) format4 -> 'a
 
 val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
 (** Like {!sprintf} but enable/disable colors depending on [colors].
-    
+
     Example:
     {[
       (* with colors *)

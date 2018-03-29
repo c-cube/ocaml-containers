@@ -28,8 +28,8 @@ module type S = sig
 
   val add : left -> right -> t -> t
   (** Add [left] and [right] correspondence to bijection such that
-     [left] and [right] are unique in their respective sets and only
-     correspond to each other. *)
+      [left] and [right] are unique in their respective sets and only
+      correspond to each other. *)
 
   val cardinal : t -> int
   (** Number of bindings. O(n) time *)
@@ -51,7 +51,7 @@ module type S = sig
 
   val remove : left -> right -> t -> t
   (** Removes the [left], [right] binding if it exists. Returns the
-     same bijection otherwise. *)
+      same bijection otherwise. *)
 
   val remove_left : left -> t -> t
   (** Remove the binding with [left] key if it exists. Returns the

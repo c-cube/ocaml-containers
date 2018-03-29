@@ -46,14 +46,14 @@ module Make(L : OrderedType)(R : OrderedType) = struct
   module MapR = Map.Make(R)
 
   type t = {
-      left : right MapL.t;
-      right : left MapR.t;
-    }
+    left : right MapL.t;
+    right : left MapR.t;
+  }
 
   let empty = {
-      left = MapL.empty;
-      right = MapR.empty;
-    }
+    left = MapL.empty;
+    right = MapR.empty;
+  }
 
   let cardinal m = MapL.cardinal m.left
 
@@ -66,17 +66,17 @@ module Make(L : OrderedType)(R : OrderedType) = struct
   let compare a b = MapL.compare R.compare a.left b.left
 
   let add a b m = {
-      left =
-        (try let found = MapR.find b m.right in
-             if L.compare found a <> 0 then MapL.remove found m.left else m.left
-         with Not_found -> m.left)
-        |> MapL.add a b;
-      right =
-        (try let found = MapL.find a m.left in
-             if R.compare found b <> 0 then MapR.remove found m.right else m.right
-         with Not_found -> m.right)
-        |> MapR.add b a;
-    }
+    left =
+      (try let found = MapR.find b m.right in
+         if L.compare found a <> 0 then MapL.remove found m.left else m.left
+       with Not_found -> m.left)
+      |> MapL.add a b;
+    right =
+      (try let found = MapL.find a m.left in
+         if R.compare found b <> 0 then MapR.remove found m.right else m.right
+       with Not_found -> m.right)
+      |> MapR.add b a;
+  }
 
   let find_left  key m = MapL.find key m.left
   let find_right key m = MapR.find key m.right
@@ -84,7 +84,7 @@ module Make(L : OrderedType)(R : OrderedType) = struct
   let mem left right m = try R.compare right (find_left left m) = 0 with Not_found -> false
   let mem_left  key m  = MapL.mem key m.left
   let mem_right key m  = MapR.mem key m.right
-                       
+
   let remove a b m =
     if mem a b m then
       {

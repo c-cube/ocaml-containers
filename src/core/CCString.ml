@@ -84,7 +84,7 @@ let rev s =
 (*$Q
   Q.printable_string (fun s -> \
     rev s = (to_list s |> List.rev |> of_list))
-  *)
+*)
 
 
 (*$=
