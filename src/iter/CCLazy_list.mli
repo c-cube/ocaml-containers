@@ -47,12 +47,12 @@ val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
 
 val default : default:'a t -> 'a t -> 'a t
 (** Choice operator.
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val (<|>) : 'a t -> 'a t -> 'a t (** Alias to {!default}. @since NEXT_RELEASE *)
+  val (<|>) : 'a t -> 'a t -> 'a t (** Alias to {!default}. @since 2.1 *)
 end
 
 include module type of Infix

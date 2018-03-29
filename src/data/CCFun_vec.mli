@@ -7,7 +7,7 @@
 
     {b status: experimental. DO NOT USE (yet)}
 
-    @since NEXT_RELEASE
+    @since 2.1
 *)
 
 type 'a sequence = ('a -> unit) -> unit

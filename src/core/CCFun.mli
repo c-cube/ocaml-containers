@@ -79,7 +79,7 @@ val opaque_identity : 'a -> 'a
 val iterate : int -> ('a -> 'a) -> 'a -> 'a
 (** [iterate n f] is [f] iterated [n] times. That is to say, [iterate 0 f x] is
     [x], [iterate 1 f x] is [f x], [iterate 2 f x] is [f (f x)], etc.
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 (** {2 Monad}
 

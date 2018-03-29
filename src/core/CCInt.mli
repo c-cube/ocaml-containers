@@ -116,19 +116,19 @@ module Infix : sig
   (** Alias to {!range'}.
       @since 1.2 *)
 
-  val (+) : t -> t -> t (** @since NEXT_RELEASE *)
-  val (-) : t -> t -> t (** @since NEXT_RELEASE *)
-  val (~-) : t -> t (** @since NEXT_RELEASE *)
-  val ( * ) : t -> t -> t (** @since NEXT_RELEASE *)
-  val (/) : t -> t -> t (** @since NEXT_RELEASE *)
-  val (mod) : t -> t -> t (** @since NEXT_RELEASE *)
-  val (land) : t -> t -> t (** @since NEXT_RELEASE *)
-  val (lor) : t -> t -> t (** @since NEXT_RELEASE *)
-  val (lxor) : t -> t -> t (** @since NEXT_RELEASE *)
-  val lnot : t -> t (** @since NEXT_RELEASE *)
-  val (lsl) : t -> int -> t (** @since NEXT_RELEASE *)
-  val (lsr) : t -> int -> t (** @since NEXT_RELEASE *)
-  val (asr) : t -> int -> t (** @since NEXT_RELEASE *)
+  val (+) : t -> t -> t (** @since 2.1 *)
+  val (-) : t -> t -> t (** @since 2.1 *)
+  val (~-) : t -> t (** @since 2.1 *)
+  val ( * ) : t -> t -> t (** @since 2.1 *)
+  val (/) : t -> t -> t (** @since 2.1 *)
+  val (mod) : t -> t -> t (** @since 2.1 *)
+  val (land) : t -> t -> t (** @since 2.1 *)
+  val (lor) : t -> t -> t (** @since 2.1 *)
+  val (lxor) : t -> t -> t (** @since 2.1 *)
+  val lnot : t -> t (** @since 2.1 *)
+  val (lsl) : t -> int -> t (** @since 2.1 *)
+  val (lsr) : t -> int -> t (** @since 2.1 *)
+  val (asr) : t -> int -> t (** @since 2.1 *)
 end
 
 include module type of Infix

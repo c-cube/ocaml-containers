@@ -10,7 +10,7 @@
     For more elaborate operations,
     please use the excellent {{: http://erratique.ch/software/uutf} Uutf}.
 
-    @since NEXT_RELEASE
+    @since 2.1
 
     {b status}: experimental
 *)

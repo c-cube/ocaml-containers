@@ -1,5 +1,33 @@
 = Changelog
 
+== 2.1
+
+- make `CCInt64` compatible with `Int64` (breaking!) (closes #192)
+
+- Add `CCBijection` in containers.data
+- feat(mono): add dotted comparison operators for floats
+- add `?margin` parameter to `CCFormat.ksprintf`
+- add `CCUtf8_string` with basic encoding and decoding functionalities
+- Add `CCLazy_list.<|>`
+- Adding `CCNativeint`
+- enrich `CCInt.Infix` to get a uniform interface with `CCInt{32,64}`
+- add `CCInt{32,64}.Infix`
+- Adding CCInt32 module
+- add `CCHash.combine{5,6}`
+- Add infix operators to CCFloat
+- feat(list): add `{interleave,intersperse}` (closes #191)
+- add missing signatures of `CCArrayLabels` (closes #193)
+- Add CCFun.iterate
+- add experimental `CCFun_vec` data structure for fast functional vectors
+
+- fix: strong type aliases in Random (closes #210)
+- use standard `List.sort_uniq`
+- remove explicit dep on `bytes` in jbuild files
+- update printers names in containers.top (closes #201)
+- Enable support for Travis CI and Appveyor
+- test deps are required when we run tests
+- point to JST's blog post on poly compare
+
 == 2.0
 
 === breaking

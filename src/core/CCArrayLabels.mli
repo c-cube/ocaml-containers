@@ -70,13 +70,13 @@ val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 
 val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a t -> 'acc * 'b t
 (** [fold_map f acc a] is a [fold_left]-like function, but it also maps the
     array to another array.
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 val scan_left : f:('acc -> 'a -> 'acc) -> init:'acc -> 'a t -> 'acc t
 (** [scan_left f acc a] returns the array
     [ [|acc; f acc x0; f (f acc a.(0)) a.(1); …|] ].
 
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 
 val iter : f:('a -> unit) -> 'a t -> unit
@@ -130,21 +130,21 @@ val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
 val find_map : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find_map f a] returns [Some y] if there is an element [x] such
     that [f x = Some y], else it returns [None].
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 val find : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find f a] returns [Some y] if there is an element [x] such
     that [f x = Some y], else it returns [None].
-    @deprecated since NEXT_RELEASE *)
+    @deprecated since 2.1 *)
 
 val find_map_i : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find}, but also pass the index to the predicate function.
     @since 0.3.4
-    @deprecated since NEXT_RELEASE *)
+    @deprecated since 2.1 *)
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],

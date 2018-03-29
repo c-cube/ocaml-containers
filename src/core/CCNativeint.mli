@@ -14,7 +14,7 @@
     and arithmetic operations on [nativeint] are generally slower than those on [int]. 
     Use [nativeint] only when the application requires the extra bit of precision over the [int] type.
 
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 include module type of struct include Nativeint end
 

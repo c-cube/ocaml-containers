@@ -4,7 +4,7 @@
     Represents 1-to-1 mappings between two types. Each element from the "left"
     is mapped to one "right" value, and conversely.
 
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 type 'a sequence = ('a -> unit) -> unit
 

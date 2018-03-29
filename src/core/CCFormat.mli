@@ -286,7 +286,7 @@ val ksprintf :
   'a
 (** [ksprintf fmt ~f] formats using [fmt], in a way similar to {!sprintf},
     and then calls [f] on the resulting string.
-    @param margin set margin (since NEXT_RELEASE)
+    @param margin set margin (since 2.1)
     @since 0.14 *)
 
 val to_file : string -> ('a, t, unit, unit) format4 -> 'a

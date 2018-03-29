@@ -13,7 +13,7 @@
     of type int, and arithmetic operations on int32 are generally slower than
     those on int. Use int32 only when the application requires exact 32-bit arithmetic.
 
-    @since NEXT_RELEASE *)
+    @since 2.1 *)
 
 include module type of struct include Int32 end
 
