@@ -132,8 +132,9 @@ module type S = sig
   (** Return a [ktree] of the elements of the heap. *)
 
   val pp : ?sep:string -> elt printer -> t printer
-  (** @since 0.16
-      Renamed from {!print} since 2.0 *)
+  (** printer
+      Renamed from {!print} since 2.0
+      @since 0.16 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t

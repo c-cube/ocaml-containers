@@ -65,7 +65,7 @@ module type S = sig
   (** returns the bindings as a list of ([left], [right]) values *)
 
   val list_right : t -> (right * left) list
-  (** returns the bindings as a list of ([right, [left]) values *)
+  (** returns the bindings as a list of [(right, left)] values *)
 
   val add_seq : (left * right) sequence -> t -> t
 

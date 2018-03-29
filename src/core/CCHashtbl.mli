@@ -105,8 +105,8 @@ module Poly : sig
 
   val pp : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
   (** Printer for table.
-      @since 0.13
-      Renamed from [print] since 2.0. *)
+      Renamed from [print] since 2.0.
+      @since 0.13 *)
 end
 
 include module type of Poly
@@ -206,8 +206,8 @@ module type S = sig
 
   val pp : key printer -> 'a printer -> 'a t printer
   (** Printer for tables.
-      @since 0.13
-      Renamed from [print] since 2.0. *)
+      Renamed from [print] since 2.0.
+      @since 0.13 *)
 end
 
 module Make(X : Hashtbl.HashedType) :
