@@ -17,6 +17,7 @@ contains a tutorial and more explanations about what Containers is about.
 
 - [current](last)
 - [dev](dev)
+- [2.1](2.1)
 - [2.0](2.0)
 - [1.4](1.4)
 - [1.3](1.3)

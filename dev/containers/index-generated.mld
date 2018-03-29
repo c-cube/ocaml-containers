@@ -1,0 +1,2 @@
+{1 Library containers}
+This library exposes the following toplevel modules: {!modules:CCArray CCArrayLabels CCArray_slice CCBool CCChar CCEqual CCFloat CCFormat CCFun CCHash CCHashtbl CCHeap CCIO CCInt CCInt32 CCInt64 CCList CCListLabels CCMap CCNativeint CCOpt CCOrd CCPair CCParse CCRandom CCRef CCResult CCSet CCString CCUtf8_string CCVector Containers}.

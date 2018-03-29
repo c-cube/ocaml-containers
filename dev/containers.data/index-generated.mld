@@ -1,0 +1,2 @@
+{1 Library containers.data}
+This library exposes the following toplevel modules: {!modules:CCBV CCBijection CCBitField CCCache CCDeque CCFQueue CCFun_vec CCGraph CCHashSet CCHashTrie CCHet CCImmutArray CCIntMap CCMixmap CCMixset CCMixtbl CCMultiMap CCMultiSet CCPersistentArray CCPersistentHashtbl CCRAL CCRingBuffer CCSimple_queue CCTrie CCWBTree CCZipper}.
