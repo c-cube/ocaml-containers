@@ -6,6 +6,8 @@
 
     @since NEXT_RELEASE *)
 
+type 'a sequence = ('a -> unit) -> unit
+
 module type OrderedType = sig
   type t
   val compare : t -> t -> int
@@ -20,14 +22,20 @@ module type S = sig
 
   val is_empty : t -> bool
 
+  val equal : t -> t -> bool
+
+  val compare : t -> t -> int
+
   val add : left -> right -> t -> t
   (** Add [left] and [right] correspondence to bijection such that
      [left] and [right] are unique in their respective sets and only
      correspond to each other. *)
 
+  val cardinal : t -> int
+  (** Number of bindings. O(n) time *)
+
   val mem : left -> right -> t -> bool
-  (** Checks both sides for key membership. Can raise [Incoherence of
-     string] but should never happen *)
+  (** Checks both sides for key membership.  *)
 
   val mem_left : left -> t -> bool
   (** Checks for membership of correspondence using [left] key *)
@@ -36,10 +44,10 @@ module type S = sig
   (** Checks for membership of correspondence using [right] key *)
 
   val find_left  : left ->  t -> right
-  (** Raises [Not_found] if left is not found *)
+  (** @raise Not_found if left is not found *)
 
   val find_right : right -> t -> left
-  (** Raises [Not_found] if right is not found *)
+  (** @raise Not_found if right is not found *)
 
   val remove : left -> right -> t -> t
   (** Removes the [left], [right] binding if it exists. Returns the
@@ -47,11 +55,11 @@ module type S = sig
 
   val remove_left : left -> t -> t
   (** Remove the binding with [left] key if it exists. Returns the
-     same bijection otheriwse *)
+      same bijection otherwise *)
 
   val remove_right : right -> t -> t
   (** Remove the binding with [right] key if it exists. Returns the
-     same bijection otheriwse *)
+      same bijection otherwise *)
 
   val list_left : t -> (left * right) list
   (** returns the bindings as a list of ([left], [right]) values *)
@@ -59,6 +67,17 @@ module type S = sig
   val list_right : t -> (right * left) list
   (** returns the bindings as a list of ([right, [left]) values *)
 
+  val add_seq : (left * right) sequence -> t -> t
+
+  val of_seq : (left * right) sequence -> t
+
+  val to_seq : t -> (left * right) sequence
+
+  val add_list : (left * right) list -> t -> t
+
+  val of_list : (left * right) list -> t
+
+  val to_list : t -> (left * right) list
 end
 
 module Make(L : OrderedType)(R : OrderedType) : S

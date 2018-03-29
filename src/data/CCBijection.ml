@@ -1,6 +1,9 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Bijection} *)
+
+type 'a sequence = ('a -> unit) -> unit
+
 module type OrderedType = sig
   type t
   val compare : t -> t -> int
@@ -13,7 +16,10 @@ module type S = sig
 
   val empty : t
   val is_empty : t -> bool
+  val equal : t -> t -> bool
+  val compare : t -> t -> int
   val add : left -> right -> t -> t
+  val cardinal : t -> int
   val mem : left -> right -> t -> bool
   val mem_left : left -> t -> bool
   val mem_right : right -> t -> bool
@@ -24,6 +30,12 @@ module type S = sig
   val remove_right : right -> t -> t
   val list_left : t -> (left * right) list
   val list_right : t -> (right * left) list
+  val add_seq : (left * right) sequence -> t -> t
+  val of_seq : (left * right) sequence -> t
+  val to_seq : t -> (left * right) sequence
+  val add_list : (left * right) list -> t -> t
+  val of_list : (left * right) list -> t
+  val to_list : t -> (left * right) list
 end
 
 module Make(L : OrderedType)(R : OrderedType) = struct
@@ -32,8 +44,6 @@ module Make(L : OrderedType)(R : OrderedType) = struct
 
   module MapL = Map.Make(L)
   module MapR = Map.Make(R)
-
-  exception Incoherence of string
 
   type t = {
       left : right MapL.t;
@@ -45,10 +55,15 @@ module Make(L : OrderedType)(R : OrderedType) = struct
       right = MapR.empty;
     }
 
+  let cardinal m = MapL.cardinal m.left
+
   let is_empty m =
     let res = MapL.is_empty m.left in
     assert (res = MapR.is_empty m.right);
     res
+
+  let equal a b = MapL.equal (fun a b -> R.compare a b = 0) a.left b.left
+  let compare a b = MapL.compare R.compare a.left b.left
 
   let add a b m = {
       left =
@@ -89,4 +104,30 @@ module Make(L : OrderedType)(R : OrderedType) = struct
   let list_left  m = MapL.bindings m.left
   let list_right m = MapR.bindings m.right
 
+  let add_list l m = List.fold_left (fun m (a,b) -> add a b m) m l
+  let of_list l = add_list l empty
+  let to_list = list_left
+
+  let add_seq seq m =
+    let m = ref m in
+    seq (fun (k,v) -> m := add k v !m);
+    !m
+
+  let of_seq l = add_seq l empty
+
+  let to_seq m yield = MapL.iter (fun k v -> yield (k,v)) m.left
 end
+
+(*$inject
+  open Containers
+  module M = Make(Int)(String)
+
+*)
+
+(*$=
+  2     (M.of_list [1,"1"; 2, "2"] |> M.cardinal)
+  "1"   (M.of_list [1,"1"; 2, "2"] |> M.find_left 1)
+  "2"   (M.of_list [1,"1"; 2, "2"] |> M.find_left 2)
+  1     (M.of_list [1,"1"; 2, "2"] |> M.find_right "1")
+  2     (M.of_list [1,"1"; 2, "2"] |> M.find_right "2")
+*)
