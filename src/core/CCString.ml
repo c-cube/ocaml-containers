@@ -696,7 +696,7 @@ let prefix ~pre s =
   else (
     let rec check i =
       if i=len then true
-      else if String.unsafe_get s i != String.unsafe_get pre i then false
+      else if not (Char.equal (String.unsafe_get s i) (String.unsafe_get pre i)) then false
       else check (i+1)
     in
     check 0
@@ -719,7 +719,7 @@ let suffix ~suf s =
     let off = String.length s - len in
     let rec check i =
       if i=len then true
-      else if String.unsafe_get s (off+i) != String.unsafe_get suf i then false
+      else if not (Char.equal (String.unsafe_get s (off+i)) (String.unsafe_get suf i)) then false
       else check (i+1)
     in
     check 0
