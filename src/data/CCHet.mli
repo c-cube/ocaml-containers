@@ -23,7 +23,7 @@ end
 type pair =
   | Pair : 'a Key.t * 'a -> pair
 
-(** {2 Imperative table indexed by {!Key}} *)
+(** {2 Imperative table indexed by [Key]} *)
 module Tbl : sig
   type t
 

@@ -8,7 +8,7 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (** {2 Signatures} *)
 
-(** {6 A Composite Word}
+(** {4 A Composite Word}
 
     Words are made of characters, who belong to a total order *)
 
@@ -86,7 +86,7 @@ module type S = sig
   val size : _ t -> int
   (** Number of bindings. *)
 
-  (** {6 Conversions} *)
+  (** {4 Conversions} *)
 
   val to_list : 'a t -> (key * 'a) list
 
@@ -100,7 +100,7 @@ module type S = sig
 
   val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
 
-  (** {6 Ranges} *)
+  (** {4 Ranges} *)
 
   val above : key -> 'a t -> (key * 'a) sequence
   (** All bindings whose key is bigger or equal to the given key, in

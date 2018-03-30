@@ -295,16 +295,20 @@ val exists2 : (char -> char -> bool) -> string -> string -> bool
     a stable alias for them even in older versions. *)
 
 val capitalize_ascii : string -> string
-(** See {!String}. @since 0.18 *)
+(** See {!String}.
+    @since 0.18 *)
 
 val uncapitalize_ascii : string -> string
-(** See {!String}. @since 0.18 *)
+(** See {!String}.
+    @since 0.18 *)
 
 val uppercase_ascii : string -> string
-(** See {!String}. @since 0.18 *)
+(** See {!String}.
+    @since 0.18 *)
 
 val lowercase_ascii : string -> string
-(** See {!String}. @since 0.18 *)
+(** See {!String}.
+    @since 0.18 *)
 
 val equal_caseless : string -> string -> bool
 (** Comparison without respect to {b ascii} lowercase.
@@ -370,7 +374,7 @@ module Split : sig
 
   val klist : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) klist
 
-  (** {6 Copying functions}
+  (** {4 Copying functions}
 
       Those split functions actually copy the substrings, which can be
       more convenient but less efficient in general. *)
@@ -430,7 +434,9 @@ val edit_distance : string -> string -> int
     distance axioms: it is always positive, symmetric, and satisfies
     the formula [distance a b + distance b c >= distance a c]. *)
 
-(** {2 Slices} A contiguous part of a string *)
+(** {2 Slices}
+    
+    A contiguous part of a string *)
 
 module Sub : sig
   type t = string * int * int

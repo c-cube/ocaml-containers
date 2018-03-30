@@ -43,16 +43,20 @@ val push_back : 'a t -> 'a -> unit
 (** Push value at the back. *)
 
 val peek_front : 'a t -> 'a
-(** First value, or @raise Empty if empty. *)
+(** First value
+    @raise Empty if empty. *)
 
 val peek_back : 'a t -> 'a
-(** Last value, or @raise Empty if empty. *)
+(** Last value
+    @raise Empty if empty. *)
 
 val take_back : 'a t -> 'a
-(** Take last value, or @raise Empty if empty. *)
+(** Take last value
+    @raise Empty if empty. *)
 
 val take_front : 'a t -> 'a
-(** Take first value, or @raise Empty if empty. *)
+(** Take first value
+    @raise Empty if empty. *)
 
 val append_front : into:'a t -> 'a t -> unit
 (** [append_front ~into q] adds all elements of [q] at the front

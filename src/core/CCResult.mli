@@ -54,7 +54,8 @@ val add_ctx : string -> ('a, string) t -> ('a, string) t
 val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) format4 -> 'a
 (** [add_ctxf format_message] is similar to {!add_ctx} but with
     {!Format} for printing the message (eagerly).
-    Example: {[
+    Example:
+    {[
       add_ctxf "message(number %d, foo: %B)" 42 true (Error "error)"
     ]}
     @since 1.2 *)

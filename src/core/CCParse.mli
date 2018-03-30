@@ -23,7 +23,7 @@
 
     ]}
 
-    {6 Parse a list of words}
+    {4 Parse a list of words}
 
     {[
       open Containers.Parse;;
@@ -31,7 +31,7 @@
       parse_string_exn p "[abc , de, hello ,world  ]";;
     ]}
 
-    {6 Stress Test}
+    {4 Stress Test}
     This makes a list of 100_000 integers, prints it and parses it back.
 
     {[

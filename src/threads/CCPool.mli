@@ -39,7 +39,7 @@ module Make(P : PARAM) : sig
   (** After calling [stop ()], most functions will raise Stopped.
       This has the effect of preventing new tasks from being executed. *)
 
-  (** {6 Futures}
+  (** {4 Futures}
 
       The futures are registration points for callbacks, storing a {!state},
       that are executed in the pool using {!run}. *)

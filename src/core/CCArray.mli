@@ -164,7 +164,7 @@ val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
-    the result is not specified (may @raise Invalid_argument).
+    the result is not specified
 
     Complexity: [O(log n)] where n is the length of the array
     (dichotomic search).

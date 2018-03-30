@@ -143,13 +143,13 @@ val fix :
     @param sub2 cases that use the recursive gen twice.
     @param subn cases that use a list of recursive cases. *)
 
-(** {6 Applicative} *)
+(** {4 Applicative} *)
 
 val pure : 'a -> 'a t
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
-(** {6 Run a generator} *)
+(** {4 Run a generator} *)
 
 val run : ?st:state -> 'a t -> 'a
 (** Using a random state (possibly the one in argument) run a generator. *)
