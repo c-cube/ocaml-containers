@@ -3,6 +3,12 @@
 
 (** {1 Complements to list} *)
 
+type 'a sequence = ('a -> unit) -> unit
+type 'a gen = unit -> 'a option
+type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a printer = Format.formatter -> 'a -> unit
+type 'a random_gen = Random.State.t -> 'a
+
 include module type of ListLabels
 
 type 'a t = 'a list
@@ -59,6 +65,9 @@ val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a list -> 'acc * 'b 
     list to another list.
     @since 0.14 *)
 
+val scan_left : f:('acc -> 'a -> 'acc) -> init:'acc -> 'a list -> 'acc list
+(** @since NEXT_RELEASE *)
+
 val fold_map2 : f:('acc -> 'a -> 'b -> 'acc * 'c) -> init:'acc -> 'a list -> 'b list -> 'acc * 'c list
 (** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length.
@@ -74,12 +83,30 @@ val fold_flat_map : f:('acc -> 'a -> 'acc * 'b list) -> init:'acc -> 'a list -> 
     list to a list of lists that is then [flatten]'d.
     @since 0.14 *)
 
+val count : f:('a -> bool) -> 'a list -> int
+(** @since NEXT_RELEASE *)
+
 val init : int -> f:(int -> 'a) -> 'a t
 (** [init len ~f] is [f 0; f 1; ...; f (len-1)].
     @raise Invalid_argument if len < 0.
     @since 0.6 *)
 
+val combine : 'a list -> 'b list -> ('a * 'b) list
+(** @since NEXT_RELEASE *)
+
+val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
+(** @since NEXT_RELEASE *)
+
+val split : ('a * 'b) t -> 'a t * 'b t
+(** @since NEXT_RELEASE *)
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
+
+val compare_lengths : 'a t -> 'b t -> int
+(** @since NEXT_RELEASE *)
+
+val compare_length_with : 'a t -> int -> int
+(** @since NEXT_RELEASE *)
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
@@ -95,6 +122,11 @@ val product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 val fold_product : f:('c -> 'a -> 'b -> 'c) -> init:'c -> 'a t -> 'b t -> 'c
 (** Fold on the cartesian product. *)
 
+val cartesian_product : 'a t t -> 'a t t
+(** @since NEXT_RELEASE *)
+
+val map_product_l : f:('a -> 'b list) -> 'a list -> 'b list list
+(** @since NEXT_RELEASE *)
 val diagonal : 'a t -> ('a * 'a) t
 (** All pairs of distinct positions of the list. [list_diagonal l] will
     return the list of [List.nth i l, List.nth j l] if [i < j]. *)
@@ -121,7 +153,7 @@ val sublists_of_len :
 
     @since 1.5 *)
 
-val intersperse : 'a -> 'a list -> 'a list
+val intersperse : x:'a -> 'a list -> 'a list
 (** Insert the first argument between every element of the list.
     @since NEXT_RELEASE *)
 
@@ -168,6 +200,9 @@ val drop_while : f:('a -> bool) -> 'a t -> 'a t
 (** [drop_while ~f l] drops the longest prefix of [l] for which [f] is [true].
     @since 0.13 *)
 
+val take_drop_while : f:('a -> bool) -> 'a t -> 'a t * 'a t
+(** @since NEXT_RELEASE *)
+
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements). *)
@@ -188,6 +223,9 @@ val find_pred : f:('a -> bool) -> 'a t -> 'a option
 (** [find_pred p l] finds the first element of [l] that satisfies [p],
     or returns [None] if no element satisfies [p].
     @since 0.11 *)
+
+val find_opt : f:('a -> bool) -> 'a t -> 'a option
+(** @since NEXT_RELEASE *)
 
 val find_pred_exn : f:('a -> bool) -> 'a t -> 'a
 (** Unsafe version of {!find_pred}.
@@ -217,6 +255,18 @@ val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 (** [filter_map ~f l] is the sublist of [l] containing only elements for which
     [f] returns [Some e].
     Map and remove elements at the same time. *)
+
+val keep_some : 'a option t -> 'a t
+(** @since NEXT_RELEASE *)
+
+val keep_ok : ('a, _) Result.result t -> 'a t
+(** @since NEXT_RELEASE *)
+
+val all_some : 'a option t -> 'a t option
+(** @since NEXT_RELEASE *)
+
+val all_ok : ('a, 'err) Result.result t -> ('a t, 'err) Result.result
+(** @since NEXT_RELEASE *)
 
 val sorted_merge : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** Merges elements from both sorted list. *)
@@ -265,13 +315,22 @@ val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
     the element as first argument (counting from 0), and the element
     itself as second argument. *)
 
+val iteri2 : f:(int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
+(** @since NEXT_RELEASE *)
+
 val foldi : f:('b -> int -> 'a -> 'b) -> init:'b -> 'a t -> 'b
 (** Like [fold] but it also passes in the index of each element to the folded function. Tail-recursive. *)
+
+val foldi2 : f:('c -> int -> 'a -> 'b -> 'c) -> init:'c -> 'a t -> 'b t -> 'c
+(** @since NEXT_RELEASE *)
 
 val get_at_idx : int -> 'a t -> 'a option
 (** Get by index in the list.
     If the index is negative, it will get element starting from the end
     of the list. *)
+
+val nth_opt : 'a t -> int -> 'a option
+(** @since NEXT_RELEASE *)
 
 val get_at_idx_exn : int -> 'a t -> 'a
 (** Get the i-th element, or
@@ -462,12 +521,6 @@ module Traverse(M : MONAD) : sig
 end
 
 (** {2 Conversions} *)
-
-type 'a sequence = ('a -> unit) -> unit
-type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
-type 'a printer = Format.formatter -> 'a -> unit
-type 'a random_gen = Random.State.t -> 'a
 
 val random : 'a random_gen -> 'a t random_gen
 val random_non_empty : 'a random_gen -> 'a t random_gen
