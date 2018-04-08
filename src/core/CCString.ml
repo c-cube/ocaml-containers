@@ -285,7 +285,7 @@ let find ?(start=0) ~sub =
   1 (find ~sub:"bc" "abcd")
   ~-1 (find ~sub:"bc" "abd")
   1 (find ~sub:"a" "_a_a_a_")
-  6 (find ~sub:"a" ~start:5 "a1a234a")
+  6 (find ~start:5 ~sub:"a" "a1a234a")
 *)
 
 (*$Q & ~count:10_000

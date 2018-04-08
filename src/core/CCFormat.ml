@@ -394,7 +394,7 @@ let ksprintf ?margin ~f fmt =
 
 (*$= & ~printer:CCFormat.(to_string (opt string))
   (Some "hello world") \
-    (ksprintf "hello %a" CCFormat.string "world" ~f:(fun s -> Some s))
+    (ksprintf ~f:(fun s -> Some s) "hello %a" CCFormat.string "world")
 *)
 
 module Dump = struct

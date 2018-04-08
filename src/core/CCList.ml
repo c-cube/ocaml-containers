@@ -779,10 +779,10 @@ let sublists_of_len ?(last=fun _ -> None) ?offset n l =
   [[1;2;3]] (subs 3 [1;2;3;4])
   [[1;2]; [3;4]; [5;6]] (subs 2 [1;2;3;4;5;6])
   [] (subs 3 [1;2])
-  [[1;2];[3;4]] (subs 2 ~offset:2 [1;2;3;4])
-  [[1;2];[2;3]] (subs 2 ~offset:1 [1;2;3])
-  [[1;2];[4;5]] (subs 2 ~offset:3 [1;2;3;4;5;6])
-  [[1;2;3];[4]] (subs 3 ~last:CCOpt.return [1;2;3;4])
+  [[1;2];[3;4]] (subs ~offset:2 2 [1;2;3;4])
+  [[1;2];[2;3]] (subs ~offset:1 2 [1;2;3])
+  [[1;2];[4;5]] (subs ~offset:3 2 [1;2;3;4;5;6])
+  [[1;2;3];[4]] (subs ~last:CCOpt.return 3 [1;2;3;4])
   [[1;2]; [3;4]] (subs 2 [1;2;3;4;5])
 *)
 
@@ -1374,14 +1374,14 @@ module Assoc = struct
           | Some y' -> (x,y') :: rest)
   (*$=
     [1,"1"; 2,"22"] \
-      (Assoc.update ~eq:CCInt.equal 2 [1,"1"; 2,"2"] \
-        ~f:(function Some "2" -> Some "22" | _ -> assert false) |> lsort)
+      (Assoc.update ~eq:CCInt.equal \
+        ~f:(function Some "2" -> Some "22" | _ -> assert false) 2 [1,"1"; 2,"2"] |> lsort)
     [1,"1"; 3,"3"] \
-      (Assoc.update ~eq:CCInt.equal 2 [1,"1"; 2,"2"; 3,"3"] \
-        ~f:(function Some "2" -> None | _ -> assert false) |> lsort)
+      (Assoc.update ~eq:CCInt.equal \
+        ~f:(function Some "2" -> None | _ -> assert false) 2 [1,"1"; 2,"2"; 3,"3"] |> lsort)
     [1,"1"; 2,"2"; 3,"3"] \
-      (Assoc.update ~eq:CCInt.equal 3 [1,"1"; 2,"2"] \
-        ~f:(function None -> Some "3" | _ -> assert false) |> lsort)
+      (Assoc.update ~eq:CCInt.equal \
+        ~f:(function None -> Some "3" | _ -> assert false) 3 [1,"1"; 2,"2"] |> lsort)
   *)
 
   let remove ~eq x l =

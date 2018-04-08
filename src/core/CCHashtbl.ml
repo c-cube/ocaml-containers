@@ -95,12 +95,12 @@ module Poly = struct
 
   (*$R
     let tbl = Hashtbl.create 32 in
-    update tbl ~k:1 ~f:(fun _ _ -> Some "1");
+    update tbl ~f:(fun _ _ -> Some "1") ~k:1;
     assert_equal (Some "1") (get tbl 1);
-    update tbl ~k:2 ~f:(fun _ v->match v with Some _ -> assert false | None -> Some "2");
+    update tbl ~f:(fun _ v->match v with Some _ -> assert false | None -> Some "2") ~k:2;
     assert_equal (Some "2") (get tbl 2);
     assert_equal 2 (Hashtbl.length tbl);
-    update tbl ~k:1 ~f:(fun _ _ -> None);
+    update tbl ~f:(fun _ _ -> None) ~k:1;
     assert_equal None (get tbl 1);
   *)
 
@@ -113,13 +113,13 @@ module Poly = struct
 
   (*$R
     let tbl = Hashtbl.create 32 in
-    let v1 = get_or_add tbl ~k:1 ~f:(fun _ -> "1") in
+    let v1 = get_or_add tbl ~f:(fun _ -> "1") ~k:1 in
     assert_equal "1" v1;
     assert_equal (Some "1") (get tbl 1);
-    let v2 = get_or_add tbl ~k:2 ~f:(fun _ ->"2") in
+    let v2 = get_or_add tbl ~f:(fun _ ->"2") ~k:2 in
     assert_equal "2" v2;
     assert_equal (Some "2") (get tbl 2);
-    assert_equal "2" (get_or_add tbl ~k:2 ~f:(fun _ -> assert false));
+    assert_equal "2" (get_or_add tbl ~f:(fun _ -> assert false) ~k:2);
     assert_equal 2 (Hashtbl.length tbl);
     ()
   *)

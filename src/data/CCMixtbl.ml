@@ -163,8 +163,8 @@ let bindings tbl yield =
   set ~inj:inj_int tbl "bar" 2;
   set ~inj:inj_str tbl "baaz" "hello";
   set ~inj:inj_str tbl "str" "rts";
-  let l_int = bindings_of tbl ~inj:inj_int |> Sequence.to_list in
+  let l_int = bindings_of ~inj:inj_int tbl |> Sequence.to_list in
   OUnit.assert_equal ["bar", 2; "foo", 1] (List.sort compare l_int);
-  let l_str = bindings_of tbl ~inj:inj_str |> Sequence.to_list in
+  let l_str = bindings_of ~inj:inj_str tbl |> Sequence.to_list in
   OUnit.assert_equal ["baaz", "hello"; "str", "rts"] (List.sort compare l_str);
 *)

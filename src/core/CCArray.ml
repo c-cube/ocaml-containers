@@ -686,6 +686,6 @@ let sort_generic (type arr)(type elt)
 (*$Q & ~count:300
   arr_arbitrary (fun a -> \
     let a1 = Array.copy a and a2 = Array.copy a in \
-    Array.sort CCInt.compare a1; sort_generic ~cmp:CCInt.compare (module IA) a2; \
+    Array.sort CCInt.compare a1; sort_generic (module IA) ~cmp:CCInt.compare a2; \
     a1 = a2 )
 *)

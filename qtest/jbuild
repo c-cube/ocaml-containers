@@ -16,6 +16,7 @@
   ((name run_qtest)
    (modes (native))
    (modules (run_qtest))
+   (flags (:standard -nolabels))
    (libraries (sequence gen qcheck containers containers.unix
                containers.data containers.thread containers.iter
                containers.sexp uutf))
