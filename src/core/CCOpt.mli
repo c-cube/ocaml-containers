@@ -101,7 +101,7 @@ val pure : 'a -> 'a t
 (** Alias to {!return}. *)
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-(** [f <$> (Some x)] returns [Some (f x)] and [f <$> None] returns [None]. *)
+(** [f <*> (Some x)] returns [Some (f x)] and [f <*> None] returns [None]. *)
 
 val (<$>) : ('a -> 'b) -> 'a t -> 'b t
 (** Like [map].  *)
@@ -133,7 +133,7 @@ module Infix : sig
   (** Monadic bind. *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  (** [f <$> (Some x)] returns [Some (f x)] and [f <$> None] returns [None]. *)
+  (** [f <*> (Some x)] returns [Some (f x)] and [f <*> None] returns [None]. *)
 
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
   (** Like [map].  *)

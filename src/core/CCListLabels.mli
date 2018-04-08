@@ -8,7 +8,7 @@ include module type of ListLabels
 type 'a t = 'a list
 
 val empty : 'a t
-(** [empty] is []. *)
+(** [empty] is [[]]. *)
 
 val is_empty : _ t -> bool
 (** [is_empty l] returns [true] iff [l = []].
@@ -121,6 +121,15 @@ val sublists_of_len :
 
     @since 1.5 *)
 
+val intersperse : 'a -> 'a list -> 'a list
+(** Insert the first argument between every element of the list.
+    @since 2.1 *)
+
+val interleave : 'a list -> 'a list -> 'a list
+(** [interleave [x1…xn] [y1…ym]] is [x1,y1,x2,y2,…] and finishes with
+    the suffix of the longest list.
+    @since 2.1 *)
+
 val pure : 'a -> 'a t
 (** [pure] is [return]. *)
 
@@ -161,7 +170,7 @@ val drop_while : f:('a -> bool) -> 'a t -> 'a t
 
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
-    [l] doesn't have that many elements. *)
+    [l] doesn't have that many elements). *)
 
 val head_opt : 'a t -> 'a option
 (** First element.
@@ -502,7 +511,7 @@ module Infix : sig
   (** As {!append}. Concatenate two lists. *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  (** [fun <*> l] is [product (fun f x -> f x) funs l]. *)
+  (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
 
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
   (** As {!map}. *)

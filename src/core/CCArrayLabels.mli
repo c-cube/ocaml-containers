@@ -117,7 +117,7 @@ val sort_indices : f:('a -> 'a -> int) -> 'a t -> int array
 
 val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
 (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
-    such that [b.(i)] is the index at which the [i]-the element of [a] appears
+    such that [b.(i)] is the index at which the [i]-th element of [a] appears
     in [sorted cmp a]. [a] is not modified.
 
     In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].
@@ -135,7 +135,7 @@ val find_map : f:('a -> 'b option) -> 'a t -> 'b option
 val find : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find f a] returns [Some y] if there is an element [x] such
     that [f x = Some y], else it returns [None].
-    @deprecated since 2.1 *)
+    @deprecated since 2.1, use {!find_map} instead. *)
 
 val find_map_i : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
@@ -144,7 +144,7 @@ val find_map_i : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find}, but also pass the index to the predicate function.
     @since 0.3.4
-    @deprecated since 2.1 *)
+    @deprecated since 2.1, use {!find_map_i} instead. *)
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],

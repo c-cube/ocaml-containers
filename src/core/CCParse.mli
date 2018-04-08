@@ -138,7 +138,7 @@ val chars1_if : (char -> bool) -> string t
 (** Like {!chars_if}, but only non-empty strings. *)
 
 val endline : char t
-(** Parses '\n'. *)
+(** Parse '\n'. *)
 
 val space : char t
 (** Tab or space. *)

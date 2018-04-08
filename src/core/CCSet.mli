@@ -68,7 +68,7 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
-    (** Print the set *)
+    (** Print the set. *)
 
 end
 

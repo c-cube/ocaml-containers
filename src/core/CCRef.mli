@@ -24,7 +24,7 @@ val update : ('a -> 'a) -> 'a t -> unit
 (** Update the reference's content with the given function. *)
 
 val incr_then_get : int t -> int
-(** [incr_then_get r] increments [r] and returns its new value, think [++ r].
+(** [incr_then_get r] increments [r] and returns its new value, think [++r].
     @since 0.17 *)
 
 val get_then_incr : int t -> int
