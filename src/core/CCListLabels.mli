@@ -123,12 +123,12 @@ val sublists_of_len :
 
 val intersperse : 'a -> 'a list -> 'a list
 (** Insert the first argument between every element of the list.
-    @since 2.1 *)
+    @since NEXT_RELEASE *)
 
 val interleave : 'a list -> 'a list -> 'a list
 (** [interleave [x1…xn] [y1…ym]] is [x1,y1,x2,y2,…] and finishes with
     the suffix of the longest list.
-    @since 2.1 *)
+    @since NEXT_RELEASE *)
 
 val pure : 'a -> 'a t
 (** [pure] is [return]. *)
