@@ -43,7 +43,7 @@ module type S = sig
   (** Synonym to {!find} with flipped arguments. *)
 
   val get : key -> 'a t -> 'a option
-  (** Safe version of !{get_exn}. *)
+  (** Safe version of {!get_exn}. *)
 
   val mem : 'a t -> key -> bool
   (** Is the key bound? *)

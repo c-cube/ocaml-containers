@@ -10,9 +10,9 @@
     For more elaborate operations,
     please use the excellent {{: http://erratique.ch/software/uutf} Uutf}.
 
-    @since 2.1
+    {b status: experimental}
 
-    {b status}: experimental
+    @since 2.1
 *)
 
 

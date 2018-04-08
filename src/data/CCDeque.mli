@@ -28,7 +28,7 @@ val equal : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
     @since 0.13 *)
 
 val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
-(** [compare a b] compares lexicographically [a] and [b]
+(** [compare a b] compares lexicographically [a] and [b].
     @param cmp comparison function for elements.
     @since 0.13 *)
 
@@ -43,19 +43,19 @@ val push_back : 'a t -> 'a -> unit
 (** Push value at the back. *)
 
 val peek_front : 'a t -> 'a
-(** First value
+(** First value.
     @raise Empty if empty. *)
 
 val peek_back : 'a t -> 'a
-(** Last value
+(** Last value.
     @raise Empty if empty. *)
 
 val take_back : 'a t -> 'a
-(** Take last value
+(** Take last value.
     @raise Empty if empty. *)
 
 val take_front : 'a t -> 'a
-(** Take first value
+(** Take first value.
     @raise Empty if empty. *)
 
 val append_front : into:'a t -> 'a t -> unit
@@ -83,8 +83,8 @@ type 'a sequence = ('a -> unit) -> unit
 
 val of_seq : 'a sequence -> 'a t
 (** Create a deque from the sequence.
-    Optional argument [deque] disappears, use {!add_seq_back} instead since
-    0.13 *)
+    Optional argument [deque] disappears, use {!add_seq_back} instead.
+    @since 0.13 *)
 
 val to_seq : 'a t -> 'a sequence
 (** Iterate on the elements. *)

@@ -125,7 +125,7 @@ val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
 
 val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
-    such that [b.(i)] is the index at which the [i]-the element of [a] appears
+    such that [b.(i)] is the index at which the [i]-th element of [a] appears
     in [sorted cmp a]. [a] is not modified.
 
     In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].

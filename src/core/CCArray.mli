@@ -116,7 +116,7 @@ val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
 
 val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
 (** [sort_ranking cmp a] returns a new array [b], with the same length as [a],
-    such that [b.(i)] is the index at which the [i]-the element of [a] appears
+    such that [b.(i)] is the index at which the [i]-th element of [a] appears
     in [sorted cmp a]. [a] is not modified.
 
     In other words, [map (fun i -> (sorted cmp a).(i)) (sort_ranking cmp a) = a].
@@ -133,7 +133,7 @@ val find_map : ('a -> 'b option) -> 'a t -> 'b option
 
 val find : ('a -> 'b option) -> 'a t -> 'b option
 (** Alias to {!find_map}.
-    @deprecated since 1.3 *)
+    @deprecated since 1.3, use {!find_map} instead. *)
 
 val find_map_i : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Like {!find_map}, but also pass the index to the predicate function.
@@ -142,7 +142,7 @@ val find_map_i : (int -> 'a -> 'b option) -> 'a t -> 'b option
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** Alias to {!find_map_i}.
     @since 0.3.4
-    @deprecated since 1.3 *)
+    @deprecated since 1.3, use {!find_map_i} instead. *)
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
@@ -164,7 +164,7 @@ val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ?cmp x arr] finds the index of the object [x] in the array [arr],
     provided [arr] is {b sorted} using [cmp]. If the array is not sorted,
-    the result is not specified
+    the result is not specified.
 
     Complexity: [O(log n)] where n is the length of the array
     (dichotomic search).

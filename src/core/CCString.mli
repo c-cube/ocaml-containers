@@ -138,9 +138,9 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
 (** [replace ~sub ~by s] replaces some occurrences of [sub] by [by] in [s].
     @param which decides whether the occurrences to replace are:
       {ul
-        {- [`Left] first occurrence from the left (beginning)}
-        {- [`Right] first occurrence from the right (end)}
-        {- [`All] all occurrences (default)}
+        {- [`Left] first occurrence from the left (beginning).}
+        {- [`Right] first occurrence from the right (end).}
+        {- [`All] all occurrences (default).}
       }
     @raise Invalid_argument if [sub = ""].
     @since 0.14 *)
@@ -420,7 +420,7 @@ val split : by:string -> string -> string list
 (** {2 Utils} *)
 
 val compare_versions : string -> string -> int
-(** [compare_versions a b] compares {i version strings} [a] and [b],
+(** [compare_versions a b] compares {i version strings} [ a] and [b],
     considering that numbers are above text.
     @since 0.13 *)
 

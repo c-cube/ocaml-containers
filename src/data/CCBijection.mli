@@ -32,40 +32,40 @@ module type S = sig
       correspond to each other. *)
 
   val cardinal : t -> int
-  (** Number of bindings. O(n) time *)
+  (** Number of bindings. O(n) time. *)
 
   val mem : left -> right -> t -> bool
-  (** Checks both sides for key membership.  *)
+  (** Check both sides for key membership. *)
 
   val mem_left : left -> t -> bool
-  (** Checks for membership of correspondence using [left] key *)
+  (** Check for membership of correspondence using [left] key. *)
 
   val mem_right : right -> t -> bool
-  (** Checks for membership of correspondence using [right] key *)
+  (** Check for membership of correspondence using [right] key. *)
 
   val find_left  : left ->  t -> right
-  (** @raise Not_found if left is not found *)
+  (** @raise Not_found if left is not found. *)
 
   val find_right : right -> t -> left
-  (** @raise Not_found if right is not found *)
+  (** @raise Not_found if right is not found. *)
 
   val remove : left -> right -> t -> t
-  (** Removes the [left], [right] binding if it exists. Returns the
+  (** Remove the [left], [right] binding if it exists. Return the
       same bijection otherwise. *)
 
   val remove_left : left -> t -> t
-  (** Remove the binding with [left] key if it exists. Returns the
-      same bijection otherwise *)
+  (** Remove the binding with [left] key if it exists. Return the
+      same bijection otherwise. *)
 
   val remove_right : right -> t -> t
-  (** Remove the binding with [right] key if it exists. Returns the
-      same bijection otherwise *)
+  (** Remove the binding with [right] key if it exists. Return the
+      same bijection otherwise. *)
 
   val list_left : t -> (left * right) list
-  (** returns the bindings as a list of ([left], [right]) values *)
+  (** Return the bindings as a list of ([left], [right]) values. *)
 
   val list_right : t -> (right * left) list
-  (** returns the bindings as a list of [(right, left)] values *)
+  (** Return the bindings as a list of [(right, left)] values. *)
 
   val add_seq : (left * right) sequence -> t -> t
 

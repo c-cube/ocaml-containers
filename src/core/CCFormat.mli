@@ -47,8 +47,11 @@ val text : string printer
     @since 1.2 *)
 
 val char : char printer (** @since 0.14 *)
+
 val int32 : int32 printer (** @since 0.14 *)
+
 val int64 : int64 printer (** @since 0.14 *)
+
 val nativeint : nativeint printer (** @since 0.14 *)
 
 val flush : unit printer

@@ -119,7 +119,7 @@ val of_int : int -> t
 
 val of_int_exn : int -> t
 (** Alias to {!Int64.of_int}.
-    @deprecated since 2.1 *)
+    @deprecated since 2.1, use {!Int64.of_int} instead. *)
 
 val to_int32 : t -> int32
 (** Convert the given 64-bit integer (type [int64]) to a
@@ -133,7 +133,7 @@ val of_int32 : int32 -> t
 
 val of_int32_exn : int32 -> t
 (** Alias to {!Int64.of_int32}.
-    @deprecated since 2.1 *)
+    @deprecated since 2.1, use {!Int64.of_int32} instead. *)
 
 val to_nativeint : t -> nativeint
 (** Convert the given 64-bit integer (type [int64]) to a
@@ -147,7 +147,7 @@ val of_nativeint : nativeint -> t
 
 val of_nativeint_exn : nativeint -> t
 (** Alias to {!Int64.of_nativeint}.
-    @deprecated since 2.1 *)
+    @deprecated since 2.1, use {!Int64.of_nativeint} instead. *)
 
 val to_float : t -> float
 (** Convert the given 64-bit integer to a floating-point number. *)
@@ -162,7 +162,7 @@ val of_float : float -> t
 
 val of_float_exn : float -> t
 (** Alias to {!Int64.of_float}.
-    @deprecated since 2.1 *)
+    @deprecated since 2.1, use {!Int64.of_float} instead. *)
 
 val to_string : t -> string
 (** Return the string representation of its argument, in decimal. *)

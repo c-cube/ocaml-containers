@@ -132,7 +132,7 @@ module type S = sig
   (** Return a [ktree] of the elements of the heap. *)
 
   val pp : ?sep:string -> elt printer -> t printer
-  (** printer
+  (** Printer.
       Renamed from {!print} since 2.0
       @since 0.16 *)
 end

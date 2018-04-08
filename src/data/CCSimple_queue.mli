@@ -56,8 +56,11 @@ val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t (** Alias to {!map}. *)
+
   val (@) : 'a t -> 'a t -> 'a t (** Alias to {!append}. *)
+
   val (<::) : 'a t -> 'a -> 'a t (** Alias to {!snoc}. *)
+
 end
 
 include module type of Infix
