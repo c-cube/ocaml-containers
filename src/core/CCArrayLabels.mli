@@ -13,6 +13,10 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
+(**/**)
+external make_float : int -> float array = "caml_make_float_vect" (* compat *)
+(**/**)
+
 include module type of struct include ArrayLabels end
 
 type 'a t = 'a array
@@ -310,3 +314,4 @@ val sort_generic :
 (** Sort the array, without allocating (eats stack space though). Performance
     might be lower than {!Array.sort}.
     @since 0.14 *)
+
