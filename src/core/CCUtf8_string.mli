@@ -11,6 +11,7 @@
     please use the excellent {{: http://erratique.ch/software/uutf} Uutf}.
 
     {b status: experimental}
+    {b status}: experimental
 
     @since 2.1
 *)

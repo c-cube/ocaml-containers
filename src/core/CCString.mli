@@ -1,10 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Basic String Utils}
-
-    Consider using {!Containers_string.KMP} for pattern search, or Regex
-    libraries. *)
+(** {1 Basic String Utils} *)
 
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
