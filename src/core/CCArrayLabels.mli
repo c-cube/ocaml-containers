@@ -16,7 +16,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 external make_float : int -> float array = "caml_make_float_vect" (* compat *)
 (**/**)
 
-include module type of struct include ArrayLabels end
+include module type of ArrayLabels
 
 type 'a t = 'a array
 (** The type for arrays *)
