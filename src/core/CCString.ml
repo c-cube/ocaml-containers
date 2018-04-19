@@ -987,20 +987,23 @@ let exists p s =
   try iter (fun c -> if p c then raise MyExit) s; false
   with MyExit -> true
 
+let drop_while f s =
+  let i = ref 0 in
+  while !i < length s && f (unsafe_get s !i) do incr i done;
+  if !i > 0 then sub s !i (length s - !i) else s
+
+let rdrop_while f s =
+  let i = ref (length s-1) in
+  while !i >= 0 && f (unsafe_get s !i) do decr i done;
+  if !i < length s-1 then sub s 0 (!i+1) else s
+
 (* notion of whitespace for trim *)
 let is_space_ = function
   | ' ' | '\012' | '\n' | '\r' | '\t' -> true
   | _ -> false
 
-let ltrim s =
-  let i = ref 0 in
-  while !i < length s && is_space_ (unsafe_get s !i) do incr i done;
-  if !i > 0 then sub s !i (length s - !i) else s
-
-let rtrim s =
-  let i = ref (length s-1) in
-  while !i >= 0 && is_space_ (unsafe_get s !i) do decr i done;
-  if !i < length s-1 then sub s 0 (!i+1) else s
+let ltrim s = drop_while is_space_ s
+let rtrim s = rdrop_while is_space_ s
 
 (*$= & ~printer:id
   "abc " (ltrim " abc ")
