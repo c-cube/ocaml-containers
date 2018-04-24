@@ -218,3 +218,14 @@ let flatten = function
   flatten (Some None) = None
   flatten (Some (Some 1)) = Some 1
 *)
+
+let return_if b x =
+  if b then
+    Some x
+  else
+    None
+
+(*$T
+  return_if false 1 = None
+  return_if true 1 = Some 1
+*)
