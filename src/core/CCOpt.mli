@@ -122,6 +122,10 @@ val (<+>) : 'a t -> 'a t -> 'a t
 val choice : 'a t list -> 'a t
 (** [choice] returns the first non-[None] element of the list, or [None]. *)
 
+val flatten : 'a t t -> 'a t
+(** [flatten] transforms [Some x] into [x].
+    @since NEXT_RELEASE *)
+
 (** {2 Infix Operators}
     @since 0.16 *)
 

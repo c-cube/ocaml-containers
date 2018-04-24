@@ -208,3 +208,13 @@ let to_seq o k = match o with
 let pp ppx out = function
   | None -> Format.pp_print_string out "None"
   | Some x -> Format.fprintf out "@[Some %a@]" ppx x
+
+let flatten = function
+  | Some x -> x
+  | None -> None
+
+(*$T
+  flatten None = None
+  flatten (Some None) = None
+  flatten (Some (Some 1)) = Some 1
+*)
