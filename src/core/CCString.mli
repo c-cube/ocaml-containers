@@ -442,7 +442,7 @@ val edit_distance : string -> string -> int
     the formula [distance a b + distance b c >= distance a c]. *)
 
 (** {2 Slices}
-    
+
     A contiguous part of a string *)
 
 module Sub : sig
