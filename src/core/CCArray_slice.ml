@@ -28,7 +28,7 @@ let empty = {
 }
 
 let make arr i ~len =
-  if i<0||i+len > Array.length arr then invalid_arg "Array_slice.make";
+  if i<0||i+len > Array.length arr then invalid_arg "CCArray_slice.make";
   { arr; i; j=i+len; }
 
 let of_slice (arr,i,len) = make arr i ~len
@@ -113,7 +113,7 @@ let fold_while f acc a =
 
 let get a i =
   let j = a.i + i in
-  if i<0 || j>=a.j then invalid_arg "Array_slice.get";
+  if i<0 || j>=a.j then invalid_arg "CCArray_slice.get";
   a.arr.(j)
 
 let get_safe a i =
@@ -136,7 +136,7 @@ let get_safe a i =
 
 let set a i x =
   let j = a.i + i in
-  if i<0 || j>=a.j then invalid_arg "Array_slice.set";
+  if i<0 || j>=a.j then invalid_arg "CCArray_slice.set";
   a.arr.(j) <- x
 
 let iter f a =
@@ -146,7 +146,7 @@ let iteri f a =
   for k=0 to length a-1 do f k a.arr.(a.i + k) done
 
 let blit a i b j len =
-  if i+len>length a || j+len>length b then invalid_arg "Array_slice.blit";
+  if i+len>length a || j+len>length b then invalid_arg "CCArray_slice.blit";
   Array.blit a.arr (a.i+i) b.arr (b.i+j) len
 
 let rec _find f a i j =
@@ -382,7 +382,7 @@ let _iter2 f a b i j ~len =
   done
 
 let iter2 f a b =
-  if length a <> length b then invalid_arg "iter2";
+  if length a <> length b then invalid_arg "CCArray_slice_iter2";
   _iter2 f a.arr b.arr a.i b.i ~len:(length a)
 
 let _fold2 f acc a b i j ~len =
@@ -395,7 +395,7 @@ let _fold2 f acc a b i j ~len =
   aux acc 0
 
 let fold2 f acc a b =
-  if length a <> length b then invalid_arg "fold2";
+  if length a <> length b then invalid_arg "CCArray_slice_fold2";
   _fold2 f acc a.arr b.arr a.i b.i ~len:(length a)
 
 let shuffle a =
