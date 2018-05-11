@@ -124,13 +124,13 @@ val choice : 'a t list -> 'a t
 
 val flatten : 'a t t -> 'a t
 (** [flatten] transforms [Some x] into [x].
-    @since NEXT_RELEASE *)
+    @since 2.2 *)
 
 val return_if : bool -> 'a -> 'a t
 (** Apply [Some] or [None] depending on a boolean.
     More precisely, [return_if false x] is [None],
     and [return_if true x] is [Some x].
-    @since NEXT_RELEASE *)
+    @since 2.2 *)
 
 (** {2 Infix Operators}
     @since 0.16 *)

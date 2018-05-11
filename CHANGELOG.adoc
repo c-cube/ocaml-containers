@@ -1,5 +1,18 @@
 = Changelog
 
+== 2.2
+
+- Improving comments presentation
+- Add `CCOpt.return_if`
+- Add `CCOpt.flatten`
+- Add `CCString.{,r}drop_while`
+- add many missing functions to `CCListLabels`
+- test: consistency `CCList{,Labels}`
+
+- fix(arrayLabels): compatibility with 4.07
+- fix: compatibility for CCArrayLabels
+- test: add compatibility checks between `CCArray{,Labels}`
+
 == 2.1
 
 - make `CCInt64` compatible with `Int64` (breaking!) (closes #192)

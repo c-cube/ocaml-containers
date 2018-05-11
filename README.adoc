@@ -560,8 +560,6 @@ can be removed.
    removed deprecated functions, etc.
 . update `CHANGELOG.adoc` (see its end to find the right git command)
 . commit the changes
-. `git checkout stable`
-. `git merge master`
 . `make test doc`
 . tag, and push both to github
 . `opam pin add containers https://github.com/c-cube/ocaml-containers.git#<release>`

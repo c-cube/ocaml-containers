@@ -249,12 +249,12 @@ include S with type t := string
 val drop_while : (char -> bool) -> t -> t
 (** [drop_while f s] discards any characters starting from the left,
     up to the first character [c] not satisfying [f c].
-    @since NEXT_RELEASE *)
+    @since 2.2 *)
 
 val rdrop_while : (char -> bool) -> t -> t
 (** [rdrop_while f s] discards any characters starting from the right,
     up to the first character [c] not satisfying [f c].
-    @since NEXT_RELEASE *)
+    @since 2.2 *)
 
 val ltrim : t -> t
 (** Trim space on the left (see {!String.trim} for more details).
