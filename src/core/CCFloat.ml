@@ -58,6 +58,20 @@ let max (x : t) y =
     | _, FP_nan -> x
     | _ -> if x > y then x else y
 
+(*$T
+  max nan 1. = 1.
+  min nan 1. = 1.
+  max 1. nan = 1.
+  min 1. nan = 1.
+*)
+
+(*$Q
+  Q.(pair float float) (fun (x,y) -> \
+    is_nan x || is_nan y || (min x y <= x && min x y <= y))
+  Q.(pair float float) (fun (x,y) -> \
+    is_nan x || is_nan y || (max x y >= x && max x y >= y))
+  *)
+
 let equal (a:float) b = a=b
 
 let hash : t -> int = Hashtbl.hash
