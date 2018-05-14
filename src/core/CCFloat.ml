@@ -36,7 +36,7 @@ let max_finite_value = Pervasives.max_float
 
 let epsilon = Pervasives.epsilon_float
 
-let is_nan x = (x : t) <> x
+let is_nan x = Pervasives.classify_float x = Pervasives.FP_nan
 
 let add = (+.)
 let sub = (-.)
@@ -47,16 +47,20 @@ let abs = Pervasives.abs_float
 let scale = ( *. )
 
 let min (x : t) y =
-  if is_nan x || is_nan y then nan
-  else if x < y then x else y
+  match Pervasives.classify_float x, Pervasives.classify_float y with
+    | FP_nan, _ -> y
+    | _, FP_nan -> x
+    | _ -> if x < y then x else y
 
 let max (x : t) y =
-  if is_nan x || is_nan y then nan
-  else if x > y then x else y
+  match Pervasives.classify_float x, Pervasives.classify_float y with
+    | FP_nan, _ -> y
+    | _, FP_nan -> x
+    | _ -> if x > y then x else y
 
 let equal (a:float) b = a=b
 
-let hash = Hashtbl.hash
+let hash : t -> int = Hashtbl.hash
 let compare (a:float) b = Pervasives.compare a b
 
 type 'a printer = Format.formatter -> 'a -> unit
