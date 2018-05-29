@@ -102,6 +102,10 @@ val compare : t -> t -> int
     allows the module [CCInt64] to be passed as argument to the functors
     {!Set.Make} and {!Map.Make}. *)
 
+val leq : t -> t -> bool
+(** Equivalent of [(<=)]
+    Allows to be passed to {!Heap.Make} *)
+
 val hash : t -> int
 (** Like {!Pervasives.abs (to_int x)}. *)
 

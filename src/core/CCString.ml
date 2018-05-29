@@ -66,6 +66,8 @@ let equal (a:string) b = Pervasives.(=) a b
 let compare_int (a : int) b = Pervasives.compare a b
 let compare = String.compare
 
+let leq (a:string) b = String.compare a b <= 0
+
 let hash s = Hashtbl.hash s
 
 let length = String.length

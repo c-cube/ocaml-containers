@@ -2,7 +2,8 @@
 
 include Int64
 
-let equal (x:t) y = Pervasives.(=) x y
+let equal (x:int64) y = Pervasives.(=) x y
+let leq (a:int64) b = Pervasives.(<=) a b
 
 module Infix = struct
   let (+) = add

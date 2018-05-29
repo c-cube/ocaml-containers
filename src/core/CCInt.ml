@@ -7,6 +7,8 @@ let equal (a:int) b = Pervasives.(=) a b
 
 let compare a b = compare a b
 
+let leq (a:int) b = Pervasives.(<=) a b
+
 let hash i = i land max_int
 
 let range i j yield =

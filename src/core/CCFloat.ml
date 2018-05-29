@@ -76,6 +76,7 @@ let equal (a:float) b = a=b
 
 let hash : t -> int = Hashtbl.hash
 let compare (a:float) b = Pervasives.compare a b
+let leq (a:float) b = Pervasives.(<=) a b
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a

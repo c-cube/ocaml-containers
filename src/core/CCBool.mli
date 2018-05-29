@@ -8,6 +8,10 @@ type t = bool
 val compare : t -> t -> int
 (** Total ordering on booleans, similar to {!Pervasives.compare}. *)
 
+val leq : t -> t -> bool
+(** Equivalent of [(<=)]
+    Allows to be passed to {!Heap.Make} *)
+
 val equal : t -> t -> bool
 
 val negate : t -> t

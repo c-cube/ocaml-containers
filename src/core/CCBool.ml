@@ -7,6 +7,8 @@ let equal (a:bool) b = Pervasives.(=) a b
 
 let compare (a:bool) b = Pervasives.compare a b
 
+let leq (a:bool) b = Pervasives.(<=) a b
+
 let negate = not
 
 type 'a printer = Format.formatter -> 'a -> unit

@@ -96,6 +96,10 @@ val equal : t -> t -> bool
 (** The equal function for 32-bit integers.
     Like {!Pervasives.(=) x y)}. *)
 
+val leq : t -> t -> bool
+(** Equivalent of [(<=)]
+    Allows to be passed to {!Heap.Make} *)
+
 val hash : t -> int
 (** Like {!Pervasives.abs (to_int x)}. *)
 

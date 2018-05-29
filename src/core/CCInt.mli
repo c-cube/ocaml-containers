@@ -11,6 +11,10 @@ val compare : t -> t -> int
 val equal : t -> t -> bool
 (** Equality function for integers. *)
 
+val leq : t -> t -> bool
+(** Equivalent of [(<=)]
+    Allows to be passed to {!Heap.Make} *)
+
 val hash : t -> int
 
 val sign : t -> int

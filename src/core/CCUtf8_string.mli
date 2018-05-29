@@ -29,6 +29,10 @@ val hash : t -> int
 
 val compare : t -> t -> int
 
+val leq : t -> t -> bool
+(** Equivalent of [(<=)]
+    Allows to be passed to {!Heap.Make} *)
+
 val pp : Format.formatter -> t -> unit
 
 val to_string : t -> string
