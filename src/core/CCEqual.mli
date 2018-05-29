@@ -36,10 +36,9 @@ val map : ('a -> 'b) -> 'b t -> 'a t
     [map fst int] compares values of type [(int * 'a)]  by their
       first component. *)
 
-val (>|=) : 'b t -> ('a -> 'b) -> 'a t
-(** Infix equivalent of {!map}. *)
-
 module Infix : sig
   val (>|=) : 'b t -> ('a -> 'b) -> 'a t
   (** Infix equivalent of {!map}. *)
 end
+
+include module type of Infix
