@@ -90,6 +90,8 @@ module Infix : sig
   val (<) : t -> t -> bool
 end
 
+include module type of Infix
+
 val equal : t -> t -> bool
 (** The equal function for 32-bit integers.
     Like {!Pervasives.(=) x y)}. *)
