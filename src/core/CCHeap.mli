@@ -15,6 +15,15 @@ module type PARTIAL_ORD = sig
   (** [leq x y] shall return [true] iff [x] is lower or equal to [y]. *)
 end
 
+module type TOTAL_ORD = sig
+  type t
+  val compare : t -> t -> int
+  (** [compare a b] shall return
+      a negative value if [a] is smaller than [b],
+      [0] if [a] and [b] are equal or
+      a positive value if [a] is greater than [b] *)
+end
+
 module type S = sig
   type elt
   type t
@@ -138,3 +147,8 @@ module type S = sig
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t
+
+(** A convenient version Make that take a TOTAL_ORD instead
+    It allow to directly pass modules that implement [compare]
+    without implementing [leq] *)
+module Make_from_compare(E : TOTAL_ORD) : S with type elt = E.t
