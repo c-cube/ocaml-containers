@@ -421,7 +421,7 @@ module Make_from_compare(E : TOTAL_ORD) =
 
 (*$QR
   Q.(list_of_size Gen.(return 1_000) int) (fun l ->
-    let module H' = Make_from_compare(Int) in
+    let module H' = Make_from_compare(CCInt) in
     let h = H'.of_list l in
     let l' = H'.to_list_sorted h in
     is_sorted l'

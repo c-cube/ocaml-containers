@@ -148,7 +148,8 @@ end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t
 
-(** A convenient version Make that take a TOTAL_ORD instead
+(** A convenient version of [Make] that take a [TOTAL_ORD] instead of
+    a partially ordered module.
     It allow to directly pass modules that implement [compare]
-    without implementing [leq] *)
+    without implementing [leq] explicitly *)
 module Make_from_compare(E : TOTAL_ORD) : S with type elt = E.t
