@@ -15,6 +15,15 @@ module type PARTIAL_ORD = sig
   (** [leq x y] shall return [true] iff [x] is lower or equal to [y]. *)
 end
 
+module type TOTAL_ORD = sig
+  type t
+  val compare : t -> t -> int
+  (** [compare a b] shall return
+      a negative value if [a] is smaller than [b],
+      [0] if [a] and [b] are equal or
+      a positive value if [a] is greater than [b] *)
+end
+
 (*$inject
   module H = CCHeap.Make(struct
     type t = int
@@ -403,3 +412,18 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
          pp_elt out x)
       h
 end
+
+module Make_from_compare(E : TOTAL_ORD) =
+  Make(struct
+    type t = E.t
+    let leq a b = E.compare a b <= 0
+  end)
+
+(*$QR
+  Q.(list_of_size Gen.(return 1_000) int) (fun l ->
+    let module H' = Make_from_compare(Int) in
+    let h = H'.of_list l in
+    let l' = H'.to_list_sorted h in
+    is_sorted l'
+  )
+*)
