@@ -10,6 +10,7 @@ type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 
 let equal (a:string) b = Pervasives.(=) a b
+let leq (a:string) b = String.compare a b <= 0
 let hash : string -> int = Hashtbl.hash
 let pp = Format.pp_print_string
 

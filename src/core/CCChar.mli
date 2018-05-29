@@ -15,6 +15,10 @@ val compare : t -> t -> int
     allows the module [Char] to be passed as argument to the functors
     {!Set.Make} and {!Map.Make}. *)
 
+val leq : t -> t -> bool
+(** Equivalent of [(<=)]
+    Allows to be passed to {!Heap.Make} *)
+
 val lowercase_ascii : t -> t
 (** Convert the given character to its equivalent lowercase character,
     using the US-ASCII character set.

@@ -64,6 +64,10 @@ val equal : string -> string -> bool
 
 val compare : string -> string -> int
 
+val leq : t -> t -> bool
+(** Equivalent of [(<=)]
+    Allows to be passed to {!Heap.Make} *)
+
 val is_empty : string -> bool
 (** [is_empty s] returns [true] iff [s] is empty (i.e. its length is 0).
     @since 1.5 *)

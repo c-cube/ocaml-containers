@@ -8,6 +8,8 @@ include Char
 
 let equal (a:char) b = Pervasives.(=) a b
 
+let leq (a:char) b = Pervasives.(<=) a b
+
 let pp_buf = Buffer.add_char
 let pp = Format.pp_print_char
 
