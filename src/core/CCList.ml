@@ -1017,6 +1017,110 @@ let all_ok l =
       | Some e -> Result.Error e
     end
 
+let group_by (type k) ?(hash=Hashtbl.hash) ?(eq=Pervasives.(=)) l =
+  let module Tbl = Hashtbl.Make(struct type t = k let equal = eq let hash = hash end) in
+  (* compute group table *)
+  let tbl = Tbl.create 32 in
+  List.iter
+    (fun x ->
+       let l = try Tbl.find tbl x with Not_found -> [] in
+       Tbl.replace tbl x (x::l))
+    l;
+  Tbl.fold (fun _ x acc -> x::acc) tbl []
+
+let join ~join_row s1 s2 : _ t =
+  flat_map (fun a -> filter_map (join_row a) s2) s1
+
+(*$R
+  let s1 = (1 -- 3) in
+  let s2 = ["1"; "2"] in
+  let join_row i j =
+    if string_of_int i = j then Some (string_of_int i ^ " = " ^ j) else None
+  in
+  let s = join ~join_row s1 s2 in
+  OUnit.assert_equal ["1 = 1"; "2 = 2"] s;
+*)
+
+let join_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge c1 c2 =
+  let module Tbl = Hashtbl.Make(struct type t = a let equal = eq let hash = hash end) in
+  let tbl = Tbl.create 32 in
+  List.iter
+    (fun x ->
+       let key = f1 x in
+       Tbl.add tbl key x)
+    c1;
+  let res = ref [] in
+  List.iter
+    (fun y ->
+       let key = f2 y in
+       let xs = Tbl.find_all tbl key in
+       List.iter
+         (fun x -> match merge key x y with
+            | None -> ()
+            | Some z -> res := z :: !res)
+         xs)
+    c2;
+  !res
+
+type ('a, 'b) join_all_cell = {
+  mutable ja_left: 'a list;
+  mutable ja_right: 'b list;
+}
+
+let join_all_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge c1 c2 =
+  let module Tbl = Hashtbl.Make(struct type t = a let equal = eq let hash = hash end) in
+  let tbl = Tbl.create 32 in
+  (* build the map [key -> cell] *)
+  List.iter
+    (fun x ->
+       let key = f1 x in
+       try
+         let c = Tbl.find tbl key in
+         c.ja_left <- x :: c.ja_left
+       with Not_found ->
+         Tbl.add tbl key {ja_left=[x]; ja_right=[]})
+    c1;
+  List.iter
+    (fun y ->
+       let key = f2 y in
+       try
+         let c = Tbl.find tbl key in
+         c.ja_right <- y :: c.ja_right
+       with Not_found ->
+         Tbl.add tbl key {ja_left=[]; ja_right=[y]})
+    c2;
+  Tbl.fold
+    (fun key cell res -> match merge key cell.ja_left cell.ja_right with
+       | None -> res
+       | Some z -> z :: res)
+    tbl []
+
+let group_join_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f c1 c2 =
+  let module Tbl = Hashtbl.Make(struct type t = a let equal = eq let hash = hash end) in
+  let tbl = Tbl.create 32 in
+  List.iter (fun x -> Tbl.replace tbl x []) c1;
+  List.iter
+    (fun y ->
+       (* project [y] into some element of [c1] *)
+       let key = f y in
+       try
+         let l = Tbl.find tbl key in
+         Tbl.replace tbl key (y :: l)
+       with Not_found -> ())
+    c2;
+  Tbl.fold (fun k v l -> (k,v) :: l) tbl []
+
+(*$=
+  ['a', ["abc"; "attic"]; \
+   'b', ["barbary"; "boom"; "bop"]; \
+   'c', []] \
+  (group_join_by (fun s->s.[0]) \
+    (CCString.to_list "abc") \
+    ["abc"; "boom"; "attic"; "deleted"; "barbary"; "bop"] \
+  |> map (fun (c,l)->c,List.sort Pervasives.compare l) \
+  |> sort Pervasives.compare)
+*)
+
 (*$inject
   open Result
 *)
