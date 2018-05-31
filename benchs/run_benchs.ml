@@ -6,6 +6,8 @@ let (@>>) = B.Tree.(@>>)
 let (@>>>) = B.Tree.(@>>>)
 let (|>) = CCFun.(|>)
 
+module Int_map = Map.Make(CCInt)
+
 let app_int f n = string_of_int n @> lazy (f n)
 let app_ints f l = B.Tree.concat (List.map (app_int f) l)
 
@@ -108,24 +110,86 @@ module L = struct
   (* RANDOM ACCESS *)
 
   let bench_nth ?(time=2) n =
-    let l = CCList.(1 -- n) in
+    let l = CCList.(0 -- (n - 1)) in
     let ral = CCRAL.of_list l in
     let v = CCFun_vec.of_list l in
     let bv = BatVect.of_list l in
+    let cv = Clarity.Vector.of_list l in
+    let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
     let bench_list l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (List.nth l i)) done
+    and bench_map l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (Int_map.find i l)) done
     and bench_ral l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.get_exn l i)) done
     and bench_funvec l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (CCFun_vec.get_exn i l)) done
     and bench_batvec l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.get l i)) done
+    and bench_clarity_vec l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (Clarity.Vector.get l i)) done
     in
     B.throughputN time ~repeat
       [ "List.nth", bench_list l, ()
+      ; "Map.find", bench_map map, ()
       ; "RAL.get", bench_ral ral, ()
       ; "funvec.get", bench_funvec v, ()
       ; "batvec.get", bench_batvec bv, ()
+      ; "clarity_vec.get", bench_clarity_vec cv, ()
+      ]
+
+  let bench_set ?(time=2) n =
+    let l = CCList.(0 -- (n - 1)) in
+    let ral = CCRAL.of_list l in
+    let v = CCFun_vec.of_list l in
+    let bv = BatVect.of_list l in
+    let cv = Clarity.Vector.of_list l in
+    let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
+    let bench_map l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (Int_map.add i (-i) l)) done
+    and bench_ral l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.set l i (-i))) done
+    and bench_funvec l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore ((* TODO *))) done
+    and bench_batvec l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.set l i (-i))) done
+    and bench_clarity_vec l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (Clarity.Vector.update l i (-1))) done
+    in
+    B.throughputN time ~repeat
+      [ "Map.add", bench_map map, ()
+      ; "RAL.set", bench_ral ral, ()
+(*       ; "funvec.set", bench_funvec v, () *)
+      ; "batvec.set", bench_batvec bv, ()
+      ; "clarity_vec.update", bench_clarity_vec cv, ()
+      ]
+
+  let bench_push ?(time=2) n =
+    let l = CCList.(0 -- (n - 1)) in
+    let ral = CCRAL.of_list l in
+    let v = CCFun_vec.of_list l in
+    let bv = BatVect.of_list l in
+    let cv = Clarity.Vector.of_list l in
+    let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
+    let bench_map l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (Int_map.add i i l)) done
+    and bench_ral l () =
+      (* Note: Better implementation probably possible *)
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.append l (CCRAL.return i))) done
+    and bench_funvec l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCFun_vec.push i l)) done
+    and bench_batvec l () =
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.append i l)) done
+    and bench_clarity_vec l () =
+      (* Note: Better implementation probably possible *)
+      for i = 0 to n-1 do Sys.opaque_identity (ignore (Clarity.Vector.append l (Clarity.Vector.pure i))) done
+    in
+    B.throughputN time ~repeat
+      [ "Map.add", bench_map map, ()
+(*       ; "RAL.append", bench_ral ral, () *) (* too slow *)
+      ; "funvec.push", bench_funvec v, ()
+      ; "batvec.append", bench_batvec bv, ()
+      ; "clarity_vec.append", bench_clarity_vec cv, ()
       ]
 
   (* MAIN *)
@@ -158,6 +222,16 @@ module L = struct
           [ app_int (bench_nth ~time:2) 100
           ; app_int (bench_nth ~time:2) 10_000
           ; app_int (bench_nth ~time:4) 100_000]
+      ; "set" @>>
+        B.Tree.concat
+          [ app_int (bench_set ~time:2) 100
+          ; app_int (bench_set ~time:2) 10_000
+          ; app_int (bench_set ~time:4) 100_000]
+      ; "push" @>>
+        B.Tree.concat
+          [ app_int (bench_push ~time:2) 100
+          ; app_int (bench_push ~time:2) 10_000
+          ; app_int (bench_push ~time:4) 100_000]
       ]
     )
 end
