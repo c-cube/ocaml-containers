@@ -165,24 +165,24 @@ module L = struct
       ]
 
   let bench_push ?(time=2) n =
-    let l = CCList.(0 -- (n - 1)) in
-    let ral = CCRAL.of_list l in
-    let v = CCFun_vec.of_list l in
-    let bv = BatVect.of_list l in
-    let cv = Clarity.Vector.of_list l in
-    let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
+    let l = ref CCList.empty in
+    let ral = ref CCRAL.empty in
+    let v = ref CCFun_vec.empty in
+    let bv = ref BatVect.empty in
+    let cv = ref Clarity.Vector.empty in
+    let map = ref Int_map.empty in
     let bench_map l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Int_map.add i i l)) done
+      for i = 0 to n-1 do Sys.opaque_identity (l := Int_map.add i i !l) done
     and bench_ral l () =
       (* Note: Better implementation probably possible *)
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.append l (CCRAL.return i))) done
+      for i = 0 to n-1 do Sys.opaque_identity (l := CCRAL.append !l (CCRAL.return i)) done
     and bench_funvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCFun_vec.push i l)) done
+      for i = 0 to n-1 do Sys.opaque_identity (l := CCFun_vec.push i !l) done
     and bench_batvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.append i l)) done
+      for i = 0 to n-1 do Sys.opaque_identity (l := BatVect.append i !l) done
     and bench_clarity_vec l () =
       (* Note: Better implementation probably possible *)
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Clarity.Vector.append l (Clarity.Vector.pure i))) done
+      for i = 0 to n-1 do Sys.opaque_identity (l := Clarity.Vector.append !l (Clarity.Vector.pure i)) done
     in
     B.throughputN time ~repeat
       [ "Map.add", bench_map map, ()
