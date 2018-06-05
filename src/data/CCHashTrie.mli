@@ -159,5 +159,5 @@ end
 module Make(K : KEY) : S with type key = K.t
 
 (**/**)
-val popcount : int -> int
+val popcount : int64 -> int
 (**/**)

@@ -21,14 +21,13 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (** {2 Transient IDs} *)
 module Transient = struct
-  type state = { mutable frozen: bool }
-  type t = Nil | St of state
-  let empty = Nil
-  let equal a b = Pervasives.(==) a b
-  let create () = St {frozen=false}
-  let active = function Nil -> false | St st -> not st.frozen
-  let frozen = function Nil -> true | St st -> st.frozen
-  let freeze = function Nil -> () | St st -> st.frozen <- true
+  type t = { mutable frozen: bool }
+  let empty = {frozen=true} (* special value *)
+  let[@inline] equal a b = Pervasives.(==) a b
+  let[@inline] create () = {frozen=false}
+  let[@inline] active st =not st.frozen
+  let[@inline] frozen st = st.frozen
+  let[@inline] freeze st = st.frozen <- true
   let with_ f =
     let r = create() in
     try
@@ -140,7 +139,7 @@ module type KEY = sig
   val hash : t -> int
 end
 
-  (*
+(*
   from https://en.wikipedia.org/wiki/Hamming_weight
 
   //This uses fewer arithmetic operations than any other known
@@ -156,69 +155,92 @@ end
     return x & 0x7f;
   }
 
-  32-bits popcount. int64 is too slow, and there is not use trying to deal
-  with 32 bit platforms by defining popcount-16, as there are integer literals
-  here that will not compile on 32-bits.
+   m1 = 0x5555555555555555
+   m2 = 0x3333333333333333
+   m4 = 0x0f0f0f0f0f0f0f0f
+
+   We use Int64 for our 64-bits popcount.
 *)
-let popcount b =
-  let b = b - ((b lsr 1) land 0x55555555) in
-  let b = (b land 0x33333333) + ((b lsr 2) land 0x33333333) in
-  let b = (b + (b lsr 4)) land 0x0f0f0f0f in
+module I64 = struct
+  type t = Int64.t
+  let (+) = Int64.add
+  let (-) = Int64.sub
+  let (lsl) = Int64.shift_left
+  let (lsr) = Int64.shift_right_logical
+  let (land) = Int64.logand
+  let (lor) = Int64.logor
+  let lnot = Int64.lognot
+end
+
+let popcount (b:I64.t) : int =
+  let open I64 in
+  let b = b - ((b lsr 1) land 0x5555555555555555L) in
+  let b = (b land 0x3333333333333333L) + ((b lsr 2) land 0x3333333333333333L) in
+  let b = (b + (b lsr 4)) land 0x0f0f0f0f0f0f0f0fL in
   let b = b + (b lsr 8) in
   let b = b + (b lsr 16) in
-  b land 0x3f
+  let b = b + (b lsr 32) in
+  Int64.to_int (b land 0x7fL)
 
 (*$T
-  popcount 5 = 2
-  popcount 256 = 1
-  popcount 255 = 8
-  popcount 0xFFFF = 16
-  popcount 0xFF1F = 13
-  popcount 0xFFFFFFFF = 32
+  popcount 5L = 2
+  popcount 256L = 1
+  popcount 255L = 8
+  popcount 0xFFFFL = 16
+  popcount 0xFF1FL = 13
+  popcount 0xFFFFFFFFL = 32
+  popcount 0xFFFFFFFFFFFFFFFFL = 64
 *)
 
 (*$Q
-  Q.int (fun i -> let i = i land (1 lsl 32) in popcount i <= 32)
+  Q.int (fun i -> let i = Int64.of_int i in popcount i <= 64)
 *)
 
 (* sparse array, using a bitfield and POPCOUNT *)
 module A_SPARSE = struct
   type 'a t = {
-    bits: int;
+    bits: int64;
     arr: 'a array;
     id: Transient.t;
   }
 
-  let length_log = 5
+  let length_log = 6
   let length = 1 lsl length_log
 
-  let create ~id = { bits=0; arr= [| |]; id; }
+  let () = assert (length = 64)
+
+  let create ~id = { bits=0L; arr= [| |]; id; }
 
   let owns ~id a =
     Transient.active id && Transient.equal id a.id
 
   let get ~default a i =
-    let idx = 1 lsl i in
-    if a.bits land idx = 0
-    then default
-    else
-      let real_idx = popcount (a.bits land (idx- 1)) in
+    let open I64 in
+    let idx = 1L lsl i in
+    if a.bits land idx = 0L then (
+      default
+    ) else (
+      let real_idx = popcount (a.bits land (idx - 1L)) in
       a.arr.(real_idx)
+    )
 
   let set ~mut a i x =
-    let idx = 1 lsl i in
-    let real_idx = popcount (a.bits land (idx -1)) in
-    if a.bits land idx = 0
-    then (
+    let open I64 in
+    let idx = 1L lsl i in
+    let real_idx = popcount (a.bits land (idx - 1L)) in
+    if (a.bits land idx = 0L) then (
       (* insert at [real_idx] in a new array *)
       let bits = a.bits lor idx in
       let n = Array.length a.arr in
-      let arr = Array.make (n+1) x in
+      let arr = Array.make Pervasives.(n+1) x in
       arr.(real_idx) <- x;
-      if real_idx>0
-      then Array.blit a.arr 0 arr 0 real_idx;
-      if real_idx<n
-      then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
+      if real_idx>0 then (
+        Array.blit a.arr 0 arr 0 real_idx;
+      );
+      if real_idx<n then (
+        let open Pervasives in
+        Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
+      );
       {a with bits; arr}
     ) else (
       (* replace element at [real_idx] *)
@@ -233,20 +255,23 @@ module A_SPARSE = struct
     )
 
   let update ~mut ~default a i f =
-    let idx = 1 lsl i in
-    let real_idx = popcount (a.bits land (idx -1)) in
-    if a.bits land idx = 0
-    then (
+    let open I64 in
+    let idx = 1L lsl i in
+    let real_idx = popcount (a.bits land (idx - 1L)) in
+    if a.bits land idx = 0L then (
       (* not present *)
       let x = f default in
       (* insert at [real_idx] in a new array *)
       let bits = a.bits lor idx in
       let n = Array.length a.arr in
-      let arr = Array.make (n+1) x in
-      if real_idx>0
-      then Array.blit a.arr 0 arr 0 real_idx;
-      if real_idx<n
-      then Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
+      let arr = Array.make Pervasives.(n+1) x in
+      if real_idx>0 then (
+        Array.blit a.arr 0 arr 0 real_idx;
+      );
+      if real_idx<n then (
+        let open Pervasives in
+        Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
+      );
       {a with bits; arr}
     ) else (
       let x = f a.arr.(real_idx) in
@@ -257,25 +282,29 @@ module A_SPARSE = struct
     )
 
   let remove a i =
-    let idx = 1 lsl i in
-    let real_idx = popcount (a.bits land (idx -1)) in
-    if a.bits land idx = 0
-    then a (* not present *)
-    else (
+    let open I64 in
+    let idx = 1L lsl i in
+    let real_idx = popcount (a.bits land (idx - 1L)) in
+    if a.bits land idx = 0L then (
+      a (* not present *)
+    ) else (
       (* remove at [real_idx] *)
       let bits = a.bits land (lnot idx) in
       let n = Array.length a.arr in
-      let arr = if n=1 then [||] else Array.make (n-1) a.arr.(0) in
-      if real_idx > 0
-      then Array.blit a.arr 0 arr 0 real_idx;
-      if real_idx+1 < n
-      then Array.blit a.arr (real_idx+1) arr real_idx (n-real_idx-1);
+      let arr = if n=1 then [||] else Array.make Pervasives.(n-1) a.arr.(0) in
+      let open Pervasives in
+      if real_idx > 0 then (
+        Array.blit a.arr 0 arr 0 real_idx;
+      );
+      if real_idx+1 < n then (
+        Array.blit a.arr (real_idx+1) arr real_idx (n-real_idx-1);
+      );
       {a with bits; arr}
     )
 
-  let iter f a = Array.iter f a.arr
+  let[@inline] iter f a = Array.iter f a.arr
 
-  let fold f acc a = Array.fold_left f acc a.arr
+  let[@inline] fold f acc a = Array.fold_left f acc a.arr
 end
 
 (** {2 Functors} *)
@@ -299,10 +328,10 @@ module Make(Key : KEY)
     type t = int
     let make = Key.hash
     let zero = 0
-    let is_0 h = h = 0
-    let equal (a : int) b = Pervasives.(=) a b
-    let rem h = h land (A.length - 1)
-    let quotient h = h lsr A.length_log
+    let[@inline] is_0 h = h = 0
+    let[@inline] equal : int -> int -> bool = Pervasives.(=)
+    let[@inline] rem h = h land (A.length - 1)
+    let[@inline] quotient h = h lsr A.length_log
   end
 
   let hash_ = Hash.make
@@ -332,15 +361,14 @@ module Make(Key : KEY)
   let is_empty = function
     | E -> true
     | L (_, Nil) -> assert false
-    | S _
-    | L _
-    | N _ -> false
+    | S _ | L _ | N _
+      -> false
 
   (*$T
     M.is_empty M.empty
   *)
 
-  let leaf_ k v ~h = L (h, Cons(k,v,Nil))
+  let[@inline] leaf_ k v ~h = L (h, Cons(k,v,Nil))
 
   let singleton k v = leaf_ k v ~h:(hash_ k)
 
@@ -365,12 +393,13 @@ module Make(Key : KEY)
     | L (_, l) -> get_exn_list_ k l
     | N (leaf, a) ->
       if Hash.is_0 h then get_exn_list_ k leaf
-      else
+      else (
         let i = Hash.rem h in
         let h' = Hash.quotient h in
         get_exn_ k ~h:h' (A.get ~default:E a i)
+      )
 
-  let get_exn k m = get_exn_ k ~h:(hash_ k) m
+  let[@inline] get_exn k m = get_exn_ k ~h:(hash_ k) m
 
   (*$Q
      _listuniq (fun l -> \
@@ -402,19 +431,20 @@ module Make(Key : KEY)
       then Cons (k, v, tail) (* replace *)
       else Cons (k', v', add_list_ k v tail)
 
-  let node_ leaf a = N (leaf, a)
+  let[@inline] node_ leaf a = N (leaf, a)
 
   (* [h]: hash, with the part required to reach this leaf removed
       [id] is the transient ID used for mutability *)
   let rec add_ ~id k v ~h m = match m with
     | E -> S (h, k, v)
     | S (h', k', v') ->
-      if Hash.equal h h'
-      then if Key.equal k k'
+      if Hash.equal h h' then (
+        if Key.equal k k'
         then S (h, k, v)  (* replace *)
         else L (h, Cons (k, v, Cons (k', v', Nil)))
-      else
+      ) else (
         make_array_ ~id ~leaf:(Cons (k', v', Nil)) ~h_leaf:h' k v ~h
+      )
     | L (h', l) ->
       if Hash.equal h h'
       then L (h, add_list_ k v l)
@@ -423,20 +453,21 @@ module Make(Key : KEY)
     | N (leaf, a) ->
       if Hash.is_0 h
       then node_ (add_list_ k v leaf) a
-      else
+      else (
         let mut = A.owns ~id a in (* can we modify [a] in place? *)
         node_ leaf (add_to_array_ ~id ~mut k v ~h a)
+      )
 
   (* make an array containing a leaf, and insert (k,v) in it *)
   and make_array_ ~id ~leaf ~h_leaf:h' k v ~h =
     let a = A.create ~id in
     let a, leaf =
-      if Hash.is_0 h' then a, leaf
-      else
+      if Hash.is_0 h' then a, leaf else (
         (* put leaf in the right bucket *)
         let i = Hash.rem h' in
         let h'' = Hash.quotient h' in
         A.set ~mut:true a i (L (h'', leaf)), Nil
+      )
     in
     (* then add new node *)
     let a, leaf =
@@ -452,7 +483,7 @@ module Make(Key : KEY)
     let h' = Hash.quotient h in
     A.update ~default:E ~mut a i (fun x -> add_ ~id k v ~h:h' x)
 
-  let add k v m = add_ ~id:Transient.empty k v ~h:(hash_ k) m
+  let[@inline] add k v m = add_ ~id:Transient.empty k v ~h:(hash_ k) m
 
   (*$Q
      _listuniq (fun l -> \
@@ -460,7 +491,7 @@ module Make(Key : KEY)
         List.for_all (fun (x,y) -> M.get_exn x m = y) l)
   *)
 
-  let add_mut ~id k v m =
+  let[@inline] add_mut ~id k v m =
     if Transient.frozen id then raise Transient.Frozen;
     add_ ~id k v ~h:(hash_ k) m
 
@@ -516,23 +547,25 @@ module Make(Key : KEY)
       let leaf, a =
         if Hash.is_0 h
         then remove_list_ k leaf, a
-        else
+        else (
           let i = Hash.rem h in
           let h' = Hash.quotient h in
           let new_t = remove_rec_ ~id k ~h:h' (A.get ~default:E a i) in
           if is_empty new_t
           then leaf, A.remove a i (* remove sub-tree *)
-          else
+          else (
             let mut = A.owns ~id a in
             leaf, A.set ~mut a i new_t
+          )
+        )
       in
       if is_empty_list_ leaf && is_empty_arr_ a
       then E
       else N (leaf, a)
 
-  let remove k m = remove_rec_ ~id:Transient.empty k ~h:(hash_ k) m
+  let[@inline] remove k m = remove_rec_ ~id:Transient.empty k ~h:(hash_ k) m
 
-  let remove_mut ~id k m =
+  let[@inline] remove_mut ~id k m =
     if Transient.frozen id then raise Transient.Frozen;
     remove_rec_ ~id k ~h:(hash_ k) m
 
@@ -554,15 +587,16 @@ module Make(Key : KEY)
   let update_ ~id k f m =
     let h = hash_ k in
     let opt_v = try Some (get_exn_ k ~h m) with Not_found -> None in
-    match opt_v, f opt_v with
+    begin match opt_v, f opt_v with
       | None, None -> m
       | Some _, Some v
       | None, Some v -> add_ ~id k v ~h m
       | Some _, None -> remove_rec_ ~id k ~h m
+    end
 
-  let update k ~f m = update_ ~id:Transient.empty k f m
+  let[@inline] update k ~f m = update_ ~id:Transient.empty k f m
 
-  let update_mut ~id k ~f m =
+  let[@inline] update_mut ~id k ~f m =
     if Transient.frozen id then raise Transient.Frozen;
     update_ ~id k f m
 
@@ -616,13 +650,13 @@ module Make(Key : KEY)
 
   let to_list m = fold ~f:(fun acc k v -> (k,v)::acc) ~x:[] m
 
-  let add_list_mut ~id m l =
+  let[@inline] add_list_mut ~id m l =
     List.fold_left (fun acc (k,v) -> add_mut ~id k v acc) m l
 
-  let add_list m l =
+  let[@inline] add_list m l =
     Transient.with_ (fun id -> add_list_mut ~id m l)
 
-  let of_list l = add_list empty l
+  let[@inline] of_list l = add_list empty l
 
   let add_seq_mut ~id m seq =
     let m = ref m in
@@ -632,7 +666,7 @@ module Make(Key : KEY)
   let add_seq m seq =
     Transient.with_ (fun id -> add_seq_mut ~id m seq)
 
-  let of_seq s = add_seq empty s
+  let[@inline] of_seq s = add_seq empty s
 
   let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
 
@@ -650,7 +684,7 @@ module Make(Key : KEY)
   let add_gen m g =
     Transient.with_ (fun id -> add_gen_mut ~id m g)
 
-  let of_gen g = add_gen empty g
+  let[@inline] of_gen g = add_gen empty g
 
   (* traverse the tree by increasing hash order, where the order compares
      hashes lexicographically by A.length_log-wide chunks of bits,
@@ -687,7 +721,7 @@ module Make(Key : KEY)
           |> List.sort Pervasives.compare) )
   *)
 
-  let choose m = to_gen m ()
+  let[@inline] choose m = to_gen m ()
 
   (*$T
     M.choose M.empty = None
@@ -733,3 +767,4 @@ end
   assert_bool "check all get after remove"
     (Sequence.for_all (fun i -> None = M.get i m) Sequence.(501 -- 1000));
 *)
+
