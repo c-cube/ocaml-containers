@@ -118,6 +118,7 @@ module Bit : sig
   type t = private int
   val min_int : t
   val highest : int -> t
+  val equal_int : int -> t -> bool
 end
 val check_invariants : _ t -> bool
 
