@@ -37,6 +37,14 @@ val compare : cmp:('a -> 'a -> int) -> 'a t -> 'a t -> int
 
 val update : int -> ('a option -> 'a option) -> 'a t -> 'a t
 
+val filter : (int -> 'a -> bool) -> 'a t -> 'a t
+(** Filter values using the given predicate
+    @since NEXT_RELEASE *)
+
+val filter_map : (int -> 'a -> 'b option) -> 'a t -> 'b t
+(** Filter-map values using the given function
+    @since NEXT_RELEASE *)
+
 val cardinal : _ t -> int
 (** Number of bindings in the map. Linear time. *)
 
@@ -58,6 +66,15 @@ val choose_exn : 'a t -> int * 'a
 val union : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
 
 val inter : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
+
+val merge :
+  f:(int -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
+  'a t -> 'b t -> 'c t
+(** [merge ~f m1 m2] merges [m1] and [m2] together, calling [f] once on every
+    key that occurs in at least one of [m1] and [m2].
+    if [f k binding = Some c] then [k -> c] is part of the result,
+    else [k] is not part of the result.
+    @since NEXT_RELEASE *)
 
 (** {2 Whole-collection operations} *)
 
