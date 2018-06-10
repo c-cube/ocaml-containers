@@ -1,7 +1,12 @@
-
 (executable
   (name mkflags)
+  (modules mkflags)
   (libraries dune.configurator))
+
+(executable
+  (name unlabel)
+  (modules unlabel)
+  (libraries str compiler-libs.common))
 
 (rule
   (targets flambda.flags)
@@ -9,4 +14,3 @@
   (action
     (run ./mkflags.exe))
   )
-
