@@ -75,22 +75,24 @@ val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 
 val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a t -> 'acc * 'b t
 (** [fold_map ~f ~init a] is a [fold_left]-like function, but it also maps the
     array to another array.
-    @since 2.1 *)
+    @since 1.2, but only
+    @since 2.1 with labels *)
 
 val scan_left : f:('acc -> 'a -> 'acc) -> init:'acc -> 'a t -> 'acc t
 (** [scan_left ~f ~init a] returns the array
     [ [|~init; ~f ~init x0; ~f (~f ~init a.(0)) a.(1); …|] ].
 
-    @since 2.1 *)
-    
+    @since 1.2, but only
+    @since 2.1 with labels *)
+
 val iter : f:('a -> unit) -> 'a t -> unit
-(** [iter ~f a] applies function [~f] in turn to all elements of [a].  
+(** [iter ~f a] applies function [~f] in turn to all elements of [a].
     It is equivalent to [~f a.(0); ~f a.(1); ...; ~f a.(length a - 1); ()]. *)
 
 val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
 (** [iteri ~f a] is like {!iter}, but the function [~f] is applied with the index of the
     element as first argument, and the element itself as second argument. *)
-  
+
 val blit : 'a t -> int -> 'a t -> int -> int -> unit
 (** [blit a1 o1 a2 o2 len] copies [len] elements
     from array [a1], starting at element number [o1], to array [a2],
@@ -106,10 +108,12 @@ val reverse_in_place : 'a t -> unit
 (** [reverse_in_place a] reverses the array [a] in place. *)
 
 val sorted : f:('a -> 'a -> int) -> 'a t -> 'a array
+    (* FIXME: better label this ~cmp ?? *)
 (** [sorted ~f a] makes a copy of [a] and sorts it with [~f].
     @since 1.0 *)
 
 val sort_indices : f:('a -> 'a -> int) -> 'a t -> int array
+    (* FIXME: better label this ~cmp ?? *)
 (** [sort_indices ~f a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index at which the [i]-th element of [sorted ~f a]
     appears in [a]. [a] is not modified.
@@ -119,6 +123,7 @@ val sort_indices : f:('a -> 'a -> int) -> 'a t -> int array
     @since 1.0 *)
 
 val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
+    (* FIXME: better label this ~cmp ?? *)
 (** [sort_ranking ~f a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index at which the [i]-th element of [a] appears
     in [sorted ~f a]. [a] is not modified.
@@ -133,39 +138,45 @@ val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
 val find_map : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find_map ~f a] returns [Some y] if there is an element [x] such
     that [~f x = Some y]. Otherwise returns [None].
-    @since 2.1 *)
+    @since 1.3, but only
+    @since 2.1 with labels *)
 
 val find : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find ~f a] is an alias to {!find_map}.
+    @deprecated since 1.3, use {!find_map} instead.
+    The version with labels is
     @deprecated since 2.1, use {!find_map} instead. *)
 
 val find_map_i : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** [find_map_i ~f a] is like {!find_map}, but the index of the element is also passed
     to the predicate function [~f].
-    @since 2.1 *)
+    @since 1.3, but only
+    @since 2.1 with labels *)
 
 val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** [findi ~f a] is an alias to {!find_map_i}.
     @since 0.3.4
-    @deprecated since 2.1, use {!find_map_i} instead. *)
+    @deprecated since 1.3, use {!find_map} instead.
+    The version with labels is
+    @deprecated since 2.1, use {!find_map} instead. *)
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx ~f a] returns [Some (i,x)] where [x] is the [i]-th element of [a],
     and [~f x] holds. Otherwise returns [None].
     @since 0.3.4 *)
 
-val lookup : cmp:'a ord -> key:'a -> 'a t -> int option
+val lookup : cmp:('a ord [@keep_label]) -> key:'a -> 'a t -> int option
 (** [lookup ~cmp ~key a] lookups the index of some key [~key] in a sorted array [a].
     Undefined behavior if the array [a] is not sorted wrt [~cmp].
     Complexity: [O(log (n))] (dichotomic search).
     @return [None] if the key [~key] is not present, or
       [Some i] ([i] the index of the key) otherwise. *)
 
-val lookup_exn : cmp:'a ord -> key:'a -> 'a t -> int
+val lookup_exn : cmp:('a ord [@keep_label]) -> key:'a -> 'a t -> int
 (** [lookup_exn ~cmp ~key a] is like {!lookup}, but
     @raise Not_found if the key [~key] is not present. *)
 
-val bsearch : cmp:('a -> 'a -> int) -> key:'a -> 'a t ->
+val bsearch : cmp:(('a -> 'a -> int) [@keep_label]) -> key:'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ~cmp ~key a] finds the index of the object [~key] in the array [a],
     provided [a] is {b sorted} using [~cmp]. If the array is not sorted,
@@ -270,8 +281,8 @@ val map2 : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
     and builds an array with the results returned by [~f]:
     [[| ~f a.(0) b.(0); ...; ~f a.(length a - 1) b.(length b - 1)|]].
 
-      @raise Invalid_argument if [a] and [b] have distinct lengths.
-      @since 0.20 *)
+    @raise Invalid_argument if [a] and [b] have distinct lengths.
+    @since 0.20 *)
 
 val rev : 'a t -> 'a t
 (** [rev a] copies the array [a] and reverses it in place.
@@ -330,8 +341,7 @@ end
 
 val sort_generic :
   (module MONO_ARRAY with type t = 'arr and type elt = 'elt) ->
-  cmp:('elt -> 'elt -> int) -> 'arr -> unit
+  cmp:(('elt -> 'elt -> int) [@keep_label]) -> 'arr -> unit
 (** [sort_generic (module M) ~cmp a] sorts the array [a], without allocating (eats stack space though).
     Performance might be lower than {!Array.sort}.
     @since 0.14 *)
-

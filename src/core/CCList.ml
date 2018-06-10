@@ -968,7 +968,7 @@ let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
   find_map (fun x -> if x=3 then Some "a" else None) [1;2;4;5] = None
 *)
 
-let remove ~eq ~x l =
+let remove ~eq x l =
   let rec remove' eq x acc l = match l with
     | [] -> List.rev acc
     | y :: tail when eq x y -> remove' eq x acc tail
@@ -977,8 +977,8 @@ let remove ~eq ~x l =
   remove' eq x [] l
 
 (*$T
-  remove ~eq:CCInt.equal ~x:1 [2;1;3;3;2;1] = [2;3;3;2]
-  remove ~eq:CCInt.equal ~x:10 [1;2;3] = [1;2;3]
+  remove ~eq:CCInt.equal 1 [2;1;3;3;2;1] = [2;3;3;2]
+  remove ~eq:CCInt.equal 10 [1;2;3] = [1;2;3]
 *)
 
 let filter_map f l =
@@ -1483,7 +1483,7 @@ module Assoc = struct
     not (Assoc.mem ~eq:CCInt.equal 4 [1,"1"; 2,"2"; 3, "3"])
   *)
 
-  let update ~eq ~f x l =
+  let update ~eq f x l =
     search_set eq [] l x
       ~f:(fun x opt_y rest ->
         match f opt_y with
@@ -1492,13 +1492,13 @@ module Assoc = struct
   (*$=
     [1,"1"; 2,"22"] \
       (Assoc.update ~eq:CCInt.equal \
-        ~f:(function Some "2" -> Some "22" | _ -> assert false) 2 [1,"1"; 2,"2"] |> lsort)
+        (function Some "2" -> Some "22" | _ -> assert false) 2 [1,"1"; 2,"2"] |> lsort)
     [1,"1"; 3,"3"] \
       (Assoc.update ~eq:CCInt.equal \
-        ~f:(function Some "2" -> None | _ -> assert false) 2 [1,"1"; 2,"2"; 3,"3"] |> lsort)
+        (function Some "2" -> None | _ -> assert false) 2 [1,"1"; 2,"2"; 3,"3"] |> lsort)
     [1,"1"; 2,"2"; 3,"3"] \
       (Assoc.update ~eq:CCInt.equal \
-        ~f:(function None -> Some "3" | _ -> assert false) 3 [1,"1"; 2,"2"] |> lsort)
+        (function None -> Some "3" | _ -> assert false) 3 [1,"1"; 2,"2"] |> lsort)
   *)
 
   let remove ~eq x l =
