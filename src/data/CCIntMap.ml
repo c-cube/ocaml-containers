@@ -46,14 +46,14 @@ end = struct
       highest_bit_naive x 1
     )
 
-  let[@inline] is_0 ~bit x = x land bit = 0
-  let[@inline] is_1 ~bit x = x land bit = bit
+  let is_0 ~bit x = x land bit = 0
+  let is_1 ~bit x = x land bit = bit
 
-  let[@inline] mask ~mask x = (x lor (mask -1)) land (lnot mask)
+  let mask ~mask x = (x lor (mask -1)) land (lnot mask)
   (* low endian: let mask_ x ~mask = x land (mask - 1) *)
 
-  let[@inline] gt a b = (b != min_int) && (a = min_int || a > b)
-  let[@inline] lt a b = gt b a
+  let gt a b = (b != min_int) && (a = min_int || a > b)
+  let lt a b = gt b a
   let equal_int = Pervasives.(=)
 end
 
@@ -80,7 +80,7 @@ type 'a t =
 
 let empty = E
 
-let[@inline] is_prefix_ ~prefix y ~bit =
+let is_prefix_ ~prefix y ~bit =
   prefix = Bit.mask y ~mask:bit
 
 (*$inject
@@ -113,7 +113,7 @@ let[@inline] is_prefix_ ~prefix y ~bit =
 *)
 
 (* low endian: let branching_bit_ a _ b _ = lowest_bit_ (a lxor b) *)
-let[@inline] branching_bit_ a b = Bit.highest (a lxor b)
+let branching_bit_ a b = Bit.highest (a lxor b)
 
 (* TODO use hint in branching_bit_ *)
 
@@ -183,7 +183,7 @@ let mem k t =
     List.for_all (fun (k,_) -> mem k m) l)
 *)
 
-let[@inline] mk_node_ prefix switch l r = match l, r with
+let mk_node_ prefix switch l r = match l, r with
   | E, o | o, E -> o
   | _ -> N (prefix, switch, l, r)
 
@@ -200,7 +200,7 @@ let join_ t1 p1 t2 p2 =
     mk_node_ prefix switch t2 t1
   )
 
-let[@inline] singleton k v = L (k, v)
+let singleton k v = L (k, v)
 
 (* c: conflict function *)
 let rec insert_ c k v t = match t with

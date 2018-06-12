@@ -23,11 +23,11 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 module Transient = struct
   type t = { mutable frozen: bool }
   let empty = {frozen=true} (* special value *)
-  let[@inline] equal a b = Pervasives.(==) a b
-  let[@inline] create () = {frozen=false}
-  let[@inline] active st =not st.frozen
-  let[@inline] frozen st = st.frozen
-  let[@inline] freeze st = st.frozen <- true
+  let equal a b = Pervasives.(==) a b
+  let create () = {frozen=false}
+  let active st =not st.frozen
+  let frozen st = st.frozen
+  let freeze st = st.frozen <- true
   let with_ f =
     let r = create() in
     try
@@ -302,9 +302,9 @@ module A_SPARSE = struct
       {a with bits; arr}
     )
 
-  let[@inline] iter f a = Array.iter f a.arr
+  let iter f a = Array.iter f a.arr
 
-  let[@inline] fold f acc a = Array.fold_left f acc a.arr
+  let fold f acc a = Array.fold_left f acc a.arr
 end
 
 (** {2 Functors} *)
@@ -328,10 +328,10 @@ module Make(Key : KEY)
     type t = int
     let make = Key.hash
     let zero = 0
-    let[@inline] is_0 h = h = 0
-    let[@inline] equal : int -> int -> bool = Pervasives.(=)
-    let[@inline] rem h = h land (A.length - 1)
-    let[@inline] quotient h = h lsr A.length_log
+    let is_0 h = h = 0
+    let equal : int -> int -> bool = Pervasives.(=)
+    let rem h = h land (A.length - 1)
+    let quotient h = h lsr A.length_log
   end
 
   let hash_ = Hash.make
@@ -368,7 +368,7 @@ module Make(Key : KEY)
     M.is_empty M.empty
   *)
 
-  let[@inline] leaf_ k v ~h = L (h, Cons(k,v,Nil))
+  let leaf_ k v ~h = L (h, Cons(k,v,Nil))
 
   let singleton k v = leaf_ k v ~h:(hash_ k)
 
@@ -399,7 +399,7 @@ module Make(Key : KEY)
         get_exn_ k ~h:h' (A.get ~default:E a i)
       )
 
-  let[@inline] get_exn k m = get_exn_ k ~h:(hash_ k) m
+  let get_exn k m = get_exn_ k ~h:(hash_ k) m
 
   (*$Q
      _listuniq (fun l -> \
@@ -431,7 +431,7 @@ module Make(Key : KEY)
       then Cons (k, v, tail) (* replace *)
       else Cons (k', v', add_list_ k v tail)
 
-  let[@inline] node_ leaf a = N (leaf, a)
+  let node_ leaf a = N (leaf, a)
 
   (* [h]: hash, with the part required to reach this leaf removed
       [id] is the transient ID used for mutability *)
@@ -483,7 +483,7 @@ module Make(Key : KEY)
     let h' = Hash.quotient h in
     A.update ~default:E ~mut a i (fun x -> add_ ~id k v ~h:h' x)
 
-  let[@inline] add k v m = add_ ~id:Transient.empty k v ~h:(hash_ k) m
+  let add k v m = add_ ~id:Transient.empty k v ~h:(hash_ k) m
 
   (*$Q
      _listuniq (fun l -> \
@@ -491,7 +491,7 @@ module Make(Key : KEY)
         List.for_all (fun (x,y) -> M.get_exn x m = y) l)
   *)
 
-  let[@inline] add_mut ~id k v m =
+  let add_mut ~id k v m =
     if Transient.frozen id then raise Transient.Frozen;
     add_ ~id k v ~h:(hash_ k) m
 
@@ -563,9 +563,9 @@ module Make(Key : KEY)
       then E
       else N (leaf, a)
 
-  let[@inline] remove k m = remove_rec_ ~id:Transient.empty k ~h:(hash_ k) m
+  let remove k m = remove_rec_ ~id:Transient.empty k ~h:(hash_ k) m
 
-  let[@inline] remove_mut ~id k m =
+  let remove_mut ~id k m =
     if Transient.frozen id then raise Transient.Frozen;
     remove_rec_ ~id k ~h:(hash_ k) m
 
@@ -594,9 +594,9 @@ module Make(Key : KEY)
       | Some _, None -> remove_rec_ ~id k ~h m
     end
 
-  let[@inline] update k ~f m = update_ ~id:Transient.empty k f m
+  let update k ~f m = update_ ~id:Transient.empty k f m
 
-  let[@inline] update_mut ~id k ~f m =
+  let update_mut ~id k ~f m =
     if Transient.frozen id then raise Transient.Frozen;
     update_ ~id k f m
 
@@ -650,13 +650,13 @@ module Make(Key : KEY)
 
   let to_list m = fold ~f:(fun acc k v -> (k,v)::acc) ~x:[] m
 
-  let[@inline] add_list_mut ~id m l =
+  let add_list_mut ~id m l =
     List.fold_left (fun acc (k,v) -> add_mut ~id k v acc) m l
 
-  let[@inline] add_list m l =
+  let add_list m l =
     Transient.with_ (fun id -> add_list_mut ~id m l)
 
-  let[@inline] of_list l = add_list empty l
+  let of_list l = add_list empty l
 
   let add_seq_mut ~id m seq =
     let m = ref m in
@@ -666,7 +666,7 @@ module Make(Key : KEY)
   let add_seq m seq =
     Transient.with_ (fun id -> add_seq_mut ~id m seq)
 
-  let[@inline] of_seq s = add_seq empty s
+  let of_seq s = add_seq empty s
 
   let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
 
@@ -684,7 +684,7 @@ module Make(Key : KEY)
   let add_gen m g =
     Transient.with_ (fun id -> add_gen_mut ~id m g)
 
-  let[@inline] of_gen g = add_gen empty g
+  let of_gen g = add_gen empty g
 
   (* traverse the tree by increasing hash order, where the order compares
      hashes lexicographically by A.length_log-wide chunks of bits,
@@ -721,7 +721,7 @@ module Make(Key : KEY)
           |> List.sort Pervasives.compare) )
   *)
 
-  let[@inline] choose m = to_gen m ()
+  let choose m = to_gen m ()
 
   (*$T
     M.choose M.empty = None
