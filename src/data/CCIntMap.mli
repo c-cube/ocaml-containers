@@ -6,9 +6,13 @@
     {b status: stable}
     @since 0.10 *)
 
-type 'a t
+type +'a t
 
 val empty : 'a t
+
+val is_empty : _ t -> bool
+(** Is the map empty?
+    @since NEXT_RELEASE *)
 
 val singleton : int -> 'a -> 'a t
 

@@ -73,19 +73,29 @@ end
       (Bit.highest x :> int) (highest2 x))
   *)
 
-type 'a t =
+(*$inject
+  let _list_uniq l = CCList.sort_uniq ~cmp:(fun a b-> Pervasives.compare (fst a)(fst b)) l
+*)
+
+type +'a t =
   | E  (* empty *)
   | L of int * 'a  (* leaf *)
   | N of int (* common prefix *) * Bit.t (* bit switch *) * 'a t * 'a t
 
 let empty = E
 
+let is_empty = function
+  | E -> true
+  | _ -> false
+
+(*$Q
+  Q.(small_list (pair int int)) (fun l -> \
+    let m = of_list l in \
+    is_empty m = (cardinal m = 0))
+  *)
+
 let is_prefix_ ~prefix y ~bit =
   prefix = Bit.mask y ~mask:bit
-
-(*$inject
-  let _list_uniq l = CCList.sort_uniq ~cmp:(fun a b-> Pervasives.compare (fst a)(fst b)) l
-*)
 
 (*$Q
   Q.int (fun i -> \
