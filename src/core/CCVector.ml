@@ -422,6 +422,13 @@ let uniq_sort cmp v =
   uniq_sort Pervasives.compare v; to_list v = [1;2;3;4;5]
 *)
 
+(*$QR & ~long_factor:10
+  Q.(small_list small_int) (fun l ->
+    let v = of_list l in
+    uniq_sort Pervasives.compare v;
+    to_list v = (CCList.sort_uniq ~cmp:Pervasives.compare l))
+*)
+
 let iter k v =
   for i = 0 to v.size -1 do
     k (Array.unsafe_get v.vec i)
@@ -470,6 +477,13 @@ let filter' p v =
     to_list v = [1;2;3]
 *)
 
+(*$QR
+  Q.(pair (fun1 Observable.int bool) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    filter' f v;
+    to_list v = List.filter f l)
+*)
+
 let filter p v =
   if array_is_empty_ v then (
     create ()
@@ -503,6 +517,12 @@ let fold f acc v =
 (*$T
   fold (+) 0 (of_list [1;2;3;4;5]) = 15
   fold (+) 0 (create ()) = 0
+*)
+
+(*$QR
+  Q.(pair (fun2 Observable.int Observable.int small_int) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    fold f 0 v = List.fold_left f 0 l)
 *)
 
 let exists p v =
