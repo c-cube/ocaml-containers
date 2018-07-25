@@ -471,19 +471,25 @@ let filter' p v =
 *)
 
 let filter p v =
-  if array_is_empty_ v
-  then create ()
-  else (
+  if array_is_empty_ v then (
+    create ()
+  ) else (
     let v' = create_with ~capacity:v.size v.vec.(0) in
-    Array.iter
+    iter
       (fun x -> if p x then push_unsafe_ v' x)
-      v.vec;
+      v;
     v'
   )
 
 (*$T
   filter (fun x-> x mod 2=0) (of_list [1;2;3;4;5]) |> to_list = [2;4]
   filter (fun x-> x mod 2=0) (1 -- 1_000_000) |> length = 500_000
+*)
+
+(*$QR
+  Q.(pair (fun1 Observable.int bool) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    to_list (filter f v) = List.filter f l)
 *)
 
 let fold f acc v =
