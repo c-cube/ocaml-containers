@@ -293,15 +293,30 @@ let equal eq v1 v2 =
     equal (=) (of_list l1) (of_list l2) = (l1=l2))
 *)
 
+(*$QR
+  Q.(pair (small_list small_int)(small_list small_int)) (fun (l1,l2) ->
+    let v1 = of_list l1 in
+    let v2 = of_list l2 in
+    equal (=) v1 v2 = (l1=l2))
+*)
+
 let compare cmp v1 v2 =
   let n = min v1.size v2.size in
   let rec check i =
     if i = n
     then compare v1.size v2.size
-    else
+    else (
       let c = cmp (get v1 i) (get v2 i) in
       if c = 0 then check (i+1) else c
+    )
   in check 0
+
+(*$QR
+  Q.(pair (small_list small_int)(small_list small_int)) (fun (l1,l2) ->
+    let v1 = of_list l1 in
+    let v2 = of_list l2 in
+    compare Pervasives.compare v1 v2 = CCList.compare Pervasives.compare l1 l2)
+*)
 
 exception Empty
 
@@ -347,6 +362,13 @@ let copy v = {
   clear v';
   OUnit.assert_bool "empty" (is_empty v');
   OUnit.assert_bool "not_empty" (not (is_empty v));
+*)
+
+(*$QR
+  Q.(small_list small_int) (fun l ->
+    let v = of_list l in
+    let v' = copy v in
+    equal (=) v v')
 *)
 
 let shrink v n =
@@ -532,12 +554,24 @@ let exists p v =
     else p v.vec.(i) || check (i+1)
   in check 0
 
+(*$QR
+  Q.(pair (fun1 Observable.int bool) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    exists f v = List.exists f l)
+*)
+
 let for_all p v =
   let n = v.size in
   let rec check i =
     if i = n then true
     else p v.vec.(i) && check (i+1)
   in check 0
+
+(*$QR
+  Q.(pair (fun1 Observable.int bool) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    for_all f v = List.for_all f l)
+*)
 
 let member ~eq x v =
   exists (eq x) v
@@ -555,6 +589,12 @@ let find_exn p v =
 let find p v =
   try Some (find_exn p v)
   with Not_found -> None
+
+(*$QR
+  Q.(pair (fun1 Observable.int bool) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    find f v = CCList.find_pred f l)
+*)
 
 let find_map f v =
   let n = v.size in
@@ -578,9 +618,15 @@ let filter_map f v =
   iter
     (fun x -> match f x with
        | None -> ()
-       | Some y -> push v' y
-    ) v;
+       | Some y -> push v' y)
+    v;
   v'
+
+(*$QR
+  Q.(pair (fun1 Observable.int (option bool)) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    to_list (filter_map f v) = CCList.filter_map f l)
+*)
 
 let flat_map f v =
   let v' = create () in
@@ -592,8 +638,8 @@ let flat_map_seq f v =
   iter
     (fun x ->
        let seq = f x in
-       append_seq v' seq;
-    ) v;
+       append_seq v' seq)
+    v;
   v'
 
 let flat_map_list f v =
@@ -601,8 +647,8 @@ let flat_map_list f v =
   iter
     (fun x ->
        let l = f x in
-       append_list v' l;
-    ) v;
+       append_list v' l)
+    v;
   v'
 
 let (>>=) x f = flat_map f x
@@ -622,6 +668,13 @@ let rev_in_place v =
     done
   )
 
+(*$QR
+  Q.(small_list small_int) (fun l ->
+    let v = of_list l in
+    rev_in_place v;
+    to_list v = List.rev l)
+*)
+
 let rev v =
   let v' = copy v in
   rev_in_place v';
@@ -631,6 +684,12 @@ let rev v =
   rev (of_list [1;2;3;4]) |> to_list = [4;3;2;1]
   rev (of_list [1;2;3;4;5]) |> to_list = [5;4;3;2;1]
   rev (create ()) |> to_list = []
+*)
+
+(*$QR
+  Q.(small_list small_int) (fun l ->
+    let v = of_list l in
+    to_list (rev v) = List.rev l)
 *)
 
 let rev_iter f v =
