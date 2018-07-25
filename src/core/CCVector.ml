@@ -87,11 +87,11 @@ let resize_ v newcapacity =
 
 (* grow the array, using [x] as a filler if required *)
 let grow_with_ v ~filler:x =
-  if array_is_empty_ v
-  then v.vec <- Array.make 32 x
-  else (
+  if array_is_empty_ v then (
+    v.vec <- Array.make 4 x
+  ) else (
     let n = Array.length v.vec in
-    let size = min (2 * n + 10) Sys.max_array_length in
+    let size = min (2 * n + 3) Sys.max_array_length in
     if size = n then failwith "vec: can't grow any further";
     resize_ v size
   )
@@ -104,20 +104,22 @@ let ensure_assuming_not_empty_ v ~size =
   if size > Sys.max_array_length
   then failwith "vec.ensure: size too big"
   else (
-    let n = ref (max 16 (Array.length v.vec)) in
+    let n = ref (max 8 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;
     resize_ v !n
   )
 
 let ensure_with ~init v size =
-  if Array.length v.vec = 0
-  then v.vec <- Array.make size init
-  else ensure_assuming_not_empty_ v ~size
+  if Array.length v.vec = 0 then (
+    v.vec <- Array.make size init
+  ) else (
+    ensure_assuming_not_empty_ v ~size
+  )
 
 let ensure v size =
-  if Array.length v.vec = 0
-  then ()
-  else ensure_assuming_not_empty_  v ~size
+  if Array.length v.vec > 0 then (
+    ensure_assuming_not_empty_  v ~size
+  )
 
 let clear v =
   v.size <- 0
@@ -452,12 +454,14 @@ let uniq_sort cmp v =
 *)
 
 let iter k v =
-  for i = 0 to v.size -1 do
+  let n = v.size in
+  for i = 0 to n-1 do
     k (Array.unsafe_get v.vec i)
   done
 
 let iteri k v =
-  for i = 0 to v.size -1 do
+  let n = v.size in
+  for i = 0 to n-1 do
     k i (Array.unsafe_get v.vec i)
   done
 
@@ -576,18 +580,24 @@ let for_all p v =
 let member ~eq x v =
   exists (eq x) v
 
-let find_exn p v =
+let find_internal_ p v =
   let n = v.size in
   let rec check i =
-    if i = n then raise Not_found
-    else
+    if i = n then raise_notrace Not_found
+    else (
       let x = v.vec.(i) in
       if p x then x
       else check (i+1)
+    )
   in check 0
 
+let find_exn p v =
+  try find_internal_ p v
+  with Not_found ->
+    raise Not_found
+
 let find p v =
-  try Some (find_exn p v)
+  try Some (find_internal_ p v)
   with Not_found -> None
 
 (*$QR
@@ -693,8 +703,9 @@ let rev v =
 *)
 
 let rev_iter f v =
-  for i = v.size-1 downto 0 do
-    f v.vec.(i)
+  let n = v.size in
+  for i = n-1 downto 0 do
+    f (Array.unsafe_get v.vec i)
   done
 
 (*$T
@@ -726,7 +737,8 @@ let of_seq ?(init=create ()) seq =
 let to_seq v k = iter k v
 
 let to_seq_rev v k =
-  for i = v.size - 1 downto 0 do
+  let n = v.size in
+  for i = n - 1 downto 0 do
     k (Array.unsafe_get v.vec i)
   done
 
@@ -789,8 +801,10 @@ let of_array a =
 
 let of_list l = match l with
   | [] -> create()
+  | [x] -> return x
+  | [x;y] -> {size=2; vec=[| x; y |]}
   | x::_ ->
-    let v = create_with ~capacity:(List.length l + 5) x in
+    let v = create_with ~capacity:(List.length l) x in
     List.iter (push_unsafe_ v) l;
     v
 
