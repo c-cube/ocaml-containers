@@ -141,6 +141,10 @@ val iteri : (int -> 'a -> unit) -> ('a,_) t -> unit
 val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
 (** Map elements of the vector, yielding a new vector. *)
 
+val map_in_place : ('a -> 'a) -> ('a,_) t -> unit
+(** Map elements of the vector in place
+    @since NEXT_RELEASE *)
+
 val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
 (** Filter elements from the vector. [filter p v] leaves [v] unchanged but
     returns a new vector that only contains elements of [v] satisfying [p]. *)
@@ -171,6 +175,10 @@ val find_map : ('a -> 'b option) -> ('a,_) t -> 'b option
 
 val filter_map : ('a -> 'b option) -> ('a,_) t -> ('b, 'mut) t
 (** Map elements with a function, possibly filtering some of them out. *)
+
+val filter_map_in_place : ('a -> 'a option) -> ('a,_) t -> unit
+(** Filter-map elements of the vector in place
+    @since NEXT_RELEASE *)
 
 val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 (** Map each element to a sub-vector. *)

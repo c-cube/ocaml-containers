@@ -483,6 +483,24 @@ let map f v =
   to_list (map string_of_int v) = ["1"; "2"; "3"]
 *)
 
+(*$QR
+  Q.(pair (fun1 Observable.int small_int) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    to_list (map f v) = List.map f l)
+*)
+
+let map_in_place f v =
+  iteri
+    (fun i x -> Array.unsafe_set v.vec i (f x))
+    v
+
+(*$QR
+  Q.(pair (fun1 Observable.int small_int) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    map_in_place f v;
+    to_list v = List.map f l)
+*)
+
 let filter' p v =
   let i = ref 0 in (* cur element *)
   let j = ref 0 in  (* cur insertion point *)
@@ -636,6 +654,29 @@ let filter_map f v =
   Q.(pair (fun1 Observable.int (option bool)) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
     let v = of_list l in
     to_list (filter_map f v) = CCList.filter_map f l)
+*)
+
+let filter_map_in_place f v =
+  let i = ref 0 in (* cur element *)
+  let j = ref 0 in  (* cur insertion point *)
+  let n = v.size in
+  while !i < n do
+    match f v.vec.(!i) with
+      | None -> incr i (* drop *)
+      | Some y ->
+        (* move element i at the first empty slot.
+           invariant: i >= j*)
+        v.vec.(!j) <- y;
+        incr i;
+        incr j
+  done;
+  v.size <- !j
+
+(*$QR
+  Q.(pair (fun1 Observable.int (option small_int)) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
+    let v = of_list l in
+    filter_map_in_place f v;
+    to_list v = CCList.filter_map f l)
 *)
 
 let flat_map f v =
