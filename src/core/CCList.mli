@@ -178,14 +178,14 @@ val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) ->
   'a t -> 'a list t
 (** Group equal elements, regardless of their order of appearance.
     precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val join : join_row:('a -> 'b -> 'c option) -> 'a t -> 'b t -> 'c t
 (** [join ~join_row a b] combines every element of [a] with every
     element of [b] using [join_row]. If [join_row] returns None, then
     the two elements do not combine. Assume that [b] allows for multiple
     iterations.
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val join_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
   ('a -> 'key) -> ('b -> 'key) ->
@@ -200,7 +200,7 @@ val join_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
     using [merge]. If [merge] returns [None], the combination
     of values is discarded.
     precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val join_all_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
   ('a -> 'key) -> ('b -> 'key) ->
@@ -217,7 +217,7 @@ val join_all_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
     - call [merge k l1 l2]. If [merge] returns [None], the combination
       of values is discarded, otherwise it returns [Some c]
       and [c] is inserted in the result.
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val group_join_by : ?eq:('a -> 'a -> bool) -> ?hash:('a -> int) ->
   ('b -> 'a) ->
@@ -230,7 +230,7 @@ val group_join_by : ?eq:('a -> 'a -> bool) -> ?hash:('a -> int) ->
     sequences without corresponding values in the second one
     are mapped to [[]]
     precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val sublists_of_len :
   ?last:('a list -> 'a list option) ->

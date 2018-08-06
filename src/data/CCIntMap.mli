@@ -12,7 +12,7 @@ val empty : 'a t
 
 val is_empty : _ t -> bool
 (** Is the map empty?
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val singleton : int -> 'a -> 'a t
 
@@ -43,11 +43,11 @@ val update : int -> ('a option -> 'a option) -> 'a t -> 'a t
 
 val filter : (int -> 'a -> bool) -> 'a t -> 'a t
 (** Filter values using the given predicate
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val filter_map : (int -> 'a -> 'b option) -> 'a t -> 'b t
 (** Filter-map values using the given function
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val cardinal : _ t -> int
 (** Number of bindings in the map. Linear time. *)
@@ -78,7 +78,7 @@ val merge :
     key that occurs in at least one of [m1] and [m2].
     if [f k binding = Some c] then [k -> c] is part of the result,
     else [k] is not part of the result.
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 (** {2 Whole-collection operations} *)
 

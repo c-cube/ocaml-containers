@@ -143,7 +143,7 @@ val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
 
 val map_in_place : ('a -> 'a) -> ('a,_) t -> unit
 (** Map elements of the vector in place
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
 (** Filter elements from the vector. [filter p v] leaves [v] unchanged but
@@ -178,7 +178,7 @@ val filter_map : ('a -> 'b option) -> ('a,_) t -> ('b, 'mut) t
 
 val filter_map_in_place : ('a -> 'a option) -> ('a,_) t -> unit
 (** Filter-map elements of the vector in place
-    @since NEXT_RELEASE *)
+    @since 2.3 *)
 
 val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 (** Map each element to a sub-vector. *)

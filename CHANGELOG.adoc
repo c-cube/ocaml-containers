@@ -1,5 +1,20 @@
 = Changelog
 
+== 2.3
+
+- feat(vector): add `Vector.{filter,filter_map}_in_place`
+- perf(hashtrie): use int64 for 64-bits branching factor and popcount
+- feat(intmap): add `CCIntMap.{filter,filter_map,merge,is_empty}`
+- Add `CCHeap.Make_from_compare` (#225)
+- add relational ops `CCList.{group_by,join,join_by,join_all_by,group_join_by}`
+
+- fix(float): make `Float.{min,max}` compliant with revised IEEE754
+- fix(build): remove `[@inline]` attributes since they break on 4.02.3
+- Fix Int32 and Int64 operators that are not visible (#224)
+
+- some performance tweaks in Vector
+- test(float): add some tests for FP min/max
+
 == 2.2
 
 - Improving comments presentation
