@@ -13,7 +13,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-include module type of struct include Array end
+include module type of Array
 
 type 'a t = 'a array
 (** The type for arrays *)
