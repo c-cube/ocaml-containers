@@ -12,7 +12,7 @@ depends: [
   "jbuilder" {build & >= "1.0+beta12"}
   "result"
   "uchar"
-  "qtest" { test }
+  "qtest" { test & > "0.8" }
   "qcheck" { test }
   "ounit" { test }
   "sequence" { test }
