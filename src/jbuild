@@ -1,10 +1,12 @@
 
+(executable
+  ((name mkflags)
+   (libraries (dune.configurator))))
 
 (rule
   ((targets (flambda.flags))
-   (deps ((file mkflags.ml)))
    (fallback)
    (action
-     (run ocaml ./mkflags.ml))
+     (run ./mkflags.exe))
   ))
 
