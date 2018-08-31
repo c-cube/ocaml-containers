@@ -126,6 +126,8 @@ module Infix : sig
 
   val (/) : t -> t -> t (** @since 2.1 *)
 
+  val ( ** ) : t -> t -> t
+
   val (mod) : t -> t -> t (** @since 2.1 *)
 
   val (land) : t -> t -> t (** @since 2.1 *)
