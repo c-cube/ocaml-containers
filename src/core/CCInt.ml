@@ -42,13 +42,6 @@ let range' i j yield =
   [5;4;3]     (range' 5 2 |> Sequence.to_list)
 *)
 
-module Infix = struct
-  include Pervasives
-  let (--) = range
-  let (--^) = range'
-end
-include Infix
-
 let sign i =
   if i < 0 then -1
   else if i>0 then 1
@@ -76,6 +69,14 @@ let pow a b =
   pow 1 0 = 1
   pow 0 1 = 0
 *)
+
+module Infix = struct
+  include Pervasives
+  let (--) = range
+  let (--^) = range'
+  let ( ** ) = pow
+end
+include Infix
 
 let floor_div a n =
   if a < 0 && n >= 0 then
