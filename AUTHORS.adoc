@@ -30,3 +30,4 @@
 - Etienne Millon (@emillon)
 - Christopher Zimmermann (@madroach)
 - Jules Aguillon (@julow)
+- Metin Akat (@loxs)
