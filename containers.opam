@@ -4,12 +4,12 @@ version: "2.3"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 build: [
-    ["jbuilder" "build" "-p" name "-j" jobs]
+    ["dune" "build" "-p" name "-j" jobs]
 ]
-build-doc: [ "jbuilder" "build" "@doc" ]
-build-test: [ "jbuilder" "runtest" "-p" name "-j" jobs]
+build-doc: [ "dune" "build" "@doc" ]
+build-test: [ "dune" "runtest" "-p" name "-j" jobs]
 depends: [
-  "jbuilder" {build & >= "1.0+beta12"}
+  "dune" {build}
   "result"
   "uchar"
   "qtest" { test }

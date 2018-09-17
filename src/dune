@@ -1,0 +1,12 @@
+
+(executable
+  (name mkflags)
+  (libraries dune.configurator))
+
+(rule
+  (targets flambda.flags)
+  (mode fallback)
+  (action
+    (run ./mkflags.exe))
+  )
+

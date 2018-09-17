@@ -9,3 +9,5 @@ TAGS
 setup.*
 *.html
 .merlin
+*.install
+.ignore

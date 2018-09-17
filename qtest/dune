@@ -1,0 +1,31 @@
+
+(executable
+  (name make)
+  (modules make)
+  )
+
+(rule
+  (targets run_qtest.ml)
+  (deps make.bc (source_tree ../src))
+  ;(libraries (qtest qcheck))
+  (action
+    (run ./make.bc -target %{targets}))
+  )
+
+(executable
+  (name run_qtest)
+  (modes native)
+  (modules run_qtest)
+  ; disable some warnings in qtests
+  (flags :standard -warn-error -a -w -33-35-27-39 -nolabels)
+  (libraries sequence gen qcheck containers containers.unix
+             containers.data containers.thread containers.iter
+             containers.sexp uutf)
+  )
+
+(alias
+  (name    runtest)
+  (deps    run_qtest.exe)
+  (action  (run %{deps}))
+  )
+

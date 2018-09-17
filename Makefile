@@ -2,24 +2,24 @@
 all: build test
 
 build:
-	jbuilder build @install
+	dune build @install
 
 test: build
-	jbuilder runtest --no-buffer --force
+	dune runtest --no-buffer --force
 
 clean:
-	jbuilder clean
+	dune clean
 
 doc:
-	jbuilder build @doc
+	dune build @doc
 
 BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
 
 benchs:
-	jbuilder build $(addprefix benchs/, $(BENCH_TARGETS))
+	dune build $(addprefix benchs/, $(BENCH_TARGETS))
 
 examples:
-	jbuilder build examples/id_sexp.exe
+	dune build examples/id_sexp.exe
 
 VERSION=$(shell awk '/^version:/ {print $$2}' containers.opam)
 
