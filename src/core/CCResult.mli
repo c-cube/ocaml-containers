@@ -84,6 +84,11 @@ val get_exn : ('a, _) t -> 'a
 val get_or : ('a, _) t -> default:'a -> 'a
 (** [get_or e ~default] returns [x] if [e = Ok x], [default] otherwise. *)
 
+val get_or_failwith : ('a, string) t -> 'a
+(** [get_or_failwith e] returns [x] if [e = Ok x], fails otherwise.
+    @raise Failure with [msg] if [e = Error msg].
+    @since NEXT_RELEASE *)
+
 val map_or : ('a -> 'b) ->  ('a, 'c) t -> default:'b -> 'b
 (** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise. *)
 

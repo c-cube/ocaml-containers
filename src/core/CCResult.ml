@@ -93,6 +93,15 @@ let get_or e ~default = match e with
   | Ok x -> x
   | Error _ -> default
 
+let get_or_failwith = function
+  | Ok x -> x
+  | Error msg -> failwith msg
+
+(*$T
+  get_or_failwith (Ok 1) = 1
+  try ignore @@ get_or_failwith (Error "e"); false with Failure msg -> msg = "e"
+*)
+
 let map_or f e ~default = match e with
   | Ok x -> f x
   | Error _ -> default
