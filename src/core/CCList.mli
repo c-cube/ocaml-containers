@@ -86,7 +86,7 @@ val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 
     @since 0.14 *)
 
 val count : ('a -> bool) -> 'a list -> int
-(** [count p l] count_true_false how many elements of [l] satisfy predicate [p].
+(** [count p l] counts how many elements of [l] satisfy predicate [p].
     @since 1.5 *)
 
 val count_true_false : ('a -> bool) -> 'a list -> int * int
