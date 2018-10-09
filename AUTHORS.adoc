@@ -31,3 +31,4 @@
 - Christopher Zimmermann (@madroach)
 - Jules Aguillon (@julow)
 - Metin Akat (@loxs)
+- Francois Berenger (@UnixJunkie)
