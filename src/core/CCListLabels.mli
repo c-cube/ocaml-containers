@@ -86,6 +86,9 @@ val fold_flat_map : f:('acc -> 'a -> 'acc * 'b list) -> init:'acc -> 'a list -> 
 val count : f:('a -> bool) -> 'a list -> int
 (** @since 2.2 *)
 
+val count_true_false : f:('a -> bool) -> 'a list -> int * int
+(** @since NEXT_RELEASE *)
+
 val init : int -> f:(int -> 'a) -> 'a t
 (** [init len ~f] is [f 0; f 1; ...; f (len-1)].
     @raise Invalid_argument if len < 0.

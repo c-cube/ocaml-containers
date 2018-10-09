@@ -382,6 +382,19 @@ let count f l =
   count (fun x -> x mod 2 = 0) [2; 6; 9; 4] = 3
 *)
 
+let count_true_false p l =
+  fold_left (fun (ok, ko) x ->
+      if p x then (ok + 1, ko)
+      else (ok, ko + 1)
+    ) (0, 0) l
+
+(*$T
+  count_true_false (fun x -> x mod 2 = 0) [] = (0, 0)
+  count_true_false (fun x -> x mod 2 = 0) [0; 0; 2; 4] = (4, 0)
+  count_true_false (fun x -> x mod 2 = 0) [1; 3; 5; 7] = (0, 4)
+  count_true_false (fun x -> x mod 2 = 0) [2; 6; 9; 4] = (3, 1)
+*)
+
 let product f l1 l2 =
   flat_map (fun x -> map (fun y -> f x y) l2) l1
 

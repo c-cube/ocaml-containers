@@ -86,8 +86,13 @@ val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 
     @since 0.14 *)
 
 val count : ('a -> bool) -> 'a list -> int
-(** [count f l] counts how much elements of [l] comply with the function [f].
+(** [count p l] counts how many elements of [l] satisfy predicate [p].
     @since 1.5 *)
+
+val count_true_false : ('a -> bool) -> 'a list -> int * int
+(** [let ok_count, ko_count = count_true_false p l in ...]
+    count_true_false how many elements of [l] satisfy (resp. violate) predicate [p].
+    @since NEXT_RELEASE *)
 
 val init : int -> (int -> 'a) -> 'a t
 (** [init len f] is [f 0; f 1; ...; f (len-1)].
