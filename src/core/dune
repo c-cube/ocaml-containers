@@ -10,6 +10,12 @@
   (mode promote)
   (action (run ../unlabel.exe %{deps} %{targets})))
 
+(rule
+  (targets CCString.mli)
+  (deps CCStringLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
+
 (library
   (name containers)
   (public_name containers)
