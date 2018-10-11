@@ -10,6 +10,7 @@ module Array_sliceLabels = CCArray_sliceLabels
 module Bool = CCBool
 module Char = Char
 module Equal = CCEqual
+module EqualLabels = CCEqualLabels
 module Float = CCFloat
 module Format = CCFormat
 module Fun = CCFun
