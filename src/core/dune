@@ -5,6 +5,12 @@
   (action (run ../unlabel.exe %{deps} %{targets})))
 
 (rule
+  (targets CCArray_slice.mli)
+  (deps CCArray_sliceLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
+
+(rule
   (targets CCList.mli)
   (deps CCListLabels.mli)
   (mode promote)

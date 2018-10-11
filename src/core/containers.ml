@@ -6,6 +6,7 @@
 module Array = CCArray
 module ArrayLabels = CCArrayLabels
 module Array_slice = CCArray_slice
+module Array_sliceLabels = CCArray_sliceLabels
 module Bool = CCBool
 module Char = Char
 module Equal = CCEqual
