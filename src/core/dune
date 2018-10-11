@@ -11,6 +11,12 @@
   (action (run ../unlabel.exe %{deps} %{targets})))
 
 (rule
+  (targets CCEqual.mli)
+  (deps CCEqualLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
+
+(rule
   (targets CCList.mli)
   (deps CCListLabels.mli)
   (mode promote)
