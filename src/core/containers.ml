@@ -43,6 +43,7 @@ module Ref = CCRef
 module Result = CCResult
 module Set = CCSet
 module String = CCString
+module StringLabels = CCStringLabels
 module Vector = CCVector
 module Monomorphic = CCMonomorphic
 module Utf8_string = CCUtf8_string
