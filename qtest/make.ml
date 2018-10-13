@@ -20,6 +20,7 @@ let do_not_test file =
   is_suffix ~sub:"containers.ml" file ||
   is_suffix ~sub:"containers_top.ml" file ||
   is_suffix ~sub:"mkflags.ml" file ||
+  is_suffix ~sub:"unlabel.ml" file ||
   is_suffix ~sub:"utop.ml" file
 
 let prefix = "src"

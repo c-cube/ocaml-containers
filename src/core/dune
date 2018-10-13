@@ -1,3 +1,32 @@
+(rule
+  (targets CCArray.mli)
+  (deps CCArrayLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
+
+(rule
+  (targets CCArray_slice.mli)
+  (deps CCArray_sliceLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
+
+(rule
+  (targets CCEqual.mli)
+  (deps CCEqualLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
+
+(rule
+  (targets CCList.mli)
+  (deps CCListLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
+
+(rule
+  (targets CCString.mli)
+  (deps CCStringLabels.mli)
+  (mode promote)
+  (action (run ../unlabel.exe %{deps} %{targets})))
 
 (library
   (name containers)

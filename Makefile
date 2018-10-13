@@ -1,8 +1,10 @@
+PROMOTE=$(if $(shell ocamlc -version |grep '4\.0[012]\.[0-9][0-9]*'), \
+	      --ignore-promoted-rules, )
 
 all: build test
 
 build:
-	dune build @install
+	dune build $(PROMOTE) @install
 
 test: build
 	dune runtest --no-buffer --force
@@ -11,12 +13,12 @@ clean:
 	dune clean
 
 doc:
-	dune build @doc
+	dune build $(PROMOTE) @doc
 
 BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
 
 benchs:
-	dune build $(addprefix benchs/, $(BENCH_TARGETS))
+	dune build $(PROMOTE) $(addprefix benchs/, $(BENCH_TARGETS))
 
 examples:
 	dune build examples/id_sexp.exe
