@@ -263,13 +263,13 @@ let of_string s = if is_valid s then Some s else None
 *)
 
 (*$QR
-  Q.string (fun s ->
+  Q.small_string (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
     is_valid s)
 *)
 
 (*$QR & ~long_factor:10
-  Q.string (fun s ->
+  Q.small_string (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
     s = (of_string_exn s |> to_seq |> of_seq |> to_string)
   )
@@ -312,8 +312,8 @@ let of_string s = if is_valid s then Some s else None
 
 (* compare with uutf *)
 
-(*$QR & ~long_factor:40 ~count:100_000
-  Q.string (fun s ->
+(*$QR & ~long_factor:40 ~count:50_000
+  Q.small_string (fun s ->
     let v1 = is_valid s in
     let v2 = uutf_is_valid s in
     if v1=v2 then true
@@ -321,8 +321,8 @@ let of_string s = if is_valid s then Some s else None
   )
 *)
 
-(*$QR & ~long_factor:40 ~count:100_000
-  Q.string (fun s ->
+(*$QR & ~long_factor:40 ~count:50_000
+  Q.small_string (fun s ->
     Q.assume (is_valid s && uutf_is_valid s);
     let pp s = Q.Print.(list pp_uchar) s in
     let l_uutf = uutf_to_seq s |> Sequence.to_list in

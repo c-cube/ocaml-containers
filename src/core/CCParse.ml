@@ -68,8 +68,7 @@
 
     assert_equal ~printer:Q.Print.(list int) l l'
   in
-  test 100_000;
-  test 400_000;
+  test 300_000;
 
 *)
 

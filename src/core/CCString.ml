@@ -918,7 +918,7 @@ let unlines_gen g =
 *)
 
 (*$Q
-  Q.(list string) (fun l -> \
+  Q.(small_list small_string) (fun l -> \
     let l = unlines l |> lines in \
     l = (unlines l |> lines))
 *)

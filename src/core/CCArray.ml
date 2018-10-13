@@ -170,7 +170,7 @@ let sort_indices cmp a =
 *)
 
 (*$Q
-  Q.(array printable_string) (fun a -> \
+  Q.(array_of_size Gen.(0 -- 30) printable_string) (fun a -> \
     let b = sort_indices String.compare a in \
     sorted String.compare a = Array.map (Array.get a) b)
 *)
@@ -485,7 +485,7 @@ let swap a i j =
 *)
 
 (*$QR
-  Q.(array small_int) (fun a ->
+  Q.(array_of_size Gen.(0 -- 100) small_int) (fun a ->
     let b = Array.copy a in
     for i = 0 to Array.length a-1 do
       for j = i+1 to Array.length a-1 do

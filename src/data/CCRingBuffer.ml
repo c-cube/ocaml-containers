@@ -744,7 +744,7 @@ module Make(Elt:sig
     ~print:str_of_op
     gen_op
 
-  let arb_ops = Q.list arb_op
+  let arb_ops = Q.list_of_size Q.Gen.(0 -- 20) arb_op
 
   module L_impl = struct
   type t = {
