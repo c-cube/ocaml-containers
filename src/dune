@@ -6,7 +6,7 @@
 (executable
   (name unlabel)
   (modules unlabel)
-  (libraries str compiler-libs.common))
+  (libraries compiler-libs.common))
 
 (rule
   (targets flambda.flags)
