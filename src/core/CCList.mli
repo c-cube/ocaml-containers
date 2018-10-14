@@ -55,7 +55,7 @@ val filter : ('a -> bool) -> 'a t -> 'a t
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Safe version of [fold_right].
     [fold_right f [a1; ...; an] b] is
-    [f a1 (f a2 (... (f an b) ...))].  Not tail-recursive. *)
+    [f a1 (f a2 (... (f an b) ...))].  *)
 
 val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
 (** Fold until a stop condition via [('a, `Stop)] is

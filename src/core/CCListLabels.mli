@@ -50,10 +50,10 @@ val filter : f:('a -> bool) -> 'a t -> 'a t
     that satisfy the predicate [p].  The order of the elements
     in the input list is preserved. *)
 
-val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+val fold_right : f:('a -> 'b -> 'b) -> 'a t -> init:'b -> 'b
 (** Safe version of [fold_right].
     [fold_right f [a1; ...; an] b] is
-    [f a1 (f a2 (... (f an b) ...))].  Not tail-recursive. *)
+    [f a1 (f a2 (... (f an b) ...))].  *)
 
 val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 'a
 (** Fold until a stop condition via [('a, `Stop)] is
