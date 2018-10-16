@@ -77,8 +77,8 @@ let replicate n g st =
   in aux [] n
 
 (* Sample without replacement using rejection sampling. *)
-let sample_without_replacement (type elt) ~compare k (rng:elt t) st=
-  let module S = Set.Make(struct type t=elt let compare = compare end) in
+let sample_without_duplicates (type elt) ~cmp k (rng:elt t) st=
+  let module S = Set.Make(struct type t=elt let compare = cmp end) in
   let rec aux s k =
     if k <= 0 then
       S.elements s
@@ -89,8 +89,12 @@ let sample_without_replacement (type elt) ~compare k (rng:elt t) st=
       else
         aux (S.add x s) (k-1)
   in
-  if k<=0 then invalid_arg "sample_without_replacement";
+  if k<=0 then invalid_arg "sample_without_duplicates";
   aux S.empty k
+
+(* deprecated *)
+let sample_without_replacement ~compare k rng =
+  sample_without_duplicates ~cmp:compare k rng
 
 let list_seq l st = List.map (fun f -> f st) l
 
@@ -231,5 +235,5 @@ let uniformity_test ?(size_hint=10) k rng st =
 
 (*$R
   let open Containers in
-  ignore @@ List.random_choose [1;2;3] (Random.get_state()) 
+  ignore @@ List.random_choose [1;2;3] (Random.get_state())
 *)
