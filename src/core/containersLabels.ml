@@ -3,11 +3,11 @@
 
 (** {1 Drop-In replacement to Stdlib} *)
 
-module Array = CCArray
-module Array_slice = CCArray_slice
+module Array = CCArrayLabels
+module Array_slice = CCArray_sliceLabels
 module Bool = CCBool
 module Char = Char
-module Equal = CCEqual
+module Equal = CCEqualLabels
 module Float = CCFloat
 module Format = CCFormat
 module Fun = CCFun
@@ -29,7 +29,7 @@ module Int = CCInt
 module Int32 = CCInt32
 module Int64 = CCInt64
 module IO = CCIO
-module List = CCList
+module List = CCListLabels
 module Map = CCMap
 module Nativeint = CCNativeint
 module Option = CCOpt
@@ -40,11 +40,9 @@ module Random = CCRandom
 module Ref = CCRef
 module Result = CCResult
 module Set = CCSet
-module String = CCString
+module String = CCStringLabels
 module Vector = CCVector
 module Monomorphic = CCMonomorphic
 module Utf8_string = CCUtf8_string
-
-module Labels = CCArrayLabels
 
 include Monomorphic

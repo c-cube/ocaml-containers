@@ -232,7 +232,7 @@ let () =
 
   let unlabelled_text =
     Buffer.contents unlabelled_text
-    (* CCArrayLabels -> CCArray *)
+    (* ArrayLabels -> Array *)
     |> replace_all labelled_name unlabelled_name
   in
 
