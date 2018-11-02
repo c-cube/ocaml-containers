@@ -166,8 +166,7 @@ and <<tutorial,the tutorial below>> for a gentle introduction.
 
 == Documentation
 
-In general, see http://c-cube.github.io/ocaml-containers/last/ or
-http://cedeela.fr/~simon/software/containers for the **API documentation**.
+In general, see http://c-cube.github.io/ocaml-containers/last/ for the **API documentation**.
 
 Some examples can be found link:doc/containers.adoc[there],
 per-version doc http://c-cube.github.io/ocaml-containers/[there].
