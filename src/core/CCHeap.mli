@@ -1,7 +1,9 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Leftist Heaps} following Okasaki *)
+(** {1 Leftist Heaps}
+    
+    Implementation following Okasaki's book. *)
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option

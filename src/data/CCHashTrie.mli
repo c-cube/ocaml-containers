@@ -107,7 +107,7 @@ module type S = sig
 
   val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
-  (** {6 Conversions} *)
+  (** {5 Conversions} *)
 
   val to_list : 'a t -> (key * 'a) list
 
@@ -136,7 +136,7 @@ module type S = sig
 
   val to_gen : 'a t -> (key * 'a) gen
 
-  (** {6 IO} *)
+  (** {5 IO} *)
 
   val pp : key printer -> 'a printer -> 'a t printer
   (** Renamed from [val print].

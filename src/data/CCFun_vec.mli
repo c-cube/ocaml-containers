@@ -106,7 +106,7 @@ val choose : 'a t -> 'a option
    val append_mut : id:Transient.t -> into:'a t -> 'a t -> 'a t
 *)
 
-(** {6 Conversions} *)
+(** {5 Conversions} *)
 
 val to_list : 'a t -> 'a list
 
@@ -138,6 +138,6 @@ val to_gen : 'a t -> 'a gen
    (** @raise Frozen if the ID is frozen. *)
 *)
 
-(** {6 IO} *)
+(** {5 IO} *)
 
 val pp : 'a printer -> 'a t printer
