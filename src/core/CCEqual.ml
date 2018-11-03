@@ -44,6 +44,9 @@ let map f eq x y = eq (f x) (f y)
     CCEqual.(list (pair int bool)) l1 l2 = (l1=l2))
 *)
 
+let always_eq _ _ = true
+let never_eq _ _ = false
+
 module Infix = struct
   let (>|=) x f = map f x
 end
