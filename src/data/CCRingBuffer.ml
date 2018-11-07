@@ -824,3 +824,33 @@ module Make(Elt:sig
     let l2 = CCList.filter_map (L_impl.apply_op l) ops in
     l1=l2 && BS.to_list b = L_impl.to_list l)
 *)
+
+(* check that deleted elements can be GCed *)
+(*$inject
+  module BO = CCRingBuffer.Make(struct type t = int option let dummy=None end)
+  let make_bo () =
+    let b = BO.create 1000 in
+    for i = 1 to BO.capacity b do
+      BO.push_back b (Some i)
+    done;
+    b
+  let test_no_major_blocks clear =
+    Gc.full_major ();
+    let live_blocks_before = (Gc.stat ()).live_blocks in
+    let b = make_bo () in
+    clear b;
+    Gc.full_major ();
+    let live_blocks_after = (Gc.stat ()).live_blocks in
+    assert (BO.length b = 0);
+    let diff = live_blocks_after - live_blocks_before in
+    diff < BO.capacity b / 2
+*)
+
+(*$T
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do BO.junk_front b; done)
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do BO.junk_back b; done)
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do ignore (BO.take_front b); done)
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do ignore (BO.take_back b); done)
+  test_no_major_blocks (fun b -> BO.skip b (BO.length b))
+  test_no_major_blocks (fun b -> BO.clear b)
+*)
