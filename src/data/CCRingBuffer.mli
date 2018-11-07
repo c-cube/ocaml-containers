@@ -121,7 +121,7 @@ module type S = sig
   (** Extract the current content into a list. *)
 
   val clear : t -> unit
-  (** Clear the content of the buffer. Doesn't actually destroy the content. *)
+  (** Clear the content of the buffer *)
 
   val is_empty :t -> bool
   (** Is the buffer empty (i.e. contains no elements)? *)

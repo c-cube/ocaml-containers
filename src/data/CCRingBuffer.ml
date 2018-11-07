@@ -345,20 +345,6 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     to_buf = s && len = Bytes.length s)
   *)
 
-  let clear b =
-    b.stop <- 0;
-    b.start <- 0;
-    ()
-
-  (*$Q
-    a_str (fun s -> let s = Bytes.of_string s in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create (max s_len 64) in \
-    Byte.blit_from b s 0 s_len; \
-    Byte.clear b; \
-    Byte.length b = 0)
-  *)
-
   let is_empty b = b.start = b.stop
 
   (*$Q
@@ -373,6 +359,7 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
   let take_front_exn b =
     if b.start = b.stop then raise Empty;
     let c = A.get b.buf b.start in
+    A.set b.buf b.start A.dummy;
     b.start <- next_ b b.start;
     c
 
@@ -392,7 +379,9 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     if b.stop = 0
     then b.stop <- A.length b.buf - 1
     else b.stop <- b.stop - 1;
-    A.get b.buf b.stop
+    let c = A.get b.buf b.stop in
+    A.set b.buf b.stop A.dummy;
+    c
 
   let take_back b = try Some (take_back_exn b) with Empty -> None
 
@@ -408,6 +397,7 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
 
   let junk_front b =
     if b.start = b.stop then raise Empty;
+    A.set b.buf b.start A.dummy;
     if b.start + 1 = A.length b.buf
     then b.start <- 0
     else b.start <- b.start + 1
@@ -424,8 +414,9 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
   let junk_back b =
     if b.start = b.stop then raise Empty;
     if b.stop = 0
-    then b.stop <- A.length b.buf - 1
-    else b.stop <- b.stop - 1
+      then b.stop <- A.length b.buf - 1
+      else b.stop <- b.stop - 1;
+    A.set b.buf b.stop A.dummy
 
   (*$Q
     a_str (fun s -> let s = Bytes.of_string s in \
@@ -440,15 +431,9 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     if len > length b then (
       invalid_arg "CCRingBuffer.skip";
     );
-    if b.stop >= b.start then (
-      b.start <- b.start + len;
-      assert (b.stop >= b.start);
-    ) else (
-      let len_end = A.length b.buf - b.start in
-      if len >= len_end
-      then b.start <- len-len_end  (* wrap to the beginning *)
-      else b.start <- b.start + len
-    )
+    for _ = 1 to len do
+      junk_front b
+    done
 
   (*$Q
     (Q.pair a_str a_str) (fun (s,s') -> \
@@ -461,6 +446,19 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     let l = Byte.length b in let l' = l/2 in Byte.skip b l'; \
     Byte.length b + l' = l)
   *)
+
+  let clear b =
+    skip b (length b)
+
+  (*$Q
+    a_str (fun s -> let s = Bytes.of_string s in \
+    let s_len = Bytes.length s in \
+    let b = Byte.create (max s_len 64) in \
+    Byte.blit_from b s 0 s_len; \
+    Byte.clear b; \
+    Byte.length b = 0)
+  *)
+
 
   let iter b ~f =
     if b.stop >= b.start
