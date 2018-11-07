@@ -26,6 +26,10 @@ module Array : sig
     (** The type of an array instance *)
     type t
 
+    val dummy : elt
+    (** A dummy element used for empty slots in the array
+        @since NEXT_RELEASE *)
+
     val create : int -> t
     (** Make an array of the given size, filled with dummy elements. *)
 

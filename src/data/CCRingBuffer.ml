@@ -18,6 +18,10 @@ module Array = struct
     (** The type of an array instance *)
     type t
 
+    val dummy : elt
+    (** A dummy element used for empty slots in the array
+        @since NEXT_RELEASE *)
+
     val create : int -> t
     (** Make an array of the given size, filled with dummy elements *)
 
@@ -49,6 +53,7 @@ module Array = struct
   module Byte :
     S with type elt = char and type t = Bytes.t = struct
     type elt = char
+    let dummy = '\x00'
     include Bytes
   end
 
@@ -56,6 +61,7 @@ module Array = struct
     S with type elt = Elt.t and type t = Elt.t array = struct
     type elt = Elt.t
     type t = Elt.t array
+    let dummy = Elt.dummy
     let create size = Array.make size Elt.dummy
     let length = Array.length
     let get = Array.get
