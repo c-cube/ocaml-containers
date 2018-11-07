@@ -324,8 +324,10 @@ exception Empty
 
 let pop_exn v =
   if v.size = 0 then raise Empty;
-  v.size <- v.size - 1;
-  let x = v.vec.(v.size) in
+  let new_size = v.size - 1 in
+  v.size <- new_size;
+  let x = v.vec.(new_size) in
+  if new_size > 0 then v.vec.(new_size) <- v.vec.(0); (* free last element *)
   x
 
 let pop v =
@@ -374,7 +376,14 @@ let copy v = {
 *)
 
 let shrink v n =
-  if n < v.size then v.size <- n
+  let old_size = v.size in
+  if n < old_size then (
+    v.size <- n;
+    if n > 0 then (
+      (* free elements by erasing them *)
+      Array.fill v.vec n (old_size-n) v.vec.(0);
+    )
+  )
 
 (*$R
   let v = of_seq Sequence.(1 -- 10) in
@@ -501,6 +510,8 @@ let map_in_place f v =
     to_list v = List.map f l)
 *)
 
+
+(* TODO: free elements *)
 let filter' p v =
   let i = ref 0 in (* cur element *)
   let j = ref 0 in  (* cur insertion point *)
@@ -656,6 +667,7 @@ let filter_map f v =
     to_list (filter_map f v) = CCList.filter_map f l)
 *)
 
+(* TODO: free elements *)
 let filter_map_in_place f v =
   let i = ref 0 in (* cur element *)
   let j = ref 0 in  (* cur insertion point *)
