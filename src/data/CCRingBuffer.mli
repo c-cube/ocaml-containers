@@ -26,6 +26,10 @@ module Array : sig
     (** The type of an array instance *)
     type t
 
+    val dummy : elt
+    (** A dummy element used for empty slots in the array
+        @since NEXT_RELEASE *)
+
     val create : int -> t
     (** Make an array of the given size, filled with dummy elements. *)
 
@@ -117,7 +121,7 @@ module type S = sig
   (** Extract the current content into a list. *)
 
   val clear : t -> unit
-  (** Clear the content of the buffer. Doesn't actually destroy the content. *)
+  (** Clear the content of the buffer *)
 
   val is_empty :t -> bool
   (** Is the buffer empty (i.e. contains no elements)? *)

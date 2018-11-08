@@ -18,6 +18,10 @@ module Array = struct
     (** The type of an array instance *)
     type t
 
+    val dummy : elt
+    (** A dummy element used for empty slots in the array
+        @since NEXT_RELEASE *)
+
     val create : int -> t
     (** Make an array of the given size, filled with dummy elements *)
 
@@ -49,6 +53,7 @@ module Array = struct
   module Byte :
     S with type elt = char and type t = Bytes.t = struct
     type elt = char
+    let dummy = '\x00'
     include Bytes
   end
 
@@ -56,6 +61,7 @@ module Array = struct
     S with type elt = Elt.t and type t = Elt.t array = struct
     type elt = Elt.t
     type t = Elt.t array
+    let dummy = Elt.dummy
     let create size = Array.make size Elt.dummy
     let length = Array.length
     let get = Array.get
@@ -339,20 +345,6 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     to_buf = s && len = Bytes.length s)
   *)
 
-  let clear b =
-    b.stop <- 0;
-    b.start <- 0;
-    ()
-
-  (*$Q
-    a_str (fun s -> let s = Bytes.of_string s in \
-    let s_len = Bytes.length s in \
-    let b = Byte.create (max s_len 64) in \
-    Byte.blit_from b s 0 s_len; \
-    Byte.clear b; \
-    Byte.length b = 0)
-  *)
-
   let is_empty b = b.start = b.stop
 
   (*$Q
@@ -367,6 +359,7 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
   let take_front_exn b =
     if b.start = b.stop then raise Empty;
     let c = A.get b.buf b.start in
+    A.set b.buf b.start A.dummy;
     b.start <- next_ b b.start;
     c
 
@@ -386,7 +379,9 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     if b.stop = 0
     then b.stop <- A.length b.buf - 1
     else b.stop <- b.stop - 1;
-    A.get b.buf b.stop
+    let c = A.get b.buf b.stop in
+    A.set b.buf b.stop A.dummy;
+    c
 
   let take_back b = try Some (take_back_exn b) with Empty -> None
 
@@ -402,6 +397,7 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
 
   let junk_front b =
     if b.start = b.stop then raise Empty;
+    A.set b.buf b.start A.dummy;
     if b.start + 1 = A.length b.buf
     then b.start <- 0
     else b.start <- b.start + 1
@@ -418,8 +414,9 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
   let junk_back b =
     if b.start = b.stop then raise Empty;
     if b.stop = 0
-    then b.stop <- A.length b.buf - 1
-    else b.stop <- b.stop - 1
+      then b.stop <- A.length b.buf - 1
+      else b.stop <- b.stop - 1;
+    A.set b.buf b.stop A.dummy
 
   (*$Q
     a_str (fun s -> let s = Bytes.of_string s in \
@@ -434,15 +431,9 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     if len > length b then (
       invalid_arg "CCRingBuffer.skip";
     );
-    if b.stop >= b.start then (
-      b.start <- b.start + len;
-      assert (b.stop >= b.start);
-    ) else (
-      let len_end = A.length b.buf - b.start in
-      if len >= len_end
-      then b.start <- len-len_end  (* wrap to the beginning *)
-      else b.start <- b.start + len
-    )
+    for _ = 1 to len do
+      junk_front b
+    done
 
   (*$Q
     (Q.pair a_str a_str) (fun (s,s') -> \
@@ -455,6 +446,19 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     let l = Byte.length b in let l' = l/2 in Byte.skip b l'; \
     Byte.length b + l' = l)
   *)
+
+  let clear b =
+    skip b (length b)
+
+  (*$Q
+    a_str (fun s -> let s = Bytes.of_string s in \
+    let s_len = Bytes.length s in \
+    let b = Byte.create (max s_len 64) in \
+    Byte.blit_from b s 0 s_len; \
+    Byte.clear b; \
+    Byte.length b = 0)
+  *)
+
 
   let iter b ~f =
     if b.stop >= b.start
@@ -819,4 +823,34 @@ module Make(Elt:sig
     let l1 = CCList.filter_map (apply_op b) ops in
     let l2 = CCList.filter_map (L_impl.apply_op l) ops in
     l1=l2 && BS.to_list b = L_impl.to_list l)
+*)
+
+(* check that deleted elements can be GCed *)
+(*$inject
+  module BO = CCRingBuffer.Make(struct type t = int option let dummy=None end)
+  let make_bo () =
+    let b = BO.create 1000 in
+    for i = 1 to BO.capacity b do
+      BO.push_back b (Some i)
+    done;
+    b
+  let test_no_major_blocks clear =
+    Gc.full_major ();
+    let live_blocks_before = (Gc.stat ()).live_blocks in
+    let b = make_bo () in
+    clear b;
+    Gc.full_major ();
+    let live_blocks_after = (Gc.stat ()).live_blocks in
+    assert (BO.length b = 0);
+    let diff = live_blocks_after - live_blocks_before in
+    diff < BO.capacity b / 2
+*)
+
+(*$T
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do BO.junk_front b; done)
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do BO.junk_back b; done)
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do ignore (BO.take_front b); done)
+  test_no_major_blocks (fun b -> for _ = 1 to BO.length b do ignore (BO.take_back b); done)
+  test_no_major_blocks (fun b -> BO.skip b (BO.length b))
+  test_no_major_blocks (fun b -> BO.clear b)
 *)
