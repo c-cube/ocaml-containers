@@ -73,6 +73,10 @@ val map2 : ('a -> 'b) -> ('err1 -> 'err2) -> ('a, 'err1) t -> ('b, 'err2) t
 val iter : ('a -> unit) -> ('a, _) t -> unit
 (** Apply the function only in case of [Ok]. *)
 
+val iter_err : ('err -> unit) -> (_, 'err) t -> unit
+(** Apply the function in case of [Error].
+    @since NEXT_RELEASE *)
+
 exception Get_error
 
 val get_exn : ('a, _) t -> 'a
