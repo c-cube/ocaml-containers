@@ -83,6 +83,19 @@ let iter f e = match e with
   | Ok x -> f x
   | Error _ -> ()
 
+let iter_err f e = match e with
+  | Ok _ -> ()
+  | Error err -> f err
+
+(*$R iter_err
+  let called_with = ref None in
+  let f e = called_with := Some e in
+  iter_err f (Ok 1);
+  assert_bool "should not apply when Ok" (!called_with = None);
+  iter_err f (Error 1);
+  assert_bool "should apply f to Error" (!called_with = Some 1)
+*)
+
 exception Get_error
 
 let get_exn = function
