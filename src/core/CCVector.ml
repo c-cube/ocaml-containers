@@ -511,7 +511,6 @@ let map_in_place f v =
 *)
 
 
-(* TODO: free elements *)
 let filter' p v =
   let i = ref 0 in (* cur element *)
   let j = ref 0 in  (* cur insertion point *)
@@ -525,6 +524,10 @@ let filter' p v =
       incr j
     ) else incr i
   done;
+  (* free elements *)
+  if !j > 0 && !j < v.size then (
+    Array.fill v.vec !j (v.size - !j) v.vec.(0);
+  );
   v.size <- !j
 
 (*$T
@@ -682,6 +685,10 @@ let filter_map_in_place f v =
         incr i;
         incr j
   done;
+  (* free elements *)
+  if !j > 0 && !j < v.size then (
+    Array.fill v.vec !j (v.size - !j) v.vec.(0);
+  );
   v.size <- !j
 
 (*$QR
@@ -689,6 +696,19 @@ let filter_map_in_place f v =
     let v = of_list l in
     filter_map_in_place f v;
     to_list v = CCList.filter_map f l)
+*)
+
+(* check it frees memory properly *)
+(*$R
+  let s = "coucou" ^ "lol" in
+  let w = Weak.create 1 in
+  Weak.set w 0 (Some s);
+  let v = of_list ["a"; s] in
+  filter' (fun s -> String.length s <= 1) v;
+  assert_equal 1 (length v);
+  assert_equal "a" (get v 0);
+  Gc.major();
+  assert_equal None (Weak.get w 0);
 *)
 
 let flat_map f v =
@@ -816,6 +836,25 @@ let slice_seq v start len =
 *)
 
 let slice v = (v.vec, 0, v.size)
+
+let fill_empty_slots_with v x : unit =
+  if capacity v > length v then (
+    Array.fill v.vec (length v) (capacity v - length v) x;
+  )
+
+(* check it frees memory properly *)
+(*$R
+  let s = "coucou" ^ "lol" in
+  let w = Weak.create 1 in
+  Weak.set w 0 (Some s);
+  let v = of_list ["a"; s] in
+  ignore (pop_exn v :string);
+  assert_equal ~printer:string_of_int 1 (length v);
+  assert_equal ~printer:CCFun.id      "a" (get v 0);
+  fill_empty_slots_with v "";
+  Gc.major();
+  assert_equal None (Weak.get w 0);
+*)
 
 let (--) i j =
   if i>j

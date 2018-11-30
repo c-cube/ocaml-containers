@@ -275,6 +275,13 @@ val slice_seq : ('a,_) t -> int -> int -> 'a sequence
 (** [slice_seq v start len] is the sequence of elements from [v.(start)]
     to [v.(start+len-1)]. *)
 
+val fill_empty_slots_with : ('a, _) t -> 'a -> unit
+(** [fill_empty_slots_with v x] puts [x] in the slots of [v]'s underlying
+    array that are not used (ie in the last [capacity v - length v] slots).
+    This is useful if you removed some elements from the vector and
+    want to be sure they can be GC'd by erasing them from the vector.
+    @since NEXT_RELEASE *)
+
 val of_klist : ?init:('a, rw) t -> 'a klist -> ('a, rw) t
 val to_klist : ('a,_) t -> 'a klist
 val of_gen : ?init:('a, rw) t -> 'a gen -> ('a, rw) t
