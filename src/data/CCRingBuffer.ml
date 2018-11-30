@@ -20,7 +20,7 @@ module Array = struct
 
     val dummy : elt
     (** A dummy element used for empty slots in the array
-        @since NEXT_RELEASE *)
+        @since 2.4 *)
 
     val create : int -> t
     (** Make an array of the given size, filled with dummy elements *)

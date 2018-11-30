@@ -74,7 +74,7 @@ val sample_without_duplicates:
     generated randomly using [g] with the added constraint that none of the generated
     random values are equal.
     @raise Invalid_argument if [n <= 0].
-    @since NEXT_RELEASE *)
+    @since 2.4 *)
 
 val list_seq : 'a t list -> 'a list t
 (** Build random lists from lists of random generators.

@@ -75,7 +75,7 @@ val iter : ('a -> unit) -> ('a, _) t -> unit
 
 val iter_err : ('err -> unit) -> (_, 'err) t -> unit
 (** Apply the function in case of [Error].
-    @since NEXT_RELEASE *)
+    @since 2.4 *)
 
 exception Get_error
 
@@ -91,7 +91,7 @@ val get_or : ('a, _) t -> default:'a -> 'a
 val get_or_failwith : ('a, string) t -> 'a
 (** [get_or_failwith e] returns [x] if [e = Ok x], fails otherwise.
     @raise Failure with [msg] if [e = Error msg].
-    @since NEXT_RELEASE *)
+    @since 2.4 *)
 
 val map_or : ('a -> 'b) ->  ('a, 'c) t -> default:'b -> 'b
 (** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise. *)

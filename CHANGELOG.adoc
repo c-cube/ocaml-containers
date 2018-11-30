@@ -1,5 +1,34 @@
 = Changelog
 
+== 2.4
+
+=== breaking:
+
+- rename `Random.sample_without_{replacement,duplicates}`
+
+=== Features
+
+- add `CCResult.iter_err`
+- add `CCEqual.{always,never}_eq`
+- add `containersLabels.ml`, generate unlabelled interfaces from labelled ones
+- add `CCEqualLabels`
+- add `CCArray_sliceLabels`
+- add `CCStringLabels`
+- add `CCResult.get_or_failwith`
+- add `CCInt.( ** )` for integer exponentiation
+- add `List.counts`, related to `List.count` (#230)
+
+- migrate to dune
+- migrate to opam2
+- add CODE_OF_CONDUCT.md
+
+=== Fixes
+
+- #235: release memory in vector/ringbuffer (thanks to @copy)
+- remove spurious `Labels` module
+- doc: fix small inaccuracy in comments and API
+- test: improve perf by changing random gens
+
 == 2.3
 
 - feat(vector): add `Vector.{filter,filter_map}_in_place`

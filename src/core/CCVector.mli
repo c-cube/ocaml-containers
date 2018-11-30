@@ -280,7 +280,7 @@ val fill_empty_slots_with : ('a, _) t -> 'a -> unit
     array that are not used (ie in the last [capacity v - length v] slots).
     This is useful if you removed some elements from the vector and
     want to be sure they can be GC'd by erasing them from the vector.
-    @since NEXT_RELEASE *)
+    @since 2.4 *)
 
 val of_klist : ?init:('a, rw) t -> 'a klist -> ('a, rw) t
 val to_klist : ('a,_) t -> 'a klist

@@ -94,7 +94,7 @@ val count : ('a -> bool) -> 'a list -> int
     @since 2.2 with labels *)
 
 val count_true_false : ('a -> bool) -> 'a list -> int * int
-(** @since NEXT_RELEASE *)
+(** @since 2.4 *)
 
 val init : int -> (int -> 'a) -> 'a t
 (** [init len f] is [f 0; f 1; ...; f (len-1)].
