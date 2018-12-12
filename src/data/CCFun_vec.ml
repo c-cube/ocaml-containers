@@ -236,10 +236,10 @@ let pop_ i (m:'a t) : 'a * 'a t =
 
 let pop_exn (v:'a t) : 'a * 'a t =
   if v.size=0 then failwith "Fun_vec.pop_exn";
-  pop_ v.size v
+  pop_ (v.size-1) v
 
 let pop (v:'a t) : ('a * 'a t) option =
-  if v.size=0 then None else Some (pop_ v.size v)
+  if v.size=0 then None else Some (pop_ (v.size-1) v)
 
 let iteri ~f (m : 'a t) : unit =
   (* basically, a 32-way BFS traversal.
