@@ -190,7 +190,7 @@ end
 val map_l : ('a -> ('b, 'err) t) -> 'a list -> ('b list, 'err) t
 (** [map_l f l] apply [f] on every element of [l], and, in case of success for every
     element, return [Ok (List.map f l)]. Otherwise, it fails, and the first error is
-    return.*)
+    returned.*)
 
 val fold_l : ('b -> 'a -> ('b, 'err) t) -> 'b -> 'a list -> ('b, 'err) t
 
