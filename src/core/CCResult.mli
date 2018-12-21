@@ -188,9 +188,9 @@ end
 (** {2 Collections} *)
 
 val map_l : ('a -> ('b, 'err) t) -> 'a list -> ('b list, 'err) t
-(** [map_l f [a1; ...; an]] applies function f to a1, ..., an , and, in case of
-    success for every elements, return the list of [Ok]-value.
-    Otherwise, it fails and return the first error encountered. Tail-recursive.*)
+(** [map_l f [a1; ...; an]] applies the function [f] to [a1, ..., an] , and, in case of
+    success for every element, returns the list of [Ok]-value.
+    Otherwise, it fails and returns the first error encountered. Tail-recursive.*)
 
 val fold_l : ('b -> 'a -> ('b, 'err) t) -> 'b -> 'a list -> ('b, 'err) t
 
