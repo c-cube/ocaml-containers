@@ -7,8 +7,6 @@ environment:
     CYG_ROOT: C:\cygwin64
     PINS: containers:.
   matrix:
-  - OPAM_SWITCH: 4.02.3+mingw64c
-    PACKAGE: containers
   - OPAM_SWITCH: 4.03.0+mingw64c
     PACKAGE: containers
   - OPAM_SWITCH: 4.04.2+mingw64c
