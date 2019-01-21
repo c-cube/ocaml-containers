@@ -22,14 +22,14 @@ type one = zero succ
 type two = zero succ succ
 type three = zero succ succ succ
 
-type ('a, 'l) digit =
+type (+'a, 'l) digit =
   | Zero : ('a, zero) digit
   | One : 'a -> ('a, one) digit
   | Two : 'a * 'a -> ('a, two) digit
   | Three : 'a * 'a * 'a -> ('a, three) digit
 
 (* store the size in deep version *)
-type 'a t =
+type +'a t =
   | Shallow : ('a, _) digit -> 'a t
   | Deep : int * ('a, _ succ) digit * ('a * 'a) t lazy_t * ('a, _ succ) digit -> 'a t
 
