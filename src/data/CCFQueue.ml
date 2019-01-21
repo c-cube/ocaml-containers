@@ -14,18 +14,26 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type 'a digit =
-  | Zero
-  | One of 'a
-  | Two of 'a * 'a
-  | Three of 'a * 'a * 'a
+[@@@warning "-37"]
+
+type zero = Zero
+type 'x succ = Succ
+type one = zero succ
+type two = zero succ succ
+type three = zero succ succ succ
+
+type ('a, 'l) digit =
+  | Zero : ('a, zero) digit
+  | One : 'a -> ('a, one) digit
+  | Two : 'a * 'a -> ('a, two) digit
+  | Three : 'a * 'a * 'a -> ('a, three) digit
 
 (* store the size in deep version *)
 type 'a t =
-  | Shallow of 'a digit
-  | Deep of int * 'a digit * ('a * 'a) t lazy_t * 'a digit
+  | Shallow : ('a, _) digit -> 'a t
+  | Deep : int * ('a, _ succ) digit * ('a * 'a) t lazy_t * ('a, _ succ) digit -> 'a t
 
-let empty = Shallow Zero
+let empty : type a. a t = Shallow Zero
 
 (*$R
   let q = empty in
@@ -34,14 +42,12 @@ let empty = Shallow Zero
 
 exception Empty
 
-let is_not_zero = function
-  | Zero -> false
-  | One _ | Two _ | Three _ -> true
-
+let _empty = Shallow Zero
 let _single x = Shallow (One x)
 let _double x y = Shallow (Two (x,y))
-let _deep n hd middle tl =
-  assert (is_not_zero hd && is_not_zero tl);
+let _deep
+  : type l0 l1. int -> ('a, l0 succ) digit -> ('a * 'a) t lazy_t -> ('a, l1 succ) digit -> 'a t
+  = fun n hd middle tl ->
   Deep (n, hd, middle, tl)
 
 let is_empty = function
@@ -51,16 +57,13 @@ let is_empty = function
 let singleton x = _single x
 let doubleton x y = _double x y
 
-let _empty = Lazy.from_val empty
-
-let rec cons : 'a. 'a -> 'a t -> 'a t
+let rec cons : type a. a -> a t -> a t
   = fun x q -> match q with
     | Shallow Zero -> _single x
     | Shallow (One y) -> Shallow (Two (x,y))
     | Shallow (Two (y,z)) -> Shallow (Three (x,y,z))
     | Shallow (Three (y,z,z')) ->
-      _deep 4 (Two (x,y)) _empty (Two (z,z'))
-    | Deep (_, Zero, _middle, _tl) -> assert false
+      _deep 4 (Two (x,y)) (lazy _empty) (Two (z,z'))
     | Deep (n,One y, middle, tl) -> _deep (n+1) (Two (x,y)) middle tl
     | Deep (n,Two (y,z), middle, tl) -> _deep (n+1)(Three (x,y,z)) middle tl
     | Deep (n,Three (y,z,z'), lazy q', tail) ->
@@ -71,14 +74,13 @@ let rec cons : 'a. 'a -> 'a t -> 'a t
     cons x (of_list l) |> to_list = x::l)
 *)
 
-let rec snoc : 'a. 'a t -> 'a -> 'a t
+let rec snoc : type a. a t -> a -> a t
   = fun q x -> match q with
     | Shallow Zero -> _single x
     | Shallow (One y) -> Shallow (Two (y,x))
     | Shallow (Two (y,z)) -> Shallow (Three (y,z,x))
     | Shallow (Three (y,z,z')) ->
-      _deep 4 (Two (y,z)) _empty (Two (z',x))
-    | Deep (_,_hd, _middle, Zero) -> assert false
+      _deep 4 (Two (y,z)) (lazy _empty) (Two (z',x))
     | Deep (n,hd, middle, One y) -> _deep (n+1) hd middle (Two(y,x))
     | Deep (n,hd, middle, Two (y,z)) -> _deep (n+1) hd middle (Three(y,z,x))
     | Deep (n,hd, lazy q', Three (y,z,z')) ->
@@ -103,7 +105,6 @@ let rec take_front_exn : 'a. 'a t -> ('a *'a t)
     | Shallow (One x) -> x, empty
     | Shallow (Two (x,y)) -> x, Shallow (One y)
     | Shallow (Three (x,y,z)) -> x, Shallow (Two (y,z))
-    | Deep (_,Zero, _, _) -> assert false
     | Deep (n,One x, lazy q', tail) ->
       if is_empty q'
       then x, Shallow tail
@@ -173,7 +174,6 @@ let rec take_back_exn : 'a. 'a t -> 'a t * 'a
     | Shallow (One x) -> empty, x
     | Shallow (Two (x,y)) -> _single x, y
     | Shallow (Three (x,y,z)) -> Shallow (Two(x,y)), z
-    | Deep (_, _hd, _middle, Zero) -> assert false
     | Deep (n, hd, lazy q', One x) ->
       if is_empty q'
       then Shallow hd, x
@@ -230,7 +230,7 @@ let last q =
 
 let last_exn q = snd (take_back_exn q)
 
-let _size_digit = function
+let _size_digit : type l. ('a, l) digit -> int = function
   | Zero -> 0
   | One _ -> 1
   | Two _ -> 2
@@ -246,7 +246,7 @@ let size : 'a. 'a t -> int
     size (of_list l) = List.length l)
 *)
 
-let _nth_digit i d = match i, d with
+let _nth_digit : type l. int -> ('a, l) digit -> 'a = fun i d -> match i, d with
   | _, Zero -> raise Not_found
   | 0, One x -> x
   | 0, Two (x,_) -> x
@@ -329,7 +329,7 @@ let add_seq_back q seq =
   seq (fun x -> q := snoc !q x);
   !q
 
-let _digit_to_seq d k = match d with
+let _digit_to_seq : type l. ('a, l) digit -> 'a sequence = fun d k -> match d with
   | Zero -> ()
   | One x -> k x
   | Two (x,y) -> k x; k y
@@ -367,7 +367,7 @@ let append q1 q2 =
   OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5;6;7;8] l
 *)
 
-let _map_digit f d = match d with
+let _map_digit : type l. ('a -> 'b) -> ('a, l) digit -> ('b, l) digit = fun f d -> match d with
   | Zero -> Zero
   | One x -> One (f x)
   | Two (x,y) -> Two (f x, f y)
@@ -387,7 +387,7 @@ let rec map : 'a 'b. ('a -> 'b) -> 'a t -> 'b t
 
 let (>|=) q f = map f q
 
-let _fold_digit f acc d = match d with
+let _fold_digit : type l. ('acc -> 'a -> 'acc) -> 'acc -> ('a, l) digit -> 'acc = fun f acc d -> match d with
   | Zero -> acc
   | One x -> f acc x
   | Two (x,y) -> f (f acc x) y
@@ -443,7 +443,7 @@ let _single x cont () = `Cons (x, cont)
 let _double x y cont () = `Cons (x, _single y cont)
 let _triple x y z cont () = `Cons (x, _double y z cont)
 
-let _digit_to_klist d cont = match d with
+let _digit_to_klist : type l. ('a, l) digit -> 'a klist -> 'a klist = fun d cont -> match d with
   | Zero -> _nil
   | One x -> _single x cont
   | Two (x,y) -> _double x y cont
