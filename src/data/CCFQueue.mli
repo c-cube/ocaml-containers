@@ -10,7 +10,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type +'a t
+type 'a t
 (** Queue containing elements of type 'a *)
 
 val empty : 'a t
