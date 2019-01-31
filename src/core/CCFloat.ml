@@ -10,17 +10,17 @@ type fpclass = Pervasives.fpclass =
   | FP_nan
 
 module Infix = struct
-  let (=) = Pervasives.(=)
-  let (<>) = Pervasives.(<>)
-  let (<) = Pervasives.(<)
-  let (>) = Pervasives.(>)
-  let (<=) = Pervasives.(<=)
-  let (>=) = Pervasives.(>=)
-  let (~-) = Pervasives.(~-.)
-  let (+) = Pervasives.(+.)
-  let (-) = Pervasives.(-.)
-  let ( * ) = Pervasives.( *. )
-  let (/) = Pervasives.(/.)
+  let (=) : t -> t -> bool = Pervasives.(=)
+  let (<>) : t -> t -> bool = Pervasives.(<>)
+  let (<) : t -> t -> bool = Pervasives.(<)
+  let (>) : t -> t -> bool = Pervasives.(>)
+  let (<=) : t -> t -> bool = Pervasives.(<=)
+  let (>=) : t -> t -> bool = Pervasives.(>=)
+  let (~-) : t -> t = Pervasives.(~-.)
+  let (+) : t -> t -> t = Pervasives.(+.)
+  let (-) : t -> t -> t = Pervasives.(-.)
+  let ( * ) : t -> t -> t = Pervasives.( *. )
+  let (/) : t -> t -> t = Pervasives.(/.)
 end
 include Infix
 
@@ -36,7 +36,7 @@ let max_finite_value = Pervasives.max_float
 
 let epsilon = Pervasives.epsilon_float
 
-let is_nan x = Pervasives.classify_float x = Pervasives.FP_nan
+let is_nan x = Pervasives.(classify_float x = Pervasives.FP_nan)
 
 let add = (+.)
 let sub = (-.)

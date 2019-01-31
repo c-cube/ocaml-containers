@@ -2,6 +2,7 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 type t = int
+type 'a sequence = ('a -> unit) -> unit
 
 let equal (a:int) b = Pervasives.(=) a b
 
@@ -70,13 +71,39 @@ let pow a b =
   pow 0 1 = 0
 *)
 
-module Infix = struct
+module Infix : sig
+  val (=) : t -> t -> bool
+  val (<>) : t -> t -> bool
+  val (<) : t -> t -> bool
+  val (>) : t -> t -> bool
+  val (<=) : t -> t -> bool
+  val (>=) : t -> t -> bool
+  val (--) : t -> t -> t sequence
+  val (--^) : t -> t -> t sequence
+  val (+) : t -> t -> t
+  val (-) : t -> t -> t
+  val (~-) : t -> t
+  val ( * ) : t -> t -> t
+  val (/) : t -> t -> t
+  val ( ** ) : t -> t -> t
+  val (mod) : t -> t -> t
+  val (land) : t -> t -> t
+  val (lor) : t -> t -> t
+  val (lxor) : t -> t -> t
+  val lnot : t -> t
+  val (lsl) : t -> int -> t
+  val (lsr) : t -> int -> t
+  val (asr) : t -> int -> t
+end = struct
   include Pervasives
   let (--) = range
   let (--^) = range'
   let ( ** ) = pow
 end
 include Infix
+
+let min : t -> t -> t = Pervasives.min
+let max : t -> t -> t = Pervasives.max
 
 let floor_div a n =
   if a < 0 && n >= 0 then
@@ -159,7 +186,6 @@ let rem a n =
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
-type 'a sequence = ('a -> unit) -> unit
 
 let random n st = Random.State.int st n
 let random_small = random 100
