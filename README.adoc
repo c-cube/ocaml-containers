@@ -128,7 +128,7 @@ See link:CHANGELOG.adoc[this file].
   the address is mailto:containers-users@lists.ocaml.org[]
 - the https://github.com/c-cube/ocaml-containers/wiki[github wiki]
 - on IRC, ask `companion_cube` on `#ocaml@freenode.net`
-- image:https://badges.gitter.im/Join%20Chat.svg[alt="Gitter", link="https://gitter.im/c-cube/ocaml-containers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge"]
+- there is a `#containers` channel on OCaml's discord server.
 
 == Use
 
