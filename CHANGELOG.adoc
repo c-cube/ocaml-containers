@@ -1,5 +1,11 @@
 = Changelog
 
+== 2.5
+
+- perf: annotate types in monomorphic/float/int to help specialize builtins
+- use GADT to discard impossible case on `CCFQueue` (@dinosaure).
+- fix(funvec): expose `pop`, fix off by one error
+
 == 2.4.1
 
 - revert some compatibility-breaking changes in label modules

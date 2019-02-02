@@ -74,7 +74,7 @@ val pop_exn : 'a t -> 'a * 'a t
 
 val pop : 'a t -> ('a * 'a t) option
 (** Pop last element.
-    @since NEXT_RELEASE *)
+    @since 2.5 *)
 
 val iter : f:('a -> unit) -> 'a t -> unit
 
