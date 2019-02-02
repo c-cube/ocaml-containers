@@ -110,12 +110,10 @@ val reverse_in_place : 'a t -> unit
 (** [reverse_in_place a] reverses the array [a] in place. *)
 
 val sorted : ('a -> 'a -> int) -> 'a t -> 'a array
-    (* FIXME: better label this ~cmp ?? *)
 (** [sorted f a] makes a copy of [a] and sorts it with [f].
     @since 1.0 *)
 
 val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
-    (* FIXME: better label this ~cmp ?? *)
 (** [sort_indices f a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index at which the [i]-th element of [sorted f a]
     appears in [a]. [a] is not modified.
@@ -125,7 +123,6 @@ val sort_indices : ('a -> 'a -> int) -> 'a t -> int array
     @since 1.0 *)
 
 val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
-    (* FIXME: better label this ~cmp ?? *)
 (** [sort_ranking f a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index at which the [i]-th element of [a] appears
     in [sorted f a]. [a] is not modified.

@@ -377,9 +377,9 @@ val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
     and [p x] holds. Otherwise returns [None]. *)
 
-val remove : eq:('a -> 'a -> bool) -> 'a -> 'a t -> 'a t
+val remove : eq:('a -> 'a -> bool) -> key:'a -> 'a t -> 'a t
     (* FIXME: the original CCList.mli uses ~x instead of ~key !! *)
-(** [remove key l] removes every instance of [key] from [l]. Tail-recursive.
+(** [remove ~key l] removes every instance of [key] from [l]. Tail-recursive.
     @param eq equality function.
     @since 0.11 *)
 
@@ -589,9 +589,8 @@ module Assoc : sig
       @since 0.16 *)
 
   val update :
-    eq:('a->'a->bool) -> ('b option -> 'b option) -> 'a -> ('a,'b) t -> ('a,'b) t
-      (* FIXME: the original no labels mli kept the ~f label ! *)
-  (** [update k f l] updates [l] on the key [k], by calling [f (get l k)]
+    eq:('a->'a->bool) -> f:('b option -> 'b option) -> 'a -> ('a,'b) t -> ('a,'b) t
+  (** [update k ~f l] updates [l] on the key [k], by calling [f (get l k)]
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v'].
       @since 0.16 *)

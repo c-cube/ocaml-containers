@@ -28,7 +28,7 @@ let search_all pat s =
   List.rev (search_rest [] 0)
 ;;
 
-(* replase first occurence of pat with subst in s *)
+(* replace first occurrence of pat with subst in s *)
 let replace_first pat subst s =
   let pos = search pat s 0 in
   let patl = String.length pat
@@ -43,7 +43,7 @@ let replace_first pat subst s =
   Bytes.unsafe_to_string buf
 ;;
 
-(* replase first occurence of pat with subst in s *)
+(* replace all occurrences of pat with subst in s *)
 let replace_all pat subst s =
   let pos = search_all pat s in
   let patl = String.length pat
