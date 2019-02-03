@@ -316,7 +316,7 @@ module IntMap = CCMap.Make(CCInt)
 # (* conversions using the "sequence" type, fast iterators that are
    pervasively used in containers. Combinators can be found
    in the opam library "sequence". *)
-  let map =
+  let map : string IntMap.t =
     l2
     |> List.map (fun x -> x, string_of_int x)
     |> CCList.to_seq
@@ -378,13 +378,17 @@ Now for a few examples:
    vector that is mutable OR immutable (see the 'mut parameter?) *)
   CCVector.init ;;
 - : int -> (int -> 'a) -> ('a, 'mut) CCVector.t = <fun>
+```
 
+```ocaml non-deterministic=output
 # (* use the infix (--) operator for creating a range. Notice
    that v is a vector of integer but its mutability is not
    decided yet. *)
   let v = CCVector.(1 -- 10);;
-val v : (int, '_weak1) CCVector.t = <abstr>
+val v : (int, '_a) CCVector.t = <abstr>
+```
 
+```ocaml
 # Format.printf "v = @[%a@]@." (CCVector.pp CCInt.pp) v;;
 v = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 - : unit = ()
@@ -395,11 +399,11 @@ v = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 - : (int, CCVector.rw) CCVector.t = <abstr>
 
 # (* functional combinators! *)
-  let v2 = v
+  let v2 : _ CCVector.ro_vector = v
   |> CCVector.map (fun x-> x+1)
   |> CCVector.filter (fun x-> x mod 2=0)
   |> CCVector.rev ;;
-val v2 : (int, '_weak2) CCVector.t = <abstr>
+val v2 : int CCVector.ro_vector = <abstr>
 
 # Format.printf "v2 = @[%a@]@." (CCVector.pp CCInt.pp) v2;;
 v2 = 10, 8, 6, 4, 2
@@ -479,7 +483,7 @@ a record with an explicitely quantified function type).
 Now we can read the file again:
 
 ```ocaml
-# let lines = CCIO.with_in "./foobar" CCIO.read_lines_l ;;
+# let lines : string list = CCIO.with_in "./foobar" CCIO.read_lines_l ;;
 val lines : string list = ["hello"; "world"]
 ```
 
