@@ -10,7 +10,7 @@ map/fold_right/append, and additional functions on lists).
 Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
 
-The [README](https://github.com/c-cube/ocaml-containers/blob/master/README.adoc)
+The [README](https://github.com/c-cube/ocaml-containers/blob/master/README.md)
 contains a tutorial and more explanations about what Containers is about.
 
 ## by version
