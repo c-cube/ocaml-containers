@@ -179,6 +179,8 @@ $ opam install containers
 
 ### From Sources
 
+<details>
+
 You need dune (formerly jbuilder).
 
 ```
@@ -200,9 +202,14 @@ $ make bench
 $ ./benchs/run_benchs.sh
 ```
 
+</details>
+
 ## Contributing
 
 PRs on github are very welcome (patches by email too, if you prefer so).
+
+<details>
+<summary>how to contribute (click to unfold)</summary>
 
 ### First-Time Contributors
 
@@ -249,6 +256,8 @@ To contribute a change, here are the steps (roughly):
 6. `git push origin master` to push the new change(s) onto your
   copy of the repository
 7. on github, open a "pull request" (PR). Et voilà !
+
+</details>
 
 ## Tutorial
 
