@@ -1,10 +1,8 @@
-= OCaml-containers 📦 =
-:toc: macro
-:source-highlighter: pygments
+# OCaml-containers 📦
 
 A modular, clean and powerful extension of the OCaml standard library.
 
-https://c-cube.github.io/ocaml-containers/last/[(Jump to the current API documentation)].
+[(Jump to the current API documentation)](https://c-cube.github.io/ocaml-containers/last/)
 
 Containers is an extension of OCaml's standard library (under BSD license)
 focused on data structures, combinators and iterators, without dependencies on
@@ -14,12 +12,10 @@ map/fold_right/append, and additional functions on lists).
 Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
 
-image::https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master[alt="Build Status on Travis", link="https://travis-ci.org/c-cube/ocaml-containers"]
-image::https://ci.appveyor.com/api/projects/status/tftx9q8auil4cv4c?svg=true[alt="Build Status on AppVeyor", link="https://ci.appveyor.com/project/c-cube/ocaml-containers"]
+[![Build Status](https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master)](https://travis-ci.org/c-cube/ocaml-containers)
+[![Build Status](https://ci.appveyor.com/api/projects/status/tftx9q8auil4cv4c?svg=true)](https://ci.appveyor.com/project/c-cube/ocaml-containers)
 
-toc::[]
-
-== Quick Summary
+## Quick Summary
 
 Containers is:
 
@@ -46,9 +42,9 @@ Containers is:
 Some of the modules have been moved to their own repository (e.g. `sequence`,
 `gen`, `qcheck`) and are on opam for great fun and profit.
 
-== Migration Guide
+## Migration Guide
 
-=== To 2.0
+### To 2.0
 
 - The type system should detect issues related to `print` renamed into `pp` easily.
   If you are lucky, a call to `sed -i 's/print/pp/g'` on the concerned files
@@ -66,14 +62,13 @@ Some of the modules have been moved to their own repository (e.g. `sequence`,
   However, during migration and until you use proper combinators for
   equality (`CCEqual`), comparison (`CCOrd`), and hashing (`CCHash`),
   you might want to add `open Pervasives` just after the `open Containers`.
-  See <<mono-ops,the section on monomorphic operators>> for more details.
+  See [the section on monomorphic operators](#monomorphic-operators-why-and-how) for more details.
 
-[[mono-ops]]
-== Monomorphic operators: why, and how?
+## Monomorphic operators: why, and how?
 
-=== Why shadow polymorphic operators by default?
+### Why shadow polymorphic operators by default?
 
-To quote @bluddy in https://github.com/c-cube/ocaml-containers/issues/196[#196]:
+To quote @bluddy in [#196](https://github.com/c-cube/ocaml-containers/issues/196):
 
 The main problem with polymorphic comparison is that many data structures will
 give one result for structural comparison, and a different result for semantic
@@ -99,7 +94,7 @@ See also:
 - https://blog.janestreet.com/the-perils-of-polymorphic-compare/
 - https://blog.janestreet.com/building-a-better-compare/
 
-=== Sometimes polymorphic operators still make sense!
+### Sometimes polymorphic operators still make sense!
 
 If you just want to use polymorphic operators, it's fine! You can access them
 easily by using `Pervasives.(=)`, `Pervasives.max`, etc.
@@ -112,29 +107,29 @@ This way, other modules can refer to `Foo.equal` and will not have to be
 updated the day `Foo.equal` is no longer just polymorphic equality.
 Another bonus is that `Hashtbl.Make(Foo)` or `Map.Make(Foo)` will just work™.
 
-=== Further discussions
+### Further discussions
 
 See issues
-https://github.com/c-cube/ocaml-containers/issues/196[#196],
-https://github.com/c-cube/ocaml-containers/issues/197[#197]
+[#196](https://github.com/c-cube/ocaml-containers/issues/196),
+[#197](https://github.com/c-cube/ocaml-containers/issues/197)
 
-== Change Log
+## Change Log
 
-See link:CHANGELOG.adoc[this file].
+See [this file](./CHANGELOG.adoc).
 
-== Finding help
+## Finding help
 
-- http://lists.ocaml.org/listinfo/containers-users[Mailing List]
-  the address is mailto:containers-users@lists.ocaml.org[]
-- the https://github.com/c-cube/ocaml-containers/wiki[github wiki]
+- [Mailing List](http://lists.ocaml.org/listinfo/containers-users)
+  the address is <mailto:containers-users@lists.ocaml.org>
+- the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
 - on IRC, ask `companion_cube` on `#ocaml@freenode.net`
 - there is a `#containers` channel on OCaml's discord server.
 
-== Use
+## Use
 
-You might start with the <<tutorial>> to get a picture of how to use the library.
+You might start with the [tutorial](#tutorial) to get a picture of how to use the library.
 
-You can either build and install the library (see <<build>>), or just copy
+You can either build and install the library (see [build](#build)), or just copy
 files to your own project. The last solution has the benefits that you
 don't have additional dependencies nor build complications (and it may enable
 more inlining). Since modules have a friendly license and are mostly
@@ -142,8 +137,7 @@ independent, both options are easy.
 
 In a toplevel, using ocamlfind:
 
-[source,OCaml]
-----
+```ocaml
 # #use "topfind";;
 # #require "containers";;
 # CCList.flat_map;;
@@ -151,134 +145,148 @@ In a toplevel, using ocamlfind:
 # open Containers;;  (* optional *)
 # List.flat_map ;;
 - : ('a -> 'b list) -> 'a list -> 'b list = <fun>
-----
+```
 
 If you have comments, requests, or bugfixes, please share them! :-)
 
-== License
+## License
 
 This code is free, under the BSD license.
 
-== Contents
+## Contents
 
-See http://c-cube.github.io/ocaml-containers/[the documentation]
-and <<tutorial,the tutorial below>> for a gentle introduction.
+See [the documentation](http://c-cube.github.io/ocaml-containers/)
+and [the tutorial below](#tutorial) for a gentle introduction.
 
-== Documentation
+## Documentation
 
 In general, see http://c-cube.github.io/ocaml-containers/last/ for the **API documentation**.
 
-Some examples can be found link:doc/containers.adoc[there],
-per-version doc http://c-cube.github.io/ocaml-containers/[there].
+Some examples can be found [there](doc/containers.adoc),
+per-version doc [there](http://c-cube.github.io/ocaml-containers/).
 
-[[build]]
-== Build
+## Build
 
 You will need OCaml `>=` 4.02.0.
 
-=== Via opam
+### Via opam
 
-The prefered way to install is through http://opam.ocaml.org/[opam].
+The prefered way to install is through [opam](http://opam.ocaml.org/).
 
-    $ opam install containers
+```
+$ opam install containers
+```
 
-=== From Sources
+### From Sources
 
 You need dune (formerly jbuilder).
 
-    $ make
+```
+$ make
+```
 
-To build and run tests (requires `oUnit` and https://github.com/vincent-hugot/iTeML[qtest]):
+To build and run tests (requires `oUnit` and [qtest](https://github.com/vincent-hugot/iTeML)):
 
-    $ opam install oUnit qtest
-    $ ./configure --enable-tests --enable-unix
-    $ make test
+```
+$ opam install oUnit qtest
+$ make test
+```
 
-To build the small benchmarking suite (requires https://github.com/chris00/ocaml-benchmark[benchmark]):
+To build the small benchmarking suite (requires [benchmark](https://github.com/chris00/ocaml-benchmark)):
 
-    $ opam install benchmark
-    $ make bench
-    $ ./benchs.native
+```
+$ opam install benchmark batteries
+$ make bench
+$ ./benchs/run_benchs.sh
+```
 
-== Contributing
+## Contributing
 
 PRs on github are very welcome (patches by email too, if you prefer so).
 
-[[first-time-contribute]]
-=== First-Time Contributors
+### First-Time Contributors
 
 Assuming your are in a clone of the repository:
 
-. Some dependencies are required, you'll need
+1. Some dependencies are required, you'll need
   `opam install benchmark qcheck qtest sequence`. 
-. run `make devel` to enable everything (including tests).
-. make your changes, commit, push, and open a PR.
-. use `make test` without moderation! It must pass before a PR
-  is merged.  There are around 900 tests right now, and new
+2. run `make devel` to enable everything (including tests).
+3. make your changes, commit, push, and open a PR.
+4. use `make test` without moderation! It must pass before a PR
+  is merged.  There are around 1150 tests right now, and new
   features should come with their own tests.
 
 If you feel like writing new tests, that is totally worth a PR
 (and my gratefulness).
 
-=== General Guidelines
+### General Guidelines
 
 A few guidelines to follow the philosophy of containers:
 
 - no dependencies between basic modules (even just for signatures);
 - add `@since` tags for new functions;
-- add tests if possible (using https://github.com/vincent-hugot/iTeML/[qtest]). There are numerous inline tests already,
-to see what it looks like search for comments starting with `(*$`
-in source files.
+- add tests if possible (using [qtest](https://github.com/vincent-hugot/iTeML/)).
+   There are numerous inline tests already,
+  to see what it looks like search for comments starting with `(*$`
+  in source files.
 
-=== For Total Beginners
+### For Total Beginners
 
 Thanks for wanting to contribute!
 To contribute a change, here are the steps (roughly):
 
-. click "fork" on https://github.com/c-cube/ocaml-containers on the top right of the page. This will create a copy of the repository on your own github account.
-. click the big green "clone or download" button, with "SSH". Copy the URL (which should look like `git@github.com:<your username>/ocaml-containers.git`) into a terminal to enter the command:
-+
-[source,sh]
-----
-$ git clone git@github.com:<your username>/ocaml-containers.git
-----
-+
-. then, `cd` into the newly created directory.
-. make the changes you want. See <<first-time-contribute>> for
-  more details about what to do in particular.
-. use `git add` and `git commit` to commit these changes.
-. `git push origin master` to push the new change(s) onto your
-  copy of the repository
-. on github, open a "pull request" (PR). Et voilà !
+1. click "fork" on https://github.com/c-cube/ocaml-containers on the top right of the page. This will create a copy of the repository on your own github account.
+2. click the big green "clone or download" button, with "SSH". Copy the URL (which should look like `git@github.com:<your username>/ocaml-containers.git`) into a terminal to enter the command:
 
-[[tutorial]]
-== Tutorial
+    ```
+    $ git clone git@github.com:<your username>/ocaml-containers.git
+    ```
+
+3. then, `cd` into the newly created directory.
+4. make the changes you want. See <#first-time-contributors> for
+  more details about what to do in particular.
+5. use `git add` and `git commit` to commit these changes.
+6. `git push origin master` to push the new change(s) onto your
+  copy of the repository
+7. on github, open a "pull request" (PR). Et voilà !
+
+## Tutorial
 
 This tutorial contains a few examples to illustrate the features and
-usage of containers. We assume containers is installed and that
+usage of containers.
+
+
+<details>
+<summary>an introduction to containers (click to unfold)</summary>
+
+We assume containers is installed and that
 the library is loaded, e.g. with:
 
-[source,OCaml]
-----
-#require "containers";;
-----
+```ocaml
+# #require "containers";;
+# Format.set_margin 50;; (* for readability here *)
+- : unit = ()
+```
 
-=== Basics
+### Basics
 
 We will start with a few list helpers, then look at other parts of
 the library, including printers, maps, etc.
 
-[source,OCaml]
-----
-
-(* quick reminder of this awesome standard operator *)
-# (|>) ;;
+```ocaml
+# (|>) ;;  (* quick reminder of this awesome standard operator *)
 - : 'a -> ('a -> 'b) -> 'b = <fun>
 
 # open CCList.Infix;;
 
 # let l = 1 -- 100;;
-val l : int list = [1; 2; .....]
+val l : int list =
+  [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21;
+   22; 23; 24; 25; 26; 27; 28; 29; 30; 31; 32; 33; 34; 35; 36; 37; 38; 39;
+   40; 41; 42; 43; 44; 45; 46; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57;
+   58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75;
+   76; 77; 78; 79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90; 91; 92; 93;
+   94; 95; 96; 97; 98; 99; 100]
 
 # l
   |> CCList.filter_map
@@ -288,58 +296,60 @@ val l : int list = [1; 2; .....]
 
 # let l2 = l |> CCList.take_while (fun x -> x<10) ;;
 val l2 : int list = [1; 2; 3; 4; 5; 6; 7; 8; 9]
+```
 
+```ocaml
 (* an extension of Map.Make, compatible with Map.Make(CCInt) *)
-# module IntMap = CCMap.Make(CCInt);;
+module IntMap = CCMap.Make(CCInt)
+```
 
-(* conversions using the "sequence" type, fast iterators that are
+```ocaml
+# (* conversions using the "sequence" type, fast iterators that are
    pervasively used in containers. Combinators can be found
    in the opam library "sequence". *)
-# let map =
+  let map =
     l2
     |> List.map (fun x -> x, string_of_int x)
     |> CCList.to_seq
     |> IntMap.of_seq;;
-val map : string CCIntMap.t = <abstr>
+val map : string IntMap.t = <abstr>
 
-(* check the type *)
-# CCList.to_seq ;;
-- : 'a list -> 'a sequence = <fun>
+# CCList.to_seq ;; (* check the type *)
+- : 'a list -> 'a CCList.sequence = <fun>
 # IntMap.of_seq ;;
 - : (int * 'a) CCMap.sequence -> 'a IntMap.t = <fun>
 
-(* we can print, too *)
-# Format.printf "@[<2>map =@ @[<hov>%a@]@]@."
-    (IntMap.print CCFormat.int CCFormat.string_quoted)
+# (* we can print, too *)
+  Format.printf "@[<2>map =@ @[<hov>%a@]@]@."
+    (IntMap.pp CCFormat.int CCFormat.string_quoted)
     map;;
 map =
-  [1 --> "1", 2 --> "2", 3 --> "3", 4 --> "4", 5 --> "5", 6 --> "6",
-   7 --> "7", 8 --> "8", 9 --> "9"]
+  1->"1", 2->"2", 3->"3", 4->"4", 5->"5", 
+  6->"6", 7->"7", 8->"8", 9->"9"
 - : unit = ()
 
-(* options are good *)
-# IntMap.get 3 map |> CCOpt.map (fun s->s ^ s);;
+# (* options are good *)
+  IntMap.get 3 map |> CCOpt.map (fun s->s ^ s);;
 - : string option = Some "33"
+```
 
-----
-
-=== New types: `CCVector`, `CCHeap`, `CCResult`
+### New types: `CCVector`, `CCHeap`, `CCResult`
 
 Containers also contains (!) a few datatypes that are not from the standard
 library but that are useful in a lot of situations:
 
-CCVector::
+- `CCVector`:
   A resizable array, with a mutability parameter. A value of type
   `('a, CCVector.ro) CCVector.t` is an immutable vector of values of type `'a`,
   whereas a `('a, CCVector.rw) CCVector.t` is a mutable vector that
   can be modified. This way, vectors can be used in a quite functional
   way, using operations such as `map` or `flat_map`, or in a more
   imperative way.
-CCHeap::
+- `CCHeap`:
   A priority queue (currently, leftist heaps) functorized over
   a module `sig val t val leq : t -> t -> bool` that provides a type `t`
   and a partial order `leq` on `t`.
-CCResult::
+- `CCResult`
   An error type for making error handling more explicit (an error monad,
   really, if you're not afraid of the "M"-word).
   Subsumes and replaces the old `CCError`.
@@ -349,73 +359,73 @@ CCResult::
 
 Now for a few examples:
 
-[source,OCaml]
-----
-
-(* create a new empty vector. It is mutable, for otherwise it would
+```ocaml
+# (* create a new empty vector. It is mutable, for otherwise it would
    not be very useful. *)
-# CCVector.create;;
+  CCVector.create;;
 - : unit -> ('a, CCVector.rw) CCVector.t = <fun>
 
-(* init, similar to Array.init, can be used to produce a
+# (* init, similar to Array.init, can be used to produce a
    vector that is mutable OR immutable (see the 'mut parameter?) *)
-# CCVector.init ;;
-- : int -> (int -> 'a) -> ('a, 'mut) CCVector.t = <fun>c
+  CCVector.init ;;
+- : int -> (int -> 'a) -> ('a, 'mut) CCVector.t = <fun>
 
-(* use the infix (--) operator for creating a range. Notice
+# (* use the infix (--) operator for creating a range. Notice
    that v is a vector of integer but its mutability is not
    decided yet. *)
-# let v = CCVector.(1 -- 10);;
-val v : (int, '_a) CCVector.t = <abstr>
+  let v = CCVector.(1 -- 10);;
+val v : (int, '_weak1) CCVector.t = <abstr>
 
-# Format.printf "v = @[%a@]@." (CCVector.print CCInt.print) v;;
-v = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-(* now let's mutate v *)
+# Format.printf "v = @[%a@]@." (CCVector.pp CCInt.pp) v;;
+v = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+- : unit = ()
 # CCVector.push v 42;;
 - : unit = ()
 
-(* now v is a mutable vector *)
-# v;;
+# v;; (* now v is a mutable vector *)
 - : (int, CCVector.rw) CCVector.t = <abstr>
 
-(* functional combinators! *)
-# let v2 = v
+# (* functional combinators! *)
+  let v2 = v
   |> CCVector.map (fun x-> x+1)
   |> CCVector.filter (fun x-> x mod 2=0)
   |> CCVector.rev ;;
-val v2 : (int, '_a) CCVector.t = <abstr>
+val v2 : (int, '_weak2) CCVector.t = <abstr>
 
-# Format.printf "v2 = @[%a@]@." (CCVector.print CCInt.print) v2;;
-v2 = [10, 8, 6, 4, 2]
+# Format.printf "v2 = @[%a@]@." (CCVector.pp CCInt.pp) v2;;
+v2 = 10, 8, 6, 4, 2
+- : unit = ()
+```
 
+```ocaml
 (* let's transfer to a heap *)
-# module IntHeap = CCHeap.Make(struct type t = int let leq = (<=) end);;
+module IntHeap = CCHeap.Make(struct type t = int let leq = (<=) end);;
+```
 
+```ocaml
 # let h = v2 |> CCVector.to_seq |> IntHeap.of_seq ;;
 val h : IntHeap.t = <abstr>
 
-(* We can print the content of h
+# (* We can print the content of h
   (printing is not necessarily in order, though) *)
-# Format.printf "h = [@[%a@]]@." (IntHeap.print CCInt.print) h;;
+  Format.printf "h = [@[%a@]]@." (IntHeap.pp CCInt.pp) h;;
 h = [2,4,6,8,10]
+- : unit = ()
 
-(* we can remove the first element, which also returns a new heap
+# (* we can remove the first element, which also returns a new heap
    that does not contain it — CCHeap is a functional data structure *)
-# IntHeap.take h;;
+  IntHeap.take h;;
 - : (IntHeap.t * int) option = Some (<abstr>, 2)
 
 # let h', x = IntHeap.take_exn h ;;
 val h' : IntHeap.t = <abstr>
 val x : int = 2
 
-(* see, 2 is removed *)
-# IntHeap.to_list h' ;;
+# IntHeap.to_list h' ;; (* see, 2 is removed *)
 - : int list = [4; 6; 8; 10]
+```
 
-----
-
-=== IO helpers
+### IO helpers
 
 The core library contains a module called `CCIO` that provides useful
 functions for reading and writing files. It provides functions that
@@ -429,26 +439,24 @@ error, it will free the resource.
 
 Consider for instance:
 
-[source,OCaml]
-----
-# CCIO.with_out "/tmp/foobar"
+```ocaml
+# CCIO.with_out "./foobar"
     (fun out_channel ->
       CCIO.write_lines_l out_channel ["hello"; "world"]);;
 - : unit = ()
-----
+```
 
 This just opened the file '/tmp/foobar', creating it if it didn't exist,
 and wrote two lines in it. We did not have to close the file descriptor
 because `with_out` took care of it. By the way, the type signatures are:
 
-[source,OCaml]
-----
+```ocaml non-deterministic=command
 val with_out :
   ?mode:int -> ?flags:open_flag list ->
   string -> (out_channel -> 'a) -> 'a
 
 val write_lines_l : out_channel -> string list -> unit
-----
+```
 
 So we see the pattern for `with_out` (which opens a function in write
 mode and gives its functional argument the corresponding file descriptor).
@@ -461,11 +469,10 @@ a record with an explicitely quantified function type).
 
 Now we can read the file again:
 
-[source,OCaml]
-----
-# let lines = CCIO.with_in "/tmp/foobar" CCIO.read_lines_l ;;
+```ocaml
+# let lines = CCIO.with_in "./foobar" CCIO.read_lines_l ;;
 val lines : string list = ["hello"; "world"]
-----
+```
 
 There are some other functions in `CCIO` that return _generators_
 instead of lists. The type of generators in containers
@@ -475,32 +482,29 @@ to obtain successive values, until it returns `None` (which means it
 has been exhausted). In particular, python users might recognize
 the function
 
-[source,OCaml]
-----
+```ocaml non-deterministic=command
 # CCIO.File.walk ;;
 - : string -> walk_item gen = <fun>;;
-----
+```
 
-where `type walk_item = [ `Dir | `File ] * string` is a path
+where `type walk_item = [ ``Dir | ``File ] * string` is a path
 paired with a flag distinguishing files from directories.
 
 
-=== To go further: containers.data
+### To go further: `containers.data`
 
 There is also a sub-library called `containers.data`, with lots of
 more specialized data-structures.
-The documentation contains the API for all the modules
-(see link:README.adoc[the readme]); they also provide
+The documentation contains the API for all the modules; they also provide
 interface to `sequence` and, as the rest of containers, minimize
 dependencies over other modules. To use `containers.data` you need to link it,
 either in your build system or by `#require containers.data;;`
 
 A quick example based on purely functional double-ended queues:
 
-[source,OCaml]
-----
+```ocaml
 # #require "containers.data";;
-# #install_printer CCFQueue.print;;  (* better printing of queues! *)
+# #install_printer CCFQueue.pp;;  (* better printing of queues! *)
 
 # let q = CCFQueue.of_list [2;3;4] ;;
 val q : int CCFQueue.t = queue {2; 3; 4}
@@ -508,63 +512,70 @@ val q : int CCFQueue.t = queue {2; 3; 4}
 # let q2 = q |> CCFQueue.cons 1 |> CCFQueue.cons 0 ;;
 val q2 : int CCFQueue.t = queue {0; 1; 2; 3; 4}
 
-(* remove first element *)
-# CCFQueue.take_front q2;;
+# (* remove first element *)
+  CCFQueue.take_front q2;;
 - : (int * int CCFQueue.t) option = Some (0, queue {1; 2; 3; 4})
 
-(* q was not changed *)
-# CCFQueue.take_front q;;
+# (* q was not changed *)
+  CCFQueue.take_front q;;
 - : (int * int CCFQueue.t) option = Some (2, queue {3; 4})
 
-(* take works on both ends of the queue *)
-# CCFQueue.take_back_l 2 q2;;
+# (* take works on both ends of the queue *)
+  CCFQueue.take_back_l 2 q2;;
 - : int CCFQueue.t * int list = (queue {0; 1; 2}, [3; 4])
+```
 
-----
-
-=== Common Type Definitions
+### Common Type Definitions
 
 Some structural types are used throughout the library:
 
-gen:: `'a gen = unit -> 'a option` is an iterator type. Many combinators
-  are defined in the opam library https://github.com/c-cube/gen[gen]
-sequence:: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
+- `gen`: `'a gen = unit -> 'a option` is an iterator type. Many combinators
+  are defined in the opam library [gen](https://github.com/c-cube/gen)
+- `sequence`: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
   It is easier to define on data structures than `gen`, but it a bit less
-  powerful.  The opam library https://github.com/c-cube/sequence[sequence]
+  powerful.  The opam library [sequence](https://github.com/c-cube/sequence)
   can be used to consume and produce values of this type.
-error:: `'a or_error = ('a, string) result = Error of string | Ok of 'a`
+- `error`: `'a or_error = ('a, string) result = Error of string | Ok of 'a`
   using the standard `result` type, supported in `CCResult`.
-klist:: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
+- `klist`: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
   without memoization, used as a persistent iterator. The reference
   module is `CCKList` (in `containers.iter`).
-printer:: `'a printer = Format.formatter -> 'a -> unit` is a pretty-printer
+- `printer`: `'a printer = Format.formatter -> 'a -> unit` is a pretty-printer
   to be used with the standard module `Format`. In particular, in many cases,
   `"foo: %a" Foo.print foo` will type-check.
 
-=== Extended Documentation
+### Extended Documentation
 
-See link:doc/containers.adoc[the extended documentation] for more examples.
+See [the extended documentation](doc/containers.adoc) for more examples.
 
-== HOWTO (for contributors)
+</details>
 
-=== Make a release
+## HOWTO (for contributors)
+
+<details>
+
+### Make a release
 
 Beforehand, check `grep deprecated -r src` to see whether some functions
 can be removed.
 
-. `make test`
-. update version in `containers.opam`
-. `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
-. check status of modules (`{b status: foo}`) and update if required;
+- `make test`
+- update version in `containers.opam`
+- `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
+- check status of modules (`{b status: foo}`) and update if required;
    removed deprecated functions, etc.
-. update `CHANGELOG.adoc` (see its end to find the right git command)
-. commit the changes
-. `make test doc`
-. tag, and push both to github
-. `opam pin add containers https://github.com/c-cube/ocaml-containers.git#<release>`
-. new opam package: `opam publish prepare; opam publish submit`
-. re-generate doc: `make doc push_doc`
+- update `CHANGELOG.adoc` (see its end to find the right git command)
+- commit the changes
+- `make test doc`
+- tag, and push both to github
+- `opam pin add containers https://github.com/c-cube/ocaml-containers.git#<release>`
+- new opam package: `opam publish prepare; opam publish submit`
+- re-generate doc: `make doc push_doc`
 
-=== List Authors
+### List Authors
 
-  `git log --format='%aN' | sort -u`
+```
+git log --format='%aN' | sort -u
+```
+
+</details>

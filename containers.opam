@@ -19,6 +19,7 @@ depends: [
   "sequence" { with-test }
   "gen" { with-test }
   "uutf" { with-test }
+  "mdx" { with-test }
   "odoc" { with-doc }
   "ocaml" { >= "4.02.0" }
 ]
