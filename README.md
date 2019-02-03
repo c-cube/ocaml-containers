@@ -546,7 +546,7 @@ Some structural types are used throughout the library:
 
 ### Extended Documentation
 
-See [the extended documentation](doc/containers.adoc) for more examples.
+See [the extended documentation](doc/containers.md) for more examples.
 
 </details>
 
