@@ -5,77 +5,76 @@
 
 type 'a t = 'a option
 
-let map f = function
+let[@inline] map f = function
   | None -> None
   | Some x -> Some (f x)
 
-let map_or ~default f = function
+let[@inline] map_or ~default f = function
   | None -> default
   | Some x -> f x
 
-let map_lazy default_fn f = function
+let[@inline] map_lazy default_fn f = function
   | None -> default_fn ()
   | Some x -> f x
 
-let is_some = function
+let[@inline] is_some = function
   | None -> false
   | Some _ -> true
 
-let is_none = function
+let[@inline] is_none = function
   | None -> true
   | Some _ -> false
 
-let compare f o1 o2 = match o1, o2 with
+let[@inline] compare f o1 o2 = match o1, o2 with
   | None, None -> 0
   | Some _, None -> 1
   | None, Some _ -> -1
   | Some x, Some y -> f x y
 
-let equal f o1 o2 = match o1, o2 with
+let[@inline] equal f o1 o2 = match o1, o2 with
   | None, None -> true
   | Some _, None
   | None, Some _ -> false
   | Some x, Some y -> f x y
 
-let return x = Some x
+let[@inline] return x = Some x
 
-let (>|=) x f = map f x
+let[@inline] (>|=) x f = map f x
 
-let (>>=) o f = match o with
+let[@inline] (>>=) o f = match o with
   | None -> None
   | Some x -> f x
 
-let flat_map f o = match o with
+let[@inline] flat_map f o = match o with
   | None -> None
   | Some x -> f x
 
-let pure x = Some x
+let pure = return
 
-let (<*>) f x = match f, x with
+let[@inline] (<*>) f x = match f, x with
   | None, _
   | _, None -> None
   | Some f, Some x -> Some (f x)
 
 let (<$>) = map
 
-let or_ ~else_ a = match a with
+let[@inline] or_ ~else_ a = match a with
   | None -> else_
   | Some _ -> a
 
-let or_lazy ~else_ a = match a with
+let[@inline] or_lazy ~else_ a = match a with
   | None -> else_ ()
   | Some _ -> a
 
-let (<+>) a b = or_ ~else_:b a
+let[@inline] (<+>) a b = or_ ~else_:b a
 
-let choice l = List.fold_left (<+>) None l
+let[@inline] choice l = List.fold_left (<+>) None l
 
-let map2 f o1 o2 = match o1, o2 with
-  | None, _
-  | _, None -> None
+let[@inline] map2 f o1 o2 = match o1, o2 with
+  | None, _ | _, None -> None
   | Some x, Some y -> Some (f x y)
 
-let filter p = function
+let[@inline] filter p = function
   | Some x as o when p x -> o
   | _ -> None
 
@@ -85,33 +84,33 @@ let filter p = function
   None (filter (fun _ -> true) None)
 *)
 
-let if_ p x = if p x then Some x else None
+let[@inline] if_ p x = if p x then Some x else None
 
-let exists p = function
+let[@inline] exists p = function
   | None -> false
   | Some x -> p x
 
-let for_all p = function
+let[@inline] for_all p = function
   | None -> true
   | Some x -> p x
 
-let iter f o = match o with
+let[@inline] iter f o = match o with
   | None -> ()
   | Some x -> f x
 
-let fold f acc o = match o with
+let[@inline] fold f acc o = match o with
   | None -> acc
   | Some x -> f acc x
 
-let get_or ~default x = match x with
+let[@inline] get_or ~default x = match x with
   | None -> default
   | Some y -> y
 
-let get_exn = function
+let[@inline] get_exn = function
   | Some x -> x
   | None -> invalid_arg "CCOpt.get_exn"
 
-let get_lazy default_fn x = match x with
+let[@inline] get_lazy default_fn x = match x with
   | None -> default_fn ()
   | Some y -> y
 
@@ -139,25 +138,25 @@ let wrap2 ?(handler=fun _ -> true) f x y =
   with e ->
     if handler e then None else raise e
 
-let to_list o = match o with
+let[@inline] to_list o = match o with
   | None -> []
   | Some x -> [x]
 
-let of_list = function
+let[@inline] of_list = function
   | x::_ -> Some x
   | [] -> None
 
-let to_result err = function
-  | None -> Result.Error err
-  | Some x -> Result.Ok x
+let[@inline] to_result err = function
+  | None -> Error err
+  | Some x -> Ok x
 
-let to_result_lazy err_fn = function
-  | None -> Result.Error (err_fn ())
-  | Some x -> Result.Ok x
+let[@inline] to_result_lazy err_fn = function
+  | None -> Error (err_fn ())
+  | Some x -> Ok x
 
-let of_result = function
-  | Result.Error _ -> None
-  | Result.Ok x -> Some x
+let[@inline] of_result = function
+  | Error _ -> None
+  | Ok x -> Some x
 
 module Infix = struct
   let (>|=) = (>|=)
@@ -209,7 +208,7 @@ let pp ppx out = function
   | None -> Format.pp_print_string out "None"
   | Some x -> Format.fprintf out "@[Some %a@]" ppx x
 
-let flatten = function
+let[@inline] flatten = function
   | Some x -> x
   | None -> None
 
@@ -219,7 +218,7 @@ let flatten = function
   flatten (Some (Some 1)) = Some 1
 *)
 
-let return_if b x =
+let[@inline] return_if b x =
   if b then
     Some x
   else

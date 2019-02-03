@@ -247,11 +247,11 @@ module Make(X : Hashtbl.HashedType)
 = struct
   include Hashtbl.Make(X)
 
-  let get tbl x =
+  let[@inline] get tbl x =
     try Some (find tbl x)
     with Not_found -> None
 
-  let get_or tbl x ~default =
+  let[@inline] get_or tbl x ~default =
     try find tbl x
     with Not_found -> default
 
@@ -292,12 +292,10 @@ module Make(X : Hashtbl.HashedType)
       else replace tbl x (n-by)
     with Not_found -> ()
 
-  let keys tbl k = iter (fun key _ -> k key) tbl
-
-  let values tbl k = iter (fun _ v -> k v) tbl
-
-  let keys_list tbl = fold (fun k _ a -> k::a) tbl []
-  let values_list tbl = fold (fun _ v a -> v::a) tbl []
+  let[@inline] keys tbl k = iter (fun key _ -> k key) tbl
+  let[@inline] values tbl k = iter (fun _ v -> k v) tbl
+  let[@inline] keys_list tbl = fold (fun k _ a -> k::a) tbl []
+  let[@inline] values_list tbl = fold (fun _ v a -> v::a) tbl []
 
   let map_list f h =
     fold
@@ -319,9 +317,9 @@ module Make(X : Hashtbl.HashedType)
       add tbl k v;
       v
 
-  let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
+  let[@inline] to_seq tbl k = iter (fun key v -> k (key,v)) tbl
 
-  let add_seq tbl seq = seq (fun (k,v) -> add tbl k v)
+  let[@inline] add_seq tbl seq = seq (fun (k,v) -> add tbl k v)
 
   let of_seq seq =
     let tbl = create 32 in

@@ -10,15 +10,15 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-include Result
-
-type (+'good, +'bad) t = ('good, 'bad) Result.result =
+type (+'good, +'bad) t = ('good, 'bad) Pervasives.result =
   | Ok of 'good
   | Error of 'bad
 
-let return x = Ok x
+type ('a,'b) result = ('a,'b) t
 
-let fail s = Error s
+let[@inline] return x = Ok x
+
+let[@inline] fail s = Error s
 
 let fail_printf format =
   let buf = Buffer.create 64 in
@@ -67,23 +67,23 @@ let of_exn_trace e =
   in
   Error res
 
-let map f e = match e with
+let[@inline] map f e = match e with
   | Ok x -> Ok (f x)
   | Error s -> Error s
 
-let map_err f e = match e with
+let[@inline] map_err f e = match e with
   | Ok _ as res -> res
   | Error y -> Error (f y)
 
-let map2 f g e = match e with
+let[@inline] map2 f g e = match e with
   | Ok x -> Ok (f x)
   | Error s -> Error (g s)
 
-let iter f e = match e with
+let[@inline] iter f e = match e with
   | Ok x -> f x
   | Error _ -> ()
 
-let iter_err f e = match e with
+let[@inline] iter_err f e = match e with
   | Ok _ -> ()
   | Error err -> f err
 
@@ -98,15 +98,15 @@ let iter_err f e = match e with
 
 exception Get_error
 
-let get_exn = function
+let[@inline] get_exn = function
   | Ok x -> x
   | Error _ -> raise Get_error
 
-let get_or e ~default = match e with
+let[@inline] get_or e ~default = match e with
   | Ok x -> x
   | Error _ -> default
 
-let get_or_failwith = function
+let[@inline] get_or_failwith = function
   | Ok x -> x
   | Error msg -> failwith msg
 
@@ -115,38 +115,38 @@ let get_or_failwith = function
   try ignore @@ get_or_failwith (Error "e"); false with Failure msg -> msg = "e"
 *)
 
-let map_or f e ~default = match e with
+let[@inline] map_or f e ~default = match e with
   | Ok x -> f x
   | Error _ -> default
 
-let catch e ~ok ~err = match e with
+let[@inline] catch e ~ok ~err = match e with
   | Ok x -> ok x
   | Error y -> err y
 
-let flat_map f e = match e with
+let[@inline] flat_map f e = match e with
   | Ok x -> f x
   | Error s -> Error s
 
-let (>|=) e f = map f e
+let[@inline] (>|=) e f = map f e
 
-let (>>=) e f = flat_map f e
+let[@inline] (>>=) e f = flat_map f e
 
 let equal ~err eq a b = match a, b with
   | Ok x, Ok y -> eq x y
   | Error s, Error s' -> err s s'
   | _ -> false
 
-let compare ~err cmp a b = match a, b with
+let[@inline] compare ~err cmp a b = match a, b with
   | Ok x, Ok y -> cmp x y
   | Ok _, _  -> 1
   | _, Ok _ -> -1
   | Error s, Error s' -> err s s'
 
-let fold ~ok ~error x = match x with
+let[@inline] fold ~ok ~error x = match x with
   | Ok x -> ok x
   | Error s -> error s
 
-let fold_ok f acc r = match r with
+let[@inline] fold_ok f acc r = match r with
   | Ok x -> f acc x
   | Error _ -> acc
 
@@ -155,37 +155,37 @@ let fold_ok f acc r = match r with
   40 (fold_ok (+) 40 (Error "foo"))
 *)
 
-let is_ok = function
+let[@inline] is_ok = function
   | Ok _ -> true
   | Error _ -> false
 
-let is_error = function
+let[@inline] is_error = function
   | Ok _ -> false
   | Error _ -> true
 
 (** {2 Wrappers} *)
 
-let guard f =
+let[@inline] guard f =
   try Ok (f ())
   with e -> Error e
 
-let guard_str f =
+let[@inline] guard_str f =
   try Ok (f())
   with e -> of_exn e
 
-let guard_str_trace f =
+let[@inline] guard_str_trace f =
   try Ok (f())
   with e -> of_exn_trace e
 
-let wrap1 f x =
+let[@inline] wrap1 f x =
   try return (f x)
   with e -> Error e
 
-let wrap2 f x y =
+let[@inline] wrap2 f x y =
   try return (f x y)
   with e -> Error e
 
-let wrap3 f x y z =
+let[@inline] wrap3 f x y z =
   try return (f x y z)
   with e -> Error e
 
@@ -193,7 +193,7 @@ let wrap3 f x y z =
 
 let pure = return
 
-let (<*>) f x = match f with
+let[@inline] (<*>) f x = match f with
   | Error s -> fail s
   | Ok f -> map f x
 
@@ -232,7 +232,7 @@ let fold_seq f acc seq =
   with LocalExit ->
   match !err with None -> assert false | Some s -> Error s
 
-let fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
+let[@inline] fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
 
 (** {2 Misc} *)
 
@@ -279,7 +279,7 @@ module Traverse(M : MONAD) = struct
     | Error s -> M.return (Error s)
     | Ok x -> f x >>= fun y -> M.return (Ok y)
 
-  let sequence_m m = map_m (fun x->x) m
+  let[@inline] sequence_m m = map_m (fun x->x) m
 
   let fold_m f acc e = match e with
     | Error _ -> M.return acc
@@ -293,19 +293,19 @@ module Traverse(M : MONAD) = struct
         | Ok x -> M.return (Ok x)
         | Error e -> retry (n-1) (e::acc)
     in retry n []
-end
+end[@@inline]
 
 (** {2 Conversions} *)
 
-let to_opt = function
+let[@inline] to_opt = function
   | Ok x -> Some x
   | Error _ -> None
 
-let of_opt = function
+let[@inline] of_opt = function
   | None -> Error "of_opt"
   | Some x -> Ok x
 
-let to_seq e k = match e with
+let[@inline] to_seq e k = match e with
   | Ok x -> k x
   | Error _ -> ()
 

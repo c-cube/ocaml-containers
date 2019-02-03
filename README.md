@@ -167,7 +167,7 @@ per-version doc [there](http://c-cube.github.io/ocaml-containers/).
 
 ## Build
 
-You will need OCaml `>=` 4.02.0.
+You will need OCaml `>=` 4.03.0, `dune`, `base-bytes`.
 
 ### Via opam
 

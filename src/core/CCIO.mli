@@ -36,7 +36,7 @@
 
 *)
 
-type 'a or_error = ('a, string) Result.result
+type 'a or_error = ('a, string) result
 type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library. *)
 
 (** {2 Input} *)

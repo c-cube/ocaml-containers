@@ -3,7 +3,7 @@
 
 (** {1 Simple S-expression parsing/printing} *)
 
-type 'a or_error = ('a, string) Result.result
+type 'a or_error = ('a, string) result
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
@@ -147,7 +147,7 @@ let _with_in filename f =
     x
   with e ->
     close_in ic;
-    Result.Error (Printexc.to_string e)
+    Error (Printexc.to_string e)
 
 (** A parser of ['a] can return [Yield x] when it parsed a value,
     or [Fail e] when a parse error was encountered, or
@@ -221,9 +221,9 @@ let parse_string s : t or_error =
   let buf = Lexing.from_string s in
   let d = Decoder.of_lexbuf buf in
   match Decoder.next d with
-    | End -> Result.Error "unexpected end of file"
-    | Yield x -> Result.Ok x
-    | Fail s -> Result.Error s
+    | End -> Error "unexpected end of file"
+    | Yield x -> Ok x
+    | Fail s -> Error s
 
 (*$T
   CCResult.to_opt (parse_string "(abc d/e/f \"hello \\\" () world\" )") <> None
@@ -272,17 +272,17 @@ let parse_chan ic : sexp or_error =
   let buf = Lexing.from_channel ic in
   let d = Decoder.of_lexbuf buf in
   match Decoder.next d with
-    | End -> Result.Error "unexpected end of file"
-    | Yield x -> Result.Ok x
-    | Fail e -> Result.Error e
+    | End -> Error "unexpected end of file"
+    | Yield x -> Ok x
+    | Fail e -> Error e
 
 let parse_chan_list ic =
   let buf = Lexing.from_channel ic in
   let d = Decoder.of_lexbuf buf in
   let rec iter acc = match Decoder.next d with
-    | End -> Result.Ok (List.rev acc)
+    | End -> Ok (List.rev acc)
     | Yield x -> iter (x::acc)
-    | Fail e -> Result.Error e
+    | Fail e -> Error e
   in
   iter []
 
@@ -291,8 +291,8 @@ let parse_chan_gen ic =
   let d = Decoder.of_lexbuf buf in
   fun () -> match Decoder.next d with
     | End -> None
-    | Fail e -> Some (Result.Error e)
-    | Yield x -> Some (Result.Ok x)
+    | Fail e -> Some (Error e)
+    | Yield x -> Some (Ok x)
 
 let parse_file filename = _with_in filename parse_chan
 

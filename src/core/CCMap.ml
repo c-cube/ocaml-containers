@@ -108,19 +108,19 @@ module Make(O : Map.OrderedType) = struct
          | Some v1, Some v2 -> f k v1 v2)
       a b
 
-  let choose_opt m =
+  let[@inline] choose_opt m =
     try Some (M.choose m)
     with Not_found -> None
 
-  let find_opt k m =
+  let[@inline] find_opt k m =
     try Some (M.find k m)
     with Not_found -> None
 
-  let max_binding_opt m =
+  let[@inline] max_binding_opt m =
     try Some (M.max_binding m)
     with Not_found -> None
 
-  let min_binding_opt m =
+  let[@inline] min_binding_opt m =
     try Some (M.min_binding m)
     with Not_found -> None
 
@@ -140,7 +140,7 @@ module Make(O : Map.OrderedType) = struct
     with Find_binding_exit ->
       !res
 
-  let find_first f m = match find_first_opt f m with
+  let[@inline] find_first f m = match find_first_opt f m with
     | None -> raise Not_found
     | Some (k,v) -> k, v
 
@@ -152,7 +152,7 @@ module Make(O : Map.OrderedType) = struct
       m;
     !res
 
-  let find_last f m = match find_last_opt f m with
+  let[@inline] find_last f m = match find_last_opt f m with
     | None -> raise Not_found
     | Some (k,v) -> k, v
 
@@ -160,7 +160,7 @@ module Make(O : Map.OrderedType) = struct
 
   let get = find_opt
 
-  let get_or k m ~default =
+  let[@inline] get_or k m ~default =
     try find k m
     with Not_found -> default
 
@@ -187,22 +187,22 @@ module Make(O : Map.OrderedType) = struct
     s (fun (k,v) -> m := add k v !m);
     !m
 
-  let of_seq s = add_seq empty s
+  let[@inline] of_seq s = add_seq empty s
 
-  let to_seq m yield =
+  let[@inline] to_seq m yield =
     iter (fun k v -> yield (k,v)) m
 
-  let keys m yield =
+  let[@inline] keys m yield =
     iter (fun k _ -> yield k) m
 
-  let values m yield =
+  let[@inline] values m yield =
     iter (fun _ v -> yield v) m
 
   let add_list m l = List.fold_left (fun m (k,v) -> add k v m) m l
 
-  let of_list l = add_list empty l
+  let[@inline] of_list l = add_list empty l
 
-  let to_list m =
+  let[@inline] to_list m =
     fold (fun k v acc -> (k,v)::acc) m []
 
   let pp ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =

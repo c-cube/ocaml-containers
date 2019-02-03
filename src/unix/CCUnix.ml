@@ -3,7 +3,7 @@
 
 (** {1 High-level Functions on top of Unix} *)
 
-type 'a or_error = ('a, string) Result.result
+type 'a or_error = ('a, string) result
 type 'a gen = unit -> 'a option
 
 (** {2 Calling Commands} *)

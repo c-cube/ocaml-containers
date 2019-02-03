@@ -23,22 +23,22 @@ type 'a vector = ('a, rw) t
 
 type 'a ro_vector = ('a, ro) t
 
-let freeze v = {
+let[@inline] freeze v = {
   size=v.size;
   vec=v.vec;
 }
 
-let freeze_copy v = {
+let[@inline] freeze_copy v = {
   size=v.size;
   vec=Array.sub v.vec 0 v.size;
 }
 
-let create () = {
+let[@inline] create () = {
   size = 0;
   vec = [| |];
 }
 
-let create_with ?(capacity=128) x = {
+let[@inline] create_with ?(capacity=128) x = {
   size = 0;
   vec = Array.make capacity x;
 }
@@ -47,7 +47,7 @@ let create_with ?(capacity=128) x = {
   (create_with ~capacity:200 1 |> capacity) >= 200
 *)
 
-let return x = {
+let[@inline] return x = {
   size=1;
   vec= [| x |];
 }
@@ -57,22 +57,22 @@ let return x = {
   return 42 |> length = 1
 *)
 
-let make n x = {
+let[@inline] make n x = {
   size=n;
   vec=Array.make n x;
 }
 
-let init n f = {
+let[@inline] init n f = {
   size=n;
   vec=Array.init n f;
 }
 
 (* is the underlying array empty? *)
-let array_is_empty_ v =
+let[@inline] array_is_empty_ v =
   Array.length v.vec = 0
 
 (* assuming the underlying array isn't empty, resize it *)
-let resize_ v newcapacity =
+let[@inline never] resize_ v newcapacity =
   assert (newcapacity >= v.size);
   assert (not (array_is_empty_ v));
   let new_vec = Array.make newcapacity v.vec.(0) in
@@ -121,7 +121,7 @@ let ensure v size =
     ensure_assuming_not_empty_  v ~size
   )
 
-let clear v =
+let[@inline] clear v =
   v.size <- 0
 
 (*$R
@@ -132,13 +132,13 @@ let clear v =
   OUnit.assert_bool "empty_after_clear" (Sequence.is_empty (to_seq v));
 *)
 
-let is_empty v = v.size = 0
+let[@inline] is_empty v = v.size = 0
 
-let push_unsafe_ v x =
+let[@inline] push_unsafe_ v x =
   Array.unsafe_set v.vec v.size x;
   v.size <- v.size + 1
 
-let push v x =
+let[@inline] push v x =
   if v.size = Array.length v.vec then grow_with_ v ~filler:x;
   push_unsafe_ v x
 
@@ -184,11 +184,11 @@ let append a b =
   OUnit.assert_equal (Sequence.to_array Sequence.(6 -- 10)) (to_array b);
 *)
 
-let get v i =
+let[@inline] get v i =
   if i < 0 || i >= v.size then invalid_arg "CCVector.get";
   Array.unsafe_get v.vec i
 
-let set v i x =
+let[@inline] set v i x =
   if i < 0 || i >= v.size then invalid_arg "CCVector.set";
   Array.unsafe_set v.vec i x
 
@@ -200,7 +200,7 @@ let remove v i =
   (* remove one element *)
   v.size <- v.size - 1
 
-let append_seq a seq =
+let[@inline] append_seq a seq =
   seq (fun x -> push a x)
 
 let append_array a b =
@@ -330,14 +330,14 @@ let pop_exn v =
   if new_size > 0 then v.vec.(new_size) <- v.vec.(0); (* free last element *)
   x
 
-let pop v =
+let[@inline] pop v =
   try Some (pop_exn v)
   with Empty -> None
 
-let top v =
+let[@inline] top v =
   if v.size = 0 then None else Some v.vec.(v.size-1)
 
-let top_exn v =
+let[@inline] top_exn v =
   if v.size = 0 then raise Empty;
   v.vec.(v.size-1)
 
@@ -609,7 +609,7 @@ let for_all p v =
     for_all f v = List.for_all f l)
 *)
 
-let member ~eq x v =
+let[@inline] member ~eq x v =
   exists (eq x) v
 
 let find_internal_ p v =
@@ -734,9 +734,9 @@ let flat_map_list f v =
     v;
   v'
 
-let (>>=) x f = flat_map f x
+let[@inline] (>>=) x f = flat_map f x
 
-let (>|=) x f = map f x
+let[@inline] (>|=) x f = map f x
 
 let rev_in_place v =
   if v.size > 0
@@ -791,13 +791,13 @@ let rev_iter f v =
     (fun f->rev_iter f v) |> Sequence.to_list = List.rev l)
 *)
 
-let size v = v.size
+let[@inline] size v = v.size
 
-let length v = v.size
+let[@inline] length v = v.size
 
-let capacity v = Array.length v.vec
+let[@inline] capacity v = Array.length v.vec
 
-let unsafe_get_array v = v.vec
+let[@inline] unsafe_get_array v = v.vec
 
 let of_seq ?(init=create ()) seq =
   append_seq init seq;
@@ -807,7 +807,7 @@ let of_seq ?(init=create ()) seq =
   of_seq Sequence.(1 -- 10) |> to_list = CCList.(1 -- 10)
 *)
 
-let to_seq v k = iter k v
+let[@inline] to_seq v k = iter k v
 
 let to_seq_rev v k =
   let n = v.size in
@@ -904,7 +904,7 @@ let of_list l = match l with
   of_list CCList.(1--300_000) |> to_list = CCList.(1--300_000)
 *)
 
-let to_array v =
+let[@inline] to_array v =
   Array.sub v.vec 0 v.size
 
 let to_list v =

@@ -392,7 +392,7 @@ val keep_some : 'a option t -> 'a t
     @since 1.3, but only
     @since 2.2 with labels *)
 
-val keep_ok : ('a, _) Result.result t -> 'a t
+val keep_ok : ('a, _) result t -> 'a t
 (** [keep_ok l] retains only elements of the form [Ok x].
     @since 1.3, but only
     @since 2.2 with labels *)
@@ -403,7 +403,7 @@ val all_some : 'a option t -> 'a t option
     @since 1.3, but only
     @since 2.2 with labels *)
 
-val all_ok : ('a, 'err) Result.result t -> ('a t, 'err) Result.result
+val all_ok : ('a, 'err) result t -> ('a t, 'err) result
 (** [all_ok l] returns [Ok l'] if all elements of [l] are of the form [Ok x],
     or [Error e] otherwise (with the first error met).
     @since 1.3, but only

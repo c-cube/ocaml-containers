@@ -73,9 +73,9 @@ Now we can parse strings using `expr`:
 
 ```ocaml
 # P.parse_string expr "4*1+2";; (* Ok 6 *)
-- : int P.or_error = Result.Ok 6
+- : int P.or_error = Ok 6
 
 # P.parse_string expr "4*(1+2)";; (* Ok 12 *)
-- : int P.or_error = Result.Ok 12
+- : int P.or_error = Ok 12
 ```
 

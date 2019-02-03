@@ -25,7 +25,7 @@ let nth_opt l n =
     nth_opt l i = get_at_idx i l)
 *)
 
-let rec find_opt p l = match l with
+let[@unroll 2] rec find_opt p l = match l with
   | [] -> None
   | x :: _ when p x -> Some x
   | _ :: tl -> find_opt p tl
@@ -70,7 +70,7 @@ include List
 
 let empty = []
 
-let is_empty = function
+let[@inline] is_empty = function
   | [] -> true
   | _::_ -> false
 
@@ -123,11 +123,11 @@ let map f l =
     List.rev (List.rev_map f l) = map f l)
 *)
 
-let (>|=) l f = map f l
+let[@inline] (>|=) l f = map f l
 
 let direct_depth_append_ = 10_000
 
-let cons x l = x::l
+let[@inline] cons x l = x::l
 
 let append l1 l2 =
   let rec direct i l1 l2 = match l1 with
@@ -150,7 +150,7 @@ let (@) = append
   (1-- 10_000) @ (10_001 -- 20_000) = 1 -- 20_000
 *)
 
-let cons_maybe o l = match o with
+let[@inline] cons_maybe o l = match o with
   | Some x -> x :: l
   | None -> l
 
@@ -522,15 +522,15 @@ let split l =
     split l = List.split l)
 *)
 
-let return x = [x]
+let[@inline] return x = [x]
 
-let (>>=) l f = flat_map f l
+let[@inline] (>>=) l f = flat_map f l
 
 let (<$>) = map
 
 let pure = return
 
-let (<*>) funs l = product (fun f x -> f x) funs l
+let[@inline] (<*>) funs l = product (fun f x -> f x) funs l
 
 let cartesian_product l =
   (* [left]: elements picked so far
@@ -593,7 +593,7 @@ let sorted_merge ~cmp l1 l2 =
     List.length (sorted_merge ~cmp:CCInt.compare l1 l2) = List.length l1 + List.length l2)
 *)
 
-let sort_uniq ~cmp l = List.sort_uniq cmp l
+let[@inline] sort_uniq ~cmp l = List.sort_uniq cmp l
 
 (*$T
   sort_uniq ~cmp:CCInt.compare [1;2;5;3;6;1;4;2;3] = [1;2;3;4;5;6]
@@ -748,7 +748,7 @@ let rec drop n l = match l with
   | _ when n=0 -> l
   | _::l' -> drop (n-1) l'
 
-let hd_tl = function
+let[@inline] hd_tl = function
   | [] -> failwith "hd_tl"
   | x :: l -> x, l
 
@@ -757,7 +757,7 @@ let hd_tl = function
   hd_tl [1;2;3] = (1, [2;3])
 *)
 
-let take_drop n l = take n l, drop n l
+let[@inline] take_drop n l = take n l, drop n l
 
 (*$Q
   (Q.pair (Q.list Q.small_int) Q.int) (fun (l,i) -> \
@@ -909,11 +909,11 @@ let last n l =
   let len = List.length l in
   if len < n then l else drop (len-n) l
 
-let head_opt = function
+let[@inline] head_opt = function
   | [] -> None
   | x::_ -> Some x
 
-let tail_opt = function
+let[@inline] tail_opt = function
   | [] -> None
   | _ :: tail -> Some tail
 
@@ -951,7 +951,7 @@ let find_pred_exn p l = match find_pred p l with
 *)
 
 let find_mapi f l =
-  let rec aux f i = function
+  let[@specialise] rec aux f i = function
     | [] -> None
     | x::l' ->
       match f i x with
@@ -959,7 +959,7 @@ let find_mapi f l =
         | None -> aux f (i+1) l'
   in aux f 0 l
 
-let find_map f l = find_mapi (fun _ -> f) l
+let[@inline] find_map f l = find_mapi (fun _ -> f) l
 
 let find_idx p l = find_mapi (fun i x -> if p x then Some (i, x) else None) l
 
@@ -1003,8 +1003,8 @@ let keep_some l = filter_map (fun x->x) l
 let keep_ok l =
   filter_map
     (function
-      | Result.Ok x -> Some x
-      | Result.Error _ -> None)
+      | Ok x -> Some x
+      | Error _ -> None)
     l
 
 let all_some l =
@@ -1020,14 +1020,14 @@ let all_some l =
 let all_ok l =
   let err = ref None in
   try
-    Result.Ok
+    Ok
       (map
-         (function Result.Ok x -> x | Result.Error e -> err := Some e; raise Exit)
+         (function Ok x -> x | Error e -> err := Some e; raise Exit)
          l)
   with Exit ->
     begin match !err with
       | None -> assert false
-      | Some e -> Result.Error e
+      | Some e -> Error e
     end
 
 let group_by (type k) ?(hash=Hashtbl.hash) ?(eq=Pervasives.(=)) l =
@@ -1216,11 +1216,11 @@ let inter ~eq l1 l2 =
 
 let mapi f l =
   let r = ref 0 in
-  map
+  (map[@specialised])
     (fun x ->
        let y = f !r x in
-       incr r; y
-    ) l
+       incr r; y)
+    l
 
 (*$T
   mapi (fun i x -> i*x) [10;10;10] = [0;10;20]
@@ -1527,7 +1527,7 @@ let remove_assoc = Assoc.remove
 module Ref = struct
   type 'a t = 'a list ref
 
-  let push l x = l := x :: !l
+  let[@inline] push l x = l := x :: !l
 
   let pop l = match !l with
     | [] -> None
@@ -1541,13 +1541,13 @@ module Ref = struct
       l := tail;
       x
 
-  let create() = ref []
+  let[@inline] create() = ref []
 
-  let clear l = l := []
+  let[@inline] clear l = l := []
 
-  let lift f l = f !l
+  let[@inline] lift f l = f !l
 
-  let push_list r l =
+  let[@inline] push_list r l =
     r := List.rev_append l !r
 
   (*$T
@@ -1582,7 +1582,7 @@ module Traverse(M : MONAD) = struct
       tl' >>= fun tl' ->
       M.return (x'::tl')
 
-  let sequence_m l = map_m (fun x->x) l
+  let[@inline] sequence_m l = map_m (fun x->x) l
 
   let rec fold_m f acc l = match l with
     | [] -> return acc
@@ -1590,7 +1590,7 @@ module Traverse(M : MONAD) = struct
       f acc x
       >>= fun acc' ->
       fold_m f acc' l'
-end
+end [@@inline]
 
 (** {2 Conversions} *)
 
