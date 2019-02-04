@@ -6,7 +6,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 let equal (a:int) b = Pervasives.(=) a b
 
-let compare a b = compare a b
+let compare (a:int) b = compare a b
 
 let hash i = i land max_int
 
