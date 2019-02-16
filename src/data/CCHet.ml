@@ -109,6 +109,10 @@ module Tbl = struct
 
   let add t k v = add_pair_ t (Pair (k,v))
 
+  let remove (type a) t (k:a Key.t) =
+    let module K = (val k) in
+    M.remove t K.id
+
   let length t = M.length t
 
   let iter f t = M.iter (fun _ pair -> f (pair_of_e_pair pair)) t
@@ -167,6 +171,10 @@ module Map = struct
   let add (type a) (k : a Key.t) v t =
     let module K = (val k) in
     add_e_pair_ (E_pair (k, K.Store v)) t
+    
+  let remove (type a) (k: a Key.t) t =
+    let module K = (val k) in
+    M.remove K.id t
 
   let cardinal t = M.cardinal t
 

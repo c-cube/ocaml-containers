@@ -33,6 +33,8 @@ module Tbl : sig
 
   val add : t -> 'a Key.t -> 'a -> unit
 
+  val remove : t -> _ Key.t -> unit
+
   val length : t -> int
 
   val find : t -> 'a Key.t -> 'a option
@@ -64,6 +66,8 @@ module Map : sig
   val mem : _ Key.t -> t -> bool
 
   val add : 'a Key.t -> 'a -> t -> t
+
+  val remove : _ Key.t -> t -> t
 
   val length : t -> int
 
