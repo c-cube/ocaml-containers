@@ -515,10 +515,10 @@ let shuffle_with st a =
 let rec _to_klist a i j () =
   if i=j then `Nil else `Cons (a.(i), _to_klist a (i+1) j)
 
-let random_choose a st =
+let random_choose a =
   let n = Array.length a in
   if n = 0 then raise Not_found;
-  a.(Random.State.int st n)
+  fun st -> a.(Random.State.int st n)
 
 let random_len n g st =
   Array.init n (fun _ -> g st)
