@@ -13,7 +13,6 @@ Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
 
 [![Build Status](https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master)](https://travis-ci.org/c-cube/ocaml-containers)
-[![Build Status](https://ci.appveyor.com/api/projects/status/tftx9q8auil4cv4c?svg=true)](https://ci.appveyor.com/project/c-cube/ocaml-containers)
 
 ## Quick Summary
 
