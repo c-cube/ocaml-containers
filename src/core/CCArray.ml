@@ -517,7 +517,7 @@ let rec _to_klist a i j () =
 
 let random_choose a =
   let n = Array.length a in
-  if n = 0 then raise Not_found;
+  if n = 0 then invalid_arg "Array.random_choose";
   fun st -> a.(Random.State.int st n)
 
 let random_len n g st =
