@@ -117,24 +117,31 @@ See issues
 To print values with types defined in `containers` in the bytecode debugger,
 you first have to load the appropriate bytecode archives. After starting a
 session, e.g. `ocamldebug your_program.bc`,
+
 ```ocaml
 # load_printer containers_monomorphic.cma
 # load_printer containers.cma
 ```
+
 For these archives to be found, you may have to `run` the program first. Now
 printing functions that have the appropriate type `Format.formatter -> 'a ->
 unit` can be installed. For example,
+
 ```ocaml
-install_printer Containers.Int.pp
+# install_printer Containers.Int.pp
 ```
+
 However, printer combinators are not easily handled by `ocamldebug`. For
-instance `install_printer Containers.(List.pp Int.pp)` will not work out of the
-box. You can make this work by writing a short module which defines ready-made
-combined printing functions, and loading that in ocamldebug. For instance
+instance `# install_printer Containers.(List.pp Int.pp)` will *not* work out of
+the box. You can make this work by writing a short module which defines
+ready-made combined printing functions, and loading that in ocamldebug. For
+instance
+
 ```ocaml
 module M = struct let pp_int_list = Containers.(List.pp Int.pp) end
 ```
-loaded via `load_printer m.cmo` and installed as `install_printer
+
+loaded via `# load_printer m.cmo` and installed as `# install_printer
 M.pp_int_list`.
 
 
