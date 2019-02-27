@@ -136,11 +136,13 @@ instance `# install_printer Containers.(List.pp Int.pp)` will *not* work out of
 the box. You can make this work by writing a short module which defines
 ready-made combined printing functions, and loading that in ocamldebug. For
 instance 
-```
-ocaml module M = struct 
-let pp_int_list = Containers.(List.pp Int.pp)
+
+```ocaml non-deterministic=command
+module M = struct 
+	let pp_int_list = Containers.(List.pp Int.pp)
 end
 ```
+
 loaded via `# load_printer m.cmo` and installed as `# install_printer
 M.pp_int_list`.
 
