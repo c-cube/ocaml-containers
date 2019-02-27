@@ -139,7 +139,7 @@ instance
 
 ```ocaml non-deterministic=command
 module M = struct 
-	let pp_int_list = Containers.(List.pp Int.pp)
+let pp_int_list = Containers.(List.pp Int.pp)
 end
 ```
 
