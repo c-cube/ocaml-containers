@@ -93,13 +93,9 @@ let () =
   let   labelled_filename = Sys.argv.(1) in (* CCArrayLabels.mli *)
   let unlabelled_filename = Sys.argv.(2) in (* CCArray.ml *)
   let labelled_name = (* ArrayLabels *)
-    let basename =
-      Compenv.module_of_filename Format.err_formatter
-        labelled_filename
-        labelled_filename
-    in
-    assert (basename.[0] = 'C' && basename.[1] = 'C');
-    String.sub basename 2 (String.length basename - 2)
+    assert (labelled_filename.[0] = 'C' && labelled_filename.[1] = 'C');
+    let dot = String.rindex labelled_filename '.' in
+    String.sub labelled_filename 2 (dot - 2)
   in
   let unlabelled_name = (* Array *)
     replace_first "Labels" "" labelled_name
