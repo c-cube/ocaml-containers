@@ -1,11 +1,13 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
+open CCShims_
+
 type t = bool
 
-let equal (a:bool) b = Pervasives.(=) a b
+let equal (a:bool) b = Stdlib.(=) a b
 
-let compare (a:bool) b = Pervasives.compare a b
+let compare (a:bool) b = Stdlib.compare a b
 
 let negate = not
 

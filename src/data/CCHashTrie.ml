@@ -7,7 +7,7 @@
     let g = Q.(list (pair small_int small_int)) in
     Q.map_same_type
       (fun l ->
-        CCList.sort_uniq ~cmp:(fun a b -> Pervasives.compare (fst a)(fst b)) l
+        CCList.sort_uniq ~cmp:(fun a b -> Stdlib.compare (fst a)(fst b)) l
       ) g
   ;;
 *)
@@ -23,7 +23,7 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 module Transient = struct
   type t = { mutable frozen: bool }
   let empty = {frozen=true} (* special value *)
-  let equal a b = Pervasives.(==) a b
+  let equal a b = Stdlib.(==) a b
   let create () = {frozen=false}
   let active st =not st.frozen
   let frozen st = st.frozen
@@ -232,13 +232,13 @@ module A_SPARSE = struct
       (* insert at [real_idx] in a new array *)
       let bits = a.bits lor idx in
       let n = Array.length a.arr in
-      let arr = Array.make Pervasives.(n+1) x in
+      let arr = Array.make Stdlib.(n+1) x in
       arr.(real_idx) <- x;
       if real_idx>0 then (
         Array.blit a.arr 0 arr 0 real_idx;
       );
       if real_idx<n then (
-        let open Pervasives in
+        let open Stdlib in
         Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
       );
       {a with bits; arr}
@@ -264,12 +264,12 @@ module A_SPARSE = struct
       (* insert at [real_idx] in a new array *)
       let bits = a.bits lor idx in
       let n = Array.length a.arr in
-      let arr = Array.make Pervasives.(n+1) x in
+      let arr = Array.make Stdlib.(n+1) x in
       if real_idx>0 then (
         Array.blit a.arr 0 arr 0 real_idx;
       );
       if real_idx<n then (
-        let open Pervasives in
+        let open Stdlib in
         Array.blit a.arr real_idx arr (real_idx+1) (n-real_idx);
       );
       {a with bits; arr}
@@ -291,8 +291,8 @@ module A_SPARSE = struct
       (* remove at [real_idx] *)
       let bits = a.bits land (lnot idx) in
       let n = Array.length a.arr in
-      let arr = if n=1 then [||] else Array.make Pervasives.(n-1) a.arr.(0) in
-      let open Pervasives in
+      let arr = if n=1 then [||] else Array.make Stdlib.(n-1) a.arr.(0) in
+      let open Stdlib in
       if real_idx > 0 then (
         Array.blit a.arr 0 arr 0 real_idx;
       );
@@ -329,7 +329,7 @@ module Make(Key : KEY)
     let make = Key.hash
     let zero = 0
     let is_0 h = h = 0
-    let equal : int -> int -> bool = Pervasives.(=)
+    let equal : int -> int -> bool = Stdlib.(=)
     let rem h = h land (A.length - 1)
     let quotient h = h lsr A.length_log
   end
@@ -496,7 +496,7 @@ module Make(Key : KEY)
     add_ ~id k v ~h:(hash_ k) m
 
   (*$R
-    let lsort = List.sort Pervasives.compare in
+    let lsort = List.sort Stdlib.compare in
     let m = M.of_list [1, 1; 2, 2] in
     let id = Transient.create() in
     let m' = M.add_mut ~id 3 3 m in
@@ -608,7 +608,7 @@ module Make(Key : KEY)
       | Some _ -> Some 0
       ) m
     in
-    assert_equal [1,1; 2,2; 4,4; 5,5] (M.to_list m' |> List.sort Pervasives.compare);
+    assert_equal [1,1; 2,2; 4,4; 5,5] (M.to_list m' |> List.sort Stdlib.compare);
   *)
 
   let iter ~f t =
@@ -643,7 +643,7 @@ module Make(Key : KEY)
     let l = CCList.(1 -- 10 |> map (fun x->x,x)) in  \
     M.of_list l \
       |> M.fold ~f:(fun acc x y -> (x,y)::acc) ~x:[] \
-      |> List.sort Pervasives.compare = l
+      |> List.sort Stdlib.compare = l
   *)
 
   let cardinal m = fold ~f:(fun n _ _ -> n+1) ~x:0 m
@@ -672,9 +672,9 @@ module Make(Key : KEY)
 
   (*$Q
     _listuniq (fun l -> \
-      (List.sort Pervasives.compare l) = \
+      (List.sort Stdlib.compare l) = \
         (l |> Iter.of_list |> M.of_seq |> M.to_seq |> Iter.to_list \
-          |> List.sort Pervasives.compare) )
+          |> List.sort Stdlib.compare) )
   *)
 
   let rec add_gen_mut ~id m g = match g() with
@@ -716,9 +716,9 @@ module Make(Key : KEY)
 
   (*$Q
     _listuniq (fun l -> \
-      (List.sort Pervasives.compare l) = \
+      (List.sort Stdlib.compare l) = \
         (l |> Gen.of_list |> M.of_gen |> M.to_gen |> Gen.to_list \
-          |> List.sort Pervasives.compare) )
+          |> List.sort Stdlib.compare) )
   *)
 
   let choose m = to_gen m ()

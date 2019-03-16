@@ -4,8 +4,7 @@
   (public_name containers.thread)
   (wrapped false)
   (optional)
-  (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string)
+  (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -open CCShims_)
   (ocamlopt_flags :standard (:include ../flambda.flags))
-  (libraries containers threads)
-  )
+  (libraries containers threads))
 

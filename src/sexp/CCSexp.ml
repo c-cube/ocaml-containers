@@ -3,6 +3,8 @@
 
 (** {1 Simple S-expression parsing/printing} *)
 
+open CCShims_
+
 type 'a or_error = ('a, string) Result.result
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -13,7 +15,7 @@ type t = [
 ]
 type sexp = t
 
-let equal_string (a : string) b = Pervasives.(=) a b
+let equal_string (a : string) b = Stdlib.(=) a b
 
 let rec equal a b = match a, b with
   | `Atom s1, `Atom s2 ->
@@ -22,7 +24,7 @@ let rec equal a b = match a, b with
     begin try List.for_all2 equal l1 l2 with Invalid_argument _ -> false end
   | `Atom _, _ | `List _, _ -> false
 
-let compare_string (a : string) b = Pervasives.compare a b
+let compare_string (a : string) b = Stdlib.compare a b
 
 let rec compare_list a b = match a, b with
   | [], [] -> 0

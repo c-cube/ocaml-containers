@@ -609,18 +609,18 @@ See [the extended documentation](doc/containers.md) for more examples.
 Beforehand, check `grep deprecated -r src` to see whether some functions
 can be removed.
 
-- `make test`
+- `make all`
 - update version in `containers.opam`
 - `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
 - check status of modules (`{b status: foo}`) and update if required;
    removed deprecated functions, etc.
+- `make unlabel` to see if labelled interfaces are up to date (requires compiler-libs)
 - update `CHANGELOG.adoc` (see its end to find the right git command)
 - commit the changes
 - `make test doc`
-- tag, and push both to github
-- `opam pin add containers https://github.com/c-cube/ocaml-containers.git#<release>`
-- new opam package: `opam publish prepare; opam publish submit`
-- re-generate doc: `make doc push_doc`
+- `export VERSION=<tag here>; git tag -f $VERSION; git push origin :$VERSION; git push origin $VERSION`
+- new opam package: `opam publish https://github.com/c-cube/ocaml-containers/archive/<tag>.tar.gz`
+- re-generate doc: `make doc` and put it into `gh-pages`
 
 ### List Authors
 

@@ -20,6 +20,7 @@ let do_not_test file =
   is_suffix ~sub:"containers.ml" file ||
   is_suffix ~sub:"containers_top.ml" file ||
   is_suffix ~sub:"mkflags.ml" file ||
+  is_suffix ~sub:"mkshims.ml" file ||
   is_suffix ~sub:"unlabel.ml" file ||
   is_suffix ~sub:"utop.ml" file
 
@@ -44,7 +45,7 @@ let run_qtest target =
     |> String.concat " "
   in
   let cmd =
-    Printf.sprintf "qtest extract --preamble 'open CCFun;;' -o %S %s 2>/dev/null"
+    Printf.sprintf "qtest extract --preamble 'open CCShims_;; open CCFun;;' -o %S %s 2>/dev/null"
       target files
   in
   exit (Sys.command cmd)

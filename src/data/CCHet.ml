@@ -139,7 +139,7 @@ end
 module Map = struct
   module M = Map.Make(struct
       type t = int
-      let compare (i:int) j = Pervasives.compare i j
+      let compare (i:int) j = Stdlib.compare i j
     end)
 
   type t = exn_pair M.t

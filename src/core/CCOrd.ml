@@ -3,10 +3,12 @@
 
 (** {1 Comparisons} *)
 
+open CCShims_
+
 type 'a t = 'a -> 'a -> int
 (** Comparison (total ordering) between two elements, that returns an int *)
 
-let compare = Pervasives.compare
+let compare = Stdlib.compare
 
 let opp f x y = - (f x y)
 
@@ -32,10 +34,10 @@ let equiv i j =
     if (equiv x y && equiv y z) then (equiv x z) else true)
 *)
 
-let int (x:int) y = Pervasives.compare x y
-let string (x:string) y = Pervasives.compare x y
-let bool (x:bool) y = Pervasives.compare x y
-let float (x:float) y = Pervasives.compare x y
+let int (x:int) y = Stdlib.compare x y
+let string (x:string) y = Stdlib.compare x y
+let bool (x:bool) y = Stdlib.compare x y
+let float (x:float) y = Stdlib.compare x y
 
 (*$T
   bool true false > 0
@@ -101,7 +103,7 @@ let rec list ord l1 l2 = match l1, l2 with
 
 (*$Q
   Q.(pair (list int)(list int)) CCOrd.(fun (l1,l2) -> \
-    equiv (list int l1 l2) (Pervasives.compare l1 l2))
+    equiv (list int l1 l2) (Stdlib.compare l1 l2))
 *)
 
 let array ord a1 a2 =

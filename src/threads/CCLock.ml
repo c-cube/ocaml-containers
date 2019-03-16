@@ -120,9 +120,9 @@ let set l x =
   let l = create 0 in set l 4; set l 5; get l = 5
 *)
 
-let incr l = update l Pervasives.succ
+let incr l = update l Stdlib.succ
 
-let decr l = update l Pervasives.pred
+let decr l = update l Stdlib.pred
 
 
 (*$R

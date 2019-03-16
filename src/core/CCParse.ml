@@ -3,6 +3,8 @@
 
 (** {1 Very Simple Parser Combinators} *)
 
+open CCShims_
+
 (*$inject
   module T = struct
     type tree = L of int | N of tree * tree
@@ -139,8 +141,8 @@ type state = {
 
 exception ParseError of parse_branch * (unit -> string)
 
-let char_equal (a : char) b = Pervasives.(=) a b
-let string_equal (a : string) b = Pervasives.(=) a b
+let char_equal (a : char) b = Stdlib.(=) a b
+let string_equal (a : string) b = Stdlib.(=) a b
 
 let rec string_of_branch l =
   let pp_s () = function

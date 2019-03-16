@@ -294,14 +294,15 @@ let mark_close_tag st ~or_else s =
 (* add color handling to formatter [ppf] *)
 let set_color_tag_handling ppf =
   let open Format in
-  let functions = pp_get_formatter_tag_functions ppf () in
+  let functions = CCShimsFormat_.pp_get_formatter_tag_functions ppf () in
   let st = Stack.create () in (* stack of styles *)
-  let functions' = {functions with
-                      mark_open_tag=(mark_open_tag st ~or_else:functions.mark_open_tag);
-                      mark_close_tag=(mark_close_tag st ~or_else:functions.mark_close_tag);
-                   } in
+  let functions' =
+    CCShimsFormat_.cc_update_funs functions
+      (mark_open_tag st)
+      (mark_close_tag st)
+  in
   pp_set_mark_tags ppf true; (* enable tags *)
-  pp_set_formatter_tag_functions ppf functions'
+  CCShimsFormat_.pp_set_formatter_tag_functions ppf functions'
 
 let set_color_default =
   let first = ref true in
@@ -326,14 +327,14 @@ let set_color_default =
 *)
 
 let with_color s pp out x =
-  Format.pp_open_tag out s;
+  CCShimsFormat_.pp_open_tag out s;
   pp out x;
-  Format.pp_close_tag out ()
+  CCShimsFormat_.pp_close_tag out ()
 
 let with_colorf s out fmt =
-  Format.pp_open_tag out s;
+  CCShimsFormat_.pp_open_tag out s;
   Format.kfprintf
-    (fun out -> Format.pp_close_tag out ())
+    (fun out -> CCShimsFormat_.pp_close_tag out ())
     out fmt
 
 (* c: whether colors are enabled *)
@@ -350,10 +351,10 @@ let with_color_ksf ~f s fmt =
   let buf = Buffer.create 64 in
   let out = Format.formatter_of_buffer buf in
   if !color_enabled then set_color_tag_handling out;
-  Format.pp_open_tag out s;
+  CCShimsFormat_.pp_open_tag out s;
   Format.kfprintf
     (fun out ->
-       Format.pp_close_tag out ();
+       CCShimsFormat_.pp_close_tag out ();
        Format.pp_print_flush out ();
        f (Buffer.contents buf))
     out fmt

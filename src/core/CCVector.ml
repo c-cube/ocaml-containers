@@ -317,7 +317,7 @@ let compare cmp v1 v2 =
   Q.(pair (small_list small_int)(small_list small_int)) (fun (l1,l2) ->
     let v1 = of_list l1 in
     let v2 = of_list l2 in
-    compare Pervasives.compare v1 v2 = CCList.compare Pervasives.compare l1 l2)
+    compare Stdlib.compare v1 v2 = CCList.compare Stdlib.compare l1 l2)
 *)
 
 exception Empty
@@ -422,9 +422,9 @@ let sort cmp v =
 (*$QR
   (gen Q.small_int) (fun v ->
     let v' = copy v in
-    sort' Pervasives.compare v';
+    sort' Stdlib.compare v';
     let l = to_list v' in
-    List.sort Pervasives.compare l = l
+    List.sort Stdlib.compare l = l
   )
 *)
 
@@ -452,14 +452,14 @@ let uniq_sort cmp v =
 
 (*$T
   let v = of_list [1;4;5;3;2;4;1] in \
-  uniq_sort Pervasives.compare v; to_list v = [1;2;3;4;5]
+  uniq_sort Stdlib.compare v; to_list v = [1;2;3;4;5]
 *)
 
 (*$QR & ~long_factor:10
   Q.(small_list small_int) (fun l ->
     let v = of_list l in
-    uniq_sort Pervasives.compare v;
-    to_list v = (CCList.sort_uniq ~cmp:Pervasives.compare l))
+    uniq_sort Stdlib.compare v;
+    to_list v = (CCList.sort_uniq ~cmp:Stdlib.compare l))
 *)
 
 let iter k v =

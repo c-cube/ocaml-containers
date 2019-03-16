@@ -3,6 +3,8 @@
 
 (** {1 Basic String Utils} *)
 
+open CCShims_
+
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -61,9 +63,9 @@ module type S = sig
   val pp : Format.formatter -> t -> unit
 end
 
-let equal (a:string) b = Pervasives.(=) a b
+let equal (a:string) b = Stdlib.(=) a b
 
-let compare_int (a : int) b = Pervasives.compare a b
+let compare_int (a : int) b = Stdlib.compare a b
 let compare = String.compare
 
 let hash s = Hashtbl.hash s
@@ -696,7 +698,7 @@ let prefix ~pre s =
   else (
     let rec check i =
       if i=len then true
-      else if Pervasives.(<>) (String.unsafe_get s i) (String.unsafe_get pre i) then false
+      else if Stdlib.(<>) (String.unsafe_get s i) (String.unsafe_get pre i) then false
       else check (i+1)
     in
     check 0
@@ -719,7 +721,7 @@ let suffix ~suf s =
     let off = String.length s - len in
     let rec check i =
       if i=len then true
-      else if Pervasives.(<>) (String.unsafe_get s (off+i)) (String.unsafe_get suf i) then false
+      else if Stdlib.(<>) (String.unsafe_get s (off+i)) (String.unsafe_get suf i) then false
       else check (i+1)
     in
     check 0

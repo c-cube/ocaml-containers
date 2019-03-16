@@ -6,10 +6,10 @@
 type job =
   | Job : float * (unit -> 'a) -> job
 
-let (<=) (a : float) b = Pervasives.(<=) a b
-let (>=) (a : float) b = Pervasives.(>=) a b
-let (<) (a : float) b = Pervasives.(<) a b
-let (>) (a : float) b = Pervasives.(>) a b
+let (<=) (a : float) b = Stdlib.(<=) a b
+let (>=) (a : float) b = Stdlib.(>=) a b
+let (<) (a : float) b = Stdlib.(<) a b
+let (>) (a : float) b = Stdlib.(>) a b
 
 module TaskHeap = CCHeap.Make(struct
     type t = job

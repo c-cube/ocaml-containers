@@ -56,7 +56,7 @@ module Poly = struct
 
   (*$T
     of_list [1,"a"; 2,"b"] |> map_list (fun x y -> string_of_int x ^ y) \
-      |> List.sort Pervasives.compare = ["1a"; "2b"]
+      |> List.sort Stdlib.compare = ["1a"; "2b"]
   *)
 
   let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl

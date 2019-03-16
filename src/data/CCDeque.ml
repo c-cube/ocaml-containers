@@ -74,7 +74,7 @@ let is_zero_ n = match n.cell with
   | Two _
   | Three _ -> false
 
-let bool_eq (a : bool) b = Pervasives.(=) a b
+let bool_eq (a : bool) b = Stdlib.(=) a b
 
 let is_empty d =
   let res = d.size = 0 in
@@ -163,7 +163,7 @@ let take_back_node_ n = match n.cell with
 
 let take_back d =
   if is_empty d then raise Empty
-  else if Pervasives.(==) d.cur d.cur.prev
+  else if Stdlib.(==) d.cur d.cur.prev
   then (
     (* only one cell *)
     decr_size_ d;
@@ -196,7 +196,7 @@ let take_front_node_ n = match n.cell with
 
 let take_front d =
   if is_empty d then raise Empty
-  else if Pervasives.(==) d.cur.prev d.cur
+  else if Stdlib.(==) d.cur.prev d.cur
   then (
     (* only one cell *)
     decr_size_ d;
@@ -255,7 +255,7 @@ let fold f acc d =
       | Two (x,y) -> f (f acc x) y
       | Three (x,y,z) -> f (f (f acc x) y) z
     in
-    if Pervasives.(==) n.next first then acc else aux ~first f acc n.next
+    if Stdlib.(==) n.next first then acc else aux ~first f acc n.next
   in
   aux ~first:d.cur f acc d.cur
 
@@ -337,7 +337,7 @@ let to_gen q =
   let cell = ref q.cur.cell in
   let cur = ref q.cur in
   let rec next () = match !cell with
-    | Zero when Pervasives.(==) (!cur).next first -> None
+    | Zero when Stdlib.(==) (!cur).next first -> None
     | Zero ->
       (* go to next node *)
       let n = !cur in
@@ -399,8 +399,8 @@ let compare ~cmp a b =
 
 (*$Q
    Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    CCOrd.equiv (compare ~cmp:Pervasives.compare (of_list l1) (of_list l2)) \
-      (CCList.compare Pervasives.compare l1 l2))
+    CCOrd.equiv (compare ~cmp:Stdlib.compare (of_list l1) (of_list l2)) \
+      (CCList.compare Stdlib.compare l1 l2))
 *)
 
 type 'a printer = Format.formatter -> 'a -> unit

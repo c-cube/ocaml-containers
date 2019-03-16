@@ -1,23 +1,25 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-let (=) : int -> int -> bool = Pervasives.(=)
-let (<>) : int -> int -> bool  = Pervasives.(<>)
-let (<) : int -> int -> bool = Pervasives.(<)
-let (>) : int -> int -> bool = Pervasives.(>)
-let (<=) : int -> int -> bool = Pervasives.(<=)
-let (>=) : int -> int -> bool = Pervasives.(>=)
+open CCMonomorphicShims_
 
-let compare : int -> int -> int = Pervasives.compare
-let min : int -> int -> int = Pervasives.min
-let max : int -> int -> int = Pervasives.max
+let (=) : int -> int -> bool = Stdlib.(=)
+let (<>) : int -> int -> bool  = Stdlib.(<>)
+let (<) : int -> int -> bool = Stdlib.(<)
+let (>) : int -> int -> bool = Stdlib.(>)
+let (<=) : int -> int -> bool = Stdlib.(<=)
+let (>=) : int -> int -> bool = Stdlib.(>=)
 
-let (=.) : float -> float -> bool = Pervasives.(=)
-let (<>.) : float -> float -> bool = Pervasives.(<>)
-let (<.) : float -> float -> bool = Pervasives.(<)
-let (>.) : float -> float -> bool = Pervasives.(>)
-let (<=.) : float -> float -> bool = Pervasives.(<=)
-let (>=.) : float -> float -> bool = Pervasives.(>=)
+let compare : int -> int -> int = Stdlib.compare
+let min : int -> int -> int = Stdlib.min
+let max : int -> int -> int = Stdlib.max
+
+let (=.) : float -> float -> bool = Stdlib.(=)
+let (<>.) : float -> float -> bool = Stdlib.(<>)
+let (<.) : float -> float -> bool = Stdlib.(<)
+let (>.) : float -> float -> bool = Stdlib.(>)
+let (<=.) : float -> float -> bool = Stdlib.(<=)
+let (>=.) : float -> float -> bool = Stdlib.(>=)
 
 
 let (==) = `Consider_using_CCEqual_physical

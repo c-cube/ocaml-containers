@@ -3,6 +3,8 @@
 
 (** {1 Array Slice} *)
 
+open CCShims_
+
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -85,7 +87,7 @@ let rec _compare cmp a1 i1 j1 a2 i2 j2 =
 let equal eq a b =
   length a = length b && _equal eq a.arr a.i a.j b.arr b.i b.j
 
-let compare_int (a : int) b = Pervasives.compare a b
+let compare_int (a : int) b = Stdlib.compare a b
 let compare cmp a b =
   _compare cmp a.arr a.i a.j b.arr b.i b.j
 
@@ -277,10 +279,10 @@ let sorted cmp a = _sorted cmp a.arr a.i a.j
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
   [||] \
     (let a = 1--6 in let s = make a 2 ~len:0 in \
-     sorted Pervasives.compare s)
+     sorted Stdlib.compare s)
   [|2;3;4|] \
     (let a = [|6;5;4;3;2;1|] in let s = make a 2 ~len:3 in \
-    sorted Pervasives.compare s)
+    sorted Stdlib.compare s)
 *)
 
 (*$Q
@@ -288,7 +290,7 @@ let sorted cmp a = _sorted cmp a.arr a.i a.j
   Array.length a > 10 ==> ( Array.length a > 10 && \
   let s = make a 5 ~len:5 in \
   let b = Array.sub a 5 5 in \
-  Array.sort Pervasives.compare b; b = sorted Pervasives.compare s))
+  Array.sort Stdlib.compare b; b = sorted Stdlib.compare s))
 *)
 
 let sort_ranking cmp a =
@@ -299,10 +301,10 @@ let sort_ranking cmp a =
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
   [||] \
      (let a = 1--6 in let s = make a 2 ~len:0 in \
-     sort_ranking Pervasives.compare s)
+     sort_ranking Stdlib.compare s)
   [|2;1;3;0|] \
     (let a = [|"d";"c";"b";"e";"a"|] in let s = make a 1 ~len:4 in \
-    sort_ranking Pervasives.compare s)
+    sort_ranking Stdlib.compare s)
 *)
 
 (*$Q
@@ -318,10 +320,10 @@ let sort_indices cmp a = _sort_indices cmp a.arr a.i a.j
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
   [||] \
      (let a = 1--6 in let s = make a 2 ~len:0 in \
-     sort_indices Pervasives.compare s)
+     sort_indices Stdlib.compare s)
   [|3;1;0;2|] \
     (let a = [|"d";"c";"b";"e";"a"|] in let s = make a 1 ~len:4 in \
-    sort_indices Pervasives.compare s)
+    sort_indices Stdlib.compare s)
 *)
 
 (*$Q

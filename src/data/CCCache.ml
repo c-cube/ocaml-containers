@@ -222,7 +222,7 @@ module LRU(X:HASH) = struct
   (* take first from queue *)
   let take_ c =
     match c.first with
-      | Some n when Pervasives.(==) n.next n ->
+      | Some n when Stdlib.(==) n.next n ->
         (* last element *)
         c.first <- None;
         n
@@ -241,7 +241,7 @@ module LRU(X:HASH) = struct
         n.next <- n;
         n.prev <- n;
         c.first <- Some n
-      | Some n1 when Pervasives.(==) n1 n -> ()
+      | Some n1 when Stdlib.(==) n1 n -> ()
       | Some n1 ->
         n.prev <- n1.prev;
         n.next <- n1;

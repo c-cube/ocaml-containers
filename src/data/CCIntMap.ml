@@ -23,7 +23,7 @@ end = struct
 
   let min_int = min_int
 
-  let equal : t -> t -> bool = Pervasives.(=)
+  let equal : t -> t -> bool = Stdlib.(=)
 
   let rec highest_bit_naive x m =
     if x=m then m
@@ -54,7 +54,7 @@ end = struct
 
   let gt a b = (b != min_int) && (a = min_int || a > b)
   let lt a b = gt b a
-  let equal_int = Pervasives.(=)
+  let equal_int = Stdlib.(=)
 end
 
 (*$inject
@@ -74,7 +74,7 @@ end
   *)
 
 (*$inject
-  let _list_uniq l = CCList.sort_uniq ~cmp:(fun a b-> Pervasives.compare (fst a)(fst b)) l
+  let _list_uniq l = CCList.sort_uniq ~cmp:(fun a b-> Stdlib.compare (fst a)(fst b)) l
 *)
 
 type +'a t =
@@ -270,13 +270,13 @@ let update k f t =
   [1,1; 2, 22; 3, 3] \
   (of_list [1,1;2,2;3,3] \
     |> update 2 (function None -> assert false | Some _ -> Some 22) \
-    |> to_list |> List.sort Pervasives.compare)
+    |> to_list |> List.sort Stdlib.compare)
 *)
 
 let doubleton k1 v1 k2 v2 = add k1 v1 (singleton k2 v2)
 
 let rec equal ~eq a b =
-  Pervasives.(==) a b ||
+  Stdlib.(==) a b ||
   begin match a, b with
     | E, E -> true
     | L (ka, va), L (kb, vb) -> ka = kb && eq va vb
@@ -562,7 +562,7 @@ let rec merge ~f t1 t2 : _ t =
 (*$QR
   Q.(let p = small_list (pair small_int unit) in pair p p) (fun (l1,l2) ->
     let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
-    equal Pervasives.(=)
+    equal Stdlib.(=)
       (union (fun _ v1 _ -> v1) (of_list l1) (of_list l2))
       (merge ~f:merge_union (of_list l1) (of_list l2)))
   *)
@@ -570,7 +570,7 @@ let rec merge ~f t1 t2 : _ t =
 (*$QR
   Q.(let p = small_list (pair small_int unit) in pair p p) (fun (l1,l2) ->
     let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
-    equal Pervasives.(=)
+    equal Stdlib.(=)
       (inter (fun _ v1 _ -> v1) (of_list l1) (of_list l2))
       (merge ~f:merge_inter (of_list l1) (of_list l2)))
   *)
@@ -636,7 +636,7 @@ let to_gen m =
 
 (*$T
   doubleton 1 "a" 2 "b" |> to_gen |> of_gen |> to_list \
-    |> List.sort Pervasives.compare = [1, "a"; 2, "b"]
+    |> List.sort Stdlib.compare = [1, "a"; 2, "b"]
 *)
 
 (*$Q
@@ -663,7 +663,7 @@ let compare ~cmp a b =
 (*$Q
   Q.(list (pair int bool)) ( fun l -> \
     let m1 = of_list l and m2 = of_list (List.rev l) in \
-    compare ~cmp:Pervasives.compare m1 m2 = 0)
+    compare ~cmp:Stdlib.compare m1 m2 = 0)
 
 *)
 
@@ -672,8 +672,8 @@ let compare ~cmp a b =
     let l1 = List.map (fun (k,v) -> abs k,v) l1 in
     let l2 = List.map (fun (k,v) -> abs k,v) l2 in
     let m1 = of_list l1 and m2 = of_list l2 in
-    let c = compare ~cmp:Pervasives.compare m1 m2
-    and c' = compare ~cmp:Pervasives.compare m2 m1 in
+    let c = compare ~cmp:Stdlib.compare m1 m2
+    and c' = compare ~cmp:Stdlib.compare m2 m1 in
     (c = 0) = (c' = 0) && (c < 0) = (c' > 0) && (c > 0) = (c' < 0))
 *)
 
@@ -682,7 +682,7 @@ let compare ~cmp a b =
     let l1 = List.map (fun (k,v) -> abs k,v) l1 in
     let l2 = List.map (fun (k,v) -> abs k,v) l2 in
     let m1 = of_list l1 and m2 = of_list l2 in
-    (compare ~cmp:Pervasives.compare m1 m2 = 0) = equal ~eq:(=) m1 m2)
+    (compare ~cmp:Stdlib.compare m1 m2 = 0) = equal ~eq:(=) m1 m2)
 *)
 
 let rec add_klist m l = match l() with
@@ -833,7 +833,7 @@ let pp pp_x out m =
   let rec remove_m i s = match s with
     | [] -> []
     | (j,v)::s' -> if i=j then s' else (j,v)::(remove_m i s')
-  let add_m k v s = List.sort Pervasives.compare ((k,v)::remove_m k s)
+  let add_m k v s = List.sort Stdlib.compare ((k,v)::remove_m k s)
   let rec union_m s s' = match s,s' with
     | [], _ -> s'
     | _, [] -> s
@@ -848,7 +848,7 @@ let pp pp_x out m =
       then (k,min v (List.assoc k s'))::(inter_m s s')
       else inter_m s s'
 
-  let abstract s = List.sort Pervasives.compare (fold (fun k v acc -> (k,v)::acc) s [])
+  let abstract s = List.sort Stdlib.compare (fold (fun k v acc -> (k,v)::acc) s [])
 *)
 
 (* A bunch of agreement properties *)

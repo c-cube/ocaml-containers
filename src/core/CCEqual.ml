@@ -3,15 +3,17 @@
 
 (** {1 Equality Combinators} *)
 
+open CCShims_
+
 type 'a t = 'a -> 'a -> bool
 
-let poly = Pervasives.(=)
-let physical = Pervasives.(==)
+let poly = Stdlib.(=)
+let physical = Stdlib.(==)
 
 let int : int t = (=)
-let string : string t = Pervasives.(=)
-let bool : bool t = Pervasives.(=)
-let float : float t = Pervasives.(=)
+let string : string t = Stdlib.(=)
+let bool : bool t = Stdlib.(=)
+let float : float t = Stdlib.(=)
 let unit () () = true
 
 let rec list f l1 l2 = match l1, l2 with

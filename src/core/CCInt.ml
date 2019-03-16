@@ -1,10 +1,12 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
+open CCShims_
+
 type t = int
 type 'a sequence = ('a -> unit) -> unit
 
-let equal (a:int) b = Pervasives.(=) a b
+let equal (a:int) b = Stdlib.(=) a b
 
 let compare (a:int) b = compare a b
 
@@ -95,15 +97,15 @@ module Infix : sig
   val (lsr) : t -> int -> t
   val (asr) : t -> int -> t
 end = struct
-  include Pervasives
+  include Stdlib
   let (--) = range
   let (--^) = range'
   let ( ** ) = pow
 end
 include Infix
 
-let min : t -> t -> t = Pervasives.min
-let max : t -> t -> t = Pervasives.max
+let min : t -> t -> t = Stdlib.min
+let max : t -> t -> t = Stdlib.max
 
 let floor_div a n =
   if a < 0 && n >= 0 then
@@ -143,7 +145,7 @@ let floor_div a n =
       (fun (n, m) -> floor_div n (-m) = int_of_float @@ floor (float n /. float (-m)))
 *)
 
-let bool_neq (a : bool) b = Pervasives.(<>) a b
+let bool_neq (a : bool) b = Stdlib.(<>) a b
 
 let rem a n =
   let y = a mod n in

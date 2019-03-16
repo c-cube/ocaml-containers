@@ -930,7 +930,7 @@ module Deque = struct
     let take_back d =
       match !d with
       | None -> raise Empty
-      | Some first when Pervasives.(==) first first.prev ->
+      | Some first when Stdlib.(==) first first.prev ->
         (* only one element *)
         d := None;
         first.content
@@ -943,7 +943,7 @@ module Deque = struct
     let take_front d =
       match !d with
       | None -> raise Empty
-      | Some first when Pervasives.(==) first first.prev ->
+      | Some first when Stdlib.(==) first first.prev ->
         (* only one element *)
         d := None;
         first.content

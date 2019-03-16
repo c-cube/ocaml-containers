@@ -4,8 +4,10 @@
 (** {1 Basic operations on floating-point numbers}
     @since 0.6.1 *)
 
+open CCShims_
+
 type t = float
-type fpclass = Pervasives.fpclass =
+type fpclass = Stdlib.fpclass =
   | FP_normal
   | FP_subnormal
   | FP_zero
@@ -13,20 +15,20 @@ type fpclass = Pervasives.fpclass =
   | FP_nan
 
 val nan : t
-(** Equal to {!Pervasives.nan}. *)
+(** Equal to {!Stdlib.nan}. *)
 
 val max_value : t
-(** Positive infinity. Equal to {!Pervasives.infinity}. *)
+(** Positive infinity. Equal to {!Stdlib.infinity}. *)
 
 val min_value : t
-(** Negative infinity. Equal to {!Pervasives.neg_infinity}. *)
+(** Negative infinity. Equal to {!Stdlib.neg_infinity}. *)
 
 val max_finite_value : t
-(** Equal to {!Pervasives.max_float}. *)
+(** Equal to {!Stdlib.max_float}. *)
 
 val epsilon : t
 (** The smallest positive float x such that [1.0 +. x <> 1.0].
-    Equal to {!Pervasives.epsilon_float}. *)
+    Equal to {!Stdlib.epsilon_float}. *)
 
 val is_nan : t -> bool
 (** [is_nan f] returns [true] if f is NaN, [false] otherwise. *)
@@ -42,7 +44,7 @@ val neg : t -> t
 
 val abs : t -> t
 (** The absolute value of a floating-point number.
-    Equal to {!Pervasives.abs_float}. *)
+    Equal to {!Stdlib.abs_float}. *)
 
 val scale : t -> t -> t
 (** Equal to [( *. )]. *)

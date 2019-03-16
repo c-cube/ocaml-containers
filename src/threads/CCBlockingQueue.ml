@@ -73,7 +73,7 @@ let take q =
     done)
   in
   Thread.join t1; Thread.join t2; Thread.join t3;
-  assert_equal [1;2;3;4] (List.sort Pervasives.compare (CCLock.get l))
+  assert_equal [1;2;3;4] (List.sort Stdlib.compare (CCLock.get l))
 *)
 
 let push_list q l =
@@ -156,7 +156,7 @@ let take_list q n =
     )
   in
   CCThread.Arr.join senders; CCThread.Arr.join receivers;
-  let l = CCLock.get res |> List.sort Pervasives.compare in
+  let l = CCLock.get res |> List.sort Stdlib.compare in
   assert_equal CCList.(1 -- 3*n) l
 *)
 

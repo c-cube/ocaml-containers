@@ -1,8 +1,18 @@
 
+(executable
+  (name mkshims)
+  (modules mkshims)
+  (libraries dune.configurator))
+
+(rule
+  (targets CCMonomorphicShims_.ml)
+  (deps ./mkshims.exe)
+  (action (with-stdout-to %{targets} (run ./mkshims.exe))))
+
 (library
   (name containers_monomorphic)
   (public_name containers.monomorphic)
+  (modules CCMonomorphic CCMonomorphicShims_)
   (wrapped false)
   (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string)
-  (ocamlopt_flags :standard (:include ../flambda.flags))
-  )
+  (ocamlopt_flags :standard (:include ../flambda.flags)))

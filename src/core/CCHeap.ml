@@ -396,8 +396,8 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
         extract_list (H.of_gen (CCList.to_gen l)))
     Q.(list int) (fun l -> \
       let h = H.of_list l in \
-      (H.to_gen h |> CCList.of_gen |> List.sort Pervasives.compare) \
-        = (H.to_list h |> List.sort Pervasives.compare))
+      (H.to_gen h |> CCList.of_gen |> List.sort Stdlib.compare) \
+        = (H.to_list h |> List.sort Stdlib.compare))
   *)
 
   let rec to_tree h () = match h with

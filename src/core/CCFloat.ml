@@ -1,8 +1,10 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
+open CCShims_
+
 type t = float
-type fpclass = Pervasives.fpclass =
+type fpclass = Stdlib.fpclass =
   | FP_normal
   | FP_subnormal
   | FP_zero
@@ -10,50 +12,50 @@ type fpclass = Pervasives.fpclass =
   | FP_nan
 
 module Infix = struct
-  let (=) : t -> t -> bool = Pervasives.(=)
-  let (<>) : t -> t -> bool = Pervasives.(<>)
-  let (<) : t -> t -> bool = Pervasives.(<)
-  let (>) : t -> t -> bool = Pervasives.(>)
-  let (<=) : t -> t -> bool = Pervasives.(<=)
-  let (>=) : t -> t -> bool = Pervasives.(>=)
-  let (~-) : t -> t = Pervasives.(~-.)
-  let (+) : t -> t -> t = Pervasives.(+.)
-  let (-) : t -> t -> t = Pervasives.(-.)
-  let ( * ) : t -> t -> t = Pervasives.( *. )
-  let (/) : t -> t -> t = Pervasives.(/.)
+  let (=) : t -> t -> bool = Stdlib.(=)
+  let (<>) : t -> t -> bool = Stdlib.(<>)
+  let (<) : t -> t -> bool = Stdlib.(<)
+  let (>) : t -> t -> bool = Stdlib.(>)
+  let (<=) : t -> t -> bool = Stdlib.(<=)
+  let (>=) : t -> t -> bool = Stdlib.(>=)
+  let (~-) : t -> t = Stdlib.(~-.)
+  let (+) : t -> t -> t = Stdlib.(+.)
+  let (-) : t -> t -> t = Stdlib.(-.)
+  let ( * ) : t -> t -> t = Stdlib.( *. )
+  let (/) : t -> t -> t = Stdlib.(/.)
 end
 include Infix
 
-let nan = Pervasives.nan
+let nan = Stdlib.nan
 
-let infinity = Pervasives.infinity
-let neg_infinity = Pervasives.neg_infinity
+let infinity = Stdlib.infinity
+let neg_infinity = Stdlib.neg_infinity
 
 let max_value = infinity
 let min_value = neg_infinity
 
-let max_finite_value = Pervasives.max_float
+let max_finite_value = Stdlib.max_float
 
-let epsilon = Pervasives.epsilon_float
+let epsilon = Stdlib.epsilon_float
 
-let is_nan x = Pervasives.(classify_float x = Pervasives.FP_nan)
+let is_nan x = Stdlib.(classify_float x = Stdlib.FP_nan)
 
 let add = (+.)
 let sub = (-.)
 let mul = ( *. )
 let div = (/.)
 let neg = (~-.)
-let abs = Pervasives.abs_float
+let abs = Stdlib.abs_float
 let scale = ( *. )
 
 let min (x : t) y =
-  match Pervasives.classify_float x, Pervasives.classify_float y with
+  match Stdlib.classify_float x, Stdlib.classify_float y with
     | FP_nan, _ -> y
     | _, FP_nan -> x
     | _ -> if x < y then x else y
 
 let max (x : t) y =
-  match Pervasives.classify_float x, Pervasives.classify_float y with
+  match Stdlib.classify_float x, Stdlib.classify_float y with
     | FP_nan, _ -> y
     | _, FP_nan -> x
     | _ -> if x > y then x else y
@@ -75,7 +77,7 @@ let max (x : t) y =
 let equal (a:float) b = a=b
 
 let hash : t -> int = Hashtbl.hash
-let compare (a:float) b = Pervasives.compare a b
+let compare (a:float) b = Stdlib.compare a b
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
@@ -85,7 +87,7 @@ let pp = Format.pp_print_float
 let fsign a =
   if is_nan a then nan
   else if a = 0. then a
-  else Pervasives.copysign 1. a
+  else Stdlib.copysign 1. a
 
 exception TrapNaN of string
 
@@ -104,12 +106,12 @@ let round x =
   0. (round 0.)
 *)
 
-let to_int (a:float) = Pervasives.int_of_float a
-let of_int (a:int) = Pervasives.float_of_int a
+let to_int (a:float) = Stdlib.int_of_float a
+let of_int (a:int) = Stdlib.float_of_int a
 
-let to_string (a:float) = Pervasives.string_of_float a
-let of_string_exn (a:string) = Pervasives.float_of_string a
-let of_string (a:string) = Pervasives.float_of_string a
+let to_string (a:float) = Stdlib.string_of_float a
+let of_string_exn (a:string) = Stdlib.float_of_string a
+let of_string (a:string) = Stdlib.float_of_string a
 
 
 let random n st = Random.State.float st n
@@ -118,4 +120,4 @@ let random_range i j st = i +. random (j-.i) st
 
 let equal_precision ~epsilon a b = abs_float (a-.b) < epsilon
 
-let classify = Pervasives.classify_float
+let classify = Stdlib.classify_float

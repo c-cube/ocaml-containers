@@ -604,7 +604,7 @@ let compare ~cmp l1 l2 =
 
 (*$Q
   Q.(pair (list int)(list int)) (fun (l1,l2) -> \
-    compare ~cmp:CCInt.compare (of_list l1) (of_list l2) = (Pervasives.compare l1 l2))
+    compare ~cmp:CCInt.compare (of_list l1) (of_list l2) = (Stdlib.compare l1 l2))
 *)
 
 (** {2 Infix} *)

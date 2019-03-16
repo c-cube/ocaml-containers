@@ -130,7 +130,7 @@ end
   let my_seq = Iter.of_list my_list
 
   let _list_uniq = CCList.sort_uniq
-    ~cmp:(fun a b -> Pervasives.compare (fst a) (fst b))
+    ~cmp:(fun a b -> Stdlib.compare (fst a) (fst b))
 
   let _list_int_int = Q.(
     map_same_type _list_uniq

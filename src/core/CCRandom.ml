@@ -3,6 +3,7 @@
 
 (** {1 Random Generators} *)
 
+open CCShims_
 include Random
 
 type state = Random.State.t
@@ -225,7 +226,7 @@ let uniformity_test ?(size_hint=10) k rng st =
   let confidence = 4. in
   let std = confidence *. (sqrt (kf *. variance)) in
   let predicate _key n acc =
-    let (<) (a : float) b = Pervasives.(<) a b in
+    let (<) (a : float) b = Stdlib.(<) a b in
     acc && abs_float (average -. float_of_int n) < std in
   Hashtbl.fold predicate histogram true
 

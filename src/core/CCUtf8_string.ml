@@ -5,11 +5,13 @@
 
     We only deal with UTF8 strings as they naturally map to OCaml bytestrings *)
 
+open CCShims_
+
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 
-let equal (a:string) b = Pervasives.(=) a b
+let equal (a:string) b = Stdlib.(=) a b
 let hash : string -> int = Hashtbl.hash
 let pp = Format.pp_print_string
 
@@ -208,7 +210,7 @@ let flat_map f s : t =
   iter (fun c -> iter (code_to_string buf) (f c)) s;
   Buffer.contents buf
 
-let append = Pervasives.(^)
+let append = Stdlib.(^)
 
 let unsafe_of_string s = s
 

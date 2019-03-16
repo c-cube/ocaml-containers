@@ -8,6 +8,9 @@
   (modules unlabel)
   (libraries compiler-libs.common))
 
+(env
+  (_ (flags :standard -warn-error -3)))
+
 (rule
   (targets flambda.flags)
   (mode fallback)

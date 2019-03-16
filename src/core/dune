@@ -1,38 +1,44 @@
-(rule
-  (targets CCArray.mli)
+(alias
+  (name unlabel)
   (deps (:mli CCArrayLabels.mli) ../unlabel.exe)
-  (mode promote)
-  (action (run ../unlabel.exe %{mli} %{targets})))
+  (action (run ../unlabel.exe %{mli} CCArray.mli)))
 
-(rule
-  (targets CCArray_slice.mli)
+(alias
+  (name unlabel)
   (deps (:mli CCArray_sliceLabels.mli) ../unlabel.exe)
-  (mode promote)
-  (action (run ../unlabel.exe %{mli} %{targets})))
+  (action (run ../unlabel.exe %{mli} CCArray_slice.mli)))
 
-(rule
-  (targets CCEqual.mli)
+(alias
+  (name unlabel)
   (deps (:mli CCEqualLabels.mli) ../unlabel.exe)
-  (mode promote)
-  (action (run ../unlabel.exe %{mli} %{targets})))
+  (action (run ../unlabel.exe %{mli} CCEqual.mli)))
 
-(rule
-  (targets CCList.mli)
+(alias
+  (name unlabel)
   (deps (:mli CCListLabels.mli) ../unlabel.exe)
-  (mode promote)
-  (action (run ../unlabel.exe %{mli} %{targets})))
+  (action (run ../unlabel.exe %{mli} CCList.mli)))
+
+(alias
+  (name unlabel)
+  (deps (:mli CCStringLabels.mli) ../unlabel.exe)
+  (action (run ../unlabel.exe %{mli} CCString.mli)))
+
+
+(executable
+  (name mkshims)
+  (modules mkshims)
+  (libraries dune.configurator))
 
 (rule
-  (targets CCString.mli)
-  (deps (:mli CCStringLabels.mli) ../unlabel.exe)
-  (mode promote)
-  (action (run ../unlabel.exe %{mli} %{targets})))
+  (targets CCShims_.ml CCShimsList_.ml CCShimsFormat_.ml)
+  (deps ./mkshims.exe)
+  (action (run ./mkshims.exe)))
 
 (library
   (name containers)
   (public_name containers)
   (wrapped false)
+  (modules :standard \ mkshims)
   (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -nolabels -open CCMonomorphic)
   (ocamlopt_flags (:include ../flambda.flags))
-  (libraries result uchar containers.monomorphic)
-  )
+  (libraries result uchar containers.monomorphic))

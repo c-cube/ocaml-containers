@@ -4,9 +4,10 @@
 
     @since 0.14 *)
 
+open CCShims_
 include Char
 
-let equal (a:char) b = Pervasives.(=) a b
+let equal (a:char) b = Stdlib.(=) a b
 
 let pp_buf = Buffer.add_char
 let pp = Format.pp_print_char

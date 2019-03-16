@@ -34,7 +34,7 @@
 
   let op = Q.make ~print:pp_op gen_op
 
-  let _list_uniq = CCList.sort_uniq ~cmp:(CCFun.compose_binop fst Pervasives.compare)
+  let _list_uniq = CCList.sort_uniq ~cmp:(CCFun.compose_binop fst Stdlib.compare)
 *)
 
 (*$Q & ~count:200
@@ -539,7 +539,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       ~cmp:(CCList.equal (CCPair.equal CCInt.equal CCInt.equal))
       ~printer:CCFormat.(to_string (list (pair int int)))
       [1, 2; 4, 8]
-      (M.to_list m |> List.sort Pervasives.compare)
+      (M.to_list m |> List.sort Stdlib.compare)
   *)
 
   (*$QR

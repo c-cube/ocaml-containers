@@ -398,7 +398,7 @@ module Make(W : WORD)
 
   (*$T
     T.fold (fun acc k v -> (k,v) :: acc) [] t1 \
-      |> List.sort Pervasives.compare = List.sort Pervasives.compare l1
+      |> List.sort Stdlib.compare = List.sort Stdlib.compare l1
   *)
 
   let mapi f t =
@@ -418,9 +418,9 @@ module Make(W : WORD)
     in map_ _id t
 
   (*$= & ~printer:Q.Print.(list (pair (list int) string))
-    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare) \
+    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Stdlib.compare) \
       (T.mapi (fun k v -> v ^ "!") t1 \
-        |> T.to_list |> List.sort Pervasives.compare)
+        |> T.to_list |> List.sort Stdlib.compare)
   *)
 
   let map f t =
@@ -435,9 +435,9 @@ module Make(W : WORD)
         in Node (v', map')
     in map_ t
   (*$= & ~printer:Q.Print.(list (pair (list int) string))
-    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Pervasives.compare) \
+    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Stdlib.compare) \
       (T.map (fun v -> v ^ "!") t1 \
-        |> T.to_list |> List.sort Pervasives.compare)
+        |> T.to_list |> List.sort Stdlib.compare)
   *)
 
 

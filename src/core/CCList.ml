@@ -3,11 +3,11 @@
 
 (** {1 Complements to list} *)
 
-(*$inject
-  let lsort l = List.sort Pervasives.compare l
-*)
+open CCShims_
 
-type 'a t = 'a list
+(*$inject
+  let lsort l = List.sort Stdlib.compare l
+*)
 
 (* backport new functions from stdlib here *)
 
@@ -56,17 +56,17 @@ let rec compare_length_with l n = match l, n with
 
 let rec assoc_opt x = function
   | [] -> None
-  | (y,v) :: _ when Pervasives.(=) x y -> Some v
+  | (y,v) :: _ when Stdlib.(=) x y -> Some v
   | _ :: tail -> assoc_opt x tail
 
 let rec assq_opt x = function
   | [] -> None
-  | (y,v) :: _ when Pervasives.(==) x y -> Some v
+  | (y,v) :: _ when Stdlib.(==) x y -> Some v
   | _ :: tail -> assq_opt x tail
 
 (* end of backport *)
 
-include List
+include CCShimsList_
 
 let empty = []
 
@@ -443,7 +443,7 @@ let diagonal l =
   diagonal [] = []
   diagonal [1] = []
   diagonal [1;2] = [1,2]
-  diagonal [1;2;3] |> List.sort Pervasives.compare = [1, 2; 1, 3; 2, 3]
+  diagonal [1;2;3] |> List.sort Stdlib.compare = [1, 2; 1, 3; 2, 3]
 *)
 
 let partition_map f l =
@@ -634,7 +634,7 @@ let is_sorted ~cmp l =
 
 (*$Q
   Q.(list small_int) (fun l -> \
-    is_sorted ~cmp:CCInt.compare (List.sort Pervasives.compare l))
+    is_sorted ~cmp:CCInt.compare (List.sort Stdlib.compare l))
 *)
 
 let sorted_insert ~cmp ?(uniq=false) x l =
@@ -652,20 +652,20 @@ let sorted_insert ~cmp ?(uniq=false) x l =
 
 (*$Q
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
-      let l = List.sort Pervasives.compare l in \
+      let l = List.sort Stdlib.compare l in \
       is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
-      let l = List.sort Pervasives.compare l in \
+      let l = List.sort Stdlib.compare l in \
       is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare ~uniq:true x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
-      let l = List.sort Pervasives.compare l in \
+      let l = List.sort Stdlib.compare l in \
       is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare ~uniq:false x l))
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
-      let l = List.sort Pervasives.compare l in \
+      let l = List.sort Stdlib.compare l in \
       let l' = sorted_insert ~cmp:CCInt.compare ~uniq:false x l in \
       List.length l' = List.length l + 1)
     Q.(pair small_int (list small_int)) (fun (x,l) -> \
-      let l = List.sort Pervasives.compare l in \
+      let l = List.sort Stdlib.compare l in \
       List.mem x (sorted_insert ~cmp:CCInt.compare x l))
 *)
 
@@ -726,14 +726,14 @@ let sorted_merge_uniq ~cmp l1 l2 =
 
 (*$Q
   Q.(list int) (fun l -> \
-    let l = List.sort Pervasives.compare l in \
+    let l = List.sort Stdlib.compare l in \
     sorted_merge_uniq ~cmp:CCInt.compare l [] = uniq_succ ~eq:CCInt.equal l)
   Q.(list int) (fun l -> \
-    let l = List.sort Pervasives.compare l in \
+    let l = List.sort Stdlib.compare l in \
     sorted_merge_uniq ~cmp:CCInt.compare [] l = uniq_succ ~eq:CCInt.equal l)
   Q.(pair (list int) (list int)) (fun (l1, l2) -> \
-    let l1 = List.sort Pervasives.compare l1 \
-    and l2 = List.sort Pervasives.compare l2 in \
+    let l1 = List.sort Stdlib.compare l1 \
+    and l2 = List.sort Stdlib.compare l2 in \
     let l3 = sorted_merge_uniq ~cmp:CCInt.compare l1 l2 in \
     uniq_succ ~eq:CCInt.equal l3 = l3)
 *)
@@ -1054,7 +1054,7 @@ let all_ok l =
       | Some e -> Result.Error e
     end
 
-let group_by (type k) ?(hash=Hashtbl.hash) ?(eq=Pervasives.(=)) l =
+let group_by (type k) ?(hash=Hashtbl.hash) ?(eq=Stdlib.(=)) l =
   let module Tbl = Hashtbl.Make(struct type t = k let equal = eq let hash = hash end) in
   (* compute group table *)
   let tbl = Tbl.create 32 in
@@ -1078,7 +1078,7 @@ let join ~join_row s1 s2 : _ t =
   OUnit.assert_equal ["1 = 1"; "2 = 2"] s;
 *)
 
-let join_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge c1 c2 =
+let join_by (type a) ?(eq=Stdlib.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge c1 c2 =
   let module Tbl = Hashtbl.Make(struct type t = a let equal = eq let hash = hash end) in
   let tbl = Tbl.create 32 in
   List.iter
@@ -1104,7 +1104,7 @@ type ('a, 'b) join_all_cell = {
   mutable ja_right: 'b list;
 }
 
-let join_all_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge c1 c2 =
+let join_all_by (type a) ?(eq=Stdlib.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge c1 c2 =
   let module Tbl = Hashtbl.Make(struct type t = a let equal = eq let hash = hash end) in
   let tbl = Tbl.create 32 in
   (* build the map [key -> cell] *)
@@ -1132,7 +1132,7 @@ let join_all_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge 
        | Some z -> z :: res)
     tbl []
 
-let group_join_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f c1 c2 =
+let group_join_by (type a) ?(eq=Stdlib.(=)) ?(hash=Hashtbl.hash) f c1 c2 =
   let module Tbl = Hashtbl.Make(struct type t = a let equal = eq let hash = hash end) in
   let tbl = Tbl.create 32 in
   List.iter (fun x -> Tbl.replace tbl x []) c1;
@@ -1154,8 +1154,8 @@ let group_join_by (type a) ?(eq=Pervasives.(=)) ?(hash=Hashtbl.hash) f c1 c2 =
   (group_join_by (fun s->s.[0]) \
     (CCString.to_list "abc") \
     ["abc"; "boom"; "attic"; "deleted"; "barbary"; "bop"] \
-  |> map (fun (c,l)->c,List.sort Pervasives.compare l) \
-  |> sort Pervasives.compare)
+  |> map (fun (c,l)->c,List.sort Stdlib.compare l) \
+  |> sort Stdlib.compare)
 *)
 
 (*$inject
@@ -1207,13 +1207,13 @@ let uniq ~eq l =
   in uniq eq [] l
 
 (*$T
-  uniq ~eq:CCInt.equal [1;2;3] |> List.sort Pervasives.compare = [1;2;3]
-  uniq ~eq:CCInt.equal [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Pervasives.compare = [1;2;3;4;5]
+  uniq ~eq:CCInt.equal [1;2;3] |> List.sort Stdlib.compare = [1;2;3]
+  uniq ~eq:CCInt.equal [1;1;2;2;3;4;4;2;4;1;5] |> List.sort Stdlib.compare = [1;2;3;4;5]
 *)
 
 (*$Q
   Q.(small_list small_int) (fun l -> \
-    sort_uniq ~cmp:CCInt.compare l = (uniq ~eq:CCInt.equal l |> sort Pervasives.compare))
+    sort_uniq ~cmp:CCInt.compare l = (uniq ~eq:CCInt.equal l |> sort Stdlib.compare))
 *)
 
 let union ~eq l1 l2 =
@@ -1492,9 +1492,9 @@ module Assoc = struct
       ~f:(fun x _ l -> (x,y)::l)
 
   (*$T
-    Assoc.set ~eq:CCInt.equal 2 "two" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
+    Assoc.set ~eq:CCInt.equal 2 "two" [1,"1"; 2, "2"] |> List.sort Stdlib.compare \
       = [1, "1"; 2, "two"]
-    Assoc.set ~eq:CCInt.equal 3 "3" [1,"1"; 2, "2"] |> List.sort Pervasives.compare \
+    Assoc.set ~eq:CCInt.equal 3 "3" [1,"1"; 2, "2"] |> List.sort Stdlib.compare \
       = [1, "1"; 2, "2"; 3, "3"]
   *)
 

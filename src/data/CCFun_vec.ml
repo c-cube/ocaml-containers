@@ -6,7 +6,7 @@
     let g = Q.(small_list (pair small_int small_int)) in
     Q.map_same_type
       (fun l ->
-        CCList.sort_uniq ~cmp:(fun a b -> Pervasives.compare (fst a)(fst b)) l
+        CCList.sort_uniq ~cmp:(fun a b -> Stdlib.compare (fst a)(fst b)) l
       ) g
   ;;
 *)
@@ -24,7 +24,7 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
    type state = { mutable frozen: bool }
    type t = Nil | St of state
    let empty = Nil
-   let equal a b = Pervasives.(==) a b
+   let equal a b = Stdlib.(==) a b
    let create () = St {frozen=false}
    let active = function Nil -> false | St st -> not st.frozen
    let frozen = function Nil -> true | St st -> st.frozen
@@ -324,9 +324,9 @@ let to_seq m yield = iteri ~f:(fun _ v -> yield v) m
 
 (*$Q
   _listuniq (fun l -> \
-    (List.sort Pervasives.compare l) = \
+    (List.sort Stdlib.compare l) = \
       (l |> Iter.of_list |> of_seq |> to_seq |> Iter.to_list \
-        |> List.sort Pervasives.compare) )
+        |> List.sort Stdlib.compare) )
 *)
 
 let rec add_gen m g = match g() with
@@ -355,9 +355,9 @@ let to_gen m =
 
 (*$Q
   _listuniq (fun l -> \
-    (List.sort Pervasives.compare l) = \
+    (List.sort Stdlib.compare l) = \
       (l |> Gen.of_list |> of_gen |> to_gen |> Gen.to_list \
-        |> List.sort Pervasives.compare) )
+        |> List.sort Stdlib.compare) )
 *)
 
 let choose m = to_gen m ()

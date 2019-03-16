@@ -13,7 +13,7 @@ let opaque_identity x = x
 (* import standard implementations, if any *)
 
 include Sys
-include Pervasives
+include CCShims_.Stdlib
 
 let compose f g x = g (f x)
 
