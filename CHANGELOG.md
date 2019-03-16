@@ -1,22 +1,22 @@
-= Changelog
+# Changelog
 
-== 2.5
+## 2.5
 
 - perf: annotate types in monomorphic/float/int to help specialize builtins
 - use GADT to discard impossible case on `CCFQueue` (@dinosaure).
 - fix(funvec): expose `pop`, fix off by one error
 
-== 2.4.1
+## 2.4.1
 
 - revert some compatibility-breaking changes in label modules
 
-== 2.4
+## 2.4
 
-=== breaking:
+### breaking:
 
 - rename `Random.sample_without_{replacement,duplicates}`
 
-=== Features
+### Features
 
 - add `CCResult.iter_err`
 - add `CCEqual.{always,never}_eq`
@@ -32,14 +32,14 @@
 - migrate to opam2
 - add CODE_OF_CONDUCT.md
 
-=== Fixes
+### Fixes
 
 - #235: release memory in vector/ringbuffer (thanks to @copy)
 - remove spurious `Labels` module
 - doc: fix small inaccuracy in comments and API
 - test: improve perf by changing random gens
 
-== 2.3
+## 2.3
 
 - feat(vector): add `Vector.{filter,filter_map}_in_place`
 - perf(hashtrie): use int64 for 64-bits branching factor and popcount
@@ -54,7 +54,7 @@
 - some performance tweaks in Vector
 - test(float): add some tests for FP min/max
 
-== 2.2
+## 2.2
 
 - Improving comments presentation
 - Add `CCOpt.return_if`
@@ -67,7 +67,7 @@
 - fix: compatibility for CCArrayLabels
 - test: add compatibility checks between `CCArray{,Labels}`
 
-== 2.1
+## 2.1
 
 - make `CCInt64` compatible with `Int64` (breaking!) (closes #192)
 
@@ -95,9 +95,9 @@
 - test deps are required when we run tests
 - point to JST's blog post on poly compare
 
-== 2.0
+## 2.0
 
-=== breaking
+### breaking
 
 - move to jbuilder (closes #165), requiring at least OCaml 4.02
 - become defensive w.r.t polymorphic operators:
@@ -108,7 +108,7 @@
 - rename `print` to `pp` for Format printers (closes #153, #181)
 - remove `CCFlatHashtbl`
 
-=== others
+### others
 
 - many typos and style fixes  (from Fourchaux)
 - Add `CCList.iteri2` and `CCList.foldi2`
@@ -129,11 +129,11 @@
 - `CCFormat`: fix support of unrecognized styles
 - fix bug: don't reverse twice in `CCList.repeat`
 
-== 1.5.1, 1.5.2
+## 1.5.1, 1.5.2
 
 - re-export `Format` types and functions in `CCFormat`
 
-== 1.5
+## 1.5
 
 - have `CCList.{get,insert,set}_at_idx` work with negative indices
 - Add CCCache.add
@@ -155,7 +155,7 @@
 - update doc of `CCList.cartesian_product`, which returns results in unspecified order (close #154)
 - fix containers.top (closes #155)
 
-== 1.4
+## 1.4
 
 - add `CCMap.union`
 - add `CCRef.swap`
@@ -175,7 +175,7 @@
 - More tests for CCVector.append and CCVector.append_array
 - assertions and cleanup in `CCPool`
 
-== 1.3
+## 1.3
 
 - deprecate `CCBool.negate`
 - add `CCString.compare_natural` (closes #146)
@@ -193,7 +193,7 @@
 - cleanup and refactor of `CCRingBuffer` (see #126). Add strong tests.
 - add rich testsuite to `CCIntMap`, based on @jmid's work
 
-== 1.2
+## 1.2
 
 - make many modules extensions of stdlib (close #109)
   the modules are: `String List ListLabels Array ArrayLabels Char Random`
@@ -227,9 +227,9 @@
 - build unix support by default
 - bugfix and test for `CCZipper.is_focused` (closes #102)
 - use boxes in `CCFormat.Dump` for tuples
-- update header, and use more `(==)` in `CCIntMap`
+- update header, and use more `(##)` in `CCIntMap`
 
-== 1.1
+## 1.1
 
 **bugfixes**:
 
@@ -250,7 +250,7 @@
 - remove CCError from tutorial
 - merge tutorial into readme, cleanup
 
-== 1.0
+## 1.0
 
 See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
 
@@ -313,14 +313,14 @@ See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
 - add doc for `of_list` in relevant modules (close #85)
 - bugfix: do not use `Sequence.flatMap` (close #90)
 
-== 0.22
+## 0.22
 
 - threads/CCLock: add `try_with_lock` to wrap `Mutex.try_lock`
 - Add `CCMultiSet.remove_all`
 - document errors in `CCIO` (close #86)
 - use the new qtest/qcheck
 
-== 0.21
+## 0.21
 
 - (breaking) make default `start`/`stop` arguments empty in printers (#82)
 
@@ -329,13 +329,13 @@ See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
 - add `CCArray.Sub.to_list`
 - add `CCArray.{sorted,sort_indices,sort_ranking}` (closes #81)
 
-- handle '\r` in CCSexpM (fixes #83)
+- handle `\r` in CCSexpM (fixes #83)
 - add alias `Containers.IO`
 - bugfixes in `CCArray.Sub`
 - bugfix + tests for `CCArray.Sub.sub`
 - disable parallel build to support cygwin
 
-== 0.20
+## 0.20
 
 - bugfix in `CCArray.equal`
 - fix `CCString.*_ascii`; add `CCChar.{upper,lower}case_ascii`
@@ -349,7 +349,7 @@ See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
 - more general types for `CCArray.{for_all2,exists2}`
 - more general type for `CCResult.map_or`
 
-== 0.19
+## 0.19
 
 - add regression test for #75
 - Fix `CCString.Split.{left,right}` (#75)
@@ -361,7 +361,7 @@ See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
 - add `CCstring.of_char`
 - update headers
 
-== 0.18
+## 0.18
 
 - update implem of `CCVector.equal`
 - add `CCOpt.get_or` with label, deprecates `get`
@@ -372,13 +372,13 @@ See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
 - add `Lazy_list.filter`
 - add `CCList.range_by`
 
-== 0.17
+## 0.17
 
-=== potentially breaking
+### potentially breaking
 
 - change the semantics of `CCString.find_all` (allow overlaps)
 
-=== Additions
+### Additions
 
 - add `CCString.pad` for more webscale
 - add `(--^)` to CCRAl, CCFQueue, CCKlist (closes #56); add `CCKList.Infix`
@@ -407,7 +407,7 @@ See https://github.com/c-cube/ocaml-containers/issues/84 for an overview.
 - add `CCImmutArray` into containers.data
 - add `CCList.Assoc.remove`
 
-=== Fixes, misc
+### Fixes, misc
 
 - Make `CCPersistentHashtbl.S.merge` more general.
 - optimize KMP search in `CCString.Find` (hand-specialize code)
@@ -425,9 +425,9 @@ others:
 - add an `IO` section to the tutorial
 - enable `-j 0` for ocamlbuild
 
-== 0.16
+## 0.16
 
-=== breaking
+### breaking
 
 - change the signature of `CCHeap.{of_gen,of_seq,of_klist}`
 - change the API of `CCMixmap`
@@ -435,18 +435,18 @@ others:
 - optional argument `~eq` to `CCGraph.Dot.pp`
 - rename `CCFuture` into `CCPool`
 
-=== deprecations
+### deprecations
 
 - deprecate `containers.bigarray`
 - deprecate `CCHashtbl.{Counter,Default}` tables
 - deprecate `CCLinq` in favor of standalone `OLinq` (to be released)
 
-=== bugfixes
+### bugfixes
 
 - fix wrong signature of `CCHashtbl.Make.{keys,values}_list`
 - missing constraint in `CCSexpM.ID_MONAD`
 
-=== new features
+### new features
 
 - add a tutorial file
 - add a printer into CCHeap
@@ -481,14 +481,14 @@ others:
 - update `examples/id_sexp` so it can read on stdin
 - add `CCList.fold_map2`
 
-== 0.15
+## 0.15
 
-=== breaking changes
+### breaking changes
 
 - remove deprecated `CCFloat.sign`
 - remove deprecated `CCSexpStream`
 
-=== other changes
+### other changes
 
 - basic color handling in `CCFormat`, using tags and ANSI codes
 - add `CCVector.ro_vector` as a convenience alias
@@ -504,15 +504,15 @@ others:
 
 - bugfix: forgot to export `{Set.Map}.OrderedType` in `Containers`
 
-== 0.14
+## 0.14
 
-=== breaking changes
+### breaking changes
 
 - change the type `'a CCParse.t` with continuations
 - add labels on `CCParse.parse_*` functions
 - change semantics of `CCList.Zipper.is_empty`
 
-=== other changes
+### other changes
 
 - deprecate `CCVector.rev'`, renamed into `CCVector.rev_in_place`
 - deprecate `CCVector.flat_map'`, renamed `flat_map_seq`
@@ -559,9 +559,9 @@ others:
 - bugfix in hashtable printing
 - bugfix in `CCKList.take`, it was slightly too eager
 
-== 0.13
+## 0.13
 
-=== Breaking changes
+### Breaking changes
 
 - big refactoring of `CCLinq` (now simpler and cleaner)
 - changed the types `input` and `ParseError`  in `CCParse`
@@ -569,12 +569,12 @@ others:
 - change the exceptions in `CCVector`
 - change signature of `CCDeque.of_seq`
 
-=== Other changes
+### Other changes
 
 - add module `CCWBTree`, a weight-balanced tree, in `containers.data`.
 - add module `CCBloom` in `containers.data`, a bloom filter
 - new module `CCHashTrie` in `containers.data`, HAMT-like associative map
-- add module `CCBitField` in `containers.data`, a safe abstraction for bitfields of < 62 bits
+- add module `CCBitField` in `containers.data`, a safe abstraction for bitfields of `< 62 bits`
 - add module `CCHashSet` into `containers.data`, a mutable set
 - add module `CCInt64`
 - move module `RAL` into `containers.data` as `CCRAL`
@@ -621,14 +621,14 @@ others:
 - new implementation for `CCDeque`, more efficient
 - update makefile (target devel)
 
-== 0.12
+## 0.12
 
-=== breaking
+### breaking
 
 - change type of `CCString.blit` so it writes into `Bytes.t`
 - better default opening flags for `CCIO.with_{in, out}`
 
-=== non-breaking
+### non-breaking
 
 NOTE: use of `containers.io` is deprecated (its only module has moved to `containers`)
 
@@ -649,7 +649,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - fix: use the proper array module in `CCRingBuffer`
 - bugfix: `CCRandom.float_range`
 
-== 0.11
+## 0.11
 
 - add `CCList.{remove,is_empty}`
 - add `CCOpt.is_none`
@@ -671,7 +671,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - add `CCList.Set.{add,remove}`
 - fix doc of `CCstring.Split.list_`
 
-== 0.10
+## 0.10
 
 - add `containers.misc.Puf.iter`
 - add `CCString.{lines,unlines,concat_gen}`
@@ -686,7 +686,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - remove `containers.pervasives`, add the module `Containers` to core
 - bugfix in `CCFormat.to_file`
 
-== 0.9
+## 0.9
 
 - add `Float`, `Ref`, `Set`, `Format` to `CCPervasives`
 - `CCRingBuffer.append` (simple implementation)
@@ -706,7 +706,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - add `CCSet` module in core/
 - add `CCRef` module in core/
 
-== 0.8
+## 0.8
 
 - add `@Emm` to authors
 - refactored heavily `CCFuture` (much simpler, cleaner, basic API and thread pool)
@@ -729,9 +729,9 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCHashtbl.{keys,values}_list`
 - more accurate type for `CCHashtbl.Make`
 
-== 0.7
+## 0.7
 
-=== breaking
+### breaking
 
 - remove `cgi`/
 - removed useless Lwt-related module
@@ -739,7 +739,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - split the library into smaller pieces (with `containers.io`, `containers.iter`,
     `containers.sexp`, `containers.data`)
 
-=== other changes
+### other changes
 
 - cleanup: move sub-libraries to their own subdir each; mv everything into `src/`
 - `sexp`:
@@ -759,7 +759,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
     * bugfix in `CCIO.read_all` and `CCIO.read_chunks`
 - use `-no-alias-deps`
 
-== 0.6.1
+## 0.6.1
 
 - use subtree `gen/` for `CCGen` (symlink) rather than a copy.
 - Add benchmarks for the function `iter` of iterators.
@@ -767,14 +767,14 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCOpt.get_lazy` convenience function
 - introduce `CCFloat`, add float functions to `CCRandom` (thanks to @struktured)
 
-== 0.6
+## 0.6
 
-=== breaking changes
+### breaking changes
 
 - new `CCIO` module, much simpler, but incompatible interface
 - renamed `CCIO` to `advanced.CCMonadIO`
 
-=== other changes
+### other changes
 
 - `CCMultiSet.{add_mult,remove_mult,update}`
 - `CCVector.{top,top_exn}`
@@ -792,9 +792,9 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
   are now tailrec
 
 
-== 0.5
+## 0.5
 
-=== breaking changes
+### breaking changes
 
 - dependency on `cppo` (thanks to @whitequark, see `AUTHORS.md`) and `bytes`
 - `CCError`:
@@ -803,7 +803,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCPervasives.Opt` -> `CCPervasives.Option`
 - `Levenshtein.Index.remove` changed signature (useless param removed)
 
-=== other changes
+### other changes
 
 - stronger inlining for `CCVector` (so that e.g. push is inline)
 - more tests for `CCVector`
@@ -818,7 +818,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - add Format printers to `CCString`
 - `AUTHORS.md`
 
-== 0.4.1
+## 0.4.1
 
 - `CCOpt.get`
 - new functions in `CCSexp.Traverse`
@@ -827,7 +827,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - update of readme
 - generate doc for `containers.advanced`
 
-== 0.4
+## 0.4
 
 - `core/CCSexp` for fast and lightweight S-expressions parsing/printing
 - moved `CCLinq`, `CCBatch` and `CCat` from core/ to advanced/
@@ -842,7 +842,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCPervasives` module, replacing modules of the standard library
 - removed type alias `CCString.t` (duplicate of String.t which already exists)
 
-== 0.3.4
+## 0.3.4
 
 - subtree for `sequence` repo
 - `CCSequence` is now a copy of `sequence`
@@ -852,7 +852,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - specialize some comparison functions
 - `CCOrd.map`
 
-== 0.3.3
+## 0.3.3
 
 - readme: add ci hook (to http://ci.cedeela.fr)
 - `CCIO`: monad for IO actions-as-values
@@ -872,7 +872,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCString.init`
 - `CCError.fail_printf`
 
-== 0.3.2
+## 0.3.2
 
 - small change in makefile
 - conversions for `CCString`
@@ -897,7 +897,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - `CCError.map2`
 - more combinators in `CCError`
 
-== 0.3.1
+## 0.3.1
 
 - test for `CCArray.shuffle`
 - bugfix in `CCArray.shuffle`

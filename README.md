@@ -150,7 +150,7 @@ M.pp_int_list`.
 
 ## Change Log
 
-See [this file](./CHANGELOG.adoc).
+See [this file](./CHANGELOG.md).
 
 ## Finding help
 
@@ -615,7 +615,7 @@ can be removed.
 - check status of modules (`{b status: foo}`) and update if required;
    removed deprecated functions, etc.
 - `make unlabel` to see if labelled interfaces are up to date (requires compiler-libs)
-- update `CHANGELOG.adoc` (see its end to find the right git command)
+- update `CHANGELOG.md` (see its end to find the right git command)
 - commit the changes
 - `make test doc`
 - `export VERSION=<tag here>; git tag -f $VERSION; git push origin :$VERSION; git push origin $VERSION`
