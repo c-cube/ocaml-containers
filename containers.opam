@@ -27,9 +27,6 @@ depopts: [
   "base-unix"
   "base-threads"
 ]
-conflicts: [
-  "sequence" { < "0.5" }
-]
 tags: [ "stdlib" "containers" "iterators" "list" "heap" "queue" ]
 homepage: "https://github.com/c-cube/ocaml-containers/"
 doc: "https://c-cube.github.io/ocaml-containers"
