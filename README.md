@@ -38,7 +38,7 @@ Containers is:
   including a blocking queue, semaphores, an extension of `Mutex`, and
   thread-pool based futures.
 
-Some of the modules have been moved to their own repository (e.g. `sequence`,
+Some of the modules have been moved to their own repository (e.g. `sequence` (now `iter`),
 `gen`, `qcheck`) and are on opam for great fun and profit.
 
 ## Migration Guide
@@ -135,10 +135,10 @@ However, printer combinators are not easily handled by `ocamldebug`. For
 instance `# install_printer Containers.(List.pp Int.pp)` will *not* work out of
 the box. You can make this work by writing a short module which defines
 ready-made combined printing functions, and loading that in ocamldebug. For
-instance 
+instance
 
 ```ocaml non-deterministic=command
-module M = struct 
+module M = struct
 	let pp_int_list = Containers.(List.pp Int.pp)
 end
 ```
@@ -251,7 +251,7 @@ PRs on github are very welcome (patches by email too, if you prefer so).
 Assuming your are in a clone of the repository:
 
 1. Some dependencies are required, you'll need
-  `opam install benchmark qcheck qtest sequence`. 
+  `opam install benchmark qcheck qtest iter`.
 2. run `make devel` to enable everything (including tests).
 3. make your changes, commit, push, and open a PR.
 4. use `make test` without moderation! It must pass before a PR
@@ -348,7 +348,7 @@ module IntMap = CCMap.Make(CCInt)
 ```
 
 ```ocaml
-# (* conversions using the "sequence" type, fast iterators that are
+# (* conversions using the "iter" type, fast iterators that are
    pervasively used in containers. Combinators can be found
    in the opam library "sequence". *)
   let map : string IntMap.t =
@@ -368,7 +368,7 @@ val map : string IntMap.t = <abstr>
     (IntMap.pp CCFormat.int CCFormat.string_quoted)
     map;;
 map =
-  1->"1", 2->"2", 3->"3", 4->"4", 5->"5", 
+  1->"1", 2->"2", 3->"3", 4->"4", 5->"5",
   6->"6", 7->"7", 8->"8", 9->"9"
 - : unit = ()
 
@@ -544,7 +544,7 @@ paired with a flag distinguishing files from directories.
 There is also a sub-library called `containers.data`, with lots of
 more specialized data-structures.
 The documentation contains the API for all the modules; they also provide
-interface to `sequence` and, as the rest of containers, minimize
+interface to `iter` and, as the rest of containers, minimize
 dependencies over other modules. To use `containers.data` you need to link it,
 either in your build system or by `#require containers.data;;`
 
@@ -581,8 +581,10 @@ Some structural types are used throughout the library:
   are defined in the opam library [gen](https://github.com/c-cube/gen)
 - `sequence`: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
   It is easier to define on data structures than `gen`, but it a bit less
-  powerful.  The opam library [sequence](https://github.com/c-cube/sequence)
-  can be used to consume and produce values of this type.
+  powerful. The opam library [iter](https://github.com/c-cube/iter)
+  can be used to consume and produce values of this type. It was renamed
+  from `'a sequence` to `'a iter` to distinguish it better from `Core.Sequence`
+  and the standard `seq`.
 - `error`: `'a or_error = ('a, string) result = Error of string | Ok of 'a`
   using the standard `result` type, supported in `CCResult`.
 - `klist`: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
