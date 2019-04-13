@@ -3,13 +3,13 @@
 
 (** {1 Simple Graph Interface} *)
 
-(** {2 Sequence Helpers} *)
+(** {2 Iter Helpers} *)
 
 type 'a sequence = ('a -> unit) -> unit
 
 type 'a sequence_once = 'a sequence
 
-exception Sequence_once
+exception Iter_once
 
 let (|>) x f = f x
 
@@ -147,7 +147,7 @@ module Traverse = struct
     let first = ref true in
     fun k ->
       (* ensure linearity *)
-      if !first then first := false else raise Sequence_once;
+      if !first then first := false else raise Iter_once;
       Seq.iter bag.push seq;
       while not (bag.is_empty ()) do
         let x = bag.pop () in
@@ -243,7 +243,7 @@ module Traverse = struct
     let dfs_tag ~eq ~tags ~graph seq =
       let first = ref true in
       fun k ->
-        if !first then first := false else raise Sequence_once;
+        if !first then first := false else raise Iter_once;
         let bag = mk_stack() in
         let n = ref 0 in
         Seq.iter
@@ -290,8 +290,8 @@ module Traverse = struct
   (*$R
     let l =
       let tbl = mk_table ~eq:CCInt.equal 128 in
-      Traverse.Event.dfs ~tbl ~eq:CCInt.equal ~graph:divisors_graph (Sequence.return 345614)
-      |> Sequence.to_list in
+      Traverse.Event.dfs ~tbl ~eq:CCInt.equal ~graph:divisors_graph (Iter.return 345614)
+      |> Iter.to_list in
     let expected =
     [`Enter (345614, 0, []); `Edge (345614, (), 172807, `Forward);
      `Enter (172807, 1, [(345614, (), 172807)]); `Edge (172807, (), 1, `Forward);
@@ -433,7 +433,7 @@ module SCC = struct
   let explore ~tbl ~graph seq =
     let first = ref true in
     fun k ->
-      if !first then first := false else raise Sequence_once;
+      if !first then first := false else raise Iter_once;
       (* stack of nodes being explored, for the DFS *)
       let to_explore = Stack.create() in
       (* stack for Tarjan's algorithm itself *)

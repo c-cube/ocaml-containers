@@ -267,7 +267,7 @@ module Make(P : PARAM) = struct
     (*$R
       List.iter
         (fun n ->
-          let l = Sequence.(1 -- n) |> Sequence.to_list in
+          let l = Iter.(1 -- n) |> Iter.to_list in
           let l = List.rev_map (fun i ->
             Fut.make
               (fun () ->
@@ -283,7 +283,7 @@ module Make(P : PARAM) = struct
     (*$R
       List.iter
         (fun n ->
-          let l = Sequence.(1 -- n) |> Sequence.to_list in
+          let l = Iter.(1 -- n) |> Iter.to_list in
           let l = List.rev_map (fun i ->
             Fut2.make
               (fun () ->

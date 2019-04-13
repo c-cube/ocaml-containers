@@ -325,8 +325,8 @@ let of_string s = if is_valid s then Some s else None
   Q.small_string (fun s ->
     Q.assume (is_valid s && uutf_is_valid s);
     let pp s = Q.Print.(list pp_uchar) s in
-    let l_uutf = uutf_to_seq s |> Sequence.to_list in
-    let l_co = of_string_exn s |> to_seq |> Sequence.to_list in
+    let l_uutf = uutf_to_seq s |> Iter.to_list in
+    let l_co = of_string_exn s |> to_seq |> Iter.to_list in
     if l_uutf = l_co then true
     else Q.Test.fail_reportf "uutf: '%s', containers: '%s', is_valid %B, uutf_is_valid %B"
       (pp l_uutf) (pp l_co) (is_valid s) (uutf_is_valid s)

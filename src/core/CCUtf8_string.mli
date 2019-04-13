@@ -42,7 +42,7 @@ val to_gen : ?idx:int -> t -> uchar gen
     @param idx offset where to start the decoding. *)
 
 val to_seq : ?idx:int -> t -> uchar sequence
-(** Sequence of unicode codepoints.
+(** Iter of unicode codepoints.
     @param idx offset where to start the decoding. *)
 
 val to_list : ?idx:int -> t -> uchar list

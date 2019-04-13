@@ -82,7 +82,7 @@ val range : t -> t -> t sequence
 
 val range' : t -> t -> t sequence
 (** Like {!range} but the second bound is excluded.
-    For instance [range' 0 5 = Sequence.of_list [0;1;2;3;4]].
+    For instance [range' 0 5 = Iter.of_list [0;1;2;3;4]].
     @since 1.2 *)
 
 (** {2 Infix Operators}

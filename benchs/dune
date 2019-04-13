@@ -2,7 +2,7 @@
 (executables
   (names run_benchs run_bench_hash)
   (libraries containers containers.data containers.iter
-             containers.thread benchmark gen sequence qcheck
+             containers.thread benchmark gen iter qcheck
              batteries clarity)
   (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -color always)
   (ocamlopt_flags :standard -O3 -color always

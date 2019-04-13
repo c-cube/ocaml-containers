@@ -517,10 +517,10 @@ module Make(W : WORD)
       (fun (l1,l2) ->
         let t1 = S.of_list l1 and t2 = S.of_list l2 in
         let t = S.merge (fun a _ -> Some a) t1 t2 in
-        S.to_seq t |> Sequence.for_all
+        S.to_seq t |> Iter.for_all
           (fun (k,v) -> S.find k t1 = Some v || S.find k t2 = Some v) &&
-        S.to_seq t1 |> Sequence.for_all (fun (k,v) -> S.find k t <> None) &&
-        S.to_seq t2 |> Sequence.for_all (fun (k,v) -> S.find k t <> None))
+        S.to_seq t1 |> Iter.for_all (fun (k,v) -> S.find k t <> None) &&
+        S.to_seq t2 |> Iter.for_all (fun (k,v) -> S.find k t <> None))
   *)
 
   let rec size t = match t with
@@ -671,13 +671,13 @@ module Make(W : WORD)
 
   (*$= & ~printer:CCFormat.(to_string (list (pair (list int) string)))
     [ [1], "1"; [1;2], "12"; [1;2;3], "123"; [2;1], "21" ] \
-      (T.above [1] t1 |> Sequence.to_list)
+      (T.above [1] t1 |> Iter.to_list)
     [ [1;2], "12"; [1;2;3], "123"; [2;1], "21" ] \
-      (T.above [1;1] t1 |> Sequence.to_list)
+      (T.above [1;1] t1 |> Iter.to_list)
     [ [1;2], "12"; [1], "1"; [], "[]" ] \
-      (T.below [1;2] t1 |> Sequence.to_list)
+      (T.below [1;2] t1 |> Iter.to_list)
     [ [1], "1"; [], "[]" ] \
-      (T.below [1;1] t1 |> Sequence.to_list)
+      (T.below [1;1] t1 |> Iter.to_list)
   *)
 
   (* NOTE: Regression test. See #158 *)
@@ -691,7 +691,7 @@ module Make(W : WORD)
       end) \
     in \
     let trie = TPoly.of_list [[fun () -> 'a'], 1; [fun () -> 'b'], 2] in \
-    ignore (TPoly.below [fun () -> 'a'] trie |> Sequence.to_list); \
+    ignore (TPoly.below [fun () -> 'a'] trie |> Iter.to_list); \
     true
   *)
 
@@ -714,22 +714,22 @@ module Make(W : WORD)
     Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
-          String.above k t |> Sequence.for_all (fun (k',v) -> k' >= k)) \
+          String.above k t |> Iter.for_all (fun (k',v) -> k' >= k)) \
           l)
     Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
-          String.below k t |> Sequence.for_all (fun (k',v) -> k' <= k)) \
+          String.below k t |> Iter.for_all (fun (k',v) -> k' <= k)) \
           l)
     Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
-          String.above k t |> Sequence.to_list |> sorted ~rev:false) \
+          String.above k t |> Iter.to_list |> sorted ~rev:false) \
           l)
     Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
       (fun l -> let t = String.of_list l in \
         List.for_all (fun (k,_) -> \
-          String.below k t |> Sequence.to_list |> sorted ~rev:true) \
+          String.below k t |> Iter.to_list |> sorted ~rev:true) \
           l)
   *)
 end

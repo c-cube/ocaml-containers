@@ -119,10 +119,10 @@ let of_seq s = add_seq empty s
 (*$Q
   Q.(list small_int) (fun l -> \
     equal CCInt.equal \
-      (of_seq (Sequence.of_list l)) \
+      (of_seq (Iter.of_list l)) \
       (of_list l))
   Q.(list small_int) (fun l -> \
-    l = (of_list l |> to_seq |> Sequence.to_list))
+    l = (of_list l |> to_seq |> Iter.to_list))
 *)
 
 let rec klist_iter_ k f = match k() with

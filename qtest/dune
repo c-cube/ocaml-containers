@@ -18,7 +18,7 @@
   (modules run_qtest)
   ; disable some warnings in qtests
   (flags :standard -warn-error -a -w -33-35-27-39 -nolabels)
-  (libraries sequence gen qcheck containers containers.unix
+  (libraries iter gen qcheck containers containers.unix
              containers.data containers.thread containers.iter
              containers.sexp uutf)
   )

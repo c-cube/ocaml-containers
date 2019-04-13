@@ -23,15 +23,15 @@
 
     @since 0.12 *)
 
-(** {2 Sequence Helpers} *)
+(** {2 Iter Helpers} *)
 
 type 'a sequence = ('a -> unit) -> unit
 (** A sequence of items of type ['a], possibly infinite *)
 
 type 'a sequence_once = 'a sequence
-(** Sequence that should be used only once *)
+(** Iter that should be used only once *)
 
-exception Sequence_once
+exception Iter_once
 (** Raised when a sequence meant to be used once is used several times. *)
 
 module Seq : sig
@@ -274,7 +274,7 @@ val scc : tbl:('v, 'v scc_state) table ->
     components, and C1 points to C2, then C2 will be yielded before C1).
     Uses {{: https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm} Tarjan's algorithm}.
     @param tbl table used to map nodes to some hidden state.
-    @raise Sequence_once if the result is iterated on more than once.
+    @raise Iter_once if the result is iterated on more than once.
 *)
 
 (** {2 Pretty printing in the DOT (graphviz) format}

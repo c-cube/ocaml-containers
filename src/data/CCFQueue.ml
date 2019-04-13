@@ -95,7 +95,7 @@ let rec snoc : type a. a t -> a -> a t
   let q = List.fold_left snoc empty [1;2;3;4;5] in
   let q = tail q in
   let q = List.fold_left snoc q [6;7;8] in
-  let l = Sequence.to_list (to_seq q) in
+  let l = Iter.to_list (to_seq q) in
   OUnit.assert_equal ~printer:pp_ilist [2;3;4;5;6;7;8] l
 *)
 
@@ -321,7 +321,7 @@ let add_seq_front seq q =
 
 (*$Q
   Q.(pair (list int) (list int)) (fun (l1, l2) -> \
-    add_seq_front (Sequence.of_list l1) (of_list l2) |> to_list = l1 @ l2)
+    add_seq_front (Iter.of_list l1) (of_list l2) |> to_list = l1 @ l2)
 *)
 
 let add_seq_back q seq =
@@ -345,7 +345,7 @@ let rec to_seq : 'a. 'a t -> 'a sequence
 
 (*$Q
   (Q.list Q.int) (fun l -> \
-    of_list l |> to_seq |> Sequence.to_list = l)
+    of_list l |> to_seq |> Iter.to_list = l)
 *)
 
 let append q1 q2 =
@@ -360,10 +360,10 @@ let append q1 q2 =
 *)
 
 (*$R
-  let q1 = of_seq (Sequence.of_list [1;2;3;4]) in
-  let q2 = of_seq (Sequence.of_list [5;6;7;8]) in
+  let q1 = of_seq (Iter.of_list [1;2;3;4]) in
+  let q2 = of_seq (Iter.of_list [5;6;7;8]) in
   let q = append q1 q2 in
-  let l = Sequence.to_list (to_seq q) in
+  let l = Iter.to_list (to_seq q) in
   OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5;6;7;8] l
 *)
 
@@ -407,7 +407,7 @@ let rec fold : 'a 'b. ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 *)
 
 (*$R
-  let q = of_seq (Sequence.of_list [1;2;3;4]) in
+  let q = of_seq (Iter.of_list [1;2;3;4]) in
   let n = fold (+) 0 q in
   OUnit.assert_equal 10 n;
 *)
@@ -425,7 +425,7 @@ let of_seq seq = add_seq_front seq empty
 
 (*$Q
   (Q.list Q.int) (fun l -> \
-    Sequence.of_list l |> of_seq |> to_list = l)
+    Iter.of_list l |> of_seq |> to_list = l)
 *)
 
 let rev q =

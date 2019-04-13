@@ -325,7 +325,7 @@ let to_seq m yield = iteri ~f:(fun _ v -> yield v) m
 (*$Q
   _listuniq (fun l -> \
     (List.sort Pervasives.compare l) = \
-      (l |> Sequence.of_list |> of_seq |> to_seq |> Sequence.to_list \
+      (l |> Iter.of_list |> of_seq |> to_seq |> Iter.to_list \
         |> List.sort Pervasives.compare) )
 *)
 

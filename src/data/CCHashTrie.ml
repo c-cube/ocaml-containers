@@ -673,7 +673,7 @@ module Make(Key : KEY)
   (*$Q
     _listuniq (fun l -> \
       (List.sort Pervasives.compare l) = \
-        (l |> Sequence.of_list |> M.of_seq |> M.to_seq |> Sequence.to_list \
+        (l |> Iter.of_list |> M.of_seq |> M.to_seq |> Iter.to_list \
           |> List.sort Pervasives.compare) )
   *)
 
@@ -759,12 +759,12 @@ end
   let m = M.of_list CCList.( (501 -- 1000) @ (500 -- 1) |> map (fun i->i,i)) in
   assert_equal ~printer:CCInt.to_string 1000 (M.cardinal m);
   assert_bool "check all get"
-    (Sequence.for_all (fun i -> i = M.get_exn i m) Sequence.(1 -- 1000));
-  let m = Sequence.(501 -- 1000 |> fold (fun m i -> M.remove i m) m) in
+    (Iter.for_all (fun i -> i = M.get_exn i m) Iter.(1 -- 1000));
+  let m = Iter.(501 -- 1000 |> fold (fun m i -> M.remove i m) m) in
   assert_equal ~printer:CCInt.to_string 500 (M.cardinal m);
   assert_bool "check all get after remove"
-    (Sequence.for_all (fun i -> i = M.get_exn i m) Sequence.(1 -- 500));
+    (Iter.for_all (fun i -> i = M.get_exn i m) Iter.(1 -- 500));
   assert_bool "check all get after remove"
-    (Sequence.for_all (fun i -> None = M.get i m) Sequence.(501 -- 1000));
+    (Iter.for_all (fun i -> None = M.get i m) Iter.(501 -- 1000));
 *)
 

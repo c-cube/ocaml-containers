@@ -135,7 +135,7 @@ let keys_seq tbl yield =
   set ~inj:inj_int tbl "foo" 1;
   set ~inj:inj_int tbl "bar" 2;
   set ~inj:inj_str tbl "baaz" "hello";
-  let l = keys_seq tbl |> Sequence.to_list in
+  let l = keys_seq tbl |> Iter.to_list in
   OUnit.assert_equal ["baaz"; "bar"; "foo"] (List.sort compare l);
 *)
 
@@ -163,8 +163,8 @@ let bindings tbl yield =
   set ~inj:inj_int tbl "bar" 2;
   set ~inj:inj_str tbl "baaz" "hello";
   set ~inj:inj_str tbl "str" "rts";
-  let l_int = bindings_of ~inj:inj_int tbl |> Sequence.to_list in
+  let l_int = bindings_of ~inj:inj_int tbl |> Iter.to_list in
   OUnit.assert_equal ["bar", 2; "foo", 1] (List.sort compare l_int);
-  let l_str = bindings_of ~inj:inj_str tbl |> Sequence.to_list in
+  let l_str = bindings_of ~inj:inj_str tbl |> Iter.to_list in
   OUnit.assert_equal ["baaz", "hello"; "str", "rts"] (List.sort compare l_str);
 *)

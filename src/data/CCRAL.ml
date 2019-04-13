@@ -539,13 +539,13 @@ let to_seq l yield = iter ~f:yield l
 
 (*$Q & ~small:List.length
   Q.(list small_int) (fun l -> \
-    of_list l |> to_seq |> Sequence.to_list = l)
+    of_list l |> to_seq |> Iter.to_list = l)
   Q.(list small_int) (fun l -> \
-    Sequence.of_list l |> of_seq |> to_list = l)
+    Iter.of_list l |> of_seq |> to_list = l)
 *)
 
 (*$T
-  add_seq (of_list [3;4]) (Sequence.of_list [1;2]) |> to_list = [1;2;3;4]
+  add_seq (of_list [3;4]) (Iter.of_list [1;2]) |> to_list = [1;2;3;4]
 *)
 
 let rec gen_iter_ f g = match g() with

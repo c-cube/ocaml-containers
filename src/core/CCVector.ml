@@ -125,11 +125,11 @@ let clear v =
   v.size <- 0
 
 (*$R
-  let v = of_seq Sequence.(1 -- 10) in
+  let v = of_seq Iter.(1 -- 10) in
   OUnit.assert_equal 10 (size v);
   clear v;
   OUnit.assert_equal 0 (size v);
-  OUnit.assert_bool "empty_after_clear" (Sequence.is_empty (to_seq v));
+  OUnit.assert_bool "empty_after_clear" (Iter.is_empty (to_seq v));
 *)
 
 let is_empty v = v.size = 0
@@ -176,12 +176,12 @@ let append a b =
 *)
 
 (*$R
-  let a = of_seq Sequence.(1 -- 5) in
-  let b = of_seq Sequence.(6 -- 10) in
+  let a = of_seq Iter.(1 -- 5) in
+  let b = of_seq Iter.(6 -- 10) in
   append a b;
   OUnit.assert_equal 10 (size a);
-  OUnit.assert_equal (Sequence.to_array Sequence.(1 -- 10)) (to_array a);
-  OUnit.assert_equal (Sequence.to_array Sequence.(6 -- 10)) (to_array b);
+  OUnit.assert_equal (Iter.to_array Iter.(1 -- 10)) (to_array a);
+  OUnit.assert_equal (Iter.to_array Iter.(6 -- 10)) (to_array b);
 *)
 
 let get v i =
@@ -269,8 +269,8 @@ let rec append_gen a b = match b() with
   (Q.pair (gen Q.int) (gen Q.int)) (fun (v1,v2) ->
     let l1 = to_list v1 in
     append v1 v2;
-    Sequence.to_list (to_seq v1) =
-      Sequence.(to_list (append (of_list l1) (to_seq v2)))
+    Iter.to_list (to_seq v1) =
+      Iter.(to_list (append (of_list l1) (to_seq v2)))
   )
 *)
 
@@ -359,7 +359,7 @@ let copy v = {
 *)
 
 (*$R
-  let v = of_seq Sequence.(1 -- 100) in
+  let v = of_seq Iter.(1 -- 100) in
   OUnit.assert_equal 100 (size v);
   let v' = copy v in
   OUnit.assert_equal 100 (size v');
@@ -386,7 +386,7 @@ let shrink v n =
   )
 
 (*$R
-  let v = of_seq Sequence.(1 -- 10) in
+  let v = of_seq Iter.(1 -- 10) in
   shrink v 5;
   OUnit.assert_equal [1;2;3;4;5] (to_list v);
 *)
@@ -395,7 +395,7 @@ let shrink v n =
   (gen Q.small_int) (fun v ->
     let n = size v / 2 in
     let l = to_list v in
-    let h = Sequence.(to_list (take n (of_list l))) in
+    let h = Iter.(to_list (take n (of_list l))) in
     let v' = copy v in
     shrink v' n;
     h = to_list v'
@@ -782,13 +782,13 @@ let rev_iter f v =
   done
 
 (*$T
-  let v = of_list [1;2;3] in (fun f->rev_iter f v) |> Sequence.to_list = [3;2;1]
+  let v = of_list [1;2;3] in (fun f->rev_iter f v) |> Iter.to_list = [3;2;1]
 *)
 
 (*$Q
   Q.(list int) (fun l -> \
     let v = of_list l in \
-    (fun f->rev_iter f v) |> Sequence.to_list = List.rev l)
+    (fun f->rev_iter f v) |> Iter.to_list = List.rev l)
 *)
 
 let size v = v.size
@@ -804,7 +804,7 @@ let of_seq ?(init=create ()) seq =
   init
 
 (*$T
-  of_seq Sequence.(1 -- 10) |> to_list = CCList.(1 -- 10)
+  of_seq Iter.(1 -- 10) |> to_list = CCList.(1 -- 10)
 *)
 
 let to_seq v k = iter k v
@@ -817,7 +817,7 @@ let to_seq_rev v k =
 
 (*$Q
   Q.(list int) (fun l -> \
-    let v= of_list l in v |> to_seq_rev |> Sequence.to_rev_list = l)
+    let v= of_list l in v |> to_seq_rev |> Iter.to_rev_list = l)
 *)
 
 let slice_seq v start len =

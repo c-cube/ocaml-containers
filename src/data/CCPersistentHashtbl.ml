@@ -102,7 +102,7 @@ module type S = sig
   val add_list : 'a t -> (key  * 'a) list -> 'a t
 
   val to_seq : 'a t -> (key * 'a) sequence
-  (** Sequence of the bindings of the table *)
+  (** Iter of the bindings of the table *)
 
   val to_list : 'a t -> (key * 'a) list
 
@@ -127,7 +127,7 @@ end
       4, "d";
     ]
 
-  let my_seq = Sequence.of_list my_list
+  let my_seq = Iter.of_list my_list
 
   let _list_uniq = CCList.sort_uniq
     ~cmp:(fun a b -> Pervasives.compare (fst a) (fst b))
@@ -234,9 +234,9 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   (*$R
     let n = 10000 in
-    let seq = Sequence.map (fun i -> i, string_of_int i) Sequence.(0--n) in
+    let seq = Iter.map (fun i -> i, string_of_int i) Iter.(0--n) in
     let h = H.of_seq seq in
-    Sequence.iter
+    Iter.iter
       (fun (k,v) ->
         OUnit.assert_equal ~printer:(fun x -> x) v (H.find h k))
       seq;
@@ -268,7 +268,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   (*$R
     let h = H.of_seq
-      Sequence.(map (fun i -> i, string_of_int i)
+      Iter.(map (fun i -> i, string_of_int i)
         (0 -- 200)) in
     OUnit.assert_equal 201 (H.length h);
   *)
@@ -425,12 +425,12 @@ module Make(H : HashedType) : S with type key = H.t = struct
   *)
 
   (*$R
-    let open Sequence.Infix in
+    let open Iter.Infix in
     let n = 10000 in
-    let seq = Sequence.map (fun i -> i, string_of_int i) (0 -- n) in
+    let seq = Iter.map (fun i -> i, string_of_int i) (0 -- n) in
     let h = H.of_seq seq in
     OUnit.assert_equal (n+1) (H.length h);
-    let h = Sequence.fold (fun h i -> H.remove h i) h (0 -- 500) in
+    let h = Iter.fold (fun h i -> H.remove h i) h (0 -- 500) in
     OUnit.assert_equal (n-500) (H.length h);
     OUnit.assert_bool "is_empty" (H.is_empty (H.create 16));
   *)
@@ -609,7 +609,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   (*$R
     let h = H.of_seq my_seq in
-    let l = Sequence.to_list (H.to_seq h) in
+    let l = Iter.to_list (H.to_seq h) in
     OUnit.assert_equal my_list (List.sort compare l)
   *)
 

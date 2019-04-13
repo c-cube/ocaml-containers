@@ -500,8 +500,8 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       List.for_all (fun (k,v) ->
         let l, v', r = M.split k m in
         v' = Some v
-        && (M.to_seq l |> Sequence.for_all (fun (k',_) -> k' < k))
-        && (M.to_seq r |> Sequence.for_all (fun (k',_) -> k' > k))
+        && (M.to_seq l |> Iter.for_all (fun (k',_) -> k' < k))
+        && (M.to_seq r |> Iter.for_all (fun (k',_) -> k' > k))
         && M.balanced m
         && M.cardinal l + M.cardinal r + 1 = List.length lst
       ) lst)

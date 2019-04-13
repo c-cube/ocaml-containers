@@ -189,9 +189,9 @@ let choice_seq s =
   !r
 
 (*$T
-  choice_seq (Sequence.of_list [None; Some 1; Some 2]) = Some 1
-  choice_seq Sequence.empty = None
-  choice_seq (Sequence.repeat None |> Sequence.take 100) = None
+  choice_seq (Iter.of_list [None; Some 1; Some 2]) = Some 1
+  choice_seq Iter.empty = None
+  choice_seq (Iter.repeat None |> Iter.take 100) = None
 *)
 
 let to_gen o =

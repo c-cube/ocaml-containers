@@ -109,7 +109,7 @@ module type S = sig
   val add_list : 'a t -> (key  * 'a) list -> 'a t
 
   val to_seq : 'a t -> (key * 'a) sequence
-  (** Sequence of the bindings of the table. *)
+  (** Iter of the bindings of the table. *)
 
   val to_list : 'a t -> (key * 'a) list
 

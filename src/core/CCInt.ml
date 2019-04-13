@@ -27,9 +27,9 @@ let range i j yield =
   if i<=j then up i j yield else down i j yield
 
 (*$= & ~printer:Q.Print.(list int)
-  [0;1;2;3;4;5] (range 0 5 |> Sequence.to_list)
-  [0]           (range 0 0 |> Sequence.to_list)
-  [5;4;3;2]     (range 5 2 |> Sequence.to_list)
+  [0;1;2;3;4;5] (range 0 5 |> Iter.to_list)
+  [0]           (range 0 0 |> Iter.to_list)
+  [5;4;3;2]     (range 5 2 |> Iter.to_list)
 *)
 
 let range' i j yield =
@@ -38,9 +38,9 @@ let range' i j yield =
   else range i (j+1) yield
 
 (*$= & ~printer:Q.Print.(list int)
-  []          (range' 0 0 |> Sequence.to_list)
-  [0;1;2;3;4] (range' 0 5 |> Sequence.to_list)
-  [5;4;3]     (range' 5 2 |> Sequence.to_list)
+  []          (range' 0 0 |> Iter.to_list)
+  [0;1;2;3;4] (range' 0 5 |> Iter.to_list)
+  [5;4;3]     (range' 5 2 |> Iter.to_list)
 *)
 
 let sign i =
@@ -258,23 +258,23 @@ let range_by ~step i j yield =
 
 (* note: the last test checks that no error occurs due to overflows. *)
 (*$= & ~printer:Q.Print.(list int)
-  [0]     (range_by ~step:1   0 0     |> Sequence.to_list)
-  []      (range_by ~step:1   5 0     |> Sequence.to_list)
-  []      (range_by ~step:2   1 0     |> Sequence.to_list)
-  [0;2;4] (range_by ~step:2   0 4     |> Sequence.to_list)
-  [0;2;4] (range_by ~step:2   0 5     |> Sequence.to_list)
-  [0]     (range_by ~step:~-1 0 0     |> Sequence.to_list)
-  []      (range_by ~step:~-1 0 5     |> Sequence.to_list)
-  []      (range_by ~step:~-2 0 1     |> Sequence.to_list)
-  [5;3;1] (range_by ~step:~-2 5 1     |> Sequence.to_list)
-  [5;3;1] (range_by ~step:~-2 5 0     |> Sequence.to_list)
-  [0]     (range_by ~step:max_int 0 2 |> Sequence.to_list)
+  [0]     (range_by ~step:1   0 0     |> Iter.to_list)
+  []      (range_by ~step:1   5 0     |> Iter.to_list)
+  []      (range_by ~step:2   1 0     |> Iter.to_list)
+  [0;2;4] (range_by ~step:2   0 4     |> Iter.to_list)
+  [0;2;4] (range_by ~step:2   0 5     |> Iter.to_list)
+  [0]     (range_by ~step:~-1 0 0     |> Iter.to_list)
+  []      (range_by ~step:~-1 0 5     |> Iter.to_list)
+  []      (range_by ~step:~-2 0 1     |> Iter.to_list)
+  [5;3;1] (range_by ~step:~-2 5 1     |> Iter.to_list)
+  [5;3;1] (range_by ~step:~-2 5 0     |> Iter.to_list)
+  [0]     (range_by ~step:max_int 0 2 |> Iter.to_list)
 *)
 
 (*$Q
   Q.(pair small_int small_int) (fun (i,j) -> \
     let i = min i j and j = max i j in \
     CCList.equal CCInt.equal \
-      (CCInt.range_by ~step:1 i j |> Sequence.to_list) \
-      (CCInt.range i j |> Sequence.to_list) )
+      (CCInt.range_by ~step:1 i j |> Iter.to_list) \
+      (CCInt.range i j |> Iter.to_list) )
 *)

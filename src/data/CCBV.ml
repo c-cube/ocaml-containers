@@ -262,16 +262,16 @@ let iter bv f =
 *)
 
 (*$= & ~printer:Q.Print.(list (pair int bool))
-  [] (iter (create ~size:0 false) |> seq_zip |> Sequence.to_list)
+  [] (iter (create ~size:0 false) |> seq_zip |> Iter.to_list)
   [0, false; 1, true; 2, false] \
-    (iter (let bv = create ~size:3 false in set bv 1; bv) |> seq_zip |> Sequence.to_list)
+    (iter (let bv = create ~size:3 false in set bv 1; bv) |> seq_zip |> Iter.to_list)
 *)
 
 (*$Q
   Q.(small_int) (fun n -> \
     assert (n >= 0); \
     let bv = create ~size:n true in \
-    let l = iter bv |> seq_zip |> Sequence.to_list in \
+    let l = iter bv |> seq_zip |> Iter.to_list in \
     List.length l = n && List.for_all (fun (_,b) -> b) l)
 *)
 
@@ -279,7 +279,7 @@ let iter_true bv f =
   iter bv (fun i b -> if b then f i else ())
 
 (*$T
-  of_list [1;5;7] |> iter_true |> Sequence.to_list |> List.sort CCOrd.compare = [1;5;7]
+  of_list [1;5;7] |> iter_true |> Iter.to_list |> List.sort CCOrd.compare = [1;5;7]
 *)
 
 (*$inject
@@ -292,7 +292,7 @@ let iter_true bv f =
 
 (*$QR
   gen_bv (fun bv ->
-    let l' = Sequence.to_rev_list (CCBV.iter_true bv) in
+    let l' = Iter.to_rev_list (CCBV.iter_true bv) in
     let bv' = CCBV.of_list l' in
     CCBV.cardinal bv = CCBV.cardinal bv'
   )
@@ -538,7 +538,7 @@ let to_seq bv k = iter_true bv k
   Q.(small_int) (fun i -> \
       let i = max 1 i in \
       let bv = create ~size:i true in \
-      i = (to_seq bv |> Sequence.length))
+      i = (to_seq bv |> Iter.length))
 *)
 
 let of_seq seq =

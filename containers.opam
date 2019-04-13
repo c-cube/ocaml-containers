@@ -16,7 +16,7 @@ depends: [
   "qtest" { with-test }
   "qcheck" { with-test }
   "ounit" { with-test }
-  "sequence" { with-test }
+  "iter" { with-test }
   "gen" { with-test }
   "uutf" { with-test }
   "mdx" { with-test }

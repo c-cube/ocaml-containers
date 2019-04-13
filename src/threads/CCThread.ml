@@ -32,7 +32,7 @@ end
   let l = CCLock.create 0 in
   let a = Arr.spawn 101 (fun i -> CCLock.update l ((+) i)) in
   Arr.join a;
-  let n = Sequence.(1 -- 100 |> fold (+) 0) in
+  let n = Iter.(1 -- 100 |> fold (+) 0) in
   assert_equal ~printer:CCInt.to_string n (CCLock.get l)
 *)
 

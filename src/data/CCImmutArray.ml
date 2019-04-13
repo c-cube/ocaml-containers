@@ -87,8 +87,8 @@ let of_seq s =
 
 (*$Q
   Q.(list int) (fun l -> \
-    let g = Sequence.of_list l in \
-    of_seq g |> to_seq |> Sequence.to_list = l)
+    let g = Iter.of_list l in \
+    of_seq g |> to_seq |> Iter.to_list = l)
 *)
 
 let rec gen_to_list_ acc g = match g() with

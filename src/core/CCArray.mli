@@ -245,7 +245,7 @@ val shuffle_with : Random.State.t -> 'a t -> unit
 
 val random_choose : 'a t -> 'a random_gen
 (** [random_choose a rs] randomly chooses an element of [a].
-    @raise Invalid_argument if the array/slice is empty. *)
+    @raise Not_found if the array/slice is empty. *)
 
 val to_seq : 'a t -> 'a sequence
 (** [to_seq a] returns a [sequence] of the elements of an array [a].

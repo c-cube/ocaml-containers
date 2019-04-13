@@ -1135,14 +1135,14 @@ module Sub = struct
 
   (*$QR
     Q.(printable_string_of_size Gen.(3--10)) (fun s ->
-      let open Sequence.Infix in
+      let open Iter.Infix in
       begin
         (0 -- (length s-2)
           >|= fun i -> i, Sub.make s i ~len:(length s-i))
         >>= fun (i,sub) ->
         (0 -- (Sub.length sub-1) >|= fun j -> i,j,sub)
       end
-      |> Sequence.for_all
+      |> Iter.for_all
         (fun (i,j,sub) -> Sub.get sub j = s.[i+j]))
   *)
 
