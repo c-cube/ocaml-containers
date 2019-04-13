@@ -36,11 +36,9 @@ release: update_next_tag
 	opam publish prepare https://github.com/c-cube/qcheck/archive/$(VERSION).tar.gz
 	@echo "review the release, then type 'opam publish submit qcheck.$(VERSION)/'"
 
+WATCH?=@all
 watch:
-	while find src/ benchs/ -print0 | xargs -0 inotifywait -e delete_self -e modify ; do \
-		echo "============ at `date` ==========" ; \
-		make all; \
-	done
+	@dune build $(WATCH) -w
 
 reindent:
 	@which ocp-indent || ( echo "require ocp-indent" ; exit 1 )
