@@ -314,13 +314,25 @@ let fold_flat_map f acc l =
 *)
 
 let init len f =
-  let rec init_rec acc i f =
-    if i=0 then f i :: acc
-    else init_rec (f i :: acc) (i-1) f
+  let rec indirect_ i acc =
+    if i=len then List.rev acc
+    else (
+      let x = f i in
+      indirect_ (i+1) (x::acc)
+    )
+  in
+  let rec direct_ i =
+    if i = len then []
+    else if i < direct_depth_default_ then (
+      let x = f i in
+      x :: direct_ (i+1)
+    ) else (
+      indirect_ i []
+    )
   in
   if len<0 then invalid_arg "init"
   else if len=0 then []
-  else init_rec [] (len-1) f
+  else direct_ 0
 
 (*$T
   init 0 (fun _ -> 0) = []
