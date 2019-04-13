@@ -328,6 +328,18 @@ let init len f =
   init 1000 (fun x->x) = 0--999
 *)
 
+(* see: #256 *)
+(*$R
+  let r = ref [] in
+  ignore (CCList.init 5 (fun x -> r := x :: !r; ()));
+  assert_equal ~printer:Q.Print.(list int) (List.rev !r) [0;1;2;3;4]
+*)
+(*$R
+  let r = ref [] in
+  ignore (CCList.init 200_000 (fun x -> r := x :: !r; ()));
+  assert_equal ~printer:Q.Print.(list int) (List.rev !r) (0--(200_000-1))
+*)
+
 let rec compare f l1 l2 = match l1, l2 with
   | [], [] -> 0
   | _, [] -> 1
