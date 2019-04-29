@@ -67,14 +67,11 @@ let with_in ?(mode=0o644) ?(flags=[Open_text]) filename f =
 
 let read_chunks ?(size=1024) ic =
   let buf = Bytes.create size in
-  let eof = ref false in
   let next() =
-    if !eof then None
-    else
-      let n = input ic buf 0 size in
-      if n = 0
-      then None
-      else Some (Bytes.sub_string buf 0 n)
+    let n = input ic buf 0 size in
+    if n = 0
+    then None
+    else Some (Bytes.sub_string buf 0 n)
   in
   next
 
