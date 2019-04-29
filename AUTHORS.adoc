@@ -34,3 +34,4 @@
 - Francois Berenger (@UnixJunkie)
 - Hongchang Wu (@hongchangwu)
 - Nathan Rebours (@NathanReb)
+- @rymdhund
