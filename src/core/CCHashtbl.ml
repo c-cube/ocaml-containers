@@ -166,7 +166,7 @@ module type S = sig
       @since 0.16 *)
 
   val decr : ?by:int -> int t -> key -> unit
-  (** Like {!incr} but substract 1 (or the value of [by]).
+  (** Like {!incr} but subtract 1 (or the value of [by]).
       If the value reaches 0, the key is removed from the table.
       This does nothing if the key is not already present in the table.
       @since 0.16 *)

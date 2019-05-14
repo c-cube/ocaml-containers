@@ -1,4 +1,4 @@
-(* search for first occurence of pat in s *)
+(* search for first occurrence of pat in s *)
 let rec search pat s pos =
   let rec compare i =
     if i >= String.length pat
@@ -14,7 +14,7 @@ let rec search pat s pos =
   else search pat s (pos+1)
 ;;
 
-(* search all non-overlapping occurences of pat in s *)
+(* search all non-overlapping occurrences of pat in s *)
 let search_all pat s =
   let rec search_rest acc pos =
     let next =
