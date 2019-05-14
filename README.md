@@ -206,7 +206,7 @@ You will need OCaml `>=` 4.02.0.
 
 ### Via opam
 
-The prefered way to install is through [opam](http://opam.ocaml.org/).
+The preferred way to install is through [opam](http://opam.ocaml.org/).
 
 ```
 $ opam install containers
@@ -513,7 +513,7 @@ NOTE: you should never let the resource escape the
 scope of the `with_resource` call, because it will not be valid outside.
 OCaml's type system doesn't make it easy to forbid that so we rely
 on convention here (it would be possible, but cumbersome, using
-a record with an explicitely quantified function type).
+a record with an explicitly quantified function type).
 
 Now we can read the file again:
 

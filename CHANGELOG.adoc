@@ -519,7 +519,7 @@ others:
 
 - add `CCMap.add_{list,seqe`
 - add `CCSet.add_{list,seq}`
-- fix small uglyness in `Map.print` and `Set.print`
+- fix small ugliness in `Map.print` and `Set.print`
 - add `CCFormat.{ksprintf,string_quoted}`
 - add `CCArray.sort_generic` for sorting over array-like structures in place
 - add `CCHashtbl.add` mimicking the stdlib `Hashtbl.add`
@@ -714,7 +714,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 - merged `test_levenshtein` with other tests
 - Add experimental rose tree in `Containers_misc.RoseTree`.
 - remove a lot of stuff from `containers.misc` (see `_oasis` for details)
-- `make devel` command, activating most flags, for developpers (see #27)
+- `make devel` command, activating most flags, for developers (see #27)
 - use benchmark 1.4, with the upstreamed tree system
 - test `ccvector.iteri`
 - add `CCFormat` into core/
@@ -743,7 +743,7 @@ NOTE: use of `containers.io` is deprecated (its only module has moved to `contai
 
 - cleanup: move sub-libraries to their own subdir each; mv everything into `src/`
 - `sexp`:
-    * `CCSexp` now splitted into `CCSexp` (manipulating expressions) and `CCSexpStream`
+    * `CCSexp` now split into `CCSexp` (manipulating expressions) and `CCSexpStream`
     * add `CCSexpM` for a simpler, monadic parser of S-expressions (deprecating `CCSexpStream`)
 - `core`:
     * `CCString.fold`
