@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 IO Utils}
@@ -12,7 +11,7 @@
     - obtain the list of lines of a file:
 
     {[
-      # let l = CCIO.(with_in "/tmp/some_file" read_lines);;
+      # let l = CCIO.(with_in "/tmp/some_file" read_lines_l);;
     ]}
 
     - transfer one file into another:
