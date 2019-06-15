@@ -18,7 +18,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-include Array
+include CCShimsArray_
 
 type 'a t = 'a array
 
@@ -148,14 +148,14 @@ let sorted cmp a =
   b
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
-  [||] (sorted Pervasives.compare [||])
-  [|0;1;2;3;4|] (sorted Pervasives.compare [|3;2;1;4;0|])
+  [||] (sorted Stdlib.compare [||])
+  [|0;1;2;3;4|] (sorted Stdlib.compare [|3;2;1;4;0|])
 *)
 
 (*$Q
   Q.(array int) (fun a -> \
     let b = Array.copy a in \
-    Array.sort Pervasives.compare b; b = sorted Pervasives.compare a)
+    Array.sort Stdlib.compare b; b = sorted Stdlib.compare a)
 *)
 
 let sort_indices cmp a =
@@ -165,8 +165,8 @@ let sort_indices cmp a =
   b
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
-  [||] (sort_indices Pervasives.compare [||])
-  [|4;2;1;0;3|] (sort_indices Pervasives.compare [|"d";"c";"b";"e";"a"|])
+  [||] (sort_indices Stdlib.compare [||])
+  [|4;2;1;0;3|] (sort_indices Stdlib.compare [|"d";"c";"b";"e";"a"|])
 *)
 
 (*$Q
@@ -179,8 +179,8 @@ let sort_ranking cmp a =
   sort_indices compare (sort_indices cmp a)
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(array int)
-  [||] (sort_ranking Pervasives.compare [||])
-  [|3;2;1;4;0|] (sort_ranking Pervasives.compare [|"d";"c";"b";"e";"a"|])
+  [||] (sort_ranking Stdlib.compare [||])
+  [|3;2;1;4;0|] (sort_ranking Stdlib.compare [|"d";"c";"b";"e";"a"|])
 *)
 
 (*$Q
@@ -670,9 +670,11 @@ let sort_generic (type arr)(type elt)
 
 (*$inject
   module IA = struct
+    let get = Array.get
+    let set = Array.set
+    let length = Array.length
     type elt = int
     type t = int array
-    include Array
   end
 
   let gen_arr = Q.Gen.(array_size (1--100) small_int)
