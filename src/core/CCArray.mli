@@ -20,9 +20,6 @@ external make_float : int -> float array = "caml_make_float_vect" (* compat *)
 
 include module type of CCShimsArray_
 
-type 'a t = 'a array
-(** The type for arrays *)
-
 val empty : 'a t
 (** [empty] is the empty array, physically equal to [||]. *)
 
