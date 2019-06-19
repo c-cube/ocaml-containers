@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.6
+
+- introduce shim modules for 4.08 compat
+- remove reference to sequence, use `iter` instead for tests
+- add `remove` function to het map/tbl
+- missing type annotation for specializing int.compare
+
+- doc: fix bad example in CCIO
+- use `iter`, not `sequence`, in tests
+- fix: use same evaluation order as stdlib for `CCList.init`
+- fix: make `Array.random_choose` fail on empty array at creation time
+- breaking: make `Array.random_choose` raise invalid_arg instead of not_found
+- migrate readme to .md, using mdx to test it
+
 ## 2.5
 
 - perf: annotate types in monomorphic/float/int to help specialize builtins
