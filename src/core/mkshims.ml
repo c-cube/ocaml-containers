@@ -1,9 +1,9 @@
 
 module C = Configurator.V1
 
-let shims_pre_408 = "module Stdlib = Pervasives"
+let shims_pre_407 = "module Stdlib = Pervasives"
 
-let shims_post_408 = "module Stdlib = Stdlib"
+let shims_post_407 = "module Stdlib = Stdlib"
 
 let shims_fmt_pre_408 = "
 include Format
@@ -55,7 +55,7 @@ let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
     let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
-    write_file "CCShims_.ml" (if (major, minor) >= (4,8) then shims_post_408 else shims_pre_408);
+    write_file "CCShims_.ml" (if (major, minor) >= (4,7) then shims_post_407 else shims_pre_407);
     write_file "CCShimsList_.ml" (if (major, minor) >= (4,8) then shims_list_post_408 else shims_list_pre_408);
     write_file "CCShimsArray_.ml" (if (major, minor) >= (4,8) then shims_array_post_408 else shims_array_pre_408);
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
