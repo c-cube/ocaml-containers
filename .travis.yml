@@ -14,3 +14,4 @@ env:
   - PACKAGE="containers" OCAML_VERSION="4.05" EXTRA_DEPS="base-threads base-unix"
   - PACKAGE="containers" OCAML_VERSION="4.06" EXTRA_DEPS="base-threads base-unix"
   - PACKAGE="containers" OCAML_VERSION="4.07" EXTRA_DEPS="base-threads base-unix"
+  - PACKAGE="containers" OCAML_VERSION="4.08" EXTRA_DEPS="base-threads base-unix" TESTS=false
