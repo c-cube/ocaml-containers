@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.6.1
+
+bugfix release:
+
+- fix(parse): error in `many`
+- chore: add 4.08 to travis
+- fix `Containers.Stdlib` on OCaml 4.07
+
 ## 2.6
 
 - introduce shim modules for 4.08 compat
