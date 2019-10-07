@@ -342,3 +342,30 @@ val sort_generic :
 (** [sort_generic (module M) ~cmp a] sorts the array [a], without allocating (eats stack space though).
     Performance might be lower than {!Array.sort}.
     @since 0.14 *)
+
+
+(** {3 Infix Operators} *)
+    It is convenient to {!open CCArray.Infix} to access the infix operators
+    without cluttering the scope too much.
+
+    @since 2.7 *)
+
+module Infix : sig
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  (** [a >>= f] is the infix version of {!flat_map}. *)
+
+  val (>>|) : 'a t -> ('a -> 'b) -> 'b t
+  (** [a >>| f] is the infix version of {!map}.
+      @since 0.8 *)
+
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  (** [a >|= f] is the infix version of {!map}.
+      @since 0.8 *)
+
+  val (--) : int -> int -> int t
+  (** [x -- y] creates an array containing integers in the range [x .. y]. Bounds included. *)
+
+  val (--^) : int -> int -> int t
+  (** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
+      @since 0.17 *)
+end
