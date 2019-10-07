@@ -688,3 +688,12 @@ let sort_generic (type arr)(type elt)
     Array.sort CCInt.compare a1; sort_generic (module IA) ~cmp:CCInt.compare a2; \
     a1 = a2 )
 *)
+
+
+module Infix = struct
+  let (>>=) = (>>=)
+  let (>>|) = (>>|)
+  let (>|=) = (>|=)
+  let (--) = (--)
+  let (--^) = (--^)
+end
