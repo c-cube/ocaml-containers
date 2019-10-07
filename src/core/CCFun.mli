@@ -3,6 +3,8 @@
 
 (** {1 Basic Functions} *)
 
+include module type of CCShims_.Stdlib.Fun
+
 val (|>) : 'a -> ('a -> 'b) -> 'b
 (** A 'pipe' operator. [x |> f] is the same as [f x]. *)
 
@@ -21,16 +23,6 @@ val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 val (@@) : ('a -> 'b) -> 'a -> 'b
 (** [f @@ x] is the same as [f x], but right-associative.
     @since 0.5 *)
-
-val id : 'a -> 'a
-(** Identity function. *)
-
-val const : 'a -> 'b -> 'a
-(** Produce a function that just returns its first argument.
-    [const x y = x] for any [y]. *)
-
-val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
-(** Reverse the order of arguments for a binary function. *)
 
 val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
 (** Convert a function which accepts a pair of arguments into a function which accepts two arguments.

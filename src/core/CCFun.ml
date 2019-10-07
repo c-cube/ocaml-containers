@@ -14,18 +14,13 @@ let opaque_identity x = x
 
 include Sys
 include CCShims_.Stdlib
+include Fun
 
 let compose f g x = g (f x)
 
 let compose_binop f g x y = g (f x) (f y)
 
-let flip f x y = f y x
-
 let curry f x y = f (x,y)
-
-let id x = x
-
-let const x _ = x
 
 let uncurry f (x,y) = f x y
 
