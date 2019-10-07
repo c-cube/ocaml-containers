@@ -3,7 +3,7 @@
 
 (** {1 Basic Functions} *)
 
-include module type of CCShims_.Stdlib.Fun
+include module type of CCShimsFun_
 
 val (|>) : 'a -> ('a -> 'b) -> 'b
 (** A 'pipe' operator. [x |> f] is the same as [f x]. *)

@@ -14,7 +14,7 @@ let opaque_identity x = x
 
 include Sys
 include CCShims_.Stdlib
-include Fun
+include CCShimsFun_
 
 let compose f g x = g (f x)
 
