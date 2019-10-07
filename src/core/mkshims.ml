@@ -58,8 +58,8 @@ let shims_fun_mli_pre_408 =
 (** This is the [Fun] module distributed with the OCaml Core system.
     It is linked with containers in case the installed OCaml system does not
     provide a compatible [Fun] module.
-    It is the an unmodified version of [Fun] as shipped with the OCaml core
-    system.
+    It is the a slightly modified version of [Fun] as shipped with the OCaml
+    core system.
  *)
 "
   ^ read_file "stdlib/fun.mli"
