@@ -58,16 +58,22 @@ val lexicographic : ('a -> 'a -> int) -> ('a -> 'a -> int) -> 'a -> 'a -> int
 val finally : h:(unit -> _) -> f:(unit -> 'a) -> 'a
 (** [finally h f] calls [f ()] and returns its result. If it raises, the
     same exception is raised; in {b any} case, [h ()] is called after
-    [f ()] terminates. *)
+    [f ()] terminates.
+    If [h ()] raises an exception, then this exception will be passed on and
+    any exception that may have been raised by [f ()] is lost. *)
 
 val finally1 : h:(unit -> _) -> ('a -> 'b) -> 'a -> 'b
 (** [finally1 ~h f x] is the same as [f x], but after the computation,
     [h ()] is called whether [f x] rose an exception or not.
+    If [h ()] raises an exception, then this exception will be passed on and
+    any exception that may have been raised by [f ()] is lost.
     @since 0.16 *)
 
 val finally2 : h:(unit -> _) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (** [finally2 ~h f x y] is the same as [f x y], but after the computation,
     [h ()] is called whether [f x y] rose an exception or not.
+    If [h ()] raises an exception, then this exception will be passed on and
+    any exception that may have been raised by [f ()] is lost.
     @since 0.16 *)
 
 val opaque_identity : 'a -> 'a
