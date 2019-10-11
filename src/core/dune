@@ -31,7 +31,7 @@
 
 (rule
   (targets CCShims_.ml CCShimsList_.ml CCShimsFun_.ml CCShimsFun_.mli CCShimsArray_.ml CCShimsFormat_.ml)
-  (deps ./mkshims.exe ./stdlib/fun.ml ./stdlib/fun.mli)
+  (deps ./mkshims.exe)
   (action (run ./mkshims.exe)))
 
 (library

@@ -1,20 +1,8 @@
-
 module C = Configurator.V1
 
 let write_file f s =
   let out = open_out f in
   output_string out s; flush out; close_out out
-
-let read_file f =
-  let in_channel = open_in f in
-  let buf = Buffer.create 4096 in
-  begin try
-    while true; do
-      Buffer.add_channel buf in_channel 4096
-    done
-  with End_of_file -> () end;
-  close_in in_channel;
-  Buffer.contents buf
 
 let shims_pre_407 = "module Stdlib = Pervasives"
 
@@ -50,19 +38,30 @@ let cc_update_funs funs f1 f2 =
   }
 "
 
-let shims_fun_pre_408 =
-  read_file "stdlib/fun.ml"
-let shims_fun_mli_pre_408 =
-  " (** {1:license License} *)
+let shims_fun_pre_408 = "
+  external id : 'a -> 'a = \"%identity\"
+  let flip f x y = f y x
+  let negate f x = not (f x)
+  let protect ~finally f =
+    try
+      let x= f() in
+      finally();
+      x
+    with e ->
+      finally();
+      raise e
 
-(** This is the [Fun] module distributed with the OCaml Core system.
-    It is linked with containers in case the installed OCaml system does not
-    provide a compatible [Fun] module.
-    It is the a slightly modified version of [Fun] as shipped with the OCaml
-    core system.
- *)
 "
-  ^ read_file "stdlib/fun.mli"
+let shims_fun_mli_pre_408 = "
+  (** This is an API imitating the new standard Fun module *)
+  external id : 'a -> 'a = \"%identity\"
+  val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
+  val negate : ('a -> bool) -> 'a -> bool
+
+  val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
+  (* this doesn't have the exact same semantics as the stdlib's finally.
+      It will not attempt to catch exceptions raised from [finally] at all. *)
+"
 
 let shims_fun_post_408 = "include Fun"
 let shims_fun_mli_post_408 = "include module type of Fun"

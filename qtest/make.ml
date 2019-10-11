@@ -16,7 +16,6 @@ let is_code file = is_suffix ~sub:".ml" file || is_suffix ~sub:".mli" file
 
 let do_not_test file =
   assert (not (is_suffix ~sub:"make.ml" file));
-  str_sub ~sub:"stdlib/fun.ml" file ||
   is_suffix ~sub:"containers.ml" file ||
   is_suffix ~sub:"containers_top.ml" file ||
   is_suffix ~sub:"mkflags.ml" file ||
