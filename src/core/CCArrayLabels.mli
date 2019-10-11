@@ -344,7 +344,7 @@ val sort_generic :
     @since 0.14 *)
 
 
-(** {3 Infix Operators} *)
+(** {3 Infix Operators}
     It is convenient to {!open CCArray.Infix} to access the infix operators
     without cluttering the scope too much.
 
