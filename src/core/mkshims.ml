@@ -1,5 +1,8 @@
-
 module C = Configurator.V1
+
+let write_file f s =
+  let out = open_out f in
+  output_string out s; flush out; close_out out
 
 let shims_pre_407 = "module Stdlib = Pervasives"
 
@@ -35,6 +38,36 @@ let cc_update_funs funs f1 f2 =
   }
 "
 
+let shims_fun_pre_408 = "
+  external id : 'a -> 'a = \"%identity\"
+  let flip f x y = f y x
+  let const x _ = x
+  let negate f x = not (f x)
+  let protect ~finally f =
+    try
+      let x= f() in
+      finally();
+      x
+    with e ->
+      finally();
+      raise e
+
+"
+let shims_fun_mli_pre_408 = "
+  (** This is an API imitating the new standard Fun module *)
+  external id : 'a -> 'a = \"%identity\"
+  val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
+  val const : 'a -> _ -> 'a
+  val negate : ('a -> bool) -> 'a -> bool
+
+  val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
+  (* this doesn't have the exact same semantics as the stdlib's finally.
+      It will not attempt to catch exceptions raised from [finally] at all. *)
+"
+
+let shims_fun_post_408 = "include Fun"
+let shims_fun_mli_post_408 = "include module type of Fun"
+
 let shims_list_pre_408 = "
   include List
   type +'a t = 'a list
@@ -47,10 +80,6 @@ let shims_array_pre_408 = "
 "
 let shims_array_post_408 = "include Array"
 
-let write_file f s =
-  let out = open_out f in
-  output_string out s; flush out; close_out out
-
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
@@ -59,4 +88,6 @@ let () =
     write_file "CCShimsList_.ml" (if (major, minor) >= (4,8) then shims_list_post_408 else shims_list_pre_408);
     write_file "CCShimsArray_.ml" (if (major, minor) >= (4,8) then shims_array_post_408 else shims_array_pre_408);
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
+    write_file "CCShimsFun_.ml" (if (major, minor) >= (4,8) then shims_fun_post_408 else shims_fun_pre_408);
+    write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);
   )
