@@ -41,6 +41,7 @@ let cc_update_funs funs f1 f2 =
 let shims_fun_pre_408 = "
   external id : 'a -> 'a = \"%identity\"
   let flip f x y = f y x
+  let const x _ = x
   let negate f x = not (f x)
   let protect ~finally f =
     try
@@ -56,6 +57,7 @@ let shims_fun_mli_pre_408 = "
   (** This is an API imitating the new standard Fun module *)
   external id : 'a -> 'a = \"%identity\"
   val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
+  val const : 'a -> _ -> 'a
   val negate : ('a -> bool) -> 'a -> bool
 
   val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
