@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Error Monad}
@@ -186,6 +185,12 @@ module Infix : sig
 end
 
 (** {2 Collections} *)
+
+val flatten_l : ('a, 'err) t list -> ('a list, 'err) t
+(** Same as [map_l id]: returns [Ok [x1;…;xn]] if [l=[Ok x1; …; Ok xn]],
+    or the first error otherwise.
+    @since NEXT_RELEASE
+*)
 
 val map_l : ('a -> ('b, 'err) t) -> 'a list -> ('b list, 'err) t
 (** [map_l f [a1; ...; an]] applies the function [f] to [a1, ..., an] , and, in case of

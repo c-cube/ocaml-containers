@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Error Monad} *)
@@ -217,6 +216,19 @@ let map_l f l =
         | Error s -> Error s
         | Ok y -> map (y::acc) l'
   in map [] l
+
+let flatten_l l =
+  let rec loop acc l = match l with
+    | [] -> Ok (List.rev acc)
+    | Ok x::l' -> loop (x::acc) l'
+    | Error e::_ -> Error e
+  in loop [] l
+
+(*$=
+  (Ok []) (flatten_l [])
+  (Ok [1;2;3]) (flatten_l [Ok 1; Ok 2; Ok 3])
+  (Error "ohno") (flatten_l [Ok 1; Error "ohno"; Ok 2; Ok 3; Error "wut"])
+*)
 
 exception LocalExit
 
