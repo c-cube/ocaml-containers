@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Imperative deque}
@@ -123,6 +122,10 @@ val to_list : 'a t -> 'a list
 val to_rev_list : 'a t -> 'a list
 (** Efficient conversion to list, in reverse order.
     @since 0.13 *)
+
+val filter_in_place : 'a t -> ('a -> bool) -> unit
+(** Keep only elements that satisfy the predicate.
+    @since NEXT_RELEASE *)
 
 (** {2 print} *)
 
