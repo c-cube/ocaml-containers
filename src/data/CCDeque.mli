@@ -123,6 +123,14 @@ val to_rev_list : 'a t -> 'a list
 (** Efficient conversion to list, in reverse order.
     @since 0.13 *)
 
+val filter : ('a -> bool) -> 'a t -> 'a t
+(** Filter into a new copy.
+    @since NEXT_RELEASE *)
+
+val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+(** Filter map into a new copy
+    @since NEXT_RELEASE *)
+
 val filter_in_place : 'a t -> ('a -> bool) -> unit
 (** Keep only elements that satisfy the predicate.
     @since NEXT_RELEASE *)

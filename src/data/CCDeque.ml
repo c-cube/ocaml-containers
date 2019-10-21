@@ -411,6 +411,23 @@ let filter_in_place (d:_ t) f : unit =
     (filter_in_place q f; to_list q) = (List.filter f l))
   *)
 
+let filter f q =
+  let q' = create() in
+  iter (fun x -> if f x then push_back q' x) q;
+  q'
+
+(*$Q
+  Q.(list small_nat) (fun l -> \
+    let f = fun x -> x mod 2=0 in \
+    let q = filter f (of_list l) in \
+    (to_list q) = (List.filter f l))
+  *)
+
+let filter_map f q =
+  let q' = create() in
+  iter (fun x -> match f x with None -> () | Some y -> push_back q' y) q;
+  q'
+
 let rec gen_iter_ f g = match g() with
   | None -> ()
   | Some x -> f x; gen_iter_ f g
