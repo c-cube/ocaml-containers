@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Imperative deque} *)
@@ -161,6 +160,11 @@ let take_back_node_ n = match n.cell with
   | Two (x,y) -> n.cell <- One x; y
   | Three (x,y,z) -> n.cell <- Two (x,y); z
 
+let remove_node_ n =
+  let next = n.next in
+  n.prev.next <- next;
+  next.prev <- n.prev
+
 let take_back d =
   if is_empty d then raise Empty
   else if Stdlib.(==) d.cur d.cur.prev
@@ -172,16 +176,16 @@ let take_back d =
     let n = d.cur.prev in
     let x = take_back_node_ n in
     decr_size_ d;
-    if is_zero_ n
-    then (  (* remove previous node *)
-      d.cur.prev <- n.prev;
-      n.prev.next <- d.cur;
-    );
+    (* remove previous node *)
+    if is_zero_ n then remove_node_ n;
     x
   )
 
 (*$T
+  let q = of_list [1] in take_back q = 1 && to_list q = []
+  let q = of_list [1;2] in take_back q = 2 && to_list q = [1]
   let q = of_list [1;2;3] in take_back q = 3 && to_list q = [1;2]
+  let q = of_list [1;2;3;4;5;6;7;] in take_back q = 7 && to_list q = [1;2;3;4;5;6]
 *)
 
 let take_front_node_ n = match n.cell with
@@ -322,6 +326,90 @@ let of_list l =
 let to_rev_list q = fold (fun l x -> x::l) [] q
 
 let to_list q = List.rev (to_rev_list q)
+
+let size_cell_ = function
+  | Zero -> 0
+  | One _ -> 1
+  | Two _ -> 2
+  | Three _ -> 3
+
+(* filter over a cell *)
+let filter_cell_ f = function
+  | Zero -> Zero
+  | One x as c -> if f x then c else Zero
+  | Two (x,y) as c ->
+    let fx = f x in
+    let fy = f y in
+    begin match fx, fy with
+      | true, true -> c
+      | true, false -> One x
+      | false, true -> One y
+      | _ -> Zero
+    end
+  | Three (x,y,z) as c ->
+    let fx = f x in
+    let fy = f y in
+    let fz = f z in
+    begin match fx, fy, fz with
+      | true, true, true -> c
+      | true, true, false -> Two (x,y)
+      | true, false, true -> Two (x,z)
+      | true, false, false -> One x
+      | false, true, true -> Two (y,z)
+      | false, true, false -> One y
+      | false, false, true -> One z
+      | false, false, false -> Zero
+    end
+
+let filter_in_place (d:_ t) f : unit =
+  (* update size, compute new cell *)
+  let update_local_ n =
+    d.size <- d.size - size_cell_ n.cell;
+    let new_cell = filter_cell_ f n.cell in
+    d.size <- d.size + size_cell_ new_cell;
+    new_cell
+  in
+  let rec loop ~stop_at n : unit =
+    let n_prev = n.prev in
+    let n_next = n.next in
+    if n != stop_at then (
+      let new_cell = update_local_ n in
+      (* merge into previous cell *)
+      begin match n_prev.cell, new_cell with
+        | _, Zero -> remove_node_ n
+        | Zero, _ -> remove_node_ n; n_prev.cell <- new_cell;
+        | Three _, _ -> n.cell <- new_cell
+        | One x, One y -> remove_node_ n; n_prev.cell <- Two (x,y)
+        | One (x), Two (y,z)
+        | Two (x,y), One z -> remove_node_ n; n_prev.cell <- Three (x,y,z)
+        | One x, Three (y,z,w)
+        | Two (x,y), Two (z,w) -> n_prev.cell <- Three (x,y,z); n.cell <- One w
+        | Two (x,y), Three (z,w1,w2) -> n_prev.cell <- Three (x,y,z); n.cell <- Two (w1,w2)
+      end;
+      loop ~stop_at n_next;
+    );
+  in
+  d.cur.cell <- update_local_ d.cur; (* special case for first cell *)
+  loop ~stop_at:d.cur d.cur.next
+
+(*$R
+   let q = of_list [1;2;3;4;5;6] in
+   filter_in_place q (fun x -> x mod 2 = 0);
+   assert_equal [2;4;6] (to_list q)
+  *)
+
+(*$R
+   let q = of_list [2;1;4;6;10;20] in
+   filter_in_place q (fun x -> x mod 2 = 0);
+   assert_equal [2;4;6;10;20] (to_list q)
+  *)
+
+(*$Q
+  Q.(list small_nat) (fun l -> \
+    let f = fun x -> x mod 2=0 in \
+    let q = of_list l in \
+    (filter_in_place q f; to_list q) = (List.filter f l))
+  *)
 
 let rec gen_iter_ f g = match g() with
   | None -> ()
