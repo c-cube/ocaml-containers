@@ -370,9 +370,9 @@ let filter_in_place (d:_ t) f : unit =
     new_cell
   in
   let rec loop ~stop_at n : unit =
-    let n_prev = n.prev in
-    let n_next = n.next in
     if n != stop_at then (
+      let n_prev = n.prev in
+      let n_next = n.next in
       let new_cell = update_local_ n in
       (* merge into previous cell *)
       begin match n_prev.cell, new_cell with
