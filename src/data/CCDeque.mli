@@ -45,17 +45,33 @@ val peek_front : 'a t -> 'a
 (** First value.
     @raise Empty if empty. *)
 
+val peek_front_opt : 'a t -> 'a option
+(** First value.
+    @since NEXT_RELEASE *)
+
 val peek_back : 'a t -> 'a
 (** Last value.
     @raise Empty if empty. *)
+
+val peek_back_opt : 'a t -> 'a option
+(** Last value.
+    @since NEXT_RELEASE *)
 
 val take_back : 'a t -> 'a
 (** Take last value.
     @raise Empty if empty. *)
 
+val take_back_opt : 'a t -> 'a option
+(** Take last value.
+    @since NEXT_RELEASE *)
+
 val take_front : 'a t -> 'a
 (** Take first value.
     @raise Empty if empty. *)
+
+val take_front_opt : 'a t -> 'a option
+(** Take first value.
+    @since NEXT_RELEASE *)
 
 val append_front : into:'a t -> 'a t -> unit
 (** [append_front ~into q] adds all elements of [q] at the front
