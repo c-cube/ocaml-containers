@@ -17,7 +17,9 @@ type 'a node = {
 (** Linked list of cells.
 
     invariant: only the first and last cells are allowed to
-    be anything but [Three] (all the intermediate ones are [Three]) *)
+    be anything but [Three] (all the intermediate ones are [Three])
+    The first and last cell are [Zero] if and only if the
+    deque is empty *)
 
 type 'a t = {
   mutable cur : 'a node;
