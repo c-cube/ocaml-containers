@@ -106,11 +106,15 @@ let push_back d x =
       n.next <- elt;
       d.cur.prev <- elt
 
-let peek_front d = match d.cur.cell with
-  | Zero -> raise Empty
-  | One x -> x
-  | Two (x,_) -> x
-  | Three (x,_,_) -> x
+let peek_front_opt d = match d.cur.cell with
+  | Zero -> None
+  | One x -> Some x
+  | Two (x,_) -> Some x
+  | Three (x,_,_) -> Some x
+
+let peek_front d = match peek_front_opt d with
+  | None -> raise Empty
+  | Some x -> x
 
 (*$T
   of_list [1;2;3] |> peek_front = 1
@@ -130,14 +134,17 @@ let peek_front d = match d.cur.cell with
   OUnit.assert_equal ~printer 10 (peek_back d);
 *)
 
-let peek_back d =
-  if is_empty d then raise Empty
+let peek_back_opt d =
+  if is_empty d then None
   else match d.cur.prev.cell with
     | Zero -> assert false
-    | One x -> x
-    | Two (_,x) -> x
-    | Three (_,_,x) -> x
+    | One x -> Some x
+    | Two (_,x) -> Some x
+    | Three (_,_,x) -> Some x
 
+let peek_back d = match peek_back_opt d with
+  | None -> raise Empty
+  | Some x -> x
 (*$T
   of_list [1;2;3] |> peek_back = 3
   try (ignore (of_list [] |> peek_back); false) with Empty -> true
@@ -167,21 +174,25 @@ let remove_node_ n =
   n.prev.next <- next;
   next.prev <- n.prev
 
-let take_back d =
-  if is_empty d then raise Empty
+let take_back_opt d =
+  if is_empty d then None
   else if Stdlib.(==) d.cur d.cur.prev
   then (
     (* only one cell *)
     decr_size_ d;
-    take_back_node_ d.cur
+    Some (take_back_node_ d.cur)
   ) else (
     let n = d.cur.prev in
     let x = take_back_node_ n in
     decr_size_ d;
     (* remove previous node *)
     if is_zero_ n then remove_node_ n;
-    x
+    Some x
   )
+
+let take_back d = match take_back_opt d with
+  | None -> raise Empty
+  | Some x -> x
 
 (*$T
   let q = of_list [1] in take_back q = 1 && to_list q = []
@@ -200,13 +211,13 @@ let take_front_node_ n = match n.cell with
   let q = of_list [1;2;3] in take_front q = 1 && to_list q = [2;3]
 *)
 
-let take_front d =
-  if is_empty d then raise Empty
+let take_front_opt d =
+  if is_empty d then None
   else if Stdlib.(==) d.cur.prev d.cur
   then (
     (* only one cell *)
     decr_size_ d;
-    take_front_node_ d.cur
+    Some (take_front_node_ d.cur)
   ) else (
     decr_size_ d;
     let x = take_front_node_ d.cur in
@@ -215,8 +226,12 @@ let take_front d =
       d.cur.next.prev <- d.cur.prev;
       d.cur <- d.cur.next;
     );
-    x
+    Some x
   )
+
+let take_front d = match take_front_opt d with
+  | None -> raise Empty
+  | Some x -> x
 
 let iter f d =
   let rec iter f ~first n =
