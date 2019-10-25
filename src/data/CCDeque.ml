@@ -233,6 +233,95 @@ let take_front d = match take_front_opt d with
   | None -> raise Empty
   | Some x -> x
 
+let remove_back d = ignore (take_back_opt d)
+
+(*$T remove_back
+  let q = of_list [1;2;3;4;5;6;7] in remove_back q; to_list q = [1;2;3;4;5;6]
+*)
+
+let remove_front d = ignore (take_front_opt d)
+
+(*$T remove_front
+  let q = of_list [1;2;3;4;5;6;7] in remove_front q; to_list q = [2;3;4;5;6;7]
+*)
+
+let update_front d f =
+  match d.cur.cell with
+    | Zero -> ()
+    | One x ->
+       begin match f x with
+         | None -> if Stdlib.(!=) d.cur.prev d.cur then (
+              d.cur.prev.next <- d.cur.next;
+              d.cur.next.prev <- d.cur.prev;
+              d.cur <- d.cur.next;
+            )
+            else d.cur.cell <- Zero
+         | Some x -> d.cur.cell <- One x
+       end
+    | Two (x, y) ->
+       begin match f x with
+         | None -> d.cur.cell <- One (y)
+         | Some x -> d.cur.cell <- Two (x,y)
+       end
+    | Three (x,y,z) ->
+       match f x with
+         | None -> d.cur.cell <- Two (y,z)
+         | Some x -> d.cur.cell <- Three (x,y,z)
+
+(*$T update_front
+  let q = of_list [1;2;3;4;5;6;7] in update_front q (fun _ -> None); to_list q = [2;3;4;5;6;7]
+  let q = of_list [1;2;3;4;5;6;7] in update_front q (fun _ -> Some 9); to_list q = [9;2;3;4;5;6;7]
+*)
+(*$Q update_front
+  Q.(list int) (fun l -> \
+    let q = of_list l in \
+    update_front q (fun _ -> None); \
+    let output_list = if l = [] then [] else List.tl l in \
+    to_list q = output_list)
+  Q.(list int) (fun l -> \
+    let q = of_list l in \
+    update_front q (fun x -> Some (x + 42)); \
+    let output_list = if l = [] then [] else List.((hd l + 42)::(tl l)) in \
+    to_list q = output_list)
+*)
+
+let update_back d f =
+  let n = d.cur.prev in
+  match n.cell with
+    | Zero -> ()
+    | One x ->
+       begin match f x with
+         | None -> if Stdlib.(!=) d.cur.prev d.cur then remove_node_ n
+                   else n.cell <- Zero
+         | Some x -> n.cell <- One x
+       end
+    | Two (x, y) ->
+       begin match f y with
+         | None -> n.cell <- One (x)
+         | Some y -> n.cell <- Two (x,y)
+       end
+    | Three (x,y,z) ->
+       match f z with
+         | None -> n.cell <- Two (x,y)
+         | Some z -> n.cell <- Three (x,y,z)
+
+(*$T update_back
+  let q = of_list [1;2;3;4;5;6;7] in update_back q (fun _ -> None); to_list q = [1;2;3;4;5;6]
+  let q = of_list [1;2;3;4;5;6;7] in update_back q (fun _ -> Some 9); to_list q = [1;2;3;4;5;6;9]
+*)
+(*$Q update_back
+  Q.(list int) (fun l -> \
+    let q = of_list l in \
+    update_back q (fun _ -> None); \
+    let output_list = if l = [] then [] else List.(rev l |> tl) in \
+    (to_list q |> List.rev) = output_list)
+  Q.(list int) (fun l -> \
+    let q = of_list l in \
+    update_back q (fun x -> Some (x + 42)); \
+    let output_list = if l = [] then [] else List.(rev l |> fun l -> (hd l + 42)::(tl l)) in \
+    (to_list q |> List.rev) = output_list)
+*)
+
 let iter f d =
   let rec iter f ~first n =
     begin match n.cell with
