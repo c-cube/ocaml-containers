@@ -57,6 +57,14 @@ val peek_back_opt : 'a t -> 'a option
 (** Last value.
     @since NEXT_RELEASE *)
 
+val remove_back : 'a t -> unit
+(** Remove last value. If the deque is empty do nothing
+    @since NEXT_RELEASE *)
+
+val remove_front : 'a t -> unit
+(** Remove first value. If the deque is empty do nothing
+    @since NEXT_RELEASE *)
+
 val take_back : 'a t -> 'a
 (** Take last value.
     @raise Empty if empty. *)
@@ -71,6 +79,14 @@ val take_front : 'a t -> 'a
 
 val take_front_opt : 'a t -> 'a option
 (** Take first value.
+    @since NEXT_RELEASE *)
+
+val update_back : 'a t -> ('a -> 'a option) -> unit
+(** Update last value. If the deque is empty do nothing.
+    @since NEXT_RELEASE *)
+
+val update_front : 'a t -> ('a -> 'a option) -> unit
+(** Update first value. If the deque is empty do nothing.
     @since NEXT_RELEASE *)
 
 val append_front : into:'a t -> 'a t -> unit
