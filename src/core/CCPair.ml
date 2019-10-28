@@ -42,6 +42,8 @@ let compare f g (x1,y1) (x2,y2) =
   let c = f x1 x2 in
   if c <> 0 then c else g y1 y2
 
+let to_string ?(sep=", ") a_to_string b_to_string (x,y) =
+  Printf.sprintf "%s%s%s" (a_to_string x) sep (b_to_string y)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
