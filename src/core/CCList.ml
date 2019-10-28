@@ -1649,6 +1649,18 @@ let random_choose l = match l with
 
 let random_sequence l st = map (fun g -> g st) l
 
+let to_string ?(start="") ?(stop="") ?(sep=", ") item_to_string l =
+  let l = List.map item_to_string l in
+  start ^ (String.concat sep l) ^ stop
+
+(*$= to_string & ~printer:(fun s -> s)
+  (to_string string_of_int []) ""
+  (to_string ~start:"[" ~stop:"]" string_of_int []) "[]"
+  (to_string ~start:"[" ~stop:"]" string_of_int [1]) "[1]"
+  (to_string ~start:"[" ~stop:"]" string_of_int [1;2;3;4]) "[1, 2, 3, 4]"
+  (to_string ~sep:" " string_of_int [1;2;3;4]) "1 2 3 4"
+*)
+
 let to_seq l k = List.iter k l
 let of_seq seq =
   let l = ref [] in
