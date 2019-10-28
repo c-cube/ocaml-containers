@@ -40,6 +40,10 @@ val to_int : t -> int
     Return the ASCII code of the argument.
     @since 1.0 *)
 
+val to_string : t -> string
+(** [to_string c] return a string containing [c]
+    @since NEXT_RELEASE *)
+
 val pp_buf : Buffer.t -> t -> unit
 (** Renamed from [pp] since 2.0. *)
 
