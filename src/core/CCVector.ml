@@ -942,6 +942,9 @@ let to_klist v =
     else `Cons (v.vec.(i), aux (i+1))
   in aux 0
 
+let to_string ?(start="") ?(stop="") ?(sep=", ") item_to_string v =
+  to_list v |> CCList.to_string ~start ~stop ~sep item_to_string
+
 let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
   Format.pp_print_string fmt start;
   iteri
