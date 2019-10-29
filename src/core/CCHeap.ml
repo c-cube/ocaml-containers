@@ -202,6 +202,10 @@ module type S = sig
   val to_tree : t -> elt ktree
   (** Return a [ktree] of the elements of the heap. *)
 
+  val to_string : ?sep:string -> (elt -> string) -> t -> string
+  (**  Print the heap in a string
+       @since NEXT_RELEASE *)
+
   val pp : ?sep:string -> elt printer -> t printer
   (** @since 0.16
       Renamed from {!print} @since 2.0 *)
@@ -403,6 +407,22 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let rec to_tree h () = match h with
     | E -> `Nil
     | N (_, x, l, r) -> `Node(x, [to_tree l; to_tree r])
+
+  let to_string ?(sep=",") elt_to_string h =
+    to_list_sorted h
+    |> List.map elt_to_string
+    |> String.concat sep
+
+  (*$Q
+    Q.(list int) (fun l -> \
+      let h = H.of_list l in \
+      (H.to_string string_of_int h) \
+        = (List.sort Stdlib.compare l |> List.map string_of_int |> String.concat ","))
+    Q.(list int) (fun l -> \
+      let h = H.of_list l in \
+      (H.to_string ~sep:" " string_of_int h) \
+        = (List.sort Stdlib.compare l |> List.map string_of_int |> String.concat " "))
+  *)
 
   let pp ?(sep=",") pp_elt out h =
     let first=ref true in

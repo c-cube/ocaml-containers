@@ -142,6 +142,10 @@ module type S = sig
   val to_tree : t -> elt ktree
   (** Return a [ktree] of the elements of the heap. *)
 
+  val to_string : ?sep:string -> (elt -> string) -> t -> string
+  (**  Print the heap in a string
+       @since NEXT_RELEASE *)
+
   val pp : ?sep:string -> elt printer -> t printer
   (** Printer.
       Renamed from {!print} since 2.0
