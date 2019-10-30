@@ -83,10 +83,13 @@ val take_front_opt : 'a t -> 'a option
 
 val update_back : 'a t -> ('a -> 'a option) -> unit
 (** Update last value. If the deque is empty do nothing.
+    If the function returns [None], remove last element;
+    if it returns [Some x], replace last element with [x].
     @since NEXT_RELEASE *)
 
 val update_front : 'a t -> ('a -> 'a option) -> unit
 (** Update first value. If the deque is empty do nothing.
+    Similar to {!update_back} but for the first value.
     @since NEXT_RELEASE *)
 
 val append_front : into:'a t -> 'a t -> unit

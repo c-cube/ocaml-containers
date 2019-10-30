@@ -249,24 +249,25 @@ let update_front d f =
   match d.cur.cell with
     | Zero -> ()
     | One x ->
-       begin match f x with
-         | None -> if Stdlib.(!=) d.cur.prev d.cur then (
-              d.cur.prev.next <- d.cur.next;
-              d.cur.next.prev <- d.cur.prev;
-              d.cur <- d.cur.next;
-            )
-            else d.cur.cell <- Zero
-         | Some x -> d.cur.cell <- One x
-       end
+      begin match f x with
+        | None -> if Stdlib.(!=) d.cur.prev d.cur then (
+            d.cur.prev.next <- d.cur.next;
+            d.cur.next.prev <- d.cur.prev;
+            d.cur <- d.cur.next;
+          )
+          else d.cur.cell <- Zero
+        | Some x -> d.cur.cell <- One x
+      end
     | Two (x, y) ->
-       begin match f x with
-         | None -> d.cur.cell <- One (y)
-         | Some x -> d.cur.cell <- Two (x,y)
-       end
+      begin match f x with
+        | None -> d.cur.cell <- One (y)
+        | Some x -> d.cur.cell <- Two (x,y)
+      end
     | Three (x,y,z) ->
-       match f x with
-         | None -> d.cur.cell <- Two (y,z)
-         | Some x -> d.cur.cell <- Three (x,y,z)
+      begin match f x with
+        | None -> d.cur.cell <- Two (y,z)
+        | Some x -> d.cur.cell <- Three (x,y,z)
+      end
 
 (*$T update_front
   let q = of_list [1;2;3;4;5;6;7] in update_front q (fun _ -> None); to_list q = [2;3;4;5;6;7]
@@ -290,20 +291,21 @@ let update_back d f =
   match n.cell with
     | Zero -> ()
     | One x ->
-       begin match f x with
-         | None -> if Stdlib.(!=) d.cur.prev d.cur then remove_node_ n
-                   else n.cell <- Zero
-         | Some x -> n.cell <- One x
-       end
+      begin match f x with
+        | None -> if Stdlib.(!=) d.cur.prev d.cur then remove_node_ n
+          else n.cell <- Zero
+        | Some x -> n.cell <- One x
+      end
     | Two (x, y) ->
-       begin match f y with
-         | None -> n.cell <- One (x)
-         | Some y -> n.cell <- Two (x,y)
-       end
+      begin match f y with
+        | None -> n.cell <- One (x)
+        | Some y -> n.cell <- Two (x,y)
+      end
     | Three (x,y,z) ->
-       match f z with
-         | None -> n.cell <- Two (x,y)
-         | Some z -> n.cell <- Three (x,y,z)
+      begin match f z with
+        | None -> n.cell <- Two (x,y)
+        | Some z -> n.cell <- Three (x,y,z)
+      end
 
 (*$T update_back
   let q = of_list [1;2;3;4;5;6;7] in update_back q (fun _ -> None); to_list q = [1;2;3;4;5;6]
