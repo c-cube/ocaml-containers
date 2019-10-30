@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Growable, mutable vector} *)
@@ -943,7 +942,7 @@ let to_klist v =
   in aux 0
 
 let to_string ?(start="") ?(stop="") ?(sep=", ") item_to_string v =
-  to_list v |> CCList.to_string ~start ~stop ~sep item_to_string
+  start ^ (to_list v |> List.map item_to_string |> String.concat sep) ^ stop
 
 let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
   Format.pp_print_string fmt start;
