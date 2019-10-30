@@ -16,6 +16,12 @@ let of_int_exn = Char.chr
 let of_int c = try Some (of_int_exn c) with _ -> None
 let to_int = Char.code
 
+let to_string c = String.make 1 c
+
+(*$Q to_string
+  (Q.string_of_size (Q.Gen.return 1)) (fun s -> to_string s.[0] = s)
+*)
+
 let lowercase_ascii = function
   | 'A'..'Z' as c -> Char.unsafe_chr (Char.code c + 32)
   | c -> c

@@ -540,6 +540,18 @@ let pp_i ?(sep=", ") pp_item out a =
     pp_item k out a.(k)
   done
 
+let to_string ?(sep=", ") item_to_string a =
+  Array.to_list a
+  |> List.map item_to_string
+  |> String.concat sep
+
+(*$= to_string & ~printer:(fun s -> s)
+  (to_string string_of_int [|1;2;3;4;5;6|]) "1, 2, 3, 4, 5, 6"
+  (to_string string_of_int [||]) ""
+  (to_string ~sep:" " string_of_int [|1;2;3;4;5;6|]) "1 2 3 4 5 6"
+  (to_string string_of_int [|1|]) "1"
+*)
+
 let to_seq a k = iter k a
 
 let to_gen a =

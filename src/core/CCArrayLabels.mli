@@ -245,6 +245,11 @@ val random_choose : 'a t -> 'a random_gen
 (** [random_choose a rs] randomly chooses an element of [a].
     @raise Not_found if the array/slice is empty. *)
 
+val to_string : ?sep:string -> ('a -> string) -> 'a array -> string
+(** [to_string ~sep item_to_string a] print [a] to a string using [sep] as a separator
+    between elements of [a].
+    @since NEXT_RELEASE *)
+
 val to_seq : 'a t -> 'a sequence
 (** [to_seq a] returns a [sequence] of the elements of an array [a].
     The input array [a] is shared with the sequence and modification of it will result

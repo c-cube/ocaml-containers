@@ -287,5 +287,11 @@ val to_klist : ('a,_) t -> 'a klist
 val of_gen : ?init:('a, rw) t -> 'a gen -> ('a, rw) t
 val to_gen : ('a,_) t -> 'a gen
 
+val to_string :
+  ?start:string -> ?stop:string -> ?sep:string ->
+  ('a -> string) -> ('a,_) t -> string
+(**  Print the vector in a string
+     @since NEXT_RELEASE *)
+
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> ('a,_) t printer
