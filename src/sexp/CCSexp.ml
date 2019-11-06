@@ -176,19 +176,45 @@ module Make(Sexp : SEXP) = struct
       let col = start.Lexing.pos_cnum - start.Lexing.pos_bol in
       raise (E_error (line,col,msg))
 
+    let pair_of_pos_ p =
+      let open Lexing in
+      p.pos_lnum, p.pos_cnum - p.pos_bol
+
     let next (t:t) =
+      let open Lexing in
       let rec expr () = match cur t with
         | L.EOI -> raise E_end
         | L.SEXP_COMMENT ->
           junk t;
           let _u = expr() in (* discard next sexp *)
           expr()
-        | L.ATOM s -> junk t; Sexp.atom s
+        | L.ATOM s ->
+          junk t; 
+          begin match Sexp.make_loc with
+            | None -> Sexp.atom s
+            | Some f ->
+              (* build a position for this token *)
+              let loc =
+                f (pair_of_pos_ t.buf.lex_start_p) (pair_of_pos_ t.buf.lex_curr_p)
+                  t.buf.lex_curr_p.pos_fname in
+              Sexp.atom_with_loc ~loc s
+          end
         | L.LIST_OPEN ->
+          let pos_start = t.buf.lex_curr_p in
           junk t;
           let l = lst [] in
           begin match cur t with
-            | L.LIST_CLOSE -> junk t; Sexp.list l
+            | L.LIST_CLOSE ->
+              junk t;
+              begin match Sexp.make_loc with
+                | None -> Sexp.list l
+                | Some f ->
+                  let loc =
+                    f (pair_of_pos_ pos_start)
+                      (pair_of_pos_ t.buf.lex_curr_p)
+                      t.buf.lex_curr_p.pos_fname in 
+                  Sexp.list_with_loc ~loc l
+              end
             | _ -> error_ t.buf "expected ')'"
           end
         | L.LIST_CLOSE -> error_ t.buf "expected expression"
@@ -277,8 +303,12 @@ and compare a b = match a, b with
 include (Make(struct
     type t_ = t
     type t = t_
+    type loc = unit
+    let make_loc = None
     let atom x = `Atom x
     let list x = `List x
+    let atom_with_loc ~loc:_ s = atom s
+    let list_with_loc ~loc:_ l = list l
 
     let match_ x ~atom ~list = match x with
       | `Atom x -> atom x
