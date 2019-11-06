@@ -4,6 +4,7 @@
     | ATOM of string
     | LIST_OPEN
     | LIST_CLOSE
+    | SEXP_COMMENT
     | EOI
 
   (* location + message *)
@@ -65,6 +66,7 @@ let string_item =
 let string = '"' string_item* '"'
 
 rule token = parse
+  | "#;" { SEXP_COMMENT }
   | comment_line { token lexbuf }
   | newline { Lexing.new_line lexbuf; token lexbuf }
   | white { token lexbuf }

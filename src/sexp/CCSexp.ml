@@ -195,6 +195,10 @@ module Decoder = struct
   let next (t:t) =
     let rec expr () = match cur t with
       | L.EOI -> raise E_end
+      | L.SEXP_COMMENT ->
+        junk t;
+        let _u = expr() in (* discard next sexp *)
+        expr()
       | L.ATOM s -> junk t; `Atom s
       | L.LIST_OPEN ->
         junk t;
@@ -206,7 +210,7 @@ module Decoder = struct
       | L.LIST_CLOSE -> error_ t.buf "expected expression"
     and lst acc = match cur t with
       | L.LIST_CLOSE -> List.rev acc
-      | L.LIST_OPEN | L.ATOM _ ->
+      | L.LIST_OPEN | L.ATOM _ | L.SEXP_COMMENT ->
         let sub = expr () in
         lst (sub::acc)
       | L.EOI -> error_ t.buf "unexpected EOI"
@@ -232,6 +236,15 @@ let parse_string s : t or_error =
   CCResult.to_opt (parse_string "(abc ( d e ffff   ) \"hello/world\")") <> None
   CCResult.to_opt (parse_string "\"\123\bcoucou\"") <> None
 *)
+
+(*$= & ~printer:(function Ok x -> to_string x | Error e -> "error " ^ e)
+  (parse_string "(a b)") (Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "(a\n ;coucou\n b)") (Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "(a #; (foo bar\n (1 2 3)) b)") (Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "#; (a b) (c d)") (Ok (`List [`Atom "c"; `Atom "d"]))
+  (parse_string "#; (a b) 1") (Ok (`Atom "1"))
+*)
+
 
 (*$inject
   let sexp_gen =
