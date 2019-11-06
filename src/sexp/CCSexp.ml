@@ -170,15 +170,14 @@ module Make(Sexp : SEXP) = struct
     exception E_end
     exception E_error of int * int * string
 
-    let error_ lexbuf msg =
-      let start = Lexing.lexeme_start_p lexbuf in
-      let line = start.Lexing.pos_lnum in
-      let col = start.Lexing.pos_cnum - start.Lexing.pos_bol in
-      raise (E_error (line,col,msg))
-
     let pair_of_pos_ p =
       let open Lexing in
       p.pos_lnum, p.pos_cnum - p.pos_bol
+
+    let error_ lexbuf msg =
+      let start = Lexing.lexeme_start_p lexbuf in
+      let line, col = pair_of_pos_ start in
+      raise (E_error (line,col,msg))
 
     let next (t:t) =
       let open Lexing in
