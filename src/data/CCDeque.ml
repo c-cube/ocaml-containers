@@ -74,47 +74,48 @@ let is_empty d =
   assert (bool_eq res (d.cur = Empty));
   res
 
-(*let rec cur = { cell=Zero; prev=cur; next=cur } in*)
 let push_front d x =
   incr_size_ d;
   match d.cur with
-    | Empty ->
-        let rec node = { cell=One x; prev = node; next = node } in
-        d.cur <- Node node
-    | Node n ->
-      match n.cell with
-        | One y -> n.cell <- Two (x, y)
-        | Two (y, z) -> n.cell <- Three (x,y,z)
-        | Three _ ->
-          let node = { cell = One x; prev = n.prev; next = n; } in
-          n.prev.next <- node;
-          n.prev <- node;
-          d.cur <- Node node (* always point to first node *)
+  | Empty ->
+    let rec node = { cell=One x; prev = node; next = node } in
+    d.cur <- Node node
+  | Node n ->
+    begin match n.cell with
+      | One y -> n.cell <- Two (x, y)
+      | Two (y, z) -> n.cell <- Three (x,y,z)
+      | Three _ ->
+        let node = { cell = One x; prev = n.prev; next = n; } in
+        n.prev.next <- node;
+        n.prev <- node;
+        d.cur <- Node node (* always point to first node *)
+    end
 
 let push_back d x =
   incr_size_ d;
   match d.cur with
-    | Empty ->
-        let rec node = { cell=One x; prev = node; next = node } in
-        d.cur <- Node node
-    | Node cur ->
-      let n = cur.prev in (* last node *)
-      match n.cell with
-        | One y -> n.cell <- Two (y, x)
-        | Two (y,z) -> n.cell <- Three (y, z, x)
-        | Three _ ->
-          let elt = { cell = One x; next=cur; prev=n; } in
-          n.next <- elt;
-          cur.prev <- elt
+  | Empty ->
+    let rec node = { cell=One x; prev = node; next = node } in
+    d.cur <- Node node
+  | Node cur ->
+    let n = cur.prev in (* last node *)
+    begin match n.cell with
+      | One y -> n.cell <- Two (y, x)
+      | Two (y,z) -> n.cell <- Three (y, z, x)
+      | Three _ ->
+        let elt = { cell = One x; next=cur; prev=n; } in
+        n.next <- elt;
+        cur.prev <- elt
+    end
 
 let peek_front_opt d =
   match d.cur with
-    | Empty -> None
-    | Node cur ->
-      match cur.cell with
-        | One x -> Some x
-        | Two (x,_) -> Some x
-        | Three (x,_,_) -> Some x
+  | Empty -> None
+  | Node cur ->
+    match cur.cell with
+    | One x -> Some x
+    | Two (x,_) -> Some x
+    | Three (x,_,_) -> Some x
 
 let peek_front d = match peek_front_opt d with
   | None -> raise Empty
@@ -140,12 +141,12 @@ let peek_front d = match peek_front_opt d with
 
 let peek_back_opt d =
   match d.cur with
-    | Empty -> None
-    | Node cur ->
-      match cur.prev.cell with
-        | One x -> Some x
-        | Two (_,x) -> Some x
-        | Three (_,_,x) -> Some x
+  | Empty -> None
+  | Node cur ->
+    match cur.prev.cell with
+    | One x -> Some x
+    | Two (_,x) -> Some x
+    | Three (_,_,x) -> Some x
 
 let peek_back d = match peek_back_opt d with
   | None -> raise Empty
@@ -180,23 +181,23 @@ let remove_node_ n =
 
 let take_back_opt d =
   match d.cur with
-    | Empty -> None
-    | Node cur ->
-      if Stdlib.(==) cur cur.prev
-      then (
-        (* only one cell *)
-        decr_size_ d;
-        let is_zero, x = take_back_node_ cur in
-        if is_zero then d.cur <- Empty;
-        Some x
-      ) else (
-        let n = cur.prev in
-        let is_zero, x = take_back_node_ n in
-        decr_size_ d;
-        (* remove previous node *)
-        if is_zero then remove_node_ n;
-        Some x
-      )
+  | Empty -> None
+  | Node cur ->
+    if Stdlib.(==) cur cur.prev
+    then (
+      (* only one cell *)
+      decr_size_ d;
+      let is_zero, x = take_back_node_ cur in
+      if is_zero then d.cur <- Empty;
+      Some x
+    ) else (
+      let n = cur.prev in
+      let is_zero, x = take_back_node_ n in
+      decr_size_ d;
+      (* remove previous node *)
+      if is_zero then remove_node_ n;
+      Some x
+    )
 
 let take_back d = match take_back_opt d with
   | None -> raise Empty
@@ -220,25 +221,25 @@ let take_front_node_ n = match n.cell with
 
 let take_front_opt d =
   match d.cur with
-    | Empty -> None
-    | Node cur ->
-      if Stdlib.(==) cur.prev cur
-      then (
-        (* only one cell *)
-        decr_size_ d;
-        let is_zero, x = take_front_node_ cur in
-        if is_zero then d.cur <- Empty;
-        Some x
-      ) else (
-        decr_size_ d;
-        let is_zero, x = take_front_node_ cur in
-        if is_zero then (
-          cur.prev.next <- cur.next;
-          cur.next.prev <- cur.prev;
-          d.cur <- Node cur.next;
-        );
-        Some x
-      )
+  | Empty -> None
+  | Node cur ->
+    if Stdlib.(==) cur.prev cur
+    then (
+      (* only one cell *)
+      decr_size_ d;
+      let is_zero, x = take_front_node_ cur in
+      if is_zero then d.cur <- Empty;
+      Some x
+    ) else (
+      decr_size_ d;
+      let is_zero, x = take_front_node_ cur in
+      if is_zero then (
+        cur.prev.next <- cur.next;
+        cur.next.prev <- cur.prev;
+        d.cur <- Node cur.next;
+      );
+      Some x
+    )
 
 let take_front d = match take_front_opt d with
   | None -> raise Empty
@@ -258,29 +259,31 @@ let remove_front d = ignore (take_front_opt d)
 
 let update_front d f =
   match d.cur with
-    | Empty -> ()
-    | Node cur ->
-      match cur.cell with
-        | One x ->
-          begin match f x with
-            | None -> if Stdlib.(!=) cur.prev cur then (
-                cur.prev.next <- cur.next;
-                cur.next.prev <- cur.prev;
-                d.cur <- Node cur.next;
-              )
-              else d.cur <- Empty
-            | Some x -> cur.cell <- One x
-          end
-        | Two (x, y) ->
-          begin match f x with
-            | None -> cur.cell <- One (y)
-            | Some x -> cur.cell <- Two (x,y)
-          end
-        | Three (x,y,z) ->
-          begin match f x with
-            | None -> cur.cell <- Two (y,z)
-            | Some x -> cur.cell <- Three (x,y,z)
-          end
+  | Empty -> ()
+  | Node cur ->
+    match cur.cell with
+    | One x ->
+      begin match f x with
+        | None ->
+          if Stdlib.(!=) cur.prev cur then (
+            cur.prev.next <- cur.next;
+            cur.next.prev <- cur.prev;
+            d.cur <- Node cur.next;
+          ) else (
+            d.cur <- Empty
+          )
+        | Some x -> cur.cell <- One x
+      end
+    | Two (x, y) ->
+      begin match f x with
+        | None -> cur.cell <- One (y)
+        | Some x -> cur.cell <- Two (x,y)
+      end
+    | Three (x,y,z) ->
+      begin match f x with
+        | None -> cur.cell <- Two (y,z)
+        | Some x -> cur.cell <- Three (x,y,z)
+      end
 
 (*$T update_front
   let q = of_list [1;2;3;4;5;6;7] in update_front q (fun _ -> None); to_list q = [2;3;4;5;6;7]
@@ -301,26 +304,27 @@ let update_front d f =
 
 let update_back d f =
   match d.cur with
-    | Empty -> ()
-    | Node cur ->
-      let n = cur.prev in
-      match n.cell with
-        | One x ->
-          begin match f x with
-            | None -> if Stdlib.(!=) cur.prev cur then remove_node_ n
-              else d.cur <- Empty
-            | Some x -> n.cell <- One x
-          end
-        | Two (x, y) ->
-          begin match f y with
-            | None -> n.cell <- One (x)
-            | Some y -> n.cell <- Two (x,y)
-          end
-        | Three (x,y,z) ->
-          begin match f z with
-            | None -> n.cell <- Two (x,y)
-            | Some z -> n.cell <- Three (x,y,z)
-          end
+  | Empty -> ()
+  | Node cur ->
+    let n = cur.prev in
+    match n.cell with
+    | One x ->
+      begin match f x with
+        | None ->
+          if Stdlib.(!=) cur.prev cur then remove_node_ n
+          else d.cur <- Empty
+        | Some x -> n.cell <- One x
+      end
+    | Two (x, y) ->
+      begin match f y with
+        | None -> n.cell <- One (x)
+        | Some y -> n.cell <- Two (x,y)
+      end
+    | Three (x,y,z) ->
+      begin match f z with
+        | None -> n.cell <- Two (x,y)
+        | Some z -> n.cell <- Three (x,y,z)
+      end
 
 (*$T update_back
   let q = of_list [1;2;3;4;5;6;7] in update_back q (fun _ -> None); to_list q = [1;2;3;4;5;6]
@@ -349,9 +353,9 @@ let iter f d =
     if n.next != first then iter f ~first n.next
   in
   match d.cur with
-    | Empty -> ()
-    | Node cur ->
-      iter f ~first:cur cur
+  | Empty -> ()
+  | Node cur ->
+    iter f ~first:cur cur
 
 (*$T
   let n = ref 0 in iter (fun _ -> incr n) (of_list [1;2;3]); !n = 3
@@ -386,9 +390,9 @@ let fold f acc d =
     if Stdlib.(==) n.next first then acc else aux ~first f acc n.next
   in
   match d.cur with
-    | Empty -> acc
-    | Node cur ->
-      aux ~first:cur f acc cur
+  | Empty -> acc
+  | Node cur ->
+    aux ~first:cur f acc cur
 
 (*$T
   fold (+) 0 (of_list [1;2;3]) = 6
@@ -491,10 +495,10 @@ let filter_in_place (d:_ t) f : unit =
   let update_local_ n =
     d.size <- d.size - size_cell_ n.cell;
     match filter_cell_ f n.cell with
-      | None -> None
-      |Some n as new_cell->
-        d.size <- d.size + size_cell_ n;
-        new_cell
+    | None -> None
+    | Some n as new_cell->
+      d.size <- d.size + size_cell_ n;
+      new_cell
   in
   let rec loop ~stop_at n : unit =
     if n != stop_at then (
@@ -518,10 +522,10 @@ let filter_in_place (d:_ t) f : unit =
   let rec new_first_cell ~stop_at n =
     if n != stop_at then (
       match update_local_ n with
-        | None ->
-          new_first_cell ~stop_at n.next
-        | Some c ->
-          n.cell <- c; Some n
+      | None ->
+        new_first_cell ~stop_at n.next
+      | Some c ->
+        n.cell <- c; Some n
     ) else None
   in
   match d.cur with
@@ -529,17 +533,18 @@ let filter_in_place (d:_ t) f : unit =
     | Node cur ->
       (* special case for first cell *)
       match update_local_ cur with
-        | None ->
-          begin match new_first_cell ~stop_at:cur cur.next with
-            | None -> d.cur <- Empty
-            | Some n ->
-              cur.prev.next <- n;
-              n.prev <- cur.prev;
-              d.cur <- Node n;
-              loop ~stop_at:n n.next
-          end
-        | Some c -> cur.cell <- c;
-          loop ~stop_at:cur cur.next
+      | None ->
+        begin match new_first_cell ~stop_at:cur cur.next with
+          | None -> d.cur <- Empty
+          | Some n ->
+            cur.prev.next <- n;
+            n.prev <- cur.prev;
+            d.cur <- Node n;
+            loop ~stop_at:n n.next
+        end
+      | Some c ->
+        cur.cell <- c;
+        loop ~stop_at:cur cur.next
 
 (*$R
    let q = of_list [1;2;3;4;5;6] in
@@ -588,24 +593,25 @@ let of_gen g =
 
 let to_gen q =
   match q.cur with
-    | Empty -> (fun () -> None)
-    | Node cur ->
-      let first = cur in
-      let cell = ref (Some cur.cell) in
-      let cur = ref cur in
-      let rec next () = match !cell with
-        | None when Stdlib.(==) (!cur).next first -> None
-        | None ->
-          (* go to next node *)
-          let n = !cur in
-          cur := n.next;
-          cell := Some (n.next.cell);
-          next ()
-        | Some (One x) -> cell := None; Some x
-        | Some (Two (x,y)) -> cell := Some (One y); Some x
-        | Some (Three (x,y,z)) -> cell := Some (Two (y,z)); Some x
-      in
-      next
+  | Empty -> (fun () -> None)
+  | Node cur ->
+    let first = cur in
+    let cell = ref (Some cur.cell) in
+    let cur = ref cur in
+    let rec next () =
+      match !cell with
+      | None when Stdlib.(==) (!cur).next first -> None
+      | None ->
+        (* go to next node *)
+        let n = !cur in
+        cur := n.next;
+        cell := Some (n.next.cell);
+        next ()
+      | Some (One x) -> cell := None; Some x
+      | Some (Two (x,y)) -> cell := Some (One y); Some x
+      | Some (Three (x,y,z)) -> cell := Some (Two (y,z)); Some x
+    in
+    next
 
 (*$T
   of_list [1;2;3] |> to_gen |> of_gen |> to_list = [1;2;3]
