@@ -21,11 +21,28 @@
           with_in "/tmp/input"
             (fun ic ->
                let chunks = read_chunks ic in
-               with_out ~flags:[Open_binary] ~mode:0o644 "/tmp/output"
+               with_out ~flags:[Open_binary; Open_creat] ~mode:0o644 "/tmp/output"
                  (fun oc ->
                     write_gen oc chunks
                  )
             )
+        ) ;;
+    ]}
+
+    - Note that the lifetime of an IO generator is tied to the underlying
+      channel. In the example above, [chunks] must be used in the scope of [ic].
+      This will raise an error: 
+
+    {[
+      # CCIO.(
+          let chunks =
+            with_in "/tmp/input"
+              (fun ic ->read_chunks ic)
+          in
+          with_out ~flags:[Open_binary;Open_creat] ~mode:0o644 "/tmp/output"
+             (fun oc ->
+                write_gen oc chunks
+             )
         ) ;;
     ]}
 
