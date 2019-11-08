@@ -1,2 +1,0 @@
-{1 Library containers.thread}
-This library exposes the following toplevel modules: {!modules:CCBlockingQueue CCLock CCPool CCSemaphore CCThread CCTimer}.
