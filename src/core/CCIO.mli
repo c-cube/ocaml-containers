@@ -36,7 +36,8 @@
 *)
 
 type 'a or_error = ('a, string) Result.result
-type 'a gen = unit -> 'a option  (** See {!Gen} in the gen library. *)
+type 'a gen = unit -> 'a option
+(** See [Gen] in the {{: https://github.com/c-cube/gen} gen library}. *)
 
 (** {2 Input} *)
 
