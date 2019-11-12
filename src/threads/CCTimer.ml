@@ -157,16 +157,19 @@ let every ?delay timer d ~f =
   let start = Unix.gettimeofday() in
   let timer = create() in
   let res = CCLock.create 0 in
+  let sem = CCSemaphore.create 1 in
+  CCSemaphore.acquire 1 sem;
   let stop = ref 0. in
   every timer 0.1
     ~f:(fun () ->
       if CCLock.incr_then_get res > 5 then (
         stop := Unix.gettimeofday();
+        CCSemaphore.release 1 sem;
         raise ExitEvery
       ));
-  Thread.delay 0.7;
+  CCSemaphore.acquire 1 sem; (* wait *)
   OUnit.assert_equal ~printer:CCInt.to_string 6 (CCLock.get res);
-  OUnit.assert_bool "estimate delay" (abs_float (!stop -. start -. 0.5) < 0.1);
+  OUnit.assert_bool "estimate delay" (abs_float (!stop -. start -. 0.5) < 0.2);
 *)
 
 let active timer = not timer.stop
