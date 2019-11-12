@@ -1,7 +1,15 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Continuation List} *)
+(** {1 Continuation List}
+
+
+    @deprecated since NEXT_RELEASE, you should use the standard {b Seq} instead.
+    See {{: https://github.com/c-cube/oseq/} oseq} for similar combinators.
+
+*)
+
+[@@@ocaml.deprecated "use Seq instead"]
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
