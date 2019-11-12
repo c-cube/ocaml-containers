@@ -189,7 +189,7 @@ end
 val flatten_l : ('a, 'err) t list -> ('a list, 'err) t
 (** Same as [map_l id]: returns [Ok [x1;…;xn]] if [l=[Ok x1; …; Ok xn]],
     or the first error otherwise.
-    @since NEXT_RELEASE
+    @since 2.7
 *)
 
 val map_l : ('a -> ('b, 'err) t) -> 'a list -> ('b list, 'err) t

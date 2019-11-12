@@ -9,12 +9,12 @@ type 'a gen = unit -> 'a option
 
 (** {2 Abstract representation of S-expressions}
 
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 module type SEXP = CCSexp_intf.SEXP
 
 (** {2 Operations over S-expressions}
 
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 module type S = CCSexp_intf.S
 
 (** {2 Functorized operations}
@@ -22,7 +22,7 @@ module type S = CCSexp_intf.S
     This builds a parser and printer for S-expressions represented as
     in the [Sexp] argument.
 
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 module Make(Sexp : SEXP) : S with type t = Sexp.t
 
 (** {2 Basics} *)

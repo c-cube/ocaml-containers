@@ -291,7 +291,7 @@ val to_string :
   ?start:string -> ?stop:string -> ?sep:string ->
   ('a -> string) -> ('a,_) t -> string
 (**  Print the vector in a string
-     @since NEXT_RELEASE *)
+     @since 2.7 *)
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> ('a,_) t printer

@@ -247,7 +247,7 @@ val random_choose : 'a t -> 'a random_gen
 val to_string : ?sep:string -> ('a -> string) -> 'a array -> string
 (** [to_string ~sep item_to_string a] print [a] to a string using [sep] as a separator
     between elements of [a].
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val to_seq : 'a t -> 'a sequence
 (** [to_seq a] returns a [sequence] of the elements of an array [a].

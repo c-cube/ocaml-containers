@@ -320,12 +320,12 @@ include (Make(struct
   CCResult.to_opt (parse_string "\"\123\bcoucou\"") <> None
 *)
 
-(*$= & ~printer:(function Ok x -> to_string x | Error e -> "error " ^ e)
-  (parse_string "(a b)") (Ok (`List [`Atom "a"; `Atom "b"]))
-  (parse_string "(a\n ;coucou\n b)") (Ok (`List [`Atom "a"; `Atom "b"]))
-  (parse_string "(a #; (foo bar\n (1 2 3)) b)") (Ok (`List [`Atom "a"; `Atom "b"]))
-  (parse_string "#; (a b) (c d)") (Ok (`List [`Atom "c"; `Atom "d"]))
-  (parse_string "#; (a b) 1") (Ok (`Atom "1"))
+(*$= & ~printer:(function Result.Ok x -> to_string x | Result.Error e -> "error " ^ e)
+  (parse_string "(a b)") (Result.Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "(a\n ;coucou\n b)") (Result.Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "(a #; (foo bar\n (1 2 3)) b)") (Result.Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "#; (a b) (c d)") (Result.Ok (`List [`Atom "c"; `Atom "d"]))
+  (parse_string "#; (a b) 1") (Result.Ok (`Atom "1"))
 *)
 
 

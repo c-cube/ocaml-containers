@@ -5,7 +5,7 @@ type 'a gen = unit -> 'a option
 
 (** {2 Abstract representation of S-expressions}
 
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 module type SEXP = sig
   type t
   type loc
@@ -25,7 +25,7 @@ end
 
 (** {2 Operations over S-expressions}
 
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 module type S = sig
   type t
   type sexp = t

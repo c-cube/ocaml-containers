@@ -1,4 +1,4 @@
-# OCaml-containers 📦
+# OCaml-containers 📦  [![Build Status](https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master)](https://travis-ci.org/c-cube/ocaml-containers)
 
 A modular, clean and powerful extension of the OCaml standard library.
 
@@ -11,8 +11,6 @@ global namespace. Some modules extend the stdlib (e.g. CCList provides safe
 map/fold_right/append, and additional functions on lists).
 Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
-
-[![Build Status](https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master)](https://travis-ci.org/c-cube/ocaml-containers)
 
 ## Quick Summary
 

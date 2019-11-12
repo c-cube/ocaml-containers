@@ -69,7 +69,7 @@ module type S = sig
     ?start:string -> ?stop:string -> ?sep:string ->
     (elt -> string) -> t -> string
   (**  Print the set in a string
-       @since NEXT_RELEASE *)
+       @since 2.7 *)
 
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->

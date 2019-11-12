@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "containers"
-version: "2.6.1"
+version: "2.7"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 synopsis: "A modular, clean and powerful extension of the OCaml standard library"
@@ -19,7 +19,6 @@ depends: [
   "iter" { with-test }
   "gen" { with-test }
   "uutf" { with-test }
-  "mdx" { with-test }
   "odoc" { with-doc }
   "ocaml" { >= "4.02.0" }
 ]

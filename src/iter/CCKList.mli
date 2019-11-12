@@ -4,7 +4,7 @@
 (** {1 Continuation List}
 
 
-    @deprecated since NEXT_RELEASE, you should use the standard {b Seq} instead.
+    @deprecated since 2.7, you should use the standard {b Seq} instead.
     See {{: https://github.com/c-cube/oseq/} oseq} for similar combinators.
 
 *)

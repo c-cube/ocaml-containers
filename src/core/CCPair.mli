@@ -69,7 +69,7 @@ val compare : ('a -> 'a -> int) -> ('b -> 'b -> int) -> ('a * 'b) -> ('a * 'b) -
 
 val to_string : ?sep:string -> ('a -> string) -> ('b -> string) -> ('a * 'b) -> string
 (** Print tuple in a string
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 

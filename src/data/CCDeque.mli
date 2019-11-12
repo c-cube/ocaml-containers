@@ -47,7 +47,7 @@ val peek_front : 'a t -> 'a
 
 val peek_front_opt : 'a t -> 'a option
 (** First value.
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val peek_back : 'a t -> 'a
 (** Last value.
@@ -55,15 +55,15 @@ val peek_back : 'a t -> 'a
 
 val peek_back_opt : 'a t -> 'a option
 (** Last value.
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val remove_back : 'a t -> unit
 (** Remove last value. If the deque is empty do nothing
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val remove_front : 'a t -> unit
 (** Remove first value. If the deque is empty do nothing
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val take_back : 'a t -> 'a
 (** Take last value.
@@ -71,7 +71,7 @@ val take_back : 'a t -> 'a
 
 val take_back_opt : 'a t -> 'a option
 (** Take last value.
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val take_front : 'a t -> 'a
 (** Take first value.
@@ -79,18 +79,18 @@ val take_front : 'a t -> 'a
 
 val take_front_opt : 'a t -> 'a option
 (** Take first value.
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val update_back : 'a t -> ('a -> 'a option) -> unit
 (** Update last value. If the deque is empty do nothing.
     If the function returns [None], remove last element;
     if it returns [Some x], replace last element with [x].
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val update_front : 'a t -> ('a -> 'a option) -> unit
 (** Update first value. If the deque is empty do nothing.
     Similar to {!update_back} but for the first value.
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val append_front : into:'a t -> 'a t -> unit
 (** [append_front ~into q] adds all elements of [q] at the front
@@ -160,15 +160,15 @@ val to_rev_list : 'a t -> 'a list
 
 val filter : ('a -> bool) -> 'a t -> 'a t
 (** Filter into a new copy.
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** Filter map into a new copy
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val filter_in_place : 'a t -> ('a -> bool) -> unit
 (** Keep only elements that satisfy the predicate.
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 (** {2 print} *)
 

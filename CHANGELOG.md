@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.7
+
+- deprecate CCKList in favor of the standard Seq
+- CCIO: add `_gen` suffixes to some functions
+- ccsexp: provide ability to annotate parsed S-exprs with their position
+- ccsexp: functorize the parser/printer
+- ccsexp: support `#;` for commenting a sexp
+- fix: remove dep from vec to list
+- add `to_string` to many modules (#270)
+- add `CCDeque.{remove_*;update_*}`,` CCDeque.{*_opt}`
+- add `CCDeque.{filter,filter_map}`
+- add `CCDeque.filter_in_place`
+- add `CCBool.{to,of}_int`
+- add `Result.flatten_l` to turn a list of results into a result of list
+- refactor: remove stdlib's code, simple reimplementation of `Stdlib.Fun`
+- add `CCArray.Infix`
+- Document behaviour of `Fun.finally` when finaliser raises
+
+- travis: test on OCaml 4.09, too.
+- more docs for IO
+
 ## 2.6.1
 
 bugfix release:

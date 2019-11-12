@@ -204,7 +204,7 @@ module type S = sig
 
   val to_string : ?sep:string -> (elt -> string) -> t -> string
   (**  Print the heap in a string
-       @since NEXT_RELEASE *)
+       @since 2.7 *)
 
   val pp : ?sep:string -> elt printer -> t printer
   (** @since 0.16

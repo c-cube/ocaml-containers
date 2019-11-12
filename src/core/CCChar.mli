@@ -42,7 +42,7 @@ val to_int : t -> int
 
 val to_string : t -> string
 (** [to_string c] return a string containing [c]
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val pp_buf : Buffer.t -> t -> unit
 (** Renamed from [pp] since 2.0. *)

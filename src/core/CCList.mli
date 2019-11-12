@@ -689,7 +689,7 @@ val to_string : ?start:string -> ?stop:string -> ?sep:string ->
   ('a -> string) -> 'a t -> string
 (** [to_string ~start ~stop ~sep item_to_string l] print [l] to a string using
     [sep] as a separator between elements of [l].
-    @since NEXT_RELEASE *)
+    @since 2.7 *)
 
 val to_seq : 'a t -> 'a sequence
 (** Return a [sequence] of the elements of the list. *)
