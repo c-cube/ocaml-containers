@@ -65,7 +65,7 @@ let with_in ?(mode=0o644) ?(flags=[Open_text]) filename f =
   let ic = open_in_gen (Open_rdonly::flags) mode filename in
   finally_ f ic ~h:close_in
 
-let read_chunks ?(size=1024) ic =
+let read_chunks_gen ?(size=1024) ic =
   let buf = Bytes.create size in
   let next() =
     let n = input ic buf 0 size in
@@ -75,16 +75,20 @@ let read_chunks ?(size=1024) ic =
   in
   next
 
+let read_chunks = read_chunks_gen
+
 let read_line ic =
   try Some (input_line ic)
   with End_of_file -> None
 
-let read_lines ic =
+let read_lines_gen ic =
   let stop = ref false in
   fun () ->
     if !stop then None
     else try Some (input_line ic)
       with End_of_file -> (stop:=true; None)
+
+let read_lines = read_lines_gen
 
 let read_lines_l ic =
   let l = ref [] in

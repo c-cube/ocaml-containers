@@ -20,7 +20,7 @@
       # CCIO.(
           with_in "/tmp/input"
             (fun ic ->
-               let chunks = read_chunks ic in
+               let chunks = read_chunks_gen ic in
                with_out ~flags:[Open_binary; Open_creat] ~mode:0o644 "/tmp/output"
                  (fun oc ->
                     write_gen oc chunks
@@ -37,7 +37,7 @@
       # CCIO.(
           let chunks =
             with_in "/tmp/input"
-              (fun ic ->read_chunks ic)
+              (fun ic -> read_chunks_gen ic)
           in
           with_out ~flags:[Open_binary;Open_creat] ~mode:0o644 "/tmp/output"
              (fun oc ->
@@ -67,14 +67,26 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
     @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases. *)
 
 val read_chunks : ?size:int -> in_channel -> string gen
-(** Read the channel's content into chunks of size [size]. *)
+(** Read the channel's content into chunks of size [size].
+    @deprecated use {!read_chunks_gen} instead. *)
+
+val read_chunks_gen : ?size:int -> in_channel -> string gen
+(** Read the channel's content into chunks of size [size].
+    {b NOTE} the generator must be used within the lifetime of the channel,
+    see warning at the top of the file. *)
 
 val read_line : in_channel -> string option
 (** Read a line from the channel. Returns [None] if the input is terminated.
     The "\n" is removed from the line. *)
 
 val read_lines : in_channel -> string gen
-(** Read all lines. The generator should be traversed only once. *)
+(** Read all lines. The generator should be traversed only once.
+    @deprecated use {!read_lines_gen} instead. *)
+
+val read_lines_gen : in_channel -> string gen
+(** Read all lines. The generator should be traversed only once.
+    {b NOTE} the generator must be used within the lifetime of the channel,
+    see warning at the top of the file. *)
 
 val read_lines_l : in_channel -> string list
 (** Read all lines into a list. *)
