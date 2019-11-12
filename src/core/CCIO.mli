@@ -69,6 +69,7 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
 val read_chunks : ?size:int -> in_channel -> string gen
 (** Read the channel's content into chunks of size [size].
     @deprecated use {!read_chunks_gen} instead. *)
+[@@ocaml.deprecated "use read_chunks_gen"]
 
 val read_chunks_gen : ?size:int -> in_channel -> string gen
 (** Read the channel's content into chunks of size [size].
@@ -82,6 +83,7 @@ val read_line : in_channel -> string option
 val read_lines : in_channel -> string gen
 (** Read all lines. The generator should be traversed only once.
     @deprecated use {!read_lines_gen} instead. *)
+[@@ocaml.deprecated "use read_lines_gen"]
 
 val read_lines_gen : in_channel -> string gen
 (** Read all lines. The generator should be traversed only once.
