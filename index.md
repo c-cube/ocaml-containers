@@ -18,6 +18,7 @@ contains a tutorial and more explanations about what Containers is about.
 - [development version](dev)
 
 - [current](last)
+- [2.7](2.7)
 - [2.6](2.6)
 - [2.5](2.5)
 - [2.4](2.4)
