@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Handling S-expressions} *)
@@ -34,3 +33,6 @@ type t = [
 ]
 
 include S with type t := t
+
+val atom : string -> t  
+(** Build an atom directly from a string. *)

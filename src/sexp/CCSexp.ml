@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Simple S-expression parsing/printing} *)
@@ -365,3 +364,5 @@ include (Make(struct
 (*$Q & ~count:100
     sexp_gen (fun s -> sexp_valid s ==> (to_string s |> parse_string = Result.Ok s))
 *)
+
+let atom s : t = `Atom s
