@@ -114,7 +114,6 @@ module L = struct
     let ral = CCRAL.of_list l in
     let v = CCFun_vec.of_list l in
     let bv = BatVect.of_list l in
-    let cv = Clarity.Vector.of_list l in
     let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
     let bench_list l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (List.nth l i)) done
@@ -126,8 +125,6 @@ module L = struct
       for i = 0 to n-1 do Sys.opaque_identity (ignore (CCFun_vec.get_exn i l)) done
     and bench_batvec l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.get l i)) done
-    and bench_clarity_vec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Clarity.Vector.get l i)) done
     in
     B.throughputN time ~repeat
       [ "List.nth", bench_list l, ()
@@ -135,61 +132,54 @@ module L = struct
       ; "RAL.get", bench_ral ral, ()
       ; "funvec.get", bench_funvec v, ()
       ; "batvec.get", bench_batvec bv, ()
-      ; "clarity_vec.get", bench_clarity_vec cv, ()
       ]
 
   let bench_set ?(time=2) n =
     let l = CCList.(0 -- (n - 1)) in
     let ral = CCRAL.of_list l in
-    let v = CCFun_vec.of_list l in
+(*     let v = CCFun_vec.of_list l in *)
     let bv = BatVect.of_list l in
-    let cv = Clarity.Vector.of_list l in
     let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
     let bench_map l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (Int_map.add i (-i) l)) done
     and bench_ral l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.set l i (-i))) done
+(*
     and bench_funvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore ((* TODO *))) done
+      for _i = 0 to n-1 do Sys.opaque_identity (ignore ((* TODO *))) done
+*)
     and bench_batvec l () =
       for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.set l i (-i))) done
-    and bench_clarity_vec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Clarity.Vector.update l i (-1))) done
     in
     B.throughputN time ~repeat
       [ "Map.add", bench_map map, ()
       ; "RAL.set", bench_ral ral, ()
 (*       ; "funvec.set", bench_funvec v, () *)
       ; "batvec.set", bench_batvec bv, ()
-      ; "clarity_vec.update", bench_clarity_vec cv, ()
       ]
 
   let bench_push ?(time=2) n =
-    let l = ref CCList.empty in
-    let ral = ref CCRAL.empty in
+  (*let ral = ref CCRAL.empty in *)
     let v = ref CCFun_vec.empty in
     let bv = ref BatVect.empty in
-    let cv = ref Clarity.Vector.empty in
     let map = ref Int_map.empty in
     let bench_map l () =
       for i = 0 to n-1 do Sys.opaque_identity (l := Int_map.add i i !l) done
-    and bench_ral l () =
-      (* Note: Better implementation probably possible *)
-      for i = 0 to n-1 do Sys.opaque_identity (l := CCRAL.append !l (CCRAL.return i)) done
+  (*
+      and bench_ral l () =
+        (* Note: Better implementation probably possible *)
+        for i = 0 to n-1 do Sys.opaque_identity (l := CCRAL.append !l (CCRAL.return i)) done
+  *)
     and bench_funvec l () =
       for i = 0 to n-1 do Sys.opaque_identity (l := CCFun_vec.push i !l) done
     and bench_batvec l () =
       for i = 0 to n-1 do Sys.opaque_identity (l := BatVect.append i !l) done
-    and bench_clarity_vec l () =
-      (* Note: Better implementation probably possible *)
-      for i = 0 to n-1 do Sys.opaque_identity (l := Clarity.Vector.append !l (Clarity.Vector.pure i)) done
     in
     B.throughputN time ~repeat
       [ "Map.add", bench_map map, ()
 (*       ; "RAL.append", bench_ral ral, () *) (* too slow *)
       ; "funvec.push", bench_funvec v, ()
       ; "batvec.append", bench_batvec bv, ()
-      ; "clarity_vec.append", bench_clarity_vec cv, ()
       ]
 
   (* MAIN *)
@@ -808,40 +798,40 @@ module Tbl = struct
     ()
 end
 
-module Iter = struct
-  (** {2 Sequence/Gen} *)
+module Iter_ = struct
+  (** {2 Iter/Gen} *)
 
   let bench_fold n =
-    let seq () = Sequence.fold (+) 0 Sequence.(0 --n) in
+    let iter () = Iter.fold (+) 0 Iter.(0 --n) in
     let gen () = Gen.fold (+) 0 Gen.(0 -- n) in
-    let klist () = CCKList.fold (+) 0 CCKList.(0 -- n) in
+    let klist () = OSeq.fold (+) 0 OSeq.(0 -- n) in
     B.throughputN 3 ~repeat
-      [ "sequence.fold", seq, ();
+      [ "iter.fold", iter, ();
         "gen.fold", gen, ();
         "klist.fold", klist, ();
       ]
 
   let bench_flat_map n =
-    let seq () = Sequence.(
+    let iter () = Iter.(
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
     and gen () = Gen.(
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
-    and klist () = CCKList.(
+    and oseq () = OSeq.(
       0 -- n |> flat_map (fun x -> x-- (x+10)) |> fold (+) 0
     )
     in
     B.throughputN 3 ~repeat
-      [ "sequence.flat_map", seq, ();
+      [ "sequence.flat_map", iter, ();
         "gen.flat_map", gen, ();
-        "klist.flat_map", klist, ();
+        "oseq.flat_map", oseq, ();
       ]
 
   let bench_iter n =
-    let seq () =
+    let iter () =
       let i = ref 2 in
-      Sequence.(
+      Iter.(
         1 -- n |> iter (fun x -> i := !i * x)
       )
     and gen () =
@@ -849,16 +839,16 @@ module Iter = struct
       Gen.(
         1 -- n |> iter (fun x -> i := !i * x)
       )
-    and klist () =
+    and oseq () =
       let i = ref 2 in
-      CCKList.(
+      OSeq.(
         1 -- n |> iter (fun x -> i := !i * x)
       )
     in
     B.throughputN 3 ~repeat
-      [ "sequence.iter", seq, ();
+      [ "iter.iter", iter, ();
         "gen.iter", gen, ();
-        "klist.iter", klist, ();
+        "oseq.iter", oseq, ();
       ]
 
   let () = B.Tree.register (
@@ -873,7 +863,7 @@ module Deque = struct
   module type DEQUE = sig
     type 'a t
     val create : unit -> 'a t
-    val of_seq : 'a Sequence.t -> 'a t
+    val of_seq : 'a Iter.t -> 'a t
     val iter : ('a -> unit) -> 'a t -> unit
     val push_front : 'a t -> 'a -> unit
     val push_back : 'a t -> 'a -> unit
@@ -1000,7 +990,7 @@ module Deque = struct
   let fqueue = (module FQueue : DEQUE)
 
   let bench_iter n =
-    let seq = Sequence.(1 -- n) in
+    let seq = Iter.(1 -- n) in
     let make (module D : DEQUE) =
       let q = D.of_seq seq in
       fun () ->
@@ -1038,7 +1028,7 @@ module Deque = struct
       ]
 
   let bench_append n =
-    let seq = Sequence.(1 -- n) in
+    let seq = Iter.(1 -- n) in
     let make (module D :DEQUE) =
       let q1 = D.of_seq seq in
       let q2 = D.of_seq seq in
@@ -1051,7 +1041,7 @@ module Deque = struct
       ]
 
   let bench_length n =
-    let seq = Sequence.(1--n) in
+    let seq = Iter.(1--n) in
     let make (module D:DEQUE) =
       let q = D.of_seq seq in
       fun () -> ignore (D.length q)
@@ -1108,14 +1098,14 @@ module Graph = struct
   let dfs_ n () =
     let tbl = CCGraph.mk_table ~eq:CCInt.equal ~hash:CCInt.hash (n+10) in
     CCGraph.Traverse.dfs ~tbl ~graph:div_graph_
-      (Sequence.return n)
-    |> Sequence.fold (fun acc _ -> acc+1) 0
+      (Iter.return n)
+    |> Iter.fold (fun acc _ -> acc+1) 0
 
   let dfs_event n () =
     let tbl = CCGraph.mk_table ~eq:CCInt.equal ~hash:CCInt.hash (n+10) in
     CCGraph.Traverse.Event.dfs ~tbl ~eq:CCInt.equal ~graph:div_graph_
-      (Sequence.return n)
-    |> Sequence.fold
+      (Iter.return n)
+    |> Iter.fold
       (fun acc -> function
         | `Enter _ -> acc+1
         | `Exit _
@@ -1156,7 +1146,7 @@ module Str = struct
     let i = ref start in
     try
       while !i + n <= String.length s do
-        if CCString.is_sub ~sub 0 s !i ~len:n then raise Exit;
+        if CCString.is_sub ~sub 0 s !i ~sub_len:n then raise Exit;
         incr i
       done;
       -1
@@ -1168,7 +1158,7 @@ module Str = struct
     let i = ref (String.length s - n) in
     try
       while !i >= 0 do
-        if CCString.is_sub ~sub 0 s !i ~len:n then raise Exit;
+        if CCString.is_sub ~sub 0 s !i ~sub_len:n then raise Exit;
         decr i
       done;
       ~-1
