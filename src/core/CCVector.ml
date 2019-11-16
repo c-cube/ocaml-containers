@@ -70,12 +70,23 @@ let init n f = {
 let array_is_empty_ v =
   Array.length v.vec = 0
 
+external as_float_arr : 'a array -> float array = "%identity"
+external as_obj_arr : 'a array -> Obj.t array = "%identity"
+
+let fill_with_junk_ (a:_ array) i len : unit =
+  if Obj.(tag (repr a) = double_array_tag) then (
+    Array.fill (as_float_arr a) i len 0.;
+  ) else (
+    Array.fill (as_obj_arr a) i len (Obj.repr ());
+  )
+
 (* assuming the underlying array isn't empty, resize it *)
 let resize_ v newcapacity =
   assert (newcapacity >= v.size);
   assert (not (array_is_empty_ v));
   let new_vec = Array.make newcapacity v.vec.(0) in
   Array.blit v.vec 0 new_vec 0 v.size;
+  fill_with_junk_ new_vec v.size (newcapacity-v.size);
   v.vec <- new_vec;
   ()
 
@@ -84,10 +95,35 @@ let resize_ v newcapacity =
     ensure v 200; capacity v >= 200
 *)
 
+(*$T
+  let v = create() in push v 0.; push v 1.; push v 2.; 3=length v
+  let v = create() in push v 1.; push v 2.; push v 3.; 6. = (get v 0 +. get v 1 +. get v 2)
+  let v = create() in push v 0; push v 1; push v 2; 3=length v
+  let v = create() in push v 1; push v 2; push v 3; 6 = (get v 0 + get v 1 + get v 2)
+  let v = create() in push v "a"; push v "b"; push v "c"; 3=length v
+  let v = create() in push v "a"; push v "b"; push v "c"; "abc" = String.concat "" (to_list v)
+*)
+
+(*$R
+  let v = create() in
+  push v 0.; push v 1.;
+  clear v;
+  push v 0.; push v 1.; push v 7.; push v 10.; push v 12.;
+  shrink v 2;
+  assert_equal 1. (fold (+.) 0. v);
+  clear v;
+  assert_equal 0 (size v);
+  push v 0.; push v 1.; push v 7.; push v 10.; push v 12.;
+  assert_equal (1. +. 7. +. 10. +. 12.) (fold (+.) 0. v);
+  *)
+
 (* grow the array, using [x] as a filler if required *)
 let grow_with_ v ~filler:x =
   if array_is_empty_ v then (
-    v.vec <- Array.make 4 x
+    let len = 4 in
+    v.vec <- Array.make len x;
+    (* do not really use [x], it was just for knowing the type *)
+    fill_with_junk_ v.vec 0 len;
   ) else (
     let n = Array.length v.vec in
     let size = min (2 * n + 3) Sys.max_array_length in
@@ -134,6 +170,18 @@ let clear v =
 let clear_and_reset v =
   v.size <- 0;
   v.vec <- [||]
+
+(* TODO*)
+(*    
+  let v = create() in
+  let a = Weak.create 1 in
+  push v ("hello"^"world");
+  Weak.set a 0 (Some (get v 0));
+  Gc.full_major(); Gc.compact();
+  OUnit.assert_bool "is alive" (Weak.check a 0);
+  Gc.full_major(); Gc.compact();
+  OUnit.assert_equal None (Weak.get a 0);
+*)
 
 let is_empty v = v.size = 0
 

@@ -45,7 +45,8 @@ val return : 'a -> ('a, 'mut) t
     @since 0.14 *)
 
 val make : int -> 'a -> ('a, 'mut) t
-(** [make n x] makes a vector of size [n], filled with [x]. *)
+(** [make n x] makes a vector of size [n], filled with [x].
+    The element [x] will possibly live as long as the vector. *)
 
 val init : int -> (int -> 'a) -> ('a, 'mut) t
 (** Init the vector with the given function and size. *)
