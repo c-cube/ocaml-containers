@@ -53,6 +53,11 @@ val init : int -> (int -> 'a) -> ('a, 'mut) t
 val clear : ('a, rw) t -> unit
 (** Clear the content of the vector. *)
 
+val clear_and_reset : ('a, rw) t -> unit
+(** Clear the content of the vector, and deallocate the underlying array,
+    removing references to all the elements.
+    @since NEXT_RELEASE *)
+
 val ensure_with : init:'a -> ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
     @param init if [capacity v = 0], used as a filler

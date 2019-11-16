@@ -131,6 +131,10 @@ let clear v =
   OUnit.assert_bool "empty_after_clear" (Iter.is_empty (to_seq v));
 *)
 
+let clear_and_reset v =
+  v.size <- 0;
+  v.vec <- [||]
+
 let is_empty v = v.size = 0
 
 let push_unsafe_ v x =
