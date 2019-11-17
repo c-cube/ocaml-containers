@@ -141,6 +141,11 @@ val iteri : (int -> 'a -> unit) -> ('a,_) t -> unit
 val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
 (** Map elements of the vector, yielding a new vector. *)
 
+val mapi : (int -> 'a -> 'b) -> ('a,_) t -> ('b, 'mut) t
+(** [map f v] is just like {!map}, but it also passes in the index
+    of each element as the first argument to the function [f].
+    @since NEXT_RELEASE *)
+
 val map_in_place : ('a -> 'a) -> ('a,_) t -> unit
 (** Map elements of the vector in place
     @since 2.3 *)

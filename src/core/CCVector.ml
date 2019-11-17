@@ -497,6 +497,26 @@ let map f v =
     to_list (map f v) = List.map f l)
 *)
 
+let mapi f v =
+  if array_is_empty_ v
+  then create ()
+  else (
+    let vec = Array.init v.size (fun i -> f i (Array.unsafe_get v.vec i)) in
+    { size=v.size; vec; }
+  )
+
+(*$T mapi
+  let v = create() in push v 1; push v 2; push v 3; \
+  to_list (mapi (fun i e -> Printf.sprintf "%i %i" i e) v) = ["0 1"; "1 2"; "2 3"]
+*)
+
+(*$QR mapi
+  Q.(pair (fun2 Observable.int Observable.int small_int) (small_list small_int))
+    (fun (Q.Fun (_,f),l) ->
+      let v = of_list l in
+      to_list (mapi f v) = List.mapi f l)
+*)
+
 let map_in_place f v =
   iteri
     (fun i x -> Array.unsafe_set v.vec i (f x))
