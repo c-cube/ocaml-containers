@@ -453,6 +453,21 @@ let shrink v n =
   )
 *)
 
+let shrink_to_fit v : unit =
+  if v.size = 0 then (
+    v.vec <- [| |]
+  ) else if v.size < Array.length v.vec then (
+    v.vec <- Array.sub v.vec 0 v.size
+  )
+
+(*$QR
+  (gen Q.small_int) (fun v ->
+    let v' = copy v in
+    shrink_to_fit v;
+    to_list v = to_list v'
+  )
+*)
+
 let sort' cmp v =
   (* possibly copy array (to avoid junk at its end), then sort the array *)
   let a =

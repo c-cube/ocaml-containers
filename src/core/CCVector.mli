@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Growable, mutable vector} *)
@@ -123,6 +122,10 @@ val copy : ('a,_) t -> ('a,'mut) t
 val shrink : ('a, rw) t -> int -> unit
 (** Shrink to the given size (remove elements above this size).
     Does nothing if the parameter is bigger than the current size. *)
+
+val shrink_to_fit : ('a, _) t -> unit
+(** Shrink internal array to fit the size of the vector
+    @since NEXT_RELEASE *)
 
 val member : eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 (** Is the element a member of the vector? *)
