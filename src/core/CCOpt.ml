@@ -204,9 +204,11 @@ let to_gen o =
       let first = ref true in
       fun () -> if !first then (first:=false; o) else None
 
-let to_seq o k = match o with
+let to_iter o k = match o with
   | None -> ()
   | Some x -> k x
+
+let to_seq = to_iter
 
 let pp ppx out = function
   | None -> Format.pp_print_string out "None"

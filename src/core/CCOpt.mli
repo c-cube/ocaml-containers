@@ -186,6 +186,13 @@ val choice_seq : 'a t sequence -> 'a t
     @since 0.13 *)
 
 val to_gen : 'a t -> 'a gen
+
+val to_iter : 'a t -> 'a sequence
+(** Returns an internal iterator, like in the library [Iter].
+    @since NEXT_RELEASE *)
+
 val to_seq : 'a t -> 'a sequence
+(** Previous name for {!to_iter}
+    @deprecated use {!to_iter} instead *)
 
 val pp : 'a printer -> 'a t printer
