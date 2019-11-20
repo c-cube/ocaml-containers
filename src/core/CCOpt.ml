@@ -106,6 +106,9 @@ let fold f acc o = match o with
 let get_or ~default x = match x with
   | None -> default
   | Some y -> y
+let value x ~default = match x with
+  | None -> default
+  | Some y -> y
 
 let get_exn = function
   | Some x -> x

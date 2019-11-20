@@ -72,6 +72,10 @@ val get_or : default:'a -> 'a t -> 'a
     returns [default] if [o = None].
     @since 0.18 *)
 
+val value : 'a t -> default:'a -> 'a
+(** Similar to the stdlib's [Option.value] and to {!get_or}.
+    @since NEXT_RELEASE *)
+
 val get_exn : 'a t -> 'a
 (** Open the option, possibly failing if it is [None].
     @raise Invalid_argument if the option is [None]. *)
