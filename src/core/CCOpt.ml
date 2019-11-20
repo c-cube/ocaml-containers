@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Options} *)
@@ -209,6 +208,10 @@ let to_iter o k = match o with
   | Some x -> k x
 
 let to_seq = to_iter
+
+let to_std_seq o () = match o with
+  | None -> Seq.Nil
+  | Some x -> Seq.Cons (x, Seq.empty)
 
 let pp ppx out = function
   | None -> Format.pp_print_string out "None"

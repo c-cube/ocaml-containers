@@ -1,44 +1,62 @@
 (alias
-  (name unlabel)
-  (deps (:mli CCArrayLabels.mli) ../unlabel.exe)
-  (action (run ../unlabel.exe %{mli} CCArray.mli)))
+ (name unlabel)
+ (deps
+  (:mli CCArrayLabels.mli)
+  ../unlabel.exe)
+ (action
+  (run ../unlabel.exe %{mli} CCArray.mli)))
 
 (alias
-  (name unlabel)
-  (deps (:mli CCArray_sliceLabels.mli) ../unlabel.exe)
-  (action (run ../unlabel.exe %{mli} CCArray_slice.mli)))
+ (name unlabel)
+ (deps
+  (:mli CCArray_sliceLabels.mli)
+  ../unlabel.exe)
+ (action
+  (run ../unlabel.exe %{mli} CCArray_slice.mli)))
 
 (alias
-  (name unlabel)
-  (deps (:mli CCEqualLabels.mli) ../unlabel.exe)
-  (action (run ../unlabel.exe %{mli} CCEqual.mli)))
+ (name unlabel)
+ (deps
+  (:mli CCEqualLabels.mli)
+  ../unlabel.exe)
+ (action
+  (run ../unlabel.exe %{mli} CCEqual.mli)))
 
 (alias
-  (name unlabel)
-  (deps (:mli CCListLabels.mli) ../unlabel.exe)
-  (action (run ../unlabel.exe %{mli} CCList.mli)))
+ (name unlabel)
+ (deps
+  (:mli CCListLabels.mli)
+  ../unlabel.exe)
+ (action
+  (run ../unlabel.exe %{mli} CCList.mli)))
 
 (alias
-  (name unlabel)
-  (deps (:mli CCStringLabels.mli) ../unlabel.exe)
-  (action (run ../unlabel.exe %{mli} CCString.mli)))
-
+ (name unlabel)
+ (deps
+  (:mli CCStringLabels.mli)
+  ../unlabel.exe)
+ (action
+  (run ../unlabel.exe %{mli} CCString.mli)))
 
 (executable
-  (name mkshims)
-  (modules mkshims)
-  (libraries dune.configurator))
+ (name mkshims)
+ (modules mkshims)
+ (libraries dune.configurator))
 
 (rule
-  (targets CCShims_.ml CCShimsList_.ml CCShimsFun_.ml CCShimsFun_.mli CCShimsArray_.ml CCShimsFormat_.ml)
-  (deps ./mkshims.exe)
-  (action (run ./mkshims.exe)))
+ (targets CCShims_.ml CCShimsList_.ml CCShimsFun_.ml CCShimsFun_.mli
+   CCShimsArray_.ml CCShimsFormat_.ml)
+ (deps ./mkshims.exe)
+ (action
+  (run ./mkshims.exe)))
 
 (library
-  (name containers)
-  (public_name containers)
-  (wrapped false)
-  (modules :standard \ mkshims)
-  (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -nolabels -open CCMonomorphic)
-  (ocamlopt_flags (:include ../flambda.flags))
-  (libraries result uchar containers.monomorphic))
+ (name containers)
+ (public_name containers)
+ (wrapped false)
+ (modules :standard \ mkshims)
+ (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -nolabels -open
+   CCMonomorphic)
+ (ocamlopt_flags
+  (:include ../flambda.flags))
+ (libraries result uchar seq containers.monomorphic))

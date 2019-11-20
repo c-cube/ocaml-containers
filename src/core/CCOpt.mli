@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Options} *)
@@ -186,6 +185,10 @@ val choice_seq : 'a t sequence -> 'a t
     @since 0.13 *)
 
 val to_gen : 'a t -> 'a gen
+
+val to_std_seq : 'a t -> 'a Seq.t
+(** Same as {!Stdlib.Option.to_seq}
+    @since NEXT_RELEASE *)
 
 val to_iter : 'a t -> 'a sequence
 (** Returns an internal iterator, like in the library [Iter].
