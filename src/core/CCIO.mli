@@ -250,3 +250,19 @@ module File : sig
         See {!Filename.temp_file}.
         @since 0.17 *)
 end
+
+val with_temp_dir :
+  ?mode:int -> ?dir:string ->
+  string -> (string -> 'a) -> 'a
+(** Create a temporary directory, call the function, and then destroy the
+    directory afterwards. Usage [with_temp_dir pattern f].
+    @param pattern the naming pattern for the temporary directory.
+      Helps avoiding collisions.
+    @param mode mode for the directory
+    @param dir the directory under which to make a temporary directory (default [/tmp])
+
+    Note that this is implemented following the discussion at:
+    https://discuss.ocaml.org/t/how-to-create-a-temporary-directory-in-ocaml/1815/
+
+    @since NEXT_RELEASE
+ *)

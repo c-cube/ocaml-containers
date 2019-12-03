@@ -351,3 +351,47 @@ module File = struct
     let name = Filename.temp_file ?temp_dir prefix suffix in
     finally_ f name ~h:remove_noerr
 end
+
+let rand_digits_ =
+  let st = lazy (Random.State.make_self_init()) in
+  fun () ->
+    let rand = Random.State.bits (Lazy.force st) land 0xFFFFFF in
+    Printf.sprintf "%06x" rand
+
+let rmdir_ dir =
+  try ignore (Sys.command ("rm -r " ^ dir) : int)
+  with _ -> ()
+
+let with_temp_dir ?(mode=0o700) ?dir pat (f: string -> 'a) : 'a =
+  let dir = match dir with
+    | Some d -> d
+    | None   -> Filename.get_temp_dir_name ()
+  in
+  let raise_err msg = raise (Sys_error msg) in
+  let rec loop count =
+    if count < 0 then (
+      raise_err "mk_temp_dir: too many failing attemps"
+    ) else (
+      let dir = Filename.concat dir (pat ^ rand_digits_ ()) in
+      match Unix.mkdir dir mode with
+      | () ->
+        finally_ f dir ~h:rmdir_
+      | exception Unix.Unix_error (Unix.EEXIST, _, _) -> loop (count - 1)
+      | exception Unix.Unix_error (Unix.EINTR, _, _)  -> loop count
+      | exception Unix.Unix_error (e, _, _)           ->
+        raise_err ("mk_temp_dir: " ^ (Unix.error_message e))
+    )
+  in
+  loop 1000
+
+(*$R
+  let filename = with_temp_dir "test_containers"
+      (fun dir ->
+         let name = Filename.concat dir "test" in
+         CCIO.with_out name (fun oc -> output_string oc "content"; flush oc);
+         assert_bool ("file exists:"^name) (Sys.file_exists name);
+         name)
+  in
+  assert_bool ("file does not exist"^filename) (not (Sys.file_exists filename));
+  ()
+*)

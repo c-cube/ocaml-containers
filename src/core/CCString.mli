@@ -145,8 +145,8 @@ val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string ->
     @since 0.14 *)
 
 val is_sub : sub:string -> int -> string -> int -> sub_len:int -> bool
-(** [is_sub ~sub i s j ~len] returns [true] iff the substring of
-    [sub] starting at position [i] and of length [len] is a substring
+(** [is_sub ~sub i s j ~sub_len] returns [true] iff the substring of
+    [sub] starting at position [i] and of length [sub_len] is a substring
     of [s] starting at position [j]. *)
 
 val repeat : string -> int -> string
