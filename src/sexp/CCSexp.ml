@@ -18,6 +18,8 @@ module Make(Sexp : SEXP) = struct
   type t = Sexp.t
   type sexp = t
 
+  let atom = Sexp.atom
+  let list = Sexp.list
   let of_int x = Sexp.atom (string_of_int x)
   let of_float x = Sexp.atom (string_of_float x)
   let of_bool x = Sexp.atom (string_of_bool x)

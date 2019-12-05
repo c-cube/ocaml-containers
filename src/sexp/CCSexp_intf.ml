@@ -30,11 +30,24 @@ module type S = sig
   type t
   type sexp = t
 
+  (** {2 Re-exports} *)
+
+  val atom : string -> t
+  (** Make an atom out of this string.
+      @since NEXT_RELEASE *)
+
+  val list : t list -> t
+  (** Make a Sexpr of this list.
+      @since NEXT_RELEASE *)
+
+  (** {2 Constructors} *)
+
   val of_int : int -> t
   val of_bool : bool -> t
   val of_list : t list -> t
   val of_rev_list : t list -> t  
   (** Reverse the list. *)
+
   val of_float : float -> t
   val of_unit : t
   val of_pair : t * t -> t
