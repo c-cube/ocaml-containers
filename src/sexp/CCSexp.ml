@@ -241,16 +241,24 @@ module Make(Sexp : SEXP) = struct
       | Yield x -> Result.Ok x
       | Fail s -> Result.Error s
 
-  let parse_chan ic : sexp or_error =
+  let set_file_ ?file buf =
+    let open Lexing in
+    match file with
+    | Some s -> buf.lex_start_p <- {buf.lex_start_p with pos_fname=s}
+    | None -> ()
+
+  let parse_chan_ ?file ic : sexp or_error =
     let buf = Lexing.from_channel ic in
+    set_file_ ?file buf;
     let d = Decoder.of_lexbuf buf in
     match Decoder.next d with
       | End -> Result.Error "unexpected end of file"
       | Yield x -> Result.Ok x
       | Fail e -> Result.Error e
 
-  let parse_chan_list ic =
+  let parse_chan_list_ ?file ic =
     let buf = Lexing.from_channel ic in
+    set_file_ ?file buf;
     let d = Decoder.of_lexbuf buf in
     let rec iter acc = match Decoder.next d with
       | End -> Result.Ok (List.rev acc)
@@ -258,6 +266,9 @@ module Make(Sexp : SEXP) = struct
       | Fail e -> Result.Error e
     in
     iter []
+
+  let parse_chan ic = parse_chan_ ic
+  let parse_chan_list ic = parse_chan_list_ ic
 
   let parse_chan_gen ic =
     let buf = Lexing.from_channel ic in
@@ -267,9 +278,9 @@ module Make(Sexp : SEXP) = struct
       | Fail e -> Some (Result.Error e)
       | Yield x -> Some (Result.Ok x)
 
-  let parse_file filename = _with_in filename parse_chan
+  let parse_file filename = _with_in filename (parse_chan_ ~file:filename)
 
-  let parse_file_list filename = _with_in filename parse_chan_list
+  let parse_file_list filename = _with_in filename (parse_chan_list_ ~file:filename)
 end
 
 type t = [
