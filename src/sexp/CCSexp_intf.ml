@@ -103,10 +103,18 @@ module type S = sig
     val next : t -> sexp parse_result
     (** Parse the next S-expression or return an error if the input isn't
         long enough or isn't a proper S-expression. *)
+
+    val to_list : t -> sexp list or_error
+    (** Read all the values from this decoder.
+        @since NEXT_RELEASE *)
   end
 
   val parse_string : string -> t or_error
   (** Parse a string. *)
+
+  val parse_string_list : string -> t list or_error
+  (** Parse a string into a list of S-exprs.
+      @since NEXT_RELEASE *)
 
   val parse_chan : in_channel -> t or_error
   (** Parse a S-expression from the given channel. Can read more data than

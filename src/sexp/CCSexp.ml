@@ -231,15 +231,32 @@ module Make(Sexp : SEXP) = struct
         | E_error (line,col,msg)
         | CCSexp_lex.Error (line,col,msg) ->
           Fail (Printf.sprintf "parse error at %d:%d: %s" line col msg)
+
+    let to_list (d:t) : _ or_error =
+      let rec iter acc = match next d with
+        | End -> Result.Ok (List.rev acc)
+        | Yield x -> iter (x::acc)
+        | Fail e -> Result.Error e
+      in
+      try iter []
+      with e -> Error (Printexc.to_string e)
   end
 
-  let parse_string s : t or_error =
-    let buf = Lexing.from_string s in
-    let d = Decoder.of_lexbuf buf in
+  let dec_next_ (d:Decoder.t) : _ or_error =
     match Decoder.next d with
       | End -> Result.Error "unexpected end of file"
       | Yield x -> Result.Ok x
       | Fail s -> Result.Error s
+
+  let parse_string s : t or_error =
+    let buf = Lexing.from_string s in
+    let d = Decoder.of_lexbuf buf in
+    dec_next_ d
+
+  let parse_string_list s : t list or_error =
+    let buf = Lexing.from_string s in
+    let d = Decoder.of_lexbuf buf in
+    Decoder.to_list d
 
   let set_file_ ?file buf =
     let open Lexing in
@@ -251,21 +268,13 @@ module Make(Sexp : SEXP) = struct
     let buf = Lexing.from_channel ic in
     set_file_ ?file buf;
     let d = Decoder.of_lexbuf buf in
-    match Decoder.next d with
-      | End -> Result.Error "unexpected end of file"
-      | Yield x -> Result.Ok x
-      | Fail e -> Result.Error e
+    dec_next_ d
 
   let parse_chan_list_ ?file ic =
     let buf = Lexing.from_channel ic in
     set_file_ ?file buf;
     let d = Decoder.of_lexbuf buf in
-    let rec iter acc = match Decoder.next d with
-      | End -> Result.Ok (List.rev acc)
-      | Yield x -> iter (x::acc)
-      | Fail e -> Result.Error e
-    in
-    iter []
+    Decoder.to_list d
 
   let parse_chan ic = parse_chan_ ic
   let parse_chan_list ic = parse_chan_list_ ic
@@ -338,6 +347,14 @@ include (Make(struct
   (parse_string "(a #; (foo bar\n (1 2 3)) b)") (Result.Ok (`List [`Atom "a"; `Atom "b"]))
   (parse_string "#; (a b) (c d)") (Result.Ok (`List [`Atom "c"; `Atom "d"]))
   (parse_string "#; (a b) 1") (Result.Ok (`Atom "1"))
+*)
+
+(*$= & ~printer:(function Result.Ok x -> String.concat ";" @@ List.map to_string x | Result.Error e -> "error " ^ e)
+  (parse_string_list "(a b)(c)") (Result.Ok [`List [`Atom "a"; `Atom "b"]; `List [`Atom "c"]])
+  (parse_string_list "  ") (Result.Ok [])
+  (parse_string_list "(a\n ;coucou\n b)") (Result.Ok [`List [`Atom "a"; `Atom "b"]])
+  (parse_string_list "#; (a b) (c d) e ") (Result.Ok [`List [`Atom "c"; `Atom "d"]; `Atom "e"])
+  (parse_string_list "#; (a b) 1") (Result.Ok [`Atom "1"])
 *)
 
 
