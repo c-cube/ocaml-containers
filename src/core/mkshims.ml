@@ -76,7 +76,18 @@ let shims_list_post_408 = "include List"
 
 let shims_array_pre_406 = "
   include Array
-  module Floatarray = struct end
+  module Floatarray = struct type t = float array end
+  type 'a t = 'a array
+  "
+
+let shims_array_label_pre_406 = "
+  include ArrayLabels
+  module Floatarray = struct type t = float array end
+  type 'a t = 'a array
+  "
+
+let shims_array_label_406_408 = "
+  include ArrayLabels
   type 'a t = 'a array
   "
 
@@ -85,6 +96,7 @@ let shims_array_406_408 = "
   type 'a t = 'a array
 "
 let shims_array_post_408 = "include Array"
+let shims_array_label_post_408 = "include ArrayLabels"
 
 let shims_let_op_pre_408 =
   "
@@ -148,6 +160,10 @@ let () =
       (if (major, minor) >= (4,8) then shims_array_post_408
        else if (major, minor) >= (4,6) then shims_array_406_408
        else shims_array_pre_406);
+    write_file "CCShimsArrayLabels_.ml"
+      (if (major, minor) >= (4,8) then shims_array_label_post_408
+       else if (major, minor) >= (4,6) then shims_array_label_406_408
+       else shims_array_label_pre_406);
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
     write_file "CCShimsFun_.ml" (if (major, minor) >= (4,8) then shims_fun_post_408 else shims_fun_pre_408);
     write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);

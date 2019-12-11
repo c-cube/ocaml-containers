@@ -16,10 +16,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 external make_float : int -> float array = "caml_make_float_vect" (* compat *)
 (**/**)
 
-include module type of ArrayLabels
-
-type 'a t = 'a array
-(** The type for arrays *)
+include module type of CCShimsArrayLabels_
 
 val empty : 'a t
 (** [empty] is the empty array, physically equal to [||]. *)
