@@ -1,6 +1,4 @@
 
-open Result
-
 let pp_sexp s = match s with
   | Ok l ->
       List.iter
