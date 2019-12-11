@@ -351,12 +351,6 @@ let bsearch ~cmp k a =
   bsearch ~cmp:CCInt.compare 3 [| |] = `Empty
 *)
 
-let (>>=) a f = flat_map f a
-
-let (>>|) a f = map f a
-
-let (>|=) a f = map f a
-
 let for_all p a =
   let rec aux i =
     i = Array.length a || (p a.(i) && aux (i+1))
@@ -716,12 +710,21 @@ let sort_generic (type arr)(type elt)
 
 
 module Infix = struct
-  let (>>=) = (>>=)
-  let (>>|) = (>>|)
-  let (>|=) = (>|=)
+  let (>>=) a f = flat_map f a
+  let (>>|) a f = map f a
+  let (>|=) a f = map f a
   let (--) = (--)
   let (--^) = (--^)
+
+  include CCShimsMkLet_.Make(struct
+      type 'a t = 'a array
+      let (>>=) = (>>=)
+      let (>|=) = (>|=)
+      let monoid_product a1 a2 = monoid_product (fun x y->x,y) a1 a2
+    end)
 end
+
+include Infix
 
 
 (* test consistency of interfaces *)
@@ -738,9 +741,3 @@ end
 (*$R
   ignore (module CCArray : LL)
 *)
-
-include CCShimsMkLet_.Make(struct
-    type 'a t = 'a array
-    include Infix
-    let monoid_product a1 a2 = monoid_product (fun x y->x,y) a1 a2
-  end)

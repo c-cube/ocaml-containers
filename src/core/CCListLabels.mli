@@ -736,9 +736,12 @@ module Infix : sig
   (** Infix alias for [range]. Bounds included. *)
 
   val (--^) : int -> int -> int t
-  (** Infix alias for [range']. Second bound excluded. *)
+  (** Infix alias for [range']. Second bound excluded.
+      @since 0.17 *)
 
-  (** @since 0.17 *)
+  (** Let operators on OCaml >= 4.08.0, nothing otherwise
+      @since NEXT_RELEASE *)
+  include CCShimsMkLet_.S with type 'a t_let := 'a list
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise

@@ -38,8 +38,6 @@ let equal f o1 o2 = match o1, o2 with
 
 let return x = Some x
 
-let (>|=) x f = map f x
-
 let (>>=) o f = match o with
   | None -> None
   | Some x -> f x
@@ -54,8 +52,6 @@ let (<*>) f x = match f, x with
   | None, _
   | _, None -> None
   | Some f, Some x -> Some (f x)
-
-let (<$>) = map
 
 let or_ ~else_ a = match a with
   | None -> else_
@@ -163,12 +159,23 @@ let of_result = function
   | Ok x -> Some x
 
 module Infix = struct
-  let (>|=) = (>|=)
+  let (>|=) x f = map f x
   let (>>=) = (>>=)
   let (<*>) = (<*>)
-  let (<$>) = (<$>)
+  let (<$>) = map
   let (<+>) = (<+>)
+
+  include CCShimsMkLet_.Make(struct
+      type 'a t = 'a option
+      let (>|=) = (>|=)
+      let (>>=) = (>>=)
+      let monoid_product o1 o2 = match o1, o2 with
+        | Some x, Some y -> Some (x,y)
+        | _ -> None
+    end)
 end
+
+include Infix
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -238,11 +245,3 @@ let return_if b x =
   return_if false 1 = None
   return_if true 1 = Some 1
 *)
-
-include CCShimsMkLet_.Make(struct
-    type 'a t = 'a option
-    include Infix
-    let monoid_product o1 o2 = match o1, o2 with
-      | Some x, Some y -> Some (x,y)
-      | _ -> None
-  end)

@@ -124,10 +124,6 @@ let flat_map f e = match e with
   | Ok x -> f x
   | Error s -> Error s
 
-let (>|=) e f = map f e
-
-let (>>=) e f = flat_map f e
-
 let equal ~err eq a b = match a, b with
   | Ok x, Ok y -> eq x y
   | Error s, Error s' -> err s s'
@@ -269,10 +265,22 @@ let retry n f =
 (** {2 Infix} *)
 
 module Infix = struct
-  let (>>=) = (>>=)
-  let (>|=) = (>|=)
+  let (>|=) e f = map f e
+  let (>>=) e f = flat_map f e
   let (<*>) = (<*>)
+
+  include CCShimsMkLet_.Make2(struct
+      type ('a,'e) t = ('a,'e) result
+      let (>>=) = (>>=)
+      let (>|=) = (>|=)
+      let monoid_product x1 x2 = match x1, x2 with
+        | Ok x, Ok y -> Ok (x,y)
+        | Error e, _ -> Error e
+        | _, Error e -> Error e
+    end)
 end
+
+include Infix
 
 (** {2 Monadic Operations} *)
 
@@ -338,12 +346,3 @@ let pp pp_x fmt e = match e with
 let pp' pp_x pp_e fmt e = match e with
   | Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
   | Error s -> Format.fprintf fmt "@[error(@,%a)@]" pp_e s
-
-include CCShimsMkLet_.Make2(struct
-    type ('a,'e) t = ('a,'e) result
-    include Infix
-    let monoid_product x1 x2 = match x1, x2 with
-      | Ok x, Ok y -> Ok (x,y)
-      | Error e, _ -> Error e
-      | _, Error e -> Error e
-  end)

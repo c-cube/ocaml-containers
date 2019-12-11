@@ -123,8 +123,6 @@ let map f l =
     List.rev (List.rev_map f l) = map f l)
 *)
 
-let (>|=) l f = map f l
-
 let direct_depth_append_ = 10_000
 
 let cons x l = x::l
@@ -547,10 +545,6 @@ let split l =
 *)
 
 let return x = [x]
-
-let (>>=) l f = flat_map f l
-
-let (<$>) = map
 
 let pure = return
 
@@ -1710,20 +1704,23 @@ let of_klist l =
   direct direct_depth_default_ l
 
 module Infix = struct
-  let (>|=) = (>|=)
+  let (>|=) l f = map f l
+  let (>>=) l f = flat_map f l
   let (@) = (@)
   let (<*>) = (<*>)
-  let (<$>) = (<$>)
-  let (>>=) = (>>=)
+  let (<$>) = map
   let (--) = (--)
   let (--^) = (--^)
+
+  include CCShimsMkLet_.Make(struct
+      type 'a t = 'a list
+    let (>|=) = (>|=)
+    let (>>=) = (>>=)
+      let monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
+    end)
 end
 
-include CCShimsMkLet_.Make(struct
-    type 'a t = 'a list
-    include Infix
-    let monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
-  end)
+include Infix
 
 (** {2 IO} *)
 

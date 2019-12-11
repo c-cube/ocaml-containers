@@ -154,7 +154,16 @@ module Infix : sig
   val (<+>) : 'a t -> 'a t -> 'a t
   (** [a <+> b] is [a] if [a] is [Some _], [b] otherwise. *)
 
+  (** Let operators on OCaml >= 4.08.0, nothing otherwise
+      @since NEXT_RELEASE *)
+  include CCShimsMkLet_.S with type 'a t_let := 'a option
+
 end
+
+
+(** Let operators on OCaml >= 4.08.0, nothing otherwise
+    @since NEXT_RELEASE *)
+include CCShimsMkLet_.S with type 'a t_let := 'a option
 
 (** {2 Conversion and IO} *)
 
@@ -199,7 +208,3 @@ val to_seq : 'a t -> 'a sequence
     @deprecated use {!to_iter} instead *)
 
 val pp : 'a printer -> 'a t printer
-
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
-include CCShimsMkLet_.S with type 'a t_let := 'a option
