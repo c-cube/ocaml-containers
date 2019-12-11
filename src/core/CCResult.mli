@@ -253,3 +253,7 @@ val pp : 'a printer -> ('a, string) t printer
 
 val pp': 'a printer -> 'e printer -> ('a, 'e) t printer
 (** Printer that is generic on the error type. *)
+
+(** Let operators on OCaml >= 4.08.0, nothing otherwise
+    @since NEXT_RELEASE *)
+include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result

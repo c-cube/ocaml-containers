@@ -81,20 +81,54 @@ let shims_array_pre_408 = "
 let shims_array_post_408 = "include Array"
 
 let shims_let_op_pre_408 =
-  "module Make_let_applicative(X:sig end) = struct end
-   module Make_let_functor(X:sig end) = struct end
+  "
+   module type S = sig type 'a t_let end
+   module Make(X:sig type 'a t end) = struct type 'a t_let = 'a X.t end
+
+   module type S2 = sig type ('a,'b) t_let2 end
+   module Make2(X:sig type ('a,'b) t end) = struct type ('a,'b) t_let2 = ('a,'b) X.t end
 "
 let shims_let_op_post_408 =
-  "module Make_let_applicative(X:sig
+  "
+    module type S = sig
+      type 'a t_let
+      val (let+) : 'a t_let -> ('a -> 'b) -> 'b t_let
+      val (and+) : 'a t_let -> 'b t_let -> ('a * 'b) t_let
+      val (let*) : 'a t_let -> ('a -> 'b t_let) -> 'b t_let
+      val (and*) : 'a t_let -> 'b t_let -> ('a * 'b) t_let
+    end
+   module Make(X:sig
     type 'a t
-    val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-    val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-    end) = struct
-  end
-   module Make_let_functor(X:sig
-    type 'a t
+    val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+    val monoid_product : 'a t -> 'b t -> ('a * 'b) t
     val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-    end) = struct
+    end) : S with type 'a t_let = 'a X.t = struct
+      type 'a t_let = 'a X.t
+      let (let+) = X.(>|=)
+      let (and+) = X.monoid_product
+      let (let*) = X.(>>=)
+      let (and*) = X.monoid_product
+  end
+
+    module type S2 = sig
+      type ('a,'e) t_let2
+      val (let+) : ('a,'e) t_let2 -> ('a -> 'b) -> ('b,'e) t_let2
+      val (and+) : ('a,'e) t_let2 -> ('b,'e) t_let2 -> ('a * 'b, 'e) t_let2
+      val (let*) : ('a,'e) t_let2 -> ('a -> ('b,'e) t_let2) -> ('b,'e) t_let2
+      val (and*) : ('a,'e) t_let2 -> ('b,'e) t_let2 -> ('a * 'b,'e) t_let2
+    end
+
+   module Make2(X:sig
+    type ('a,'b) t
+    val (>|=) : ('a,'e) t -> ('a -> 'b) -> ('b,'e) t
+    val monoid_product : ('a,'e) t -> ('b,'e) t -> ('a * 'b, 'e) t
+    val (>>=) : ('a,'e) t -> ('a -> ('b,'e) t) -> ('b,'e) t
+    end) : S2 with type ('a,'e) t_let2 = ('a,'e) X.t = struct
+      type ('a,'e) t_let2 = ('a,'e) X.t
+      let (let+) = X.(>|=)
+      let (and+) = X.monoid_product
+      let (let*) = X.(>>=)
+      let (and*) = X.monoid_product
   end
 "
 
@@ -108,4 +142,5 @@ let () =
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
     write_file "CCShimsFun_.ml" (if (major, minor) >= (4,8) then shims_fun_post_408 else shims_fun_pre_408);
     write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);
+    write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
   )

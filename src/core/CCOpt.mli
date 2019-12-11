@@ -199,3 +199,7 @@ val to_seq : 'a t -> 'a sequence
     @deprecated use {!to_iter} instead *)
 
 val pp : 'a printer -> 'a t printer
+
+(** Let operators on OCaml >= 4.08.0, nothing otherwise
+    @since NEXT_RELEASE *)
+include CCShimsMkLet_.S with type 'a t_let := 'a option

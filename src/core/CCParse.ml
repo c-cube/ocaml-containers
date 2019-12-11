@@ -527,3 +527,9 @@ module U = struct
       p3 >>= fun x3 ->
     string stop *> return (x1,x2,x3)
 end
+
+include CCShimsMkLet_.Make(struct
+    type nonrec 'a t = 'a t
+    include Infix
+    let monoid_product a1 a2 = pure (fun x y ->x,y) <*> a1 <*> a2
+  end)

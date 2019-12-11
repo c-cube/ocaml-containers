@@ -323,3 +323,7 @@ module U : sig
   (** Parse a triple using OCaml whitespace conventions.
       The default is "(a, b, c)". *)
 end
+
+(** Let operators on OCaml >= 4.08.0, nothing otherwise
+    @since NEXT_RELEASE *)
+include CCShimsMkLet_.S with type 'a t_let := 'a t

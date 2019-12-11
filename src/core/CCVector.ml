@@ -1053,3 +1053,10 @@ let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
        pp_item fmt x
     ) v;
   Format.pp_print_string fmt stop
+
+include CCShimsMkLet_.Make2(struct
+    type nonrec ('a,'e) t = ('a,'e) t
+    let (>|=) = (>|=)
+    let (>>=) = (>>=)
+    let monoid_product a1 a2 = monoid_product (fun x y->x,y) a1 a2
+  end)
