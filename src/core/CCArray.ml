@@ -729,7 +729,7 @@ include Infix
 
 (* test consistency of interfaces *)
 (*$inject
-  module FA = CCShims_.Stdlib.Array.Floatarray
+  module FA = Array.Floatarray
   module type L = module type of CCArray with module Floatarray := FA
   module type LL = module type of CCArrayLabels with module Floatarray := FA
 *)
