@@ -179,7 +179,16 @@ module Infix : sig
   (** [a <*> b] evaluates [a] and [b], and, in case of success, returns
       [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
       over the error of [b] if both fail. *)
+
+  (** Let operators on OCaml >= 4.08.0, nothing otherwise
+      @since NEXT_RELEASE *)
+  include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
 end
+
+(** Let operators on OCaml >= 4.08.0, nothing otherwise
+    @since NEXT_RELEASE *)
+include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
+
 
 (** {2 Collections} *)
 
@@ -253,7 +262,3 @@ val pp : 'a printer -> ('a, string) t printer
 
 val pp': 'a printer -> 'e printer -> ('a, 'e) t printer
 (** Printer that is generic on the error type. *)
-
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
-include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
