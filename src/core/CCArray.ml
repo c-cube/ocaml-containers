@@ -709,3 +709,20 @@ module Infix = struct
   let (--) = (--)
   let (--^) = (--^)
 end
+
+
+(* test consistency of interfaces *)
+(*$inject
+  module FA = CCShims_.Stdlib.Array.Floatarray
+  module type L = module type of CCArray with module Floatarray := FA
+  module type LL = module type of CCArrayLabels with module Floatarray := FA
+*)
+
+(*$R
+  ignore (module CCArrayLabels : L)
+*)
+
+(*$R
+  ignore (module CCArray : LL)
+*)
+

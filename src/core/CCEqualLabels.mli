@@ -42,3 +42,18 @@ module Infix : sig
 end
 
 include module type of Infix
+
+(* test consistency of interfaces *)
+(*$inject
+  module type L = module type of CCEqual
+  module type LL = module type of CCEqualLabels
+*)
+
+(*$R
+  ignore (module CCEqualLabels : L)
+*)
+
+(*$R
+  ignore (module CCEqual : LL)
+*)
+

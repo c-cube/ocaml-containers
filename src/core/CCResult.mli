@@ -13,10 +13,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-include module type of struct include Result end
-(** @since 1.5 *)
-
-type (+'good, +'bad) t = ('good, 'bad) Result.result =
+type (+'good, +'bad) t = ('good, 'bad) result =
   | Ok of 'good
   | Error of 'bad
 

@@ -418,3 +418,19 @@ let to_seq a k = iter k a
 let to_gen a = _to_gen a.arr a.i a.j
 
 let to_klist a = _to_klist a.arr a.i a.j
+    
+
+(* test consistency of interfaces *)
+(*$inject
+  module type L = module type of CCArray_slice
+  module type LL = module type of CCArray_sliceLabels
+*)
+
+(*$R
+  ignore (module CCArray_sliceLabels : L)
+*)
+
+(*$R
+  ignore (module CCArray_slice : LL)
+*)
+

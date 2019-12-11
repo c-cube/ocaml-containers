@@ -48,7 +48,7 @@
 
 *)
 
-type 'a or_error = ('a, string) Result.result
+type 'a or_error = ('a, string) result
 
 type line_num = int
 type col_num = int

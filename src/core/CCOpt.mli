@@ -163,13 +163,13 @@ val to_list : 'a t -> 'a list
 val of_list : 'a list -> 'a t
 (** Head of list, or [None]. *)
 
-val to_result : 'e -> 'a t -> ('a, 'e) Result.result
+val to_result : 'e -> 'a t -> ('a, 'e) result
 (** @since 1.2 *)
 
-val to_result_lazy : (unit -> 'e) -> 'a t -> ('a, 'e) Result.result
+val to_result_lazy : (unit -> 'e) -> 'a t -> ('a, 'e) result
 (** @since 1.2 *)
 
-val of_result : ('a, _) Result.result -> 'a t
+val of_result : ('a, _) result -> 'a t
 (** @since 1.2 *)
 
 type 'a sequence = ('a -> unit) -> unit

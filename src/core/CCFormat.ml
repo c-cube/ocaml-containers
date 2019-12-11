@@ -418,8 +418,8 @@ module Dump = struct
   let triple p1 p2 p3 = within "(" ")" (hovbox (triple p1 p2 p3))
   let quad p1 p2 p3 p4 = within "(" ")" (hovbox (quad p1 p2 p3 p4))
   let result' pok perror out = function
-    | Result.Ok x -> Format.fprintf out "(@[Ok %a@])" pok x
-    | Result.Error e -> Format.fprintf out "(@[Error %a@])" perror e
+    | Ok x -> Format.fprintf out "(@[Ok %a@])" pok x
+    | Error e -> Format.fprintf out "(@[Error %a@])" perror e
   let result pok = result' pok string
   let to_string = to_string
 end
@@ -429,5 +429,5 @@ end
   "Some 1" (to_string Dump.(option int) (Some 1))
   "[None;Some \"a b\"]" (to_string Dump.(list (option string)) [None; Some "a b"])
   "[(Ok \"a b c\");(Error \"nope\")]" \
-    (to_string Dump.(list (result string)) [Result.Ok "a b c"; Result.Error "nope"])
+    (to_string Dump.(list (result string)) [Ok "a b c"; Error "nope"])
 *)

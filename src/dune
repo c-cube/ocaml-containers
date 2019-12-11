@@ -3,11 +3,6 @@
   (modules mkflags)
   (libraries dune.configurator))
 
-(executable
-  (name unlabel)
-  (modules unlabel)
-  (libraries compiler-libs.common))
-
 (env
   (_ (flags :standard -warn-error -3)))
 

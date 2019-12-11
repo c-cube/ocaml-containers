@@ -2,7 +2,7 @@
 
 (** {1 Handling S-expressions} *)
 
-type 'a or_error = ('a, string) Result.result
+type 'a or_error = ('a, string) result
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 

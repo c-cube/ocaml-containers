@@ -4,7 +4,7 @@
 
 open CCShims_
 
-type 'a or_error = ('a, string) Result.result
+type 'a or_error = ('a, string) result
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
@@ -134,7 +134,7 @@ module Make(Sexp : SEXP) = struct
       x
     with e ->
       close_in ic;
-      Result.Error (Printexc.to_string e)
+      Error (Printexc.to_string e)
 
   (** A parser of ['a] can return [Yield x] when it parsed a value,
       or [Fail e] when a parse error was encountered, or
@@ -234,9 +234,9 @@ module Make(Sexp : SEXP) = struct
 
     let to_list (d:t) : _ or_error =
       let rec iter acc = match next d with
-        | End -> Result.Ok (List.rev acc)
+        | End -> Ok (List.rev acc)
         | Yield x -> iter (x::acc)
-        | Fail e -> Result.Error e
+        | Fail e -> Error e
       in
       try iter []
       with e -> Error (Printexc.to_string e)
@@ -244,9 +244,9 @@ module Make(Sexp : SEXP) = struct
 
   let dec_next_ (d:Decoder.t) : _ or_error =
     match Decoder.next d with
-      | End -> Result.Error "unexpected end of file"
-      | Yield x -> Result.Ok x
-      | Fail s -> Result.Error s
+      | End -> Error "unexpected end of file"
+      | Yield x -> Ok x
+      | Fail s -> Error s
 
   let parse_string s : t or_error =
     let buf = Lexing.from_string s in
@@ -284,8 +284,8 @@ module Make(Sexp : SEXP) = struct
     let d = Decoder.of_lexbuf buf in
     fun () -> match Decoder.next d with
       | End -> None
-      | Fail e -> Some (Result.Error e)
-      | Yield x -> Some (Result.Ok x)
+      | Fail e -> Some (Error e)
+      | Yield x -> Some (Ok x)
 
   let parse_file filename = _with_in filename (parse_chan_ ~file:filename)
 
@@ -341,20 +341,20 @@ include (Make(struct
   CCResult.to_opt (parse_string "\"\123\bcoucou\"") <> None
 *)
 
-(*$= & ~printer:(function Result.Ok x -> to_string x | Result.Error e -> "error " ^ e)
-  (parse_string "(a b)") (Result.Ok (`List [`Atom "a"; `Atom "b"]))
-  (parse_string "(a\n ;coucou\n b)") (Result.Ok (`List [`Atom "a"; `Atom "b"]))
-  (parse_string "(a #; (foo bar\n (1 2 3)) b)") (Result.Ok (`List [`Atom "a"; `Atom "b"]))
-  (parse_string "#; (a b) (c d)") (Result.Ok (`List [`Atom "c"; `Atom "d"]))
-  (parse_string "#; (a b) 1") (Result.Ok (`Atom "1"))
+(*$= & ~printer:(function Ok x -> to_string x | Error e -> "error " ^ e)
+  (parse_string "(a b)") (Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "(a\n ;coucou\n b)") (Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "(a #; (foo bar\n (1 2 3)) b)") (Ok (`List [`Atom "a"; `Atom "b"]))
+  (parse_string "#; (a b) (c d)") (Ok (`List [`Atom "c"; `Atom "d"]))
+  (parse_string "#; (a b) 1") (Ok (`Atom "1"))
 *)
 
-(*$= & ~printer:(function Result.Ok x -> String.concat ";" @@ List.map to_string x | Result.Error e -> "error " ^ e)
-  (parse_string_list "(a b)(c)") (Result.Ok [`List [`Atom "a"; `Atom "b"]; `List [`Atom "c"]])
-  (parse_string_list "  ") (Result.Ok [])
-  (parse_string_list "(a\n ;coucou\n b)") (Result.Ok [`List [`Atom "a"; `Atom "b"]])
-  (parse_string_list "#; (a b) (c d) e ") (Result.Ok [`List [`Atom "c"; `Atom "d"]; `Atom "e"])
-  (parse_string_list "#; (a b) 1") (Result.Ok [`Atom "1"])
+(*$= & ~printer:(function Ok x -> String.concat ";" @@ List.map to_string x | Error e -> "error " ^ e)
+  (parse_string_list "(a b)(c)") (Ok [`List [`Atom "a"; `Atom "b"]; `List [`Atom "c"]])
+  (parse_string_list "  ") (Ok [])
+  (parse_string_list "(a\n ;coucou\n b)") (Ok [`List [`Atom "a"; `Atom "b"]])
+  (parse_string_list "#; (a b) (c d) e ") (Ok [`List [`Atom "c"; `Atom "d"]; `Atom "e"])
+  (parse_string_list "#; (a b) 1") (Ok [`Atom "1"])
 *)
 
 
@@ -392,7 +392,7 @@ include (Make(struct
 *)
 
 (*$Q & ~count:100
-    sexp_gen (fun s -> sexp_valid s ==> (to_string s |> parse_string = Result.Ok s))
+    sexp_gen (fun s -> sexp_valid s ==> (to_string s |> parse_string = Ok s))
 *)
 
 let atom s : t = `Atom s

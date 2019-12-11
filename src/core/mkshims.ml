@@ -80,6 +80,24 @@ let shims_array_pre_408 = "
 "
 let shims_array_post_408 = "include Array"
 
+let shims_let_op_pre_408 =
+  "module Make_let_applicative(X:sig end) = struct end
+   module Make_let_functor(X:sig end) = struct end
+"
+let shims_let_op_post_408 =
+  "module Make_let_applicative(X:sig
+    type 'a t
+    val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+    val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+    end) = struct
+  end
+   module Make_let_functor(X:sig
+    type 'a t
+    val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+    end) = struct
+  end
+"
+
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in

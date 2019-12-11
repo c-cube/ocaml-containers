@@ -1027,8 +1027,8 @@ let keep_some l = filter_map (fun x->x) l
 let keep_ok l =
   filter_map
     (function
-      | Result.Ok x -> Some x
-      | Result.Error _ -> None)
+      | Ok x -> Some x
+      | Error _ -> None)
     l
 
 let all_some l =
@@ -1044,14 +1044,14 @@ let all_some l =
 let all_ok l =
   let err = ref None in
   try
-    Result.Ok
+    Ok
       (map
-         (function Result.Ok x -> x | Result.Error e -> err := Some e; raise Exit)
+         (function Ok x -> x | Error e -> err := Some e; raise Exit)
          l)
   with Exit ->
     begin match !err with
       | None -> assert false
-      | Some e -> Result.Error e
+      | Some e -> Error e
     end
 
 let group_by (type k) ?(hash=Hashtbl.hash) ?(eq=Stdlib.(=)) l =
@@ -1156,10 +1156,6 @@ let group_join_by (type a) ?(eq=Stdlib.(=)) ?(hash=Hashtbl.hash) f c1 c2 =
     ["abc"; "boom"; "attic"; "deleted"; "barbary"; "bop"] \
   |> map (fun (c,l)->c,List.sort Stdlib.compare l) \
   |> sort Stdlib.compare)
-*)
-
-(*$inject
-  open Result
 *)
 
 (*$=
@@ -1744,5 +1740,20 @@ let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
       (CCFormat.to_string \
         (CCFormat.hbox(CCList.pp ~start:"[" ~stop:"]" CCFormat.int)) \
         [1;2;3])
+*)
+
+
+(* test consistency of interfaces *)
+(*$inject
+  module type L = module type of CCList
+  module type LL = module type of CCListLabels
+*)
+
+(*$R
+  ignore (module CCListLabels : L)
+*)
+
+(*$R
+  ignore (module CCList : LL)
 *)
 
