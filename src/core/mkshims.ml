@@ -82,12 +82,12 @@ let shims_array_pre_406 = "
 
 let shims_array_label_pre_406 = "
   include ArrayLabels
-  module Floatarray = struct type t = float array end
+  module Floatarray = CCShimsArray_.Floatarray
   type 'a t = 'a array
   "
 
 let shims_array_label_406_408 = "
-  include ArrayLabels
+  include (ArrayLabels : module type of ArrayLabels with module Floatarray = Array.Floatarray)
   type 'a t = 'a array
   "
 
@@ -96,7 +96,7 @@ let shims_array_406_408 = "
   type 'a t = 'a array
 "
 let shims_array_post_408 = "include Array"
-let shims_array_label_post_408 = "include ArrayLabels"
+let shims_array_label_post_408 = "include (ArrayLabels : module type of ArrayLabels with module Floatarray = Array.Floatarray)"
 
 let shims_let_op_pre_408 =
   "
