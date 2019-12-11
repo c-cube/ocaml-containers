@@ -126,7 +126,7 @@ let shims_let_op_post_408 =
       let (and+) = X.monoid_product
       let (let*) = X.(>>=)
       let (and*) = X.monoid_product
-  end
+  end[@@inline]
 
     module type S2 = sig
       type ('a,'e) t_let2
@@ -147,7 +147,7 @@ let shims_let_op_post_408 =
       let (and+) = X.monoid_product
       let (let*) = X.(>>=)
       let (and*) = X.monoid_product
-  end
+  end[@@inline]
 "
 
 let () =
