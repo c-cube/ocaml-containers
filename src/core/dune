@@ -59,4 +59,4 @@
    CCMonomorphic)
  (ocamlopt_flags
   (:include ../flambda.flags))
- (libraries result uchar seq containers.monomorphic))
+ (libraries seq containers.monomorphic))
