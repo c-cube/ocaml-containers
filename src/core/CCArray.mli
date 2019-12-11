@@ -298,6 +298,10 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
     of all elements [bi] such as [f ai = Some bi]. When [f] returns [None], the corresponding
     element of [a] is discarded. *)
 
+val monoid_product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** All combinaisons of tuples from the two arrays are passed to the function
+    @since NEXT_RELEASE *)
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b array
 (** [flat_map f a] transforms each element of [a] into an array, then flattens. *)
 

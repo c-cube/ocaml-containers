@@ -198,6 +198,10 @@ val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
     intermediate collections.
     @since 0.14 *)
 
+val monoid_product : ('a -> 'b -> 'c) -> ('a,_) t -> ('b,_) t -> ('c,_) t
+(** All combinaisons of tuples from the two vectors are passed to the function.
+    @since NEXT_RELEASE *)
+
 val (>>=) : ('a,_) t -> ('a -> ('b,_) t) -> ('b, 'mut) t
 (** Infix version of {!flat_map}. *)
 

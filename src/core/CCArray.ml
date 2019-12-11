@@ -268,6 +268,19 @@ let flat_map f a =
   a' = [| 1; 2; 3; 4; 5; 6 |]
 *)
 
+let monoid_product f a1 a2 =
+  let na1 = length a1 in
+  init (na1 * length a2)
+    (fun i_prod ->
+       let i = i_prod mod na1 in
+       let j = i_prod / na1 in
+       f a1.(i) a2.(j))
+
+(*$= & ~cmp:(=) ~printer:Q.Print.(array int)
+  [| 11; 12; 21; 22 |] (sorted CCInt.compare @@ monoid_product (+) [| 10; 20 |] [| 1; 2 |])
+  [| 11; 12; 13; 14 |] (sorted CCInt.compare @@ monoid_product (+) [| 10 |] [| 1; 2; 3; 4 |])
+*)
+
 let rec _lookup_rec ~cmp k a i j =
   if i>j then raise Not_found
   else if i=j

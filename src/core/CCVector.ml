@@ -753,6 +753,21 @@ let flat_map_list f v =
     v;
   v'
 
+let monoid_product f a1 a2 : _ t =
+  let na1 = a1.size in
+  init (na1 * a2.size)
+    (fun i_prod ->
+       let i = i_prod mod na1 in
+       let j = i_prod / na1 in
+       f a1.vec.(i) a2.vec.(j))
+
+(*$= & ~cmp:(=) ~printer:Q.Print.(list int)
+  [ 11; 12; 21; 22 ] (List.sort CCInt.compare @@ \
+                      to_list @@ monoid_product (+) (of_list [10; 20]) (of_list [1; 2]))
+  [ 11; 12; 13; 14 ] (List.sort CCInt.compare @@ \
+                      to_list @@ monoid_product (+) (of_list [10]) (of_list [1; 2; 3; 4]))
+*)
+
 let (>>=) x f = flat_map f x
 
 let (>|=) x f = map f x

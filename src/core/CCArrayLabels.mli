@@ -302,6 +302,10 @@ val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b array
 (** [flat_map ~f a] transforms each element of [a] into an array, then flattens. *)
 
+val monoid_product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** All combinaisons of tuples from the two arrays are passed to the function
+    @since NEXT_RELEASE *)
+
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** [a >>= f] is the infix version of {!flat_map}. *)
 
