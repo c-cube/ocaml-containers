@@ -8,11 +8,10 @@ env:
   - PINS="containers:."
   - DISTRO="ubuntu-16.04"
   matrix:
-  - PACKAGE="containers" OCAML_VERSION="4.02.3" EXTRA_DEPS="base-threads base-unix" TESTS=false
   - PACKAGE="containers" OCAML_VERSION="4.03" EXTRA_DEPS="base-threads base-unix"
   - PACKAGE="containers" OCAML_VERSION="4.04" EXTRA_DEPS="base-threads base-unix"
   - PACKAGE="containers" OCAML_VERSION="4.05" EXTRA_DEPS="base-threads base-unix"
   - PACKAGE="containers" OCAML_VERSION="4.06" EXTRA_DEPS="base-threads base-unix"
   - PACKAGE="containers" OCAML_VERSION="4.07" EXTRA_DEPS="base-threads base-unix"
-  - PACKAGE="containers" OCAML_VERSION="4.08" EXTRA_DEPS="base-threads base-unix" TESTS=false
+  - PACKAGE="containers" OCAML_VERSION="4.08" EXTRA_DEPS="base-threads base-unix"
   - PACKAGE="containers" OCAML_VERSION="4.09" EXTRA_DEPS="base-threads base-unix" TESTS=false
