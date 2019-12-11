@@ -1719,6 +1719,12 @@ module Infix = struct
   let (--^) = (--^)
 end
 
+include CCShimsMkLet_.Make(struct
+    type 'a t = 'a list
+    include Infix
+    let monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
+  end)
+
 (** {2 IO} *)
 
 let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =

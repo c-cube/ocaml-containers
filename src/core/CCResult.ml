@@ -338,3 +338,12 @@ let pp pp_x fmt e = match e with
 let pp' pp_x pp_e fmt e = match e with
   | Ok x -> Format.fprintf fmt "@[ok(@,%a)@]" pp_x x
   | Error s -> Format.fprintf fmt "@[error(@,%a)@]" pp_e s
+
+include CCShimsMkLet_.Make2(struct
+    type ('a,'e) t = ('a,'e) result
+    include Infix
+    let monoid_product x1 x2 = match x1, x2 with
+      | Ok x, Ok y -> Ok (x,y)
+      | Error e, _ -> Error e
+      | _, Error e -> Error e
+  end)

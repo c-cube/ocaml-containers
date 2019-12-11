@@ -739,3 +739,8 @@ end
   ignore (module CCArray : LL)
 *)
 
+include CCShimsMkLet_.Make(struct
+    type 'a t = 'a array
+    include Infix
+    let monoid_product a1 a2 = monoid_product (fun x y->x,y) a1 a2
+  end)

@@ -105,6 +105,7 @@ let fold f acc o = match o with
 let get_or ~default x = match x with
   | None -> default
   | Some y -> y
+
 let value x ~default = match x with
   | None -> default
   | Some y -> y
@@ -237,3 +238,11 @@ let return_if b x =
   return_if false 1 = None
   return_if true 1 = Some 1
 *)
+
+include CCShimsMkLet_.Make(struct
+    type 'a t = 'a option
+    include Infix
+    let monoid_product o1 o2 = match o1, o2 with
+      | Some x, Some y -> Some (x,y)
+      | _ -> None
+  end)

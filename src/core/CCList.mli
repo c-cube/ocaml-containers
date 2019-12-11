@@ -743,6 +743,10 @@ module Infix : sig
   (** @since 0.17 *)
 end
 
+(** Let operators on OCaml >= 4.08.0, nothing otherwise
+    @since NEXT_RELEASE *)
+include CCShimsMkLet_.S with type 'a t_let := 'a list
+
 (** {2 IO} *)
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->

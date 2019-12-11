@@ -304,3 +304,7 @@ val to_string :
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> ('a,_) t printer
+
+(** Let operators on OCaml >= 4.08.0, nothing otherwise
+    @since NEXT_RELEASE *)
+include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) t
