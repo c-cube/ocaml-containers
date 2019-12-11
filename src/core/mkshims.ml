@@ -74,6 +74,12 @@ let shims_list_pre_408 = "
 "
 let shims_list_post_408 = "include List"
 
+let shims_array_pre_406 = "
+  include Array
+  module Floatarray = struct end
+  type 'a t = 'a array
+  "
+
 let shims_array_pre_408 = "
   include Array
   type 'a t = 'a array
@@ -138,7 +144,10 @@ let () =
     let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
     write_file "CCShims_.ml" (if (major, minor) >= (4,7) then shims_post_407 else shims_pre_407);
     write_file "CCShimsList_.ml" (if (major, minor) >= (4,8) then shims_list_post_408 else shims_list_pre_408);
-    write_file "CCShimsArray_.ml" (if (major, minor) >= (4,8) then shims_array_post_408 else shims_array_pre_408);
+    write_file "CCShimsArray_.ml"
+      (if (major, minor) >= (4,8) then shims_array_post_408
+       else if (major, minor) >= (4,6) then shims_fmt_pre_408
+       else shims_array_pre_406);
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
     write_file "CCShimsFun_.ml" (if (major, minor) >= (4,8) then shims_fun_post_408 else shims_fun_pre_408);
     write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);
