@@ -106,15 +106,17 @@ val with_out : ?mode:int -> ?flags:Unix.open_flag list ->
       [Unix.O_WRONLY] is used in any cases.
     @since 0.16 *)
 
+(** {2 Subprocesses} *)
+
 val with_process_in : string -> f:(in_channel -> 'a) -> 'a
-(** Open a subprocess and obtain a handle to its stdout.
+(** Open a shell command in a subprocess and obtain a handle to its stdout.
     {[
       CCUnix.with_process_in "ls /tmp" ~f:CCIO.read_lines_l;;
     ]}
     @since 0.16 *)
 
 val with_process_out : string -> f:(out_channel -> 'a) -> 'a
-(** Open a subprocess and obtain a handle to its stdin.
+(** Open a shell command in a subprocess and obtain a handle to its stdin.
     @since 0.16 *)
 
 (** Handle to a subprocess.
@@ -131,6 +133,16 @@ val with_process_full : ?env:string array -> string -> f:(process_full -> 'a) ->
     @param env environment to pass to the subprocess.
     @since 0.16 *)
 
+val ensure_session_leader : unit -> unit
+(** On unix, call [Unix.setsid()] to make sure subprocesses die at the same
+    time as the current process. Does nothing on windows.
+    Idempotent: it can be called several times but will only have effects,
+    if any, the first time.
+    @since NEXT_RELEASE
+*)
+
+(** {2 Networking} *)
+
 val with_connection : Unix.sockaddr -> f:(in_channel -> out_channel -> 'a) -> 'a
 (** Wrap {!Unix.open_connection} with a handler.
     @since 0.16 *)
@@ -142,6 +154,8 @@ val establish_server : Unix.sockaddr -> f:(in_channel -> out_channel -> _) -> un
     Using {!Thread} is recommended if handlers might take time.
     The callback should raise {!ExitServer} to stop the loop.
     @since 0.16 *)
+
+(** {2 File lock} *)
 
 val with_file_lock : kind:[`Read|`Write] -> string -> (unit -> 'a) -> 'a
 (** [with_file_lock ~kind filename f] puts a lock on the offset 0

@@ -222,6 +222,14 @@ let with_connection addr ~f =
   finally_ (fun () -> f ic oc) ()
     ~h:(fun () -> Unix.shutdown_connection ic)
 
+(* make sure that we are a session leader; that is, our children die if we die *)
+let ensure_session_leader =
+  let thunk = lazy (
+    if not Sys.win32 && not Sys.cygwin
+    then ignore (Unix.setsid ())
+  ) in
+  fun () -> Lazy.force thunk
+
 exception ExitServer
 
 (* version of {!Unix.establish_server} that doesn't fork *)
