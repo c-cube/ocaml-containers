@@ -83,11 +83,11 @@ let init n f = {
 let array_is_empty_ v =
   Array.length v.vec = 0
 
-(* assuming the underlying array isn't empty, resize it *)
-let resize_ v newcapacity =
+(* resize the underlying array using x to temporarily fill the array *)
+let resize_ v newcapacity x =
   assert (newcapacity >= v.size);
   assert (not (array_is_empty_ v));
-  let new_vec = Array.make newcapacity v.vec.(0) in
+  let new_vec = Array.make newcapacity x in
   Array.blit v.vec 0 new_vec 0 v.size;
   fill_with_junk_ new_vec v.size (newcapacity-v.size);
   v.vec <- new_vec;
@@ -131,7 +131,7 @@ let grow_with_ v ~filler:x =
     let n = Array.length v.vec in
     let size = min (2 * n + 3) Sys.max_array_length in
     if size = n then failwith "vec: can't grow any further";
-    resize_ v size
+    resize_ v size v.vec.(0)
   )
 
 (* v is not empty; ensure it has at least [size] slots.
@@ -144,7 +144,7 @@ let ensure_assuming_not_empty_ v ~size =
   else (
     let n = ref (max 8 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;
-    resize_ v !n
+    resize_ v !n v.vec.(0)
   )
 
 let ensure_with ~init v size =
