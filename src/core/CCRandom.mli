@@ -67,6 +67,7 @@ val sample_without_replacement:
     @deprecated use sample_without_duplicates instead
     @raise Invalid_argument if [n <= 0].
     @since 0.15 *)
+[@@ocaml.deprecated "use sample_without_duplicates instead"]
 
 val sample_without_duplicates:
   cmp:('a -> 'a -> int) -> int -> 'a t -> 'a list t

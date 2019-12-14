@@ -102,6 +102,7 @@ val of_string : string -> t
 (** Alias to {!float_of_string}.
     @deprecated since 1.2, use {!of_string_exn} instead.
     @raise Failure in case of failure. *)
+[@@ocaml.deprecated "use of_string_exn instead"]
 
 val equal_precision : epsilon:t -> t -> t -> bool
 (** Equality with allowed error up to a non negative epsilon value. *)

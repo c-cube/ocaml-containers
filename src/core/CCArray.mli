@@ -142,6 +142,7 @@ val find : ('a -> 'b option) -> 'a t -> 'b option
     @deprecated since 1.3, use {!find_map} instead.
     The version with labels is
     @deprecated since 2.1, use {!find_map} instead. *)
+[@@ocaml.deprecated "use find_map instead"]
 
 val find_map_i : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** [find_map_i f a] is like {!find_map}, but the index of the element is also passed
@@ -152,9 +153,10 @@ val find_map_i : (int -> 'a -> 'b option) -> 'a t -> 'b option
 val findi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** [findi f a] is an alias to {!find_map_i}.
     @since 0.3.4
-    @deprecated since 1.3, use {!find_map} instead.
+    @deprecated since 1.3, use {!find_map_i} instead.
     The version with labels is
-    @deprecated since 2.1, use {!find_map} instead. *)
+    @deprecated since 2.1, use {!find_map_i} instead. *)
+[@@ocaml.deprecated "use find_map_i instead"]
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx f a] returns [Some (i,x)] where [x] is the [i]-th element of [a],
