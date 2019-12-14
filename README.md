@@ -116,17 +116,17 @@ To print values with types defined in `containers` in the bytecode debugger,
 you first have to load the appropriate bytecode archives. After starting a
 session, e.g. `ocamldebug your_program.bc`,
 
-```
-# load_printer containers_monomorphic.cma
-# load_printer containers.cma
+```ocaml non-deterministic=command
+# #load_printer containers_monomorphic.cma
+# #load_printer containers.cma
 ```
 
 For these archives to be found, you may have to `run` the program first. Now
 printing functions that have the appropriate type `Format.formatter -> 'a ->
 unit` can be installed. For example,
 
-```
-# install_printer Containers.Int.pp
+```ocaml non-deterministic=command
+# #install_printer Containers.Int.pp
 ```
 
 However, printer combinators are not easily handled by `ocamldebug`. For
@@ -143,7 +143,6 @@ end
 
 loaded via `# load_printer m.cmo` and installed as `# install_printer
 M.pp_int_list`.
-
 
 
 ## Change Log
