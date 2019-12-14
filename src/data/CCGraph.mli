@@ -29,11 +29,11 @@
 
 type 'a iter = ('a -> unit) -> unit
 (** A sequence of items of type ['a], possibly infinite
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a iter_once = 'a iter
 (** Iter that should be used only once
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a sequence = ('a -> unit) -> unit
 (** A sequence of items of type ['a], possibly infinite
@@ -347,7 +347,7 @@ module Dot : sig
     'v iter ->
     unit
   (** Same as {!pp} but starting from several vertices, not just one.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val pp_seq : tbl:('v,vertex_state) table ->
     eq:('v -> 'v -> bool) ->
@@ -420,13 +420,13 @@ module type MAP = sig
   val to_list : 'a t -> (vertex * 'a * vertex) list
 
   val of_iter : (vertex * 'a * vertex) iter -> 'a t
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val add_iter : (vertex * 'a * vertex) iter -> 'a t -> 'a t
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val to_iter : 'a t -> (vertex * 'a * vertex) iter
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val of_seq : (vertex * 'a * vertex) iter -> 'a t
   (** @deprecated use {!of_iter} instead *)

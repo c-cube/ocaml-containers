@@ -10,7 +10,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -76,12 +76,12 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
 val fold_map_i : ('acc -> int -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_map_i f init l] is a [foldi]-like function, but it also maps the
     list to another list.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val fold_on_map : f:('a -> 'b) -> reduce:('acc -> 'b -> 'acc) -> 'acc -> 'a list -> 'acc
 (** [fold_on_map ~f ~reduce init l] combines [map f] and [fold_left reduce init]
     in one operation.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc list
 (** [scan_left f init l] returns the list [[init; f init x0; f (f init x0) x1; ...]]
@@ -102,7 +102,7 @@ val fold_filter_map : ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'ac
 val fold_filter_map_i : ('acc -> int -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_filter_map_i f init l] is a [foldi]-like function, but also
     generates a list of output in a way similar to {!filter_map}.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
@@ -112,7 +112,7 @@ val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 
 val fold_flat_map_i : ('acc -> int -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map_i f acc l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val count : ('a -> bool) -> 'a list -> int
 (** [count p l] counts how many elements of [l] satisfy predicate [p].
@@ -173,7 +173,7 @@ val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 val flat_map_i : (int -> 'a -> 'b t) -> 'a t -> 'b t
 (** Map with index and flatten at the same time (safe).
     Evaluation order is not guaranteed.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val flatten : 'a t t -> 'a t
@@ -725,11 +725,11 @@ val to_string : ?start:string -> ?stop:string -> ?sep:string ->
 
 val to_iter : 'a t -> 'a iter
 (** Return a [iter] of the elements of the list.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val to_std_seq : 'a t -> 'a Seq.t
 (** Return a [Seq.t] of the elements of the list.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val to_seq : 'a t -> 'a sequence
 (** Return a [sequence] of the elements of the list.
@@ -739,16 +739,16 @@ val to_seq : 'a t -> 'a sequence
 val of_iter : 'a iter -> 'a t
 (** Build a list from a given [iter].
     In the result, elements appear in the same order as they did in the source [iter].
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val of_std_seq_rev : 'a Seq.t -> 'a t
 (** Build a list from a given [Seq.t], in reverse order.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val of_std_seq : 'a Seq.t -> 'a t
 (** Build a list from a given [Seq.t].
     In the result, elements appear in the same order as they did in the source [seq].
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val of_seq : 'a sequence -> 'a t
 (** Build a list from a given [sequence].
@@ -800,12 +800,12 @@ module Infix : sig
       @since 0.17 *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
   include CCShimsMkLet_.S with type 'a t_let := 'a list
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 include CCShimsMkLet_.S with type 'a t_let := 'a list
 
 (** {2 IO} *)

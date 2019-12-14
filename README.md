@@ -611,7 +611,6 @@ can be removed.
 - `make update_next_tag` (to update `@since` comments; be careful not to change symlinks)
 - check status of modules (`{b status: foo}`) and update if required;
    removed deprecated functions, etc.
-- `make unlabel` to see if labelled interfaces are up to date (requires compiler-libs)
 - update `CHANGELOG.md` (see its end to find the right git command)
 - commit the changes
 - `make test doc`

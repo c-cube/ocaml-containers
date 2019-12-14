@@ -9,7 +9,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -46,11 +46,11 @@ module type S = sig
 
   val to_iter : t -> char iter
   (** Return the [iter] of characters contained in the string.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_std_seq : t -> char Seq.t
   (** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
-      @since NEXT_RELEASE
+      @since 2.8
   *)
 
   val to_seq : t -> char sequence
@@ -114,11 +114,11 @@ val of_gen : char gen -> string
 
 val of_iter : char iter -> string
 (** Convert a [iter] of characters to a string.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val of_std_seq : char Seq.t -> string
 (** Convert a [sequence] of characters to a string.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val of_seq : char sequence -> string
 (** Convert a [sequence] of characters to a string.
@@ -410,10 +410,10 @@ module Split : sig
   val gen : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) gen
 
   val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) sequence
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val std_seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) sequence
   (** deprecated, use {!iter} instead *)
@@ -433,10 +433,10 @@ module Split : sig
   val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
 
   val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val std_seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string Seq.t
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
   (** deprecated, use {!iter_cpy} instead *)

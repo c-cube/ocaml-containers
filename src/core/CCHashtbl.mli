@@ -12,7 +12,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a eq = 'a -> 'a -> bool
 type 'a hash = 'a -> int
@@ -64,7 +64,7 @@ module Poly : sig
 
   val to_iter : ('a,'b) Hashtbl.t -> ('a * 'b) iter
   (** Iterate on bindings in the table.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence
   (** Iterate on bindings in the table.
@@ -78,11 +78,11 @@ module Poly : sig
 
   val add_iter : ('a,'b) Hashtbl.t -> ('a * 'b) iter -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_std_seq : ('a,'b) Hashtbl.t -> ('a * 'b) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
@@ -92,11 +92,11 @@ module Poly : sig
 
   val of_iter : ('a * 'b) iter -> ('a,'b) Hashtbl.t
   (** From the given bindings, added in order.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_std_seq : ('a * 'b) Seq.t -> ('a,'b) Hashtbl.t
   (** From the given bindings, added in order.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_seq : ('a * 'b) sequence -> ('a,'b) Hashtbl.t
   (** From the given bindings, added in order.
@@ -107,13 +107,13 @@ module Poly : sig
   (** [add_iter_count tbl i] increments the count of each element of [i]
       by calling {!incr}. This is useful for counting how many times each
       element of [i] occurs.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_std_seq_count : ('a, int) Hashtbl.t -> 'a Seq.t -> unit
   (** [add_seq_count tbl seq] increments the count of each element of [seq]
       by calling {!incr}. This is useful for counting how many times each
       element of [seq] occurs.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_seq_count : ('a, int) Hashtbl.t -> 'a sequence -> unit
   (** [add_seq_count tbl seq] increments the count of each element of [seq]
@@ -125,11 +125,11 @@ module Poly : sig
 
   val of_iter_count : 'a iter -> ('a, int) Hashtbl.t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_std_seq_count : 'a Seq.t -> ('a, int) Hashtbl.t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_seq_count : 'a sequence -> ('a, int) Hashtbl.t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
@@ -220,7 +220,7 @@ module type S = sig
 
   val to_iter : 'a t -> (key * 'a) iter
   (** Iterate on bindings in the table.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_seq : 'a t -> (key * 'a) sequence
   (** Iterate on values in the table.
@@ -229,11 +229,11 @@ module type S = sig
 
   val add_iter : 'a t -> (key * 'a) iter -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_std_seq : 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_seq : 'a t -> (key * 'a) sequence -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
@@ -243,11 +243,11 @@ module type S = sig
 
   val of_iter : (key * 'a) iter -> 'a t
   (** From the given bindings, added in order.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_std_seq : (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
   (** From the given bindings, added in order.
@@ -258,13 +258,13 @@ module type S = sig
   (** [add_iter_count tbl i] increments the count of each element of [i]
       by calling {!incr}. This is useful for counting how many times each
       element of [i] occurs.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_std_seq_count : int t -> key Seq.t -> unit
   (** [add_seq_count tbl seq] increments the count of each element of [seq]
       by calling {!incr}. This is useful for counting how many times each
       element of [seq] occurs.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_seq_count : int t -> key sequence -> unit
   (** [add_seq_count tbl seq] increments the count of each element of [seq]
@@ -276,11 +276,11 @@ module type S = sig
 
   val of_iter_count : key iter -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_std_seq_count : key Seq.t -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_seq_count : key sequence -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.

@@ -24,7 +24,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -61,7 +61,7 @@ val clear : ('a, rw) t -> unit
 val clear_and_reset : ('a, rw) t -> unit
 (** Clear the content of the vector, and deallocate the underlying array,
     removing references to all the elements.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val ensure_with : init:'a -> ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
@@ -88,11 +88,11 @@ val append_array : ('a, rw) t -> 'a array -> unit
 
 val append_iter : ('a, rw) t -> 'a iter -> unit
 (** Append content of iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val append_std_seq : ('a, rw) t -> 'a Seq.t -> unit
 (** Append content of iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val append_seq : ('a, rw) t -> 'a sequence -> unit
 (** Append content of sequence. *)
@@ -138,7 +138,7 @@ val shrink : ('a, rw) t -> int -> unit
 
 val shrink_to_fit : ('a, _) t -> unit
 (** Shrink internal array to fit the size of the vector
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val member : eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 (** Is the element a member of the vector? *)
@@ -169,7 +169,7 @@ val map : ('a -> 'b) -> ('a,_) t -> ('b, 'mut) t
 val mapi : (int -> 'a -> 'b) -> ('a,_) t -> ('b, 'mut) t
 (** [map f v] is just like {!map}, but it also passes in the index
     of each element as the first argument to the function [f].
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val map_in_place : ('a -> 'a) -> ('a,_) t -> unit
 (** Map elements of the vector in place
@@ -215,11 +215,11 @@ val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 
 val flat_map_iter : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!iter} for intermediate collections.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val flat_map_std_seq : ('a -> 'b Seq.t) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using [Seq] for intermediate collections.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val flat_map_seq : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!sequence} for
@@ -235,7 +235,7 @@ val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
 
 val monoid_product : ('a -> 'b -> 'c) -> ('a,_) t -> ('b,_) t -> ('c,_) t
 (** All combinaisons of tuples from the two vectors are passed to the function.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val (>>=) : ('a,_) t -> ('a -> ('b,_) t) -> ('b, 'mut) t
 (** Infix version of {!flat_map}. *)
@@ -313,24 +313,24 @@ val of_std_seq : ?init:('a,rw) t -> 'a Seq.t -> ('a, rw) t
 
 val to_iter : ('a,_) t -> 'a iter
 (** Return a [iter] with the elements contained in the vector.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val to_iter_rev : ('a,_) t -> 'a iter
 (** [to_iter_rev v] returns the sequence of elements of [v] in reverse order,
     that is, the last elements of [v] are iterated on first.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val to_std_seq : ('a,_) t -> 'a Seq.t
 (** Return an iterator with the elements contained in the vector.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val to_std_seq_rev : ('a,_) t -> 'a Seq.t
 (** [to_seq v] returns the sequence of elements of [v] in reverse order,
     that is, the last elements of [v] are iterated on first.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val to_seq : ('a,_) t -> 'a sequence
@@ -375,5 +375,5 @@ val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> ('a,_) t printer
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) t

@@ -64,27 +64,27 @@ module type S = sig
 
   val of_iter : (key * 'a) iter -> 'a t
   (** Like {!of_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_std_seq : 'a t -> (key * 'a) Seq.t -> 'a t
   (** Like {!add_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_std_seq : (key * 'a) Seq.t -> 'a t
   (** Like {!of_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_iter : 'a t -> (key * 'a) iter -> 'a t
   (** Like {!add_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_iter : (key * 'a) iter -> 'a t
   (** Like {!of_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_iter : 'a t -> (key * 'a) iter
   (** Like {!to_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_seq : (key * 'a) sequence -> 'a t
   (** Like {!of_list}.

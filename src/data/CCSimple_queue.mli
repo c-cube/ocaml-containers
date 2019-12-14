@@ -13,7 +13,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]

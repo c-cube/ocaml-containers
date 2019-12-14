@@ -12,7 +12,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -120,11 +120,11 @@ module type S = sig
 
   val add_iter : t -> elt iter -> t
   (** Like {!add_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_std_seq : t -> elt Seq.t -> t
   (** Like {!add_list}.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_seq : t -> elt sequence -> t (** @since 0.16 *)
   (** Like {!add_list}.
@@ -133,11 +133,11 @@ module type S = sig
 
   val of_iter : elt iter -> t
   (** Build a heap from a given [iter]. Complexity: [O(n log n)].
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_std_seq : elt Seq.t -> t
   (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_seq : elt sequence -> t
   (** Build a heap from a given [sequence]. Complexity: [O(n log n)].
@@ -146,11 +146,11 @@ module type S = sig
 
   val to_iter : t -> elt iter
   (** Return a [iter] of the elements of the heap.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_std_seq : t -> elt Seq.t
   (** Return a [Seq.t] of the elements of the heap.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_seq : t -> elt sequence
   (** Return a [sequence] of the elements of the heap.
@@ -159,11 +159,11 @@ module type S = sig
 
   val to_iter_sorted : t -> elt iter
   (** Iterate on the elements, in increasing order.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_std_seq_sorted : t -> elt Seq.t
   (** Iterate on the elements, in increasing order.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_seq_sorted : t -> elt sequence
   (** Iterate on the elements, in increasing order.

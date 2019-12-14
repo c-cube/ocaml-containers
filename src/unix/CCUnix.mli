@@ -138,7 +138,7 @@ val ensure_session_leader : unit -> unit
     time as the current process. Does nothing on windows.
     Idempotent: it can be called several times but will only have effects,
     if any, the first time.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 (** {2 Networking} *)
@@ -196,5 +196,5 @@ val with_temp_dir :
     Note that this is implemented following the discussion at:
     https://discuss.ocaml.org/t/how-to-create-a-temporary-directory-in-ocaml/1815/
 
-    @since NEXT_RELEASE
+    @since 2.8
  *)

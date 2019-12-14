@@ -1,5 +1,41 @@
 # Changelog
 
+## 2.8
+
+### Breaking:
+
+- bump minimum version of OCaml to 4.03, drop deps `{result,uchar}`
+- deprecate `{of,to}_seq` a bit everywhere
+- deprecate `CCKList` as it's subsumed by `Seq`
+
+- feat: on `>= 4.08`, support let+ and let* operators
+- feat(list): add indexed functions and `fold_on_map`
+- refactor: also port `CCGraph` to iter
+- feat: add `{to,of,add}_{iter,std_seq}` where relevant
+- feat(unix): add `ensure_session_leader` and add some docs
+- feat(pool): add infix operators on futures
+- fix(pp): improve printing of hashtables
+- feat: add `monoid_product` to Array and Vector
+- improved gc behavior for `CCvector`
+- deprecate `CCVector.fill_empty_slots_with`
+- `CCVector.shrink_to_fit` to limit memory usage
+- add `CCVector.clear_and_reset`
+- feat(sexp): expose `parse_string_list` and the list decoder
+- add `CCUnix.with_temp_dir` function
+- deprecate `CCOpt.to_seq`, provide `to_iter` instead
+- add `CCOpt.value` to improve compat with `Stdlib.Option`
+- add `CCVector.mapi`
+
+- fix: restore `CCSexp.atom` and `list` which was lost in 2.7
+- fix(sexp): set location properly when parsing a file
+- fix: properly alias to `CCChar` in containers.ml
+
+- use older dune dialect
+- remove unlabel, remove all traces of Result
+- require dune configurator explicitly in opam
+- Re-enable mdx tests
+- fix benchs so they don't depend on clarity and they compile again
+
 ## 2.7
 
 - deprecate CCKList in favor of the standard Seq

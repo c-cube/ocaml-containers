@@ -34,11 +34,11 @@ module type S = sig
 
   val atom : string -> t
   (** Make an atom out of this string.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val list : t list -> t
   (** Make a Sexpr of this list.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   (** {2 Constructors} *)
 
@@ -106,7 +106,7 @@ module type S = sig
 
     val to_list : t -> sexp list or_error
     (** Read all the values from this decoder.
-        @since NEXT_RELEASE *)
+        @since 2.8 *)
   end
 
   val parse_string : string -> t or_error
@@ -114,7 +114,7 @@ module type S = sig
 
   val parse_string_list : string -> t list or_error
   (** Parse a string into a list of S-exprs.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val parse_chan : in_channel -> t or_error
   (** Parse a S-expression from the given channel. Can read more data than

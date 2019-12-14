@@ -9,7 +9,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -261,13 +261,13 @@ val to_iter : 'a t -> 'a iter
 (** [to_iter a] returns an [iter] of the elements of an array [a].
     The input array [a] is shared with the sequence and modification of it will result
     in modification of the iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val to_std_seq : 'a t -> 'a Seq.t
 (** [to_std_seq a] returns a [Seq.t] of the elements of an array [a].
     The input array [a] is shared with the sequence and modification of it will result
     in modification of the sequence.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val to_seq : 'a t -> 'a sequence
@@ -323,7 +323,7 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 
 val monoid_product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** All combinaisons of tuples from the two arrays are passed to the function
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b array
 (** [flat_map f a] transforms each element of [a] into an array, then flattens. *)
@@ -401,10 +401,10 @@ module Infix : sig
       @since 0.17 *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
   include CCShimsMkLet_.S with type 'a t_let := 'a array
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 include CCShimsMkLet_.S with type 'a t_let := 'a array

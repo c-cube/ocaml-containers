@@ -160,7 +160,7 @@ val pure : 'a -> 'a t
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 include CCShimsMkLet_.S with type 'a t_let := 'a t
 
 (** {4 Run a generator} *)

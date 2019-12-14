@@ -53,14 +53,14 @@ module type S = sig
 
   val of_iter : elt iter -> t
   (** Build a set from the given [iter] of elements.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val add_iter : t -> elt iter -> t
-  (** @since NEXT_RELEASE *)
+  (** @since 2.8 *)
 
   val to_iter : t -> elt iter
   (** [to_iter t] converts the set [t] to a [iter] of the elements.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val of_seq : elt sequence -> t
   (** Build a set from the given [sequence] of elements.

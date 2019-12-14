@@ -9,7 +9,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -246,13 +246,13 @@ val to_iter : 'a t -> 'a iter
 (** [to_iter a] returns an [iter] of the elements of a slice [a].
     The input array [a] is shared with the sequence and modification of it will result
     in modification of the iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val to_std_seq : 'a t -> 'a Seq.t
 (** [to_std_seq a] returns a [Seq.t] of the elements of a slice [a].
     The input array [a] is shared with the sequence and modification of it will result
     in modification of the sequence.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val to_seq : 'a t -> 'a sequence

@@ -325,5 +325,5 @@ module U : sig
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 include CCShimsMkLet_.S with type 'a t_let := 'a t

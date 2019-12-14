@@ -134,7 +134,7 @@ module Make(P : PARAM) : sig
 
     val monoid_product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
     (** Cartesian product of the content of these futures.
-        @since NEXT_RELEASE *)
+        @since 2.8 *)
 
     val app : ('a -> 'b) t -> 'a t -> 'b t
     (** [app f x] applies the result of [f] to the result of [x]. *)
@@ -155,7 +155,7 @@ module Make(P : PARAM) : sig
       val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
       (** Let operators on OCaml >= 4.08.0, nothing otherwise
-          @since NEXT_RELEASE *)
+          @since 2.8 *)
       include CCShimsMkLet_.S with type 'a t_let := 'a t
     end
 
@@ -170,7 +170,7 @@ module Make(P : PARAM) : sig
     (** Alias to {!app}. *)
 
     (** Let operators on OCaml >= 4.08.0, nothing otherwise
-        @since NEXT_RELEASE *)
+        @since 2.8 *)
     include CCShimsMkLet_.S with type 'a t_let := 'a t
   end
 end

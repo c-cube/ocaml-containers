@@ -73,7 +73,7 @@ val get_or : default:'a -> 'a t -> 'a
 
 val value : 'a t -> default:'a -> 'a
 (** Similar to the stdlib's [Option.value] and to {!get_or}.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val get_exn : 'a t -> 'a
 (** Open the option, possibly failing if it is [None].
@@ -155,14 +155,14 @@ module Infix : sig
   (** [a <+> b] is [a] if [a] is [Some _], [b] otherwise. *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
   include CCShimsMkLet_.S with type 'a t_let := 'a option
 
 end
 
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 include CCShimsMkLet_.S with type 'a t_let := 'a option
 
 (** {2 Conversion and IO} *)
@@ -197,11 +197,11 @@ val to_gen : 'a t -> 'a gen
 
 val to_std_seq : 'a t -> 'a Seq.t
 (** Same as {!Stdlib.Option.to_seq}
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val to_iter : 'a t -> 'a sequence
 (** Returns an internal iterator, like in the library [Iter].
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val to_seq : 'a t -> 'a sequence
 (** Previous name for {!to_iter}

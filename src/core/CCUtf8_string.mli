@@ -25,7 +25,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 
 type t = private string
@@ -52,7 +52,7 @@ val to_gen : ?idx:int -> t -> uchar gen
 val to_iter : ?idx:int -> t -> uchar iter
 (** Iterator of unicode codepoints.
     @param idx offset where to start the decoding.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val to_seq : ?idx:int -> t -> uchar sequence
 (** Iter of unicode codepoints.
@@ -63,7 +63,7 @@ val to_seq : ?idx:int -> t -> uchar sequence
 val to_std_seq : ?idx:int -> t -> uchar Seq.t
 (** Iter of unicode codepoints.
     @param idx offset where to start the decoding.
-    @since NEXT_RELEASE
+    @since 2.8
 *)
 
 val to_list : ?idx:int -> t -> uchar list
@@ -92,11 +92,11 @@ val concat : t -> t list -> t
 
 val of_std_seq : uchar Seq.t -> t
 (** Build a string from unicode codepoints
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val of_iter : uchar sequence -> t
 (** Build a string from unicode codepoints
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 val of_seq : uchar sequence -> t
 (** @deprecated use {!of_seq} or {!of_std_seq} instead *)

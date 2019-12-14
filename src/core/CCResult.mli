@@ -13,7 +13,7 @@ type 'a sequence = ('a -> unit) -> unit
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
@@ -193,12 +193,12 @@ module Infix : sig
       over the error of [b] if both fail. *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
   include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since NEXT_RELEASE *)
+    @since 2.8 *)
 include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
 
 
@@ -259,10 +259,10 @@ val of_opt : 'a option -> ('a, string) t
 (** Convert an option to a result. *)
 
 val to_iter : ('a, _) t -> 'a iter
-(** @since NEXT_RELEASE *)
+(** @since 2.8 *)
 
 val to_std_seq : ('a, _) t -> 'a Seq.t
-(** @since NEXT_RELEASE *)
+(** @since 2.8 *)
 
 val to_seq : ('a, _) t -> 'a sequence
 (** @deprecated use {!to_iter} or {!to_std_seq} *)

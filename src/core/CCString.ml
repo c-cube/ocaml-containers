@@ -71,11 +71,11 @@ module type S = sig
 
   val to_iter : t -> char iter
   (** Return the [iter] of characters contained in the string.
-      @since NEXT_RELEASE *)
+      @since 2.8 *)
 
   val to_std_seq : t -> char Seq.t
   (** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
-      @since NEXT_RELEASE
+      @since 2.8
   *)
 
   val to_seq : t -> char sequence
