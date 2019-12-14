@@ -35,17 +35,15 @@ val create : unit -> ('a, rw) t
 (** Create a new, empty vector. *)
 
 val create_with : ?capacity:int -> 'a -> ('a, rw) t
-(** Create a new vector, using the given value as a filler.
-    @param capacity the size of the underlying array.
-    {b caution}: the value will likely not be GC'd before the vector is. *)
+(** Create a new vector, the value is used to enforce the type the new vector.
+    @param capacity the size of the underlying array. *)
 
 val return : 'a -> ('a, 'mut) t
 (** Singleton vector.
     @since 0.14 *)
 
 val make : int -> 'a -> ('a, 'mut) t
-(** [make n x] makes a vector of size [n], filled with [x].
-    The element [x] will possibly live as long as the vector. *)
+(** [make n x] makes a vector of size [n], filled with [x]. *)
 
 val init : int -> (int -> 'a) -> ('a, 'mut) t
 (** Init the vector with the given function and size. *)
@@ -60,8 +58,8 @@ val clear_and_reset : ('a, rw) t -> unit
 
 val ensure_with : init:'a -> ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
-    @param init if [capacity v = 0], used as a filler
-      element for the underlying array (see {!create_with}).
+    @param init if [capacity v = 0], used to enforce the type of the vector
+      (see {!create_with}).
     @since 0.14 *)
 
 val ensure : ('a, rw) t -> int -> unit
