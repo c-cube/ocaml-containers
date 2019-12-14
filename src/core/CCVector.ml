@@ -145,14 +145,14 @@ let ensure_assuming_not_empty_ v ~size =
   )
 
 let ensure_with ~init v size =
-  if Array.length v.vec = 0 then (
+  if array_is_empty_ v then (
     v.vec <- Array.make size init
   ) else (
     ensure_assuming_not_empty_ v ~size
   )
 
 let ensure v size =
-  if Array.length v.vec > 0 then (
+  if not (array_is_empty_ v) then (
     ensure_assuming_not_empty_  v ~size
   )
 
