@@ -40,7 +40,7 @@ type 'a sequence = ('a -> unit) -> unit
     @deprecate see {!iter} instead *)
 [@@ocaml.deprecated "see iter"]
 
-type 'a sequence_once = 'a sequence
+type 'a sequence_once = 'a iter
 (** Iter that should be used only once
     @deprecate see {!iter_once} instead *)
 [@@ocaml.deprecated "see iter_once"]

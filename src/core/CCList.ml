@@ -233,6 +233,28 @@ let fold_map f acc l =
     fold_map (fun acc x -> x::acc, x) [] l = (List.rev l, l))
 *)
 
+let fold_map_i f acc l =
+  let rec aux f acc i map_acc l = match l with
+    | [] -> acc, List.rev map_acc
+    | x :: l' ->
+      let acc, y = f acc i x in
+      aux f acc (i+1) (y :: map_acc) l'
+  in
+  aux f acc 0 [] l
+
+let fold_on_map ~f ~reduce acc l =
+  let rec aux acc l = match l with
+    | [] -> acc
+    | x :: l' ->
+      let acc = reduce acc (f x) in
+      aux acc l'
+  in
+  aux acc l
+
+(*$=
+  6 (fold_on_map ~f:int_of_string ~reduce:(+) 0 ["1";"2";"3"])
+*)
+
 let scan_left f acc l =
   let rec aux f acc l_acc l = match l with
     | [] -> List.rev l_acc
@@ -290,6 +312,15 @@ let fold_filter_map f acc l =
     0 (1--10))
 *)
 
+let fold_filter_map_i f acc l =
+  let rec aux f acc i map_acc l = match l with
+    | [] -> acc, List.rev map_acc
+    | x :: l' ->
+      let acc, y = f acc i x in
+      aux f acc (i+1) (cons_maybe y map_acc) l'
+  in
+  aux f acc 0 [] l
+
 let fold_flat_map f acc l =
   let rec aux f acc map_acc l = match l with
     | [] -> acc, List.rev map_acc
@@ -304,6 +335,15 @@ let fold_flat_map f acc l =
     (let pf = Printf.sprintf in \
       fold_flat_map (fun acc x->acc+x, [pf "%d" x; pf "a%d" x]) 0 [1;2;3])
 *)
+
+let fold_flat_map_i f acc l =
+  let rec aux f acc i map_acc l = match l with
+    | [] -> acc, List.rev map_acc
+    | x :: l' ->
+      let acc, y = f acc i x in
+      aux f acc (i+1) (List.rev_append y map_acc) l'
+  in
+  aux f acc 0 [] l
 
 (*$Q
   Q.(list int) (fun l -> \
@@ -385,6 +425,25 @@ let flat_map f l =
 (*$T
   flat_map (fun x -> [x+1; x*2]) [10;100] = [11;20;101;200]
   List.length (flat_map (fun x->[x]) (1--300_000)) = 300_000
+*)
+
+let flat_map_i f l =
+  let rec aux f i l kont = match l with
+    | [] -> kont []
+    | x::l' ->
+      let y = f i x in
+      let kont' tail = match y with
+        | [] -> kont tail
+        | [x] -> kont (x :: tail)
+        | [x;y] -> kont (x::y::tail)
+        | l -> kont (append l tail)
+      in
+      aux f (i+1) l' kont'
+  in
+  aux f 0 l (fun l->l)
+
+(*$=
+  [1;2;2;3;3;3] (flat_map_i (fun i x->replicate (i+1) x) [1;2;3])
 *)
 
 let flatten l = fold_right append l []

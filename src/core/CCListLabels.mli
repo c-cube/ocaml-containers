@@ -73,6 +73,16 @@ val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a list -> 'acc * 'b 
     list to another list.
     @since 0.14 *)
 
+val fold_map_i : f:('acc -> int -> 'a -> 'acc * 'b) -> init:'acc -> 'a list -> 'acc * 'b list
+(** [fold_map_i f init l] is a [foldi]-like function, but it also maps the
+    list to another list.
+    @since NEXT_RELEASE *)
+
+val fold_on_map : f:('a -> 'b) -> reduce:('acc -> 'b -> 'acc) -> init:'acc -> 'a list -> 'acc
+(** [fold_on_map ~f ~reduce init l] combines [map f] and [fold_left reduce init]
+    in one operation.
+    @since NEXT_RELEASE *)
+
 val scan_left : f:('acc -> 'a -> 'acc) -> init:'acc -> 'a list -> 'acc list
 (** [scan_left ~f ~init l] returns the list [[init; f init x0; f (f init x0) x1; ...]]
     where [x0], [x1], etc. are the elements of [l].
@@ -89,10 +99,20 @@ val fold_filter_map : f:('acc -> 'a -> 'acc * 'b option) -> init:'acc -> 'a list
     generates a list of output in a way similar to {!filter_map}.
     @since 0.17 *)
 
+val fold_filter_map_i : f:('acc -> int -> 'a -> 'acc * 'b option) -> init:'acc -> 'a list -> 'acc * 'b list
+(** [fold_filter_map_i f init l] is a [foldi]-like function, but also
+    generates a list of output in a way similar to {!filter_map}.
+    @since NEXT_RELEASE *)
+
 val fold_flat_map : f:('acc -> 'a -> 'acc * 'b list) -> init:'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
     @since 0.14 *)
+
+val fold_flat_map_i : f:('acc -> int -> 'a -> 'acc * 'b list) -> init:'acc -> 'a list -> 'acc * 'b list
+(** [fold_flat_map_i f acc l] is a [fold_left]-like function, but it also maps the
+    list to a list of lists that is then [flatten]'d.
+    @since NEXT_RELEASE *)
 
 val count : f:('a -> bool) -> 'a list -> int
 (** [count p l] counts how many elements of [l] satisfy predicate [p].
@@ -149,6 +169,12 @@ val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
 (** Map and flatten at the same time (safe). Evaluation order is not guaranteed. *)
+
+val flat_map_i : f:(int -> 'a -> 'b t) -> 'a t -> 'b t
+(** Map with index and flatten at the same time (safe).
+    Evaluation order is not guaranteed.
+    @since NEXT_RELEASE
+*)
 
 val flatten : 'a t t -> 'a t
 (** Safe flatten. Concatenate a list of lists. *)
