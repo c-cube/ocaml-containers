@@ -130,10 +130,13 @@ val member : eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 
 val sort : ('a -> 'a -> int) -> ('a, _) t -> ('a, 'mut) t
 (** Sort the vector, returning a copy of it that is sorted
-    w.r.t the given ordering. The vector itself is unchanged. *)
+    w.r.t the given ordering. The vector itself is unchanged.
+    The underlying array of the new vector can be smaller than
+    the original one. *)
 
 val sort' : ('a -> 'a -> int) -> ('a, rw) t -> unit
-(** Sort the vector in place (modifying it). *)
+(** Sort the vector in place (modifying it).
+    This function change the size of the underlying array. *)
 
 val uniq_sort : ('a -> 'a -> int) -> ('a, rw) t -> unit
 (** Sort the array and remove duplicates, in place (e.g. modifying
