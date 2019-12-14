@@ -6,7 +6,15 @@
 
     @since 0.16 *)
 
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a printer = Format.formatter -> 'a -> unit
@@ -246,7 +254,15 @@ val to_opt : ('a, _) t -> 'a option
 val of_opt : 'a option -> ('a, string) t
 (** Convert an option to a result. *)
 
+val to_iter : ('a, _) t -> 'a iter
+(** @since NEXT_RELEASE *)
+
+val to_std_seq : ('a, _) t -> 'a Seq.t
+(** @since NEXT_RELEASE *)
+
 val to_seq : ('a, _) t -> 'a sequence
+(** @deprecated use {!to_iter} or {!to_std_seq} *)
+[@@ocaml.deprecated "use to_iter or to_std_seq"]
 
 type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
 

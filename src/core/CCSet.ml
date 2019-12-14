@@ -3,6 +3,7 @@
 
 (** {1 Wrapper around Set} *)
 
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
@@ -19,43 +20,62 @@ module type S = sig
   include Set.S
 
   val min_elt_opt : t -> elt option
-  (** Safe version of {!min_elt}
+  (** Safe version of {!min_elt}.
       @since 1.5 *)
 
   val max_elt_opt : t -> elt option
-  (** Safe version of {!max_elt}
+  (** Safe version of {!max_elt}.
       @since 1.5 *)
 
   val choose_opt : t -> elt option
-  (** Safe version of {!choose}
+  (** Safe version of {!choose}.
       @since 1.5 *)
 
   val find_opt : elt -> t -> elt option
-  (** Safe version of {!find}
+  (** Safe version of {!find}.
       @since 1.5 *)
 
   val find_first : (elt -> bool) -> t -> elt
-  (** Find minimum element satisfying predicate
+  (** Find minimum element satisfying predicate.
       @since 1.5 *)
 
   val find_first_opt : (elt -> bool) -> t -> elt option
-  (** Safe version of {!find_first}
+  (** Safe version of {!find_first}.
       @since 1.5 *)
 
   val find_last : (elt -> bool) -> t -> elt
-  (** Find maximum element satisfying predicate
+  (** Find maximum element satisfying predicate.
       @since 1.5 *)
 
   val find_last_opt : (elt -> bool) -> t -> elt option
-  (** Safe version of {!find_last}
+  (** Safe version of {!find_last}.
       @since 1.5 *)
 
+  val of_iter : elt iter -> t
+  (** Build a set from the given [iter] of elements.
+      @since NEXT_RELEASE *)
+
+  val add_iter : t -> elt iter -> t
+  (** @since NEXT_RELEASE *)
+
+  val to_iter : t -> elt iter
+  (** [to_iter t] converts the set [t] to a [iter] of the elements.
+      @since NEXT_RELEASE *)
+
   val of_seq : elt sequence -> t
+  (** Build a set from the given [sequence] of elements.
+      @deprecated use {!of_iter} instead. *)
+  [@@ocaml.deprecated "use of_iter instead"]
 
   val add_seq : t -> elt sequence -> t
-  (** @since 0.14 *)
+  (** @since 0.14
+      @deprecated use {!add_iter} instead. *)
+  [@@ocaml.deprecated "use add_iter instead"]
 
   val to_seq : t -> elt sequence
+  (** [to_seq t] converts the set [t] to a [sequence] of the elements.
+      @deprecated use {!to_iter} instead. *)
+  [@@ocaml.deprecated "use to_iter instead"]
 
   val of_list : elt list -> t
   (** Build a set from the given list of elements,
@@ -65,6 +85,7 @@ module type S = sig
   (** @since 0.14 *)
 
   val to_list : t -> elt list
+  (** [to_list t] converts the set [t] to a list of the elements. *)
 
   val to_string :
     ?start:string -> ?stop:string -> ?sep:string ->
@@ -75,6 +96,7 @@ module type S = sig
   val pp :
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
+    (** Print the set. *)
 end
 
 module Make(O : Map.OrderedType) = struct
@@ -133,14 +155,24 @@ module Make(O : Map.OrderedType) = struct
 
   include S
 
-  let add_seq set seq =
+  let add_std_seq set seq =
     let set = ref set in
-    seq (fun x -> set := add x !set);
+    Seq.iter (fun x -> set := add x !set) seq;
     !set
 
-  let of_seq s = add_seq empty s
+  let of_std_seq s = add_std_seq empty s
 
-  let to_seq s yield = iter yield s
+  let add_iter set i =
+    let set = ref set in
+    i (fun x -> set := add x !set);
+    !set
+
+  let of_iter s = add_iter empty s
+  let to_iter s yield = iter yield s
+
+  let add_seq = add_iter
+  let of_seq = of_iter
+  let to_seq = to_iter
 
   let add_list = List.fold_left (fun set x -> add x set)
 

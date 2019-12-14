@@ -5,6 +5,7 @@
 
 open CCShims_
 
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -264,6 +265,9 @@ let _to_gen a i j =
       Some x
     ) else None
 
+let rec _to_std_seq a i j () =
+  if i=j then Seq.Nil else Seq.Cons (a.(i), _to_std_seq a (i+1) j)
+
 let rec _to_klist a i j () =
   if i=j then `Nil else `Cons (a.(i), _to_klist a (i+1) j)
 
@@ -413,10 +417,12 @@ let pp ?(sep=", ") pp_item buf a = _pp ~sep pp_item buf a.arr a.i a.j
 let pp_i ?(sep=", ") pp_item out a =
   _pp_i ~sep (fun k out x -> pp_item (k-a.i) out x) out a.arr a.i a.j
 
-let to_seq a k = iter k a
+let to_iter a k = iter k a
+let to_seq = to_iter
 
 let to_gen a = _to_gen a.arr a.i a.j
 
+let to_std_seq a = _to_std_seq a.arr a.i a.j
 let to_klist a = _to_klist a.arr a.i a.j
     
 

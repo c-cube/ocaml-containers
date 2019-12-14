@@ -5,6 +5,7 @@
 
 open CCShims_
 
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -44,23 +45,59 @@ module type S = sig
   type t
 
   val length : t -> int
+  (** Return the length (number of characters) of the given string. *)
 
   val blit : t -> int -> Bytes.t -> int -> int -> unit
   (** Like {!String.blit}.
       Compatible with the [-safe-string] option.
-      @raise Invalid_argument if indices are not valid *)
+      @raise Invalid_argument if indices are not valid. *)
+
+  (*
+  val blit_immut : t -> int -> t -> int -> int -> string
+  (** Immutable version of {!blit}, returning a new string.
+      [blit a i b j len] is the same as [b], but in which
+      the range [j, ..., j+len] is replaced by [a.[i], ..., a.[i + len]].
+      @raise Invalid_argument if indices are not valid. *)
+     *)
 
   val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
+  (** Fold on chars by increasing index.
+      @since 0.7 *)
 
   (** {2 Conversions} *)
 
   val to_gen : t -> char gen
+  (** Return the [gen] of characters contained in the string. *)
+
+  val to_iter : t -> char iter
+  (** Return the [iter] of characters contained in the string.
+      @since NEXT_RELEASE *)
+
+  val to_std_seq : t -> char Seq.t
+  (** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
+      @since NEXT_RELEASE
+  *)
+
   val to_seq : t -> char sequence
+  (** Return the [sequence] of characters contained in the string.
+      @deprecated use {!to_iter} instead *)
+  [@@ocaml.deprecated "use to_iter or to_std_seq"]
+
   val to_klist : t -> char klist
+  (** Return the [klist] of characters contained in the string.
+      @deprecated use {!to_std_seq} instead *)
+  [@@ocaml.deprecated "use to_std_seq"]
+
   val to_list : t -> char list
+  (** Return the list of characters contained in the string. *)
 
   val pp_buf : Buffer.t -> t -> unit
+  (** Renamed from [pp] since 2.0. *)
+
   val pp : Format.formatter -> t -> unit
+  (** Print the string within quotes.
+
+      Renamed from [print] since 2.0. *)
 end
 
 let equal (a:string) b = Stdlib.(=) a b
@@ -458,6 +495,20 @@ module Split = struct
     Split.list_cpy ~by:" " "hello  world aie" = ["hello"; ""; "world"; "aie"]
   *)
 
+  let _mkseq ~drop ~by s k =
+    let by = Find.compile by in
+    let rec make state () = match _split ~by s state with
+      | None -> Seq.Nil
+      | Some (state', 0, 0) when drop.first -> make state' ()
+      | Some (_, i, 0) when drop.last && i=length s -> Seq.Nil
+      | Some (state', i, len) ->
+        Seq.Cons (k s i len , make state')
+    in make (SplitAt 0)
+
+  let std_seq ?(drop=default_drop) ~by s = _mkseq ~drop ~by s _tuple3
+
+  let std_seq_cpy ?(drop=default_drop) ~by s = _mkseq ~drop ~by s String.sub
+
   let _mkklist ~drop ~by s k =
     let by = Find.compile by in
     let rec make state () = match _split ~by s state with
@@ -472,7 +523,7 @@ module Split = struct
 
   let klist_cpy ?(drop=default_drop) ~by s = _mkklist ~drop ~by s String.sub
 
-  let _mkseq ~drop ~by s f k =
+  let _mk_iter ~drop ~by s f k =
     let by = Find.compile by in
     let rec aux state = match _split ~by s state with
       | None -> ()
@@ -481,8 +532,11 @@ module Split = struct
       | Some (state', i, len) -> k (f s i len); aux state'
     in aux (SplitAt 0)
 
-  let seq ?(drop=default_drop) ~by s = _mkseq ~drop ~by s _tuple3
-  let seq_cpy ?(drop=default_drop) ~by s = _mkseq ~drop ~by s String.sub
+  let iter ?(drop=default_drop) ~by s = _mk_iter ~drop ~by s _tuple3
+  let iter_cpy ?(drop=default_drop) ~by s = _mk_iter ~drop ~by s String.sub
+
+  let seq = iter
+  let seq_cpy = iter_cpy
 
   let left_exn ~by s =
     let i = find ~sub:by s in
@@ -516,7 +570,6 @@ module Split = struct
     Split.right ~by:"_" "abcde" = None
     Split.right ~by:"a_" "abcde" = None
   *)
-
 end
 
 let split_on_char c s: _ list =
@@ -822,12 +875,27 @@ let of_gen g =
     | Some c -> Buffer.add_char b c; aux ()
   in aux ()
 
-let to_seq s k = String.iter k s
+let to_iter s k = String.iter k s
 
-let of_seq seq =
-  let b= Buffer.create 32 in
-  seq (Buffer.add_char b);
+let to_seq = to_iter
+
+let rec _to_std_seq s i len () =
+  if len=0 then Seq.Nil
+  else Seq.Cons (s.[i], _to_std_seq s (i+1)(len-1))
+
+let to_std_seq s = _to_std_seq s 0 (String.length s)
+
+let of_iter i =
+  let b = Buffer.create 32 in
+  i (Buffer.add_char b);
   Buffer.contents b
+
+let of_std_seq seq =
+  let b = Buffer.create 32 in
+  Seq.iter (Buffer.add_char b) seq;
+  Buffer.contents b
+
+let of_seq = of_iter
 
 let rec _to_klist s i len () =
   if len=0 then `Nil
@@ -1149,8 +1217,10 @@ module Sub = struct
   *)
 
   let to_gen (s,i,len) = _to_gen s i len
-  let to_seq (s,i,len) k =
-    for i=i to i+len-1 do k s.[i] done
+  let to_iter (s,i,len) k = for i=i to i+len-1 do k s.[i] done
+  let to_std_seq (s,i,len) = _to_std_seq s i len
+
+  let to_seq = to_iter
   let to_klist (s,i,len) = _to_klist s i len
   let to_list (s,i,len) = _to_list s [] i len
 

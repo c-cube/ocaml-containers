@@ -3,6 +3,7 @@
 
 (** {1 Leftist Heaps} *)
 
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
@@ -130,14 +131,16 @@ module type S = sig
   val delete_one : (elt -> elt -> bool) -> elt -> t -> t
   (** Delete one occurrence of a value if it exist in the heap.
       [delete_one eq x h], use [eq] to find one [x] in [h] and delete it.
-      If [h] do not contain [x] then it return [h]. *)
+      If [h] do not contain [x] then it return [h].
+      @since 2.0 *)
 
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
   (** Delete all occurrences of a value in the heap.
       [delete_all eq x h], use [eq] to find all [x] in [h] and delete them.
       If [h] do not contain [x] then it return [h].
       The difference with {!filter} is that [delete_all] stops as soon as
-      it enters a subtree whose root is bigger than the element. *)
+      it enters a subtree whose root is bigger than the element.
+      @since 2.0 *)
 
   val iter : (elt -> unit) -> t -> unit
   (** Iterate on elements. *)
@@ -151,7 +154,7 @@ module type S = sig
   (** {2 Conversions}
 
       The interface of [of_gen], [of_seq], [of_klist]
-      has changed @since 0.16 (the old signatures
+      has changed since 0.16 (the old signatures
       are now [add_seq], [add_gen], [add_klist]). *)
 
   val to_list : t -> elt list
@@ -167,26 +170,65 @@ module type S = sig
       @since 0.16 *)
 
   val of_list : elt list -> t
-  (** [of_list l] is [add_list empty l]. *)
+  (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
 
-  val add_seq : t -> elt sequence -> t
+  val add_iter : t -> elt iter -> t
   (** Like {!add_list}.
-      @since 0.16 *)
+      @since NEXT_RELEASE *)
+
+  val add_std_seq : t -> elt Seq.t -> t
+  (** Like {!add_list}.
+      @since NEXT_RELEASE *)
+
+  val add_seq : t -> elt sequence -> t (** @since 0.16 *)
+  (** Like {!add_list}.
+      @deprecated use {!add_iter} or {!add_std_seq} instead *)
+  [@@ocaml.deprecated "use add_iter. For the standard Seq, see {!add_std_seq}"]
+
+  val of_iter : elt iter -> t
+  (** Build a heap from a given [iter]. Complexity: [O(n log n)].
+      @since NEXT_RELEASE *)
+
+  val of_std_seq : elt Seq.t -> t
+  (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
+      @since NEXT_RELEASE *)
 
   val of_seq : elt sequence -> t
-  (** Build a heap from a given [sequence]. *)
+  (** Build a heap from a given [sequence]. Complexity: [O(n log n)].
+      @deprecated use {!of_iter} or {!of_std_seq} instead *)
+  [@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
+
+  val to_iter : t -> elt iter
+  (** Return a [iter] of the elements of the heap.
+      @since NEXT_RELEASE *)
+
+  val to_std_seq : t -> elt Seq.t
+  (** Return a [Seq.t] of the elements of the heap.
+      @since NEXT_RELEASE *)
 
   val to_seq : t -> elt sequence
-  (** Return a [sequence] of the elements of the heap. *)
+  (** Return a [sequence] of the elements of the heap.
+      @deprecated use {!to_iter} or {!to_std_seq} instead *)
+  [@@ocaml.deprecated "use to_iter. For the standard Seq, see {!to_std_seq}"]
+
+  val to_iter_sorted : t -> elt iter
+  (** Iterate on the elements, in increasing order.
+      @since NEXT_RELEASE *)
+
+  val to_std_seq_sorted : t -> elt Seq.t
+  (** Iterate on the elements, in increasing order.
+      @since NEXT_RELEASE *)
 
   val to_seq_sorted : t -> elt sequence
   (** Iterate on the elements, in increasing order.
-      @since 1.1 *)
+      @since 1.1
+      @deprecated use {!to_iter_sorted} or {!to_std_seq_sorted} instead *)
+  [@@ocaml.deprecated "use to_iter_sorted or to_std_seq_sorted"]
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
   val of_klist : elt klist -> t
-  (** Build a heap from a given [klist]. *)
+  (** Build a heap from a given [klist]. Complexity: [O(n log n)]. *)
 
   val to_klist : t -> elt klist
   (** Return a [klist] of the elements of the heap. *)
@@ -194,7 +236,7 @@ module type S = sig
   val add_gen : t -> elt gen -> t (** @since 0.16 *)
 
   val of_gen : elt gen -> t
-  (** Build a heap from a given [gen]. *)
+  (** Build a heap from a given [gen]. Complexity: [O(n log n)]. *)
 
   val to_gen : t -> elt gen
   (** Return a [gen] of the elements of the heap. *)
@@ -207,8 +249,9 @@ module type S = sig
        @since 2.7 *)
 
   val pp : ?sep:string -> elt printer -> t printer
-  (** @since 0.16
-      Renamed from {!print} @since 2.0 *)
+  (** Printer.
+      Renamed from {!print} since 2.0
+      @since 0.16 *)
 end
 
 module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
@@ -340,21 +383,45 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
 
   let of_list l = add_list empty l
 
-  let add_seq h seq =
+  let add_iter h i =
     let h = ref h in
-    seq (fun x -> h := insert x !h);
+    i (fun x -> h := insert x !h);
     !h
 
-  let of_seq seq = add_seq empty seq
+  let add_std_seq h seq =
+    let h = ref h in
+    Seq.iter (fun x -> h := insert x !h) seq;
+    !h
 
-  let to_seq h k = iter k h
+  let of_iter i = add_iter empty i
+  let of_std_seq seq = add_std_seq empty seq
 
-  let to_seq_sorted heap =
+  let to_iter h k = iter k h
+
+  let to_std_seq h =
+    (* use an explicit stack [st] *)
+    let rec aux st () =
+      match st with
+      | [] -> Seq.Nil
+      | E :: st' -> aux st' ()
+      | N(_,x,l,r) :: st' -> Seq.Cons (x, aux (l::r::st'))
+    in aux [h]
+
+  let to_iter_sorted heap =
     let rec recurse h k = match take h with
       | None -> ()
       | Some (h',x) -> k x; recurse h' k
     in
     fun k -> recurse heap k
+
+  let rec to_std_seq_sorted h () = match take h with
+    | None -> Seq.Nil
+    | Some (h', x) -> Seq.Cons (x, to_std_seq_sorted h')
+
+  let add_seq = add_iter
+  let of_seq = of_iter
+  let to_seq = to_iter
+  let to_seq_sorted = to_iter_sorted
 
   let rec add_klist h l = match l() with
     | `Nil -> h

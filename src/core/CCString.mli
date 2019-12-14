@@ -5,8 +5,16 @@
 
 (** {1 Basic String Utils} *)
 
-type 'a gen = unit -> 'a option
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
+type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 (** {2 Common Signature} *)
@@ -39,11 +47,24 @@ module type S = sig
   val to_gen : t -> char gen
   (** Return the [gen] of characters contained in the string. *)
 
+  val to_iter : t -> char iter
+  (** Return the [iter] of characters contained in the string.
+      @since NEXT_RELEASE *)
+
+  val to_std_seq : t -> char Seq.t
+  (** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
+      @since NEXT_RELEASE
+  *)
+
   val to_seq : t -> char sequence
-  (** Return the [sequence] of characters contained in the string. *)
+  (** Return the [sequence] of characters contained in the string.
+      @deprecated use {!to_iter} instead *)
+  [@@ocaml.deprecated "use to_iter or to_std_seq"]
 
   val to_klist : t -> char klist
-  (** Return the [klist] of characters contained in the string. *)
+  (** Return the [klist] of characters contained in the string.
+      @deprecated use {!to_std_seq} instead *)
+  [@@ocaml.deprecated "use to_std_seq"]
 
   val to_list : t -> char list
   (** Return the list of characters contained in the string. *)
@@ -94,11 +115,23 @@ val of_char : char -> string
 val of_gen : char gen -> string
 (** Convert a [gen] of characters to a string. *)
 
+val of_iter : char iter -> string
+(** Convert a [iter] of characters to a string.
+    @since NEXT_RELEASE *)
+
+val of_std_seq : char Seq.t -> string
+(** Convert a [sequence] of characters to a string.
+    @since NEXT_RELEASE *)
+
 val of_seq : char sequence -> string
-(** Convert a [sequence] of characters to a string. *)
+(** Convert a [sequence] of characters to a string.
+    @deprecated use {!of_iter} instead *)
+[@@ocaml.deprecated "use of_iter"]
 
 val of_klist : char klist -> string
-(** Convert a [klist] of characters to a string. *)
+(** Convert a [klist] of characters to a string.
+    @deprecated use {!of_std_seq} instead *)
+[@@ocaml.deprecated "use of_std_seq"]
 
 val of_list : char list -> string
 (** Convert a list of characters to a string. *)
@@ -379,9 +412,19 @@ module Split : sig
 
   val gen : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) gen
 
+  val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) sequence
+  (** @since NEXT_RELEASE *)
+
+  val std_seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
+  (** @since NEXT_RELEASE *)
+
   val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) sequence
+  (** deprecated, use {!iter} instead *)
+  [@@ocaml.deprecated "use iter"]
 
   val klist : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) klist
+  (** deprecated, use {!std_seq} instead *)
+  [@@ocaml.deprecated "use std_seq"]
 
   (** {4 Copying functions}
 
@@ -392,9 +435,19 @@ module Split : sig
 
   val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
 
+  val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
+  (** @since NEXT_RELEASE *)
+
+  val std_seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string Seq.t
+  (** @since NEXT_RELEASE *)
+
   val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
+  (** deprecated, use {!iter_cpy} instead *)
+  [@@ocaml.deprecated "use iter_cpy"]
 
   val klist_cpy : ?drop:drop_if_empty -> by:string -> string -> string klist
+  (** deprecated, use {!std_seq_cpy} instead *)
+  [@@ocaml.deprecated "use std_seq_cpy"]
 
   val left : by:string -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the leftmost part of

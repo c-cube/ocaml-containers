@@ -2,7 +2,15 @@
 
 (** {1 Array utils} *)
 
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
@@ -249,16 +257,31 @@ val to_string : ?sep:string -> ('a -> string) -> 'a array -> string
     between elements of [a].
     @since 2.7 *)
 
-val to_seq : 'a t -> 'a sequence
-(** [to_seq a] returns a [sequence] of the elements of an array [a].
+val to_iter : 'a t -> 'a iter
+(** [to_iter a] returns an [iter] of the elements of an array [a].
     The input array [a] is shared with the sequence and modification of it will result
-    in modification of the sequence. *)
+    in modification of the iterator.
+    @since NEXT_RELEASE *)
+
+val to_std_seq : 'a t -> 'a Seq.t
+(** [to_std_seq a] returns a [Seq.t] of the elements of an array [a].
+    The input array [a] is shared with the sequence and modification of it will result
+    in modification of the sequence.
+    @since NEXT_RELEASE
+*)
+
+val to_seq : 'a t -> 'a sequence
+(** Same as {!to_iter}.
+    @deprecated use {!to_iter} instead *)
+[@@ocaml.deprecated "use to_iter or to_std_seq"]
 
 val to_gen : 'a t -> 'a gen
 (** [to_gen a] returns a [gen] of the elements of an array [a]. *)
 
 val to_klist : 'a t -> 'a klist
-(** [to_klist] returns a [klist] of the elements of an array [a]. *)
+(** [to_klist] returns a [klist] of the elements of an array [a].
+    @deprecated use {!to_std_seq} *)
+[@@ocaml.deprecated "use to_std_seq"]
 
 (** {2 IO} *)
 
@@ -298,12 +321,12 @@ val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
     of all elements [bi] such as [~f ai = Some bi]. When [~f] returns [None], the corresponding
     element of [a] is discarded. *)
 
-val flat_map : f:('a -> 'b t) -> 'a t -> 'b array
-(** [flat_map ~f a] transforms each element of [a] into an array, then flattens. *)
-
 val monoid_product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** All combinaisons of tuples from the two arrays are passed to the function
     @since NEXT_RELEASE *)
+
+val flat_map : f:('a -> 'b t) -> 'a t -> 'b array
+(** [flat_map ~f a] transforms each element of [a] into an array, then flattens. *)
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** [a >>= f] is the infix version of {!flat_map}. *)

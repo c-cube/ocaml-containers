@@ -6,7 +6,15 @@
 (** Simple implementation of functional queues
     @since 1.3 *)
 
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -76,13 +84,31 @@ val to_list : 'a t -> 'a list
 val add_list : 'a t -> 'a list -> 'a t
 val of_list : 'a list -> 'a t
 
+val to_iter : 'a t -> 'a iter
+val add_iter : 'a t -> 'a iter -> 'a t
+val of_iter : 'a iter -> 'a t
+
 val to_seq : 'a t -> 'a sequence
+[@@ocaml.deprecated "use to_iter"]
+
 val add_seq : 'a t -> 'a sequence -> 'a t
+[@@ocaml.deprecated "use add_iter"]
+
 val of_seq : 'a sequence -> 'a t
+[@@ocaml.deprecated "use of_iter"]
+
+val to_std_seq : 'a t -> 'a Seq.t
+val add_std_seq : 'a t -> 'a Seq.t -> 'a t
+val of_std_seq : 'a Seq.t -> 'a t
 
 val to_klist : 'a t -> 'a klist
+[@@ocaml.deprecated "use to_std_seq"]
+
 val add_klist : 'a t -> 'a klist -> 'a t
+[@@ocaml.deprecated "use add_std_seq"]
+
 val of_klist : 'a klist -> 'a t
+[@@ocaml.deprecated "use of_std_seq"]
 
 val of_gen : 'a gen -> 'a t
 val add_gen : 'a t -> 'a gen -> 'a t

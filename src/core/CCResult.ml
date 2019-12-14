@@ -2,6 +2,7 @@
 
 (** {1 Error Monad} *)
 
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
@@ -323,9 +324,15 @@ let of_opt = function
   | None -> Error "of_opt"
   | Some x -> Ok x
 
-let to_seq e k = match e with
+let to_std_seq e () = match e with
+  | Ok x -> Seq.Cons (x, Seq.empty)
+  | Error _ -> Seq.Nil
+
+let to_iter e k = match e with
   | Ok x -> k x
   | Error _ -> ()
+
+let to_seq = to_iter
 
 type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
 

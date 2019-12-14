@@ -18,7 +18,14 @@ type 'a ro_vector = ('a, ro) t
 (** Alias for immutable vectors.
     @since 0.15 *)
 
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
@@ -78,6 +85,14 @@ val append : ('a, rw) t -> ('a, _) t -> unit
 
 val append_array : ('a, rw) t -> 'a array -> unit
 (** Like {!append}, with an array. *)
+
+val append_iter : ('a, rw) t -> 'a iter -> unit
+(** Append content of iterator.
+    @since NEXT_RELEASE *)
+
+val append_std_seq : ('a, rw) t -> 'a Seq.t -> unit
+(** Append content of iterator.
+    @since NEXT_RELEASE *)
 
 val append_seq : ('a, rw) t -> 'a sequence -> unit
 (** Append content of sequence. *)
@@ -198,10 +213,20 @@ val filter_map_in_place : ('a -> 'a option) -> ('a,_) t -> unit
 val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 (** Map each element to a sub-vector. *)
 
+val flat_map_iter : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
+(** Like {!flat_map}, but using {!iter} for intermediate collections.
+    @since NEXT_RELEASE *)
+
+val flat_map_std_seq : ('a -> 'b Seq.t) -> ('a,_) t -> ('b, 'mut) t
+(** Like {!flat_map}, but using [Seq] for intermediate collections.
+    @since NEXT_RELEASE *)
+
 val flat_map_seq : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!sequence} for
     intermediate collections.
+    @deprecated use {!flat_map_iter} or {!flat_map_std_seq}
     @since 0.14 *)
+[@@ocaml.deprecated "use flat_map_iter or flat_map_std_seq"]
 
 val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!list} for
@@ -277,14 +302,47 @@ val to_list : ('a,_) t -> 'a list
 (** Return a list with the elements contained in the vector. *)
 
 val of_seq : ?init:('a,rw) t -> 'a sequence -> ('a, rw) t
+(** Convert an Iterator to a vector.
+    @deprecated use of_iter *)
+[@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
+
+val of_std_seq : ?init:('a,rw) t -> 'a Seq.t -> ('a, rw) t
+(** Convert an Iterator to a vector.
+    @deprecated use of_iter *)
+[@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
+
+val to_iter : ('a,_) t -> 'a iter
+(** Return a [iter] with the elements contained in the vector.
+    @since NEXT_RELEASE
+*)
+
+val to_iter_rev : ('a,_) t -> 'a iter
+(** [to_iter_rev v] returns the sequence of elements of [v] in reverse order,
+    that is, the last elements of [v] are iterated on first.
+    @since NEXT_RELEASE
+*)
+
+val to_std_seq : ('a,_) t -> 'a Seq.t
+(** Return an iterator with the elements contained in the vector.
+    @since NEXT_RELEASE
+*)
+
+val to_std_seq_rev : ('a,_) t -> 'a Seq.t
+(** [to_seq v] returns the sequence of elements of [v] in reverse order,
+    that is, the last elements of [v] are iterated on first.
+    @since NEXT_RELEASE
+*)
 
 val to_seq : ('a,_) t -> 'a sequence
-(** Return a [sequence] with the elements contained in the vector. *)
+(** @deprecated use to_iter *)
+[@@ocaml.deprecated "use to_iter. For the standard Seq, see {!to_std_seq}"]
 
 val to_seq_rev : ('a, _) t -> 'a sequence
 (** [to_seq_rev v] returns the sequence of elements of [v] in reverse order,
     that is, the last elements of [v] are iterated on first.
-    @since 0.14 *)
+    @since 0.14
+    @deprecated use {!to_iter_rev} *)
+[@@ocaml.deprecated "use to_iter_rev. For the standard Seq, see {!to_std_seq_rev}"]
 
 val slice : ('a,rw) t -> ('a array * int * int)
 (** Vector as an array slice. By doing it we expose the internal array, so

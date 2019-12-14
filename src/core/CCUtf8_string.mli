@@ -18,7 +18,15 @@
 
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 
 type t = private string
 (** A UTF8 string *)
@@ -41,9 +49,22 @@ val to_gen : ?idx:int -> t -> uchar gen
 (** Generator of unicode codepoints.
     @param idx offset where to start the decoding. *)
 
+val to_iter : ?idx:int -> t -> uchar iter
+(** Iterator of unicode codepoints.
+    @param idx offset where to start the decoding.
+    @since NEXT_RELEASE *)
+
 val to_seq : ?idx:int -> t -> uchar sequence
 (** Iter of unicode codepoints.
-    @param idx offset where to start the decoding. *)
+    @param idx offset where to start the decoding.
+    @deprecated use {!to_iter} or {!to_std_seq} instead *)
+[@@ocaml.deprecated "use to_iter or to_std_seq instead"]
+
+val to_std_seq : ?idx:int -> t -> uchar Seq.t
+(** Iter of unicode codepoints.
+    @param idx offset where to start the decoding.
+    @since NEXT_RELEASE
+*)
 
 val to_list : ?idx:int -> t -> uchar list
 (** List of unicode codepoints.
@@ -69,7 +90,17 @@ val append : t -> t -> t
 
 val concat : t -> t list -> t
 
+val of_std_seq : uchar Seq.t -> t
+(** Build a string from unicode codepoints
+    @since NEXT_RELEASE *)
+
+val of_iter : uchar sequence -> t
+(** Build a string from unicode codepoints
+    @since NEXT_RELEASE *)
+
 val of_seq : uchar sequence -> t
+(** @deprecated use {!of_seq} or {!of_std_seq} instead *)
+[@@ocaml.deprecated "use of_iter or of_std_seq instead"]
 
 val of_gen : uchar gen -> t
 
@@ -87,5 +118,8 @@ val is_valid : string -> bool
 
 val unsafe_of_string : string -> t
 (** Conversion from a string without validating.
-    Upon iteration, if an invalid substring is met, Malformed will be raised. *)
+    {b CAUTION} this is unsafe and can break all the other functions
+    in this module. Use only if you're sure the string is valid UTF8.
+    Upon iteration, if an invalid substring is met, Malformed will be raised.
+*)
 

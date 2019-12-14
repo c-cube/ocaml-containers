@@ -5,7 +5,15 @@
     
     Implementation following Okasaki's book. *)
 
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
@@ -110,18 +118,58 @@ module type S = sig
   val of_list : elt list -> t
   (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
 
+  val add_iter : t -> elt iter -> t
+  (** Like {!add_list}.
+      @since NEXT_RELEASE *)
+
+  val add_std_seq : t -> elt Seq.t -> t
+  (** Like {!add_list}.
+      @since NEXT_RELEASE *)
+
   val add_seq : t -> elt sequence -> t (** @since 0.16 *)
-  (** Like {!add_list}. *)
+  (** Like {!add_list}.
+      @deprecated use {!add_iter} or {!add_std_seq} instead *)
+  [@@ocaml.deprecated "use add_iter. For the standard Seq, see {!add_std_seq}"]
+
+  val of_iter : elt iter -> t
+  (** Build a heap from a given [iter]. Complexity: [O(n log n)].
+      @since NEXT_RELEASE *)
+
+  val of_std_seq : elt Seq.t -> t
+  (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
+      @since NEXT_RELEASE *)
 
   val of_seq : elt sequence -> t
-  (** Build a heap from a given [sequence]. Complexity: [O(n log n)]. *)
+  (** Build a heap from a given [sequence]. Complexity: [O(n log n)].
+      @deprecated use {!of_iter} or {!of_std_seq} instead *)
+  [@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
+
+  val to_iter : t -> elt iter
+  (** Return a [iter] of the elements of the heap.
+      @since NEXT_RELEASE *)
+
+  val to_std_seq : t -> elt Seq.t
+  (** Return a [Seq.t] of the elements of the heap.
+      @since NEXT_RELEASE *)
 
   val to_seq : t -> elt sequence
-  (** Return a [sequence] of the elements of the heap. *)
+  (** Return a [sequence] of the elements of the heap.
+      @deprecated use {!to_iter} or {!to_std_seq} instead *)
+  [@@ocaml.deprecated "use to_iter. For the standard Seq, see {!to_std_seq}"]
+
+  val to_iter_sorted : t -> elt iter
+  (** Iterate on the elements, in increasing order.
+      @since NEXT_RELEASE *)
+
+  val to_std_seq_sorted : t -> elt Seq.t
+  (** Iterate on the elements, in increasing order.
+      @since NEXT_RELEASE *)
 
   val to_seq_sorted : t -> elt sequence
   (** Iterate on the elements, in increasing order.
-      @since 1.1 *)
+      @since 1.1
+      @deprecated use {!to_iter_sorted} or {!to_std_seq_sorted} instead *)
+  [@@ocaml.deprecated "use to_iter_sorted or to_std_seq_sorted"]
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 

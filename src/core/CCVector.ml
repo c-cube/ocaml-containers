@@ -6,6 +6,7 @@ type rw = [`RW]
 type ro = [`RO]
 
 type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
@@ -256,8 +257,9 @@ let remove v i =
   v.size <- v.size - 1;
   fill_with_junk_ v.vec v.size 1
 
-let append_seq a seq =
-  seq (fun x -> push a x)
+let append_iter a i = i (fun x -> push a x)
+
+let append_std_seq a seq = Seq.iter (fun x -> push a x) seq
 
 let append_array a b =
   let len_b = Array.length b in
@@ -801,12 +803,21 @@ let flat_map f v =
   iter (fun x -> iter (push v') (f x)) v;
   v'
 
-let flat_map_seq f v =
+let flat_map_iter f v =
   let v' = create () in
   iter
     (fun x ->
        let seq = f x in
-       append_seq v' seq)
+       append_iter v' seq)
+    v;
+  v'
+
+let flat_map_std_seq f v =
+  let v' = create () in
+  iter
+    (fun x ->
+       let seq = f x in
+       append_std_seq v' seq)
     v;
   v'
 
@@ -899,21 +910,45 @@ let capacity v = Array.length v.vec
 
 let unsafe_get_array v = v.vec
 
-let of_seq ?(init=create ()) seq =
-  append_seq init seq;
+let of_iter ?(init=create ()) seq =
+  append_iter init seq;
+  init
+
+let of_std_seq ?(init=create ()) seq =
+  append_std_seq init seq;
   init
 
 (*$T
   of_seq Iter.(1 -- 10) |> to_list = CCList.(1 -- 10)
 *)
 
-let to_seq v k = iter k v
+let to_iter v k = iter k v
 
-let to_seq_rev v k =
+let to_iter_rev v k =
   let n = v.size in
   for i = n - 1 downto 0 do
     k (Array.unsafe_get v.vec i)
   done
+
+let to_std_seq v =
+  let rec aux i () =
+    if i>= size v then Seq.Nil
+    else Seq.Cons (v.vec.(i), aux (i+1))
+  in
+  aux 0
+
+let to_std_seq_rev v =
+  let rec aux i () =
+    if i<0 || i > size v then Seq.Nil
+    else Seq.Cons (v.vec.(i), aux (i-1))
+  in
+  aux (size v-1)
+
+let of_seq = of_iter
+let to_seq = to_iter
+let to_seq_rev = to_iter_rev
+let append_seq = append_iter
+let flat_map_seq = flat_map_iter
 
 (*$Q
   Q.(list int) (fun l -> \

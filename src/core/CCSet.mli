@@ -5,7 +5,15 @@
 
     @since 0.9 *)
 
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a printer = Format.formatter -> 'a -> unit
 
 module type OrderedType = Set.OrderedType
@@ -46,14 +54,31 @@ module type S = sig
   (** Safe version of {!find_last}.
       @since 1.5 *)
 
+  val of_iter : elt iter -> t
+  (** Build a set from the given [iter] of elements.
+      @since NEXT_RELEASE *)
+
+  val add_iter : t -> elt iter -> t
+  (** @since NEXT_RELEASE *)
+
+  val to_iter : t -> elt iter
+  (** [to_iter t] converts the set [t] to a [iter] of the elements.
+      @since NEXT_RELEASE *)
+
   val of_seq : elt sequence -> t
-  (** Build a set from the given [sequence] of elements. *)
+  (** Build a set from the given [sequence] of elements.
+      @deprecated use {!of_iter} instead. *)
+  [@@ocaml.deprecated "use of_iter instead"]
 
   val add_seq : t -> elt sequence -> t
-  (** @since 0.14 *)
+  (** @since 0.14
+      @deprecated use {!add_iter} instead. *)
+  [@@ocaml.deprecated "use add_iter instead"]
 
   val to_seq : t -> elt sequence
-  (** [to_seq t] converts the set [t] to a [sequence] of the elements. *)
+  (** [to_seq t] converts the set [t] to a [sequence] of the elements.
+      @deprecated use {!to_iter} instead. *)
+  [@@ocaml.deprecated "use to_iter instead"]
 
   val of_list : elt list -> t
   (** Build a set from the given list of elements,
@@ -75,7 +100,6 @@ module type S = sig
     ?start:string -> ?stop:string -> ?sep:string ->
     elt printer -> t printer
     (** Print the set. *)
-
 end
 
 module Make(O : Set.OrderedType) : S

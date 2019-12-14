@@ -5,7 +5,15 @@
 
 (** {1 Array Slice} *)
 
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
@@ -237,16 +245,33 @@ val random_choose : 'a t -> 'a random_gen
 (** [random_choose as rs] randomly chooses an element of [as].
     @raise Not_found if the array/slice is empty. *)
 
+val to_iter : 'a t -> 'a iter
+(** [to_iter a] returns an [iter] of the elements of a slice [a].
+    The input array [a] is shared with the sequence and modification of it will result
+    in modification of the iterator.
+    @since NEXT_RELEASE *)
+
+val to_std_seq : 'a t -> 'a Seq.t
+(** [to_std_seq a] returns a [Seq.t] of the elements of a slice [a].
+    The input array [a] is shared with the sequence and modification of it will result
+    in modification of the sequence.
+    @since NEXT_RELEASE
+*)
+
 val to_seq : 'a t -> 'a sequence
 (** [to_seq as] returns a [sequence] of the elements of a slice [as].
     The input slice [as] is shared with the sequence and modification of it will result
-    in modification of the sequence. *)
+    in modification of the sequence.
+    @deprecated use {!to_iter} instead *)
+[@@ocaml.deprecated "use to_iter or to_std_seq"]
 
 val to_gen : 'a t -> 'a gen
 (** [to_gen as] returns a [gen] of the elements of a slice [as]. *)
 
 val to_klist : 'a t -> 'a klist
-(** [to_klist as] returns a [klist] of the elements of a slice [as]. *)
+(** [to_klist as] returns a [klist] of the elements of a slice [as].
+    @deprecated use {!to_std_seq} *)
+[@@ocaml.deprecated "use to_std_seq"]
 
 (** {2 IO} *)
 

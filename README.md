@@ -351,14 +351,14 @@ module IntMap = CCMap.Make(CCInt)
   let map : string IntMap.t =
     l2
     |> List.map (fun x -> x, string_of_int x)
-    |> CCList.to_seq
-    |> IntMap.of_seq;;
+    |> CCList.to_iter
+    |> IntMap.of_iter;;
 val map : string IntMap.t = <abstr>
 
-# CCList.to_seq ;; (* check the type *)
-- : 'a list -> 'a CCList.sequence = <fun>
-# IntMap.of_seq ;;
-- : (int * 'a) CCMap.sequence -> 'a IntMap.t = <fun>
+# CCList.to_iter;; (* check the type *)
+- : 'a list -> 'a CCList.iter = <fun>
+# IntMap.of_iter ;;
+- : (int * 'a) CCMap.iter -> 'a IntMap.t = <fun>
 
 # (* we can print, too *)
   Format.printf "@[<2>map =@ @[<hov>%a@]@]@."
@@ -448,7 +448,7 @@ module IntHeap = CCHeap.Make(struct type t = int let leq = (<=) end);;
 ```
 
 ```ocaml
-# let h = v2 |> CCVector.to_seq |> IntHeap.of_seq ;;
+# let h = v2 |> CCVector.to_iter |> IntHeap.of_iter ;;
 val h : IntHeap.t = <abstr>
 
 # (* We can print the content of h

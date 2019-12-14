@@ -1608,6 +1608,7 @@ end
 
 (** {2 Conversions} *)
 
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -1651,15 +1652,41 @@ let to_string ?(start="") ?(stop="") ?(sep=", ") item_to_string l =
   (to_string ~sep:" " string_of_int [1;2;3;4]) "1 2 3 4"
 *)
 
-let to_seq l k = List.iter k l
-let of_seq seq =
+let to_iter l k = List.iter k l
+
+let rec to_std_seq l () = match l with
+  | [] -> Seq.Nil
+  | x :: tl -> Seq.Cons (x, to_std_seq tl)
+
+let of_iter i =
   let l = ref [] in
-  seq (fun x -> l := x :: !l);
+  i (fun x -> l := x :: !l);
   List.rev !l
+
+let of_std_seq_rev l =
+  let rec loop acc s = match s() with
+    | Seq.Nil -> acc
+    | Seq.Cons (x,tl) -> loop (x::acc) tl
+  in
+  loop [] l
+
+let of_std_seq l =
+  let rec direct i seq =
+    if i <= 0 then List.rev (of_std_seq_rev seq)
+    else (
+      match seq() with
+        | Seq.Nil -> []
+        | Seq.Cons (x, tl) -> x :: direct (i-1) tl
+    )
+  in
+  direct direct_depth_default_ l
 
 (*$Q
   Q.(list int) (fun l -> of_seq (to_seq l) = l)
 *)
+
+let to_seq = to_iter
+let of_seq = of_iter
 
 let to_gen l =
   let l = ref l in

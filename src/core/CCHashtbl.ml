@@ -3,6 +3,7 @@
 
 (** {1 Extension to the standard Hashtbl}  *)
 
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a eq = 'a -> 'a -> bool
 type 'a hash = 'a -> int
@@ -59,21 +60,41 @@ module Poly = struct
       |> List.sort Stdlib.compare = ["1a"; "2b"]
   *)
 
-  let to_seq tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
+  let to_iter tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
 
-  let add_seq tbl seq = seq (fun (k,v) -> Hashtbl.add tbl k v)
+  let add_iter tbl i = i (fun (k,v) -> Hashtbl.add tbl k v)
 
-  let of_seq seq =
+  let add_std_seq tbl seq = Seq.iter (fun (k,v) -> Hashtbl.add tbl k v) seq
+
+  let of_iter i =
     let tbl = Hashtbl.create 32 in
-    add_seq tbl seq;
+    add_iter tbl i;
     tbl
 
-  let add_seq_count tbl seq = seq (fun k -> incr tbl k)
-
-  let of_seq_count seq =
+  let of_std_seq i =
     let tbl = Hashtbl.create 32 in
-    add_seq_count tbl seq;
+    add_std_seq tbl i;
     tbl
+
+  let add_iter_count tbl i = i (fun k -> incr tbl k)
+
+  let add_std_seq_count tbl seq = Seq.iter (fun k -> incr tbl k) seq
+
+  let of_iter_count i =
+    let tbl = Hashtbl.create 32 in
+    add_iter_count tbl i;
+    tbl
+
+  let of_std_seq_count i =
+    let tbl = Hashtbl.create 32 in
+    add_std_seq_count tbl i;
+    tbl
+
+  let to_seq = to_iter
+  let add_seq = add_iter
+  let of_seq = of_iter
+  let add_seq_count = add_iter_count
+  let of_seq_count = of_iter_count
 
   let to_list tbl =
     Hashtbl.fold
@@ -145,23 +166,23 @@ module type S = sig
   include Hashtbl.S
 
   val get : 'a t -> key -> 'a option
-  (** Safe version of {!Hashtbl.find} *)
+  (** Safe version of {!Hashtbl.find}. *)
 
   val get_or : 'a t -> key -> default:'a -> 'a
   (** [get_or tbl k ~default] returns the value associated to [k] if present,
-      and returns [default] otherwise (if [k] doesn't belong in [tbl])
+      and returns [default] otherwise (if [k] doesn't belong in [tbl]).
       @since 0.16 *)
 
   val add_list : 'a list t -> key -> 'a -> unit
   (** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
-      not bound, it becomes bound to [[y]].
+      not bound, it becomes bound to [y].
       @since 0.16 *)
 
   val incr : ?by:int -> int t -> key -> unit
   (** [incr ?by tbl x] increments or initializes the counter associated with [x].
       If [get tbl x = None], then after update, [get tbl x = Some 1];
       otherwise, if [get tbl x = Some n], now [get tbl x = Some (n+1)].
-      @param by if specified, the int value is incremented by [by] rather than 1
+      @param by if specified, the int value is incremented by [by] rather than 1.
       @since 0.16 *)
 
   val decr : ?by:int -> int t -> key -> unit
@@ -170,45 +191,96 @@ module type S = sig
       This does nothing if the key is not already present in the table.
       @since 0.16 *)
 
-  val keys : 'a t -> key sequence
-  (** Iterate on keys (similar order as {!Hashtbl.iter}) *)
+  val keys : 'a t -> key iter
+  (** Iterate on keys (similar order as {!Hashtbl.iter}). *)
 
-  val values : 'a t -> 'a sequence
-  (** Iterate on values in the table *)
+  val values : 'a t -> 'a iter
+  (** Iterate on values in the table. *)
 
   val keys_list : _ t -> key list
-  (** [keys t] is the list of keys in [t].
+  (** [keys_list t] is the list of keys in [t].
+      If the key is in the Hashtable multiple times, all occurrences will be returned.
       @since 0.8 *)
 
   val values_list : 'a t -> 'a list
-  (** [values t] is the list of values in [t].
+  (** [values_list t] is the list of values in [t].
       @since 0.8 *)
 
   val map_list : (key -> 'a -> 'b) -> 'a t -> 'b list
-  (** Map on a hashtable's items, collect into a list *)
+  (** Map on a hashtable's items, collect into a list. *)
+
+  val to_iter : 'a t -> (key * 'a) iter
+  (** Iterate on bindings in the table.
+      @since NEXT_RELEASE *)
 
   val to_seq : 'a t -> (key * 'a) sequence
-  (** Iterate on values in the table *)
+  (** Iterate on values in the table.
+      @deprecated use {!to_iter} instead *)
+  [@@ocaml.deprecated "use to_iter"]
 
-  val of_seq : (key * 'a) sequence -> 'a t
-  (** From the given bindings, added in order *)
+  val add_iter : 'a t -> (key * 'a) iter -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      @since NEXT_RELEASE *)
+
+  val add_std_seq : 'a t -> (key * 'a) Seq.t -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      @since NEXT_RELEASE *)
 
   val add_seq : 'a t -> (key * 'a) sequence -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since 0.16 *)
+      @since 0.16
+      @deprecated use {!add_iter} or {!add_std_seq} *)
+  [@@ocaml.deprecated "use add_iter or add_std_seq"]
+
+  val of_iter : (key * 'a) iter -> 'a t
+  (** From the given bindings, added in order.
+      @since NEXT_RELEASE *)
+
+  val of_std_seq : (key * 'a) Seq.t -> 'a t
+  (** From the given bindings, added in order.
+      @since NEXT_RELEASE *)
+
+  val of_seq : (key * 'a) sequence -> 'a t
+  (** From the given bindings, added in order.
+      @deprecated use {!of_iter} or {!of_std_seq} *)
+  [@@ocaml.deprecated "use of_iter or of_std_seq"]
+
+  val add_iter_count : int t -> key iter -> unit
+  (** [add_iter_count tbl i] increments the count of each element of [i]
+      by calling {!incr}. This is useful for counting how many times each
+      element of [i] occurs.
+      @since NEXT_RELEASE *)
+
+  val add_std_seq_count : int t -> key Seq.t -> unit
+  (** [add_seq_count tbl seq] increments the count of each element of [seq]
+      by calling {!incr}. This is useful for counting how many times each
+      element of [seq] occurs.
+      @since NEXT_RELEASE *)
 
   val add_seq_count : int t -> key sequence -> unit
   (** [add_seq_count tbl seq] increments the count of each element of [seq]
       by calling {!incr}. This is useful for counting how many times each
       element of [seq] occurs.
-      @since 0.16 *)
+      @since 0.16
+      @deprecated use {!add_iter_count} or {!add_std_seq_count} *)
+  [@@ocaml.deprecated "use add_iter_count or add_std_seq_count"]
+
+  val of_iter_count : key iter -> int t
+  (** Like {!add_seq_count}, but allocates a new table and returns it.
+      @since NEXT_RELEASE *)
+
+  val of_std_seq_count : key Seq.t -> int t
+  (** Like {!add_seq_count}, but allocates a new table and returns it.
+      @since NEXT_RELEASE *)
 
   val of_seq_count : key sequence -> int t
-  (** Like {!add_seq_count}, but allocates a new table and returns it
-      @since 0.16 *)
+  (** Like {!add_seq_count}, but allocates a new table and returns it.
+      @since 0.16
+      @deprecated use {!of_iter_count} or {!of_std_seq_count} *)
+  [@@ocaml.deprecated "use add_iter_count or add_std_seq_count"]
 
   val to_list : 'a t -> (key * 'a) list
-  (** List of bindings (order unspecified)  *)
+  (** List of bindings (order unspecified). *)
 
   val of_list : (key * 'a) list -> 'a t
   (** Build a table from the given list of bindings [k_i -> v_i],
@@ -221,7 +293,7 @@ module type S = sig
       [k] was mapped to [v], or [f k None] otherwise; if the call
       returns [None] then [k] is removed/stays removed, if the call
       returns [Some v'] then the binding [k -> v'] is inserted
-      using {!Hashtbl.replace}
+      using {!Hashtbl.replace}.
       @since 0.14 *)
 
   val get_or_add : 'a t -> f:(key -> 'a) -> k:key -> 'a
@@ -232,9 +304,9 @@ module type S = sig
       @since 1.0 *)
 
   val pp : key printer -> 'a printer -> 'a t printer
-  (** Printer for table
-      @since 0.13
-      Renamed from [print] @since 2.0 *)
+  (** Printer for tables.
+      Renamed from [print] since 2.0.
+      @since 0.13 *)
 end
 
 (*$inject
@@ -318,21 +390,41 @@ module Make(X : Hashtbl.HashedType)
       add tbl k v;
       v
 
-  let to_seq tbl k = iter (fun key v -> k (key,v)) tbl
+  let to_iter tbl k = iter (fun key v -> k (key,v)) tbl
 
-  let add_seq tbl seq = seq (fun (k,v) -> add tbl k v)
+  let add_iter tbl i = i (fun (k,v) -> add tbl k v)
 
-  let of_seq seq =
+  let add_std_seq tbl seq = Seq.iter (fun (k,v) -> add tbl k v) seq
+
+  let of_iter i =
     let tbl = create 32 in
-    add_seq tbl seq;
+    add_iter tbl i;
     tbl
 
-  let add_seq_count tbl seq = seq (fun k -> incr tbl k)
-
-  let of_seq_count seq =
+  let of_std_seq i =
     let tbl = create 32 in
-    add_seq_count tbl seq;
+    add_std_seq tbl i;
     tbl
+
+  let add_iter_count tbl i = i (fun k -> incr tbl k)
+
+  let add_std_seq_count tbl seq = Seq.iter (fun k -> incr tbl k) seq
+
+  let of_iter_count seq =
+    let tbl = create 32 in
+    add_iter_count tbl seq;
+    tbl
+
+  let of_std_seq_count i =
+    let tbl = create 32 in
+    add_std_seq_count tbl i;
+    tbl
+
+  let to_seq = to_iter
+  let add_seq = add_iter
+  let of_seq = of_iter
+  let add_seq_count = add_iter_count
+  let of_seq_count = of_iter_count
 
   let to_list tbl =
     fold

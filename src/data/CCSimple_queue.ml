@@ -3,6 +3,7 @@
 
 (** {1 Functional queues (fifo)} *)
 
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
@@ -107,14 +108,18 @@ let to_list q = fold (fun acc x->x::acc) [] q |> List.rev
 let add_list q l = List.fold_left snoc q l
 let of_list l = add_list empty l
 
-let to_seq q = fun k -> iter k q
+let to_iter q = fun k -> iter k q
 
-let add_seq q seq =
+let add_iter q seq =
   let q = ref q in
   seq (fun x -> q := push x !q);
   !q
 
-let of_seq s = add_seq empty s
+let of_iter s = add_iter empty s
+
+let of_seq = of_iter
+let to_seq = to_iter
+let add_seq = add_iter
 
 (*$Q
   Q.(list small_int) (fun l -> \
@@ -124,6 +129,19 @@ let of_seq s = add_seq empty s
   Q.(list small_int) (fun l -> \
     l = (of_list l |> to_seq |> Iter.to_list))
 *)
+
+let add_std_seq q l = add_iter q (fun k -> Seq.iter k l)
+let of_std_seq l = add_std_seq empty l
+
+let to_std_seq q =
+  let rec aux1 l () = match l with
+    | [] -> aux2 (List.rev q.tl) ()
+    | x :: tl -> Seq.Cons (x, aux1 tl)
+  and aux2 l () = match l with
+    | [] -> Seq.Nil
+    | x :: tl -> Seq.Cons (x, aux2 tl)
+  in
+  aux1 q.hd
 
 let rec klist_iter_ k f = match k() with
   | `Nil -> ()

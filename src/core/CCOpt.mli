@@ -205,6 +205,8 @@ val to_iter : 'a t -> 'a sequence
 
 val to_seq : 'a t -> 'a sequence
 (** Previous name for {!to_iter}
-    @deprecated use {!to_iter} instead *)
+    @deprecated use {!to_iter} or {!to_std_seq} instead *)
+[@@ocaml.deprecated "use to_iter or to_std_seq"]
+
 
 val pp : 'a printer -> 'a t printer

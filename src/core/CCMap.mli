@@ -6,7 +6,15 @@
     Provide useful functions and iterators on [Map.S]
     @since 0.5 *)
 
+
+(* TODO: remove for 3.0 *)
 type 'a sequence = ('a -> unit) -> unit
+(** @deprecated use ['a iter] instead *)
+
+type 'a iter = ('a -> unit) -> unit
+(** Fast internal iterator.
+    @since NEXT_RELEASE *)
+
 type 'a printer = Format.formatter -> 'a -> unit
 
 module type OrderedType = Map.OrderedType
@@ -65,13 +73,43 @@ module type S = sig
       that belong to both inputs.
       @since 1.4 *)
 
+  val of_iter : (key * 'a) iter -> 'a t
+  (** Like {!of_list}.
+      @since NEXT_RELEASE *)
+
+  val add_std_seq : 'a t -> (key * 'a) Seq.t -> 'a t
+  (** Like {!add_list}.
+      @since NEXT_RELEASE *)
+
+  val of_std_seq : (key * 'a) Seq.t -> 'a t
+  (** Like {!of_list}.
+      @since NEXT_RELEASE *)
+
+  val add_iter : 'a t -> (key * 'a) iter -> 'a t
+  (** Like {!add_list}.
+      @since NEXT_RELEASE *)
+
+  val of_iter : (key * 'a) iter -> 'a t
+  (** Like {!of_list}.
+      @since NEXT_RELEASE *)
+
+  val to_iter : 'a t -> (key * 'a) iter
+  (** Like {!to_list}.
+      @since NEXT_RELEASE *)
+
   val of_seq : (key * 'a) sequence -> 'a t
-  (** Like {!of_list}. *)
+  (** Like {!of_list}.
+      @deprecated use {!of_iter} instead. *)
+  [@@ocaml.deprecated "use of_iter instead"]
 
   val add_seq : 'a t -> (key * 'a) sequence -> 'a t
-  (** @since 0.14 *)
+  (** @since 0.14
+      @deprecated use {!add_iter} instead. *)
+  [@@ocaml.deprecated "use add_iter instead"]
 
   val to_seq : 'a t -> (key * 'a) sequence
+  (** @deprecated use {!to_iter} instead. *)
+  [@@ocaml.deprecated "use to_iter instead"]
 
   val of_list : (key * 'a) list -> 'a t
   (** Build a map from the given list of bindings [k_i -> v_i],
@@ -82,11 +120,11 @@ module type S = sig
   val add_list : 'a t -> (key * 'a) list -> 'a t
   (** @since 0.14 *)
 
-  val keys : _ t -> key sequence
+  val keys : _ t -> key iter
   (** Iterate on keys only.
       @since 0.15 *)
 
-  val values : 'a t -> 'a sequence
+  val values : 'a t -> 'a iter
   (** Iterate on values only.
       @since 0.15 *)
 

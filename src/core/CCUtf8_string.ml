@@ -9,6 +9,7 @@ open CCShims_
 
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option
+type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 
 let equal (a:string) b = Stdlib.(=) a b
@@ -113,7 +114,7 @@ let to_gen ?(idx=0) str : uchar gen =
 
 exception Stop
 
-let to_seq ?(idx=0) s : uchar sequence =
+let to_iter ?(idx=0) s : uchar iter =
   fun yield ->
     let st = Dec.make ~idx s in
     try
@@ -124,7 +125,41 @@ let to_seq ?(idx=0) s : uchar sequence =
       done
     with Stop -> ()
 
-let iter ?idx f s = to_seq ?idx s f
+let to_seq = to_iter
+
+let to_std_seq ?(idx=0) s : uchar Seq.t =
+  let rec loop st =
+    let r = ref None in
+    fun () ->
+      match !r with
+      | Some c -> c
+      | None ->
+        let c = next_ st ~yield:(fun x -> Seq.Cons (x, loop st))
+            ~stop:(fun () -> Seq.Nil) ()
+        in
+        r := Some c;
+        c
+  in
+  let st = Dec.make ~idx s in
+  loop st
+
+(*$= & ~cmp:(=) ~printer:Q.Print.(list (fun c -> string_of_int@@ Uchar.to_int c))
+  (to_list (of_string_exn "aébõ😀")) (to_std_seq (of_string_exn "aébõ😀") |> CCList.of_std_seq)
+  *)
+
+(* make sure it's persisted correctly *)
+(*$R
+  let s = (of_string_exn "aébõ😀") in
+  let seq = to_std_seq s in
+  let l = to_list s in
+  let testeq seq = assert_equal ~cmp:(=) l (CCList.of_std_seq seq) in
+  testeq seq;
+  testeq seq;
+  testeq seq;
+  *)
+
+
+let iter ?idx f s = to_iter ?idx s f
 
 let fold ?idx f acc s =
   let st = Dec.make ?idx s in
@@ -181,10 +216,17 @@ let of_gen g : t =
   in
   aux ()
 
-let of_seq seq : t =
+let of_std_seq seq : t =
   let buf = Buffer.create 32 in
-  seq (code_to_string buf);
+  Seq.iter (code_to_string buf) seq;
   Buffer.contents buf
+
+let of_iter i : t =
+  let buf = Buffer.create 32 in
+  i (code_to_string buf);
+  Buffer.contents buf
+
+let of_seq = of_iter
 
 let of_list l : t =
   let buf = Buffer.create 32 in
