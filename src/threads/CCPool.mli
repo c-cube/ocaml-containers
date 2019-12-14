@@ -132,6 +132,10 @@ module Make(P : PARAM) : sig
     val map_async : ('a -> 'b) -> 'a t -> 'b t
     (** Map the value inside the future, to be computed in a separated job. *)
 
+    val monoid_product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+    (** Cartesian product of the content of these futures.
+        @since NEXT_RELEASE *)
+
     val app : ('a -> 'b) t -> 'a t -> 'b t
     (** [app f x] applies the result of [f] to the result of [x]. *)
 
@@ -149,6 +153,10 @@ module Make(P : PARAM) : sig
       val (>>) : 'a t -> (unit -> 'b t) -> 'b t
       val (>|=) : 'a t -> ('a -> 'b) -> 'b t
       val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
+      (** Let operators on OCaml >= 4.08.0, nothing otherwise
+          @since NEXT_RELEASE *)
+      include CCShimsMkLet_.S with type 'a t_let := 'a t
     end
 
     val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
@@ -160,5 +168,9 @@ module Make(P : PARAM) : sig
 
     val (<*>): ('a -> 'b) t -> 'a t -> 'b t
     (** Alias to {!app}. *)
+
+    (** Let operators on OCaml >= 4.08.0, nothing otherwise
+        @since NEXT_RELEASE *)
+    include CCShimsMkLet_.S with type 'a t_let := 'a t
   end
 end

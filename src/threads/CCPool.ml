@@ -386,20 +386,6 @@ module Make(P : PARAM) = struct
 
     let map_async f fut = map_ ~async:true f fut
 
-    (*$R
-      let a = Fut.make (fun () -> 1) in
-      let b = Fut.map (fun x -> x+1) a in
-      let c = Fut.map (fun x -> x-1) b in
-      OUnit.assert_equal 1 (Fut.get c)
-    *)
-
-    (*$R
-      let a = Fut2.make (fun () -> 1) in
-      let b = Fut2.map (fun x -> x+1) a in
-      let c = Fut2.map (fun x -> x-1) b in
-      OUnit.assert_equal 1 (Fut2.get c)
-    *)
-
     let app_ ~async f x = match f, x with
       | Return f, Return x ->
         if async
@@ -423,6 +409,44 @@ module Make(P : PARAM) = struct
     let app f x = app_ ~async:false f x
 
     let app_async f x = app_ ~async:true f x
+
+    (*$R
+      let a = Fut.make (fun () -> 1) in
+      let b = Fut.return 42 in
+      let c = Fut.monoid_product CCPair.make a b in
+      OUnit.assert_equal (1,42) (Fut.get c)
+    *)
+
+    (*$R
+      let a = Fut.make (fun () -> 1) in
+      let b = Fut.make (fun () -> 42) in
+      let c = Fut.monoid_product CCPair.make a b in
+      OUnit.assert_equal (1,42) (Fut.get c)
+    *)
+
+    (*$R
+      let a = Fut.make (fun () -> 1) in
+      let b = Fut.map succ @@ Fut.make (fun () -> 41) in
+      let c = Fut.monoid_product CCPair.make a b in
+      OUnit.assert_equal (1,42) (Fut.get c)
+    *)
+
+    let monoid_product f x y = match x, y with
+      | Return x, Return y -> Return (f x y)
+      | FailNow e, _
+      | _, FailNow e -> FailNow e
+      | Return x, Run y ->
+        map_cell_ ~async:false (fun y -> f x y) y ~into:(create_cell())
+      | Run x, Return y ->
+        map_cell_ ~async:false (fun x -> f x y) x ~into:(create_cell())
+      | Run x, Run y ->
+        let cell' = create_cell () in
+        add_handler_ x
+          (function
+            | Done x -> ignore (map_cell_ ~async:false (fun y->f x y) y ~into:cell')
+            | Failed e -> set_fail_ cell' e
+            | Waiting -> assert false);
+        Run cell'
 
     let flat_map f fut = match fut with
       | Return x -> f x
@@ -634,6 +658,14 @@ module Make(P : PARAM) = struct
       let (>>) a f = and_then a f
       let (>|=) a f = map f a
       let (<*>) = app
+
+
+    include CCShimsMkLet_.Make(struct
+        type nonrec 'a t = 'a t
+        let (>>=) = (>>=)
+        let (>|=) = (>|=)
+        let monoid_product a1 a2 = monoid_product (fun x y->x,y) a1 a2
+      end)
     end
 
     include Infix
