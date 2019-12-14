@@ -22,6 +22,16 @@ type 'a vector = ('a, rw) t
 
 type 'a ro_vector = ('a, ro) t
 
+external as_float_arr : 'a array -> float array = "%identity"
+external as_obj_arr : 'a array -> Obj.t array = "%identity"
+
+let fill_with_junk_ (a:_ array) i len : unit =
+  if Obj.(tag (repr a) = double_array_tag) then (
+    Array.fill (as_float_arr a) i len 0.;
+  ) else (
+    Array.fill (as_obj_arr a) i len (Obj.repr ());
+  )
+
 let freeze v = {
   size=v.size;
   vec=v.vec;
@@ -37,9 +47,12 @@ let create () = {
   vec = [| |];
 }
 
-let create_with ?(capacity=128) x = {
+let create_with ?(capacity=128) x =
+  let vec = Array.make capacity x in
+  fill_with_junk_ vec 0 capacity;
+  {
   size = 0;
-  vec = Array.make capacity x;
+  vec
 }
 
 (*$T
@@ -76,6 +89,7 @@ let resize_ v newcapacity =
   assert (not (array_is_empty_ v));
   let new_vec = Array.make newcapacity v.vec.(0) in
   Array.blit v.vec 0 new_vec 0 v.size;
+  fill_with_junk_ new_vec v.size (newcapacity-v.size);
   v.vec <- new_vec;
   ()
 
@@ -84,10 +98,35 @@ let resize_ v newcapacity =
     ensure v 200; capacity v >= 200
 *)
 
+(*$T
+  let v = create() in push v 0.; push v 1.; push v 2.; 3=length v
+  let v = create() in push v 1.; push v 2.; push v 3.; 6. = (get v 0 +. get v 1 +. get v 2)
+  let v = create() in push v 0; push v 1; push v 2; 3=length v
+  let v = create() in push v 1; push v 2; push v 3; 6 = (get v 0 + get v 1 + get v 2)
+  let v = create() in push v "a"; push v "b"; push v "c"; 3=length v
+  let v = create() in push v "a"; push v "b"; push v "c"; "abc" = String.concat "" (to_list v)
+*)
+
+(*$R
+  let v = create() in
+  push v 0.; push v 1.;
+  clear v;
+  push v 0.; push v 1.; push v 7.; push v 10.; push v 12.;
+  shrink v 2;
+  assert_equal 1. (fold (+.) 0. v);
+  clear v;
+  assert_equal 0 (size v);
+  push v 0.; push v 1.; push v 7.; push v 10.; push v 12.;
+  assert_equal (1. +. 7. +. 10. +. 12.) (fold (+.) 0. v);
+  *)
+
 (* grow the array, using [x] as a filler if required *)
 let grow_with_ v ~filler:x =
   if array_is_empty_ v then (
-    v.vec <- Array.make 4 x
+    let len = 4 in
+    v.vec <- Array.make len x;
+    (* do not really use [x], it was just for knowing the type *)
+    fill_with_junk_ v.vec 0 len;
   ) else (
     let n = Array.length v.vec in
     let size = min (2 * n + 3) Sys.max_array_length in
@@ -109,14 +148,15 @@ let ensure_assuming_not_empty_ v ~size =
   )
 
 let ensure_with ~init v size =
-  if Array.length v.vec = 0 then (
-    v.vec <- Array.make size init
+  if array_is_empty_ v then (
+    v.vec <- Array.make size init;
+    fill_with_junk_ v.vec 0 size
   ) else (
     ensure_assuming_not_empty_ v ~size
   )
 
 let ensure v size =
-  if Array.length v.vec > 0 then (
+  if not (array_is_empty_ v) then (
     ensure_assuming_not_empty_  v ~size
   )
 
@@ -129,6 +169,22 @@ let clear v =
   clear v;
   OUnit.assert_equal 0 (size v);
   OUnit.assert_bool "empty_after_clear" (Iter.is_empty (to_seq v));
+*)
+
+let clear_and_reset v =
+  v.size <- 0;
+  v.vec <- [||]
+
+(* TODO*)
+(*    
+  let v = create() in
+  let a = Weak.create 1 in
+  push v ("hello"^"world");
+  Weak.set a 0 (Some (get v 0));
+  Gc.full_major(); Gc.compact();
+  OUnit.assert_bool "is alive" (Weak.check a 0);
+  Gc.full_major(); Gc.compact();
+  OUnit.assert_equal None (Weak.get a 0);
 *)
 
 let is_empty v = v.size = 0
@@ -197,7 +253,8 @@ let remove v i =
   if i < v.size - 1
   then v.vec.(i) <- v.vec.(v.size - 1);
   (* remove one element *)
-  v.size <- v.size - 1
+  v.size <- v.size - 1;
+  fill_with_junk_ v.vec v.size 1
 
 let append_seq a seq =
   seq (fun x -> push a x)
@@ -326,7 +383,8 @@ let pop_exn v =
   let new_size = v.size - 1 in
   v.size <- new_size;
   let x = v.vec.(new_size) in
-  if new_size > 0 then v.vec.(new_size) <- v.vec.(0); (* free last element *)
+  (* free last element *)
+  fill_with_junk_ v.vec new_size 1;
   x
 
 let pop v =
@@ -378,10 +436,8 @@ let shrink v n =
   let old_size = v.size in
   if n < old_size then (
     v.size <- n;
-    if n > 0 then (
-      (* free elements by erasing them *)
-      Array.fill v.vec n (old_size-n) v.vec.(0);
-    )
+    (* free elements by erasing them *)
+    fill_with_junk_ v.vec n (old_size-n);
   )
 
 (*$R
@@ -398,6 +454,21 @@ let shrink v n =
     let v' = copy v in
     shrink v' n;
     h = to_list v'
+  )
+*)
+
+let shrink_to_fit v : unit =
+  if v.size = 0 then (
+    v.vec <- [| |]
+  ) else if v.size < Array.length v.vec then (
+    v.vec <- Array.sub v.vec 0 v.size
+  )
+
+(*$QR
+  (gen Q.small_int) (fun v ->
+    let v' = copy v in
+    shrink_to_fit v;
+    to_list v = to_list v'
   )
 *)
 
@@ -544,9 +615,7 @@ let filter' p v =
     ) else incr i
   done;
   (* free elements *)
-  if !j > 0 && !j < v.size then (
-    Array.fill v.vec !j (v.size - !j) v.vec.(0);
-  );
+  fill_with_junk_ v.vec !j (v.size - !j);
   v.size <- !j
 
 (*$T
@@ -689,7 +758,6 @@ let filter_map f v =
     to_list (filter_map f v) = CCList.filter_map f l)
 *)
 
-(* TODO: free elements *)
 let filter_map_in_place f v =
   let i = ref 0 in (* cur element *)
   let j = ref 0 in  (* cur insertion point *)
@@ -705,9 +773,7 @@ let filter_map_in_place f v =
         incr j
   done;
   (* free elements *)
-  if !j > 0 && !j < v.size then (
-    Array.fill v.vec !j (v.size - !j) v.vec.(0);
-  );
+  fill_with_junk_ v.vec !j (v.size - !j);
   v.size <- !j
 
 (*$QR

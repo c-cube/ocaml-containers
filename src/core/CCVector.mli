@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Growable, mutable vector} *)
@@ -36,9 +35,8 @@ val create : unit -> ('a, rw) t
 (** Create a new, empty vector. *)
 
 val create_with : ?capacity:int -> 'a -> ('a, rw) t
-(** Create a new vector, using the given value as a filler.
-    @param capacity the size of the underlying array.
-    {b caution}: the value will likely not be GC'd before the vector is. *)
+(** Create a new vector, the value is used to enforce the type the new vector.
+    @param capacity the size of the underlying array. *)
 
 val return : 'a -> ('a, 'mut) t
 (** Singleton vector.
@@ -53,10 +51,15 @@ val init : int -> (int -> 'a) -> ('a, 'mut) t
 val clear : ('a, rw) t -> unit
 (** Clear the content of the vector. *)
 
+val clear_and_reset : ('a, rw) t -> unit
+(** Clear the content of the vector, and deallocate the underlying array,
+    removing references to all the elements.
+    @since NEXT_RELEASE *)
+
 val ensure_with : init:'a -> ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
-    @param init if [capacity v = 0], used as a filler
-      element for the underlying array (see {!create_with}).
+    @param init if [capacity v = 0], used to enforce the type of the vector
+      (see {!create_with}).
     @since 0.14 *)
 
 val ensure : ('a, rw) t -> int -> unit
@@ -117,6 +120,10 @@ val copy : ('a,_) t -> ('a,'mut) t
 val shrink : ('a, rw) t -> int -> unit
 (** Shrink to the given size (remove elements above this size).
     Does nothing if the parameter is bigger than the current size. *)
+
+val shrink_to_fit : ('a, _) t -> unit
+(** Shrink internal array to fit the size of the vector
+    @since NEXT_RELEASE *)
 
 val member : eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 (** Is the element a member of the vector? *)
