@@ -129,13 +129,12 @@ module Poly = struct
     let first = ref true in
     Hashtbl.iter
       (fun k v ->
-         if !first then first := false else Format.pp_print_string fmt ", ";
+         if !first then first := false else Format.fprintf fmt ",@ ";
          pp_k fmt k;
          Format.pp_print_string fmt " -> ";
          pp_v fmt v;
-         Format.pp_print_cut fmt ()
       ) m;
-    Format.fprintf fmt "}@]"
+    Format.fprintf fmt "@,}@]"
 end
 
 include Poly
