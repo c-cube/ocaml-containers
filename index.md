@@ -15,9 +15,8 @@ contains a tutorial and more explanations about what Containers is about.
 
 ## by version
 
-- [development version](dev)
-
-- [current](last)
+- [current](2.8)
+- [2.8](2.7)
 - [2.7](2.7)
 - [2.6](2.6)
 - [2.5](2.5)
