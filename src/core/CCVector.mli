@@ -298,8 +298,9 @@ val fill_empty_slots_with : ('a, _) t -> 'a -> unit
 (** [fill_empty_slots_with v x] puts [x] in the slots of [v]'s underlying
     array that are not used (ie in the last [capacity v - length v] slots).
     This is useful if you removed some elements from the vector and
-    want to be sure they can be GC'd by erasing them from the vector.
+    @deprecated after 2.8, as the vector doesn't keep values alive anymore (see #279, #282, #283)
     @since 2.4 *)
+[@@ocaml.deprecated "not needed anymore, see #279,#282,#283"]
 
 val of_klist : ?init:('a, rw) t -> 'a klist -> ('a, rw) t
 val to_klist : ('a,_) t -> 'a klist
