@@ -1,6 +1,6 @@
 # OCaml-containers
 
-[Current documentation](last)
+[Current documentation](2.8)
 
 Containers is an extension of OCaml's standard library (under BSD license)
 focused on data structures, combinators and iterators, without dependencies on
@@ -15,8 +15,7 @@ contains a tutorial and more explanations about what Containers is about.
 
 ## by version
 
-- [current](2.8)
-- [2.8](2.7)
+- [2.8](2.8)
 - [2.7](2.7)
 - [2.6](2.6)
 - [2.5](2.5)
