@@ -2,7 +2,7 @@
 
 A modular, clean and powerful extension of the OCaml standard library.
 
-[(Jump to the current API documentation)](https://c-cube.github.io/ocaml-containers/last/)
+[(Jump to the current API documentation)](https://c-cube.github.io/ocaml-containers/)
 
 Containers is an extension of OCaml's standard library (under BSD license)
 focused on data structures, combinators and iterators, without dependencies on
