@@ -104,6 +104,9 @@ val of_string : string -> t
     @raise Failure in case of failure. *)
 [@@ocaml.deprecated "use of_string_exn instead"]
 
+val of_string_opt : string -> t option
+(** @since NEXT_RELEASE *)
+
 val equal_precision : epsilon:t -> t -> t -> bool
 (** Equality with allowed error up to a non negative epsilon value. *)
 

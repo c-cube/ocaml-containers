@@ -112,6 +112,9 @@ let of_int (a:int) = Stdlib.float_of_int a
 let to_string (a:float) = Stdlib.string_of_float a
 let of_string_exn (a:string) = Stdlib.float_of_string a
 let of_string (a:string) = Stdlib.float_of_string a
+let of_string_opt (a:string) =
+  try Some (Stdlib.float_of_string a)
+  with _ -> None
 
 
 let random n st = Random.State.float st n
