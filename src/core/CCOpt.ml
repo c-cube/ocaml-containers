@@ -4,6 +4,10 @@
 
 type 'a t = 'a option
 
+let bind f = function
+  | None -> None
+  | Some x -> f x
+
 let map f = function
   | None -> None
   | Some x -> Some (f x)

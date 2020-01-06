@@ -4,6 +4,10 @@
 
 type +'a t = 'a option
 
+val bind : ('a -> 'b t) -> 'a t -> 'b t
+(** [bind f o] if [o] is [Some v] then [f v] else [None]
+    @since NEXT_RELEASE *)
+
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Transform the element inside, if any. *)
 
