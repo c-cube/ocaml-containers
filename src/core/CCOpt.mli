@@ -4,10 +4,6 @@
 
 type +'a t = 'a option
 
-val bind : ('a -> 'b t) -> 'a t -> 'b t
-(** [bind f o] if [o] is [Some v] then [f v] else [None]
-    @since NEXT_RELEASE *)
-
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Transform the element inside, if any. *)
 
@@ -39,11 +35,16 @@ val return : 'a -> 'a t
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix version of {!map}. *)
 
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** Monadic bind. *)
-
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** Flip version of {!>>=}. *)
+
+val bind : 'a t -> ('a -> 'b t) -> 'b t
+(** Monadic bind.
+    [bind f o] if [o] is [Some v] then [f v] else [None]
+    @since NEXT_RELEASE *)
+
+val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+(** Infix version of {!bind}. *)
 
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [map2 f o1 o2] maps ['a option] and ['b option] to a ['c option] using [f]. *)

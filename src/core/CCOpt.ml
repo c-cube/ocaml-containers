@@ -4,10 +4,6 @@
 
 type 'a t = 'a option
 
-let bind f = function
-  | None -> None
-  | Some x -> f x
-
 let map f = function
   | None -> None
   | Some x -> Some (f x)
@@ -42,13 +38,13 @@ let equal f o1 o2 = match o1, o2 with
 
 let return x = Some x
 
-let (>>=) o f = match o with
-  | None -> None
-  | Some x -> f x
-
 let flat_map f o = match o with
   | None -> None
   | Some x -> f x
+
+let bind o f = flat_map f o
+
+let (>>=) = bind
 
 let pure x = Some x
 
