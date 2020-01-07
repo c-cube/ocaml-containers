@@ -114,7 +114,7 @@ let of_string_exn (a:string) = Stdlib.float_of_string a
 let of_string (a:string) = Stdlib.float_of_string a
 let of_string_opt (a:string) =
   try Some (Stdlib.float_of_string a)
-  with _ -> None
+  with Failure _ -> None
 
 
 let random n st = Random.State.float st n
