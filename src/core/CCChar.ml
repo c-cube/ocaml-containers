@@ -13,7 +13,7 @@ let pp_buf = Buffer.add_char
 let pp = Format.pp_print_char
 
 let of_int_exn = Char.chr
-let of_int c = try Some (of_int_exn c) with _ -> None
+let of_int c = try Some (of_int_exn c) with Invalid_argument _ -> None
 let to_int = Char.code
 
 let to_string c = String.make 1 c

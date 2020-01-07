@@ -222,11 +222,7 @@ let with_in_out ?(mode=0o644) ?(flags=[Open_creat]) filename f =
 let tee funs g () = match g() with
   | None -> None
   | Some x as res ->
-    List.iter
-      (fun f ->
-         try f x
-         with _ -> ()
-      ) funs;
+    List.iter (fun f -> f x) funs;
     res
 
 (* TODO: lines/unlines:  string gen -> string gen *)

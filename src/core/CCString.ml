@@ -589,7 +589,7 @@ let split_on_char c s: _ list =
 let split ~by s = Split.list_cpy ~by s
 
 let compare_versions a b =
-  let of_int s = try Some (int_of_string s) with _ -> None in
+  let of_int s = try Some (int_of_string s) with Failure _ -> None in
   let rec cmp_rec a b = match a(), b() with
     | None, None -> 0
     | Some _, None -> 1
