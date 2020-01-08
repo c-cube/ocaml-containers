@@ -179,8 +179,14 @@ val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
 (** Filter elements from the vector. [filter p v] leaves [v] unchanged but
     returns a new vector that only contains elements of [v] satisfying [p]. *)
 
+val filter_in_place : ('a -> bool) -> ('a, rw) t -> unit
+(** Filter elements from the vector in place.
+    @since NEXT_RELEASE *)
+
 val filter' : ('a -> bool) -> ('a, rw) t -> unit
-(** Filter elements in place. *)
+(** Alias of {!filter_in_place}
+    @deprecated since NEXT_RELEASE, use {!filter_in_place} instead. *)
+[@@ocaml.deprecated "use filter_in_place instead"]
 
 val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
 (** Fold on elements of the vector *)

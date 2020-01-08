@@ -603,7 +603,7 @@ let map_in_place f v =
 *)
 
 
-let filter' p v =
+let filter_in_place p v =
   let i = ref 0 in (* cur element *)
   let j = ref 0 in  (* cur insertion point *)
   let n = v.size in
@@ -620,15 +620,17 @@ let filter' p v =
   fill_with_junk_ v.vec !j (v.size - !j);
   v.size <- !j
 
+let filter' = filter_in_place
+
 (*$T
-  let v = 1 -- 10 in filter' (fun x->x<4) v; \
+  let v = 1 -- 10 in filter_in_place (fun x->x<4) v; \
     to_list v = [1;2;3]
 *)
 
 (*$QR
   Q.(pair (fun1 Observable.int bool) (small_list small_int)) (fun (Q.Fun (_,f),l) ->
     let v = of_list l in
-    filter' f v;
+    filter_in_place f v;
     to_list v = List.filter f l)
 *)
 
@@ -791,7 +793,7 @@ let filter_map_in_place f v =
   let w = Weak.create 1 in
   Weak.set w 0 (Some s);
   let v = of_list ["a"; s] in
-  filter' (fun s -> String.length s <= 1) v;
+  filter_in_place (fun s -> String.length s <= 1) v;
   assert_equal 1 (length v);
   assert_equal "a" (get v 0);
   Gc.major();
