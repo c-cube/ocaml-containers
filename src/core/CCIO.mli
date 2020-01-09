@@ -143,7 +143,8 @@ val with_in_out : ?mode:int -> ?flags:open_flag list ->
 
 val tee : ('a -> unit) list -> 'a gen -> 'a gen
 (** [tee funs gen] behaves like [gen], but each element is given to
-    every function [f] in [funs] at the time the element is produced. *)
+    every function [f] in [funs] at the time the element is produced.
+    The returned generator will raise any exception that [f] raises *)
 
 (** {2 File and file names}
 
