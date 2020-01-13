@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.1
+
+- add missing `CCVector.of_iter`
+
 ## 2.8
 
 ### Breaking:
