@@ -16,6 +16,11 @@ let of_int_exn = Char.chr
 let of_int c = try Some (of_int_exn c) with _ -> None
 let to_int = Char.code
 
+(*$=
+  (Some 'a') (of_int (to_int 'a'))
+  None (of_int 257)
+*)
+
 let to_string c = String.make 1 c
 
 (*$Q to_string

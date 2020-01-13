@@ -204,6 +204,11 @@ let of_string s =
   try Some (int_of_string s)
   with _ -> None
 
+(*$=
+  None (of_string "moo")
+  (Some 42) (of_string "42")
+*)
+
 type output = char -> unit
 
 (* abstract printer *)
