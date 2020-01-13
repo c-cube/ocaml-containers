@@ -303,7 +303,7 @@ val to_list : ('a,_) t -> 'a list
 
 val of_iter : ?init:('a,rw) t -> 'a iter -> ('a, rw) t
 (** Convert an Iterator to a vector.
-    @since NEXT_RELEASE *)
+    @since 2.8.1 *)
 
 val of_seq : ?init:('a,rw) t -> 'a sequence -> ('a, rw) t
 (** Convert an Iterator to a vector.
