@@ -266,7 +266,9 @@ val to_gen : 'a t -> 'a gen
 (** [to_gen as] returns a [gen] of the elements of a slice [as]. *)
 
 val to_klist : 'a t -> 'a klist
-(** [to_klist as] returns a [klist] of the elements of a slice [as]. *)
+(** [to_klist as] returns a [klist] of the elements of a slice [as].
+    @deprecated use {!to_std_seq} *)
+[@@ocaml.deprecated "use to_std_seq"]
 
 (** {2 IO} *)
 

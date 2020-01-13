@@ -301,6 +301,10 @@ val to_array : ('a,_) t -> 'a array
 val to_list : ('a,_) t -> 'a list
 (** Return a list with the elements contained in the vector. *)
 
+val of_iter : ?init:('a,rw) t -> 'a iter -> ('a, rw) t
+(** Convert an Iterator to a vector.
+    @since NEXT_RELEASE *)
+
 val of_seq : ?init:('a,rw) t -> 'a sequence -> ('a, rw) t
 (** Convert an Iterator to a vector.
     @deprecated use of_iter *)
