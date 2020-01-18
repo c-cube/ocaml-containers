@@ -209,6 +209,8 @@ let of_string s =
   (Some 42) (of_string "42")
 *)
 
+let of_string_exn = Stdlib.int_of_string
+
 type output = char -> unit
 
 (* abstract printer *)

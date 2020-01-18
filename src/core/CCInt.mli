@@ -53,6 +53,11 @@ val to_string : t -> string
 val of_string : string -> t option
 (** @since 0.13 *)
 
+val of_string_exn : string -> t
+(** Alias to {!int_of_string}.
+    @raise Failure in case of failure.
+    @since NEXT_RELEASE *)
+
 val pp_binary : t printer
 (** Print as "0b00101010".
     @since 0.20 *)
