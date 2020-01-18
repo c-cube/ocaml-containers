@@ -211,6 +211,12 @@ let of_string s =
 
 let of_string_exn = Stdlib.int_of_string
 
+let of_float = int_of_float
+
+(*$=
+  1 (of_float 1.2)
+*)
+
 type output = char -> unit
 
 (* abstract printer *)
