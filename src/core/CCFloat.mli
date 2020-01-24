@@ -74,6 +74,7 @@ val fsign : t -> t
 
 val round : t -> t
 (** [round f] returns the closest integer value, either above or below.
+    For [n + 0.5], [round] returns [n].
     @since 0.20 *)
 
 exception TrapNaN of string
