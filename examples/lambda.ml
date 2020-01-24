@@ -28,7 +28,7 @@ let rec fvars t = match t with
 let rec replace t ~var ~by = match t with
   | Var s -> if s=var then by else t
   | App (t1,t2) -> App (replace t1 ~var ~by, replace t2 ~var ~by)
-  | Lambda (v, t') when v=var -> t  (* no risk *)
+  | Lambda (v, _t') when v=var -> t  (* no risk *)
   | Lambda (v, t') -> Lambda (v, replace t' ~var ~by)
 
 (* rename [t] so that [var] doesn't occur in it *)
@@ -109,4 +109,4 @@ let print_reduction t =
 let () =
   Random.self_init ();
   let t = _random_term (5 + Random.int 20) [] in
-  PrintBox.output ~indent:2 stdout (print_reduction t)
+  PrintBox_text.output ~indent:2 stdout (print_reduction t)

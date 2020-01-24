@@ -1,10 +1,15 @@
 
-(executables
-  (names id_sexp)
+(executable
+  (name id_sexp)
   (libraries containers.sexp)
+  (modules id_sexp)
   (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -color always)
   (ocamlopt_flags :standard -O3 -color always
                    -unbox-closures -unbox-closures-factor 20)
   )
 
-
+(executable
+  (name lambda)
+  (libraries printbox)
+  (modules lambda)
+  )
