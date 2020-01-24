@@ -117,6 +117,15 @@ let get_or_failwith = function
   try ignore @@ get_or_failwith (Error "e"); false with Failure msg -> msg = "e"
 *)
 
+let get_lazy default_fn x = match x with
+  | Ok x -> x
+  | Error e -> default_fn e
+
+(*$= get_lazy
+  (get_lazy (fun _ -> 2) (Ok 1)) (1)
+  (get_lazy (fun _ -> 2) (Error "error")) (2)
+*)
+
 let map_or f e ~default = match e with
   | Ok x -> f x
   | Error _ -> default

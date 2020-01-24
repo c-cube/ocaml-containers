@@ -101,6 +101,10 @@ val get_or_failwith : ('a, string) t -> 'a
     @raise Failure with [msg] if [e = Error msg].
     @since 2.4 *)
 
+val get_lazy : ('b -> 'a) -> ('a, 'b) t -> 'a
+(** [get_lazy default_fn x] unwraps [x], but if [x = Error e] it returns [default_fr e] instead.
+    @since NEXT_RELEASE *)
+
 val map_or : ('a -> 'b) ->  ('a, 'c) t -> default:'b -> 'b
 (** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise. *)
 
