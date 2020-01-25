@@ -7,9 +7,3 @@
   (ocamlopt_flags :standard -O3 -color always
                    -unbox-closures -unbox-closures-factor 20)
   )
-
-(executable
-  (name lambda)
-  (libraries printbox)
-  (modules lambda)
-  )
