@@ -139,6 +139,11 @@ val with_in_out : ?mode:int -> ?flags:open_flag list ->
     @raise Sys_error in case of error.
     @since 0.12 *)
 
+val copy_into : ?bufsize:int -> in_channel -> out_channel -> unit
+(** [copy_into ic oc] writes the content of [ic] into [oc].
+    It is a blocking call.
+    @since NEXT_RELEASE *)
+
 (** {2 Misc for Generators} *)
 
 val tee : ('a -> unit) list -> 'a gen -> 'a gen

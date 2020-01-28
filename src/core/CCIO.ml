@@ -219,6 +219,35 @@ let with_in_out ?(mode=0o644) ?(flags=[Open_creat]) filename f =
     close_in_noerr ic;
     raise e
 
+let copy_into ?(bufsize=4_096) ic oc : unit =
+  let buf = Bytes.create bufsize in
+  let cont = ref true in
+  while !cont do
+    let n = input ic buf 0 bufsize in
+    if n > 0 then (
+      output oc buf 0 n;
+    ) else (
+      cont := false
+    )
+  done
+
+(*$QR
+   Q.(list_of_size Gen.(0 -- 40) printable_string) (fun l ->
+     let s = ref "" in
+     OUnit.bracket_tmpfile ~prefix:"test_containers1" ~mode:[Open_creat; Open_trunc]
+      (fun (name1, oc1) ->
+        write_gen ~sep:"" oc1 (Gen.of_list l);
+        flush oc1;
+        OUnit.bracket_tmpfile ~prefix:"test_containers2" ~mode:[Open_creat; Open_trunc]
+          (fun (name2, oc2) ->
+             CCIO.with_in name1 (fun ic1 -> copy_into ic1 oc2);
+             flush oc2;
+             s := with_in name2 read_all;) ();
+      ) ();
+     String.concat "" l = !s
+    )
+*)
+
 let tee funs g () = match g() with
   | None -> None
   | Some x as res ->
