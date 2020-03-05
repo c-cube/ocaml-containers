@@ -92,10 +92,6 @@ end
 
 include module type of Infix
 
-val equal : t -> t -> bool
-(** The equal function for 64-bit integers.
-    Like {!Pervasives.(=) x y)}. *)
-
 val compare : t -> t -> int
 (** The comparison function for 64-bit integers, with the same specification as
     {!Pervasives.compare}.  Along with the type [t], this function [compare]
