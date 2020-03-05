@@ -125,8 +125,6 @@ let map f l =
 
 let direct_depth_append_ = 10_000
 
-let cons x l = x::l
-
 let append l1 l2 =
   let rec direct i l1 l2 = match l1 with
     | [] -> l2
