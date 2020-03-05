@@ -79,6 +79,9 @@ end
 
 include module type of struct include StringLabels end
 
+val equal : string -> string -> bool
+(** Equality function on strings. *)
+
 val compare : string -> string -> int
 
 val is_empty : string -> bool
@@ -313,6 +316,22 @@ val exists2 : f:(char -> char -> bool) -> string -> string -> bool
 
     Those functions are deprecated in {!String} since 4.03, so we provide
     a stable alias for them even in older versions. *)
+
+val capitalize_ascii : string -> string
+(** See {!String}.
+    @since 0.18 *)
+
+val uncapitalize_ascii : string -> string
+(** See {!String}.
+    @since 0.18 *)
+
+val uppercase_ascii : string -> string
+(** See {!String}.
+    @since 0.18 *)
+
+val lowercase_ascii : string -> string
+(** See {!String}.
+    @since 0.18 *)
 
 val equal_caseless : string -> string -> bool
 (** Comparison without respect to {b ascii} lowercase.
