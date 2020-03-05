@@ -80,10 +80,6 @@ module type S = sig
       @deprecated use {!to_iter} instead. *)
   [@@ocaml.deprecated "use to_iter instead"]
 
-  val of_list : elt list -> t
-  (** Build a set from the given list of elements,
-      added in order using {!add}. *)
-
   val add_list : t -> elt list -> t
   (** @since 0.14 *)
 

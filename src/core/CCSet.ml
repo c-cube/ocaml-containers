@@ -77,10 +77,6 @@ module type S = sig
       @deprecated use {!to_iter} instead. *)
   [@@ocaml.deprecated "use to_iter instead"]
 
-  val of_list : elt list -> t
-  (** Build a set from the given list of elements,
-      added in order using {!add}. *)
-
   val add_list : t -> elt list -> t
   (** @since 0.14 *)
 
@@ -175,8 +171,6 @@ module Make(O : Map.OrderedType) = struct
   let to_seq = to_iter
 
   let add_list = List.fold_left (fun set x -> add x set)
-
-  let of_list l = add_list empty l
 
   let to_list = elements
 
