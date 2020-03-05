@@ -10,33 +10,6 @@ type 'a gen = unit -> 'a option
 type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
-(* compatibility implementations *)
-
-let init n f =
-  let buf = Bytes.init n f in
-  Bytes.unsafe_to_string buf
-
-(*$T
-  init 3 (fun i -> [|'a'; 'b'; 'c'|].(i)) = "abc"
-  init 0 (fun _ -> assert false) = ""
-*)
-
-let uppercase_ascii = String.map CCChar.uppercase_ascii
-
-let lowercase_ascii = String.map CCChar.lowercase_ascii
-
-let mapi f s = init (String.length s) (fun i -> f i s.[i])
-
-let capitalize_ascii s =
-  mapi
-    (fun i c -> if i=0 then CCChar.uppercase_ascii c else c)
-    s
-
-let uncapitalize_ascii s =
-  mapi
-    (fun i c -> if i=0 then CCChar.lowercase_ascii c else c)
-    s
-
 (* standard implementations *)
 
 include String
@@ -99,8 +72,6 @@ module type S = sig
 
       Renamed from [print] since 2.0. *)
 end
-
-let equal (a:string) b = Stdlib.(=) a b
 
 let compare_int (a : int) b = Stdlib.compare a b
 let compare = String.compare
