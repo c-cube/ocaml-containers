@@ -59,7 +59,8 @@ val of_string_exn : string -> t
     @since NEXT_RELEASE *)
 
 val of_float : float -> t
-(** @since NEXT_RELEASE *)
+(** Alias to {!int_of_float}.
+    @since NEXT_RELEASE *)
 
 val pp_binary : t printer
 (** Print as "0b00101010".
