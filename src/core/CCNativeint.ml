@@ -3,8 +3,6 @@
 open CCShims_
 include Nativeint
 
-let equal (x:t) y = Stdlib.(=) x y
-
 module Infix = struct
   let (+) = add
 

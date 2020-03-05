@@ -93,10 +93,6 @@ module Infix : sig
   val (<) : t -> t -> bool
 end
 
-val equal : t -> t -> bool
-(** The equal function for native integers.
-    Like {!Pervasives.(=) x y)}. *)
-
 val hash : t -> int
 (** Like {!Pervasives.abs (to_int x)}. *)
 
