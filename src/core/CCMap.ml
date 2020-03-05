@@ -57,11 +57,6 @@ module type S = sig
   (** [merge_safe ~f a b] merges the maps [a] and [b] together.
       @since 0.17 *)
 
-  val union : (key -> 'a -> 'a -> 'a option) -> 'a t -> 'a t -> 'a t
-  (** Union of both maps, using the function to combine bindings
-      that belong to both inputs.
-      @since 1.4 *)
-
   val of_iter : (key * 'a) iter -> 'a t
   (** Like {!of_list}.
       @since 2.8 *)
