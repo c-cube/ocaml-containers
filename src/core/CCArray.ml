@@ -24,10 +24,6 @@ let empty = [| |]
 
 let map = Array.map
 
-let map2 f a b =
-  if Array.length a <> Array.length b then invalid_arg "map2";
-  Array.init (Array.length a) (fun i -> f (Array.unsafe_get a i) (Array.unsafe_get b i))
-
 let length = Array.length
 
 let get = Array.get
@@ -352,18 +348,6 @@ let bsearch ~cmp k a =
   bsearch ~cmp:CCInt.compare 3 [| |] = `Empty
 *)
 
-let for_all p a =
-  let rec aux i =
-    i = Array.length a || (p a.(i) && aux (i+1))
-  in
-  aux 0
-
-let exists p a =
-  let rec aux i =
-    i <> Array.length a && (p a.(i) || aux (i+1))
-  in
-  aux 0
-
 let rec _for_all2 p a1 a2 i1 i2 ~len =
   len=0 || (p a1.(i1) a2.(i2) && _for_all2 p a1 a2 (i1+1) (i2+1) ~len:(len-1))
 
@@ -378,11 +362,6 @@ let rec _exists2 p a1 a2 i1 i2 ~len =
 let exists2 p a b =
   _exists2 p a b 0 0 ~len:(min (Array.length a) (Array.length b))
 
-let _iter2 f a b i j ~len =
-  for o = 0 to len-1 do
-    f (Array.get a (i+o)) (Array.get b (j+o))
-  done
-
 let _fold2 f acc a b i j ~len =
   let rec aux acc o =
     if o=len then acc
@@ -391,10 +370,6 @@ let _fold2 f acc a b i j ~len =
       aux acc (o+1)
   in
   aux acc 0
-
-let iter2 f a b =
-  if length a <> length b then invalid_arg "iter2";
-  _iter2 f a b 0 0 ~len:(Array.length a)
 
 let fold2 f acc a b =
   if length a <> length b then invalid_arg "fold2";
