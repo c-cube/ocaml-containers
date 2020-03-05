@@ -199,11 +199,6 @@ val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
     @raise Invalid_argument if the array is found to be unsorted w.r.t [cmp].
     @since 0.13 *)
 
-val for_all : ('a -> bool) -> 'a t -> bool
-(** [for_all f [|a1; ...; an|]] is [true] if all elements of the array
-    satisfy the predicate [f]. That is, it returns
-    [(f a1) && (f a2) && ... && (f an)]. *)
-
 val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (** [for_all2 f [|a1; ...; an|] [|b1; ...; bn|]] is [true] if each pair of elements [ai bi]
     satisfies the predicate [f].
@@ -212,11 +207,6 @@ val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
     @raise Invalid_argument if arrays have distinct lengths.
     Allow different types.
     @since 0.20 *)
-
-val exists : ('a -> bool) -> 'a t -> bool
-(** [exists f [|a1; ...; an|]] is [true] if at least one element of
-    the array satisfies the predicate [f]. That is, it returns
-    [(f a1) || (f a2) || ... || (f an)]. *)
 
 val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (** [exists2 f [|a1; ...; an|] [|b1; ...; bn|]] is [true] if any pair of elements [ai bi]
@@ -230,13 +220,6 @@ val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
 (** [fold2 f init a b] fold on two arrays [a] and [b] stepwise.
     It computes [f (... (f init a1 b1)...) an bn].
-
-    @raise Invalid_argument if [a] and [b] have distinct lengths.
-    @since 0.20 *)
-
-val iter2 : ('a -> 'b -> unit) -> 'a t -> 'b t -> unit
-(** [iter2 f a b] iterates on the two arrays [a] and [b] stepwise.
-    It is equivalent to  [f a0 b0; ...; f a.(length a - 1) b.(length b - 1); ()].
 
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
@@ -299,14 +282,6 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 (** [map f a] applies function [f] to all elements of [a],
     and builds an array with the results returned by [f]:
     [[| f a.(0); f a.(1); ...; f a.(length a - 1) |]]. *)
-
-val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** [map2 f a b] applies function [f] to all elements of [a] and [b],
-    and builds an array with the results returned by [f]:
-    [[| f a.(0) b.(0); ...; f a.(length a - 1) b.(length b - 1)|]].
-
-    @raise Invalid_argument if [a] and [b] have distinct lengths.
-    @since 0.20 *)
 
 val rev : 'a t -> 'a t
 (** [rev a] copies the array [a] and reverses it in place.
