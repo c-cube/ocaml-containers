@@ -79,9 +79,6 @@ end
 
 include module type of struct include StringLabels end
 
-val equal : string -> string -> bool
-(** Equality function on strings. *)
-
 val compare : string -> string -> int
 
 val is_empty : string -> bool
@@ -89,10 +86,6 @@ val is_empty : string -> bool
     @since 1.5 *)
 
 val hash : string -> int
-
-val init : int -> (int -> char) -> string
-(** Like [Array.init].
-    @since 0.3.3 *)
 
 val rev : string -> string
 (** [rev s] returns the reverse of [s].
@@ -241,18 +234,6 @@ val iter : f:(char -> unit) -> string -> unit
 (** Alias to {!String.iter}.
     @since 0.12 *)
 
-val iteri : f:(int -> char -> unit) -> string -> unit
-(** Iter on chars with their index.
-    @since 0.12 *)
-
-val map : f:(char -> char) -> string -> string
-(** Map chars.
-    @since 0.12 *)
-
-val mapi : f:(int -> char -> char) -> string -> string
-(** Map chars with their index.
-    @since 0.12 *)
-
 val filter_map : f:(char -> char option) -> string -> string
 (** [filter_map f s] calls [(f a0) (f a1) ... (f an)] where [a0 ... an] are the characters of s.
     It returns the string of characters [ci] such as [f ai = Some ci] (when [f] returns [None],
@@ -332,22 +313,6 @@ val exists2 : f:(char -> char -> bool) -> string -> string -> bool
 
     Those functions are deprecated in {!String} since 4.03, so we provide
     a stable alias for them even in older versions. *)
-
-val capitalize_ascii : string -> string
-(** See {!String}.
-    @since 0.18 *)
-
-val uncapitalize_ascii : string -> string
-(** See {!String}.
-    @since 0.18 *)
-
-val uppercase_ascii : string -> string
-(** See {!String}.
-    @since 0.18 *)
-
-val lowercase_ascii : string -> string
-(** See {!String}.
-    @since 0.18 *)
 
 val equal_caseless : string -> string -> bool
 (** Comparison without respect to {b ascii} lowercase.
