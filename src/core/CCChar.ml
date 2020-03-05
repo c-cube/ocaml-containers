@@ -4,10 +4,7 @@
 
     @since 0.14 *)
 
-open CCShims_
 include Char
-
-let equal (a:char) b = Stdlib.(=) a b
 
 let pp_buf = Buffer.add_char
 let pp = Format.pp_print_char
@@ -26,11 +23,3 @@ let to_string c = String.make 1 c
 (*$Q to_string
   (Q.string_of_size (Q.Gen.return 1)) (fun s -> to_string s.[0] = s)
 *)
-
-let lowercase_ascii = function
-  | 'A'..'Z' as c -> Char.unsafe_chr (Char.code c + 32)
-  | c -> c
-
-let uppercase_ascii = function
-  | 'a'..'z' as c -> Char.unsafe_chr (Char.code c - 32)
-  | c -> c
