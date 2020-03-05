@@ -224,6 +224,13 @@ val fold2 : f:('acc -> 'a -> 'b -> 'acc) -> init:'acc -> 'a t -> 'b t -> 'acc
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
 
+val iter2 : f:('a -> 'b -> unit) -> 'a t -> 'b t -> unit
+(** [iter2 ~f a b] iterates on the two arrays [a] and [b] stepwise.
+    It is equivalent to  [~f a0 b0; ...; ~f a.(length a - 1) b.(length b - 1); ()].
+
+    @raise Invalid_argument if [a] and [b] have distinct lengths.
+    @since 0.20 *)
+
 val shuffle : 'a t -> unit
 (** [shuffle a] randomly shuffles the array [a], in place. *)
 
@@ -282,6 +289,15 @@ val map : f:('a -> 'b) -> 'a t -> 'b t
 (** [map ~f a] applies function [f] to all elements of [a],
     and builds an array with the results returned by [~f]:
     [[| ~f a.(0); ~f a.(1); ...; ~f a.(length a - 1) |]]. *)
+
+val map2 : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** [map2 ~f a b] applies function [~f] to all elements of [a] and [b],
+    and builds an array with the results returned by [~f]:
+    [[| ~f a.(0) b.(0); ...; ~f a.(length a - 1) b.(length b - 1)|]].
+
+    @raise Invalid_argument if [a] and [b] have distinct lengths.
+    @since 0.20 *)
+
 
 val rev : 'a t -> 'a t
 (** [rev a] copies the array [a] and reverses it in place.

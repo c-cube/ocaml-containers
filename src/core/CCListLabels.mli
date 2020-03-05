@@ -35,6 +35,10 @@ val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** Infix version of [map] with reversed arguments.
     @since 0.5 *)
 
+val cons : 'a -> 'a t -> 'a t
+(** [cons x l] is [x::l].
+    @since 0.12 *)
+
 val append : 'a t -> 'a t -> 'a t
 (** Safe version of {!List.append}.
     Concatenate two lists. *)
