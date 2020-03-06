@@ -321,7 +321,7 @@ let with_temp_dir ?(mode=0o700) ?dir pat (f: string -> 'a) : 'a =
   let raise_err msg = raise (Sys_error msg) in
   let rec loop count =
     if count < 0 then (
-      raise_err "mk_temp_dir: too many failing attemps"
+      raise_err "mk_temp_dir: too many failing attempts"
     ) else (
       let dir = Filename.concat dir (pat ^ rand_digits_ ()) in
       match Unix.mkdir dir mode with
