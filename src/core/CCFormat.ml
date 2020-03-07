@@ -127,6 +127,8 @@ let hbox pp out x =
 
 let of_to_string f out x = Format.pp_print_string out (f x)
 
+let exn = of_to_string Printexc.to_string
+
 let const pp x out () = pp out x
 
 let some pp out = function

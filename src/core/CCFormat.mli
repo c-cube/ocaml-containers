@@ -29,6 +29,10 @@ val bool : bool printer
 val float3 : float printer (* 3 digits after . *)
 val float : float printer
 
+val exn : exn printer
+(** Printer using {!Printexc.to_string}.
+    @since NEXT_RELEASE *)
+
 val newline : unit printer
 (** Force newline (see {!Format.pp_force_newline}).
     @since 1.2 *)
