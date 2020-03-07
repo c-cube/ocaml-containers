@@ -249,7 +249,8 @@ val topo_sort_tag : eq:('v -> 'v -> bool) ->
   graph:('v, 'e) t ->
   'v iter ->
   'v list
-(** Same as {!topo_sort} but uses an explicit tag set. *)
+(** Same as {!topo_sort} but uses an explicit tag set.
+    @raise Has_cycle if the graph is not a DAG. *)
 
 (** {2 Lazy Spanning Tree} *)
 
