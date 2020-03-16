@@ -5,7 +5,7 @@
 type t = bool
 
 val compare : t -> t -> int
-(** [compare b1 b2] is the total ordering on booleans [b1] and [b2], similar to {!Pervasives.compare}. *)
+(** [compare b1 b2] is the total ordering on booleans [b1] and [b2], similar to {!Stdlib.compare}. *)
 
 val equal : t -> t -> bool
 (** [equal b1 b2] is [true] if [b1] and [b2] are the same. *)

@@ -483,7 +483,7 @@ let (<.>) f a = fair_app f a
 (*$T
   interleave (of_list [1;3;5]) (of_list [2;4;6]) |> to_list = [1;2;3;4;5;6]
   fair_app (of_list [(+)1; ( * ) 3]) (of_list [1; 10]) \
-    |> to_list |> List.sort Pervasives.compare = [2; 3; 11; 30]
+    |> to_list |> List.sort Stdlib.compare = [2; 3; 11; 30]
 *)
 
 (** {2 Infix} *)

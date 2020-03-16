@@ -51,14 +51,14 @@ Some of the modules have been moved to their own repository (e.g. `sequence` (no
 - many optional arguments have become mandatory, because their default value
   would be a polymorphic "magic" operator such as `(=)` or `(>=)`.
   Now these have to be specified explicitly, but during the transition
-  you can use `Pervasives.(=)` and `Pervasives.(>=)` as explicit arguments.
+  you can use `Stdlib.(=)` and `Stdlib.(>=)` as explicit arguments.
 
 - if your code contains `open Containers`, the biggest hurdle you face
   might be that operators have become monomorphic by default.
   We believe this is a useful change that prevents many subtle bugs.
   However, during migration and until you use proper combinators for
   equality (`CCEqual`), comparison (`CCOrd`), and hashing (`CCHash`),
-  you might want to add `open Pervasives` just after the `open Containers`.
+  you might want to add `open Stdlib` just after the `open Containers`.
   See [the section on monomorphic operators](#monomorphic-operators-why-and-how) for more details.
 
 ## Monomorphic operators: why, and how?
@@ -94,9 +94,9 @@ See also:
 ### Sometimes polymorphic operators still make sense!
 
 If you just want to use polymorphic operators, it's fine! You can access them
-easily by using `Pervasives.(=)`, `Pervasives.max`, etc.
+easily by using `Stdlib.(=)`, `Stdlib.max`, etc.
 
-When migrating a module, you can add `open Pervasives` on top of it to restore
+When migrating a module, you can add `open Stdlib` on top of it to restore
 the default behavior. It is, however, recommended to export an `equal` function
 (and `compare`, and `hash`) for all the public types, even if their internal
 definition is just the corresponding polymorphic operator.

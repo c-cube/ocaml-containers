@@ -6,7 +6,7 @@
 type t = int
 
 val compare : t -> t -> int
-(** The comparison function for integers with the same specification as {!Pervasives.compare}. *)
+(** The comparison function for integers with the same specification as {!Stdlib.compare}. *)
 
 val equal : t -> t -> bool
 (** Equality function for integers. *)
