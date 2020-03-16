@@ -456,7 +456,7 @@ val sorted_merge_uniq : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a l
 
 val is_sorted : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> bool
 (** [is_sorted l] returns [true] iff [l] is sorted (according to given order).
-    @param cmp the comparison function (default [Pervasives.compare]).
+    @param cmp the comparison function (default [Stdlib.compare]).
     @since 0.17 *)
 
 val sorted_insert : cmp:(('a -> 'a -> int) [@keep_label]) -> ?uniq:bool -> 'a -> 'a list -> 'a list

@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Shadow unsafe functions and operators from Pervasives} *)
+(** {1 Shadow unsafe functions and operators from Stdlib} *)
 (** @since 2.0 *)
 
 val (=) : int -> int -> bool
@@ -32,8 +32,8 @@ val (>=.) : float -> float -> bool (** @since 2.1 *)
 (** {2 Shadow Dangerous Operators} *)
 
 val (==) : [`Consider_using_CCEqual_physical]
-[@@ocaml.deprecated "Please use CCEqual.physical or Pervasives.(==) instead."]
+[@@ocaml.deprecated "Please use CCEqual.physical or Stdlib.(==) instead."]
 
 (** @since 2.1 *)
 val (!=) : [`Consider_using_CCEqual_physical]
-[@@ocaml.deprecated "Please use [not CCEqual.physical] or Pervasives.(!=) instead."]
+[@@ocaml.deprecated "Please use [not CCEqual.physical] or Stdlib.(!=) instead."]
