@@ -38,7 +38,7 @@ val newline : unit printer
     @since 1.2 *)
 
 val substring : (string * int * int) printer
-(** Print the substring [(s,i,len)], where [i] is the offset
+(** [substring (s,i,len)] prints the substring [(s,i,len)], where [i] is the offset
     in [s] and [len] the number of bytes in the substring.
     @raise Invalid_argument if the triple [(s,i,len)] does not
     describe a proper substring.

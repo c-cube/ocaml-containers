@@ -297,7 +297,8 @@ val filter_map : ('a -> 'b option) -> 'a t -> 'b t
     element of [a] is discarded. *)
 
 val monoid_product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** All combinaisons of tuples from the two arrays are passed to the function
+(** [monoid_product f a b] passes all combinaisons of tuples from the two arrays [a] and [b]
+    to the function [f].
     @since 2.8 *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b array

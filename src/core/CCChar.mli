@@ -28,7 +28,7 @@ val to_int : t -> int
     @since 1.0 *)
 
 val to_string : t -> string
-(** [to_string c] return a string containing [c]
+(** [to_string c] returns a string containing [c]
     @since 2.7 *)
 
 val pp_buf : Buffer.t -> t -> unit
