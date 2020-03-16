@@ -6,10 +6,10 @@
 include module type of CCShimsFun_
 
 val (|>) : 'a -> ('a -> 'b) -> 'b
-(** A 'pipe' operator. [x |> f] is the same as [f x]. *)
+(** [x |> f] is the same as [f x]. A 'pipe' operator. *)
 
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
-(** Composition. [compose f g x] is [g (f x)]. *)
+(** [compose f g x] is [g (f x)]. Composition. *)
 
 val compose_binop : ('a -> 'b) -> ('b -> 'b -> 'c) -> 'a -> 'a -> 'c
 (** [compose_binop f g] is [fun x y -> g (f x) (f y)].
@@ -18,19 +18,19 @@ val compose_binop : ('a -> 'b) -> ('b -> 'b -> 'c) -> 'a -> 'a -> 'c
     @since 0.6*)
 
 val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
-(** Alias to [compose]. *)
+(** [(f %> g) x] or [(%>) f g x] is [g (f x)]. Alias to [compose]. *)
 
 val (@@) : ('a -> 'b) -> 'a -> 'b
 (** [f @@ x] is the same as [f x], but right-associative.
     @since 0.5 *)
 
 val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
-(** Convert a function which accepts a pair of arguments into a function which accepts two arguments.
-    [curry f x y] is [f (x,y)]. *)
+(** [curry f x y] is [f (x,y)].
+    Convert a function which accepts a pair of arguments into a function which accepts two arguments. *)
 
 val uncurry : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
-(** Convert a function which accepts a two arguments into a function which accepts a pair of arguments.
-    [uncurry f (x,y)] is  [f x y]. *)
+(** [uncurry f (x,y)] is  [f x y].
+    Convert a function which accepts a two arguments into a function which accepts a pair of arguments. *)
 
 val tap : ('a -> _) -> 'a -> 'a
 (** [tap f x] evaluates [f x], discards it, then returns [x]. Useful
@@ -42,13 +42,13 @@ val tap : ('a -> _) -> 'a -> 'a
 *)
 
 val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
-(** Mathematical composition. [(%) f g x] is [f (g x)]. *)
+(** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
 
 val lexicographic : ('a -> 'a -> int) -> ('a -> 'a -> int) -> 'a -> 'a -> int
 (** Lexicographic combination of comparison functions. *)
 
 val finally : h:(unit -> _) -> f:(unit -> 'a) -> 'a
-(** [finally h f] calls [f ()] and returns its result. If it raises, the
+(** [finally ~h f] calls [f ()] and returns its result. If it raises, the
     same exception is raised; in {b any} case, [h ()] is called after
     [f ()] terminates.
     If [h ()] raises an exception, then this exception will be passed on and

@@ -5,9 +5,10 @@
 type t = bool
 
 val compare : t -> t -> int
-(** Total ordering on booleans, similar to {!Pervasives.compare}. *)
+(** [compare b1 b2] is the total ordering on booleans [b1] and [b2], similar to {!Pervasives.compare}. *)
 
 val equal : t -> t -> bool
+(** [equal b1 b2] is [true] if [b1] and [b2] are the same. *)
 
 val to_int : t -> int
 (** [to_int true = 1], [to_int false = 0].

@@ -15,47 +15,51 @@ type fpclass = Stdlib.fpclass =
   | FP_nan
 
 val nan : t
-(** Equal to {!Stdlib.nan}. *)
+(** [nan] is Not a Number (NaN). Equal to {!Stdlib.nan}. *)
 
 val max_value : t
-(** Positive infinity. Equal to {!Stdlib.infinity}. *)
+(** [max_value] is Positive infinity. Equal to {!Stdlib.infinity}. *)
 
 val min_value : t
-(** Negative infinity. Equal to {!Stdlib.neg_infinity}. *)
+(** [min_value] is Negative infinity. Equal to {!Stdlib.neg_infinity}. *)
 
 val max_finite_value : t
-(** Equal to {!Stdlib.max_float}. *)
+(** [max_finite_value] is the largest finite float value. Equal to {!Stdlib.max_float}. *)
 
 val epsilon : t
-(** The smallest positive float x such that [1.0 +. x <> 1.0].
+(** [epsilon] is the smallest positive float x such that [1.0 +. x <> 1.0].
     Equal to {!Stdlib.epsilon_float}. *)
 
 val is_nan : t -> bool
 (** [is_nan f] returns [true] if f is NaN, [false] otherwise. *)
 
 val add : t -> t -> t
-(** Equal to [(+.)]. *)
+(** [add x y] is equal to [x +. y]. *)
 
 val sub : t -> t -> t
-(** Equal to [(-.)]. *)
+(** [sub x y] is equal to [x -. y]. *)
 
 val neg : t -> t
-(** Equal to [(~-.)]. *)
+(** [neg x] is equal to [~-. x]. *)
 
 val abs : t -> t
-(** The absolute value of a floating-point number.
+(** [abs x] is the absolute value of the floating-point number [x].
     Equal to {!Stdlib.abs_float}. *)
 
 val scale : t -> t -> t
-(** Equal to [( *. )]. *)
+(** [scale x y] is equal to [x *. y]. *)
 
 val min : t -> t -> t
+(** [min x y] returns the min of the two given values [x] and [y]. *)
 
 val max : t -> t -> t
+(** [max x y] returns the max of the two given values [x] and [y]. *)
 
 val equal : t -> t -> bool
+(** [equal x y] is [true] if [x] and [y] are the same. *)
 
 val compare : t -> t -> int
+(** [compare x y] is {!Stdlib.compare x y}. *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
@@ -73,7 +77,7 @@ val fsign : t -> t
     @since 0.7 *)
 
 val round : t -> t
-(** [round f] returns the closest integer value, either above or below.
+(** [round x] returns the closest integer value, either above or below.
     For [n + 0.5], [round] returns [n].
     @since 0.20 *)
 
@@ -112,7 +116,7 @@ val equal_precision : epsilon:t -> t -> t -> bool
 (** Equality with allowed error up to a non negative epsilon value. *)
 
 val classify : t -> fpclass
-(** Return the class of the given floating-point number:
+(** [classify x] returns the class of the given floating-point number [x]:
     normal, subnormal, zero, infinite or nan (not a number). *)
 
 (** {2 Infix Operators}
