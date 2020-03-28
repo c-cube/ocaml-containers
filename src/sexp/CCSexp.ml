@@ -61,6 +61,9 @@ module Make(Sexp : SEXP) = struct
       false
     with Exit -> true
 
+  (* empty atoms must be escaped *)
+  let _must_escape s = String.length s = 0 || _must_escape s
+
   let rec to_buf b t =
     Sexp.match_ t
       ~atom:(fun s ->
@@ -359,6 +362,14 @@ include (Make(struct
 
 
 (*$inject
+  let sexp_bijective s = to_string s |> parse_string = Ok s
+*)
+
+(*$T
+  sexp_bijective (`List [`Atom ""])
+*)
+
+(*$inject
   let sexp_gen =
     let mkatom a = `Atom a and mklist l = `List l in
     let atom = Q.Gen.(map mkatom (string_size ~gen:printable (1 -- 30))) in
@@ -384,15 +395,10 @@ include (Make(struct
       | `List l -> Q.Iter.map mklist (Q.Shrink.list ~shrink l)
     in
     Q.make ~print ~small ~shrink gen
-
-  let rec sexp_valid  = function
-    | `Atom "" -> false
-    | `Atom _ -> true
-    | `List l -> List.for_all sexp_valid l
 *)
 
 (*$Q & ~count:100
-    sexp_gen (fun s -> sexp_valid s ==> (to_string s |> parse_string = Ok s))
+    sexp_gen sexp_bijective
 *)
 
 let atom s : t = `Atom s
