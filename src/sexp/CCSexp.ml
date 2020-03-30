@@ -366,6 +366,7 @@ include (Make(struct
 *)
 
 (*$T
+  (Ok (`List [`Atom ""]) = (parse_string "(\"\")"))
   sexp_bijective (`List [`Atom ""])
 *)
 
