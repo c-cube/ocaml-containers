@@ -933,11 +933,58 @@ module Iter_ = struct
         "oseq.iter", oseq, ();
       ]
 
+  let bench_to_array n =
+    let iter () = Iter.to_array (Iter.(1 -- n))
+    and gen () = Gen.to_array (Gen.(1 -- n))
+    and oseq () = OSeq.to_array (OSeq.(1 -- n)) in
+    B.throughputN 3 ~repeat
+      [ "iter.to_array", iter, ();
+        "gen.to_array", gen, ();
+        "oseq.to_array", oseq, ();
+      ]
+
+  let bench_cons n =
+    let gen_cons x xs =
+      let saw_x = ref false in
+      fun () ->
+        if !saw_x then (saw_x := true; Some x)
+        else xs ()
+    in
+    let xs = Array.init n Fun.id in
+    let iter () = ignore (Array.fold_right Iter.cons xs Iter.empty : int Iter.t) in
+    let gen () = ignore (Array.fold_right gen_cons xs Gen.empty : int Gen.t) in
+    let oseq () = ignore (Array.fold_right OSeq.cons xs OSeq.empty : int OSeq.t) in
+    B.throughputN 3 ~repeat
+      [ "iter.cons", iter, ();
+        "gen.cons", gen, ();
+        "oseq.cons", oseq, ();
+      ]
+
+  let bench_cons_fold n =
+    let gen_cons x xs =
+      let saw_x = ref false in
+      fun () ->
+        if !saw_x then (saw_x := true; Some x)
+        else xs ()
+    in
+    let xs = Array.init n Fun.id in
+    let iter () = Iter.fold (+) 0 (Array.fold_right Iter.cons xs Iter.empty) in
+    let gen () = Gen.fold (+) 0 (Array.fold_right gen_cons xs Gen.empty) in
+    let oseq () = OSeq.fold (+) 0 (Array.fold_right OSeq.cons xs OSeq.empty) in
+    B.throughputN 3 ~repeat
+      [ "iter.cons_fold", iter, ();
+        "gen.cons_fold", gen, ();
+        "oseq.cons_fold", oseq, ();
+      ]
+
   let () = B.Tree.register (
     "iter" @>>>
       [ "fold" @>> app_ints bench_fold [100; 1_000; 10_000; 1_000_000]
       ; "flat_map" @>> app_ints bench_flat_map [1_000; 10_000]
       ; "iter" @>> app_ints bench_iter [1_000; 10_000]
+      ; "to_array" @>> app_ints bench_to_array [1_000; 10_000]
+      ; "cons" @>> app_ints bench_cons [1_000; 10_000; 100_000]
+      ; "cons_fold" @>> app_ints bench_cons_fold [1_000; 10_000; 100_000]
       ])
 end
 
