@@ -17,9 +17,11 @@ let repeat = 3
 (* composition *)
 let (%%) f g x = f (g x)
 
+let opaque_ignore x = ignore (Sys.opaque_identity x)
+
 module L = struct
   let bench_iter ?(time=2) n =
-    let f i = ignore (Sys.opaque_identity i) in
+    let f i = opaque_ignore i in
     let l = CCList.(1 -- n) in
     let ral = CCRAL.of_list l in
     let vec = CCFun_vec.of_list l in
@@ -105,10 +107,10 @@ module L = struct
     let s1 = Sek.Persistent.of_array 0 (Array.of_list l1) in
     let s2 = Sek.Persistent.of_array 0 (Array.of_list l2) in
     let s3 = Sek.Persistent.of_array 0 (Array.of_list l3) in
-    let bench_list l1 l2 l3 () = ignore (Sys.opaque_identity (List.(append (append l1 l2) l3))) in
-    let bench_cclist l1 l2 l3 () = ignore (Sys.opaque_identity (CCList.(append (append l1 l2) l3))) in
-    let bench_funvec l1 l2 l3 () = ignore (Sys.opaque_identity (CCFun_vec.(append (append l1 l2) l3))) in
-    let bench_sek l1 l2 l3 () = ignore (Sys.opaque_identity (Sek.Persistent.(concat (concat l1 l2) l3))) in
+    let bench_list l1 l2 l3 () = opaque_ignore (List.(append (append l1 l2) l3)) in
+    let bench_cclist l1 l2 l3 () = opaque_ignore (CCList.(append (append l1 l2) l3)) in
+    let bench_funvec l1 l2 l3 () = opaque_ignore (CCFun_vec.(append (append l1 l2) l3)) in
+    let bench_sek l1 l2 l3 () = opaque_ignore (Sek.Persistent.(concat (concat l1 l2) l3)) in
     B.throughputN time ~repeat
       [ "CCList.append", bench_list l1 l2 l3, ()
       ; "List.append", bench_cclist l1 l2 l3, ()
@@ -146,17 +148,17 @@ module L = struct
     let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
     let sek = Sek.Persistent.of_array 0 (Array.of_list l) in
     let bench_list l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (List.nth l i)) done
+      for i = 0 to n-1 do opaque_ignore (List.nth l i) done
     and bench_map l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Int_map.find i l)) done
+      for i = 0 to n-1 do opaque_ignore (Int_map.find i l) done
     and bench_ral l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.get_exn l i)) done
+      for i = 0 to n-1 do opaque_ignore (CCRAL.get_exn l i) done
     and bench_funvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCFun_vec.get_exn i l)) done
+      for i = 0 to n-1 do opaque_ignore (CCFun_vec.get_exn i l) done
     and bench_batvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.get l i)) done
+      for i = 0 to n-1 do opaque_ignore (BatVect.get l i) done
     and bench_sek l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Sek.Persistent.get l i)) done
+      for i = 0 to n-1 do opaque_ignore (Sek.Persistent.get l i) done
     in
     B.throughputN time ~repeat
       [ "List.nth", bench_list l, ()
@@ -175,17 +177,17 @@ module L = struct
     let sek = Sek.Persistent.of_array 0 (Array.of_list l) in
     let map = List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l in
     let bench_map l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Int_map.add i (-i) l)) done
+      for i = 0 to n-1 do opaque_ignore (Int_map.add i (-i) l) done
     and bench_ral l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (CCRAL.set l i (-i))) done
+      for i = 0 to n-1 do opaque_ignore (CCRAL.set l i (-i)) done
 (*
     and bench_funvec l () =
-      for _i = 0 to n-1 do Sys.opaque_identity (ignore ((* TODO *))) done
+      for _i = 0 to n-1 do opaque_ignore ((* TODO *)) done
 *)
     and bench_batvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (BatVect.set l i (-i))) done
+      for i = 0 to n-1 do opaque_ignore (BatVect.set l i (-i)) done
     and bench_sek l () =
-      for i = 0 to n-1 do Sys.opaque_identity (ignore (Sek.Persistent.set l i (-i))) done
+      for i = 0 to n-1 do opaque_ignore (Sek.Persistent.set l i (-i)) done
     in
     B.throughputN time ~repeat
       [ "Map.add", bench_map map, ()
@@ -202,18 +204,18 @@ module L = struct
     let map = ref Int_map.empty in
     let sek = ref (Sek.Persistent.create 0) in
     let bench_map l () =
-      for i = 0 to n-1 do Sys.opaque_identity (l := Int_map.add i i !l) done
+      for i = 0 to n-1 do l := Int_map.add i i !l done; opaque_ignore l
   (*
       and bench_ral l () =
         (* Note: Better implementation probably possible *)
-        for i = 0 to n-1 do Sys.opaque_identity (l := CCRAL.append !l (CCRAL.return i)) done
+        for i = 0 to n-1 do l := CCRAL.append !l (CCRAL.return i) done; opaque_ignore l
   *)
     and bench_funvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (l := CCFun_vec.push i !l) done
+      for i = 0 to n-1 do l := CCFun_vec.push i !l done; opaque_ignore l
     and bench_batvec l () =
-      for i = 0 to n-1 do Sys.opaque_identity (l := BatVect.append i !l) done
+      for i = 0 to n-1 do l := BatVect.append i !l done; opaque_ignore l
     and bench_sek l () =
-      for i = 0 to n-1 do Sys.opaque_identity (l := Sek.Persistent.push Sek.front !l i) done
+      for i = 0 to n-1 do l := Sek.Persistent.push Sek.front !l i done; opaque_ignore l
     in
     B.throughputN time ~repeat
       [ "Map.add", bench_map map, ()
@@ -232,19 +234,19 @@ module L = struct
     let sek = Sek.Persistent.of_array 0 (Array.of_list l) in
     let bench_map l () =
       let l = ref l in
-      for i = 0 to n-1 do Sys.opaque_identity (l := Int_map.remove i !l) done
+      for i = 0 to n-1 do l := Int_map.remove i !l done; opaque_ignore l
     and bench_ral l () =
       let l = ref l in
-      for _ = 0 to n-1 do Sys.opaque_identity (l := CCRAL.tl !l) done
+      for _ = 0 to n-1 do l := CCRAL.tl !l done; opaque_ignore l
     and bench_funvec l () =
       let l = ref l in
-      for _ = 0 to n-1 do Sys.opaque_identity (l := snd (CCFun_vec.pop_exn !l)) done
+      for _ = 0 to n-1 do l := snd (CCFun_vec.pop_exn !l) done; opaque_ignore l
     and bench_batvec l () =
       let l = ref l in
-      for _ = 0 to n-1 do Sys.opaque_identity (l := snd (BatVect.pop !l)) done
+      for _ = 0 to n-1 do l := snd (BatVect.pop !l) done; opaque_ignore l
     and bench_sek l () =
       let l = ref l in
-      for _ = 0 to n-1 do Sys.opaque_identity (l := snd (Sek.Persistent.pop Sek.back !l)) done
+      for _ = 0 to n-1 do l := snd (Sek.Persistent.pop Sek.back !l) done; opaque_ignore l
     in
     B.throughputN time ~repeat
       [ "Map.remove", bench_map map, ()
