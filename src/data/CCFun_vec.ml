@@ -250,6 +250,18 @@ let pop (v:'a t) : ('a * 'a t) option =
   ()
 *)
 
+(*$QR
+    Q.(pair int (small_list int)) (fun (x,l) ->
+        let q0 = of_list l in
+        let q = push x q0 in
+        assert_equal (length q) (length q0+1);
+        let y, q = pop_exn q in
+        assert_equal x y;
+        assert_equal (to_list q) (to_list q0);
+        true
+      )
+    *)
+
 let iteri ~f (m : 'a t) : unit =
   (* basically, a 32-way BFS traversal.
      The queue contains subtrees to explore, along with their high_idx_ offsets *)
