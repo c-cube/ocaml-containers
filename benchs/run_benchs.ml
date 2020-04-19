@@ -804,11 +804,11 @@ module Iter_ = struct
   let bench_fold n =
     let iter () = Iter.fold (+) 0 Iter.(0 --n) in
     let gen () = Gen.fold (+) 0 Gen.(0 -- n) in
-    let klist () = OSeq.fold (+) 0 OSeq.(0 -- n) in
+    let oseq () = OSeq.fold (+) 0 OSeq.(0 -- n) in
     B.throughputN 3 ~repeat
       [ "iter.fold", iter, ();
         "gen.fold", gen, ();
-        "klist.fold", klist, ();
+        "oseq.fold", oseq, ();
       ]
 
   let bench_flat_map n =
@@ -823,7 +823,7 @@ module Iter_ = struct
     )
     in
     B.throughputN 3 ~repeat
-      [ "sequence.flat_map", iter, ();
+      [ "iter.flat_map", iter, ();
         "gen.flat_map", gen, ();
         "oseq.flat_map", oseq, ();
       ]
