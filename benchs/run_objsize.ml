@@ -1,4 +1,4 @@
-module Deque = Core_kernel.Deque
+(* module Deque = Core_kernel.Deque *)
 module Int_map = Map.Make(CCInt)
 module Int_set = Set.Make(CCInt)
 
@@ -29,7 +29,7 @@ let types = [
   "Sek.Persistent", (fun n -> Obj.magic @@ List.fold_left (Sek.Persistent.push front) (Sek.Persistent.create dummy) (ns n));
   "Sek.Ephemeral", (fun n -> Obj.magic @@ let c = Sek.Ephemeral.create dummy in iter_range n (Sek.Ephemeral.push front c); c);
   "CCVector", (fun n -> Obj.magic @@ let c = CCVector.create () in iter_range n (CCVector.push c); c);
-  "Core_kernel.Deque", (fun n -> Obj.magic @@ let c = Deque.create () in iter_range n (Deque.enqueue_back c); c);
+  (* "Core_kernel.Deque", (fun n -> Obj.magic @@ let c = Deque.create () in iter_range n (Deque.enqueue_back c); c); *)
   "Base.Queue", (fun n -> Obj.magic @@ let c = Base.Queue.create () in iter_range n (Base.Queue.enqueue c); c);
   "Stdlib.Queue", (fun n -> Obj.magic @@ Queue.of_seq (OSeq.init ~n id));
   "CCQueue", (fun n -> Obj.magic @@ CCDeque.of_list (ns n));

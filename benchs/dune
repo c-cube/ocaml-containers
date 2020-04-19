@@ -2,7 +2,7 @@
   (names run_benchs run_bench_hash run_objsize)
   (libraries containers containers.data containers.iter
              containers.thread benchmark gen iter qcheck oseq
-             batteries base core_kernel sek)
+             batteries base sek)
   (flags :standard -warn-error -3 -safe-string -color always -open CCShims_)
   (ocamlopt_flags :standard -O3 -color always
                    -unbox-closures -unbox-closures-factor 20)
