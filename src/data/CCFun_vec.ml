@@ -226,10 +226,10 @@ let pop_ i (m:'a t) : 'a * 'a t =
     let sub = A.get m.subs x in
     let y, sub' = aux l sub in
     if is_empty sub' then (
-      assert (i+1 = A.length m.subs); (* last one *)
+      assert (x+1 = A.length m.subs); (* last one *)
       y, {m with size=m.size-1; subs=A.pop m.subs}
     ) else (
-      y, {m with size=m.size-1; subs=A.set ~mut:false m.subs x sub}
+      y, {m with size=m.size-1; subs=A.set ~mut:false m.subs x sub'}
     )
   in
   aux (split_idx i) m
@@ -240,6 +240,15 @@ let pop_exn (v:'a t) : 'a * 'a t =
 
 let pop (v:'a t) : ('a * 'a t) option =
   if v.size=0 then None else Some (pop_ (v.size-1) v)
+
+(* regression test for #298 *)
+(*$R
+  let rec consume x = match CCFun_vec.pop x with
+    | None -> () | Some (_, x) -> consume x
+  in
+  consume (of_list (CCList.(1 -- 100)));
+  ()
+*)
 
 let iteri ~f (m : 'a t) : unit =
   (* basically, a 32-way BFS traversal.
