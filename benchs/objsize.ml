@@ -23,12 +23,12 @@ open Obj
     comparisons are done using physical equality. *)
 
 module H = Hashtbl.Make(
-  struct 
-    type t = Obj.t 
-    let equal = (==) 
+  struct
+    type t = Obj.t
+    let equal = (==)
     let hash o = Hashtbl.hash (magic o : int)
   end)
-	     
+
 let node_table = (H.create 257 : unit H.t)
 
 let in_table o = try H.find node_table o; true with Not_found -> false
@@ -53,15 +53,15 @@ let rec traverse t =
       if tag < no_scan_tag then begin
 	count := !count + 1 + n;
 	for i = 0 to n - 1 do
-      	  let f = field t i in 
+      	  let f = field t i in
 	  if is_block f then traverse f
 	done
       end else if tag = string_tag then
-	count := !count + 1 + n 
+	count := !count + 1 + n
       else if tag = double_tag then
 	count := !count + size_of_double
       else if tag = double_array_tag then
-	count := !count + 1 + size_of_double * n 
+	count := !count + 1 + size_of_double * n
       else
 	incr count
     end
