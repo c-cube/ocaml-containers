@@ -6,6 +6,4 @@
   (wrapped false)
   (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string)
   (ocamlopt_flags :standard (:include ../flambda.flags))
-  (libraries compiler-libs.common containers containers.data
-             containers.unix containers.sexp containers.iter)
-  )
+  (libraries compiler-libs.common containers containers.unix containers.sexp))

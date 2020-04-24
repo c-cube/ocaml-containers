@@ -1,10 +1,11 @@
 PROMOTE=$(if $(shell ocamlc -version |grep '4\.0[012]\.[0-9][0-9]*'), \
 	      --ignore-promoted-rules, )
+PACKAGES=containers,containers-data,containers-thread
 
 all: build test
 
 build:
-	dune build $(PROMOTE) @install
+	dune build $(PROMOTE) @install -p $(PACKAGES)
 
 test: build
 	dune runtest --no-buffer --force

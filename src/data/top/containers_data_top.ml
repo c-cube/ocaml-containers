@@ -1,3 +1,4 @@
+
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 type 'a printer = Format.formatter -> 'a -> unit
@@ -17,6 +18,10 @@ let install_printers = List.iter install_printer
 
 let () =
   install_printers
-    [ "CCHashtbl.pp";
-      "CCSexp.pp";
+    [ "CCBV.pp";
+      "CCDeque.pp";
+      "CCFQueue.pp";
+      "CCFun_vec.pp";
+      "CCIntMap.pp";
+      "CCPersistentArray.pp";
     ]
