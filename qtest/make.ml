@@ -16,6 +16,7 @@ let is_code file = is_suffix ~sub:".ml" file || is_suffix ~sub:".mli" file
 
 let do_not_test file =
   assert (not (is_suffix ~sub:"make.ml" file));
+  str_sub ~sub:"Labels.ml" file ||
   is_suffix ~sub:"containers.ml" file ||
   is_suffix ~sub:"containers_top.ml" file ||
   is_suffix ~sub:"mkflags.ml" file ||
@@ -37,9 +38,11 @@ let list_files dir : string list =
   in
   f ~prefix:"" [] dir
 
-let run_qtest target =
+let run_qtest target dirs =
   let files =
-    list_files "../src/"
+    dirs
+    |> List.map list_files
+    |> List.flatten
     |> List.map (Printf.sprintf "'%s'")
     |> String.concat " "
   in
@@ -51,8 +54,9 @@ let run_qtest target =
 
 let () =
   let target = ref "" in
+  let dirs = ref [] in
   Arg.parse ["-target", Arg.Set_string target, " set target"]
-    (fun _ -> ()) "make.ml -target file";
+    (fun d -> dirs := d :: !dirs) "make.ml -target file dir+";
   if !target="" then failwith "please specify a target";
   if Sys.command "which qtest > /dev/null" <> 0 then (
     (* create empty file *)
@@ -60,5 +64,5 @@ let () =
     output_string out "";
     close_out out;
   ) else (
-    run_qtest !target
+    run_qtest !target !dirs
   )

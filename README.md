@@ -172,6 +172,7 @@ In a toplevel, using ocamlfind:
 ```ocaml
 # #use "topfind";;
 # #require "containers";;
+# #require "containers-data";;
 # CCList.flat_map;;
 - : ('a -> 'b list) -> 'a list -> 'b list = <fun>
 # open Containers;;  (* optional *)

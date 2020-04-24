@@ -1,16 +1,13 @@
 
 (executable
   (name make)
-  (modules make)
-  )
+  (flags :standard -warn-error -a)
+  (modules make))
 
 (rule
   (targets run_qtest.ml)
   (deps make.bc (source_tree ../src))
-  ;(libraries (qtest qcheck))
-  (action
-    (run ./make.bc -target %{targets}))
-  )
+  (action (run ./make.bc -target %{targets} ../src/core ../src/unix/)))
 
 (executable
   (name run_qtest)
@@ -18,14 +15,45 @@
   (modules run_qtest)
   ; disable some warnings in qtests
   (flags :standard -warn-error -a -w -3-33-35-27-39 -nolabels)
-  (libraries iter gen qcheck containers containers.unix
-             containers.data containers.thread containers.iter
-             containers.sexp uutf)
-  )
+  (libraries iter gen qcheck containers containers.unix unix uutf))
 
 (alias
   (name    runtest)
-  (deps    run_qtest.exe)
-  (action  (run %{deps}))
-  )
+  (package containers)
+  (action  (run ./run_qtest.exe)))
 
+(rule
+  (targets run_qtest_data.ml)
+  (deps make.bc (source_tree ../src/data))
+  (action (run ./make.bc -target %{targets} ../src/data)))
+
+(executable
+  (name run_qtest_data)
+  (modes native)
+  (modules run_qtest_data)
+  ; disable some warnings in qtests
+  (flags :standard -warn-error -a -w -3-33-35-27-39)
+  (libraries iter gen qcheck containers containers-data))
+
+(alias
+  (name    runtest)
+  (package containers-data)
+  (action  (run ./run_qtest_data.exe)))
+
+(rule
+  (targets run_qtest_thread.ml)
+  (deps make.bc (source_tree ../src/threads))
+  (action (run ./make.bc -target %{targets} ../src/threads)))
+
+(executable
+  (name run_qtest_thread)
+  (modes native)
+  (modules run_qtest_thread)
+  ; disable some warnings in qtests
+  (flags :standard -warn-error -a -w -3-33-35-27-39)
+  (libraries qcheck containers containers-thread iter threads))
+
+(alias
+  (name    runtest)
+  (package containers-thread)
+  (action  (run ./run_qtest_thread.exe)))
