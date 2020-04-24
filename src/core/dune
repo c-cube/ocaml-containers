@@ -16,8 +16,9 @@
  (public_name containers)
  (wrapped false)
  (modules :standard \ mkshims)
- (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -nolabels -open
+ (flags :standard :standard -warn-error -a+8 -safe-string -nolabels -open
    CCMonomorphic)
- (ocamlopt_flags
-  (:include ../flambda.flags))
+ (ocamlopt_flags (:include ../flambda.flags))
  (libraries seq containers.monomorphic))
+
+(ocamllex (modules CCSexp_lex))

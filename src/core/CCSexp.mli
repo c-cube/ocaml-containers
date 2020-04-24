@@ -1,6 +1,9 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Handling S-expressions} *)
+(** {1 Handling S-expressions}
+
+    @since 3.0 moved into containers-core, previously in [containers.sexp]
+*)
 
 type 'a or_error = ('a, string) result
 type 'a sequence = ('a -> unit) -> unit
@@ -34,5 +37,11 @@ type t = [
 
 include S with type t := t
 
-val atom : string -> t  
+val equal : t -> t -> bool
+(** @since 3.0 *)
+
+val compare : t -> t -> int
+(** @since 3.0 *)
+
+val atom : string -> t
 (** Build an atom directly from a string. *)

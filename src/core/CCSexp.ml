@@ -23,7 +23,6 @@ module Make(Sexp : SEXP) = struct
   let of_int x = Sexp.atom (string_of_int x)
   let of_float x = Sexp.atom (string_of_float x)
   let of_bool x = Sexp.atom (string_of_bool x)
-  let atom x = Sexp.atom x
   let of_unit = Sexp.list []
   let of_list l = Sexp.list l
   let of_rev_list l = Sexp.list (List.rev l)

@@ -45,6 +45,9 @@ module Vector = CCVector
 module Monomorphic = CCMonomorphic
 module Utf8_string = CCUtf8_string
 
+module Sexp = CCSexp
+module Sexp_intf = CCSexp_intf
+
 module Stdlib = CCShims_.Stdlib
 
 include Monomorphic
