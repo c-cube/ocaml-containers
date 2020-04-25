@@ -20,7 +20,6 @@ depends: [
   "iter" { with-test }
   "gen" { with-test }
   "uutf" { with-test }
-  "mdx" { with-test & >= "1.5.0" & < "2.0.0" }
   "odoc" { with-doc }
 ]
 depopts: [

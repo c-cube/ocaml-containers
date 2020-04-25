@@ -18,6 +18,7 @@ depends: [
   "ounit" { with-test }
   "iter" { with-test }
   "gen" { with-test }
+  "mdx" { with-test & >= "1.5.0" & < "2.0.0" }
   "odoc" { with-doc }
 ]
 tags: [ "containers" "RAL" "functional" "vector" "okasaki" ]
