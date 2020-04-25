@@ -4,7 +4,7 @@
 open CCShims_
 
 type t = int
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 let equal (a:int) b = Stdlib.(=) a b
 
@@ -80,8 +80,8 @@ module Infix : sig
   val (>) : t -> t -> bool
   val (<=) : t -> t -> bool
   val (>=) : t -> t -> bool
-  val (--) : t -> t -> t sequence
-  val (--^) : t -> t -> t sequence
+  val (--) : t -> t -> t iter
+  val (--^) : t -> t -> t iter
   val (+) : t -> t -> t
   val (-) : t -> t -> t
   val (~-) : t -> t

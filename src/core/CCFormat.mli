@@ -5,7 +5,7 @@
 
     @since 0.8 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 (* include Format, and alias all its types.
    see https://discuss.ocaml.org/t/extend-existing-module/1389/4
@@ -69,7 +69,8 @@ val string_quoted : string printer
 val list : ?sep:unit printer -> 'a printer -> 'a list printer
 val array : ?sep:unit printer -> 'a printer -> 'a array printer
 val arrayi : ?sep:unit printer -> (int * 'a) printer -> 'a array printer
-val seq : ?sep:unit printer -> 'a printer -> 'a sequence printer
+val seq : ?sep:unit printer -> 'a printer -> 'a Seq.t printer
+val iter : ?sep:unit printer -> 'a printer -> 'a iter printer
 
 val opt : 'a printer -> 'a option printer
 (** [opt pp] prints options as follows:

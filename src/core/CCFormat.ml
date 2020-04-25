@@ -3,7 +3,7 @@
 
 (** {1 Helpers for Format} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 include Format
 
@@ -77,6 +77,14 @@ let arrayi ?(sep=return ",@ ") pp fmt a =
   done
 
 let seq ?(sep=return ",@ ") pp fmt seq =
+  let first = ref true in
+  CCSeq.iter
+    (fun x ->
+       if !first then first := false else sep fmt ();
+       pp fmt x)
+    seq
+
+let iter ?(sep=return ",@ ") pp fmt seq =
   let first = ref true in
   seq
     (fun x ->

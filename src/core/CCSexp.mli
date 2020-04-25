@@ -6,7 +6,6 @@
 *)
 
 type 'a or_error = ('a, string) result
-type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 (** {2 Abstract representation of S-expressions}

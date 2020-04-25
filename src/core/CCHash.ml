@@ -7,7 +7,7 @@ type hash = int
 
 type 'a t = 'a -> hash
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
@@ -72,9 +72,14 @@ let list_comm f l =
   let a = Array.of_list l in
   array_comm f a
 
-let seq f seq =
+let iter f seq =
   let h = ref 0x43 in
   seq (fun x -> h := combine f !h x);
+  !h
+
+let seq f seq =
+  let h = ref 0x43 in
+  Seq.iter (fun x -> h := combine f !h x) seq;
   !h
 
 let gen f g =

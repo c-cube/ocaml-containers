@@ -10,60 +10,54 @@ type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
-(** {2 Common Signature} *)
+include module type of struct include StringLabels end
 
-module type S = sig
-  type t
+val length : t -> int
+(** Return the length (number of characters) of the given string. *)
 
-  val length : t -> int
-  (** Return the length (number of characters) of the given string. *)
+val blit : src:t -> src_pos:int -> dst:Bytes.t -> dst_pos:int -> len:int -> unit
+(** Like {!String.blit}.
+    Compatible with the [-safe-string] option.
+    @raise Invalid_argument if indices are not valid. *)
 
-  val blit : src:t -> src_pos:int -> dst:Bytes.t -> dst_pos:int -> len:int -> unit
-  (** Like {!String.blit}.
-      Compatible with the [-safe-string] option.
-      @raise Invalid_argument if indices are not valid. *)
+(*
+val blit_immut : t -> int -> t -> int -> int -> string
+(** Immutable version of {!blit}, returning a new string.
+    [blit a i b j len] is the same as [b], but in which
+    the range [j, ..., j+len] is replaced by [a.[i], ..., a.[i + len]].
+    @raise Invalid_argument if indices are not valid. *)
+   *)
 
-  (*
-  val blit_immut : t -> int -> t -> int -> int -> string
-  (** Immutable version of {!blit}, returning a new string.
-      [blit a i b j len] is the same as [b], but in which
-      the range [j, ..., j+len] is replaced by [a.[i], ..., a.[i + len]].
-      @raise Invalid_argument if indices are not valid. *)
-     *)
+val fold : f:('a -> char -> 'a) -> init:'a -> t -> 'a
+(** Fold on chars by increasing index.
+    @since 0.7 *)
 
-  val fold : f:('a -> char -> 'a) -> init:'a -> t -> 'a
-  (** Fold on chars by increasing index.
-      @since 0.7 *)
+(** {2 Conversions} *)
 
-  (** {2 Conversions} *)
+val to_gen : t -> char gen
+(** Return the [gen] of characters contained in the string. *)
 
-  val to_gen : t -> char gen
-  (** Return the [gen] of characters contained in the string. *)
+val to_iter : t -> char iter
+(** Return the [iter] of characters contained in the string.
+    @since 2.8 *)
 
-  val to_iter : t -> char iter
-  (** Return the [iter] of characters contained in the string.
-      @since 2.8 *)
+val to_std_seq : t -> char Seq.t
+(** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
+    @since 2.8
+*)
 
-  val to_std_seq : t -> char Seq.t
-  (** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
-      @since 2.8
-  *)
+val to_list : t -> char list
+(** Return the list of characters contained in the string. *)
 
-  val to_list : t -> char list
-  (** Return the list of characters contained in the string. *)
+val pp_buf : Buffer.t -> t -> unit
+(** Renamed from [pp] since 2.0. *)
 
-  val pp_buf : Buffer.t -> t -> unit
-  (** Renamed from [pp] since 2.0. *)
+val pp : Format.formatter -> t -> unit
+(** Print the string within quotes.
 
-  val pp : Format.formatter -> t -> unit
-  (** Print the string within quotes.
-
-      Renamed from [print] since 2.0. *)
-end
+    Renamed from [print] since 2.0. *)
 
 (** {2 Strings} *)
-
-include module type of struct include StringLabels end
 
 val equal : string -> string -> bool
 (** Equality function on strings. *)
@@ -235,8 +229,6 @@ val for_all : f:(char -> bool) -> string -> bool
 val exists : f:(char -> bool) -> string -> bool
 (** True for some char?
     @since 0.12 *)
-
-include S with type t := string
 
 val drop_while : f:(char -> bool) -> t -> t
 (** [drop_while f s] discards any characters starting from the left,
@@ -436,33 +428,3 @@ val edit_distance : string -> string -> int
 (** Edition distance between two strings. This satisfies the classical
     distance axioms: it is always positive, symmetric, and satisfies
     the formula [distance a b + distance b c >= distance a c]. *)
-
-(** {2 Slices}
-
-    A contiguous part of a string *)
-
-module Sub : sig
-  type t = string * int * int
-  (** A string, an offset, and the length of the slice. *)
-
-  val make : string -> pos:int -> len:(int [@keep_label]) -> t
-
-  val full : string -> t
-  (** Full string. *)
-
-  val copy : t -> string
-  (** Make a copy of the substring. *)
-
-  val underlying : t -> string
-
-  val sub : t -> int -> int -> t
-  (** Sub-slice. *)
-
-  val get : t -> int -> char
-  (** [get s i] gets the [i]-th element, or fails.
-      @raise Invalid_argument if the index is not within [0 ... length - 1].
-      @since 1.2 *)
-
-  include S with type t := t
-
-end

@@ -4,9 +4,8 @@
 (** {1 Drop-In replacement to Stdlib} *)
 
 module Array = CCArrayLabels
-module Array_slice = CCArray_sliceLabels
 module Bool = CCBool
-module Char = Char
+module Char = CCChar
 module Equal = CCEqualLabels
 module Float = CCFloat
 module Format = CCFormat
@@ -39,10 +38,16 @@ module Parse = CCParse
 module Random = CCRandom
 module Ref = CCRef
 module Result = CCResult
+module Seq = CCSeq
 module Set = CCSet
 module String = CCStringLabels
 module Vector = CCVector
 module Monomorphic = CCMonomorphic
 module Utf8_string = CCUtf8_string
+
+module Sexp = CCSexp
+module Sexp_intf = CCSexp_intf
+
+module Stdlib = CCShims_.Stdlib
 
 include Monomorphic

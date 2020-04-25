@@ -1,6 +1,6 @@
 
 type 'a or_error = ('a, string) result
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 (** {2 Abstract representation of S-expressions}
@@ -73,8 +73,8 @@ module type S = sig
 
   val to_file : string -> t -> unit
 
-  val to_file_seq : string -> t sequence -> unit
-  (** Print the given sequence of expressions to a file. *)
+  val to_file_iter : string -> t iter -> unit
+  (** Print the given iter of expressions to a file. *)
 
   val to_chan : out_channel -> t -> unit
 

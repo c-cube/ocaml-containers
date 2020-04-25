@@ -5,7 +5,7 @@
 open CCShims_
 
 type 'a or_error = ('a, string) result
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 module type SEXP = CCSexp_intf.SEXP
@@ -118,13 +118,13 @@ module Make(Sexp : SEXP) = struct
     pp fmt t;
     Format.pp_print_flush fmt ()
 
-  let to_file_seq filename seq =
+  let to_file_iter filename seq =
     _with_out filename
       (fun oc ->
          seq (fun t -> to_chan oc t; output_char oc '\n')
       )
 
-  let to_file filename t = to_file_seq filename (fun k -> k t)
+  let to_file filename t = to_file_iter filename (fun k -> k t)
 
   (** {2 Parsing} *)
 

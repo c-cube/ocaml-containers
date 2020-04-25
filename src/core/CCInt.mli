@@ -38,7 +38,7 @@ val rem : t -> t -> t
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 val random : int -> t random_gen
 val random_small : t random_gen
@@ -77,19 +77,19 @@ val max : t -> t -> t
 (** The maximum of two integers.
     @since 0.17 *)
 
-val range_by : step:t -> t -> t -> t sequence
+val range_by : step:t -> t -> t -> t iter
 (** [range_by ~step i j] iterates on integers from [i] to [j] included,
     where the difference between successive elements is [step].
     Use a negative [step] for a decreasing list.
     @raise Invalid_argument if [step=0].
     @since 1.2 *)
 
-val range : t -> t -> t sequence
+val range : t -> t -> t iter
 (** [range i j] iterates on integers from [i] to [j] included . It works
     both for decreasing and increasing ranges.
     @since 1.2 *)
 
-val range' : t -> t -> t sequence
+val range' : t -> t -> t iter
 (** Like {!range} but the second bound is excluded.
     For instance [range' 0 5 = Iter.of_list [0;1;2;3;4]].
     @since 1.2 *)
@@ -117,11 +117,11 @@ module Infix : sig
   val (>=) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (--) : t -> t -> t sequence
+  val (--) : t -> t -> t iter
   (** Alias to {!range}.
       @since 1.2 *)
 
-  val (--^) : t -> t -> t sequence
+  val (--^) : t -> t -> t iter
   (** Alias to {!range'}.
       @since 1.2 *)
 

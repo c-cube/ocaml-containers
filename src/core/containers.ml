@@ -4,7 +4,6 @@
 (** {1 Drop-In replacement to Stdlib} *)
 
 module Array = CCArray
-module Array_slice = CCArray_slice
 module Bool = CCBool
 module Char = CCChar
 module Equal = CCEqual
