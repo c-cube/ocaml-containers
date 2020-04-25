@@ -18,39 +18,44 @@
 include module type of struct include Int32 end
 
 val ( + ) : t -> t -> t
-(** Addition. *)
+(** [x + y] is the sum of [x] and [y]. 
+    Addition. *)
 
 val ( - ) : t -> t -> t
-(** Subtraction. *)
+(** [x - y] is the difference of [x] and [y].
+    Subtraction. *)
 
 val ( ~- ) : t -> t
-(** Unary negation. *)
+(** [~- x] is the negation of [x].
+    Unary negation. *)
 
 val ( * ) : t -> t -> t
-(** Multiplication. *)
+(** [ x * y] is the product of [x] and [y].
+    Multiplication. *)
 
 val ( / ) : t -> t -> t
-(** Integer division.  Raise [Division_by_zero] if the second
-    argument is zero.  This division rounds the real quotient of
+(** [x / y] is the integer quotient of [x] and [y].
+    Integer division.  Raise [Division_by_zero] if the second
+    argument [y] is zero.  This division rounds the real quotient of
     its arguments towards zero, as specified for {!Stdlib.(/)}. *)
 
 val ( mod ) : t -> t -> t
-(** [x mod y ] is the integer remainder.
+(** [x mod y] is the integer remainder of [x / y].
     If [y <> zero], the result of [x mod y] satisfies the following property:
     [x = ((x / y) * y) + (x mod y)].
     If [y = 0], [x mod y] raises [Division_by_zero]. *)
 
 val ( land ) : t -> t -> t
-(** Bitwise logical and. *)
+(** [x land y] is the bitwise logical and of [x] and [y]. *)
 
 val ( lor ) : t -> t -> t
-(** Bitwise logical or. *)
+(** [x lor y] is the bitwise logical or of [x] and [y]. *)
 
 val ( lxor ) : t -> t -> t
-(** Bitwise logical exclusive or. *)
+(** [x lxor y] is the bitwise logical exclusive or of [x] and [y]. *)
 
 val lnot : t -> t
-(** Bitwise logical negation. *)
+(** [lnot x] is the bitwise logical negation of [x] (the bits of [x] are inverted). *)
 
 val ( lsl ) : t -> int -> t
 (** [ x lsl y] shifts [x] to the left by [y] bits, filling in with zeroes.
@@ -93,35 +98,39 @@ end
 include module type of Infix
 
 val hash : t -> int
-(** Like {!Stdlib.abs (to_int x)}. *)
+(** [hash x] computes the hash of [x].
+    Like {!Stdlib.abs (to_int x)}. *)
 
 (** {2 Conversion} *)
 
 val to_int : t -> int
-(** Convert the given 32-bit integer (type [int32]) to an
+(** [to_int x] converts the given 32-bit integer [x] (type [int32]) into an
     integer (type [int]). On 32-bit platforms, the 32-bit integer
     is taken modulo 2{^31}, i.e. the high-order bit is lost
     during the conversion. On 64-bit platforms, the conversion is exact. *)
 
 val of_int : int -> t
-(** Alias to {!Int32.of_int}. *)
+(** [of_int x] converts the given integer [x] (type [int]) into an
+    32-bit integer (type [int32]).
+    Alias to {!Int32.of_int}. *)
 
 val to_float : t -> float
-(** Convert the given 32-bit integer to a floating-point number. *)
+(** [to_float x] converts the given 32-bit integer [x] 
+    into a floating-point number (type [float]). *)
 
 val of_float : float -> t
-(** Alias to {!Int32.of_float}.
-    Convert the given floating-point number to a 32-bit integer,
+(** [of_float x] converts the given floating-point number [x] into a 32-bit integer,
     discarding the fractional part (truncate towards 0).
     The result of the conversion is undefined if, after truncation, the number
-    is outside the range \[{!CCInt32.min_int}, {!CCInt32.max_int}\]. *)
+    is outside the range \[{!CCInt32.min_int}, {!CCInt32.max_int}\]. 
+    Alias to {!Int32.of_float}. *)
 
 val to_string : t -> string
-(** Return the string representation of its argument, in signed decimal. *)
+(** [to_string x] returns the string representation of its argument [x], in signed decimal. *)
 
 val of_string_exn : string -> t
-(** Alias to {!Int32.of_string}.
-    Convert the given string to a 32-bit integer.
+(** [of_string_exn s] converts the given string [s] into a 32-bit integer.
+    Alias to {!Int32.of_string}.
     The string is read in decimal (by default, or if the string
     begins with [0u]) or in hexadecimal, octal or binary if the
     string begins with [0x], [0o] or [0b] respectively.
@@ -138,8 +147,8 @@ val of_string_exn : string -> t
     exceeds the range of integers representable in type [int32]. *)
 
 val of_string : string -> t option
-(** Safe version of {!of_string_exn}.
+(** [of_string s] is the safe version of {!of_string_exn}.
     Like {!of_string_exn}, but return [None] instead of raising. *)
 
 val of_string_opt : string -> t option
-(** Alias to {!of_string}. *)
+(** [of_string_opt s] is an alias to {!of_string}. *)
