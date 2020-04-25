@@ -7,7 +7,7 @@
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ord = 'a -> 'a -> int
 type 'a eq = 'a -> 'a -> bool
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 type 'a t = 'a ref
 
@@ -41,6 +41,7 @@ val equal : 'a eq -> 'a t eq
 
 val to_list : 'a t -> 'a list
 
-val to_seq : 'a t -> 'a sequence
+val to_iter : 'a t -> 'a iter
+(** @since 3.0 *)
 
 val pp : 'a printer -> 'a t printer

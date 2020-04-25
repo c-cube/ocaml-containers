@@ -5,11 +5,6 @@
 
 (** {1 Basic String Utils} *)
 
-
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
@@ -55,16 +50,6 @@ module type S = sig
   (** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
       @since 2.8
   *)
-
-  val to_seq : t -> char sequence
-  (** Return the [sequence] of characters contained in the string.
-      @deprecated use {!to_iter} instead *)
-  [@@ocaml.deprecated "use to_iter or to_std_seq"]
-
-  val to_klist : t -> char klist
-  (** Return the [klist] of characters contained in the string.
-      @deprecated use {!to_std_seq} instead *)
-  [@@ocaml.deprecated "use to_std_seq"]
 
   val to_list : t -> char list
   (** Return the list of characters contained in the string. *)
@@ -115,16 +100,6 @@ val of_iter : char iter -> string
 val of_std_seq : char Seq.t -> string
 (** Convert a [sequence] of characters to a string.
     @since 2.8 *)
-
-val of_seq : char sequence -> string
-(** Convert a [sequence] of characters to a string.
-    @deprecated use {!of_iter} instead *)
-[@@ocaml.deprecated "use of_iter"]
-
-val of_klist : char klist -> string
-(** Convert a [klist] of characters to a string.
-    @deprecated use {!of_std_seq} instead *)
-[@@ocaml.deprecated "use of_std_seq"]
 
 val of_list : char list -> string
 (** Convert a list of characters to a string. *)
@@ -377,19 +352,11 @@ module Split : sig
 
   val gen : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) gen
 
-  val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) sequence
+  val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) iter
   (** @since 2.8 *)
 
   val std_seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
   (** @since 2.8 *)
-
-  val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) sequence
-  (** deprecated, use {!iter} instead *)
-  [@@ocaml.deprecated "use iter"]
-
-  val klist : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) klist
-  (** deprecated, use {!std_seq} instead *)
-  [@@ocaml.deprecated "use std_seq"]
 
   (** {4 Copying functions}
 
@@ -400,19 +367,11 @@ module Split : sig
 
   val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
 
-  val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
+  val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string iter 
   (** @since 2.8 *)
 
   val std_seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string Seq.t
   (** @since 2.8 *)
-
-  val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string sequence
-  (** deprecated, use {!iter_cpy} instead *)
-  [@@ocaml.deprecated "use iter_cpy"]
-
-  val klist_cpy : ?drop:drop_if_empty -> by:string -> string -> string klist
-  (** deprecated, use {!std_seq_cpy} instead *)
-  [@@ocaml.deprecated "use std_seq_cpy"]
 
   val left : by:string -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the leftmost part of

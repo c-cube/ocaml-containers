@@ -93,10 +93,6 @@ let sample_without_duplicates (type elt) ~cmp k (rng:elt t) st=
   if k<=0 then invalid_arg "sample_without_duplicates";
   aux S.empty k
 
-(* deprecated *)
-let sample_without_replacement ~compare k rng =
-  sample_without_duplicates ~cmp:compare k rng
-
 let list_seq l st = List.map (fun f -> f st) l
 
 let split i st =
@@ -123,7 +119,7 @@ let _diff_list ~last l =
 let split_list i ~len st =
   if len <= 1 then invalid_arg "Random.split_list";
   if i >= len then (
-    let xs = sample_without_replacement ~compare (len-1) (int_range 1 (i-1)) st in
+    let xs = sample_without_duplicates ~cmp:compare (len-1) (int_range 1 (i-1)) st in
     _diff_list ~last:i (0::xs)
   ) else
     None

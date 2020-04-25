@@ -284,7 +284,7 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
     let b' = Byte.copy b in \
-    try Byte.iteri b (fun i c -> if Byte.get_front b' i <> c then raise Exit); true with Exit -> false)
+    try Byte.iteri b ~f:(fun i c -> if Byte.get_front b' i <> c then raise Exit); true with Exit -> false)
   *)
 
   (*$Q
@@ -481,7 +481,7 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     let s_len = Bytes.length s in \
     let b = Byte.create (max s_len 64) in \
     Byte.blit_from b s 0 s_len; \
-    try Byte.iteri b (fun i c -> if Byte.get_front b i <> c then raise Exit); \
+    try Byte.iteri b ~f:(fun i c -> if Byte.get_front b i <> c then raise Exit); \
       true with Exit -> false)
   *)
 

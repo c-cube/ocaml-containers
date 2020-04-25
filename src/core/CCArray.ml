@@ -3,8 +3,6 @@
 (** {1 Array utils} *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a sequence = ('a -> unit) -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
@@ -549,7 +547,6 @@ let to_std_seq a =
 *)
 
 let to_iter a k = iter k a
-let to_seq = to_iter
 
 let to_gen a =
   let k = ref 0 in
@@ -560,8 +557,6 @@ let to_gen a =
       incr k;
       Some x
     ) else None
-
-let to_klist a = _to_klist a 0 (Array.length a)
 
 (** {2 Generic Functions} *)
 

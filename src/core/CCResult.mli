@@ -6,11 +6,6 @@
 
     @since 0.16 *)
 
-
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
@@ -221,7 +216,8 @@ val map_l : ('a -> ('b, 'err) t) -> 'a list -> ('b list, 'err) t
 
 val fold_l : ('b -> 'a -> ('b, 'err) t) -> 'b -> 'a list -> ('b, 'err) t
 
-val fold_seq : ('b -> 'a -> ('b, 'err) t) -> 'b -> 'a sequence -> ('b, 'err) t
+val fold_iter : ('b -> 'a -> ('b, 'err) t) -> 'b -> 'a iter -> ('b, 'err) t
+(** @since 3.0 *)
 
 (** {2 Misc} *)
 
@@ -267,10 +263,6 @@ val to_iter : ('a, _) t -> 'a iter
 
 val to_std_seq : ('a, _) t -> 'a Seq.t
 (** @since 2.8 *)
-
-val to_seq : ('a, _) t -> 'a sequence
-(** @deprecated use {!to_iter} or {!to_std_seq} *)
-[@@ocaml.deprecated "use to_iter or to_std_seq"]
 
 type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
 

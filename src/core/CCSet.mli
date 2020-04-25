@@ -5,11 +5,6 @@
 
     @since 0.9 *)
 
-
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
@@ -64,21 +59,6 @@ module type S = sig
   val to_iter : t -> elt iter
   (** [to_iter t] converts the set [t] to a [iter] of the elements.
       @since 2.8 *)
-
-  val of_seq : elt sequence -> t
-  (** Build a set from the given [sequence] of elements.
-      @deprecated use {!of_iter} instead. *)
-  [@@ocaml.deprecated "use of_iter instead"]
-
-  val add_seq : t -> elt sequence -> t
-  (** @since 0.14
-      @deprecated use {!add_iter} instead. *)
-  [@@ocaml.deprecated "use add_iter instead"]
-
-  val to_seq : t -> elt sequence
-  (** [to_seq t] converts the set [t] to a [sequence] of the elements.
-      @deprecated use {!to_iter} instead. *)
-  [@@ocaml.deprecated "use to_iter instead"]
 
   val add_list : t -> elt list -> t
   (** @since 0.14 *)

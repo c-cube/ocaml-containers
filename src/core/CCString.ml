@@ -7,7 +7,6 @@ open CCShims_
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a sequence = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 (* standard implementations *)
@@ -50,16 +49,6 @@ module type S = sig
   (** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
       @since 2.8
   *)
-
-  val to_seq : t -> char sequence
-  (** Return the [sequence] of characters contained in the string.
-      @deprecated use {!to_iter} instead *)
-  [@@ocaml.deprecated "use to_iter or to_std_seq"]
-
-  val to_klist : t -> char klist
-  (** Return the [klist] of characters contained in the string.
-      @deprecated use {!to_std_seq} instead *)
-  [@@ocaml.deprecated "use to_std_seq"]
 
   val to_list : t -> char list
   (** Return the list of characters contained in the string. *)
@@ -848,8 +837,6 @@ let of_gen g =
 
 let to_iter s k = String.iter k s
 
-let to_seq = to_iter
-
 let rec _to_std_seq s i len () =
   if len=0 then Seq.Nil
   else Seq.Cons (s.[i], _to_std_seq s (i+1)(len-1))
@@ -865,8 +852,6 @@ let of_std_seq seq =
   let b = Buffer.create 32 in
   Seq.iter (Buffer.add_char b) seq;
   Buffer.contents b
-
-let of_seq = of_iter
 
 let rec _to_klist s i len () =
   if len=0 then `Nil

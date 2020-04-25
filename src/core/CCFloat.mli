@@ -103,12 +103,6 @@ val of_string_exn : string -> t
     @raise Failure in case of failure.
     @since 1.2 *)
 
-val of_string : string -> t
-(** Alias to {!float_of_string}.
-    @deprecated since 1.2, use {!of_string_exn} instead.
-    @raise Failure in case of failure. *)
-[@@ocaml.deprecated "use of_string_exn instead"]
-
 val of_string_opt : string -> t option
 (** @since NEXT_RELEASE *)
 

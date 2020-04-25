@@ -4,7 +4,6 @@
 (** {1 Wrapper around Set} *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
 module type OrderedType = Set.OrderedType
@@ -61,21 +60,6 @@ module type S = sig
   val to_iter : t -> elt iter
   (** [to_iter t] converts the set [t] to a [iter] of the elements.
       @since 2.8 *)
-
-  val of_seq : elt sequence -> t
-  (** Build a set from the given [sequence] of elements.
-      @deprecated use {!of_iter} instead. *)
-  [@@ocaml.deprecated "use of_iter instead"]
-
-  val add_seq : t -> elt sequence -> t
-  (** @since 0.14
-      @deprecated use {!add_iter} instead. *)
-  [@@ocaml.deprecated "use add_iter instead"]
-
-  val to_seq : t -> elt sequence
-  (** [to_seq t] converts the set [t] to a [sequence] of the elements.
-      @deprecated use {!to_iter} instead. *)
-  [@@ocaml.deprecated "use to_iter instead"]
 
   val add_list : t -> elt list -> t
   (** @since 0.14 *)
@@ -165,10 +149,6 @@ module Make(O : Map.OrderedType) = struct
 
   let of_iter s = add_iter empty s
   let to_iter s yield = iter yield s
-
-  let add_seq = add_iter
-  let of_seq = of_iter
-  let to_seq = to_iter
 
   let add_list = List.fold_left (fun set x -> add x set)
 

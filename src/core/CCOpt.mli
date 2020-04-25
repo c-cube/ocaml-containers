@@ -186,17 +186,20 @@ val to_result_lazy : (unit -> 'e) -> 'a t -> ('a, 'e) result
 val of_result : ('a, _) result -> 'a t
 (** @since 1.2 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val random : 'a random_gen -> 'a t random_gen
 
-val choice_seq : 'a t sequence -> 'a t
+val choice_iter : 'a t iter -> 'a t
 (** [choice_seq s] is similar to {!choice}, but works on sequences.
     It returns the first [Some x] occurring in [s], or [None] otherwise.
-    @since 0.13 *)
+    @since 3.0 *)
+
+val choice_seq : 'a t Seq.t -> 'a t
+(** @since 3.0 *)
 
 val to_gen : 'a t -> 'a gen
 
@@ -204,14 +207,8 @@ val to_std_seq : 'a t -> 'a Seq.t
 (** Same as {!Stdlib.Option.to_seq}
     @since 2.8 *)
 
-val to_iter : 'a t -> 'a sequence
+val to_iter : 'a t -> 'a iter
 (** Returns an internal iterator, like in the library [Iter].
     @since 2.8 *)
-
-val to_seq : 'a t -> 'a sequence
-(** Previous name for {!to_iter}
-    @deprecated use {!to_iter} or {!to_std_seq} instead *)
-[@@ocaml.deprecated "use to_iter or to_std_seq"]
-
 
 val pp : 'a printer -> 'a t printer

@@ -8,7 +8,7 @@
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ord = 'a -> 'a -> int
 type 'a eq = 'a -> 'a -> bool
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 type 'a t = 'a ref
 
@@ -38,6 +38,6 @@ let swap a b =
   b := x
 
 let to_list r = [!r]
-let to_seq r yield = yield !r
+let to_iter r yield = yield !r
 
 let pp pp_x out r = pp_x out !r

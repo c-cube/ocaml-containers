@@ -59,7 +59,7 @@ end
 (*$QR & ~count:30
   Q.(list_of_size Gen.(return 1_000) int) (fun l ->
     (* put elements into a heap *)
-    let h = H.of_seq (Iter.of_list l) in
+    let h = H.of_iter (Iter.of_list l) in
     OUnit.assert_equal 1_000 (H.size h);
     let l' = extract_list h in
     is_sorted l'
@@ -70,10 +70,10 @@ end
 (*$QR & ~count:30
   Q.(list_of_size Gen.(return 1_000) int) (fun l ->
     (* put elements into a heap *)
-    let h = H.of_seq (Iter.of_list l) in
+    let h = H.of_iter (Iter.of_list l) in
     let h = H.filter (fun x->x mod 2=0) h in
     OUnit.assert_bool "all odd"
-      (H.to_seq h |> Iter.for_all (fun x -> x mod 2 = 0));
+      (H.to_iter h |> Iter.for_all (fun x -> x mod 2 = 0));
     let l' = extract_list h in
     is_sorted l'
   )
@@ -82,8 +82,8 @@ end
 (*$QR
   Q.(list_of_size Gen.(return 1_000) int) (fun l ->
     (* put elements into a heap *)
-    let h = H.of_seq (Iter.of_list l) in
-    let l' = H.to_seq_sorted h |> Iter.to_list in
+    let h = H.of_iter (Iter.of_list l) in
+    let l' = H.to_iter_sorted h |> Iter.to_list in
     is_sorted l'
   )
 *)
@@ -153,7 +153,7 @@ module type S = sig
 
   (** {2 Conversions}
 
-      The interface of [of_gen], [of_seq], [of_klist]
+      The interface of [of_gen], [of_iter], [of_klist]
       has changed since 0.16 (the old signatures
       are now [add_seq], [add_gen], [add_klist]). *)
 
@@ -180,11 +180,6 @@ module type S = sig
   (** Like {!add_list}.
       @since 2.8 *)
 
-  val add_seq : t -> elt sequence -> t (** @since 0.16 *)
-  (** Like {!add_list}.
-      @deprecated use {!add_iter} or {!add_std_seq} instead *)
-  [@@ocaml.deprecated "use add_iter. For the standard Seq, see {!add_std_seq}"]
-
   val of_iter : elt iter -> t
   (** Build a heap from a given [iter]. Complexity: [O(n log n)].
       @since 2.8 *)
@@ -192,11 +187,6 @@ module type S = sig
   val of_std_seq : elt Seq.t -> t
   (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
       @since 2.8 *)
-
-  val of_seq : elt sequence -> t
-  (** Build a heap from a given [sequence]. Complexity: [O(n log n)].
-      @deprecated use {!of_iter} or {!of_std_seq} instead *)
-  [@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
 
   val to_iter : t -> elt iter
   (** Return a [iter] of the elements of the heap.
@@ -206,11 +196,6 @@ module type S = sig
   (** Return a [Seq.t] of the elements of the heap.
       @since 2.8 *)
 
-  val to_seq : t -> elt sequence
-  (** Return a [sequence] of the elements of the heap.
-      @deprecated use {!to_iter} or {!to_std_seq} instead *)
-  [@@ocaml.deprecated "use to_iter. For the standard Seq, see {!to_std_seq}"]
-
   val to_iter_sorted : t -> elt iter
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
@@ -218,12 +203,6 @@ module type S = sig
   val to_std_seq_sorted : t -> elt Seq.t
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
-
-  val to_seq_sorted : t -> elt sequence
-  (** Iterate on the elements, in increasing order.
-      @since 1.1
-      @deprecated use {!to_iter_sorted} or {!to_std_seq_sorted} instead *)
-  [@@ocaml.deprecated "use to_iter_sorted or to_std_seq_sorted"]
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 
@@ -417,11 +396,6 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let rec to_std_seq_sorted h () = match take h with
     | None -> Seq.Nil
     | Some (h', x) -> Seq.Cons (x, to_std_seq_sorted h')
-
-  let add_seq = add_iter
-  let of_seq = of_iter
-  let to_seq = to_iter
-  let to_seq_sorted = to_iter_sorted
 
   let rec add_klist h l = match l() with
     | `Nil -> h

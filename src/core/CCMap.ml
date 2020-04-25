@@ -4,7 +4,6 @@
 (** {1 Extensions of Standard Map} *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
 module type OrderedType = Map.OrderedType
@@ -80,20 +79,6 @@ module type S = sig
   val to_iter : 'a t -> (key * 'a) iter
   (** Like {!to_list}.
       @since 2.8 *)
-
-  val of_seq : (key * 'a) sequence -> 'a t
-  (** Like {!of_list}.
-      @deprecated use {!of_iter} instead. *)
-  [@@ocaml.deprecated "use of_iter instead"]
-
-  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
-  (** @since 0.14
-      @deprecated use {!add_iter} instead. *)
-  [@@ocaml.deprecated "use add_iter instead"]
-
-  val to_seq : 'a t -> (key * 'a) sequence
-  (** @deprecated use {!to_iter} instead. *)
-  [@@ocaml.deprecated "use to_iter instead"]
 
   val of_list : (key * 'a) list -> 'a t
   (** Build a map from the given list of bindings [k_i -> v_i],
@@ -224,10 +209,6 @@ module Make(O : Map.OrderedType) = struct
 
   let to_iter m yield =
     iter (fun k v -> yield (k,v)) m
-
-  let add_seq = add_iter
-  let of_seq = of_iter
-  let to_seq = to_iter
 
   let keys m yield =
     iter (fun k _ -> yield k) m

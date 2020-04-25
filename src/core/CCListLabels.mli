@@ -3,11 +3,6 @@
 
 (** {1 Complements to list} *)
 
-
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
@@ -731,11 +726,6 @@ val to_std_seq : 'a t -> 'a Seq.t
 (** Return a [Seq.t] of the elements of the list.
     @since 2.8 *)
 
-val to_seq : 'a t -> 'a sequence
-(** Return a [sequence] of the elements of the list.
-    @deprecated use {!to_iter} or {!to_std_seq} instead *)
-[@@ocaml.deprecated "use to_iter or to_std_seq"]
-
 val of_iter : 'a iter -> 'a t
 (** Build a list from a given [iter].
     In the result, elements appear in the same order as they did in the source [iter].
@@ -749,12 +739,6 @@ val of_std_seq : 'a Seq.t -> 'a t
 (** Build a list from a given [Seq.t].
     In the result, elements appear in the same order as they did in the source [seq].
     @since 2.8 *)
-
-val of_seq : 'a sequence -> 'a t
-(** Build a list from a given [sequence].
-    In the result, elements appear in the same order as they did in the source [sequence].
-    @deprecated use {!of_iter} or {!of_std_seq} instead *)
-[@@ocaml.deprecated "use of_iter or of_std_seq"]
 
 val to_gen : 'a t -> 'a gen
 (** Return a [gen] of the elements of the list. *)

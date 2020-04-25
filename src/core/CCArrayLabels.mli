@@ -2,16 +2,10 @@
 
 (** {1 Array utils} *)
 
-
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
 
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
@@ -143,26 +137,11 @@ val find_map : f:('a -> 'b option) -> 'a t -> 'b option
     @since 1.3, but only
     @since 2.1 with labels *)
 
-val find : f:('a -> 'b option) -> 'a t -> 'b option
-(** [find ~f a] is an alias to {!find_map}.
-    @deprecated since 1.3, use {!find_map} instead.
-    The version with labels is
-    @deprecated since 2.1, use {!find_map} instead. *)
-[@@ocaml.deprecated "use find_map instead"]
-
 val find_map_i : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** [find_map_i ~f a] is like {!find_map}, but the index of the element is also passed
     to the predicate function [~f].
     @since 1.3, but only
     @since 2.1 with labels *)
-
-val findi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
-(** [findi ~f a] is an alias to {!find_map_i}.
-    @since 0.3.4
-    @deprecated since 1.3, use {!find_map_i} instead.
-    The version with labels is
-    @deprecated since 2.1, use {!find_map_i} instead. *)
-[@@ocaml.deprecated "use find_map_i instead"]
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx ~f a] returns [Some (i,x)] where [x] is the [i]-th element of [a],
@@ -260,18 +239,8 @@ val to_std_seq : 'a t -> 'a Seq.t
     @since 2.8
 *)
 
-val to_seq : 'a t -> 'a sequence
-(** Same as {!to_iter}.
-    @deprecated use {!to_iter} instead *)
-[@@ocaml.deprecated "use to_iter or to_std_seq"]
-
 val to_gen : 'a t -> 'a gen
 (** [to_gen a] returns a [gen] of the elements of an array [a]. *)
-
-val to_klist : 'a t -> 'a klist
-(** [to_klist] returns a [klist] of the elements of an array [a].
-    @deprecated use {!to_std_seq} *)
-[@@ocaml.deprecated "use to_std_seq"]
 
 (** {2 IO} *)
 

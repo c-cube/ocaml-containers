@@ -1666,7 +1666,6 @@ end
 (** {2 Conversions} *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Format.formatter -> 'a -> unit
@@ -1739,11 +1738,8 @@ let of_std_seq l =
   direct direct_depth_default_ l
 
 (*$Q
-  Q.(list int) (fun l -> of_seq (to_seq l) = l)
+  Q.(list int) (fun l -> of_iter (to_iter l) = l)
 *)
-
-let to_seq = to_iter
-let of_seq = of_iter
 
 let to_gen l =
   let l = ref l in

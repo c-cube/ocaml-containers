@@ -19,10 +19,6 @@
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option
 
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
@@ -53,12 +49,6 @@ val to_iter : ?idx:int -> t -> uchar iter
 (** Iterator of unicode codepoints.
     @param idx offset where to start the decoding.
     @since 2.8 *)
-
-val to_seq : ?idx:int -> t -> uchar sequence
-(** Iter of unicode codepoints.
-    @param idx offset where to start the decoding.
-    @deprecated use {!to_iter} or {!to_std_seq} instead *)
-[@@ocaml.deprecated "use to_iter or to_std_seq instead"]
 
 val to_std_seq : ?idx:int -> t -> uchar Seq.t
 (** Iter of unicode codepoints.
@@ -94,13 +84,9 @@ val of_std_seq : uchar Seq.t -> t
 (** Build a string from unicode codepoints
     @since 2.8 *)
 
-val of_iter : uchar sequence -> t
+val of_iter : uchar iter -> t
 (** Build a string from unicode codepoints
     @since 2.8 *)
-
-val of_seq : uchar sequence -> t
-(** @deprecated use {!of_seq} or {!of_std_seq} instead *)
-[@@ocaml.deprecated "use of_iter or of_std_seq instead"]
 
 val of_gen : uchar gen -> t
 

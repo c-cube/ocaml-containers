@@ -39,6 +39,7 @@ module Parse = CCParse
 module Random = CCRandom
 module Ref = CCRef
 module Result = CCResult
+module Seq = CCSeq
 module Set = CCSet
 module String = CCString
 module Vector = CCVector

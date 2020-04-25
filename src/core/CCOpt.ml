@@ -177,7 +177,7 @@ end
 
 include Infix
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
@@ -187,7 +187,7 @@ let random g st =
 
 exception ExitChoice
 
-let choice_seq s =
+let choice_iter s =
   let r = ref None in
   begin try
       s (function
@@ -199,9 +199,20 @@ let choice_seq s =
   !r
 
 (*$T
-  choice_seq (Iter.of_list [None; Some 1; Some 2]) = Some 1
-  choice_seq Iter.empty = None
-  choice_seq (Iter.repeat None |> Iter.take 100) = None
+  choice_iter (Iter.of_list [None; Some 1; Some 2]) = Some 1
+  choice_iter Iter.empty = None
+  choice_iter (Iter.repeat None |> Iter.take 100) = None
+*)
+
+let rec choice_seq s = match s() with
+  | Seq.Nil -> None
+  | Seq.Cons (Some x, _) -> Some x
+  | Seq.Cons (None, tl) -> choice_seq tl
+
+(*$T
+  choice_seq (CCSeq.of_list [None; Some 1; Some 2]) = Some 1
+  choice_seq CCSeq.empty = None
+  choice_seq (CCSeq.repeat None |> CCSeq.take 100) = None
 *)
 
 let to_gen o =

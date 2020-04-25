@@ -603,7 +603,7 @@ module Make(Key : KEY)
   (*$R
     let m = M.of_list [1, 1; 2, 2; 5, 5] in
     let m' = M.update 4
-      (function
+      ~f:(function
       | None -> Some 4
       | Some _ -> Some 0
       ) m

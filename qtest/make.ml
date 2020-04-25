@@ -18,7 +18,7 @@ let do_not_test file =
   assert (not (is_suffix ~sub:"make.ml" file));
   str_sub ~sub:"Labels.ml" file ||
   is_suffix ~sub:"containers.ml" file ||
-  is_suffix ~sub:"containers_top.ml" file ||
+  is_suffix ~sub:"_top.ml" file ||
   is_suffix ~sub:"mkflags.ml" file ||
   is_suffix ~sub:"mkshims.ml" file ||
   is_suffix ~sub:"unlabel.ml" file ||

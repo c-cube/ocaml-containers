@@ -549,8 +549,8 @@ let of_seq seq =
   bv
 
 (*$T
-  CCList.range 0 10 |> CCList.to_seq |> of_seq |> to_seq \
-    |> CCList.of_seq |> List.sort CCOrd.compare = CCList.range 0 10
+  CCList.range 0 10 |> CCList.to_iter |> of_seq |> to_seq \
+    |> CCList.of_iter |> List.sort CCOrd.compare = CCList.range 0 10
 *)
 
 let pp out bv =

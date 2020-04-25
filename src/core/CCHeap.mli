@@ -2,7 +2,7 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Leftist Heaps}
-    
+
     Implementation following Okasaki's book. *)
 
 
@@ -126,11 +126,6 @@ module type S = sig
   (** Like {!add_list}.
       @since 2.8 *)
 
-  val add_seq : t -> elt sequence -> t (** @since 0.16 *)
-  (** Like {!add_list}.
-      @deprecated use {!add_iter} or {!add_std_seq} instead *)
-  [@@ocaml.deprecated "use add_iter. For the standard Seq, see {!add_std_seq}"]
-
   val of_iter : elt iter -> t
   (** Build a heap from a given [iter]. Complexity: [O(n log n)].
       @since 2.8 *)
@@ -138,11 +133,6 @@ module type S = sig
   val of_std_seq : elt Seq.t -> t
   (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
       @since 2.8 *)
-
-  val of_seq : elt sequence -> t
-  (** Build a heap from a given [sequence]. Complexity: [O(n log n)].
-      @deprecated use {!of_iter} or {!of_std_seq} instead *)
-  [@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
 
   val to_iter : t -> elt iter
   (** Return a [iter] of the elements of the heap.
@@ -152,11 +142,6 @@ module type S = sig
   (** Return a [Seq.t] of the elements of the heap.
       @since 2.8 *)
 
-  val to_seq : t -> elt sequence
-  (** Return a [sequence] of the elements of the heap.
-      @deprecated use {!to_iter} or {!to_std_seq} instead *)
-  [@@ocaml.deprecated "use to_iter. For the standard Seq, see {!to_std_seq}"]
-
   val to_iter_sorted : t -> elt iter
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
@@ -164,12 +149,6 @@ module type S = sig
   val to_std_seq_sorted : t -> elt Seq.t
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
-
-  val to_seq_sorted : t -> elt sequence
-  (** Iterate on the elements, in increasing order.
-      @since 1.1
-      @deprecated use {!to_iter_sorted} or {!to_std_seq_sorted} instead *)
-  [@@ocaml.deprecated "use to_iter_sorted or to_std_seq_sorted"]
 
   val add_klist : t -> elt klist -> t (** @since 0.16 *)
 

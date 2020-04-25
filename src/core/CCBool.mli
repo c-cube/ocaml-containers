@@ -18,11 +18,6 @@ val of_int : int -> t
 (** [of_int i] is the same as [i <> 0]
     @since 2.7 *)
 
-val negate : t -> t
-(** Negation on booleans (functional version of [not]).
-    @deprecated since 1.3, simply use {!not} instead. *)
-[@@ocaml.deprecated "use `not` instead"]
-
 type 'a printer = Format.formatter -> 'a -> unit
 
 val pp : t printer

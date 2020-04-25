@@ -5,7 +5,6 @@
 type rw = [`RW]
 type ro = [`RO]
 
-type 'a sequence = ('a -> unit) -> unit
 type 'a iter = ('a -> unit) -> unit
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
@@ -165,11 +164,11 @@ let clear v =
   v.size <- 0
 
 (*$R
-  let v = of_seq Iter.(1 -- 10) in
+  let v = of_iter Iter.(1 -- 10) in
   OUnit.assert_equal 10 (size v);
   clear v;
   OUnit.assert_equal 0 (size v);
-  OUnit.assert_bool "empty_after_clear" (Iter.is_empty (to_seq v));
+  OUnit.assert_bool "empty_after_clear" (Iter.is_empty (to_iter v));
 *)
 
 let clear_and_reset v =
@@ -177,7 +176,7 @@ let clear_and_reset v =
   v.vec <- [||]
 
 (* TODO*)
-(*    
+(*
   let v = create() in
   let a = Weak.create 1 in
   push v ("hello"^"world");
@@ -232,8 +231,8 @@ let append a b =
 *)
 
 (*$R
-  let a = of_seq Iter.(1 -- 5) in
-  let b = of_seq Iter.(6 -- 10) in
+  let a = of_iter Iter.(1 -- 5) in
+  let b = of_iter Iter.(6 -- 10) in
   append a b;
   OUnit.assert_equal 10 (size a);
   OUnit.assert_equal (Iter.to_array Iter.(1 -- 10)) (to_array a);
@@ -327,8 +326,8 @@ let rec append_gen a b = match b() with
   (Q.pair (gen Q.int) (gen Q.int)) (fun (v1,v2) ->
     let l1 = to_list v1 in
     append v1 v2;
-    Iter.to_list (to_seq v1) =
-      Iter.(to_list (append (of_list l1) (to_seq v2)))
+    Iter.to_list (to_iter v1) =
+      Iter.(to_list (append (of_list l1) (to_iter v2)))
   )
 *)
 
@@ -418,7 +417,7 @@ let copy v = {
 *)
 
 (*$R
-  let v = of_seq Iter.(1 -- 100) in
+  let v = of_iter Iter.(1 -- 100) in
   OUnit.assert_equal 100 (size v);
   let v' = copy v in
   OUnit.assert_equal 100 (size v');
@@ -443,7 +442,7 @@ let shrink v n =
   )
 
 (*$R
-  let v = of_seq Iter.(1 -- 10) in
+  let v = of_iter Iter.(1 -- 10) in
   shrink v 5;
   OUnit.assert_equal [1;2;3;4;5] (to_list v);
 *)
@@ -619,8 +618,6 @@ let filter_in_place p v =
   (* free elements *)
   fill_with_junk_ v.vec !j (v.size - !j);
   v.size <- !j
-
-let filter' = filter_in_place
 
 (*$T
   let v = 1 -- 10 in filter_in_place (fun x->x<4) v; \
@@ -921,7 +918,7 @@ let of_std_seq ?(init=create ()) seq =
   init
 
 (*$T
-  of_seq Iter.(1 -- 10) |> to_list = CCList.(1 -- 10)
+  of_iter Iter.(1 -- 10) |> to_list = CCList.(1 -- 10)
 *)
 
 let to_iter v k = iter k v
@@ -946,18 +943,12 @@ let to_std_seq_rev v =
   in
   aux (size v-1)
 
-let of_seq = of_iter
-let to_seq = to_iter
-let to_seq_rev = to_iter_rev
-let append_seq = append_iter
-let flat_map_seq = flat_map_iter
-
 (*$Q
   Q.(list int) (fun l -> \
-    let v= of_list l in v |> to_seq_rev |> Iter.to_rev_list = l)
+    let v= of_list l in v |> to_iter_rev |> Iter.to_rev_list = l)
 *)
 
-let slice_seq v start len =
+let slice_iter v start len =
   assert (start >= 0 && len >= 0);
   fun k ->
     assert (start+len <= v.size);
@@ -967,31 +958,12 @@ let slice_seq v start len =
     done
 
 (*$T
-  slice_seq (of_list [0;1;2;3;4]) 1 3 |> CCList.of_seq = [1;2;3]
-  slice_seq (of_list [0;1;2;3;4]) 1 4 |> CCList.of_seq = [1;2;3;4]
-  slice_seq (of_list [0;1;2;3;4]) 0 5 |> CCList.of_seq = [0;1;2;3;4]
+  slice_iter (of_list [0;1;2;3;4]) 1 3 |> CCList.of_iter = [1;2;3]
+  slice_iter (of_list [0;1;2;3;4]) 1 4 |> CCList.of_iter = [1;2;3;4]
+  slice_iter (of_list [0;1;2;3;4]) 0 5 |> CCList.of_iter = [0;1;2;3;4]
 *)
 
 let slice v = (v.vec, 0, v.size)
-
-let fill_empty_slots_with v x : unit =
-  if capacity v > length v then (
-    Array.fill v.vec (length v) (capacity v - length v) x;
-  )
-
-(* check it frees memory properly *)
-(*$R
-  let s = "coucou" ^ "lol" in
-  let w = Weak.create 1 in
-  Weak.set w 0 (Some s);
-  let v = of_list ["a"; s] in
-  ignore (pop_exn v :string);
-  assert_equal ~printer:string_of_int 1 (length v);
-  assert_equal ~printer:CCFun.id      "a" (get v 0);
-  fill_empty_slots_with v "";
-  Gc.major();
-  assert_equal None (Weak.get w 0);
-*)
 
 let (--) i j =
   if i>j

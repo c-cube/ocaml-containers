@@ -45,11 +45,6 @@ let hash x = Stdlib.abs (to_int x)
 
 (** {2 Conversion} *)
 
-let of_int_exn = of_int
-let of_nativeint_exn = of_nativeint
-let of_int32_exn = of_int32
-let of_float_exn = of_float
-
 let of_string_exn = of_string
 
 let of_string x = try Some (of_string_exn x) with Failure _ -> None

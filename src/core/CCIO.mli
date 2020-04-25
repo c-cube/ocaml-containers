@@ -66,11 +66,6 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
     @raise Sys_error in case of error (same as {!open_in} and {!close_in}).
     @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases. *)
 
-val read_chunks : ?size:int -> in_channel -> string gen
-(** Read the channel's content into chunks of size [size].
-    @deprecated use {!read_chunks_gen} instead. *)
-[@@ocaml.deprecated "use read_chunks_gen"]
-
 val read_chunks_gen : ?size:int -> in_channel -> string gen
 (** Read the channel's content into chunks of size [size].
     {b NOTE} the generator must be used within the lifetime of the channel,
@@ -79,11 +74,6 @@ val read_chunks_gen : ?size:int -> in_channel -> string gen
 val read_line : in_channel -> string option
 (** Read a line from the channel. Returns [None] if the input is terminated.
     The "\n" is removed from the line. *)
-
-val read_lines : in_channel -> string gen
-(** Read all lines. The generator should be traversed only once.
-    @deprecated use {!read_lines_gen} instead. *)
-[@@ocaml.deprecated "use read_lines_gen"]
 
 val read_lines_gen : in_channel -> string gen
 (** Read all lines. The generator should be traversed only once.

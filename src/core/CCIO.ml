@@ -75,8 +75,6 @@ let read_chunks_gen ?(size=1024) ic =
   in
   next
 
-let read_chunks = read_chunks_gen
-
 let read_line ic =
   try Some (input_line ic)
   with End_of_file -> None
@@ -87,8 +85,6 @@ let read_lines_gen ic =
     if !stop then None
     else try Some (input_line ic)
       with End_of_file -> (stop:=true; None)
-
-let read_lines = read_lines_gen
 
 let read_lines_l ic =
   let l = ref [] in
@@ -200,7 +196,7 @@ let write_lines_l oc l =
       (fun (name, oc) ->
         write_lines oc (Gen.of_list l);
         flush oc;
-        l' := with_in name (fun ic -> read_lines ic |> Gen.to_list);
+        l' := with_in name (fun ic -> read_lines_gen ic |> Gen.to_list);
       ) ();
      String.concat "\n" l = String.concat "\n" !l'
     )

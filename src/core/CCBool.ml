@@ -25,8 +25,6 @@ let of_int x : t = x<>0
   true (of_int min_int)
 *)
 
-let negate = not
-
 type 'a printer = Format.formatter -> 'a -> unit
 
 let pp = Format.pp_print_bool

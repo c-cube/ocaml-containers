@@ -82,7 +82,7 @@ val merge :
 
 (** {2 Whole-collection operations} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
@@ -92,15 +92,15 @@ val of_list : (int * 'a) list -> 'a t
 
 val to_list : 'a t -> (int * 'a) list
 
-val add_seq : 'a t -> (int * 'a) sequence -> 'a t
+val add_iter : 'a t -> (int * 'a) iter -> 'a t
 
-val of_seq : (int * 'a) sequence -> 'a t
+val of_iter : (int * 'a) iter -> 'a t
 
-val to_seq : 'a t -> (int * 'a) sequence
+val to_iter : 'a t -> (int * 'a) iter
 
-val keys : _ t -> int sequence
+val keys : _ t -> int iter
 
-val values : 'a t -> 'a sequence
+val values : 'a t -> 'a iter
 
 val add_gen : 'a t -> (int * 'a) gen -> 'a t
 (** @since 0.13 *)

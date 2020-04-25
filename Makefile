@@ -20,6 +20,7 @@ BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
 
 benchs:
 	dune build $(PROMOTE) $(addprefix benchs/, $(BENCH_TARGETS))
+	@for i in $(BENCH_TARGETS) ; do ln -sf _build/default/benchs/$$i ; done
 
 examples:
 	dune build examples/id_sexp.exe

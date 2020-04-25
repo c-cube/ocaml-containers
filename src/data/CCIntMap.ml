@@ -562,7 +562,7 @@ let rec merge ~f t1 t2 : _ t =
 (*$QR
   Q.(let p = small_list (pair small_int unit) in pair p p) (fun (l1,l2) ->
     let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
-    equal Stdlib.(=)
+    equal ~eq:Stdlib.(=)
       (union (fun _ v1 _ -> v1) (of_list l1) (of_list l2))
       (merge ~f:merge_union (of_list l1) (of_list l2)))
   *)
@@ -570,14 +570,14 @@ let rec merge ~f t1 t2 : _ t =
 (*$QR
   Q.(let p = small_list (pair small_int unit) in pair p p) (fun (l1,l2) ->
     let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
-    equal Stdlib.(=)
+    equal ~eq:Stdlib.(=)
       (inter (fun _ v1 _ -> v1) (of_list l1) (of_list l2))
       (merge ~f:merge_inter (of_list l1) (of_list l2)))
   *)
 
 (** {2 Conversions} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
@@ -600,14 +600,14 @@ let to_list t = fold (fun k v l -> (k,v) :: l) t []
     of_list l |> cardinal = List.length l)
 *)
 
-let add_seq t seq =
+let add_iter t iter =
   let t = ref t in
-  seq (fun (k,v) -> t := add k v !t);
+  iter (fun (k,v) -> t := add k v !t);
   !t
 
-let of_seq seq = add_seq empty seq
+let of_iter iter = add_iter empty iter
 
-let to_seq t yield = iter (fun k v -> yield (k,v)) t
+let to_iter t yield = iter (fun k v -> yield (k,v)) t
 
 let keys t yield = iter (fun k _ -> yield k) t
 

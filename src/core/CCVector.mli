@@ -18,10 +18,6 @@ type 'a ro_vector = ('a, ro) t
 (** Alias for immutable vectors.
     @since 0.15 *)
 
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
@@ -93,9 +89,6 @@ val append_iter : ('a, rw) t -> 'a iter -> unit
 val append_std_seq : ('a, rw) t -> 'a Seq.t -> unit
 (** Append content of iterator.
     @since 2.8 *)
-
-val append_seq : ('a, rw) t -> 'a sequence -> unit
-(** Append content of sequence. *)
 
 val append_list : ('a, rw) t -> 'a list -> unit
 (** Append content of list.
@@ -183,11 +176,6 @@ val filter_in_place : ('a -> bool) -> ('a, rw) t -> unit
 (** Filter elements from the vector in place.
     @since NEXT_RELEASE *)
 
-val filter' : ('a -> bool) -> ('a, rw) t -> unit
-(** Alias of {!filter_in_place}
-    @deprecated since NEXT_RELEASE, use {!filter_in_place} instead. *)
-[@@ocaml.deprecated "use filter_in_place instead"]
-
 val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
 (** Fold on elements of the vector *)
 
@@ -219,20 +207,9 @@ val filter_map_in_place : ('a -> 'a option) -> ('a,_) t -> unit
 val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 (** Map each element to a sub-vector. *)
 
-val flat_map_iter : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
-(** Like {!flat_map}, but using {!iter} for intermediate collections.
-    @since 2.8 *)
-
 val flat_map_std_seq : ('a -> 'b Seq.t) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using [Seq] for intermediate collections.
     @since 2.8 *)
-
-val flat_map_seq : ('a -> 'b sequence) -> ('a,_) t -> ('b, 'mut) t
-(** Like {!flat_map}, but using {!sequence} for
-    intermediate collections.
-    @deprecated use {!flat_map_iter} or {!flat_map_std_seq}
-    @since 0.14 *)
-[@@ocaml.deprecated "use flat_map_iter or flat_map_std_seq"]
 
 val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!list} for
@@ -311,15 +288,9 @@ val of_iter : ?init:('a,rw) t -> 'a iter -> ('a, rw) t
 (** Convert an Iterator to a vector.
     @since 2.8.1 *)
 
-val of_seq : ?init:('a,rw) t -> 'a sequence -> ('a, rw) t
-(** Convert an Iterator to a vector.
-    @deprecated use of_iter *)
-[@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
-
 val of_std_seq : ?init:('a,rw) t -> 'a Seq.t -> ('a, rw) t
 (** Convert an Iterator to a vector.
-    @deprecated use of_iter *)
-[@@ocaml.deprecated "use of_iter. For the standard Seq, see {!of_std_seq}"]
+    @since 2.8.1 *)
 
 val to_iter : ('a,_) t -> 'a iter
 (** Return a [iter] with the elements contained in the vector.
@@ -343,32 +314,15 @@ val to_std_seq_rev : ('a,_) t -> 'a Seq.t
     @since 2.8
 *)
 
-val to_seq : ('a,_) t -> 'a sequence
-(** @deprecated use to_iter *)
-[@@ocaml.deprecated "use to_iter. For the standard Seq, see {!to_std_seq}"]
-
-val to_seq_rev : ('a, _) t -> 'a sequence
-(** [to_seq_rev v] returns the sequence of elements of [v] in reverse order,
-    that is, the last elements of [v] are iterated on first.
-    @since 0.14
-    @deprecated use {!to_iter_rev} *)
-[@@ocaml.deprecated "use to_iter_rev. For the standard Seq, see {!to_std_seq_rev}"]
-
 val slice : ('a,rw) t -> ('a array * int * int)
 (** Vector as an array slice. By doing it we expose the internal array, so
     be careful!. *)
 
-val slice_seq : ('a,_) t -> int -> int -> 'a sequence
+val slice_iter : ('a,_) t -> int -> int -> 'a iter
 (** [slice_seq v start len] is the sequence of elements from [v.(start)]
-    to [v.(start+len-1)]. *)
-
-val fill_empty_slots_with : ('a, _) t -> 'a -> unit
-(** [fill_empty_slots_with v x] puts [x] in the slots of [v]'s underlying
-    array that are not used (ie in the last [capacity v - length v] slots).
-    This is useful if you removed some elements from the vector and
-    @deprecated after 2.8, as the vector doesn't keep values alive anymore (see #279, #282, #283)
-    @since 2.4 *)
-[@@ocaml.deprecated "not needed anymore, see #279,#282,#283"]
+    to [v.(start+len-1)].
+    @since NEXT_RELEASE
+*)
 
 val of_klist : ?init:('a, rw) t -> 'a klist -> ('a, rw) t
 val to_klist : ('a,_) t -> 'a klist

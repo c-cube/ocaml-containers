@@ -3,7 +3,6 @@
 (** {1 Error Monad} *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a sequence = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a printer = Format.formatter -> 'a -> unit
@@ -240,7 +239,7 @@ let flatten_l l =
 
 exception LocalExit
 
-let fold_seq f acc seq =
+let fold_iter f acc seq =
   let err = ref None in
   try
     let acc = ref acc in
@@ -252,7 +251,7 @@ let fold_seq f acc seq =
   with LocalExit ->
   match !err with None -> assert false | Some s -> Error s
 
-let fold_l f acc l = fold_seq f acc (fun k -> List.iter k l)
+let fold_l f acc l = fold_iter f acc (fun k -> List.iter k l)
 
 (** {2 Misc} *)
 
@@ -344,8 +343,6 @@ let to_std_seq e () = match e with
 let to_iter e k = match e with
   | Ok x -> k x
   | Error _ -> ()
-
-let to_seq = to_iter
 
 type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
 

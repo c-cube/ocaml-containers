@@ -5,11 +5,6 @@
 
     @since 0.4 *)
 
-
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
@@ -66,11 +61,6 @@ module Poly : sig
   (** Iterate on bindings in the table.
       @since 2.8 *)
 
-  val to_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence
-  (** Iterate on bindings in the table.
-      @deprecated use {!to_iter} instead *)
-  [@@ocaml.deprecated "use to_iter"]
-
   val add_list : ('a, 'b list) Hashtbl.t -> 'a -> 'b -> unit
   (** [add_list tbl x y] adds [y] to the list [x] is bound to. If [x] is
       not bound, it becomes bound to [y].
@@ -84,12 +74,6 @@ module Poly : sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
-  val add_seq : ('a,'b) Hashtbl.t -> ('a * 'b) sequence -> unit
-  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since 0.16
-      @deprecated use {!add_iter} or {!add_std_seq} *)
-  [@@ocaml.deprecated "use add_iter or add_std_seq"]
-
   val of_iter : ('a * 'b) iter -> ('a,'b) Hashtbl.t
   (** From the given bindings, added in order.
       @since 2.8 *)
@@ -97,11 +81,6 @@ module Poly : sig
   val of_std_seq : ('a * 'b) Seq.t -> ('a,'b) Hashtbl.t
   (** From the given bindings, added in order.
       @since 2.8 *)
-
-  val of_seq : ('a * 'b) sequence -> ('a,'b) Hashtbl.t
-  (** From the given bindings, added in order.
-      @deprecated use {!of_iter} or {!of_std_seq} *)
-  [@@ocaml.deprecated "use of_iter or of_std_seq"]
 
   val add_iter_count : ('a, int) Hashtbl.t -> 'a iter -> unit
   (** [add_iter_count tbl i] increments the count of each element of [i]
@@ -115,14 +94,6 @@ module Poly : sig
       element of [seq] occurs.
       @since 2.8 *)
 
-  val add_seq_count : ('a, int) Hashtbl.t -> 'a sequence -> unit
-  (** [add_seq_count tbl seq] increments the count of each element of [seq]
-      by calling {!incr}. This is useful for counting how many times each
-      element of [seq] occurs.
-      @since 0.16 
-      @deprecated use {!add_iter_count} or {!add_std_seq_count} *)
-  [@@ocaml.deprecated "use add_iter_count or add_std_seq_count"]
-
   val of_iter_count : 'a iter -> ('a, int) Hashtbl.t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 2.8 *)
@@ -130,12 +101,6 @@ module Poly : sig
   val of_std_seq_count : 'a Seq.t -> ('a, int) Hashtbl.t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 2.8 *)
-
-  val of_seq_count : 'a sequence -> ('a, int) Hashtbl.t
-  (** Like {!add_seq_count}, but allocates a new table and returns it.
-      @since 0.16
-      @deprecated use {!of_iter_count} or {!of_std_seq_count} *)
-  [@@ocaml.deprecated "use add_iter_count or add_std_seq_count"]
 
   val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
   (** List of bindings (order unspecified). *)
@@ -222,11 +187,6 @@ module type S = sig
   (** Iterate on bindings in the table.
       @since 2.8 *)
 
-  val to_seq : 'a t -> (key * 'a) sequence
-  (** Iterate on values in the table.
-      @deprecated use {!to_iter} instead *)
-  [@@ocaml.deprecated "use to_iter"]
-
   val add_iter : 'a t -> (key * 'a) iter -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
@@ -235,12 +195,6 @@ module type S = sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
-  val add_seq : 'a t -> (key * 'a) sequence -> unit
-  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since 0.16
-      @deprecated use {!add_iter} or {!add_std_seq} *)
-  [@@ocaml.deprecated "use add_iter or add_std_seq"]
-
   val of_iter : (key * 'a) iter -> 'a t
   (** From the given bindings, added in order.
       @since 2.8 *)
@@ -248,11 +202,6 @@ module type S = sig
   val of_std_seq : (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
       @since 2.8 *)
-
-  val of_seq : (key * 'a) sequence -> 'a t
-  (** From the given bindings, added in order.
-      @deprecated use {!of_iter} or {!of_std_seq} *)
-  [@@ocaml.deprecated "use of_iter or of_std_seq"]
 
   val add_iter_count : int t -> key iter -> unit
   (** [add_iter_count tbl i] increments the count of each element of [i]
@@ -266,14 +215,6 @@ module type S = sig
       element of [seq] occurs.
       @since 2.8 *)
 
-  val add_seq_count : int t -> key sequence -> unit
-  (** [add_seq_count tbl seq] increments the count of each element of [seq]
-      by calling {!incr}. This is useful for counting how many times each
-      element of [seq] occurs.
-      @since 0.16
-      @deprecated use {!add_iter_count} or {!add_std_seq_count} *)
-  [@@ocaml.deprecated "use add_iter_count or add_std_seq_count"]
-
   val of_iter_count : key iter -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 2.8 *)
@@ -281,12 +222,6 @@ module type S = sig
   val of_std_seq_count : key Seq.t -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 2.8 *)
-
-  val of_seq_count : key sequence -> int t
-  (** Like {!add_seq_count}, but allocates a new table and returns it.
-      @since 0.16
-      @deprecated use {!of_iter_count} or {!of_std_seq_count} *)
-  [@@ocaml.deprecated "use add_iter_count or add_std_seq_count"]
 
   val to_list : 'a t -> (key * 'a) list
   (** List of bindings (order unspecified). *)

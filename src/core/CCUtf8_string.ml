@@ -10,7 +10,6 @@ open CCShims_
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option
 type 'a iter = ('a -> unit) -> unit
-type 'a sequence = ('a -> unit) -> unit
 
 let equal (a:string) b = Stdlib.(=) a b
 let hash : string -> int = Hashtbl.hash
@@ -125,8 +124,6 @@ let to_iter ?(idx=0) s : uchar iter =
       done
     with Stop -> ()
 
-let to_seq = to_iter
-
 let to_std_seq ?(idx=0) s : uchar Seq.t =
   let rec loop st =
     let r = ref None in
@@ -226,8 +223,6 @@ let of_iter i : t =
   i (code_to_string buf);
   Buffer.contents buf
 
-let of_seq = of_iter
-
 let of_list l : t =
   let buf = Buffer.create 32 in
   List.iter (code_to_string buf) l;
@@ -292,7 +287,7 @@ let of_string s = if is_valid s then Some s else None
   with Exit ->
     false
 
-  let uutf_to_seq s f =
+  let uutf_to_iter s f =
   Uutf.String.fold_utf_8
     (fun () _ -> function
        | `Malformed _ -> f (Uchar.of_int 0xfffd)
@@ -302,7 +297,7 @@ let of_string s = if is_valid s then Some s else None
 
 (*$R
   let s = of_string_exn "このため、" in
-  let s' = to_seq s |> of_seq in
+  let s' = to_iter s |> of_iter in
   assert_equal ~cmp:equal ~printer s s'
 *)
 
@@ -315,7 +310,7 @@ let of_string s = if is_valid s then Some s else None
 (*$QR & ~long_factor:10
   Q.small_string (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
-    s = (of_string_exn s |> to_seq |> of_seq |> to_string)
+    s = (of_string_exn s |> to_iter|> of_iter|> to_string)
   )
 *)
 
@@ -338,7 +333,7 @@ let of_string s = if is_valid s then Some s else None
   Q.string (fun s ->
     Q.assume (is_valid s);
     let s = of_string_exn s in
-    let s2 = s |> to_seq |> of_seq in
+    let s2 = s |> to_iter|> of_iter in
     if s=s2 then true
     else Q.Test.fail_reportf "s=%S, s2=%S" (to_string s)(to_string s2)
   )
@@ -369,8 +364,8 @@ let of_string s = if is_valid s then Some s else None
   Q.small_string (fun s ->
     Q.assume (is_valid s && uutf_is_valid s);
     let pp s = Q.Print.(list pp_uchar) s in
-    let l_uutf = uutf_to_seq s |> Iter.to_list in
-    let l_co = of_string_exn s |> to_seq |> Iter.to_list in
+    let l_uutf = uutf_to_iter s |> Iter.to_list in
+    let l_co = of_string_exn s |> to_iter |> Iter.to_list in
     if l_uutf = l_co then true
     else Q.Test.fail_reportf "uutf: '%s', containers: '%s', is_valid %B, uutf_is_valid %B"
       (pp l_uutf) (pp l_co) (is_valid s) (uutf_is_valid s)

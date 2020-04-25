@@ -41,7 +41,7 @@
   Q.(list op) (fun l -> let m = apply_ops l M.empty in M.balanced m)
 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 
@@ -149,11 +149,11 @@ module type S = sig
 
   val to_list : 'a t -> (key * 'a) list
 
-  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+  val add_iter : 'a t -> (key * 'a) iter -> 'a t
 
-  val of_seq : (key * 'a) sequence -> 'a t
+  val of_iter : (key * 'a) iter -> 'a t
 
-  val to_seq : 'a t -> (key * 'a) sequence
+  val to_iter : 'a t -> (key * 'a) iter
 
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
 
@@ -500,8 +500,8 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
       List.for_all (fun (k,v) ->
         let l, v', r = M.split k m in
         v' = Some v
-        && (M.to_seq l |> Iter.for_all (fun (k',_) -> k' < k))
-        && (M.to_seq r |> Iter.for_all (fun (k',_) -> k' > k))
+        && (M.to_iter l |> Iter.for_all (fun (k',_) -> k' < k))
+        && (M.to_iter r |> Iter.for_all (fun (k',_) -> k' > k))
         && M.balanced m
         && M.cardinal l + M.cardinal r + 1 = List.length lst
       ) lst)
@@ -533,7 +533,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   (*$R
     let m1 = M.of_list [1, 1; 2, 2; 4, 4] in
     let m2 = M.of_list [1, 1; 3, 3; 4, 4; 7, 7] in
-    let m = M.merge (fun k -> CCOpt.map2 (+)) m1 m2 in
+    let m = M.merge ~f:(fun k -> CCOpt.map2 (+)) m1 m2 in
     assert_bool "balanced" (M.balanced m);
     assert_equal
       ~cmp:(CCList.equal (CCPair.equal CCInt.equal CCInt.equal))
@@ -546,7 +546,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
     Q.(let p = list (pair small_int small_int) in pair p p) (fun (l1, l2) ->
         let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
         let m1 = M.of_list l1 and m2 = M.of_list l2  in
-        let m = M.merge (fun _ v1 v2 -> match v1 with
+        let m = M.merge ~f:(fun _ v1 v2 -> match v1 with
           | None -> v2 | Some _ as r -> r) m1 m2 in
         List.for_all (fun (k,v) -> M.get_exn k m = v) l1  &&
         List.for_all (fun (k,v) -> M.mem k m1 || M.get_exn k m = v) l2)
@@ -560,14 +560,14 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
 
   let to_list m = fold ~f:(fun acc k v -> (k,v) :: acc) ~x:[] m
 
-  let add_seq m seq =
+  let add_iter m seq =
     let m = ref m in
     seq (fun (k,v) -> m := add k v !m);
     !m
 
-  let of_seq s = add_seq empty s
+  let of_iter s = add_iter empty s
 
-  let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
+  let to_iter m yield = iter ~f:(fun k v -> yield (k,v)) m
 
   let rec add_gen m g = match g() with
     | None -> m

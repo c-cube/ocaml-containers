@@ -90,7 +90,7 @@ let default ~default l =
   )
 
 (*$=
-  [1] (default (return 1) empty |> to_list)
+  [1] (default ~default:(return 1) empty |> to_list)
 *)
 
 module Infix = struct
