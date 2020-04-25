@@ -19,7 +19,9 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 module Poly : sig
   val get : ('a,'b) Hashtbl.t -> 'a -> 'b option
-  (** Safe version of {!Hashtbl.find}. *)
+  (** [get tbl k] finds a binding for the key [k] if present,
+      or returns [None] if no value is found.
+      Safe version of {!Hashtbl.find}. *)
 
   val get_or : ('a,'b) Hashtbl.t -> 'a -> default:'b -> 'b
   (** [get_or tbl k ~default] returns the value associated to [k] if present,
@@ -27,22 +29,22 @@ module Poly : sig
       @since 0.16 *)
 
   val keys : ('a,'b) Hashtbl.t -> 'a iter
-  (** Iterate on keys (similar order as {!Hashtbl.iter}). *)
+  (** [keys tbl f] iterates on keys (similar order as {!Hashtbl.iter}). *)
 
   val values : ('a,'b) Hashtbl.t -> 'b iter
-  (** Iterate on values in the table. *)
+  (** [values tbl f] iterates on values in the table [tbl]. *)
 
   val keys_list : ('a, 'b) Hashtbl.t -> 'a list
-  (** [keys_list t] is the list of keys in [t].
+  (** [keys_list tbl] is the list of keys in [tbl].
       If the key is in the Hashtable multiple times, all occurrences will be returned.
       @since 0.8 *)
 
   val values_list : ('a, 'b) Hashtbl.t -> 'b list
-  (** [values_list t] is the list of values in [t].
+  (** [values_list tbl] is the list of values in [tbl].
       @since 0.8 *)
 
   val map_list : ('a -> 'b -> 'c) -> ('a, 'b) Hashtbl.t -> 'c list
-  (** Map on a hashtable's items, collect into a list. *)
+  (** [map_list f tbl] maps on a [tbl]'s items. Collect into a list. *)
 
   val incr : ?by:int -> ('a, int) Hashtbl.t -> 'a -> unit
   (** [incr ?by tbl x] increments or initializes the counter associated with [x].
@@ -52,7 +54,7 @@ module Poly : sig
       @since 0.16 *)
 
   val decr : ?by:int -> ('a, int) Hashtbl.t -> 'a -> unit
-  (** Like {!incr} but subtract 1 (or the value of [by]).
+  (** [decr ?by tbl x] is like {!incr} but subtract 1 (or the value of [by]).
       If the value reaches 0, the key is removed from the table.
       This does nothing if the key is not already present in the table.
       @since 0.16 *)
@@ -103,10 +105,10 @@ module Poly : sig
       @since 2.8 *)
 
   val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
-  (** List of bindings (order unspecified). *)
+  (** [to_list tbl] returns the list of (key,value) bindings (order unspecified). *)
 
   val of_list : ('a * 'b) list -> ('a,'b) Hashtbl.t
-  (** Build a table from the given list of bindings [k_i -> v_i],
+  (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i],
       added in order using {!add}. If a key occurs several times,
       it will be added several times, and the visible binding
       will be the last one. *)
@@ -127,7 +129,8 @@ module Poly : sig
       @since 1.0 *)
 
   val pp : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
-  (** Printer for table.
+  (** [pp pp_k pp_v] returns a table printer given a [pp_k] printer
+      for individual key and a [pp_v] printer for individual value.
       Renamed from [print] since 2.0.
       @since 0.13 *)
 end
@@ -140,7 +143,9 @@ module type S = sig
   include Hashtbl.S
 
   val get : 'a t -> key -> 'a option
-  (** Safe version of {!Hashtbl.find}. *)
+  (** [get tbl k] finds a binding for the key [k] if present,
+      or returns [None] if no value is found.
+      Safe version of {!Hashtbl.find}. *)
 
   val get_or : 'a t -> key -> default:'a -> 'a
   (** [get_or tbl k ~default] returns the value associated to [k] if present,
@@ -160,19 +165,19 @@ module type S = sig
       @since 0.16 *)
 
   val decr : ?by:int -> int t -> key -> unit
-  (** Like {!incr} but subtract 1 (or the value of [by]).
+  (** [decr ?by tbl x] is like {!incr} but subtract 1 (or the value of [by]).
       If the value reaches 0, the key is removed from the table.
       This does nothing if the key is not already present in the table.
       @since 0.16 *)
 
   val keys : 'a t -> key iter
-  (** Iterate on keys (similar order as {!Hashtbl.iter}). *)
+  (**  [keys tbl f] iterates on keys (similar order as {!Hashtbl.iter}). *)
 
   val values : 'a t -> 'a iter
-  (** Iterate on values in the table. *)
+  (**  [values tbl f] iterates on values in the table. *)
 
   val keys_list : _ t -> key list
-  (** [keys_list t] is the list of keys in [t].
+  (** [keys_list tbl] is the list of keys in [tbl].
       If the key is in the Hashtable multiple times, all occurrences will be returned.
       @since 0.8 *)
 
@@ -224,10 +229,10 @@ module type S = sig
       @since 2.8 *)
 
   val to_list : 'a t -> (key * 'a) list
-  (** List of bindings (order unspecified). *)
+  (** [to_list tbl] returns the list of (key,value) bindings (order unspecified). *)
 
   val of_list : (key * 'a) list -> 'a t
-  (** Build a table from the given list of bindings [k_i -> v_i],
+  (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i],
       added in order using {!add}. If a key occurs several times,
       it will be added several times, and the visible binding
       will be the last one. *)
@@ -248,7 +253,8 @@ module type S = sig
       @since 1.0 *)
 
   val pp : key printer -> 'a printer -> 'a t printer
-  (** Printer for tables.
+  (** [pp pp_k pp_v] returns a table printer given a [pp_k] printer
+      for individual key and a [pp_v] printer for individual value. 
       Renamed from [print] since 2.0.
       @since 0.13 *)
 end
