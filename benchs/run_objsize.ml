@@ -1,6 +1,6 @@
 (* module Deque = Core_kernel.Deque *)
-module Int_map = Map.Make(CCInt)
-module Int_set = Set.Make(CCInt)
+module Int_map = CCMap.Make(CCInt)
+module Int_set = CCSet.Make(CCInt)
 
 let dup = CCPair.dup
 let id = CCFun.id
@@ -19,10 +19,10 @@ let dummy = 0
 let types = [
   "Stdlib.List", (fun n -> Obj.magic @@ ns n);
   "Stdlib.Array", (fun n -> Obj.magic @@ Array.init n id);
-  "Stdlib.Hashtbl", (fun n -> Obj.magic @@ Hashtbl.of_seq (OSeq.init ~n dup));
+  "Stdlib.Hashtbl", (fun n -> Obj.magic @@ CCHashtbl.of_iter Iter.(init dup |> take n));
   "Base.Hashtbl", (fun n -> Obj.magic @@ Base.Hashtbl.Poly.of_alist_exn (List.init n dup));
-  "Stdlib.Map", (fun n -> Obj.magic @@ Int_map.of_seq (OSeq.init ~n dup));
-  "Stdlib.Set", (fun n -> Obj.magic @@ Int_set.of_seq (OSeq.init ~n id));
+  "Stdlib.Map", (fun n -> Obj.magic @@ Int_map.of_iter Iter.(init dup |> take n));
+  "Stdlib.Set", (fun n -> Obj.magic @@ Int_set.of_iter Iter.(init id |> take n));
   "CCFun_vec", (fun n -> Obj.magic @@ CCFun_vec.of_list (ns n));
   "CCRAL", (fun n -> Obj.magic @@ CCRAL.of_list (ns n));
   "BatVect", (fun n -> Obj.magic @@ BatVect.of_list (ns n));
@@ -31,7 +31,7 @@ let types = [
   "CCVector", (fun n -> Obj.magic @@ let c = CCVector.create () in iter_range n (CCVector.push c); c);
   (* "Core_kernel.Deque", (fun n -> Obj.magic @@ let c = Deque.create () in iter_range n (Deque.enqueue_back c); c); *)
   "Base.Queue", (fun n -> Obj.magic @@ let c = Base.Queue.create () in iter_range n (Base.Queue.enqueue c); c);
-  "Stdlib.Queue", (fun n -> Obj.magic @@ Queue.of_seq (OSeq.init ~n id));
+  "Stdlib.Queue", (fun n -> Obj.magic @@ (let q = Queue.create () in iter_range n (fun x -> Queue.push x q); q));
   "CCQueue", (fun n -> Obj.magic @@ CCDeque.of_list (ns n));
   "Iter", (fun n -> Obj.magic @@ List.fold_right Iter.cons (ns n) Iter.empty);
   "Gen", (fun n -> Obj.magic @@ List.fold_right gen_cons (ns n) Gen.empty);

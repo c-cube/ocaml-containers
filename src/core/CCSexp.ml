@@ -5,7 +5,6 @@
 open CCShims_
 
 type 'a or_error = ('a, string) result
-type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 module type SEXP = CCSexp_intf.SEXP

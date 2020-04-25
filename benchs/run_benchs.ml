@@ -1,5 +1,7 @@
 (** Generic benchs *)
 
+[@@@warning "-5"]
+
 module B = Benchmark
 let (@>) = B.Tree.(@>)
 let (@>>) = B.Tree.(@>>)
@@ -952,7 +954,7 @@ module Iter_ = struct
         if !saw_x then (saw_x := true; Some x)
         else xs ()
     in
-    let xs = Array.init n Fun.id in
+    let xs = Array.init n CCFun.id in
     let iter () = ignore (Array.fold_right Iter.cons xs Iter.empty : int Iter.t) in
     let gen () = ignore (Array.fold_right gen_cons xs Gen.empty : int Gen.t) in
     let oseq () = ignore (Array.fold_right OSeq.cons xs OSeq.empty : int OSeq.t) in
@@ -969,7 +971,7 @@ module Iter_ = struct
         if !saw_x then (saw_x := true; Some x)
         else xs ()
     in
-    let xs = Array.init n Fun.id in
+    let xs = Array.init n CCFun.id in
     let iter () = Iter.fold (+) 0 (Array.fold_right Iter.cons xs Iter.empty) in
     let gen () = Gen.fold (+) 0 (Array.fold_right gen_cons xs Gen.empty) in
     let oseq () = OSeq.fold (+) 0 (Array.fold_right OSeq.cons xs OSeq.empty) in
