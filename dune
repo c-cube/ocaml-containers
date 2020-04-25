@@ -5,4 +5,5 @@
 
 (alias
  (name runtest)
+ (package containers-data)
  (action (diff README.md README.md.corrected)))
