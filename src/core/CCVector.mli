@@ -234,7 +234,7 @@ val set : ('a, rw) t -> int -> 'a -> unit
 (** Modify element at given index, or
     @raise Invalid_argument if bad index. *)
 
-val remove : ('a, rw) t -> int -> unit
+val remove_unordered : ('a, rw) t -> int -> unit
 (** Remove the [n-th] element of the vector. Does {b NOT} preserve the order
     of the elements (might swap with the last element). *)
 
