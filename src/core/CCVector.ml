@@ -247,8 +247,8 @@ let set v i x =
   if i < 0 || i >= v.size then invalid_arg "CCVector.set";
   Array.unsafe_set v.vec i x
 
-let remove v i =
-  if i < 0 || i >= v.size then invalid_arg "CCVector.remove";
+let remove_unordered v i =
+  if i < 0 || i >= v.size then invalid_arg "CCVector.remove_unordered";
   (* if v.(i) not the last element, then put last element at index i *)
   if i < v.size - 1
   then v.vec.(i) <- v.vec.(v.size - 1);
@@ -547,7 +547,7 @@ let iteri k v =
 
 (*$T
   let v = (0--6) in \
-    iteri (fun i x ->  if i = 3 then remove v i) v; length v = 6
+    iteri (fun i x ->  if i = 3 then remove_unordered v i) v; length v = 6
 *)
 
 let map f v =
