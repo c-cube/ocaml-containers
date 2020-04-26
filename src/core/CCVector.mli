@@ -234,9 +234,16 @@ val set : ('a, rw) t -> int -> 'a -> unit
 (** Modify element at given index, or
     @raise Invalid_argument if bad index. *)
 
+val remove : ('a, rw) t -> int -> unit
+(** [remove v i] remove the [i-th] element from [v].
+    Move elements that are after the [i-th] in [v].
+    Preserve the order of the elements in [v].
+    See {!remove_unordered} for constant time function. *)
+
 val remove_unordered : ('a, rw) t -> int -> unit
-(** Remove the [n-th] element of the vector. Does {b NOT} preserve the order
-    of the elements (might swap with the last element). *)
+(** [remove_unordered v i] remove the [i-th] element from [v].
+    Does {b NOT} preserve the order of the elements in [v]
+    (might swap with the last element). *)
 
 val rev : ('a,_) t -> ('a, 'mut) t
 (** Reverse the vector. *)

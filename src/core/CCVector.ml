@@ -247,6 +247,15 @@ let set v i x =
   if i < 0 || i >= v.size then invalid_arg "CCVector.set";
   Array.unsafe_set v.vec i x
 
+let remove v i =
+  if i < 0 || i >= v.size then invalid_arg "CCVector.remove";
+  (* if v.(i) not the last element, then put last element at index i *)
+  if i < v.size - 1
+  then Array.blit v.vec (i+1) v.vec i (v.size - i - 1);
+  (* remove one element *)
+  v.size <- v.size - 1;
+  fill_with_junk_ v.vec v.size 1
+
 let remove_unordered v i =
   if i < 0 || i >= v.size then invalid_arg "CCVector.remove_unordered";
   (* if v.(i) not the last element, then put last element at index i *)
@@ -255,6 +264,25 @@ let remove_unordered v i =
   (* remove one element *)
   v.size <- v.size - 1;
   fill_with_junk_ v.vec v.size 1
+
+(*$Q remove
+  Q.(list_of_size (Gen.int_range 10 10) small_int) (fun l -> \
+    let v1 = of_list l and v2 = of_list l in \
+    remove v1 9; \
+    remove_unordered v2 9; \
+    to_list v1 = (to_list v2))
+  Q.(list_of_size (Gen.int_range 10 10) small_int) (fun l -> \
+    let l = List.sort CCInt.compare l in \
+    let v = of_list l in\
+    remove v 3; \
+    to_list v = (List.sort CCInt.compare (to_list v)))
+  Q.(list_of_size (Gen.int_range 10 10) small_int) (fun l -> \
+    let l = List.sort CCInt.compare l in \
+    let v1 = of_list l and v2 = of_list l in \
+    remove v1 3; \
+    remove_unordered v2 3; \
+    to_list v1 = (List.sort CCInt.compare (to_list v2)))
+*)
 
 let append_iter a i = i (fun x -> push a x)
 
