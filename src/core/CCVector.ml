@@ -112,7 +112,7 @@ let resize_ v newcapacity x =
   push v 0.; push v 1.;
   clear v;
   push v 0.; push v 1.; push v 7.; push v 10.; push v 12.;
-  shrink v 2;
+  keep v 2;
   assert_equal 1. (fold (+.) 0. v);
   clear v;
   assert_equal 0 (size v);
@@ -433,7 +433,7 @@ let copy v = {
     equal (=) v v')
 *)
 
-let shrink v n =
+let keep v n =
   let old_size = v.size in
   if n < old_size then (
     v.size <- n;
@@ -443,7 +443,7 @@ let shrink v n =
 
 (*$R
   let v = of_iter Iter.(1 -- 10) in
-  shrink v 5;
+  keep v 5;
   OUnit.assert_equal [1;2;3;4;5] (to_list v);
 *)
 
@@ -453,23 +453,8 @@ let shrink v n =
     let l = to_list v in
     let h = Iter.(to_list (take n (of_list l))) in
     let v' = copy v in
-    shrink v' n;
+    keep v' n;
     h = to_list v'
-  )
-*)
-
-let shrink_to_fit v : unit =
-  if v.size = 0 then (
-    v.vec <- [| |]
-  ) else if v.size < Array.length v.vec then (
-    v.vec <- Array.sub v.vec 0 v.size
-  )
-
-(*$QR
-  (gen Q.small_int) (fun v ->
-    let v' = copy v in
-    shrink_to_fit v;
-    to_list v = to_list v'
   )
 *)
 

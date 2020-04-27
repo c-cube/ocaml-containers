@@ -125,13 +125,9 @@ val top_exn : ('a, _) t -> 'a
 val copy : ('a,_) t -> ('a,'mut) t
 (** Shallow copy (may give an immutable or mutable vector). *)
 
-val shrink : ('a, rw) t -> int -> unit
-(** Shrink to the given size (remove elements above this size).
+val keep : ('a, rw) t -> int -> unit
+(** [keep v n] Keep the [n] first elements of [v] and remove the rest.
     Does nothing if the parameter is bigger than the current size. *)
-
-val shrink_to_fit : ('a, _) t -> unit
-(** Shrink internal array to fit the size of the vector
-    @since 2.8 *)
 
 val member : eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
 (** Is the element a member of the vector? *)
