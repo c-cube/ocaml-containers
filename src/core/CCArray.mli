@@ -133,7 +133,9 @@ val sort_ranking : ('a -> 'a -> int) -> 'a t -> int array
     @since 1.0 *)
 
 val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
-(** [mem ~eq x a] return true if x is present in [a]. Linear time. *)
+(** [mem ~eq x a] return true if x is present in [a]. Linear time.
+    @since NEXT_RELEASE
+*)
 
 val find_map : ('a -> 'b option) -> 'a t -> 'b option
 (** [find_map f a] returns [Some y] if there is an element [x] such
