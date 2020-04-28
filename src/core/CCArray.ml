@@ -16,6 +16,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
+include CCShims_
 include CCShimsArray_
 
 let empty = [| |]
