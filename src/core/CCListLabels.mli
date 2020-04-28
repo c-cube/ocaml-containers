@@ -548,7 +548,7 @@ val remove_one : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> 'a t
 (** [remove_one x set] removes one occurrence of [x] from [set]. Linear time.
     @since 0.11 *)
 
-val mem : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> bool
+val mem : ?eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> bool
 (** Membership to the list. Linear time. *)
 
 val subset : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t -> bool
@@ -611,7 +611,7 @@ module Assoc : sig
   val set : eq:(('a->'a->bool) [@keep_label]) -> 'a -> 'b -> ('a,'b) t -> ('a,'b) t
   (** Add the binding into the list (erase it if already present). *)
 
-  val mem : eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,_) t -> bool
+  val mem : ?eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,_) t -> bool
   (** [mem x l] returns [true] iff [x] is a key in [l].
       @since 0.16 *)
 
@@ -641,7 +641,7 @@ val assq_opt : 'a -> ('a * 'b) t -> 'b option
     @since 1.5, but only
     @since 2.0 with labels *)
 
-val mem_assoc : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * _) t -> bool
+val mem_assoc : ?eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * _) t -> bool
 (** Like [Assoc.mem].
     @since 2.0 *)
 
