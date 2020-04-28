@@ -201,7 +201,7 @@ exception Found
 
 let mem ?(eq = Stdlib.(=)) elt a =
   try
-    Array.iter (fun e -> if eq e elt then raise Found) a;
+    Array.iter (fun e -> if eq e elt then raise_notrace Found) a;
     false
   with Found -> true
 
