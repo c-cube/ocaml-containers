@@ -1215,11 +1215,16 @@ let group_join_by (type a) ?(eq=Stdlib.(=)) ?(hash=Hashtbl.hash) f c1 c2 =
   (Error "e2") (all_ok [Ok 1; Error "e2"; Error "e3"; Ok 4])
 *)
 
-let mem ~eq x l =
+let mem ?(eq=Stdlib.(=)) x l =
   let rec search eq x l = match l with
     | [] -> false
     | y::l' -> eq x y || search eq x l'
   in search eq x l
+
+(*$Q mem
+  Q.(small_list small_int) (fun l -> \
+  mem 1 l = (List.mem 1 l))
+*)
 
 let add_nodup ~eq x l =
   if mem ~eq x l then l else x::l
@@ -1545,7 +1550,7 @@ module Assoc = struct
       = [1, "1"; 2, "2"; 3, "3"]
   *)
 
-  let mem ~eq x l =
+  let mem ?(eq=Stdlib.(=)) x l =
     try ignore (search_exn eq l x); true
     with Not_found -> false
 
