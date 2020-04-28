@@ -197,8 +197,21 @@ let rev a =
   rev [| |] = [| |]
 *)
 
+exception Found
+
+let mem ?(eq = Stdlib.(=)) elt a =
+  try
+    Array.iter (fun e -> if eq e elt then raise Found) a;
+    false
+  with Found -> true
+
+(*$Q mem
+  Q.(array small_int) (fun a -> \
+  mem 1 a = (Array.mem 1 a))
+*)
+
 let rec find_aux f a i =
-  if i = Array.length a then None
+  if i >= Array.length a then None
   else match f i a.(i) with
     | Some _ as res -> res
     | None -> find_aux f a (i+1)
