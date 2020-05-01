@@ -589,18 +589,19 @@ let compare_natural a b =
     then compare_natural a c < 0 else Q.assume_fail())
 *)
 
-let edit_distance s1 s2 =
+let edit_distance ?(cutoff=max_int) s1 s2 =
   if length s1 = 0
-  then length s2
+  then min cutoff (length s2)
   else if length s2 = 0
-  then length s1
+  then min cutoff (length s1)
   else if equal s1 s2
   then 0
-  else begin
+  else try
     (* distance vectors (v0=previous, v1=current) *)
     let v0 = Array.make (length s2 + 1) 0 in
     let v1 = Array.make (length s2 + 1) 0 in
     (* initialize v0: v0(i) = A(0)(i) = delete i chars from t *)
+    let lower_bound = ref max_int in
     for i = 0 to length s2 do
       v0.(i) <- i
     done;
@@ -611,19 +612,45 @@ let edit_distance s1 s2 =
 
       (* try add/delete/replace operations *)
       for j = 0 to length s2 - 1 do
-        let cost = if Char.compare (String.get s1 i) (String.get s2 j) = 0 then 0 else 1 in
+        let cost = if Char.equal (String.get s1 i) (String.get s2 j) then 0 else 1 in
         v1.(j+1) <- min (v1.(j) + 1) (min (v0.(j+1) + 1) (v0.(j) + cost));
       done;
+
+      if cutoff < Array.length v1 && i <= 2 * cutoff &&
+         2 * cutoff - i < String.length s2 then (
+        lower_bound := min !lower_bound v1.(2 * cutoff - i);
+      );
+      (* did we compute up to the diagonal 2*cutoff+1? *)
+      if cutoff < Array.length v1 && i = cutoff * 2 && !lower_bound >= cutoff then (
+        raise_notrace Exit;
+      );
 
       (* copy v1 into v0 for next iteration *)
       Array.blit v1 0 v0 0 (length s2 + 1);
     done;
     v1.(length s2)
-  end
+  with Exit -> cutoff
 
 (*$Q
   Q.(string_of_size Gen.(0 -- 30)) (fun s -> \
     edit_distance s s = 0)
+  Q.(let p = string_of_size Gen.(0 -- 20) in pair p p) (fun (s1,s2) -> \
+    edit_distance s1 s2 = edit_distance s2 s1)
+  Q.(let p = string_of_size Gen.(0 -- 20) in pair p p) (fun (s1,s2) -> \
+    let e = edit_distance s1 s2 in \
+    let e' = edit_distance ~cutoff:3 s1 s2 in \
+    (if e' < 3 then e=e' else e >= 3) && \
+    (if e <= 3 then e=e' else true))
+*)
+
+(*$= & ~printer:string_of_int
+  2 (edit_distance "hello" "helo!")
+  5 (edit_distance "abcde" "tuvwx")
+  2 (edit_distance ~cutoff:2 "abcde" "tuvwx")
+  1 (edit_distance ("a" ^ String.make 100 '_') ("b"^String.make 100 '_'))
+  1 (edit_distance ~cutoff:4 ("a" ^ String.make 1000 '_') ("b"^String.make 1000 '_'))
+  2 (edit_distance ~cutoff:3 ("a" ^ String.make 1000 '_' ^ "c")\
+       ("b" ^ String.make 1000 '_' ^ "d"))
 *)
 
 (* test that building a from s, and mutating one char of s, yields

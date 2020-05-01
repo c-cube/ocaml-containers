@@ -405,7 +405,11 @@ val compare_natural : string -> string -> int
     https://en.wikipedia.org/wiki/Natural_sort_order
     @since 1.3 *)
 
-val edit_distance : string -> string -> int
+val edit_distance : ?cutoff:int -> string -> string -> int
 (** Edition distance between two strings. This satisfies the classical
     distance axioms: it is always positive, symmetric, and satisfies
-    the formula [distance a b + distance b c >= distance a c]. *)
+    the formula [distance a b + distance b c >= distance a c].
+    @param cutoff if provided, it's a cap on both the number of iterations,
+      and on the result. (since 3.0). This is useful if you just want to
+    check whether the edit distance is less or equal than 2 (use cutoff of 3).
+*)
