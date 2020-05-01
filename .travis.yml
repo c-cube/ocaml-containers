@@ -9,7 +9,7 @@ env:
   - DISTRO="ubuntu-16.04"
   matrix:
   - PACKAGE="containers" OCAML_VERSION="4.03"
-  - PACKAGE="containers" OCAML_VERSION="4.04"
+  #- PACKAGE="containers" OCAML_VERSION="4.04"
   #- PACKAGE="containers" OCAML_VERSION="4.05"
   - PACKAGE="containers" OCAML_VERSION="4.06"
   #- PACKAGE="containers" OCAML_VERSION="4.07"
@@ -20,4 +20,4 @@ env:
   - PACKAGE="containers-thread" OCAML_VERSION="4.08"
 cache:
   directories:
-    - /home/opam/.opam/
+    - $HOME/.opam/
