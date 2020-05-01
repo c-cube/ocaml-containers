@@ -1,0 +1,166 @@
+{1 Containers}
+
+{2 Change Log}
+
+See {{: https://github.com/c-cube/ocaml-containers/blob/master/CHANGELOG.adoc } this file}
+
+{2 License}
+
+This code is free, under the BSD license.
+
+The logo (media/logo.png) is
+CC-SA3 {{:http://en.wikipedia.org/wiki/File:Hypercube.svg} wikimedia}
+
+{2 Contents}
+
+The design is mostly centered around polymorphism rather than functors. Such
+structures comprise (some modules in misc/, some other in core/):
+
+the core library, containers, now depends on base-bytes (provided
+by ocamlfind).
+
+{4 Core Modules (extension of the standard library)}
+
+{b findlib name}: containers
+
+{!modules:
+CCArray
+CCArrayLabels
+CCArray_slice
+CCBool
+CCChar
+CCEqual
+CCFloat
+CCFormat
+CCFun
+CCHash
+CCHashtbl
+CCHeap
+CCIO
+CCInt
+CCInt64
+CCList
+CCListLabels
+CCMap
+CCOpt
+CCOrd
+CCPair
+CCParse
+CCRandom
+CCRef
+CCResult
+CCSet
+CCString
+CCVector
+Containers
+}
+
+The module {!Containers} contains aliases to most other modules defined
+in {i containers core}, and mixins
+such as:
+
+{[ module List = struct
+    include List
+    include CCList
+  end
+]}
+
+{4 Containers.data}
+
+{b findlib name}: containers.data
+
+Various data structures.
+
+{!modules:
+CCBitField
+CCBV
+CCCache
+CCDeque
+CCFQueue
+CCFlatHashtbl
+CCGraph
+CCHashSet
+CCHashTrie
+CCHet
+CCImmutArray
+CCIntMap
+CCMixmap
+CCMixset
+CCMixtbl
+CCMultiMap
+CCMultiSet
+CCPersistentArray
+CCPersistentHashtbl
+CCRAL
+CCRingBuffer
+CCSimple_queue
+CCTrie
+CCWBTree
+}
+
+{4 Containers.unix}
+
+Helpers that depend on {!Unix}, e.g. to spawn sub-processes.
+
+{!modules: CCUnix}
+
+{4 Containers.sexp}
+
+A small S-expression library. The interface is relatively unstable, but
+the main type ([CCSexp.t]) isn't.
+
+{!modules:
+CCSexp
+}
+
+{4 Containers.iter}
+
+Iterators:
+
+{!modules:
+CCKList
+CCKTree
+CCLazy_list}
+
+{4 String}
+
+containers.string has been removed. Some of its functionality is present
+in {!CCString}; some in other libraries such as [Spelll].
+
+{4 Bigarrays}
+
+containers.bigarray has been removed. Use the [Bigstring] library for
+arrays of bytes.
+
+{4 Advanced}
+
+containers.advanced has been removed. Use [OLinq] to replace some of its
+functionality.
+
+{4 Misc}
+
+Moved to its own repository.
+
+{4 Lwt}
+
+Moved to its own repository
+
+{4 Thread Helpers}
+
+{b findlib name}: containers.thread
+
+Modules related to the use of [Thread].
+
+{!modules:
+CCBlockingQueue
+CCLock
+CCPool
+CCSemaphore
+CCThread
+CCTimer
+}
+
+
+{2 Index}
+
+{!indexlist}
