@@ -3,5 +3,6 @@
   (name containers_data_top)
   (public_name containers-data.top)
   (wrapped false)
+  (modes byte)
   (flags :standard -warn-error -a+8 -safe-string)
   (libraries compiler-libs.common containers containers-data))
