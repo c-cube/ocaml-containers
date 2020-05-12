@@ -474,7 +474,7 @@ let count_true_false p l =
   count_true_false (fun x -> x mod 2 = 0) [2; 6; 9; 4] = (3, 1)
 *)
 
-let product f l1 l2 =
+let[@inline] product f l1 l2 =
   flat_map (fun x -> map (fun y -> f x y) l2) l1
 
 let fold_product f acc l1 l2 =
@@ -1789,8 +1789,8 @@ let of_klist l =
   direct direct_depth_default_ l
 
 module Infix = struct
-  let (>|=) l f = map f l
-  let (>>=) l f = flat_map f l
+  let[@inline] (>|=) l f = map f l
+  let[@inline] (>>=) l f = flat_map f l
   let (@) = (@)
   let (<*>) = (<*>)
   let (<$>) = map
@@ -1799,9 +1799,9 @@ module Infix = struct
 
   include CCShimsMkLet_.Make(struct
       type 'a t = 'a list
-    let (>|=) = (>|=)
-    let (>>=) = (>>=)
-      let monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
+      let (>|=) = (>|=)
+      let (>>=) = (>>=)
+      let[@inline]  monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
     end)
 end
 

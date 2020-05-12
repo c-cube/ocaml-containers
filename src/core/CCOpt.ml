@@ -4,7 +4,7 @@
 
 type 'a t = 'a option
 
-let map f = function
+let[@inline] map f = function
   | None -> None
   | Some x -> Some (f x)
 
@@ -38,11 +38,11 @@ let equal f o1 o2 = match o1, o2 with
 
 let return x = Some x
 
-let flat_map f o = match o with
+let[@inline] flat_map f o = match o with
   | None -> None
   | Some x -> f x
 
-let bind o f = flat_map f o
+let[@inline] bind o f = flat_map f o
 
 let (>>=) = bind
 
@@ -169,7 +169,7 @@ module Infix = struct
       type 'a t = 'a option
       let (>|=) = (>|=)
       let (>>=) = (>>=)
-      let monoid_product o1 o2 = match o1, o2 with
+      let[@inline] monoid_product o1 o2 = match o1, o2 with
         | Some x, Some y -> Some (x,y)
         | _ -> None
     end)
