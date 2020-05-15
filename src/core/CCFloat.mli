@@ -31,7 +31,7 @@ val epsilon : t
     Equal to {!Stdlib.epsilon_float}. *)
 
 val pi : t
-(** [pi] is the constant pi. The ratio of a circunference to its diameter.
+(** [pi] is the constant pi. The ratio of a circumference to its diameter.
     @since NEXT_RELEASE *)
 
 val is_nan : t -> bool
