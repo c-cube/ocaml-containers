@@ -30,6 +30,10 @@ val epsilon : t
 (** [epsilon] is the smallest positive float x such that [1.0 +. x <> 1.0].
     Equal to {!Stdlib.epsilon_float}. *)
 
+val pi : t
+(** [pi] is the constant pi. The ratio of a circunference to its diameter.
+    @since NEXT_RELEASE *)
+
 val is_nan : t -> bool
 (** [is_nan f] returns [true] if f is NaN, [false] otherwise. *)
 

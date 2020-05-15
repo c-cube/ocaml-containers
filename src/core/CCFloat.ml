@@ -38,6 +38,8 @@ let max_finite_value = Stdlib.max_float
 
 let epsilon = Stdlib.epsilon_float
 
+let pi = 0x1.921fb54442d18p+1
+
 let is_nan x = Stdlib.(classify_float x = Stdlib.FP_nan)
 
 let add = (+.)
