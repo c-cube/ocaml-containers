@@ -3,6 +3,8 @@
 
 (** {1 Basic Int functions} *)
 
+include module type of CCShimsInt_
+
 type t = int
 
 val zero : t

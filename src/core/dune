@@ -6,7 +6,8 @@
 
 (rule
  (targets CCShims_.ml CCShimsList_.ml CCShimsFun_.ml CCShimsFun_.mli
-   CCShimsArray_.ml CCShimsFormat_.ml CCShimsMkLet_.ml CCShimsArrayLabels_.ml)
+   CCShimsArray_.ml CCShimsFormat_.ml CCShimsMkLet_.ml CCShimsArrayLabels_.ml
+   CCShimsInt_.ml)
  (deps ./mkshims.exe)
  (action
   (run ./mkshims.exe)))

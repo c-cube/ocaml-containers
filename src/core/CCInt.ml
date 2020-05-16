@@ -3,6 +3,8 @@
 
 open CCShims_
 
+include CCShimsInt_
+
 type t = int
 type 'a iter = ('a -> unit) -> unit
 
