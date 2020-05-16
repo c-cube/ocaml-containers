@@ -6,6 +6,30 @@ open CCShims_
 type t = int
 type 'a iter = ('a -> unit) -> unit
 
+let zero = 0
+
+let one = 1
+
+let minus_one = -1
+
+let add = (+)
+
+let sub = (-)
+
+let mul = ( * )
+
+let div = (/)
+
+let succ = succ
+
+let pred = pred
+
+let abs = abs
+
+let max_int = max_int
+
+let min_int = min_int
+
 let equal (a:int) b = Stdlib.(=) a b
 
 let compare (a:int) b = compare a b
@@ -211,6 +235,8 @@ let of_string s =
 
 let of_string_exn = Stdlib.int_of_string
 
+let to_float = float_of_int
+
 let of_float = int_of_float
 
 (*$=
@@ -359,3 +385,17 @@ let popcount (b:int) : int =
       );
       true)
     *)
+
+let logand = (land)
+
+let logor = (lor)
+
+let logxor = (lxor)
+
+let lognot = lnot
+
+let shift_left = (lsl)
+
+let shift_right = (asr)
+
+let shift_right_logical = (lsr)
