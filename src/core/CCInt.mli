@@ -105,6 +105,10 @@ val range' : t -> t -> t iter
     For instance [range' 0 5 = Iter.of_list [0;1;2;3;4]].
     @since 1.2 *)
 
+val popcount : t -> int
+(** Number of bits set to 1
+    @since NEXT_RELEASE *)
+
 (** {2 Infix Operators}
 
     @since 0.17 *)
