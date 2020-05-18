@@ -71,10 +71,7 @@ let range' i j yield =
   [5;4;3]     (range' 5 2 |> Iter.to_list)
 *)
 
-let sign i =
-  if i < 0 then -1
-  else if i>0 then 1
-  else 0
+let sign i = compare i 0
 
 let neg i = -i
 

@@ -68,7 +68,8 @@ val hash : t -> int
 (** [hash x] computes the hash of [x]. *)
 
 val sign : t -> int
-(** [sign x] is one of [-1, 0, 1]. *)
+(** [sign x] return [0] if [x = 0], [-1] if [x < 0] and [1] if [x > 0].
+    Same as [compare x 0].*)
 
 val neg : t -> t
 (** [neg x] is [- x].
