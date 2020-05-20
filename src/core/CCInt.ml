@@ -292,7 +292,7 @@ let range_by ~step i j yield =
     )
   in
   if step = 0 then
-    raise (Invalid_argument "CCList.range_by")
+    raise (Invalid_argument "CCInt.range_by")
   else if (if step > 0 then i>j else i<j) then ()
   else range i ((j-i)/step*step + i) yield
 
