@@ -107,6 +107,10 @@ let get_or e ~default = match e with
   | Ok x -> x
   | Error _ -> default
 
+let get_lazy f e = match e with
+  | Ok x -> x
+  | Error e -> f e
+
 let get_or_failwith = function
   | Ok x -> x
   | Error msg -> failwith msg
