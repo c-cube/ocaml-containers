@@ -18,73 +18,60 @@
 
 include module type of struct include Nativeint end
 
-val ( + ) : t -> t -> t
-(** Addition. *)
-
-val ( - ) : t -> t -> t
-(** Subtraction. *)
-
-val ( ~- ) : t -> t
-(** Unary negation. *)
-
-val ( * ) : t -> t -> t
-(** Multiplication. *)
-
-val ( / ) : t -> t -> t
-(** Integer division.  Raise [Division_by_zero] if the second
-    argument is zero.  This division rounds the real quotient of
-    its arguments towards zero, as specified for {!Stdlib.(/)}. *)
-
-val ( mod ) : t -> t -> t
-(** [x mod y ] is the integer remainder.
-    If [y <> zero], the result of [x mod y] satisfies the following properties:
-    [zero <= x mod y < abs y] and
-    [x = ((x / y) * y) + (x mod y)].
-    If [y = 0], [x mod y] raises [Division_by_zero]. *)
-
-val ( land ) : t -> t -> t
-(** Bitwise logical and. *)
-
-val ( lor ) : t -> t -> t
-(** Bitwise logical or. *)
-
-val ( lxor ) : t -> t -> t
-(** Bitwise logical exclusive or. *)
-
-val lnot : t -> t
-(** Bitwise logical negation. *)
-
-val ( lsl ) : t -> int -> t
-(** [ x lsl y] shifts [x] to the left by [y] bits.
-    The result is unspecified if [y < 0] or [y >= bitsize], where [bitsize] is [32] on a 32-bit platform
-    and [64] on a 64-bit platform. *)
-
-val ( lsr ) : t -> int -> t
-(** [x lsr y] shifts [x] to the right by [y] bits.
-    This is a logical shift: zeroes are inserted in the vacated bits
-    regardless of the sign of [x].
-    The result is unspecified if [y < 0] or [y >= bitsize]. *)
-
-val ( asr ) : t -> int -> t
-(** [x asr y] shifts [x] to the right by [y] bits.
-    This is an arithmetic shift: the sign bit of [x] is replicated
-    and inserted in the vacated bits.
-    The result is unspecified if [y < 0] or [y >= bitsize]. *)
-
 module Infix : sig
-  val (+) : t -> t -> t
-  val (-) : t -> t -> t
-  val (~-) : t -> t
+  val ( + ) : t -> t -> t
+  (** Addition. *)
+
+  val ( - ) : t -> t -> t
+  (** Subtraction. *)
+
+  val ( ~- ) : t -> t
+  (** Unary negation. *)
+
   val ( * ) : t -> t -> t
-  val (/) : t -> t -> t
-  val (mod) : t -> t -> t
-  val (land) : t -> t -> t
-  val (lor) : t -> t -> t
-  val (lxor) : t -> t -> t
+  (** Multiplication. *)
+
+  val ( / ) : t -> t -> t
+  (** Integer division.  Raise [Division_by_zero] if the second
+      argument is zero.  This division rounds the real quotient of
+      its arguments towards zero, as specified for {!Stdlib.(/)}. *)
+
+  val ( mod ) : t -> t -> t
+  (** [x mod y ] is the integer remainder.
+      If [y <> zero], the result of [x mod y] satisfies the following properties:
+      [zero <= x mod y < abs y] and
+      [x = ((x / y) * y) + (x mod y)].
+      If [y = 0], [x mod y] raises [Division_by_zero]. *)
+
+  val ( land ) : t -> t -> t
+  (** Bitwise logical and. *)
+
+  val ( lor ) : t -> t -> t
+  (** Bitwise logical or. *)
+
+  val ( lxor ) : t -> t -> t
+  (** Bitwise logical exclusive or. *)
+
   val lnot : t -> t
-  val (lsl) : t -> int -> t
-  val (lsr) : t -> int -> t
-  val (asr) : t -> int -> t
+  (** Bitwise logical negation. *)
+
+  val ( lsl ) : t -> int -> t
+  (** [ x lsl y] shifts [x] to the left by [y] bits.
+      The result is unspecified if [y < 0] or [y >= bitsize], where [bitsize] is [32] on a 32-bit platform
+      and [64] on a 64-bit platform. *)
+
+  val ( lsr ) : t -> int -> t
+  (** [x lsr y] shifts [x] to the right by [y] bits.
+      This is a logical shift: zeroes are inserted in the vacated bits
+      regardless of the sign of [x].
+      The result is unspecified if [y < 0] or [y >= bitsize]. *)
+
+  val ( asr ) : t -> int -> t
+  (** [x asr y] shifts [x] to the right by [y] bits.
+      This is an arithmetic shift: the sign bit of [x] is replicated
+      and inserted in the vacated bits.
+      The result is unspecified if [y < 0] or [y >= bitsize]. *)
+
   val (=) : t -> t -> bool
   val (<>) : t -> t -> bool
   val (>) : t -> t -> bool
@@ -97,28 +84,6 @@ val hash : t -> int
 (** Like {!Stdlib.abs (to_int x)}. *)
 
 (** {2 Conversion} *)
-
-val to_int : t -> int
-(** Convert the given native integer (type [nativeint]) to an
-    integer (type [int]). The high-order bit is lost
-    during the conversion. *)
-
-val of_int : int -> t
-(** Alias to {!Nativeint.of_int}.
-    Convert the given integer (type [int]) to a native integer (type [nativeint]). *)
-
-val to_float : t -> float
-(** Convert the given native integer to a floating-point number. *)
-
-val of_float : float -> t
-(** Alias to {!Nativeint.of_float}.
-    Convert the given floating-point number to a native integer,
-    discarding the fractional part (truncate towards 0).
-    The result of the conversion is undefined if, after truncation, the number
-    is outside the range \[{!CCNativeint.min_int}, {!CCNativeint.max_int}\]. *)
-
-val to_string : t -> string
-(** Return the string representation of its argument, in decimal. *)
 
 val of_string_exn : string -> t
 (** Alias to {!Nativeint.of_string}.
