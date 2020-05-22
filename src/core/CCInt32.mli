@@ -155,6 +155,13 @@ val of_float : float -> t
 val to_string : t -> string
 (** [to_string x] returns the string representation of its argument [x], in signed decimal. *)
 
+val of_string : string -> t option
+(** [of_string s] is the safe version of {!of_string_exn}.
+    Like {!of_string_exn}, but return [None] instead of raising. *)
+
+val of_string_opt : string -> t option
+(** [of_string_opt s] is an alias to {!of_string}. *)
+
 val of_string_exn : string -> t
 (** [of_string_exn s] converts the given string [s] into a 32-bit integer.
     Alias to {!Int32.of_string}.
@@ -172,13 +179,6 @@ val of_string_exn : string -> t
     Raise [Failure "Int32.of_string"] if the given string is not
     a valid representation of an integer, or if the integer represented
     exceeds the range of integers representable in type [int32]. *)
-
-val of_string : string -> t option
-(** [of_string s] is the safe version of {!of_string_exn}.
-    Like {!of_string_exn}, but return [None] instead of raising. *)
-
-val of_string_opt : string -> t option
-(** [of_string_opt s] is an alias to {!of_string}. *)
 
 val to_string_binary : t -> string
 (** [to_string_binary x] returns the string representation of the integer [x], in binary.
