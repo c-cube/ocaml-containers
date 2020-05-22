@@ -17,34 +17,6 @@
 
 include module type of struct include Int32 end
 
-val ( + ) : t -> t -> t
-(** [x + y] is the sum of [x] and [y]. 
-    Addition. *)
-
-val ( - ) : t -> t -> t
-(** [x - y] is the difference of [x] and [y].
-    Subtraction. *)
-
-val ( ~- ) : t -> t
-(** [~- x] is the negation of [x].
-    Unary negation. *)
-
-val ( * ) : t -> t -> t
-(** [ x * y] is the product of [x] and [y].
-    Multiplication. *)
-
-val ( / ) : t -> t -> t
-(** [x / y] is the integer quotient of [x] and [y].
-    Integer division.  Raise [Division_by_zero] if the second
-    argument [y] is zero.  This division rounds the real quotient of
-    its arguments towards zero, as specified for {!Stdlib.(/)}. *)
-
-val ( mod ) : t -> t -> t
-(** [x mod y] is the integer remainder of [x / y].
-    If [y <> zero], the result of [x mod y] satisfies the following property:
-    [x = ((x / y) * y) + (x mod y)].
-    If [y = 0], [x mod y] raises [Division_by_zero]. *)
-
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
     @since NEXT_RELEASE *)
@@ -52,34 +24,6 @@ val min : t -> t -> t
 val max : t -> t -> t
 (** [max x y] returns the maximum of the two integers [x] and [y].
     @since NEXT_RELEASE *)
-
-val ( land ) : t -> t -> t
-(** [x land y] is the bitwise logical and of [x] and [y]. *)
-
-val ( lor ) : t -> t -> t
-(** [x lor y] is the bitwise logical or of [x] and [y]. *)
-
-val ( lxor ) : t -> t -> t
-(** [x lxor y] is the bitwise logical exclusive or of [x] and [y]. *)
-
-val lnot : t -> t
-(** [lnot x] is the bitwise logical negation of [x] (the bits of [x] are inverted). *)
-
-val ( lsl ) : t -> int -> t
-(** [ x lsl y] shifts [x] to the left by [y] bits, filling in with zeroes.
-    The result is unspecified if [y < 0] or [y >= 32]. *)
-
-val ( lsr ) : t -> int -> t
-(** [x lsr y] shifts [x] to the right by [y] bits.
-    This is a logical shift: zeroes are inserted in the vacated bits
-    regardless of the sign of [x].
-    The result is unspecified if [y < 0] or [y >= 32]. *)
-
-val ( asr ) : t -> int -> t
-(** [x asr y] shifts [x] to the right by [y] bits.
-    This is an arithmetic shift: the sign bit of [x] is replicated
-    and inserted in the vacated bits.
-    The result is unspecified if [y < 0] or [y >= 32]. *)
 
 val hash : t -> int
 (** [hash x] computes the hash of [x].
@@ -130,31 +74,6 @@ val random_range : t -> t -> t random_gen
 
 (** {2 Conversion} *)
 
-val to_int : t -> int
-(** [to_int x] converts the given 32-bit integer [x] (type [int32]) into an
-    integer (type [int]). On 32-bit platforms, the 32-bit integer
-    is taken modulo 2{^31}, i.e. the high-order bit is lost
-    during the conversion. On 64-bit platforms, the conversion is exact. *)
-
-val of_int : int -> t
-(** [of_int x] converts the given integer [x] (type [int]) into an
-    32-bit integer (type [int32]).
-    Alias to {!Int32.of_int}. *)
-
-val to_float : t -> float
-(** [to_float x] converts the given 32-bit integer [x]
-    into a floating-point number (type [float]). *)
-
-val of_float : float -> t
-(** [of_float x] converts the given floating-point number [x] into a 32-bit integer,
-    discarding the fractional part (truncate towards 0).
-    The result of the conversion is undefined if, after truncation, the number
-    is outside the range \[{!CCInt32.min_int}, {!CCInt32.max_int}\].
-    Alias to {!Int32.of_float}. *)
-
-val to_string : t -> string
-(** [to_string x] returns the string representation of its argument [x], in signed decimal. *)
-
 val of_string : string -> t option
 (** [of_string s] is the safe version of {!of_string_exn}.
     Like {!of_string_exn}, but return [None] instead of raising. *)
@@ -200,11 +119,34 @@ val pp_binary : t printer
 (** {2 Infix Operators} *)
 
 module Infix : sig
-  val (+) : t -> t -> t
-  val (-) : t -> t -> t
-  val (~-) : t -> t
+  val ( + ) : t -> t -> t
+  (** [x + y] is the sum of [x] and [y]. 
+      Addition. *)
+
+  val ( - ) : t -> t -> t
+  (** [x - y] is the difference of [x] and [y].
+      Subtraction. *)
+
+  val ( ~- ) : t -> t
+  (** [~- x] is the negation of [x].
+      Unary negation. *)
+
   val ( * ) : t -> t -> t
-  val (/) : t -> t -> t
+  (** [ x * y] is the product of [x] and [y].
+      Multiplication. *)
+
+  val ( / ) : t -> t -> t
+  (** [x / y] is the integer quotient of [x] and [y].
+      Integer division.  Raise [Division_by_zero] if the second
+      argument [y] is zero.  This division rounds the real quotient of
+      its arguments towards zero, as specified for {!Stdlib.(/)}. *)
+
+  val ( mod ) : t -> t -> t
+  (** [x mod y] is the integer remainder of [x / y].
+      If [y <> zero], the result of [x mod y] satisfies the following property:
+      [x = ((x / y) * y) + (x mod y)].
+      If [y = 0], [x mod y] raises [Division_by_zero]. *)
+
   val ( ** ) : t -> t -> t
   (** Alias to {!pow}
       @since NEXT_RELEASE *)
@@ -217,14 +159,34 @@ module Infix : sig
   (** Alias to {!range'}.
       @since NEXT_RELEASE *)
 
-  val (mod) : t -> t -> t
-  val (land) : t -> t -> t
-  val (lor) : t -> t -> t
-  val (lxor) : t -> t -> t
+  val ( land ) : t -> t -> t
+  (** [x land y] is the bitwise logical and of [x] and [y]. *)
+
+  val ( lor ) : t -> t -> t
+  (** [x lor y] is the bitwise logical or of [x] and [y]. *)
+
+  val ( lxor ) : t -> t -> t
+  (** [x lxor y] is the bitwise logical exclusive or of [x] and [y]. *)
+
   val lnot : t -> t
-  val (lsl) : t -> int -> t
-  val (lsr) : t -> int -> t
-  val (asr) : t -> int -> t
+  (** [lnot x] is the bitwise logical negation of [x] (the bits of [x] are inverted). *)
+
+  val ( lsl ) : t -> int -> t
+  (** [ x lsl y] shifts [x] to the left by [y] bits, filling in with zeroes.
+      The result is unspecified if [y < 0] or [y >= 32]. *)
+
+  val ( lsr ) : t -> int -> t
+  (** [x lsr y] shifts [x] to the right by [y] bits.
+      This is a logical shift: zeroes are inserted in the vacated bits
+      regardless of the sign of [x].
+      The result is unspecified if [y < 0] or [y >= 32]. *)
+
+  val ( asr ) : t -> int -> t
+  (** [x asr y] shifts [x] to the right by [y] bits.
+      This is an arithmetic shift: the sign bit of [x] is replicated
+      and inserted in the vacated bits.
+      The result is unspecified if [y < 0] or [y >= 32]. *)
+
   val (=) : t -> t -> bool
   val (<>) : t -> t -> bool
   val (>) : t -> t -> bool
