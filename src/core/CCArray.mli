@@ -15,10 +15,6 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-(**/**)
-external make_float : int -> float array = "caml_make_float_vect" (* compat *)
-(**/**)
-
 include module type of CCShimsArray_
 
 val empty : 'a t
@@ -35,33 +31,14 @@ val swap : 'a t -> int -> int -> unit
 (** [swap a i j] swaps elements at indices [i] and [j].
     @since 1.4 *)
 
-val get : 'a t -> int -> 'a
-(** [get a n] returns the element number [n] of array [a].
-    The first element has number 0.
-    The last element has number [length a - 1].
-    You can also write [a.(n)] instead of [get a n].
-
-    Raise [Invalid_argument "index out of bounds"]
-    if [n] is outside the range 0 to [(length a - 1)]. *)
-
 val get_safe : 'a t -> int -> 'a option
 (** [get_safe a i] returns [Some a.(i)] if [i] is a valid index.
     @since 0.18 *)
 
-val set : 'a t -> int -> 'a -> unit
-(** [set a n x] modifies array [a] in place, replacing
-    element number [n] with [x].
-    You can also write [a.(n) <- x] instead of [set a n x].
-
-    Raise [Invalid_argument "index out of bounds"]
-    if [n] is outside the range 0 to [length a - 1]. *)
-
-val length : _ t -> int
-(** [length a] returns the length (number of elements) of the given array [a]. *)
-
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** [fold f init a] computes [f (... (f (f init a.(0)) a.(1)) ...) a.(n-1)],
-    where [n] is the length of the array [a]. *)
+    where [n] is the length of the array [a].
+    Same as {!Array.fold_left}*)
 
 val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** [foldi f init a] is just like {!fold}, but it also passes in the index
@@ -84,25 +61,6 @@ val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc t
 
     @since 1.2, but only
     @since 2.1 with labels *)
-
-val iter : ('a -> unit) -> 'a t -> unit
-(** [iter f a] applies function [f] in turn to all elements of [a].
-    It is equivalent to [f a.(0); f a.(1); ...; f a.(length a - 1); ()]. *)
-
-val iteri : (int -> 'a -> unit) -> 'a t -> unit
-(** [iteri f a] is like {!iter}, but the function [f] is applied with the index of the
-    element as first argument, and the element itself as second argument. *)
-
-val blit : 'a t -> int -> 'a t -> int -> int -> unit
-(** [blit a1 o1 a2 o2 len] copies [len] elements
-    from array [a1], starting at element number [o1], to array [a2],
-    starting at element number [o2]. It works correctly even if
-    [a1] and [a2] are the same array, and the source and
-    destination chunks overlap.
-
-    Raise [Invalid_argument "CCArray.blit"] if [o1] and [len] do not
-    designate a valid subarray of [a1], or if [o2] and [len] do not
-    designate a valid subarray of [a2]. *)
 
 val reverse_in_place : 'a t -> unit
 (** [reverse_in_place a] reverses the array [a] in place. *)
@@ -253,11 +211,6 @@ val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
     The printing function [pp_item] is giving both index and element.
     Elements are separated by [sep] (defaults to ", "). *)
 
-val map : ('a -> 'b) -> 'a t -> 'b t
-(** [map f a] applies function [f] to all elements of [a],
-    and builds an array with the results returned by [f]:
-    [[| f a.(0); f a.(1); ...; f a.(length a - 1) |]]. *)
-
 val rev : 'a t -> 'a t
 (** [rev a] copies the array [a] and reverses it in place.
     @since 0.20 *)
@@ -279,27 +232,9 @@ val monoid_product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 val flat_map : ('a -> 'b t) -> 'a t -> 'b array
 (** [flat_map f a] transforms each element of [a] into an array, then flattens. *)
 
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** [a >>= f] is the infix version of {!flat_map}. *)
-
-val (>>|) : 'a t -> ('a -> 'b) -> 'b t
-(** [a >>| f] is the infix version of {!map}.
-    @since 0.8 *)
-
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** [a >|= f] is the infix version of {!map}.
-    @since 0.8 *)
-
 val except_idx : 'a t -> int -> 'a list
 (** [except_idx a i] removes the element of [a] at given index [i], and returns
     the list of the other elements. *)
-
-val (--) : int -> int -> int t
-(** [x -- y] creates an array containing integers in the range [x .. y]. Bounds included. *)
-
-val (--^) : int -> int -> int t
-(** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
-    @since 0.17 *)
 
 val random : 'a random_gen -> 'a t random_gen
 val random_non_empty : 'a random_gen -> 'a t random_gen
@@ -356,6 +291,4 @@ module Infix : sig
   include CCShimsMkLet_.S with type 'a t_let := 'a array
 end
 
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
-include CCShimsMkLet_.S with type 'a t_let := 'a array
+include module type of Infix

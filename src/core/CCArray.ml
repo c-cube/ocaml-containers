@@ -21,12 +21,6 @@ include CCShimsArray_
 
 let empty = [| |]
 
-let map = Array.map
-
-let length = Array.length
-
-let get = Array.get
-
 let get_safe a i =
   if i>=0 && i<Array.length a
   then Some (Array.unsafe_get a i)
@@ -41,8 +35,6 @@ let get_safe a i =
   None (get_safe [|1;2;3|] ~-1)
   None (get_safe [|1;2;3|] ~-42)
 *)
-
-let set = Array.set
 
 let fold = Array.fold_left
 
@@ -107,12 +99,6 @@ let scan_left f acc a =
   [|0|] (scan_left (+) 0 [||])
 *)
 
-
-let iter = Array.iter
-
-let iteri = Array.iteri
-
-let blit = Array.blit
 
 let reverse_in_place a =
   let len = Array.length a in
