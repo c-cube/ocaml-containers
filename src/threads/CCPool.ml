@@ -547,6 +547,18 @@ module Make(P : PARAM) = struct
     *)
 
     (*$R
+      let l = CCList.(1 -- 100_000) in
+      let l' = l
+        |> List.map
+          (fun x -> Fut.make (fun () -> 1))
+        |> Fut.sequence_l
+        |> Fut.map (List.fold_left (+) 0)
+      in
+      let expected = 100_000 in
+      OUnit.assert_equal expected (Fut.get l')
+    *)
+
+    (*$R
       let l = CCList.(1 -- 50) in
       let l' = l
         |> List.map
