@@ -3,10 +3,61 @@
 
 (** {1 Basic Int functions} *)
 
+include module type of CCShimsInt_
+
 type t = int
 
+val zero : t
+(** [zero] is the integer [0].
+    @since NEXT_RELEASE *)
+
+val one : t
+(** [one] is the integer [1].
+    @since NEXT_RELEASE *)
+
+val minus_one : t
+(** [minus_one] is the integer [-1].
+    @since NEXT_RELEASE *)
+
+val add : t -> t -> t
+(** [add x y] is [x + y].
+    @since NEXT_RELEASE *)
+
+val sub : t -> t -> t
+(** [sub x y] is [x - y].
+    @since NEXT_RELEASE *)
+
+val mul : t -> t -> t
+(** [mul x y] is [x * y].
+    @since NEXT_RELEASE *)
+
+val div : t -> t -> t
+(** [div x y] is [x / y]
+    @since NEXT_RELEASE *)
+
+val succ : t -> t
+(** [succ x] is [x + 1].
+    @since NEXT_RELEASE *)
+
+val pred : t -> t
+(** [pred x] is [x - 1].
+    @since NEXT_RELEASE *)
+
+val abs : t -> t
+(** [abs x] is the absolute value of [x]. It is [x] if [x] is positive
+    and [neg x] otherwise.
+    @since NEXT_RELEASE *)
+
+val max_int : t
+(** [max_int] is the maximum integer.
+    @since NEXT_RELEASE *)
+
+val min_int : t
+(** [min_int] is the minimum integer.
+    @since NEXT_RELEASE *)
+
 val compare : t -> t -> int
-(** [compare x y] is the comparison function for integers 
+(** [compare x y] is the comparison function for integers
     with the same specification as {!Stdlib.compare}. *)
 
 val equal : t -> t -> bool
@@ -15,9 +66,10 @@ val equal : t -> t -> bool
 
 val hash : t -> int
 (** [hash x] computes the hash of [x]. *)
-  
+
 val sign : t -> int
-(** [sign x] is one of [-1, 0, 1]. *)
+(** [sign x] return [0] if [x = 0], [-1] if [x < 0] and [1] if [x > 0].
+    Same as [compare x 0].*)
 
 val neg : t -> t
 (** [neg x] is [- x].
@@ -49,7 +101,15 @@ val random_small : t random_gen
 val random_range : int -> int -> t random_gen
 
 val pp : t printer
-(** [pp ppf x] prints the integer [x] on [ppf]. *)    
+(** [pp ppf x] prints the integer [x] on [ppf]. *)
+
+val to_float : t -> float
+(** [to_float] is the same as [float_of_int]
+    @since NEXT_RELEASE*)
+
+val of_float : float -> t
+(** [to_float] is the same as [int_of_float]
+    @since NEXT_RELEASE*)
 
 val to_string : t -> string
 (** [to_string x] returns the string representation of the integer [x], in signed decimal.
@@ -107,6 +167,34 @@ val range' : t -> t -> t iter
 
 val popcount : t -> int
 (** Number of bits set to 1
+    @since NEXT_RELEASE *)
+
+val logand : t -> t -> t
+(** [logand] is the same as [(land)].
+    @since NEXT_RELEASE *)
+
+val logor : t -> t -> t
+(** [logand] is the same as [(lor)].
+    @since NEXT_RELEASE *)
+
+val logxor : t -> t -> t
+(** [logxor] is the same as [(lxor)].
+    @since NEXT_RELEASE *)
+
+val lognot : t -> t
+(** [logand] is the same as [lnot].
+    @since NEXT_RELEASE *)
+
+val shift_left : t -> int -> t
+(** [shift_left] is the same as [(lsl)].
+    @since NEXT_RELEASE *)
+
+val shift_right : t -> int -> t
+(** [shift_right] is the same as [(asr)].
+    @since NEXT_RELEASE *)
+
+val shift_right_logical : t -> int -> t
+(** [shift_right_logical] is the same as [(lsr)].
     @since NEXT_RELEASE *)
 
 (** {2 Infix Operators}

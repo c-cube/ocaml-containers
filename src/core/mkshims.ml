@@ -150,6 +150,9 @@ let shims_let_op_post_408 =
   end[@@inline]
 "
 
+let shims_int_pre_408 = ""
+let shims_int_post_408 = "include Int"
+
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
@@ -168,4 +171,5 @@ let () =
     write_file "CCShimsFun_.ml" (if (major, minor) >= (4,8) then shims_fun_post_408 else shims_fun_pre_408);
     write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);
     write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
+    write_file "CCShimsInt_.ml" (if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408);
   )
