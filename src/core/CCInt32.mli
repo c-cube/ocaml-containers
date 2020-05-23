@@ -143,7 +143,8 @@ module Infix : sig
 
   val ( mod ) : t -> t -> t
   (** [x mod y] is the integer remainder of [x / y].
-      If [y <> zero], the result of [x mod y] satisfies the following property:
+      If [y <> zero], the result of [x mod y] satisfies the following properties:
+      [zero <= x mod y < abs y] and
       [x = ((x / y) * y) + (x mod y)].
       If [y = 0], [x mod y] raises [Division_by_zero]. *)
 
