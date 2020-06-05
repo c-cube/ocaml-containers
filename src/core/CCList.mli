@@ -41,7 +41,7 @@ val cons_maybe : 'a option -> 'a t -> 'a t
     @since 0.13 *)
 
 val (@) : 'a t -> 'a t -> 'a t
-(** [l1 @ l2] is like [append].
+(** [l1 @ l2] is like [append l1 l2].
     Concatenate the two lists [l1] and [l2]. *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
@@ -56,22 +56,22 @@ val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
     Safe version of {!List.fold_right}. *)
 
 val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
-(** [fold_while f acc l] folds until a stop condition via [('a, `Stop)] is
+(** [fold_while f init l] folds until a stop condition via [('a, `Stop)] is
     indicated by the accumulator.
     @since 0.8 *)
 
 val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
-(** [fold_map f acc l] is a [fold_left]-like function, but it also maps the
+(** [fold_map f init l] is a [fold_left]-like function, but it also maps the
     list to another list.
     @since 0.14 *)
 
 val fold_map_i : ('acc -> int -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
-(** [fold_map_i f acc l] is a [foldi]-like function, but it also maps the
+(** [fold_map_i f init l] is a [foldi]-like function, but it also maps the
     list to another list.
     @since 2.8 *)
 
 val fold_on_map : f:('a -> 'b) -> reduce:('acc -> 'b -> 'acc) -> 'acc -> 'a list -> 'acc
-(** [fold_on_map ~f ~reduce acc l] combines [map f] and [fold_left reduce acc]
+(** [fold_on_map ~f ~reduce init l] combines [map f] and [fold_left reduce init]
     in one operation.
     @since 2.8 *)
 
@@ -82,27 +82,27 @@ val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc list
     @since 2.2 with labels *)
 
 val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
-(** [fold_map2 f acc l1 l2] is to [fold_map] what [List.map2] is to [List.map].
+(** [fold_map2 f init l1 l2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length.
     @since 0.16 *)
 
 val fold_filter_map : ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
-(** [fold_filter_map f acc l] is a [fold_left]-like function, but also
+(** [fold_filter_map f init l] is a [fold_left]-like function, but also
     generates a list of output in a way similar to {!filter_map}.
     @since 0.17 *)
 
 val fold_filter_map_i : ('acc -> int -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
-(** [fold_filter_map_i f acc l] is a [foldi]-like function, but also
+(** [fold_filter_map_i f init l] is a [foldi]-like function, but also
     generates a list of output in a way similar to {!filter_map}.
     @since 2.8 *)
 
 val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
-(** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
+(** [fold_flat_map f init l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
     @since 0.14 *)
 
 val fold_flat_map_i : ('acc -> int -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
-(** [fold_flat_map_i f acc l] is a [fold_left]-like function, but it also maps the
+(** [fold_flat_map_i f init l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
     @since 2.8 *)
 
@@ -173,13 +173,14 @@ val flat_map_i : (int -> 'a -> 'b t) -> 'a t -> 'b t
     @since 2.8 *)
 
 val flatten : 'a t t -> 'a t
-(** [flatten [l1]; [l2]; ⋯] concatenates a list of lists. Safe flatten. *)
+(** [flatten [l1]; [l2]; ⋯] concatenates a list of lists. 
+    Safe version of {!List.flatten}. *)
 
 val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [product comb l1 l2] computes the cartesian product of the two lists, with the given combinator [comb]. *)
 
 val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
-(** [fold_product f acc l1 l2] applies the function [f] with the accumulator [acc] on all 
+(** [fold_product f init l1 l2] applies the function [f] with the accumulator [init] on all 
     the pair of elements of [l1] and [l2]. Fold on the cartesian product. *)
 
 val cartesian_product : 'a t t -> 'a t t
@@ -313,7 +314,7 @@ val intersperse : 'a -> 'a list -> 'a list
     @since 2.2 with labels *)
 
 val interleave : 'a list -> 'a list -> 'a list
-(** [interleave [x1…xn] [y1…ym]] is [x1;y1;x2;y2;…] and finishes with
+(** [interleave [x1…xn] [y1…ym]] is [[x1;y1;x2;y2;…]] and finishes with
     the suffix of the longest list.
     @since 2.1, but only
     @since 2.2 with labels *)
@@ -366,16 +367,17 @@ val last : int -> 'a t -> 'a t
     [l] doesn't have that many elements). *)
 
 val head_opt : 'a t -> 'a option
-(** [head_opt (x :: l)] returns [Some x] or [None] if the list is empty.
+(** [head_opt l] returns [Some x] (the first element of the list [l] 
+    or [None] if the list [l] is empty.
     @since 0.20 *)
 
 val tail_opt : 'a t -> 'a t option
-(** [tail_opt (x :: l)] returns [Some l] (the given list without its first element),
-    or [None] if the list is empty.
+(** [tail_opt l] returns [Some l'] (the given list [l] without its first element),
+    or [None] if the list [l] is empty.
     @since 2.0 *)
 
 val last_opt : 'a t -> 'a option
-(** [last_opt l] returns [Some x] (the last element of [l]) or [None] if the list is empty. 
+(** [last_opt l] returns [Some x] (the last element of [l]) or [None] if the list [l] is empty. 
     @since 0.20 *)
 
 val find_pred : ('a -> bool) -> 'a t -> 'a option
@@ -456,7 +458,7 @@ val sorted_merge_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 
 val is_sorted : cmp:('a -> 'a -> int) -> 'a list -> bool
 (** [is_sorted ~cmp l] returns [true] iff [l] is sorted (according to given order).
-    @param cmp the comparison function (default [Stdlib.compare]).
+    @param cmp the comparison function.
     @since 0.17 *)
 
 val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
@@ -498,13 +500,13 @@ val iteri2 : (int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
     @since 2.2 with labels *)
 
 val foldi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
-(** [foldi f acc l] is like [fold] but it also passes in the index of each element, from [0] to [length l - 1]
+(** [foldi f init l] is like [fold] but it also passes in the index of each element, from [0] to [length l - 1]
     as additional argument to the folded function [f]. Tail-recursive. *)
 
 val foldi2 : ('c -> int -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
-(** [foldi2 f acc l1 l2] folds on the two lists [l1] and [l2],
+(** [foldi2 f init l1 l2] folds on the two lists [l1] and [l2],
     with index of each element passed to the function [f].
-    Computes [f(… (f acc i_0 l1_0 l2_0) …) i_n l1_n l2_n] .
+    Computes [f(… (f init i_0 l1_0 l2_0) …) i_n l1_n l2_n] .
     @raise Invalid_argument when lists do not have the same length.
     @since 2.0, but only
     @since 2.2 with labels *)
@@ -599,11 +601,11 @@ val range' : int -> int -> int t
     For instance [range' 0 5 = [0;1;2;3;4]]. *)
 
 val (--) : int -> int -> int t
-(** [i -- j] iterates on integers from [i] to [j] included.
+(** [i -- j] is the list of integers from [i] to [j] included.
     Infix alias for [range]. *)
 
 val (--^) : int -> int -> int t
-(** [i --^ j] iterates on integers from [i] to [j] excluded.
+(** [i --^ j] is the list of integers from [i] to [j] excluded.
     Infix alias for [range'].
     @since 0.17 *)
 
