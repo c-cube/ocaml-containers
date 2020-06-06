@@ -123,6 +123,19 @@ let call_full ?bufsize ?stdin ?env cmd =
   call_full ~stdin:(`Str "abc") "cat" |> stdout = "abc"
   call_full "echo %s" (escape_str "a'b'c") |> stdout = "a'b'c\n"
   call_full "echo %s" "a'b'c" |> stdout = "abc\n"
+  String.length (call_full "yes | head -n 100000 1>&2" |> stderr) > 100000
+*)
+
+(*$R
+  let p = call_full "for i in `seq 1 10000` ; do echo $i ; echo $i >&2 ; done" in
+  assert_equal ~printer:Q.Print.(list string)
+    (CCString.split_on_char '\n' p#stdout |> List.map String.trim
+     |> List.filter (fun s->s<>""))
+    CCList.(1 -- 10000 |> List.map string_of_int);
+  assert_equal ~printer:Q.Print.(list string)
+    (CCString.split_on_char '\n' p#stderr |> List.map String.trim
+     |> List.filter (fun s->s<>""))
+    CCList.(1 -- 10000 |> List.map string_of_int);
 *)
 
 let call ?bufsize ?stdin ?env cmd =
