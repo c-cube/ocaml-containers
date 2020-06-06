@@ -97,10 +97,16 @@ let call_full_inner ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) ~
        end;
        close_out ic;
        (* read out and err *)
-       let out = read_all ~size:bufsize oc in
+       let out = ref "" in
+       let t_out =
+         Thread.create
+           (fun oc ->
+              out := read_all ~size:bufsize oc)
+           oc in
        let err = read_all ~size:bufsize errc in
+       Thread.join t_out;
        let status = Unix.close_process_full (oc, ic, errc) in
-       f (out,err,status)
+       f (!out,err,status)
     )
 
 let call_full ?bufsize ?stdin ?env cmd =
