@@ -74,6 +74,18 @@ let read_all ?(size=1024) ic =
   with Exit ->
     Bytes.sub_string !buf 0 !len
 
+(* read content but do not store it. This prevents writers from
+   starving while not allocating anything more than the initial buffer. *)
+let read_all_and_discard ?(size=1024) ic : unit =
+  let buf = Bytes.create size in
+  try
+    while true do
+      let n = input ic buf 0 size in
+      if n = 0 then raise Exit;  (* exhausted *)
+    done;
+    assert false (* never reached*)
+  with Exit -> ()
+
 type call_result =
   < stdout:string;
     stderr:string;
@@ -83,7 +95,8 @@ type call_result =
 
 let kbprintf' buf fmt k = Printf.kbprintf k buf fmt
 
-let call_full_inner ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) ~f cmd =
+let call_full_inner ?(discard_stderr=false)
+    ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) ~f cmd =
   (* render the command *)
   let buf = Buffer.create 256 in
   kbprintf' buf cmd
@@ -103,7 +116,11 @@ let call_full_inner ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) ~
            (fun oc ->
               out := read_all ~size:bufsize oc)
            oc in
-       let err = read_all ~size:bufsize errc in
+       let err =
+         if discard_stderr then (
+           read_all_and_discard ~size:bufsize errc; ""
+         ) else read_all ~size:bufsize errc
+       in
        Thread.join t_out;
        let status = Unix.close_process_full (oc, ic, errc) in
        f (!out,err,status)
@@ -143,7 +160,8 @@ let call ?bufsize ?stdin ?env cmd =
     ~f:(fun (out,err,status) -> out, err, int_of_process_status status)
 
 let call_stdout ?bufsize ?stdin ?env cmd =
-  call_full_inner ?bufsize ?stdin ?env cmd
+  (* no need to store stderr *)
+  call_full_inner ~discard_stderr:true ?bufsize ?stdin ?env cmd
     ~f:(fun (out,_err,_status) -> out)
 
 (*$T
