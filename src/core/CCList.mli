@@ -367,12 +367,12 @@ val last : int -> 'a t -> 'a t
     [l] doesn't have that many elements). *)
 
 val head_opt : 'a t -> 'a option
-(** [head_opt l] returns [Some x] (the first element of the list [l] 
+(** [head_opt l] returns [Some x] (the first element of the list [l]) 
     or [None] if the list [l] is empty.
     @since 0.20 *)
 
 val tail_opt : 'a t -> 'a t option
-(** [tail_opt l] returns [Some l'] (the given list [l] without its first element),
+(** [tail_opt l] returns [Some l'] (the given list [l] without its first element)
     or [None] if the list [l] is empty.
     @since 2.0 *)
 
@@ -754,7 +754,7 @@ val to_iter : 'a t -> 'a iter
     @since 2.8 *)
 
 val to_std_seq : 'a t -> 'a Seq.t
-(** [to_std_seq l] returns a [Seq.t] of the elements of the list [l].
+(** [to_std_seq l] returns a [seq] of the elements of the list [l].
     @since 2.8 *)
 
 val of_iter : 'a iter -> 'a t
@@ -763,11 +763,11 @@ val of_iter : 'a iter -> 'a t
     @since 2.8 *)
 
 val of_std_seq_rev : 'a Seq.t -> 'a t
-(** [of_std_seq_rev Seq.t] builds a list from a given [Seq.t], in reverse order.
+(** [of_std_seq_rev seq] builds a list from a given [seq], in reverse order.
     @since 2.8 *)
 
 val of_std_seq : 'a Seq.t -> 'a t
-(** [of_std_seq Seq.t] builds a list from a given [Seq.t].
+(** [of_std_seq seq] builds a list from a given [seq].
     In the result, elements appear in the same order as they did in the source [Seq.t].
     @since 2.8 *)
 

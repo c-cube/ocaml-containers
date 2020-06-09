@@ -42,7 +42,7 @@ val to_iter : t -> char iter
     @since 2.8 *)
 
 val to_std_seq : t -> char Seq.t
-(** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
+(** [to_std_seq s] returns a [seq] of the bytes in [s].
     @since 2.8
 *)
 
