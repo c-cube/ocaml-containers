@@ -190,7 +190,7 @@ val to_iter : 'a t -> 'a iter
     @since 2.8 *)
 
 val to_std_seq : 'a t -> 'a Seq.t
-(** [to_std_seq a] returns a [seq] of the elements of an array [a].
+(** [to_std_seq a] returns a [Seq.t] of the elements of an array [a].
     The input array [a] is shared with the sequence and modification of it will result
     in modification of the sequence.
     @since 2.8

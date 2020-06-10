@@ -754,7 +754,7 @@ val to_iter : 'a t -> 'a iter
     @since 2.8 *)
 
 val to_std_seq : 'a t -> 'a Seq.t
-(** [to_std_seq l] returns a [seq] of the elements of the list [l].
+(** [to_std_seq l] returns a [Seq.t] of the elements of the list [l].
     @since 2.8 *)
 
 val of_iter : 'a iter -> 'a t
@@ -763,11 +763,11 @@ val of_iter : 'a iter -> 'a t
     @since 2.8 *)
 
 val of_std_seq_rev : 'a Seq.t -> 'a t
-(** [of_std_seq_rev seq] builds a list from a given [seq], in reverse order.
+(** [of_std_seq_rev seq] builds a list from a given [Seq.t], in reverse order.
     @since 2.8 *)
 
 val of_std_seq : 'a Seq.t -> 'a t
-(** [of_std_seq seq] builds a list from a given [seq].
+(** [of_std_seq seq] builds a list from a given [Seq.t].
     In the result, elements appear in the same order as they did in the source [Seq.t].
     @since 2.8 *)
 

@@ -133,7 +133,7 @@ module type S = sig
       @since 2.8 *)
 
   val to_std_seq : t -> elt Seq.t
-  (** [to_std_seq h] returns a [seq] of the elements of the heap [h].
+  (** [to_std_seq h] returns a [Seq.t] of the elements of the heap [h].
       @since 2.8 *)
 
   val to_iter_sorted : t -> elt iter
@@ -142,7 +142,7 @@ module type S = sig
       @since 2.8 *)
 
   val to_std_seq_sorted : t -> elt Seq.t
-  (** [to_std_seq_sorted h] returns a [seq] by iterating on the elements of [h],
+  (** [to_std_seq_sorted h] returns a [Seq.t] by iterating on the elements of [h],
       in increasing order.
       @since 2.8 *)
 
