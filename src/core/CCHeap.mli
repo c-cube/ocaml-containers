@@ -117,7 +117,7 @@ module type S = sig
       @since 2.8 *)
 
   val add_std_seq : t -> elt Seq.t -> t
-  (** [add_std_seq h Seq.t] is like {!add_list}.
+  (** [add_std_seq h seq] is like {!add_list}.
       @since 2.8 *)
 
   val of_iter : elt iter -> t
@@ -125,7 +125,7 @@ module type S = sig
       @since 2.8 *)
 
   val of_std_seq : elt Seq.t -> t
-  (** [of_std_seq Seq.t] builds a heap from a given [Seq.t]. Complexity: [O(n log n)].
+  (** [of_std_seq seq] builds a heap from a given [Seq.t]. Complexity: [O(n log n)].
       @since 2.8 *)
 
   val to_iter : t -> elt iter
@@ -142,7 +142,7 @@ module type S = sig
       @since 2.8 *)
 
   val to_std_seq_sorted : t -> elt Seq.t
-  (** [to_std_seq_sorted h ] returns a [Seq.t] by iterating on the elements of [h],
+  (** [to_std_seq_sorted h] returns a [Seq.t] by iterating on the elements of [h],
       in increasing order.
       @since 2.8 *)
 
