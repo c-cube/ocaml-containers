@@ -35,13 +35,13 @@ val get_safe : 'a t -> int -> 'a option
     @since 0.18 *)
 
 val fold : f:('a -> 'b -> 'a) -> init:'a -> 'b t -> 'a
-(** [fold ~f ~init a] computes [~f (... (~f (~f ~init a.(0)) a.(1)) ...) a.(n-1)],
+(** [fold ~f ~init a] computes [f (⋯ (f (f init a.(0)) a.(1)) ⋯) a.(n-1)],
     where [n] is the length of the array [a].
     Same as {!ArrayLabels.fold_left} *)
 
 val foldi : f:('a -> int -> 'b -> 'a) -> init:'a -> 'b t -> 'a
 (** [foldi ~f ~init a] is just like {!fold}, but it also passes in the index
-    of each element as the second argument to the folded function [~f]. *)
+    of each element as the second argument to the folded function [f]. *)
 
 val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 'a
 (** [fold_while ~f ~init a] folds left on array [a] until a stop condition via [('a, `Stop)]
@@ -56,7 +56,7 @@ val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a t -> 'acc * 'b t
 
 val scan_left : f:('acc -> 'a -> 'acc) -> init:'acc -> 'a t -> 'acc t
 (** [scan_left ~f ~init a] returns the array
-    [ [|~init; ~f ~init x0; ~f (~f ~init a.(0)) a.(1); …|] ].
+    [ [|init; f init x0; f (f init a.(0)) a.(1); …|] ].
 
     @since 1.2, but only
     @since 2.1 with labels *)
@@ -65,24 +65,24 @@ val reverse_in_place : 'a t -> unit
 (** [reverse_in_place a] reverses the array [a] in place. *)
 
 val sorted : f:('a -> 'a -> int) -> 'a t -> 'a array
-(** [sorted ~f a] makes a copy of [a] and sorts it with [~f].
+(** [sorted ~f a] makes a copy of [a] and sorts it with [f].
     @since 1.0 *)
 
 val sort_indices : f:('a -> 'a -> int) -> 'a t -> int array
 (** [sort_indices ~f a] returns a new array [b], with the same length as [a],
-    such that [b.(i)] is the index at which the [i]-th element of [sorted ~f a]
+    such that [b.(i)] is the index at which the [i]-th element of [sorted f a]
     appears in [a]. [a] is not modified.
 
-    In other words, [map (fun i -> a.(i)) (sort_indices ~f a) = sorted ~f a].
+    In other words, [map (fun i -> a.(i)) (sort_indices f a) = sorted f a].
     [sort_indices] yields the inverse permutation of {!sort_ranking}.
     @since 1.0 *)
 
 val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
 (** [sort_ranking ~f a] returns a new array [b], with the same length as [a],
     such that [b.(i)] is the index at which the [i]-th element of [a] appears
-    in [sorted ~f a]. [a] is not modified.
+    in [sorted f a]. [a] is not modified.
 
-    In other words, [map (fun i -> (sorted ~f a).(i)) (sort_ranking ~f a) = a].
+    In other words, [map (fun i -> (sorted f a).(i)) (sort_ranking f a) = a].
     [sort_ranking] yields the inverse permutation of {!sort_indices}.
 
     In the absence of duplicate elements in [a], we also have
@@ -96,36 +96,36 @@ val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
 
 val find_map : f:('a -> 'b option) -> 'a t -> 'b option
 (** [find_map ~f a] returns [Some y] if there is an element [x] such
-    that [~f x = Some y]. Otherwise returns [None].
+    that [f x = Some y]. Otherwise returns [None].
     @since 1.3, but only
     @since 2.1 with labels *)
 
 val find_map_i : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
 (** [find_map_i ~f a] is like {!find_map}, but the index of the element is also passed
-    to the predicate function [~f].
+    to the predicate function [f].
     @since 1.3, but only
     @since 2.1 with labels *)
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx ~f a] returns [Some (i,x)] where [x] is the [i]-th element of [a],
-    and [~f x] holds. Otherwise returns [None].
+    and [f x] holds. Otherwise returns [None].
     @since 0.3.4 *)
 
 val lookup : cmp:('a ord [@keep_label]) -> key:'a -> 'a t -> int option
-(** [lookup ~cmp ~key a] lookups the index of some key [~key] in a sorted array [a].
-    Undefined behavior if the array [a] is not sorted wrt [~cmp].
+(** [lookup ~cmp ~key a] lookups the index of some key [key] in a sorted array [a].
+    Undefined behavior if the array [a] is not sorted wrt [cmp].
     Complexity: [O(log (n))] (dichotomic search).
-    @return [None] if the key [~key] is not present, or
+    @return [None] if the key [key] is not present, or
       [Some i] ([i] the index of the key) otherwise. *)
 
 val lookup_exn : cmp:('a ord [@keep_label]) -> key:'a -> 'a t -> int
 (** [lookup_exn ~cmp ~key a] is like {!lookup}, but
-    @raise Not_found if the key [~key] is not present. *)
+    @raise Not_found if the key [key] is not present. *)
 
 val bsearch : cmp:(('a -> 'a -> int) [@keep_label]) -> key:'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
-(** [bsearch ~cmp ~key a] finds the index of the object [~key] in the array [a],
-    provided [a] is {b sorted} using [~cmp]. If the array is not sorted,
+(** [bsearch ~cmp ~key a] finds the index of the object [key] in the array [a],
+    provided [a] is {b sorted} using [cmp]. If the array is not sorted,
     the result is not specified (may raise Invalid_argument).
 
     Complexity: [O(log n)] where n is the length of the array [a]
@@ -142,18 +142,18 @@ val bsearch : cmp:(('a -> 'a -> int) [@keep_label]) -> key:'a -> 'a t ->
     @since 0.13 *)
 
 val for_all2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
-(** [for_all2 ~f [|a1; ...; an|] [|b1; ...; bn|]] is [true] if each pair of elements [ai bi]
-    satisfies the predicate [~f].
-    That is, it returns [(~f a1 b1) && (~f a2 b2) && ... && (~f an bn)].
+(** [for_all2 ~f [|a1; ⋯; an|] [|b1; ⋯; bn|]] is [true] if each pair of elements [ai bi]
+    satisfies the predicate [f].
+    That is, it returns [(f a1 b1) && (f a2 b2) && ⋯ && (f an bn)].
 
     @raise Invalid_argument if arrays have distinct lengths.
     Allow different types.
     @since 0.20 *)
 
 val exists2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
-(** [exists2 ~f [|a1; ...; an|] [|b1; ...; bn|]] is [true] if any pair of elements [ai bi]
-    satisfies the predicate [~f].
-    That is, it returns [(~f a1 b1) || (~f a2 b2) || ... || (~f an bn)].
+(** [exists2 ~f [|a1; ⋯; an|] [|b1; ⋯; bn|]] is [true] if any pair of elements [ai bi]
+    satisfies the predicate [f].
+    That is, it returns [(f a1 b1) || (f a2 b2) || ⋯ || (f an bn)].
 
     @raise Invalid_argument if arrays have distinct lengths.
     Allow different types.
@@ -161,14 +161,14 @@ val exists2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 
 val fold2 : f:('acc -> 'a -> 'b -> 'acc) -> init:'acc -> 'a t -> 'b t -> 'acc
 (** [fold2 ~f ~init a b] fold on two arrays [a] and [b] stepwise.
-    It computes [~f (... (~f ~init a1 b1)...) an bn].
+    It computes [f (⋯ (f init a1 b1)⋯) an bn].
 
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
 
 val iter2 : f:('a -> 'b -> unit) -> 'a t -> 'b t -> unit
 (** [iter2 ~f a b] iterates on the two arrays [a] and [b] stepwise.
-    It is equivalent to  [~f a0 b0; ...; ~f a.(length a - 1) b.(length b - 1); ()].
+    It is equivalent to  [f a0 b0; ⋯; f a.(length a - 1) b.(length b - 1); ()].
 
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
@@ -218,9 +218,9 @@ val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
     Elements are separated by [sep] (defaults to ", "). *)
 
 val map2 : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** [map2 ~f a b] applies function [~f] to all elements of [a] and [b],
-    and builds an array with the results returned by [~f]:
-    [[| ~f a.(0) b.(0); ...; ~f a.(length a - 1) b.(length b - 1)|]].
+(** [map2 ~f a b] applies function [f] to all elements of [a] and [b],
+    and builds an array with the results returned by [f]:
+    [[| f a.(0) b.(0); ⋯; f a.(length a - 1) b.(length b - 1)|]].
 
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
@@ -232,16 +232,16 @@ val rev : 'a t -> 'a t
 
 val filter : f:('a -> bool) -> 'a t -> 'a t
 (** [filter ~f a] filters elements out of the array [a]. Only the elements satisfying
-    the given predicate [~f] will be kept. *)
+    the given predicate [f] will be kept. *)
 
 val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
-(** [filter_map ~f [|a1; ...; an|]] calls [(~f a1) ... (~f an)] and returns an array [b] consisting
-    of all elements [bi] such as [~f ai = Some bi]. When [~f] returns [None], the corresponding
+(** [filter_map ~f [|a1; ⋯; an|]] calls [(f a1) ⋯ (f an)] and returns an array [b] consisting
+    of all elements [bi] such as [f ai = Some bi]. When [f] returns [None], the corresponding
     element of [a] is discarded. *)
 
 val monoid_product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [monoid_product ~f a b] passes all combinaisons of tuples from the two arrays [a] and [b] 
-    to the function [~f].
+    to the function [f].
     @since 2.8 *)
 
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b array
