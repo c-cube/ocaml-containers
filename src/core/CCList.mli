@@ -746,7 +746,7 @@ val random_sequence : 'a random_gen t -> 'a t random_gen
 val to_string : ?start:string -> ?stop:string -> ?sep:string ->
   ('a -> string) -> 'a t -> string
 (** [to_string ?start ?stop ?sep item_to_string l] prints [l] to a string using
-    [?sep] as a separator between elements of [l].
+    [sep] as a separator between elements of [l].
     @since 2.7 *)
 
 val to_iter : 'a t -> 'a iter

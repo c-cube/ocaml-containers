@@ -675,7 +675,7 @@ val mem_assoc : ?eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * _) t -> bo
 (** [mem_assoc ?eq k alist] returns [true] iff [k] is a key in [alist].
     Like [Assoc.mem].
     @since 2.0 *)
-    
+
 val remove_assoc : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * 'b) t -> ('a * 'b) t
 (** [remove_assoc ~eq k alist] returns the [alist] without the first pair with key [k], if any.
     Like [Assoc.remove].
