@@ -126,7 +126,7 @@ val lookup_exn : cmp:'a ord -> 'a -> 'a t -> int
 val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ~cmp key a] finds the index of the object [key] in the array [a],
-    provided [a] is {b sorted} using [~cmp]. If the array is not sorted,
+    provided [a] is {b sorted} using [cmp]. If the array is not sorted,
     the result is not specified (may raise Invalid_argument).
 
     Complexity: [O(log n)] where n is the length of the array [a]

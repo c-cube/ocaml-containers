@@ -202,7 +202,7 @@ val cartesian_product : 'a t t -> 'a t t
 val map_product_l : ('a -> 'b list) -> 'a list -> 'b list list
 (** [map_product_l f l] maps each element of [l] to a list of
     objects of type ['b] using [f].
-    We obtain [[l1;l2;...;ln]] where [length l=n] and [li : 'b list].
+    We obtain [[l1;l2;⋯;ln]] where [length l=n] and [li : 'b list].
     Then, it returns all the ways of picking exactly one element per [li].
     @since 1.2, but only
     @since 2.2 with labels *)
@@ -227,7 +227,7 @@ val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) ->
 
 val join : join_row:('a -> 'b -> 'c option) -> 'a t -> 'b t -> 'c t
 (** [join ~join_row a b] combines every element of [a] with every
-    element of [b] using [join_row]. If [join_row] returns None, then
+    element of [b] using [join_row]. If [join_row] returns [None], then
     the two elements do not combine. Assume that [b] allows for multiple
     iterations.
     @since 2.3 *)
@@ -269,7 +269,7 @@ val group_join_by : ?eq:('a -> 'a -> bool) -> ?hash:('a -> int) ->
   'a t ->
   'b t ->
   ('a * 'b list) t
-(** [group_join_by ?eq ?hash key2 la lb] associates to every element [x] of
+(** [group_join_by ?eq ?hash key la lb] associates to every element [x] of
     the first sequence, all the elements [y] of the second
     sequence such that [eq x (key y)]. Elements of the first
     sequences without corresponding values in the second one
@@ -745,7 +745,7 @@ val random_sequence : 'a random_gen t -> 'a t random_gen
 
 val to_string : ?start:string -> ?stop:string -> ?sep:string ->
   ('a -> string) -> 'a t -> string
-(** [to_string ~start ~stop ~sep item_to_string l] prints [l] to a string using
+(** [to_string ?start ?stop ?sep item_to_string l] prints [l] to a string using
     [sep] as a separator between elements of [l].
     @since 2.7 *)
 

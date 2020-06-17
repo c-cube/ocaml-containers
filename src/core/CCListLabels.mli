@@ -24,10 +24,11 @@ val is_empty : _ t -> bool
     @since 0.11 *)
 
 val map : f:('a -> 'b) -> 'a t -> 'b t
-(** Safe version of {!List.map}. *)
+(** [map ~f [a0; a1; ⋯ an]] applies function [f] in turn to [[a0; a1; ⋯ an]].
+    Safe version of {!List.map}. *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** Infix version of [map] with reversed arguments.
+(** [l >|= f] is the infix version of [map] with reversed arguments.
     @since 0.5 *)
 
 val cons : 'a -> 'a t -> 'a t
@@ -35,8 +36,8 @@ val cons : 'a -> 'a t -> 'a t
     @since 0.12 *)
 
 val append : 'a t -> 'a t -> 'a t
-(** Safe version of {!List.append}.
-    Concatenate two lists. *)
+(** [append l1 l2] returns the list that is the concatenation of [l1] and [l2].
+    Safe version of {!List.append}. *)
 
 val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l].
@@ -44,22 +45,22 @@ val cons_maybe : 'a option -> 'a t -> 'a t
     @since 0.13 *)
 
 val (@) : 'a t -> 'a t -> 'a t
-(** Like [append].
-    Concatenate two lists. *)
+(** [l1 @ l2] is like [append l1 l2].
+    Concatenate the two lists [l1] and [l2]. *)
 
 val filter : f:('a -> bool) -> 'a t -> 'a t
-(** Safe version of {!List.filter}.
-    [filter p l] returns all the elements of the list [l]
-    that satisfy the predicate [p].  The order of the elements
-    in the input list is preserved. *)
+(** [filter ~f l] returns all the elements of the list [l]
+    that satisfy the predicate [f].  The order of the elements
+    in the input list [l] is preserved.
+    Safe version of {!List.filter}. *)
 
 val fold_right : f:('a -> 'b -> 'b) -> 'a t -> init:'b -> 'b
-(** Safe version of [fold_right].
-    [fold_right f [a1; ...; an] b] is
-    [f a1 (f a2 (... (f an b) ...))].  *)
+(** [fold_right ~f [a1; ⋯ an] ~init] is
+    [f a1 (f a2 ( ⋯ (f an init) ⋯ ))].
+    Safe version of {!List.fold_right}. *)
 
 val fold_while : f:('a -> 'b -> 'a * [`Stop | `Continue]) -> init:'a -> 'b t -> 'a
-(** Fold until a stop condition via [('a, `Stop)] is
+(** [fold_while ~f ~init l] folds until a stop condition via [('a, `Stop)] is
     indicated by the accumulator.
     @since 0.8 *)
 
@@ -69,23 +70,23 @@ val fold_map : f:('acc -> 'a -> 'acc * 'b) -> init:'acc -> 'a list -> 'acc * 'b 
     @since 0.14 *)
 
 val fold_map_i : f:('acc -> int -> 'a -> 'acc * 'b) -> init:'acc -> 'a list -> 'acc * 'b list
-(** [fold_map_i f init l] is a [foldi]-like function, but it also maps the
+(** [fold_map_i ~f ~init l] is a [foldi]-like function, but it also maps the
     list to another list.
     @since 2.8 *)
 
 val fold_on_map : f:('a -> 'b) -> reduce:('acc -> 'b -> 'acc) -> init:'acc -> 'a list -> 'acc
-(** [fold_on_map ~f ~reduce init l] combines [map f] and [fold_left reduce init]
+(** [fold_on_map ~f ~reduce ~init l] combines [map ~f] and [fold_left ~reduce ~init]
     in one operation.
     @since 2.8 *)
 
 val scan_left : f:('acc -> 'a -> 'acc) -> init:'acc -> 'a list -> 'acc list
-(** [scan_left ~f ~init l] returns the list [[init; f init x0; f (f init x0) x1; ...]]
+(** [scan_left ~f ~init l] returns the list [[init; f init x0; f (f init x0) x1; ⋯]]
     where [x0], [x1], etc. are the elements of [l].
     @since 1.2, but only
     @since 2.2 with labels *)
 
 val fold_map2 : f:('acc -> 'a -> 'b -> 'acc * 'c) -> init:'acc -> 'a list -> 'b list -> 'acc * 'c list
-(** [fold_map2] is to [fold_map] what [List.map2] is to [List.map].
+(** [fold_map2 ~f ~init l1 l2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length.
     @since 0.16 *)
 
@@ -95,44 +96,46 @@ val fold_filter_map : f:('acc -> 'a -> 'acc * 'b option) -> init:'acc -> 'a list
     @since 0.17 *)
 
 val fold_filter_map_i : f:('acc -> int -> 'a -> 'acc * 'b option) -> init:'acc -> 'a list -> 'acc * 'b list
-(** [fold_filter_map_i f init l] is a [foldi]-like function, but also
+(** [fold_filter_map_i ~f ~init l] is a [foldi]-like function, but also
     generates a list of output in a way similar to {!filter_map}.
     @since 2.8 *)
 
 val fold_flat_map : f:('acc -> 'a -> 'acc * 'b list) -> init:'acc -> 'a list -> 'acc * 'b list
-(** [fold_flat_map f acc l] is a [fold_left]-like function, but it also maps the
+(** [fold_flat_map ~f ~init l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
     @since 0.14 *)
 
 val fold_flat_map_i : f:('acc -> int -> 'a -> 'acc * 'b list) -> init:'acc -> 'a list -> 'acc * 'b list
-(** [fold_flat_map_i f acc l] is a [fold_left]-like function, but it also maps the
+(** [fold_flat_map_i ~f ~init l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
     @since 2.8 *)
 
 val count : f:('a -> bool) -> 'a list -> int
-(** [count p l] counts how many elements of [l] satisfy predicate [p].
+(** [count ~f l] counts how many elements of [l] satisfy predicate [f].
     @since 1.5, but only
     @since 2.2 with labels *)
 
 val count_true_false : f:('a -> bool) -> 'a list -> int * int
-(** @since 2.4 *)
+(** [count_true_false ~f l] returns a pair [(int1,int2)] where [int1] is the number of elements in [l]
+    that satisfy the predicate [f], and [int2] the number of elements that do not satisfy [f].
+    @since 2.4 *)
 
 val init : int -> f:(int -> 'a) -> 'a t
-(** [init len ~f] is [f 0; f 1; ...; f (len-1)].
+(** [init len ~f] is [f 0; f 1; ⋯; f (len-1)].
     @raise Invalid_argument if len < 0.
     @since 0.6 *)
 
 val combine : 'a list -> 'b list -> ('a * 'b) list
-(** Like {!List.combine} but tail-recursive.
-    Transform a pair of lists into a list of pairs:
-    [combine [a1; ...; an] [b1; ...; bn]] is
-    [[(a1,b1); ...; (an,bn)]].
+(** [combine [a1; ⋯; an] [b1; ⋯; bn]] is [[(a1,b1); ⋯; (an,bn)]].
+    Transform two lists into a list of pairs.
+    Like {!List.combine} but tail-recursive.
     @raise Invalid_argument if the lists have distinct lengths.
     @since 1.2, but only
     @since 2.2 with labels *)
 
 val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
-(** Lazy version of {!combine}.
+(** [combine_gen l1 l2] transforms two lists into a [gen] of pairs.
+    Lazy version of {!combine}.
     Unlike {!combine}, it does not fail if the lists have different
     lengths;
     instead, the output has as many pairs as the smallest input list.
@@ -140,48 +143,52 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
     @since 2.2 with labels *)
 
 val split : ('a * 'b) t -> 'a t * 'b t
-(** A tail-recursive version of {!List.split}.
-    Transform a list of pairs into a pair of lists:
-    [split [(a1,b1); ...; (an,bn)]] is [([a1; ...; an], [b1; ...; bn])].
+(** [split [(a1,b1); ⋯; (an,bn)]] is [([a1; ⋯; an], [b1; ⋯; bn])].
+    Transform a list of pairs into a pair of lists.
+    A tail-recursive version of {!List.split}.
     @since 1.2, but only
     @since 2.2 with labels *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
-
+(** [compare cmp l1 l2] compares the two lists [l1] and [l2]
+    using the given comparison function [cmp]. *)
+    
 val compare_lengths : 'a t -> 'b t -> int
-(** Equivalent to [compare (length l1) (length l2)] but more efficient.
-    Compare the lengths of two lists.
+(** [compare_lengths l1 l2] compare the lengths of the two lists [l1] and [l2].
+    Equivalent to [compare (length l1) (length l2)] but more efficient.
     @since 1.5, but only
     @since 2.2 with labels *)
 
 val compare_length_with : 'a t -> int -> int
-(** Equivalent to [compare (length l) x] but more efficient.
-    Compare the length of a list to an integer.
+(** [compare_length_with l x] compares the length of the list [l] to an integer [x].
+    Equivalent to [compare (length l) x] but more efficient.
     @since 1.5, but only
     @since 2.2 with labels *)
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+(** [equal p l1 l2] returns [true] if [l1] and [l2] are equal. *)
 
 val flat_map : f:('a -> 'b t) -> 'a t -> 'b t
-(** Map and flatten at the same time (safe). Evaluation order is not guaranteed. *)
+(** [flat_map ~f l] maps and flattens at the same time (safe). Evaluation order is not guaranteed. *)
 
 val flat_map_i : f:(int -> 'a -> 'b t) -> 'a t -> 'b t
-(** Map with index and flatten at the same time (safe).
+(** [flat_map_i ~f l] maps with index and flattens at the same time (safe).
     Evaluation order is not guaranteed.
-    @since 2.8
-*)
+    @since 2.8 *)
 
 val flatten : 'a t t -> 'a t
-(** Safe flatten. Concatenate a list of lists. *)
-
+(** [flatten [l1]; [l2]; ⋯] concatenates a list of lists. 
+    Safe version of {!List.flatten}. *)
+    
 val product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** Cartesian product of the two lists, with the given combinator. *)
+(** [product ~f l1 l2] computes the cartesian product of the two lists, with the given combinator [f]. *)
 
 val fold_product : f:('c -> 'a -> 'b -> 'c) -> init:'c -> 'a t -> 'b t -> 'c
-(** Fold on the cartesian product. *)
-
+(** [fold_product ~f ~init l1 l2] applies the function [f] with the accumulator [init] on all 
+    the pair of elements of [l1] and [l2]. Fold on the cartesian product. *)
+    
 val cartesian_product : 'a t t -> 'a t t
-(** Produce the cartesian product of this list of lists,
+(** [cartesian_product [[l1];[l2]; ⋯[ln]]] produces the cartesian product of this list of lists,
     by returning all the ways of picking one element per sublist.
     {b NOTE} the order of the returned list is unspecified.
     For example:
@@ -197,16 +204,16 @@ val cartesian_product : 'a t t -> 'a t t
     @since 2.2 with labels *)
 
 val map_product_l : f:('a -> 'b list) -> 'a list -> 'b list list
-(** [map_product_l f l] maps each element of [l] to a list of
+(** [map_product_l ~f l] maps each element of [l] to a list of
     objects of type ['b] using [f].
-    We obtain [[l1;l2;...;ln]] where [length l=n] and [li : 'b list].
+    We obtain [[l1;l2;⋯;ln]] where [length l=n] and [li : 'b list].
     Then, it returns all the ways of picking exactly one element per [li].
     @since 1.2, but only
     @since 2.2 with labels *)
 
 val diagonal : 'a t -> ('a * 'a) t
-(** All pairs of distinct positions of the list. [list_diagonal l] will
-    return the list of [List.nth i l, List.nth j l] if [i < j]. *)
+(** [diagonal l] returns all pairs of distinct positions of the list [l],
+    that is the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
 val partition_map : f:('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
   'a list -> 'b list * 'c list
@@ -218,13 +225,13 @@ val partition_map : f:('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
 
 val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) ->
   'a t -> 'a list t
-(** Group equal elements, regardless of their order of appearance.
-    precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
+(** [group_by ?hash ?eq l] groups equal elements, regardless of their order of appearance.
+    precondition: for any [x] and [y], if [eq x y] then [hash x = hash y] must hold.
     @since 2.3 *)
 
 val join : join_row:(('a -> 'b -> 'c option) [@keep_label]) -> 'a t -> 'b t -> 'c t
 (** [join ~join_row a b] combines every element of [a] with every
-    element of [b] using [join_row]. If [join_row] returns None, then
+    element of [b] using [join_row]. If [join_row] returns [None], then
     the two elements do not combine. Assume that [b] allows for multiple
     iterations.
     @since 2.3 *)
@@ -235,13 +242,13 @@ val join_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
   'a t ->
   'b t ->
   'c t
-(** [join key1 key2 ~merge] is a binary operation
+(** [join_by ?eq ?hash key1 key2 ~merge la lb] is a binary operation
     that takes two sequences [a] and [b], projects their
     elements resp. with [key1] and [key2], and combine
     values [(x,y)] from [(a,b)] with the same [key]
     using [merge]. If [merge] returns [None], the combination
     of values is discarded.
-    precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
+    precondition: for any [x] and [y], if [eq x y] then [hash x = hash y] must hold.
     @since 2.3 *)
 
 val join_all_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
@@ -250,7 +257,7 @@ val join_all_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
   'a t ->
   'b t ->
   'c t
-(** [join_all_by key1 key2 ~merge] is a binary operation
+(** [join_all_by ?eq ?hash key1 key2 ~merge la lb] is a binary operation
     that takes two sequences [a] and [b], projects their
     elements resp. with [key1] and [key2], and, for each key [k]
     occurring in at least one of them:
@@ -266,12 +273,12 @@ val group_join_by : ?eq:('a -> 'a -> bool) -> ?hash:('a -> int) ->
   'a t ->
   'b t ->
   ('a * 'b list) t
-(** [group_join_by key2] associates to every element [x] of
+(** [group_join_by ?eq ?hash key la lb] associates to every element [x] of
     the first sequence, all the elements [y] of the second
     sequence such that [eq x (key y)]. Elements of the first
     sequences without corresponding values in the second one
     are mapped to [[]]
-    precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
+    precondition: for any [x] and [y], if [eq x y] then [hash x = hash y] must hold.
     @since 2.3 *)
 
 val sublists_of_len :
@@ -280,7 +287,7 @@ val sublists_of_len :
   len:int ->
   'a list ->
   'a list list
-(** [sublists_of_len n l] returns sub-lists of [l] that have length [n].
+(** [sublists_of_len ?last ?offset n l] returns sub-lists of [l] that have length [n].
     By default, these sub-lists are non overlapping:
     [sublists_of_len 2 [1;2;3;4;5;6]] returns [[1;2]; [3;4]; [5;6]].
 
@@ -306,18 +313,18 @@ val sublists_of_len :
     @since 1.5 with labels *)
 
 val intersperse : x:'a -> 'a list -> 'a list
-(** Insert the first argument between every element of the list.
+(** [intersperse ~x l] inserts the element [x] between adjacent elements of the list [l].
     @since 2.1, but only
     @since 2.2 with labels *)
 
 val interleave : 'a list -> 'a list -> 'a list
-(** [interleave [x1…xn] [y1…ym]] is [x1,y1,x2,y2,…] and finishes with
+(** [interleave [x1…xn] [y1…ym]] is [[x1,y1,x2,y2,…]] and finishes with
     the suffix of the longest list.
     @since 2.1, but only
     @since 2.2 with labels *)
 
 val pure : 'a -> 'a t
-(** [pure] is [return]. *)
+(** [pure x] is [return x]. *)
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
@@ -332,10 +339,10 @@ val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 (** [l >>= f] is [flat_map f l]. *)
 
 val take : int -> 'a t -> 'a t
-(** Take the [n] first elements, drop the rest. *)
+(** [take n l] takes the [n] first elements of the list [l], drop the rest. *)
 
 val drop : int -> 'a t -> 'a t
-(** Drop the [n] first elements, keep the rest. *)
+(** [drop n l] drops the [n] first elements of the list [l], keep the rest. *)
 
 val hd_tl : 'a t -> 'a * 'a t
 (** [hd_tl (x :: l)] returns [hd, l].
@@ -355,7 +362,7 @@ val drop_while : f:('a -> bool) -> 'a t -> 'a t
     @since 0.13 *)
 
 val take_drop_while : f:('a -> bool) -> 'a t -> 'a t * 'a t
-(** [take_drop_while p l] = [take_while p l, drop_while p l].
+(** [take_drop_while ~f l] = [take_while ~f l, drop_while ~f l].
     @since 1.2, but only
     @since 2.2 with labels *)
 
@@ -364,29 +371,31 @@ val last : int -> 'a t -> 'a t
     [l] doesn't have that many elements). *)
 
 val head_opt : 'a t -> 'a option
-(** First element.
+(** [head_opt l] returns [Some x] (the first element of the list [l]) 
+    or [None] if the list [l] is empty.
     @since 0.20 *)
 
 val tail_opt : 'a t -> 'a t option
-(** Return the given list without its first element.
+(** [tail_opt l] returns [Some l'] (the given list [l] without its first element)
+    or [None] if the list [l] is empty.
     @since 2.0 *)
 
 val last_opt : 'a t -> 'a option
-(** Last element.
+(** [last_opt l] returns [Some x] (the last element of [l]) or [None] if the list [l] is empty. 
     @since 0.20 *)
 
 val find_pred : f:('a -> bool) -> 'a t -> 'a option
-(** [find_pred p l] finds the first element of [l] that satisfies [p],
-    or returns [None] if no element satisfies [p].
+(** [find_pred ~f l] finds the first element of [l] that satisfies [f],
+    or returns [None] if no element satisfies [f].
     @since 0.11 *)
 
 val find_opt : f:('a -> bool) -> 'a t -> 'a option
-(** Safe version of {!find}.
+(** [find_opt ~f l] is the safe version of {!find}.
     @since 1.5, but only
     @since 2.2 with labels *)
 
 val find_pred_exn : f:('a -> bool) -> 'a t -> 'a
-(** Unsafe version of {!find_pred}.
+(** [find_pred_exn ~f l] is the unsafe version of {!find_pred}.
     @raise Not_found if no such element is found.
     @since 0.11 *)
 
@@ -397,16 +406,16 @@ val find_map : f:('a -> 'b option) -> 'a t -> 'b option
     @since 0.11 *)
 
 val find_mapi : f:(int -> 'a -> 'b option) -> 'a t -> 'b option
-(** Like {!find_map}, but also pass the index to the predicate function.
+(** [find_mapi ~f l] is like {!find_map}, but also pass the index to the predicate function.
     @since 0.11 *)
 
 val find_idx : f:('a -> bool) -> 'a t -> (int * 'a) option
-(** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
-    and [p x] holds. Otherwise returns [None]. *)
+(** [find_idx ~f x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
+    and [f x] holds. Otherwise returns [None]. *)
 
 val remove : eq:(('a -> 'a -> bool) [@keep_label]) -> key:('a [@keep_label]) -> 'a t -> 'a t
     (* FIXME: the original CCList.mli uses ~x instead of ~key !! *)
-(** [remove ~key l] removes every instance of [key] from [l]. Tail-recursive.
+(** [remove ~eq ~key l] removes every instance of [key] from [l]. Tail-recursive.
     @param eq equality function.
     @since 0.11 *)
 
@@ -439,30 +448,32 @@ val all_ok : ('a, 'err) result t -> ('a t, 'err) result
     @since 2.2 with labels *)
 
 val sorted_merge : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list -> 'a list
-(** Merge elements from both sorted list. *)
-
+(** [sorted_merge ~cmp l1 l2] merges elements from both sorted list using
+    the given comparison function [cmp]. *)
+    
 val sort_uniq : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list
-(** Sort the list and remove duplicate elements. *)
-
+(** [sort_uniq ~cmp l] sorts the list [l] using the given comparison function [cmp]
+    and remove duplicate elements. *)
+    
 val sorted_merge_uniq : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list -> 'a list
-(** [sorted_merge_uniq l1 l2] merges the sorted lists [l1] and [l2] and
+(** [sorted_merge_uniq ~cmp l1 l2] merges the sorted lists [l1] and [l2] and
     removes duplicates.
     @since 0.10 *)
 
 val is_sorted : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> bool
-(** [is_sorted l] returns [true] iff [l] is sorted (according to given order).
-    @param cmp the comparison function (default [Stdlib.compare]).
+(** [is_sorted ~cmp l] returns [true] iff [l] is sorted (according to given order).
+    @param cmp the comparison function.
     @since 0.17 *)
 
 val sorted_insert : cmp:(('a -> 'a -> int) [@keep_label]) -> ?uniq:bool -> 'a -> 'a list -> 'a list
-(** [sorted_insert x l] inserts [x] into [l] such that, if [l] was sorted,
+(** [sorted_insert ~cmp ?uniq x l] inserts [x] into [l] such that, if [l] was sorted,
     then [sorted_insert x l] is sorted too.
     @param uniq if true and [x] is already in sorted position in [l], then
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
     @since 0.17 *)
 
 val uniq_succ : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a list -> 'a list
-(** [uniq_succ l] removes duplicate elements that occur one next to the other.
+(** [uniq_succ ~eq l] removes duplicate elements that occur one next to the other.
     Examples:
     [uniq_succ [1;2;1] = [1;2;1]].
     [uniq_succ [1;1;2] = [1;2]].
@@ -476,62 +487,68 @@ val group_succ : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a list -> 'a list lis
 (** {2 Indices} *)
 
 val mapi : f:(int -> 'a -> 'b) -> 'a t -> 'b t
-(** Like {!map}, but the function is applied to the index of
+(** [mapi ~f l] is like {!map}, but the function [f] is applied to the index of
     the element as first argument (counting from 0), and the element
     itself as second argument. *)
 
 val iteri : f:(int -> 'a -> unit) -> 'a t -> unit
-(** Like {!iter}, but the function is applied to the index of
+(** [iteri ~f l] is like {!iter}, but the function [f] is applied to the index of
     the element as first argument (counting from 0), and the element
     itself as second argument. *)
 
 val iteri2 : f:(int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
-(** Iter on two lists.
+(** [iteri2 ~f l1 l2] applies [f] to the two lists [l1] and [l2] simultaneously.
+    The integer passed to [f] indicates the index of element.
     @raise Invalid_argument when lists do not have the same length.
     @since 2.0, but only
     @since 2.2 with labels *)
 
 val foldi : f:('b -> int -> 'a -> 'b) -> init:'b -> 'a t -> 'b
-(** Like [fold] but it also passes in the index of each element to the folded function. Tail-recursive. *)
-
+(** [foldi ~f ~init l] is like [fold] but it also passes in the index of each element, from [0] to [length l - 1]
+    as additional argument to the folded function [f]. Tail-recursive. *)
+    
 val foldi2 : f:('c -> int -> 'a -> 'b -> 'c) -> init:'c -> 'a t -> 'b t -> 'c
-(** Fold on two lists, with index.
+(** [foldi2 ~f ~init l1 l2] folds on the two lists [l1] and [l2],
+    with index of each element passed to the function [f].
+    Computes [f(… (f init i_0 l1_0 l2_0) …) i_n l1_n l2_n] .
     @raise Invalid_argument when lists do not have the same length.
     @since 2.0, but only
     @since 2.2 with labels *)
 
 val get_at_idx : int -> 'a t -> 'a option
-(** Get by index in the list.
+(** [get_at_idx i l] returns [Some i-th] element of the given list [l]
+    or [None] if the list [l] is too short.
     If the index is negative, it will get element starting from the end
-    of the list. *)
+    of the list [l]. *)
 
 val nth_opt : 'a t -> int -> 'a option
-(** Safe version of {!nth}.
+(** [nth_opt l n] returns [Some n-th] element of [l]. Safe version of {!nth}.
     @raise Invalid_argument if the int is negative.
     @since 1.5, but only
     @since 2.2 with labels *)
 
 val get_at_idx_exn : int -> 'a t -> 'a
-(** Get the i-th element, or
+(** [get_at_idx_exn i l] gets the [i-th] element of [l], or
     @raise Not_found if the index is invalid.
+    The first element has index 0.
     If the index is negative, it will get element starting from the end
     of the list. *)
 
 val set_at_idx : int -> 'a -> 'a t -> 'a t
-(** Set i-th element (removes the old one), or does nothing if
-    index is too high.
+(** [set_at_idx i x l] replaces the [i-th] element with [x] (removes the old one),
+    or does nothing if index is too high.
     If the index is negative, it will set element starting from the end
     of the list. *)
 
 val insert_at_idx : int -> 'a -> 'a t -> 'a t
-(** Insert at i-th position, between the two existing elements. If the
-    index is too high, append at the end of the list.
+(** [insert_at_idx i x l] inserts [x] at [i-th] position, between the two existing elements.
+    If the index is too high, append at the end of the list.
     If the index is negative, it will insert element starting from the end
     of the list. *)
 
 val remove_at_idx : int -> 'a t -> 'a t
-(** Remove element at given index. Does nothing if the index is
-    too high.
+(** [remove_at_idx i l] removes element at given index [i].
+    Does nothing if the index is too high.
     If the index is negative, it will remove element starting from the end
     of the list. *)
 
@@ -541,31 +558,35 @@ val remove_at_idx : int -> 'a t -> 'a t
     contain duplicates (if it already satisfies it). *)
 
 val add_nodup : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> 'a t
-(** [add_nodup x set] adds [x] to [set] if it was not already present. Linear time.
+(** [add_nodup ~eq x set] adds [x] to [set] if it was not already present. Linear time.
     @since 0.11 *)
 
 val remove_one : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> 'a t
-(** [remove_one x set] removes one occurrence of [x] from [set]. Linear time.
+(** [remove_one ~eq x set] removes one occurrence of [x] from [set]. Linear time.
     @since 0.11 *)
 
 val mem : ?eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> bool
-(** Membership to the list. Linear time. *)
-
+(** [mem ?eq x l] is [true] iff [x] is equal to an element of [l].
+    A comparator function [eq] can be provided. Linear time. *)
+    
 val subset : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t -> bool
-(** Test for inclusion. *)
-
+(** [subset ~eq l1 l2] tests if all elements of the list [l1] are contained
+    in the list [l2] by applying [eq]. *)
+    
 val uniq : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t
-(** Remove duplicates w.r.t the equality predicate.
+(** [uniq ~eq l] removes duplicates in [l] w.r.t the equality predicate [eq].
     Complexity is quadratic in the length of the list, but the order
     of elements is preserved. If you wish for a faster de-duplication
     but do not care about the order, use {!sort_uniq}. *)
 
 val union : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t -> 'a t
-(** List union. Complexity is product of length of inputs. *)
+(** [union ~eq l1 l2] is the union of the lists [l1] and [l2] w.r.t. the equality predicate [eq].
+    Complexity is product of length of inputs. *)
 
 val inter : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t -> 'a t
-(** List intersection. Complexity is product of length of inputs. *)
-
+(** [inter ~eq l1 l2] is the intersection of the lists [l1] and [l2] w.r.t. the equality predicate [eq].
+    Complexity is product of length of inputs. *)
+    
 (** {2 Other Constructors} *)
 
 val range_by : step:(int [@keep_label]) -> int -> int -> int t
@@ -580,21 +601,23 @@ val range : int -> int -> int t
     both for decreasing and increasing ranges. *)
 
 val range' : int -> int -> int t
-(** Like {!range} but the second bound is excluded.
+(** [range' i j] is like {!range} but the second bound [j] is excluded.
     For instance [range' 0 5 = [0;1;2;3;4]]. *)
 
 val (--) : int -> int -> int t
-(** Infix alias for [range]. *)
-
+(** [i -- j] is the list of integers from [i] to [j] included.
+    Infix alias for [range]. *)
+    
 val (--^) : int -> int -> int t
-(** Infix alias for [range'].
+(** [i --^ j] is the list of integers from [i] to [j] excluded.
+    Infix alias for [range'].
     @since 0.17 *)
 
 val replicate : int -> 'a -> 'a t
-(** Replicate the given element [n] times. *)
+(** [replicate n x] replicates the given element [x] [n] times. *)
 
 val repeat : int -> 'a t -> 'a t
-(** Concatenate the list with itself [n] times. *)
+(** [repeat n l] concatenates the list [l] with itself [n] times. *)
 
 (** {2 Association Lists} *)
 
@@ -602,51 +625,60 @@ module Assoc : sig
   type ('a, 'b) t = ('a*'b) list
 
   val get : eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,'b) t -> 'b option
-  (** Find the element. *)
-
+  (** [get ~eq k alist] returns [Some v] if the given key [k] is present into [alist],
+      or [None] if not present. *)
+      
   val get_exn : eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,'b) t -> 'b
-  (** Like [get], but unsafe.
+  (** [get_exn ~eq k alist] returns [v] if the element [k] is present into [alist].
+      Like [get], but unsafe.
       @raise Not_found if the element is not present. *)
 
   val set : eq:(('a->'a->bool) [@keep_label]) -> 'a -> 'b -> ('a,'b) t -> ('a,'b) t
-  (** Add the binding into the list (erase it if already present). *)
+  (** [set ~eq k v alist] adds the binding [k, v] into the list [alist] (erase it if already present). *)
 
   val mem : ?eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,_) t -> bool
-  (** [mem x l] returns [true] iff [x] is a key in [l].
+  (** [mem ?eq k alist] returns [true] iff [k] is a key in [alist].
       @since 0.16 *)
-
+      
   val update :
     eq:(('a->'a->bool) [@keep_label]) -> f:(('b option -> 'b option) [@keep_label]) -> 'a -> ('a,'b) t -> ('a,'b) t
-  (** [update k ~f l] updates [l] on the key [k], by calling [f (get l k)]
+  (** [update ~eq ~f k alist] updates [alist] on the key [k], by calling [f (get alist k)]
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v'].
       @since 0.16 *)
 
   val remove : eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,'b) t -> ('a,'b) t
-  (** [remove x l] removes the first occurrence of [k] from [l].
+  (** [remove ~eq k alist] returns the [alist] without the first pair with key [k], if any.
       @since 0.17 *)
 end
 
 val assoc : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * 'b) t -> 'b
-(** Like [Assoc.get_exn].
+(** [assoc ~eq k alist] returns the value [v] associated with key [k] in [alist].
+    Like [Assoc.get_exn].
     @since 2.0 *)
 
 val assoc_opt : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * 'b) t -> 'b option
-(** Like [Assoc.get].
+(** [assoc_opt ~eq k alist] returns [Some v] if the given key [k] is present into [alist],
+    or [None] if not present. Like [Assoc.get].
     @since 1.5, but only
     @since 2.0 with labels *)
 
 val assq_opt : 'a -> ('a * 'b) t -> 'b option
-(** Safe version of {!assq}.
+(** [assq_opt k alist] returns [Some v] if the given key [k] is present into [alist].
+    Like [Assoc.assoc_opt] but use physical equality instead of structural equality
+    to compare keys.
+    Safe version of {!assq}.
     @since 1.5, but only
     @since 2.0 with labels *)
 
 val mem_assoc : ?eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * _) t -> bool
-(** Like [Assoc.mem].
+(** [mem_assoc ?eq k alist] returns [true] iff [k] is a key in [alist].
+    Like [Assoc.mem].
     @since 2.0 *)
 
 val remove_assoc : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * 'b) t -> ('a * 'b) t
-(** Like [Assoc.remove].
+(** [remove_assoc ~eq k alist] returns the [alist] without the first pair with key [k], if any.
+    Like [Assoc.remove].
     @since 2.0 *)
 
 (** {2 References on Lists}
@@ -656,35 +688,39 @@ module Ref : sig
   type 'a t = 'a list ref
 
   val push : 'a t -> 'a -> unit
+  (** [push rlist e] adds an element [e] at the head of [rlist]. *)
 
   val pop : 'a t -> 'a option
-
+  (** [pop rlist] removes and returns [Some e] (the first element of [rlist])
+      or [None] if the [rlist] is empty *)
+      
   val pop_exn : 'a t -> 'a
-  (** Unsafe version of {!pop}.
+  (** [pop_exn rlist] removes and returns the first element of [rlist].
+      Unsafe version of {!pop}.
       @raise Failure if the list is empty. *)
 
   val create : unit -> 'a t
-  (** Create a new list reference. *)
+  (** [create ()] creates a new empty reference list. *)
 
   val clear : _ t -> unit
-  (** Remove all elements. *)
+  (** [clear rlist] removes all elements of [rlist]. *)
 
   val lift : ('a list -> 'b) -> 'a t -> 'b
-  (** Apply a list function to the content. *)
+  (** [lift f rlist] applies a list function [f] to the content of [rlist]. *)
 
   val push_list : 'a t -> 'a list -> unit
-  (** Add elements of the list at the beginning of the list ref. Elements
-      at the end of the list will be at the beginning of the list ref. *)
+  (** [push_list rlist l] adds elements of the list [l] at the beginning of the list ref [rlist]. 
+      Elements at the end of the list [l] will be at the beginning of the list ref [rlist]. *)
 end
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig
   type 'a t
   val return : 'a -> 'a t
-  (** Monadic [return]. *)
+  (** [return] is the Monadic [return]. *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  (** Monadic [bind]. *)
+  (** [ (>>=) ] is the Monadic [bind]. *)
 end
 
 module Traverse(M : MONAD) : sig
@@ -695,9 +731,8 @@ module Traverse(M : MONAD) : sig
   val map_m : f:('a -> 'b M.t) -> 'a t -> 'b t M.t
 
   val map_m_par : f:('a -> 'b M.t) -> 'a t -> 'b t M.t
-  (** Like {!map_m} but [map_m_par f (x::l)] evaluates [f x] and
-      [f l] "in parallel" before combining their result (for instance
-      in Lwt). *)
+  (** [map_m_par ~f (x :: l)] is like {!map_m} but [f x] and [f l] are evaluated
+      "in parallel" before combining their result (for instance in Lwt). *)
 end
 
 (** {2 Conversions} *)
@@ -707,51 +742,51 @@ val random_non_empty : 'a random_gen -> 'a t random_gen
 val random_len : int -> 'a random_gen -> 'a t random_gen
 
 val random_choose : 'a t -> 'a random_gen
-(** Randomly choose an element in the list.
+(** [random_choose l] randomly chooses an element in the list [l].
     @raise Not_found if the list is empty. *)
 
 val random_sequence : 'a random_gen t -> 'a t random_gen
 
 val to_string : ?start:string -> ?stop:string -> ?sep:string ->
   ('a -> string) -> 'a t -> string
-(** [to_string ~start ~stop ~sep item_to_string l] print [l] to a string using
+(** [to_string ?start ?stop ?sep item_to_string l] print [l] to a string using
     [sep] as a separator between elements of [l].
     @since 2.7 *)
 
 val to_iter : 'a t -> 'a iter
-(** Return a [iter] of the elements of the list.
+(** [to_iter l] returns a [iter] of the elements of the list [l].
     @since 2.8 *)
 
 val to_std_seq : 'a t -> 'a Seq.t
-(** Return a [Seq.t] of the elements of the list.
+(** [to_std_seq l] returns a [Seq.t] of the elements of the list [l].
     @since 2.8 *)
 
 val of_iter : 'a iter -> 'a t
-(** Build a list from a given [iter].
+(** [of_iter iter] builds a list from a given [iter].
     In the result, elements appear in the same order as they did in the source [iter].
     @since 2.8 *)
 
 val of_std_seq_rev : 'a Seq.t -> 'a t
-(** Build a list from a given [Seq.t], in reverse order.
+(** [of_std_seq_rev seq] builds a list from a given [Seq.t], in reverse order.
     @since 2.8 *)
 
 val of_std_seq : 'a Seq.t -> 'a t
-(** Build a list from a given [Seq.t].
-    In the result, elements appear in the same order as they did in the source [seq].
+(** [of_std_seq seq] builds a list from a given [Seq.t].
+    In the result, elements appear in the same order as they did in the source [Seq.t].
     @since 2.8 *)
 
 val to_gen : 'a t -> 'a gen
-(** Return a [gen] of the elements of the list. *)
+(** [to_gen l] returns a [gen] of the elements of the list [l]. *)
 
 val of_gen : 'a gen -> 'a t
-(** Build a list from a given [gen].
+(** [of_gen gen] builds a list from a given [gen].
     In the result, elements appear in the same order as they did in the source [gen]. *)
-
+    
 val to_klist : 'a t -> 'a klist
-(** Return a [klist] of the elements of the list. *)
+(** [to_klist l] returns a [klist] of the elements of the list [l]. *)
 
 val of_klist : 'a klist -> 'a t
-(** Build a list from a given [klist].
+(** [of_klist klist] builds a list from a given [klist].
     In the result, elements appear in the same order as they did in the source [klist]. *)
 
 (** {2 Infix Operators}
@@ -762,25 +797,26 @@ val of_klist : 'a klist -> 'a t
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  (** Infix version of [map] with reversed arguments. *)
+  (** [l >|= f] is the infix version of [map] with reversed arguments. *)
 
   val (@) : 'a t -> 'a t -> 'a t
-  (** As {!append}. Concatenate two lists. *)
-
+  (** [l1 @ l2] concatenates two lists [l1] and [l2].
+      As {!append}. *)
+      
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
 
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-  (** As {!map}. *)
+  (** [f <$> l] is like {!map}. *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   (** [l >>= f] is [flat_map f l]. *)
 
   val (--) : int -> int -> int t
-  (** Infix alias for [range]. Bounds included. *)
+  (** [i -- j] is the infix alias for [range]. Bounds included. *)
 
   val (--^) : int -> int -> int t
-  (** Infix alias for [range']. Second bound excluded.
+  (** [i --^ j] is the infix alias for [range']. Second bound [j] excluded.
       @since 0.17 *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
@@ -796,4 +832,4 @@ include CCShimsMkLet_.S with type 'a t_let := 'a list
 
 val pp : ?start:string -> ?stop:string -> ?sep:string ->
   'a printer -> 'a t printer
-(** Print the contents of a list. *)
+(** [pp ?start ?stop ?sep ppf l] prints the contents of a list. *)
