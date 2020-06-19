@@ -81,6 +81,13 @@ module Infix = struct
   let (%) f g x = f (g x)
 end
 
+(*$T
+  CCFun.((succ %> string_of_int) 2 = "3")
+  CCFun.((( * ) 3 % succ) 5 = 18)
+  CCFun.(succ @@ ( * ) 2 @@ pred @@ 3 = 5)
+  CCFun.(3 |> succ |> ( * ) 5 |> pred = 19)
+*)
+
 include Infix
 
 module Monad(X : sig type t end) = struct
