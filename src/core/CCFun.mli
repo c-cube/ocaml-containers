@@ -86,6 +86,8 @@ module Infix : sig
   (** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
 end
 
+include module type of Infix
+
 (** {2 Monad}
 
     Functions with a fixed domain are monads in their codomain. *)
