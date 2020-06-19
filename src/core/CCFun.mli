@@ -5,9 +5,6 @@
 
 include module type of CCShimsFun_
 
-val (|>) : 'a -> ('a -> 'b) -> 'b
-(** [x |> f] is the same as [f x]. A 'pipe' operator. *)
-
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** [compose f g x] is [g (f x)]. Composition. *)
 
@@ -16,13 +13,6 @@ val compose_binop : ('a -> 'b) -> ('b -> 'b -> 'c) -> 'a -> 'a -> 'c
     Example (partial order):
       [List.sort (compose_binop fst CCInt.compare) [1, true; 2, false; 1, false]].
     @since 0.6*)
-
-val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
-(** [(f %> g) x] or [(%>) f g x] is [g (f x)]. Alias to [compose]. *)
-
-val (@@) : ('a -> 'b) -> 'a -> 'b
-(** [f @@ x] is the same as [f x], but right-associative.
-    @since 0.5 *)
 
 val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
 (** [curry f x y] is [f (x,y)].
@@ -40,9 +30,6 @@ val tap : ('a -> _) -> 'a -> 'a
       |> tap @@ CCArray.sort Stdlib.compare
     ]}
 *)
-
-val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
-(** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
 
 val lexicographic : ('a -> 'a -> int) -> ('a -> 'a -> int) -> 'a -> 'a -> int
 (** Lexicographic combination of comparison functions. *)
@@ -78,6 +65,26 @@ val iterate : int -> ('a -> 'a) -> 'a -> 'a
 (** [iterate n f] is [f] iterated [n] times. That is to say, [iterate 0 f x] is
     [x], [iterate 1 f x] is [f x], [iterate 2 f x] is [f (f x)], etc.
     @since 2.1 *)
+
+(** {2 Infix}
+
+    Infix operators. *)
+
+module Infix : sig
+
+  val (|>) : 'a -> ('a -> 'b) -> 'b
+  (** [x |> f] is the same as [f x]. A 'pipe' operator. *)
+
+  val (@@) : ('a -> 'b) -> 'a -> 'b
+  (** [f @@ x] is the same as [f x], but right-associative.
+      @since 0.5 *)
+
+  val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
+  (** [(f %> g) x] or [(%>) f g x] is [g (f x)]. Alias to [compose]. *)
+
+  val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
+  (** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
+end
 
 (** {2 Monad}
 

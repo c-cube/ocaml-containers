@@ -3,11 +3,6 @@
 
 (** {1 Basic Functions} *)
 
-(* default implem for some operators *)
-
-let (|>) x f = f x
-let (@@) f x = f x
-
 let opaque_identity x = x
 
 (* import standard implementations, if any *)
@@ -25,10 +20,6 @@ let curry f x y = f (x,y)
 let uncurry f (x,y) = f x y
 
 let tap f x = ignore (f x); x
-
-let (%>) = compose
-
-let (%) f g x = f (g x)
 
 let lexicographic f1 f2 x y =
   let c = f1 x y in
@@ -80,6 +71,17 @@ let rec iterate n f x =
   (Invalid_argument "CCFun.iterate")
   (fun () -> iterate (-1) succ 10)
 *)
+
+module Infix = struct
+  (* default implem for some operators *)
+  let (|>) x f = f x
+  let (@@) f x = f x
+
+  let (%>) = compose
+  let (%) f g x = f (g x)
+end
+
+include Infix
 
 module Monad(X : sig type t end) = struct
   type 'a t = X.t -> 'a
