@@ -244,6 +244,13 @@ PRs on github are very welcome (patches by email too, if you prefer so).
 <details>
 <summary>how to contribute (click to unfold)</summary>
 
+### List of authors
+
+The list of contributors can be seen [on github](https://github.com/c-cube/ocaml-containers/graphs/contributors).
+
+Alternatively, `git authors` from git-extras can be invoked from within the repo
+to list authors based on the git commits.
+
 ### First-Time Contributors
 
 Assuming your are in a clone of the repository:
