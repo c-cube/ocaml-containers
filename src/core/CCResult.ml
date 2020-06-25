@@ -282,6 +282,7 @@ let retry n f =
 (** {2 Infix} *)
 
 module Infix = struct
+  let (<$>) = map
   let (>|=) e f = map f e
   let (>>=) e f = flat_map f e
   let (<*>) = (<*>)

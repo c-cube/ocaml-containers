@@ -114,12 +114,6 @@ val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
 
 val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
 
-val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
-
-val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
-(** Monadic composition. [e >>= f] proceeds as [f x] if [e] is [Ok x]
-    or returns [e] if [e] is an [Error]. *)
-
 val equal : err:'err equal -> 'a equal -> ('a, 'err) t equal
 
 val compare : err:'err ord -> 'a ord -> ('a, 'err) t ord
@@ -168,11 +162,6 @@ val wrap3 : ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> ('d, exn) t
 val pure : 'a -> ('a, 'err) t
 (** Synonym of {!return}. *)
 
-val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
-(** [a <*> b] evaluates [a] and [b], and, in case of success, returns
-    [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
-    over the error of [b] if both fail. *)
-
 val join : (('a, 'err) t, 'err) t -> ('a, 'err) t
 (** [join t], in case of success, returns [Ok o] from [Ok (Ok o)]. Otherwise,
     it fails with [Error e] where [e] is the unwrapped error of [t]. *)
@@ -185,7 +174,11 @@ val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
 (** {2 Infix} *)
 
 module Infix : sig
+  val (<$>) : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
+  (** Infix version of [map]. *)
+
   val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
+  (** Infix version of [map] with reversed arguments. *)
 
   val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
   (** Monadic composition. [e >>= f] proceeds as [f x] if [e] is [Ok x]
@@ -200,6 +193,8 @@ module Infix : sig
       @since 2.8 *)
   include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
 end
+
+include module type of Infix
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
     @since 2.8 *)
