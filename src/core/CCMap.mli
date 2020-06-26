@@ -19,7 +19,9 @@ module type S = sig
   include Map.S
 
   val get : key -> 'a t -> 'a option
-  (** Safe version of {!find}. *)
+  (** [get k m] returns [Some v] if the current binding of [k] in [m] is [v],
+      or [None] if the key [k] is not present.
+      Safe version of {!find}. *)
 
   val get_or : key -> 'a t -> default:'a -> 'a
   (** [get_or k m ~default] returns the value associated to [k] if present,
@@ -33,28 +35,38 @@ module type S = sig
       [add k v' m] is returned. *)
 
   val choose_opt : 'a t -> (key * 'a) option
-  (** Safe version of {!choose}.
+  (** [choose_opt m] returns one binding of the given map [m], or [None] if [m] is empty.
+      Safe version of {!choose}.
       @since 1.5 *)
 
   val min_binding_opt : 'a t -> (key * 'a) option
-  (** Safe version of {!min_binding}.
+  (** [min_binding_opt m] returns the smallest binding of the given map [m],
+      or [None] if [m] is empty.
+      Safe version of {!min_binding}.
       @since 1.5 *)
 
   val max_binding_opt : 'a t -> (key * 'a) option
-  (** Safe version of {!max_binding}.
+  (** [max_binding_opt m] returns the largest binding of the given map [m],
+      or [None] if [m] is empty.
+      Safe version of {!max_binding}.
       @since 1.5 *)
 
   val find_opt : key -> 'a t -> 'a option
-  (** Safe version of {!find}.
+  (** [find_opt k m] returns [Some v] if the current binding of [k] in [m] is [v],
+      or [None] if the key [k] is not present.
+      Safe version of {!find}.
       @since 1.5 *)
 
   val find_first : (key -> bool) -> 'a t -> key * 'a
-  (** Find smallest binding satisfying the monotonic predicate.
+  (** [find_first f m] where [f] is a monotonically increasing function, returns the binding of [m]
+      with the lowest key [k] such that [f k], or raises [Not_found] if no such key exists.
       See {!Map.S.find_first}.
       @since 1.5 *)
 
   val find_first_opt : (key -> bool) -> 'a t -> (key * 'a) option
-  (** Safe version of {!find_first}.
+  (** [find_first_opt f m] where [f] is a monotonically increasing function, returns an option containing
+      the binding of [m] with the lowest key [k] such that [f k], or [None] if no such key exists.
+      Safe version of {!find_first}.
       @since 1.5 *)
 
   val merge_safe :
@@ -64,51 +76,60 @@ module type S = sig
       @since 0.17 *)
 
   val of_iter : (key * 'a) iter -> 'a t
-  (** Like {!of_list}.
+  (** [of_iter iter] builds a map from the given [iter] of bindings.
+      Like {!of_list}.
       @since 2.8 *)
 
   val add_std_seq : 'a t -> (key * 'a) Seq.t -> 'a t
-  (** Like {!add_list}.
+  (** [add_std_seq m seq] adds the given [Seq.t] of bindings to the map [m].
+      Like {!add_list}.
       @since 2.8 *)
 
   val of_std_seq : (key * 'a) Seq.t -> 'a t
-  (** Like {!of_list}.
+  (** [of_std_seq seq] builds a map from the given [Seq.t] of bindings.
+      Like {!of_list}.
       @since 2.8 *)
 
   val add_iter : 'a t -> (key * 'a) iter -> 'a t
-  (** Like {!add_list}.
+  (** [add_iter m iter] adds the given [iter] of bindings to the map [m].
+      Like {!add_list}.
       @since 2.8 *)
 
   val of_iter : (key * 'a) iter -> 'a t
-  (** Like {!of_list}.
+  (** [of_iter iter] builds a map from the given [iter] of bindings.
+      Like {!of_list}.
       @since 2.8 *)
 
   val to_iter : 'a t -> (key * 'a) iter
-  (** Like {!to_list}.
+  (** [to_iter m] iterates on the whole map [m], creating an [iter] of bindings.
+      Like {!to_list}.
       @since 2.8 *)
 
   val of_list : (key * 'a) list -> 'a t
-  (** Build a map from the given list of bindings [k_i -> v_i],
+  (** [of_list l] builds a map from the given list [l] of bindings [k_i -> v_i],
       added in order using {!add}.
       If a key occurs several times, only its last binding
       will be present in the result. *)
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
-  (** @since 0.14 *)
+  (** [add_list m l] adds the given list [l] of bindings to the map [m].
+      @since 0.14 *)
 
   val keys : _ t -> key iter
-  (** Iterate on keys only.
+  (** [keys m] iterates on the keys of [m] only, creating an [iter] of keys.
       @since 0.15 *)
 
   val values : 'a t -> 'a iter
-  (** Iterate on values only.
+  (** [values m] iterates on the values of [m] only, creating an [iter] of values.
       @since 0.15 *)
 
   val to_list : 'a t -> (key * 'a) list
+  (** [to_list m] builds a list of the bindings of the given map [m]. *)
 
   val pp :
     ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
     key printer -> 'a printer -> 'a t printer
+  (** [pp ?start ?stop ?arrow ?sep pp_key pp_v m] pretty-prints the contents of the map. *)    
 end
 
 module Make(O : Map.OrderedType) : S
