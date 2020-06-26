@@ -5,7 +5,7 @@
 type +'a t = 'a option
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-(** Transform the element inside, if any. *)
+(** [map f o] applies the function [f] to the element inside [o], if any. *)
 
 val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
 (** [map_or ~default f o] is [f x] if [o = Some x], [default] otherwise.
@@ -23,40 +23,46 @@ val is_none : _ t -> bool
     @since 0.11 *)
 
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
-(** Compare two options, using custom comparators for the value.
+(** [compare comp o1 o2] compares two options [o1] and [o2],
+    using custom comparators [comp] for the value.
     [None] is always assumed to be less than [Some _]. *)
 
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-(** Test for equality between option types using a custom equality predicat. *)
+(** [equal p o1 o2] tests for equality between option types [o1] and [o2],
+    using a custom equality predicate [p]. *)
 
 val return : 'a -> 'a t
-(** Monadic return, that is [return x = Some x]. *)
+(** [return x] is a monadic return, that is [return x = Some x]. *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** Infix version of {!map}. *)
+(** [o >|= f] is the infix version of {!map}. *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** Flip version of {!>>=}. *)
+(** [flat_map f o] is equivalent to {!map} followed by {!flatten}.
+    Flip version of {!>>=}. *)
 
 val bind : 'a t -> ('a -> 'b t) -> 'b t
-(** Monadic bind.
-    [bind f o] if [o] is [Some v] then [f v] else [None]
+(** [bind o f] is [f v] if [o] is [Some v], [None] otherwise.
+    Monadic bind.
     @since NEXT_RELEASE *)
 
 val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** Infix version of {!bind}. *)
+(** [o >>= f] is the infix version of {!bind}. *)
 
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [map2 f o1 o2] maps ['a option] and ['b option] to a ['c option] using [f]. *)
 
 val iter : ('a -> unit) -> 'a t -> unit
-(** Iterate on 0 or 1 element. *)
+(** [iter f o] applies [f] to [o]. Iterate on 0 or 1 element. *)
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
-(** Fold on 0 or 1 element. *)
+(** [fold f init o] is [f init x] if [o] is [Some x], or [init] if [o] is [None].
+    Fold on 0 or 1 element. *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
-(** Filter on 0 or 1 element.
+(** [filter f o] returns [Some x] if [f (Some x)] is [true],
+    or [None] if [f (Some x)] is [false] or if [o] is [None].
+    Filter on 0 or 1 element.
     @since 0.5 *)
 
 val if_ : ('a -> bool) -> 'a -> 'a option
@@ -64,78 +70,79 @@ val if_ : ('a -> bool) -> 'a -> 'a option
     @since 0.17 *)
 
 val exists : ('a -> bool) -> 'a t -> bool
-(** Return [true] iff there exists an element for which the provided function evaluates to [true].
+(** [exists f o] returns [true] iff there exists an element for which
+    the provided function [f] evaluates to [true].
     @since 0.17 *)
 
 val for_all : ('a -> bool) -> 'a t -> bool
-(** Return [true] iff the provided function evaluates to [true] for all elements.
+(** [for_all f o] returns [true] iff the provided function [f] evaluates to [true] for all elements.
     @since 0.17 *)
 
 val get_or : default:'a -> 'a t -> 'a
 (** [get_or ~default o] extracts the value from [o], or
-    returns [default] if [o = None].
+    returns [default] if [o] is [None].
     @since 0.18 *)
 
 val value : 'a t -> default:'a -> 'a
-(** Similar to the stdlib's [Option.value] and to {!get_or}.
+(** [value o ~default] is similar to the Stdlib's [Option.value] and to {!get_or}.
     @since 2.8 *)
 
 val get_exn : 'a t -> 'a
-(** Open the option, possibly failing if it is [None].
+(** [get_exn o] returns [x] if [o] is [Some x] or fails if [o] is [None].
     @raise Invalid_argument if the option is [None]. *)
 
 val get_lazy : (unit -> 'a) -> 'a t -> 'a
-(** [get_lazy default_fn x] unwraps [x], but if [x = None] it returns [default_fn ()] instead.
+(** [get_lazy default_fn o] unwraps [o], but if [o] is [None] it returns [default_fn ()] instead.
     @since 0.6.1 *)
 
 val sequence_l : 'a t list -> 'a list t
-(** [sequence_l [x1; x2; ...; xn]] returns [Some [y1;y2;...;yn]] if
+(** [sequence_l [x1; x2; ⋯; xn]] returns [Some [y1; y2; ⋯;yn]] if
     every [xi] is [Some yi]. Otherwise, if the list contains at least
     one [None], the result is [None]. *)
 
 val wrap : ?handler:(exn -> bool) -> ('a -> 'b) -> 'a -> 'b option
-(** [wrap f x] calls [f x] and returns [Some y] if [f x = y]. If [f x] raises
+(** [wrap ?handler f x] calls [f x] and returns [Some y] if [f x = y]. If [f x] raises
     any exception, the result is [None]. This can be useful to wrap functions
     such as [Map.S.find].
     @param handler the exception handler, which returns [true] if the
         exception is to be caught. *)
 
 val wrap2 : ?handler:(exn -> bool) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c option
-(** [wrap2 f x y] is similar to {!wrap} but for binary functions. *)
+(** [wrap2 ?handler f x y] is similar to {!wrap} but for binary functions. *)
 
 (** {2 Applicative} *)
 
 val pure : 'a -> 'a t
-(** Alias to {!return}. *)
+(** [pure x] is an alias to {!return}. *)
 
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 (** [f <*> (Some x)] returns [Some (f x)] and [f <*> None] returns [None]. *)
 
 val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-(** Like [map].  *)
+(** [f <$> o] is like [map f o].  *)
 
 (** {2 Alternatives} *)
 
 val or_ : else_:('a t) -> 'a t -> 'a t
-(** [or_ ~else_ a] is [a] if [a] is [Some _], [else_] otherwise.
+(** [or_ ~else_ o] is [o] if [o] is [Some _], [else_] if [o] is [None].
     @since 1.2 *)
 
 val or_lazy : else_:(unit -> 'a t) -> 'a t -> 'a t
-(** [or_lazy ~else_ a] is [a] if [a] is [Some _], [else_ ()] otherwise.
+(** [or_lazy ~else_ o] is [o] if [o] is [Some _], [else_ ()] if [o] is [None].
     @since 1.2 *)
 
 val (<+>) : 'a t -> 'a t -> 'a t
-(** [a <+> b] is [a] if [a] is [Some _], [b] otherwise. *)
+(** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
 
 val choice : 'a t list -> 'a t
-(** [choice] returns the first non-[None] element of the list, or [None]. *)
+(** [choice lo] returns the first non-[None] element of the list [lo], or [None]. *)
 
 val flatten : 'a t t -> 'a t
-(** [flatten] transforms [Some x] into [x].
+(** [flatten oo] transforms [Some x] into [x].
     @since 2.2 *)
 
 val return_if : bool -> 'a -> 'a t
-(** Apply [Some] or [None] depending on a boolean.
+(** [return_if b x] applies [Some] or [None] depending on the boolean [b].
     More precisely, [return_if false x] is [None],
     and [return_if true x] is [Some x].
     @since 2.2 *)
@@ -145,19 +152,19 @@ val return_if : bool -> 'a -> 'a t
 
 module Infix : sig
   val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  (** [x >|= f] is [map f x]. *)
+  (** [o >|= f] is [map f o]. *)
 
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  (** Monadic bind. *)
+  (** [o >>= f] is the monadic bind. *)
 
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  (** [f <*> (Some x)] returns [Some (f x)] and [f <*> None] returns [None]. *)
+  (** [f <*> o] returns [Some (f x)] if [o] is [Some x] and [None] if [o] is [None]. *)
 
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-  (** Like [map].  *)
+  (** [f <$> o] is like [map f o].  *)
 
   val (<+>) : 'a t -> 'a t -> 'a t
-  (** [a <+> b] is [a] if [a] is [Some _], [b] otherwise. *)
+  (** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
       @since 2.8 *)
@@ -173,18 +180,22 @@ include CCShimsMkLet_.S with type 'a t_let := 'a option
 (** {2 Conversion and IO} *)
 
 val to_list : 'a t -> 'a list
-
+(** [to_list o] returns [[x]] if [o] is [Some x] or the empty list [[]] if [o] is [None]. *)
+    
 val of_list : 'a list -> 'a t
-(** Head of list, or [None]. *)
+(** [of_list l] returns [Some x] (x being the head of the list l), or [None] if [l] is the empty list. *)
 
 val to_result : 'e -> 'a t -> ('a, 'e) result
-(** @since 1.2 *)
+(** [to_result e o] returns [Ok x] if [o] is [Some x], or [Error e] if [o] is [None].
+    @since 1.2 *)
 
 val to_result_lazy : (unit -> 'e) -> 'a t -> ('a, 'e) result
-(** @since 1.2 *)
+(** [to_result_lazy f o] returns [Ok x] if [o] is [Some x] or [Error f] if [o] is [None].
+    @since 1.2 *)
 
 val of_result : ('a, _) result -> 'a t
-(** @since 1.2 *)
+(** [of_result result] returns an option from a [result].
+    @since 1.2 *)
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -194,21 +205,28 @@ type 'a random_gen = Random.State.t -> 'a
 val random : 'a random_gen -> 'a t random_gen
 
 val choice_iter : 'a t iter -> 'a t
-(** [choice_seq s] is similar to {!choice}, but works on sequences.
-    It returns the first [Some x] occurring in [s], or [None] otherwise.
+(** [choice_iter iter] is similar to {!choice}, but works on [iter].
+    It returns the first [Some x] occurring in [iter], or [None] otherwise.
     @since 3.0 *)
 
 val choice_seq : 'a t Seq.t -> 'a t
-(** @since 3.0 *)
+(** [choice_seq seq] works on [Seq.t].
+    It returns the first [Some x] occurring in [seq], or [None] otherwise.
+    @since 3.0 *)
 
 val to_gen : 'a t -> 'a gen
-
+(** [to_gen o] is [o] as a [gen]. [Some x] is the singleton [gen] containing [x]
+    and [None] is the empty [gen]. *)
+    
 val to_std_seq : 'a t -> 'a Seq.t
-(** Same as {!Stdlib.Option.to_seq}
+(** [to_std_seq o] is [o] as a sequence [Seq.t]. [Some x] is the singleton sequence containing [x]
+    and [None] is the empty sequence.
+    Same as {!Stdlib.Option.to_seq}
     @since 2.8 *)
 
 val to_iter : 'a t -> 'a iter
-(** Returns an internal iterator, like in the library [Iter].
+(** [to_iter o] returns an internal iterator, like in the library [Iter].
     @since 2.8 *)
 
 val pp : 'a printer -> 'a t printer
+(** [pp ppf o] pretty-prints option [o] using [ppf]. *)
