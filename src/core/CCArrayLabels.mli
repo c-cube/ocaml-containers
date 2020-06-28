@@ -35,7 +35,7 @@ val get_safe : 'a t -> int -> 'a option
     @since 0.18 *)
 
 val fold : f:('a -> 'b -> 'a) -> init:'a -> 'b t -> 'a
-(** [fold ~f ~init a] computes [f (⋯ (f (f init a.(0)) a.(1)) ⋯) a.(n-1)],
+(** [fold ~f ~init a] computes [f (… (f (f init a.(0)) a.(1)) …) a.(n-1)],
     where [n] is the length of the array [a].
     Same as {!ArrayLabels.fold_left} *)
 
@@ -142,18 +142,18 @@ val bsearch : cmp:(('a -> 'a -> int) [@keep_label]) -> key:'a -> 'a t ->
     @since 0.13 *)
 
 val for_all2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
-(** [for_all2 ~f [|a1; ⋯; an|] [|b1; ⋯; bn|]] is [true] if each pair of elements [ai bi]
+(** [for_all2 ~f [|a1; …; an|] [|b1; …; bn|]] is [true] if each pair of elements [ai bi]
     satisfies the predicate [f].
-    That is, it returns [(f a1 b1) && (f a2 b2) && ⋯ && (f an bn)].
+    That is, it returns [(f a1 b1) && (f a2 b2) && … && (f an bn)].
 
     @raise Invalid_argument if arrays have distinct lengths.
     Allow different types.
     @since 0.20 *)
 
 val exists2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
-(** [exists2 ~f [|a1; ⋯; an|] [|b1; ⋯; bn|]] is [true] if any pair of elements [ai bi]
+(** [exists2 ~f [|a1; …; an|] [|b1; …; bn|]] is [true] if any pair of elements [ai bi]
     satisfies the predicate [f].
-    That is, it returns [(f a1 b1) || (f a2 b2) || ⋯ || (f an bn)].
+    That is, it returns [(f a1 b1) || (f a2 b2) || … || (f an bn)].
 
     @raise Invalid_argument if arrays have distinct lengths.
     Allow different types.
@@ -161,14 +161,14 @@ val exists2 : f:('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 
 val fold2 : f:('acc -> 'a -> 'b -> 'acc) -> init:'acc -> 'a t -> 'b t -> 'acc
 (** [fold2 ~f ~init a b] fold on two arrays [a] and [b] stepwise.
-    It computes [f (⋯ (f init a1 b1)⋯) an bn].
+    It computes [f (… (f init a1 b1) …) an bn].
 
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
 
 val iter2 : f:('a -> 'b -> unit) -> 'a t -> 'b t -> unit
 (** [iter2 ~f a b] iterates on the two arrays [a] and [b] stepwise.
-    It is equivalent to  [f a0 b0; ⋯; f a.(length a - 1) b.(length b - 1); ()].
+    It is equivalent to  [f a0 b0; …; f a.(length a - 1) b.(length b - 1); ()].
 
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
@@ -220,7 +220,7 @@ val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
 val map2 : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [map2 ~f a b] applies function [f] to all elements of [a] and [b],
     and builds an array with the results returned by [f]:
-    [[| f a.(0) b.(0); ⋯; f a.(length a - 1) b.(length b - 1)|]].
+    [[| f a.(0) b.(0); …; f a.(length a - 1) b.(length b - 1)|]].
 
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
@@ -235,7 +235,7 @@ val filter : f:('a -> bool) -> 'a t -> 'a t
     the given predicate [f] will be kept. *)
 
 val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
-(** [filter_map ~f [|a1; ⋯; an|]] calls [(f a1) ⋯ (f an)] and returns an array [b] consisting
+(** [filter_map ~f [|a1; …; an|]] calls [(f a1) … (f an)] and returns an array [b] consisting
     of all elements [bi] such as [f ai = Some bi]. When [f] returns [None], the corresponding
     element of [a] is discarded. *)
 

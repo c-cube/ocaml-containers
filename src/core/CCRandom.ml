@@ -113,8 +113,8 @@ let _diff_list ~last l =
 (* Partition of an int into [len] integers uniformly.
    We first sample (len-1) points from the set {1,..i-1} without replacement.
    We sort these points and add back 0 and i, we have thus
-   x_0 = 0 < x_1 < x_2 < ... < x_{len-1} < i = x_{len}.
-   If we define, y_k = x_{k+1} - x_{k} for k in 0..(len-1), then by construction
+   x_0 = 0 < x_1 < x_2 < … < x_{len-1} < i = x_{len}.
+   If we define, y_k = x_{k+1} - x_{k} for k in 0 … (len-1), then by construction
    ∑_k y_k = ∑_k (x_{k+1} - x_k ) = x_{len} - x_0 = i. *)
 let split_list i ~len st =
   if len <= 1 then invalid_arg "Random.split_list";

@@ -215,7 +215,7 @@ val flatten_l : ('a, 'err) t list -> ('a list, 'err) t
 *)
 
 val map_l : ('a -> ('b, 'err) t) -> 'a list -> ('b list, 'err) t
-(** [map_l f [a1; ...; an]] applies the function [f] to [a1, ..., an] , and, in case of
+(** [map_l f [a1; …; an]] applies the function [f] to [a1, …, an] ,and, in case of
     success for every element, returns the list of [Ok]-value.
     Otherwise, it fails and returns the first error encountered. Tail-recursive.*)
 
