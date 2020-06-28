@@ -295,7 +295,7 @@ let rfind ~sub =
     i < 0 || String.sub s1 i (length s2) = s2)
 *)
 
-(* Replace substring [s.[pos]....s.[pos+len-1]] by [by] in [s] *)
+(* Replace substring [s.[pos] … s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
   let b = Buffer.create (length s + length by - len) in
   Buffer.add_substring b s 0 pos;

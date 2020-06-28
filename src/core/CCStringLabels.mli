@@ -24,7 +24,7 @@ val blit : src:t -> src_pos:int -> dst:Bytes.t -> dst_pos:int -> len:int -> unit
 val blit_immut : t -> int -> t -> int -> int -> string
 (** Immutable version of {!blit}, returning a new string.
     [blit a i b j len] is the same as [b], but in which
-    the range [j, ..., j+len] is replaced by [a.[i], ..., a.[i + len]].
+    the range [j, …, j+len] is replaced by [a.[i], …, a.[i + len]].
     @raise Invalid_argument if indices are not valid. *)
    *)
 
@@ -208,7 +208,7 @@ val iter : f:(char -> unit) -> string -> unit
     @since 0.12 *)
 
 val filter_map : f:(char -> char option) -> string -> string
-(** [filter_map f s] calls [(f a0) (f a1) ... (f an)] where [a0 ... an] are the characters of s.
+(** [filter_map f s] calls [(f a0) (f a1) … (f an)] where [a0 … an] are the characters of s.
     It returns the string of characters [ci] such as [f ai = Some ci] (when [f] returns [None],
     the corresponding element of [s] is discarded).
     @since 0.17 *)

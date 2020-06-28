@@ -96,7 +96,7 @@ val get_lazy : (unit -> 'a) -> 'a t -> 'a
     @since 0.6.1 *)
 
 val sequence_l : 'a t list -> 'a list t
-(** [sequence_l [x1; x2; ⋯; xn]] returns [Some [y1; y2; ⋯;yn]] if
+(** [sequence_l [x1; x2; …; xn]] returns [Some [y1; y2; …; yn]] if
     every [xi] is [Some yi]. Otherwise, if the list contains at least
     one [None], the result is [None]. *)
 

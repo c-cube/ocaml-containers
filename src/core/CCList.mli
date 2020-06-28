@@ -24,7 +24,7 @@ val is_empty : _ t -> bool
     @since 0.11 *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-(** [map f [a0; a1; ⋯ an]] applies function [f] in turn to [a0; a1; ⋯ an].
+(** [map f [a0; a1; …; an]] applies function [f] in turn to [a0; a1; …; an].
     Safe version of {!List.map}. *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
@@ -51,8 +51,8 @@ val filter : ('a -> bool) -> 'a t -> 'a t
     Safe version of {!List.filter}. *)
     
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
-(** [fold_right f [a1; ⋯ an] b] is
-    [f a1 (f a2 ( ⋯ (f an b) ⋯ ))].
+(** [fold_right f [a1; …; an] b] is
+    [f a1 (f a2 ( … (f an b) … ))].
     Safe version of {!List.fold_right}. *)
 
 val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
@@ -76,7 +76,7 @@ val fold_on_map : f:('a -> 'b) -> reduce:('acc -> 'b -> 'acc) -> 'acc -> 'a list
     @since 2.8 *)
 
 val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc list
-(** [scan_left f init l] returns the list [[init; f init x0; f (f init x0) x1; ⋯]]
+(** [scan_left f init l] returns the list [[init; f init x0; f (f init x0) x1; …]]
     where [x0], [x1], etc. are the elements of [l].
     @since 1.2, but only
     @since 2.2 with labels *)
@@ -117,12 +117,12 @@ val count_true_false : ('a -> bool) -> 'a list -> int * int
     @since 2.4 *)
 
 val init : int -> (int -> 'a) -> 'a t
-(** [init len f] is [f 0; f 1; ⋯; f (len-1)].
+(** [init len f] is [f 0; f 1; …; f (len-1)].
     @raise Invalid_argument if len < 0.
     @since 0.6 *)
 
 val combine : 'a list -> 'b list -> ('a * 'b) list
-(** [combine [a1; ⋯; an] [b1; ⋯; bn]] is [[(a1,b1); ⋯; (an,bn)]].
+(** [combine [a1; …; an] [b1; …; bn]] is [[(a1,b1); …; (an,bn)]].
     Transform two lists into a list of pairs.
     Like {!List.combine} but tail-recursive.
     @raise Invalid_argument if the lists have distinct lengths.
@@ -139,7 +139,7 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
     @since 2.2 with labels *)
 
 val split : ('a * 'b) t -> 'a t * 'b t
-(** [split [(a1,b1); ⋯; (an,bn)]] is [([a1; ⋯; an], [b1; ⋯; bn])].
+(** [split [(a1,b1); …; (an,bn)]] is [([a1; …; an], [b1; …; bn])].
     Transform a list of pairs into a pair of lists.
     A tail-recursive version of {!List.split}.
     @since 1.2, but only
@@ -173,7 +173,7 @@ val flat_map_i : (int -> 'a -> 'b t) -> 'a t -> 'b t
     @since 2.8 *)
 
 val flatten : 'a t t -> 'a t
-(** [flatten [l1]; [l2]; ⋯] concatenates a list of lists. 
+(** [flatten [l1]; [l2]; …] concatenates a list of lists. 
     Safe version of {!List.flatten}. *)
 
 val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
@@ -184,7 +184,7 @@ val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
     the pair of elements of [l1] and [l2]. Fold on the cartesian product. *)
 
 val cartesian_product : 'a t t -> 'a t t
-(** [cartesian_product [[l1];[l2]; ⋯[ln]]] produces the cartesian product of this list of lists,
+(** [cartesian_product [[l1]; [l2]; …; [ln]]] produces the cartesian product of this list of lists,
     by returning all the ways of picking one element per sublist.
     {b NOTE} the order of the returned list is unspecified.
     For example:
@@ -202,7 +202,7 @@ val cartesian_product : 'a t t -> 'a t t
 val map_product_l : ('a -> 'b list) -> 'a list -> 'b list list
 (** [map_product_l f l] maps each element of [l] to a list of
     objects of type ['b] using [f].
-    We obtain [[l1;l2;⋯;ln]] where [length l=n] and [li : 'b list].
+    We obtain [[l1; l2; …; ln]] where [length l=n] and [li : 'b list].
     Then, it returns all the ways of picking exactly one element per [li].
     @since 1.2, but only
     @since 2.2 with labels *)

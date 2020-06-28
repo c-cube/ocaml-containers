@@ -15,7 +15,7 @@ val compare : t -> t -> int
 val of_int_exn : int -> t
 (** Alias to {!Char.chr}.
     Return the character with the given ASCII code.
-    @raise Invalid_argument if the int is not within [0,...,255].
+    @raise Invalid_argument if the int is not within [0 … 255].
     @since 1.0 *)
 
 val of_int : int -> t option

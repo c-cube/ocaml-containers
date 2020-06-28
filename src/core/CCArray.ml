@@ -474,7 +474,7 @@ let swap a i j =
     a=b)
 *)
 
-(* shuffle a[i...j[ using the given int random generator
+(* shuffle a[i … j] using the given int random generator
    See http://en.wikipedia.org/wiki/Fisher-Yates_shuffle *)
 let _shuffle _rand_int a i j =
   for k = j-1 downto i+1 do

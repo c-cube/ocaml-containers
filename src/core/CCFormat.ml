@@ -293,7 +293,7 @@ let mark_close_tag st ~or_else s =
     | _ ->
       let style =
         try
-          ignore (Stack.pop st); (* pop current style (if well-scoped...) *)
+          ignore (Stack.pop st); (* pop current style (if well-scoped …) *)
           Stack.top st (* look at previous style *)
         with Stack.Empty ->
           [`Reset]
