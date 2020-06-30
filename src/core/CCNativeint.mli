@@ -17,6 +17,7 @@
     @since 2.1 *)
 
 include module type of struct include Nativeint end
+(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Nativeint.html} Documentation for the standard Nativeint module}*)
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].

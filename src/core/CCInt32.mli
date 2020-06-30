@@ -16,6 +16,7 @@
     @since 2.1 *)
 
 include module type of struct include Int32 end
+(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int32.html} Documentation for the standard Int32 module}*)
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].

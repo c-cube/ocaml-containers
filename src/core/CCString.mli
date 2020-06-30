@@ -13,6 +13,7 @@ type 'a gen = unit -> 'a option
 type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 include module type of struct include String end
+(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/String.html} Documentation for the standard String module}*)
 
 val length : t -> int
 (** Return the length (number of characters) of the given string. *)

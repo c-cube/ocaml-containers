@@ -13,6 +13,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 include module type of ListLabels
+(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/ListLabels.html} Documentation for the standard ListLabels module}*)
 
 type 'a t = 'a list
 
