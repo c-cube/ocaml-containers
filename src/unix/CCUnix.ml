@@ -101,6 +101,7 @@ let call_full_inner ?(bufsize=2048) ?(stdin=`Str "") ?(env=Unix.environment()) ~
        let t_out =
          Thread.create
            (fun oc ->
+              ignore (Thread.sigmask Unix.SIG_BLOCK [Sys.sigint;Sys.sigpipe]: _ list);
               out := read_all ~size:bufsize oc)
            oc in
        let err = read_all ~size:bufsize errc in
