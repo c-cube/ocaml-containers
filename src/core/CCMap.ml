@@ -60,11 +60,11 @@ module type S = sig
   (** Like {!of_list}.
       @since 2.8 *)
 
-  val add_std_seq : 'a t -> (key * 'a) Seq.t -> 'a t
+  val add_seq : 'a t -> (key * 'a) Seq.t -> 'a t
   (** Like {!add_list}.
       @since 2.8 *)
 
-  val of_std_seq : (key * 'a) Seq.t -> 'a t
+  val of_seq : (key * 'a) Seq.t -> 'a t
   (** Like {!of_list}.
       @since 2.8 *)
 
@@ -193,12 +193,12 @@ module Make(O : Map.OrderedType) = struct
          | Some v1, Some v2 -> f k (`Both (v1,v2)))
       a b
 
-  let add_std_seq m s =
+  let add_seq m s =
     let m = ref m in
     Seq.iter (fun (k,v) -> m := add k v !m) s;
     !m
 
-  let of_std_seq s = add_std_seq empty s
+  let of_seq s = add_seq empty s
 
   let add_iter m s =
     let m = ref m in

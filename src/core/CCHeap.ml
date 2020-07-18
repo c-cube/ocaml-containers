@@ -175,7 +175,7 @@ module type S = sig
   (** Like {!add_list}.
       @since 2.8 *)
 
-  val add_std_seq : t -> elt Seq.t -> t
+  val add_seq : t -> elt Seq.t -> t
   (** Like {!add_list}.
       @since 2.8 *)
 
@@ -183,7 +183,7 @@ module type S = sig
   (** Build a heap from a given [iter]. Complexity: [O(n log n)].
       @since 2.8 *)
 
-  val of_std_seq : elt Seq.t -> t
+  val of_seq : elt Seq.t -> t
   (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
       @since 2.8 *)
 
@@ -191,7 +191,7 @@ module type S = sig
   (** Return a [iter] of the elements of the heap.
       @since 2.8 *)
 
-  val to_std_seq : t -> elt Seq.t
+  val to_seq : t -> elt Seq.t
   (** Return a [Seq.t] of the elements of the heap.
       @since 2.8 *)
 
@@ -199,7 +199,7 @@ module type S = sig
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
 
-  val to_std_seq_sorted : t -> elt Seq.t
+  val to_seq_sorted : t -> elt Seq.t
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
 
@@ -366,17 +366,17 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     i (fun x -> h := insert x !h);
     !h
 
-  let add_std_seq h seq =
+  let add_seq h seq =
     let h = ref h in
     Seq.iter (fun x -> h := insert x !h) seq;
     !h
 
   let of_iter i = add_iter empty i
-  let of_std_seq seq = add_std_seq empty seq
+  let of_seq seq = add_seq empty seq
 
   let to_iter h k = iter k h
 
-  let to_std_seq h =
+  let to_seq h =
     (* use an explicit stack [st] *)
     let rec aux st () =
       match st with
@@ -392,9 +392,9 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     in
     fun k -> recurse heap k
 
-  let rec to_std_seq_sorted h () = match take h with
+  let rec to_seq_sorted h () = match take h with
     | None -> Seq.Nil
-    | Some (h', x) -> Seq.Cons (x, to_std_seq_sorted h')
+    | Some (h', x) -> Seq.Cons (x, to_seq_sorted h')
 
   let rec add_klist h l = match l() with
     | `Nil -> h

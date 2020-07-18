@@ -86,9 +86,10 @@ val append_iter : ('a, rw) t -> 'a iter -> unit
 (** Append content of iterator.
     @since 2.8 *)
 
-val append_std_seq : ('a, rw) t -> 'a Seq.t -> unit
+val append_seq : ('a, rw) t -> 'a Seq.t -> unit
 (** Append content of iterator.
-    @since 2.8 *)
+    Renamed from [append_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
 val append_list : ('a, rw) t -> 'a list -> unit
 (** Append content of list.
@@ -209,9 +210,10 @@ val filter_map_in_place : ('a -> 'a option) -> ('a,_) t -> unit
 val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 (** Map each element to a sub-vector. *)
 
-val flat_map_std_seq : ('a -> 'b Seq.t) -> ('a,_) t -> ('b, 'mut) t
+val flat_map_seq : ('a -> 'b Seq.t) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using [Seq] for intermediate collections.
-    @since 2.8 *)
+    Renamed from [flat_map_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
 val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!list} for
@@ -298,9 +300,10 @@ val of_iter : ?init:('a,rw) t -> 'a iter -> ('a, rw) t
 (** Convert an Iterator to a vector.
     @since 2.8.1 *)
 
-val of_std_seq : ?init:('a,rw) t -> 'a Seq.t -> ('a, rw) t
+val of_seq : ?init:('a,rw) t -> 'a Seq.t -> ('a, rw) t
 (** Convert an Iterator to a vector.
-    @since 2.8.1 *)
+    Renamed from [of_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
 val to_iter : ('a,_) t -> 'a iter
 (** Return a [iter] with the elements contained in the vector.
@@ -313,15 +316,17 @@ val to_iter_rev : ('a,_) t -> 'a iter
     @since 2.8
 *)
 
-val to_std_seq : ('a,_) t -> 'a Seq.t
+val to_seq : ('a,_) t -> 'a Seq.t
 (** Return an iterator with the elements contained in the vector.
-    @since 2.8
+    Renamed from [to_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE
 *)
 
-val to_std_seq_rev : ('a,_) t -> 'a Seq.t
+val to_seq_rev : ('a,_) t -> 'a Seq.t
 (** [to_seq v] returns the sequence of elements of [v] in reverse order,
     that is, the last elements of [v] are iterated on first.
-    @since 2.8
+    Renamed from [to_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE
 *)
 
 val slice : ('a,rw) t -> ('a array * int * int)
@@ -329,7 +334,7 @@ val slice : ('a,rw) t -> ('a array * int * int)
     be careful!. *)
 
 val slice_iter : ('a,_) t -> int -> int -> 'a iter
-(** [slice_seq v start len] is the sequence of elements from [v.(start)]
+(** [slice_iter v start len] is the sequence of elements from [v.(start)]
     to [v.(start+len-1)].
     @since NEXT_RELEASE
 *)

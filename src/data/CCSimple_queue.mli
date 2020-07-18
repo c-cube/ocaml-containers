@@ -88,27 +88,26 @@ val to_iter : 'a t -> 'a iter
 val add_iter : 'a t -> 'a iter -> 'a t
 val of_iter : 'a iter -> 'a t
 
-val to_seq : 'a t -> 'a sequence
-[@@ocaml.deprecated "use to_iter"]
+val to_seq : 'a t -> 'a Seq.t
+(** Renamed from [to_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
-val add_seq : 'a t -> 'a sequence -> 'a t
-[@@ocaml.deprecated "use add_iter"]
+val add_seq : 'a t -> 'a Seq.t -> 'a t
+(** Renamed from [add_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
-val of_seq : 'a sequence -> 'a t
-[@@ocaml.deprecated "use of_iter"]
-
-val to_std_seq : 'a t -> 'a Seq.t
-val add_std_seq : 'a t -> 'a Seq.t -> 'a t
-val of_std_seq : 'a Seq.t -> 'a t
+val of_seq : 'a Seq.t -> 'a t
+(** Renamed from [of_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
 val to_klist : 'a t -> 'a klist
-[@@ocaml.deprecated "use to_std_seq"]
+[@@ocaml.deprecated "use to_seq"]
 
 val add_klist : 'a t -> 'a klist -> 'a t
-[@@ocaml.deprecated "use add_std_seq"]
+[@@ocaml.deprecated "use add_seq"]
 
 val of_klist : 'a klist -> 'a t
-[@@ocaml.deprecated "use of_std_seq"]
+[@@ocaml.deprecated "use of_seq"]
 
 val of_gen : 'a gen -> 'a t
 val add_gen : 'a t -> 'a gen -> 'a t

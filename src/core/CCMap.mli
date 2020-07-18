@@ -80,15 +80,17 @@ module type S = sig
       Like {!of_list}.
       @since 2.8 *)
 
-  val add_std_seq : 'a t -> (key * 'a) Seq.t -> 'a t
-  (** [add_std_seq m seq] adds the given [Seq.t] of bindings to the map [m].
+  val add_seq : 'a t -> (key * 'a) Seq.t -> 'a t
+  (** [add_seq m seq] adds the given [Seq.t] of bindings to the map [m].
       Like {!add_list}.
-      @since 2.8 *)
+      Renamed from [add_std_seq] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
-  val of_std_seq : (key * 'a) Seq.t -> 'a t
-  (** [of_std_seq seq] builds a map from the given [Seq.t] of bindings.
+  val of_seq : (key * 'a) Seq.t -> 'a t
+  (** [of_seq seq] builds a map from the given [Seq.t] of bindings.
       Like {!of_list}.
-      @since 2.8 *)
+      Renamed from [of_std_seq] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
   val add_iter : 'a t -> (key * 'a) iter -> 'a t
   (** [add_iter m iter] adds the given [iter] of bindings to the map [m].

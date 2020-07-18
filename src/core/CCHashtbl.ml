@@ -63,30 +63,30 @@ module Poly = struct
 
   let add_iter tbl i = i (fun (k,v) -> Hashtbl.add tbl k v)
 
-  let add_std_seq tbl seq = Seq.iter (fun (k,v) -> Hashtbl.add tbl k v) seq
+  let add_seq tbl seq = Seq.iter (fun (k,v) -> Hashtbl.add tbl k v) seq
 
   let of_iter i =
     let tbl = Hashtbl.create 32 in
     add_iter tbl i;
     tbl
 
-  let of_std_seq i =
+  let of_seq i =
     let tbl = Hashtbl.create 32 in
-    add_std_seq tbl i;
+    add_seq tbl i;
     tbl
 
   let add_iter_count tbl i = i (fun k -> incr tbl k)
 
-  let add_std_seq_count tbl seq = Seq.iter (fun k -> incr tbl k) seq
+  let add_seq_count tbl seq = Seq.iter (fun k -> incr tbl k) seq
 
   let of_iter_count i =
     let tbl = Hashtbl.create 32 in
     add_iter_count tbl i;
     tbl
 
-  let of_std_seq_count i =
+  let of_seq_count i =
     let tbl = Hashtbl.create 32 in
-    add_std_seq_count tbl i;
+    add_seq_count tbl i;
     tbl
 
   let to_list tbl =
@@ -210,7 +210,7 @@ module type S = sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
-  val add_std_seq : 'a t -> (key * 'a) Seq.t -> unit
+  val add_seq : 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
@@ -218,7 +218,7 @@ module type S = sig
   (** From the given bindings, added in order.
       @since 2.8 *)
 
-  val of_std_seq : (key * 'a) Seq.t -> 'a t
+  val of_seq : (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
       @since 2.8 *)
 
@@ -228,7 +228,7 @@ module type S = sig
       element of [i] occurs.
       @since 2.8 *)
 
-  val add_std_seq_count : int t -> key Seq.t -> unit
+  val add_seq_count : int t -> key Seq.t -> unit
   (** [add_seq_count tbl seq] increments the count of each element of [seq]
       by calling {!incr}. This is useful for counting how many times each
       element of [seq] occurs.
@@ -238,7 +238,7 @@ module type S = sig
   (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 2.8 *)
 
-  val of_std_seq_count : key Seq.t -> int t
+  val of_seq_count : key Seq.t -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
       @since 2.8 *)
 
@@ -357,30 +357,30 @@ module Make(X : Hashtbl.HashedType)
 
   let add_iter tbl i = i (fun (k,v) -> add tbl k v)
 
-  let add_std_seq tbl seq = Seq.iter (fun (k,v) -> add tbl k v) seq
+  let add_seq tbl seq = Seq.iter (fun (k,v) -> add tbl k v) seq
 
   let of_iter i =
     let tbl = create 32 in
     add_iter tbl i;
     tbl
 
-  let of_std_seq i =
+  let of_seq i =
     let tbl = create 32 in
-    add_std_seq tbl i;
+    add_seq tbl i;
     tbl
 
   let add_iter_count tbl i = i (fun k -> incr tbl k)
 
-  let add_std_seq_count tbl seq = Seq.iter (fun k -> incr tbl k) seq
+  let add_seq_count tbl seq = Seq.iter (fun k -> incr tbl k) seq
 
   let of_iter_count seq =
     let tbl = create 32 in
     add_iter_count tbl seq;
     tbl
 
-  let of_std_seq_count i =
+  let of_seq_count i =
     let tbl = create 32 in
-    add_std_seq_count tbl i;
+    add_seq_count tbl i;
     tbl
 
   let to_list tbl =
