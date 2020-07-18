@@ -533,7 +533,7 @@ let to_string ?(sep=", ") item_to_string a =
   (to_string string_of_int [|1|]) "1"
 *)
 
-let to_std_seq a =
+let to_seq a =
   let rec aux i () =
     if i>= length a then Seq.Nil
     else Seq.Cons (a.(i), aux (i+1))
@@ -541,9 +541,9 @@ let to_std_seq a =
   aux 0
 
 (*$=
-  [] (to_std_seq [||] |> CCList.of_std_seq)
-  [1;2;3] (to_std_seq [|1;2;3|] |> CCList.of_std_seq)
-  CCList.(1 -- 1000) (to_std_seq (1--1000) |> CCList.of_std_seq)
+  [] (to_seq [||] |> CCList.of_seq)
+  [1;2;3] (to_seq [|1;2;3|] |> CCList.of_seq)
+  CCList.(1 -- 1000) (to_seq (1--1000) |> CCList.of_seq)
 *)
 
 let to_iter a k = iter k a

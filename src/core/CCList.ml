@@ -1715,25 +1715,25 @@ let to_string ?(start="") ?(stop="") ?(sep=", ") item_to_string l =
 
 let to_iter l k = List.iter k l
 
-let rec to_std_seq l () = match l with
+let rec to_seq l () = match l with
   | [] -> Seq.Nil
-  | x :: tl -> Seq.Cons (x, to_std_seq tl)
+  | x :: tl -> Seq.Cons (x, to_seq tl)
 
 let of_iter i =
   let l = ref [] in
   i (fun x -> l := x :: !l);
   List.rev !l
 
-let of_std_seq_rev l =
+let of_seq_rev l =
   let rec loop acc s = match s() with
     | Seq.Nil -> acc
     | Seq.Cons (x,tl) -> loop (x::acc) tl
   in
   loop [] l
 
-let of_std_seq l =
+let of_seq l =
   let rec direct i seq =
-    if i <= 0 then List.rev (of_std_seq_rev seq)
+    if i <= 0 then List.rev (of_seq_rev seq)
     else (
       match seq() with
         | Seq.Nil -> []

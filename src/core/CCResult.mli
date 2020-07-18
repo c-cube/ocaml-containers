@@ -262,8 +262,9 @@ val of_opt : 'a option -> ('a, string) t
 val to_iter : ('a, _) t -> 'a iter
 (** @since 2.8 *)
 
-val to_std_seq : ('a, _) t -> 'a Seq.t
-(** @since 2.8 *)
+val to_seq : ('a, _) t -> 'a Seq.t
+(** Renamed from [to_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
 type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
 

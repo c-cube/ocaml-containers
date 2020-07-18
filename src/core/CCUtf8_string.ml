@@ -124,7 +124,7 @@ let to_iter ?(idx=0) s : uchar iter =
       done
     with Stop -> ()
 
-let to_std_seq ?(idx=0) s : uchar Seq.t =
+let to_seq ?(idx=0) s : uchar Seq.t =
   let rec loop st =
     let r = ref None in
     fun () ->
@@ -141,15 +141,15 @@ let to_std_seq ?(idx=0) s : uchar Seq.t =
   loop st
 
 (*$= & ~cmp:(=) ~printer:Q.Print.(list (fun c -> string_of_int@@ Uchar.to_int c))
-  (to_list (of_string_exn "aébõ😀")) (to_std_seq (of_string_exn "aébõ😀") |> CCList.of_std_seq)
+  (to_list (of_string_exn "aébõ😀")) (to_seq (of_string_exn "aébõ😀") |> CCList.of_seq)
   *)
 
 (* make sure it's persisted correctly *)
 (*$R
   let s = (of_string_exn "aébõ😀") in
-  let seq = to_std_seq s in
+  let seq = to_seq s in
   let l = to_list s in
-  let testeq seq = assert_equal ~cmp:(=) l (CCList.of_std_seq seq) in
+  let testeq seq = assert_equal ~cmp:(=) l (CCList.of_seq seq) in
   testeq seq;
   testeq seq;
   testeq seq;
@@ -213,7 +213,7 @@ let of_gen g : t =
   in
   aux ()
 
-let of_std_seq seq : t =
+let of_seq seq : t =
   let buf = Buffer.create 32 in
   Seq.iter (code_to_string buf) seq;
   Buffer.contents buf

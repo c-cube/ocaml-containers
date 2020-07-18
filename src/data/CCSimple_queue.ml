@@ -117,23 +117,19 @@ let add_iter q seq =
 
 let of_iter s = add_iter empty s
 
-let of_seq = of_iter
-let to_seq = to_iter
-let add_seq = add_iter
-
 (*$Q
   Q.(list small_int) (fun l -> \
     equal CCInt.equal \
-      (of_seq (Iter.of_list l)) \
+      (of_iter (Iter.of_list l)) \
       (of_list l))
   Q.(list small_int) (fun l -> \
-    l = (of_list l |> to_seq |> Iter.to_list))
+    l = (of_list l |> to_iter |> Iter.to_list))
 *)
 
-let add_std_seq q l = add_iter q (fun k -> Seq.iter k l)
-let of_std_seq l = add_std_seq empty l
+let add_seq q l = add_iter q (fun k -> Seq.iter k l)
+let of_seq l = add_seq empty l
 
-let to_std_seq q =
+let to_seq q =
   let rec aux1 l () = match l with
     | [] -> aux2 (List.rev q.tl) ()
     | x :: tl -> Seq.Cons (x, aux1 tl)
@@ -147,7 +143,7 @@ let rec klist_iter_ k f = match k() with
   | `Nil -> ()
   | `Cons (x,tl) -> f x; klist_iter_ tl f
 
-let add_klist q l = add_seq q (klist_iter_ l)
+let add_klist q l = add_iter q (klist_iter_ l)
 let of_klist l = add_klist empty l
 
 let to_klist q =
@@ -164,7 +160,7 @@ let rec gen_iter g f = match g() with
   | None -> ()
   | Some x -> f x; gen_iter g f
 
-let add_gen q g = add_seq q (gen_iter g)
+let add_gen q g = add_iter q (gen_iter g)
 let of_gen g = add_gen empty g
 
 let to_gen q =

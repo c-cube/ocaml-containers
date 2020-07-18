@@ -44,9 +44,10 @@ val to_iter : t -> char iter
 (** Return the [iter] of characters contained in the string.
     @since 2.8 *)
 
-val to_std_seq : t -> char Seq.t
-(** [to_std_seq s] returns a [Seq.t] of the bytes in [s].
-    @since 2.8
+val to_seq : t -> char Seq.t
+(** [to_seq s] returns a [Seq.t] of the bytes in [s].
+    Renamed from [to std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE
 *)
 
 val to_list : t -> char list
@@ -90,9 +91,10 @@ val of_iter : char iter -> string
 (** Convert a [iter] of characters to a string.
     @since 2.8 *)
 
-val of_std_seq : char Seq.t -> string
+val of_seq : char Seq.t -> string
 (** Convert a [sequence] of characters to a string.
-    @since 2.8 *)
+    Renamed from [of_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
 val of_list : char list -> string
 (** Convert a list of characters to a string. *)
@@ -346,8 +348,9 @@ module Split : sig
   val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) iter
   (** @since 2.8 *)
 
-  val std_seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
-  (** @since 2.8 *)
+  val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
+  (** Renamed from [std_seq] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
   (** {4 Copying functions}
 
@@ -361,8 +364,9 @@ module Split : sig
   val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string iter 
   (** @since 2.8 *)
 
-  val std_seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string Seq.t
-  (** @since 2.8 *)
+  val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string Seq.t
+  (** Renamed from [std_seq_cpy] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
   val left : by:string -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the leftmost part of

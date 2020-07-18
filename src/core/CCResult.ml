@@ -341,7 +341,7 @@ let of_opt = function
   | None -> Error "of_opt"
   | Some x -> Ok x
 
-let to_std_seq e () = match e with
+let to_seq e () = match e with
   | Ok x -> Seq.Cons (x, Seq.empty)
   | Error _ -> Seq.Nil
 

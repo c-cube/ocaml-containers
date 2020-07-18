@@ -54,8 +54,16 @@ module type S = sig
   (** Build a set from the given [iter] of elements.
       @since 2.8 *)
 
+  val of_seq : elt Seq.t -> t
+  (** Build a set from the given [seq] of elements.
+      @since NEXT_RELEASE *)
+
   val add_iter : t -> elt iter -> t
   (** @since 2.8 *)
+
+  val add_seq : elt Seq.t -> t -> t
+  (** @since NEXT_RELEASE *)
+
 
   val to_iter : t -> elt iter
   (** [to_iter t] converts the set [t] to a [iter] of the elements.
@@ -135,12 +143,12 @@ module Make(O : Map.OrderedType) = struct
 
   include S
 
-  let add_std_seq set seq =
+  let add_seq seq set =
     let set = ref set in
     Seq.iter (fun x -> set := add x !set) seq;
     !set
 
-  let of_std_seq s = add_std_seq empty s
+  let of_seq s = add_seq s empty
 
   let add_iter set i =
     let set = ref set in

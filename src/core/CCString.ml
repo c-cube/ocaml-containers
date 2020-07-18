@@ -416,9 +416,9 @@ module Split = struct
         Seq.Cons (k s i len , make state')
     in make (SplitAt 0)
 
-  let std_seq ?(drop=default_drop) ~by s = _mkseq ~drop ~by s _tuple3
+  let seq ?(drop=default_drop) ~by s = _mkseq ~drop ~by s _tuple3
 
-  let std_seq_cpy ?(drop=default_drop) ~by s = _mkseq ~drop ~by s String.sub
+  let seq_cpy ?(drop=default_drop) ~by s = _mkseq ~drop ~by s String.sub
 
   let _mkklist ~drop ~by s k =
     let by = Find.compile by in
@@ -445,9 +445,6 @@ module Split = struct
 
   let iter ?(drop=default_drop) ~by s = _mk_iter ~drop ~by s _tuple3
   let iter_cpy ?(drop=default_drop) ~by s = _mk_iter ~drop ~by s String.sub
-
-  let seq = iter
-  let seq_cpy = iter_cpy
 
   let left_exn ~by s =
     let i = find ~sub:by s in
@@ -815,18 +812,18 @@ let of_gen g =
 
 let to_iter s k = String.iter k s
 
-let rec _to_std_seq s i len () =
+let rec _to_seq s i len () =
   if len=0 then Seq.Nil
-  else Seq.Cons (s.[i], _to_std_seq s (i+1)(len-1))
+  else Seq.Cons (s.[i], _to_seq s (i+1)(len-1))
 
-let to_std_seq s = _to_std_seq s 0 (String.length s)
+let to_seq s = _to_seq s 0 (String.length s)
 
 let of_iter i =
   let b = Buffer.create 32 in
   i (Buffer.add_char b);
   Buffer.contents b
 
-let of_std_seq seq =
+let of_seq seq =
   let b = Buffer.create 32 in
   Seq.iter (Buffer.add_char b) seq;
   Buffer.contents b

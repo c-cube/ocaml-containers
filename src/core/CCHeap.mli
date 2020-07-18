@@ -91,11 +91,7 @@ module type S = sig
   val size : t -> int
   (** [size h] is the number of elements in the heap [h]. Linear complexity. *)
 
-  (** {2 Conversions}
-
-      The interface of [of_gen], [of_seq], [of_klist]
-      has changed since 0.16 (the old signatures
-      are now [add_seq], [add_gen], [add_klist]). *)
+  (** {2 Conversions} *)
 
   val to_list : t -> elt list
   (** [to_list h] returns the elements of the heap [h], in no particular order. *)
@@ -116,35 +112,39 @@ module type S = sig
   (** [add_iter h iter] is like {!add_list}.
       @since 2.8 *)
 
-  val add_std_seq : t -> elt Seq.t -> t
-  (** [add_std_seq h seq] is like {!add_list}.
-      @since 2.8 *)
+  val add_seq : t -> elt Seq.t -> t
+  (** [add_seq h seq] is like {!add_list}.
+      Renamed from [add_std_seq] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
   val of_iter : elt iter -> t
   (** [of_iter iter] builds a heap from a given [iter]. Complexity: [O(n log n)].
       @since 2.8 *)
 
-  val of_std_seq : elt Seq.t -> t
-  (** [of_std_seq seq] builds a heap from a given [Seq.t]. Complexity: [O(n log n)].
-      @since 2.8 *)
+  val of_seq : elt Seq.t -> t
+  (** [of_seq seq] builds a heap from a given [Seq.t]. Complexity: [O(n log n)].
+      Renamed from [of_seq] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
   val to_iter : t -> elt iter
   (** [to_iter h] returns a [iter] of the elements of the heap [h].
       @since 2.8 *)
 
-  val to_std_seq : t -> elt Seq.t
-  (** [to_std_seq h] returns a [Seq.t] of the elements of the heap [h].
-      @since 2.8 *)
+  val to_seq : t -> elt Seq.t
+  (** [to_seq h] returns a [Seq.t] of the elements of the heap [h].
+      Renamed from [to_std_seq] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
   val to_iter_sorted : t -> elt iter
   (** [to_iter_sorted h] returns a [iter] by iterating on the elements of [h], 
       in increasing order.
       @since 2.8 *)
 
-  val to_std_seq_sorted : t -> elt Seq.t
-  (** [to_std_seq_sorted h] returns a [Seq.t] by iterating on the elements of [h],
+  val to_seq_sorted : t -> elt Seq.t
+  (** [to_seq_sorted h] returns a [Seq.t] by iterating on the elements of [h],
       in increasing order.
-      @since 2.8 *)
+      Renamed from [to_std_seq_sorted] since NEXT_RELEASE.
+      @since NEXT_RELEASE *)
 
   val add_klist : t -> elt klist -> t
   (** [add_klist h klist] adds the klist [klist] to the heap [h].

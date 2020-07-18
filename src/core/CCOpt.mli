@@ -218,11 +218,12 @@ val to_gen : 'a t -> 'a gen
 (** [to_gen o] is [o] as a [gen]. [Some x] is the singleton [gen] containing [x]
     and [None] is the empty [gen]. *)
     
-val to_std_seq : 'a t -> 'a Seq.t
-(** [to_std_seq o] is [o] as a sequence [Seq.t]. [Some x] is the singleton sequence containing [x]
+val to_seq : 'a t -> 'a Seq.t
+(** [to_seq o] is [o] as a sequence [Seq.t]. [Some x] is the singleton sequence containing [x]
     and [None] is the empty sequence.
     Same as {!Stdlib.Option.to_seq}
-    @since 2.8 *)
+    Renamed from [to_std_seq] since NEXT_RELEASE.
+    @since NEXT_RELEASE *)
 
 val to_iter : 'a t -> 'a iter
 (** [to_iter o] returns an internal iterator, like in the library [Iter].
