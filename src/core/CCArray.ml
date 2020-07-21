@@ -490,9 +490,6 @@ let shuffle a =
 let shuffle_with st a =
   _shuffle (Random.State.int st) a 0 (Array.length a)
 
-let rec _to_klist a i j () =
-  if i=j then `Nil else `Cons (a.(i), _to_klist a (i+1) j)
-
 let random_choose a =
   let n = Array.length a in
   if n = 0 then invalid_arg "Array.random_choose";

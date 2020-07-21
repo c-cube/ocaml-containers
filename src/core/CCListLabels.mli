@@ -8,7 +8,6 @@ type 'a iter = ('a -> unit) -> unit
     @since 2.8 *)
 
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
@@ -786,13 +785,6 @@ val of_gen : 'a gen -> 'a t
 (** [of_gen gen] builds a list from a given [gen].
     In the result, elements appear in the same order as they did in the source [gen]. *)
     
-val to_klist : 'a t -> 'a klist
-(** [to_klist l] returns a [klist] of the elements of the list [l]. *)
-
-val of_klist : 'a klist -> 'a t
-(** [of_klist klist] builds a list from a given [klist].
-    In the result, elements appear in the same order as they did in the source [klist]. *)
-
 (** {2 Infix Operators}
     It is convenient to {!open CCList.Infix} to access the infix operators
     without cluttering the scope too much.

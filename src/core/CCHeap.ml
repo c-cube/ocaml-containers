@@ -6,7 +6,6 @@
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 module type PARTIAL_ORD = sig
@@ -152,9 +151,9 @@ module type S = sig
 
   (** {2 Conversions}
 
-      The interface of [of_gen], [of_iter], [of_klist]
+      The interface of [of_gen], [of_iter]
       has changed since 0.16 (the old signatures
-      are now [add_seq], [add_gen], [add_klist]). *)
+      are now [add_seq], [add_gen]). *)
 
   val to_list : t -> elt list
   (** Return the elements of the heap, in no particular order. *)
@@ -202,14 +201,6 @@ module type S = sig
   val to_seq_sorted : t -> elt Seq.t
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
-
-  val add_klist : t -> elt klist -> t (** @since 0.16 *)
-
-  val of_klist : elt klist -> t
-  (** Build a heap from a given [klist]. Complexity: [O(n log n)]. *)
-
-  val to_klist : t -> elt klist
-  (** Return a [klist] of the elements of the heap. *)
 
   val add_gen : t -> elt gen -> t (** @since 0.16 *)
 
@@ -395,23 +386,6 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
   let rec to_seq_sorted h () = match take h with
     | None -> Seq.Nil
     | Some (h', x) -> Seq.Cons (x, to_seq_sorted h')
-
-  let rec add_klist h l = match l() with
-    | `Nil -> h
-    | `Cons (x, l') ->
-      let h' = add h x in
-      add_klist h' l'
-
-  let of_klist l = add_klist empty l
-
-  let to_klist h =
-    let rec next stack () = match stack with
-      | [] -> `Nil
-      | E :: stack' -> next stack' ()
-      | N (_, x, a, b) :: stack' ->
-        `Cons (x, next (a :: b :: stack'))
-    in
-    next [h]
 
   let rec add_gen h g = match g () with
     | None -> h

@@ -10,7 +10,6 @@ type 'a iter = ('a -> unit) -> unit
     @since 2.8 *)
 
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 type 'a printer = Format.formatter -> 'a -> unit
 
@@ -145,16 +144,6 @@ module type S = sig
       in increasing order.
       Renamed from [to_std_seq_sorted] since NEXT_RELEASE.
       @since NEXT_RELEASE *)
-
-  val add_klist : t -> elt klist -> t
-  (** [add_klist h klist] adds the klist [klist] to the heap [h].
-      @since 0.16 *)
-
-  val of_klist : elt klist -> t
-  (** [of_klist klist] builds a heap from a given [klist]. Complexity: [O(n log n)]. *)
-
-  val to_klist : t -> elt klist
-  (** [to_klist h] returns a [klist] of the elements of the heap [h]. *)
 
   val add_gen : t -> elt gen -> t
   (** [add_gen h gen] adds the gen [gen] to the heap [h].

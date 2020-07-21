@@ -22,7 +22,6 @@ type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
 
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
@@ -339,8 +338,6 @@ val slice_iter : ('a,_) t -> int -> int -> 'a iter
     @since NEXT_RELEASE
 *)
 
-val of_klist : ?init:('a, rw) t -> 'a klist -> ('a, rw) t
-val to_klist : ('a,_) t -> 'a klist
 val of_gen : ?init:('a, rw) t -> 'a gen -> ('a, rw) t
 val to_gen : ('a,_) t -> 'a gen
 

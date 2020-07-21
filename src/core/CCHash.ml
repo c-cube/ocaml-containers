@@ -9,7 +9,6 @@ type 'a t = 'a -> hash
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 let combine f s x = Hashtbl.seeded_hash s (f x)
 
@@ -87,9 +86,3 @@ let gen f g =
     | None -> s
     | Some x -> aux (combine2 s (f x))
   in aux 0x42
-
-let klist f l =
-  let rec aux l s = match l () with
-    | `Nil -> s
-    | `Cons (x,tail) -> aux tail (combine2 s (f x))
-  in aux l 0x42
