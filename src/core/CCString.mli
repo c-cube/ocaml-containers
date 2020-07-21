@@ -10,7 +10,6 @@ type 'a iter = ('a -> unit) -> unit
     @since 2.8 *)
 
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 include module type of struct include String end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/String.html} Documentation for the standard String module}*)

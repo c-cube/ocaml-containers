@@ -7,7 +7,6 @@ open CCShims_
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 (* standard implementations *)
 
@@ -420,20 +419,6 @@ module Split = struct
 
   let seq_cpy ?(drop=default_drop) ~by s = _mkseq ~drop ~by s String.sub
 
-  let _mkklist ~drop ~by s k =
-    let by = Find.compile by in
-    let rec make state () = match _split ~by s state with
-      | None -> `Nil
-      | Some (state', 0, 0) when drop.first -> make state' ()
-      | Some (_, i, 0) when drop.last && i=length s -> `Nil
-      | Some (state', i, len) ->
-        `Cons (k s i len , make state')
-    in make (SplitAt 0)
-
-  let klist ?(drop=default_drop) ~by s = _mkklist ~drop ~by s _tuple3
-
-  let klist_cpy ?(drop=default_drop) ~by s = _mkklist ~drop ~by s String.sub
-
   let _mk_iter ~drop ~by s f k =
     let by = Find.compile by in
     let rec aux state = match _split ~by s state with
@@ -827,22 +812,6 @@ let of_seq seq =
   let b = Buffer.create 32 in
   Seq.iter (Buffer.add_char b) seq;
   Buffer.contents b
-
-let rec _to_klist s i len () =
-  if len=0 then `Nil
-  else `Cons (s.[i], _to_klist s (i+1)(len-1))
-
-let of_klist l =
-  let b = Buffer.create 15 in
-  let rec aux l = match l() with
-    | `Nil ->
-      Buffer.contents b
-    | `Cons (x,l') ->
-      Buffer.add_char b x;
-      aux l'
-  in aux l
-
-let to_klist s = _to_klist s 0 (String.length s)
 
 let to_list s = _to_list s [] 0 (String.length s)
 

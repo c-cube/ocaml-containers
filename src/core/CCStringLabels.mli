@@ -8,7 +8,6 @@ type 'a iter = ('a -> unit) -> unit
     @since 2.8 *)
 
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 include module type of struct include StringLabels end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/StringLabels.html} Documentation for the standard StringLabels module}*)

@@ -6,7 +6,6 @@ type rw = [`RW]
 type ro = [`RO]
 
 type 'a iter = ('a -> unit) -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
@@ -1066,18 +1065,6 @@ let to_gen v =
 (*$T
   let v = (1--10) in to_list v = Gen.to_list (to_gen v)
 *)
-
-let of_klist ?(init=create ()) l =
-  let rec aux l = match l() with
-    | `Nil -> init
-    | `Cons (x,l') -> push init x; aux l'
-  in aux l
-
-let to_klist v =
-  let rec aux i () =
-    if i=v.size then `Nil
-    else `Cons (v.vec.(i), aux (i+1))
-  in aux 0
 
 let to_string ?(start="") ?(stop="") ?(sep=", ") item_to_string v =
   start ^ (to_list v |> List.map item_to_string |> String.concat sep) ^ stop

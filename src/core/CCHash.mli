@@ -74,9 +74,7 @@ val combine6 : hash -> hash -> hash -> hash -> hash -> hash -> hash
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 val seq : 'a t -> 'a Seq.t t
 val iter : 'a t -> 'a iter t
 val gen : 'a t -> 'a gen t
-val klist : 'a t -> 'a klist t

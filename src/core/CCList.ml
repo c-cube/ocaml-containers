@@ -1672,7 +1672,6 @@ end
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
@@ -1769,24 +1768,6 @@ let of_gen g =
 (*$Q
   Q.(list int) (fun l -> of_gen(to_gen l) = l)
 *)
-
-let to_klist l =
-  let rec make l () = match l with
-    | [] -> `Nil
-    | x::l' -> `Cons (x, make l')
-  in make l
-
-let of_klist l =
-  let rec direct i g =
-    if i = 0 then safe [] g
-    else match l () with
-      | `Nil -> []
-      | `Cons (x,l') -> x :: direct (i-1) l'
-  and safe acc l = match l () with
-    | `Nil -> List.rev acc
-    | `Cons (x,l') -> safe (x::acc) l'
-  in
-  direct direct_depth_default_ l
 
 module Infix = struct
   let[@inline] (>|=) l f = map f l
