@@ -77,6 +77,7 @@ let shims_list_post_408 = "include List"
 let shims_array_pre_406 = "
   include Array
   (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
   module Floatarray = struct type t = float array end
   type 'a t = 'a array
   "
@@ -84,6 +85,7 @@ let shims_array_pre_406 = "
 let shims_array_label_pre_406 = "
   include ArrayLabels
   (** {{: http://caml.inria.fr/pub/docs/manual-ocaml/libref/ArrayLabels.html} Documentation for the standard ArrayLabels module}*)
+
   module Floatarray = CCShimsArray_.Floatarray
   type 'a t = 'a array
   "
@@ -91,12 +93,14 @@ let shims_array_label_pre_406 = "
 let shims_array_label_406_408 = "
   include (ArrayLabels : module type of ArrayLabels with module Floatarray = Array.Floatarray)
   (** {{: http://caml.inria.fr/pub/docs/manual-ocaml/libref/ArrayLabels.html} Documentation for the standard ArrayLabels module}*)
+
   type 'a t = 'a array
   "
 
 let shims_array_406_408 = "
   include Array
   (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
   type 'a t = 'a array
 "
 let shims_array_post_408 = "
