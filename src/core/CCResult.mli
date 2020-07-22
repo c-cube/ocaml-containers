@@ -175,7 +175,8 @@ val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
 
 module Infix : sig
   val (<$>) : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
-  (** Infix version of [map]. *)
+  (** Infix version of [map].
+      @since NEXT_RELEASE *)
 
   val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
   (** Infix version of [map] with reversed arguments. *)
