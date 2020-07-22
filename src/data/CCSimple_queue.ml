@@ -6,7 +6,6 @@
 type 'a iter = ('a -> unit) -> unit
 type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 
 type 'a t = {
@@ -139,23 +138,6 @@ let to_seq q =
   in
   aux1 q.hd
 
-let rec klist_iter_ k f = match k() with
-  | `Nil -> ()
-  | `Cons (x,tl) -> f x; klist_iter_ tl f
-
-let add_klist q l = add_iter q (klist_iter_ l)
-let of_klist l = add_klist empty l
-
-let to_klist q =
-  let rec aux1 l () = match l with
-    | [] -> aux2 (List.rev q.tl) ()
-    | x :: tl -> `Cons (x, aux1 tl)
-  and aux2 l () = match l with
-    | [] -> `Nil
-    | x :: tl -> `Cons (x, aux2 tl)
-  in
-  aux1 q.hd
-
 let rec gen_iter g f = match g() with
   | None -> ()
   | Some x -> f x; gen_iter g f
@@ -174,14 +156,14 @@ let to_gen q =
   in
   aux
 
-let rec klist_equal eq l1 l2 = match l1(), l2() with
-  | `Nil, `Nil -> true
-  | `Nil, _
-  | _, `Nil -> false
-  | `Cons (x1,l1'), `Cons (x2,l2') ->
-    eq x1 x2 && klist_equal eq l1' l2'
+let rec seq_equal eq l1 l2 = match l1(), l2() with
+  | Seq.Nil, Seq.Nil -> true
+  | Seq.Nil, _
+  | _, Seq.Nil -> false
+  | Seq.Cons (x1,l1'), Seq.Cons (x2,l2') ->
+    eq x1 x2 && seq_equal eq l1' l2'
 
-let equal eq q1 q2 = klist_equal eq (to_klist q1) (to_klist q2)
+let equal eq q1 q2 = seq_equal eq (to_seq q1) (to_seq q2)
 
 (*$Q
   Q.(pair (list small_int)(list small_int)) (fun (l1,l2) -> \

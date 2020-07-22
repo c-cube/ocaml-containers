@@ -579,7 +579,6 @@ let rec merge ~f t1 t2 : _ t =
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 let add_list t l = List.fold_left (fun t (k,v) -> add k v t) t l
 
@@ -685,27 +684,27 @@ let compare ~cmp a b =
     (compare ~cmp:Stdlib.compare m1 m2 = 0) = equal ~eq:(=) m1 m2)
 *)
 
-let rec add_klist m l = match l() with
-  | `Nil -> m
-  | `Cons ((k,v), tl) -> add_klist (add k v m) tl
+let rec add_seq m l = match l() with
+  | Seq.Nil -> m
+  | Seq.Cons ((k,v), tl) -> add_seq (add k v m) tl
 
-let of_klist l = add_klist empty l
+let of_seq l = add_seq empty l
 
-let to_klist m =
+let to_seq m =
   (* [st]: stack of alternatives *)
   let rec explore st m () = match m with
     | E -> next st ()
-    | L (k,v) -> `Cons ((k, v), next st)
+    | L (k,v) -> Seq.Cons ((k, v), next st)
     | N (_, _, l, r) -> explore (r::st) l ()
   and next st () = match st with
-    | [] -> `Nil
+    | [] -> Seq.Nil
     | x :: st' -> explore st' x ()
   in
   next [m]
 
 (*$Q
   Q.(list (pair int bool)) (fun l -> \
-    let m = of_list l in equal ~eq:(=) m (m |> to_klist |> of_klist))
+    let m = of_list l in equal ~eq:(=) m (m |> to_seq |> of_seq))
 *)
 
 type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]

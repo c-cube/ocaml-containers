@@ -7,7 +7,6 @@
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
@@ -60,10 +59,10 @@ end
 val set_of_cmp : cmp:('a -> 'a -> int) -> unit -> 'a pset
 (** Build a set structure given a total ordering. *)
 
-val dfs : pset:'a pset -> 'a t -> [ `Enter of 'a | `Exit of 'a ] klist
+val dfs : pset:'a pset -> 'a t -> [ `Enter of 'a | `Exit of 'a ] Seq.t
 (** Depth-first traversal of the tree. *)
 
-val bfs : pset:'a pset -> 'a t -> 'a klist
+val bfs : pset:'a pset -> 'a t -> 'a Seq.t
 (** Breadth-first traversal of the tree. *)
 
 val force : 'a t -> ([ `Nil | `Node of 'a * 'b list ] as 'b)

@@ -3,8 +3,7 @@
 
 (** {1 Functional queues} *)
 
-type 'a sequence = ('a -> unit) -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a iter = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a printer = Format.formatter -> 'a -> unit
 
@@ -117,15 +116,29 @@ val equal : 'a equal -> 'a t equal
 val of_list : 'a list -> 'a t
 val to_list : 'a t -> 'a list
 
-val add_seq_front : 'a sequence -> 'a t -> 'a t
+val add_iter_front : 'a iter -> 'a t -> 'a t
+(** @since NEXT_RELEASE *)
 
-val add_seq_back : 'a t -> 'a sequence -> 'a t
+val add_iter_back : 'a t -> 'a iter -> 'a t
+(** @since NEXT_RELEASE *)
 
-val to_seq : 'a t -> 'a sequence
-val of_seq : 'a sequence -> 'a t
+val to_iter : 'a t -> 'a iter
+(** @since NEXT_RELEASE *)
 
-val to_klist : 'a t -> 'a klist
-val of_klist : 'a klist -> 'a t
+val of_iter : 'a iter -> 'a t
+(** @since NEXT_RELEASE *)
+
+val add_seq_front : 'a Seq.t -> 'a t -> 'a t
+(** @since NEXT_RELEASE *)
+
+val add_seq_back : 'a t -> 'a Seq.t -> 'a t
+(** @since NEXT_RELEASE *)
+
+val to_seq : 'a t -> 'a Seq.t
+(** @since NEXT_RELEASE *)
+
+val of_seq : 'a Seq.t -> 'a t
+(** @since NEXT_RELEASE *)
 
 val (--) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], both included.

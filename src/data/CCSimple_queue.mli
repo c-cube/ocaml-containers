@@ -16,7 +16,6 @@ type 'a iter = ('a -> unit) -> unit
     @since 2.8 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a gen = unit -> 'a option
 
 type +'a t
@@ -99,15 +98,6 @@ val add_seq : 'a t -> 'a Seq.t -> 'a t
 val of_seq : 'a Seq.t -> 'a t
 (** Renamed from [of_std_seq] since NEXT_RELEASE.
     @since NEXT_RELEASE *)
-
-val to_klist : 'a t -> 'a klist
-[@@ocaml.deprecated "use to_seq"]
-
-val add_klist : 'a t -> 'a klist -> 'a t
-[@@ocaml.deprecated "use add_seq"]
-
-val of_klist : 'a klist -> 'a t
-[@@ocaml.deprecated "use of_seq"]
 
 val of_gen : 'a gen -> 'a t
 val add_gen : 'a t -> 'a gen -> 'a t
