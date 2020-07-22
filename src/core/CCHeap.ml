@@ -149,11 +149,7 @@ module type S = sig
   val size : t -> int
   (** Number of elements (linear complexity). *)
 
-  (** {2 Conversions}
-
-      The interface of [of_gen], [of_iter]
-      has changed since 0.16 (the old signatures
-      are now [add_seq], [add_gen]). *)
+  (** {2 Conversions} *)
 
   val to_list : t -> elt list
   (** Return the elements of the heap, in no particular order. *)
