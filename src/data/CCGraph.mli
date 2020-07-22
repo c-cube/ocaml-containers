@@ -49,10 +49,6 @@ module Iter : sig
   val to_list : 'a t -> 'a list
 end
 
-module Seq = Iter
-(** @deprecated use {!Iter} instead *)
-[@@ocaml.deprecated "use {!Iter} instead"]
-
 (** {2 Interfaces for graphs}
 
     This interface is designed for oriented graphs with labels on edges *)
@@ -339,18 +335,6 @@ module Dot : sig
     unit
   (** Same as {!pp} but starting from several vertices, not just one.
       @since 2.8 *)
-
-  val pp_seq : tbl:('v,vertex_state) table ->
-    eq:('v -> 'v -> bool) ->
-    ?attrs_v:('v -> attribute list) ->
-    ?attrs_e:('e -> attribute list) ->
-    ?name:string ->
-    graph:('v,'e) t ->
-    Format.formatter ->
-    'v iter ->
-    unit
-  (** @deprecated see {!pp_all} instead *)
-  [@@ocaml.deprecated "use {!pp_all} instead"]
 
   val with_out : string -> (Format.formatter -> 'a) -> 'a
   (** Shortcut to open a file and write to it. *)
