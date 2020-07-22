@@ -398,7 +398,7 @@ let of_seq seq = add_seq_front seq empty
 
 (*$Q
   (Q.list Q.int) (fun l -> \
-    of_list l |> to_seq |> List.of_seq = l)
+    of_list l |> to_seq |> CCList.of_seq = l)
 *)
 
 let _map_digit : type l. ('a -> 'b) -> ('a, l) digit -> ('b, l) digit = fun f d -> match d with
