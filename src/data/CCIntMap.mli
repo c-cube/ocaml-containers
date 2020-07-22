@@ -84,7 +84,6 @@ val merge :
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 
 val add_list : 'a t -> (int * 'a) list -> 'a t
 
@@ -111,14 +110,14 @@ val of_gen : (int * 'a) gen -> 'a t
 val to_gen : 'a t -> (int * 'a) gen
 (** @since 0.13 *)
 
-val add_klist : 'a t -> (int * 'a) klist -> 'a t
-(** @since 0.13 *)
+val add_seq : 'a t -> (int * 'a) Seq.t -> 'a t
+(** @since NEXT_RELEASE *)
 
-val of_klist : (int * 'a) klist -> 'a t
-(** @since 0.13 *)
+val of_seq : (int * 'a) Seq.t -> 'a t
+(** @since NEXT_RELEASE *)
 
-val to_klist : 'a t -> (int * 'a) klist
-(** @since 0.13 *)
+val to_seq : 'a t -> (int * 'a) Seq.t
+(** @since NEXT_RELEASE *)
 
 type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 

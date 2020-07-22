@@ -7,7 +7,6 @@
 
 type 'a sequence = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
 type 'a printer = Format.formatter -> 'a -> unit
 
 type +'a t = unit -> [`Nil | `Node of 'a * 'a t list]
@@ -79,12 +78,12 @@ let set_of_cmp (type elt) ~cmp () =
     method mem x = S.mem x s
   end
 
-let _nil () = `Nil
-let _cons x l = `Cons (x, l)
+let _nil () = Seq.Nil
+let _cons x l = Seq.Cons (x, l)
 
 let dfs ~pset t =
   let rec dfs pset stack () = match stack with
-    | [] -> `Nil
+    | [] -> Seq.Nil
     | `Explore t :: stack' ->
       begin match t() with
         | `Nil -> dfs pset stack' ()
@@ -136,7 +135,7 @@ end
 
 let bfs ~pset t =
   let rec bfs pset q () =
-    if FQ.is_empty q then `Nil
+    if FQ.is_empty q then Seq.Nil
     else
       let t, q' = FQ.pop_exn q in
       match t() with
@@ -156,8 +155,8 @@ let rec force t : ([`Nil | `Node of 'a * 'b list] as 'b) = match t() with
 
 let find ~pset f t =
   let rec _find_kl f l = match l() with
-    | `Nil -> None
-    | `Cons (x, l') ->
+    | Seq.Nil -> None
+    | Seq.Cons (x, l') ->
       match f x with
         | None -> _find_kl f l'
         | Some _ as res -> res

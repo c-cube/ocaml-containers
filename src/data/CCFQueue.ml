@@ -3,8 +3,7 @@
 
 (** {1 Functional queues (fifo)} *)
 
-type 'a sequence = ('a -> unit) -> unit
-type 'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]
+type 'a iter = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool
 type 'a printer = Format.formatter -> 'a -> unit
 
@@ -95,7 +94,7 @@ let rec snoc : type a. a t -> a -> a t
   let q = List.fold_left snoc empty [1;2;3;4;5] in
   let q = tail q in
   let q = List.fold_left snoc q [6;7;8] in
-  let l = Iter.to_list (to_seq q) in
+  let l = Iter.to_list (to_iter q) in
   OUnit.assert_equal ~printer:pp_ilist [2;3;4;5;6;7;8] l
 *)
 
@@ -313,7 +312,7 @@ let tail q =
     l = [] || (of_list l |> tail |> to_list = List.tl l))
 *)
 
-let add_seq_front seq q =
+let add_iter_front seq q =
   let l = ref [] in
   (* reversed seq *)
   seq (fun x -> l := x :: !l);
@@ -321,38 +320,38 @@ let add_seq_front seq q =
 
 (*$Q
   Q.(pair (list int) (list int)) (fun (l1, l2) -> \
-    add_seq_front (Iter.of_list l1) (of_list l2) |> to_list = l1 @ l2)
+    add_iter_front (Iter.of_list l1) (of_list l2) |> to_list = l1 @ l2)
 *)
 
-let add_seq_back q seq =
+let add_iter_back q seq =
   let q = ref q in
   seq (fun x -> q := snoc !q x);
   !q
 
-let _digit_to_seq : type l. ('a, l) digit -> 'a sequence = fun d k -> match d with
+let _digit_to_iter : type l. ('a, l) digit -> 'a iter = fun d k -> match d with
   | Zero -> ()
   | One x -> k x
   | Two (x,y) -> k x; k y
   | Three (x,y,z) -> k x; k y; k z
 
-let rec to_seq : 'a. 'a t -> 'a sequence
+let rec to_iter : 'a. 'a t -> 'a iter
   = fun q k -> match q with
-    | Shallow d -> _digit_to_seq d k
+    | Shallow d -> _digit_to_iter d k
     | Deep (_, hd, lazy q', tail) ->
-      _digit_to_seq hd k;
-      to_seq q' (fun (x,y) -> k x; k y);
-      _digit_to_seq tail k
+      _digit_to_iter hd k;
+      to_iter q' (fun (x,y) -> k x; k y);
+      _digit_to_iter tail k
 
 (*$Q
   (Q.list Q.int) (fun l -> \
-    of_list l |> to_seq |> Iter.to_list = l)
+    of_list l |> to_iter |> Iter.to_list = l)
 *)
 
 let append q1 q2 =
   match q1, q2 with
     | Shallow Zero, _ -> q2
     | _, Shallow Zero -> q1
-    | _ -> add_seq_back q1 (to_seq q2)
+    | _ -> add_iter_back q1 (to_iter q2)
 
 (*$Q
   (Q.pair (Q.list Q.int)(Q.list Q.int)) (fun (l1,l2) -> \
@@ -360,11 +359,46 @@ let append q1 q2 =
 *)
 
 (*$R
-  let q1 = of_seq (Iter.of_list [1;2;3;4]) in
-  let q2 = of_seq (Iter.of_list [5;6;7;8]) in
+  let q1 = of_iter (Iter.of_list [1;2;3;4]) in
+  let q2 = of_iter (Iter.of_list [5;6;7;8]) in
   let q = append q1 q2 in
-  let l = Iter.to_list (to_seq q) in
+  let l = Iter.to_list (to_iter q) in
   OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5;6;7;8] l
+*)
+
+let add_seq_front seq q =
+  (* reversed seq *)
+  let l = Seq.fold_left (fun l elt -> elt::l ) [] seq in
+  List.fold_left (fun q x -> cons x q) q l
+
+(*$Q
+  Q.(pair (list int) (list int)) (fun (l1, l2) -> \
+    add_seq_front (CCList.to_seq l1) (of_list l2) |> to_list = l1 @ l2)
+*)
+
+let add_seq_back q seq =
+  Seq.fold_left (fun q x -> snoc q x) q seq
+
+let _digit_to_seq : type l. ('a, l) digit -> 'a Seq.t = fun d () -> match d with
+  | Zero -> Seq.Nil
+  | One x -> Seq.Cons (x, Seq.empty)
+  | Two (x,y) -> Seq.Cons (x, Seq.return y)
+  | Three (x,y,z) -> Seq.Cons (x, fun () -> Seq.Cons (y, Seq.return z))
+
+let rec to_seq : 'a. 'a t -> 'a Seq.t
+  = fun q -> match q with
+    | Shallow d -> _digit_to_seq d
+    | Deep (_, hd, lazy q', tail) ->
+      CCSeq.append (_digit_to_seq hd)
+        (CCSeq.append
+           (Seq.flat_map (fun (x,y) () -> Seq.Cons (x, Seq.return y) ) (to_seq q'))
+           (_digit_to_seq tail))
+
+let of_seq seq = add_seq_front seq empty
+
+(*$Q
+  (Q.list Q.int) (fun l -> \
+    of_list l |> to_seq |> List.of_seq = l)
 *)
 
 let _map_digit : type l. ('a -> 'b) -> ('a, l) digit -> ('b, l) digit = fun f d -> match d with
@@ -407,25 +441,25 @@ let rec fold : 'a 'b. ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 *)
 
 (*$R
-  let q = of_seq (Iter.of_list [1;2;3;4]) in
+  let q = of_iter (Iter.of_list [1;2;3;4]) in
   let n = fold (+) 0 q in
   OUnit.assert_equal 10 n;
 *)
 
-let iter f q = to_seq q f
+let iter f q = to_iter q f
 
 let of_list l = List.fold_left snoc empty l
 
 let to_list q =
   let l = ref [] in
-  to_seq q (fun x -> l := x :: !l);
+  to_iter q (fun x -> l := x :: !l);
   List.rev !l
 
-let of_seq seq = add_seq_front seq empty
+let of_iter seq = add_iter_front seq empty
 
 (*$Q
   (Q.list Q.int) (fun l -> \
-    Iter.of_list l |> of_seq |> to_list = l)
+    Iter.of_list l |> of_iter |> to_list = l)
 *)
 
 let rev q =
@@ -438,50 +472,14 @@ let rev q =
     of_list l |> rev |> to_list = List.rev l)
 *)
 
-let _nil () = `Nil
-let _single x cont () = `Cons (x, cont)
-let _double x y cont () = `Cons (x, _single y cont)
-let _triple x y z cont () = `Cons (x, _double y z cont)
+let rec _equal_seq eq l1 l2 = match l1(), l2() with
+  | Seq.Nil, Seq.Nil -> true
+  | Seq.Nil, _
+  | _, Seq.Nil -> false
+  | Seq.Cons(x1,l1'), Seq.Cons(x2,l2') ->
+    eq x1 x2 && _equal_seq eq l1' l2'
 
-let _digit_to_klist : type l. ('a, l) digit -> 'a klist -> 'a klist = fun d cont -> match d with
-  | Zero -> _nil
-  | One x -> _single x cont
-  | Two (x,y) -> _double x y cont
-  | Three (x,y,z) -> _triple x y z cont
-
-let rec _flat_klist : 'a. ('a * 'a) klist -> 'a klist -> 'a klist
-  = fun l cont () -> match l () with
-    | `Nil -> cont ()
-    | `Cons ((x,y),l') -> _double x y (_flat_klist l' cont) ()
-
-let to_klist q =
-  let rec aux : 'a. 'a t -> 'a klist -> 'a klist
-    = fun q cont () -> match q with
-      | Shallow d -> _digit_to_klist d cont ()
-      | Deep (_, hd, lazy q', tl) ->
-        _digit_to_klist hd
-          (_flat_klist
-             (aux q' _nil)
-             (_digit_to_klist tl cont))
-          ()
-  in
-  aux q _nil
-
-let of_klist l =
-  let rec seq l k = match l() with
-    | `Nil -> ()
-    | `Cons(x,l') -> k x; seq l' k
-  in
-  add_seq_front (seq l) empty
-
-let rec _equal_klist eq l1 l2 = match l1(), l2() with
-  | `Nil, `Nil -> true
-  | `Nil, _
-  | _, `Nil -> false
-  | `Cons(x1,l1'), `Cons(x2,l2') ->
-    eq x1 x2 && _equal_klist eq l1' l2'
-
-let equal eq q1 q2 = _equal_klist eq (to_klist q1) (to_klist q2)
+let equal eq q1 q2 = _equal_seq eq (to_seq q1) (to_seq q2)
 
 (*$T
   let q1 = 1 -- 10 and q2 = append (1 -- 5) (6 -- 10) in \
