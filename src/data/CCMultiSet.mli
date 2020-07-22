@@ -3,7 +3,7 @@
 
 (** {1 Multiset} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 module type S = sig
   type elt
@@ -84,9 +84,9 @@ module type S = sig
 
   val to_list : t -> elt list
 
-  val to_seq : t -> elt sequence
+  val to_iter : t -> elt iter
 
-  val of_seq : elt sequence -> t
+  val of_iter : elt iter -> t
 
   val of_list_mult : (elt * int) list -> t
   (** @since 0.19 *)
@@ -94,10 +94,10 @@ module type S = sig
   val to_list_mult : t -> (elt * int) list
   (** @since 0.19 *)
 
-  val to_seq_mult : t -> (elt * int) sequence
+  val to_iter_mult : t -> (elt * int) iter
   (** @since 0.19 *)
 
-  val of_seq_mult : (elt * int) sequence -> t
+  val of_iter_mult : (elt * int) iter -> t
   (** @since 0.19 *)
 end
 

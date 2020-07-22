@@ -14,7 +14,7 @@
 
 (** {1 Hash Tries} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
@@ -105,14 +105,14 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
 
-  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+  val add_iter : 'a t -> (key * 'a) iter -> 'a t
 
-  val add_seq_mut : id:Transient.t -> 'a t -> (key * 'a) sequence -> 'a t
+  val add_iter_mut : id:Transient.t -> 'a t -> (key * 'a) iter -> 'a t
   (** @raise Frozen if the ID is frozen *)
 
-  val of_seq : (key * 'a) sequence -> 'a t
+  val of_iter : (key * 'a) iter -> 'a t
 
-  val to_seq : 'a t -> (key * 'a) sequence
+  val to_iter : 'a t -> (key * 'a) iter
 
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
 
@@ -658,22 +658,22 @@ module Make(Key : KEY)
 
   let of_list l = add_list empty l
 
-  let add_seq_mut ~id m seq =
+  let add_iter_mut ~id m seq =
     let m = ref m in
     seq (fun (k,v) -> m := add_mut ~id k v !m);
     !m
 
-  let add_seq m seq =
-    Transient.with_ (fun id -> add_seq_mut ~id m seq)
+  let add_iter m seq =
+    Transient.with_ (fun id -> add_iter_mut ~id m seq)
 
-  let of_seq s = add_seq empty s
+  let of_iter s = add_iter empty s
 
-  let to_seq m yield = iter ~f:(fun k v -> yield (k,v)) m
+  let to_iter m yield = iter ~f:(fun k v -> yield (k,v)) m
 
   (*$Q
     _listuniq (fun l -> \
       (List.sort Stdlib.compare l) = \
-        (l |> Iter.of_list |> M.of_seq |> M.to_seq |> Iter.to_list \
+        (l |> Iter.of_list |> M.of_iter |> M.to_iter |> Iter.to_list \
           |> List.sort Stdlib.compare) )
   *)
 

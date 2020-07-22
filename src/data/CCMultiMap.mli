@@ -2,7 +2,7 @@
 
 (** {1 Multimap} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 module type S = sig
   type key
@@ -64,13 +64,13 @@ module type S = sig
   val submap : t -> t -> bool
   (** [submap m1 m2] is [true] iff all bindings of [m1] are also in [m2]. *)
 
-  val to_seq : t -> (key * value) sequence
+  val to_iter : t -> (key * value) iter
 
-  val of_seq : ?init:t -> (key * value) sequence -> t
+  val of_iter : ?init:t -> (key * value) iter -> t
 
-  val keys : t -> key sequence
+  val keys : t -> key iter
 
-  val values : t -> value sequence
+  val values : t -> value iter
   (** Some values may occur several times. *)
 end
 
@@ -120,10 +120,10 @@ module type BIDIR = sig
   val mem_right : t -> right -> bool
   (** Is the right key present in at least one pair? *)
 
-  val find_left : t -> left -> right sequence
+  val find_left : t -> left -> right iter
   (** Find all bindings for this given left-key. *)
 
-  val find_right : t -> right -> left sequence
+  val find_right : t -> right -> left iter
   (** Find all bindings for this given right-key. *)
 
   val find1_left : t -> left -> right option
@@ -135,14 +135,14 @@ module type BIDIR = sig
   val fold : ('a -> left -> right -> 'a) -> 'a -> t -> 'a
   (** Fold on pairs. *)
 
-  val pairs : t -> (left * right) sequence
+  val pairs : t -> (left * right) iter
   (** Iterate on pairs. *)
 
-  val add_pairs : t -> (left * right) sequence -> t
+  val add_pairs : t -> (left * right) iter -> t
   (** Add pairs. *)
 
-  val seq_left : t -> left sequence
-  val seq_right : t -> right sequence
+  val iter_left : t -> left iter
+  val iter_right : t -> right iter
 end
 
 module MakeBidir(L : OrderedType)(R : OrderedType) : BIDIR

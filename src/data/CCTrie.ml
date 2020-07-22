@@ -3,7 +3,7 @@
 
 (** {1 Prefix Tree} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (** {2 Signatures} *)
@@ -17,7 +17,7 @@ module type WORD = sig
   type char_
 
   val compare : char_ -> char_ -> int
-  val to_seq : t -> char_ sequence
+  val to_iter : t -> char_ iter
   val of_list : char_ list -> t
 end
 
@@ -92,21 +92,21 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
 
-  val to_seq : 'a t -> (key * 'a) sequence
+  val to_iter : 'a t -> (key * 'a) iter
 
-  val of_seq : (key * 'a) sequence -> 'a t
+  val of_iter : (key * 'a) iter -> 'a t
 
-  val to_seq_values : 'a t -> 'a sequence
+  val to_iter_values : 'a t -> 'a iter
 
   val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
 
   (** {6 Ranges} *)
 
-  val above : key -> 'a t -> (key * 'a) sequence
+  val above : key -> 'a t -> (key * 'a) iter
   (** All bindings whose key is bigger or equal to the given key, in
       ascending order *)
 
-  val below : key -> 'a t -> (key * 'a) sequence
+  val below : key -> 'a t -> (key * 'a) iter
   (** All bindings whose key is smaller or equal to the given key,
       in decreasing order *)
 
@@ -183,27 +183,27 @@ module Make(W : WORD)
 
   (* fold [f] on [seq] with accumulator [acc], and call [finish]
      on the accumulator once [seq] is exhausted *)
-  let _fold_seq_and_then f ~finish acc seq =
+  let _fold_iter_and_then f ~finish acc seq =
     let acc = ref acc in
     seq (fun x -> acc := f !acc x);
     finish !acc
 
-  let _filter_map_seq f seq k =
+  let _filter_map_iter f seq k =
     seq (fun x -> match f x with
       | None -> ()
       | Some y -> k y)
 
-  let _seq_map f seq k = seq (fun x -> k (f x))
+  let _iter_map f seq k = seq (fun x -> k (f x))
 
-  let _seq_append_list_rev l seq =
+  let _iter_append_list_rev l seq =
     let l = ref l in
     seq (fun x -> l := x :: !l);
     !l
 
-  let _seq_append_list l seq =
-    List.rev_append (_seq_append_list_rev [] seq) l
+  let _iter_append_list l seq =
+    List.rev_append (_iter_append_list_rev [] seq) l
 
-  let seq_of_map map k =
+  let iter_of_map map k =
     M.iter (fun key v -> k (key,v)) map
 
   (* return common prefix, and disjoint suffixes *)
@@ -300,8 +300,8 @@ module Make(W : WORD)
         let value' = f value in
         rebuild (_mk_node value' map)
     in
-    let word = W.to_seq key in
-    _fold_seq_and_then goto ~finish (t, _id) word
+    let word = W.to_iter key in
+    _fold_iter_and_then goto ~finish (t, _id) word
 
   let add k v t = update k (fun _ -> Some v) t
 
@@ -328,8 +328,8 @@ module Make(W : WORD)
       | Node (Some v, _) -> v
       | _ -> raise Not_found
     in
-    let word = W.to_seq k in
-    _fold_seq_and_then goto ~finish t word
+    let word = W.to_iter k in
+    _fold_iter_and_then goto ~finish t word
 
   let find k t =
     try Some (find_exn k t)
@@ -357,8 +357,8 @@ module Make(W : WORD)
     and finish (_,prefix) =
       W.of_list (prefix [])
     in
-    let word = W.to_seq k in
-    _fold_seq_and_then goto ~finish (t,_id) word
+    let word = W.to_iter k in
+    _fold_iter_and_then goto ~finish (t,_id) word
 
   (*$= & ~printer:CCFun.id
     "ca" (String.longest_prefix "carte" s1)
@@ -517,10 +517,10 @@ module Make(W : WORD)
       (fun (l1,l2) ->
         let t1 = S.of_list l1 and t2 = S.of_list l2 in
         let t = S.merge (fun a _ -> Some a) t1 t2 in
-        S.to_seq t |> Iter.for_all
+        S.to_iter t |> Iter.for_all
           (fun (k,v) -> S.find k t1 = Some v || S.find k t2 = Some v) &&
-        S.to_seq t1 |> Iter.for_all (fun (k,v) -> S.find k t <> None) &&
-        S.to_seq t2 |> Iter.for_all (fun (k,v) -> S.find k t <> None))
+        S.to_iter t1 |> Iter.for_all (fun (k,v) -> S.find k t <> None) &&
+        S.to_iter t2 |> Iter.for_all (fun (k,v) -> S.find k t <> None))
   *)
 
   let rec size t = match t with
@@ -541,12 +541,12 @@ module Make(W : WORD)
   let of_list l =
     List.fold_left (fun acc (k,v) -> add k v acc) empty l
 
-  let to_seq t k = iter (fun key v -> k (key,v)) t
+  let to_iter t k = iter (fun key v -> k (key,v)) t
 
-  let to_seq_values t k = iter_values k t
+  let to_iter_values t k = iter_values k t
 
-  let of_seq seq =
-    _fold_seq_and_then (fun acc (k,v) -> add k v acc) ~finish:_id empty seq
+  let of_iter seq =
+    _fold_iter_and_then (fun acc (k,v) -> add k v acc) ~finish:_id empty seq
 
   let rec to_tree t () =
     let _tree_node x l () = `Node (x,l) in
@@ -583,13 +583,13 @@ module Make(W : WORD)
         | Some v, Above -> k (W.of_list (prefix[]), v)
         | _ -> ()
       end;
-      let seq = seq_of_map map in
-      let seq = _seq_map (fun (c,t') -> Explore (t', _difflist_add prefix c)) seq in
+      let seq = iter_of_map map in
+      let seq = _iter_map (fun (c,t') -> Explore (t', _difflist_add prefix c)) seq in
       let l' = match o, dir with
-        | _, Above -> _seq_append_list [] seq
-        | None, Below -> _seq_append_list_rev [] seq
+        | _, Above -> _iter_append_list [] seq
+        | None, Below -> _iter_append_list_rev [] seq
         | Some v, Below ->
-          _seq_append_list_rev [Yield (v, prefix)] seq
+          _iter_append_list_rev [Yield (v, prefix)] seq
       in
       List.iter (explore ~dir k) l'
 
@@ -598,7 +598,7 @@ module Make(W : WORD)
     with Invalid_argument _ -> false
 
   let _key_to_list key =
-    List.rev (_seq_append_list_rev [] (W.to_seq key))
+    List.rev (_iter_append_list_rev [] (W.to_iter key))
 
   (* range above (if [above = true]) or below a threshold .
      [p c c'] must return [true] if [c'], in the tree, meets some criterion
@@ -622,8 +622,8 @@ module Make(W : WORD)
             | _ -> alternatives
           in
           let alternatives =
-            let seq = seq_of_map map in
-            let seq = _filter_map_seq
+            let seq = iter_of_map map in
+            let seq = _filter_map_iter
                 (fun (c', t') ->
                    if p ~cur:c ~other:c'
                    then Some (Explore (t', _difflist_add trail c'))
@@ -634,8 +634,8 @@ module Make(W : WORD)
                - Above: explore alternatives in increasing order
                - Below: explore alternatives in decreasing order *)
             match dir with
-              | Above -> _seq_append_list alternatives seq
-              | Below -> _seq_append_list_rev alternatives seq
+              | Above -> _iter_append_list alternatives seq
+              | Below -> _iter_append_list_rev alternatives seq
           in
           begin
             try
@@ -660,8 +660,8 @@ module Make(W : WORD)
       end;
       List.iter (explore ~dir k) alternatives
     in
-    let word = W.to_seq key in
-    _fold_seq_and_then on_char ~finish (Some(t,_id), []) word
+    let word = W.to_iter key in
+    _fold_iter_and_then on_char ~finish (Some(t,_id), []) word
 
   let above key t =
     _half_range ~dir:Above ~p:(fun ~cur ~other -> W.compare cur other < 0) key t
@@ -686,7 +686,7 @@ module Make(W : WORD)
         type t = (unit -> char) list \
         type char_ = char \
         let compare = compare \
-        let to_seq a k = List.iter (fun c -> k (c ())) a \
+        let to_iter a k = List.iter (fun c -> k (c ())) a \
         let of_list l = List.map (fun c -> (fun () -> c)) l \
       end) \
     in \
@@ -743,7 +743,7 @@ module MakeArray(X : ORDERED) = Make(struct
     type t = X.t array
     type char_ = X.t
     let compare = X.compare
-    let to_seq a k = Array.iter k a
+    let to_iter a k = Array.iter k a
     let of_list = Array.of_list
   end)
 
@@ -751,7 +751,7 @@ module MakeList(X : ORDERED) = Make(struct
     type t = X.t list
     type char_ = X.t
     let compare = X.compare
-    let to_seq a k = List.iter k a
+    let to_iter a k = List.iter k a
     let of_list l = l
   end)
 
@@ -759,7 +759,7 @@ module String = Make(struct
     type t = string
     type char_ = char
     let compare = Char.compare
-    let to_seq s k = String.iter k s
+    let to_iter s k = String.iter k s
     let of_list l =
       let buf = Buffer.create (List.length l) in
       List.iter (fun c -> Buffer.add_char buf c) l;

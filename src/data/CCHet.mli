@@ -8,7 +8,7 @@
 
     @since 0.17 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 module Key : sig
@@ -44,11 +44,11 @@ module Tbl : sig
 
   val iter : (pair -> unit) -> t -> unit
 
-  val to_seq : t -> pair sequence
+  val to_iter : t -> pair iter
 
-  val of_seq : pair sequence -> t
+  val of_iter : pair iter -> t
 
-  val add_seq : t -> pair sequence -> unit
+  val add_iter : t -> pair iter -> unit
 
   val add_list : t -> pair list -> unit
 
@@ -80,11 +80,11 @@ module Map : sig
 
   val iter : (pair -> unit) -> t -> unit
 
-  val to_seq : t -> pair sequence
+  val to_iter : t -> pair iter
 
-  val of_seq : pair sequence -> t
+  val of_iter : pair iter -> t
 
-  val add_seq : t -> pair sequence -> t
+  val add_iter : t -> pair iter -> t
 
   val add_list : t -> pair list -> t
 

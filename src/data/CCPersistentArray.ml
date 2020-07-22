@@ -126,12 +126,12 @@ let of_rev_list l =
   rev_in_place_ a 0 ~len:(Array.length a);
   ref (Array a)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
-let to_seq a yield = iter yield a
+let to_iter a yield = iter yield a
 
-let of_seq seq =
+let of_iter seq =
   let l = ref [] in
   seq (fun x -> l := x :: !l);
   of_rev_list !l

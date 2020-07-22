@@ -13,7 +13,7 @@
 
 (** {1 Hash Tries} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
@@ -334,19 +334,19 @@ let to_list m = fold_rev m ~f:(fun acc x -> x::acc) ~x:[]
     l = to_list (of_list l))
 *)
 
-let add_seq v seq =
+let add_iter v seq =
   let v = ref v in
   seq (fun x -> v := push x !v);
   !v
 
-let of_seq s = add_seq empty s
+let of_iter s = add_iter empty s
 
-let to_seq m yield = iteri ~f:(fun _ v -> yield v) m
+let to_iter m yield = iteri ~f:(fun _ v -> yield v) m
 
 (*$Q
   _listuniq (fun l -> \
     (List.sort Stdlib.compare l) = \
-      (l |> Iter.of_list |> of_seq |> to_seq |> Iter.to_list \
+      (l |> Iter.of_list |> of_iter |> to_iter |> Iter.to_list \
         |> List.sort Stdlib.compare) )
 *)
 

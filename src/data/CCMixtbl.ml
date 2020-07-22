@@ -121,9 +121,9 @@ let fold_keys tbl acc f =
 
 (** {2 Iterators} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
-let keys_seq tbl yield =
+let keys_iter tbl yield =
   Hashtbl.iter
     (fun x _ -> yield x)
     tbl
@@ -135,7 +135,7 @@ let keys_seq tbl yield =
   set ~inj:inj_int tbl "foo" 1;
   set ~inj:inj_int tbl "bar" 2;
   set ~inj:inj_str tbl "baaz" "hello";
-  let l = keys_seq tbl |> Iter.to_list in
+  let l = keys_iter tbl |> Iter.to_list in
   OUnit.assert_equal ["baaz"; "bar"; "foo"] (List.sort compare l);
 *)
 

@@ -113,14 +113,14 @@ val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** {2 Conversions} *)
 
 type 'a gen = unit -> 'a option
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
-val of_seq : 'a sequence -> 'a t
+val of_iter : 'a iter -> 'a t
 (** Create a deque from the sequence.
-    Optional argument [deque] disappears, use {!add_seq_back} instead.
+    Optional argument [deque] disappears, use {!add_iter_back} instead.
     @since 0.13 *)
 
-val to_seq : 'a t -> 'a sequence
+val to_iter : 'a t -> 'a iter
 (** Iterate on the elements. *)
 
 val of_gen : 'a gen -> 'a t
@@ -131,14 +131,14 @@ val to_gen : 'a t -> 'a gen
 (** Iterate on the elements of the deque.
     @since 0.13 *)
 
-val add_seq_front : 'a t -> 'a sequence -> unit
-(** [add_seq_front q seq] adds elements of [seq] into the front of [q],
+val add_iter_front : 'a t -> 'a iter -> unit
+(** [add_iter_front q seq] adds elements of [seq] into the front of [q],
     in reverse order.
     [O(n)] in time, where [n] is the number of elements to add.
     @since 0.13 *)
 
-val add_seq_back : 'a t -> 'a sequence -> unit
-(** [add_seq_back q seq] adds elements of [seq] into the back of [q],
+val add_iter_back : 'a t -> 'a iter -> unit
+(** [add_iter_back q seq] adds elements of [seq] into the back of [q],
     in order.
     [O(n)] in time, where [n] is the number of elements to add.
     @since 0.13 *)

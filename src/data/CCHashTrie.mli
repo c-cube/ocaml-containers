@@ -15,7 +15,7 @@
     @since 0.13
 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
@@ -118,14 +118,14 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
 
-  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+  val add_iter : 'a t -> (key * 'a) iter -> 'a t
 
-  val add_seq_mut : id:Transient.t -> 'a t -> (key * 'a) sequence -> 'a t
+  val add_iter_mut : id:Transient.t -> 'a t -> (key * 'a) iter -> 'a t
   (** @raise Frozen if the ID is frozen. *)
 
-  val of_seq : (key * 'a) sequence -> 'a t
+  val of_iter : (key * 'a) iter -> 'a t
 
-  val to_seq : 'a t -> (key * 'a) sequence
+  val to_iter : 'a t -> (key * 'a) iter
 
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
 

@@ -135,10 +135,10 @@ val select : t -> 'a array -> 'a list
 val selecti : t -> 'a array -> ('a * int) list
 (** Same as {!select}, but selected elements are paired with their indexes. *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
-val to_seq : t -> int sequence
-val of_seq : int sequence -> t
+val to_iter : t -> int iter
+val of_iter : int iter -> t
 
 val pp : Format.formatter -> t -> unit
 (** Print the bitvector as a string of bits.

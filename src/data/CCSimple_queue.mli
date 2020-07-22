@@ -7,10 +7,6 @@
     @since 1.3 *)
 
 
-(* TODO: remove for 3.0 *)
-type 'a sequence = ('a -> unit) -> unit
-(** @deprecated use ['a iter] instead *)
-
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)

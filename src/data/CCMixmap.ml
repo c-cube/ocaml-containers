@@ -79,18 +79,18 @@ module type S = sig
 
   (** {2 Iterators} *)
 
-  type 'a sequence = ('a -> unit) -> unit
+  type 'a iter = ('a -> unit) -> unit
 
-  val keys_seq : t -> key sequence
+  val keys_iter : t -> key iter
   (** All the keys *)
 
-  val bindings_of : inj:'a injection -> t -> (key * 'a) sequence
+  val bindings_of : inj:'a injection -> t -> (key * 'a) iter
   (** All the bindings that come from the corresponding injection *)
 
   type value =
     | Value : ('a injection -> 'a option) -> value
 
-  val bindings : t -> (key * value) sequence
+  val bindings : t -> (key * value) iter
   (** Iterate on all bindings *)
 end
 
@@ -140,9 +140,9 @@ module Make(X : ORD) : S with type key = X.t = struct
 
   (** {2 Iterators} *)
 
-  type 'a sequence = ('a -> unit) -> unit
+  type 'a iter = ('a -> unit) -> unit
 
-  let keys_seq map yield =
+  let keys_iter map yield =
     M.iter
       (fun x _ -> yield x)
       map

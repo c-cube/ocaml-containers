@@ -65,7 +65,7 @@ val exists : ('a -> bool) -> 'a t -> bool
 
 (** {2 Conversions} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 val of_list : 'a list -> 'a t
@@ -76,9 +76,9 @@ val of_array_unsafe : 'a array -> 'a t
 (** Take ownership of the given array. Careful, the array must {b NOT}
     be modified afterwards! *)
 
-val to_seq : 'a t -> 'a sequence
+val to_iter : 'a t -> 'a iter
 
-val of_seq : 'a sequence -> 'a t
+val of_iter : 'a iter -> 'a t
 
 val of_gen : 'a gen -> 'a t
 

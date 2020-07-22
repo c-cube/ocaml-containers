@@ -5,7 +5,7 @@
     graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
     is a structural type. *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 

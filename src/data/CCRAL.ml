@@ -489,7 +489,7 @@ let range_r_open_ i j =
 
 (** {2 Conversions} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 let add_list l l2 = List.fold_left (fun acc x -> cons x acc) l (List.rev l2)
@@ -525,27 +525,27 @@ let to_array l = match l with
     of_array a |> to_array = a)
 *)
 
-let of_seq s =
+let of_iter s =
   let l = ref empty in
   s (fun x -> l := cons x !l);
   rev !l
 
-let add_seq l s =
+let add_iter l s =
   let l1 = ref empty in
   s (fun x -> l1 := cons x !l1);
   fold ~f:(fun acc x -> cons x acc) ~x:l !l1
 
-let to_seq l yield = iter ~f:yield l
+let to_iter l yield = iter ~f:yield l
 
 (*$Q & ~small:List.length
   Q.(list small_int) (fun l -> \
-    of_list l |> to_seq |> Iter.to_list = l)
+    of_list l |> to_iter |> Iter.to_list = l)
   Q.(list small_int) (fun l -> \
-    Iter.of_list l |> of_seq |> to_list = l)
+    Iter.of_list l |> of_iter |> to_list = l)
 *)
 
 (*$T
-  add_seq (of_list [3;4]) (Iter.of_list [1;2]) |> to_list = [1;2;3;4]
+  add_iter (of_list [3;4]) (Iter.of_list [1;2]) |> to_list = [1;2;3;4]
 *)
 
 let rec gen_iter_ f g = match g() with

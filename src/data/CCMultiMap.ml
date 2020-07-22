@@ -2,7 +2,7 @@
 
 (** {1 Multimap} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 module type S = sig
   type key
@@ -64,13 +64,13 @@ module type S = sig
   val submap : t -> t -> bool
   (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2] *)
 
-  val to_seq : t -> (key * value) sequence
+  val to_iter : t -> (key * value) iter
 
-  val of_seq : ?init:t -> (key * value) sequence -> t
+  val of_iter : ?init:t -> (key * value) iter -> t
 
-  val keys : t -> key sequence
+  val keys : t -> key iter
 
-  val values : t -> value sequence
+  val values : t -> value iter
   (** Some values may occur several times *)
 end
 
@@ -190,9 +190,9 @@ module Make(K : OrderedType)(V : OrderedType) = struct
            false)
       m1
 
-  let to_seq m k = iter m (fun x y -> k (x,y))
+  let to_iter m k = iter m (fun x y -> k (x,y))
 
-  let of_seq ?(init=empty) seq =
+  let of_iter ?(init=empty) seq =
     let m = ref init in
     seq (fun (k,v) -> m := add !m k v);
     !m
@@ -235,10 +235,10 @@ module type BIDIR = sig
   val mem_right : t -> right -> bool
   (** Is the right key present in at least one pair? *)
 
-  val find_left : t -> left -> right sequence
+  val find_left : t -> left -> right iter
   (** Find all bindings for this given left-key *)
 
-  val find_right : t -> right -> left sequence
+  val find_right : t -> right -> left iter
   (** Find all bindings for this given right-key *)
 
   val find1_left : t -> left -> right option
@@ -250,22 +250,22 @@ module type BIDIR = sig
   val fold : ('a -> left -> right -> 'a) -> 'a -> t -> 'a
   (** Fold on pairs *)
 
-  val pairs : t -> (left * right) sequence
+  val pairs : t -> (left * right) iter
   (** Iterate on pairs *)
 
-  val add_pairs : t -> (left * right) sequence -> t
+  val add_pairs : t -> (left * right) iter -> t
   (** Add pairs *)
 
-  val seq_left : t -> left sequence
-  val seq_right : t -> right sequence
+  val iter_left : t -> left iter
+  val iter_right : t -> right iter
 end
 
-let _fold_seq f acc seq =
+let _fold_iter f acc seq =
   let acc = ref acc in
   seq (fun x -> acc := f !acc x);
   !acc
 
-let _head_seq seq =
+let _head_iter seq =
   let r = ref None in
   begin try seq (fun x -> r := Some x; raise Exit)
     with Exit -> ();
@@ -308,29 +308,29 @@ module MakeBidir(L : OrderedType)(R : OrderedType) = struct
   let find_right m b = MapR.find_iter m.right b
 
   let remove_left m a =
-    _fold_seq
+    _fold_iter
       (fun m b -> remove m a b)
       m (find_left m a)
 
   let remove_right m b =
-    _fold_seq
+    _fold_iter
       (fun m a -> remove m a b)
       m (find_right m b)
 
   let mem_left m a = MapL.mem m.left a
   let mem_right m b = MapR.mem m.right b
 
-  let find1_left m a = _head_seq (find_left m a)
-  let find1_right m b = _head_seq (find_right m b)
+  let find1_left m a = _head_iter (find_left m a)
+  let find1_right m b = _head_iter (find_right m b)
 
   let fold f acc m =
     MapL.fold m.left acc f
 
-  let pairs m = MapL.to_seq m.left
+  let pairs m = MapL.to_iter m.left
 
-  let add_pairs m seq = _fold_seq (fun m (a,b) -> add m a b) m seq
+  let add_pairs m seq = _fold_iter (fun m (a,b) -> add m a b) m seq
 
-  let seq_left m = MapL.keys m.left
+  let iter_left m = MapL.keys m.left
 
-  let seq_right m = MapR.keys m.right
+  let iter_right m = MapR.keys m.right
 end

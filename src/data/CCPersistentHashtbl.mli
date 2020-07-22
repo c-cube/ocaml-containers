@@ -10,7 +10,7 @@
 
     This module is not thread-safe. *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a equal = 'a -> 'a -> bool
 
@@ -99,16 +99,16 @@ module type S = sig
 
   (** {3 Conversions} *)
 
-  val of_seq : (key * 'a) sequence -> 'a t
+  val of_iter : (key * 'a) iter -> 'a t
   (** Add (replace) bindings from the sequence to the table. *)
 
   val of_list : (key * 'a) list -> 'a t
 
-  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+  val add_iter : 'a t -> (key * 'a) iter -> 'a t
 
   val add_list : 'a t -> (key  * 'a) list -> 'a t
 
-  val to_seq : 'a t -> (key * 'a) sequence
+  val to_iter : 'a t -> (key * 'a) iter
   (** Iter of the bindings of the table. *)
 
   val to_list : 'a t -> (key * 'a) list

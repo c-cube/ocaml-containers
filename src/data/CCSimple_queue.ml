@@ -4,7 +4,6 @@
 (** {1 Functional queues (fifo)} *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a sequence = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a gen = unit -> 'a option
 

@@ -6,7 +6,7 @@
 
     @since 2.1 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 module type OrderedType = sig
   type t
@@ -67,11 +67,11 @@ module type S = sig
   val list_right : t -> (right * left) list
   (** Return the bindings as a list of [(right, left)] values. *)
 
-  val add_seq : (left * right) sequence -> t -> t
+  val add_iter : (left * right) iter -> t -> t
 
-  val of_seq : (left * right) sequence -> t
+  val of_iter : (left * right) iter -> t
 
-  val to_seq : t -> (left * right) sequence
+  val to_iter : t -> (left * right) iter
 
   val add_list : (left * right) list -> t -> t
 
