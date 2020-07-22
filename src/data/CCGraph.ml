@@ -35,8 +35,6 @@ module Iter = struct
     with Exit_ -> true
 end
 
-module Seq = Iter
-
 (** {2 Interfaces for graphs} *)
 
 (** Directed graph with vertices of type ['v] and edges labeled with [e'] *)
@@ -607,8 +605,6 @@ module Dot = struct
     (* close *)
     Format.fprintf out "}@]@;@?";
     ()
-
-  let pp_seq = pp_all
 
   let pp ~tbl ~eq ?attrs_v ?attrs_e ?name ~graph fmt v =
     pp_all ~tbl ~eq ?attrs_v ?attrs_e ?name ~graph fmt (Iter.return v)
