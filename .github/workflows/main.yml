@@ -16,5 +16,9 @@ jobs:
     - run: opam pin -n .
     - run: opam depext -yt containers containers-data containers-thread
     - run: opam install -t . --deps-only
+      if: ${{ job.os == 'Linux' }}
+    - run: opam install . --deps-only  # no test deps
+      if: ${{ job.os != 'Linux' }}
     - run: opam exec -- dune build
     - run: opam exec -- dune runtest
+      if: ${{ job.os == 'Linux' }}
