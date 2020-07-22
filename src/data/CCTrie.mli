@@ -3,7 +3,7 @@
 
 (** {1 Prefix Tree} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 
 (** {2 Signatures} *)
@@ -17,7 +17,7 @@ module type WORD = sig
   type char_
 
   val compare : char_ -> char_ -> int
-  val to_seq : t -> char_ sequence
+  val to_iter : t -> char_ iter
   val of_list : char_ list -> t
 end
 
@@ -92,21 +92,21 @@ module type S = sig
 
   val of_list : (key * 'a) list -> 'a t
 
-  val to_seq : 'a t -> (key * 'a) sequence
+  val to_iter : 'a t -> (key * 'a) iter
 
-  val of_seq : (key * 'a) sequence -> 'a t
+  val of_iter : (key * 'a) iter -> 'a t
 
-  val to_seq_values : 'a t -> 'a sequence
+  val to_iter_values : 'a t -> 'a iter
 
   val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
 
   (** {4 Ranges} *)
 
-  val above : key -> 'a t -> (key * 'a) sequence
+  val above : key -> 'a t -> (key * 'a) iter
   (** All bindings whose key is bigger or equal to the given key, in
       ascending order. *)
 
-  val below : key -> 'a t -> (key * 'a) sequence
+  val below : key -> 'a t -> (key * 'a) iter
   (** All bindings whose key is smaller or equal to the given key,
       in decreasing order. *)
 

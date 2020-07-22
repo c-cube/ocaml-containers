@@ -2,7 +2,7 @@
 
 (** {1 Bijection} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 module type OrderedType = sig
   type t
@@ -30,9 +30,9 @@ module type S = sig
   val remove_right : right -> t -> t
   val list_left : t -> (left * right) list
   val list_right : t -> (right * left) list
-  val add_seq : (left * right) sequence -> t -> t
-  val of_seq : (left * right) sequence -> t
-  val to_seq : t -> (left * right) sequence
+  val add_iter : (left * right) iter -> t -> t
+  val of_iter : (left * right) iter -> t
+  val to_iter : t -> (left * right) iter
   val add_list : (left * right) list -> t -> t
   val of_list : (left * right) list -> t
   val to_list : t -> (left * right) list
@@ -108,14 +108,14 @@ module Make(L : OrderedType)(R : OrderedType) = struct
   let of_list l = add_list l empty
   let to_list = list_left
 
-  let add_seq seq m =
+  let add_iter seq m =
     let m = ref m in
     seq (fun (k,v) -> m := add k v !m);
     !m
 
-  let of_seq l = add_seq l empty
+  let of_iter l = add_iter l empty
 
-  let to_seq m yield = MapL.iter (fun k v -> yield (k,v)) m.left
+  let to_iter m yield = MapL.iter (fun k v -> yield (k,v)) m.left
 end
 
 (*$inject

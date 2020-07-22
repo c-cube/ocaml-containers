@@ -35,16 +35,6 @@ type 'a iter_once = 'a iter
 (** Iter that should be used only once
     @since 2.8 *)
 
-type 'a sequence = ('a -> unit) -> unit
-(** A sequence of items of type ['a], possibly infinite
-    @deprecate see {!iter} instead *)
-[@@ocaml.deprecated "see iter"]
-
-type 'a sequence_once = 'a iter
-(** Iter that should be used only once
-    @deprecate see {!iter_once} instead *)
-[@@ocaml.deprecated "see iter_once"]
-
 exception Iter_once
 (** Raised when a sequence meant to be used once is used several times. *)
 
@@ -428,15 +418,6 @@ module type MAP = sig
 
   val to_iter : 'a t -> (vertex * 'a * vertex) iter
   (** @since 2.8 *)
-
-  val of_seq : (vertex * 'a * vertex) iter -> 'a t
-  (** @deprecated use {!of_iter} instead *)
-
-  val add_seq : (vertex * 'a * vertex) iter -> 'a t -> 'a t
-  (** @deprecated use {!add_iter} instead *)
-
-  val to_seq : 'a t -> (vertex * 'a * vertex) iter
-  (** @deprecated use {!to_iter} instead *)
 end
 
 module Map(O : Map.OrderedType) : MAP with type vertex = O.t

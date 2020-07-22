@@ -6,7 +6,7 @@
 
     @since 0.13 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
@@ -83,11 +83,11 @@ module type S = sig
 
   val of_list : elt list -> t
 
-  val to_seq : t -> elt sequence
+  val to_iter : t -> elt iter
 
-  val of_seq : elt sequence -> t
+  val of_iter : elt iter -> t
 
-  val add_seq : t -> elt sequence -> unit
+  val add_iter : t -> elt iter -> unit
 
   val pp : ?sep:string -> elt printer -> t printer
   (** [pp pp_elt] returns a set printer, given a printer for

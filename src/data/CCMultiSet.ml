@@ -3,7 +3,7 @@
 
 (** {1 Multiset} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
 let max_int = max
 let min_int = min
@@ -87,9 +87,9 @@ module type S = sig
 
   val to_list : t -> elt list
 
-  val to_seq : t -> elt sequence
+  val to_iter : t -> elt iter
 
-  val of_seq : elt sequence -> t
+  val of_iter : elt iter -> t
 
   val of_list_mult : (elt * int) list -> t
   (** @since 0.19 *)
@@ -97,10 +97,10 @@ module type S = sig
   val to_list_mult : t -> (elt * int) list
   (** @since 0.19 *)
 
-  val to_seq_mult : t -> (elt * int) sequence
+  val to_iter_mult : t -> (elt * int) iter
   (** @since 0.19 *)
 
-  val of_seq_mult : (elt * int) sequence -> t
+  val of_iter_mult : (elt * int) iter -> t
   (** @since 0.19 *)
 end
 
@@ -235,10 +235,10 @@ module Make(O : Set.OrderedType) = struct
     in
     fold m [] (fun acc n x -> n_cons n x acc)
 
-  let to_seq m k =
+  let to_iter m k =
     M.iter (fun x n -> for _i = 1 to n do k x done) m
 
-  let of_seq seq =
+  let of_iter seq =
     let m = ref empty in
     seq (fun x -> m := add !m x);
     !m
@@ -251,9 +251,9 @@ module Make(O : Set.OrderedType) = struct
   let to_list_mult m =
     fold m [] (fun acc n x -> (x,n) :: acc)
 
-  let to_seq_mult m k = M.iter (fun x n -> k (x,n)) m
+  let to_iter_mult m k = M.iter (fun x n -> k (x,n)) m
 
-  let of_seq_mult seq =
+  let of_iter_mult seq =
     let m = ref empty in
     seq (fun (x,n) -> m := add_mult !m x n);
     !m

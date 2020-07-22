@@ -126,7 +126,7 @@ val range : int -> int -> int t
 
 (** {2 Conversions} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 val add_list : 'a t -> 'a list -> 'a t
@@ -146,11 +146,11 @@ val add_array : 'a t -> 'a array -> 'a t
 val to_array : 'a t -> 'a array
 (** More efficient than on usual lists. *)
 
-val add_seq : 'a t -> 'a sequence -> 'a t
+val add_iter : 'a t -> 'a iter -> 'a t
 
-val of_seq : 'a sequence -> 'a t
+val of_iter : 'a iter -> 'a t
 
-val to_seq : 'a t -> 'a sequence
+val to_iter : 'a t -> 'a iter
 
 val add_gen : 'a t -> 'a gen -> 'a t
 

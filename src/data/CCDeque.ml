@@ -34,9 +34,9 @@ type 'a t = {
 
 (*$R
   let q = create () in
-  add_seq_back q Iter.(3 -- 5);
+  add_iter_back q Iter.(3 -- 5);
   assert_equal [3;4;5] (to_list q);
-  add_seq_front q Iter.(of_list [2;1]);
+  add_iter_front q Iter.(of_list [2;1]);
   assert_equal [1;2;3;4;5] (to_list q);
   push_front q 0;
   assert_equal [0;1;2;3;4;5] (to_list q);
@@ -56,7 +56,7 @@ let clear q =
   ()
 
 (*$R
-  let q = of_seq Iter.(1 -- 100) in
+  let q = of_iter Iter.(1 -- 100) in
   assert_equal 100 (length q);
   clear q;
   assert_equal 0 (length q);
@@ -127,7 +127,7 @@ let peek_front d = match peek_front_opt d with
 *)
 
 (*$R
-  let d = of_seq Iter.(1 -- 10) in
+  let d = of_iter Iter.(1 -- 10) in
   let printer = pint in
   OUnit.assert_equal ~printer 1 (peek_front d);
   push_front d 42;
@@ -157,7 +157,7 @@ let peek_back d = match peek_back_opt d with
 *)
 
 (*$R
-  let d = of_seq Iter.(1 -- 10) in
+  let d = of_iter Iter.(1 -- 10) in
   let printer = pint in
   OUnit.assert_equal ~printer 1 (peek_front d);
   push_back d 42;
@@ -362,7 +362,7 @@ let iter f d =
 *)
 
 (*$R
-  let d = of_seq Iter.(1 -- 5) in
+  let d = of_iter Iter.(1 -- 5) in
   let s = Iter.from_iter (fun k -> iter k d) in
   let l = Iter.to_list s in
   OUnit.assert_equal ~printer:plist [1;2;3;4;5] l;
@@ -410,35 +410,35 @@ let length d = d.size
 *)
 
 (*$R
-  let d = of_seq Iter.(1 -- 10) in
+  let d = of_iter Iter.(1 -- 10) in
   OUnit.assert_equal ~printer:pint 10 (length d)
 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
-let add_seq_back q seq = seq (fun x -> push_back q x)
+let add_iter_back q seq = seq (fun x -> push_back q x)
 
-let add_seq_front q seq = seq (fun x -> push_front q x)
+let add_iter_front q seq = seq (fun x -> push_front q x)
 
 (*$R
   let q = of_list [4;5] in
-  add_seq_front q Iter.(of_list [3;2;1]);
+  add_iter_front q Iter.(of_list [3;2;1]);
   assert_equal [1;2;3;4;5] (to_list q);
-  add_seq_back q Iter.(of_list [6;7]);
+  add_iter_back q Iter.(of_list [6;7]);
   assert_equal [1;2;3;4;5;6;7] (to_list q);
 *)
 
-let of_seq seq =
+let of_iter seq =
   let deque = create () in
   seq (fun x -> push_back deque x);
   deque
 
-let to_seq d k = iter k d
+let to_iter d k = iter k d
 
 (*$Q
   Q.(list int) (fun l -> \
-    Iter.of_list l |> of_seq |> to_seq |> Iter.to_list = l)
+    Iter.of_list l |> of_iter |> to_iter |> Iter.to_list = l)
 *)
 
 let of_list l =

@@ -86,16 +86,16 @@ val fold_keys : 'a t -> 'b -> ('b -> 'a -> 'b) -> 'b
 
 (** {2 Iterators} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
-val keys_seq : 'a t -> 'a sequence
+val keys_iter : 'a t -> 'a iter
 (** All the keys. *)
 
-val bindings_of : inj:'b injection -> 'a t -> ('a * 'b) sequence
+val bindings_of : inj:'b injection -> 'a t -> ('a * 'b) iter
 (** All the bindings that come from the corresponding injection. *)
 
 type value =
   | Value : ('b injection -> 'b option) -> value
 
-val bindings : 'a t -> ('a *  value) sequence
+val bindings : 'a t -> ('a *  value) iter
 (** Iterate on all bindings. *)

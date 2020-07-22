@@ -258,20 +258,20 @@ let iter bv f =
 *)
 
 (*$inject
-  let seq_zip s k = s (fun x y -> k(x,y))
+  let iter_zip s k = s (fun x y -> k(x,y))
 *)
 
 (*$= & ~printer:Q.Print.(list (pair int bool))
-  [] (iter (create ~size:0 false) |> seq_zip |> Iter.to_list)
+  [] (iter (create ~size:0 false) |> iter_zip |> Iter.to_list)
   [0, false; 1, true; 2, false] \
-    (iter (let bv = create ~size:3 false in set bv 1; bv) |> seq_zip |> Iter.to_list)
+    (iter (let bv = create ~size:3 false in set bv 1; bv) |> iter_zip |> Iter.to_list)
 *)
 
 (*$Q
   Q.(small_int) (fun n -> \
     assert (n >= 0); \
     let bv = create ~size:n true in \
-    let l = iter bv |> seq_zip |> Iter.to_list in \
+    let l = iter bv |> iter_zip |> Iter.to_list in \
     List.length l = n && List.for_all (fun (_,b) -> b) l)
 *)
 
@@ -530,18 +530,18 @@ let selecti bv arr =
     |> List.sort CCOrd.compare)
 *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 
-let to_seq bv k = iter_true bv k
+let to_iter bv k = iter_true bv k
 
 (*$Q
   Q.(small_int) (fun i -> \
       let i = max 1 i in \
       let bv = create ~size:i true in \
-      i = (to_seq bv |> Iter.length))
+      i = (to_iter bv |> Iter.length))
 *)
 
-let of_seq seq =
+let of_iter seq =
   let l = ref [] and maxi = ref 0 in
   seq (fun x -> l := x :: !l; maxi := max !maxi x);
   let bv = create ~size:(!maxi+1) false in
@@ -549,7 +549,7 @@ let of_seq seq =
   bv
 
 (*$T
-  CCList.range 0 10 |> CCList.to_iter |> of_seq |> to_seq \
+  CCList.range 0 10 |> CCList.to_iter |> of_iter |> to_iter \
     |> CCList.of_iter |> List.sort CCOrd.compare = CCList.range 0 10
 *)
 

@@ -3,7 +3,7 @@
 
 (** {1 Persistent hash-table on top of OCaml's hashtables} *)
 
-type 'a sequence = ('a -> unit) -> unit
+type 'a iter = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a equal = 'a -> 'a -> bool
 
@@ -92,16 +92,16 @@ module type S = sig
 
   (** {3 Conversions} *)
 
-  val of_seq : (key * 'a) sequence -> 'a t
+  val of_iter : (key * 'a) iter -> 'a t
   (** Add (replace) bindings from the sequence to the table *)
 
   val of_list : (key * 'a) list -> 'a t
 
-  val add_seq : 'a t -> (key * 'a) sequence -> 'a t
+  val add_iter : 'a t -> (key * 'a) iter -> 'a t
 
   val add_list : 'a t -> (key  * 'a) list -> 'a t
 
-  val to_seq : 'a t -> (key * 'a) sequence
+  val to_iter : 'a t -> (key * 'a) iter
   (** Iter of the bindings of the table *)
 
   val to_list : 'a t -> (key * 'a) list
@@ -127,7 +127,7 @@ end
       4, "d";
     ]
 
-  let my_seq = Iter.of_list my_list
+  let my_iter = Iter.of_list my_list
 
   let _list_uniq = CCList.sort_uniq
     ~cmp:(fun a b -> Stdlib.compare (fst a) (fst b))
@@ -222,7 +222,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
                     if H.equal k k4 then v4 else find_rec_ k l4
 
   (*$R
-    let h = H.of_seq my_seq in
+    let h = H.of_iter my_iter in
     OUnit.assert_equal "a" (H.find h 1);
     OUnit.assert_raises Not_found (fun () -> H.find h 5);
     let h' = H.replace h 5 "e" in
@@ -235,7 +235,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
   (*$R
     let n = 10000 in
     let seq = Iter.map (fun i -> i, string_of_int i) Iter.(0--n) in
-    let h = H.of_seq seq in
+    let h = H.of_iter seq in
     Iter.iter
       (fun (k,v) ->
         OUnit.assert_equal ~printer:(fun x -> x) v (H.find h k))
@@ -267,7 +267,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
     with Not_found -> false
 
   (*$R
-    let h = H.of_seq
+    let h = H.of_iter
       Iter.(map (fun i -> i, string_of_int i)
         (0 -- 200)) in
     OUnit.assert_equal 201 (H.length h);
@@ -369,7 +369,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
     )
 
   (*$R
-    let h = H.of_seq my_seq in
+    let h = H.of_iter my_iter in
     OUnit.assert_equal "a" (H.find h 1);
     OUnit.assert_raises Not_found (fun () -> H.find h 5);
     let h1 = H.add h 5 "e" in
@@ -413,7 +413,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
             t'
 
   (*$R
-    let h = H.of_seq my_seq in
+    let h = H.of_iter my_iter in
     OUnit.assert_equal (H.find h 2) "b";
     OUnit.assert_equal (H.find h 3) "c";
     OUnit.assert_equal (H.find h 4) "d";
@@ -428,7 +428,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let open Iter.Infix in
     let n = 10000 in
     let seq = Iter.map (fun i -> i, string_of_int i) (0 -- n) in
-    let h = H.of_seq seq in
+    let h = H.of_iter seq in
     OUnit.assert_equal (n+1) (H.length h);
     let h = Iter.fold (fun h i -> H.remove h i) h (0 -- 500) in
     OUnit.assert_equal (n-500) (H.length h);
@@ -574,15 +574,15 @@ module Make(H : HashedType) : S with type key = H.t = struct
     OUnit.assert_equal "c" (H.find t 3);
   *)
 
-  let add_seq init seq =
+  let add_iter init seq =
     let tbl = ref init in
     seq (fun (k,v) -> tbl := replace !tbl k v);
     !tbl
 
-  let of_seq seq = add_seq (empty ()) seq
+  let of_iter seq = add_iter (empty ()) seq
 
   let add_list init l =
-    add_seq init (fun k -> List.iter k l)
+    add_iter init (fun k -> List.iter k l)
 
   (*$QR
     _list_int_int (fun l ->
@@ -608,17 +608,17 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let to_list t = fold (fun acc k v -> (k,v)::acc) [] t
 
   (*$R
-    let h = H.of_seq my_seq in
-    let l = Iter.to_list (H.to_seq h) in
+    let h = H.of_iter my_iter in
+    let l = Iter.to_list (H.to_iter h) in
     OUnit.assert_equal my_list (List.sort compare l)
   *)
 
-  let to_seq t =
+  let to_iter t =
     fun k ->
       iter t (fun x y -> k (x,y))
 
   (*$R
-    let h = H.of_seq my_seq in
+    let h = H.of_iter my_iter in
     OUnit.assert_equal "b" (H.find h 2);
     OUnit.assert_equal "a" (H.find h 1);
     OUnit.assert_raises Not_found (fun () -> H.find h 42);
