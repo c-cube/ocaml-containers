@@ -1,4 +1,4 @@
-# OCaml-containers 📦  [![Build Status](https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master)](https://travis-ci.org/c-cube/ocaml-containers)
+# OCaml-containers 📦  [![Build Status](https://travis-ci.org/c-cube/ocaml-containers.svg?branch=master)](https://travis-ci.org/c-cube/ocaml-containers) ![build gh](https://github.com/c-cube/ocaml-containers/workflows/build/badge.svg)
 
 A modular, clean and powerful extension of the OCaml standard library.
 
