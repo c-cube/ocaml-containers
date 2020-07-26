@@ -89,7 +89,7 @@ module type S = sig
 
   val add_iter : t -> elt iter -> unit
 
-  val pp : ?sep:string -> elt printer -> t printer
+  val pp : ?pp_sep:unit printer -> elt printer -> t printer
   (** [pp pp_elt] returns a set printer, given a printer for
       individual elements. *)
 end

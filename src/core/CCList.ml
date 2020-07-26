@@ -1790,24 +1790,25 @@ include Infix
 
 (** {2 IO} *)
 
-let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt l =
+let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+    ?(pp_sep=fun fmt () ->Format.fprintf fmt ",@ ") pp_item fmt l =
   let rec print fmt l = match l with
     | x::((_::_) as l) ->
       pp_item fmt x;
-      Format.pp_print_string fmt sep;
-      Format.pp_print_cut fmt ();
+      pp_sep fmt ();
       print fmt l
     | x::[] -> pp_item fmt x
     | [] -> ()
   in
-  Format.pp_print_string fmt start;
+  pp_start fmt ();
   print fmt l;
-  Format.pp_print_string fmt stop
+  pp_stop fmt ()
 
 (*$= & ~printer:(fun s->s)
   "[1, 2, 3]" \
       (CCFormat.to_string \
-        (CCFormat.hbox(CCList.pp ~start:"[" ~stop:"]" CCFormat.int)) \
+        (CCFormat.hbox(CCList.pp ~pp_start:(fun fmt () -> Format.fprintf fmt "[") \
+                         ~pp_stop:(fun fmt () -> Format.fprintf fmt "]") CCFormat.int)) \
         [1;2;3])
 *)
 

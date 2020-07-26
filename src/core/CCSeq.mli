@@ -272,6 +272,10 @@ val of_gen : 'a gen -> 'a t
 
 (** {2 IO} *)
 
-val pp : ?sep:string -> 'a printer -> 'a t printer
-(** Print the list with the given separator (default ",").
-    Do not print opening/closing delimiters. *)
+val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+  'a printer -> 'a t printer
+(** [pp ~pp_start ~pp_stop ~pp_sep pp_item ppf s] formats the sequence [s] on [ppf].
+    Each element is formatted with [pp_item], [pp_start] is called at the beginning,
+    [pp_stop] is called at the end, [pp_sep] is called between each elements.
+    By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
+    (fun out -> Format.fprintf out ",@ "). *)

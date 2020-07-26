@@ -527,15 +527,19 @@ end
 
 (** {2 IO} *)
 
-let pp ?(sep=",") pp_item fmt l =
+let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+    ?(pp_sep=fun out () -> Format.fprintf out ",@ ") pp_item fmt l =
+  pp_start fmt ();
   let rec pp fmt l = match l() with
     | Nil -> ()
     | Cons (x,l') ->
-      Format.pp_print_string fmt sep;
+      pp_sep fmt ();
       Format.pp_print_cut fmt ();
       pp_item fmt x;
       pp fmt l'
   in
-  match l() with
+  begin match l() with
     | Nil -> ()
     | Cons (x,l') -> pp_item fmt x; pp fmt l'
+  end;
+  pp_stop fmt ()

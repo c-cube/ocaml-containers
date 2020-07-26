@@ -47,5 +47,10 @@ let to_string ?(sep=", ") a_to_string b_to_string (x,y) =
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let pp ?(sep=", ") pa pb out (x,y) =
-  Format.fprintf out "%a%s@,%a" pa x sep pb y
+let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+    ?(pp_sep=fun out () -> Format.fprintf out ",@ ") pa pb out (x,y) =
+  pp_start out ();
+  pa out x;
+  pp_sep out ();
+  pb out y;
+  pp_stop out ()

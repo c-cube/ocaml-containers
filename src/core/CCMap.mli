@@ -128,10 +128,10 @@ module type S = sig
   val to_list : 'a t -> (key * 'a) list
   (** [to_list m] builds a list of the bindings of the given map [m]. *)
 
-  val pp :
-    ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
-    key printer -> 'a printer -> 'a t printer
-  (** [pp ?start ?stop ?arrow ?sep pp_key pp_v m] pretty-prints the contents of the map. *)    
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_arrow:unit printer ->
+    ?pp_sep:unit printer -> key printer -> 'a printer -> 'a t printer
+  (** [pp ?pp_start ?pp_stop ?pp_arrow ?pp_sep pp_key pp_v m] pretty-prints the
+      contents of the map. *)
 end
 
 module Make(O : Map.OrderedType) : S

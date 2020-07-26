@@ -138,17 +138,19 @@ module Poly = struct
     ()
   *)
 
-  let pp pp_k pp_v fmt m =
-    Format.fprintf fmt "@[<hov2>tbl {@,";
+  let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+      ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ")
+      ?(pp_arrow=fun fmt () -> Format.fprintf fmt "@ -> ") pp_k pp_v fmt m =
+    pp_start fmt ();
     let first = ref true in
     Hashtbl.iter
       (fun k v ->
-         if !first then first := false else Format.fprintf fmt ",@ ";
+         if !first then first := false else pp_sep fmt ();
          pp_k fmt k;
-         Format.pp_print_string fmt " -> ";
+         pp_arrow fmt ();
          pp_v fmt v;
       ) m;
-    Format.fprintf fmt "@,}@]"
+    pp_stop fmt ()
 end
 
 include Poly
@@ -266,7 +268,8 @@ module type S = sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val pp : key printer -> 'a printer -> 'a t printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer -> key printer -> 'a printer -> 'a t printer
   (** Printer for tables.
       Renamed from [print] since 2.0.
       @since 0.13 *)
@@ -393,17 +396,18 @@ module Make(X : Hashtbl.HashedType)
     List.iter (fun (k,v) -> add tbl k v) l;
     tbl
 
-  let pp pp_k pp_v fmt m =
-    Format.fprintf fmt "@[<hov2>tbl {@,";
+  let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+      ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ")
+      ?(pp_arrow=fun fmt () -> Format.fprintf fmt "@ -> ") pp_k pp_v fmt m =
+    pp_start fmt ();
     let first = ref true in
     iter
       (fun k v ->
-         if !first then first := false else Format.pp_print_string fmt ", ";
+         if !first then first := false else pp_sep fmt ();
          pp_k fmt k;
-         Format.pp_print_string fmt " -> ";
+         pp_arrow fmt ();
          pp_v fmt v;
-         Format.pp_print_cut fmt ()
       ) m;
-    Format.fprintf fmt "}@]"
+    pp_stop fmt ()
 end
 

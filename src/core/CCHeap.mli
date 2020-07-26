@@ -164,9 +164,13 @@ module type S = sig
        (converted to a string using [f]).
        @since 2.7 *)
 
-  val pp : ?sep:string -> elt printer -> t printer
-  (** [pp ?sep ppf h] prints [h] on [ppf].
-      Elements are separated by [sep] (default ",").
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+    elt printer -> t printer
+  (** [pp ?pp_start ?pp_stop ?pp_sep ppf h] prints [h] on [ppf].
+      Each element is formatted with [ppf], [pp_start] is called at the beginning,
+      [pp_stop] is called at the end, [pp_sep] is called between each elements.
+      By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
+      (fun out -> Format.fprintf out ",@ ").
       Renamed from {!print} since 2.0
       @since 0.16 *)
 end

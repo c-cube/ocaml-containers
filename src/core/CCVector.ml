@@ -1069,14 +1069,15 @@ let to_gen v =
 let to_string ?(start="") ?(stop="") ?(sep=", ") item_to_string v =
   start ^ (to_list v |> List.map item_to_string |> String.concat sep) ^ stop
 
-let pp ?(start="") ?(stop="") ?(sep=", ") pp_item fmt v =
-  Format.pp_print_string fmt start;
+let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+    ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ") pp_item fmt v =
+  pp_start fmt ();
   iteri
     (fun i x ->
-       if i > 0 then (Format.pp_print_string fmt sep; Format.pp_print_cut fmt());
+       if i > 0 then pp_sep fmt ();
        pp_item fmt x
     ) v;
-  Format.pp_print_string fmt stop
+  pp_stop fmt ()
 
 include CCShimsMkLet_.Make2(struct
     type nonrec ('a,'e) t = ('a,'e) t
