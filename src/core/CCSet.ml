@@ -81,8 +81,7 @@ module type S = sig
   (**  Print the set in a string
        @since 2.7 *)
 
-  val pp :
-    ?start:string -> ?stop:string -> ?sep:string ->
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
     elt printer -> t printer
     (** Print the set. *)
 end
@@ -182,17 +181,15 @@ module Make(O : Map.OrderedType) = struct
            |> List.map string_of_int |> String.concat " "))
   *)
 
-  let pp ?(start="") ?(stop="") ?(sep=", ") pp_x fmt m =
-    Format.pp_print_string fmt start;
+  let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+      ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ") pp_x fmt m =
+    pp_start fmt ();
     let first = ref true in
     iter
       (fun x ->
          if !first then first := false
-         else (
-           Format.pp_print_string fmt sep;
-           Format.pp_print_cut fmt ()
-         );
+         else pp_sep fmt ();
          pp_x fmt x)
       m;
-    Format.pp_print_string fmt stop
+    pp_stop fmt ()
 end

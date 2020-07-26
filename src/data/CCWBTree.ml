@@ -161,7 +161,8 @@ module type S = sig
 
   val to_gen : 'a t -> (key * 'a) gen
 
-  val pp : key printer -> 'a printer -> 'a t printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_arrow:unit printer ->
+    ?pp_sep:unit printer -> key printer -> 'a printer -> 'a t printer
 
   (**/**)
   val node_ : key -> 'a -> 'a t -> 'a t -> 'a t
@@ -588,19 +589,21 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
           Some (k,v)
     in next
 
-  let pp pp_k pp_v fmt m =
-    let start = "[" and stop = "]" and arrow = "->" and sep = ","in
-    Format.pp_print_string fmt start;
+  let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+      ?(pp_arrow=fun fmt () -> Format.fprintf fmt "@ -> ")
+      ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ")
+      pp_k pp_v fmt m =
+    pp_start fmt ();
     let first = ref true in
     iter m
       ~f:(fun k v ->
-        if !first then first := false else Format.pp_print_string fmt sep;
+        if !first then first := false else pp_sep fmt ();
         pp_k fmt k;
-        Format.pp_print_string fmt arrow;
+        pp_arrow fmt ();
         pp_v fmt v;
         Format.pp_print_cut fmt ()
       );
-    Format.pp_print_string fmt stop
+    pp_stop fmt ();
 end
 
 module Make(X : ORD) = MakeFull(struct

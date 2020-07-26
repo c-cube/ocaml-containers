@@ -822,6 +822,6 @@ include CCShimsMkLet_.S with type 'a t_let := 'a list
 
 (** {2 IO} *)
 
-val pp : ?start:string -> ?stop:string -> ?sep:string ->
+val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
   'a printer -> 'a t printer
-(** [pp ?start ?stop ?sep ppf l] prints the contents of a list. *)
+(** [pp ?pp_start ?pp_stop ?pp_sep ppf l] prints the contents of a list. *)

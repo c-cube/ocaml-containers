@@ -110,7 +110,8 @@ module type S = sig
 
   val equal : 'a equal -> 'a t equal
 
-  val pp : ?sep:string -> ?arrow:string -> key printer -> 'a printer -> 'a t printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer -> key printer -> 'a printer -> 'a t printer
 
   val stats : _ t -> Hashtbl.statistics
   (** Statistics on the internal table.
@@ -633,15 +634,20 @@ module Make(H : HashedType) : S with type key = H.t = struct
          | Some v' -> eq v v'
       ) t1
 
-  let pp ?(sep=",") ?(arrow="->") pp_k pp_v fmt t =
+  let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+      ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ")
+      ?(pp_arrow=fun fmt () -> Format.fprintf fmt "@ -> ") pp_k pp_v fmt t =
     let first = ref true in
+    pp_start fmt ();
     iter t
       (fun k v ->
          if !first then first:=false
-         else (Format.pp_print_string fmt sep; Format.pp_print_cut fmt ());
-         Format.fprintf fmt "%a %s %a" pp_k k arrow pp_v v
+         else pp_sep fmt ();
+         pp_k fmt k;
+         pp_arrow fmt ();
+         pp_v fmt v
       );
-    ()
+    pp_stop fmt ()
 
   let stats t =
     let a = reroot_ t in

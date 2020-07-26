@@ -73,5 +73,7 @@ val to_string : ?sep:string -> ('a -> string) -> ('b -> string) -> ('a * 'b) -> 
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val pp : ?sep:string -> 'a printer -> 'b printer -> ('a * 'b) printer
-(** Print a pair given an optional separator and a method for printing each of its elements. *)
+val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+  'a printer -> 'b printer -> ('a * 'b) printer
+(** Print a pair given an optional separator, an optional start and stop and a
+    method for printing each of its elements. *)

@@ -506,17 +506,23 @@ let random_non_empty g st =
   let n = 1 + Random.State.int st 1_000 in
   random_len n g st
 
-let pp ?(sep=", ") pp_item out a =
+let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+    ?(pp_sep=fun out () -> Format.fprintf out ",@ ") pp_item out a =
+  pp_start out ();
   for k = 0 to Array.length a-1 do
-    if k > 0 then (Format.pp_print_string out sep; Format.pp_print_cut out ());
+    if k > 0 then pp_sep out ();
     pp_item out a.(k)
-  done
+  done;
+  pp_stop out ()
 
-let pp_i ?(sep=", ") pp_item out a =
+let pp_i ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+    ?(pp_sep=fun out () -> Format.fprintf out ",@ ") pp_item out a =
+  pp_start out ();
   for k = 0 to Array.length a - 1 do
-    if k > 0 then (Format.pp_print_string out sep; Format.pp_print_cut out ());
+    if k > 0 then pp_sep out ();
     pp_item k out a.(k)
-  done
+  done;
+  pp_stop out ()
 
 let to_string ?(sep=", ") item_to_string a =
   Array.to_list a

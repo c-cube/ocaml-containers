@@ -624,14 +624,11 @@ include Infix
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let pp ?(sep=", ") pp_item fmt l =
+let pp ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ") pp_item fmt l =
   let first = ref true in
   iter l
     ~f:(fun x ->
-      if !first then first := false else (
-        Format.pp_print_string fmt sep;
-        Format.pp_print_cut fmt ();
-      );
+      if !first then first := false else pp_sep fmt ();
       pp_item fmt x
     );
   ()

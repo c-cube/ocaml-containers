@@ -202,15 +202,22 @@ val to_gen : 'a t -> 'a gen
 
 (** {2 IO} *)
 
-val pp: ?sep:string -> 'a printer -> 'a t printer
-(** [pp ~sep pp_item ppf a] formats the array [a] on [ppf].
-    Each element is formatted with [pp_item] and elements are separated
-    by [sep] (defaults to ", "). *)
+val pp: ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+  'a printer -> 'a t printer
+(** [pp ~pp_start ~pp_stop ~pp_sep pp_item ppf a] formats the array [a] on [ppf].
+    Each element is formatted with [pp_item], [pp_start] is called at the beginning,
+    [pp_stop] is called at the end, [pp_sep] is called between each elements.
+    By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
+    (fun out -> Format.fprintf out ",@ "). *)
 
-val pp_i: ?sep:string -> (int -> 'a printer) -> 'a t printer
-(** [pp_i ~sep pp_item ppf a] prints the array [a] on [ppf].
+val pp_i: ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+  (int -> 'a printer) -> 'a t printer
+(** [pp_i ~pp_start ~pp_stop ~pp_sep pp_item ppf a] prints the array [a] on [ppf].
     The printing function [pp_item] is giving both index and element.
-    Elements are separated by [sep] (defaults to ", "). *)
+    [pp_start] is called at the beginning,
+    [pp_stop] is called at the end, [pp_sep] is called between each elements.
+    By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
+    (fun out -> Format.fprintf out ",@ "). *)
 
 val rev : 'a t -> 'a t
 (** [rev a] copies the array [a] and reverses it in place.

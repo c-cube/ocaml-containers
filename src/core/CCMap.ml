@@ -99,9 +99,8 @@ module type S = sig
 
   val to_list : 'a t -> (key * 'a) list
 
-  val pp :
-    ?start:string -> ?stop:string -> ?arrow:string -> ?sep:string ->
-    key printer -> 'a printer -> 'a t printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_arrow:unit printer ->
+    ?pp_sep:unit printer -> key printer -> 'a printer -> 'a t printer
 end
 
 module Make(O : Map.OrderedType) = struct
@@ -223,19 +222,18 @@ module Make(O : Map.OrderedType) = struct
   let to_list m =
     fold (fun k v acc -> (k,v)::acc) m []
 
-  let pp ?(start="") ?(stop="") ?(arrow="->") ?(sep=", ") pp_k pp_v fmt m =
-    Format.pp_print_string fmt start;
+  let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+      ?(pp_arrow=fun fmt () -> Format.fprintf fmt "@ -> ")
+      ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ") pp_k pp_v fmt m =
+    pp_start fmt ();
     let first = ref true in
     iter
       (fun k v ->
          if !first then first := false
-         else (
-           Format.pp_print_string fmt sep;
-           Format.pp_print_cut fmt ()
-         );
+         else pp_sep fmt ();
          pp_k fmt k;
-         Format.pp_print_string fmt arrow;
+         pp_arrow fmt ();
          pp_v fmt v)
       m;
-    Format.pp_print_string fmt stop
+    pp_stop fmt ()
 end

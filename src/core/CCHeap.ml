@@ -213,7 +213,8 @@ module type S = sig
   (**  Print the heap in a string
        @since 2.7 *)
 
-  val pp : ?sep:string -> elt printer -> t printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+    elt printer -> t printer
   (** Printer.
       Renamed from {!print} since 2.0
       @since 0.16 *)
@@ -434,13 +435,16 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
         = (List.sort Stdlib.compare l |> List.map string_of_int |> String.concat " "))
   *)
 
-  let pp ?(sep=",") pp_elt out h =
+  let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
+      ?(pp_sep=fun out () -> Format.fprintf out ",") pp_elt out h =
     let first=ref true in
+    pp_start out ();
     iter
       (fun x ->
-         if !first then first := false else Format.fprintf out "%s@," sep;
+         if !first then first := false else pp_sep out ();
          pp_elt out x)
-      h
+      h;
+    pp_stop out ();
 end
 
 module Make_from_compare(E : TOTAL_ORD) =

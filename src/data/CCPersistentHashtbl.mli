@@ -117,7 +117,8 @@ module type S = sig
 
   val equal : 'a equal -> 'a t equal
 
-  val pp : ?sep:string -> ?arrow:string -> key printer -> 'a printer -> 'a t printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer -> key printer -> 'a printer -> 'a t printer
 
   val stats : _ t -> Hashtbl.statistics
   (** Statistics on the internal table.

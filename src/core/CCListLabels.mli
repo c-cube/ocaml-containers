@@ -784,7 +784,7 @@ val to_gen : 'a t -> 'a gen
 val of_gen : 'a gen -> 'a t
 (** [of_gen gen] builds a list from a given [gen].
     In the result, elements appear in the same order as they did in the source [gen]. *)
-    
+
 (** {2 Infix Operators}
     It is convenient to {!open CCList.Infix} to access the infix operators
     without cluttering the scope too much.
@@ -798,7 +798,7 @@ module Infix : sig
   val (@) : 'a t -> 'a t -> 'a t
   (** [l1 @ l2] concatenates two lists [l1] and [l2].
       As {!append}. *)
-      
+
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
 
@@ -826,6 +826,6 @@ include CCShimsMkLet_.S with type 'a t_let := 'a list
 
 (** {2 IO} *)
 
-val pp : ?start:string -> ?stop:string -> ?sep:string ->
+val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
   'a printer -> 'a t printer
-(** [pp ?start ?stop ?sep ppf l] prints the contents of a list. *)
+(** [pp ?pp_start ?pp_stop ?pp_sep ppf l] prints the contents of a list. *)

@@ -73,14 +73,12 @@ module type S = sig
   val to_list : t -> elt list
   (** [to_list t] converts the set [t] to a list of the elements. *)
 
-  val to_string :
-    ?start:string -> ?stop:string -> ?sep:string ->
+  val to_string : ?start:string -> ?stop:string -> ?sep:string ->
     (elt -> string) -> t -> string
   (**  Print the set in a string
        @since 2.7 *)
 
-  val pp :
-    ?start:string -> ?stop:string -> ?sep:string ->
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
     elt printer -> t printer
     (** Print the set. *)
 end

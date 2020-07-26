@@ -132,9 +132,14 @@ module Poly : sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val pp : 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
-  (** [pp pp_k pp_v] returns a table printer given a [pp_k] printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer -> 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
+  (** [pp ~pp_start ~pp_stop ~pp_sep ~pp arrow pp_k pp_v] returns a table printer
+      given a [pp_k] printer
       for individual key and a [pp_v] printer for individual value.
+      [pp_start] and [pp_stop] control the opening and closing delimiters,
+      by default print nothing. [pp_sep] control the separator between binding.
+      [pp_arrow] control the arrow between the key and value.
       Renamed from [print] since 2.0.
       @since 0.13 *)
 end
@@ -260,9 +265,14 @@ module type S = sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val pp : key printer -> 'a printer -> 'a t printer
-  (** [pp pp_k pp_v] returns a table printer given a [pp_k] printer
+  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer -> key printer -> 'a printer -> 'a t printer
+  (** [pp ~pp_start ~pp_stop ~pp_sep ~pp arrow pp_k pp_v] returns a table printer
+      given a [pp_k] printer
       for individual key and a [pp_v] printer for individual value. 
+      [pp_start] and [pp_stop] control the opening and closing delimiters,
+      by default print nothing. [pp_sep] control the separator between binding.
+      [pp_arrow] control the arrow between the key and value.
       Renamed from [print] since 2.0.
       @since 0.13 *)
 end

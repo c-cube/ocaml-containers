@@ -85,7 +85,7 @@ module type S = sig
 
   val add_iter : t -> elt iter -> unit
 
-  val pp : ?sep:string -> elt printer -> t printer
+  val pp : ?pp_sep:unit printer -> elt printer -> t printer
   (** [pp pp_elt] returns a set printer, given a printer for
       individual elements *)
 end
@@ -221,17 +221,14 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     seq (insert s);
     s
 
-  let pp ?(sep=",") pp_x out s =
+  let pp ?(pp_sep=fun out () -> Format.fprintf out ",@ ") pp_x out s =
     Format.pp_print_string out "{";
     let first = ref true in
     Tbl.iter
       (fun x _ ->
          if !first
          then first := false
-         else (
-           Format.pp_print_string out sep;
-           Format.pp_print_cut out ();
-         );
+         else pp_sep out ();
          pp_x out x
       ) s;
     Format.pp_print_string out "}"
