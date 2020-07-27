@@ -9,11 +9,13 @@ val make : 'a -> 'b -> ('a, 'b) t
 (** Make a tuple from its components.
     @since 0.16 *)
 
-val map1 : ('a -> 'b) -> ('a * 'c) -> ('b * 'c)
-(** [map1 f (x, y)] returns [(f x, y)]. *)
+val map_fst : ('a -> 'b) -> ('a * 'c) -> ('b * 'c)
+(** [map_fst f (x, y)] returns [(f x, y)].
+    Renamed from [map1] since NEXT_RELEASE. *)
 
-val map2 : ('a -> 'b) -> ('c * 'a) -> ('c * 'b)
-(** [map2 f (x, y)] returns [(x, f y)]. *)
+val map_snd : ('a -> 'b) -> ('c * 'a) -> ('c * 'b)
+(** [map_snd f (x, y)] returns [(x, f y)].
+    Renamed from [map2] since NEXT_RELEASE. *)
 
 val map : ('a -> 'c) -> ('b -> 'd) -> ('a * 'b) -> ('c * 'd)
 (** Synonym to {!( *** )}. Map on both sides of a tuple. *)
@@ -21,12 +23,23 @@ val map : ('a -> 'c) -> ('b -> 'd) -> ('a * 'b) -> ('c * 'd)
 val map_same : ('a -> 'b) -> ('a * 'a) -> ('b * 'b)
 (** Like {!map} but specialized for pairs with elements of the same type. *)
 
-val map_fst : ('a -> 'b) -> ('a * _) -> 'b
+val map2 : ('a1 -> 'b1 -> 'c1) -> ('a2 -> 'b2 -> 'c2) -> ('a1 * 'a2) ->
+  ('b1 * 'b2) -> ('c1 * 'c2)
+(** [map2 f g (a,b) (x,y)] return [(f a x, g b y)].
+    @since NEXT_RELEASE *)
+
+val map_same2 : ('a -> 'b -> 'c) -> ('a * 'a) -> ('b * 'b) -> ('c * 'c)
+(** [map_same2 f (a,b) (x,y)] return [(f a x, f b y)].
+    @since NEXT_RELEASE *)
+
+val fst_map : ('a -> 'b) -> ('a * _) -> 'b
 (** Compose the given function with [fst].
+    Rename from [map_fst] since NEXT_RELEASE.
     @since 0.3.3 *)
 
-val map_snd : ('a -> 'b) -> (_ * 'a) -> 'b
+val snd_map : ('a -> 'b) -> (_ * 'a) -> 'b
 (** Compose the given function with [snd].
+    Rename from [map_snd] since NEXT_RELEASE.
     @since 0.3.3 *)
 
 val iter : ('a -> 'b -> unit) -> ('a * 'b) -> unit

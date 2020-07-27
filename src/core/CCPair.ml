@@ -7,24 +7,28 @@ type ('a,'b) t = ('a * 'b)
 
 let make x y = x,y
 
-let map1 f (x,y) = f x,y
+let map_fst f (x,y) = f x,y
 
-let map2 f (x,y) = x,f y
+let map_snd f (x,y) = x,f y
 
 let map f g (x,y) = f x, g y
 
 let map_same f (x,y) = f x, f y
 
-let map_fst f (x,_) = f x
-let map_snd f (_,x) = f x
+let map2 f g (a,b) (x,y) = f a x, g b y
+
+let map_same2 f (a,b) (x,y) = f a x, f b y
+
+let fst_map f (x,_) = f x
+let snd_map f (_,x) = f x
 
 let iter f (x,y) = f x y
 
 let swap (x,y) = y, x
 
-let (<<<) = map1
+let (<<<) = map_fst
 
-let (>>>) = map2
+let (>>>) = map_snd
 
 let ( *** ) = map
 
