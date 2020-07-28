@@ -41,6 +41,52 @@ Some of the modules have been moved to their own repository (e.g. `sequence` (no
 
 ## Migration Guide
 
+### To 3.0
+
+The [changelog's breaking section](CHANGELOG.md) contains a list of the breaking
+changes in this release.
+
+1. The biggest change is that some sub-libraries have been either turned into
+  their own packages (`containers-thread`, `containers-data`),
+  deleted (`containers.iter`),or merged elsewhere (`containers.sexp`).
+  This means that if use these libraries you will have to edit your
+  `dune`/`_oasis`/`opam` files.
+
+  - if you use `containers.sexp` (i.e. the `CCSexp` module), it now lives in
+    `containers` itself.
+  - if you used anything in `containers.data`, you need to depend on the
+    `containers-data` package now.
+
+2. Another large change is the removal (at last!) of functions deprecated
+  in 2.8, related to the spread of `Seq.t` as the standard iterator type.
+  Functions like `CCVector.of_seq` now operate on this standard `Seq.t` type,
+  and old-time iteration based on [iter](https://github.com/c-cube/iter)
+  is now named `of_iter`, `to_iter`, etc.
+
+  Here you need to change you code, possibly using search and replace.
+  Thankfully, the typechecker should guide you.
+
+3. `Array_slice` and `String.Sub` have been removed to simplify the
+  code and `String` more lightweight. There is no replacement at the moment.
+  Please tell us if you need this to be turned into a sub-library.
+
+4. Renaming of some functions into more explicit/clear names.
+  Examples:
+
+  * `CCVector.shrink` is now `CCVector.truncate`
+  * `CCVector.remove` is now `CCVector.remove_unordered`, to be
+    contrasted with the new `CCVector.remove_and_shift`.
+  * `CCPair.map_fst` and `map_snd` now transform a tuple into another tuple
+    by modify the first (resp. second) element.
+
+5. All the collection pretty-printers now take their separator/start/stop
+  optional arguments as `unit printer` (i.e. `Format.formatter -> unit -> unit`
+  functions) rather than strings. This gives the caller better control
+  over the formatting of lists, arrays, queues, tables, etc.
+
+6. Removal of many deprecated functions.
+
+
 ### To 2.0
 
 - The type system should detect issues related to `print` renamed into `pp` easily.

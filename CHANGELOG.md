@@ -1,5 +1,68 @@
 # Changelog
 
+## 3.0-rc1
+
+### Breaking changes
+
+see https://github.com/c-cube/ocaml-containers/issues/290 for a summary of
+a subset of these changes.
+
+packaging:
+
+- split the library into separate packages
+  `containers`, `containers-data`, and `containers-thread`.
+- delete `containers.iter` and merge parts of it into `containers-data`;
+- move `CCSexp` into the core library, remove `containers.sexp`.
+
+api:
+
+- remove slice APIs in string and array.
+- change pp functions to take unit printer for sep/stop/start (#295)
+- CCPair: use more standard name for some map functions (#316)
+- remove `CCKlist` from everywhere
+- CCGraph: remove deprecated module and function
+- rename `<op>_std_seq` to `<op>_seq`, making `Seq.t` the standard everywhere;
+  remove the old `<op>_seq` that were previously
+  deprecated in favor of `<op>_iter`.
+- CCVector: rename `shrink` into `truncate`
+- CCVector: rename `remove to CCVector.remove_unordered`
+- CCList: make mem compatible with the Stdlib by making `?eq` optional
+- CCVector: rename `filter'` into `filter_in_place`
+
+### Other changes
+
+- CI: add github actions in addition to travis
+- feat: add infix operators to `String`
+- feat: add opt.bind
+- CCResult: add `<$>` operator
+- CCResult: add `get_lazy`
+- put infix operators in `Infix` module, then include it
+- ccnativeint: complete CCNativeint with regards to CCInt
+- Int64: complete CCInt64 with regards to CCInt
+- CCInt32: complete CCInt32 with regards to CCInt
+- implement `CCInt.sign` using `CCInt.compare`
+- CCInt: include module Int for ocaml >= 4.08
+- CCInt: add `of_float`
+- CCInt: add `of_string_exn`
+- add `CCResult.get_lazy`
+- add `Int.popcount` operator
+- CCFloat: add `pi`
+- CCFloat: add `of_string_opt`
+- fix: expose `always_eq`/`never_eq` in `CCEqual`
+- string: add optional `cutoff` arg on `String.edit_distance`
+- CCVector: add `remove_and_shift`
+- CCArray: add optional argument eq to mem
+- CCSexp: Escape empty atoms
+- substitute 'Pervasives' with 'Stdlib'
+- CCFormat: add `exn` combinator
+- IO: add `copy_into` for transferring data between channels
+
+- Extend benchmark: `to_array`, cons and `cons_fold`
+- Extend benchmark: Sek, iter and pop
+- benchmark for memory usage of data structures
+
+And many, many bugfixes.
+
 ## 2.8.1
 
 - add missing `CCVector.of_iter`
