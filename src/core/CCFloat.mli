@@ -32,7 +32,7 @@ val epsilon : t
 
 val pi : t
 (** [pi] is the constant pi. The ratio of a circumference to its diameter.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val is_nan : t -> bool
 (** [is_nan f] returns [true] if f is NaN, [false] otherwise. *)
@@ -108,7 +108,7 @@ val of_string_exn : string -> t
     @since 1.2 *)
 
 val of_string_opt : string -> t option
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val equal_precision : epsilon:t -> t -> t -> bool
 (** Equality with allowed error up to a non negative epsilon value. *)

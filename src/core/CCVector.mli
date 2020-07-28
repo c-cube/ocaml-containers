@@ -87,8 +87,8 @@ val append_iter : ('a, rw) t -> 'a iter -> unit
 
 val append_seq : ('a, rw) t -> 'a Seq.t -> unit
 (** Append content of iterator.
-    Renamed from [append_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+    Renamed from [append_std_seq] since 3.0.
+    @since 3.0 *)
 
 val append_list : ('a, rw) t -> 'a list -> unit
 (** Append content of list.
@@ -129,7 +129,7 @@ val truncate : ('a, rw) t -> int -> unit
 (** Truncate to the given size (remove elements above this size).
     Does nothing if the parameter is bigger than the current size.
     [truncate] was called [shrink].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val shrink_to_fit : ('a, _) t -> unit
 (** Shrink internal array to fit the size of the vector
@@ -176,7 +176,7 @@ val filter : ('a -> bool) -> ('a,_) t -> ('a, 'mut) t
 
 val filter_in_place : ('a -> bool) -> ('a, rw) t -> unit
 (** Filter elements from the vector in place.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> ('a,_) t -> 'b
 (** Fold on elements of the vector *)
@@ -211,8 +211,8 @@ val flat_map : ('a -> ('b,_) t) -> ('a,_) t -> ('b, 'mut) t
 
 val flat_map_seq : ('a -> 'b Seq.t) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using [Seq] for intermediate collections.
-    Renamed from [flat_map_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+    Renamed from [flat_map_std_seq] since 3.0.
+    @since 3.0 *)
 
 val flat_map_list : ('a -> 'b list) -> ('a,_) t -> ('b, 'mut) t
 (** Like {!flat_map}, but using {!list} for
@@ -301,8 +301,8 @@ val of_iter : ?init:('a,rw) t -> 'a iter -> ('a, rw) t
 
 val of_seq : ?init:('a,rw) t -> 'a Seq.t -> ('a, rw) t
 (** Convert an Iterator to a vector.
-    Renamed from [of_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+    Renamed from [of_std_seq] since 3.0.
+    @since 3.0 *)
 
 val to_iter : ('a,_) t -> 'a iter
 (** Return a [iter] with the elements contained in the vector.
@@ -317,15 +317,15 @@ val to_iter_rev : ('a,_) t -> 'a iter
 
 val to_seq : ('a,_) t -> 'a Seq.t
 (** Return an iterator with the elements contained in the vector.
-    Renamed from [to_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE
+    Renamed from [to_std_seq] since 3.0.
+    @since 3.0
 *)
 
 val to_seq_rev : ('a,_) t -> 'a Seq.t
 (** [to_seq v] returns the sequence of elements of [v] in reverse order,
     that is, the last elements of [v] are iterated on first.
-    Renamed from [to_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE
+    Renamed from [to_std_seq] since 3.0.
+    @since 3.0
 *)
 
 val slice : ('a,rw) t -> ('a array * int * int)
@@ -335,7 +335,7 @@ val slice : ('a,rw) t -> ('a array * int * int)
 val slice_iter : ('a,_) t -> int -> int -> 'a iter
 (** [slice_iter v start len] is the sequence of elements from [v.(start)]
     to [v.(start+len-1)].
-    @since NEXT_RELEASE
+    @since 3.0
 *)
 
 val of_gen : ?init:('a, rw) t -> 'a gen -> ('a, rw) t

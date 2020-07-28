@@ -91,7 +91,7 @@ val sort_ranking : f:('a -> 'a -> int) -> 'a t -> int array
 
 val mem : ?eq:('a -> 'a -> bool) -> 'a -> 'a t -> bool
 (** [mem ~eq x a] return true if x is present in [a]. Linear time.
-    @since NEXT_RELEASE
+    @since 3.0
 *)
 
 val find_map : f:('a -> 'b option) -> 'a t -> 'b option
@@ -199,8 +199,8 @@ val to_seq : 'a t -> 'a Seq.t
 (** [to_seq a] returns a [Seq.t] of the elements of an array [a].
     The input array [a] is shared with the sequence and modification of it will result
     in modification of the sequence.
-    Renamed from [to_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE
+    Renamed from [to_std_seq] since 3.0.
+    @since 3.0
 *)
 
 val to_gen : 'a t -> 'a gen

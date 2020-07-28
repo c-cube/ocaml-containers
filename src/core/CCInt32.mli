@@ -20,11 +20,11 @@ include module type of struct include Int32 end
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val max : t -> t -> t
 (** [max x y] returns the maximum of the two integers [x] and [y].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val hash : t -> int
 (** [hash x] computes the hash of [x].
@@ -33,7 +33,7 @@ val hash : t -> int
 val sign : t -> int
 (** [sign x] return [0] if [x = 0], [-1] if [x < 0] and [1] if [x > 0].
     Same as [compare x zero].
-    @since NEXT_RELEASE*)
+    @since 3.0*)
 
 val pow : t -> t -> t
 (** [pow base exponent] returns [base] raised to the power of [exponent].
@@ -44,7 +44,7 @@ val pow : t -> t -> t
 val floor_div : t -> t -> t
 (** [floor_div x n] is integer division rounding towards negative infinity.
     It satisfies [x = m * floor_div x n + rem x n].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
@@ -56,17 +56,17 @@ val range_by : step:t -> t -> t -> t iter
     where the difference between successive elements is [step].
     Use a negative [step] for a decreasing list.
     @raise Invalid_argument if [step=0].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val range : t -> t -> t iter
 (** [range i j] iterates on integers from [i] to [j] included . It works
     both for decreasing and increasing ranges.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val range' : t -> t -> t iter
 (** [range' i j] is like {!range} but the second bound [j] is excluded.
     For instance [range' 0 5 = Iter.of_list [0;1;2;3;4]].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val random : t -> t random_gen
 val random_small : t random_gen
@@ -102,19 +102,19 @@ val of_string_exn : string -> t
 
 val to_string_binary : t -> string
 (** [to_string_binary x] returns the string representation of the integer [x], in binary.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 
 (** {2 Printing} *)
 
 val pp : t printer
 (** [pp ppf x] prints the integer [x] on [ppf].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val pp_binary : t printer
 (** [pp_binary ppf x] prints [x] on [ppf].
     Print as "0b00101010".
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 
 (** {2 Infix Operators} *)
@@ -151,15 +151,15 @@ module Infix : sig
 
   val ( ** ) : t -> t -> t
   (** Alias to {!pow}
-      @since NEXT_RELEASE *)
+      @since 3.0 *)
 
   val (--) : t -> t -> t iter
   (** Alias to {!range}.
-      @since NEXT_RELEASE *)
+      @since 3.0 *)
 
   val (--^) : t -> t -> t iter
   (** Alias to {!range'}.
-      @since NEXT_RELEASE *)
+      @since 3.0 *)
 
   val ( land ) : t -> t -> t
   (** [x land y] is the bitwise logical and of [x] and [y]. *)

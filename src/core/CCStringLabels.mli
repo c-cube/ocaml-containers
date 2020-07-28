@@ -43,8 +43,8 @@ val to_iter : t -> char iter
 
 val to_seq : t -> char Seq.t
 (** [to_seq s] returns a [Seq.t] of the bytes in [s].
-    Renamed from [to std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE
+    Renamed from [to std_seq] since 3.0.
+    @since 3.0
 *)
 
 val to_list : t -> char list
@@ -95,8 +95,8 @@ val of_iter : char iter -> string
 
 val of_seq : char Seq.t -> string
 (** Convert a [sequence] of characters to a string.
-    Renamed from [of_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+    Renamed from [of_std_seq] since 3.0.
+    @since 3.0 *)
 
 val of_list : char list -> string
 (** Convert a list of characters to a string. *)
@@ -367,8 +367,8 @@ module Split : sig
   (** @since 2.8 *)
 
   val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
-  (** Renamed from [std_seq] since NEXT_RELEASE.
-      @since NEXT_RELEASE *)
+  (** Renamed from [std_seq] since 3.0.
+      @since 3.0 *)
 
   (** {4 Copying functions}
 
@@ -383,8 +383,8 @@ module Split : sig
   (** @since 2.8 *)
 
   val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string Seq.t
-  (** Renamed from [std_seq_cpy] since NEXT_RELEASE.
-      @since NEXT_RELEASE *)
+  (** Renamed from [std_seq_cpy] since 3.0.
+      @since 3.0 *)
 
   val left : by:(string [@keep_label]) -> string -> (string * string) option
   (** Split on the first occurrence of [by] from the leftmost part of
@@ -439,26 +439,26 @@ val edit_distance : ?cutoff:int -> string -> string -> int
 
 (** {2 Infix operators}
 
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 module Infix : sig
   val (=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.0 *)
 
   val (<>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.0 *)
 
   val (<) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.0 *)
 
   val (<=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.0 *)
 
   val (>=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.0 *)
 
   val (>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.0 *)
 end
 
 include module type of Infix

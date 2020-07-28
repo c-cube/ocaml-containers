@@ -11,11 +11,11 @@ val make : 'a -> 'b -> ('a, 'b) t
 
 val map_fst : ('a -> 'b) -> ('a * 'c) -> ('b * 'c)
 (** [map_fst f (x, y)] returns [(f x, y)].
-    Renamed from [map1] since NEXT_RELEASE. *)
+    Renamed from [map1] since 3.0. *)
 
 val map_snd : ('a -> 'b) -> ('c * 'a) -> ('c * 'b)
 (** [map_snd f (x, y)] returns [(x, f y)].
-    Renamed from [map2] since NEXT_RELEASE. *)
+    Renamed from [map2] since 3.0. *)
 
 val map : ('a -> 'c) -> ('b -> 'd) -> ('a * 'b) -> ('c * 'd)
 (** Synonym to {!( *** )}. Map on both sides of a tuple. *)
@@ -26,20 +26,20 @@ val map_same : ('a -> 'b) -> ('a * 'a) -> ('b * 'b)
 val map2 : ('a1 -> 'b1 -> 'c1) -> ('a2 -> 'b2 -> 'c2) -> ('a1 * 'a2) ->
   ('b1 * 'b2) -> ('c1 * 'c2)
 (** [map2 f g (a,b) (x,y)] return [(f a x, g b y)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val map_same2 : ('a -> 'b -> 'c) -> ('a * 'a) -> ('b * 'b) -> ('c * 'c)
 (** [map_same2 f (a,b) (x,y)] return [(f a x, f b y)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val fst_map : ('a -> 'b) -> ('a * _) -> 'b
 (** Compose the given function with [fst].
-    Rename from [map_fst] since NEXT_RELEASE.
+    Rename from [map_fst] since 3.0.
     @since 0.3.3 *)
 
 val snd_map : ('a -> 'b) -> (_ * 'a) -> 'b
 (** Compose the given function with [snd].
-    Rename from [map_snd] since NEXT_RELEASE.
+    Rename from [map_snd] since 3.0.
     @since 0.3.3 *)
 
 val iter : ('a -> 'b -> unit) -> ('a * 'b) -> unit

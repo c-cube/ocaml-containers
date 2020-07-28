@@ -40,13 +40,13 @@ val map : ('a -> 'b) -> 'b t -> 'a t
 
 val always_eq : _ t
 (** Always returns true. All values are equal.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val never_eq : _ t
 (** Always returns false. No values are, so this
     is not even reflexive (i.e. [x=x] is false).
     Be careful!
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 module Infix : sig
   val (>|=) : 'b t -> ('a -> 'b) -> 'a t

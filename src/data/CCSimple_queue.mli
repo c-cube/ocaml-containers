@@ -84,16 +84,16 @@ val add_iter : 'a t -> 'a iter -> 'a t
 val of_iter : 'a iter -> 'a t
 
 val to_seq : 'a t -> 'a Seq.t
-(** Renamed from [to_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+(** Renamed from [to_std_seq] since 3.0.
+    @since 3.0 *)
 
 val add_seq : 'a t -> 'a Seq.t -> 'a t
-(** Renamed from [add_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+(** Renamed from [add_std_seq] since 3.0.
+    @since 3.0 *)
 
 val of_seq : 'a Seq.t -> 'a t
-(** Renamed from [of_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+(** Renamed from [of_std_seq] since 3.0.
+    @since 3.0 *)
 
 val of_gen : 'a gen -> 'a t
 val add_gen : 'a t -> 'a gen -> 'a t

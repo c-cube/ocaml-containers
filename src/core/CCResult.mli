@@ -94,7 +94,7 @@ val get_or : ('a, _) t -> default:'a -> 'a
 val get_lazy : ('e -> 'a) -> ('a, 'e) t -> 'a
 (** [get_lazy f e] returns [x] if [e = Ok x], [f msg]  if [e = Error msg].
     This is similar to {!CCOpt.get_lazy}.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val get_or_failwith : ('a, string) t -> 'a
 (** [get_or_failwith e] returns [x] if [e = Ok x], fails otherwise.
@@ -103,7 +103,7 @@ val get_or_failwith : ('a, string) t -> 'a
 
 val get_lazy : ('b -> 'a) -> ('a, 'b) t -> 'a
 (** [get_lazy default_fn x] unwraps [x], but if [x = Error e] it returns [default_fr e] instead.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val map_or : ('a -> 'b) ->  ('a, 'c) t -> default:'b -> 'b
 (** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise. *)
@@ -176,7 +176,7 @@ val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
 module Infix : sig
   val (<$>) : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
   (** Infix version of [map].
-      @since NEXT_RELEASE *)
+      @since 3.0 *)
 
   val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
   (** Infix version of [map] with reversed arguments. *)
@@ -263,8 +263,8 @@ val to_iter : ('a, _) t -> 'a iter
 (** @since 2.8 *)
 
 val to_seq : ('a, _) t -> 'a Seq.t
-(** Renamed from [to_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+(** Renamed from [to_std_seq] since 3.0.
+    @since 3.0 *)
 
 type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
 

@@ -52,9 +52,9 @@ val to_iter : ?idx:int -> t -> uchar iter
 
 val to_seq : ?idx:int -> t -> uchar Seq.t
 (** Iter of unicode codepoints.
-    Renamed from [to_std_seq] since NEXT_RELEASE.
+    Renamed from [to_std_seq] since 3.0.
     @param idx offset where to start the decoding.
-    @since NEXT_RELEASE
+    @since 3.0
 *)
 
 val to_list : ?idx:int -> t -> uchar list
@@ -83,8 +83,8 @@ val concat : t -> t list -> t
 
 val of_seq : uchar Seq.t -> t
 (** Build a string from unicode codepoints
-    Renamed from [of_std_seq] since NEXT_RELEASE.
-    @since NEXT_RELEASE *)
+    Renamed from [of_std_seq] since 3.0.
+    @since 3.0 *)
 
 val of_iter : uchar iter -> t
 (** Build a string from unicode codepoints

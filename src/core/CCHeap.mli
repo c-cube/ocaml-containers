@@ -113,8 +113,8 @@ module type S = sig
 
   val add_seq : t -> elt Seq.t -> t
   (** [add_seq h seq] is like {!add_list}.
-      Renamed from [add_std_seq] since NEXT_RELEASE.
-      @since NEXT_RELEASE *)
+      Renamed from [add_std_seq] since 3.0.
+      @since 3.0 *)
 
   val of_iter : elt iter -> t
   (** [of_iter iter] builds a heap from a given [iter]. Complexity: [O(n log n)].
@@ -122,8 +122,8 @@ module type S = sig
 
   val of_seq : elt Seq.t -> t
   (** [of_seq seq] builds a heap from a given [Seq.t]. Complexity: [O(n log n)].
-      Renamed from [of_seq] since NEXT_RELEASE.
-      @since NEXT_RELEASE *)
+      Renamed from [of_seq] since 3.0.
+      @since 3.0 *)
 
   val to_iter : t -> elt iter
   (** [to_iter h] returns a [iter] of the elements of the heap [h].
@@ -131,8 +131,8 @@ module type S = sig
 
   val to_seq : t -> elt Seq.t
   (** [to_seq h] returns a [Seq.t] of the elements of the heap [h].
-      Renamed from [to_std_seq] since NEXT_RELEASE.
-      @since NEXT_RELEASE *)
+      Renamed from [to_std_seq] since 3.0.
+      @since 3.0 *)
 
   val to_iter_sorted : t -> elt iter
   (** [to_iter_sorted h] returns a [iter] by iterating on the elements of [h], 
@@ -142,8 +142,8 @@ module type S = sig
   val to_seq_sorted : t -> elt Seq.t
   (** [to_seq_sorted h] returns a [Seq.t] by iterating on the elements of [h],
       in increasing order.
-      Renamed from [to_std_seq_sorted] since NEXT_RELEASE.
-      @since NEXT_RELEASE *)
+      Renamed from [to_std_seq_sorted] since 3.0.
+      @since 3.0 *)
 
   val add_gen : t -> elt gen -> t
   (** [add_gen h gen] adds the gen [gen] to the heap [h].

@@ -132,7 +132,7 @@ val with_in_out : ?mode:int -> ?flags:open_flag list ->
 val copy_into : ?bufsize:int -> in_channel -> out_channel -> unit
 (** [copy_into ic oc] writes the content of [ic] into [oc].
     It is a blocking call.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 (** {2 Misc for Generators} *)
 

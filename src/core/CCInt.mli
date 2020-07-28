@@ -9,52 +9,52 @@ type t = int
 
 val zero : t
 (** [zero] is the integer [0].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val one : t
 (** [one] is the integer [1].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val minus_one : t
 (** [minus_one] is the integer [-1].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val add : t -> t -> t
 (** [add x y] is [x + y].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val sub : t -> t -> t
 (** [sub x y] is [x - y].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val mul : t -> t -> t
 (** [mul x y] is [x * y].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val div : t -> t -> t
 (** [div x y] is [x / y]
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val succ : t -> t
 (** [succ x] is [x + 1].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val pred : t -> t
 (** [pred x] is [x - 1].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val abs : t -> t
 (** [abs x] is the absolute value of [x]. It is [x] if [x] is positive
     and [neg x] otherwise.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val max_int : t
 (** [max_int] is the maximum integer.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val min_int : t
 (** [min_int] is the minimum integer.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val compare : t -> t -> int
 (** [compare x y] is the comparison function for integers
@@ -105,11 +105,11 @@ val pp : t printer
 
 val to_float : t -> float
 (** [to_float] is the same as [float_of_int]
-    @since NEXT_RELEASE*)
+    @since 3.0*)
 
 val of_float : float -> t
 (** [to_float] is the same as [int_of_float]
-    @since NEXT_RELEASE*)
+    @since 3.0*)
 
 val to_string : t -> string
 (** [to_string x] returns the string representation of the integer [x], in signed decimal.
@@ -124,12 +124,12 @@ val of_string_exn : string -> t
 (** [of_string_exn s] converts the given string [s] to an integer.
     Alias to {!int_of_string}.
     @raise Failure in case of failure.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val of_float : float -> t
 (** [of_float x] converts the given floating-point number [x] to an integer.
     Alias to {!int_of_float}.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val pp_binary : t printer
 (** [pp_binary ppf x] prints [x] on [ppf].
@@ -167,35 +167,35 @@ val range' : t -> t -> t iter
 
 val popcount : t -> int
 (** Number of bits set to 1
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val logand : t -> t -> t
 (** [logand] is the same as [(land)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val logor : t -> t -> t
 (** [logand] is the same as [(lor)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val logxor : t -> t -> t
 (** [logxor] is the same as [(lxor)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val lognot : t -> t
 (** [logand] is the same as [lnot].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val shift_left : t -> int -> t
 (** [shift_left] is the same as [(lsl)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val shift_right : t -> int -> t
 (** [shift_right] is the same as [(asr)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val shift_right_logical : t -> int -> t
 (** [shift_right_logical] is the same as [(lsr)].
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 (** {2 Infix Operators}
 

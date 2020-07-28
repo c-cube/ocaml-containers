@@ -111,13 +111,13 @@ val to_gen : 'a t -> (int * 'a) gen
 (** @since 0.13 *)
 
 val add_seq : 'a t -> (int * 'a) Seq.t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val of_seq : (int * 'a) Seq.t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val to_seq : 'a t -> (int * 'a) Seq.t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
 

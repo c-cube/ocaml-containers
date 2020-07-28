@@ -117,28 +117,28 @@ val of_list : 'a list -> 'a t
 val to_list : 'a t -> 'a list
 
 val add_iter_front : 'a iter -> 'a t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val add_iter_back : 'a t -> 'a iter -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val to_iter : 'a t -> 'a iter
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val of_iter : 'a iter -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val add_seq_front : 'a Seq.t -> 'a t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val add_seq_back : 'a t -> 'a Seq.t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val to_seq : 'a t -> 'a Seq.t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val of_seq : 'a Seq.t -> 'a t
-(** @since NEXT_RELEASE *)
+(** @since 3.0 *)
 
 val (--) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], both included.

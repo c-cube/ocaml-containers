@@ -32,7 +32,7 @@ val float : float printer
 
 val exn : exn printer
 (** Printer using {!Printexc.to_string}.
-    @since NEXT_RELEASE *)
+    @since 3.0 *)
 
 val newline : unit printer
 (** Force newline (see {!Format.pp_force_newline}).
