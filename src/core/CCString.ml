@@ -3,6 +3,10 @@
 
 (** {1 Basic String Utils} *)
 
+(*$inject
+  open CCShims_.Stdlib
+*)
+
 open CCShims_
 
 type 'a iter = ('a -> unit) -> unit
@@ -1052,6 +1056,22 @@ let pp_buf buf s =
 
 let pp fmt s =
   Format.fprintf fmt "\"%s\"" s
+
+module Infix = struct
+  let (=) = equal
+  let (<>) a b = not (equal a b)
+  let (>) : t -> t -> bool = CCShims_.Stdlib.(>)
+  let (>=) : t -> t -> bool = CCShims_.Stdlib.(>=)
+  let (<) : t -> t -> bool = CCShims_.Stdlib.(<)
+  let (<=) : t -> t -> bool = CCShims_.Stdlib.(<=)
+end
+
+include Infix
+
+(*$T
+  "ab" < "abc"
+  "123" < "14"
+ *)
 
 (* test consistency of interfaces *)
 (*$inject

@@ -417,3 +417,29 @@ val edit_distance : ?cutoff:int -> string -> string -> int
       and on the result. (since 3.0). This is useful if you just want to
     check whether the edit distance is less or equal than 2 (use cutoff of 3).
 *)
+
+(** {2 Infix operators}
+
+    @since NEXT_RELEASE *)
+
+module Infix : sig
+  val (=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<>) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (>=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (>) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+end
+
+include module type of Infix
