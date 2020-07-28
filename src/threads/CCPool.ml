@@ -530,9 +530,17 @@ module Make(P : PARAM) = struct
 
     (* reverse twice *)
     let map_l f l =
-      let l = List.rev_map f l in
-      sequence_ (L_ l)
-        (fun () -> List.rev_map get_nolock_ l)
+      match l with
+      | [] -> return []
+      | _ ->
+        let l = List.rev_map f l in
+        sequence_ (L_ l)
+          (fun () -> List.rev_map get_nolock_ l)
+
+    (*$=
+      [2;3] (Fut.get @@ Fut.map_l (fun x -> Fut.return (x+1)) [1;2])
+      [] (Fut.get @@ Fut.map_l (fun x -> Fut.return (x+1)) [])
+    *)
 
     (*$R
       let l = CCList.(1 -- 50) in
