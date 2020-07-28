@@ -238,7 +238,7 @@ val set : ('a, rw) t -> int -> 'a -> unit
     @raise Invalid_argument if bad index. *)
 
 val remove_and_shift : ('a, rw) t -> int -> unit
-(** [remove v i] remove the [i-th] element from [v].
+(** [remove_and_shift v i] remove the [i-th] element from [v].
     Move elements that are after the [i-th] in [v].
     Preserve the order of the elements in [v].
     See {!remove_unordered} for constant time function. *)
