@@ -9,6 +9,9 @@
 (rule
   (targets flambda.flags)
   (mode fallback)
-  (action
-    (run ./mkflags.exe))
-  )
+  (action (run ./mkflags.exe)))
+
+(executable
+  (name mdx_runner)
+  (libraries containers)
+  (modules mdx_runner))

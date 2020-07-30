@@ -16,9 +16,9 @@ jobs:
     - run: opam pin -n .
     - run: opam depext -yt containers containers-data containers-thread
     - run: opam install -t . --deps-only
-      if: ${{ matrix.operating-system == 'ubuntu-latest' }}
+      if: ${{ matrix.operating-system != 'windows-latest' }}
     - run: opam install . --deps-only  # no test deps
-      if: ${{ matrix.operating-system != 'ubuntu-latest' }}
+      if: ${{ matrix.operating-system == 'windows-latest' }}
     - run: opam exec -- dune build
     - run: opam exec -- dune runtest
-      if: ${{ matrix.operating-system == 'ubuntu-latest' }}
+      if: ${{ matrix.operating-system != 'windows-latest' }}

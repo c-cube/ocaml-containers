@@ -1,7 +1,7 @@
 (rule
  (targets README.md.corrected)
- (deps (package containers-data))
- (action (run ocaml-mdx test %{dep:README.md} -o %{targets})))
+ (deps (package containers) (package containers-data) ./src/mdx_runner.exe)
+ (action (run ./src/mdx_runner.exe)))
 
 (alias
  (name runtest)

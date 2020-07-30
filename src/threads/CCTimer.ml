@@ -169,8 +169,10 @@ let every ?delay timer d ~f =
       ));
   CCSemaphore.acquire 1 sem; (* wait *)
   OUnit.assert_equal ~printer:CCInt.to_string 6 (CCLock.get res);
-  OUnit.assert_bool "estimate delay" (abs_float (!stop -. start -. 0.5) < 0.2);
+  OUnit.assert_bool "delay >= 0.5" (!stop -. start >= 0.49999);
+  OUnit.assert_bool "delay < 2." (!stop -. start < 2.);
 *)
+(* NOTE: could be tighter bounds, but travis' mac OS seems to be dog slow. *)
 
 let active timer = not timer.stop
 
