@@ -10,6 +10,7 @@ let str_sub ?(offset=0) ~sub:s' s =
   aux offset
 
 let is_suffix ~sub s =
+  String.length s >= String.length sub &&
   str_sub ~offset:(String.length s - String.length sub) ~sub s
 
 let is_code file = is_suffix ~sub:".ml" file || is_suffix ~sub:".mli" file
@@ -22,6 +23,7 @@ let do_not_test file =
   is_suffix ~sub:"mkflags.ml" file ||
   is_suffix ~sub:"mkshims.ml" file ||
   is_suffix ~sub:"unlabel.ml" file ||
+  is_suffix ~sub:"check_labelled_mods.ml" file ||
   is_suffix ~sub:"utop.ml" file
 
 let prefix = "src"

@@ -14,7 +14,7 @@
   (modes native)
   (modules run_qtest)
   ; disable some warnings in qtests
-  (flags :standard -warn-error -a -w -3-33-35-27-39-50 -nolabels)
+  (flags :standard -warn-error -a -w -3-33-35-27-39-50)
   (libraries iter gen qcheck containers containers.unix unix uutf threads))
 
 (alias

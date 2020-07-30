@@ -1072,18 +1072,3 @@ include Infix
   "ab" < "abc"
   "123" < "14"
  *)
-
-(* test consistency of interfaces *)
-(*$inject
-  module type L = module type of CCString
-  module type LL = module type of CCStringLabels
-*)
-
-(*$R
-  ignore (module CCStringLabels : L)
-*)
-
-(*$R
-  ignore (module CCString : LL)
-*)
-
