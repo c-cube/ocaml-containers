@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0-rc1
+## 3.0
 
 ### Breaking changes
 
