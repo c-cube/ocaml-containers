@@ -1,6 +1,6 @@
 (rule
  (targets README.md.corrected)
- (deps (package containers) (package containers-data) ./src/mdx_runner.exe)
+ (deps (package containers-data) ./src/mdx_runner.exe)
  (action (run ./src/mdx_runner.exe)))
 
 (alias

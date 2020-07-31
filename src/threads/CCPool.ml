@@ -526,7 +526,8 @@ module Make(P : PARAM) = struct
     let sequence_l l = match l with
       | [] -> return []
       | _ :: _ ->
-        sequence_ (L_ l) (fun () -> List.map get_nolock_ l)
+        let l = List.rev l in
+        sequence_ (L_ l) (fun () -> List.rev_map get_nolock_ l)
 
     (* reverse twice *)
     let map_l f l =
@@ -557,7 +558,7 @@ module Make(P : PARAM) = struct
     (*$R
       let l = CCList.(1 -- 100_000) in
       let l' = l
-        |> List.map
+        |> CCList.map
           (fun x -> Fut.make (fun () -> 1))
         |> Fut.sequence_l
         |> Fut.map (List.fold_left (+) 0)

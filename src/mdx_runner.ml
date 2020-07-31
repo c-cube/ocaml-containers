@@ -2,9 +2,16 @@
 open Printf
 
 let just_copy () =
-  CCIO.with_out "README.md.corrected" (fun oc ->
-      CCIO.with_in "README.md" (fun ic ->
-          CCIO.copy_into ic oc))
+  let ic = open_in "README.md" in
+  let len = in_channel_length ic in
+  let buf = Bytes.create len in
+  really_input ic buf 0 len;
+  close_in_noerr ic;
+
+  let oc = open_out "README.md.corrected" in
+  output oc buf 0 len;
+  flush oc;
+  close_out_noerr oc
 
 let () =
   try
