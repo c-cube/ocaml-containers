@@ -7,8 +7,8 @@ A modular, clean and powerful extension of the OCaml standard library.
 Containers is an extension of OCaml's standard library (under BSD license)
 focused on data structures, combinators and iterators, without dependencies on
 unix, str or num. Every module is independent and is prefixed with 'CC' in the
-global namespace. Some modules extend the stdlib (e.g. CCList provides safe
-map/fold_right/append, and additional functions on lists).
+global namespace. Some modules extend the stdlib (e.g. `CCList` provides safe
+`map`/`fold_right`/`append`, and additional functions on lists).
 Alternatively, `open Containers` will bring enhanced versions of the standard
 modules into scope.
 
@@ -24,17 +24,17 @@ Containers is:
   lists including safe versions of `map` and `append`. It also
   provides a drop-in replacement to the standard library, in the module
   `Containers` (intended to be opened, replaces some stdlib modules
-  with extended ones).
-- Several small additional libraries that complement it:
-  * `containers.data` with additional data structures that don't have an
-    equivalent in the standard library;
-  * `containers.iter` with list-like and tree-like iterators;
+  with extended ones), and a small S-expression printer and parser
+  that can be functorized over the representation of values.
 - Utilities around the `unix` library in `containers.unix` (mainly to spawn
   sub-processes easily and deal with resources safely)
-- A lightweight S-expression printer and streaming parser in `containers.sexp`
-- A library for threaded programming in `containers.thread`,
+- A separate library `containers-data` with additional
+  data structures that don't have an equivalent in the standard library,
+  typically not as thoroughly maintained. This is now in its own package
+  since 3.0.
+- A separate library for threaded programming in `containers-thread`,
   including a blocking queue, semaphores, an extension of `Mutex`, and
-  thread-pool based futures.
+  thread-pool based futures. This is in its own package since 3.0.
 
 Some of the modules have been moved to their own repository (e.g. `sequence` (now `iter`),
 `gen`, `qcheck`) and are on opam for great fun and profit.
@@ -318,8 +318,8 @@ A few guidelines to follow the philosophy of containers:
 
 - no dependencies between basic modules (even just for signatures);
 - add `@since` tags for new functions;
-- add tests if possible (using [qtest](https://github.com/vincent-hugot/iTeML/)).
-   There are numerous inline tests already,
+- add tests if possible (using [qtest](https://github.com/vincent-hugot/qtest/)).
+  There are numerous inline tests already,
   to see what it looks like search for comments starting with `(*$`
   in source files.
 
@@ -545,7 +545,7 @@ Consider for instance:
 - : unit = ()
 ```
 
-This just opened the file '/tmp/foobar', creating it if it didn't exist,
+This just opened the file 'foobar', creating it if it didn't exist,
 and wrote two lines in it. We did not have to close the file descriptor
 because `with_out` took care of it. By the way, the type signatures are:
 
@@ -638,9 +638,6 @@ Some structural types are used throughout the library:
   and the standard `seq`.
 - `error`: `'a or_error = ('a, string) result = Error of string | Ok of 'a`
   using the standard `result` type, supported in `CCResult`.
-- `klist`: `'a klist = unit -> [`Nil | `Cons of 'a * 'a klist]` is a lazy list
-  without memoization, used as a persistent iterator. The reference
-  module is `CCKList` (in `containers.iter`).
 - `printer`: `'a printer = Format.formatter -> 'a -> unit` is a pretty-printer
   to be used with the standard module `Format`. In particular, in many cases,
   `"foo: %a" Foo.print foo` will type-check.
