@@ -319,40 +319,20 @@ let range_by ~step i j yield =
       (CCInt.range i j |> Iter.to_list) )
 *)
 
-(*
-  from https://en.wikipedia.org/wiki/Hamming_weight
-
-  //This uses fewer arithmetic operations than any other known
-  //implementation on machines with slow multiplication.
-  //It uses 17 arithmetic operations.
-  int popcount_2(uint64_t x) {
-    x -= (x >> 1) & m1;             //put count of each 2 bits into those 2 bits
-    x = (x & m2) + ((x >> 2) & m2); //put count of each 4 bits into those 4 bits
-    x = (x + (x >> 4)) & m4;        //put count of each 8 bits into those 8 bits
-    x += x >>  8;  //put count of each 16 bits into their lowest 8 bits
-    x += x >> 16;  //put count of each 32 bits into their lowest 8 bits
-    x += x >> 32;  //put count of each 64 bits into their lowest 8 bits
-    return x & 0x7f;
-  }
-
-   m1 = 0x5555555555555555
-   m2 = 0x3333333333333333
-   m4 = 0x0f0f0f0f0f0f0f0f
-*)
+(* popcount comes from [Shims] as it's 32/64 bits dependent, see #327 *)
 let popcount (b:int) : int =
-  let b = b - ((b lsr 1) land 0x5555555555555555) in
-  let b = (b land 0x3333333333333333) + ((b lsr 2) land 0x3333333333333333) in
-  let b = (b + (b lsr 4)) land 0x0f0f0f0f0f0f0f0f in
-  let b = b + (b lsr 8) in
-  let b = b + (b lsr 16) in
-  let b = b + (b lsr 32) in
-  b land 0x7f
+  let rec loop count x =
+    if x=0 then count
+    else loop (count+1) (x land (x-1))
+  in
+  loop 0 b
 
 (*$=
   0 (popcount 0)
   1 (popcount 1)
   (Sys.word_size-2) (popcount max_int)
   1 (popcount min_int)
+  10 (popcount 0b1110010110110001010)
   5 (popcount 0b1101110000000000)
 *)
 

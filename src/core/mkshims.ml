@@ -170,6 +170,48 @@ let shims_int_post_408 = "
   (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
 "
 
+let shims_int_64bit = "
+(*
+  from https://en.wikipedia.org/wiki/Hamming_weight
+
+  //This uses fewer arithmetic operations than any other known
+  //implementation on machines with slow multiplication.
+  //It uses 17 arithmetic operations.
+  int popcount_2(uint64_t x) {
+    x -= (x >> 1) & m1;             //put count of each 2 bits into those 2 bits
+    x = (x & m2) + ((x >> 2) & m2); //put count of each 4 bits into those 4 bits
+    x = (x + (x >> 4)) & m4;        //put count of each 8 bits into those 8 bits
+    x += x >>  8;  //put count of each 16 bits into their lowest 8 bits
+    x += x >> 16;  //put count of each 32 bits into their lowest 8 bits
+    x += x >> 32;  //put count of each 64 bits into their lowest 8 bits
+    return x & 0x7f;
+  }
+
+   m1 = 0x5555555555555555
+   m2 = 0x3333333333333333
+   m4 = 0x0f0f0f0f0f0f0f0f
+*)
+let popcount (b:int) : int =
+  let b = b - ((b lsr 1) land 0x5555555555555555) in
+  let b = (b land 0x3333333333333333) + ((b lsr 2) land 0x3333333333333333) in
+  let b = (b + (b lsr 4)) land 0x0f0f0f0f0f0f0f0f in
+  let b = b + (b lsr 8) in
+  let b = b + (b lsr 16) in
+  let b = b + (b lsr 32) in
+  b land 0x7f
+"
+
+let shims_int_32bit = "
+(* we use the simple version for 32 bits. *)
+let popcount (b:int) : int =
+  let rec loop count x =
+    if x=0 then count
+    else loop (count+1) (x land (x-1))
+  in
+  loop 0 b
+
+"
+
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
@@ -188,5 +230,7 @@ let () =
     write_file "CCShimsFun_.ml" (if (major, minor) >= (4,8) then shims_fun_post_408 else shims_fun_pre_408);
     write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);
     write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
-    write_file "CCShimsInt_.ml" (if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408);
+    write_file "CCShimsInt_.ml"
+      ((if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408)
+      ^ if Sys.word_size=32 then shims_int_32bit else shims_int_64bit);
   )

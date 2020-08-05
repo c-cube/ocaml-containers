@@ -56,17 +56,17 @@ let with_cache_rec ?(cb=default_callback_) c f =
   f'
 
 (*$R
-  let c = unbounded ~eq:CCInt.equal 256 in
+  let c = unbounded ~eq:Int64.equal 256 in
   let fib = with_cache_rec c
     (fun self n -> match n with
-      | 1 | 2 -> 1
-      | _ -> self (n-1) + self (n-2)
+      | 1L | 2L -> 1L
+      | _ -> CCInt64.(self (n-1L) + self (n-2L))
     )
   in
-  assert_equal 55 (fib 10);
-  assert_equal 832040 (fib 30);
-  assert_equal 12586269025 (fib 50);
-  assert_equal 190392490709135 (fib 70)
+  assert_equal 55L (fib 10L);
+  assert_equal 832040L (fib 30L);
+  assert_equal 12586269025L (fib 50L);
+  assert_equal 190392490709135L (fib 70L)
 *)
 
 let size c = c.size ()
