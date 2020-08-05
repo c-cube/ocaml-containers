@@ -3,22 +3,22 @@ on: [push]
 jobs:
   run:
     name: Build
-    runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
-        operating-system: [macos-latest, ubuntu-latest, windows-latest]
-        ocaml-version: [ '4.08.0' ]
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        ocaml: [ '4.08.0' ]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@main
     - uses: avsm/setup-ocaml@master
       with:
-        ocaml-version: ${{ matrix.ocaml-version }}
+        ocaml-version: ${{ matrix.ocaml }}
     - run: opam pin -n .
     - run: opam depext -yt containers containers-data containers-thread
     - run: opam install -t . --deps-only
-      if: ${{ matrix.operating-system != 'windows-latest' }}
+      if: ${{ matrix.os != 'windows-latest' }}
     - run: opam install . --deps-only  # no test deps
-      if: ${{ matrix.operating-system == 'windows-latest' }}
+      if: ${{ matrix.os == 'windows-latest' }}
     - run: opam exec -- dune build
     - run: opam exec -- dune runtest
-      if: ${{ matrix.operating-system != 'windows-latest' }}
+      if: ${{ matrix.os != 'windows-latest' }}
