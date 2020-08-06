@@ -201,8 +201,8 @@ let popcount (b:int) : int =
   b land 0x7f
 "
 
-let shims_int_32bit = "
-(* we use the simple version for 32 bits. *)
+let shims_int_non_64bit = "
+(* we use the simple version for non-64 bits. *)
 let popcount (b:int) : int =
   let rec loop count x =
     if x=0 then count
@@ -232,5 +232,5 @@ let () =
     write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
     write_file "CCShimsInt_.ml"
       ((if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408)
-      ^ if Sys.word_size=32 then shims_int_32bit else shims_int_64bit);
+      ^ if Sys.word_size=64 then shims_int_64bit else shims_int_non_64bit);
   )
