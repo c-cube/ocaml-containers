@@ -318,14 +318,7 @@ let range_by ~step i j yield =
       (CCInt.range_by ~step:1 i j |> Iter.to_list) \
       (CCInt.range i j |> Iter.to_list) )
 *)
-
 (* popcount comes from [Shims] as it's 32/64 bits dependent, see #327 *)
-let popcount (b:int) : int =
-  let rec loop count x =
-    if x=0 then count
-    else loop (count+1) (x land (x-1))
-  in
-  loop 0 b
 
 (*$=
   0 (popcount 0)
