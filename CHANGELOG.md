@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1
+
+- fix build on 32 bits architectures
+
 ## 3.0
 
 ### Breaking changes
