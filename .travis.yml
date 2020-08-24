@@ -18,7 +18,7 @@ env:
   - PACKAGE="containers" OCAML_VERSION="4.10" TESTS=false
   - PACKAGE="containers-data"   OCAML_VERSION="4.08"
   - PACKAGE="containers-thread" OCAML_VERSION="4.08"
-  - PACKAGE="containers" OCAML_VERSION="4.11.0+trunk" OCAML_BETA=enable
+  - PACKAGE="containers" OCAML_VERSION="4.11.0"
 cache:
   directories:
     - $HOME/.opam/
