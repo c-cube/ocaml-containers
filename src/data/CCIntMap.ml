@@ -332,10 +332,10 @@ let choose t =
 let rec union f t1 t2 =
   match t1, t2 with
     | E, o | o, E -> o
-    | L (k, v), o
-    | o, L (k, v) ->
-      (* insert k, v into o *)
-      insert_ (fun ~old v -> f k old v) k v o
+    | L (k, v1), o2 ->
+      insert_ (fun ~old v -> f k v old) k v1 o2 (* insert k, v into o *)
+    | o1, L (k, v2) ->
+      insert_ (fun ~old v -> f k old v) k v2 o1 (* insert k, v into o *)
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
       if p1 = p2 && Bit.equal m1 m2 then (
         mk_node_ p1 m1 (union f l1 l2) (union f r1 r2)
@@ -350,6 +350,19 @@ let rec union f t1 t2 =
       ) else (
         join_ t1 p1 t2 p2
       )
+
+(* regression for #329 *)
+(*$R
+let minus m1 m2 =
+union (fun _key v1 v2 -> v1 - v2) m1 m2 in
+
+let key = 0 in
+let m0 = singleton key 1 in       (* a map of [key] to the value 1 *)
+let m1 = minus m0 m0 in           (* a map of [key] to the value 0 *)
+let m2 = minus m0 m1 in           (* a map of [key] to the value 1 *)
+let observed = equal (=) m2 m0 in (* [m0] and [m2] should be equal *)
+assert_equal true observed
+  *)
 
 (*$Q & ~small:(fun (a,b) -> List.length a + List.length b)
   Q.(pair (list (pair int bool)) (list (pair int bool))) (fun (l1,l2) -> \
@@ -410,11 +423,16 @@ let rec union f t1 t2 =
 let rec inter f a b =
   match a, b with
     | E, _ | _, E -> E
-    | L (k, v), o
-    | o, L (k, v) ->
+    | L (k, v1), o2 ->
       begin try
-          let v' = find_exn k o in
-          L (k, f k v v')
+          let v2' = find_exn k o2 in
+          L (k, f k v1 v2')
+        with Not_found -> E
+      end
+    | o1, L (k, v2) ->
+      begin try
+          let v1' = find_exn k o1 in
+          L (k, f k v1' v2)
         with Not_found -> E
       end
     | N (p1, m1, l1, r1), N (p2, m2, l2, r2) ->
