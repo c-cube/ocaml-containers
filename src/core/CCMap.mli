@@ -126,7 +126,8 @@ module type S = sig
       @since 0.15 *)
 
   val to_list : 'a t -> (key * 'a) list
-  (** [to_list m] builds a list of the bindings of the given map [m]. *)
+  (** [to_list m] builds a list of the bindings of the given map [m].
+      The order is unspecified. *)
 
   val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_arrow:unit printer ->
     ?pp_sep:unit printer -> key printer -> 'a printer -> 'a t printer
