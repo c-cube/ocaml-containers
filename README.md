@@ -302,8 +302,8 @@ to list authors based on the git commits.
 Assuming your are in a clone of the repository:
 
 1. Some dependencies are required, you'll need
-  `opam install benchmark qcheck qtest iter`.
-2. run `make devel` to enable everything (including tests).
+  `opam install benchmark qcheck qtest iter gen mdx uutf`.
+2. run `make all` to enable everything (including tests).
 3. make your changes, commit, push, and open a PR.
 4. use `make test` without moderation! It must pass before a PR
   is merged.  There are around 1150 tests right now, and new
