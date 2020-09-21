@@ -103,6 +103,10 @@ module type S = sig
     ?pp_sep:unit printer -> key printer -> 'a printer -> 'a t printer
 end
 
+(*$inject
+  module M = CCMap.Make(String)
+*)
+
 module Make(O : Map.OrderedType) = struct
   module M = Map.Make(O)
 
@@ -174,6 +178,15 @@ module Make(O : Map.OrderedType) = struct
     match x with
       | None -> M.remove k m
       | Some v' -> M.add k v' m
+
+  (*$= & ~printer:CCFormat.(to_string @@ Dump.(list (pair string int)))
+    ["a", 1; "b", 20] \
+      (M.of_list ["b", 2; "c", 3] \
+       |> M.update "a" (function _ -> Some 1) \
+       |> M.update "c" (fun _ -> None) \
+       |> M.update "b" (CCOpt.map (fun x -> x * 10)) \
+       |> M.to_list |> List.sort CCOrd.compare)
+    *)
 
   include M
 
