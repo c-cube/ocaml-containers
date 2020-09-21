@@ -166,6 +166,15 @@ module Make(O : Map.OrderedType) = struct
     | None -> raise Not_found
     | Some (k,v) -> k, v
 
+  let update k f m =
+    let x =
+      try f (Some (M.find k m))
+      with Not_found -> f None
+    in
+    match x with
+      | None -> M.remove k m
+      | Some v' -> M.add k v' m
+
   include M
 
   let get = find_opt
@@ -173,15 +182,6 @@ module Make(O : Map.OrderedType) = struct
   let get_or k m ~default =
     try find k m
     with Not_found -> default
-
-  let update k f m =
-    let x =
-      try f (Some (find k m))
-      with Not_found -> f None
-    in
-    match x with
-      | None -> remove k m
-      | Some v' -> add k v' m
 
   let merge_safe ~f a b =
     merge
