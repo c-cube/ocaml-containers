@@ -360,7 +360,7 @@ let key = 0 in
 let m0 = singleton key 1 in       (* a map of [key] to the value 1 *)
 let m1 = minus m0 m0 in           (* a map of [key] to the value 0 *)
 let m2 = minus m0 m1 in           (* a map of [key] to the value 1 *)
-let observed = equal (=) m2 m0 in (* [m0] and [m2] should be equal *)
+let observed = equal ~eq:(=) m2 m0 in (* [m0] and [m2] should be equal *)
 assert_equal true observed
   *)
 
