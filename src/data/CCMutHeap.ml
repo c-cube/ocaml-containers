@@ -24,12 +24,12 @@ module Make(Elt : RANKED) = struct
   let[@inline] parent i = (i - 1) asr 1 (* (i-1) / 2 *)
 
   (*
-  let rec heap_property cmp ({heap=heap} as s) i =
+  let rec heap_property ({heap=heap} as s) i =
     i >= (Vec.size heap)  ||
-      ((i = 0 || not(cmp (Vec. get heap i) (Vec.get heap (parent i))))
-       && heap_property cmp s (left i) && heap_property cmp s (right i))
+      ((i = 0 || not(cmp (Vec.get heap i) (Vec.get heap (parent i))))
+       && heap_property s (left i) && heap_property s (right i))
 
-  let heap_property cmp s = heap_property cmp s 1
+  let heap_property s = heap_property s 1
   *)
 
   (* [elt] is above or at its expected position. Move it up the heap
@@ -37,7 +37,7 @@ module Make(Elt : RANKED) = struct
   let percolate_up {heap} (elt:Elt.t) : unit =
     let pi = ref (parent (Elt.idx elt)) in
     let i = ref (Elt.idx elt) in
-    while !i <> 0 && Elt.cmp elt (Vec.get heap !pi) do
+    while !i <> 0 && Elt.lt elt (Vec.get heap !pi) do
       Vec.set heap !i (Vec.get heap !pi);
       Elt.set_idx (Vec.get heap !i) !i;
       i  := !pi;
@@ -55,11 +55,11 @@ module Make(Elt : RANKED) = struct
       try
         while !li < sz do
           let child =
-            if !ri < sz && Elt.cmp (Vec.get heap !ri) (Vec.get heap !li)
+            if !ri < sz && Elt.lt (Vec.get heap !ri) (Vec.get heap !li)
             then !ri
             else !li
           in
-          if not (Elt.cmp (Vec.get heap child) elt) then raise Exit;
+          if not (Elt.lt (Vec.get heap child) elt) then raise Exit;
           Vec.set heap !i (Vec.get heap child);
           Elt.set_idx (Vec.get heap !i) !i;
           i  := child;
