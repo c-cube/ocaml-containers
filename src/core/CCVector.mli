@@ -241,7 +241,8 @@ val remove_and_shift : ('a, rw) t -> int -> unit
 (** [remove_and_shift v i] remove the [i-th] element from [v].
     Move elements that are after the [i-th] in [v].
     Preserve the order of the elements in [v].
-    See {!remove_unordered} for constant time function. *)
+    See {!remove_unordered} for constant time function.
+    @since 3.0 *)
 
 val remove_unordered : ('a, rw) t -> int -> unit
 (** [remove_unordered v i] remove the [i-th] element from [v].
