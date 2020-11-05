@@ -74,6 +74,8 @@ let is_empty = function
   | [] -> true
   | _::_ -> false
 
+let mguard c = if c then [ () ] else []
+
 (* max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
