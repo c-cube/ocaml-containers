@@ -326,6 +326,20 @@ val interleave : 'a list -> 'a list -> 'a list
 val pure : 'a -> 'a t
 (** [pure x] is [return x]. *)
 
+val mguard : bool -> unit t
+(** [mguard c] is [pure ()] if [c] is true, [[]] otherwise. 
+    This is useful to define a list by comprehension, e.g.:
+    {[
+      # let square_even xs =
+            let* x = xs in
+            let* () = mguard (x mod 2 = 0) in
+            return @@ x * x;;
+      val square_even : int list -> int list = <fun>
+      # square_even [1;2;4;3;5;2];;
+      - : int list = [4; 16; 4]
+    ]}
+    @since 3.1 *)
+
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
 
