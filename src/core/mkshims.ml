@@ -114,6 +114,7 @@ let shims_array_label_post_408 = "
 
 let shims_let_op_pre_408 =
   "
+   (** glue code for let-operators on OCaml >= 4.08 (auto generated) *)
    module type S = sig type 'a t_let end
    module Make(X:sig type 'a t end) = struct type 'a t_let = 'a X.t end
 
@@ -121,7 +122,7 @@ let shims_let_op_pre_408 =
    module Make2(X:sig type ('a,'b) t end) = struct type ('a,'b) t_let2 = ('a,'b) X.t end
 "
 let shims_let_op_post_408 =
-  "
+  " (** glue code for let-operators on OCaml >= 4.08 (auto generated) *)
     module type S = sig
       type 'a t_let
       val (let+) : 'a t_let -> ('a -> 'b) -> 'b t_let
