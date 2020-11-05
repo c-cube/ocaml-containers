@@ -719,16 +719,42 @@ module type MONAD = sig
   (** [ (>>=) ] is the Monadic [bind]. *)
 end
 
+(** {2 Monadic Traverse}
+
+    This allows the traversal of a ['a t list] where [_ t] is also
+    a monad.
+
+    For example, a ['a option list] will be traversed by extracting
+    a value from each option, returning [Some [x1;…;x_n]]; but if
+    one of the option is [None] then the whole result is [None].
+
+    Another example is with [result]: [('a, 'err) result list] can be
+    transformed into [('a list, 'err) result] by returning the first error,
+    or [Ok [x1; …; xn]] if all the elements were successful.
+
+    This describes the behavior of [sequence_m]; [map_m] is a combination
+    of {!map} and [sequence_m]; [map_m_par] is like [map_m] but useful
+    for some pseudo monads like Lwt.
+*)
 module Traverse(M : MONAD) : sig
   val sequence_m : 'a M.t t -> 'a t M.t
+  (** Traverse the list of monadic values using {!M.(>>=)}, re-combining
+      elements with [(::)]. See the documentation of the {!Traverse}
+      functor itself. *)
 
   val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
+  (** Fold a function with a monadic effect through a list. *)
 
   val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
+  (** Combination of {!map} and {!sequence_m}. *)
 
   val map_m_par : ('a -> 'b M.t) -> 'a t -> 'b t M.t
   (** [map_m_par f (x :: l)] is like {!map_m} but [f x] and [f l] are evaluated
-      "in parallel" before combining their result (for instance in Lwt). *)
+      "in parallel" before combining their result (for instance in Lwt).
+
+      Basically, when encoutering [x :: tl], this computes [f x] and [map_m_par f tl],
+      and only then is [M.(>>=)] used to combine the two results into a new list.
+      *)
 end
 
 (** {2 Conversions} *)
