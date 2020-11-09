@@ -572,6 +572,29 @@ let combine_gen l1 l2 =
     res1 = res2)
 *)
 
+let combine_chop l1 l2 =
+  let rec direct i l1 l2 = match l1, l2 with
+    | (_, []) | ([], _) -> []
+    | _ when i=0 -> safe l1 l2 []
+    | (x1::l1', x2::l2') -> (x1, x2) :: direct (i-1) l1' l2'
+  and safe l1 l2 acc = match l1, l2 with
+    | ([], _) | (_, []) -> List.rev acc
+    | (x1::l1', x2::l2') -> safe l1' l2' @@ (x1, x2) :: acc
+  in
+  direct direct_depth_default_ l1 l2
+
+(*$T
+  (combine_chop [] []) = []
+  (combine_chop [1] []) = []
+  (combine_chop [] [1]) = []
+  (combine_chop (1--1025) (1--1026)) = List.combine (1--1025) (1--1025)
+  (combine_chop (1--1026) (1--1025)) = List.combine (1--1025) (1--1025)
+  combine_chop [1;2;3] [3;2;1] = List.combine [1;2;3] [3;2;1]
+  combine_chop (1 -- 100_000) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
+  combine_chop (1 -- 100_001) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
+*)
+
+
 let split l =
   let rec direct i l = match l with
     | [] -> [], []
@@ -1786,6 +1809,8 @@ module Infix = struct
       let (>>=) = (>>=)
       let[@inline]  monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
     end)
+    
+  let (and&) = combine_chop
 end
 
 include Infix
