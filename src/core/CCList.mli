@@ -138,6 +138,11 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
     @since 1.2, but only
     @since 2.2 with labels *)
 
+val combine_chop : 'a list -> 'b list -> ('a * 'b) list
+(** [combine [a1; …; am] [b1; …; bn]] is [[(a1,b1); …; (am,bm)]] if m <= n.
+    Like {!combine} but stops at the shortest list rather than raising. 
+    @since 3.1 *)
+
 val split : ('a * 'b) t -> 'a t * 'b t
 (** [split [(a1,b1); …; (an,bn)]] is [([a1; …; an], [b1; …; bn])].
     Transform a list of pairs into a pair of lists.
@@ -828,6 +833,23 @@ module Infix : sig
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
       @since 2.8 *)
   include CCShimsMkLet_.S with type 'a t_let := 'a list
+
+  val (and&) : 'a list -> 'b list -> ('a * 'b) list
+  (** [(and&)] is [combine_chop]. It allows to perform a synchronized product between two lists,
+        stopping gently at the shortest. Usable both with [let+] and [let*].
+    {[
+        # let f xs ys zs = 
+            let+ x = xs 
+            and& y = ys 
+            and& z = zs in
+            x + y + z;;
+        val f : int list -> int list -> int list -> int list = <fun>
+        # f [1;2] [5;6;7] [10;10];;
+        - : int list = [16; 18]
+    ]}
+    @since 3.1 
+  *)
+
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
