@@ -572,14 +572,16 @@ let combine_gen l1 l2 =
     res1 = res2)
 *)
 
-let combine_chop l1 l2 =
+let combine_shortest l1 l2 =
   let rec direct i l1 l2 = match l1, l2 with
     | (_, []) | ([], _) -> []
     | _ when i=0 -> safe l1 l2 []
     | (x1::l1', x2::l2') -> (x1, x2) :: direct (i-1) l1' l2'
   and safe l1 l2 acc = match l1, l2 with
     | ([], _) | (_, []) -> List.rev acc
-    | (x1::l1', x2::l2') -> safe l1' l2' @@ (x1, x2) :: acc
+    | (x1::l1', x2::l2') ->
+      let acc = (x1,x2) :: acc in
+      safe l1' l2' acc
   in
   direct direct_depth_default_ l1 l2
 
@@ -1810,7 +1812,7 @@ module Infix = struct
       let[@inline]  monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
     end)
     
-  let (and&) = combine_chop
+  let (and&) = combine_shortest
 end
 
 include Infix
