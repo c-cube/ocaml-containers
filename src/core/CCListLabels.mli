@@ -142,9 +142,9 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
     @since 1.2, but only
     @since 2.2 with labels *)
 
-val combine_chop : 'a list -> 'b list -> ('a * 'b) list
-(** [combine [a1; …; am] [b1; …; bn]] is [[(a1,b1); …; (am,bm)]] if m <= n.
-    Like {!combine} but stops at the shortest list rather than raising. 
+val combine_shortest : 'a list -> 'b list -> ('a * 'b) list
+(** [combine_shortest [a1; …; am] [b1; …; bn]] is [[(a1,b1); …; (am,bm)]] if m <= n.
+    Like {!combine} but stops at the shortest list rather than raising.
     @since 3.1 *)
 
 val split : ('a * 'b) t -> 'a t * 'b t

@@ -586,14 +586,14 @@ let combine_shortest l1 l2 =
   direct direct_depth_default_ l1 l2
 
 (*$T
-  (combine_chop [] []) = []
-  (combine_chop [1] []) = []
-  (combine_chop [] [1]) = []
-  (combine_chop (1--1025) (1--1026)) = List.combine (1--1025) (1--1025)
-  (combine_chop (1--1026) (1--1025)) = List.combine (1--1025) (1--1025)
-  combine_chop [1;2;3] [3;2;1] = List.combine [1;2;3] [3;2;1]
-  combine_chop (1 -- 100_000) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
-  combine_chop (1 -- 100_001) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
+  (combine_shortest [] []) = []
+  (combine_shortest [1] []) = []
+  (combine_shortest [] [1]) = []
+  (combine_shortest (1--1025) (1--1026)) = List.combine (1--1025) (1--1025)
+  (combine_shortest (1--1026) (1--1025)) = List.combine (1--1025) (1--1025)
+  combine_shortest [1;2;3] [3;2;1] = List.combine [1;2;3] [3;2;1]
+  combine_shortest (1 -- 100_000) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
+  combine_shortest (1 -- 100_001) (1 -- 100_000) = List.combine (1 -- 100_000) (1 -- 100_000)
 *)
 
 
