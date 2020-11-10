@@ -138,8 +138,8 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
     @since 1.2, but only
     @since 2.2 with labels *)
 
-val combine_chop : 'a list -> 'b list -> ('a * 'b) list
-(** [combine [a1; …; am] [b1; …; bn]] is [[(a1,b1); …; (am,bm)]] if m <= n.
+val combine_shortest : 'a list -> 'b list -> ('a * 'b) list
+(** [combine_shortest [a1; …; am] [b1; …; bn]] is [[(a1,b1); …; (am,bm)]] if m <= n.
     Like {!combine} but stops at the shortest list rather than raising. 
     @since 3.1 *)
 
@@ -861,7 +861,7 @@ module Infix : sig
   include CCShimsMkLet_.S with type 'a t_let := 'a list
 
   val (and&) : 'a list -> 'b list -> ('a * 'b) list
-  (** [(and&)] is [combine_chop]. It allows to perform a synchronized product between two lists,
+  (** [(and&)] is [combine_shortest]. It allows to perform a synchronized product between two lists,
         stopping gently at the shortest. Usable both with [let+] and [let*].
     {[
         # let f xs ys zs = 
