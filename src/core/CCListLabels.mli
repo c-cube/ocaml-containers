@@ -838,21 +838,7 @@ module Infix : sig
       @since 2.8 *)
   include CCShimsMkLet_.S with type 'a t_let := 'a list
 
-  val (and&) : 'a list -> 'b list -> ('a * 'b) list
-  (** [(and&)] is [combine_chop]. It allows to perform a synchronized product between two lists,
-        stopping gently at the shortest. Usable both with [let+] and [let*].
-    {[
-        # let f xs ys zs = 
-            let+ x = xs 
-            and& y = ys 
-            and& z = zs in
-            x + y + z;;
-        val f : int list -> int list -> int list -> int list = <fun>
-        # f [1;2] [5;6;7] [10;10];;
-        - : int list = [16; 18]
-    ]}
-    @since 3.1 
-  *)
+  include CCShimsMkLetList_.S
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
