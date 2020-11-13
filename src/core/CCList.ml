@@ -1809,10 +1809,12 @@ module Infix = struct
       type 'a t = 'a list
       let (>|=) = (>|=)
       let (>>=) = (>>=)
-      let[@inline]  monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
+      let[@inline] monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
     end)
-    
-  let (and&) = combine_shortest
+
+  include CCShimsMkLetList_.Make(struct
+      let combine_shortest=combine_shortest
+    end)
 end
 
 include Infix

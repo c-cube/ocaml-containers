@@ -49,7 +49,7 @@ val filter : ('a -> bool) -> 'a t -> 'a t
     that satisfy the predicate [p].  The order of the elements
     in the input list [l] is preserved.
     Safe version of {!List.filter}. *)
-    
+
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** [fold_right f [a1; …; an] b] is
     [f a1 (f a2 ( … (f an b) … ))].
@@ -140,7 +140,7 @@ val combine_gen : 'a list -> 'b list -> ('a * 'b) gen
 
 val combine_shortest : 'a list -> 'b list -> ('a * 'b) list
 (** [combine_shortest [a1; …; am] [b1; …; bn]] is [[(a1,b1); …; (am,bm)]] if m <= n.
-    Like {!combine} but stops at the shortest list rather than raising. 
+    Like {!combine} but stops at the shortest list rather than raising.
     @since 3.1 *)
 
 val split : ('a * 'b) t -> 'a t * 'b t
@@ -178,14 +178,14 @@ val flat_map_i : (int -> 'a -> 'b t) -> 'a t -> 'b t
     @since 2.8 *)
 
 val flatten : 'a t t -> 'a t
-(** [flatten [l1]; [l2]; …] concatenates a list of lists. 
+(** [flatten [l1]; [l2]; …] concatenates a list of lists.
     Safe version of {!List.flatten}. *)
 
 val product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [product comb l1 l2] computes the cartesian product of the two lists, with the given combinator [comb]. *)
 
 val fold_product : ('c -> 'a -> 'b -> 'c) -> 'c -> 'a t -> 'b t -> 'c
-(** [fold_product f init l1 l2] applies the function [f] with the accumulator [init] on all 
+(** [fold_product f init l1 l2] applies the function [f] with the accumulator [init] on all
     the pair of elements of [l1] and [l2]. Fold on the cartesian product. *)
 
 val cartesian_product : 'a t t -> 'a t t
@@ -328,7 +328,7 @@ val pure : 'a -> 'a t
 (** [pure x] is [return x]. *)
 
 val mguard : bool -> unit t
-(** [mguard c] is [pure ()] if [c] is true, [[]] otherwise. 
+(** [mguard c] is [pure ()] if [c] is true, [[]] otherwise.
     This is useful to define a list by comprehension, e.g.:
     {[
       # let square_even xs =
@@ -386,7 +386,7 @@ val last : int -> 'a t -> 'a t
     [l] doesn't have that many elements). *)
 
 val head_opt : 'a t -> 'a option
-(** [head_opt l] returns [Some x] (the first element of the list [l]) 
+(** [head_opt l] returns [Some x] (the first element of the list [l])
     or [None] if the list [l] is empty.
     @since 0.20 *)
 
@@ -396,7 +396,7 @@ val tail_opt : 'a t -> 'a t option
     @since 2.0 *)
 
 val last_opt : 'a t -> 'a option
-(** [last_opt l] returns [Some x] (the last element of [l]) or [None] if the list [l] is empty. 
+(** [last_opt l] returns [Some x] (the last element of [l]) or [None] if the list [l] is empty.
     @since 0.20 *)
 
 val find_pred : ('a -> bool) -> 'a t -> 'a option
@@ -601,7 +601,7 @@ val union : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
 val inter : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> 'a t
 (** [inter ~eq l1 l2] is the intersection of the lists [l1] and [l2] w.r.t. the equality predicate [eq].
     Complexity is product of length of inputs. *)
-    
+
 (** {2 Other Constructors} *)
 
 val range_by : step:int -> int -> int -> int t
@@ -704,11 +704,11 @@ module Ref : sig
 
   val push : 'a t -> 'a -> unit
   (** [push rlist e] adds an element [e] at the head of [rlist]. *)
-  
+
   val pop : 'a t -> 'a option
   (** [pop rlist] removes and returns [Some e] (the first element of [rlist])
       or [None] if the [rlist] is empty *)
-      
+
   val pop_exn : 'a t -> 'a
   (** [pop_exn rlist] removes and returns the first element of [rlist].
       Unsafe version of {!pop}.
@@ -724,7 +724,7 @@ module Ref : sig
   (** [lift f rlist] applies a list function [f] to the content of [rlist]. *)
 
   val push_list : 'a t -> 'a list -> unit
-  (** [push_list rlist l] adds elements of the list [l] at the beginning of the list ref [rlist]. 
+  (** [push_list rlist l] adds elements of the list [l] at the beginning of the list ref [rlist].
       Elements at the end of the list [l] will be at the beginning of the list ref [rlist]. *)
 end
 
@@ -860,22 +860,7 @@ module Infix : sig
       @since 2.8 *)
   include CCShimsMkLet_.S with type 'a t_let := 'a list
 
-  val (and&) : 'a list -> 'b list -> ('a * 'b) list
-  (** [(and&)] is [combine_shortest]. It allows to perform a synchronized product between two lists,
-        stopping gently at the shortest. Usable both with [let+] and [let*].
-    {[
-        # let f xs ys zs = 
-            let+ x = xs 
-            and& y = ys 
-            and& z = zs in
-            x + y + z;;
-        val f : int list -> int list -> int list -> int list = <fun>
-        # f [1;2] [5;6;7] [10;10];;
-        - : int list = [16; 18]
-    ]}
-    @since 3.1 
-  *)
-
+  include CCShimsMkLetList_.S
 end
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise

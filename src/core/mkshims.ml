@@ -114,7 +114,7 @@ let shims_array_label_post_408 = "
 
 let shims_let_op_pre_408 =
   "
-   (** glue code for let-operators on OCaml >= 4.08 (auto generated) *)
+   (** glue code for let-operators on OCaml < 4.08 (auto generated) *)
    module type S = sig type 'a t_let end
    module Make(X:sig type 'a t end) = struct type 'a t_let = 'a X.t end
 
@@ -163,6 +163,39 @@ let shims_let_op_post_408 =
       let (let*) = X.(>>=)
       let (and*) = X.monoid_product
   end[@@inline]
+"
+
+let shims_let_op_list_pre_408 =
+  "
+   (** glue code for let-operators on OCaml < 4.08 (auto generated) *)
+   module type S = sig end
+   module Make(X:sig end) = struct end
+"
+let shims_let_op_list_post_408 =
+  "module type S = sig
+   val (and&) : 'a list -> 'b list -> ('a * 'b) list
+   (** [(and&)] is {!combine_shortest}.
+      It allows to perform a synchronized product between two lists,
+        stopping gently at the shortest. Usable both with [let+] and [let*].
+    {[
+        # let f xs ys zs =
+            let+ x = xs
+            and& y = ys
+            and& z = zs in
+            x + y + z;;
+        val f : int list -> int list -> int list -> int list = <fun>
+        # f [1;2] [5;6;7] [10;10];;
+        - : int list = [16; 18]
+    ]}
+    @since 3.1
+  *)
+  end
+
+  module Make(X:sig
+    val combine_shortest : 'a list -> 'b list -> ('a*'b) list
+  end) = struct
+    let (and&) = X.combine_shortest
+  end
 "
 
 let shims_int_pre_408 = ""
@@ -231,6 +264,7 @@ let () =
     write_file "CCShimsFun_.ml" (if (major, minor) >= (4,8) then shims_fun_post_408 else shims_fun_pre_408);
     write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);
     write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
+    write_file "CCShimsMkLetList_.ml" (if (major, minor) >= (4,8) then shims_let_op_list_post_408 else shims_let_op_list_pre_408);
     write_file "CCShimsInt_.ml"
       ((if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408)
       ^ if Sys.word_size=64 then shims_int_64bit else shims_int_non_64bit);
