@@ -8,7 +8,7 @@
 
     {b STATUS}: experimental, this might change in breaking ways.
 
-    @since NEXT_RELEASE *)
+    @since 3.1 *)
 
 module type RANKED = CCMutHeap_intf.RANKED
 

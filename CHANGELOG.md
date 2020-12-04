@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.1
+
+- add `List.combine_chop` and corresponding `(and&)` synchronized product
+- chore: remove travis to use github CI instead
+- add `CCList.mguard` function for list comprehensions
+- add some basic tests to CCMutHeap
+- un-specify order of elements in `CCMap.to_list`
+- Move definition of `CCMap.update` so that it is shadowed by Stdlib.Map.update
+- fix(intmap): order of arguments for the HO param should be stable
+
+- feat(containers-data): add `CCMutHeap` mutable heap with increase/decrease
+
 ## 3.0.1
 
 - fix build on 32 bits architectures
