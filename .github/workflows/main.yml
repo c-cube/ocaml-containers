@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        ocaml: [ '4.08.0' ]
+        ocaml: [ '4.08.0', '4.03.0', '4.11.0' ]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@main
