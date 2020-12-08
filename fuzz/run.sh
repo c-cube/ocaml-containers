@@ -15,9 +15,9 @@ name=$(echo "$1" | sed 's/\.exe$//')
 
 echo "Creating input directory"
 
-input_dir="fuzz-""$name""-input"
+input_dir="$script_dir"/../"fuzz-""$name""-input"
 
-output_dir="fuzz-""$name""-output"
+output_dir="$script_dir"/../"fuzz-""$name""-output"
 
 mkdir -p "$input_dir"
 
