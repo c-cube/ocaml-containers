@@ -90,6 +90,13 @@ val of_iter : uchar iter -> t
 (** Build a string from unicode codepoints
     @since 2.8 *)
 
+val uchar_to_bytes : uchar -> char iter
+(** Translate the unicode codepoint to a list of utf-8 bytes.
+    This can be used, for example, in combination with {!Buffer.add_char}
+    on a pre-allocated buffer to add the bytes one by one (despite its name,
+      {!Buffer.add_char} takes individual bytes, not unicode codepoints).
+    @since NEXT_RELEASE *)
+
 val of_gen : uchar gen -> t
 
 val of_list : uchar list -> t

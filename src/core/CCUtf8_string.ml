@@ -179,58 +179,86 @@ let to_list ?(idx=0) s : uchar list =
    There are various equally trivial versions of this around.
 *)
 
-let code_to_string buf (c:uchar) : unit =
+let[@inline] uchar_to_bytes (c:uchar) (f:char -> unit) : unit =
   let c = Uchar.to_int c in
   let mask = 0b111111 in
   assert (Uchar.is_valid c);
   if c <= 0x7f then (
-    Buffer.add_char buf (Char.unsafe_chr c)
+    f (Char.unsafe_chr c)
   ) else if c <= 0x7ff then (
-    Buffer.add_char buf (Char.unsafe_chr (0xc0 lor (c lsr 6)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor (c land mask)));
+    f (Char.unsafe_chr (0xc0 lor (c lsr 6)));
+    f (Char.unsafe_chr (0x80 lor (c land mask)));
   ) else if c <= 0xffff then (
-    Buffer.add_char buf (Char.unsafe_chr (0xe0 lor (c lsr 12)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor ((c lsr 6) land mask)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor (c land mask)));
+    f (Char.unsafe_chr (0xe0 lor (c lsr 12)));
+    f (Char.unsafe_chr (0x80 lor ((c lsr 6) land mask)));
+    f (Char.unsafe_chr (0x80 lor (c land mask)));
   ) else if c <= 0x1fffff then (
-    Buffer.add_char buf (Char.unsafe_chr (0xf0 lor (c lsr 18)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor ((c lsr 12) land mask)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor ((c lsr 6) land mask)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor (c land mask)));
+    f (Char.unsafe_chr (0xf0 lor (c lsr 18)));
+    f (Char.unsafe_chr (0x80 lor ((c lsr 12) land mask)));
+    f (Char.unsafe_chr (0x80 lor ((c lsr 6) land mask)));
+    f (Char.unsafe_chr (0x80 lor (c land mask)));
   ) else (
-    Buffer.add_char buf (Char.unsafe_chr (0xf8 lor (c lsr 24)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor ((c lsr 18) land mask)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor ((c lsr 12) land mask)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor ((c lsr 6) land mask)));
-    Buffer.add_char buf (Char.unsafe_chr (0x80 lor (c land mask)));
+    f (Char.unsafe_chr (0xf8 lor (c lsr 24)));
+    f (Char.unsafe_chr (0x80 lor ((c lsr 18) land mask)));
+    f (Char.unsafe_chr (0x80 lor ((c lsr 12) land mask)));
+    f (Char.unsafe_chr (0x80 lor ((c lsr 6) land mask)));
+    f (Char.unsafe_chr (0x80 lor (c land mask)));
+  )
+
+(* number of bytes required to encode this codepoint. A skeleton version
+   of {!uchar_to_bytes}. *)
+let[@inline] uchar_num_bytes (c:uchar) : int =
+  let c = Uchar.to_int c in
+  if c <= 0x7f then (
+    1
+  ) else if c <= 0x7ff then (
+    2
+  ) else if c <= 0xffff then (
+    3
+  ) else if c <= 0x1fffff then (
+    4
+  ) else (
+    5
   )
 
 let of_gen g : t =
   let buf = Buffer.create 32 in
   let rec aux () = match g() with
     | None -> Buffer.contents buf
-    | Some c -> code_to_string buf c; aux ()
+    | Some c -> uchar_to_bytes c (Buffer.add_char buf); aux ()
   in
   aux ()
 
 let of_seq seq : t =
   let buf = Buffer.create 32 in
-  Seq.iter (code_to_string buf) seq;
+  Seq.iter (fun c -> uchar_to_bytes c (Buffer.add_char buf)) seq;
   Buffer.contents buf
 
 let of_iter i : t =
   let buf = Buffer.create 32 in
-  i (code_to_string buf);
+  i (fun c -> uchar_to_bytes c (Buffer.add_char buf));
   Buffer.contents buf
 
 let of_list l : t =
-  let buf = Buffer.create 32 in
-  List.iter (code_to_string buf) l;
-  Buffer.contents buf
+  let len = List.fold_left (fun n c -> n + uchar_num_bytes c) 0 l in
+  if len > Sys.max_string_length then (
+    invalid_arg "CCUtf8_string.of_list: string size limit exceeded";
+  );
+  let buf = Bytes.make len '\000' in
+  let i = ref 0 in
+  List.iter
+    (fun c ->
+       uchar_to_bytes c
+         (fun byte ->
+           Bytes.unsafe_set buf !i byte;
+           incr i))
+    l;
+  assert (!i = len);
+  Bytes.unsafe_to_string buf
 
 let map f s : t =
   let buf = Buffer.create (n_bytes s) in
-  iter (fun c -> code_to_string buf (f c)) s;
+  iter (fun c -> uchar_to_bytes (f c) (Buffer.add_char buf)) s;
   Buffer.contents buf
 
 let filter_map f s : t =
@@ -238,13 +266,15 @@ let filter_map f s : t =
   iter
     (fun c -> match f c with
        | None -> ()
-       | Some c -> code_to_string buf c)
+       | Some c -> uchar_to_bytes c (Buffer.add_char buf))
     s;
   Buffer.contents buf
 
 let flat_map f s : t =
   let buf = Buffer.create (n_bytes s) in
-  iter (fun c -> iter (code_to_string buf) (f c)) s;
+  iter
+    (fun c -> iter (fun c -> uchar_to_bytes c (Buffer.add_char buf)) (f c))
+    s;
   Buffer.contents buf
 
 let append = Stdlib.(^)
