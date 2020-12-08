@@ -43,7 +43,18 @@
       | Escaped_int_1 i, ('0'..'9' as c) ->
           st := Escaped_int_2 (10*i+Char.code c - Char.code '0')
       | Escaped_int_2 i, ('0'..'9' as c) ->
-          Buffer.add_char buf (Char.chr (10*i+Char.code c - Char.code '0'));
+        let n = 10*i+Char.code c - Char.code '0' in
+          if n < 256 then (
+            Buffer.add_char buf (Char.chr n);
+          ) else (
+            (* non-ascii unicode code point: encode to utf8 on the fly *)
+            let c =
+              try Uchar.of_int n
+              with _ ->
+                failwith (Printf.sprintf "CCSexp: invalid unicode codepont '%d'" n)
+            in
+            CCUtf8_string.uchar_to_bytes c (Buffer.add_char buf)
+          );
           st := Not_escaped
       | (Escaped | Escaped_int_1 _ | Escaped_int_2 _), c ->
           error lexbuf (Printf.sprintf "wrong escape `%c`" c)
