@@ -306,6 +306,17 @@ let of_string s = if is_valid s then Some s else None
   let printer s = String.escaped (to_string s)
   let pp_uchar (c:Uchar.t) = Printf.sprintf "0x%x" (Uchar.to_int c)
 
+  let arb_uchar =
+    let rec gen  = lazy (
+      let open Q.Gen in
+      Q.Gen.int_range Uchar.(to_int min) Uchar.(to_int max) >>= fun n ->
+      try return (Uchar.of_int n)
+      with _ -> Lazy.force gen
+    ) in
+    Q.make
+      ~print:(fun c -> Printf.sprintf "<uchar '%d'>" (Uchar.to_int c))
+      (Lazy.force gen)
+
   let uutf_is_valid s =
   try
     Uutf.String.fold_utf_8
@@ -348,6 +359,26 @@ let of_string s = if is_valid s then Some s else None
   Q.string (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
     String.length s = List.length (of_string_exn s |> to_list)
+  )
+*)
+
+(*$QR & ~long_factor:10
+  Q.(small_list arb_uchar) (fun l ->
+      let s = of_list l in
+      l = to_list s)
+*)
+
+(*$QR & ~long_factor:10
+  Q.(small_list arb_uchar) (fun l ->
+      let s = of_list l in
+      l = (to_list @@ of_gen @@ to_gen s)
+  )
+*)
+
+(*$QR & ~long_factor:10
+  Q.(small_list arb_uchar) (fun l ->
+      let s = of_list l in
+      l = (to_list @@ of_iter @@ to_iter s)
   )
 *)
 
@@ -400,4 +431,11 @@ let of_string s = if is_valid s then Some s else None
     else Q.Test.fail_reportf "uutf: '%s', containers: '%s', is_valid %B, uutf_is_valid %B"
       (pp l_uutf) (pp l_co) (is_valid s) (uutf_is_valid s)
   )
+*)
+
+(*$R
+  for i = 0 to 127 do
+    let c = Uchar.of_int i in
+    assert_equal 1 (n_bytes (of_list [c]))
+  done
 *)
