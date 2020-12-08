@@ -334,6 +334,11 @@ let of_string s = if is_valid s then Some s else None
        | `Malformed _ -> f (Uchar.of_int 0xfffd)
        | `Uchar c -> f c)
       () s
+
+  let uutf_of_l l =
+    let buf = Buffer.create 32 in
+    List.iter (Uutf.Buffer.add_utf_8 buf) l;
+    Buffer.contents buf
 *)
 
 (*$R
@@ -362,7 +367,7 @@ let of_string s = if is_valid s then Some s else None
   )
 *)
 
-(*$QR & ~long_factor:10
+(*$QR & ~long_factor:10 ~count:20_000
   Q.(small_list arb_uchar) (fun l ->
       let s = of_list l in
       l = to_list s)
@@ -418,6 +423,17 @@ let of_string s = if is_valid s then Some s else None
     let v2 = uutf_is_valid s in
     if v1=v2 then true
     else Q.Test.fail_reportf "s:%S, valid: %B, uutf_valid: %B" s v1 v2
+  )
+*)
+
+(*$QR & ~long_factor:40 ~count:50_000
+  Q.(small_list arb_uchar) (fun l ->
+    let pp s = Q.Print.(list pp_uchar) s in
+    let uutf = uutf_of_l l in
+    let s = (of_list l:>string) in
+    if uutf = s then true
+    else Q.Test.fail_reportf "l: '%s', uutf: '%s', containers: '%s'"
+      (pp l) uutf s
   )
 *)
 
