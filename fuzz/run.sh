@@ -25,4 +25,4 @@ echo "abcd" > "$input_dir"/dummy
 
 mkdir -p "$output_dir"
 
-afl-fuzz -t 1000 -m 100 -i "$input_dir" -o "$output_dir" "$script_dir"/../_build/default/fuzz/"$name".exe @@
+afl-fuzz -t 1000 -i "$input_dir" -o "$output_dir" "$script_dir"/../_build/default/fuzz/"$name".exe @@
