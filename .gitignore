@@ -12,3 +12,5 @@ setup.*
 .ignore
 _opam
 *.exe
+fuzz-*-input
+fuzz-*-output
