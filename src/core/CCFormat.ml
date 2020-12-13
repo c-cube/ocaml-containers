@@ -117,7 +117,8 @@ let append ppa ppb fmt () =
   "foo" (to_string_test (append (return "foo") (return "")))
 *)
 
-let append_l = List.fold_left append (return "")
+let append_l ppl fmt () =
+  List.iter (fun pp -> pp fmt ()) ppl
 
 (*$= append_l & ~printer:(fun s -> CCFormat.sprintf "%S" s)
   "" (to_string_test @@ append_l [])
