@@ -95,6 +95,12 @@ val triple : ?sep:unit printer -> 'a printer -> 'b printer -> 'c printer -> ('a 
 val quad : ?sep:unit printer -> 'a printer -> 'b printer ->
   'c printer -> 'd printer -> ('a * 'b * 'c * 'd) printer
 
+val append : unit printer -> unit printer -> unit printer
+(** [append ppa ppb] first prints [ppa ()], then prints [ppb ()]. *)
+
+val append_l : unit printer list -> unit printer
+(** [append_l pps] runs the printers in [pps] sequentially. *)
+
 val within : string -> string -> 'a printer -> 'a printer
 (** [within a b p] wraps [p] inside the strings [a] and [b]. Convenient,
     for instances, for brackets, parenthesis, quotes, etc.
@@ -349,3 +355,10 @@ module Dump : sig
   val to_string : 'a t -> 'a -> string
   (** Alias to {!CCFormat.to_string}. *)
 end
+
+module Infix : sig
+  val (++) : unit printer -> unit printer -> unit printer
+  (** Alias to {!append}. *)
+end
+
+include module type of Infix

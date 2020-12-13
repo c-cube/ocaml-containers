@@ -107,6 +107,24 @@ let triple ?(sep=return ",@ ") ppa ppb ppc fmt (a, b, c) =
 let quad ?(sep=return ",@ ") ppa ppb ppc ppd fmt (a, b, c, d) =
   Format.fprintf fmt "%a%a%a%a%a%a%a" ppa a sep () ppb b sep () ppc c sep () ppd d
 
+let append ppa ppb fmt () =
+  ppa fmt ();
+  ppb fmt ()
+
+(*$= append & ~printer:(fun s -> CCFormat.sprintf "%S" s)
+  "foobar" (to_string_test (append (return "foo") (return "bar")))
+  "bar" (to_string_test (append (return "") (return "bar")))
+  "foo" (to_string_test (append (return "foo") (return "")))
+*)
+
+let append_l = List.fold_left append (return "")
+
+(*$= append_l & ~printer:(fun s -> CCFormat.sprintf "%S" s)
+  "" (to_string_test @@ append_l [])
+  "foobarbaz" (to_string_test @@ append_l (List.map return ["foo"; "bar"; "baz"]))
+  "3141" (to_string_test @@ append_l (List.map (const int) [3; 14; 1]))
+*)
+
 let within a b p out x =
   string out a;
   p out x;
@@ -444,3 +462,9 @@ end
   "[(Ok \"a b c\");(Error \"nope\")]" \
     (to_string Dump.(list (result string)) [Ok "a b c"; Error "nope"])
 *)
+
+module Infix = struct
+  let (++) = append
+end
+
+include Infix
