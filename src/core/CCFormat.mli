@@ -34,6 +34,15 @@ val exn : exn printer
 (** Printer using {!Printexc.to_string}.
     @since 3.0 *)
 
+val space : unit printer
+(** Alias to {!pp_print_space}. *)
+
+val cut : unit printer
+(** Alias to {!pp_print_cut}. *)
+
+val break : (int * int) printer
+(** Tuple-ized {!printer} form of {!pp_print_break}. *)
+
 val newline : unit printer
 (** Force newline (see {!Format.pp_force_newline}).
     @since 1.2 *)

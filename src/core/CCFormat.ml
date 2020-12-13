@@ -41,6 +41,9 @@ let nativeint fmt n = Format.fprintf fmt "%nd" n
 let string_quoted fmt s = Format.fprintf fmt "\"%s\"" s
 let flush = Format.pp_print_flush
 
+let space = Format.pp_print_space
+let cut = Format.pp_print_cut
+let break fmt (m, n) = Format.pp_print_break fmt m n
 let newline = Format.pp_force_newline
 
 let substring out (s,i,len): unit =
