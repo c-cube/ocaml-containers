@@ -265,6 +265,27 @@ let scan_left f acc l =
   in
   aux f acc [acc] l
 
+let reduce f = function
+  | [] -> None
+  | x :: l -> Some (fold_left f x l)
+
+let reduce_exn f = function
+  | [] -> raise (Invalid_argument "CCList.reduce_exn")
+  | x :: l -> fold_left f x l
+
+(*$= & ~printer:Q.Print.(option int)
+  (Some 15) (reduce (+) [1; 2; 3; 4; 5])
+  (Some 3) (reduce CCInt.min [5; 3; 8; 9])
+*)
+
+(*$= & ~printer:Q.Print.string
+  "hello world" (reduce_exn (^) ["hello"; " "; "world"])
+*)
+
+(*$T 
+  try ignore (reduce_exn (+.) []); false with Invalid_argument _ -> true
+*)
+
 (*$= & ~printer:Q.Print.(list int)
   [0;1;3;6] (scan_left (+) 0 [1;2;3])
   [0] (scan_left (+) 0 [])
