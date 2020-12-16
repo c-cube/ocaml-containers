@@ -101,13 +101,13 @@ let exists p a =
 *)
 
 (*$Q
-  Q.(list bool) (fun l -> let a = of_list l in not @@ exists Fun.id a = for_all not a)
-  Q.(list bool) (fun l -> let a = of_list l in not @@ for_all Fun.id a = exists not a)
+  Q.(list bool) (fun l -> let a = of_list l in not @@ exists (fun b -> b) a = for_all not a)
+  Q.(list bool) (fun l -> let a = of_list l in not @@ for_all (fun b -> b) a = exists not a)
 *)
 
 (*$Q
- Q.(list bool) (fun l -> exists Fun.id (of_list l) = List.fold_left (||) false l)
- Q.(list bool) (fun l -> for_all Fun.id (of_list l) = List.fold_left (&&) true l)
+ Q.(list bool) (fun l -> exists (fun b -> b) (of_list l) = List.fold_left (||) false l)
+ Q.(list bool) (fun l -> for_all (fun b -> b) (of_list l) = List.fold_left (&&) true l)
  *)
 
 (** {2 Conversions} *)
