@@ -24,9 +24,9 @@ jobs:
     - run: opam depext -yt containers containers-data containers-thread
       if: steps.cache-opam.outputs.cache-hit != 'true'
     - run: opam install -t . --deps-only
-      if: ${{ matrix.os != 'windows-latest' }}
+      if: ${{ matrix.os != 'windows-latest' }} and ${{ steps.cache-opam.outputs.cache-hit != 'true' }}
     - run: opam install . --deps-only  # no test deps
-      if: ${{ matrix.os == 'windows-latest' }}
+      if: ${{ matrix.os == 'windows-latest' }} and ${{ steps.cache-opam.outputs.cache-hit != 'true' }}
     - run: opam exec -- dune build
     - run: opam exec -- dune runtest
       if: ${{ matrix.os != 'windows-latest' }}
