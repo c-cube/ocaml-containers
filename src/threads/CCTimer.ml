@@ -198,8 +198,8 @@ let stop timer =
     ~f:(fun () -> CCLock.update n (fun x -> x+2));
   ignore (Thread.create
     (fun _ -> Thread.delay 0.4; CCLock.set res (CCLock.get n)) ());
-  after timer 0.2
+  after timer 0.1
     ~f:(fun () -> CCLock.update n (fun x -> x * 4));
   Thread.delay 0.6 ;
-  OUnit.assert_equal 6 (CCLock.get res);
+  OUnit.assert_equal ~printer:Q.Print.int 6 (CCLock.get res);
 *)
