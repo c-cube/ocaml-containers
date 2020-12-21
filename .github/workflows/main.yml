@@ -10,18 +10,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@main
+    - uses: avsm/setup-ocaml@v1
+      with:
+        ocaml-version: ${{ matrix.ocaml }}
     - name: cache opam
       id: cache-opam
       uses: actions/cache@v2
       with:
         path: _opam
         key: opam-${{matrix.operating-system}}-${{matrix.ocaml-version}}
-    - uses: avsm/setup-ocaml@v1
-      with:
-        ocaml-version: ${{ matrix.ocaml }}
-      if: steps.cache-opam.outputs.cache-hit != 'true'
     - run: opam pin -n .
+      if: steps.cache-opam.outputs.cache-hit != 'true'
     - run: opam depext -yt containers containers-data containers-thread
+      if: steps.cache-opam.outputs.cache-hit != 'true'
     - run: opam install -t . --deps-only
       if: ${{ matrix.os != 'windows-latest' }}
     - run: opam install . --deps-only  # no test deps
