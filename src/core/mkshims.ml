@@ -204,7 +204,20 @@ let shims_int_post_408 = "
   (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
 "
 
-let shims_int_64bit = "
+let shims_int_non_64bit = "
+(* we use the simple version for non-64 bits. *)
+let popcount (b:int) : int =
+  let rec loop count x =
+    if x=0 then count
+    else loop (count+1) (x land (x-1))
+  in
+  loop 0 b
+
+"
+
+(* 64 bits: include basic version *)
+let shims_int_64bit =
+shims_int_non_64bit ^ "
 (*
   from https://en.wikipedia.org/wiki/Hamming_weight
 
@@ -225,7 +238,7 @@ let shims_int_64bit = "
    m2 = 0x3333333333333333
    m4 = 0x0f0f0f0f0f0f0f0f
 *)
-let popcount (b:int) : int =
+let popcount_64_ (b:int) : int =
   let b = b - ((b lsr 1) land 0x5555555555555555) in
   let b = (b land 0x3333333333333333) + ((b lsr 2) land 0x3333333333333333) in
   let b = (b + (b lsr 4)) land 0x0f0f0f0f0f0f0f0f in
@@ -233,17 +246,13 @@ let popcount (b:int) : int =
   let b = b + (b lsr 16) in
   let b = b + (b lsr 32) in
   b land 0x7f
-"
 
-let shims_int_non_64bit = "
-(* we use the simple version for non-64 bits. *)
-let popcount (b:int) : int =
-  let rec loop count x =
-    if x=0 then count
-    else loop (count+1) (x land (x-1))
-  in
-  loop 0 b
-
+(* pick at runtime, see:
+  - https://github.com/c-cube/ocaml-containers/issues/346
+  - https://github.com/ocsigen/js_of_ocaml/issues/1079
+  *)
+let popcount =
+  if Sys.int_size = 63 then popcount_64_ else popcount
 "
 
 let () =
@@ -270,7 +279,7 @@ let () =
       try C.ocaml_config_var_exn c "int_size" |> int_of_string
       with e ->
         let n = Sys.int_size in (* default to current version *)
-        Printf.eprintf "cannot obtain target word_size:\n%s\ndefaulting to %d\n%!"
+        Printf.eprintf "cannot obtain target int_size:\n%s\ndefaulting to %d\n%!"
           (Printexc.to_string e) n;
         n
     in
