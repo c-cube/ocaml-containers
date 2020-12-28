@@ -265,7 +265,16 @@ let () =
     write_file "CCShimsFun_.mli" (if (major, minor) >= (4,8) then shims_fun_mli_post_408 else shims_fun_mli_pre_408);
     write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
     write_file "CCShimsMkLetList_.ml" (if (major, minor) >= (4,8) then shims_let_op_list_post_408 else shims_let_op_list_pre_408);
+    (* see if we target native 64 bits (rather than 32 bits or jsoo or sth else) *)
+    let int_size =
+      try C.ocaml_config_var_exn c "int_size" |> int_of_string
+      with e ->
+        let n = Sys.int_size in (* default to current version *)
+        Printf.eprintf "cannot obtain target word_size:\n%s\ndefaulting to %d\n%!"
+          (Printexc.to_string e) n;
+        n
+    in
     write_file "CCShimsInt_.ml"
       ((if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408)
-      ^ if Sys.word_size=64 then shims_int_64bit else shims_int_non_64bit);
+      ^ if int_size=63 then shims_int_64bit else shims_int_non_64bit);
   )
