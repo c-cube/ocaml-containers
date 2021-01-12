@@ -246,7 +246,7 @@ per-version doc [there](http://c-cube.github.io/ocaml-containers/).
 
 ## Build
 
-You will need OCaml `>=` 4.02.0.
+You will need OCaml `>=` 4.03.0.
 
 ### Via opam
 
@@ -266,7 +266,7 @@ You need dune (formerly jbuilder).
 $ make
 ```
 
-To build and run tests (requires `oUnit` and [qtest](https://github.com/vincent-hugot/iTeML)):
+To build and run tests (requires `oUnit`, [qtest](https://github.com/vincent-hugot/qtest), `gen`, `iter`):
 
 ```
 $ opam install oUnit qtest
