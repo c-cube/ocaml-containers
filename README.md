@@ -1,4 +1,4 @@
-# OCaml-containers 📦  ![build](https://github.com/c-cube/ocaml-containers/workflows/build/badge.svg)
+# OCaml-containers 📦 ![build](https://github.com/c-cube/ocaml-containers/workflows/build/badge.svg)
 
 A modular, clean and powerful extension of the OCaml standard library.
 
