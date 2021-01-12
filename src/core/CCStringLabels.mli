@@ -192,9 +192,25 @@ val lines_gen : string -> string gen
 (** [lines_gen s] returns a generator [gen] of the lines of [s] (splits along '\n').
     @since 0.10 *)
 
+val lines_iter : string -> string iter
+(** [lines_iter s] returns an iterator of the lines of [s] (splits along '\n').
+    @since NEXT_RELEASE *)
+
+val lines_seq : string -> string Seq.t
+(** [lines_seq s] returns an iterator of the lines of [s] (splits along '\n').
+    @since NEXT_RELEASE *)
+
+val concat_iter : sep:string -> string iter -> string
+(** [concat_iter ~sep i] concatenates all strings of [i], separated with [sep].
+    @since NEXT_RELEASE *)
+
 val concat_gen : sep:(string [@keep_label]) -> string gen -> string
 (** [concat_gen ~sep gen] concatenates all strings of [gen], separated with [sep].
     @since 0.10 *)
+
+val concat_seq : sep:string -> string Seq.t -> string
+(** [concat_seq ~sep s] concatenates all strings of [s], separated with [sep].
+    @since NEXT_RELEASE *)
 
 val unlines : string list -> string
 (** [unlines ls] concatenates all strings of [ls], separated with '\n'.
@@ -203,6 +219,14 @@ val unlines : string list -> string
 val unlines_gen : string gen -> string
 (** [unlines_gen gen] concatenates all strings of [gen], separated with '\n'.
     @since 0.10 *)
+
+val unlines_iter : string iter -> string
+(** [unlines_iter i] concatenates all strings of [i], separated with '\n'.
+    @since NEXT_RELEASE *)
+
+val unlines_seq : string Seq.t -> string
+(** [unlines_seq s] concatenates all strings of [s], separated with '\n'.
+    @since NEXT_RELEASE *)
 
 val set : string -> int -> char -> string
 (** [set s i c] creates a new string which is a copy of [s], except

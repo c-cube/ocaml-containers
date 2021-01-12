@@ -837,6 +837,10 @@ let to_array s =
 
 let lines_gen s = Split.gen_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
 
+let lines_iter s = Split.iter_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
+
+let lines_seq s = Split.seq_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
+
 let lines s = Split.list_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
 
 (*$= & ~printer:Q.Print.(list @@ Printf.sprintf "%S")
@@ -845,6 +849,13 @@ let lines s = Split.list_cpy ~drop:{Split.first=false; last=true} ~by:"\n" s
   [] (lines "")
   [""] (lines "\n")
   [""; "a"] (lines "\na")
+*)
+
+(*$Q
+  Q.(printable_string) (fun s -> \
+    lines s = (lines_gen s |> Gen.to_list))
+  Q.(printable_string) (fun s -> \
+    lines s = (lines_iter s |> Iter.to_list))
 *)
 
 let concat_gen_buf ~sep g : Buffer.t =
@@ -860,6 +871,41 @@ let concat_gen_buf ~sep g : Buffer.t =
 let concat_gen ~sep g =
   let buf = concat_gen_buf ~sep g in
   Buffer.contents buf
+
+let concat_iter_buf ~sep i : Buffer.t =
+  let buf = Buffer.create 256 in
+  let first = ref true in
+  i (fun s ->
+      if !first then first := false else Buffer.add_string buf sep;
+      Buffer.add_string buf s);
+  buf
+
+let concat_iter ~sep i =
+  let buf = concat_iter_buf ~sep i in
+  Buffer.contents buf
+
+let concat_seq_buf ~sep seq : Buffer.t =
+  let buf = Buffer.create 256 in
+  let first = ref true in
+  Seq.iter
+    (fun s ->
+      if !first then first := false else Buffer.add_string buf sep;
+      Buffer.add_string buf s)
+    seq;
+  buf
+
+let concat_seq ~sep seq =
+  let buf = concat_seq_buf ~sep seq in
+  Buffer.contents buf
+
+(*$Q
+  Q.(small_list printable_string) (fun l -> \
+    concat_iter ~sep:"\n" (Iter.of_list l) = concat "\n" l)
+  Q.(small_list printable_string) (fun l -> \
+    concat_gen ~sep:"\n" (Gen.of_list l) = concat "\n" l)
+  Q.(small_list printable_string) (fun l -> \
+    concat_seq ~sep:"\n" (CCSeq.of_list l) = concat "\n" l)
+*)
 
 let unlines l =
   let len = List.fold_left (fun n s -> n + 1 + String.length s) 0 l in
@@ -878,6 +924,16 @@ let unlines l =
 
 let unlines_gen g =
   let buf = concat_gen_buf ~sep:"\n" g in
+  Buffer.add_char buf '\n';
+  Buffer.contents buf
+
+let unlines_iter i =
+  let buf = concat_iter_buf ~sep:"\n" i in
+  Buffer.add_char buf '\n';
+  Buffer.contents buf
+
+let unlines_seq seq =
+  let buf = concat_seq_buf ~sep:"\n" seq in
   Buffer.add_char buf '\n';
   Buffer.contents buf
 
