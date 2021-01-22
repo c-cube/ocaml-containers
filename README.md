@@ -241,7 +241,7 @@ and [the tutorial below](#tutorial) for a gentle introduction.
 
 In general, see http://c-cube.github.io/ocaml-containers/last/ for the **API documentation**.
 
-Some examples can be found [there](doc/containers.adoc),
+Some examples can be found [there](doc/containers.md),
 per-version doc [there](http://c-cube.github.io/ocaml-containers/).
 
 ## Build
