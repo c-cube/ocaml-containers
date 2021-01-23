@@ -67,7 +67,7 @@ val equal : string -> string -> bool
 val compare : string -> string -> int
 (** [compare s1 s2] compares the strings [s1] and [s2] and returns an integer that indicates
     their relative position in the sort order. *)
-    
+
 val is_empty : string -> bool
 (** [is_empty s] returns [true] iff [s] is empty (i.e. its length is 0).
     @since 1.5 *)
@@ -193,15 +193,15 @@ val lines_gen : string -> string gen
     @since 0.10 *)
 
 val lines_iter : string -> string iter
-(** [lines_iter s] returns an iterator of the lines of [s] (splits along '\n').
+(** [lines_iter s] returns the [iter] of the lines of [s] (splits along '\n').
     @since NEXT_RELEASE *)
 
 val lines_seq : string -> string Seq.t
-(** [lines_seq s] returns an iterator of the lines of [s] (splits along '\n').
+(** [lines_seq s] returns the [Seq.t] of the lines of [s] (splits along '\n').
     @since NEXT_RELEASE *)
 
 val concat_iter : sep:string -> string iter -> string
-(** [concat_iter ~sep i] concatenates all strings of [i], separated with [sep].
+(** [concat_iter ~sep iter] concatenates all strings of [iter], separated with [sep].
     @since NEXT_RELEASE *)
 
 val concat_gen : sep:(string [@keep_label]) -> string gen -> string
@@ -209,7 +209,7 @@ val concat_gen : sep:(string [@keep_label]) -> string gen -> string
     @since 0.10 *)
 
 val concat_seq : sep:string -> string Seq.t -> string
-(** [concat_seq ~sep s] concatenates all strings of [s], separated with [sep].
+(** [concat_seq ~sep seq] concatenates all strings of [seq], separated with [sep].
     @since NEXT_RELEASE *)
 
 val unlines : string list -> string
@@ -221,11 +221,11 @@ val unlines_gen : string gen -> string
     @since 0.10 *)
 
 val unlines_iter : string iter -> string
-(** [unlines_iter i] concatenates all strings of [i], separated with '\n'.
+(** [unlines_iter iter] concatenates all strings of [iter], separated with '\n'.
     @since NEXT_RELEASE *)
 
 val unlines_seq : string Seq.t -> string
-(** [unlines_seq s] concatenates all strings of [s], separated with '\n'.
+(** [unlines_seq seq] concatenates all strings of [seq], separated with '\n'.
     @since NEXT_RELEASE *)
 
 val set : string -> int -> char -> string
@@ -401,7 +401,7 @@ module Split : sig
   val gen : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) gen
   (** [gen ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [gen] of slices. *)
-      
+
   val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) iter
   (** [iter ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns an [iter] of slices.
@@ -421,11 +421,11 @@ module Split : sig
   val list_cpy : ?drop:drop_if_empty -> by:string -> string -> string list
   (** [list_cpy ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [list] of strings. *)
-      
+
   val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
  (** [gen_cpy ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [gen] of strings. *)
-  
+
   val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string iter
   (** [iter_cpy ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns an [iter] of strings.
