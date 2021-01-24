@@ -922,6 +922,17 @@ let sublists_of_len ?(last=fun _ -> None) ?offset n l =
   [[1;2]; [3;4]] (subs 2 [1;2;3;4;5])
 *)
 
+let chunks n l = sublists_of_len ~last:(fun x -> Some x) n l
+
+(*$Q
+    Q.(small_list small_int) (fun l -> \
+      l = (chunks 3 l |> List.flatten))
+    Q.(small_list small_int) (fun l -> \
+      l = (chunks 5 l |> List.flatten))
+    Q.(small_list small_int) (fun l -> \
+      List.for_all (fun u -> List.length u <= 5) (chunks 5 l))
+*)
+
 let intersperse x l =
   let rec aux_direct i x l = match l with
     | [] -> []

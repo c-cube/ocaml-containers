@@ -323,6 +323,13 @@ val sublists_of_len :
     @since 1.0, but only
     @since 1.5 with labels *)
 
+val chunks : int -> 'a list -> 'a list list
+(** [chunks n l] returns consecutives chunks of size at most [n] from [l].
+    Each item of [l] will occur in exactly one chunk. Only the last chunk
+    might be of length smaller than [n].
+    Invariant: [(chunks n l |> List.flatten) = l].
+    @since NEXT_RELEASE *)
+
 val intersperse : 'a -> 'a list -> 'a list
 (** [intersperse x l] inserts the element [x] between adjacent elements of the list [l].
     @since 2.1, but only
