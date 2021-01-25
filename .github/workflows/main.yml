@@ -30,3 +30,5 @@ jobs:
     - run: opam exec -- dune build
     - run: opam exec -- dune runtest
       if: ${{ matrix.os == 'ubuntu-latest' }}
+    - run: opam exec -- dune runtest -p containers # test only core on non-ubuntu platform
+      if: ${{ matrix.os != 'ubuntu-latest' }}
