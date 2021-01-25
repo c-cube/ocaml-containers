@@ -590,19 +590,19 @@ where `type walk_item = [ ``Dir | ``File ] * string` is a path
 paired with a flag distinguishing files from directories.
 
 
-### To go further: `containers.data`
+### To go further: `containers-data`
 
-There is also a sub-library called `containers.data`, with lots of
+There is also a library called `containers-data`, with lots of
 more specialized data-structures.
 The documentation contains the API for all the modules; they also provide
 interface to `iter` and, as the rest of containers, minimize
-dependencies over other modules. To use `containers.data` you need to link it,
-either in your build system or by `#require containers.data;;`
+dependencies over other modules. To use `containers-data` you need to link it,
+either in your build system or by `#require containers-data;;`
 
 A quick example based on purely functional double-ended queues:
 
 ```ocaml
-# #require "containers.data";;
+# #require "containers-data";;
 # #install_printer CCFQueue.pp;;  (* better printing of queues! *)
 
 # let q = CCFQueue.of_list [2;3;4] ;;
