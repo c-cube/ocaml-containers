@@ -7,6 +7,7 @@ module Array = CCArrayLabels
 module Bool = CCBool
 module Char = CCChar
 module Equal = CCEqualLabels
+module Either = CCEither
 module Float = CCFloat
 module Format = CCFormat
 module Fun = CCFun
