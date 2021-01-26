@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>CCMixmap (containers-data.CCMixmap)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc 1.5.2"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div class="content"><header><nav><a href="../index.html">Up</a> – <a href="../index.html">containers-data</a> &#x00BB; CCMixmap</nav><h1>Module <code>CCMixmap</code></h1><h2 id="maps-with-heterogeneous-values"><a href="#maps-with-heterogeneous-values" class="anchor"></a>Maps with Heterogeneous Values</h2><p><b>status: experimental</b></p><pre><code class="ml">module M = CCMixmap.Make(CCInt)
+
+let inj_int = CCMixmap.create_inj()
+let inj_str = CCMixmap.create_inj()
+let inj_list_int = CCMixmap.create_inj()
+
+let m =
+  M.empty
+  |&gt; M.add ~inj:inj_int 1 1
+  |&gt; M.add ~inj:inj_str 2 &quot;2&quot;
+  |&gt; M.add ~inj:inj_list_int 3 [3;3;3]
+
+    assert (M.get ~inj:inj_int 1 m = Some 1)
+    assert (M.get ~inj:inj_str 1 m = None)
+    assert (M.get ~inj:inj_str 2 m = Some &quot;2&quot;)
+    assert (M.get ~inj:inj_int 2 m = None)
+    assert (M.get ~inj:inj_list_int 3 m = Some [3;3;3])
+    assert (M.get ~inj:inj_str 3 m = None)</code></pre><p>change of API, the map is last argument to make piping with <code>|&gt;</code> easier since 0.16.</p><dl><dt>since</dt><dd>0.9</dd></dl></header><dl><dt class="spec type" id="type-injection"><a href="#type-injection" class="anchor"></a><code><span class="keyword">type</span> <span>'a injection</span></code></dt><dd><p>An accessor for values of type 'a in any map. Values put in the map using a key can only be retrieved using this very same key.</p></dd></dl><dl><dt class="spec value" id="val-create_inj"><a href="#val-create_inj" class="anchor"></a><code><span class="keyword">val</span> create_inj : unit <span>&#45;&gt;</span> <span><span class="type-var">'a</span> <a href="index.html#type-injection">injection</a></span></code></dt><dd><p>Return a value that works for a given type of values. This function is normally called once for each type of value. Several keys may be created for the same type, but a value set with a given setter can only be retrieved with the matching getter. The same key can be reused across multiple maps (although not in a thread-safe way).</p></dd></dl><div class="spec module-type" id="module-type-S"><a href="#module-type-S" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S/index.html">S</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code></div><div class="spec module-type" id="module-type-ORD"><a href="#module-type-ORD" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-ORD/index.html">ORD</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code></div><div class="spec module" id="module-Make"><a href="#module-Make" class="anchor"></a><code><span class="keyword">module</span> <a href="Make/index.html">Make</a> : <span class="keyword">functor</span> (<a href="Make/argument-1-X/index.html">X</a> : <a href="index.html#module-type-ORD">ORD</a>) <span>&#45;&gt;</span> <a href="index.html#module-type-S">S</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="Make/index.html#type-key">key</a> = <a href="Make/argument-1-X/index.html#type-t">X.t</a></code></div></div></body></html>
