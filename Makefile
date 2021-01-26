@@ -1,11 +1,9 @@
-PROMOTE=$(if $(shell ocamlc -version |grep '4\.0[012]\.[0-9][0-9]*'), \
-	      --ignore-promoted-rules, )
 PACKAGES=containers,containers-data,containers-thread
 
 all: build test
 
 build:
-	dune build $(PROMOTE) @install -p $(PACKAGES)
+	dune build @install -p $(PACKAGES)
 
 test: build
 	dune runtest --no-buffer --force
@@ -14,12 +12,12 @@ clean:
 	dune clean
 
 doc:
-	dune build $(PROMOTE) @doc
+	dune build @doc
 
 BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
 
 benchs:
-	dune build $(PROMOTE) $(addprefix benchs/, $(BENCH_TARGETS))
+	dune build $(addprefix benchs/, $(BENCH_TARGETS))
 	@for i in $(BENCH_TARGETS) ; do ln -sf _build/default/benchs/$$i ; done
 
 examples:
