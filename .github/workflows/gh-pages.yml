@@ -24,15 +24,12 @@ jobs:
 
       - name: Pin
         run: opam pin -n .
-        if: steps.cache-opam.outputs.cache-hit != 'true'
 
       - name: Depext
         run: opam depext -yt containers containers-data containers-thread
-        if: steps.cache-opam.outputs.cache-hit != 'true'
 
       - name: Deps
         run: opam install -d . --deps-only
-        if: steps.cache-opam.outputs.cache-hit != 'true'
 
       - name: Build
         run: opam exec -- dune build @doc
