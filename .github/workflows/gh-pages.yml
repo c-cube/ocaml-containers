@@ -43,3 +43,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./_build/default/_doc/_html/
           destination_dir: dev
+          enable_jekyll: true
