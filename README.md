@@ -371,6 +371,8 @@ the library, including printers, maps, etc.
 ```ocaml
 # (|>) ;;  (* quick reminder of this awesome standard operator *)
 - : 'a -> ('a -> 'b) -> 'b = <fun>
+# 10 |> succ;;
+- : int = 11
 
 # open CCList.Infix;;
 
@@ -383,7 +385,8 @@ val l : int list =
    76; 77; 78; 79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90; 91; 92; 93;
    94; 95; 96; 97; 98; 99; 100]
 
-# l
+# (* transform a list, dropping some elements *)
+  l
   |> CCList.filter_map
      (fun x-> if x mod 3=0 then Some (float x) else None)
   |> CCList.take 5 ;;

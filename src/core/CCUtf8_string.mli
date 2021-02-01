@@ -95,7 +95,7 @@ val uchar_to_bytes : uchar -> char iter
     This can be used, for example, in combination with {!Buffer.add_char}
     on a pre-allocated buffer to add the bytes one by one (despite its name,
       {!Buffer.add_char} takes individual bytes, not unicode codepoints).
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val of_gen : uchar gen -> t
 

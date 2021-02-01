@@ -36,15 +36,15 @@ val exn : exn printer
 
 val space : unit printer
 (** Alias to {!pp_print_space}.
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val cut : unit printer
 (** Alias to {!pp_print_cut}.
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val break : (int * int) printer
 (** Tuple-ized {!printer} form of {!pp_print_break}.
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val newline : unit printer
 (** Force newline (see {!Format.pp_force_newline}).
@@ -100,11 +100,11 @@ val quad : ?sep:unit printer -> 'a printer -> 'b printer ->
 
 val append : unit printer -> unit printer -> unit printer
 (** [append ppa ppb] first prints [ppa ()], then prints [ppb ()].
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val append_l : unit printer list -> unit printer
 (** [append_l pps] runs the printers in [pps] sequentially.
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val within : string -> string -> 'a printer -> 'a printer
 (** [within a b p] wraps [p] inside the strings [a] and [b]. Convenient,
@@ -364,7 +364,7 @@ end
 module Infix : sig
   val (++) : unit printer -> unit printer -> unit printer
   (** Alias to {!append}.
-      @since NEXT_RELEASE *)
+      @since 3.2 *)
 end
 
 include module type of Infix

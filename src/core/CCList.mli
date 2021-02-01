@@ -84,12 +84,12 @@ val scan_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc list
 val reduce : ('a -> 'a -> 'a) -> 'a list -> 'a option
 (** [reduce f (hd::tl)] returns [Some (fold_left f hd tl)].  If [l] is empty,
     then [None] is returned.
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val reduce_exn : ('a -> 'a -> 'a) -> 'a list -> 'a
 (** [reduce_exn] is the unsafe version of {!reduce}.
     @raise Invalid_argument if the given list is empty.
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
 (** [fold_map2 f init l1 l2] is to [fold_map] what [List.map2] is to [List.map].
@@ -328,7 +328,7 @@ val chunks : int -> 'a list -> 'a list list
     Each item of [l] will occur in exactly one chunk. Only the last chunk
     might be of length smaller than [n].
     Invariant: [(chunks n l |> List.flatten) = l].
-    @since NEXT_RELEASE *)
+    @since 3.2 *)
 
 val intersperse : 'a -> 'a list -> 'a list
 (** [intersperse x l] inserts the element [x] between adjacent elements of the list [l].

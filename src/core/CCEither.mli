@@ -5,7 +5,7 @@
     Module that is compatible with Either form OCaml 4.12 but can be use with any
     ocaml version compatible with container
 
-    @since NEXT_RELEASE
+    @since 3.2
 *)
 
 type 'a iter = ('a -> unit) -> unit

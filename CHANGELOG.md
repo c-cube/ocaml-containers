@@ -1,5 +1,25 @@
 # Changelog
 
+## 3.2
+
+- add CCEither module
+- add `CCList.chunks`
+- add iter/seq functions to `CCString`
+- add `CCList.reduce` (resolves #305)
+- fix: in `CCInt` pick popcount at runtime on 64 bits
+- fix: in shims, use configurator properly to determine int size
+- in `CCFormat`, add `append`, `append_l`, infix `++` for sequencing,
+  `space`, `break`, `cut`
+- fix: in `CCSexp`, handle non-ascii escapes in strings
+- `CCUtf8_string`: add and expose `uchar_to_bytes`
+
+- enable auto deploy of doc
+- improve CI: test core on non ubuntu platform, test all on ubuntu
+- update readme
+- CCImmutArray: add tests (#344)
+- add fuzzing (#339)
+- add stronger test to compare with uutf in ccutf8string
+
 ## 3.1
 
 - add `List.combine_chop` and corresponding `(and&)` synchronized product
