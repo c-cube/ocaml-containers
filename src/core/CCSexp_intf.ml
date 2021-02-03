@@ -4,10 +4,22 @@ type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 (** {2 Abstract representation of S-expressions}
+    @since NEXT_RELEASE *)
+module type BASIC_SEXP = sig
+  type t
+
+  val atom : string -> t
+  val list : t list -> t
+
+  val match_ : t -> atom:(string -> 'a) -> list:(t list -> 'a) -> 'a
+end
+
+(** {2 Abstract representation of S-expressions (extended)}
 
     @since 2.7 *)
 module type SEXP = sig
-  type t
+  include BASIC_SEXP
+
   type loc
 
   val make_loc : ((int * int) -> (int * int) -> string -> loc) option
@@ -16,17 +28,12 @@ module type SEXP = sig
 
   val atom_with_loc : loc:loc -> string -> t
   val list_with_loc : loc:loc -> t list -> t
-
-  val atom : string -> t
-  val list : t list -> t
-
-  val match_ : t -> atom:(string -> 'a) -> list:(t list -> 'a) -> 'a
 end
 
 (** {2 Operations over S-expressions}
 
     @since 2.7 *)
-module type S = sig
+module type S0 = sig
   type t
   type sexp = t
 
@@ -86,29 +93,6 @@ module type S = sig
 
   (** {2 Parsing} *)
 
-  (** A parser of ['a] can return [Yield x] when it parsed a value,
-      or [Fail e] when a parse error was encountered, or
-      [End] if the input was empty. *)
-  type 'a parse_result =
-    | Yield of 'a
-    | Fail of string
-    | End
-
-  module Decoder : sig
-    type t
-    (** Decoder *)
-
-    val of_lexbuf : Lexing.lexbuf -> t
-
-    val next : t -> sexp parse_result
-    (** Parse the next S-expression or return an error if the input isn't
-        long enough or isn't a proper S-expression. *)
-
-    val to_list : t -> sexp list or_error
-    (** Read all the values from this decoder.
-        @since 2.8 *)
-  end
-
   val parse_string : string -> t or_error
   (** Parse a string. *)
 
@@ -131,4 +115,37 @@ module type S = sig
 
   val parse_file_list : string -> t list or_error
   (** Open the file and read a S-exp from it. *)
+
+end
+
+(** {2 Operations over S-expressions (extended)}
+
+    @since 2.7 *)
+module type S = sig
+  include S0
+
+  (** {2 Parsing} *)
+
+  (** A parser of ['a] can return [Yield x] when it parsed a value,
+      or [Fail e] when a parse error was encountered, or
+      [End] if the input was empty. *)
+  type 'a parse_result =
+    | Yield of 'a
+    | Fail of string
+    | End
+
+  module Decoder : sig
+    type t
+    (** Decoder *)
+
+    val of_lexbuf : Lexing.lexbuf -> t
+
+    val next : t -> sexp parse_result
+    (** Parse the next S-expression or return an error if the input isn't
+        long enough or isn't a proper S-expression. *)
+
+    val to_list : t -> sexp list or_error
+    (** Read all the values from this decoder.
+        @since 2.8 *)
+  end
 end

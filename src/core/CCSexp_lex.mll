@@ -88,3 +88,4 @@ rule token = parse
   | string { ATOM (remove_quotes lexbuf (Lexing.lexeme lexbuf)) }
   | _ as c
     { error lexbuf (Printf.sprintf "lexing failed on char `%c`" c) }
+

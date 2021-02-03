@@ -10,6 +10,11 @@ type 'a gen = unit -> 'a option
 
 (** {2 Abstract representation of S-expressions}
 
+    @since NEXT_RELEASE *)
+module type BASIC_SEXP = CCSexp_intf.BASIC_SEXP
+
+(** {2 Abstract representation of S-expressions (extended)}
+
     @since 2.7 *)
 module type SEXP = CCSexp_intf.SEXP
 
@@ -18,6 +23,10 @@ module type SEXP = CCSexp_intf.SEXP
     @since 2.7 *)
 module type S = CCSexp_intf.S
 
+(** Subset of {!S}
+    @since NEXT_RELEASE *)
+module type S0 = CCSexp_intf.S0
+
 (** {2 Functorized operations}
 
     This builds a parser and printer for S-expressions represented as
@@ -25,6 +34,12 @@ module type S = CCSexp_intf.S
 
     @since 2.7 *)
 module Make(Sexp : SEXP) : S with type t = Sexp.t
+
+(** {2 Parser and printer for Canonical S-exprs}
+
+    See {{: https://en.wikipedia.org/wiki/Canonical_S-expressions} wikipedia}.
+    These S-expressions are binary safe. *)
+module MakeCanonical(Sexp : BASIC_SEXP) : S0 with type t = Sexp.t
 
 (** {2 Basics} *)
 
@@ -35,6 +50,10 @@ type t = [
 ]
 
 include S with type t := t
+
+(** Canonical encoding
+    @since NEXT_RELEASE *)
+module Canonical : S0 with type t = t
 
 val equal : t -> t -> bool
 (** @since 3.0 *)
