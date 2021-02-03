@@ -12,8 +12,8 @@ let gen_sexp =
 let () =
   Crowbar.add_test ~name:"ccsexp_csexp_reparse" [ gen_sexp ]
     (fun s ->
-       let str = CCSexp.Canonical.to_string s in
-       match CCSexp.Canonical.parse_string_list str with
+       let str = CCCanonical_sexp.to_string s in
+       match CCCanonical_sexp.parse_string_list str with
          | Ok [s2] -> assert (s = s2)
          | Ok _ -> failwith "wrong number of sexps"
          | Error e -> failwith e)
