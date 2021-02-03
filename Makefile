@@ -23,9 +23,6 @@ benchs:
 examples:
 	dune build examples/id_sexp.exe
 
-unlabel:
-	dune build @unlabel
-
 VERSION=$(shell awk '/^version:/ {print $$2}' containers.opam)
 
 update_next_tag:
