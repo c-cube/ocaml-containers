@@ -14,3 +14,4 @@ _opam
 *.exe
 fuzz-*-input
 fuzz-*-output
+fuzz-logs/
