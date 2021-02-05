@@ -304,7 +304,7 @@ end
 module U : sig
   val list : ?start:string -> ?stop:string -> ?sep:string -> 'a t -> 'a list t
   (** [list p] parses a list of [p], with the OCaml conventions for
-      start token "[", stop token "]" and separator ";".
+      start token "\[", stop token "\]" and separator ";".
       Whitespace between items are skipped. *)
 
   val int : int t
