@@ -72,19 +72,51 @@ module Poly : sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
+  val add_iter_with :
+    f:('a -> 'b -> 'b -> 'b) ->
+    ('a,'b) Hashtbl.t -> ('a * 'b) iter -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
+
   val add_seq : ('a,'b) Hashtbl.t -> ('a * 'b) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       Renamed from [add_std_seq] since 3.0.
       @since 3.0 *)
 
+  val add_seq_with :
+    f:('a -> 'b -> 'b -> 'b) ->
+    ('a,'b) Hashtbl.t -> ('a * 'b) Seq.t -> unit
+  (** Add the corresponding pairs to the table.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
+
   val of_iter : ('a * 'b) iter -> ('a,'b) Hashtbl.t
   (** From the given bindings, added in order.
       @since 2.8 *)
+
+  val of_iter_with :
+    f:('a -> 'b -> 'b -> 'b) ->
+    ('a * 'b) iter -> ('a,'b) Hashtbl.t
+  (** From the given bindings, added in order.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val of_seq : ('a * 'b) Seq.t -> ('a,'b) Hashtbl.t
   (** From the given bindings, added in order.
       Renamed from [of_std_seq] since 3.0.
       @since 3.0 *)
+
+  val of_seq_with :
+    f:('a -> 'b -> 'b -> 'b) ->
+    ('a * 'b) Seq.t -> ('a,'b) Hashtbl.t
+  (** From the given bindings, added in order.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val add_iter_count : ('a, int) Hashtbl.t -> 'a iter -> unit
   (** [add_iter_count tbl i] increments the count of each element of [i]
@@ -116,6 +148,14 @@ module Poly : sig
       added in order using {!add}. If a key occurs several times,
       it will be added several times, and the visible binding
       will be the last one. *)
+
+  val of_list_with :
+    f:('a -> 'b -> 'b -> 'b) ->
+    ('a * 'b) list -> ('a,'b) Hashtbl.t
+  (** From the given bindings, added in order.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val update : ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> unit
   (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
@@ -205,19 +245,51 @@ module type S = sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
+  val add_iter_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    'a t -> (key * 'a) iter -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
+
   val add_seq : 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       Renamed from [add_std_seq] since 3.0.
       @since 3.0 *)
 
+  val add_seq_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    'a t -> (key * 'a) Seq.t -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
+
   val of_iter : (key * 'a) iter -> 'a t
   (** From the given bindings, added in order.
       @since 2.8 *)
+
+  val of_iter_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    (key * 'a) iter -> 'a t
+  (** From the given bindings, added in order.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val of_seq : (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
       Renamed from [of_std_seq] since 3.0.
       @since 3.0 *)
+
+  val of_seq_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    (key * 'a) Seq.t -> 'a t
+  (** From the given bindings, added in order.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val add_iter_count : int t -> key iter -> unit
   (** [add_iter_count tbl i] increments the count of each element of [i]
@@ -249,6 +321,14 @@ module type S = sig
       added in order using {!add}. If a key occurs several times,
       it will be added several times, and the visible binding
       will be the last one. *)
+
+  val of_list_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    (key * 'a) list -> 'a t
+  (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i].
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
   (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if

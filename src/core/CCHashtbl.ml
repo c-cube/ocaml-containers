@@ -62,32 +62,38 @@ module Poly = struct
   let to_iter tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
 
   let add_iter tbl i = i (fun (k,v) -> Hashtbl.add tbl k v)
+  let add_iter_with ~f tbl i =
+    i (fun (k,v) ->
+        match Hashtbl.find tbl k with
+          | exception Not_found -> Hashtbl.add tbl k v
+          | v2 -> Hashtbl.replace tbl k (f k v v2))
 
   let add_seq tbl seq = Seq.iter (fun (k,v) -> Hashtbl.add tbl k v) seq
+  let add_seq_with ~f tbl seq =
+    Seq.iter
+      (fun (k,v) ->
+         match Hashtbl.find tbl k with
+           | exception Not_found -> Hashtbl.add tbl k v
+           | v2 -> Hashtbl.replace tbl k (f k v v2))
+      seq
 
-  let of_iter i =
+  (* helper for building hashtables by bulk mutation *)
+  let[@inline] mk_tbl_ f x =
     let tbl = Hashtbl.create 32 in
-    add_iter tbl i;
+    f tbl x;
     tbl
 
-  let of_seq i =
-    let tbl = Hashtbl.create 32 in
-    add_seq tbl i;
-    tbl
+  let of_iter i = mk_tbl_ add_iter i
+  let of_seq i = mk_tbl_ add_seq i
+  let of_iter_with ~f i = mk_tbl_ (add_iter_with ~f) i
+  let of_seq_with ~f i = mk_tbl_ (add_seq_with ~f) i
 
   let add_iter_count tbl i = i (fun k -> incr tbl k)
 
   let add_seq_count tbl seq = Seq.iter (fun k -> incr tbl k) seq
 
-  let of_iter_count i =
-    let tbl = Hashtbl.create 32 in
-    add_iter_count tbl i;
-    tbl
-
-  let of_seq_count i =
-    let tbl = Hashtbl.create 32 in
-    add_seq_count tbl i;
-    tbl
+  let of_iter_count i = mk_tbl_ add_iter_count i
+  let of_seq_count i = mk_tbl_ add_seq_count i
 
   let to_list tbl =
     Hashtbl.fold
@@ -97,6 +103,16 @@ module Poly = struct
   let of_list l =
     let tbl = Hashtbl.create 32 in
     List.iter (fun (k,v) -> Hashtbl.add tbl k v) l;
+    tbl
+
+  let of_list_with ~f l =
+    let tbl = Hashtbl.create 32 in
+    List.iter
+      (fun (k,v) ->
+         match Hashtbl.find tbl k with
+           | exception Not_found -> Hashtbl.add tbl k v
+           | v2 -> Hashtbl.replace tbl k (f k v v2))
+      l;
     tbl
 
   let update tbl ~f ~k =
@@ -161,7 +177,9 @@ module type S = sig
   include Hashtbl.S
 
   val get : 'a t -> key -> 'a option
-  (** Safe version of {!Hashtbl.find}. *)
+  (** [get tbl k] finds a binding for the key [k] if present,
+      or returns [None] if no value is found.
+      Safe version of {!Hashtbl.find}. *)
 
   val get_or : 'a t -> key -> default:'a -> 'a
   (** [get_or tbl k ~default] returns the value associated to [k] if present,
@@ -181,19 +199,19 @@ module type S = sig
       @since 0.16 *)
 
   val decr : ?by:int -> int t -> key -> unit
-  (** Like {!incr} but subtract 1 (or the value of [by]).
+  (** [decr ?by tbl x] is like {!incr} but subtract 1 (or the value of [by]).
       If the value reaches 0, the key is removed from the table.
       This does nothing if the key is not already present in the table.
       @since 0.16 *)
 
   val keys : 'a t -> key iter
-  (** Iterate on keys (similar order as {!Hashtbl.iter}). *)
+  (**  [keys tbl f] iterates on keys (similar order as {!Hashtbl.iter}). *)
 
   val values : 'a t -> 'a iter
-  (** Iterate on values in the table. *)
+  (**  [values tbl f] iterates on values in the table. *)
 
   val keys_list : _ t -> key list
-  (** [keys_list t] is the list of keys in [t].
+  (** [keys_list tbl] is the list of keys in [tbl].
       If the key is in the Hashtable multiple times, all occurrences will be returned.
       @since 0.8 *)
 
@@ -212,17 +230,51 @@ module type S = sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
+  val add_iter_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    'a t -> (key * 'a) iter -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
+
   val add_seq : 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      @since 2.8 *)
+      Renamed from [add_std_seq] since 3.0.
+      @since 3.0 *)
+
+  val add_seq_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    'a t -> (key * 'a) Seq.t -> unit
+  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val of_iter : (key * 'a) iter -> 'a t
   (** From the given bindings, added in order.
       @since 2.8 *)
 
+  val of_iter_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    (key * 'a) iter -> 'a t
+  (** From the given bindings, added in order.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
+
   val of_seq : (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
-      @since 2.8 *)
+      Renamed from [of_std_seq] since 3.0.
+      @since 3.0 *)
+
+  val of_seq_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    (key * 'a) Seq.t -> 'a t
+  (** From the given bindings, added in order.
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val add_iter_count : int t -> key iter -> unit
   (** [add_iter_count tbl i] increments the count of each element of [i]
@@ -234,7 +286,8 @@ module type S = sig
   (** [add_seq_count tbl seq] increments the count of each element of [seq]
       by calling {!incr}. This is useful for counting how many times each
       element of [seq] occurs.
-      @since 2.8 *)
+      Renamed from [of_std_seq_count] since 3.0.
+      @since 3.0 *)
 
   val of_iter_count : key iter -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
@@ -242,16 +295,25 @@ module type S = sig
 
   val of_seq_count : key Seq.t -> int t
   (** Like {!add_seq_count}, but allocates a new table and returns it.
-      @since 2.8 *)
+      Renamed from [of_std_seq_count] since 3.0.
+      @since 3.0 *)
 
   val to_list : 'a t -> (key * 'a) list
-  (** List of bindings (order unspecified). *)
+  (** [to_list tbl] returns the list of (key,value) bindings (order unspecified). *)
 
   val of_list : (key * 'a) list -> 'a t
-  (** Build a table from the given list of bindings [k_i -> v_i],
+  (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i],
       added in order using {!add}. If a key occurs several times,
       it will be added several times, and the visible binding
       will be the last one. *)
+
+  val of_list_with :
+    f:(key -> 'a -> 'a -> 'a) ->
+    (key * 'a) list -> 'a t
+  (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i].
+      If a key occurs multiple times in the input, the values are combined
+      using [f] in an unspecified order.
+      @since NEXT_RELEASE *)
 
   val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
   (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
@@ -270,7 +332,12 @@ module type S = sig
 
   val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
     ?pp_arrow:unit printer -> key printer -> 'a printer -> 'a t printer
-  (** Printer for tables.
+  (** [pp ~pp_start ~pp_stop ~pp_sep ~pp arrow pp_k pp_v] returns a table printer
+      given a [pp_k] printer
+      for individual key and a [pp_v] printer for individual value. 
+      [pp_start] and [pp_stop] control the opening and closing delimiters,
+      by default print nothing. [pp_sep] control the separator between binding.
+      [pp_arrow] control the arrow between the key and value.
       Renamed from [print] since 2.0.
       @since 0.13 *)
 end
@@ -359,18 +426,31 @@ module Make(X : Hashtbl.HashedType)
   let to_iter tbl k = iter (fun key v -> k (key,v)) tbl
 
   let add_iter tbl i = i (fun (k,v) -> add tbl k v)
+  let add_iter_with ~f tbl i =
+    i (fun (k,v) ->
+        match find tbl k with
+          | exception Not_found -> add tbl k v
+          | v2 -> replace tbl k (f k v v2))
 
   let add_seq tbl seq = Seq.iter (fun (k,v) -> add tbl k v) seq
+  let add_seq_with ~f tbl seq =
+    Seq.iter
+      (fun (k,v) ->
+         match find tbl k with
+           | exception Not_found -> add tbl k v
+           | v2 -> replace tbl k (f k v v2))
+      seq
 
-  let of_iter i =
+  (* helper for building hashtables by bulk mutation *)
+  let[@inline] mk_tbl_ f x =
     let tbl = create 32 in
-    add_iter tbl i;
+    f tbl x;
     tbl
 
-  let of_seq i =
-    let tbl = create 32 in
-    add_seq tbl i;
-    tbl
+  let of_iter i = mk_tbl_ add_iter i
+  let of_seq i = mk_tbl_ add_seq i
+  let of_iter_with ~f i = mk_tbl_ (add_iter_with ~f) i
+  let of_seq_with ~f i = mk_tbl_ (add_seq_with ~f) i
 
   let add_iter_count tbl i = i (fun k -> incr tbl k)
 
@@ -396,6 +476,16 @@ module Make(X : Hashtbl.HashedType)
     List.iter (fun (k,v) -> add tbl k v) l;
     tbl
 
+  let of_list_with ~f l =
+    let tbl = create 32 in
+    List.iter
+      (fun (k,v) ->
+         match find tbl k with
+           | exception Not_found -> add tbl k v
+           | v2 -> replace tbl k (f k v v2))
+      l;
+    tbl
+
   let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
       ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ")
       ?(pp_arrow=fun fmt () -> Format.fprintf fmt "@ -> ") pp_k pp_v fmt m =
@@ -410,4 +500,3 @@ module Make(X : Hashtbl.HashedType)
       ) m;
     pp_stop fmt ()
 end
-
