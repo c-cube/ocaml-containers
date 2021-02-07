@@ -270,10 +270,10 @@ module Make(O : Map.OrderedType) = struct
     !m
 
   let add_seq_with ~f m s =
+    let combine k v = function None -> Some v | Some v0 -> Some (f k v v0) in
     let m = ref m in
     Seq.iter (fun (k,v) ->
-        let v = try f k v (find k !m) with Not_found -> v in
-        m := add k v !m) s;
+        m := update k (combine k v) !m) s;
     !m
 
   let of_seq s = add_seq empty s
@@ -285,10 +285,10 @@ module Make(O : Map.OrderedType) = struct
     !m
 
   let add_iter_with ~f m s =
+    let combine k v = function None -> Some v | Some v0 -> Some (f k v v0) in
     let m = ref m in
     s (fun (k,v) ->
-        let v = try f k v (find k !m) with Not_found -> v in
-        m := add k v !m);
+        m := update k (combine k v) !m);
     !m
 
   let of_iter s = add_iter empty s
@@ -305,10 +305,10 @@ module Make(O : Map.OrderedType) = struct
 
   let add_list m l = List.fold_left (fun m (k,v) -> add k v m) m l
   let add_list_with ~f m l =
+    let combine k v = function None -> Some v | Some v0 -> Some (f k v v0) in
     List.fold_left
       (fun m (k,v) ->
-         let v = try f k v (find k m) with Not_found -> v in
-         add k v m)
+         update k (combine k v) m)
       m l
 
   let of_list l = add_list empty l
