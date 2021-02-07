@@ -181,6 +181,15 @@ module Make(O : Map.OrderedType) = struct
          | Some v1, Some v2 -> f k v1 v2)
       a b
 
+  let update k f m =
+    let x =
+      try f (Some (M.find k m))
+      with Not_found -> f None
+    in
+    match x with
+      | None -> M.remove k m
+      | Some v' -> M.add k v' m
+
   let choose_opt m =
     try Some (M.choose m)
     with Not_found -> None
@@ -229,15 +238,6 @@ module Make(O : Map.OrderedType) = struct
     | None -> raise Not_found
     | Some (k,v) -> k, v
 
-  let update k f m =
-    let x =
-      try f (Some (M.find k m))
-      with Not_found -> f None
-    in
-    match x with
-      | None -> M.remove k m
-      | Some v' -> M.add k v' m
-
   (*$= & ~printer:CCFormat.(to_string @@ Dump.(list (pair string int)))
     ["a", 1; "b", 20] \
       (M.of_list ["b", 2; "c", 3] \
@@ -246,6 +246,10 @@ module Make(O : Map.OrderedType) = struct
        |> M.update "b" (CCOpt.map (fun x -> x * 10)) \
        |> M.to_list |> List.sort CCOrd.compare)
     *)
+
+  (* === include M.
+     This will shadow some values depending on OCaml's current version
+     === *)
 
   include M
 
@@ -271,10 +275,8 @@ module Make(O : Map.OrderedType) = struct
 
   let add_seq_with ~f m s =
     let combine k v = function None -> Some v | Some v0 -> Some (f k v v0) in
-    let m = ref m in
-    Seq.iter (fun (k,v) ->
-        m := update k (combine k v) !m) s;
-    !m
+    Seq.fold_left
+      (fun m (k,v) -> update k (combine k v) m) m s
 
   let of_seq s = add_seq empty s
   let of_seq_with ~f s = add_seq_with ~f empty s
@@ -307,8 +309,7 @@ module Make(O : Map.OrderedType) = struct
   let add_list_with ~f m l =
     let combine k v = function None -> Some v | Some v0 -> Some (f k v v0) in
     List.fold_left
-      (fun m (k,v) ->
-         update k (combine k v) m)
+      (fun m (k,v) -> update k (combine k v) m)
       m l
 
   let of_list l = add_list empty l
