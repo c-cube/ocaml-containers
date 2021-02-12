@@ -148,6 +148,12 @@ let (@) = append
   (1-- 10_000) @ (10_001 -- 20_000) = 1 -- 20_000
 *)
 
+let[@inline] cons' l x = x::l
+
+(*$Q
+  Q.(small_list int)(fun l -> List.rev l = List.fold_left cons' [] l)
+  *)
+
 let cons_maybe o l = match o with
   | Some x -> x :: l
   | None -> l

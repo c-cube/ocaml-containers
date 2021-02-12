@@ -39,6 +39,11 @@ val append : 'a t -> 'a t -> 'a t
 (** [append l1 l2] returns the list that is the concatenation of [l1] and [l2].
     Safe version of {!List.append}. *)
 
+val cons' : 'a t -> 'a -> 'a t
+(** [cons' l x] is the same as [x :: l]. This is convenient for fold
+    functions such as {!List.fold_left} or {!Array.fold_left}.
+    @since NEXT_RELEASE *)
+
 val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l].
     [cons_maybe None l] is [l].

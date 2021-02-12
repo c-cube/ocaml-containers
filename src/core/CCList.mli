@@ -40,6 +40,11 @@ val cons_maybe : 'a option -> 'a t -> 'a t
     [cons_maybe None l] is [l].
     @since 0.13 *)
 
+val cons' : 'a t -> 'a -> 'a t
+(** [cons' l x] is the same as [x :: l]. This is convenient for fold
+    functions such as {!List.fold_left} or {!Array.fold_left}.
+    @since NEXT_RELEASE *)
+
 val (@) : 'a t -> 'a t -> 'a t
 (** [l1 @ l2] is like [append l1 l2].
     Concatenate the two lists [l1] and [l2]. *)
