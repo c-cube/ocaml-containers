@@ -1,35 +1,76 @@
-name: build
-on: [push, pull_request]
+name: Build and test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
   run:
     name: Build
     strategy:
+      fail-fast: false
       matrix:
-        #os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [macos-latest, ubuntu-latest]
-        ocaml: [ '4.08.0', '4.03.0', '4.11.0' ]
+        os:
+            - macos-latest
+            - ubuntu-latest
+            - windows-latest
+        ocaml:
+            - '4.08.1'
+            - '4.03.0'
+            - '4.12.0'
+
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@main
-    - uses: avsm/setup-ocaml@v1
-      with:
-        ocaml-version: ${{ matrix.ocaml }}
-    - name: cache opam
-      id: cache-opam
-      uses: actions/cache@v2
-      with:
-        path: _opam
-        key: opam-${{matrix.operating-system}}-${{matrix.ocaml-version}}
-    - run: opam pin -n .
-      if: steps.cache-opam.outputs.cache-hit != 'true'
-    - run: opam depext -yt containers containers-data containers-thread
-      if: steps.cache-opam.outputs.cache-hit != 'true'
-    - run: opam install -t . --deps-only
-      if: ${{ matrix.os == 'ubuntu-latest' }} and ${{ steps.cache-opam.outputs.cache-hit != 'true' }}
-    - run: opam install . --deps-only  # no test deps
-      if: ${{ matrix.os != 'ubuntu-latest' }} and ${{ steps.cache-opam.outputs.cache-hit != 'true' }}
-    - run: opam exec -- dune build
-    - run: opam exec -- dune runtest
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-    - run: opam exec -- dune runtest -p containers # test only core on non-ubuntu platform
-      if: ${{ matrix.os != 'ubuntu-latest' }}
+      - uses: haya14busa/action-cond@v1
+        id: path
+        with:
+          cond: ${{ matrix.os == 'windows-latest' }}
+          if_true: "D:\\cygwin\\home\\runneradmin\\.opam"
+          if_false: "~/.opam"
+
+      - name: Checkout code
+        uses: actions/checkout@main
+
+      - name: Cache opam
+        id: cache-opam
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.path.outputs.value }}
+          key: opam-${{ matrix.os }}-${{ matrix.ocaml }}
+
+      - name: Use OCaml ${{ matrix.ocaml }}
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: ${{ matrix.ocaml }}
+
+      - run: opam update -u
+        if: steps.cache-opam.outputs.cache-hit == 'true'
+
+      - run: opam pin -n .
+
+      - run: opam depext -yt containers containers-data containers-thread
+
+      - run: opam install -t containers containers-data containers-thread --deps-only
+        if: matrix.os == 'ubuntu-latest'
+
+      - run: |
+          opam install -t containers --deps-only
+          opam install containers-data containers-thread --deps-only  # no test deps
+        if: matrix.os != 'ubuntu-latest'
+
+      - run: opam exec -- dune build
+
+      - run: opam exec -- dune runtest
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
+      - run: opam exec -- dune runtest -p containers # test only core on non-ubuntu platform
+        if: ${{ matrix.os != 'ubuntu-latest' }}
+
+      - name: Remove troublesome files for caching on windows
+        if: matrix.os == 'windows-latest'
+        run: |
+            if (Test-Path D:\\cygwin\\home\\runneradmin\\.opam\\ocaml-variants.${{ matrix.ocaml }}+mingw64c\\.opam-switch\\sources\\ocamlbuild.0.14.0\\examples\\){Remove-Item –path D:\\cygwin\\home\\runneradmin\\.opam\\ocaml-variants.${{ matrix.ocaml }}+mingw64c\\.opam-switch\\sources\\ocamlbuild.0.14.0\\examples\\ –recurse}
