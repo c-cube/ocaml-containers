@@ -318,7 +318,54 @@ let range_by ~step i j yield =
       (CCInt.range_by ~step:1 i j |> Iter.to_list) \
       (CCInt.range i j |> Iter.to_list) )
 *)
-(* popcount comes from [Shims] as it's 32/64 bits dependent, see #327 *)
+
+(* we use the simple version for non-64 bits. *)
+let popcount_32 (b:int) : int =
+  let rec loop count x =
+    if x=0 then count
+    else loop (count+1) (x land (x-1))
+  in
+  loop 0 b
+
+(*
+  from https://en.wikipedia.org/wiki/Hamming_weight
+
+  //This uses fewer arithmetic operations than any other known
+  //implementation on machines with slow multiplication.
+  //It uses 17 arithmetic operations.
+  int popcount_2(uint64_t x) {
+    x -= (x >> 1) & m1;             //put count of each 2 bits into those 2 bits
+    x = (x & m2) + ((x >> 2) & m2); //put count of each 4 bits into those 4 bits
+    x = (x + (x >> 4)) & m4;        //put count of each 8 bits into those 8 bits
+    x += x >>  8;  //put count of each 16 bits into their lowest 8 bits
+    x += x >> 16;  //put count of each 32 bits into their lowest 8 bits
+    x += x >> 32;  //put count of each 64 bits into their lowest 8 bits
+    return x & 0x7f;
+  }
+
+   m1 = 0x5555555555555555
+   m2 = 0x3333333333333333
+   m4 = 0x0f0f0f0f0f0f0f0f
+*)
+let popcount_64 (b:int) : int =
+  (* break up into parts to allow compilation on 32-bit and jsoo *)
+  let m1 = 0x55555555 lor 0x55555555 lsl 32 in
+  let m2 = 0x33333333 lor 0x33333333 lsl 32 in
+  let m4 = 0x0f0f0f0f lor 0x0f0f0f0f lsl 32 in
+  let b = b - ((b lsr 1) land m1) in
+  let b = (b land m2) + ((b lsr 2) land m2) in
+  let b = (b + (b lsr 4)) land m4 in
+  let b = b + (b lsr 8) in
+  let b = b + (b lsr 16) in
+  let b = b + (b lsr 32) in
+  b land 0x7f
+
+(* pick at runtime, see:
+  - https://github.com/c-cube/ocaml-containers/issues/346
+  - https://github.com/ocsigen/js_of_ocaml/issues/1079
+  *)
+let popcount =
+  if Sys.int_size = 63 then popcount_64 else popcount_32
 
 (*$=
   0 (popcount 0)
