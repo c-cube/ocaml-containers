@@ -530,7 +530,7 @@ let diagonal l =
   diagonal [1;2;3] |> List.sort Stdlib.compare = [1, 2; 1, 3; 2, 3]
 *)
 
-let partition_filter_either f l =
+let partition_map_either f l =
   let rec iter f l1 l2 l = match l with
     | [] -> List.rev l1, List.rev l2
     | x :: tl ->
@@ -542,7 +542,7 @@ let partition_filter_either f l =
 
 (*$R
   let l1, l2 =
-    partition_filter_either (function
+    partition_map_either (function
       | n when n mod 2 = 0 -> CCEither.Left n
       | n -> CCEither.Right n
     ) [0;1;2;3;4]
