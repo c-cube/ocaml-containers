@@ -235,9 +235,9 @@ val diagonal : 'a t -> ('a * 'a) t
 (** [diagonal l] returns all pairs of distinct positions of the list [l],
     that is the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
-val partition_filter_either : f:('a -> ('b, 'c) CCEither.t) ->
+val partition_map_either : f:('a -> ('b, 'c) CCEither.t) ->
   'a list -> 'b list * 'c list
-(** [partition_filter_either ~f l] maps [f] on [l] and gather results in lists:
+(** [partition_map_either ~f l] maps [f] on [l] and gather results in lists:
     - if [f x = Left y], adds [y] to the first list.
     - if [f x = Right z], adds [z] to the second list.
     @since NEXT_RELEASE *)
