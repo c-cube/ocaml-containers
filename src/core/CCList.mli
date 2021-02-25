@@ -231,13 +231,25 @@ val diagonal : 'a t -> ('a * 'a) t
 (** [diagonal l] returns all pairs of distinct positions of the list [l],
     that is the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
-val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
+val partition_filter_either : ('a -> ('b, 'c) CCEither.t) ->
   'a list -> 'b list * 'c list
-(** [partition_map f l] maps [f] on [l] and gather results in lists:
+(** [partition_filter_either f l] maps [f] on [l] and gather results in lists:
+    - if [f x = Left y], adds [y] to the first list.
+    - if [f x = Right z], adds [z] to the second list.
+    @since NEXT_RELEASE *)
+
+val partition_filter_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
+  'a list -> 'b list * 'c list
+(** [partition_filter_map f l] maps [f] on [l] and gather results in lists:
     - if [f x = `Left y], adds [y] to the first list.
     - if [f x = `Right z], adds [z] to the second list.
     - if [f x = `Drop], ignores [x].
     @since 0.11 *)
+
+val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
+  'a list -> 'b list * 'c list
+[@@ocaml.deprecated "use CCList.partition_filter_map instead"]
+(** @deprecated use {!partition_filter_map} instead *)
 
 val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) ->
   'a t -> 'a list t
