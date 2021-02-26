@@ -56,6 +56,23 @@ let text = Format.pp_print_text
   "a b\nc" (sprintf_no_color "@[<h>%a@]%!" text "a b\nc")
 *)
 
+let string_lines out (s:string) : unit =
+  fprintf out "@[<v>";
+  let i = ref 0 in
+  let n = String.length s in
+  while !i < n do
+    let j =
+      try String.index_from s !i '\n' with Not_found -> n in
+    if !i>0 then fprintf out "@,";
+    substring out (s, !i, j - !i);
+    i := j+1;
+  done;
+  fprintf out "@]"
+
+(*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
+  "(a\n b\n c)" (sprintf_no_color "(@[<v>%a@])" string_lines "a\nb\nc")
+*)
+
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
     | x::((_::_) as l) ->

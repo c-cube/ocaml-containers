@@ -63,6 +63,14 @@ val text : string printer
     See [pp_print_text] on recent versions of OCaml.
     @since 1.2 *)
 
+val string_lines : string printer
+(** [string_lines out s] prints [s] with all newlines (['\n']) replaced by
+    a cut, in a vertical box. It does {b NOT} insert breakable spaces in
+    place of spaces, unlike {!text}.
+    This means an already formatted string can be displayed inside another
+    formatter without mangling the indentation.
+    @since NEXT_RELEASE *)
+
 val char : char printer (** @since 0.14 *)
 
 val int32 : int32 printer (** @since 0.14 *)
