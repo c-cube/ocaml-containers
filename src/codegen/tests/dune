@@ -1,0 +1,24 @@
+
+; emit tests
+
+(executable
+  (name emit_tests)
+  (modules emit_tests)
+  (flags :standard -warn-error -a+8)
+  (libraries containers containers.codegen))
+
+(rule
+  (targets test_bitfield.ml test_bitfield.mli)
+  (action (run ./emit_tests.exe)))
+
+; run tests
+
+(executables
+  (names test_bitfield)
+  (modules test_bitfield)
+  (flags :standard -warn-error -a+8)
+  (libraries containers))
+
+(alias
+  (name runtest)
+  (action (run ./test_bitfield.exe)))
