@@ -37,3 +37,29 @@ val pp_buf : Buffer.t -> t -> unit
 
 val pp : Format.formatter -> t -> unit
 (** Renamed from [print] since 2.0. *)
+
+(** {2 Infix Operators}
+
+    @since NEXT_RELEASE *)
+
+module Infix : sig
+  val (=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<>) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (>) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (<=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+
+  val (>=) : t -> t -> bool
+  (** @since NEXT_RELEASE *)
+end
+
+include module type of Infix
