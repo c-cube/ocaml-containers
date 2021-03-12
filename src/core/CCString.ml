@@ -760,6 +760,12 @@ let fold f acc s =
     else fold_rec f (f acc s.[i]) s (i+1)
   in fold_rec f acc s 0
 
+let foldi f acc s =
+  let rec fold_rec f acc s i =
+    if i = String.length s then acc
+    else fold_rec f (f acc i s.[i]) s (i+1)
+  in fold_rec f acc s 0
+
 let pad ?(side=`Left) ?(c=' ') n s =
   let len_s = String.length s in
   if len_s >= n then s

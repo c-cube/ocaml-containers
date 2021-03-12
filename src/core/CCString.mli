@@ -34,6 +34,11 @@ val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
 (** [fold f init s] folds on chars by increasing index. Computes [f(… (f (f init s.[0]) s.[1]) …) s.[n-1]].
     @since 0.7 *)
 
+val foldi : ('a -> int -> char -> 'a) -> 'a -> t -> 'a
+(** [foldi f init s] is just like {!fold}, but it also passes in the index of each chars
+    as second argument to the folded function [f].
+    @since NEXT_RELEASE *)
+
 (** {2 Conversions} *)
 
 val to_gen : t -> char gen
