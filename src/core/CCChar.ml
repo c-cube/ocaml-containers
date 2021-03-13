@@ -21,15 +21,15 @@ let to_int = Char.code
 let to_string c = String.make 1 c
 
 (*$Q to_string
-  (Q.string_of_size (Q.Gen.return 1)) (fun s -> Stdlib.(=) (to_string s.[0]) s)
+  (Q.string_of_size (Q.Gen.return 1)) (fun s -> CCShims_.Stdlib.(=) (to_string s.[0]) s)
 *)
 
 module Infix = struct
-  let (=) : t -> t -> bool = Stdlib.(=)
-  let (<>) : t -> t -> bool = Stdlib.(<>)
-  let (<) : t -> t -> bool = Stdlib.(<)
-  let (>) : t -> t -> bool = Stdlib.(>)
-  let (<=) : t -> t -> bool = Stdlib.(<=)
-  let (>=) : t -> t -> bool = Stdlib.(>=)
+  let (=) : t -> t -> bool = CCShims_.Stdlib.(=)
+  let (<>) : t -> t -> bool = CCShims_.Stdlib.(<>)
+  let (<) : t -> t -> bool = CCShims_.Stdlib.(<)
+  let (>) : t -> t -> bool = CCShims_.Stdlib.(>)
+  let (<=) : t -> t -> bool = CCShims_.Stdlib.(<=)
+  let (>=) : t -> t -> bool = CCShims_.Stdlib.(>=)
 end
 include Infix
