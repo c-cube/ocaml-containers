@@ -60,8 +60,8 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
     Fold on 0 or 1 element. *)
 
 val filter : ('a -> bool) -> 'a t -> 'a t
-(** [filter f o] returns [Some x] if [f (Some x)] is [true],
-    or [None] if [f (Some x)] is [false] or if [o] is [None].
+(** [filter f o] returns [Some x] if [o] is [Some x] and [f x] is [true],
+    or [None] if [f x] is [false] or if [o] is [None].
     Filter on 0 or 1 element.
     @since 0.5 *)
 
