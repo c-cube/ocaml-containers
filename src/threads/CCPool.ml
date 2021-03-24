@@ -55,7 +55,7 @@ module Make(P : PARAM) = struct
 
   let set_exn_handler f = pool.exn_handler <- f
 
-  let with_lock_ t f =
+  let[@inline] with_lock_ t f =
     Mutex.lock t.mutex;
     try
       let x = f t in
