@@ -517,6 +517,7 @@ module Make(P : PARAM) = struct
     (* map an array of futures to a future array *)
     let sequence_a a = match a with
       | [||] -> return [||]
+      | [| x |] -> map (fun x->[|x|]) x
       | _ ->
         sequence_ (A_ a)
           (fun () -> Array.map get_nolock_ a)
