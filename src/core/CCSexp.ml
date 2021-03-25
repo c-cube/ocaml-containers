@@ -36,6 +36,7 @@ let _with_out filename f =
 module Make(Sexp : SEXP) = struct
   type t = Sexp.t
   type sexp = t
+  type loc = Sexp.loc
 
   let atom = Sexp.atom
   let list = Sexp.list
@@ -176,6 +177,20 @@ module Make(Sexp : SEXP) = struct
       let open Lexing in
       p.pos_lnum, p.pos_cnum - p.pos_bol
 
+    let loc_of_buf_with_ ?start buf f =
+      let open Lexing in
+      let start = match start with
+        | Some p -> p
+        | None -> buf.lex_start_p in
+      f (pair_of_pos_ start) (pair_of_pos_ buf.lex_curr_p) buf.lex_curr_p.pos_fname
+
+    let[@inline] loc_of_buf_ (self:t) : loc option =
+      match Sexp.make_loc with
+        | None -> None
+        | Some f -> Some (loc_of_buf_with_ self.buf f)
+
+    let last_loc = loc_of_buf_
+
     let error_ lexbuf msg =
       let start = Lexing.lexeme_start_p lexbuf in
       let line, col = pair_of_pos_ start in
@@ -195,9 +210,7 @@ module Make(Sexp : SEXP) = struct
             | None -> Sexp.atom s
             | Some f ->
               (* build a position for this token *)
-              let loc =
-                f (pair_of_pos_ t.buf.lex_start_p) (pair_of_pos_ t.buf.lex_curr_p)
-                  t.buf.lex_curr_p.pos_fname in
+              let loc = loc_of_buf_with_ t.buf f in
               Sexp.atom_with_loc ~loc s
           end
         | L.LIST_OPEN ->
@@ -210,10 +223,7 @@ module Make(Sexp : SEXP) = struct
               begin match Sexp.make_loc with
                 | None -> Sexp.list l
                 | Some f ->
-                  let loc =
-                    f (pair_of_pos_ pos_start)
-                      (pair_of_pos_ t.buf.lex_curr_p)
-                      t.buf.lex_curr_p.pos_fname in
+                  let loc = loc_of_buf_with_ ~start:pos_start t.buf f in
                   Sexp.list_with_loc ~loc l
               end
             | _ -> error_ t.buf "expected ')'"
@@ -335,7 +345,7 @@ module Basic_ = struct
     | `List l -> list l
 end
 
-include (Make(Basic_) : S with type t := t)
+include (Make(Basic_) : S with type t := t and type loc = unit)
 
 (*$T
   CCResult.to_opt (parse_string "(abc d/e/f \"hello \\\" () world\" )") <> None

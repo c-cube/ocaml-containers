@@ -124,6 +124,10 @@ end
 module type S = sig
   include S0
 
+  type loc
+  (** Locations for the S-expressions.
+      @since NEXT_RELEASE *)
+
   (** {2 Parsing} *)
 
   (** A parser of ['a] can return [Yield x] when it parsed a value,
@@ -147,5 +151,11 @@ module type S = sig
     val to_list : t -> sexp list or_error
     (** Read all the values from this decoder.
         @since 2.8 *)
+
+    val last_loc : t -> loc option
+    (** Last location for the decoder. In particular,
+        after calling {!next}, this gives the location of the last token
+        used in the result, which is useful in case of error.
+        @since NEXT_RELEASE *)
   end
 end
