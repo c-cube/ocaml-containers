@@ -996,7 +996,7 @@ module Deque = struct
   module type DEQUE = sig
     type 'a t
     val create : unit -> 'a t
-    val of_seq : 'a Iter.t -> 'a t
+    val of_iter : 'a Iter.t -> 'a t
     val iter : ('a -> unit) -> 'a t -> unit
     val push_front : 'a t -> 'a -> unit
     val push_back : 'a t -> 'a -> unit
@@ -1086,7 +1086,7 @@ module Deque = struct
         in
         iter first
 
-    let of_seq seq =
+    let of_iter seq =
       let q =create () in seq (push_back q); q
 
     let append_back ~into q = iter (push_back into) q
@@ -1100,7 +1100,7 @@ module Deque = struct
   module FQueue : DEQUE = struct
     type 'a t = 'a CCFQueue.t ref
     let create () = ref CCFQueue.empty
-    let of_seq s = ref (CCFQueue.of_seq s)
+    let of_iter s = ref (CCFQueue.of_iter s)
     let iter f q = CCFQueue.iter f !q
     let push_front q x = q:= CCFQueue.cons x !q
     let push_back q x = q:= CCFQueue.snoc !q x
@@ -1125,7 +1125,7 @@ module Deque = struct
   let bench_iter n =
     let seq = Iter.(1 -- n) in
     let make (module D : DEQUE) =
-      let q = D.of_seq seq in
+      let q = D.of_iter seq in
       fun () ->
         let n = ref 0 in
         D.iter (fun _ -> incr n) q;
@@ -1163,8 +1163,8 @@ module Deque = struct
   let bench_append n =
     let seq = Iter.(1 -- n) in
     let make (module D :DEQUE) =
-      let q1 = D.of_seq seq in
-      let q2 = D.of_seq seq in
+      let q1 = D.of_iter seq in
+      let q2 = D.of_iter seq in
       fun () -> D.append_back ~into:q1 q2
     in
     B.throughputN 3 ~repeat
@@ -1176,7 +1176,7 @@ module Deque = struct
   let bench_length n =
     let seq = Iter.(1--n) in
     let make (module D:DEQUE) =
-      let q = D.of_seq seq in
+      let q = D.of_iter seq in
       fun () -> ignore (D.length q)
     in
     B.throughputN 3 ~repeat
