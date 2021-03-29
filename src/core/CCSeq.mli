@@ -126,6 +126,20 @@ val uniq : 'a equal -> 'a t -> 'a t
     only the first of them is kept.
     @since 0.3.3 *)
 
+val for_all : ('a -> bool) -> 'a t -> bool
+(** [for_all p [a1; ...; an]] checks if all elements of the sequence satisfy the
+    predicate [p].  That is, it returns [(p a1) && ... && (p an)] for a
+    non-empty list and [true] if the sequence is empty.  It consumes the
+    sequence until it finds an element not satisfying the predicate.
+    @since NEXT_RELEASE *)
+
+val exists : ('a -> bool) -> 'a t -> bool
+(** [exists p [a1; ...; an]] checks if at least one element of the sequence
+    satisfies the predicate [p]. That is, it returns [(p a1) || ... || (p an)]
+    for a non-empty sequence and [false] if the list is empty.  It consumes the
+    sequence until it finds an element satisfying the predicate.
+    @since NEXT_RELEASE *)
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t

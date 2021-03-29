@@ -169,6 +169,40 @@ let rec unfold f acc () = match f acc with
   unfold f 0 |> to_list = [0;1;2;3;4;5;6;7;8;9]
 *)
 
+let rec for_all p l =
+  match l () with
+  | Nil -> true
+  | Cons (x, tl) -> p x && for_all p tl
+
+(*$T
+  for_all ((=) 1) (of_list []) = true
+  for_all ((=) 1) (of_list [0]) = false
+  for_all ((=) 1) (of_list [1]) = true
+  for_all ((=) 1) (of_list [1; 0]) = false
+  for_all ((=) 1) (of_list [0; 1]) = false
+  for_all ((=) 1) (of_list [1; 1]) = true
+
+  let l () = Cons (0, fun () -> failwith "no second element") in \
+  try ignore (for_all ((=) 1) l); true with Failure _ -> false
+*)
+
+let rec exists p l =
+  match l () with
+  | Nil -> false
+  | Cons (x, tl) -> p x || exists p tl
+
+(*$T
+  exists ((=) 1) (of_list []) = false
+  exists ((=) 1) (of_list [0]) = false
+  exists ((=) 1) (of_list [1]) = true
+  exists ((=) 1) (of_list [1; 0]) = true
+  exists ((=) 1) (of_list [0; 1]) = true
+  exists ((=) 1) (of_list [0; 0]) = false
+
+  let l () = Cons (1, fun () -> failwith "no second element") in \
+  try ignore (exists ((=) 1) l); true with Failure _ -> false
+*)
+
 let rec flat_map f l () = match l () with
   | Nil -> Nil
   | Cons (x, l') ->
