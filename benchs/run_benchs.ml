@@ -660,6 +660,16 @@ module Tbl = struct
     let module U = MUT_OF_IMMUT(T) in
     (module U : MUT with type key = a)
 
+  let flat_tbl : type a. a key_type -> (module MUT with type key = a)
+    = fun key ->
+      let (module Key), name = arg_make key in
+      let module T = struct
+        let name = sprintf "flat_tbl(%s)" name
+        include Flat_tbl.Make(Key)
+        let add = replace
+      end in
+      (module T)
+
   let wbt : type a. a key_type -> (module MUT with type key = a)
   = fun k ->
     let (module K), name = arg_make k in
@@ -726,6 +736,7 @@ module Tbl = struct
     [ hashtbl_make Int
     ; hashtbl
     ; persistent_hashtbl Int
+    ; flat_tbl Int
     (* ; poly_hashtbl *)
     ; map Int
     ; wbt Int
