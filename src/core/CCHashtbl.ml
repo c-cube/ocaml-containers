@@ -236,7 +236,7 @@ module type S = sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
-      @since NEXT_RELEASE *)
+      @since 3.3 *)
 
   val add_seq : 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
@@ -249,7 +249,7 @@ module type S = sig
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
-      @since NEXT_RELEASE *)
+      @since 3.3 *)
 
   val of_iter : (key * 'a) iter -> 'a t
   (** From the given bindings, added in order.
@@ -261,7 +261,7 @@ module type S = sig
   (** From the given bindings, added in order.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
-      @since NEXT_RELEASE *)
+      @since 3.3 *)
 
   val of_seq : (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
@@ -274,7 +274,7 @@ module type S = sig
   (** From the given bindings, added in order.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
-      @since NEXT_RELEASE *)
+      @since 3.3 *)
 
   val add_iter_count : int t -> key iter -> unit
   (** [add_iter_count tbl i] increments the count of each element of [i]
@@ -313,7 +313,7 @@ module type S = sig
   (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i].
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
-      @since NEXT_RELEASE *)
+      @since 3.3 *)
 
   val update : 'a t -> f:(key -> 'a option -> 'a option) -> k:key -> unit
   (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if

@@ -131,14 +131,14 @@ val for_all : ('a -> bool) -> 'a t -> bool
     predicate [p].  That is, it returns [(p a1) && ... && (p an)] for a
     non-empty list and [true] if the sequence is empty.  It consumes the
     sequence until it finds an element not satisfying the predicate.
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 
 val exists : ('a -> bool) -> 'a t -> bool
 (** [exists p [a1; ...; an]] checks if at least one element of the sequence
     satisfies the predicate [p]. That is, it returns [(p a1) || ... || (p an)]
     for a non-empty sequence and [false] if the list is empty.  It consumes the
     sequence until it finds an element satisfying the predicate.
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 

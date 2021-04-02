@@ -40,26 +40,26 @@ val pp : Format.formatter -> t -> unit
 
 (** {2 Infix Operators}
 
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 
 module Infix : sig
   val (=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.3 *)
 
   val (<>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.3 *)
 
   val (<) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.3 *)
 
   val (>) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.3 *)
 
   val (<=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.3 *)
 
   val (>=) : t -> t -> bool
-  (** @since NEXT_RELEASE *)
+  (** @since 3.3 *)
 end
 
 include module type of Infix

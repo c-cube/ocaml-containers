@@ -431,7 +431,7 @@ map =
 - : string option = Some "33"
 ```
 
-### New types: `CCVector`, `CCHeap`, `CCResult`
+### New types: `CCVector`, `CCHeap`, `CCResult`, `CCSexp`
 
 Containers also contains (!) a few datatypes that are not from the standard
 library but that are useful in a lot of situations:
@@ -454,6 +454,10 @@ library but that are useful in a lot of situations:
   It uses the new `result` type from the standard library (or from
   the retrocompatibility package on opam) and provides
   many combinators for dealing with `result`.
+- `CCSexp` and `CCCanonical_sexp`:
+  functorized printer and parser for S-expressions, respectively as
+  actual S-expressions (like `sexplib`) and as canonical binary-safe
+  S-expressions (like `csexp`)
 
 Now for a few examples:
 

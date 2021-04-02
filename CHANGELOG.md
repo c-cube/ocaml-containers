@@ -1,5 +1,30 @@
 # Changelog
 
+## 3.3
+
+- feat: add code-generator for optimal bitfields; add tests
+- new Canonical sexpr module with printer and parser
+
+- CCSeq: Add `for_all` and `exists`
+- feat(sexp): expose last location in decoder
+- feat(CCChar): add CCChar.Infix
+- feat(CCString): add CCString.foldi
+- feat(CCFormat): add `string_lines` combinator
+- feat(CCList): update with regards to `partition_map`
+- add `CCList.cons'`
+- implement {of,add}_*_with family of function in `CCMap` with update (#352)
+- add `CCMap.of_{list,iter,seq}_with` functions
+- add `CCHashtbl.{of,add}_{list,seq,iter}_with`
+
+- Fix integer overflow warning on jsoo (#346)
+- updated fuzzer scripts
+
+### Containers-thread
+
+- refactor(pool): less locking, fix deadlock, more parallelism
+- feat(pool): keep one idle thread
+- small optim in `Pool.sequence_a`
+
 ## 3.2
 
 - add CCEither module

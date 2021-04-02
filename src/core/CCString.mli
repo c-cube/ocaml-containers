@@ -37,7 +37,7 @@ val fold : ('a -> char -> 'a) -> 'a -> t -> 'a
 val foldi : ('a -> int -> char -> 'a) -> 'a -> t -> 'a
 (** [foldi f init s] is just like {!fold}, but it also passes in the index of each chars
     as second argument to the folded function [f].
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 
 (** {2 Conversions} *)
 

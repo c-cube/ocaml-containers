@@ -4,7 +4,7 @@ type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 (** {2 Abstract representation of S-expressions}
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 module type BASIC_SEXP = sig
   type t
 
@@ -126,7 +126,7 @@ module type S = sig
 
   type loc
   (** Locations for the S-expressions.
-      @since NEXT_RELEASE *)
+      @since 3.3 *)
 
   (** {2 Parsing} *)
 
@@ -156,6 +156,6 @@ module type S = sig
     (** Last location for the decoder. In particular,
         after calling {!next}, this gives the location of the last token
         used in the result, which is useful in case of error.
-        @since NEXT_RELEASE *)
+        @since 3.3 *)
   end
 end

@@ -69,7 +69,7 @@ val string_lines : string printer
     place of spaces, unlike {!text}.
     This means an already formatted string can be displayed inside another
     formatter without mangling the indentation.
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 
 val char : char printer (** @since 0.14 *)
 

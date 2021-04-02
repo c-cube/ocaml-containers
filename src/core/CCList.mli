@@ -43,7 +43,7 @@ val cons_maybe : 'a option -> 'a t -> 'a t
 val cons' : 'a t -> 'a -> 'a t
 (** [cons' l x] is the same as [x :: l]. This is convenient for fold
     functions such as {!List.fold_left} or {!Array.fold_left}.
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 
 val (@) : 'a t -> 'a t -> 'a t
 (** [l1 @ l2] is like [append l1 l2].
@@ -236,7 +236,7 @@ val partition_map_either : ('a -> ('b, 'c) CCEither.t) ->
 (** [partition_map_either f l] maps [f] on [l] and gather results in lists:
     - if [f x = Left y], adds [y] to the first list.
     - if [f x = Right z], adds [z] to the second list.
-    @since NEXT_RELEASE *)
+    @since 3.3 *)
 
 val partition_filter_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
   'a list -> 'b list * 'c list

@@ -6,7 +6,7 @@
     See {{: https://en.wikipedia.org/wiki/Canonical_S-expressions} wikipedia}.
     These S-expressions are binary safe.
 
-    @since NEXT_RELEASE
+    @since 3.3
 *)
 
 type 'a or_error = ('a, string) result
