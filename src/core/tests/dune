@@ -12,6 +12,12 @@
   (flags :standard -warn-error -a+8)
   (libraries containers))
 
+(executable
+  (name test_random)
+  (flags :standard -warn-error -a+8)
+  (modules test_random)
+  (libraries containers))
+
 (alias
   (name runtest)
   (locks ctest)
