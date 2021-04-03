@@ -54,6 +54,10 @@ module type S = sig
 
   val stats : 'a t -> int * int * int * int * int * int
   (** Cf Weak.S *)
+
+  (**/**)
+  val _pp_dib : _ t -> string
+  (**/**)
 end
 
 (** Create a hashtable *)

@@ -61,6 +61,10 @@ module type S = sig
 
   val stats : 'a t -> int * int * int * int * int * int
   (** Cf Weak.S *)
+
+  (**/**)
+  val _pp_dib : _ t -> string
+  (**/**)
 end
 
 module Make(H : Hashtbl.HashedType) = struct
@@ -74,11 +78,10 @@ module Make(H : Hashtbl.HashedType) = struct
     | Used of {
         k: key;
         mutable v: 'a;
-        hash: int;
         mutable dib: int; (* DIB: distance to initial bucket *)
       }
 
-  let max_load = 0.92
+  let max_load = 0.8
 
   type 'a t = {
     mutable slots: 'a slot array; (* slot for index [i] *)
@@ -125,10 +128,10 @@ module Make(H : Hashtbl.HashedType) = struct
 
       match Array.unsafe_get slots j with
       | Empty ->
-        Array.unsafe_set slots j (Used {k; v; hash=h; dib});
+        Array.unsafe_set slots j (Used {k; v; dib});
         self.max_dib <- max dib self.max_dib
       | Used used_j ->
-        if used_j.hash = h && H.equal k used_j.k then (
+        if H.equal k used_j.k then (
           (* same key: replace *)
           used_j.v <- v;
           used_j.dib <- dib;
@@ -138,10 +141,10 @@ module Make(H : Hashtbl.HashedType) = struct
           (* displace element*)
           let k_j = used_j.k in
           let v_j = used_j.v in
-          let h_j = used_j.hash in
+          let h_j = H.hash k_j in
           let dib_j = used_j.dib in
 
-          Array.unsafe_set slots j (Used {k;v;hash=h;dib});
+          Array.unsafe_set slots j (Used {k;v;dib});
           self.max_dib <- max dib self.max_dib;
 
           insert_rec_ h_j k_j v_j dib_j
@@ -171,8 +174,9 @@ module Make(H : Hashtbl.HashedType) = struct
     Array.iter
       (fun slot -> match slot with
          | Empty -> ()
-         | Used {k; v; hash; _} ->
-           insert_ self hash k v)
+         | Used {k; v; _} ->
+           let h = H.hash k in
+           insert_ self h k v)
       old_slots;
     ()
 
@@ -188,7 +192,7 @@ module Make(H : Hashtbl.HashedType) = struct
       match Array.unsafe_get slots j with
       | Empty -> None
       | Used used_j ->
-        if used_j.hash = h && H.equal used_j.k k then (
+        if H.equal used_j.k k then (
           Some used_j.v (* found *)
         ) else if dib >= max_dib then (
           None (* no need to go further *)
@@ -201,7 +205,7 @@ module Make(H : Hashtbl.HashedType) = struct
           match Array.unsafe_get slots j with
           | Empty -> None
           | Used used_j ->
-            if used_j.hash = h && H.equal used_j.k k then (
+            if H.equal used_j.k k then (
               Some used_j.v (* found *)
             ) else if dib >= max_dib then (
               None (* no need to go further *)
@@ -214,7 +218,7 @@ module Make(H : Hashtbl.HashedType) = struct
     (* try a direct hit first *)
     begin match Array.unsafe_get slots (addr_ h n 0) with
       | Empty -> None
-      | Used {k=k2; v; hash; _} when h = hash && H.equal k k2 -> Some v
+      | Used {k=k2; v; _} when H.equal k k2 -> Some v
       | _ -> find_rec_ 1
     end
 
@@ -269,7 +273,7 @@ module Make(H : Hashtbl.HashedType) = struct
         | Empty -> ()
         | _ when dib > self.max_dib -> ()
         | Used used_j ->
-          if h = used_j.hash && H.equal k used_j.k then (
+          if H.equal k used_j.k then (
             (* found element, remove it *)
             Array.unsafe_set slots j Empty;
             self.size <- self.size - 1;
@@ -337,6 +341,15 @@ module Make(H : Hashtbl.HashedType) = struct
 
   (* Statistics on the table *)
   let stats t = (Array.length t.slots, t.size, t.size, 0, 0, 1)
+
+  let _pp_dib self =
+    let buf = Buffer.create 32 in
+    Array.iter(function
+        | Empty -> Printf.bprintf buf "_."
+        | Used {dib;_} -> Printf.bprintf buf "%d." dib)
+      self.slots;
+    Printf.bprintf buf "[mdib=%d,size=%d]" self.max_dib self.size;
+    Buffer.contents buf
 end
 
 (*$inject
