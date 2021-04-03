@@ -751,6 +751,7 @@ module Tbl = struct
     ; wbt Str
     ; hashtrie Str
     ; persistent_hashtbl Str
+    ; flat_tbl Str
     (* ; hamt Str *)
     ; trie
     ]
@@ -799,6 +800,21 @@ module Tbl = struct
       T.name, run, ()
     in
     B.throughputN 3 ~repeat (List.map make modules_int)
+
+  let bench_replace_string_to l n =
+    let keys = CCList.( 1 -- n |> map (fun i->string_of_int i,i)) in
+    let make (module T : STRING_MUT) =
+      let run() =
+        let t = T.create 50 in
+        List.iter
+          (fun (k,v) -> T.replace t k v)
+          keys
+      in
+      T.name, run, ()
+    in
+    B.throughputN 3 ~repeat (List.map make l)
+
+  let bench_replace_string = bench_replace_string_to modules_string
 
   module type INT_FIND = sig
     type 'a t
@@ -875,7 +891,8 @@ module Tbl = struct
     B.Tree.register ("tbl" @>>>
       [ "add_int" @>> app_ints bench_add [10; 100; 1_000; 10_000;]
       ; "add_string" @>> app_ints bench_add_string [10; 100; 1_000; 10_000;]
-      ; "replace" @>> app_ints bench_replace [10; 100; 1_000; 10_000]
+      ; "replace_int" @>> app_ints bench_replace [10; 100; 1_000; 10_000]
+      ; "replace_string" @>> app_ints bench_replace_string [10; 100; 1_000; 10_000]
       ; "find" @>> app_ints bench_find [10; 20; 100; 1_000; 10_000]
       ; "find_string" @>> app_ints bench_find_string [10; 20; 100; 1_000; 10_000]
       ]);
