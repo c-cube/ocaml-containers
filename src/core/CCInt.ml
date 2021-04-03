@@ -36,7 +36,20 @@ let equal (a:int) b = Stdlib.(=) a b
 
 let compare (a:int) b = compare a b
 
-let hash i = i land max_int
+(* use FNV:
+   https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function *)
+let hash (n:int) : int =
+  let offset_basis = 0xcbf29ce484222325L in
+  let prime = 0x100000001b3L in
+
+  let h = ref offset_basis in
+
+  for k = 0 to 7 do
+    h := Int64.(mul !h prime);
+    (* h := h xor (k-th bit of n) *)
+    h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff)));
+  done;
+  Int64.to_int !h (* truncate back to int *)
 
 let range i j yield =
   let rec up i j yield =
