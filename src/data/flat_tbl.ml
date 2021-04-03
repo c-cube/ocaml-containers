@@ -88,9 +88,16 @@ module Make(H : Hashtbl.HashedType) = struct
     mutable size : int;
     mutable max_dib : int;
   }
+  (* invariant: [length slots] is a power of two *)
+
+  (* find a power of 2 [>= n] *)
+  let rec next_power_of2_ cur n =
+    if cur >= n then cur
+    else if cur > Sys.max_array_length then failwith "flat_tbl: capacity exceeded"
+    else next_power_of2_ (2*cur) n
 
   let create size : _ t =
-    let size = max 8 size in
+    let size = next_power_of2_ 16 size in
     { slots = Array.make size Empty;
       size = 0;
       max_dib = 0;
@@ -110,11 +117,19 @@ module Make(H : Hashtbl.HashedType) = struct
     self.size <- 0
 
   (* Index of slot, for i-th probing starting from hash [h] in
-     a table of length [n].
+     a table of length [n] (which is a power of two).
+
+     Since [n = 2^k], [n-1] is all ones and [x mod n] is just
+     [x land (n-1)].
+
      Note: we make sure the [h+dist] part is positive first,
      and we do not use [abs] since it can be negative on [min_int]. *)
   let[@inline] addr_ h n dist =
-    ((h + dist) land max_int) mod n
+    ((h + dist) land max_int) land (n-1)
+
+  (* [dib mod n], where [n = 2^k] *)
+  let[@inline] mod_pow_2_ dib n =
+    dib land (n-1)
 
   (* Insert [k -> v] in [self], starting with the hash [h].
      Does not modify the size. *)
@@ -156,13 +171,12 @@ module Make(H : Hashtbl.HashedType) = struct
 
     insert_rec_ h k v 0
 
-  (* Resize the array, by inserting its content into twice as large an array *)
-  let resize (self:_ t) : unit =
+  (* Resize the table, by inserting its content into a larger array *)
+  let resize_ (self:_ t) : unit =
     let {slots=old_slots; max_dib=_; size=_} = self in
 
     let new_size =
-      let n = Array.length old_slots in
-      let n = n + n lsr 2 in (* ×1.5 *)
+      let n = 2 * Array.length old_slots in
       min n Sys.max_array_length
     in
     if new_size <= Array.length old_slots then failwith "flat_tbl: cannot resize further";
@@ -232,7 +246,7 @@ module Make(H : Hashtbl.HashedType) = struct
     (* need to resize? *)
     let load = float_of_int self.size /. float_of_int (Array.length self.slots) in
     if load > max_load then (
-      resize self;
+      resize_ self;
     );
 
     let h = H.hash k in
@@ -260,7 +274,7 @@ module Make(H : Hashtbl.HashedType) = struct
           used.dib <- used.dib - 1;
           Array.unsafe_set slots i_succ Empty;
 
-          backward_shift_ i_succ ((i_succ + 1) mod n)
+          backward_shift_ i_succ (mod_pow_2_ (i_succ + 1) n)
 
         | Used _ -> ()
     in
@@ -278,7 +292,7 @@ module Make(H : Hashtbl.HashedType) = struct
             Array.unsafe_set slots j Empty;
             self.size <- self.size - 1;
 
-            backward_shift_ j ((j+1) mod n); (* shift slots that come just next *)
+            backward_shift_ j (mod_pow_2_ (j+1) n); (* shift slots that come just next *)
 
           ) else (
             find_rec_ (dib+1)
