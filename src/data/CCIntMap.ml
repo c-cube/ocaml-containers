@@ -614,8 +614,14 @@ let to_list t = fold (fun k v l -> (k,v) :: l) t []
 
 (*$Q
   Q.(list (pair int int)) (fun l -> \
-    of_list l |> cardinal = List.length l)
+    of_list l |> cardinal = List.length (l |> List.map fst |> CCList.sort_uniq ~cmp:CCInt.compare))
+  Q.(list (pair small_int int)) (fun l -> \
+    of_list l |> cardinal = List.length (l |> List.map fst |> CCList.sort_uniq ~cmp:CCInt.compare))
 *)
+
+(*$= & ~printer:Q.Print.int
+  1 (let t = of_list [(197151390, 0); (197151390, 0)] in cardinal t)
+  *)
 
 let add_iter t iter =
   let t = ref t in
