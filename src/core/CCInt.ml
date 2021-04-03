@@ -332,14 +332,6 @@ let range_by ~step i j yield =
       (CCInt.range i j |> Iter.to_list) )
 *)
 
-(* we use the simple version for non-64 bits. *)
-let popcount_32 (b:int) : int =
-  let rec loop count x =
-    if x=0 then count
-    else loop (count+1) (x land (x-1))
-  in
-  loop 0 b
-
 (*
   from https://en.wikipedia.org/wiki/Hamming_weight
 
@@ -360,25 +352,23 @@ let popcount_32 (b:int) : int =
    m2 = 0x3333333333333333
    m4 = 0x0f0f0f0f0f0f0f0f
 *)
-let popcount_64 (b:int) : int =
-  (* break up into parts to allow compilation on 32-bit and jsoo *)
-  let m1 = 0x55555555 lor 0x55555555 lsl 32 in
-  let m2 = 0x33333333 lor 0x33333333 lsl 32 in
-  let m4 = 0x0f0f0f0f lor 0x0f0f0f0f lsl 32 in
-  let b = b - ((b lsr 1) land m1) in
-  let b = (b land m2) + ((b lsr 2) land m2) in
-  let b = (b + (b lsr 4)) land m4 in
-  let b = b + (b lsr 8) in
-  let b = b + (b lsr 16) in
-  let b = b + (b lsr 32) in
-  b land 0x7f
+let popcount (b:int) : int =
+  let m1 = 0x5555555555555555L in
+  let m2 = 0x3333333333333333L in
+  let m4 = 0x0f0f0f0f0f0f0f0fL in
+  let open Int64 in
 
-(* pick at runtime, see:
-  - https://github.com/c-cube/ocaml-containers/issues/346
-  - https://github.com/ocsigen/js_of_ocaml/issues/1079
-  *)
-let popcount =
-  if Sys.int_size = 63 then popcount_64 else popcount_32
+  let b = of_int b in (* int->int64 *)
+  let b = logand b 0x7fffffffffffffffL in (* remove sign bit, we deal with uint64 here *)
+
+  let b = sub b (logand (shift_right_logical b 1) m1) in
+  let b = add (logand b m2) (logand (shift_right_logical b 2) m2) in
+  let b = logand (add b (shift_right_logical b 4)) m4 in
+  let b = add b (shift_right_logical b 8) in
+  let b = add b (shift_right_logical b 16) in
+  let b = add b (shift_right_logical b 32) in
+  let b = logand b 0x7fL in
+  to_int b
 
 (*$=
   0 (popcount 0)
