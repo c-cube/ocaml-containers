@@ -102,7 +102,7 @@ let string (x:string) =
   int min_int >= 0
   int 0 >= 0
   char 'c' >= 0
-  int 152352 = int 162352
+  int 152352 = int 152352
 *)
 
 let slice x i len =
