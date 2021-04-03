@@ -79,7 +79,7 @@ let combine6 a b c d e f =
 let const h _ = h
 let const0 _ = 0
 
-let int i = hash_int_ i
+let int = hash_int_
 let bool b = hash_int_ (if b then 1 else 2)
 let char x = hash_int_ (Char.code x)
 let int32 (x:int32) = Hashtbl.hash x (* TODO: FNV *)
