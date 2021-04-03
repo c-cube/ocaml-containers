@@ -49,7 +49,7 @@ let hash (n:int) : int =
     (* h := h xor (k-th bit of n) *)
     h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff)));
   done;
-  Int64.to_int !h (* truncate back to int *)
+  (Int64.to_int !h) land max_int (* truncate back to int and remove sign *)
 
 let range i j yield =
   let rec up i j yield =
