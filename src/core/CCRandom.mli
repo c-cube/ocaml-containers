@@ -158,11 +158,3 @@ include CCShimsMkLet_.S with type 'a t_let := 'a t
 
 val run : ?st:state -> 'a t -> 'a
 (** Using a random state (possibly the one in argument) run a generator. *)
-
-(**/**)
-
-val uniformity_test : ?size_hint:int -> int -> 'a t -> bool t
-(** [uniformity_test k rng] tests the uniformity of the random generator [rng] using
-    [k] samples.
-    @since 0.15
-*)
