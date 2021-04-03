@@ -71,120 +71,91 @@ module Make(H : Hashtbl.HashedType) = struct
      additional pointer anyway. *)
   type 'a slot =
     | Empty
-    | Used of key * 'a
+    | Used of {
+        k: key;
+        mutable v: 'a;
+        hash: int;
+        mutable dib: int; (* DIB: distance to initial bucket *)
+      }
 
-  let max_load = 0.8
-  let probe_dist_n_bits = 7 (* store probe distance on <n> bits *)
+  let max_load = 0.92
 
   type 'a t = {
-    mutable meta: int array;
-    (* [hash | probe_distance[0..10] | present[1]]
-       for key at index [i] *)
     mutable slots: 'a slot array; (* slot for index [i] *)
     mutable size : int;
-    (* TODO: [max_dist: int], so we can stop loopup early? *)
+    mutable max_dib : int;
   }
 
   let create size : _ t =
     let size = max 8 size in
     { slots = Array.make size Empty;
-      meta = Array.make size 0;
       size = 0;
+      max_dib = 0;
     }
 
   let copy self =
     { slots = Array.copy self.slots;
-      meta = Array.copy self.meta;
       size = self.size;
+      max_dib = self.max_dib;
     }
 
   (** clear the table, by resetting all states to Empty *)
   let clear self =
-    let {slots; meta; size=_} = self in
+    let {slots; max_dib=_; size=_} = self in
     Array.fill slots 0 (Array.length slots) Empty;
-    Array.fill meta 0 (Array.length meta ) 0;
+    self.max_dib <- 0;
     self.size <- 0
 
   (* Index of slot, for i-th probing starting from hash [h] in
-     a table of length [n] *)
-  let[@inline] addr_ h n dist = (h + dist) mod n
-
-  (* normalize h by removing bits that will not fit in storage *)
-  let[@inline] normalize_hash_ h : int =
-    (h lsl (1+probe_dist_n_bits)) lsr (1+probe_dist_n_bits)
-
-  (** [mk_meta_ hash dist] make new metadata *)
-  let mk_meta_ h dist : int =
-    let dist_mask = (1 lsl probe_dist_n_bits)-1 in
-    let dist = dist land dist_mask in
-    (* LSB=1 to indicate presence *)
-    (((h lsl probe_dist_n_bits) lor dist) lsl 1) lor 1
-
-  (* hash of metadata (truncated) *)
-  let[@inline] hash_of_meta_ m : int =
-    m lsr (probe_dist_n_bits+1)
-
-  (* probe distance of metadata (truncated) *)
-  let[@inline] dist_of_meta_ m : int =
-    (m lsr 1) land ((1 lsl probe_dist_n_bits)-1)
-
-  (* presence bit of metadata *)
-  let[@inline] presence_meta_ m : bool =
-    (m land 1) == 1
+     a table of length [n].
+     Note: we make sure the [h+dist] part is positive first,
+     and we do not use [abs] since it can be negative on [min_int]. *)
+  let[@inline] addr_ h n dist =
+    ((h + dist) land max_int) mod n
 
   (* Insert [k -> v] in [self], starting with the hash [h].
      Does not modify the size. *)
   let insert_ (self:_ t) h k v : unit =
-    let {slots; meta; size=_} = self in
+    let {slots; max_dib=_; size=_} = self in
     let n = Array.length slots in
-    assert (n=Array.length meta);
 
     (* lookup an empty slot to insert the key->value in. *)
-    let rec insert_rec_ h k v dist =
-      let j = addr_ h n dist in
+    let rec insert_rec_ h k v dib =
+      let j = addr_ h n dib in
 
-      let m_j = Array.unsafe_get meta j in
-      let dist_j = dist_of_meta_ m_j in
-      let hash_j = hash_of_meta_ m_j in
+      match Array.unsafe_get slots j with
+      | Empty ->
+        Array.unsafe_set slots j (Used {k; v; hash=h; dib});
+        self.max_dib <- max dib self.max_dib
+      | Used used_j ->
+        if used_j.hash = h && H.equal k used_j.k then (
+          (* same key: replace *)
+          used_j.v <- v;
+          used_j.dib <- dib;
+          self.max_dib <- max dib self.max_dib;
 
-      if not (presence_meta_ m_j) then (
-        (* empty slot *)
-        let m = mk_meta_ h dist in
-        meta.(j) <- m;
-        slots.(j) <- Used (k, v);
-      ) else if h <> hash_j && dist_j >= dist then (
-        (* different slot and hash (hence, key): try next slot *)
-        insert_rec_ h k v (dist+1)
-      ) else (
-        let k_j, v_j =
-          match Array.unsafe_get slots j with
-          | Empty -> assert false
-          | Used (k,v) -> k, v
-        in
+        ) else if used_j.dib < dib then (
+          (* displace element*)
+          let k_j = used_j.k in
+          let v_j = used_j.v in
+          let h_j = used_j.hash in
+          let dib_j = used_j.dib in
 
-        if H.equal k k_j then (
-          (* replace slot, same key *)
-          slots.(j) <- Used (k, v);
-        ) else if dist_j < dist then (
-          (* displace this element *)
+          Array.unsafe_set slots j (Used {k;v;hash=h;dib});
+          self.max_dib <- max dib self.max_dib;
 
-          let m = mk_meta_ h dist in
-          meta.(j) <- m;
-          slots.(j) <- Used (k, v);
-
-          insert_rec_ hash_j k_j v_j dist_j
+          insert_rec_ h_j k_j v_j dib_j
         ) else (
-          (* try next slot *)
-          insert_rec_ h k v (dist+1)
+          (* look further *)
+          insert_rec_ h k v (dib+1)
         )
-      )
     in
 
     insert_rec_ h k v 0
 
   (* Resize the array, by inserting its content into twice as large an array *)
   let resize (self:_ t) : unit =
-    let {slots=old_slots; meta=old_meta; size=_} = self in
+    let {slots=old_slots; max_dib=_; size=_} = self in
 
     let new_size =
       let n = Array.length old_slots in
@@ -194,61 +165,56 @@ module Make(H : Hashtbl.HashedType) = struct
     if new_size <= Array.length old_slots then failwith "flat_tbl: cannot resize further";
 
     self.slots <- Array.make new_size Empty;
-    self.meta <- Array.make new_size 0;
+    self.max_dib <- 0;
 
     (* insert elements into new table *)
-    Array.iteri
-      (fun i slot -> match slot with
+    Array.iter
+      (fun slot -> match slot with
          | Empty -> ()
-         | Used (k,v) ->
-           let m = Array.unsafe_get old_meta i in
-           let h = hash_of_meta_ m in
-           insert_ self h k v)
+         | Used {k; v; hash; _} ->
+           insert_ self hash k v)
       old_slots;
     ()
 
   (* Lookup [key] in the table *)
   let find_opt self k =
-    let {slots; meta; size=_} = self in
+    let {slots; max_dib; size=_} = self in
     let n = Array.length slots in
-    let h = normalize_hash_ (H.hash k) in
-    let slots = self.slots in
-    let[@unroll 2] rec find_rec_ dist =
-      assert (dist < n); (* load factor would be 1 *)
-      let j = addr_ h n dist in
+    let h = H.hash k in
 
-      let m_j = Array.unsafe_get meta j in
-      if not (presence_meta_ m_j) then (
-        None (* met empty slot *)
-      ) else (
-
-        (* TODO: if we store max_probe_dist, use this for early
-           termination
-        let dist_j = dist_of_meta_ m_j in
-        if dist_j > max_probe_dist then raise Not_found
-        *)
-
-        let h_j = hash_of_meta_ m_j in
-        if h <> h_j then (
-          (* different hash *)
-          find_rec_ (dist+1)
+    let rec find_rec_ dib =
+      (*assert (dist < n); (* load factor would be 1 *)*)
+      let j = addr_ h n dib in
+      match Array.unsafe_get slots j with
+      | Empty -> None
+      | Used used_j ->
+        if used_j.hash = h && H.equal used_j.k k then (
+          Some used_j.v (* found *)
+        ) else if dib >= max_dib then (
+          None (* no need to go further *)
         ) else (
+
+          (* unroll by hand *)
+          let dib = dib+1 in
+
+          let j = addr_ h n dib in
           match Array.unsafe_get slots j with
-          | Used (k2, v) ->
-            if H.equal k k2 then Some v
-            else (
-              (* different key *)
-              find_rec_ (dist+1)
+          | Empty -> None
+          | Used used_j ->
+            if used_j.hash = h && H.equal used_j.k k then (
+              Some used_j.v (* found *)
+            ) else if dib >= max_dib then (
+              None (* no need to go further *)
+            ) else (
+            find_rec_ (dib+1)
             )
-          | Empty -> assert false
         )
-      )
     in
 
     (* try a direct hit first *)
     begin match Array.unsafe_get slots (addr_ h n 0) with
       | Empty -> None
-      | Used (k2, v) when H.equal k k2 -> Some v
+      | Used {k=k2; v; hash; _} when h = hash && H.equal k k2 -> Some v
       | _ -> find_rec_ 1
     end
 
@@ -265,7 +231,7 @@ module Make(H : Hashtbl.HashedType) = struct
       resize self;
     );
 
-    let h = normalize_hash_ (H.hash k) in
+    let h = H.hash k in
     self.size <- 1 + self.size;
     insert_ self h k v
 
@@ -273,59 +239,47 @@ module Make(H : Hashtbl.HashedType) = struct
      (see https://codecapsule.com/2013/11/17/robin-hood-hashing-backward-shift-deletion/ )
      to keep probe_distance low, instead of using tombstones. *)
   let remove self k : unit =
-    let {slots; meta; size=_} = self in
+    let {slots; max_dib=_; size=_} = self in
     let n = Array.length slots in
-    let h = normalize_hash_ (H.hash k) in
+    let h = H.hash k in
 
     (* given that [i] is empty, and [i_succ = (i+1) mod n],
        see if we can shift the element at [i_succ] to the left
        to decrease its probe count. *)
     let rec backward_shift_ i i_succ : unit =
-      let m = Array.unsafe_get meta i_succ in
-      if presence_meta_ m then (
-        let dist = dist_of_meta_ m in
-        if dist > 0 then (
-          let slot = Array.unsafe_get slots i_succ in
-          assert (slot != Empty);
+      match Array.unsafe_get slots i_succ with
+        | Empty -> ()
 
-          let m = mk_meta_ (hash_of_meta_ m) (dist-1) in
-          meta.(i) <- m;
-          slots.(i) <- slot;
-          meta.(i_succ) <- 0; (* cleanup i_succ *)
-          slots.(i_succ) <- Empty;
+        | Used used as slot when used.dib > 0 ->
+          (* shift to the left, decreasing DIB by one *)
+          Array.unsafe_set slots i slot;
+          used.dib <- used.dib - 1;
+          Array.unsafe_set slots i_succ Empty;
 
           backward_shift_ i_succ ((i_succ + 1) mod n)
-        )
-      )
+
+        | Used _ -> ()
     in
 
-    let rec find_rec_ dist =
-      assert (dist<n);
+    let rec find_rec_ dib =
+      assert (dib<n);
 
-      let j = addr_ h n dist in
-      let m_j = Array.unsafe_get meta j in
-      let hash_j = hash_of_meta_ m_j in
+      let j = addr_ h n dib in
+      begin match Array.unsafe_get slots j with
+        | Empty -> ()
+        | _ when dib > self.max_dib -> ()
+        | Used used_j ->
+          if h = used_j.hash && H.equal k used_j.k then (
+            (* found element, remove it *)
+            Array.unsafe_set slots j Empty;
+            self.size <- self.size - 1;
 
-      if not (presence_meta_ m_j) then () (* early exit, key not present *)
-      else if h <> hash_j then (
-        find_rec_ (dist+1) (* go further *)
-      ) else (
-        let k_j = match Array.unsafe_get slots j with
-          | Empty -> assert false
-          | Used (k, _) -> k
-        in
+            backward_shift_ j ((j+1) mod n); (* shift slots that come just next *)
 
-        if H.equal k k_j then (
-          (* found element, remove it *)
-          slots.(j) <- Empty;
-          meta.(j) <- 0;
-          self.size <- self.size - 1;
-
-          backward_shift_ j ((j+1) mod n); (* shift slots that come just next *)
-        ) else (
-          find_rec_ (dist+1)
-        )
-      )
+          ) else (
+            find_rec_ (dib+1)
+          )
+      end
     in
 
     if self.size > 0 then (
@@ -343,19 +297,18 @@ module Make(H : Hashtbl.HashedType) = struct
 
   (* Iterate on key -> value pairs *)
   let iter f self =
-    let slots = self.slots in
-    for i = 0 to Array.length slots - 1 do
-      match Array.unsafe_get slots i with
-      | Used (k, v) -> f k v
-      | _ -> ()
-    done
+    Array.iter
+      (function
+        | Used {k; v; _} -> f k v
+        | Empty -> ())
+      self.slots
 
   (* Fold on key -> value pairs *)
   let fold f self acc =
     Array.fold_left
       (fun acc sl -> match sl with
          | Empty -> acc
-         | Used (k,v) -> f k v acc)
+         | Used {k;v;_} -> f k v acc)
       acc self.slots
 
   let to_iter t yield =
