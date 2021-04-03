@@ -43,7 +43,6 @@ let hash (n:int) : int =
   let prime = 0x100000001b3L in
 
   let h = ref offset_basis in
-
   for k = 0 to 7 do
     h := Int64.(mul !h prime);
     (* h := h xor (k-th bit of n) *)

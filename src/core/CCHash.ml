@@ -10,39 +10,105 @@ type 'a t = 'a -> hash
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
-let combine f s x = Hashtbl.seeded_hash s (f x)
+(* FNV hashing
+   https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+*)
+let fnv_offset_basis = 0xcbf29ce484222325L
+let fnv_prime = 0x100000001b3L
 
-let combine2 a b = Hashtbl.seeded_hash a b
+(* hash an integer *)
+let hash_int_ n =
+  let h = ref fnv_offset_basis in
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff)));
+  done;
+  (Int64.to_int !h) land max_int (* truncate back to int and remove sign *)
+
+let combine2 a b =
+  let h = ref fnv_offset_basis in
+  (* we only do one loop, where we mix bytes of [a] and [b], so as
+     to simplify control flow *)
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((a lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((b lsr (k * 8)) land 0xff)));
+  done;
+  Int64.to_int !h land max_int
+
+let[@inline] combine f s x =
+  combine2 s (f x)
 
 let combine3 a b c =
-  combine2 (combine2 a b) c
+  let h = ref fnv_offset_basis in
+  (* we only do one loop, where we mix bytes of [a] [b] and [c], so as
+     to simplify control flow *)
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((a lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((b lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((c lsr (k * 8)) land 0xff)));
+  done;
+  Int64.to_int !h land max_int
 
 let combine4 a b c d =
-  combine2 (combine2 a b) (combine2 c d)
+  let h = ref fnv_offset_basis in
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((a lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((b lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((c lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((d lsr (k * 8)) land 0xff)));
+  done;
+  Int64.to_int !h land max_int
 
 let combine5 a b c d e =
-  combine2 (combine2 a b) (combine2 (combine2 c d) e)
+  combine3 a b (combine3 c d e)
 
 let combine6 a b c d e f =
-  combine2 (combine2 a b) (combine2 (combine2 c d) (combine2 e f))
+  combine4 a b c (combine3 d e f)
 
 (** {2 Combinators} *)
 
 let const h _ = h
 let const0 _ = 0
 
-let int i = i land max_int
-let bool b = if b then 1 else 2
-let char x = Char.code x
-let int32 (x:int32) = Hashtbl.hash x
-let int64 (x:int64) = Hashtbl.hash x
+let int i = hash_int_ i
+let bool b = hash_int_ (if b then 1 else 2)
+let char x = hash_int_ (Char.code x)
+let int32 (x:int32) = Hashtbl.hash x (* TODO: FNV *)
+let int64 (x:int64) = Hashtbl.hash x (* TODO: FNV *)
 let nativeint (x:nativeint) = Hashtbl.hash x
-let string (x:string) = Hashtbl.hash x
+
+let string (x:string) =
+  let h = ref fnv_offset_basis in
+  for i = 0 to String.length x - 1 do
+    h := Int64.(mul !h fnv_prime);
+    let byte = Char.code (String.unsafe_get x i) in
+    h := Int64.(logxor !h (of_int byte));
+  done;
+  Int64.to_int !h land max_int
+
+(*$T
+  int 42 >= 0
+  int max_int >= 0
+  int max_int = int max_int
+  int min_int >= 0
+  int 0 >= 0
+  char 'c' >= 0
+  int 152352 = int 162352
+*)
 
 let slice x i len =
   let j=i+len in
   let rec aux i s =
-    if i=j then s else aux (i+1) (combine2 (char x.[i]) s)
+    if i=j then s else aux (i+1) (combine2 (Char.code x.[i]) s)
   in
   aux i 0
 
