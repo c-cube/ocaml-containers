@@ -13,14 +13,14 @@ jobs:
 
       - uses: avsm/setup-ocaml@v1
         with:
-          ocaml-version: '4.11.1'
+          ocaml-version: '4.12.0'
 
       - name: cache opam
         id: cache-opam
         uses: actions/cache@v2
         with:
           path: _opam
-          key: opam-ubuntu-latest-4.11.1
+          key: opam-ubuntu-latest-4.12.0
 
       - name: Pin
         run: opam pin -n .
