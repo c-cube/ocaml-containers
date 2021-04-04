@@ -67,7 +67,7 @@ jobs:
       - run: opam exec -- dune runtest
         if: ${{ matrix.os == 'ubuntu-latest' }}
 
-      - run: opam exec -- dune runtest -j 1 -p containers # test only core on non-ubuntu platform
+      - run: opam exec -- dune runtest -j 1 -p containers,containers-data # test only core and data on non-ubuntu platform
         if: ${{ matrix.os != 'ubuntu-latest' }}
 
       - name: Remove troublesome files for caching on windows
