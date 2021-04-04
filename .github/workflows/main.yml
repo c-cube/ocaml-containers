@@ -58,8 +58,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
 
       - run: |
-          opam install -t containers containers-data --deps-only
-          opam install containers-thread --deps-only  # no test deps
+          opam install -t containers --deps-only
+          opam install containers-data containers-thread --deps-only  # no test deps
         if: matrix.os != 'ubuntu-latest'
 
       - run: opam exec -- dune build
