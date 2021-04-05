@@ -10,7 +10,7 @@
   (name test_hash)
   (modules test_hash)
   (flags :standard -warn-error -a+8)
-  (libraries containers))
+  (libraries containers iter))
 
 (executable
   (name test_random)
