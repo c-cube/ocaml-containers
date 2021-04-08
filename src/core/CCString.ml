@@ -576,12 +576,12 @@ let compare_natural a b =
 *)
 
 let edit_distance ?(cutoff=max_int) s1 s2 =
-  if length s1 = 0
-  then min cutoff (length s2)
-  else if length s2 = 0
-  then min cutoff (length s1)
-  else if equal s1 s2
-  then 0
+  let n1 = length s1 in
+  let n2 = length s2 in
+  if n1 = 0 then min cutoff n2
+  else if n2 = 0 then min cutoff n1
+  else if equal s1 s2 then 0
+  else if n1-n2 >= cutoff || n2-n1 >= cutoff then cutoff (* at least cutoff inserts *)
   else try
     (* distance vectors (v0=previous, v1=current) *)
     let v0 = Array.make (length s2 + 1) 0 in

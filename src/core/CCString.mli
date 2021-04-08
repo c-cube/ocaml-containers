@@ -462,9 +462,14 @@ val edit_distance : ?cutoff:int -> string -> string -> int
 (** [edit_distance ~cutoff s1 s2] is the edition distance between the two strings [s1] and [s2].
     This satisfies the classical distance axioms: it is always positive, symmetric, and satisfies
     the formula [distance s1 s2 + distance s2 s3 >= distance s1 s3].
-    @param cutoff if provided, it's a cap on both the number of iterations,
-      and on the result. (since 3.0). This is useful if you just want to
-    check whether the edit distance is less or equal than 2 (use cutoff of 3).
+
+    @param cutoff if provided, it's a cap on the number of iterations.
+      (since 3.0). This is useful if you just want to
+      check whether the edit distance is less or equal than 2 without
+      (use [edit_distance s1 s2 ~cutoff:3 <= 2]).
+      {b note} that contrary to what was previously documented here, the result can
+      still be higher than [cutoff] if it's reached in [<cutoff] iterations.
+      However if the result is [< cutoff] then it is accurate.
 *)
 
 (** {2 Infix operators}
