@@ -254,6 +254,10 @@ val filter : f:(char -> bool) -> string -> string
 (** [filter ~f s] discards characters of [s] not satisfying [f].
     @since 0.17 *)
 
+val uniq : eq:(char -> char -> bool) -> string -> string
+(** [uniq ~eq s] remove consecutive duplicate characters in [s].
+    @since NEXT_RELEASE *)
+
 val flat_map : ?sep:string -> f:(char -> string) -> string -> string
 (** [flat_map ?sep ~f s] maps each chars of [s] to a string, then concatenates them all.
     @param sep optional separator between each generated string.

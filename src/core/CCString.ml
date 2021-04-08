@@ -1000,6 +1000,24 @@ let filter f s =
   Q.printable_string (fun s -> filter (fun _ -> true) s = s)
 *)
 
+let uniq eq s =
+  if String.length s = 0 then s
+  else begin
+    let buf = Buffer.create (String.length s) in
+    Buffer.add_char buf s.[0];
+    let _ = fold
+        (fun previous_c c ->
+           if not (eq previous_c c) then Buffer.add_char buf c;
+           c
+        )
+        s.[0] s in
+    Buffer.contents buf
+  end
+
+(*$= & ~printer:Q.Print.string
+  "abcde" (uniq CCShims_.Stdlib.(=) "abbccdeeeee")
+*)
+
 let flat_map ?sep f s =
   let buf = Buffer.create (String.length s) in
   iteri
