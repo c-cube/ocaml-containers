@@ -23,8 +23,11 @@ module type S = CCSexp_intf.S
     This builds a parser and printer for S-expressions represented as
     in the [Sexp] argument.
 
-    @since 2.7 *)
-module Make(Sexp : SEXP) : S with type t = Sexp.t
+    @since 2.7
+
+    @since NEXT_RELEASE re-bind [loc] to [Sexp.loc]
+*)
+module Make(Sexp : SEXP) : S with type t = Sexp.t and type loc = Sexp.loc
 
 (** {2 Basics} *)
 
