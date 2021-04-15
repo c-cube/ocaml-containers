@@ -65,7 +65,11 @@ val set : 'a t -> int -> 'a -> 'a t
     @raise Invalid_argument if the list has less than [i+1] elements. *)
 
 val remove : 'a t -> int -> 'a t
-(** [remove l i] removes the [i]-th element of [v].
+(** [remove l i] removes the [i]-th element of [l].
+    @raise Invalid_argument if the list has less than [i+1] elements. *)
+
+val get_and_remove_exn : 'a t -> int -> 'a * 'a t
+(** [get_and_remove_exn l i] accesses and removes the [i]-th element of [l].
     @raise Invalid_argument if the list has less than [i+1] elements. *)
 
 val append : 'a t -> 'a t -> 'a t
