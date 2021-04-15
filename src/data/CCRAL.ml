@@ -116,7 +116,7 @@ let front_exn l = match l with
 let rec _remove prefix l i =
   let x, l' = front_exn l in
   if i=0
-  then List.fold_left (fun l x -> cons x l) l prefix
+  then List.fold_left (fun l x -> cons x l) l' prefix
   else _remove (x::prefix) l' (i-1)
 
 let remove l i = _remove [] l i
