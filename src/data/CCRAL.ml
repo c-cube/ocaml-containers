@@ -121,6 +121,10 @@ let rec _remove prefix l i =
 
 let remove l i = _remove [] l i
 
+(*$= & ~printer:Q.Print.(list int)
+  [1;2;4] (to_list @@ remove (of_list [1;2;3;4]) 2)
+*)
+
 let rec _map_tree f t = match t with
   | Leaf x -> Leaf (f x)
   | Node (x, l, r) -> Node (f x, _map_tree f l, _map_tree f r)
