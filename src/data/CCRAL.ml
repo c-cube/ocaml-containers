@@ -125,6 +125,19 @@ let remove l i = _remove [] l i
   [1;2;4] (to_list @@ remove (of_list [1;2;3;4]) 2)
 *)
 
+let rec _get_and_remove_exn prefix l i =
+  let x, l' = front_exn l in
+  if i=0
+  then (x, List.fold_left (fun l x -> cons x l) l' prefix)
+  else _get_and_remove_exn (x::prefix) l' (i-1)
+
+let get_and_remove_exn l i =
+  _get_and_remove_exn [] l i
+
+(*$= & ~printer:Q.Print.(pair int (list int))
+  (3,[1;2;4]) (CCPair.map_snd to_list @@ get_and_remove_exn (of_list [1;2;3;4]) 2)
+*)
+
 let rec _map_tree f t = match t with
   | Leaf x -> Leaf (f x)
   | Node (x, l, r) -> Node (f x, _map_tree f l, _map_tree f r)
