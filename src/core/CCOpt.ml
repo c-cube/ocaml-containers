@@ -110,6 +110,10 @@ let get_exn = function
   | Some x -> x
   | None -> invalid_arg "CCOpt.get_exn"
 
+let get_exn_or msg = function
+  | Some x -> x
+  | None -> invalid_arg msg
+
 let get_lazy default_fn x = match x with
   | None -> default_fn ()
   | Some y -> y
