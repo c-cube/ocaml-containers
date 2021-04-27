@@ -88,7 +88,14 @@ val value : 'a t -> default:'a -> 'a
     @since 2.8 *)
 
 val get_exn : 'a t -> 'a
+[@@ocaml.deprecated "use CCOpt.get_exn_or instead"]
 (** [get_exn o] returns [x] if [o] is [Some x] or fails if [o] is [None].
+    @raise Invalid_argument if the option is [None].
+    @deprecated use {!get_exn_or} instead
+*)
+
+val get_exn_or : string -> 'a t -> 'a
+(** [get_exn msg o] returns [x] if [o] is [Some x] or fails with [Invalid_argument msg] if [o] is [None].
     @raise Invalid_argument if the option is [None]. *)
 
 val get_lazy : (unit -> 'a) -> 'a t -> 'a
