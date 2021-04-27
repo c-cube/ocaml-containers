@@ -95,8 +95,10 @@ val get_exn : 'a t -> 'a
 *)
 
 val get_exn_or : string -> 'a t -> 'a
-(** [get_exn msg o] returns [x] if [o] is [Some x] or fails with [Invalid_argument msg] if [o] is [None].
-    @raise Invalid_argument if the option is [None]. *)
+(** [get_exn_or msg o] returns [x] if [o] is [Some x]
+    or fails with [Invalid_argument msg] if [o] is [None].
+    @raise Invalid_argument if the option is [None].
+    @since NEXT_RELEASE *)
 
 val get_lazy : (unit -> 'a) -> 'a t -> 'a
 (** [get_lazy default_fn o] unwraps [o], but if [o] is [None] it returns [default_fn ()] instead.

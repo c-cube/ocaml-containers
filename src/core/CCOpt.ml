@@ -114,6 +114,11 @@ let get_exn_or msg = function
   | Some x -> x
   | None -> invalid_arg msg
 
+(*$T
+  (try get_exn_or "ohno" (None:unit option); false with Invalid_argument s->s= "ohno")
+  123 = get_exn_or "yes" (Some 123)
+*)
+
 let get_lazy default_fn x = match x with
   | None -> default_fn ()
   | Some y -> y
