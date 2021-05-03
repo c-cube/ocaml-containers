@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.4
+
+- Add `CCOpt.get_exn_or` and deprecate `CCOpt.get_exn`
+- CCRAL: add `get_and_remove_exn` operation
+- CCString: add `CCString.uniq`
+- refactor `CCHash` to use FNV in many combinators
+- CCInt: improve perf by using a single implementation of popcount using int64
+
+- fix: CCRAL.remove does not always remove
+- fix(sexp): re-export the `loc` type to the functor's argument's type
+- refactor and clarify `cutoff` in `String.edit_distance`
+- fix(CCInt): make sure hash is always positive
+
+- big upgrade to CI thanks to @Fardale
+
 ## 3.3
 
 - feat: add code-generator for optimal bitfields; add tests

@@ -25,7 +25,7 @@ module type S = CCSexp_intf.S
 
     @since 2.7
 
-    @since NEXT_RELEASE re-bind [loc] to [Sexp.loc]
+    @since 3.4 re-bind [loc] to [Sexp.loc]
 *)
 module Make(Sexp : SEXP) : S with type t = Sexp.t and type loc = Sexp.loc
 

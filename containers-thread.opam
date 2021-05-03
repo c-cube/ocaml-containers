@@ -1,7 +1,8 @@
 opam-version: "2.0"
-version: "3.3"
+version: "3.4"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
+license: "BSD-2"
 synopsis: "An extension of containers for threading"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
