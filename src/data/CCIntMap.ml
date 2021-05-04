@@ -289,6 +289,7 @@ let rec equal ~eq a b =
 
 (*$Q
   Q.(list (pair int bool)) ( fun l -> \
+    CCList.sort_uniq ~cmp:CCOrd.compare l = CCList.sort CCOrd.compare l ==> \
     equal ~eq:(=) (of_list l) (of_list (List.rev l)))
 *)
 
