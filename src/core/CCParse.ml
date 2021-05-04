@@ -30,9 +30,16 @@ open CCShims_
     | N (a,b) -> Printf.sprintf "N (%s, %s)" (pptree a) (pptree b)
     | L x -> Printf.sprintf "L %d" x
 
-  let errpptree = function
-    | Ok x -> "Ok " ^ pptree x
+  let errpp pp = function
+    | Ok x -> "Ok " ^ pp x
     | Error s -> "Error " ^ s
+
+  let errpptree = errpp pptree
+
+  let erreq eq x y = match x, y with
+    | Ok x, Ok y -> eq x y
+    | Error _ , Error _ -> true
+    | _ -> false
 *)
 
 (*$= & ~printer:errpptree
@@ -125,6 +132,8 @@ module MemoTbl = struct
     | Ok of 'a
 end
 
+(* TODO: [type position = {state: state; i: int}] and recompute line, col
+   on demand *)
 type position = int * int * int (* pos, line, column *)
 
 type parse_branch = (line_num * col_num * string option) list
@@ -137,6 +146,7 @@ type state = {
   mutable branch: parse_branch;
   memo : MemoTbl.t; (* Memoization table, if any *)
 }
+(* TODO: remove lnum/cnum, recompute them lazily in errors *)
 
 exception ParseError of parse_branch * (unit -> string)
 
@@ -202,7 +212,17 @@ let backtrack st (i',l',c') =
   st.cnum <- c';
   ()
 
+(* FIXME:
+   remove all backtracking stuff and instead, pass the state as parameter
+   to [ok] and [err], with an explicit offset that changes. *)
+
 type 'a t = state -> ok:('a -> unit) -> err:(exn -> unit) -> unit
+(** Takes the input and two continuations:
+    {ul
+      {- [ok] to call with the result when it's done}
+      {- [err] to call when the parser met an error}
+    }
+*)
 
 let return : 'a -> 'a t = fun x _st ~ok ~err:_ -> ok x
 let pure = return
@@ -500,11 +520,39 @@ module U = struct
       sep_ ~by:(skip_white *> string sep *> skip_white) p <*
       skip_white <* string stop
 
+
   let int =
+    skip_white *>
     chars1_if (fun c -> is_num c || char_equal c '-')
     >>= fun s ->
     try return (int_of_string s)
     with Failure _ -> fail "expected an int"
+
+  let hexa_int =
+    (try_ (string "0x") <|> return "") *>
+    begin
+      chars1_if (function '0' .. '9' | 'a'..'f' | 'A'..'F' -> true | _ -> false)
+      >|= fun s ->
+      let i = ref 0 in
+      String.iter
+        (fun c ->
+           let n = match c with
+             | '0' .. '9' -> Char.code c - Char.code '0'
+             | 'a' .. 'f' -> Char.code c - Char.code 'a' + 10
+             | 'A' .. 'F' -> Char.code c - Char.code 'A' + 10
+             | _ -> assert false
+           in
+           i := !i * 16 + n)
+        s;
+      !i
+    end
+
+  (*$= & ~printer:(errpp Q.Print.int) ~cmp:(erreq (=))
+    (Ok 16) (parse_string U.hexa_int "0x10")
+    (Ok 16) (parse_string U.hexa_int "10")
+    (Error "") (parse_string U.hexa_int "x10")
+    (Error "") (parse_string U.hexa_int "0xz")
+  *)
 
   let prepend_str c s = String.make 1 c ^ s
 
@@ -512,11 +560,15 @@ module U = struct
     map2 prepend_str (char_if is_alpha) (chars_if is_alpha_num)
 
   let pair ?(start="(") ?(stop=")") ?(sep=",") p1 p2 =
-    string start *> skip_white *>
+    skip_white *> string start *> skip_white *>
       p1 >>= fun x1 ->
     skip_white *> string sep *> skip_white *>
       p2 >>= fun x2 ->
-    string stop *> return (x1,x2)
+    skip_white *> string stop *> return (x1,x2)
+
+  (*$= & ~printer:Q.Print.(errpp (pair int int))
+    (Ok(1,2)) U.(parse_string (pair int int) "(1 , 2 )")
+  *)
 
   let triple ?(start="(") ?(stop=")") ?(sep=",") p1 p2 p3 =
     string start *> skip_white *>

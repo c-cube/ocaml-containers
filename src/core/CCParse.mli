@@ -3,6 +3,9 @@
 
 (** {1 Very Simple Parser Combinators}
 
+    These combinators can be used to write very simple parsers, for example
+    to extract data from a line-oriented file.
+
     {[
       open CCParse;;
 
@@ -70,13 +73,12 @@ val state_of_string : string -> state
 
 (** {2 Combinators} *)
 
-type 'a t = state -> ok:('a -> unit) -> err:(exn -> unit) -> unit
-(** Takes the input and two continuations:
-    {ul
-      {- [ok] to call with the result when it's done}
-      {- [err] to call when the parser met an error}
-    }
-    @raise ParseError in case of failure. *)
+type 'a t
+(** The abstract type of parsers that return a value of type ['a] (or fail).
+
+    @raise ParseError in case of failure.
+    @since NEXT_RELEASE the type is private.
+*)
 
 val return : 'a -> 'a t
 (** Always succeeds, without consuming its input. *)
@@ -299,8 +301,8 @@ end
 
 (** {2 Utils}
 
-    This is useful to parse OCaml-like values in a simple way. *)
-
+    This is useful to parse OCaml-like values in a simple way.
+    All the parsers are whitespace-insensitive (they skip whitespace). *)
 module U : sig
   val list : ?start:string -> ?stop:string -> ?sep:string -> 'a t -> 'a list t
   (** [list p] parses a list of [p], with the OCaml conventions for
@@ -308,7 +310,12 @@ module U : sig
       Whitespace between items are skipped. *)
 
   val int : int t
-  (** Parse an int. *)
+  (** Parse an int in decimal representation. *)
+
+  val hexa_int : int t
+  (** Parse an int int hexadecimal format. Accepts an optional [0x] prefix,
+      and ignores capitalization.
+      @since NEXT_RELEASE *)
 
   val word : string t
   (** Non empty string of alpha num, start with alpha. *)
