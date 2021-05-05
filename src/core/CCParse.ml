@@ -16,13 +16,13 @@ open CCShims_
 
   let ptree = fix @@ fun self ->
     skip_space *>
-    ( (try_ (char '(') *> (pure mk_node <*> self <*> self) <* char ')')
+    ( (char '(' *> (pure mk_node <*> self <*> self) <* char ')')
       <|>
       (U.int >|= mk_leaf) )
 
   let ptree' = fix_memo @@ fun self ->
     skip_space *>
-    ( (try_ (char '(') *> (pure mk_node <*> self <*> self) <* char ')')
+    ( (char '(' *> (pure mk_node <*> self <*> self) <* char ')')
       <|>
       (U.int >|= mk_leaf) )
 
@@ -39,7 +39,7 @@ open CCShims_
   let erreq eq x y = match x, y with
     | Ok x, Ok y -> eq x y
     | Error _ , Error _ -> true
-    | _ -> false
+    | _ -> false ;;
 *)
 
 (*$= & ~printer:errpptree
@@ -56,7 +56,7 @@ open CCShims_
 (*$R
   let p = U.list ~sep:"," U.word in
   let printer = function
-    | Ok l -> "Ok " ^ CCFormat.(to_string (list string)) l
+    | Ok l -> "Ok " ^ CCFormat.(to_string (Dump.list string_quoted)) l
     | Error s -> "Error " ^ s
   in
   assert_equal ~printer
@@ -84,7 +84,7 @@ open CCShims_
   let open CCParse.Infix in
   let module P = CCParse in
 
-  let parens p = P.try_ (P.char '(') *> p <* P.char ')' in
+  let parens p = P.char '(' *> p <* P.char ')' in
   let add = P.char '+' *> P.return (+) in
   let sub = P.char '-' *> P.return (-) in
   let mul = P.char '*' *> P.return ( * ) in
@@ -94,7 +94,7 @@ open CCShims_
 
   let chainl1 e op =
   P.fix (fun r ->
-    e >>= fun x -> P.try_ (op <*> P.return x <*> r) <|> P.return x) in
+    e >>= fun x -> (op <*> P.return x <*> r) <|> P.return x) in
 
   let expr : int P.t =
   P.fix (fun expr ->
@@ -107,193 +107,270 @@ open CCShims_
   ()
 *)
 
-type 'a or_error = ('a, string) result
+module Error = struct
+  type t = {
+    msg: unit -> string;
+    str: string;
+    offset: int; (* offset in [e_str] *)
+  }
 
-type line_num = int
-type col_num = int
+  let get_loc_ (self:t) : int * int =
+    let i = ref 0 in
+    let continue = ref true in
+    let line = ref 1 in
+    let col = ref 1 in
+    while !continue && !i < self.offset do
+      match String.index_from self.str !i '\n' with
+        | exception Not_found ->
+          col := self.offset - !i; continue := false;
+        | j when j > self.offset ->
+          col := self.offset - !i; continue := false;
+        | j -> incr line; i := j+1;
+    done;
+    !line, !col
 
-module MemoTbl = struct
-  module H = Hashtbl.Make(struct
-      type t = int * int  (* id of parser, position *)
-      let equal ((a,b):t)(c,d) = a=c && b=d
-      let hash = Hashtbl.hash
-    end)
+  let line_and_column self = get_loc_ self
 
+  let msg self = self.msg()
+  let to_string self =
+    let line,col = get_loc_ self in
+    Printf.sprintf "at line %d, char %d:\n%s" line col (self.msg())
+
+  let pp out self =
+    let line,col = get_loc_ self in
+    Format.fprintf out "at line %d, char %d:@ %s" line col (self.msg())
+end
+
+type 'a or_error = ('a, Error.t) result
+
+module Memo_tbl = Hashtbl.Make(struct
+    type t = int * int  (* id of parser, position *)
+    let equal ((a,b):t)(c,d) = a=c && b=d
+    let hash = Hashtbl.hash
+  end)
+
+module Memo_state = struct
   (* table of closures, used to implement universal type *)
-  type t = (unit -> unit) H.t lazy_t
-
-  let create n = lazy (H.create n)
+  type t = (unit -> unit) Memo_tbl.t
 
   (* unique ID for each parser *)
   let id_ = ref 0
-
-  type 'a res =
-    | Fail of exn
-    | Ok of 'a
 end
 
 (* TODO: [type position = {state: state; i: int}] and recompute line, col
    on demand *)
 type position = int * int * int (* pos, line, column *)
 
-type parse_branch = (line_num * col_num * string option) list
-
+(** Purely functional state passed around *)
 type state = {
   str: string; (* the input *)
-  mutable i: int; (* offset *)
-  mutable lnum : line_num; (* Line number *)
-  mutable cnum : col_num; (* Column number *)
-  mutable branch: parse_branch;
-  memo : MemoTbl.t; (* Memoization table, if any *)
+  i: int; (* offset in [input.str] *)
+  memo : Memo_state.t option ref; (* Memoization table, if any *)
 }
-(* TODO: remove lnum/cnum, recompute them lazily in errors *)
 
-exception ParseError of parse_branch * (unit -> string)
+let[@inline] char_equal (a : char) b = Stdlib.(=) a b
+let string_equal = String.equal
 
-let char_equal (a : char) b = Stdlib.(=) a b
-let string_equal (a : string) b = Stdlib.(=) a b
-
-let rec string_of_branch l =
-  let pp_s () = function
-    | None -> ""
-    | Some s -> Format.sprintf "while parsing %s, " s
-  in
-  match l with
-    | [] -> ""
-    | [l,c,s] ->
-      Format.sprintf "@[%aat line %d, col %d@]" pp_s s l c
-    | (l,c,s) :: tail ->
-      Format.sprintf "@[%aat line %d, col %d@]@,%s" pp_s s l c (string_of_branch tail)
-
+(* FIXME: printer for error
 let () = Printexc.register_printer
     (function
       | ParseError (b,msg) ->
         Some (Format.sprintf "@[<v>%s@ %s@]" (msg()) (string_of_branch b))
       | _ -> None)
+   *)
 
-let const_ x () = x
+let[@inline] const_str_ x () : string = x
 
 let state_of_string str =
   let s = {
     str;
     i=0;
-    lnum=1;
-    cnum=1;
-    branch=[];
-    memo=MemoTbl.create 32;
+    memo=ref None;
   } in
   s
 
-let is_done st = st.i = String.length st.str
-let cur st = st.str.[st.i]
+let[@inline] is_done st = st.i >= String.length st.str
+let[@inline] cur st = st.str.[st.i]
 
-let fail_ ~err st msg =
-  let b = (st.lnum, st.cnum, None) :: st.branch in
-  err (ParseError (b, msg))
+let mk_error_ st msg : Error.t =
+  {Error.msg; str=st.str; offset=st.i}
 
-let next st ~ok ~err =
-  if st.i = String.length st.str
-  then fail_ ~err st (const_ "unexpected end of input")
-  else (
+(* consume one char, passing it to [ok]. *)
+let consume_ st ~ok ~err =
+  if is_done st then (
+    let msg = const_str_ "unexpected end of input" in
+    err (mk_error_ st msg)
+  ) else (
     let c = st.str.[st.i] in
-    st.i <- st.i + 1;
-    if char_equal c '\n'
-    then (st.lnum <- st.lnum + 1; st.cnum <- 1)
-    else st.cnum <- st.cnum + 1;
-    ok c
+    ok {st with i=st.i + 1} c
   )
 
-let pos st = st.i, st.lnum, st.cnum
-
-let backtrack st (i',l',c') =
-  assert (0 <= i' && i' <= st.i);
-  st.i <- i';
-  st.lnum <- l';
-  st.cnum <- c';
-  ()
-
-(* FIXME:
-   remove all backtracking stuff and instead, pass the state as parameter
-   to [ok] and [err], with an explicit offset that changes. *)
-
-type 'a t = state -> ok:('a -> unit) -> err:(exn -> unit) -> unit
+type 'a t = {
+  run: 'b. state -> ok:(state -> 'a -> 'b) -> err:(Error.t -> 'b) -> 'b;
+} [@@unboxed]
 (** Takes the input and two continuations:
     {ul
-      {- [ok] to call with the result when it's done}
+      {- [ok] to call with the result and new state when it's done}
       {- [err] to call when the parser met an error}
     }
 *)
 
-let return : 'a -> 'a t = fun x _st ~ok ~err:_ -> ok x
+let return x : _ t = {
+  run=fun st ~ok ~err:_ -> ok st x
+}
+
 let pure = return
-let (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  = fun p f st ~ok ~err -> p st ~ok:(fun x -> ok (f x)) ~err
-let (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  = fun p f st ~ok ~err -> p st ~ok:(fun x -> f x st ~ok ~err) ~err
-let (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  = fun f x st ~ok ~err ->
-    f st ~ok:(fun f' -> x st ~ok:(fun x' -> ok (f' x')) ~err) ~err
-let (<* ) : 'a t -> _ t -> 'a t
-  = fun x y st ~ok ~err ->
-    x st ~ok:(fun res -> y st ~ok:(fun _ -> ok res) ~err) ~err
-let ( *>) : _ t -> 'a t -> 'a t
-  = fun x y st ~ok ~err ->
-    x st ~ok:(fun _ -> y st ~ok ~err) ~err
+
+let (>|=) (p: 'a t) f : _ t = {
+  run=fun st ~ok ~err ->
+    p.run st
+      ~ok:(fun st x -> ok st (f x))
+      ~err
+}
+
+let (>>=) (p:'a t) f : _ t = {
+  run=fun st ~ok ~err ->
+    p.run st
+      ~ok:(fun st x ->
+          let p2 = f x in
+          p2.run st ~ok ~err)
+      ~err
+}
+
+let (<*>) (f:_ t) (a:_ t) : _ t = {
+  run=fun st ~ok ~err ->
+    f.run st
+      ~ok:(fun st f ->
+          a.run st ~ok:(fun st x -> ok st (f x)) ~err)
+      ~err
+}
+
+let (<*) (a:_ t) (b:_ t) : _ t = {
+  run=fun st ~ok ~err ->
+    a.run st
+      ~ok:(fun st x ->
+          b.run st ~ok:(fun st _ -> ok st x) ~err)
+      ~err
+}
+
+let ( *> ) (a:_ t) (b:_ t) : _ t = {
+  run=fun st ~ok ~err ->
+    a.run st
+      ~ok:(fun st _ ->
+          b.run st ~ok:(fun st x -> ok st x) ~err)
+      ~err
+}
 
 let map f x = x >|= f
 let map2 f x y = pure f <*> x <*> y
 let map3 f x y z = pure f <*> x <*> y <*> z
 
-let junk_ st = next st ~ok:ignore ~err:(fun _ -> assert false)
+let junk_ (st:state) : state =
+  assert (st.i < String.length st.str);
+  {st with i=st.i + 1}
 
-let eoi st ~ok ~err =
+let eoi = {
+  run=fun st ~ok ~err ->
   if is_done st
-  then ok ()
-  else fail_ ~err st (const_ "expected EOI")
+  then ok st ()
+  else err (mk_error_ st (const_str_ "expected end of input"))
+}
 
-let fail msg st ~ok:_ ~err = fail_ ~err st (const_ msg)
+let fail msg : _ t = {
+  run=fun st ~ok:_ ~err ->
+    err (mk_error_ st (const_str_ msg))
+}
 let failf msg = Printf.ksprintf fail msg
 
-let parsing s p st ~ok ~err =
-  st.branch <- (st.lnum, st.cnum, Some s) :: st.branch;
-  p st
-    ~ok:(fun x -> st.branch <- List.tl st.branch; ok x)
-    ~err:(fun e -> st.branch <- List.tl st.branch; err e)
+let parsing what p = {
+  run=fun st ~ok ~err ->
+    p.run st ~ok
+      ~err:(fun e ->
+          let msg() =
+            Printf.sprintf "while parsing %s:\n%s" what (e.Error.msg ())
+          in
+          err {e with Error.msg})
+}
 
-let nop _ ~ok ~err:_ = ok()
+let nop = {
+  run=fun st ~ok ~err:_ -> ok st ();
+}
 
-let char c =
-  let msg = Printf.sprintf "expected '%c'" c in
-  fun st ~ok ~err ->
-    next st
-      ~ok:(fun c' -> if char_equal c c' then ok c else fail_ ~err st (const_ msg)) ~err
+let any_char = {
+  run=fun st ~ok ~err -> consume_ st ~ok ~err
+}
 
-let char_if p st ~ok ~err =
-  next st
-    ~ok:(fun c ->
-      if p c then ok c
-      else fail_ ~err st (fun () -> Printf.sprintf "unexpected char '%c'" c)
-    ) ~err
+let char c : _ t = {
+  run=fun st ~ok ~err ->
+    consume_ st
+      ~ok:(fun st c2 ->
+          if char_equal c c2 then ok st c
+          else (
+            let msg() = Printf.sprintf "expected '%c', got '%c'" c (cur st) in
+            err (mk_error_ st msg)
+          ))
+      ~err
+}
 
-let chars_if p st ~ok ~err:_ =
-  let i = st.i in
-  let len = ref 0 in
-  while not (is_done st) && p (cur st) do junk_ st; incr len done;
-  ok (String.sub st.str i !len)
+let char_if ?descr p = {
+  run=fun st ~ok ~err ->
+    consume_ st
+      ~ok:(fun st c ->
+          if p c then ok st c
+          else (
+            let msg() =
+              let rest = match descr with
+                | None -> ""
+                | Some d -> Printf.sprintf ", expected %s" d
+              in
+              Printf.sprintf "unexpected char '%c'%s" c rest
+            in
+            err (mk_error_ st msg)
+          ))
+      ~err
+}
 
-let chars1_if p st ~ok ~err =
-  chars_if p st
-    ~ok:(fun s ->
-      if string_equal s ""
-      then fail_ ~err st (const_ "unexpected sequence of chars")
-      else ok s)
-    ~err
+let chars_if p = {
+  run=fun st ~ok ~err:_ ->
+    let i0 = st.i in
+    let i = ref i0 in
+    while
+      let st = {st with i = !i} in
+      not (is_done st) && p (cur st)
+    do
+      incr i;
+    done;
+    ok {st with i = !i} (String.sub st.str i0 (!i - i0))
+}
 
-let rec skip_chars p st ~ok ~err =
-  if not (is_done st) && p (cur st) then (
-    junk_ st;
-    skip_chars p st ~ok ~err
-  ) else ok()
+let chars1_if ?descr p = {
+  run=fun st ~ok ~err ->
+    (chars_if p).run st
+      ~ok:(fun st s ->
+          if string_equal s ""
+          then (
+            let msg() =
+              let what = match descr with
+                | None -> ""
+                | Some d -> Printf.sprintf " for %s" d
+              in
+              Printf.sprintf "expected non-empty sequence of chars%s" what
+            in
+            err (mk_error_ st msg)
+          ) else ok st s)
+      ~err
+}
+
+let skip_chars p : _ t =
+  let rec self = {
+    run=fun st ~ok ~err ->
+      if not (is_done st) && p (cur st) then (
+        let st = junk_ st in
+        self.run st ~ok ~err
+      ) else ok st ()
+  }
+  in
+  self
 
 let is_alpha = function
   | 'a' .. 'z' | 'A' .. 'Z' -> true
@@ -308,77 +385,136 @@ let is_white = function ' ' | '\t' | '\n' -> true | _ -> false
 let space = char_if is_space
 let white = char_if is_white
 
-let endline st ~ok ~err =
-  next st
-    ~ok:(function
-      | '\n' as c -> ok c
-      | _ -> fail_ ~err st (const_ "expected end-of-line"))
-    ~err
-
+let endline =
+  char_if ~descr:"end-of-line ('\\n')" (function '\n' -> true | _ -> false)
 let skip_space = skip_chars is_space
 let skip_white = skip_chars is_white
 
-let (<|>) : 'a t -> 'a t -> 'a t
-  = fun x y st ~ok ~err ->
-    let i = st.i in
-    x st ~ok
-      ~err:(fun e ->
-        let j = st.i in
-        if i=j then y st ~ok ~err (* try [y] *)
-        else err e (* fail *)
+let or_ (p1:'a t) (p2:'a t) : _ t = {
+  run=fun st ~ok ~err ->
+    p1.run st ~ok
+      ~err:(fun _e -> p2.run st ~ok ~err)
+}
+let (<|>) = or_
+
+let (|||) a b = map2 (fun x y ->x,y) a b
+
+let try_or p1 ~f ~else_:p2 = {
+  run=fun st ~ok ~err ->
+    p1.run st
+      ~ok:(fun st x -> (f x).run st ~ok ~err)
+      ~err:(fun _ -> p2.run st ~ok ~err)
+}
+
+let suspend f = {
+  run=fun st ~ok ~err ->
+    let p = f () in
+    p.run st ~ok ~err
+}
+
+let (<?>) (p:'a t) msg : _ t = {
+  run=fun st ~ok ~err ->
+    p.run st ~ok
+      ~err:(fun _e -> err (mk_error_ st (const_str_ msg)))
+}
+
+(* read [len] chars at once *)
+let any_chars len : _ t = {
+  run=fun st ~ok ~err ->
+    if st.i + len <= String.length st.str then (
+      let s = String.sub st.str st.i len in
+      let st = {st with i = st.i + len} in
+      ok st s
+    ) else (
+      let msg() =
+        Printf.sprintf "expected to be able to consume %d chars" len
+      in
+      err (mk_error_ st msg)
+    )
+}
+
+let exact s = {
+  run=fun st ~ok ~err ->
+    (* parse a string of length [String.length s] and compare with [s] *)
+    (any_chars (String.length s)).run st
+      ~ok:(fun st s2 ->
+          if string_equal s s2 then ok st s
+          else (
+            let msg() = Printf.sprintf "expected %S, got %S" s s2 in
+            err (mk_error_ st msg)
+          )
+        )
+      ~err
+}
+
+let string = exact
+
+let fix f =
+  let rec self = {
+    run=fun st ~ok ~err ->
+      (Lazy.force f_self).run st ~ok ~err
+  }
+  and f_self = lazy (f self) in
+  self
+
+let try_ p : _ t = {
+  run=fun st ~ok ~err:_ ->
+    p.run st
+      ~ok:(fun st x -> ok st (Some x))
+      ~err:(fun _ -> ok st None)
+}
+
+let optional p : _ t = {
+  run=fun st ~ok ~err:_ ->
+    p.run st
+      ~ok:(fun st _x -> ok st ())
+      ~err:(fun _ -> ok st ())
+}
+
+let many_until ~until p : _ t =
+  fix
+    (fun self ->
+       try_or until ~f:(fun _ -> pure [])
+         ~else_:(
+           p >>= fun x ->
+           self >|= fun l -> x :: l
+         ))
+
+let many p : _ t =
+  fix
+    (fun self ->
+       try_or p
+         ~f:(fun x -> self >|= fun tl -> x :: tl)
+         (pure []))
+
+(*
+(* parse many [p], as a difference list *)
+let many_rec_ p : (_ list -> _ list) t =
+  let rec self = {
+    run=fun st ~ok ~err ->
+      if is_done st then ok st (fun l->l) (* empty list *)
+      else (
+        p.run st
+          ~ok:(fun st x ->
+              self.run st
+                ~ok:(fun st f -> ok st (fun l -> x :: f l))
+                ~err)
+          ~err
       )
+  } in
+  self
 
-let try_ : 'a t -> 'a t
-  = fun p st ~ok ~err ->
-    let i = pos st in
-    p st ~ok
-      ~err:(fun e ->
-        backtrack st i;
-        err e)
-
-let suspend f st ~ok ~err = f () st ~ok ~err
-
-let (<?>) : 'a t -> string -> 'a t
-  = fun x msg st ~ok ~err ->
-    let i = st.i in
-    x st ~ok
-      ~err:(fun e ->
-        if st.i = i
-        then fail_ ~err st (fun () -> msg)
-        else err e)
-
-let string s st ~ok ~err =
-  let rec check i =
-    if i = String.length s then ok s
-    else
-      next st
-        ~ok:(fun c ->
-          if char_equal c s.[i]
-          then check (i+1)
-          else fail_ ~err st (fun () -> Printf.sprintf "expected \"%s\"" s))
-        ~err
-  in
-  check 0
-
-let rec many_rec : 'a t -> 'a list -> 'a list t = fun p acc st ~ok ~err ->
-  if is_done st then ok(List.rev acc)
-  else
-    p st
-      ~ok:(fun x ->
-        let i = pos st in
-        let acc = x :: acc in
-        many_rec p acc st ~ok
-          ~err:(fun _ ->
-            backtrack st i;
-            ok(List.rev acc))
-      ) ~err
-
-let many : 'a t -> 'a list t
-  = fun p st ~ok ~err -> many_rec p [] st ~ok ~err
+let many p : _ t = {
+  run=fun st ~ok ~err ->
+    (many_rec_ p).run st
+      ~ok:(fun st f -> ok st (f []))
+      ~err
+}
+   *)
 
 (*$R
   let p0 = skip_white *> U.int in
-  let p = (skip_white *> char '(' *> many p0) <* try_ (skip_white <* char ')') in
+  let p = (skip_white *> char '(' *> many p0) <* (skip_white <* char ')') in
   let printer =  CCFormat.(to_string @@ Dump.result  @@ Dump.list int) in
   assert_equal ~printer
     (Ok [1;2;3]) (parse_string p "(1 2 3)");
@@ -387,91 +523,165 @@ let many : 'a t -> 'a list t
   *)
 
 
-let many1 : 'a t -> 'a list t =
-  fun p st ~ok ~err ->
-    p st ~ok:(fun x -> many_rec p [x] st ~ok ~err) ~err
-
-let rec skip p st ~ok ~err =
-  let i = pos st in
-  p st
-    ~ok:(fun _ -> skip p st ~ok ~err)
-    ~err:(fun _ ->
-      backtrack st i;
-      ok()
-    )
-
-(* by (sep1 ~by p) *)
-let rec sep_rec ~by p = try_ by *> sep1 ~by p
-
-and sep1 ~by p =
+let many1 p =
   p >>= fun x ->
-  (sep_rec ~by p >|= fun tl -> x::tl)
-  <|> return [x]
+  many p >|= fun l -> x :: l
+
+(* skip can be made efficient by not allocating intermediate parsers *)
+let skip p : _ t =
+  let rec self = {
+    run=fun st ~ok ~err ->
+      p.run st
+        ~ok:(fun st _ -> self.run st ~ok ~err)
+        ~err:(fun _ ->
+            ok st ())
+  } in
+  self
+
+let sep_until ~until ~by p =
+  let rec read_p = lazy (
+    p >>= fun x ->
+    (until *> pure [x])
+    <|>
+    (by *> (Lazy.force read_p >|= fun tl -> x :: tl))
+  ) in
+  (until *> pure [])
+  <|> (Lazy.force read_p)
 
 let sep ~by p =
-  (try_ p >>= fun x ->
-   (sep_rec ~by p >|= fun tl -> x::tl)
-   <|> return [x])
-  <|> return []
+  let rec read_p = lazy (
+    try_or p
+      ~f:(fun x ->
+          (eoi *> pure [x])
+          <|>
+          try_or by
+            ~f:(fun _ -> Lazy.force read_p >|= fun tl -> x :: tl)
+            (pure [x]))
+      (pure [])
+  ) in
+  Lazy.force read_p
 
-let fix f =
-  let rec p st ~ok ~err = f p st ~ok ~err in
-  p
+(*$inject
+  let aword = chars1_if (function 'a'..'z'|'A'..'Z'->true|_ -> false);;
+*)
+(*$= & ~printer:(errpp Q.Print.(list string))
+(Ok ["a";"b";"c"]) \
+  (parse_string (optional (char '/') *> sep ~by:(char '/') aword) "/a/b/c")
+(Ok ["a";"b";"c"]) \
+  (parse_string (optional (char '/') *> sep ~by:(char '/') aword) "a/b/c")
+*)
 
-let memo (type a) (p:a t):a t =
-  let id = !MemoTbl.id_ in
-  incr MemoTbl.id_;
+let sep1 ~by p =
+  p >>= fun x ->
+  sep ~by p >|= fun tl ->
+  x :: tl
+
+let line : _ t = {
+  run=fun st ~ok ~err ->
+    if is_done st then err (mk_error_ st (const_str_ "expected a line, not EOI"))
+    else (
+      match String.index_from st.str st.i '\n' with
+      | j ->
+        let s = String.sub st.str st.i (j - st.i) in
+        ok {st with i=j+1} s
+      | exception Not_found ->
+        err (mk_error_ st (const_str_ "unterminated line"))
+    )
+}
+
+(*$=
+  (Ok "1234") (parse_string line "1234\nyolo")
+  (Ok ("1234", "yolo")) (parse_string (line ||| line) "1234\nyolo\nswag")
+*)
+
+(* parse a string [s] using [p_sub], then parse [s] using [p].
+   The result is that of parsing [s] using [p], but the state is
+   the one after using [p_sub], and errors are translated back into the context
+   of [p_sub].
+   This can be useful for example in [p_sub line some_line_parser]. *)
+let parse_sub_ p_sub p : _ t = {
+  run=fun st0 ~ok ~err ->
+    let p = p <* eoi in (* make sure [p] reads all *)
+    p_sub.run st0
+      ~ok:(fun st1 s ->
+          p.run (state_of_string s)
+            ~ok:(fun _ r -> ok st1 r)
+            ~err:(fun e ->
+                err {e with Error.str=st0.str; offset=e.Error.offset + st0.i}))
+      ~err
+}
+
+let each_line p : _ t =
+  fix
+    (fun self ->
+       try_or eoi
+         ~f:(fun _ -> pure [])
+         (parse_sub_ line p >>= fun x ->
+          self >|= fun tl -> x :: tl))
+
+(*$= & ~printer:(errpp Q.Print.(list @@ list int))
+  (Ok ([[1;1];[2;2];[3;3]])) \
+    (parse_string (each_line (sep ~by:skip_space U.int)) "1 1\n2 2\n3   3\n")
+*)
+
+let memo (type a) (p:a t) : a t =
+  let id = !Memo_state.id_ in
+  incr Memo_state.id_;
   let r = ref None in (* used for universal encoding *)
-  fun st ~ok ~err ->
-    let i = st.i in
-    let (lazy tbl) = st.memo in
-    try
-      let f = MemoTbl.H.find tbl (i,id) in
-      (* extract hidden value *)
+
+  {run=fun st ~ok ~err ->
+    let tbl = match !(st.memo) with
+      | Some t -> t
+      | None ->
+        let tbl = Memo_tbl.create 32 in
+        st.memo := Some tbl;
+        tbl
+    in
+
+    match
       r := None;
-      f ();
-      begin match !r with
-        | None -> assert false
-        | Some (MemoTbl.Ok x) -> ok x
-        | Some (MemoTbl.Fail e) -> err e
-      end
-    with Not_found ->
-      (* parse, and save *)
-      p st
-        ~ok:(fun x ->
-          MemoTbl.H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Ok x));
-          ok x)
-        ~err:(fun e ->
-          MemoTbl.H.replace tbl (i,id) (fun () -> r := Some (MemoTbl.Fail e));
-          err e)
+      let f = Memo_tbl.find tbl (st.i, id) in
+      f();
+      !r
+    with
+      | None -> assert false
+      | Some (Ok (st,x)) -> ok st x
+      | Some (Error e) -> err e
+      | exception Not_found ->
+        (* parse, and save *)
+        p.run st
+          ~ok:(fun st' x ->
+            Memo_tbl.replace tbl (st.i,id) (fun () -> r := Some (Ok (st',x)));
+            ok st' x)
+          ~err:(fun e ->
+            Memo_tbl.replace tbl (st.i,id) (fun () -> r := Some (Error e));
+            err e)
+  }
 
 let fix_memo f =
-  let rec p =
-    let p' = lazy (memo p) in
-    fun st ~ok ~err -> f (Lazy.force p') st ~ok ~err
-  in
+  let rec p = {
+    run=fun st ~ok ~err -> (Lazy.force p').run st ~ok ~err
+  }
+  and p' = lazy (memo (f p)) in
   p
 
-let get_lnum = fun st ~ok ~err:_ -> ok st.lnum
-let get_cnum = fun st ~ok ~err:_ -> ok st.cnum
-let get_pos = fun st ~ok ~err:_ -> ok (st.lnum, st.cnum)
+exception ParseError of Error.t
 
-let parse_exn p st =
-  let res = ref None in
-  p st ~ok:(fun x -> res := Some x) ~err:(fun e -> raise e);
-  match !res with
-    | None -> assert false
-    | Some x -> x
+let stringify_result = function
+  | Ok _ as x -> x
+  | Error e -> Error (Error.to_string e)
 
-let exn_to_err e = Error (Printexc.to_string e)
+let parse_string_exn p s =
+  p.run (state_of_string s)
+    ~ok:(fun _st x -> x)
+    ~err:(fun e -> raise (ParseError e))
 
-let parse p st =
-  try Ok (parse_exn p st)
-  with e -> exn_to_err e
+let parse_string_e p s =
+  p.run (state_of_string s)
+    ~ok:(fun _st x -> Ok x)
+    ~err:(fun e -> Error e)
 
-let parse_string_exn p s = parse_exn p (state_of_string s)
-
-let parse_string p s = parse p (state_of_string s)
+let parse_string p s = parse_string_e p s |> stringify_result
 
 let read_all_ ic =
   let buf = Buffer.create 1024 in
@@ -487,20 +697,19 @@ let read_all_ ic =
   end;
   Buffer.contents buf
 
-let parse_file_exn p file =
+let parse_file_e p file =
   let ic = open_in file in
-  let st = state_of_string (read_all_ ic) in
-  try
-    let res = parse_exn p st in
-    close_in ic;
-    res
-  with e ->
-    close_in_noerr ic;
-    raise e
+  let s = read_all_ ic in
+  let r = parse_string_e p s in
+  close_in ic;
+  r
 
-let parse_file p file =
-  try Ok (parse_file_exn p file)
-  with e -> exn_to_err e
+let parse_file p file = parse_file_e p file |> stringify_result
+
+let parse_file_exn p file =
+  match parse_file_e p file with
+    | Ok x -> x
+    | Error e -> raise (ParseError e)
 
 module Infix = struct
   let (>|=) = (>|=)
@@ -509,6 +718,7 @@ module Infix = struct
   let (<* ) = (<* )
   let ( *>) = ( *>)
   let (<|>) = (<|>)
+  let (|||) = (|||)
   let (<?>) = (<?>)
 end
 
@@ -517,19 +727,19 @@ module U = struct
 
   let list ?(start="[") ?(stop="]") ?(sep=";") p =
     string start *> skip_white *>
-      sep_ ~by:(skip_white *> string sep *> skip_white) p <*
-      skip_white <* string stop
-
+    sep_until
+      ~until:(skip_white <* string stop)
+      ~by:(skip_white *> string sep *> skip_white) p
 
   let int =
     skip_white *>
-    chars1_if (fun c -> is_num c || char_equal c '-')
+    chars1_if ~descr:"integer" (fun c -> is_num c || char_equal c '-')
     >>= fun s ->
     try return (int_of_string s)
     with Failure _ -> fail "expected an int"
 
   let hexa_int =
-    (try_ (string "0x") <|> return "") *>
+    (exact "0x" <|> return "") *>
     begin
       chars1_if (function '0' .. '9' | 'a'..'f' | 'A'..'F' -> true | _ -> false)
       >|= fun s ->
@@ -583,5 +793,5 @@ end
 include CCShimsMkLet_.Make(struct
     type nonrec 'a t = 'a t
     include Infix
-    let monoid_product a1 a2 = pure (fun x y ->x,y) <*> a1 <*> a2
+    let monoid_product = (|||)
   end)
