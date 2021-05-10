@@ -244,12 +244,13 @@ val partition_filter_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
     - if [f x = `Left y], adds [y] to the first list.
     - if [f x = `Right z], adds [z] to the second list.
     - if [f x = `Drop], ignores [x].
-    @since 0.11 *)
+    @since 3.3 *)
 
 val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
   'a list -> 'b list * 'c list
 [@@ocaml.deprecated "use CCList.partition_filter_map instead"]
-(** @deprecated use {!partition_filter_map} instead *)
+(** @deprecated use {!partition_filter_map} instead
+    @since 0.11 *)
 
 val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) ->
   'a t -> 'a list t
