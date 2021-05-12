@@ -229,7 +229,15 @@ val optional : _ t -> unit t
     succeeded or failed. Cannot fail.
     @since NEXT_RELEASE *)
 
-val try_ : 'a t -> 'a option t
+val try_ : 'a t -> 'a t
+(** [try_ p] is just like [p] (it used to play a role in backtracking
+    semantics but no more).
+
+    @deprecated since NEXT_RELEASE it can just be removed. See {!try_opt} if you want
+    to detect failure. *)
+[@@deprecated "plays no role anymore"]
+
+val try_opt : 'a t -> 'a option t
 (** [try_ p] tries to parse using [p], and return [Some x] if [p]
     succeeded with [x]. Otherwise it returns [None]. This cannot fail.
     @since NEXT_RELEASE *)

@@ -457,7 +457,9 @@ let fix f =
   and f_self = lazy (f self) in
   self
 
-let try_ p : _ t = {
+let try_ p = p
+
+let try_opt p : _ t = {
   run=fun st ~ok ~err:_ ->
     p.run st
       ~ok:(fun st x -> ok st (Some x))
