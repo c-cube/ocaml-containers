@@ -492,36 +492,44 @@ let union b1 b2 =
   union (of_list [1;2;3;4;5]) (of_list [7;3;5;6]) |> to_sorted_list = CCList.range 1 7
 *)
 
-(* Underlying size shrinks for inter. *)
-let inter_into ~into bv =
-  if into.size > bv.size then (
-    shrink_ into bv.size;
-  );
+
+let inter_into_no_resize_ ~into bv =
+  assert (Array.length into.a <= Array.length bv.a);
   for i = 0 to (Array.length into.a) - 1 do
     Array.unsafe_set into.a i
       ((Array.unsafe_get into.a i) land (Array.unsafe_get bv.a i))
   done
 
+(* Underlying size shrinks for inter. *)
+let inter_into ~into bv =
+  if into.size > bv.size then (
+    shrink_ into bv.size;
+  );
+  inter_into_no_resize_ ~into bv
+
 let inter b1 b2 =
-  if b1.size <= b2.size
-  then (
+  if b1.size <= b2.size then (
     let into = copy b1 in
-    for i = 0 to (Array.length b1.a) - 1 do
-      Array.unsafe_set into.a i
-        ((Array.unsafe_get into.a i) land (Array.unsafe_get b2.a i))
-    done;
+    inter_into_no_resize_ ~into b2;
     into
   ) else (
     let into = copy b2 in
-    for i = 0 to (Array.length b2.a) - 1 do
-      Array.unsafe_set into.a i
-        ((Array.unsafe_get into.a i) land (Array.unsafe_get b1.a i))
-    done;
+    inter_into_no_resize_ ~into b1;
     into
   )
 
 (*$T
   inter (of_list [1;2;3;4]) (of_list [2;4;6;1]) |> to_sorted_list = [1;2;4]
+*)
+
+(*$R
+  let bv1 = CCBV.of_list [1;2;3;4;200;201] in
+  let bv2 = CCBV.of_list [4;200;3] in
+  let bv = CCBV.inter bv1 bv2 in
+  let l = List.sort compare (CCBV.to_list bv) in
+  assert_equal ~printer:(CCFormat.(to_string (Dump.list int)))
+    [3;4;200] l;
+  ()
 *)
 
 (*$R
