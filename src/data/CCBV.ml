@@ -423,32 +423,30 @@ let negate b =
   Q.small_int (fun size -> create ~size false |> negate |> cardinal = size)
 *)
 
+let union_into_no_resize_ ~into bv =
+  assert (Array.length into.a >= Array.length bv.a);
+  for i = 0 to Array.length bv.a - 1 do
+    Array.unsafe_set into.a i
+      ((Array.unsafe_get into.a i) lor (Array.unsafe_get bv.a i))
+  done
+
 (* Underlying size grows for union. *)
 let union_into ~into bv =
   if into.size < bv.size then (
     grow_ into bv.size;
   );
-  for i = 0 to (Array.length into.a) - 1 do
-    Array.unsafe_set into.a i
-      ((Array.unsafe_get into.a i) lor (Array.unsafe_get bv.a i))
-  done
+  union_into_no_resize_ ~into bv
 
 (* To avoid potentially 2 passes, figure out what we need to copy. *)
 let union b1 b2 =
   if b1.size <= b2.size
   then (
     let into = copy b2 in
-    for i = 0 to (Array.length b1.a) - 1 do
-      Array.unsafe_set into.a i
-        ((Array.unsafe_get into.a i) lor (Array.unsafe_get b1.a i))
-    done;
+    union_into_no_resize_ ~into b1;
     into
   ) else (
     let into = copy b1 in
-    for i = 0 to (Array.length b1.a) - 1 do
-      Array.unsafe_set into.a i
-        ((Array.unsafe_get into.a i) lor (Array.unsafe_get b2.a i))
-    done;
+    union_into_no_resize_ ~into b2;
     into
   )
 
