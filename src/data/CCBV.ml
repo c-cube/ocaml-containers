@@ -1,6 +1,13 @@
 
 (** {2 Imperative Bitvectors} *)
 
+(* TODO: move to [bytes] and replace all [mod] and [/] with bitshifts
+   because width_=8 *)
+
+(*$inject
+  let ppli = CCFormat.(Dump.list int)
+*)
+
 let width_ = Sys.word_size - 1
 
 (** We use OCamls ints to store the bits. We index them from the
@@ -325,6 +332,28 @@ let to_list bv =
   assert_equal [0;1;5;156;201;222] l;
 *)
 
+(*$= & ~printer:(CCFormat.to_string ppli)
+  [1;2;3;4;64;130] (of_list [1;2;3;4;64;130] |> to_sorted_list)
+*)
+
+(*$Q
+  Q.(small_list small_nat) (fun l -> \
+    let l = List.sort_uniq CCOrd.compare l in \
+    let l2 = of_list l |> to_sorted_list in \
+    if l=l2 then true else Q.Test.fail_reportf "l1=%a, l2=%a" ppli l ppli l2)
+  Q.(small_list small_nat) (fun l -> \
+    let bv = of_list l in \
+    let l1 = bv |> to_sorted_list in \
+    let l2 = \
+      (CCList.init (length bv) (get bv) |> List.mapi (fun i b->i,b) \
+       |>CCList.filter_map (function (i,true) -> Some i| _ ->None)) in \
+    if l1=l2 then true else Q.Test.fail_reportf "l1=%a, l2=%a" ppli l1 ppli l2)
+  *)
+
+(*$= & ~cmp:equal ~printer:(CCFormat.to_string pp)
+  (of_list [0]) (let bv=empty() in set bv 0; bv)
+*)
+
 let to_sorted_list bv =
   List.rev (to_list bv)
 
@@ -377,9 +406,8 @@ let negate_self b =
     let l = Array.length b.a - 1 in
     Array.unsafe_set b.a l (lsb_masks_.(r) land (Array.unsafe_get b.a l))
 
-(*$T
-  let v = of_list [1;2;5;7;] in negate_self v; \
-    cardinal v = (List.length [0;3;4;6])
+(*$= & ~printer:(CCFormat.to_string ppli)
+  [0;3;4;6] (let v = of_list [1;2;5;7;] in negate_self v; to_sorted_list v)
 *)
 
 let negate b =
@@ -429,8 +457,35 @@ let union b1 b2 =
   let bv2 = CCBV.of_list [4;200;3] in
   let bv = CCBV.union bv1 bv2 in
   let l = List.sort compare (CCBV.to_list bv) in
-  assert_equal [1;2;3;4;200] l;
+  assert_equal ~printer:(CCFormat.(to_string (Dump.list int)))
+    [1;2;3;4;200] l;
   ()
+*)
+
+(*$R
+  let bv1 = CCBV.of_list [1;2;3;4;64;130] in
+  let bv2 = CCBV.of_list [4;64;3;120] in
+  let bv = CCBV.union bv1 bv2 in
+  assert_equal ~cmp:equal ~printer:(CCFormat.to_string pp)
+    (of_list [1;2;3;4;64;120;130]) bv;
+  ()
+*)
+
+(*$R
+  let bv1 = CCBV.of_list [1;2;3;4] in
+  let bv2 = CCBV.of_list [4;200;3] in
+  let bv = CCBV.union bv1 bv2 in
+  assert_equal ~cmp:equal ~printer:(CCFormat.to_string pp)
+    (of_list [1;2;3;4;200]) bv;
+  ()
+*)
+
+(*$R
+  let v1 = CCBV.empty () in
+  let () = CCBV.set v1 64 in
+  let v2 = CCBV.diff (CCBV.empty ()) (CCBV.empty ()) in
+  let v3 = CCBV.union v1 v2 in
+  assert_equal ~printer:(CCFormat.to_string pp) ~cmp:CCBV.equal v1 v3
 *)
 
 (*$T
@@ -497,6 +552,13 @@ let diff in_ not_in =
   diff (of_list [1;2;3;4])  (of_list [1;2;3])   |> to_list = [4];
   diff (of_list [1;2;3])      (of_list [1;2;3;400]) |> to_list = [];
   diff (of_list [1;2;3;400])  (of_list [1;2;3])     |> to_list = [400];
+*)
+
+(*$R
+  let v1 = CCBV.empty () in
+  set v1 65;
+  let v2 = CCBV.diff v1 v1 in
+  assert_bool (CCFormat.asprintf "bv: %a" pp v2) (CCBV.is_empty v2)
 *)
 
 let select bv arr =
@@ -572,3 +634,9 @@ let pp out bv =
        Format.pp_print_char out (if b then '1' else '0')
     );
   Format.pp_print_string out "}"
+
+(*$= & ~printer:CCFun.id
+  "bv {00001}" (CCFormat.to_string pp (of_list [4]))
+*)
+
+let __to_word_l bv = Array.to_list bv.a

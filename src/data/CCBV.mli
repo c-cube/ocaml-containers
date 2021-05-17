@@ -147,3 +147,8 @@ val of_iter : int iter -> t
 val pp : Format.formatter -> t -> unit
 (** Print the bitvector as a string of bits.
     @since 0.13 *)
+
+
+(**/**)
+val __to_word_l : t -> int list
+(**/**)
