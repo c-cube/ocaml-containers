@@ -228,6 +228,18 @@ let clear bv =
   assert_bool "must be empty" (CCBV.is_empty bv);
 *)
 
+let equal x y : bool =
+  x.size = y.size &&
+  x.a = y.a
+
+(*$T
+  equal (of_list [1; 3; 4]) (of_list [1; 3; 4])
+  equal (empty()) (empty())
+  not (equal (empty ()) (of_list [1]))
+  not (equal (empty ()) (of_list [2; 5]))
+  not (equal (of_list [1;3]) (of_list [2; 3]))
+*)
+
 let iter bv f =
   let len = array_length_of_size bv.size in
   assert (len <= Array.length bv.a);

@@ -135,6 +135,10 @@ val select : t -> 'a array -> 'a list
 val selecti : t -> 'a array -> ('a * int) list
 (** Same as {!select}, but selected elements are paired with their indexes. *)
 
+val equal : t -> t -> bool
+(** Bitwise comparison, including the size ([equal a b] implies [length a=length b]).
+    @since NEXT_RELEASE *)
+
 type 'a iter = ('a -> unit) -> unit
 
 val to_iter : t -> int iter
