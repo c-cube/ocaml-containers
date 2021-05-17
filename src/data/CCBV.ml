@@ -252,16 +252,18 @@ let iter bv f =
   assert (len <= Array.length bv.a);
   for n = 0 to len - 2 do
     let j = width_ * n in
+    let word_n = Array.unsafe_get bv.a n in
     for i = 0 to width_ - 1 do
-      f (j+i) (bv.a.(n) land (1 lsl i) <> 0)
+      f (j+i) ((word_n land (1 lsl i)) <> 0)
     done
   done;
   if bv.size > 0 then (
     let j = width_ * (len - 1) in
     let r = bv.size mod width_ in
     let final_length = if r = 0 then width_ else r in
+    let final_word = Array.unsafe_get bv.a (len-1) in
     for i = 0 to final_length - 1 do
-      f (j + i) (bv.a.(len - 1) land (1 lsl i) <> 0)
+      f (j + i) ((final_word land (1 lsl i)) <> 0)
     done
   )
 
@@ -294,7 +296,7 @@ let iter bv f =
     List.length l = n && List.for_all (fun (_,b) -> b) l)
 *)
 
-let iter_true bv f =
+let[@inline] iter_true bv f =
   iter bv (fun i b -> if b then f i else ())
 
 (*$T

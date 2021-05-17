@@ -79,7 +79,8 @@ val of_list : int list -> t
 (** From a list of true bits.
 
     The bits are interpreted as indices into the returned bitvector, so the final
-    bitvector will have [length t] equal to 1 more than max of list indices. *)
+    bitvector [bv] will have [length bv] equal to 1 more than max of list indices.
+*)
 
 val first : t -> int option
 (** First set bit, or return [None].
