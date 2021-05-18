@@ -86,14 +86,15 @@ let int32 (x:int32) = Hashtbl.hash x (* TODO: FNV *)
 let int64 (x:int64) = Hashtbl.hash x (* TODO: FNV *)
 let nativeint (x:nativeint) = Hashtbl.hash x
 
-let string (x:string) =
+let bytes (x:bytes) =
   let h = ref fnv_offset_basis in
-  for i = 0 to String.length x - 1 do
+  for i = 0 to Bytes.length x - 1 do
     h := Int64.(mul !h fnv_prime);
-    let byte = Char.code (String.unsafe_get x i) in
+    let byte = Char.code (Bytes.unsafe_get x i) in
     h := Int64.(logxor !h (of_int byte));
   done;
   Int64.to_int !h land max_int
+let string (x:string) = bytes (Bytes.unsafe_of_string x)
 
 (*$T
   int 42 >= 0

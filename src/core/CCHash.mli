@@ -30,6 +30,7 @@ val slice : string -> int -> int t
 (** [slice s i len state] hashes the slice [i, …, i+len-1] of [s]
     into [state]. *)
 
+val bytes : bytes t
 val string : string t
 
 val list : 'a t -> 'a list t
