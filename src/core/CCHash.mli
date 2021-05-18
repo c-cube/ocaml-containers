@@ -31,6 +31,8 @@ val slice : string -> int -> int t
     into [state]. *)
 
 val bytes : bytes t
+(** Hash a byte array.
+    @since NEXT_RELEASE *)
 val string : string t
 
 val list : 'a t -> 'a list t
