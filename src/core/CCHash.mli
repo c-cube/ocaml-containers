@@ -1,7 +1,14 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Hash combinators} *)
+(** {1 Hash combinators}
+
+    The API of this module is stable as per semantic versioning, like the
+    rest of containers. However the exact implementation of hashing function
+    can change and should not be relied on (i.e. hashing a value always
+    returns the same integer {b within a run of a program}, not
+    across versions of OCaml and Containers).
+*)
 
 (** {2 Definitions} *)
 
