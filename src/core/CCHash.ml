@@ -88,12 +88,13 @@ let nativeint (x:nativeint) = Hashtbl.hash x
 
 let bytes (x:bytes) =
   let h = ref fnv_offset_basis in
-  for i = 0 to Bytes.length x - 1 do
-    h := Int64.(mul !h fnv_prime);
-    let byte = Char.code (Bytes.unsafe_get x i) in
-    h := Int64.(logxor !h (of_int byte));
-  done;
+  Bytes.iter (fun c ->
+      h := Int64.(mul !h fnv_prime);
+      let byte = Char.code c in
+      h := Int64.(logxor !h (of_int byte));
+    ) x;
   Int64.to_int !h land max_int
+
 let string (x:string) = bytes (Bytes.unsafe_of_string x)
 
 (*$T
