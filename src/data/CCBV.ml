@@ -1,9 +1,6 @@
 
 (** {2 Imperative Bitvectors} *)
 
-(* TODO: move to [bytes] and replace all [mod] and [/] with bitshifts
-   because width_=8 *)
-
 (*$inject
   let ppli = CCFormat.(Dump.list int)
 *)
@@ -154,7 +151,7 @@ let resize bv size =
 let is_empty bv =
   try
     for i = 0 to Bytes.length bv.b - 1 do
-      if get_ bv.b i <> 0 then raise Exit       (* MSB of last element are all 0 *)
+      if get_ bv.b i <> 0 then raise Exit
     done;
     true
   with Exit ->
