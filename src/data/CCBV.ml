@@ -8,20 +8,35 @@
   let ppli = CCFormat.(Dump.list int)
 *)
 
-let width_ = Sys.word_size - 1
+let width_ = 8
 
-(** We use OCamls ints to store the bits. We index them from the
+(* Helper functions *)
+let[@inline] get_ b i = Char.code (Bytes.get b i)
+let[@inline] unsafe_get_ b i = Char.code (Bytes.unsafe_get b i)
+
+let[@inline] set_ b i v = Bytes.set b i (Char.unsafe_chr v)
+let[@inline] unsafe_set_ b i v = Bytes.unsafe_set b i (Char.unsafe_chr v)
+
+let[@inline] mod_ n = (n lsl (Sys.word_size - 4)) lsr (Sys.word_size - 4)
+
+let[@inline] div_ n = n lsr 3
+
+let[@inline] mul_ n = n lsl 3
+
+let zero = Char.unsafe_chr 0
+
+(** We use OCamls chars to store the bits. We index them from the
     least significant bit. We create masks to zero out the most significant
     bits that aren't used to store values. This is necessary when we are
     constructing or negating a bit vector. *)
 let lsb_masks_ =
-  let a = Array.make (width_ + 1) 0 in
+  let b = Bytes.make (width_ + 1) zero in
   for i = 1 to width_ do
-    a.(i) <- a.(i-1) lor (1 lsl (i - 1))
+    set_ b i (get_ b (i-1) lor (1 lsl (i - 1)))
   done;
-  a
+  b
 
-let all_ones_ = lsb_masks_.(width_)
+let all_ones_ = Bytes.get lsb_masks_ width_
 
 (* count the 1 bits in [n]. See https://en.wikipedia.org/wiki/Hamming_weight *)
 let count_bits_ n =
@@ -35,31 +50,31 @@ let count_bits_ n =
 *)
 
 type t = {
-  mutable a : int array;
+  mutable b : bytes;
   mutable size : int;
 }
 
 let length t = t.size
 
-let empty () = { a = [| |] ; size = 0 }
+let empty () = { b = Bytes.empty ; size = 0 }
 
-let array_length_of_size size =
-  if size mod width_ = 0 then size / width_ else (size / width_) + 1
+let bytes_length_of_size size =
+  if mod_ size = 0 then div_ size else (div_ size) + 1
 
 let create ~size default =
-  if size = 0 then { a = [| |]; size }
+  if size = 0 then empty ()
   else (
-    let n = array_length_of_size size in
-    let a = if default
-      then Array.make n all_ones_
-      else Array.make n 0
+    let n = bytes_length_of_size size in
+    let b = if default
+      then Bytes.make n all_ones_
+      else Bytes.make n zero
     in
     (* adjust last bits *)
-    let r = size mod width_ in
+    let r = mod_ size in
     if default && r <> 0 then (
-      Array.unsafe_set a (n-1) lsb_masks_.(r);
+      Bytes.unsafe_set b (n-1) (Bytes.unsafe_get lsb_masks_ r);
     );
-    { a; size }
+    { b; size }
   )
 
 (*$Q
@@ -74,21 +89,21 @@ let create ~size default =
   create ~size:29 true |> to_sorted_list = CCList.range 0 28
 *)
 
-let copy bv = { bv with a = Array.copy bv.a }
+let copy bv = { bv with b = Bytes.copy bv.b }
 
 (*$Q
   (Q.list Q.small_int) (fun l -> \
     let bv = of_list l in to_list bv = to_list (copy bv))
 *)
 
-let capacity bv = width_ * Array.length bv.a
+let capacity bv = mul_ (Bytes.length bv.b)
 
 let cardinal bv =
   if bv.size = 0 then 0
   else (
     let n = ref 0 in
-    for i = 0 to Array.length bv.a - 1 do
-      n := !n + count_bits_ bv.a.(i) (* MSB of last element are all 0 *)
+    for i = 0 to Bytes.length bv.b - 1 do
+      n := !n + count_bits_ (get_ bv.b i) (* MSB of last element are all 0 *)
     done;
     !n
   )
@@ -98,9 +113,9 @@ let cardinal bv =
 *)
 
 let really_resize_ bv ~desired ~current size =
-  let a' = Array.make desired 0 in
-  Array.blit bv.a 0 a' 0 current;
-  bv.a <- a';
+  let b = Bytes.make desired zero in
+  Bytes.blit bv.b 0 b 0 current;
+  bv.b <- b;
   bv.size <- size
 
 let grow_ bv size =
@@ -108,15 +123,15 @@ let grow_ bv size =
   then bv.size <- size
   else (
     (* beyond capacity *)
-    let desired = array_length_of_size size in
-    let current = Array.length bv.a in
+    let desired = bytes_length_of_size size in
+    let current = Bytes.length bv.b in
     assert (desired > current);
     really_resize_ bv ~desired ~current size
   )
 
 let shrink_ bv size =
-  let desired = array_length_of_size size in
-  let current = Array.length bv.a in
+  let desired = bytes_length_of_size size in
+  let current = Bytes.length bv.b in
   really_resize_ bv ~desired ~current size
 
 let resize bv size =
@@ -138,8 +153,8 @@ let resize bv size =
 
 let is_empty bv =
   try
-    for i = 0 to Array.length bv.a - 1 do
-      if bv.a.(i) <> 0 then raise Exit       (* MSB of last element are all 0 *)
+    for i = 0 to Bytes.length bv.b - 1 do
+      if get_ bv.b i <> 0 then raise Exit       (* MSB of last element are all 0 *)
     done;
     true
   with Exit ->
@@ -147,10 +162,10 @@ let is_empty bv =
 
 let get bv i =
   if i < 0 then invalid_arg "get: negative index";
-  let n = i / width_ in
-  let i = i mod width_ in
-  if n < Array.length bv.a
-  then (Array.unsafe_get bv.a n) land (1 lsl i) <> 0
+  let n = div_ i in
+  let i = mod_ i in
+  if n < Bytes.length bv.b
+  then (unsafe_get_ bv.b n) land (1 lsl i) <> 0
   else false
 
 (*$R
@@ -172,10 +187,10 @@ let get bv i =
 let set bv i =
   if i < 0 then invalid_arg "set: negative index"
   else (
-    let n = i / width_ in
-    let j = i mod width_ in
+    let n = div_ i in
+    let j = mod_ i in
     if i >= bv.size then grow_ bv (i+1);
-    Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lor (1 lsl j))
+    unsafe_set_ bv.b n ((unsafe_get_ bv.b n) lor (1 lsl j))
   )
 
 (*$T
@@ -186,10 +201,10 @@ let set bv i =
 let reset bv i =
   if i < 0 then invalid_arg "reset: negative index"
   else (
-    let n = i / width_ in
-    let j = i mod width_ in
+    let n = div_ i in
+    let j = mod_ i in
     if i >= bv.size then grow_ bv (i+1);
-    Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) land (lnot (1 lsl j)))
+    unsafe_set_ bv.b n ((unsafe_get_ bv.b n) land (lnot (1 lsl j)))
   )
 
 (*$T
@@ -199,10 +214,10 @@ let reset bv i =
 let flip bv i =
   if i < 0 then invalid_arg "reset: negative index"
   else (
-    let n = i / width_ in
-    let j = i mod width_ in
+    let n = div_ i in
+    let j = mod_ i in
     if i >= bv.size then grow_ bv (i+1);
-    Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lxor (1 lsl j))
+    unsafe_set_ bv.b n ((unsafe_get_ bv.b n) lxor (1 lsl j))
   )
 
 (*$R
@@ -221,7 +236,7 @@ let flip bv i =
 *)
 
 let clear bv =
-  Array.fill bv.a 0 (Array.length bv.a) 0
+  Bytes.fill bv.b 0 (Bytes.length bv.b) zero
 
 (*$T
   let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
@@ -237,7 +252,7 @@ let clear bv =
 
 let equal x y : bool =
   x.size = y.size &&
-  x.a = y.a
+  x.b = y.b
 
 (*$T
   equal (of_list [1; 3; 4]) (of_list [1; 3; 4])
@@ -248,20 +263,20 @@ let equal x y : bool =
 *)
 
 let iter bv f =
-  let len = array_length_of_size bv.size in
-  assert (len <= Array.length bv.a);
+  let len = bytes_length_of_size bv.size in
+  assert (len <= Bytes.length bv.b);
   for n = 0 to len - 2 do
-    let j = width_ * n in
-    let word_n = Array.unsafe_get bv.a n in
+    let j = mul_ n in
+    let word_n = unsafe_get_ bv.b n in
     for i = 0 to width_ - 1 do
       f (j+i) ((word_n land (1 lsl i)) <> 0)
     done
   done;
   if bv.size > 0 then (
-    let j = width_ * (len - 1) in
-    let r = bv.size mod width_ in
+    let j = mul_ (len - 1) in
+    let r = mod_ bv.size in
     let final_length = if r = 0 then width_ else r in
-    let final_word = Array.unsafe_get bv.a (len-1) in
+    let final_word = unsafe_get_ bv.b (len-1) in
     for i = 0 to final_length - 1 do
       f (j + i) ((final_word land (1 lsl i)) <> 0)
     done
@@ -399,37 +414,37 @@ let filter bv p =
 *)
 
 let negate_self b =
-  let len = Array.length b.a in
+  let len = Bytes.length b.b in
   for n = 0 to len - 1 do
-    Array.unsafe_set b.a n (lnot (Array.unsafe_get b.a n))
+    unsafe_set_ b.b n (lnot (unsafe_get_ b.b n))
   done;
-  let r = b.size mod width_ in
+  let r = mod_ b.size in
   if r <> 0 then
-    let l = Array.length b.a - 1 in
-    Array.unsafe_set b.a l (lsb_masks_.(r) land (Array.unsafe_get b.a l))
+    let l = Bytes.length b.b - 1 in
+    unsafe_set_ b.b l (unsafe_get_ lsb_masks_ r land (unsafe_get_ b.b l))
 
 (*$= & ~printer:(CCFormat.to_string ppli)
   [0;3;4;6] (let v = of_list [1;2;5;7;] in negate_self v; to_sorted_list v)
 *)
 
-let negate b =
-  let a =  Array.map (lnot) b.a in
-  let r = b.size mod width_ in
+let negate a =
+  let b =  Bytes.map (fun c -> Char.unsafe_chr (lnot (Char.code c))) a.b in
+  let r = mod_ a.size in
   if r <> 0 then (
-    let l = Array.length b.a - 1 in
-    Array.unsafe_set a l (lsb_masks_.(r) land (Array.unsafe_get a l))
+    let l = Bytes.length a.b - 1 in
+    unsafe_set_ b l (unsafe_get_ lsb_masks_ r land (unsafe_get_ b l))
   );
-  { a ; size = b.size }
+  { b ; size = a.size }
 
 (*$Q
   Q.small_int (fun size -> create ~size false |> negate |> cardinal = size)
 *)
 
 let union_into_no_resize_ ~into bv =
-  assert (Array.length into.a >= Array.length bv.a);
-  for i = 0 to Array.length bv.a - 1 do
-    Array.unsafe_set into.a i
-      ((Array.unsafe_get into.a i) lor (Array.unsafe_get bv.a i))
+  assert (Bytes.length into.b >= Bytes.length bv.b);
+  for i = 0 to Bytes.length bv.b - 1 do
+    unsafe_set_ into.b i
+      ((unsafe_get_ into.b i) lor (unsafe_get_ bv.b i))
   done
 
 (* Underlying size grows for union. *)
@@ -494,10 +509,10 @@ let union b1 b2 =
 
 
 let inter_into_no_resize_ ~into bv =
-  assert (Array.length into.a <= Array.length bv.a);
-  for i = 0 to (Array.length into.a) - 1 do
-    Array.unsafe_set into.a i
-      ((Array.unsafe_get into.a i) land (Array.unsafe_get bv.a i))
+  assert (Bytes.length into.b <= Bytes.length bv.b);
+  for i = 0 to (Bytes.length into.b) - 1 do
+    unsafe_set_ into.b i
+      ((unsafe_get_ into.b i) land (unsafe_get_ bv.b i))
   done
 
 (* Underlying size shrinks for inter. *)
@@ -543,10 +558,10 @@ let inter b1 b2 =
 (* Underlying size depends on the 'in_' set for diff, so we don't change
    it's size! *)
 let diff_into ~into bv =
-  let n = min (Array.length into.a) (Array.length bv.a) in
+  let n = min (Bytes.length into.b) (Bytes.length bv.b) in
   for i = 0 to n - 1 do
-    Array.unsafe_set into.a i
-      ((Array.unsafe_get into.a i) land (lnot (Array.unsafe_get bv.a i)))
+    unsafe_set_ into.b i
+      ((unsafe_get_ into.b i) land (lnot (unsafe_get_ bv.b i)))
   done
 
 let diff in_ not_in =
@@ -647,4 +662,4 @@ let pp out bv =
   "bv {00001}" (CCFormat.to_string pp (of_list [4]))
 *)
 
-let __to_word_l bv = Array.to_list bv.a
+let __to_word_l bv = CCString.to_list (Bytes.unsafe_to_string bv.b)
