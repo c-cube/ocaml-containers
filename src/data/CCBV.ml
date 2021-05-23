@@ -35,12 +35,19 @@ let lsb_masks_ =
 
 let all_ones_ = Bytes.get lsb_masks_ width_
 
-(* count the 1 bits in [n]. See https://en.wikipedia.org/wiki/Hamming_weight *)
 let count_bits_ n =
-  let rec recurse count n =
-    if n = 0 then count else recurse (count+1) (n land (n-1))
-  in
-  recurse 0 n
+  let table = [| 0; 1; 1; 2; 1; 2; 2; 3; 1; 2; 2; 3; 2; 3; 3; 4; 1; 2; 2; 3; 2; 3; 3; 4;
+                 2; 3; 3; 4; 3; 4; 4; 5; 1; 2; 2; 3; 2; 3; 3; 4; 2; 3; 3; 4; 3; 4; 4; 5;
+                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 1; 2; 2; 3; 2; 3; 3; 4;
+                 2; 3; 3; 4; 3; 4; 4; 5; 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6;
+                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 3; 4; 4; 5; 4; 5; 5; 6;
+                 4; 5; 5; 6; 5; 6; 6; 7; 1; 2; 2; 3; 2; 3; 3; 4; 2; 3; 3; 4; 3; 4; 4; 5;
+                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 2; 3; 3; 4; 3; 4; 4; 5;
+                 3; 4; 4; 5; 4; 5; 5; 6; 3; 4; 4; 5; 4; 5; 5; 6; 4; 5; 5; 6; 5; 6; 6; 7;
+                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 3; 4; 4; 5; 4; 5; 5; 6;
+                 4; 5; 5; 6; 5; 6; 6; 7; 3; 4; 4; 5; 4; 5; 5; 6; 4; 5; 5; 6; 5; 6; 6; 7;
+                 4; 5; 5; 6; 5; 6; 6; 7; 5; 6; 6; 7; 6; 7; 7; 8; |] in
+  Array.unsafe_get table n
 
 (*  Can I access the "private" members in testing? $Q
     (Q.int_bound (Sys.word_size - 1)) (fun i -> count_bits_ lsb_masks_.(i) = i)
