@@ -771,6 +771,10 @@ let sorted_diff ~cmp l1 l2 =
   Q.(triple small_nat small_nat int) (fun (n1,n2,x) -> \
     let l = sorted_diff ~cmp:CCInt.compare (CCList.init n1 (fun _ -> x)) (CCList.init n2 (fun _ -> x)) in \
     count (CCInt.equal x) l = CCInt.max (n1 - n2) 0)
+  Q.(pair (list small_int) (list small_int)) (fun (l1,l2) -> \
+    let l1 = List.sort CCInt.compare l1 in \
+    let l2 = List.sort CCInt.compare l2 in \
+    l1 = sorted_diff ~cmp:CCInt.compare (sorted_merge ~cmp:CCInt.compare l1 l2) l2)
 *)
 
 let sort_uniq ~cmp l = List.sort_uniq cmp l

@@ -504,7 +504,9 @@ val sorted_merge : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 val sorted_diff : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** [sorted_diff ~cmp l1 l2] returns the elements in [l1] that are not in [l2].
     Both lists are assumed to be sorted with respect to [cmp] and
-    duplicate elements are treated individually.
+    duplicate elements are treated individually. It is the left inverse of
+    [sorted_merge]; that is, [sorted_diff ~cmp (sorted_merge ~cmp l1 l2) l2]
+    is always equal to [l1] for sorted lists [l1] and [l2].
     @since NEXT_RELEASE *)
 
 val sort_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list
