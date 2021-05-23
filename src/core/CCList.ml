@@ -825,28 +825,51 @@ let sorted_insert ~cmp ?(uniq=false) x l =
       List.mem x (sorted_insert ~cmp:CCInt.compare x l))
 *)
 
-let sorted_remove ~cmp ~key l =
-  let rec aux cmp key left l = match l with
+let sorted_remove ~cmp ?(all=false) x l =
+  let rec aux cmp all x left l = match l with
     | [] -> List.rev left
     | y :: tail ->
-      match cmp key y with
-        | 0 -> aux cmp key left tail
+      match cmp x y with
+        | 0 ->
+          if all then aux cmp all x left tail else List.rev_append left tail
         | n when n<0 -> List.rev_append left l
-        | _ -> aux cmp key (y::left) tail
+        | _ -> aux cmp all x (y::left) tail
   in
-  aux cmp key [] l
+  aux cmp all x [] l
 
 (*$Q
-    Q.(pair small_int (list small_int)) (fun (key,l) -> \
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Stdlib.compare l in \
-      is_sorted ~cmp:CCInt.compare (sorted_remove ~cmp:CCInt.compare ~key l))
-    Q.(pair small_int (list small_int)) (fun (key,l) -> \
+      is_sorted ~cmp:CCInt.compare (sorted_remove ~cmp:CCInt.compare x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Stdlib.compare l in \
-      let l' = sorted_remove ~cmp:CCInt.compare ~key l in \
-      List.length l' = List.length l - count (CCInt.equal key) l)
-    Q.(pair small_int (list small_int)) (fun (key,l) -> \
+      is_sorted ~cmp:CCInt.compare (sorted_remove ~cmp:CCInt.compare ~all:false x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
       let l = List.sort Stdlib.compare l in \
-      not (List.mem key (sorted_remove ~cmp:CCInt.compare ~key l)))
+      is_sorted ~cmp:CCInt.compare (sorted_remove ~cmp:CCInt.compare ~all:true x l))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      let l' = sorted_remove ~cmp:CCInt.compare x l in \
+      List.length l' = List.length l - (if List.mem x l then 1 else 0))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      let l' = sorted_remove ~cmp:CCInt.compare ~all:true x l in \
+      List.length l' = List.length l - count (CCInt.equal x) l)
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      let l' = sorted_remove ~cmp:CCInt.compare ~all:false x l in \
+      List.length l' = List.length l - (if List.mem x l then 1 else 0))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      let l' = sorted_remove ~cmp:CCInt.compare x l in \
+      count (CCInt.equal x) l' = count (CCInt.equal x) l - (if List.mem x l then 1 else 0))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      let l' = sorted_remove ~cmp:CCInt.compare ~all:false x l in \
+      count (CCInt.equal x) l' = count (CCInt.equal x) l - (if List.mem x l then 1 else 0))
+    Q.(pair small_int (list small_int)) (fun (x,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      not (List.mem x (sorted_remove ~cmp:CCInt.compare ~all:true x l)))
 *)
 
 let uniq_succ ~eq l =

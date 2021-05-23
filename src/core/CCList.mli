@@ -528,9 +528,11 @@ val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a l
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
     @since 0.17 *)
 
-val sorted_remove : cmp:('a -> 'a -> int) -> key:'a -> 'a list -> 'a list
+val sorted_remove : cmp:('a -> 'a -> int) -> ?all:bool -> 'a -> 'a list -> 'a list
 (** [sorted_insert ~cmp ~key l] removes [key] from a sorted list [l] such that
     the return value is sorted too.
+    @param all if true then all occurrences of [x] will be removed. Otherwise, only the first
+      [x] will be removed (if any). Default [false] (only the first will be removed).
     @since NEXT_RELEASE *)
 
 val uniq_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list
