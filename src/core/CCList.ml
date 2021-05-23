@@ -745,6 +745,34 @@ let sorted_merge ~cmp l1 l2 =
     List.length (sorted_merge ~cmp:CCInt.compare l1 l2) = List.length l1 + List.length l2)
 *)
 
+let sorted_diff ~cmp l1 l2 =
+  let rec recurse cmp acc l1 l2 = match l1,l2 with
+    | [], _ -> List.rev acc
+    | _, [] -> List.rev_append acc l1
+    | x1::l1', x2::l2' ->
+      let c = cmp x1 x2 in
+      if c < 0 then recurse cmp (x1::acc) l1' l2
+      else if c > 0 then recurse cmp acc l1 l2'
+      else recurse cmp acc l1' l2'
+  in
+  recurse cmp [] l1 l2
+
+(*$T
+  equal CCInt.equal (sorted_diff ~cmp:CCInt.compare [0;1;1;2;4] [1;2;2;2;3]) [0;1;4]
+  equal CCInt.equal (sorted_diff ~cmp:CCInt.compare [2] [1;2;2;2;3]) []
+*)
+
+(*$Q
+  Q.(pair (list small_int) (list small_int)) (fun (l1,l2) -> \
+    List.length (sorted_merge ~cmp:CCInt.compare l1 l2) = List.length l1 + List.length l2)
+  Q.(pair (list small_int) (list small_int)) (fun (l1,l2) -> \
+    let l = sorted_diff ~cmp:CCInt.compare (List.sort CCInt.compare l1) (List.sort CCInt.compare l2) in \
+    l = sort CCInt.compare l) (* [is_sorted] is after this function *)
+  Q.(triple small_nat small_nat int) (fun (n1,n2,x) -> \
+    let l = sorted_diff ~cmp:CCInt.compare (List.init n1 (fun _ -> x)) (List.init n2 (fun _ -> x)) in \
+    count (CCInt.equal x) l = CCInt.max (n1 - n2) 0)
+*)
+
 let sort_uniq ~cmp l = List.sort_uniq cmp l
 
 (*$T
