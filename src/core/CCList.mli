@@ -502,9 +502,10 @@ val sorted_merge : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
     the given comparison function [cmp]. *)
 
 val sorted_diff : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
-(** [sorted_merge ~cmp l1 l2] returns the elements in [l1] that are not in [l2].
+(** [sorted_diff ~cmp l1 l2] returns the elements in [l1] that are not in [l2].
     Both lists are assumed to be sorted with respect to [cmp] and
-    duplicate elements are treated individually. *)
+    duplicate elements are treated individually.
+    @since NEXT_RELEASE *)
 
 val sort_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list
 (** [sort_uniq ~cmp l] sorts the list [l] using the given comparison function [cmp]
