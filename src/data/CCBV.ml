@@ -14,7 +14,7 @@ let[@inline] unsafe_get_ b i = Char.code (Bytes.unsafe_get b i)
 let[@inline] set_ b i v = Bytes.set b i (Char.unsafe_chr v)
 let[@inline] unsafe_set_ b i v = Bytes.unsafe_set b i (Char.unsafe_chr v)
 
-let[@inline] mod_ n = (n lsl (Sys.word_size - 4)) lsr (Sys.word_size - 4)
+let[@inline] mod_ n = (n land 0b111)
 
 let[@inline] div_ n = n lsr 3
 
@@ -26,14 +26,9 @@ let zero = Char.unsafe_chr 0
     least significant bit. We create masks to zero out the most significant
     bits that aren't used to store values. This is necessary when we are
     constructing or negating a bit vector. *)
-let lsb_masks_ =
-  let b = Bytes.make (width_ + 1) zero in
-  for i = 1 to width_ do
-    set_ b i (get_ b (i-1) lor (1 lsl (i - 1)))
-  done;
-  b
+let[@inline] lsb_masks_ n = (1 lsl n) - 1
 
-let all_ones_ = Bytes.get lsb_masks_ width_
+let all_ones_ = Char.unsafe_chr (lsb_masks_ width_)
 
 let count_bits_ n =
   let table = [| 0; 1; 1; 2; 1; 2; 2; 3; 1; 2; 2; 3; 2; 3; 3; 4; 1; 2; 2; 3; 2; 3; 3; 4;
@@ -76,7 +71,7 @@ let create ~size default =
     (* adjust last bits *)
     let r = mod_ size in
     if default && r <> 0 then (
-      Bytes.unsafe_set b (n-1) (Bytes.unsafe_get lsb_masks_ r);
+      Bytes.unsafe_set b (n-1) (Char.unsafe_chr (lsb_masks_ r));
     );
     { b; size }
   )
@@ -425,7 +420,7 @@ let negate_self b =
   let r = mod_ b.size in
   if r <> 0 then
     let l = Bytes.length b.b - 1 in
-    unsafe_set_ b.b l (unsafe_get_ lsb_masks_ r land (unsafe_get_ b.b l))
+    unsafe_set_ b.b l (lsb_masks_ r land (unsafe_get_ b.b l))
 
 (*$= & ~printer:(CCFormat.to_string ppli)
   [0;3;4;6] (let v = of_list [1;2;5;7;] in negate_self v; to_sorted_list v)
@@ -436,7 +431,7 @@ let negate a =
   let r = mod_ a.size in
   if r <> 0 then (
     let l = Bytes.length a.b - 1 in
-    unsafe_set_ b l (unsafe_get_ lsb_masks_ r land (unsafe_get_ b l))
+    unsafe_set_ b l (lsb_masks_ r land (unsafe_get_ b l))
   );
   { b ; size = a.size }
 
@@ -666,4 +661,7 @@ let pp out bv =
   "bv {00001}" (CCFormat.to_string pp (of_list [4]))
 *)
 
-let __to_word_l bv = CCString.to_list (Bytes.unsafe_to_string bv.b)
+let __to_word_l bv =
+  let l = ref [] in
+  Bytes.iter (fun c -> l := c :: !l) bv.b;
+  List.rev !l
