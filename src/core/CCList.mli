@@ -523,6 +523,10 @@ val is_sorted : cmp:('a -> 'a -> int) -> 'a list -> bool
     @param cmp the comparison function.
     @since 0.17 *)
 
+val sorted_mem : cmp:('a -> 'a -> int) -> 'a -> 'a list -> bool
+(** Suppose the list [l] is sorted. [sorted_mem x l] is [true] iff [x] is equal to an element of [l].
+    @since NEXT_RELEASE *)
+
 val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
 (** [sorted_insert ~cmp ?uniq x l] inserts [x] into [l] such that, if [l] was sorted,
     then [sorted_insert x l] is sorted too.
