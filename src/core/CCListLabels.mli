@@ -525,6 +525,11 @@ val sorted_insert : cmp:(('a -> 'a -> int) [@keep_label]) -> ?uniq:bool -> 'a ->
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
     @since 0.17 *)
 
+val sorted_remove : cmp:(('a -> 'a -> int) [@keep_label]) -> key:('a [@keep_label]) -> 'a list -> 'a list
+(** [sorted_insert ~cmp ~key l] removes [key] from a sorted list [l] such that
+    the return value is sorted too.
+    @since NEXT_RELEASE *)
+
 val uniq_succ : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a list -> 'a list
 (** [uniq_succ ~eq l] removes duplicate elements that occur one next to the other.
     Examples:

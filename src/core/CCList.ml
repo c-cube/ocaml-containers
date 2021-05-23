@@ -797,6 +797,30 @@ let sorted_insert ~cmp ?(uniq=false) x l =
       List.mem x (sorted_insert ~cmp:CCInt.compare x l))
 *)
 
+let sorted_remove ~cmp ~key l =
+  let rec aux cmp key left l = match l with
+    | [] -> List.rev left
+    | y :: tail ->
+      match cmp key y with
+        | 0 -> aux cmp key left tail
+        | n when n<0 -> List.rev_append left l
+        | _ -> aux cmp key (y::left) tail
+  in
+  aux cmp key [] l
+
+(*$Q
+    Q.(pair small_int (list small_int)) (fun (key,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      is_sorted ~cmp:CCInt.compare (sorted_remove ~cmp:CCInt.compare ~key l))
+    Q.(pair small_int (list small_int)) (fun (key,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      let l' = sorted_remove ~cmp:CCInt.compare ~key l in \
+      List.length l' = List.length l - count (Int.equal key) l)
+    Q.(pair small_int (list small_int)) (fun (key,l) -> \
+      let l = List.sort Stdlib.compare l in \
+      not (List.mem key (sorted_remove ~cmp:CCInt.compare ~key l)))
+*)
+
 let uniq_succ ~eq l =
   let rec f acc l = match l with
     | [] -> List.rev acc
