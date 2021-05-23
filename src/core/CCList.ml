@@ -769,7 +769,7 @@ let sorted_diff ~cmp l1 l2 =
     let l = sorted_diff ~cmp:CCInt.compare (List.sort CCInt.compare l1) (List.sort CCInt.compare l2) in \
     l = sort CCInt.compare l) (* [is_sorted] is after this function *)
   Q.(triple small_nat small_nat int) (fun (n1,n2,x) -> \
-    let l = sorted_diff ~cmp:CCInt.compare (List.init n1 (fun _ -> x)) (List.init n2 (fun _ -> x)) in \
+    let l = sorted_diff ~cmp:CCInt.compare (CCList.init n1 (fun _ -> x)) (CCList.init n2 (fun _ -> x)) in \
     count (CCInt.equal x) l = CCInt.max (n1 - n2) 0)
 *)
 
