@@ -815,7 +815,7 @@ let sorted_remove ~cmp ~key l =
     Q.(pair small_int (list small_int)) (fun (key,l) -> \
       let l = List.sort Stdlib.compare l in \
       let l' = sorted_remove ~cmp:CCInt.compare ~key l in \
-      List.length l' = List.length l - count (Int.equal key) l)
+      List.length l' = List.length l - count (CCInt.equal key) l)
     Q.(pair small_int (list small_int)) (fun (key,l) -> \
       let l = List.sort Stdlib.compare l in \
       not (List.mem key (sorted_remove ~cmp:CCInt.compare ~key l)))
