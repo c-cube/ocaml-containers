@@ -497,6 +497,11 @@ val all_ok : ('a, 'err) result t -> ('a t, 'err) result
     @since 1.3, but only
     @since 2.2 with labels *)
 
+val sorted_mem : cmp:('a -> 'a -> int) -> 'a -> 'a list -> bool
+(** [sorted_mem ~cmp x l] and [mem x l] give the same result for any sorted list [l],
+    but potentially more efficiently.
+    @since NEXT_RELEASE *)
+
 val sorted_merge : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** [sorted_merge ~cmp l1 l2] merges elements from both sorted list using
     the given comparison function [cmp]. *)
@@ -534,10 +539,6 @@ val is_sorted : cmp:('a -> 'a -> int) -> 'a list -> bool
 (** [is_sorted ~cmp l] returns [true] iff [l] is sorted (according to given order).
     @param cmp the comparison function.
     @since 0.17 *)
-
-val sorted_mem : cmp:('a -> 'a -> int) -> 'a -> 'a list -> bool
-(** Suppose the list [l] is sorted. [sorted_mem x l] is [true] iff [x] is equal to an element of [l].
-    @since NEXT_RELEASE *)
 
 val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
 (** [sorted_insert ~cmp ?uniq x l] inserts [x] into [l] such that, if [l] was sorted,

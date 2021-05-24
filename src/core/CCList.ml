@@ -722,6 +722,19 @@ let map_product_l f l =
     cmp_lii_unord (cartesian_product l) (map_product_l CCFun.id l))
 *)
 
+let rec sorted_mem ~cmp x l = match l with
+  | [] -> false
+  | y :: tail ->
+    match cmp x y with
+      | 0 -> true
+      | n when n<0 -> false
+      | _ -> (sorted_mem[@tailcall]) ~cmp x tail
+
+(*$Q
+  Q.(pair small_int (list small_int)) (fun (x,l) -> \
+    sorted_mem ~cmp:CCInt.compare x (List.sort CCInt.compare l) = mem ~eq:CCInt.equal x l)
+*)
+
 let sorted_merge ~cmp l1 l2 =
   let rec recurse cmp acc l1 l2 = match l1,l2 with
     | [], _ -> List.rev_append acc l2
@@ -795,19 +808,6 @@ let is_sorted ~cmp l =
 (*$Q
   Q.(list small_int) (fun l -> \
     is_sorted ~cmp:CCInt.compare (List.sort Stdlib.compare l))
-*)
-
-let rec sorted_mem ~cmp x l = match l with
-  | [] -> false
-  | y :: tail ->
-    match cmp x y with
-      | 0 -> true
-      | n when n<0 -> false
-      | _ -> (sorted_mem[@tailcall]) ~cmp x tail
-
-(*$Q
-  Q.(pair small_int (list small_int)) (fun (x,l) -> \
-    sorted_mem ~cmp:CCInt.compare x (List.sort CCInt.compare l) = mem ~eq:CCInt.equal x l)
 *)
 
 let sorted_insert ~cmp ?(uniq=false) x l =
