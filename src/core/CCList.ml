@@ -958,6 +958,40 @@ let sorted_merge_uniq ~cmp l1 l2 =
     uniq_succ ~eq:CCInt.equal l3 = l3)
 *)
 
+let sorted_diff_uniq ~cmp l1 l2 =
+  let push ~cmp acc x = match acc with
+    | [] -> [x]
+    | y :: _ when cmp x y > 0 -> x :: acc
+    | _ -> acc (* duplicate, do not yield *)
+  in
+  let rec recurse ~cmp acc l1 l2 = match l1,l2 with
+    | [], _ -> List.rev acc
+    | l, [] ->
+      let acc = List.fold_left (push ~cmp) acc l in
+      List.rev acc
+    | x1::l1', x2::l2' ->
+      let c = cmp x1 x2 in
+      if c < 0 then recurse ~cmp (push ~cmp acc x1) l1' l2
+      else if c > 0 then recurse ~cmp acc l1 l2'
+      else recurse ~cmp acc l1' l2'
+  in
+  recurse ~cmp [] l1 l2
+
+(*$T
+  sorted_diff_uniq ~cmp:CCInt.compare [1; 1; 1; 2; 2; 3; 5; 8; 8; 8] [1; 2; 2; 2; 2; 8; 13; 13; 13] = [1;3;5;8]
+*)
+
+(*$Q
+  Q.(pair (list small_int) (list small_int)) (fun (l1, l2) -> \
+    let l1 = List.sort CCInt.compare l1 in \
+    let l2 = List.sort CCInt.compare l2 in \
+    is_sorted ~cmp:CCInt.compare (sorted_diff_uniq ~cmp:CCInt.compare l1 l2))
+  Q.(pair (list small_int) (list small_int)) (fun (l1, l2) -> \
+    let l1 = List.sort CCInt.compare l1 in \
+    let l2 = List.sort CCInt.compare l2 in \
+    sorted_diff_uniq ~cmp:CCInt.compare l1 l2 = uniq_succ ~eq:CCInt.equal (sorted_diff ~cmp:CCInt.compare l1 l2))
+*)
+
 let take n l =
   let rec direct i n l = match l with
     | [] -> []

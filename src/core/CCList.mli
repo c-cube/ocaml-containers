@@ -504,8 +504,10 @@ val sorted_merge : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 val sorted_diff : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** [sorted_diff ~cmp l1 l2] returns the elements in [l1] that are not in [l2].
     Both lists are assumed to be sorted with respect to [cmp] and
-    duplicate elements are treated individually. It is the left inverse of
-    [sorted_merge]; that is, [sorted_diff ~cmp (sorted_merge ~cmp l1 l2) l2]
+    duplicate elements in the input lists are treated individually;
+    for example, [sorted_diff ~cmp [1;1;1;2;2;3] [1;2;2]] would be [[1;1;3]].
+    It is the left inverse of [sorted_merge]; that is,
+    [sorted_diff ~cmp (sorted_merge ~cmp l1 l2) l2]
     is always equal to [l1] for sorted lists [l1] and [l2].
     @since NEXT_RELEASE *)
 
@@ -517,6 +519,16 @@ val sorted_merge_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 (** [sorted_merge_uniq ~cmp l1 l2] merges the sorted lists [l1] and [l2] and
     removes duplicates.
     @since 0.10 *)
+
+val sorted_diff_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
+(** [sorted_diff_uniq ~cmp l1 l2] collects the elements in [l1] that are not in [l2]
+    and then remove duplicates.
+    Both lists are assumed to be sorted with respect to [cmp] and
+    duplicate elements in the input lists are treated individually;
+    for example, [sorted_diff_uniq ~cmp [1;1;1;2;2] [1;2;2;2]] would be [[1]].
+    [sorted_diff_uniq ~cmp l1 l2] and [uniq_succ ~eq (sorted_diff ~cmp l1 l2)]
+    always give the same result for sorted [l1] and [l2] and compatible [cmp] and [eq].
+    @since NEXT_RELEASE *)
 
 val is_sorted : cmp:('a -> 'a -> int) -> 'a list -> bool
 (** [is_sorted ~cmp l] returns [true] iff [l] is sorted (according to given order).
@@ -535,8 +547,10 @@ val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a l
     @since 0.17 *)
 
 val sorted_remove : cmp:('a -> 'a -> int) -> ?all:bool -> 'a -> 'a list -> 'a list
-(** [sorted_insert ~cmp ~key l] removes [key] from a sorted list [l] such that
-    the return value is sorted too.
+(** [sorted_remove ~cmp x l] removes [x] from a sorted list [l] such that
+    the return value is sorted too. By default, it is the left inverse of
+    [sorted_insert]; that is, [sorted_remove ~cmp x (sorted_insert ~cmp x l)]
+    is equal to [l] for any sorted list [l].
     @param all if true then all occurrences of [x] will be removed. Otherwise, only the first
       [x] will be removed (if any). Default [false] (only the first will be removed).
     @since NEXT_RELEASE *)
