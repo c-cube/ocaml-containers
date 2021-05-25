@@ -530,7 +530,7 @@ val sorted_diff_uniq : cmp:('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
     and then remove duplicates.
     Both lists are assumed to be sorted with respect to [cmp] and
     duplicate elements in the input lists are treated individually;
-    for example, [sorted_diff_uniq ~cmp [1;1;1;2;2] [1;2;2;2]] would be [[1;1]].
+    for example, [sorted_diff_uniq ~cmp [1;1;1;2;2] [1;2;2;2]] would be [[1]].
     [sorted_diff_uniq ~cmp l1 l2] and [uniq_succ ~eq (sorted_diff ~cmp l1 l2)]
     always give the same result for sorted [l1] and [l2] and compatible [cmp] and [eq].
     @since NEXT_RELEASE *)

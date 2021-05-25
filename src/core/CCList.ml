@@ -979,7 +979,6 @@ let sorted_diff_uniq ~cmp l1 l2 =
 
 (*$T
   sorted_diff_uniq ~cmp:CCInt.compare [1; 1; 1; 2; 2; 3; 5; 8; 8; 8] [1; 2; 2; 2; 2; 8; 13; 13; 13] = [1;3;5;8]
-  sorted_diff_uniq ~cmp:CCInt.compare [1;1;1;2;2] [1;2;2;2] = [1;1]
 *)
 
 (*$Q
