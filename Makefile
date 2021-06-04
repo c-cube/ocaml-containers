@@ -17,7 +17,7 @@ doc:
 BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
 
 benchs:
-	dune build $(addprefix benchs/, $(BENCH_TARGETS))
+	dune build $(addprefix benchs/, $(BENCH_TARGETS)) --profile=release
 	@for i in $(BENCH_TARGETS) ; do ln -sf _build/default/benchs/$$i ; done
 
 examples:
