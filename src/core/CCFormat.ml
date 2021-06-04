@@ -242,91 +242,110 @@ let to_file filename format =
     (fun fmt -> Format.pp_print_flush fmt (); close_out_noerr oc)
     fmt format
 
-type color =
-  [ `Black
-  | `Red
-  | `Yellow
-  | `Green
-  | `Blue
-  | `Magenta
-  | `Cyan
-  | `White
-  ]
+module ANSI_codes = struct
+  type color =
+    [ `Black
+    | `Red
+    | `Yellow
+    | `Green
+    | `Blue
+    | `Magenta
+    | `Cyan
+    | `White
+    ]
 
-let int_of_color_ = function
-  | `Black -> 0
-  | `Red -> 1
-  | `Green -> 2
-  | `Yellow -> 3
-  | `Blue -> 4
-  | `Magenta -> 5
-  | `Cyan -> 6
-  | `White -> 7
+  let int_of_color_ = function
+    | `Black -> 0
+    | `Red -> 1
+    | `Green -> 2
+    | `Yellow -> 3
+    | `Blue -> 4
+    | `Magenta -> 5
+    | `Cyan -> 6
+    | `White -> 7
 
-type style =
-  [ `FG of color (* foreground *)
-  | `BG of color (* background *)
-  | `Bold
-  | `Reset
-  ]
+  type style =
+    [ `FG of color (* foreground *)
+    | `BG of color (* background *)
+    | `Bold
+    | `Reset
+    ]
 
-let code_of_style : style -> int = function
-  | `FG c -> 30 + int_of_color_ c
-  | `BG c -> 40 + int_of_color_ c
-  | `Bold -> 1
-  | `Reset -> 0
+  let code_of_style : style -> int = function
+    | `FG c -> 30 + int_of_color_ c
+    | `BG c -> 40 + int_of_color_ c
+    | `Bold -> 1
+    | `Reset -> 0
 
-let ansi_l_to_str_ = function
-  | [] -> "\x1b[0m"
-  | [a] -> Printf.sprintf "\x1b[%dm" (code_of_style a)
-  | [a;b] -> Printf.sprintf "\x1b[%d;%dm" (code_of_style a) (code_of_style b)
-  | l ->
-    let buf = Buffer.create 16 in
-    let pp_num c = Buffer.add_string buf (string_of_int (code_of_style c)) in
-    Buffer.add_string buf "\x1b[";
-    List.iteri
-      (fun i c ->
-         if i>0 then Buffer.add_char buf ';';
-         pp_num c)
-      l;
-    Buffer.add_string buf "m";
-    Buffer.contents buf
+  let string_of_style a =
+    Printf.sprintf "\x1b[%dm" (code_of_style a)
 
-exception No_such_style
+  let clear_line = "\x1b[2K\r"
 
-(* parse a tag *)
-let style_of_tag_ s = match String.trim s with
-  | "reset" -> [`Reset]
-  | "black" -> [`FG `Black]
-  | "red" -> [`FG `Red]
-  | "green" -> [`FG `Green]
-  | "yellow" -> [`FG `Yellow]
-  | "blue" -> [`FG `Blue]
-  | "magenta" -> [`FG `Magenta]
-  | "cyan" -> [`FG `Cyan]
-  | "white" -> [`FG `White]
-  | "bold" -> [`Bold]
-  | "Black" -> [`FG `Black; `Bold]
-  | "Red" -> [`FG `Red; `Bold]
-  | "Green" -> [`FG `Green; `Bold]
-  | "Yellow" -> [`FG `Yellow; `Bold]
-  | "Blue" -> [`FG `Blue; `Bold]
-  | "Magenta" -> [`FG `Magenta; `Bold]
-  | "Cyan" -> [`FG `Cyan; `Bold]
-  | "White" -> [`FG `White; `Bold]
-  | _ -> raise No_such_style
+  let reset = string_of_style `Reset
+
+  (*$=
+    ANSI_codes.reset "\x1b[0m"
+  *)
+
+  let string_of_style_list = function
+    | [] -> reset
+    | [a] -> string_of_style a
+    | [a;b] -> Printf.sprintf "\x1b[%d;%dm" (code_of_style a) (code_of_style b)
+    | [a;b;c] ->
+      Printf.sprintf "\x1b[%d;%d;%dm"
+        (code_of_style a) (code_of_style b) (code_of_style c)
+    | l ->
+      let buf = Buffer.create 32 in
+      let pp_num c = Buffer.add_string buf (string_of_int (code_of_style c)) in
+      Buffer.add_string buf "\x1b[";
+      List.iteri
+        (fun i c ->
+           if i>0 then Buffer.add_char buf ';';
+           pp_num c)
+        l;
+      Buffer.add_string buf "m";
+      Buffer.contents buf
+
+  exception No_such_style
+
+  (* parse a string tag.
+     TODO: use [stag], for OCaml >= 4.08… *)
+  let style_of_tag_ s = match String.trim s with
+    | "reset" -> [`Reset]
+    | "black" -> [`FG `Black]
+    | "red" -> [`FG `Red]
+    | "green" -> [`FG `Green]
+    | "yellow" -> [`FG `Yellow]
+    | "blue" -> [`FG `Blue]
+    | "magenta" -> [`FG `Magenta]
+    | "cyan" -> [`FG `Cyan]
+    | "white" -> [`FG `White]
+    | "bold" -> [`Bold]
+    | "Black" -> [`FG `Black; `Bold]
+    | "Red" -> [`FG `Red; `Bold]
+    | "Green" -> [`FG `Green; `Bold]
+    | "Yellow" -> [`FG `Yellow; `Bold]
+    | "Blue" -> [`FG `Blue; `Bold]
+    | "Magenta" -> [`FG `Magenta; `Bold]
+    | "Cyan" -> [`FG `Cyan; `Bold]
+    | "White" -> [`FG `White; `Bold]
+    | _ -> raise No_such_style
+end
 
 let color_enabled = ref false
 
 (* either prints the tag of [s] or delegate to [or_else] *)
 let mark_open_tag st ~or_else s =
+  let open ANSI_codes in
   try
     let style = style_of_tag_ s in
     Stack.push style st;
-    if !color_enabled then ansi_l_to_str_ style else ""
+    if !color_enabled then string_of_style_list style else ""
   with No_such_style -> or_else s
 
 let mark_close_tag st ~or_else s =
+  let open ANSI_codes in
   (* check if it's indeed about color *)
   match style_of_tag_ s with
     | _ ->
@@ -337,7 +356,7 @@ let mark_close_tag st ~or_else s =
         with Stack.Empty ->
           [`Reset]
       in
-      if !color_enabled then ansi_l_to_str_ style else ""
+      if !color_enabled then string_of_style_list style else ""
     | exception No_such_style -> or_else s
 
 (* add color handling to formatter [ppf] *)

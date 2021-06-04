@@ -263,6 +263,57 @@ val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 
     ]}
     @since 1.2 *)
 
+
+(** ANSI escape codes. This contains lower level functions for them.
+    @since NEXT_RELEASE *)
+module ANSI_codes : sig
+  type color =
+    [ `Black
+    | `Red
+    | `Yellow
+    | `Green
+    | `Blue
+    | `Magenta
+    | `Cyan
+    | `White
+    ]
+  (** An ANSI color *)
+
+  type style =
+    [ `FG of color (** foreground *)
+    | `BG of color (** background *)
+    | `Bold
+    | `Reset
+    ]
+  (** A style. Styles can be composed in a list. *)
+
+  val clear_line : string
+  (** [clear_line] is an escape code to clear the current line. It
+      is very useful for progress bars; for example:
+
+      {[
+        let pp_progress i =
+          Printf.printf "%sprogress at %d%!" ANSI_codes.clear_line i
+      ]}
+      if called repeatedly this will print successive progress messages
+      on a single line.
+  *)
+
+  val reset : string
+  (** The escape code to reset style (colors, bold, etc.) *)
+
+  val string_of_style : style -> string
+  (** [string_of_style st] is an escape code to set the current style
+      to [st]. It can be printed as is on any output that is a
+      compatible terminal. *)
+
+  val string_of_style_list : style list -> string
+  (** [string_of_style_list styles] is an escape code
+      for multiple styles at once.
+      For example [string_of_style_list ANSI_codes.([`FG `Red; `BG `Green; `Bold])]
+      is a very shiny style. *)
+end
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit
