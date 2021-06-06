@@ -6,11 +6,21 @@
 type 'a t = 'a -> 'a -> int
 (** Comparison (total ordering) between two elements, that returns an int. *)
 
+val poly : 'a t
+(** Polymorphic "magic" comparison. Use with care, as it will fail on
+    some types.
+    @since NEXT_RELEASE *)
+
 val compare : 'a t
-(** Polymorphic "magic" comparison. *)
+[@@deprecated "use CCOrd.poly instead, this name is too general"]
+(** Polymorphic "magic" comparison.
+    @deprecated since NEXT_RELEASE in favor of {!poly}. The reason is that
+    [compare] is easily shadowed, can shadow other comparators, and is just
+    generally not very descriptive. *)
 
 val opp : 'a t -> 'a t
-(** Opposite order. *)
+(** Opposite order. For example, [opp a b < 0] iff [opp b a > 0].
+    This can be used to sort values in the opposite order, among other things. *)
 
 val equiv : int -> int -> bool
 (** Returns [true] iff the two comparison results are the same. *)
