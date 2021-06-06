@@ -1,8 +1,22 @@
 
-(executable
-  (name id_sexp)
+(executables
+  (names id_sexp ccparse_sexp)
   (libraries containers)
-  (modules id_sexp)
+  ;(modules id_sexp)
   (flags :standard -warn-error -a+8 -safe-string -color always)
   (ocamlopt_flags :standard -O3 -color always
                    -unbox-closures -unbox-closures-factor 20))
+
+(alias
+  (name runtest)
+  (locks /ctest)
+  (action
+    (ignore-stdout
+      (run ./id_sexp.exe test_data/benchpress.sexp))))
+
+(alias
+  (name runtest)
+  (locks /ctest)
+  (action
+    (ignore-stdout
+      (run ./ccparse_sexp.exe test_data/benchpress.sexp))))
