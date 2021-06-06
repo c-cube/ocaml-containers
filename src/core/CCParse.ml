@@ -9,7 +9,6 @@ open CCShims_
     type tree = L of int | N of tree * tree
   end
   open T
-  open Result
 
   let mk_leaf x = L x
   let mk_node x y = N(x,y)
