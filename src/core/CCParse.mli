@@ -4,7 +4,11 @@
 (** {1 Very Simple Parser Combinators}
 
     These combinators can be used to write very simple parsers, for example
-    to extract data from a line-oriented file.
+    to extract data from a line-oriented file, or as a replacement to {!Scanf}.
+
+    {2 A few examples}
+
+    {4 Parse a tree}
 
     {[
       open CCParse;;
@@ -16,7 +20,7 @@
 
       let ptree = fix @@ fun self ->
         skip_space *>
-          ( (try_ (char '(') *> (pure mk_node <*> self <*> self) <* char ')')
+          ( (char '(' *> (pure mk_node <*> self <*> self) <* char ')')
             <|>
               (U.int >|= mk_leaf) )
       ;;
@@ -49,7 +53,34 @@
       assert (l=l');;
     ]}
 
+    {2 Stability guarantees}
+
+    Some functions are marked "experimental" and are still subject to change.
+
 *)
+
+type position
+(** A position in the input. Typically it'll point at the {b beginning} of
+    an error location. *)
+
+(** {2 Positions in input}
+
+    @since NEXT_RELEASE *)
+module Position : sig
+  type t = position
+
+  val line : t -> int
+  (** Line number *)
+
+  val column : t -> int
+  (** Column number *)
+
+  val line_and_column : t -> int * int
+  (** Line and column number *)
+
+  val pp : Format.formatter -> t -> unit
+  (** Unspecified pretty-printed version of the position. *)
+end
 
 (** {2 Errors}
     @since NEXT_RELEASE *)
@@ -57,6 +88,9 @@ module Error : sig
   type t
   (** A parse error.
       @since NEXT_RELEASE *)
+
+  val position : t -> position
+  (** Returns position of the error *)
 
   val line_and_column : t -> int * int
   (** Line and column numbers of the error position. *)
@@ -71,14 +105,15 @@ module Error : sig
 end
 
 type 'a or_error = ('a, Error.t) result
-(* TODO: use [('a, error) result] instead, with easy conversion to [('a, string) result]  *)
+(** ['a or_error] is either [Ok x] for some result [x : 'a],
+    or an error {!Error.t}.
+
+    See {!stringify_result} and {!Error.to_string} to print the
+    error message. *)
 
 exception ParseError of Error.t
 
 (** {2 Input} *)
-
-type position
-(* TODO: make a module Position:  sig type t val line : t -> int val col : t -> int *)
 
 (** {2 Combinators} *)
 
@@ -95,33 +130,20 @@ val return : 'a -> 'a t
 val pure : 'a -> 'a t
 (** Synonym to {!return}. *)
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** Map. *)
-
 val map : ('a -> 'b) -> 'a t -> 'b t
 
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 
 val map3 : ('a -> 'b -> 'c -> 'd) -> 'a t -> 'b t -> 'c t -> 'd t
 
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** Monadic bind.
-    [p >>= f] results in a new parser which behaves as [p] then,
-    in case of success, applies [f] to the result. *)
+val bind : ('a -> 'b t) -> 'a t -> 'b t
+(** [bind f p] results in a new parser which behaves as [p] then,
+    in case of success, applies [f] to the result.
+    @since NEXT_RELEASE
+*)
 
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-(** Applicative. *)
-
-val (<* ) : 'a t -> _ t -> 'a t
-(** [a <* b] parses [a] into [x], parses [b] and ignores its result,
-    and returns [x]. *)
-
-val ( *>) : _ t -> 'a t -> 'a t
-(** [a *> b] parses [a], then parses [b] into [x], and returns [x]. The
-    results of [a] is ignored. *)
-
-val (|||) : 'a t -> 'b t -> ('a * 'b) t
-(** [a ||| b] parses [a], then [b], then returns the pair of their results.
+val ap : ('a -> 'b) t -> 'a t -> 'b t
+(** Applicative.
     @since NEXT_RELEASE *)
 
 val fail : string -> 'a t
@@ -196,19 +218,6 @@ val is_space : char -> bool
 val is_white : char -> bool
 (** True on ' ' and '\t' and '\n'. *)
 
-val (<|>) : 'a t -> 'a t -> 'a t
-(** [a <|> b] tries to parse [a], and if [a] fails without
-    consuming any input, backtracks and tries
-    to parse [b], otherwise it fails as [a].
-    See {!try_} to ensure [a] does not consume anything (but it is best
-    to avoid wrapping large parsers with {!try_}). *)
-
-val (<?>) : 'a t -> string -> 'a t
-(** [a <?> msg] behaves like [a], but if [a] fails,
-    [a <? msg] fails with [msg] instead.
-    Useful as the last choice in a series of [<|>]. For example:
-    [a <|> b <|> c <?> "expected one of a, b, c"]. *)
-
 val suspend : (unit -> 'a t) -> 'a t
 (** [suspend f] is  the same as [f ()], but evaluates [f ()] only
     when needed. *)
@@ -230,12 +239,12 @@ val optional : _ t -> unit t
     @since NEXT_RELEASE *)
 
 val try_ : 'a t -> 'a t
+[@@deprecated "plays no role anymore, just replace [try foo] with [foo]"]
 (** [try_ p] is just like [p] (it used to play a role in backtracking
     semantics but no more).
 
     @deprecated since NEXT_RELEASE it can just be removed. See {!try_opt} if you want
     to detect failure. *)
-[@@deprecated "plays no role anymore"]
 
 val try_opt : 'a t -> 'a option t
 (** [try_ p] tries to parse using [p], and return [Some x] if [p]
@@ -247,12 +256,17 @@ val many_until : until:_ t -> 'a t -> 'a list t
     the [until] parser successfully returns.
     If [p] fails before that then [many_until ~until p] fails as well.
     Typically [until] can be a closing ')' or another termination condition.
+
+    {b EXPERIMENTAL}
+
     @since NEXT_RELEASE *)
 
 val try_or : 'a t -> f:('a -> 'b t) -> else_:'b t -> 'b t
-(** [try_or p1 ~f p2] attempts to parse [x] using [p1],
+(** [try_or p1 ~f ~else_:p2] attempts to parse [x] using [p1],
     and then becomes [f x].
-    If [p1] fails, then it becomes [p2].
+    If [p1] fails, then it becomes [p2]. This can be useful if [f] is expensive
+    but only ever works if [p1] matches (e.g. after an opening parenthesis
+    or some sort of prefix).
     @since NEXT_RELEASE
 *)
 
@@ -260,6 +274,16 @@ val or_ : 'a t -> 'a t -> 'a t
 (** [or_ p1 p2] tries to parse [p1], and if it fails, tries [p2]
     from the same position.
     @since NEXT_RELEASE *)
+
+val both : 'a t -> 'b t -> ('a * 'b) t
+(** [both a b] parses [a], then [b], then returns the pair of their results.
+    @since NEXT_RELEASE *)
+
+val set_error_message : string -> 'a t -> 'a t
+(** [set_error_message msg p] behaves like [p], but if [p] fails,
+    [set_error_message msg p] fails with [msg] instead.
+    @since NEXT_RELEASE
+*)
 
 val many1 : 'a t -> 'a list t
 (** [many1 p] is like [many p] excepts it fails if the
@@ -271,8 +295,6 @@ val skip : _ t -> unit t
 val sep : by:_ t -> 'a t -> 'a list t
 (** [sep ~by p] parses a list of [p] separated by [by]. *)
 
-(* TODO: lookahead? *)
-
 val sep_until: until:_ t -> by:_ t -> 'a t -> 'a list t
 (** Same as {!sep} but stop when [until] parses successfully.
     @since NEXT_RELEASE *)
@@ -280,12 +302,19 @@ val sep_until: until:_ t -> by:_ t -> 'a t -> 'a list t
 val sep1 : by:_ t -> 'a t -> 'a list t
 (** [sep1 ~by p] parses a non empty list of [p], separated by [by]. *)
 
+val lookahead : 'a t -> 'a t
+(** [lookahead p] behaves like [p], except it doesn't consume any input.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
 val line : string t
 (** Parse a line, '\n' excluded.
     @since NEXT_RELEASE *)
 
 val each_line : 'a t -> 'a list t
 (** [each_line p] runs [p] on each line of the input.
+    {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
 
 val fix : ('a t -> 'a t) -> 'a t
@@ -299,15 +328,70 @@ val memo : 'a t -> 'a t
     This can be costly in memory, but improve the run time a lot if there
     is a lot of backtracking involving [p].
 
+    Do not call {!memo} inside other functions, especially with {!(>>=)},
+    {!map}, etc. being so prevalent. Instead the correct way to use it
+    is in a toplevel definition:
+
+    {[
+      let my_expensive_parser = memo (foo *> bar >>= fun i -> …)
+    ]}
+
     This function is not thread-safe. *)
 
 val fix_memo : ('a t -> 'a t) -> 'a t
 (** Like {!fix}, but the fixpoint is memoized. *)
 
-(** {2 Parse}
+(** {2 Infix} *)
 
-    Those functions have a label [~p] on the parser, since 0.14.
-*)
+module Infix : sig
+  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  (** Alias to {!map}. [p >|= f] parses an item [x] using [p],
+      and returns [f x]. *)
+
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  (** Alias to {!bind}.
+      [p >>= f] results in a new parser which behaves as [p] then,
+      in case of success, applies [f] to the result. *)
+
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  (** Applicative. *)
+
+  val (<* ) : 'a t -> _ t -> 'a t
+  (** [a <* b] parses [a] into [x], parses [b] and ignores its result,
+      and returns [x]. *)
+
+  val ( *>) : _ t -> 'a t -> 'a t
+  (** [a *> b] parses [a], then parses [b] into [x], and returns [x]. The
+      result of [a] is ignored. *)
+
+  val (<|>) : 'a t -> 'a t -> 'a t
+  (** Alias to {!or_}.
+
+      [a <|> b] tries to parse [a], and if [a] fails without
+      consuming any input, backtracks and tries
+      to parse [b], otherwise it fails as [a].
+      See {!try_} to ensure [a] does not consume anything (but it is best
+      to avoid wrapping large parsers with {!try_}). *)
+
+  val (<?>) : 'a t -> string -> 'a t
+  (** [a <?> msg] behaves like [a], but if [a] fails,
+      [a <? msg] fails with [msg] instead.
+      Useful as the last choice in a series of [<|>]. For example:
+      [a <|> b <|> c <?> "expected one of a, b, c"]. *)
+
+  val (|||) : 'a t -> 'b t -> ('a * 'b) t
+  (** Alias to {!both}.
+      [a ||| b] parses [a], then [b], then returns the pair of their results.
+      @since NEXT_RELEASE *)
+
+  (** Let operators on OCaml >= 4.08.0, nothing otherwise
+      @since 2.8 *)
+  include CCShimsMkLet_.S with type 'a t_let := 'a t
+end
+
+include module type of Infix
+
+(** {2 Parse input} *)
 
 val stringify_result : 'a or_error -> ('a, string) result
 (** Turn a {!Error.t}-oriented result into a more basic string result.
@@ -333,44 +417,6 @@ val parse_file_exn : 'a t -> string -> 'a
 (** Same as {!parse_file}, but
     @raise ParseError if it fails. *)
 
-(** {2 Infix} *)
-
-module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  (** Map. [p >|= f] parses an item [x] using [p],
-      and returns [f x]. *)
-
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  (** Monadic bind.
-      [p >>= f] results in a new parser which behaves as [p] then,
-      in case of success, applies [f] to the result. *)
-
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  (** Applicative. *)
-
-  val (<* ) : 'a t -> _ t -> 'a t
-  (** [a <* b] parses [a] into [x], parses [b] and ignores its result,
-      and returns [x]. *)
-
-  val ( *>) : _ t -> 'a t -> 'a t
-  (** [a *> b] parses [a], then parses [b] into [x], and returns [x]. The
-      result of [a] is ignored. *)
-
-  val (<|>) : 'a t -> 'a t -> 'a t
-  (** [a <|> b] tries to parse [a], and if [a] fails, it backtracks and tries
-      to parse [b].
-      Alias to {!or_} *)
-
-  val (|||) : 'a t -> 'b t -> ('a * 'b) t
-  (** [a ||| b] parses [a], then [b], then returns the pair of their results.
-      @since NEXT_RELEASE *)
-
-  val (<?>) : 'a t -> string -> 'a t
-  (** [a <?> msg] behaves like [a], but if [a] fails,
-      it fails with [msg] instead. Useful as the last choice in a series of
-      [<|>]: [a <|> b <|> c <?> "expected a|b|c"]. *)
-
-end
 
 (** {2 Utils}
 
@@ -396,7 +442,9 @@ module U : sig
   val word : string t
   (** Non empty string of alpha num, start with alpha. *)
 
-  (* TODO: boolean literal *)
+  val bool : bool t
+  (** Accepts "true" or "false" *)
+
   (* TODO: quoted string *)
 
   val pair : ?start:string -> ?stop:string -> ?sep:string ->
@@ -409,7 +457,3 @@ module U : sig
   (** Parse a triple using OCaml syntactic conventions.
       The default is "(a, b, c)". *)
 end
-
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
-include CCShimsMkLet_.S with type 'a t_let := 'a t

@@ -107,37 +107,64 @@ open CCShims_
   ()
 *)
 
-module Error = struct
-  type t = {
-    msg: unit -> string;
-    str: string;
-    offset: int; (* offset in [e_str] *)
-  }
+(* TODO: [type position = {state: state; i: int}] and recompute line, col
+   on demand *)
+type position = {
+  pos_buffer: string;
+  pos_offset: int;
+  mutable pos_lc: (int * int) option;
+}
 
-  let get_loc_ (self:t) : int * int =
+module Position = struct
+  type t = position
+
+  (* actually re-compute line and column from the buffer *)
+  let compute_line_and_col_ (self:t) : int * int =
     let i = ref 0 in
     let continue = ref true in
     let line = ref 1 in
     let col = ref 1 in
-    while !continue && !i < self.offset do
-      match String.index_from self.str !i '\n' with
+    while !continue && !i < self.pos_offset do
+      match String.index_from self.pos_buffer !i '\n' with
         | exception Not_found ->
-          col := self.offset - !i; continue := false;
-        | j when j > self.offset ->
-          col := self.offset - !i; continue := false;
+          col := self.pos_offset - !i; continue := false;
+        | j when j > self.pos_offset ->
+          col := self.pos_offset - !i; continue := false;
         | j -> incr line; i := j+1;
     done;
     !line, !col
 
-  let line_and_column self = get_loc_ self
+  let line_and_column self =
+    match self.pos_lc with
+      | Some tup -> tup
+      | None ->
+        let tup = compute_line_and_col_ self in
+        self.pos_lc <- Some tup; (* save *)
+        tup
+
+  let line self = fst (line_and_column self)
+  let column self = snd (line_and_column self)
+  let pp out self =
+    let l, c = line_and_column self in
+    Format.fprintf out "at line %d, column %d" l c
+end
+
+module Error = struct
+  type t = {
+    msg: unit -> string;
+    pos: position;
+  }
+
+  let position self = self.pos
+  let line_and_column self = Position.line_and_column self.pos
 
   let msg self = self.msg()
   let to_string self =
-    let line,col = get_loc_ self in
+    let line,col = line_and_column self in
     Printf.sprintf "at line %d, char %d:\n%s" line col (self.msg())
 
   let pp out self =
-    let line,col = get_loc_ self in
+    let line,col = line_and_column self in
     Format.fprintf out "at line %d, char %d:@ %s" line col (self.msg())
 end
 
@@ -156,10 +183,6 @@ module Memo_state = struct
   (* unique ID for each parser *)
   let id_ = ref 0
 end
-
-(* TODO: [type position = {state: state; i: int}] and recompute line, col
-   on demand *)
-type position = int * int * int (* pos, line, column *)
 
 (** Purely functional state passed around *)
 type state = {
@@ -192,8 +215,8 @@ let state_of_string str =
 let[@inline] is_done st = st.i >= String.length st.str
 let[@inline] cur st = st.str.[st.i]
 
-let mk_error_ st msg : Error.t =
-  {Error.msg; str=st.str; offset=st.i}
+let pos_of_st_ st : position = {pos_buffer=st.str; pos_offset=st.i; pos_lc=None}
+let mk_error_ st msg : Error.t = {Error.msg; pos=pos_of_st_ st}
 
 (* consume one char, passing it to [ok]. *)
 let consume_ st ~ok ~err =
@@ -221,14 +244,14 @@ let return x : _ t = {
 
 let pure = return
 
-let (>|=) (p: 'a t) f : _ t = {
+let map f (p: 'a t) : _ t = {
   run=fun st ~ok ~err ->
     p.run st
       ~ok:(fun st x -> ok st (f x))
       ~err
 }
 
-let (>>=) (p:'a t) f : _ t = {
+let bind f (p:'a t) : _ t = {
   run=fun st ~ok ~err ->
     p.run st
       ~ok:(fun st x ->
@@ -237,7 +260,7 @@ let (>>=) (p:'a t) f : _ t = {
       ~err
 }
 
-let (<*>) (f:_ t) (a:_ t) : _ t = {
+let ap (f:_ t) (a:_ t) : _ t = {
   run=fun st ~ok ~err ->
     f.run st
       ~ok:(fun st f ->
@@ -245,7 +268,7 @@ let (<*>) (f:_ t) (a:_ t) : _ t = {
       ~err
 }
 
-let (<*) (a:_ t) (b:_ t) : _ t = {
+let ap_left (a:_ t) (b:_ t) : _ t = {
   run=fun st ~ok ~err ->
     a.run st
       ~ok:(fun st x ->
@@ -253,7 +276,7 @@ let (<*) (a:_ t) (b:_ t) : _ t = {
       ~err
 }
 
-let ( *> ) (a:_ t) (b:_ t) : _ t = {
+let ap_right (a:_ t) (b:_ t) : _ t = {
   run=fun st ~ok ~err ->
     a.run st
       ~ok:(fun st _ ->
@@ -261,7 +284,47 @@ let ( *> ) (a:_ t) (b:_ t) : _ t = {
       ~err
 }
 
-let map f x = x >|= f
+let or_ (p1:'a t) (p2:'a t) : _ t = {
+  run=fun st ~ok ~err ->
+    p1.run st ~ok
+      ~err:(fun _e -> p2.run st ~ok ~err)
+}
+
+let both a b = {
+  run=fun st ~ok ~err ->
+    a.run st
+      ~ok:(fun st xa ->
+          b.run st ~ok:(fun st xb -> ok st (xa,xb)) ~err)
+      ~err
+}
+
+let set_error_message msg (p:'a t) : _ t = {
+  run=fun st ~ok ~err ->
+    p.run st ~ok
+      ~err:(fun _e -> err (mk_error_ st (const_str_ msg)))
+}
+
+
+module Infix = struct
+  let[@inline] (>|=) p f = map f p
+  let[@inline] (>>=) p f = bind f p
+  let (<*>) = ap
+  let (<* ) = ap_left
+  let ( *>) = ap_right
+  let (<|>) = or_
+  let (|||) = both
+  let[@inline] (<?>) p msg = set_error_message msg p
+
+  include CCShimsMkLet_.Make(struct
+      type nonrec 'a t = 'a t
+      let (>>=) = (>>=)
+      let (>|=) = (>|=)
+      let monoid_product = both
+    end)
+end
+
+include Infix
+
 let map2 f x y = pure f <*> x <*> y
 let map3 f x y z = pure f <*> x <*> y <*> z
 
@@ -390,15 +453,6 @@ let endline =
 let skip_space = skip_chars is_space
 let skip_white = skip_chars is_white
 
-let or_ (p1:'a t) (p2:'a t) : _ t = {
-  run=fun st ~ok ~err ->
-    p1.run st ~ok
-      ~err:(fun _e -> p2.run st ~ok ~err)
-}
-let (<|>) = or_
-
-let (|||) a b = map2 (fun x y ->x,y) a b
-
 let try_or p1 ~f ~else_:p2 = {
   run=fun st ~ok ~err ->
     p1.run st
@@ -410,12 +464,6 @@ let suspend f = {
   run=fun st ~ok ~err ->
     let p = f () in
     p.run st ~ok ~err
-}
-
-let (<?>) (p:'a t) msg : _ t = {
-  run=fun st ~ok ~err ->
-    p.run st ~ok
-      ~err:(fun _e -> err (mk_error_ st (const_str_ msg)))
 }
 
 (* read [len] chars at once *)
@@ -578,6 +626,17 @@ let sep1 ~by p =
   sep ~by p >|= fun tl ->
   x :: tl
 
+let lookahead p : _ t = {
+  run=fun st ~ok ~err ->
+    p.run st
+      ~ok:(fun _st x -> ok st x) (* discard old state *)
+      ~err
+}
+
+(*$= & ~printer:(errpp Q.Print.(string))
+  (Ok "abc") (parse_string (lookahead (string "ab") *> (string "abc")) "abcd")
+*)
+
 let line : _ t = {
   run=fun st ~ok ~err ->
     if is_done st then err (mk_error_ st (const_str_ "expected a line, not EOI"))
@@ -609,7 +668,13 @@ let parse_sub_ p_sub p : _ t = {
           p.run (state_of_string s)
             ~ok:(fun _ r -> ok st1 r)
             ~err:(fun e ->
-                err {e with Error.str=st0.str; offset=e.Error.offset + st0.i}))
+                let pos = e.pos in
+                let pos = {
+                  pos_buffer=pos.pos_buffer;
+                  pos_offset=pos.pos_offset + st0.i;
+                  pos_lc=None;
+                } in
+                err {e with pos}))
       ~err
 }
 
@@ -713,17 +778,6 @@ let parse_file_exn p file =
     | Ok x -> x
     | Error e -> raise (ParseError e)
 
-module Infix = struct
-  let (>|=) = (>|=)
-  let (>>=) = (>>=)
-  let (<*>) = (<*>)
-  let (<* ) = (<* )
-  let ( *>) = ( *>)
-  let (<|>) = (<|>)
-  let (|||) = (|||)
-  let (<?>) = (<?>)
-end
-
 module U = struct
   let sep_ = sep
 
@@ -771,6 +825,12 @@ module U = struct
   let word =
     map2 prepend_str (char_if is_alpha) (chars_if is_alpha_num)
 
+  let bool = (string "true" *> return true) <|> (string "false" *> return false)
+  (*$= & ~printer:(errpp Q.Print.bool) ~cmp:(erreq (=))
+    (Ok true) (parse_string U.bool "true")
+    (Ok false) (parse_string U.bool "false")
+    *)
+
   let pair ?(start="(") ?(stop=")") ?(sep=",") p1 p2 =
     skip_white *> string start *> skip_white *>
       p1 >>= fun x1 ->
@@ -791,9 +851,3 @@ module U = struct
       p3 >>= fun x3 ->
     string stop *> return (x1,x2,x3)
 end
-
-include CCShimsMkLet_.Make(struct
-    type nonrec 'a t = 'a t
-    include Infix
-    let monoid_product = (|||)
-  end)
