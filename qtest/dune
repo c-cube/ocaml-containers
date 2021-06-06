@@ -19,7 +19,7 @@
 
 (alias
   (name    runtest)
-  (locks ctest)
+  (locks /ctest)
   (package containers)
   (action  (run ./run_qtest.exe)))
 
@@ -39,7 +39,7 @@
 (alias
   (name    runtest)
   (package containers-data)
-  (locks ctest)
+  (locks /ctest)
   (action  (run ./run_qtest_data.exe)))
 
 (rule
@@ -57,6 +57,6 @@
 
 (alias
   (name    runtest)
-  (locks ctest)
+  (locks /ctest)
   (package containers-thread)
   (action  (run ./run_qtest_thread.exe)))

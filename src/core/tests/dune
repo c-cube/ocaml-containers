@@ -20,13 +20,13 @@
 
 (alias
   (name runtest)
-  (locks ctest)
+  (locks /ctest)
   (package containers)
   (action (run ./test_random.exe)))
 
 ; what matters is that it compiles
 (alias
   (name runtest)
-  (locks ctest)
+  (locks /ctest)
   (package containers)
   (action  (run ./check_labelled_mods.exe)))
