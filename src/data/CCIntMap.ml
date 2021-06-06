@@ -46,15 +46,15 @@ end = struct
       highest_bit_naive x 1
     )
 
-  let is_0 ~bit x = x land bit = 0
-  let is_1 ~bit x = x land bit = bit
+  let[@inline] is_0 ~bit x = x land bit = 0
+  let[@inline] is_1 ~bit x = x land bit = bit
 
   let mask ~mask x = (x lor (mask -1)) land (lnot mask)
-  (* low endian: let mask_ x ~mask = x land (mask - 1) *)
+  (* small endian: let mask_ x ~mask = x land (mask - 1) *)
 
   let gt a b = (b != min_int) && (a = min_int || a > b)
   let lt a b = gt b a
-  let equal_int = Stdlib.(=)
+  let equal_int : int -> int -> bool = Stdlib.(=)
 end
 
 (*$inject
@@ -84,7 +84,7 @@ type +'a t =
 
 let empty = E
 
-let is_empty = function
+let[@inline] is_empty = function
   | E -> true
   | _ -> false
 
@@ -94,7 +94,7 @@ let is_empty = function
     is_empty m = (cardinal m = 0))
   *)
 
-let is_prefix_ ~prefix y ~bit =
+let[@inline] is_prefix_ ~prefix y ~bit =
   prefix = Bit.mask y ~mask:bit
 
 (*$Q
@@ -113,16 +113,7 @@ let is_prefix_ ~prefix y ~bit =
   (Bit.highest 300 :> int) = 256
 *)
 
-(* helper:
-
-    let b_of_i i =
-      let rec f acc i =
-        if i=0 then acc else let q, r = i/2, abs (i mod 2)
-      in
-      f (r::acc) q in f [] i;;
-*)
-
-(* low endian: let branching_bit_ a _ b _ = lowest_bit_ (a lxor b) *)
+(* small endian: let branching_bit_ a _ b _ = lowest_bit_ (a lxor b) *)
 let branching_bit_ a b = Bit.highest (a lxor b)
 
 (* TODO use hint in branching_bit_ *)
@@ -163,14 +154,6 @@ let rec find_exn k t = match t with
     ) else (
       raise Not_found
     )
-
-(* XXX could test with lt_unsigned_? *)
-
-    (*
-    if k <= prefix (* search tree *)
-    then find_exn k l
-    else find_exn k r
-       *)
 
 let find k t =
   try Some (find_exn k t)
