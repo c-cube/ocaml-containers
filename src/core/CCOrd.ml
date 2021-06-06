@@ -8,6 +8,7 @@ open CCShims_
 type 'a t = 'a -> 'a -> int
 (** Comparison (total ordering) between two elements, that returns an int *)
 
+let poly = Stdlib.compare
 let compare = Stdlib.compare
 
 let opp f x y = - (f x y)
