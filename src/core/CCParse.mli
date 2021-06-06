@@ -185,6 +185,43 @@ val chars1_if : ?descr:string -> (char -> bool) -> string t
 (** Like {!chars_if}, but only non-empty strings.
     @param descr describes what kind of character was expected *)
 
+val chars_fold :
+  f:('acc -> char ->
+     [`Continue of 'acc | `Consume_and_stop | `Stop | `Fail of string]) ->
+  'acc ->
+  'acc t
+(** [chars_fold f acc0] folds over characters of the input.
+    Each char [c] is passed, along with the current accumulator, to [f];
+    [f] can either:
+
+    - stop, by returning [`Stop]. In this case the current accumulator
+      is returned, and [c] is not consumed.
+    - consume char and stop, by returning [`Consume_and_stop].
+    - fail, by returning [`Fail msg]. In this case the parser fails
+      with the given message.
+    - continue, by returning [`Continue acc]. The parser continues to the
+      next char with the new accumulator.
+
+    This is a generalization of of {!chars_if} that allows one to transform
+    characters on the fly, skip some, handle escape sequences, etc.
+
+   @since NEXT_RELEASE *)
+
+val chars_fold_map :
+  f:('acc -> char ->
+     [`Continue of 'acc | `Yield of 'acc * char
+     | `Consume_and_stop | `Stop | `Fail of string]) ->
+  'acc ->
+  ('acc * string) t
+(** Same as {!char_fold} but with the following differences:
+
+    - returns a string along with the accumulator. The string is built from
+      characters returned by [`Yield].
+    - new case [`Yield (acc, c)] adds [c] to the returned string
+      and continues parsing with [acc].
+
+    @since NEXT_RELEASE *)
+
 val endline : char t
 (** Parse '\n'. *)
 
@@ -470,4 +507,20 @@ module U : sig
     'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   (** Parse a triple using OCaml syntactic conventions.
       The default is "(a, b, c)". *)
+end
+
+(** Debugging utils.
+    {b EXPERIMENTAL} *)
+module Debug_ : sig
+  val trace_fail : string -> 'a t -> 'a t
+  (** [trace_fail name p] behaves like [p], but prints the error message of [p]
+      on stderr whenever [p] fails.
+      @param name used as a prefix of all trace messages. *)
+
+  val trace_success : string -> print:('a -> string) -> 'a t -> 'a t
+  (** [trace_success name ~print p] behaves like [p], but
+      prints successful runs of [p] using [print]. *)
+
+  val trace_success_or_fail : string -> print:('a -> string) -> 'a t -> 'a t
+      (** Trace both error or success *)
 end

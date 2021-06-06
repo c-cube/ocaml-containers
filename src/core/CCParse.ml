@@ -160,11 +160,11 @@ module Error = struct
   let msg self = self.msg()
   let to_string self =
     let line,col = line_and_column self in
-    Printf.sprintf "at line %d, char %d:\n%s" line col (self.msg())
+    Printf.sprintf "at line %d, char %d: %s" line col (self.msg())
 
   let pp out self =
     let line,col = line_and_column self in
-    Format.fprintf out "at line %d, char %d:@ %s" line col (self.msg())
+    Format.fprintf out "@[<hv>at line %d, char %d:@ %s@]" line col (self.msg())
 end
 
 type 'a or_error = ('a, Error.t) result
@@ -427,6 +427,65 @@ let chars1_if ?descr p = {
             err (mk_error_ st msg)
           ) else ok st s)
       ~err
+}
+
+exception Fold_fail of state * string
+
+let chars_fold ~f acc0 = {
+  run=fun st ~ok ~err ->
+    let i0 = st.i in
+    let i = ref i0 in
+    let acc = ref acc0 in
+    let continue = ref true in
+    try
+      while !continue do
+        let st = {st with i = !i} in
+        if is_done st then (
+          continue := false;
+        ) else (
+          let c = cur st in
+          match f !acc c with
+            | `Continue acc' ->
+              incr i;
+              acc := acc'
+            | `Stop -> continue := false;
+            | `Consume_and_stop -> incr i; continue := false
+            | `Fail msg -> raise (Fold_fail (st,msg))
+        )
+      done;
+      ok {st with i= !i} !acc
+    with Fold_fail (st,msg) -> err (mk_error_ st (const_str_ msg))
+}
+
+let chars_fold_map ~f acc0 = {
+  run=fun st ~ok ~err ->
+    let i0 = st.i in
+    let i = ref i0 in
+    let acc = ref acc0 in
+    let continue = ref true in
+    let buf = Buffer.create 16 in
+    try
+      while !continue do
+        let st = {st with i = !i} in
+        if is_done st then (
+          continue := false;
+        ) else (
+          let c = cur st in
+          match f !acc c with
+            | `Continue acc' ->
+              incr i;
+              acc := acc'
+            | `Yield (acc', c') ->
+              incr i;
+              acc := acc';
+              Buffer.add_char buf c';
+            | `Stop -> continue := false;
+            | `Consume_and_stop -> incr i; continue := false
+            | `Fail msg -> raise (Fold_fail (st,msg))
+        )
+      done;
+      ok {st with i= !i} (!acc, Buffer.contents buf)
+    with Fold_fail (st,msg) -> err (mk_error_ st (const_str_ msg))
 }
 
 let skip_chars p : _ t =
@@ -900,4 +959,30 @@ module U = struct
     skip_white *> string sep *> skip_white *>
       p3 >>= fun x3 ->
     string stop *> return (x1,x2,x3)
+end
+
+module Debug_ = struct
+  let trace_fail name p = {
+    run=fun st ~ok ~err ->
+      p.run st ~ok
+        ~err:(fun e ->
+            Printf.eprintf "trace %s: fail with %s\n%!" name (Error.to_string e);
+            err e)
+  }
+
+  let trace_ ~both name ~print p = {
+    run=fun st ~ok ~err ->
+      p.run st
+        ~ok:(fun st x ->
+            Printf.eprintf "trace %s: parsed %s\n%!" name (print x);
+            ok st x)
+        ~err:(fun e ->
+            if both then (
+              Printf.eprintf "trace %s: fail with %s\n%!" name (Error.to_string e);
+            );
+            err e)
+  }
+
+  let trace_success name ~print p = trace_ ~both:false name ~print p
+  let trace_success_or_fail name ~print p = trace_ ~both:true name ~print p
 end
