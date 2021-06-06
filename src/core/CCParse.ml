@@ -119,17 +119,17 @@ module Position = struct
   type t = position
 
   (* actually re-compute line and column from the buffer *)
-  let compute_line_and_col_ (self:t) : int * int =
+  let compute_line_and_col_ (s:string) (off:int) : int * int =
     let i = ref 0 in
     let continue = ref true in
     let line = ref 1 in
     let col = ref 1 in
-    while !continue && !i < self.pos_offset do
-      match String.index_from self.pos_buffer !i '\n' with
+    while !continue && !i < off && !i < String.length s do
+      match String.index_from s !i '\n' with
         | exception Not_found ->
-          col := self.pos_offset - !i; continue := false;
-        | j when j > self.pos_offset ->
-          col := self.pos_offset - !i; continue := false;
+          col := off - !i; continue := false;
+        | j when j > off ->
+          col := off - !i; continue := false;
         | j -> incr line; i := j+1;
     done;
     !line, !col
@@ -138,7 +138,7 @@ module Position = struct
     match self.pos_lc with
       | Some tup -> tup
       | None ->
-        let tup = compute_line_and_col_ self in
+        let tup = compute_line_and_col_ self.pos_buffer self.pos_offset in
         self.pos_lc <- Some tup; (* save *)
         tup
 
@@ -339,6 +339,12 @@ let eoi = {
   else err (mk_error_ st (const_str_ "expected end of input"))
 }
 
+(*$= & ~printer:(errpp Q.Print.bool) ~cmp:(erreq (=))
+  (Ok true) (parse_string (U.bool <* eoi) "true")
+  (Error "") (parse_string (U.bool <* eoi) "true ")
+  (Ok true) (parse_string (U.bool <* skip_white <* eoi) "true")
+*)
+
 let fail msg : _ t = {
   run=fun st ~ok:_ ~err ->
     err (mk_error_ st (const_str_ msg))
@@ -369,7 +375,7 @@ let char c : _ t = {
       ~ok:(fun st c2 ->
           if char_equal c c2 then ok st c
           else (
-            let msg() = Printf.sprintf "expected '%c', got '%c'" c (cur st) in
+            let msg() = Printf.sprintf "expected '%c', got '%c'" c c2 in
             err (mk_error_ st msg)
           ))
       ~err
@@ -794,6 +800,49 @@ module U = struct
     try return (int_of_string s)
     with Failure _ -> fail "expected an int"
 
+  (*$= & ~printer:(errpp Q.Print.int) ~cmp:(erreq (=))
+    (Ok 42) (parse_string U.int " 42")
+    (Ok 2) (parse_string U.int "2")
+    (Error "") (parse_string U.int "abc")
+    (Error "") (parse_string U.int "")
+  *)
+
+  let in_paren (p:'a t) : 'a t =
+    skip_white *>
+    (char '(' *> skip_white *> p <* skip_white <* char ')')
+
+  let in_parens_opt (p:'a t) : 'a t =
+    fix (fun self ->
+      skip_white *>
+      try_or
+        (char '(')
+        ~f:(fun _ -> skip_white *> self <* skip_white <* char ')')
+        ~else_:p)
+
+  (*$= & ~printer:(errpp Q.Print.int) ~cmp:(erreq (=))
+    (Ok 15) (parse_string (U.in_paren (U.in_paren U.int)) "( ( 15) )")
+    (Ok 2) (parse_string (U.in_paren U.int) "(2)")
+    (Error "") (parse_string (U.in_paren U.int) "2")
+    (Error "") (parse_string (U.in_paren U.int) "")
+    (Ok 2) (parse_string (U.in_parens_opt U.int) "((((2))))")
+    (Ok 2) (parse_string (U.in_parens_opt U.int) "2")
+    (Ok 200) (parse_string (U.in_parens_opt U.int) "( (  200 ) )")
+  *)
+
+  let option p =
+    skip_white *>
+    try_or
+      (string "Some")
+      ~f:(fun _ -> skip_white *> p >|= fun x -> Some x)
+      ~else_:(string "None" *> return None)
+
+  (*$= & ~printer:(errpp Q.Print.(option int)) ~cmp:(erreq (=))
+    (Ok (Some 12)) (parse_string U.(option int) " Some 12")
+    (Ok None) (parse_string U.(option int) "  None")
+    (Ok (Some 0)) (parse_string U.(option int) "Some 0")
+    (Ok (Some 0)) (parse_string U.(in_parens_opt @@ option int) "(( Some 0) )")
+  *)
+
   let hexa_int =
     (exact "0x" <|> return "") *>
     begin
@@ -825,7 +874,9 @@ module U = struct
   let word =
     map2 prepend_str (char_if is_alpha) (chars_if is_alpha_num)
 
-  let bool = (string "true" *> return true) <|> (string "false" *> return false)
+  let bool =
+    skip_white *>
+    ((string "true" *> return true) <|> (string "false" *> return false))
   (*$= & ~printer:(errpp Q.Print.bool) ~cmp:(erreq (=))
     (Ok true) (parse_string U.bool "true")
     (Ok false) (parse_string U.bool "false")

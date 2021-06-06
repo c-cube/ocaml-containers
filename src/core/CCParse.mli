@@ -434,6 +434,20 @@ module U : sig
   val int : int t
   (** Parse an int in decimal representation. *)
 
+  val in_paren : 'a t -> 'a t
+  (** [in_paren p] parses an opening "(",[p] , and then ")".
+      @since NEXT_RELEASE *)
+
+  val in_parens_opt : 'a t -> 'a t
+  (** [in_parens_opt p] parses [p] in an arbitrary number of nested
+      parenthesis (possibly 0).
+      @since NEXT_RELEASE *)
+
+  val option : 'a t -> 'a option t
+  (** [option p] parses "Some <x>" into [Some x]  if [p] parses "<x>" into [x],
+      and parses "None" into [None].
+      @since NEXT_RELEASE *)
+
   val hexa_int : int t
   (** Parse an int int hexadecimal format. Accepts an optional [0x] prefix,
       and ignores capitalization.
