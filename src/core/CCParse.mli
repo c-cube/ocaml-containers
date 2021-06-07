@@ -248,6 +248,12 @@ val recurse : slice -> 'a t -> 'a t
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
 
+val set_current_slice : slice -> unit t
+(** [set_current_slice slice] replaces the parser's state with [slice].
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
 val chars_fold :
   f:('acc -> char ->
      [`Continue of 'acc | `Consume_and_stop | `Stop | `Fail of string]) ->

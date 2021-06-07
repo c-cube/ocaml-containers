@@ -398,7 +398,8 @@ let all_str = all >|= Slice.to_string
 
 (*$= & ~printer:(errpp Q.Print.string) ~cmp:(erreq (=))
   (Ok "abcd") (parse_string all_str "abcd")
-  (Ok "cd") (parse_string (string "ab" *> all_str) "ab")
+  (Ok "cd") (parse_string (string "ab" *> all_str) "abcd")
+  (Ok "") (parse_string (string "ab" *> all_str) "ab")
 *)
 
 (*$= & ~printer:(errpp Q.Print.(pair string string)) ~cmp:(erreq (=))
@@ -804,12 +805,21 @@ let lookahead_ignore p : _ t = {
       ~err
 }
 
+let set_current_slice sl : _ t = {
+  run=fun _st ~ok ~err:_ ->
+    assert CCShims_.Stdlib.(_st.memo == sl.memo);
+    ok sl () (* jump to slice *)
+}
+
 (*$= & ~printer:(errpp Q.Print.(string))
   (Ok "abc") (parse_string (lookahead (string "ab") *> (string "abc")) "abcd")
 *)
 
-(*$=
+(*$= & ~printer:(errpp Q.Print.(string))
   (Ok "1234") (parse_string line_str "1234\nyolo")
+  *)
+
+(*$= & ~printer:(errpp Q.Print.(pair String.escaped String.escaped))
   (Ok ("1234", "yolo")) (parse_string (line_str ||| line_str) "1234\nyolo\nswag")
 *)
 
@@ -832,8 +842,12 @@ let split_1 ~on_char : _ t = {
 
 let split_list_at_most ~on_char n : slice list t =
   let rec loop acc n =
-    if n <= 0 then return (List.rev acc)
-    else (
+    if n <= 0 then (
+      (* add the rest to [acc] *)
+      all >|= fun rest ->
+      let acc = rest :: acc in
+      List.rev acc
+    ) else (
       try_or
         eoi
         ~f:(fun _ -> return (List.rev acc))
@@ -859,17 +873,17 @@ let split_list ~on_char : _ t =
   split_list_at_most ~on_char max_int
 
 let split_2 ~on_char : _ t =
-  split_list_at_most ~on_char 2 >>= function
+  split_list_at_most ~on_char 3 >>= function
   | [a; b] -> return (a,b)
   | _ -> fail "split_2: expected 2 fields exactly"
 
 let split_3 ~on_char : _ t =
-  split_list_at_most ~on_char 3 >>= function
+  split_list_at_most ~on_char 4 >>= function
   | [a; b; c] -> return (a,b,c)
   | _ -> fail "split_3: expected 3 fields exactly"
 
 let split_4 ~on_char : _ t =
-  split_list_at_most ~on_char 4 >>= function
+  split_list_at_most ~on_char 5 >>= function
   | [a; b; c; d] -> return (a,b,c,d)
   | _ -> fail "split_4: expected 4 fields exactly"
 
@@ -901,7 +915,11 @@ let each_split ~on_char p : 'a list t =
   loop []
 
 let line : slice t =
-  split_1 ~on_char:'\n' >|= fst
+  split_1 ~on_char:'\n' >>= fun (sl, rest) ->
+  match rest with
+    | None -> return sl
+    | Some rest ->
+      set_current_slice rest >|= fun () -> sl
 
 let line_str = line >|= Slice.to_string
 
@@ -909,7 +927,7 @@ let each_line p : _ t =
   each_split ~on_char:'\n' p
 
 (*$= & ~printer:(errpp Q.Print.(list @@ list int))
-  (Ok ([[1;1];[2;2];[3;3]])) \
+  (Ok ([[1;1];[2;2];[3;3];[]])) \
     (parse_string (each_line (sep ~by:skip_space U.int)) "1 1\n2 2\n3   3\n")
 *)
 
