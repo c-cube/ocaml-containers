@@ -167,7 +167,7 @@ module Error = struct
     Format.fprintf out "@[<hv>at line %d, char %d:@ %s@]" line col (self.msg())
 end
 
-type 'a or_error = ('a, Error.t) result
+type +'a or_error = ('a, Error.t) result
 
 module Memo_tbl = Hashtbl.Make(struct
     type t = int * int  (* id of parser, position *)
@@ -186,7 +186,8 @@ end
 (** Purely functional state passed around *)
 type state = {
   str: string; (* the input *)
-  i: int; (* offset in [input.str] *)
+  i: int; (* offset in [str] *)
+  j: int; (* end pointer in [str], excluded. [len = j-i] *)
   memo : Memo_state.t option ref; (* Memoization table, if any *)
 }
 
@@ -207,11 +208,12 @@ let state_of_string str =
   let s = {
     str;
     i=0;
+    j=String.length str;
     memo=ref None;
   } in
   s
 
-let[@inline] is_done st = st.i >= String.length st.str
+let[@inline] is_done st = st.i >= st.j
 let[@inline] cur st = st.str.[st.i]
 
 let pos_of_st_ st : position = {pos_buffer=st.str; pos_offset=st.i; pos_lc=None}
@@ -328,7 +330,7 @@ let map2 f x y = pure f <*> x <*> y
 let map3 f x y z = pure f <*> x <*> y <*> z
 
 let junk_ (st:state) : state =
-  assert (st.i < String.length st.str);
+  assert (st.i < st.j);
   {st with i=st.i + 1}
 
 let eoi = {
@@ -344,11 +346,61 @@ let eoi = {
   (Ok true) (parse_string (U.bool <* skip_white <* eoi) "true")
 *)
 
+let with_pos p : _ t = {
+  run=fun st ~ok ~err ->
+    p.run st
+      ~ok:(fun st' x ->
+          ok st' (x, pos_of_st_ st))
+      ~err
+}
+
+(* a slice is just a state, which makes {!recurse} quite easy. *)
+type slice = state
+
+module Slice = struct
+  type t = slice
+  let length sl = sl.j - sl.i
+  let is_empty sl = sl.i = sl.j
+  let to_string sl = String.sub sl.str sl.i (length sl)
+end
+
+let recurse slice p : _ t = {
+  run=fun _st ~ok ~err ->
+    (* make sure these states are related. all slices share the
+       same reference as the initial state they derive from. *)
+    assert CCShims_.Stdlib.(_st.memo == slice.memo);
+    p.run slice ~ok ~err
+}
+
+let all = {
+  run=fun st ~ok ~err:_ ->
+    if is_done st then ok st st
+    else (
+      let st_done = {st with i=st.j} in
+      ok st_done st
+    )
+}
+
+let all_str = all >|= Slice.to_string
+
+(*$= & ~printer:(errpp Q.Print.string) ~cmp:(erreq (=))
+  (Ok "abcd") (parse_string all_str "abcd")
+  (Ok "cd") (parse_string (string "ab" *> all_str) "ab")
+*)
+
+(*$= & ~printer:(errpp Q.Print.(pair string string)) ~cmp:(erreq (=))
+  (Ok ("foobar", "")) (parse_string (both all_str all_str) "foobar")
+  *)
+
 let fail msg : _ t = {
   run=fun st ~ok:_ ~err ->
     err (mk_error_ st (const_str_ msg))
 }
 let failf msg = Printf.ksprintf fail msg
+let fail_lazy msg = {
+  run=fun st ~ok:_ ~err ->
+    err (mk_error_ st msg)
+}
 
 let parsing what p = {
   run=fun st ~ok ~err ->
@@ -360,9 +412,10 @@ let parsing what p = {
           err {e with Error.msg})
 }
 
-let nop = {
+let empty = {
   run=fun st ~ok ~err:_ -> ok st ();
 }
+let nop = empty
 
 let any_char = {
   run=fun st ~ok ~err -> consume_ st ~ok ~err
@@ -398,18 +451,34 @@ let char_if ?descr p = {
       ~err
 }
 
-let chars_if p = {
+let take_if p : slice t = {
   run=fun st ~ok ~err:_ ->
-    let i0 = st.i in
-    let i = ref i0 in
+    let i = ref st.i in
     while
       let st = {st with i = !i} in
       not (is_done st) && p (cur st)
     do
       incr i;
     done;
-    ok {st with i = !i} (String.sub st.str i0 (!i - i0))
+    ok {st with i = !i} {st with j= !i}
 }
+
+let take1_if ?descr p =
+  take_if p >>= fun sl ->
+  if Slice.is_empty sl then (
+    let msg() =
+      let what = match descr with
+        | None -> ""
+        | Some d -> Printf.sprintf " for %s" d
+      in
+      Printf.sprintf "expected non-empty sequence of chars%s" what
+    in
+    fail_lazy msg
+  ) else (
+    return sl
+  )
+
+let chars_if p = take_if p >|= Slice.to_string
 
 let chars1_if ?descr p = {
   run=fun st ~ok ~err ->
@@ -453,11 +522,11 @@ let chars_fold ~f acc0 = {
             | `Fail msg -> raise (Fold_fail (st,msg))
         )
       done;
-      ok {st with i= !i} !acc
+      ok {st with i= !i} (!acc, {st with j= !i})
     with Fold_fail (st,msg) -> err (mk_error_ st (const_str_ msg))
 }
 
-let chars_fold_map ~f acc0 = {
+let chars_fold_transduce ~f acc0 = {
   run=fun st ~ok ~err ->
     let i0 = st.i in
     let i = ref i0 in
@@ -524,6 +593,22 @@ let try_or p1 ~f ~else_:p2 = {
       ~err:(fun _ -> p2.run st ~ok ~err)
 }
 
+let try_or_l ?(msg="try_or_l ran out of options") ?else_ l : _ t = {
+  run=fun st ~ok ~err ->
+    let rec loop = function
+      | (test, p) :: tl ->
+        test.run st
+          ~ok:(fun _ _ -> p.run st ~ok ~err) (* commit *)
+          ~err:(fun _ -> loop tl)
+      | [] ->
+        begin match else_ with
+          | None -> err (mk_error_ st (const_str_ msg))
+          | Some p -> p.run st ~ok ~err
+        end
+    in
+    loop l
+}
+
 let suspend f = {
   run=fun st ~ok ~err ->
     let p = f () in
@@ -531,12 +616,12 @@ let suspend f = {
 }
 
 (* read [len] chars at once *)
-let any_chars len : _ t = {
+let take len : slice t = {
   run=fun st ~ok ~err ->
-    if st.i + len <= String.length st.str then (
-      let s = String.sub st.str st.i len in
+    if st.i + len <= st.j then (
+      let slice = {st with j = st.i + len} in
       let st = {st with i = st.i + len} in
-      ok st s
+      ok st slice
     ) else (
       let msg() =
         Printf.sprintf "expected to be able to consume %d chars" len
@@ -544,6 +629,8 @@ let any_chars len : _ t = {
       err (mk_error_ st msg)
     )
 }
+
+let any_chars len : _ t = take len >|= Slice.to_string
 
 let exact s = {
   run=fun st ~ok ~err ->
@@ -697,58 +784,116 @@ let lookahead p : _ t = {
       ~err
 }
 
+let lookahead_ignore p : _ t = {
+  run=fun st ~ok ~err ->
+    p.run st
+      ~ok:(fun _st _x -> ok st ())
+      ~err
+}
+
 (*$= & ~printer:(errpp Q.Print.(string))
   (Ok "abc") (parse_string (lookahead (string "ab") *> (string "abc")) "abcd")
 *)
 
-let line : _ t = {
-  run=fun st ~ok ~err ->
-    if is_done st then err (mk_error_ st (const_str_ "expected a line, not EOI"))
-    else (
-      match String.index_from st.str st.i '\n' with
+(*$=
+  (Ok "1234") (parse_string line_str "1234\nyolo")
+  (Ok ("1234", "yolo")) (parse_string (line_str ||| line_str) "1234\nyolo\nswag")
+*)
+
+let split_1 ~on_char : _ t = {
+  run=fun st ~ok ~err:_ ->
+    if st.i >= st.j then (
+      ok st (st, None)
+    ) else (
+      match String.index_from st.str st.i on_char with
       | j ->
-        let s = String.sub st.str st.i (j - st.i) in
-        ok {st with i=j+1} s
+        let x = {st with j} in
+        let y = {st with i=min st.j (j+1)} in
+        let st_done = {st with i=st.j} in (* empty *)
+        ok st_done (x, Some y)
       | exception Not_found ->
-        err (mk_error_ st (const_str_ "unterminated line"))
+        let st_done = {st with i=st.j} in (* empty *)
+        ok st_done (st, None)
     )
 }
 
-(*$=
-  (Ok "1234") (parse_string line "1234\nyolo")
-  (Ok ("1234", "yolo")) (parse_string (line ||| line) "1234\nyolo\nswag")
+let split_list_at_most ~on_char n : slice list t =
+  let rec loop acc n =
+    if n <= 0 then return (List.rev acc)
+    else (
+      try_or
+        eoi
+        ~f:(fun _ -> return (List.rev acc))
+        ~else_:(parse_1 acc n)
+    )
+  and parse_1 acc n =
+    split_1 ~on_char >>= fun (sl1, rest) ->
+    let acc = sl1 :: acc in
+    match rest with
+      | None -> return (List.rev acc)
+      | Some rest -> recurse rest (loop acc (n-1))
+  in
+  loop [] n
+
+(*$= & ~printer:(errpp Q.Print.(list string)) ~cmp:(erreq (=))
+  (Ok ["a";"b";"c";"d,e,f"]) \
+    (parse_string (split_list_at_most ~on_char:',' 3 >|= List.map Slice.to_string) "a,b,c,d,e,f")
+  (Ok ["a";"bc"]) \
+    (parse_string (split_list_at_most ~on_char:',' 3 >|= List.map Slice.to_string) "a,bc")
 *)
 
-(* parse a string [s] using [p_sub], then parse [s] using [p].
-   The result is that of parsing [s] using [p], but the state is
-   the one after using [p_sub], and errors are translated back into the context
-   of [p_sub].
-   This can be useful for example in [p_sub line some_line_parser]. *)
-let parse_sub_ p_sub p : _ t = {
-  run=fun st0 ~ok ~err ->
-    let p = p <* eoi in (* make sure [p] reads all *)
-    p_sub.run st0
-      ~ok:(fun st1 s ->
-          p.run (state_of_string s)
-            ~ok:(fun _ r -> ok st1 r)
-            ~err:(fun e ->
-                let pos = e.pos in
-                let pos = {
-                  pos_buffer=pos.pos_buffer;
-                  pos_offset=pos.pos_offset + st0.i;
-                  pos_lc=None;
-                } in
-                err {e with pos}))
-      ~err
-}
+let split_list ~on_char : _ t =
+  split_list_at_most ~on_char max_int
+
+let split_2 ~on_char : _ t =
+  split_list_at_most ~on_char 2 >>= function
+  | [a; b] -> return (a,b)
+  | _ -> fail "split_2: expected 2 fields exactly"
+
+let split_3 ~on_char : _ t =
+  split_list_at_most ~on_char 3 >>= function
+  | [a; b; c] -> return (a,b,c)
+  | _ -> fail "split_3: expected 3 fields exactly"
+
+let split_4 ~on_char : _ t =
+  split_list_at_most ~on_char 4 >>= function
+  | [a; b; c; d] -> return (a,b,c,d)
+  | _ -> fail "split_4: expected 4 fields exactly"
+
+let split_list ~on_char : slice list t =
+  let rec loop acc =
+    try_or
+      eoi
+      ~f:(fun _ -> return (List.rev acc))
+      ~else_:(parse_1 acc)
+  and parse_1 acc =
+    split_1 ~on_char >>= fun (sl1, rest) ->
+    let acc = sl1 :: acc in
+    match rest with
+      | None -> return (List.rev acc)
+      | Some rest -> recurse rest (loop acc)
+  in
+  loop []
+
+let each_split ~on_char p : 'a list t =
+  let rec loop acc =
+    split_1 ~on_char >>= fun (sl1, rest) ->
+    (* parse [sl1] with [p] *)
+    recurse sl1 p >>= fun x ->
+    let acc = x :: acc in
+    match rest with
+      | None -> return (List.rev acc)
+      | Some rest -> recurse rest (loop acc)
+  in
+  loop []
+
+let line : slice t =
+  split_1 ~on_char:'\n' >|= fst
+
+let line_str = line >|= Slice.to_string
 
 let each_line p : _ t =
-  fix
-    (fun self ->
-       try_or eoi
-         ~f:(fun _ -> pure [])
-         (parse_sub_ line p >>= fun x ->
-          self >|= fun tl -> x :: tl))
+  each_split ~on_char:'\n' p
 
 (*$= & ~printer:(errpp Q.Print.(list @@ list int))
   (Ok ([[1;1];[2;2];[3;3]])) \

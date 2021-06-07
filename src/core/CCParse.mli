@@ -8,6 +8,8 @@
 
     {2 A few examples}
 
+    Some more advanced example(s) can be found in the [/examples] directory.
+
     {4 Parse a tree}
 
     {[
@@ -104,7 +106,7 @@ module Error : sig
   (** Pretty prints the error *)
 end
 
-type 'a or_error = ('a, Error.t) result
+type +'a or_error = ('a, Error.t) result
 (** ['a or_error] is either [Ok x] for some result [x : 'a],
     or an error {!Error.t}.
 
@@ -146,21 +148,45 @@ val ap : ('a -> 'b) t -> 'a t -> 'b t
 (** Applicative.
     @since NEXT_RELEASE *)
 
+val eoi : unit t
+(** Expect the end of input, fails otherwise. *)
+
+val nop : unit t
+(** Succeed with [()]. *)
+
+val empty : unit t
+(** Succeed with [()], same as {!nop}.
+    @since NEXT_RELEASE *)
+
 val fail : string -> 'a t
 (** [fail msg] fails with the given message. It can trigger a backtrack. *)
 
 val failf: ('a, unit, string, 'b t) format4 -> 'a
 (** [Format.sprintf] version of {!fail}. *)
 
+val fail_lazy : (unit -> string) -> 'a t
+(** Like {!fail}, but only produce an error message on demand.
+    @since NEXT_RELEASE *)
+
 val parsing : string -> 'a t -> 'a t
 (** [parsing s p] behaves the same as [p], with the information that
-    we are parsing [s], if [p] fails. *)
+    we are parsing [s], if [p] fails.
+    The message [s] is added to the error, it does not replace it,
+    not does the location change (the error still points to
+    the same location as in [p]). *)
 
-val eoi : unit t
-(** Expect the end of input, fails otherwise. *)
+val set_error_message : string -> 'a t -> 'a t
+(** [set_error_message msg p] behaves like [p], but if [p] fails,
+    [set_error_message msg p] fails with [msg] instead and at the current
+    position. The internal error message of [p] is just discarded.
+    @since NEXT_RELEASE *)
 
-val nop : unit t
-(** Succeed with [()]. *)
+val with_pos : 'a t -> ('a * position) t
+(** [with_pos p] behaves like [p], but returns the (starting) position
+    along with [p]'s result.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
 
 val any_char : char t
 (** [any_char] parses any character.
@@ -169,27 +195,52 @@ val any_char : char t
 
 val any_chars : int -> string t
 (** [any_chars len] parses exactly [len] characters from the input.
+    Fails if the input doesn't contain at least [len] chars.
     @since NEXT_RELEASE *)
 
 val char : char -> char t
 (** [char c] parses the character [c] and nothing else. *)
 
-val char_if : ?descr:string -> (char -> bool) -> char t
-(** [char_if f] parses a character [c] if [f c = true].
-    @param descr describes what kind of character was expected *)
+type slice
+(** A slice of the input, as returned by some combinators such
+    as {!split_1} or {split_n}.
 
-val chars_if : (char -> bool) -> string t
-(** [chars_if f] parses a string of chars that satisfy [f]. *)
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
 
-val chars1_if : ?descr:string -> (char -> bool) -> string t
-(** Like {!chars_if}, but only non-empty strings.
-    @param descr describes what kind of character was expected *)
+(** Functions on slices.
+    @since NEXT_RELEASE *)
+module Slice : sig
+  type t = slice
+
+  val is_empty : t -> bool
+  (** Is the slice empty? *)
+
+  val length : t -> int
+  (** Length of the slice *)
+
+  val to_string : t -> string
+  (** Convert the slice into a string.
+      Linear time and memory in [length slice] *)
+end
+
+val recurse : slice -> 'a t -> 'a t
+(** [recurse slice p] parses the [slice]
+    (most likely obtained via another combinator, such as {!split_1}
+    or {!split_n}), using [p].
+
+    The slice contains a position which is used to relocate error
+    messages to their position in the whole input, not just relative to
+    the slice.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
 
 val chars_fold :
   f:('acc -> char ->
      [`Continue of 'acc | `Consume_and_stop | `Stop | `Fail of string]) ->
   'acc ->
-  'acc t
+  ('acc * slice) t
 (** [chars_fold f acc0] folds over characters of the input.
     Each char [c] is passed, along with the current accumulator, to [f];
     [f] can either:
@@ -204,23 +255,53 @@ val chars_fold :
 
     This is a generalization of of {!chars_if} that allows one to transform
     characters on the fly, skip some, handle escape sequences, etc.
+    It can also be useful as a base component for a lexer.
 
    @since NEXT_RELEASE *)
 
-val chars_fold_map :
+val chars_fold_transduce :
   f:('acc -> char ->
-     [`Continue of 'acc | `Yield of 'acc * char
+     [ `Continue of 'acc | `Yield of 'acc * char
      | `Consume_and_stop | `Stop | `Fail of string]) ->
   'acc ->
   ('acc * string) t
 (** Same as {!char_fold} but with the following differences:
 
-    - returns a string along with the accumulator. The string is built from
-      characters returned by [`Yield].
+    - returns a string along with the accumulator, rather than the slice
+      of all the characters accepted by [`Continue _].
+      The string is built from characters returned by [`Yield].
     - new case [`Yield (acc, c)] adds [c] to the returned string
       and continues parsing with [acc].
 
     @since NEXT_RELEASE *)
+
+val take : int -> slice t
+(** [slice_of_len len] parses exactly [len] characters from the input.
+    Fails if the input doesn't contain at least [len] chars.
+    @since NEXT_RELEASE *)
+
+val take_if : (char -> bool) -> slice t
+(** [take_if f] takes characters as long as they satisfy the predicate [f].
+    @since NEXT_RELEASE *)
+
+val take1_if : ?descr:string -> (char -> bool) -> slice t
+(** [take1_if f] takes characters as long as they satisfy the predicate [f].
+    Fails if no character satisfies [f].
+    @since NEXT_RELEASE *)
+
+val char_if : ?descr:string -> (char -> bool) -> char t
+(** [char_if f] parses a character [c] if [f c = true].
+    Fails if  the next char does not satisfy [f].
+    @param descr describes what kind of character was expected *)
+
+val chars_if : (char -> bool) -> string t
+(** [chars_if f] parses a string of chars that satisfy [f].
+    Cannot fail. *)
+
+val chars1_if : ?descr:string -> (char -> bool) -> string t
+(** Like {!chars_if}, but only non-empty strings.
+    Fails if the string is empty.
+    @param descr describes what kind of character was expected *)
 
 val endline : char t
 (** Parse '\n'. *)
@@ -272,7 +353,9 @@ val many : 'a t -> 'a list t
 
 val optional : _ t -> unit t
 (** [optional p] tries to parse [p], and return [()] whether it
-    succeeded or failed. Cannot fail.
+    succeeded or failed. Cannot fail itself.
+    It consumes input if [p] succeeded (as much as [p] consumed), but
+    consumes not input if [p] failed.
     @since NEXT_RELEASE *)
 
 val try_ : 'a t -> 'a t
@@ -307,6 +390,27 @@ val try_or : 'a t -> f:('a -> 'b t) -> else_:'b t -> 'b t
     @since NEXT_RELEASE
 *)
 
+val try_or_l :
+  ?msg:string ->
+  ?else_:'a t ->
+  (unit t * 'a t) list ->
+  'a t
+(** [try_or_l ?else_ l] tries each pair [(test, p)] in order.
+    If the n-th [test] succeeds, then [try_or_l l] behaves like n-th [p],
+    whether [p] fails or not.
+    If they all fail, and [else_] is defined, then it behaves like [else_].
+    If all fail, and [else_] is [None], then it fails as well.
+
+    This is a performance optimization compared to {!(<|>)}. We commit to a
+    branch if the test succeeds, without backtracking at all.
+
+    See {!lookahead_ignore} for a convenient way of writing the test conditions.
+
+    @param msg error message if all options fail
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
 val or_ : 'a t -> 'a t -> 'a t
 (** [or_ p1 p2] tries to parse [p1], and if it fails, tries [p2]
     from the same position.
@@ -315,12 +419,6 @@ val or_ : 'a t -> 'a t -> 'a t
 val both : 'a t -> 'b t -> ('a * 'b) t
 (** [both a b] parses [a], then [b], then returns the pair of their results.
     @since NEXT_RELEASE *)
-
-val set_error_message : string -> 'a t -> 'a t
-(** [set_error_message msg p] behaves like [p], but if [p] fails,
-    [set_error_message msg p] fails with [msg] instead.
-    @since NEXT_RELEASE
-*)
 
 val many1 : 'a t -> 'a list t
 (** [many1 p] is like [many p] excepts it fails if the
@@ -345,8 +443,26 @@ val lookahead : 'a t -> 'a t
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
 
-val line : string t
-(** Parse a line, '\n' excluded.
+val lookahead_ignore : 'a t -> unit t
+(** [lookahead_ignore p] tries to parse input with [p],
+    and succeeds if [p] succeeds. However it doesn't consume any input
+    and returns [()], so in effect its only use-case is to detect
+    whether [p] succeeds, e.g. in {!cond}.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+val fix : ('a t -> 'a t) -> 'a t
+(** Fixpoint combinator. *)
+
+val line : slice t
+(** Parse a line, ['\n'] excluded, and position the cursor after the ['\n'].
+    @since NEXT_RELEASE *)
+
+val line_str : string t
+(** [line_str] is [line >|= Slice.to_string].
+    It parses the next line and turns the slice into a string.
+    The state points to after the ['\n'] character.
     @since NEXT_RELEASE *)
 
 val each_line : 'a t -> 'a list t
@@ -354,8 +470,90 @@ val each_line : 'a t -> 'a list t
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
 
-val fix : ('a t -> 'a t) -> 'a t
-(** Fixpoint combinator. *)
+val split_1 : on_char:char -> (slice * slice option) t
+(** [split_1 ~on_char] looks for [on_char] in the input, and returns a
+    pair [sl1, sl2], where:
+
+    - [sl1] is the slice of the input the precedes the first occurrence
+      of [on_char], or the whole input if [on_char] cannot be found.
+    - [sl2] is the slice that comes after [on_char],
+      or [None] if [on_char] couldn't be found.
+
+    The parser is now positioned at the end of the input.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+val split_list : on_char:char -> slice list t
+(** [split_n ~on_char] splits the input on all occurrences of [on_char],
+    returning a list of slices.
+
+    A useful specialization of this is {!each_line}, which is
+    basically [split_n ~on_char:'\n' p].
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+val split_list_at_most : on_char:char -> int -> slice list t
+(** [split_list_at_most ~on_char n] applies [split_1 ~on_char] at most
+    [n] times, to get a list of [n+1] elements.
+    The last element might contain [on_char]. This is useful to limit the
+    amount of work done by {!split_list}.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+
+val split_2 : on_char:char -> (slice * slice) t
+(** [split_2 ~on_char] splits the input into exactly 2 fields,
+    and fails if the split yields less or more than 2 items.
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+val split_3 : on_char:char -> (slice * slice * slice) t
+(** See {!split_2}
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+val split_4 : on_char:char -> (slice * slice * slice * slice) t
+(** See {!split_2}
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+val each_split : on_char:char -> 'a t -> 'a list t
+(** [split_list_map ~on_char p] uses [split_list ~on_char] to split
+    the input, then parses each chunk of the input thus obtained using [p].
+
+    The difference with [sep ~by:(char on_char) p] is that
+    [sep] calls [p] first, and only tries to find [on_char] after [p] returns.
+    While it is more flexible, this technique also means [p] has to be careful
+    not to consume [on_char] by error.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+val all : slice t
+(** [all] returns all the unconsumed input as a slice, and consumes it.
+    Use {!Slice.to_string} to turn it into a string.
+
+    Note that [lookahead all] can be used to {i peek} at the rest of the input
+    without consuming anything.
+
+    @since NEXT_RELEASE *)
+
+val all_str : string t
+(** [all_str] accepts all the remaining chars and extracts them into a
+    string. Similar to {!rest_of_input} but with a string.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+
+(* TODO
+val trim : slice t
+(** [trim] is like {!all}, but removes whitespace on the left and right.
+   {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
+ *)
 
 val memo : 'a t -> 'a t
 (** Memoize the parser. [memo p] will behave like [p], but when called
