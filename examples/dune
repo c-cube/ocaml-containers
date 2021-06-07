@@ -27,6 +27,7 @@
   (name runtest)
   (locks /ctest)
   (deps (source_tree test_data))
+  (enabled_if (>= %{ocaml_version} "4.08"))
   (action
     (ignore-stdout
       (run ./ccparse_irclogs.exe test_data/irc-logs.txt))))
