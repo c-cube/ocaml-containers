@@ -10,6 +10,7 @@
 (alias
   (name runtest)
   (locks /ctest)
+  (deps (source_tree test_data))
   (action
     (ignore-stdout
       (run ./id_sexp.exe test_data/benchpress.sexp))))
@@ -17,6 +18,7 @@
 (alias
   (name runtest)
   (locks /ctest)
+  (deps (source_tree test_data))
   (action
     (ignore-stdout
       (run ./ccparse_sexp.exe test_data/benchpress.sexp))))
@@ -24,6 +26,7 @@
 (alias
   (name runtest)
   (locks /ctest)
+  (deps (source_tree test_data))
   (action
     (ignore-stdout
       (run ./ccparse_irclogs.exe test_data/irc-logs.txt))))
