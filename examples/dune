@@ -1,6 +1,6 @@
 
 (executables
-  (names id_sexp ccparse_sexp)
+  (names id_sexp ccparse_sexp ccparse_irclogs)
   (libraries containers)
   ;(modules id_sexp)
   (flags :standard -warn-error -a+8 -safe-string -color always)
@@ -20,3 +20,10 @@
   (action
     (ignore-stdout
       (run ./ccparse_sexp.exe test_data/benchpress.sexp))))
+
+(alias
+  (name runtest)
+  (locks /ctest)
+  (action
+    (ignore-stdout
+      (run ./ccparse_irclogs.exe test_data/irc-logs.txt))))

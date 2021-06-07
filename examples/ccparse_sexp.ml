@@ -20,7 +20,7 @@ let skip_white_and_comments =
   )
 
 let atom =
-  chars_fold_map `Start
+  chars_fold_transduce `Start
     ~f:(fun acc c ->
         match acc, c with
           | `Start, '"' -> `Continue `In_quote
