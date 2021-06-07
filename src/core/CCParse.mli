@@ -203,7 +203,19 @@ val char : char -> char t
 
 type slice
 (** A slice of the input, as returned by some combinators such
-    as {!split_1} or {split_n}.
+    as {!split_1} or {split_list} or {!take}.
+
+    The idea is that one can use some parsers to cut the input into slices,
+    e.g. split into lines, or split a line into fields (think CSV or TSV).
+    Then a variety of parsers can be used on each slice to extract data from
+    it using {!recurse}.
+
+    Slices contain enough information to make it possible
+    for [recurse slice p] to report failures (if [p] fails) using locations
+    from the original input, not relative to the slice.
+    Therefore, even after splitting the input into lines using, say, {!each_line},
+    a failure to parse the 500th line will be reported at line 500 and
+    not at line 1.
 
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)

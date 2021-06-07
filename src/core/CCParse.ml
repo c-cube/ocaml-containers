@@ -190,6 +190,19 @@ type state = {
   j: int; (* end pointer in [str], excluded. [len = j-i] *)
   memo : Memo_state.t option ref; (* Memoization table, if any *)
 }
+(* FIXME: replace memo with:
+   [global : global_st ref]
+
+   where:
+   [type global = {
+     mutable memo: Memo_state.t option;
+     line_offsets: int CCVector.vector;
+   }
+
+   with line_offsets used to cache the offset where each line begins,
+   and is computed lazily, to make {!Position.line_and_column}
+   faster if called many times.
+   *)
 
 let[@inline] char_equal (a : char) b = Stdlib.(=) a b
 let string_equal = String.equal
