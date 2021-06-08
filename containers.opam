@@ -20,6 +20,7 @@ depends: [
   "ounit" { with-test }
   "iter" { with-test }
   "gen" { with-test }
+  "csexp" { with-test }
   "uutf" { with-test }
   "odoc" { with-doc }
 ]

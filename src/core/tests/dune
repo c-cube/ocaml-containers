@@ -18,15 +18,27 @@
   (modules test_random)
   (libraries containers))
 
+(executable
+  (name test_csexp)
+  (flags :standard -warn-error -a+8)
+  (modules test_csexp)
+  (libraries containers csexp qcheck-core qcheck))
+
 (alias
   (name runtest)
-  (locks ctest)
+  (locks /ctest)
   (package containers)
   (action (run ./test_random.exe)))
+
+(alias
+  (name runtest)
+  (locks /ctest)
+  (package containers)
+  (action (run ./test_csexp.exe)))
 
 ; what matters is that it compiles
 (alias
   (name runtest)
-  (locks ctest)
+  (locks /ctest)
   (package containers)
   (action  (run ./check_labelled_mods.exe)))
