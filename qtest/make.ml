@@ -26,6 +26,7 @@ let do_not_test file =
   is_suffix ~sub:"check_labelled_mods.ml" file ||
   is_suffix ~sub:"test_random.ml" file ||
   is_suffix ~sub:"test_hash.ml" file ||
+  is_suffix ~sub:"test_csexp.ml" file ||
   is_suffix ~sub:"utop.ml" file
 
 let prefix = "src"
