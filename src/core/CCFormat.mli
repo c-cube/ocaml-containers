@@ -14,7 +14,7 @@ include module type of struct include Format end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Format.html} Documentation for the standard Format module}*)
 
 type t = Format.formatter
-type 'a printer = t -> 'a -> unit
+type -'a printer = t -> 'a -> unit
 
 (** {2 Combinators} *)
 
@@ -166,6 +166,16 @@ val some : 'a printer -> 'a option printer
     - [None] is not printed at all
     @since 1.0
 *)
+
+val const_string : string -> 'a printer
+(** [const_string s] is a printer that ignores its input and
+    always prints [s].
+    @since NEXT_RELEASE *)
+
+val opaque : 'a printer
+(** [opaque] is [const_string "opaque"].
+    The exact string used is not stable.
+    @since NEXT_RELEASE *)
 
 val lazy_force : 'a printer -> 'a lazy_t printer
 (** [lazy_force pp out x] forces [x] and prints the result with [pp].

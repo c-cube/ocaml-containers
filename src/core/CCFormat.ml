@@ -8,7 +8,7 @@ type 'a iter = ('a -> unit) -> unit
 include Format
 
 type t = Format.formatter
-type 'a printer = t -> 'a -> unit
+type -'a printer = t -> 'a -> unit
 
 (** {2 Combinators} *)
 
@@ -181,6 +181,9 @@ let const pp x out () = pp out x
 let some pp out = function
   | None -> ()
   | Some x -> pp out x
+
+let const_string s out _ = string out s
+let opaque out _ = string out "opaque"
 
 let lazy_force pp out (lazy x) = pp out x
 
