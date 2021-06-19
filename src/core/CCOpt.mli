@@ -34,6 +34,14 @@ val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 val return : 'a -> 'a t
 (** [return x] is a monadic return, that is [return x = Some x]. *)
 
+val some : 'a -> 'a t
+(** Alias to {!return}.
+    @since NEXT_RELEASE *)
+
+val none : 'a t
+(** Alias to {!None}.
+    @since NEXT_RELEASE *)
+
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** [o >|= f] is the infix version of {!map}. *)
 

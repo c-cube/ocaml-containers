@@ -37,6 +37,8 @@ let equal f o1 o2 = match o1, o2 with
   | Some x, Some y -> f x y
 
 let return x = Some x
+let some = return
+let none = None
 
 let[@inline] flat_map f o = match o with
   | None -> None
