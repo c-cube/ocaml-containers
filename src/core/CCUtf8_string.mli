@@ -77,9 +77,24 @@ val filter_map : (uchar -> uchar option) -> t -> t
 
 val flat_map : (uchar -> t) -> t -> t
 
+val empty : t
+(** Empty string.
+    @since NEXT_RELEASE *)
+
 val append : t -> t -> t
+(** Append two string together. *)
 
 val concat : t -> t list -> t
+(** [concat sep l] concatenates each string in [l], inserting [sep]
+    in between each string. Similar to {!String.concat}. *)
+
+val of_uchar : uchar -> t
+(** [of_char c] is a string with only one unicode char in it.
+    @since NEXT_RELEASE *)
+
+val make : int -> uchar -> t
+(** [make n c] makes a new string with [n] copies of [c] in it.
+    @since NEXT_RELEASE *)
 
 val of_seq : uchar Seq.t -> t
 (** Build a string from unicode codepoints

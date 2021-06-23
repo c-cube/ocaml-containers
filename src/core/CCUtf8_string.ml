@@ -17,6 +17,7 @@ let pp = Format.pp_print_string
 
 include String
 
+let empty = ""
 let to_string x = x
 
 (** State for decoding *)
@@ -239,6 +240,23 @@ let of_iter i : t =
   i (fun c -> uchar_to_bytes c (Buffer.add_char buf));
   Buffer.contents buf
 
+let make n c =
+  if n=0 then empty
+  else (
+    let n_bytes = uchar_num_bytes c in
+    let buf = Bytes.create (n * n_bytes) in
+    (* copy [c] at the beginning of the buffer *)
+    let i = ref 0 in
+    uchar_to_bytes c (fun b -> Bytes.set buf !i b; incr i);
+    (* now repeat the prefix n-1 times *)
+    for j = 1 to n-1 do
+      Bytes.blit buf 0 buf (n_bytes * j) n_bytes;
+    done;
+    Bytes.unsafe_to_string buf
+  )
+
+let[@inline] of_uchar c : t = make 1 c
+
 let of_list l : t =
   let len = List.fold_left (fun n c -> n + uchar_num_bytes c) 0 l in
   if len > Sys.max_string_length then (
@@ -455,3 +473,13 @@ let of_string s = if is_valid s then Some s else None
     assert_equal 1 (n_bytes (of_list [c]))
   done
 *)
+
+(*$QR
+  Q.(small_list arb_uchar) (fun l ->
+        of_list l = concat empty (List.map of_uchar l))
+  *)
+
+(*$QR
+    Q.(pair small_nat arb_uchar) (fun (i,c) ->
+        make i c = concat empty (CCList.init i (fun _ -> of_uchar c)))
+  *)
