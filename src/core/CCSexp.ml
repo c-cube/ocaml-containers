@@ -111,8 +111,8 @@ module Make(Sexp : SEXP) = struct
   let rec pp_noindent fmt t =
     Sexp.match_ t
       ~atom:(fun s ->
-    if _must_escape s then Format.fprintf fmt "\"%s\"" (String.escaped s)
-    else Format.pp_print_string fmt s)
+          if _must_escape s then Format.fprintf fmt "\"%s\"" (String.escaped s)
+          else Format.pp_print_string fmt s)
       ~list:(function
           | [] -> Format.pp_print_string fmt "()"
           | [x] -> Format.fprintf fmt "(%a)" pp_noindent x
