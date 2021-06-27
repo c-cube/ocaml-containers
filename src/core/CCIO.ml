@@ -52,6 +52,27 @@ let gen_flat_map f next_elem =
   in
   next
 
+type 'a seq_of_gen_state_ =
+  | Of_gen_thunk of 'a gen
+  | Of_gen_saved of 'a Seq.node
+
+let seq_of_gen_ g =
+  let rec consume r () = match !r with
+    | Of_gen_saved cons -> cons
+    | Of_gen_thunk g ->
+      begin match g() with
+        | None ->
+          r := Of_gen_saved Seq.Nil;
+          Nil
+        | Some x ->
+          let tl = consume (ref (Of_gen_thunk g)) in
+          let l = Seq.Cons (x, tl) in
+          r := Of_gen_saved l;
+          l
+      end
+  in
+  consume (ref (Of_gen_thunk g))
+
 let finally_ f x ~h =
   try
     let res = f x in
@@ -75,6 +96,9 @@ let read_chunks_gen ?(size=1024) ic =
   in
   next
 
+let read_chunks_seq ?size ic =
+  seq_of_gen_ (read_chunks_gen ?size ic)
+
 let read_line ic =
   try Some (input_line ic)
   with End_of_file -> None
@@ -85,6 +109,9 @@ let read_lines_gen ic =
     if !stop then None
     else try Some (input_line ic)
       with End_of_file -> (stop:=true; None)
+
+let read_lines_seq ic =
+  seq_of_gen_ (read_chunks_gen ic)
 
 let read_lines_l ic =
   let l = ref [] in
@@ -152,23 +179,39 @@ let write_line oc s =
   output_char oc '\n'
 
 let write_gen ?(sep="") oc g =
-  let rec recurse () = match g() with
+  let rec recurse g = match g() with
     | None -> ()
     | Some s ->
       output_string oc sep;
       output_string oc s;
-      recurse ()
+      recurse g
   in match g() with
     | None -> ()
     | Some s ->
       output_string oc s;
-      recurse ()
+      recurse g
+
+let write_seq ?(sep="") oc seq : unit =
+  let rec recurse g = match g() with
+    | Seq.Nil -> ()
+    | Seq.Cons(s,seq) ->
+      output_string oc sep;
+      output_string oc s;
+      recurse seq
+  in match seq() with
+    | Seq.Nil -> ()
+    | Seq.Cons(s,seq) ->
+      output_string oc s;
+      recurse seq
 
 let rec write_lines oc g = match g () with
   | None -> ()
   | Some l ->
     write_line oc l;
     write_lines oc g
+
+let write_lines_seq oc seq =
+  Seq.iter (write_line oc) seq
 
 let write_lines_l oc l =
   List.iter (write_line oc) l
@@ -341,6 +384,8 @@ module File = struct
           )
       )
   *)
+
+  let walk_seq d = seq_of_gen_ (walk d)
 
   let walk_l d =
     let l = ref [] in

@@ -71,6 +71,12 @@ val read_chunks_gen : ?size:int -> in_channel -> string gen
     {b NOTE} the generator must be used within the lifetime of the channel,
     see warning at the top of the file. *)
 
+val read_chunks_seq : ?size:int -> in_channel -> string Seq.t
+(** Read the channel's content into chunks of size [size].
+    {b NOTE} the generator must be used within the lifetime of the channel,
+    see warning at the top of the file.
+    @since NEXT_RELEASE *)
+
 val read_line : in_channel -> string option
 (** Read a line from the channel. Returns [None] if the input is terminated.
     The "\n" is removed from the line. *)
@@ -79,6 +85,12 @@ val read_lines_gen : in_channel -> string gen
 (** Read all lines. The generator should be traversed only once.
     {b NOTE} the generator must be used within the lifetime of the channel,
     see warning at the top of the file. *)
+
+val read_lines_seq : in_channel -> string Seq.t
+(** Read all lines.
+    {b NOTE} the seq must be used within the lifetime of the channel,
+    see warning at the top of the file.
+    @since NEXT_RELEASE *)
 
 val read_lines_l : in_channel -> string list
 (** Read all lines into a list. *)
@@ -115,8 +127,17 @@ val write_gen : ?sep:string -> out_channel -> string gen -> unit
 (** Write the given strings on the output. If provided, add [sep] between
     every two strings (but not at the end). *)
 
+val write_seq : ?sep:string -> out_channel -> string Seq.t -> unit
+(** Write the given strings on the output. If provided, add [sep] between
+    every two strings (but not at the end).
+    @since NEXT_RELEASE *)
+
 val write_lines : out_channel -> string gen -> unit
 (** Write every string on the output, followed by "\n". *)
+
+val write_lines_seq : out_channel -> string Seq.t -> unit
+(** Write every string on the output, followed by "\n".
+    @since NEXT_RELEASE *)
 
 val write_lines_l : out_channel -> string list -> unit
 
