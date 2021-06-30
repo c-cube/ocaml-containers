@@ -151,5 +151,5 @@ val pp : Format.formatter -> t -> unit
 
 
 (**/**)
-val __to_word_l : t -> int list
+val __to_word_l : t -> char list
 (**/**)
