@@ -1,0 +1,777 @@
+2021-06-04 00:50:44	kluk>	How do I start using DynArray from the ocaml command line?
+2021-06-04 00:50:51	kluk>	I have already done opam install extlib
+2021-06-04 00:51:12	kluk>	I am a newbie at OCaml
+2021-06-04 05:18:03	dockerusocamlus>	Hello! I'm minimizing an Alpine-based Docker image with OCaml installed via opam, and I'm trying to understand if I could erase some files to save some space. Basically, trying to understand if they are needed only on special situations, or if that would cause issues for users of the Docker image.
+2021-06-04 05:19:46	dockerusocamlus>	For instance, in this image, I have file ~/.opam/<version>/lib/ocaml/expunge, which take 15 MB of space. I don't think I have ever used it, but I don't know if it's internally used by some other OCaml process.
+2021-06-04 05:28:12	dockerusocamlus>	I don't have much documentation about it, and grepping ocaml's sources only shows a few occurrences. It seems related to the installation of the OCaml compiler itself, but even after removing it, I'm still able to do a `opam switch create` to install a different compiler, so... I guess it's fine to remove it?
+2021-06-04 05:36:13	octachron>	This is a compiler tool which is used to build REPLs. It is also used by utop.
+2021-06-04 05:42:54	dockerusocamlus>	Thanks!
+2021-06-04 08:10:44	superherointj>	Need some feedback on a minimalistic lwt demo: https://github.com/superherointj/lwt-demo1
+2021-06-04 08:38:37	d_bot>	<superherointj> Just solved it. I must be really tired.
+2021-06-04 09:49:45	d_bot>	<superherointj> Can anybody point me to a good article/information on incompatible ppx drivers (ppxlib and ocaml-migrate-parsetree)?
+2021-06-04 09:49:46	d_bot>	<superherointj> I have read already the saga blog post, but I am missing something.
+2021-06-04 09:49:47	d_bot>	<superherointj> I want to build my old project. I'm trying to replicate problem atm on a demo.
+2021-06-04 09:50:25	companion_cube>	people are supposed to use ppxlib, that's all I know
+2021-06-04 09:51:25	d_bot>	<superherointj> Any example?
+2021-06-04 09:51:51	companion_cube>	https://github.com/ocaml-ppx/ppx_deriving I guess?
+2021-06-04 09:52:40	d_bot>	<superherointj> Found this:
+2021-06-04 09:52:41	d_bot>	<superherointj> https://ppxlib.readthedocs.io/_/downloads/en/stable/pdf/
+2021-06-04 09:57:49	d_bot>	<EduardoRFS> Why does OCaml not optimizes this in a noop? Even under flambda and -O3
+2021-06-04 09:57:49	d_bot>	<EduardoRFS>
+2021-06-04 09:57:51	d_bot>	<EduardoRFS> ```ocaml
+2021-06-04 09:57:52	d_bot>	<EduardoRFS> let f (a, b) = (a, b)
+2021-06-04 09:57:53	d_bot>	<EduardoRFS> ```
+2021-06-04 10:00:07	@adrien>	it returns a new tuple, not the same one
+2021-06-04 10:00:37	@adrien>	let x = (1,2);; let f (a, b) = (a, b);; let y = f x;; y == x;;
+2021-06-04 10:00:41	d_bot>	<EduardoRFS> the question is why? It would change the `==` behavior but it's already not defined from what I remember
+2021-06-04 10:01:06	d_bot>	<EduardoRFS> it behaves differently in bytecode, native and IIRC it's also different in flambda
+2021-06-04 10:01:14	companion_cube>	I agree it'd be a valid optim
+2021-06-04 10:02:19	d_bot>	<EduardoRFS> This is especiall try for the case of different types and pattern matching but that generates identical data in memory, like
+2021-06-04 10:02:20	d_bot>	<EduardoRFS>
+2021-06-04 10:02:21	d_bot>	<EduardoRFS> ```ocaml
+2021-06-04 10:02:22	d_bot>	<EduardoRFS> type a = | A(int)
+2021-06-04 10:02:24	d_bot>	<EduardoRFS> type b = B(int)
+2021-06-04 10:02:25	d_bot>	<EduardoRFS> let f = function | A v -> B v
+2021-06-04 10:02:26	d_bot>	<EduardoRFS> ```
+2021-06-04 10:02:36	@adrien>	I get the same behaviour in native
+2021-06-04 10:03:11	@adrien>	and you can do f u = u
+2021-06-04 10:03:13	companion_cube>	@eduardors these are only the same by accident though
+2021-06-04 10:03:18	companion_cube>	seems far less useful as an optim
+2021-06-04 10:03:18	zozozo>	see https://github.com/ocaml/ocaml/pull/8958
+2021-06-04 10:03:22	d_bot>	<EduardoRFS> yes but the compiler knows it
+2021-06-04 10:03:32	@adrien>	not sure how is the generated code but in that case it's not a new tuple
+2021-06-04 10:04:02	zozozo>	there is a PR to do pretty much that (the link I posted above)
+2021-06-04 10:04:05	theblatte>	I keep writing functions like `let f ((a,b) as x0) = let a' = g a in let b' = g b in if a == a' && b == b' then x0 else (a', b')`
+2021-06-04 10:04:07	d_bot>	<EduardoRFS> in this case yes, but not all cases, I'm not asking about this specific tuple, I'm asking more about identical blocks that are known to be always identical
+2021-06-04 10:04:13	companion_cube>	I don't think it's a very useful optimization to see if per chance two different variants of different types happen to have the same binary representation
+2021-06-04 10:04:33	companion_cube>	more important stuff is to eliminate temporaries imho
+2021-06-04 10:04:41	companion_cube>	like a tuple built just to be deconstructed in the same function
+2021-06-04 10:04:45	companion_cube>	(or an option…)
+2021-06-04 10:04:53	zozozo>	companion_cube: what do you mean by "temporaries"?
+2021-06-04 10:05:05	d_bot>	<EduardoRFS> temporary allocations IIUC
+2021-06-04 10:05:06	companion_cube>	data that doesn't escape the current function :p
+2021-06-04 10:05:09	zozozo>	companion_cube: ah, well, avoiding these is more or less exactly the job of flambda, ^^
+2021-06-04 10:05:11	companion_cube>	(after inlining)
+2021-06-04 10:05:12	companion_cube>	yeah I know
+2021-06-04 10:05:17	companion_cube>	godspeed to you zozozo 
+2021-06-04 10:05:30	zozozo>	^^
+2021-06-04 10:05:55	zozozo>	@EduardoRFS : did you look at https://github.com/ocaml/ocaml/pull/8958 ?
+2021-06-04 10:07:07	d_bot>	<EduardoRFS> I'm looking on it, the argument of not being predictable is sad, it's a flat allocation reduction, no hidden allocation, not trying to make non efficient code efficient, but trying to make code that is efficient as possible more efficient
+2021-06-04 10:07:34	zozozo>	companion_cube: also, note that sometimes, because of type subtleties, you need to write the "identity" function, as a pattern match that then reconstructs exactly the same value, but with a slightly different type (thing GADTs), in such cases, being able to detect that a switch returns exactly its argument, is a nice improvements, and you can't really write it differently because of the types
+2021-06-04 10:07:36	@adrien>	well, as theblatte said, the "as" construct should help for that case
+2021-06-04 10:08:04	d_bot>	<EduardoRFS> that's exactly the case zozozo, for a lot of code in ocaml-migrate-types
+2021-06-04 10:08:11	theblatte>	zozozo: yes!
+2021-06-04 10:08:19	zozozo>	the advantage of the PR I linked is that it can trigger in cases where one cannot write code using "as"
+2021-06-04 10:08:27	theblatte>	much sad when that happens
+2021-06-04 10:08:30	d_bot>	<EduardoRFS> "as"?
+2021-06-04 10:08:53	zozozo>	@EduardoRFS : `let f ((a, b) as pair) = pair`
+2021-06-04 10:09:13	d_bot>	<EduardoRFS> oh but that works only for structural types
+2021-06-04 10:09:21	companion_cube>	zozozo: good argument against GADTs ;)
+2021-06-04 10:09:34	d_bot>	<EduardoRFS> companion_cube loves GADTs
+2021-06-04 10:09:42	companion_cube>	heh, in small doses
+2021-06-04 10:09:47	theblatte>	companion_cube: no need for GADTs! https://github.com/facebook/infer/blob/cfed4c4fa0c99ab1f42683bb92df76c8c8434e79/infer/src/pulse/PulseSummary.ml#L56
+2021-06-04 10:10:03	olle>	as?
+2021-06-04 10:10:06	olle>	new keyword?
+2021-06-04 10:10:13	companion_cube>	wait, theblatte, why
+2021-06-04 10:10:14	theblatte>	eg phantom type parameters
+2021-06-04 10:10:18	companion_cube>	ah yes
+2021-06-04 10:10:29	companion_cube>	it's unfortunate
+2021-06-04 10:10:34	theblatte>	(in my case not phantom but "phantom" because it doesn't show up in some of the variants)
+2021-06-04 10:10:37	companion_cube>	but it's the same constructors in this case.
+2021-06-04 10:10:38	zozozo>	companion_cube: gadts are useful *sometimes*
+2021-06-04 10:10:40	d_bot>	<EduardoRFS> I wonder if #8958 would be better as lambda layer
+2021-06-04 10:10:44	d_bot>	<EduardoRFS> but tempting to rebase it ;/
+2021-06-04 10:11:25	zozozo>	@EduardoRFS : the problem is that if you do that at lambda level, you miss out on situations where it happens after some inlining/simplification
+2021-06-04 10:11:47	d_bot>	<EduardoRFS> yeah but you ensure same behavior between all backends
+2021-06-04 10:11:50	zozozo>	(also, the code of lambda simplifications is quite a mess from what I hear)
+2021-06-04 10:12:33	theblatte>	companion_cube: same constructors: yes, personally I would only care about preserving physical equality when the objects are actually equal but ymmv
+2021-06-04 10:12:34	zozozo>	well.. there is now a pass specifically designed to implement optimizations, so why not use it ?
+2021-06-04 10:13:05	theblatte>	I've seen several examples where it would have a material effect on perf
+2021-06-04 10:13:08	d_bot>	<EduardoRFS> But the pass should not change behavior of code unless it provides a fallback, this is how I see most of it
+2021-06-04 10:13:13	d_bot>	<EduardoRFS> maybe Sys.opaque_identity would ignore it
+2021-06-04 10:13:32	d_bot>	<EduardoRFS> can we deprecate ==? That seems like a better idea overall
+2021-06-04 10:13:34	companion_cube>	zozozo: because it only works for native?
+2021-06-04 10:13:41	companion_cube>	ahahah 
+2021-06-04 10:13:47	companion_cube>	removing == kills perf for other programs
+2021-06-04 10:14:01	theblatte>	#8958 ftw, I didn't know there'd been such a PR in flight for such a long time
+2021-06-04 10:14:04	zozozo>	companion_cube: well, bytecode is pretty much meant to not care about performance, so from that point of view it's not unreasonable
+2021-06-04 10:14:05	d_bot>	<EduardoRFS> not removing it, deprecating it, keep it under Obj.xx
+2021-06-04 10:14:34	theblatte>	== is an important part of the language, not an extension
+2021-06-04 10:14:41	zozozo>	the *good* solution would be to change the bytecode generation to use the result of flambda
+2021-06-04 10:14:56	zozozo>	the semantics of "==" is largely not officially specified
+2021-06-04 10:14:56	d_bot>	<EduardoRFS> NAH
+2021-06-04 10:15:10	theblatte>	but not a bad idea to not give it such an easily-confused name :p eg use "phys_equal" instead
+2021-06-04 10:15:12	zozozo>	and for any non-mutable record, there are next to no guarantees about "=="
+2021-06-04 10:15:26	d_bot>	<EduardoRFS> unless we had a blazing fast flambda pass, bytecode is so fast right now
+2021-06-04 10:16:22	d_bot>	<EduardoRFS> == is not exactly part of the language in many ways, and it's known to behave differently depending on the backend which should never happen for a specified feature of the language
+2021-06-04 10:16:30	zozozo>	@EduardoRFS: are you talking about compilation time or runtime of the compild program ?
+2021-06-04 10:16:35	d_bot>	<EduardoRFS> compilation time
+2021-06-04 10:16:36	companion_cube>	zozozo: I wish I could agree
+2021-06-04 10:16:40	companion_cube>	but some of us are stuck with bytecode
+2021-06-04 10:16:45	d_bot>	<EduardoRFS> bytecode is slow in runtime, really slow
+2021-06-04 10:16:46	companion_cube>	because that's the only official toplevel for now
+2021-06-04 10:17:10	d_bot>	<EduardoRFS> but bytecode generated from flambda would still work with the toplevel
+2021-06-04 10:17:16	zozozo>	companion_cube: yeah, but sometimes with others in my team, we talk about making it so that bytecode is generated after the flambda pass, which would solve all problems (if we can make it work)
+2021-06-04 10:17:21	companion_cube>	sure
+2021-06-04 10:17:36	companion_cube>	I mean in the future maybe we'll also have a JIT
+2021-06-04 10:17:42	d_bot>	<EduardoRFS> there is any plan on deprecating closure middle end?
+2021-06-04 10:17:45	companion_cube>	but for now it's not like there's a choice, and there's basically 0 optims on bytecode
+2021-06-04 10:17:47	companion_cube>	which… ugh
+2021-06-04 10:19:26	d_bot>	<dinosaure> it remmembers me one time when people compared ocsigenserver and http servers and used the bytecode version accidentally and say, OCaml is so bad
+2021-06-04 10:19:34	companion_cube>	:D
+2021-06-04 10:19:38	d_bot>	<EduardoRFS> D:
+2021-06-04 10:19:49	companion_cube>	or even using dune without --profile=release
+2021-06-04 10:19:53	companion_cube>	bye bye optims
+2021-06-04 10:19:58	d_bot>	<EduardoRFS> TEZOS IS RUNNING WITHOUT PROFILE=RELEASE
+2021-06-04 10:20:25	d_bot>	<EduardoRFS> even worse it is benchmarked without profile=release
+2021-06-04 10:20:33	companion_cube>	hu, weirder
+2021-06-04 10:21:18	zozozo>	well, if the switch is not using flambda, I don't think the difference is that important between the dev and release profiles
+2021-06-04 10:22:34	companion_cube>	err, you still have a bit of cross module inlining, don't you?
+2021-06-04 10:22:39	companion_cube>	with normal ocamlopt
+2021-06-04 10:22:54	zozozo>	I'm not sure
+2021-06-04 10:22:55	d_bot>	<EduardoRFS> yeah it makes difference, I benchmarked it, around 30% boost on some smart contracts
+2021-06-04 10:23:06	d_bot>	<EduardoRFS> dune without profile=release runs under -opaque
+2021-06-04 10:23:10	companion_cube>	I think it does, including for stuff like externals
+2021-06-04 10:23:16	companion_cube>	exactly
+2021-06-04 10:23:25	companion_cube>	--profile=release brings you back to normal behavior
+2021-06-04 10:23:26	zozozo>	I think (but I'm not sure) the only thing cross-inlined would be externals, but those are in the .mlis so no need for cross-optimization actually
+2021-06-04 10:23:30	d_bot>	<EduardoRFS> externals rely on the interface, so it doesn't depend on profile=release
+2021-06-04 10:23:50	companion_cube>	zozozo: but the .cmx ?
+2021-06-04 10:24:00	theblatte>	is profile=release different than passing -O3 to ocamlopt??
+2021-06-04 10:24:05	zozozo>	ah, maybe the small functions that closure unconditionally inline are inliend cross-modules by vanilla ocamlopt
+2021-06-04 10:24:17	d_bot>	<EduardoRFS> it is, because without profile=release you're under -opaque
+2021-06-04 10:24:30	theblatte>	whaaaat
+2021-06-04 10:24:40	theblatte>	:o
+2021-06-04 10:24:44	d_bot>	<EduardoRFS> that's the only way to achieve blazing fast build speed
+2021-06-04 10:24:53	companion_cube>	zozozo: the functions marked "inline" in .cmx files
+2021-06-04 10:24:56	d_bot>	<EduardoRFS> yup, small functions like having `Module.equal` are not inlined and Module.equal a lot of times is literally a single cnstruction
+2021-06-04 10:25:09	theblatte>	blazing fast = 6x slower than without -O3 ^^
+2021-06-04 10:25:11	companion_cube>	that's what I was talking about
+2021-06-04 10:25:21	zozozo>	companion_cube: indeed, ^^
+2021-06-04 10:25:30	companion_cube>	so it can make a big difference :)
+2021-06-04 10:25:35	companion_cube>	even without flambda
+2021-06-04 10:25:45	theblatte>	ohhh, recently-ish we noticed marking some functor arguments as [@inline] made a big difference
+2021-06-04 10:25:52	companion_cube>	:D 
+2021-06-04 10:25:59	zozozo>	that's not surprising
+2021-06-04 10:26:04	theblatte>	is that sort of thing (adding @inline) not needed with flambda + release profile?
+2021-06-04 10:26:25	theblatte>	or is that independent?
+2021-06-04 10:26:26	companion_cube>	it still gives you better control
+2021-06-04 10:26:34	zozozo>	iirc, flambda tries as much as possibvle to inline functor applicaiton that are at toplevel, so you shouldn't need the annotations in that particular case
+2021-06-04 10:26:51	companion_cube>	do a lot of people use flambda1  in production?!
+2021-06-04 10:26:59	zozozo>	companion_cube: jane street i guess ?
+2021-06-04 10:27:07	companion_cube>	ahah maybe they have enough RAM
+2021-06-04 10:27:16	zozozo>	also, the binary release of dolmen is now compiled with flambda, :D
+2021-06-04 10:27:18	companion_cube>	I stopped using it years ago
+2021-06-04 10:27:18	theblatte>	infer is 30% faster with flambda, so you bet
+2021-06-04 10:27:32	companion_cube>	wow
+2021-06-04 10:27:37	companion_cube>	well can't wait for flambda2
+2021-06-04 10:28:01	companion_cube>	anyway, the point of --profile=release is to tell dune to not block optimizations, it doesn't enable new ones
+2021-06-04 10:28:05	companion_cube>	for that you can use ocamlopt_flags
+2021-06-04 10:28:13	d_bot>	<EduardoRFS> tezos is another 20% faster on flambda
+2021-06-04 10:28:15	zozozo>	we're trying very hard on making it so that flambda2 is as fast as possible, but it's hard sometimes
+2021-06-04 10:28:27	companion_cube>	zozozo: it's not just a question of "fast"
+2021-06-04 10:28:35	companion_cube>	it's also "not gobble up RAM on bad cases"
+2021-06-04 10:28:38	theblatte>	yes but I'm trying to understand if adding --profile=release will make a difference
+2021-06-04 10:28:51	theblatte>	I'll try that
+2021-06-04 10:29:01	companion_cube>	so, -p foo already switches to release mode
+2021-06-04 10:29:12	companion_cube>	it's only if you use `dune build @all` and that kind of stuff that it matters
+2021-06-04 10:29:21	zozozo>	companion_cube: right, can you send me (if you recall), the packages that were not working 'or taking ut too much RAM) ?
+2021-06-04 10:29:24	companion_cube>	it makes compilation slower (removes -opaque) but enables optimization
+2021-06-04 10:29:27	companion_cube>	zozozo: at least dose3 
+2021-06-04 10:29:30	companion_cube>	that was the blocker
+2021-06-04 10:29:32	zozozo>	so that we can at least try and see what happens with flamdba2
+2021-06-04 10:29:32	companion_cube>	and camlp4
+2021-06-04 10:29:35	d_bot>	<EduardoRFS> even the new dose3?
+2021-06-04 10:29:52	d_bot>	<EduardoRFS> dose3 6 changed quite a bit of stuff, even parmap they're using now
+2021-06-04 10:30:34	theblatte>	companion_cube: we do "dune build infer.exe"
+2021-06-04 10:31:29	companion_cube>	lol
+2021-06-04 10:31:39	companion_cube>	yeah you need the flag
+2021-06-04 10:31:54	companion_cube>	idk about dose3 6
+2021-06-04 10:32:01	companion_cube>	I stopped trying flambda a while ago
+2021-06-04 10:32:17	companion_cube>	using too much ram is a big problem imho
+2021-06-04 10:32:45	d_bot>	<EduardoRFS> that seems weird, flambda reduces the number of allocations considerably
+2021-06-04 10:33:30	companion_cube>	per module
+2021-06-04 10:33:38	companion_cube>	with this you might also gain cross module
+2021-06-04 10:33:54	theblatte>	ah I thought you meant too much ram used during compilation :)
+2021-06-04 10:34:09	companion_cube>	that's what I meant yes
+2021-06-04 10:34:11	companion_cube>	sorry
+2021-06-04 10:34:18	companion_cube>	but theblatte, try the flag :p
+2021-06-04 10:34:26	d_bot>	<EduardoRFS> yeah makes sense
+2021-06-04 10:34:29	theblatte>	companion_cube: I am!!
+2021-06-04 10:34:30	companion_cube>	and also, make sure .cmx are installed for all libraries
+2021-06-04 10:34:52	d_bot>	<EduardoRFS> do we have an idea on what leads flambda to use so much memory?
+2021-06-04 10:34:57	theblatte>	companion_cube: how?
+2021-06-04 10:35:14	companion_cube>	well most should do it if they use dune
+2021-06-04 10:35:25	d_bot>	<ggole> Is there any info on flambda2 floating around yet?
+2021-06-04 10:35:36	companion_cube>	there's zozozo's brain
+2021-06-04 10:35:40	companion_cube>	although it's not floating
+2021-06-04 10:39:04	d_bot>	<dinosaure> technically, his brain is floating in his skull
+2021-06-04 10:39:15	companion_cube>	he might be a robot
+2021-06-04 10:39:17	companion_cube>	can't be sure
+2021-06-04 10:39:27	d_bot>	<EduardoRFS> if he is doing flambda2 he is a robot
+2021-06-04 10:40:07	zozozo>	right, I can try and answer questions about flambda2
+2021-06-04 10:40:17	zozozo>	since I'm working on it, ^^
+2021-06-04 10:41:07	companion_cube>	it'll be the default if it works well enough, right?
+2021-06-04 10:41:53	zozozo>	that's the plan
+2021-06-04 10:43:01	companion_cube>	🤞
+2021-06-04 10:43:57	d_bot>	<ggole> Hmm, I'm not sure I know enough about it to ask good questions
+2021-06-04 10:45:07	d_bot>	<ggole> Although maybe "what was not adequate about the first flambda design" is an obvious one
+2021-06-04 10:45:29	theblatte>	companion_cube: ah, but actually we never use dune default profiles, we do --profile=opt (or dev). There's no -opaque in the build logs
+2021-06-04 10:45:41	companion_cube>	ah, I see
+2021-06-04 10:45:47	theblatte>	phew :)
+2021-06-04 10:45:49	companion_cube>	(wait, there's a profile=opt??)
+2021-06-04 10:46:01	theblatte>	you can name your profile however you want :p
+2021-06-04 10:46:40	zozozo>	@ggole: basically, flambda2 now uses a CPS representation of source code, which is very useful (whereas flambda1 had an ANF representation iirc)
+2021-06-04 10:46:40	theblatte>	then we have (env (opt (ocamlopt_flags (:standard -O3))), etc.
+2021-06-04 10:47:35	theblatte>	maybe we should have -opaque for profile=dev though!
+2021-06-04 10:47:52	d_bot>	<EduardoRFS> wondering, when the optimization mentioned in 8958 may be triggered after inlining?
+2021-06-04 10:48:19	d_bot>	<EduardoRFS> It would be weird if flambda allocated two identical temporary blocks
+2021-06-04 10:48:30	d_bot>	<Drup> I also have a question on flambda 2.0
+2021-06-04 10:48:37	d_bot>	<ggole> @guigui CPS is an interesting direction. It used to be the IL style of choice, but seems to have gone right out of favour.
+2021-06-04 10:49:04	zozozo>	Drup: fire away, ^^
+2021-06-04 10:49:07	d_bot>	<Drup> Do you (the flambda team) intend to keep working on it instead of instantly decide to shoot the for moon and work on flambda 3.0 ?
+2021-06-04 10:49:36	companion_cube>	lolol
+2021-06-04 10:49:39	companion_cube>	I could say the same of ppx
+2021-06-04 10:49:44	zozozo>	Drup: the plan is to continue working on flambda2
+2021-06-04 10:50:14	d_bot>	<ggole> Although people who use ANF seem to have discovered the need for very continuation-like constructs with join points
+2021-06-04 10:50:17	zozozo>	basically, doing flambda1 gave the team (note that this was before I joined) some insights about how to do and not to do some things
+2021-06-04 10:50:17	d_bot>	<Drup> (you don't have to answer it, it's friday evening, and I know you don't really have a sway on this all that much)
+2021-06-04 10:50:50	zozozo>	Drup: indeed, but I'm right now in a conference call with Pierre so I can ask him, ^^
+2021-06-04 10:51:02	d_bot>	<Drup> Say hello from me :p
+2021-06-04 10:51:22	zozozo>	Drup: he says hello to you too
+2021-06-04 10:52:18	theblatte>	hi pchambart :)
+2021-06-04 10:52:48	companion_cube>	coucou to him
+2021-06-04 10:52:58	d_bot>	<Drup> but yeah, flambda in general is a bit moonshot infused sometimes. I understand why (it's much more fun to work on "The Perfect IR") but it's a bit infuriating.
+2021-06-04 10:53:28	companion_cube>	like multicore has been for a while, too
+2021-06-04 10:53:31	companion_cube>	or even opam 2.1
+2021-06-04 10:53:36	companion_cube>	seems like a common theme in OCaml :p
+2021-06-04 10:53:37	theblatte>	companion_cube: alright so something good still came out of that: compiling with -opaqe turns a 50s full build into a 40s one \o/ and I assume it's even better for incremental build?
+2021-06-04 10:53:42	zozozo>	yeah, but now with flambda2 we should have a good enough IR to do what we want and need
+2021-06-04 10:54:11	companion_cube>	theblatte: err it's faster builds, but slower code, yes
+2021-06-04 10:54:12	d_bot>	<Drup> let's hope so
+2021-06-04 10:54:34	theblatte>	companion_cube: it's for "dev" builds
+2021-06-04 10:54:49	companion_cube>	then yes
+2021-06-04 10:55:07	companion_cube>	with -opaque you have fully separate compilation
+2021-06-04 10:55:24	theblatte>	I was wondering why dune was doing so much work on incremental compilation ^^
+2021-06-04 10:55:31	theblatte>	thanks!
+2021-06-04 10:56:35	d_bot>	<Drup> (I though dune already added `-opaque` for dev builds)
+2021-06-04 10:57:05	d_bot>	<ggole> @guigui what was difficult before that's easy now?
+2021-06-04 10:57:06	companion_cube>	seems like theblatte has his own profiles
+2021-06-04 10:57:37	companion_cube>	zozozo: so in CPS, do you have 2 "kinds" of function calls? normal and continuations?
+2021-06-04 10:57:42	companion_cube>	to make sure there's no new closures?
+2021-06-04 10:57:53	d_bot>	<Drup> That doesn't seem very smart if those are less though-out than the normal ones :3
+2021-06-04 10:57:56	theblatte>	dune profiles have... weird defaults
+2021-06-04 10:58:24	theblatte>	fair enough :p
+2021-06-04 10:59:06	zozozo>	companion_cube: continuations in flambda2 are more along the lines of static jumps
+2021-06-04 10:59:12	companion_cube>	cool
+2021-06-04 10:59:33	companion_cube>	zozozo: please stop delaying the PR for ocaml.org 
+2021-06-04 10:59:33	companion_cube>	plz
+2021-06-04 11:00:48	zozozo>	sorry, ^^
+2021-06-04 11:00:57	companion_cube>	why does a PR against a fracking website take a full week to be merged anyway
+2021-06-04 11:01:29	zozozo>	right, that's a problem
+2021-06-04 11:02:22	companion_cube>	if you want the website to go stale because no one opens a PR to update it, that's the best way to go
+2021-06-04 11:02:38	octachron>	companion_cube, because there is noone clearly responsible? My commit right is normally mostly for OCaml releases
+2021-06-04 11:03:07	companion_cube>	is Anil trying to do too many things? :p
+2021-06-04 11:03:21	companion_cube>	definitely not blaming you octachron 
+2021-06-04 11:04:36	companion_cube>	just  annoyed that this, which should have taken literally 5 minutes, is taking a week
+2021-06-04 11:04:41	theblatte>	interesting, -opaque seems to make no difference for incremental compilation, only for full compilation
+2021-06-04 11:04:46	companion_cube>	during which the information on the website is misleading
+2021-06-04 11:05:14	companion_cube>	theblatte: try modifying a file deep in the dep graph, but only the implementation, not the interface
+2021-06-04 11:05:22	theblatte>	that's what I tried
+2021-06-04 11:05:36	companion_cube>	hu
+2021-06-04 11:06:25	theblatte>	humm, there's a leftover -opaque in the logs, my experiment must have gone wrong, sorry, digging in further
+2021-06-04 11:11:27	d_bot>	<EduardoRFS> theblatte: also opaque allows to build strictly against cmi which leads to better parallelism if you're using mli well
+2021-06-04 11:12:30	d_bot>	<EduardoRFS> so opaque should definitely matter for incremental as without it you need to rebuilt the full tree if any module changes
+2021-06-04 11:12:36	d_bot>	<EduardoRFS> maybe dune doesn't have this implemented?
+2021-06-04 11:12:48	d_bot>	<EduardoRFS> @rgrinberg any idea here?
+2021-06-04 11:13:00	theblatte>	I think because we use the "dev" name for our profile -opaque was already being passed!
+2021-06-04 11:13:48	theblatte>	even though we override (flags ...)
+2021-06-04 11:13:53	theblatte>	but not ocamlopt_flags
+2021-06-04 11:15:11	octachron>	companion_cube, anyway my week ended 15 minutes ago, so the PR is merged.
+2021-06-04 11:16:16	theblatte>	and we still see a win for the full build by forcing -opaque because it passes it in a bunch of places where dune doesn't by default
+2021-06-04 11:16:58	theblatte>	looks like that's when building the entire libraries' .cmx
+2021-06-04 11:17:21	@adrien>	octachron: thanks :)
+2021-06-04 11:17:46	theblatte>	so, hmmm, *shrug*
+2021-06-04 11:39:10	companion_cube>	octachron: 😂 thank you
+2021-06-04 11:43:12	companion_cube>	and the website is updated already, nice
+2021-06-04 11:46:07	companion_cube>	"variant constructor unboxing" that's nice
+2021-06-04 11:46:16	companion_cube>	didn't we discuss it here recently? 
+2021-06-04 11:46:21	companion_cube>	 perhaps about bitvectors
+2021-06-04 11:51:05	olle>	oooooh
+2021-06-04 13:58:46	zozozo>	@ggole : sorry for the delay, basically, control flow manipulation is much easier in cps form, also inlining a function's body is tricky to do in ANF (and can be exponential in the worst case if you need to ensure the result if in strict ANF)
+2021-06-04 13:59:23	companion_cube>	coudl you post a snippet of a tiny CPS AST? :p
+2021-06-04 13:59:39	companion_cube>	sth where we could see let, application, and like a primitive like + ?
+2021-06-04 13:59:44	zozozo>	sure
+2021-06-04 13:59:56	companion_cube>	👍
+2021-06-04 14:00:08	companion_cube>	I want to see how the continuations are represented
+2021-06-04 14:07:32	zozozo>	https://gist.github.com/Gbury/7a02a35cb4906914fa351183490f11b2
+2021-06-04 14:07:44	zozozo>	basically, a continuation is a (unique) integer
+2021-06-04 14:08:05	zozozo>	companion_cube: ^
+2021-06-04 14:09:06	companion_cube>	so, apply_cont is where you jump
+2021-06-04 14:09:09	zozozo>	yup
+2021-06-04 14:09:29	zozozo>	also, after a function call (i.e. Apply_expr), you call the given continuation with the return value of the function call
+2021-06-04 14:09:35	companion_cube>	and why is there 2 let?
+2021-06-04 14:09:42	companion_cube>	yeah
+2021-06-04 14:09:49	companion_cube>	and you call the function on already computed arguments
+2021-06-04 14:09:59	zozozo>	you can bind continuations, and regular expressions
+2021-06-04 14:10:37	companion_cube>	hmmm
+2021-06-04 14:10:54	companion_cube>	I mean, Let_expr makes sense, it's a local definition, ok
+2021-06-04 14:11:00	companion_cube>	but what's the "handler" in Let_cont?
+2021-06-04 14:11:00	zozozo>	yup
+2021-06-04 14:11:07	zozozo>	the code of the continuation
+2021-06-04 14:11:17	companion_cube>	oh shit ok
+2021-06-04 14:11:17	zozozo>	let_cont k args = handler in body
+2021-06-04 14:11:22	companion_cube>	nice
+2021-06-04 14:11:43	zozozo>	note that continuations are local to a function's body and cannot escape
+2021-06-04 14:11:44	companion_cube>	so patmatch could also create such expressions, for example
+2021-06-04 14:11:55	zozozo>	since continuations are not regular value (i.e. simples or named)
+2021-06-04 14:11:55	companion_cube>	with explicit sharing and everything
+2021-06-04 14:12:02	zozozo>	yes
+2021-06-04 14:12:29	companion_cube>	(I imagine switch could also have a default case)
+2021-06-04 14:12:49	zozozo>	in this case no, the switch has no default case
+2021-06-04 14:12:56	zozozo>	it simplifies some things
+2021-06-04 14:13:07	zozozo>	but in theory it could
+2021-06-04 14:13:08	companion_cube>	even in flambda2?
+2021-06-04 14:13:17	companion_cube>	I guess since you can share continuations, it's ok
+2021-06-04 14:13:24	zozozo>	it's just that having no default case means the code is much more regular
+2021-06-04 14:13:29	zozozo>	you can fold on the arms of the switch
+2021-06-04 14:13:41	zozozo>	and not have to specifically treat the default case
+2021-06-04 14:15:30	companion_cube>	heh, fair enough
+2021-06-04 14:16:03	companion_cube>	I think the insight that continuations are not values, is sth I didn't realize
+2021-06-04 14:16:05	companion_cube>	so thank you! :)
+2021-06-04 14:16:27	zozozo>	no problem, ^^
+2021-06-04 14:30:12	d_bot>	<ggole> zozozo: hmm, that's actually pretty close to what I expected. Thanks for taking the time to write it up.
+2021-06-04 14:33:07	d_bot>	<ggole> When I tried CPS ILs I found it difficult to perform what should be simple transformations like commuting `case` expressions, but perhaps my approach was too naive.
+2021-06-04 14:37:04	zozozo>	@ggole : well, commuting switches would be quite complicated indeed (and isn't done currently in flambda2)
+2021-06-04 14:38:59	d_bot>	<ggole> That's one benefit of a more lambda-calculus like IL, it's quite easy to do context-directed optimisations (of which commuting is probably the most significant)
+2021-06-04 14:39:37	zozozo>	yeah, but then again, I don't think commuting is really something that we want to do in flambda2
+2021-06-04 14:39:39	d_bot>	<ggole> But there are downsides with scope
+2021-06-04 14:39:55	d_bot>	<colin> will flambda2 carry through to faithful CPS compilation or what
+2021-06-04 14:40:21	zozozo>	@colin : I'm not sure what you mean ?
+2021-06-04 14:41:00	d_bot>	<ggole> SML/NJ style CPS all the way? Seems unlikely.
+2021-06-04 14:41:03	d_bot>	<colin> I've seen compilers that use CPS as an IR yet blast to something slightly different to compile to something that still uses a runtime stack
+2021-06-04 14:41:22	d_bot>	<colin> Yeah, I don't think SML/NJ or MLton can be described as using CPS to much of an extent nowadays tbh
+2021-06-04 14:41:57	d_bot>	<ggole> I thought SML/NJ still used that for their `Cont` implementation
+2021-06-04 14:41:57	zozozo>	ah well, the flambda IR is in CPS, but there will be no change to the other IR of the compiler, so that's that, ^^
+2021-06-04 14:43:13	d_bot>	<colin> is the Apply_cont constructor in this cps.ml file representing "contificated"/static continuations?
+2021-06-04 14:43:43	zozozo>	yeah, it represents static continuations bound previously by a Let_cont
+2021-06-04 14:43:59	d_bot>	<colin> interesting, I've only ever seen the IR presented in Appel's CwC book
+2021-06-04 14:44:30	d_bot>	<ggole> There's a nice paper on an CPS IR a bit like this that you might be interested in
+2021-06-04 14:44:36	d_bot>	<colin> is it by Kennedy
+2021-06-04 14:44:42	d_bot>	<ggole> Yeah
+2021-06-04 14:44:56	d_bot>	<colin> yeah, I've seen that as well actually, it's the one most people seem to go with I think
+2021-06-04 14:45:17	d_bot>	<ggole> Makes a lot of sense if you aren't supporting call/cc
+2021-06-04 14:45:18	companion_cube>	zozozo: what comes after flambda? something with a control flow graph already?
+2021-06-04 14:45:36	zozozo>	companion_cube: after flambda, it's cmm
+2021-06-04 14:46:07	d_bot>	<colin> been a while since I've toyed with CPSing compilers because very few go the full mile with the whole "no runtime stack" - they go the chicken route and use it as a GC nursery because they can't get their C compiler to do the strict (tail) call -> jumps that CPS requires and LLVM certainly can't handle CPS so you're just stuck writing your own back-end each time
+2021-06-04 14:46:17	zozozo>	(fun factoid: cmm quite literraly means C minus minus, :p )
+2021-06-04 14:46:56	d_bot>	<ggole> If the continuations are second class as in this example, then you can probably linearise to SSA fairly successfully
+2021-06-04 14:47:25	companion_cube>	hmm so cmm still has function calls and expressions, but no types, right?
+2021-06-04 14:47:33	d_bot>	<colin> I just think going from ANF -> LLVM (SSA) is simpler
+2021-06-04 14:47:41	d_bot>	<ggole> Although there's the usual complications of closure conversion and whatnot because LLVM is first order
+2021-06-04 14:48:10	d_bot>	<colin> Oleg seems to have some strong views on actually doing faithful compilation of CPS as well, along the lines of "whole-program continuations are never useful" and uh "the garbage collector doesn't like this" etc. paraphrasing (perhaps inaccurately) here
+2021-06-04 14:48:21	zozozo>	companion_cube: cmm has very minimal types (basically it says whether a value can/should be scanned)
+2021-06-04 14:48:39	d_bot>	<ggole> Well, CPS as a compiler IL is a different storly to exposing continuations reified as functions
+2021-06-04 14:48:42	companion_cube>	yeah, that's not typing ;)
+2021-06-04 14:49:20	companion_cube>	but there you eliminate continuations again, right? towards some sort of static jump, like local exceptions?
+2021-06-04 14:49:27	zozozo>	yup
+2021-06-04 14:49:38	zozozo>	cmm has static jumps and flambda continuations maps perfectly to that
+2021-06-04 14:49:50	zozozo>	(ofc continuations that are used exactly once can be inlined)
+2021-06-04 14:50:23	companion_cube>	right
+2021-06-04 14:50:32	d_bot>	<ggole> Either a return or a jump
+2021-06-04 14:50:36	d_bot>	<colin> this discussion is urging me to actually go and read Shivers' k-CFA stuff since I've always just avoided any real detail/proposed benefit of program transformations in CPS
+2021-06-04 14:50:39	companion_cube>	you can still use static jumps for patmathc and stuff
+2021-06-04 14:50:54	d_bot>	<ggole> Or maybe an exception handler if double-barrelled CPS
+2021-06-04 14:51:18	zozozo>	flambda actually has double-barrelled CPS
+2021-06-04 14:51:22	zozozo>	(flambda2)
+2021-06-04 14:51:47	d_bot>	<ggole> That makes sense, rather than duplicating all of the control constructs
+2021-06-04 14:51:51	d_bot>	<ggole> And optims on them
+2021-06-04 14:52:40	d_bot>	<colin> what's double-barrelled, just doing the CPS twice?
+2021-06-04 14:52:58	companion_cube>	wait
+2021-06-04 14:53:03	companion_cube>	does the second handler also work for effects?
+2021-06-04 14:53:10	companion_cube>	or wolud there be a third handler?
+2021-06-04 14:53:11	d_bot>	<ggole> Along with the usual return continuation you pass another continuation which is the error/exn path
+2021-06-04 14:53:42	d_bot>	<colin> ah
+2021-06-04 14:54:19	zozozo>	companion_cube: effects as in algebraic effects (cf multicore) ?
+2021-06-04 14:54:29	companion_cube>	yes
+2021-06-04 14:54:34	companion_cube>	runtime effects anyway
+2021-06-04 14:54:38	companion_cube>	the one shot continuations :)
+2021-06-04 14:54:43	zozozo>	that's a very good question
+2021-06-04 14:55:21	companion_cube>	I think exceptions will just be another effect, except in the type system, so you can probably only have 2
+2021-06-04 14:55:22	d_bot>	<colin> who funds OCamlPro? INRIA? Jane Street? or is it its own company
+2021-06-04 14:57:27	d_bot>	<Christophe> I have a question about the change log of 4.13. The change "type check x |> f and f @@ x as (f x) ` is marked as breaking change. What are the consequences of that change actually? (sorry for interrupting a very interesting conversation)
+2021-06-04 14:59:15	companion_cube>	it might change a few things in a subtle way
+2021-06-04 14:59:22	companion_cube>	like `f x` can be `f ?a ?b x`
+2021-06-04 14:59:26	companion_cube>	if f has optional arguments
+2021-06-04 14:59:43	zozozo>	@colin : OCamlPro is its own company, and janestreet is one client of ocamlpro
+2021-06-04 15:00:51	d_bot>	<colin> Ah, I see, I was looking at compiler jobs at Jane Street (wishful thinking) but now they don't seem like they'd be as interesting as this flambda2 stuff (unless there's some ties between both companies)
+2021-06-04 15:01:19	d_bot>	<Christophe> Ah yes, I didn't think of optional arguments, thanks!
+2021-06-04 15:01:37	companion_cube>	aren't they funding flambda2? :D
+2021-06-04 15:01:37	zozozo>	@colin : well, the work on flambda2 is funded by JaneStreet, ^^
+2021-06-04 15:41:47	d_bot>	<EduardoRFS> type check of `x |> f` as `f x` is something I was not expecting but I really appreciate
+2021-06-04 15:42:00	d_bot>	<EduardoRFS> now we need to type check `let x = y` in the opposite order
+2021-06-04 15:43:25	d_bot>	<EduardoRFS> can we implement this kind of subtyping or would it be unsound?
+2021-06-04 15:43:26	d_bot>	<EduardoRFS> ```ocaml
+2021-06-04 15:43:27	d_bot>	<EduardoRFS> module X : sig
+2021-06-04 15:43:28	d_bot>	<EduardoRFS>   type 'a t = private 'a
+2021-06-04 15:43:30	d_bot>	<EduardoRFS> end = struct
+2021-06-04 15:43:31	d_bot>	<EduardoRFS>   type 'a t = 'a
+2021-06-04 15:43:32	d_bot>	<EduardoRFS> end
+2021-06-04 15:43:34	d_bot>	<EduardoRFS> let add (a : int X.t) (b : int) = a + b
+2021-06-04 15:43:35	d_bot>	<EduardoRFS> ```
+2021-06-04 16:03:27	d_bot>	<octachron> This is already implemented, with an explicit coercion as usual: `let add a b = (a:int X.t:>int) + b`
+2021-06-04 19:56:48	hackinghorn>	hi
+2021-06-04 19:57:03	hackinghorn>	how do I run commands like ls for linux in ocaml?
+2021-06-04 19:59:38	dh`>	there's a binding for system() somewhere
+2021-06-04 19:59:40	hackinghorn>	oh, fileutils work
+2021-06-04 19:59:56	hackinghorn>	got it, thanks
+2021-06-04 23:15:51	d_bot>	<EduardoRFS> Why not implicit?
+2021-06-04 23:20:48	companion_cube>	There are no implicit coercions in ocaml 
+2021-06-04 23:51:53	d_bot>	<dj charlie> 👀 nice to see the stdlib increasingly fleshed out feels good
+2021-06-05 00:39:14	companion_cube>	like what?
+2021-06-05 00:57:05	d_bot>	<dj charlie> like fold_left and fold_right with the strings
+2021-06-05 00:57:12	d_bot>	<dj charlie> the math functions for floats
+2021-06-05 01:05:15	companion_cube>	Lolol ok
+2021-06-05 01:05:33	companion_cube>	Fold on string, heh? 
+2021-06-05 01:05:43	companion_cube>	Forgot that that wasn't there
+2021-06-05 01:06:10	d_bot>	<dj charlie> hey guy who wrote his own stdlib
+2021-06-05 01:06:13	d_bot>	<dj charlie> it's pretty cool to me ok?
+2021-06-05 07:50:23	companion_cube>	:D it is, it is
+2021-06-05 09:57:02	tane>	howdy! found the way
+2021-06-05 11:46:29	d_bot>	<giga_08> anyone familiar with ocaml verification? termination in particular
+2021-06-05 12:03:08	d_bot>	<darrenldl> small code or large projects?
+2021-06-05 12:41:30	d_bot>	<giga_08> small code
+2021-06-05 13:02:29	companion_cube>	@giga_08 you could give a look at try.imandra.ai (it's proprietary but termination checking is def. sth interesting)
+2021-06-05 18:18:14	d_bot>	<TheSkeward> learning ocaml and I occasionally giggle to myself because "O Caml! My Camel!" will pop into my head like a line from some sort of desert-themed walt whitman poem
+2021-06-05 18:19:38	companion_cube>	`my $camel` sounds more like perl, tbh
+2021-06-05 18:21:20	d_bot>	<TheSkeward> perls before swine
+2021-06-05 23:22:45	kluk>	how do I start using DynArray? I tried include DynArray, include Extlib, nothing works
+2021-06-05 23:23:07	companion_cube>	you need to have it in your dune file, if you use dune
+2021-06-05 23:23:10	companion_cube>	and to install it in the first place
+2021-06-05 23:24:09	kluk>	I don't know what dune is yet, I'm still a beginner at OCaml. how do I install DynArray? with opam right?
+2021-06-05 23:24:51	companion_cube>	hmmm if you're  that beginner, maybe take a look at a book 
+2021-06-05 23:24:55	companion_cube>	there's a lot to explain :/
+2021-06-05 23:26:43	kluk>	I just wanted to play around on the ocaml repl with some arrays... not looking for making a project, folders, dune stuff, any of that, if possible to avoid at this point. Is it possible to just play with the OCaml language to learn it and not worry about how it mixes up with unix?
+2021-06-05 23:27:56	companion_cube>	ah well, sure, just type `ocaml`
+2021-06-05 23:28:07	companion_cube>	but Dynarray is a 3rd party library for vectors/resizable arrays
+2021-06-05 23:28:16	companion_cube>	it's not exactly a central type in OCaml :
+2021-06-05 23:28:17	companion_cube>	:p
+2021-06-05 23:29:14	kluk>	yes I can get to the repl, but I wanted to play with arrays first without worrying about packages, does that make sense? I wanted to explore OCaml the language first, like a try.ocaml.org sort of thing if that makes sense... I wanted to have some fun with the language and learn it and not have to think about packages and managing projects for a little
+2021-06-05 23:30:40	kluk>	I need a stack whose elements can be randomly accessed by an integer so I just happen to have an exact use case for arrays, but I am open to suggestions
+2021-06-05 23:34:07	companion_cube>	arrays are in the stdlib
+2021-06-05 23:34:17	companion_cube>	not dynamic arrays
+2021-06-05 23:34:31	companion_cube>	but yeah, a stack with indexing is a good use case
+2021-06-05 23:34:55	kluk>	companion_cube :)
+2021-06-06 00:03:27	d_bot>	<Bluddy> IMO vectors should replace arrays as a primary data type in the language
+2021-06-06 00:04:29	companion_cube>	why "replace"?
+2021-06-06 00:04:42	companion_cube>	I think it'd be nice to be able to build them safely
+2021-06-06 00:04:47	d_bot>	<Bluddy> as the *primary* data type
+2021-06-06 00:04:51	companion_cube>	but otherwise, they have some overhead
+2021-06-06 00:05:03	companion_cube>	arrays are simpler as they're always fully initialized
+2021-06-06 00:05:11	d_bot>	<Bluddy> yeah the overhead is very minor though
+2021-06-06 00:05:34	d_bot>	<Bluddy> very few languages have arrays as their primary data structure
+2021-06-06 00:05:48	d_bot>	<Bluddy> python's lists are vectors
+2021-06-06 00:05:49	companion_cube>	I mean… java?
+2021-06-06 00:06:12	companion_cube>	I think the problem is the GC, because in a vector you need some unitialized space
+2021-06-06 00:06:15	companion_cube>	even in rust it's quite dirty
+2021-06-06 00:06:46	d_bot>	<Bluddy> hmm
+2021-06-06 00:07:10	companion_cube>	it's hard to do well without a bit of Obj currently :/
+2021-06-06 00:08:53	d_bot>	<Bluddy> ok so I guess python/ruby's bias may be due to their reference counting
+2021-06-06 00:09:11	companion_cube>	also they're insanely high level and slow :p
+2021-06-06 00:09:39	d_bot>	<Bluddy> yeah but that's beside the point. java has array, c# has array vs List (really a vector)
+2021-06-06 00:09:54	companion_cube>	java has ArrayList, but only for boxed types
+2021-06-06 00:09:59	companion_cube>	the primitive on the JVM is arrays, same as OCaml
+2021-06-06 00:10:07	companion_cube>	(except with unsound variance)
+2021-06-06 00:10:12	d_bot>	<Bluddy> right
+2021-06-06 00:10:30	d_bot>	<Bluddy> ok so yeah I think I'm just using python too much recently
+2021-06-06 00:11:00	d_bot>	<Bluddy> javascript also has array as its primary type
+2021-06-06 00:11:07	companion_cube>	remember that in OCaml, an array is *one* word of overhead
+2021-06-06 00:11:12	d_bot>	<Bluddy> so are python and ruby really the exceptions?
+2021-06-06 00:11:26	companion_cube>	as far as primitive types go? I'm not sure
+2021-06-06 00:13:25	d_bot>	<EduardoRFS> JS arrays are dynamic arrays / vectors
+2021-06-06 00:13:34	d_bot>	<EduardoRFS> and the implementation of it is really all over the place
+2021-06-06 00:13:51	d_bot>	<Bluddy> perl has dynamic arrays. also reference counted
+2021-06-06 00:14:18	companion_cube>	_scripting languages_ were primitives are all in C
+2021-06-06 00:15:51	d_bot>	<Bluddy> interesting. and it's gc'd.
+2021-06-06 00:16:30	d_bot>	<Bluddy> @companion_cube GC is only an issue if you don't have a bit to tell the GC not to scan the uninitialized memory. If OCaml had it, it wouldn't be an issue.
+2021-06-06 00:16:58	companion_cube>	sure, if you entirely rewrite the GC so it's not just based on the initial tag… :p
+2021-06-06 00:17:13	d_bot>	<EduardoRFS> but JS objects nowadays operates like OCaml blocks, adding and removing field is generally a bad idea because of the types, while it is possible that can trigger a whole lot of compiled and optimized code to be invalidated
+2021-06-06 00:17:15	d_bot>	<Bluddy> hmm.. no I guess you need to build it into the GC process itself so it knows how to process the vector
+2021-06-06 00:17:24	d_bot>	<Bluddy> so it looks at length vs capacity
+2021-06-06 00:17:26	d_bot>	<EduardoRFS> well we can extend the object header
+2021-06-06 00:17:26	companion_cube>	(well for a vector you'd need to fit 2 sizes in one, basically: capacity, and actual size)
+2021-06-06 00:17:35	d_bot>	<EduardoRFS> I'm looking on it during the shower
+2021-06-06 00:17:52	d_bot>	<Bluddy> yeah a bit is not enough, you need to teach the GC about a new kind of object
+2021-06-06 00:18:00	companion_cube>	also remember that vectors are 2 levels of indirection, not one
+2021-06-06 00:18:06	companion_cube>	one to the {len,capacity,ptr}
+2021-06-06 00:18:12	companion_cube>	+ the pointer itself
+2021-06-06 00:18:31	companion_cube>	but you've got to have this level of indirection so you can change the underlying array/pointer
+2021-06-06 00:19:02	d_bot>	<Bluddy> that's true
+2021-06-06 00:19:36	companion_cube>	so that's non trivial overhead compared to a basic array, when all you need is an array
+2021-06-06 00:19:53	d_bot>	<EduardoRFS> but that access can be mostly reduced if you know the cell size at compile time
+2021-06-06 00:19:56	d_bot>	<Bluddy> the problem is that you very rarely need an array
+2021-06-06 00:20:38	d_bot>	<Bluddy> if your primary type is a list, all an array gives you is mutability + O(1) access to any element. it's good, but the lack of ability to extend it is annoying
+2021-06-06 00:20:46	d_bot>	<Bluddy> if you're doing mutable stuff, you almost always want to extend it
+2021-06-06 00:20:56	companion_cube>	idk, it's nice in ASTs for example
+2021-06-06 00:21:03	companion_cube>	I agree that often a vector is also useful
+2021-06-06 00:22:19	d_bot>	<EduardoRFS> I wonder if having an unrolled linked list with some tricks wouldn't be enough for almost all cases
+2021-06-06 00:22:53	companion_cube>	for mutable stuff we just should have a good vector
+2021-06-06 00:22:59	d_bot>	<EduardoRFS> like couple cells all cache aligned + pointers to additional cells if they were created all together so that you can do O(1) after a List.map
+2021-06-06 00:23:03	companion_cube>	for immutable stuff, we _could_ use HAMT… but well
+2021-06-06 00:25:01	d_bot>	<EduardoRFS> copy on write is the solution to all problems
+2021-06-06 00:25:11	companion_cube>	noooo :D
+2021-06-06 00:27:33	d_bot>	<EduardoRFS> computers are fun, nowadays you have an ALU and caching inside of the MMU
+2021-06-06 00:28:05	d_bot>	<EduardoRFS> lisp machine to rule them all
+2021-06-06 00:51:48	d_bot>	<Bluddy> companion_cube: what do you do to prevent the GC from scanning the uninitialized vector area?
+2021-06-06 00:53:27	d_bot>	<EduardoRFS> If it is set to 0x0 the GC should just behave normally, it's a block of tag 0, size 0
+2021-06-06 00:57:50	companion_cube>	@Bluddy in containers, indeed, I fill the vector with 0
+2021-06-06 00:58:03	companion_cube>	or 0.0 if it's a float array 🙄
+2021-06-06 01:34:37	d_bot>	<Bluddy> ugh yeah that's bad
+2021-06-06 01:34:57	companion_cube>	not like we have a better option, imhp
+2021-06-06 01:34:59	companion_cube>	imho
+2021-06-06 01:37:39	d_bot>	<Bluddy> I wonder what other languages do
+2021-06-06 01:37:44	d_bot>	<Bluddy> ones with GC
+2021-06-06 01:40:49	companion_cube>	well, java fills with null I imagine
+2021-06-06 01:40:54	companion_cube>	boxed primitives and all that
+2021-06-06 01:41:03	companion_cube>	D… probably does ugly stuff?
+2021-06-06 01:41:10	companion_cube>	Go has 0 values for all types, so that's easy
+2021-06-06 01:41:31	companion_cube>	and the scripting stuff has nil/None/whatever to fill the blanks
+2021-06-06 01:42:17	d_bot>	<Bluddy> at the Obj level it would be nice if you could have a contiguous array where the size is the length, and right after that you'd place a string header with the remaining size
+2021-06-06 01:42:38	companion_cube>	you'd have to move the header every time you push/pop? :/
+2021-06-06 01:42:48	d_bot>	<Bluddy> not a huge deal. same cache line
+2021-06-06 01:43:07	companion_cube>	ideally push should be as simple and inlineable as possible :p
+2021-06-06 01:43:53	d_bot>	<Bluddy> still pretty simple. copy header over, reduce string size
+2021-06-06 01:44:34	companion_cube>	+ code path for possible resize… that's a lot more than just a normal push
+2021-06-06 01:44:37	d_bot>	<Bluddy> pop doesn't need to do anything because you can just zero data out at that point
+2021-06-06 01:45:12	d_bot>	<Bluddy> that code path is there regardless
+2021-06-06 01:45:38	d_bot>	<Bluddy> a multi-push function can be more efficient as it can do the header copy once
+2021-06-06 01:45:59	companion_cube>	pop still needs to copy the header back
+2021-06-06 01:46:58	d_bot>	<Bluddy> yeah I guess that's true. the only annoying thing about the header is the size counter
+2021-06-06 01:47:20	companion_cube>	I'd rather wish OCaml had a primitive for partially initialized arrays, and that's it
+2021-06-06 01:47:22	d_bot>	<Bluddy> but it should be doable with a couple of instructions
+2021-06-06 01:47:43	d_bot>	<Bluddy> well that's not going to happen anytime soon
+2021-06-06 01:48:23	d_bot>	<Bluddy> it can happen in the 64-bit runtime, but the 32-bit cannot handle it
+2021-06-06 01:48:38	d_bot>	<Bluddy> because you need that extra header space for the size
+2021-06-06 01:48:39	companion_cube>	not sure how that's related :p
+2021-06-06 01:49:03	companion_cube>	I just want an API for the array with a valid 0 inside
+2021-06-06 01:49:16	companion_cube>	that doesn't force me to Obj.magic to see if it's a float array or normal array
+2021-06-06 01:49:16	d_bot>	<Bluddy> valid 0?
+2021-06-06 01:49:26	companion_cube>	a valid object for this array
+2021-06-06 01:49:42	companion_cube>	a valid object for this array, _as seen by the GC_
+2021-06-06 01:51:38	d_bot>	<Bluddy> is this another wish? to deal more easily with float arrays? or is it related?
+2021-06-06 01:51:58	companion_cube>	it's related because it's the only reason I have to use Obj in containers :p
+2021-06-06 01:52:04	companion_cube>	(or one of the few, I can't remember)
+2021-06-06 01:52:20	companion_cube>	to be able to implement a vector
+2021-06-06 01:52:39	d_bot>	<Bluddy> but it doesn't deal with this particular issue
+2021-06-06 01:52:47	d_bot>	<Bluddy> I mean they're phasing out float arrays
+2021-06-06 01:52:57	companion_cube>	yeah that'll be nice
+2021-06-06 01:53:16	companion_cube>	without float arrays one could always fill the array with 0
+2021-06-06 01:53:29	companion_cube>	since the GC doesn't mind 0
+2021-06-06 01:53:55	d_bot>	<Bluddy> yeah I see that piece of code now
+2021-06-06 01:54:12	d_bot>	<Bluddy> let fill_with_junk_ (a:_ array) i len : unit =
+2021-06-06 01:54:15	companion_cube>	yep yep
+2021-06-06 01:54:27	d_bot>	<Bluddy> https://github.com/c-cube/ocaml-containers/blob/95e96fb5e12558fa5b1e907a8e315d8c859c23b8/src/core/CCVector.ml#L27
+2021-06-06 01:54:29	companion_cube>	always interested in better ideas
+2021-06-06 02:04:20	d_bot>	<ggole> For 64-bit machine zero (not OCaml zero) is fine for float arrays as well
+2021-06-06 02:05:07	d_bot>	<ggole> So you might be able to get away with coercing to `float array` and then filling with `0.0`
+2021-06-06 02:05:26	d_bot>	<ggole> However, the recent `FloatArray` stuff might kill that idea
+2021-06-06 02:08:30	d_bot>	<ggole> The no naked pointer changes might also be trouble
+2021-06-06 03:32:21	d_bot>	<aotmr> Hi everyone! I'm a 3rd-year CS student making personal explorations into programming languages with an emphasis on functional and concatenative languages, as well as metaprogramming and optimizing compilers.
+2021-06-06 03:33:32	d_bot>	<aotmr> I'm currently using OCaml to build a functional FORTH interpreter that I hope to shape into a general optimizing FORTH compiler
+2021-06-06 03:33:49	d_bot>	<aotmr> And right now I'm investigating to what extent I can express FORTH concepts in OCaml
+2021-06-06 03:42:01	d_bot>	<ggole> Hmm, they're pretty different
+2021-06-06 03:43:21	d_bot>	<ggole> OCaml code is very variable heavy, which seems to be at odds with the Forth philosophy of communicating between tiny bits with the stack
+2021-06-06 03:43:38	d_bot>	<aotmr> So, for example, inside my VM state is a list representing the current data stack.
+2021-06-06 03:43:38	d_bot>	<aotmr> ```ocaml
+2021-06-06 03:43:40	d_bot>	<aotmr> type state = {
+2021-06-06 03:43:41	d_bot>	<aotmr>     ds : Int.t list;
+2021-06-06 03:43:42	d_bot>	<aotmr>     (* ... *)
+2021-06-06 03:43:44	d_bot>	<aotmr> }
+2021-06-06 03:43:45	d_bot>	<aotmr> ```
+2021-06-06 03:43:46	d_bot>	<aotmr> Stack-based interpreters are excellent matches for programming languages with pattern matching facilities, as it turns out.
+2021-06-06 03:44:15	d_bot>	<aotmr> ```ocaml
+2021-06-06 03:44:16	d_bot>	<aotmr> type opcode =
+2021-06-06 03:44:17	d_bot>	<aotmr>     | Lit of Int.t
+2021-06-06 03:44:19	d_bot>	<aotmr>     | Add
+2021-06-06 03:44:20	d_bot>	<aotmr>     | Dot
+2021-06-06 03:44:21	d_bot>	<aotmr>     (* ... *)
+2021-06-06 03:44:23	d_bot>	<aotmr> ```
+2021-06-06 03:44:41	d_bot>	<aotmr> Let's define a small opcode set for our VM: push a literal to the stack, add the top two on the stack, and print the top on the stack (`Dot`)
+2021-06-06 03:46:01	d_bot>	<aotmr> Now, here's where OCaml's list matching becomes very elegant. Let's define a function, `execute`, that takes a state and an opcode and returns a new state that reflects having executed the opcode.
+2021-06-06 03:46:01	d_bot>	<aotmr> ```ocaml
+2021-06-06 03:46:03	d_bot>	<aotmr> let execute st = function
+2021-06-06 03:46:04	d_bot>	<aotmr> | Lit i -> { st with ds = i::st.ds }
+2021-06-06 03:46:05	d_bot>	<aotmr> | Add -> (* ... *)
+2021-06-06 03:46:07	d_bot>	<aotmr> | Dot -> (* ... *)
+2021-06-06 03:46:08	d_bot>	<aotmr> ```
+2021-06-06 03:46:32	d_bot>	<colin> awaiting the IRC users who'll ask you to read the channel description
+2021-06-06 03:46:43	d_bot>	<aotmr> Aw shit 🤦‍♂️
+2021-06-06 03:46:49	d_bot>	<colin> :p
+2021-06-06 03:46:52	zozozo>	@aotmr : code blocks from discord do not render great on the irc side of this channel, so it'd be best if you could use some paste website to link to code when there are more than a few lines, ^^
+2021-06-06 03:46:59	d_bot>	<aotmr> There it is
+2021-06-06 03:47:08	zozozo>	haha, XD
+2021-06-06 03:47:32	d_bot>	<aotmr> Well all that goes to say
+2021-06-06 03:47:32	d_bot>	<aotmr> You can express stack operations using pattern matching.
+2021-06-06 03:48:43	d_bot>	<colin> if you think that's cute, you'll like a similar idea in dependent typing where you can express stack changes (as a list) indexing the opcodes or something similar
+2021-06-06 03:48:44	d_bot>	<aotmr> For example, to swap the top two items on the stack, you'd use the record update syntax
+2021-06-06 03:48:45	d_bot>	<aotmr> `{ st with ds = match st.ds with a:🅱️:tl -> b:🅰️:tl | _ -> assert false }`
+2021-06-06 03:48:46	d_bot>	<aotmr> Last code block for the time being, I promise 😅
+2021-06-06 03:49:17	d_bot>	<aotmr> (And you can also use `let` matching, I've found, but I can't get ocaml to stop complaining even though I fully understand it'll crash if there aren't enough elements)
+2021-06-06 03:49:30	d_bot>	<aotmr> Oh, have a paper on that?
+2021-06-06 03:49:54	d_bot>	<aotmr> I'm wanting to see how high-level I can get with forth and still generate good code for small microprocessors--say, for NES and game boy dev
+2021-06-06 03:50:06	d_bot>	<colin> no, just thought it was very cute when I studied Agda at university, relevant construction of Hutton's razor can be found at https://github.com/fredrikNordvallForsberg/CS410-20/blob/master/Coursework/Two.agda#L492-L506 what you're saying just reminded me of it, not really relevant just in case you wanted to see cute things
+2021-06-06 03:50:15	zozozo>	@aotmr : small one-line blocks of code (like your last one) are mostly okay I'd say, ^^
+2021-06-06 03:50:48	d_bot>	<aotmr> Oh I'll look at it never the less, thanks.
+2021-06-06 03:50:49	d_bot>	<aotmr> Forth has its own concept of combinators and I want to try to compile those efficiently
+2021-06-06 03:52:04	d_bot>	<aotmr> Honestly I'd say OCaml is distantly related to FORTH just usagewise, there's a similar concept of "pipelining". Where in FORTH you'd write a series of words, passing state between them implicitly on the stack, you do the same in Ocaml when expressing a `|>` or `@@` pipeline
+2021-06-06 03:54:16	d_bot>	<aotmr> This is an interesting idea as, while FORTH is typically untyped, I could use this concept to track the entire lifetimes of values throughout a program
+2021-06-06 03:55:20	d_bot>	<colin> it's just a nice encoding of how the stack ought to change, helps the type system help you implement it correctly (though not a full specification by any means, just a cute stack requirement)
+2021-06-06 03:55:27	d_bot>	<ggole> There are some interesting typed concatenative langs
+2021-06-06 03:55:47	d_bot>	<ggole> Kitten and Cat
+2021-06-06 03:55:48	d_bot>	<aotmr> I've finally taken the forth-pill so to speak because I finally understand how to implement a compiler for the language
+2021-06-06 03:56:18	d_bot>	<colin> a whole new world.mp3 https://llvm.moe/
+2021-06-06 03:56:29	d_bot>	<colin> see past stack-based paradigm
+2021-06-06 03:56:58	d_bot>	<aotmr> Well, once I have a compiler for a stack-based VM that opens the door to using it as an intermediate representation
+2021-06-06 03:57:14	d_bot>	<colin> would there be any benefit
+2021-06-06 03:57:27	d_bot>	<colin> I, admittedly, have never seen the appeal of stack-based languages for general programming
+2021-06-06 03:57:32	d_bot>	<colin> I used to write postscript by hand recreationally
+2021-06-06 03:57:35	d_bot>	<colin> but that's about it
+2021-06-06 03:57:46	d_bot>	<aotmr> It's admittedly kind of recreational
+2021-06-06 03:58:10	d_bot>	<aotmr> I think the real strength is in the way you can build an entire system from the ground up by hand and know every moving part
+2021-06-06 03:59:32	d_bot>	<aotmr> You could write an optimizing compiler x86 in, oh, a month
+2021-06-06 04:00:51	d_bot>	<colin> sadly the majority of back-end optimisations for x86 are really just suffering
+2021-06-06 04:00:59	d_bot>	<aotmr> OCaml's own VM is stack-based so it's kind of circular
+2021-06-06 04:01:09	d_bot>	<colin> yeah but that's just the bytecode OCaml stuff
+2021-06-06 04:01:12	d_bot>	<aotmr> Oh yeah no x86 is a horrible architecture to program for
+2021-06-06 04:01:19	d_bot>	<aotmr> Sure but it's still a neat thought
+2021-06-06 04:01:25	d_bot>	<aotmr> But I digress
+2021-06-06 04:01:28	d_bot>	<colin> I used to be confused as to why Xavier Leroy's earlier work seemed to focus rather specifically on bytecode stack machines as the target of Camls
+2021-06-06 04:01:51	d_bot>	<colin> but then someone said like "it was research into creating a tactic computational kernel for some proof assistant"
+2021-06-06 04:02:01	d_bot>	<colin> not sure how true that is, perhaps someone here can clarify if that's nonsense
+2021-06-06 04:02:07	d_bot>	<colin> and Xavier just really likes stack machines
+2021-06-06 04:02:56	d_bot>	<aotmr> So, it could be that you can take advantage of immutable VM states in unit testing
+2021-06-06 04:03:13	d_bot>	<aotmr> And using it to accelerate the general process
+2021-06-06 04:04:16	d_bot>	<aotmr> If you wanted to do an exhaustive search of the program P with inputs a, b, c..., you could run P over every possible value of a, b, c
+2021-06-06 04:05:19	d_bot>	<aotmr> That is, we're trying to find a, b, c... that causes P to fail
+2021-06-06 04:06:00	d_bot>	<ggole> There's actually some tooling for that
+2021-06-06 04:06:02	d_bot>	<ggole> See Crowbar
+2021-06-06 04:06:08	d_bot>	<aotmr> One way to speed up that process is to memoize the VM state, I think
+2021-06-06 04:06:44	d_bot>	<ggole> It's not exhaustive search, but coverage-feedback guided random generation
+2021-06-06 04:06:47	d_bot>	<aotmr> If we find a "success" set of (a, b, c...), we could maybe remember all of the previous states of the VM and if we ever encounter them again we can stop early
+2021-06-06 04:07:14	d_bot>	<aotmr> But that would blow up your space requirements for little speedup, I'd think
+2021-06-06 04:07:17	d_bot>	<colin> can see why that'd help (as a form of concolic execution) but I think the accepted reality in industry is that Google fuzz their own software over billions of instances using AFL on dozens of Google cloud instances and just consider that alright
+2021-06-06 04:08:00	d_bot>	<aotmr> My other use case is of a rewindable debugger where you can undo all the way back to the start of the program
+2021-06-06 04:08:51	d_bot>	<colin> time travel debugging is pretty cool
+2021-06-06 04:09:07	d_bot>	<aotmr> That also brings to mind the idea of a rewindable game engine, I think rewind mechanics are pretty cool in theory
+2021-06-06 04:09:12	d_bot>	<colin> I always wanted a clean injection mechanism for debugging
+2021-06-06 04:09:27	d_bot>	<colin> hot reloading debugging stubs, that kinda thing
+2021-06-06 04:09:54	d_bot>	<aotmr> I'm still not entirely familiar with the mechanics of debuggers
+2021-06-06 04:10:07	d_bot>	<colin> syscalls and suffering™️
+2021-06-06 04:10:36	d_bot>	<aotmr> I'm under the impression that, if you can execute from RAM, you can at least single-step on pretty much any CPU
+2021-06-06 04:11:58	d_bot>	<colin> yeah there's architectural single step stuff provided by most systems; *nix has PTRACE_SINGLESTEP
+2021-06-06 04:12:02	d_bot>	<aotmr> If you want to single-step the instruction at a given address, then you'd write some kind of "breakpoint" opcode (or, crudely, even just an absolute jump) directly following it, but you'd have to know the length of the opcode beforehand
+2021-06-06 04:12:27	d_bot>	<aotmr> But I'd hope consumer CPUs can single-step in silicon by now 😅
+2021-06-06 04:12:28	d_bot>	<colin> variable length encoding is just one part of suffering in writing x86(_64) tooling, yes
+2021-06-06 04:12:42	d_bot>	<aotmr> Oh yeah I guess debugging has to be infinitely easier on a fixed-length RISC
+2021-06-06 04:13:14	d_bot>	<aotmr> Imagine if x86 had an instruction that only decoded the length of an instruction at a given address
+2021-06-06 04:13:18	d_bot>	<colin> I suppose there's other challenges, given the domain where RISC microprocessors are probably most prevalently being debugged
+2021-06-06 04:13:39	d_bot>	<colin> who knows, they might, Intel has a ton of hidden instructions and their manual doesn't even document some of them accurately
+2021-06-06 04:13:46	d_bot>	<aotmr> You're right, there probably is.
+2021-06-06 04:14:06	d_bot>	<ggole> There's tons of hardware support for debugging
+2021-06-06 04:14:09	d_bot>	<colin> it's common for trampoline hooking code to come with a "variable length decoder" as a form of minimal disassembler
+2021-06-06 04:14:13	d_bot>	<ggole> Watch registers and that kind of thing
+2021-06-06 04:14:26	d_bot>	<ggole> Pretty complicated from what I understand
+2021-06-06 04:14:27	d_bot>	<colin> to know how many bytes to replace w/ their placed `jmp` or `push ...; ret` etc.
+2021-06-06 04:16:26	d_bot>	<colin> but yeah, can't lie
+2021-06-06 04:16:34	d_bot>	<colin> confused how we went from stack langs to all this
+2021-06-06 04:16:58	d_bot>	<colin> what is your ambition, aotmr, to write a forth interpreter/compiler?
+2021-06-06 04:19:34	d_bot>	<aotmr> Just to do it, I guess. I think it's interesting to build a software stack nearly from the bottom up--or nearly so
+2021-06-06 04:19:53	d_bot>	<colin> what, in Forth?
+2021-06-06 04:20:04	d_bot>	<aotmr> I mean, build a Forth itself from the bottom up
+2021-06-06 04:20:14	d_bot>	<colin> oh alright
+2021-06-06 04:20:29	d_bot>	<aotmr> In theory it can even be possible to replace the Ocaml parts with Forth themselves
+2021-06-06 04:21:15	d_bot>	<aotmr> Though "bootstrapping"
+2021-06-06 04:21:47	d_bot>	<aotmr> First, I'd write a forth compiler in ocaml
+2021-06-06 04:22:07	d_bot>	<aotmr> Then, translate the compiler to forth
+2021-06-06 04:22:17	d_bot>	<aotmr> Compile the compiler-in-forth with the compiler-in-ocaml
+2021-06-06 04:22:30	d_bot>	<aotmr> And then I have a forth compiler, compiled and written in forth
+2021-06-06 04:22:36	d_bot>	<colin> can graduate to something hacky like JITing the FORTH then using C FFI to map the code and somehow return opaque caml values back to the user as callables within OCaml
+2021-06-06 04:22:55	d_bot>	<colin> galaxy brain interplay
+2021-06-06 04:23:14	d_bot>	<aotmr> That sounds terrifying
+2021-06-06 04:23:22	d_bot>	<colin> -ly based
+2021-06-06 04:23:28	d_bot>	<aotmr> You got it
+2021-06-06 04:23:44	d_bot>	<colin> don't actually know if you can do that
+2021-06-06 04:23:52	d_bot>	<colin> on the conceptual level, you certainly can with enough hacks
+2021-06-06 04:24:21	d_bot>	<aotmr> Probably the easiest way to "JIT" stack code is just to apply peephole optimization
+2021-06-06 04:24:34	d_bot>	<colin> can't lie, I hate stacks
+2021-06-06 04:24:56	d_bot>	<aotmr> The compiler writer writes manual superwords that implement a series of smaller words in a faster way
+2021-06-06 04:26:26	d_bot>	<aotmr> For example, replacing `>r + r>` with the much shorter machine code for the equivalent sequence that just adds the top element of the stack to the third
+2021-06-06 04:42:07	d_bot>	<BobbyT> I’m just marinating in all these high level ideas
+2021-06-06 05:58:42	ralu>	I am trying to build infer, but I keep getting error about failed dune build. So i can not build dune. Has anyone has any pointers?
+2021-06-06 09:38:22	d_bot>	<Bluddy> What if we make it so a proper null pointer inside an array means the end of GC scanning?
+2021-06-06 10:32:24	d_bot>	<Drup> @Bluddy that's not compatible with a bunch of much more interesting representations improvements (like democratizing the Zarith hack, for instance)
+2021-06-06 10:52:39	d_bot>	<Deadrat> Would lightweight higher kinded types be added to ocaml in the future?
+2021-06-06 10:58:32	d_bot>	<xvw> With modular immlicits I guess that lightweight higher kinded types will be less useful
+2021-06-06 11:08:02	d_bot>	<rbrott> There's a nice chapter on that idea in CPDT: <http://adam.chlipala.net/cpdt/html/Cpdt.StackMachine.html>
+2021-06-06 11:08:04	d_bot>	<Bluddy> @Drup could you explain the 'zarith hack'?
+2021-06-06 11:09:03	d_bot>	<Deadrat> But they are still years away as I understand?
+2021-06-06 11:09:35	d_bot>	<Drup> @Bluddy A value of type `Z.t` in zarith is either a normal ocaml integer (63bits usually, etc) or a GMP "big integers"
+2021-06-06 11:11:56	d_bot>	<Drup> This is achieved by considering the type morally as `int | Big of gmp`. OCaml integers already have a bit put aside for the GC to differentiate them from pointers, so we don't need an extra tag to differentiate between small integers and pointers to a big integer.
+2021-06-06 11:12:15	d_bot>	<Drup> This is only possible by going through the C FFI
+2021-06-06 11:12:29	d_bot>	<ggole> Machine zero isn't an `int` or a block though
+2021-06-06 11:15:09	d_bot>	<Drup> @ggole I can never remember if the tag for integers is 0 or 1.
+2021-06-06 11:17:58	d_bot>	<ggole> It's 1
+2021-06-06 11:18:24	d_bot>	<ggole> But even if it were zero, you could set aside a non-valid pointer value to indicate a truncation spot
+2021-06-06 11:20:59	d_bot>	<Drup> right, I'm not sure how much I like it, but it could work
+2021-06-06 11:26:30	d_bot>	<ggole> I guess there would have to be an `Array.unsafe_set_terminator` or something, which would be a bit nasty
+2021-06-06 11:26:41	d_bot>	<ggole> And I dunno what the interaction with bounds checking would be
+2021-06-06 11:27:07	d_bot>	<ggole> I suspect they would be more trouble than the terminator value itself though
+2021-06-06 11:49:23	d_bot>	<Bluddy> I need to try it out and see the performance difference.
+2021-06-06 11:51:38	d_bot>	<Bluddy> it's not automatically clear that setting all the memory is a bad idea
+2021-06-06 13:00:48	companion_cube>	I'd just like to point out that no one else uses a terminator for vectors, afaik
+2021-06-06 13:00:55	companion_cube>	it seems like a pretty bad idea :p
+2021-06-06 13:05:10	d_bot>	<ggole> Most of the other langs with vectors can handle uninitialised memory or keep the bits there without leaks
+2021-06-06 13:06:34	companion_cube>	and again, it's not that common
+2021-06-06 13:06:57	companion_cube>	languages that compile to native and have a GC and don't rely on C to implement a ton of datastructures are not plenty
+2021-06-06 13:47:15	d_bot>	<aotmr> I'm still not entirely used to building data structures in any language *but* C, to be honest--it feels strange
+2021-06-06 13:47:52	d_bot>	<aotmr> I probably just don't have practice because C is the only language that I use that doesn't have a dynamic array, really
+2021-06-06 13:48:49	companion_cube>	well OCaml is excellent for implementing a lot of data structures
+2021-06-06 13:49:01	companion_cube>	vectors just happen to be a bit on the low-level, unsafe memory thingie side
+2021-06-06 13:51:37	d_bot>	<aotmr> What's a good way to map from a discriminated union to successive integers?
+2021-06-06 13:51:43	d_bot>	<aotmr> And the other way around?
+2021-06-06 13:53:53	companion_cube>	ppx_deriving.enum maybe?
+2021-06-06 13:54:02	companion_cube>	if it's an enum, without payload on the variants, that is.
+2021-06-06 13:57:14	d_bot>	<aotmr> Hmm
+2021-06-06 13:57:14	d_bot>	<aotmr> Here's a simpler question: how do I get the "tag" of a sum type?
+2021-06-06 13:57:41	companion_cube>	you don't :)
+2021-06-06 13:57:45	d_bot>	<aotmr> I figure I can quickly map integers to most of the opcodes and then manually handle opcodes with a payload
+2021-06-06 13:57:47	companion_cube>	it's not really specified in the language.
+2021-06-06 13:57:48	d_bot>	<aotmr> Oh...
+2021-06-06 13:57:52	d_bot>	<octachron> The simpler and most forward-compatible way is to write the function.
+2021-06-06 13:58:11	d_bot>	<aotmr> True, but then I'd have to write two functions and keep them in sync manually, or generate the code.
+2021-06-06 13:58:35	d_bot>	<aotmr> *sigh* Okay then
+2021-06-06 13:58:37	companion_cube>	the function from integers to variants seems impossible to write
+2021-06-06 13:58:45	companion_cube>	if they have payloads that is
+2021-06-06 13:58:56	d_bot>	<aotmr> I'd be converting from a packed representation
+2021-06-06 14:01:41	companion_cube>	your best chance is codegen indeed
+2021-06-06 14:01:53	companion_cube>	variant to int: generate a pattern matching function
+2021-06-06 14:02:10	companion_cube>	int+payload to variant: well, match on the int I guess
+2021-06-06 14:04:58	d_bot>	<aotmr> Actually wait, I'm wrong
+2021-06-06 14:04:58	d_bot>	<aotmr> I shouldn't have written the VM with a discriminated union like this anyways
+2021-06-06 14:05:13	d_bot>	<aotmr> But, I guess I might as well keep a separate encoded and decoded form
+2021-06-06 14:10:07	companion_cube>	a VM seems like a good use case for C or C++ or rust, ironically
+2021-06-06 14:23:33	d_bot>	<aotmr> Oh it's definitely more appropriate, but I'm actually making some headway
+2021-06-06 14:24:11	d_bot>	<aotmr> I haven't played with ocaml in quite some time (OS issues--it didn't work well on Windows for me until quite recently)
+2021-06-06 14:24:23	companion_cube>	glad to hear it works better now
+2021-06-06 14:24:45	d_bot>	<aotmr> I mean, it works better now because it's running in WSL 😆
+2021-06-06 14:25:44	d_bot>	<aotmr> So I'm happy that I remember how to build list to list mappings that produce and consume varying numbers of elements
+2021-06-06 15:08:24	d_bot>	<aotmr> Cool, so I've figured out how to build an encoder and decoder for a variable-length instruction stream
+2021-06-06 18:00:25	kluk>	I get "Error: Unbound module Batteries" after doing open Batteries;; on the ocaml repl after having done opam install batteries. what am I missing?
+2021-06-06 18:04:03	companion_cube>	#require "batteries";;
+2021-06-06 18:04:12	companion_cube>	(and possibly, before that, #use "topfind";;)
+2021-06-06 18:07:13	kluk>	Ahhh.. it wasn't clear to me that #use was needed to bring #require but now that I ran it I can see in its blurb that it does do that. Thank you very much.
+2021-06-06 18:07:49	companion_cube>	also note that if you use `utop` it does the topfind thing directly
+2021-06-06 18:08:03	companion_cube>	you can also put the blurb in ~/.ocamlinit
+2021-06-06 18:11:31	kluk>	companion_cube thank you for the .ocamlinit tip
+2021-06-06 18:27:10	kluk>	companion_cube so now I can use DynArray from Batteries just fine :) thanks so much for the help once again.
+2021-06-06 18:35:30	companion_cube>	heh
