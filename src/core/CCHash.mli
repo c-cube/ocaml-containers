@@ -50,6 +50,19 @@ val pair : 'a t -> 'b t -> ('a * 'b) t
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
 
+val map : ('a -> 'b) -> 'b t -> 'a t
+(** [map f h] is the hasher that takes [x],
+    and uses [h] to hash [f x].
+
+    For example:
+    {[
+      module Str_set = Set.Make(String)
+
+      let hash_str_set : Str_set.t CCHash.t = CCHash.(map Str_set.to_seq @@ seq string)
+    ]}
+
+    @since NEXT_RELEASE *)
+
 val if_ : bool -> 'a t -> 'a t -> 'a t
 (** Decide which hash function to use depending on the boolean. *)
 

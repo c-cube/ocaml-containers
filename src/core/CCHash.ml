@@ -124,6 +124,7 @@ let array f l = Array.fold_left (combine f) 0x42 l
 let pair f g (x,y) = combine2 (f x) (g y)
 let triple f g h (x,y,z) = combine2 (combine2 (f x) (g y)) (h z)
 let quad f g h i (x,y,z,w) = combine2 (combine2 (f x) (g y)) (combine2 (h z) (i w))
+let map f h x = h (f x)
 
 let if_ b then_ else_ h =
   if b then then_ h else else_ h
