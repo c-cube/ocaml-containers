@@ -820,7 +820,7 @@ let filter_map_in_place f v =
   filter_in_place (fun s -> String.length s <= 1) v;
   assert_equal 1 (length v);
   assert_equal "a" (get v 0);
-  Gc.major();
+  Gc.full_major();
   assert_equal None (Weak.get w 0);
 *)
 
