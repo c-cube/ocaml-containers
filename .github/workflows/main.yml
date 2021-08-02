@@ -19,8 +19,8 @@ jobs:
             - ubuntu-latest
             - windows-latest
         ocaml:
-            - '4.08.1'
             - '4.03.0'
+            - '4.08.1'
             - '4.12.0'
 
     runs-on: ${{ matrix.os }}
@@ -32,23 +32,10 @@ jobs:
           if_true: "D:\\cygwin\\home\\runneradmin\\.opam"
           if_false: "~/.opam"
 
-      - name: Checkout code
-        uses: actions/checkout@main
-
-      - name: Cache opam
-        id: cache-opam
-        uses: actions/cache@v2
+      - uses: actions/checkout@v2
+      - uses: ocaml/setup-ocaml@v2
         with:
-          path: ${{ steps.path.outputs.value }}
-          key: opam-${{ matrix.os }}-${{ matrix.ocaml }}
-
-      - name: Use OCaml ${{ matrix.ocaml }}
-        uses: avsm/setup-ocaml@v1
-        with:
-          ocaml-version: ${{ matrix.ocaml }}
-
-      - run: opam update -u
-        if: steps.cache-opam.outputs.cache-hit == 'true'
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
       - run: opam pin -n .
 
@@ -70,7 +57,3 @@ jobs:
       - run: opam exec -- dune runtest -j 1 -p containers # test only core on non-ubuntu platform
         if: ${{ matrix.os != 'ubuntu-latest' }}
 
-      - name: Remove troublesome files for caching on windows
-        if: matrix.os == 'windows-latest'
-        run: |
-            if (Test-Path D:\\cygwin\\home\\runneradmin\\.opam\\ocaml-variants.${{ matrix.ocaml }}+mingw64c\\.opam-switch\\sources\\ocamlbuild.0.14.0\\examples\\){Remove-Item –path D:\\cygwin\\home\\runneradmin\\.opam\\ocaml-variants.${{ matrix.ocaml }}+mingw64c\\.opam-switch\\sources\\ocamlbuild.0.14.0\\examples\\ –recurse}
