@@ -170,12 +170,12 @@ val some : 'a printer -> 'a option printer
 val const_string : string -> 'a printer
 (** [const_string s] is a printer that ignores its input and
     always prints [s].
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val opaque : 'a printer
 (** [opaque] is [const_string "opaque"].
     The exact string used is not stable.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val lazy_force : 'a printer -> 'a lazy_t printer
 (** [lazy_force pp out x] forces [x] and prints the result with [pp].
@@ -275,7 +275,7 @@ val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 
 
 
 (** ANSI escape codes. This contains lower level functions for them.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 module ANSI_codes : sig
   type color =
     [ `Black

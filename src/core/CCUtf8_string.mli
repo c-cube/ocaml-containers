@@ -79,7 +79,7 @@ val flat_map : (uchar -> t) -> t -> t
 
 val empty : t
 (** Empty string.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val append : t -> t -> t
 (** Append two string together. *)
@@ -90,11 +90,11 @@ val concat : t -> t list -> t
 
 val of_uchar : uchar -> t
 (** [of_char c] is a string with only one unicode char in it.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val make : int -> uchar -> t
 (** [make n c] makes a new string with [n] copies of [c] in it.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val of_seq : uchar Seq.t -> t
 (** Build a string from unicode codepoints

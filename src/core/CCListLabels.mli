@@ -503,7 +503,7 @@ val all_ok : ('a, 'err) result t -> ('a t, 'err) result
 val sorted_mem : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a -> 'a list -> bool
 (** [sorted_mem ~cmp x l] and [mem x l] give the same result for any sorted list [l],
     but potentially more efficiently.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val sorted_merge : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list -> 'a list
 (** [sorted_merge ~cmp l1 l2] merges elements from both sorted list using
@@ -517,7 +517,7 @@ val sorted_diff : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list ->
     It is the left inverse of [sorted_merge]; that is,
     [sorted_diff ~cmp (sorted_merge ~cmp l1 l2) l2]
     is always equal to [l1] for sorted lists [l1] and [l2].
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
     
 val sort_uniq : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list
 (** [sort_uniq ~cmp l] sorts the list [l] using the given comparison function [cmp]
@@ -536,7 +536,7 @@ val sorted_diff_uniq : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a li
     for example, [sorted_diff_uniq ~cmp [1;1;1;2;2] [1;2;2;2]] would be [[1]].
     [sorted_diff_uniq ~cmp l1 l2] and [uniq_succ ~eq (sorted_diff ~cmp l1 l2)]
     always give the same result for sorted [l1] and [l2] and compatible [cmp] and [eq].
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val is_sorted : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> bool
 (** [is_sorted ~cmp l] returns [true] iff [l] is sorted (according to given order).
@@ -557,7 +557,7 @@ val sorted_remove : cmp:(('a -> 'a -> int) [@keep_label]) -> ?all:bool -> 'a -> 
     is equal to [l] for any sorted list [l].
     @param all if true then all occurrences of [x] will be removed. Otherwise, only the first
       [x] will be removed (if any). Default [false] (only the first will be removed).
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val uniq_succ : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a list -> 'a list
 (** [uniq_succ ~eq l] removes duplicate elements that occur one next to the other.

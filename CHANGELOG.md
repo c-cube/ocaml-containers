@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.5
+
+- add `CCHash.map` and `CCHash.bytes`
+- CCIO: add many `Seq.t` based functions
+- CCUtf8string: add `{make,empty,of_uchar}`
+- add `CCFormat.{const_string,opaque}`
+- add `CCOpt.{some,none}`
+- CCFormat: expose `ANSI_codes` module
+- CCBV: add `equal`, refactor for performance and readability
+- CCList: add `{sorted_diff_uniq,sorted_mem,sorted_diff,sorted_remove}`
+
+- fix(bv): index error in union
+- test: add some property tests on `Csexp/Canonical_sexp`
+- bv: add more tests, including regression for #370
+
 ## 3.4
 
 - Add `CCOpt.get_exn_or` and deprecate `CCOpt.get_exn`

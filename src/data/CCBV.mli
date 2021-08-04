@@ -138,7 +138,7 @@ val selecti : t -> 'a array -> ('a * int) list
 
 val equal : t -> t -> bool
 (** Bitwise comparison, including the size ([equal a b] implies [length a=length b]).
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 type 'a iter = ('a -> unit) -> unit
 

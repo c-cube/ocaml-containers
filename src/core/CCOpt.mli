@@ -36,11 +36,11 @@ val return : 'a -> 'a t
 
 val some : 'a -> 'a t
 (** Alias to {!return}.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val none : 'a t
 (** Alias to {!None}.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 (** [o >|= f] is the infix version of {!map}. *)

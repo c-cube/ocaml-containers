@@ -39,7 +39,7 @@ val slice : string -> int -> int t
 
 val bytes : bytes t
 (** Hash a byte array.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val string : string t
 
@@ -61,7 +61,7 @@ val map : ('a -> 'b) -> 'b t -> 'a t
       let hash_str_set : Str_set.t CCHash.t = CCHash.(map Str_set.to_seq @@ seq string)
     ]}
 
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val if_ : bool -> 'a t -> 'a t -> 'a t
 (** Decide which hash function to use depending on the boolean. *)
