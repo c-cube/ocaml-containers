@@ -3,7 +3,7 @@ version: "3.5"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 synopsis: "A set of advanced datatypes for containers"
-license: "BSD-2"
+license: "BSD-2-Clause"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "build" "@doc" "-p" name ] {with-doc}
