@@ -1,8 +1,0 @@
-
-;(alias
-; (name runtest)
-; (deps containers.md)
-; (action (progn
-;          (run mdx test %{deps})
-;          (diff? %{deps} %{deps}.corrected))))
-;
