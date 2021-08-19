@@ -3,6 +3,7 @@
 
 (** {1 IO Utils} *)
 
+type 'a iter = ('a -> unit) -> unit
 type 'a or_error = ('a, string) result
 type 'a gen = unit -> 'a option
 
@@ -32,6 +33,10 @@ let gen_of_array arr =
       incr r;
       Some x
     )
+
+let rec gen_iter f g = match g() with
+  | None -> ()
+  | Some x -> f x; gen_iter f g
 
 let gen_flat_map f next_elem =
   let state = ref `Init in
@@ -386,6 +391,7 @@ module File = struct
   *)
 
   let walk_seq d = seq_of_gen_ (walk d)
+  let walk_iter d = fun yield -> gen_iter yield (walk d)
 
   let walk_l d =
     let l = ref [] in

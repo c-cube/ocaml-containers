@@ -31,7 +31,7 @@
 
     - Note that the lifetime of an IO generator is tied to the underlying
       channel. In the example above, [chunks] must be used in the scope of [ic].
-      This will raise an error: 
+      This will raise an error:
 
     {[
       # CCIO.(
@@ -53,6 +53,7 @@
 *)
 
 type 'a or_error = ('a, string) result
+type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 (** See [Gen] in the {{: https://github.com/c-cube/gen} gen library}. *)
 
@@ -249,6 +250,10 @@ module File : sig
       Is a file anything that doesn't satisfy {!is_directory} (including
       symlinks, etc.)
       @raise Sys_error in case of error (e.g. permission denied) during iteration. *)
+
+  val walk_iter : t -> walk_item iter
+  (** Like {!walk} but with an imperative iterator.
+      @since NEXT_RELEASE *)
 
   val walk_l : t -> walk_item list
   (** Like {!walk} but returns a list (therefore it's eager and might
