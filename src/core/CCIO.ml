@@ -116,7 +116,7 @@ let read_lines_gen ic =
       with End_of_file -> (stop:=true; None)
 
 let read_lines_seq ic =
-  seq_of_gen_ (read_chunks_gen ic)
+  seq_of_gen_ (read_lines_gen ic)
 
 let read_lines_l ic =
   let l = ref [] in
