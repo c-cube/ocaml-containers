@@ -68,15 +68,19 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
     @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases. *)
 
 val read_chunks_gen : ?size:int -> in_channel -> string gen
-(** Read the channel's content into chunks of size [size].
+(** Read the channel's content into chunks of size at most [size].
     {b NOTE} the generator must be used within the lifetime of the channel,
     see warning at the top of the file. *)
 
 val read_chunks_seq : ?size:int -> in_channel -> string Seq.t
-(** Read the channel's content into chunks of size [size].
+(** Read the channel's content into chunks of size at most [size].
     {b NOTE} the generator must be used within the lifetime of the channel,
     see warning at the top of the file.
     @since 3.5 *)
+
+val read_chunks_iter : ?size:int -> in_channel -> string iter
+(** Read the channel's content into chunks of size at most [size]
+    @since NEXT_RELEASE *)
 
 val read_line : in_channel -> string option
 (** Read a line from the channel. Returns [None] if the input is terminated.
@@ -92,6 +96,10 @@ val read_lines_seq : in_channel -> string Seq.t
     {b NOTE} the seq must be used within the lifetime of the channel,
     see warning at the top of the file.
     @since 3.5 *)
+
+val read_lines_iter : in_channel -> string iter
+(** Read all lines.
+    @since NEXT_RELEASE *)
 
 val read_lines_l : in_channel -> string list
 (** Read all lines into a list. *)
@@ -135,6 +143,10 @@ val write_seq : ?sep:string -> out_channel -> string Seq.t -> unit
 
 val write_lines : out_channel -> string gen -> unit
 (** Write every string on the output, followed by "\n". *)
+
+val write_lines_iter : out_channel -> string iter -> unit
+(** Write every string on the output, followed by "\n".
+    @since NEXT_RELEASE *)
 
 val write_lines_seq : out_channel -> string Seq.t -> unit
 (** Write every string on the output, followed by "\n".
@@ -259,6 +271,10 @@ module File : sig
   (** Like {!walk} but returns a list (therefore it's eager and might
       take some time on large directories).
       @since 1.1 *)
+
+  val walk_seq : t -> walk_item Seq.t
+  (** Like {!walk} but returns a Seq
+      @since NEXT_RELEASE *)
 
   val show_walk_item : walk_item -> string
 

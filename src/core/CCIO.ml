@@ -101,6 +101,10 @@ let read_chunks_gen ?(size=1024) ic =
   in
   next
 
+let read_chunks_iter ?size ic =
+  let g = read_chunks_gen ?size ic in
+  fun yield -> gen_iter yield g
+
 let read_chunks_seq ?size ic =
   seq_of_gen_ (read_chunks_gen ?size ic)
 
@@ -117,6 +121,10 @@ let read_lines_gen ic =
 
 let read_lines_seq ic =
   seq_of_gen_ (read_lines_gen ic)
+
+let read_lines_iter ic =
+  let g = read_lines_gen ic in
+  fun yield -> gen_iter yield g
 
 let read_lines_l ic =
   let l = ref [] in
@@ -217,6 +225,8 @@ let rec write_lines oc g = match g () with
 
 let write_lines_seq oc seq =
   Seq.iter (write_line oc) seq
+
+let write_lines_iter oc i = i (write_line oc)
 
 let write_lines_l oc l =
   List.iter (write_line oc) l
