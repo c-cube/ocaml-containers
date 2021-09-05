@@ -49,10 +49,10 @@ module Make(A : ARRAY)
 
   let insertion_sort_ a ~i:first ~j:last =
     if first+1<last then (
-      for i=start+1 to last-1 do
+      for i=first +1 to last-1 do
         let j= ref i in
         (* insert a[i] into slice [start… i-1] *)
-        while !j > start && A.compare (get a (!j - 1)) (get a !j) > 0 do
+        while !j > first && A.compare (get a (!j - 1)) (get a !j) > 0 do
           swap a (!j - 1) !j;
           decr j;
         done;
