@@ -63,7 +63,7 @@ let () =
   Arg.parse ["-target", Arg.Set_string target, " set target"]
     (fun d -> dirs := d :: !dirs) "make.ml -target file dir+";
   if !target="" then failwith "please specify a target";
-  if Sys.command "which qtest > /dev/null" <> 0 then (
+  if Sys.command "command -v qtest > /dev/null" <> 0 then (
     (* create empty file *)
     let out = open_out !target in
     output_string out "";
