@@ -345,7 +345,7 @@ let rec append_gen a b = match b() with
 (*$inject
   let gen x =
     let small = length in
-    let print = CCOpt.map (fun p x -> Q.Print.list p (CCVector.to_list x)) x.Q.print in
+    let print = CCOption.map (fun p x -> Q.Print.list p (CCVector.to_list x)) x.Q.print in
     Q.make ?print ~small Q.Gen.(list x.Q.gen >|= of_list)
 *)
 

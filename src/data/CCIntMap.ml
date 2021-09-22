@@ -499,7 +499,7 @@ let rec filter_map f m = match m with
 (*$QR
   Q.(pair (fun2 Observable.int Observable.int @@ option bool) (small_list (pair int int))) (fun (f,l) ->
     let QCheck.Fun(_,f) = f in
-    _list_uniq (CCList.filter_map (fun (x,y) -> CCOpt.map (CCPair.make x) @@ f x y) l) =
+    _list_uniq (CCList.filter_map (fun (x,y) -> CCOption.map (CCPair.make x) @@ f x y) l) =
     (_list_uniq @@ to_list @@ filter_map f @@ of_list l)
   )
 *)

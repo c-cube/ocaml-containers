@@ -347,15 +347,15 @@ let topo_sort ~eq ?rev ~tbl ~graph iter =
   let tbl = mk_table ~eq:CCInt.equal 128 in \
   let l = topo_sort ~eq:CCInt.equal ~tbl ~graph:divisors_graph (Iter.return 42) in \
   List.for_all (fun (i,j) -> \
-    let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
-    let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
+    let idx_i = CCList.find_idx ((=)i) l |> CCOption.get_exn |> fst in \
+    let idx_j = CCList.find_idx ((=)j) l |> CCOption.get_exn |> fst in \
     idx_i < idx_j) \
     [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
   let tbl = mk_table ~eq:CCInt.equal 128 in \
   let l = topo_sort ~eq:CCInt.equal ~rev:true ~tbl ~graph:divisors_graph (Iter.return 42) in \
   List.for_all (fun (i,j) -> \
-    let idx_i = CCList.find_idx ((=)i) l |> CCOpt.get_exn |> fst in \
-    let idx_j = CCList.find_idx ((=)j) l |> CCOpt.get_exn |> fst in \
+    let idx_i = CCList.find_idx ((=)i) l |> CCOption.get_exn |> fst in \
+    let idx_j = CCList.find_idx ((=)j) l |> CCOption.get_exn |> fst in \
     idx_i > idx_j) \
     [ 42, 21; 14, 2; 3, 1; 21, 7; 42, 3]
 *)

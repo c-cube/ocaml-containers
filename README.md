@@ -427,7 +427,7 @@ map =
 - : unit = ()
 
 # (* options are good *)
-  IntMap.get 3 map |> CCOpt.map (fun s->s ^ s);;
+  IntMap.get 3 map |> CCOption.map (fun s->s ^ s);;
 - : string option = Some "33"
 ```
 

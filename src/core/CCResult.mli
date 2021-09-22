@@ -93,7 +93,7 @@ val get_or : ('a, _) t -> default:'a -> 'a
 
 val get_lazy : ('e -> 'a) -> ('a, 'e) t -> 'a
 (** [get_lazy f e] returns [x] if [e = Ok x], [f msg]  if [e = Error msg].
-    This is similar to {!CCOpt.get_lazy}.
+    This is similar to {!CCOption.get_lazy}.
     @since 3.0 *)
 
 val get_or_failwith : ('a, string) t -> 'a
