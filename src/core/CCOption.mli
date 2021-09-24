@@ -1,6 +1,9 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Options} *)
+(** Options
+
+   This module replaces `CCOpt`.
+   @since NEXT_RELEASE *)
 
 type +'a t = 'a option
 
