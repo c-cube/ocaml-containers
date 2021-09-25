@@ -151,11 +151,8 @@ val ap : ('a -> 'b) t -> 'a t -> 'b t
 val eoi : unit t
 (** Expect the end of input, fails otherwise. *)
 
-val nop : unit t
-(** Succeed with [()]. *)
-
 val empty : unit t
-(** Succeed with [()], same as {!nop}.
+(** Succeed with [()].
     @since NEXT_RELEASE *)
 
 val fail : string -> 'a t
@@ -256,16 +253,16 @@ val set_current_slice : slice -> unit t
 
 val chars_fold :
   f:('acc -> char ->
-     [`Continue of 'acc | `Consume_and_stop | `Stop | `Fail of string]) ->
+     [`Continue of 'acc | `Consume_and_stop of 'acc | `Stop of 'acc | `Fail of string]) ->
   'acc ->
   ('acc * slice) t
 (** [chars_fold f acc0] folds over characters of the input.
     Each char [c] is passed, along with the current accumulator, to [f];
     [f] can either:
 
-    - stop, by returning [`Stop]. In this case the current accumulator
+    - stop, by returning [`Stop acc]. In this case the final accumulator [acc]
       is returned, and [c] is not consumed.
-    - consume char and stop, by returning [`Consume_and_stop].
+    - consume char and stop, by returning [`Consume_and_stop acc].
     - fail, by returning [`Fail msg]. In this case the parser fails
       with the given message.
     - continue, by returning [`Continue acc]. The parser continues to the

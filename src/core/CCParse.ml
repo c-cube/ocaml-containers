@@ -531,8 +531,8 @@ let chars_fold ~f acc0 = {
             | `Continue acc' ->
               incr i;
               acc := acc'
-            | `Stop -> continue := false;
-            | `Consume_and_stop -> incr i; continue := false
+            | `Stop a -> acc := a; continue := false;
+            | `Consume_and_stop a -> acc := a; incr i; continue := false
             | `Fail msg -> raise (Fold_fail (st,msg))
         )
       done;
