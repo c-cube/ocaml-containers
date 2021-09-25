@@ -200,7 +200,7 @@ val char : char -> char t
 
 type slice
 (** A slice of the input, as returned by some combinators such
-    as {!split_1} or {split_list} or {!take}.
+    as {!split_1} or {!split_list} or {!take}.
 
     The idea is that one can use some parsers to cut the input into slices,
     e.g. split into lines, or split a line into fields (think CSV or TSV).
@@ -272,6 +272,7 @@ val chars_fold :
     characters on the fly, skip some, handle escape sequences, etc.
     It can also be useful as a base component for a lexer.
 
+   @return a pair of the final accumular, and the slice matched by the fold.
    @since NEXT_RELEASE *)
 
 val chars_fold_transduce :
@@ -291,7 +292,7 @@ val chars_fold_transduce :
     @since NEXT_RELEASE *)
 
 val take : int -> slice t
-(** [slice_of_len len] parses exactly [len] characters from the input.
+(** [take len] parses exactly [len] characters from the input.
     Fails if the input doesn't contain at least [len] chars.
     @since NEXT_RELEASE *)
 
@@ -302,21 +303,22 @@ val take_if : (char -> bool) -> slice t
 val take1_if : ?descr:string -> (char -> bool) -> slice t
 (** [take1_if f] takes characters as long as they satisfy the predicate [f].
     Fails if no character satisfies [f].
+    @param descr describes what kind of character was expected, in case of error
     @since NEXT_RELEASE *)
 
 val char_if : ?descr:string -> (char -> bool) -> char t
 (** [char_if f] parses a character [c] if [f c = true].
     Fails if  the next char does not satisfy [f].
-    @param descr describes what kind of character was expected *)
+    @param descr describes what kind of character was expected, in case of error *)
 
 val chars_if : (char -> bool) -> string t
 (** [chars_if f] parses a string of chars that satisfy [f].
     Cannot fail. *)
 
 val chars1_if : ?descr:string -> (char -> bool) -> string t
-(** Like {!chars_if}, but only non-empty strings.
-    Fails if the string is empty.
-    @param descr describes what kind of character was expected *)
+(** Like {!chars_if}, but accepts only non-empty strings.
+    [chars1_if p] fails if the string accepted by [chars_if p] is empty.
+    @param descr describes what kind of character was expected, in case of error *)
 
 val endline : char t
 (** Parse '\n'. *)
@@ -440,7 +442,9 @@ val many1 : 'a t -> 'a list t
     list is empty (i.e. it needs [p] to succeed at least once). *)
 
 val skip : _ t -> unit t
-(** [skip p] parses zero or more times [p] and ignores its result. *)
+(** [skip p] parses zero or more times [p] and ignores its result.
+    It is eager, meaning it will continue as long as [p] succeeds.
+    As soon as [p] fails, [skip p] stops consuming any input. *)
 
 val sep : by:_ t -> 'a t -> 'a list t
 (** [sep ~by p] parses a list of [p] separated by [by]. *)
@@ -462,7 +466,7 @@ val lookahead_ignore : 'a t -> unit t
 (** [lookahead_ignore p] tries to parse input with [p],
     and succeeds if [p] succeeds. However it doesn't consume any input
     and returns [()], so in effect its only use-case is to detect
-    whether [p] succeeds, e.g. in {!cond}.
+    whether [p] succeeds, e.g. in {!try_or_l}.
 
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
@@ -477,7 +481,7 @@ val line : slice t
 val line_str : string t
 (** [line_str] is [line >|= Slice.to_string].
     It parses the next line and turns the slice into a string.
-    The state points to after the ['\n'] character.
+    The state points to the character immediately after the ['\n'] character.
     @since NEXT_RELEASE *)
 
 val each_line : 'a t -> 'a list t
@@ -491,8 +495,10 @@ val split_1 : on_char:char -> (slice * slice option) t
 
     - [sl1] is the slice of the input the precedes the first occurrence
       of [on_char], or the whole input if [on_char] cannot be found.
+      It does not contain [on_char].
     - [sl2] is the slice that comes after [on_char],
-      or [None] if [on_char] couldn't be found.
+      or [None] if [on_char] couldn't be found. It doesn't contain the first
+      occurrence of [on_char] (if any).
 
     The parser is now positioned at the end of the input.
 
@@ -500,11 +506,8 @@ val split_1 : on_char:char -> (slice * slice option) t
     @since NEXT_RELEASE *)
 
 val split_list : on_char:char -> slice list t
-(** [split_n ~on_char] splits the input on all occurrences of [on_char],
+(** [split_list ~on_char] splits the input on all occurrences of [on_char],
     returning a list of slices.
-
-    A useful specialization of this is {!each_line}, which is
-    basically [split_n ~on_char:'\n' p].
 
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
@@ -544,6 +547,9 @@ val each_split : on_char:char -> 'a t -> 'a list t
     While it is more flexible, this technique also means [p] has to be careful
     not to consume [on_char] by error.
 
+    A useful specialization of this is {!each_line}, which is
+    basically [each_split ~on_char:'\n' p].
+
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
 
@@ -558,7 +564,7 @@ val all : slice t
 
 val all_str : string t
 (** [all_str] accepts all the remaining chars and extracts them into a
-    string. Similar to {!rest_of_input} but with a string.
+    string. Similar to {!all} but with a string.
 
     {b EXPERIMENTAL}
     @since NEXT_RELEASE *)
@@ -625,7 +631,7 @@ module Infix : sig
 
   val (<?>) : 'a t -> string -> 'a t
   (** [a <?> msg] behaves like [a], but if [a] fails,
-      [a <? msg] fails with [msg] instead.
+      [a <?> msg] fails with [msg] instead.
       Useful as the last choice in a series of [<|>]. For example:
       [a <|> b <|> c <?> "expected one of a, b, c"]. *)
 
@@ -675,7 +681,7 @@ val parse_file_exn : 'a t -> string -> 'a
 module U : sig
   val list : ?start:string -> ?stop:string -> ?sep:string -> 'a t -> 'a list t
   (** [list p] parses a list of [p], with the OCaml conventions for
-      start token "[", stop token "]" and separator ";".
+      start token "\[", stop token "\]" and separator ";".
       Whitespace between items are skipped. *)
 
   (* TODO: parse option? *)
@@ -707,7 +713,8 @@ module U : sig
   (** Non empty string of alpha num, start with alpha. *)
 
   val bool : bool t
-  (** Accepts "true" or "false" *)
+  (** Accepts "true" or "false"
+      @since NEXT_RELEASE *)
 
   (* TODO: quoted string *)
 
@@ -723,7 +730,8 @@ module U : sig
 end
 
 (** Debugging utils.
-    {b EXPERIMENTAL} *)
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
 module Debug_ : sig
   val trace_fail : string -> 'a t -> 'a t
   (** [trace_fail name p] behaves like [p], but prints the error message of [p]

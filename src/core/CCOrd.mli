@@ -19,7 +19,7 @@ val compare : 'a t
     generally not very descriptive. *)
 
 val opp : 'a t -> 'a t
-(** Opposite order. For example, [opp a b < 0] iff [opp b a > 0].
+(** Opposite order. For example, [opp cmp a b < 0] iff [cmp b a > 0].
     This can be used to sort values in the opposite order, among other things. *)
 
 val equiv : int -> int -> bool
