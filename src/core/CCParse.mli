@@ -384,8 +384,9 @@ val try_ : 'a t -> 'a t
     to detect failure. *)
 
 val try_opt : 'a t -> 'a option t
-(** [try_ p] tries to parse using [p], and return [Some x] if [p]
-    succeeded with [x]. Otherwise it returns [None]. This cannot fail.
+(** [try_opt p] tries to parse using [p], and return [Some x] if [p]
+    succeeded with [x] (and consumes what [p] consumed).
+    Otherwise it returns [None] and consumes nothing. This cannot fail.
     @since NEXT_RELEASE *)
 
 val many_until : until:_ t -> 'a t -> 'a list t
