@@ -534,7 +534,7 @@ module MakeFull(K : KEY) : S with type key = K.t = struct
   (*$R
     let m1 = M.of_list [1, 1; 2, 2; 4, 4] in
     let m2 = M.of_list [1, 1; 3, 3; 4, 4; 7, 7] in
-    let m = M.merge ~f:(fun k -> CCOpt.map2 (+)) m1 m2 in
+    let m = M.merge ~f:(fun k -> CCOption.map2 (+)) m1 m2 in
     assert_bool "balanced" (M.balanced m);
     assert_equal
       ~cmp:(CCList.equal (CCPair.equal CCInt.equal CCInt.equal))

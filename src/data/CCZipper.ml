@@ -69,7 +69,7 @@ let focused = function
 
 (*$Q
   zip_gen (fun g -> \
-    is_focused g = (focused g |> CCOpt.is_some))
+    is_focused g = (focused g |> CCOption.is_some))
 *)
 
 let focused_exn = function

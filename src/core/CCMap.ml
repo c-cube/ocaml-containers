@@ -243,7 +243,7 @@ module Make(O : Map.OrderedType) = struct
       (M.of_list ["b", 2; "c", 3] \
        |> M.update "a" (function _ -> Some 1) \
        |> M.update "c" (fun _ -> None) \
-       |> M.update "b" (CCOpt.map (fun x -> x * 10)) \
+       |> M.update "b" (CCOption.map (fun x -> x * 10)) \
        |> M.to_list |> List.sort CCOrd.compare)
     *)
 

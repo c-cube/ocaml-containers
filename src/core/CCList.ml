@@ -1073,7 +1073,7 @@ let sublists_of_len ?(last=fun _ -> None) ?offset n l =
   [[1;2];[3;4]] (subs ~offset:2 2 [1;2;3;4])
   [[1;2];[2;3]] (subs ~offset:1 2 [1;2;3])
   [[1;2];[4;5]] (subs ~offset:3 2 [1;2;3;4;5;6])
-  [[1;2;3];[4]] (subs ~last:CCOpt.return 3 [1;2;3;4])
+  [[1;2;3];[4]] (subs ~last:CCOption.return 3 [1;2;3;4])
   [[1;2]; [3;4]] (subs 2 [1;2;3;4;5])
 *)
 
