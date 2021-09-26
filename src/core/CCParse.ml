@@ -512,6 +512,19 @@ let chars1_if ?descr p = {
       ~err
 }
 
+(*$QR
+    Q.(printable_string) (fun s ->
+        let pred = (function 'a'..'z' | 'A' .. 'Z' | '{' | '}' -> true | _ -> false) in
+        let p1 = chars1_if pred in
+        let p2 = take1_if pred >|= Slice.to_string in
+        parse_string p1 s = parse_string p2 s)
+    *)
+
+(*$T
+  let pred = (function 'a'..'z' | 'A' .. 'Z' | '{' | '}' -> true | _ -> false) in \
+  parse_string (chars_if pred) "coucou{lol} 123" = Ok "coucou{lol}"
+*)
+
 exception Fold_fail of state * string
 
 let chars_fold ~f acc0 = {

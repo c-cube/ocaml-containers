@@ -318,6 +318,7 @@ val chars_if : (char -> bool) -> string t
 val chars1_if : ?descr:string -> (char -> bool) -> string t
 (** Like {!chars_if}, but accepts only non-empty strings.
     [chars1_if p] fails if the string accepted by [chars_if p] is empty.
+    [chars1_if p] is equivalent to [take1_if p >|= Slice.to_string].
     @param descr describes what kind of character was expected, in case of error *)
 
 val endline : char t
