@@ -12,7 +12,7 @@ build: [
 ]
 depends: [
   "ocaml" { >= "4.03.0" }
-  "dune" { >= "1.1" }
+  "dune" { >= "1.4" }
   "dune-configurator"
   "seq"
   "qtest" { with-test }
