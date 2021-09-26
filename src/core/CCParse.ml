@@ -657,12 +657,12 @@ let take len : slice t = {
     )
 }
 
-let any_chars len : _ t = take len >|= Slice.to_string
+let any_char_n len : _ t = take len >|= Slice.to_string
 
 let exact s = {
   run=fun st ~ok ~err ->
     (* parse a string of length [String.length s] and compare with [s] *)
-    (any_chars (String.length s)).run st
+    (any_char_n (String.length s)).run st
       ~ok:(fun st s2 ->
           if string_equal s s2 then ok st s
           else (

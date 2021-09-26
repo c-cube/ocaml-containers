@@ -190,8 +190,8 @@ val any_char : char t
     It still fails if the end of input was reached.
     @since NEXT_RELEASE *)
 
-val any_chars : int -> string t
-(** [any_chars len] parses exactly [len] characters from the input.
+val any_char_n : int -> string t
+(** [any_char_n len] parses exactly [len] characters from the input.
     Fails if the input doesn't contain at least [len] chars.
     @since NEXT_RELEASE *)
 
