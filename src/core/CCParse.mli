@@ -394,7 +394,8 @@ val many_until : until:_ t -> 'a t -> 'a list t
 (** [many_until ~until p] parses as many [p] as it can until
     the [until] parser successfully returns.
     If [p] fails before that then [many_until ~until p] fails as well.
-    Typically [until] can be a closing ')' or another termination condition.
+    Typically [until] can be a closing ')' or another termination condition,
+    and what is consumed by [until] is also consumed by [many_until ~until p].
 
     {b EXPERIMENTAL}
 
