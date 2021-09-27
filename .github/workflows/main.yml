@@ -18,22 +18,16 @@ jobs:
             - macos-latest
             - ubuntu-latest
             - windows-latest
-        ocaml:
+        ocaml-compiler:
             - '4.03.0'
             - '4.08.1'
             - '4.12.0'
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: haya14busa/action-cond@v1
-        id: path
-        with:
-          cond: ${{ matrix.os == 'windows-latest' }}
-          if_true: "D:\\cygwin\\home\\runneradmin\\.opam"
-          if_false: "~/.opam"
-
       - uses: actions/checkout@v2
-      - uses: ocaml/setup-ocaml@v2
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
