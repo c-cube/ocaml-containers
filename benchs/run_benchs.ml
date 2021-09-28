@@ -79,19 +79,27 @@ module L = struct
     else if x mod 5 = 1 then CCRAL.of_list [x;x+1]
     else CCRAL.of_list [x;x+1;x+2;x+3]
 
+  let f_sek_ x =
+    if x mod 10 = 0 then Sek.Persistent.create 0
+    else if x mod 5 = 1 then Sek.Persistent.of_list 0 [x;x+1]
+    else Sek.Persistent.of_list 0 [x;x+1;x+2;x+3]
+
   let bench_flat_map ?(time=2) n =
     let l = CCList.(1 -- n) in
     let ral = CCRAL.of_list l in
+    let sek = Sek.Persistent.of_list 0 l in
     let flatten_map_ l () = ignore @@ List.flatten (CCList.map f_ l)
     and flatmap l () = ignore @@ CCList.flat_map f_ l
     and flatten_ccmap_ l () = ignore @@ List.flatten (List.map f_ l)
     and flatmap_ral_ l () = ignore @@ CCRAL.flat_map f_ral_ l
+    and flatmap_sek s () = ignore @@ Sek.Persistent.flatten_map 0 f_sek_ s
     in
     B.throughputN time ~repeat
       [ "flat_map", flatmap l, ()
       ; "flatten o CCList.map", flatten_ccmap_ l, ()
       ; "flatten o map", flatten_map_ l, ()
       ; "ral_flatmap", flatmap_ral_ ral, ()
+      ; "sek_flatmap", flatmap_sek sek, ()
       ]
 
   (* APPEND *)
@@ -123,21 +131,26 @@ module L = struct
   (* FLATTEN *)
 
   let bench_flatten ?(time=2) n =
-    let fold_right_append_ l =
-      List.fold_right List.append l []
-    and cc_fold_right_append_ l =
-      CCList.fold_right CCList.append l []
+    let fold_right_append_ l () =
+      ignore (List.fold_right List.append l [] : _ list)
+    and cc_fold_right_append_ l () =
+      ignore (CCList.fold_right CCList.append l [] : _ list)
+    and sek_flatten s () =
+      ignore (Sek.Persistent.flatten s : _ Sek.Persistent.t)
     in
     let l =
       CCList.mapi
         (fun i x -> CCList.(x -- (x+ min i 100)))
         CCList.(1 -- n)
     in
+    let sek = Sek.Persistent.of_list (Sek.Persistent.create 0)
+        (List.map (Sek.Persistent.of_list 0) l) in
     B.throughputN time ~repeat
-      [ "CCList.flatten", CCList.flatten, l
-      ; "List.flatten", List.flatten, l
-      ; "fold_right append", fold_right_append_, l
-      ; "CCList.(fold_right append)", cc_fold_right_append_, l
+      [ "CCList.flatten", (fun() -> ignore (CCList.flatten l)), ()
+      ; "List.flatten", (fun() -> ignore (List.flatten l)), ()
+      ; "fold_right append", fold_right_append_ l, ()
+      ; "CCList.(fold_right append)", cc_fold_right_append_ l, ()
+      ; "Sek.flatten", sek_flatten sek, ()
       ]
 
   (* RANDOM ACCESS *)
