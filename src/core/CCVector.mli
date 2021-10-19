@@ -51,15 +51,19 @@ val init : int -> (int -> 'a) -> ('a, 'mut) t
 (** Init the vector with the given function and size. *)
 
 val clear : ('a, rw) t -> unit
-(** Clear the content of the vector. *)
+(** Clear the content of the vector.
+    This ensures that [length v = 0] but the underlying array is kept,
+    and possibly references to former elements, which are therefore
+    not garbage collectible. *)
 
 val clear_and_reset : ('a, rw) t -> unit
 (** Clear the content of the vector, and deallocate the underlying array,
-    removing references to all the elements.
+    removing references to all the elements. The elements can be collected.
     @since 2.8 *)
 
 val ensure_with : init:'a -> ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
+    This does not affect [length v].
     @param init if [capacity v = 0], used to enforce the type of the vector
       (see {!create_with}).
     @since 0.14 *)
@@ -235,13 +239,15 @@ val get : ('a,_) t -> int -> 'a
 
 val set : ('a, rw) t -> int -> 'a -> unit
 (** Modify element at given index, or
-    @raise Invalid_argument if bad index. *)
+    @raise Invalid_argument if the index is
+    invalid (i.e. not in [[0.. length v-1]]). *)
 
 val remove_and_shift : ('a, rw) t -> int -> unit
 (** [remove_and_shift v i] remove the [i-th] element from [v].
-    Move elements that are after the [i-th] in [v].
+    Move elements that are after the [i-th] in [v], in linear time.
     Preserve the order of the elements in [v].
-    See {!remove_unordered} for constant time function.
+    See {!remove_unordered} for constant time removal function that doesn't
+    preserve the order of elements.
     @since 3.0 *)
 
 val remove_unordered : ('a, rw) t -> int -> unit
