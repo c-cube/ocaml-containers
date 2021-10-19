@@ -3,7 +3,7 @@
 (** Options
 
    This module replaces `CCOpt`.
-   @since NEXT_RELEASE *)
+   @since 3.6 *)
 
 type +'a t = 'a option
 

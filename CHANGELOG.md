@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.6
+
+- rename `CCOpt` to `CCOption` and deprecate `CCOpt`
+- add iterator functions to `CCIO`
+- `CCOrd`: add `poly`, deprecate `compare`
+- add `CCIO.File.walk_iter`
+- `CCParse`: heavy refactoring, many new functions
+  * backtracking by default
+  * add `slice` and the ability to recurse on them
+  * expose Position module, add `or_`, `both`, `lookahead`, `U.bool`
+  * example Sexpr parser, and a test
+  * example and test of an IRC log parser
+
 ## 3.5
 
 - add `CCHash.map` and `CCHash.bytes`

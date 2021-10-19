@@ -80,7 +80,7 @@ val read_chunks_seq : ?size:int -> in_channel -> string Seq.t
 
 val read_chunks_iter : ?size:int -> in_channel -> string iter
 (** Read the channel's content into chunks of size at most [size]
-    @since NEXT_RELEASE *)
+    @since 3.6 *)
 
 val read_line : in_channel -> string option
 (** Read a line from the channel. Returns [None] if the input is terminated.
@@ -99,7 +99,7 @@ val read_lines_seq : in_channel -> string Seq.t
 
 val read_lines_iter : in_channel -> string iter
 (** Read all lines.
-    @since NEXT_RELEASE *)
+    @since 3.6 *)
 
 val read_lines_l : in_channel -> string list
 (** Read all lines into a list. *)
@@ -146,7 +146,7 @@ val write_lines : out_channel -> string gen -> unit
 
 val write_lines_iter : out_channel -> string iter -> unit
 (** Write every string on the output, followed by "\n".
-    @since NEXT_RELEASE *)
+    @since 3.6 *)
 
 val write_lines_seq : out_channel -> string Seq.t -> unit
 (** Write every string on the output, followed by "\n".
@@ -265,7 +265,7 @@ module File : sig
 
   val walk_iter : t -> walk_item iter
   (** Like {!walk} but with an imperative iterator.
-      @since NEXT_RELEASE *)
+      @since 3.6 *)
 
   val walk_l : t -> walk_item list
   (** Like {!walk} but returns a list (therefore it's eager and might
@@ -274,7 +274,7 @@ module File : sig
 
   val walk_seq : t -> walk_item Seq.t
   (** Like {!walk} but returns a Seq
-      @since NEXT_RELEASE *)
+      @since 3.6 *)
 
   val show_walk_item : walk_item -> string
 
