@@ -129,7 +129,7 @@ let grow_with_ v ~filler:x =
   ) else (
     let n = Array.length v.vec in
     let size = min (2 * n + 3) Sys.max_array_length in
-    if size = n then failwith "vec: can't grow any further";
+    if size = n then invalid_arg "vec: can't grow any further";
     resize_ v size v.vec.(0)
   )
 
@@ -139,7 +139,7 @@ let grow_with_ v ~filler:x =
    behave well *)
 let ensure_assuming_not_empty_ v ~size =
   if size > Sys.max_array_length
-  then failwith "vec.ensure: size too big"
+  then invalid_arg "vec.ensure: size too big"
   else (
     let n = ref (max 8 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;

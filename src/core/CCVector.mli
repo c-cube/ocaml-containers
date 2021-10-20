@@ -66,12 +66,15 @@ val ensure_with : init:'a -> ('a, rw) t -> int -> unit
     This does not affect [length v].
     @param init if [capacity v = 0], used to enforce the type of the vector
       (see {!create_with}).
+    @raise Invalid_arg if the size is not suitable (negative, or too big for OCaml arrays)
     @since 0.14 *)
 
 val ensure : ('a, rw) t -> int -> unit
 (** Hint to the vector that it should have at least the given capacity.
     Just a hint, will not be enforced if the vector is empty and [init]
-      is not provided. *)
+    is not provided.
+    @raise Invalid_arg if the size is not suitable (negative, or too big for OCaml arrays)
+*)
 
 val is_empty : ('a, _) t -> bool
 (** Is the vector empty? *)
@@ -114,7 +117,7 @@ val pop : ('a, rw) t -> 'a option
 (** Remove last element, or [None]. *)
 
 val pop_exn : ('a, rw) t -> 'a
-(** Remove last element, or raise a Failure if empty.
+(** Remove last element, or raise an exception if empty.
     @raise Empty on an empty vector. *)
 
 val top : ('a, _) t -> 'a option
