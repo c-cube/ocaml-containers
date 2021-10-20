@@ -203,18 +203,15 @@ let push v x =
 
 let resize_with v f size =
   if size > Sys.max_array_length then
-    raise (Invalid_argument "vec.resize_with: size too big")
-  else if size <= Array.length v.vec then
-    ()
-  else
+    invalid_arg "vec.resize_with: size too big"
+  else if size > Array.length v.vec then
     let new_vec = Array.make size (f 0) in
     Array.blit v.vec 0 new_vec 0 (v.size - 1);
     for i = v.size to size - 1 do
        Array.unsafe_set new_vec i (f i)
      done;
     v.vec <- new_vec;
-    v.size <- size;
-    ()
+    v.size <- size
 
 (*$T
   let v = make 1 0 in to_list (resize_with v (fun i -> i) 5) = [0;1;2;3;4]
@@ -228,15 +225,12 @@ let resize_with v f size =
 
 let resize_with_init v ~init size =
   if size > Sys.max_array_length then
-    raise (Invalid_argument "vec.resize_with_init: size too big")
-  else if size <= Array.length v.vec then
-    ()
-  else
+    invalid_arg "vec.resize_with_init: size too big"
+  else if size > Array.length v.vec then
     let new_vec = Array.make size init in
     Array.blit v.vec 0 new_vec 0 (v.size - 1);
     v.vec <- new_vec;
-    v.size <- size;
-    ()
+    v.size <- size
 
 (*$T
   let v = make 1 0 in to_list (resize_with_init v ~init:1 5) = [1;1;1;1;1]
