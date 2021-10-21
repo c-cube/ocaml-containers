@@ -201,6 +201,55 @@ let push v x =
   let v = of_list [1;2;3] in push v 4; to_list v = [1;2;3;4]
 *)
 
+let resize_with v f size =
+  let new_vec =
+    if size >= Array.length v.vec then
+      let new_vec = Array.make size (f 0) in
+      Array.blit v.vec 0 new_vec 0 (v.size - 1);
+      new_vec
+    else
+      v.vec
+  in
+  for i = v.size to size - 1 do
+    Array.unsafe_set new_vec i (f i)
+  done;
+  v.vec <- new_vec;
+  v.size <- size
+
+(*$T
+  let v = make 1 0 in resize_with v (fun i -> i) 5; to_list v = [0;1;2;3;4]
+  let v = make 1 0 in resize_with v (fun i -> i) 5; CCList.length (to_list v) = 5
+  let v = create_with ~capacity:2 0 in resize_with v (fun i -> i) 5; to_list v = [0;1;2;3;4]
+  let v = make 5 0 in resize_with v (fun i -> i) 5; to_list v = [0;0;0;0;0]
+  let v = make 5 0 in resize_with v (fun i -> i) 6; to_list v = [0;0;0;0;0;6]
+  let v = make 5 0 in resize_with v (fun i -> i) 4; to_list v = [0;0;0;0;0]
+  let v = make 5 0 in resize_with v (fun i -> i) 5; CCList.length (to_list v) = 5
+*)
+
+let resize_with_init v ~init size =
+  let new_vec =
+    if size >= Array.length v.vec then
+      let new_vec = Array.make size init in
+      Array.blit v.vec 0 new_vec 0 (v.size - 1);
+      new_vec
+    else
+      v.vec
+  in
+  for i = v.size to size - 1 do
+    Array.unsafe_set new_vec i init
+  done;
+  v.vec <- new_vec;
+  v.size <- size
+
+(*$T
+  let v = make 1 0 in resize_with_init v ~init:1 5; to_list v = [1;1;1;1;1]
+  let v = make 1 0 in resize_with_init v ~init:1 5; CCList.length (to_list v) = 5
+  let v = create_with ~capacity:2 0 in resize_with v ~init:1 5; to_list v = [1;1;1;1;1]
+  let v = make 5 0 in resize_with_init v ~init:1 5; to_list v = [1;1;1;1;1]
+  let v = make 5 0 in resize_with_init v ~init:1 4; to_list v = [1;1;1;1;1]
+  let v = make 5 0 in resize_with_init v ~init:1 5; CCList.length (to_list v) = 5
+*)
+
 (** Add all elements of b to a *)
 let append a b =
   if array_is_empty_ a then (

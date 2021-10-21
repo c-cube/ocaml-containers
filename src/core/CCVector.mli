@@ -82,6 +82,24 @@ val is_empty : ('a, _) t -> bool
 val push : ('a, rw) t -> 'a -> unit
 (** Add an element at the end of the vector. *)
 
+val resize_with : ('a, rw) t -> (int -> 'a) -> int -> unit
+(** [resize_with vec f size] resizes vector [vec] up to [size], fills vector
+    with calls to [f] on indexes [[vec.size-1.. size - 1]].
+    The contents and size of vec are untouched if [size] is inferior or equal
+    to [length vec].
+    @raise Invalid_argument if the size is too big
+
+    @since NEXT_RELEASE *)
+
+val resize_with_init : ('a, rw) t -> init:'a -> int -> unit
+(** [resize_with_init vec init size] resizes vector [vec] up to [size],
+    fills vector with calls to [init] on indexes [[length vec -1.. size - 1]].
+    The contents and size of vec are untouched if [size] is inferior or equal
+    to [length vec].
+    @raise Invalid_argument if the size is too big
+
+    @since NEXT_RELEASE *)
+
 val append : ('a, rw) t -> ('a, _) t -> unit
 (** [append a b] adds all elements of b to a. *)
 
