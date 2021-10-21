@@ -138,9 +138,11 @@ let grow_with_ v ~filler:x =
    Use a doubling-size strategy so that calling many times [ensure] will
    behave well *)
 let ensure_assuming_not_empty_ v ~size =
-  if size > Sys.max_array_length
-  then invalid_arg "vec.ensure: size too big"
-  else (
+  if size > Sys.max_array_length then (
+    invalid_arg "vec.ensure: size too big"
+  ) else if size < Array.length v.vec then (
+    () (* nothing to do *)
+  ) else (
     let n = ref (max 8 (Array.length v.vec)) in
     while !n < size do n := min Sys.max_array_length (2* !n) done;
     resize_ v !n v.vec.(0)
@@ -203,19 +205,17 @@ let push v x =
 
 let resize_with v f size =
   if size<0 then invalid_arg "Vec.resize_with";
-  let new_vec =
-    if size >= Array.length v.vec then
-      let new_vec = Array.make size (f 0) in
-      Array.blit v.vec 0 new_vec 0 v.size;
-      new_vec
-    else
-      v.vec
-  in
-  for i = v.size to size - 1 do
-    Array.unsafe_set new_vec i (f i)
-  done;
-  v.vec <- new_vec;
-  v.size <- size
+  if Array.length v.vec = 0 then (
+    let new_vec = Array.init size f in
+    v.vec <- new_vec;
+    v.size <- size
+  ) else (
+    ensure_assuming_not_empty_ v size;
+    for i = v.size to size - 1 do
+      Array.unsafe_set v.vec i (f i)
+    done;
+    v.size <- size
+  )
 
 (*$T
   let v = make 1 0 in resize_with v (fun i -> i) 5; to_list v = [0;1;2;3;4]
@@ -230,19 +230,17 @@ let resize_with v f size =
 
 let resize_with_init v ~init size =
   if size<0 then invalid_arg "Vec.resize_with_init";
-  let new_vec =
-    if size >= Array.length v.vec then
-      let new_vec = Array.make size init in
-      Array.blit v.vec 0 new_vec 0 v.size;
-      new_vec
-    else
-      v.vec
-  in
-  for i = v.size to size - 1 do
-    Array.unsafe_set new_vec i init
-  done;
-  v.vec <- new_vec;
-  v.size <- size
+  if Array.length v.vec = 0 then (
+    let vec = Array.make size init in
+    v.vec <- vec;
+    v.size <- size;
+  ) else (
+    ensure_assuming_not_empty_ v size;
+    for i = v.size to size - 1 do
+      Array.unsafe_set v.vec i init
+    done;
+    v.size <- size;
+  )
 
 (*$T
   let v = make 1 0 in resize_with_init v ~init:1 5; to_list v = [0;1;1;1;1]
@@ -255,6 +253,11 @@ let resize_with_init v ~init size =
     with Invalid_argument _ -> true
   let v = make 5 0 in resize_with_init v ~init:1 5; List.length (to_list v) = 5
 *)
+
+(* test for asymptotic behavior *)
+(*$T
+  let v =make 1 0 in for i=0 to 100_000 do resize_with_init v ~init:10 i; done; true
+  *)
 
 (** Add all elements of b to a *)
 let append a b =
