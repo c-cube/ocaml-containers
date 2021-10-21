@@ -202,10 +202,11 @@ let push v x =
 *)
 
 let resize_with v f size =
+  if size<0 then invalid_arg "Vec.resize_with";
   let new_vec =
     if size >= Array.length v.vec then
       let new_vec = Array.make size (f 0) in
-      Array.blit v.vec 0 new_vec 0 (v.size - 1);
+      Array.blit v.vec 0 new_vec 0 v.size;
       new_vec
     else
       v.vec
@@ -221,16 +222,18 @@ let resize_with v f size =
   let v = make 1 0 in resize_with v (fun i -> i) 5; CCList.length (to_list v) = 5
   let v = create_with ~capacity:2 0 in resize_with v (fun i -> i) 5; to_list v = [0;1;2;3;4]
   let v = make 5 0 in resize_with v (fun i -> i) 5; to_list v = [0;0;0;0;0]
-  let v = make 5 0 in resize_with v (fun i -> i) 6; to_list v = [0;0;0;0;0;6]
-  let v = make 5 0 in resize_with v (fun i -> i) 4; to_list v = [0;0;0;0;0]
-  let v = make 5 0 in resize_with v (fun i -> i) 5; CCList.length (to_list v) = 5
+  let v = make 5 0 in resize_with v (fun i -> i) 6; to_list v = [0;0;0;0;0;5]
+  let v = make 5 0 in try resize_with v (fun i -> i) (-1); false \
+    with Invalid_argument _ -> true
+  let v = make 5 0 in resize_with v (fun i -> i) 5; List.length (to_list v) = 5
 *)
 
 let resize_with_init v ~init size =
+  if size<0 then invalid_arg "Vec.resize_with_init";
   let new_vec =
     if size >= Array.length v.vec then
       let new_vec = Array.make size init in
-      Array.blit v.vec 0 new_vec 0 (v.size - 1);
+      Array.blit v.vec 0 new_vec 0 v.size;
       new_vec
     else
       v.vec
@@ -242,12 +245,15 @@ let resize_with_init v ~init size =
   v.size <- size
 
 (*$T
-  let v = make 1 0 in resize_with_init v ~init:1 5; to_list v = [1;1;1;1;1]
-  let v = make 1 0 in resize_with_init v ~init:1 5; CCList.length (to_list v) = 5
-  let v = create_with ~capacity:2 0 in resize_with v ~init:1 5; to_list v = [1;1;1;1;1]
-  let v = make 5 0 in resize_with_init v ~init:1 5; to_list v = [1;1;1;1;1]
-  let v = make 5 0 in resize_with_init v ~init:1 4; to_list v = [1;1;1;1;1]
-  let v = make 5 0 in resize_with_init v ~init:1 5; CCList.length (to_list v) = 5
+  let v = make 1 0 in resize_with_init v ~init:1 5; to_list v = [0;1;1;1;1]
+  let v = make 1 0 in resize_with_init v ~init:1 5; List.length (to_list v) = 5
+
+  let v = create_with ~capacity:2 0 in resize_with_init v ~init:1 5; to_list v = [1;1;1;1;1]
+  let v = make 5 0 in resize_with_init v ~init:1 5; to_list v = [0;0;0;0;0]
+  let v = make 3 0 in resize_with_init v ~init:1 5; to_list v = [0;0;0;1;1]
+  let v = make 5 0 in try resize_with_init v  ~init:1 (-1); false \
+    with Invalid_argument _ -> true
+  let v = make 5 0 in resize_with_init v ~init:1 5; List.length (to_list v) = 5
 *)
 
 (** Add all elements of b to a *)
