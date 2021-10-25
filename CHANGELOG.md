@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.6.1
+
+- use `either` compatibility library instead of shims
+
 ## 3.6
 
 - rename `CCOpt` to `CCOption` and deprecate `CCOpt`
