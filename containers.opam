@@ -14,7 +14,8 @@ depends: [
   "ocaml" { >= "4.03.0" }
   "dune" { >= "1.4" }
   "dune-configurator"
-  "seq"
+  "seq" # compat
+  "either" # compat
   "qtest" { with-test }
   "qcheck" { with-test }
   "ounit" { with-test }
