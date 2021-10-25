@@ -7,7 +7,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-include CCShimsEither_
+type ('a, 'b) t = ('a, 'b) Either.t = Left of 'a | Right of 'b
 
 let left l = Left l
 
