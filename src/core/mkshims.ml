@@ -204,14 +204,6 @@ let shims_int_post_408 = "
   (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
 "
 
-let shims_either_pre_412 = "
-  type ('a, 'b) t = Left of 'a | Right of 'b
-  "
-
-let shims_either_post_412 = "
-  type ('a, 'b) t = ('a, 'b) Either.t = Left of 'a | Right of 'b
-"
-
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
@@ -233,7 +225,4 @@ let () =
     write_file "CCShimsMkLetList_.ml" (if (major, minor) >= (4,8) then shims_let_op_list_post_408 else shims_let_op_list_pre_408);
     write_file "CCShimsInt_.ml"
       (if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408);
-    write_file "CCShimsEither_.ml"
-      (if (major, minor) >= (4,12) then shims_either_post_412
-       else shims_either_pre_412);
   )
