@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "containers"
-version: "3.6"
+version: "3.6.1"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 license: "BSD-2-Clause"
@@ -14,7 +14,8 @@ depends: [
   "ocaml" { >= "4.03.0" }
   "dune" { >= "1.4" }
   "dune-configurator"
-  "seq"
+  "seq" # compat
+  "either" # compat
   "qtest" { with-test }
   "qcheck" { with-test }
   "ounit" { with-test }
