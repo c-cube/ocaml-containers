@@ -1,7 +1,6 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Array utils} *)
+(** Array utils *)
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
@@ -18,7 +17,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 include module type of CCShimsArray_
 
 val empty : 'a t
-(** [empty] is the empty array, physically equal to [||]. *)
+(** [empty] is the empty array, physically equal to [[||]]. *)
 
 val equal : 'a equal -> 'a t equal
 (** [equal eq a1 a2] is [true] if the lengths of [a1] and [a2] are the same

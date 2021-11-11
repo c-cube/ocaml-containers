@@ -24,7 +24,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 
-(** {1 Persistent Arrays}
+(** Persistent Arrays
 
     From the paper by Jean-Christophe Filliâtre,
     "A persistent Union-Find data structure", see

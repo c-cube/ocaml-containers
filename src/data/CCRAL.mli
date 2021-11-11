@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Random-Access Lists}
+(** Random-Access Lists
 
     This is an OCaml implementation of Okasaki's paper
     "Purely Functional Random Access Lists". It defines a list-like data

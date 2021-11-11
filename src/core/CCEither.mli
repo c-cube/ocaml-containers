@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Either Monad}
+(** Either Monad
 
     Module that is compatible with Either form OCaml 4.12 but can be use with any
     ocaml version compatible with container

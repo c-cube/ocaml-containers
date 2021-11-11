@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Simple Graph Interface}
+(** Simple Graph Interface
 
     A collections of algorithms on (mostly read-only) graph structures.
     The user provides her own graph structure as a [('v, 'e) CCGraph.t],

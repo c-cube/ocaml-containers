@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Leftist Heaps}
+(** Leftist Heaps
 
     Implementation following Okasaki's book. *)
 

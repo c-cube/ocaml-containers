@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Functional queues} *)
+(** Functional queues *)
 
 type 'a iter = ('a -> unit) -> unit
 type 'a equal = 'a -> 'a -> bool

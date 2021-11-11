@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 IO Utils}
+(** 1 IO Utils
 
     Simple utilities to deal with basic Input/Output tasks in a resource-safe
     way. For advanced IO tasks, the user is advised to use something

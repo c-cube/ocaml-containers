@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Immutable Arrays}
+(** Immutable Arrays
 
     Purely functional use of arrays. Update is costly, but reads are very fast.
     Sadly, it is not possible to make this type covariant without using black

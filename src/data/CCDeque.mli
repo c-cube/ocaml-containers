@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Imperative deque}
+(** Imperative deque
 
     This structure provides fast access to its front and back elements,
     with O(1) operations. *)

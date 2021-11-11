@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Drop-In replacement to Stdlib} *)
+(** Drop-In replacement to Stdlib *)
 
 module Array = CCArrayLabels
 module Bool = CCBool

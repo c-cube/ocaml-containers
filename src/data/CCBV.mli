@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {2 Imperative Bitvectors}
+(** Imperative Bitvectors
 
     {b BREAKING CHANGES} since 1.2:
     size is now stored along with the bitvector. Some functions have

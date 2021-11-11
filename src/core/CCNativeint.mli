@@ -1,8 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Nativeint}
-
-    Helpers for processor-native integers
+(** Helpers for processor-native integers
 
     This module provides operations on the type [nativeint] of signed 32-bit integers 
     (on 32-bit platforms) or signed 64-bit integers (on 64-bit platforms). 

@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Lazy Tree Structure}
+(** Lazy Tree Structure
     This structure can be used to represent trees and directed
     graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
     is a structural type. *)

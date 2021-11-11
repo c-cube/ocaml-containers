@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Set of Heterogeneous Values}
+(** Set of Heterogeneous Values
 
     {[
       let k1 : int key = newkey () in

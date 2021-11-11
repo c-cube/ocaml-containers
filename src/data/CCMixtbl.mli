@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Hash Table with Heterogeneous Keys}
+(** Hash Table with Heterogeneous Keys
 
     From https://github.com/mjambon/mixtbl (thanks to him).
     Example:

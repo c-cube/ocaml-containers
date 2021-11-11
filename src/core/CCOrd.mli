@@ -1,7 +1,8 @@
+(** Order combinators *)
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Comparisons} *)
+(** {2 Comparisons} *)
 
 type 'a t = 'a -> 'a -> int
 (** Comparison (total ordering) between two elements, that returns an int. *)

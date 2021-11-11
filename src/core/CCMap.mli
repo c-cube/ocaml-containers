@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Extensions of Standard Map}
+(** Extensions of Standard Map
 
     Provide useful functions and iterators on [Map.S]
     @since 0.5 *)

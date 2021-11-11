@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Helpers for the standard {b Seq} type}
+(** Helpers for the standard {b Seq} type
 
     See {{: https://github.com/c-cube/oseq/} oseq} for a richer API.
 *)

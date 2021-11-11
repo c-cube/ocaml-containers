@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Helpers for Format}
+(** Helpers for Format
 
     @since 0.8 *)
 

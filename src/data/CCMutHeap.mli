@@ -2,7 +2,7 @@
    As such it is under the Apache 2 License.
 *)
 
-(** {1 Mutable Heaps}
+(** Mutable Heaps
 
     The classic binary heap in a vector.
 

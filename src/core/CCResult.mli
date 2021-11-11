@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Error Monad}
+(** Error Monad
 
     Uses the new "result" type from OCaml 4.03.
 

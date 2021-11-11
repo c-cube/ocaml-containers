@@ -1,7 +1,7 @@
 
 (* This file is free software. See file "license" for more details. *)
 
-(** {1 Very Simple Parser Combinators}
+(** Very Simple Parser Combinators
 
     These combinators can be used to write very simple parsers, for example
     to extract data from a line-oriented file, or as a replacement to {!Scanf}.

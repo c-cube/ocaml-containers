@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Functional queues (fifo)} *)
+(** Functional queues (fifo) *)
 
 (** Simple implementation of functional queues
     @since 1.3 *)

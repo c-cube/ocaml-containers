@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Basic Int functions} *)
+(** Basic Int functions *)
 
 include module type of CCShimsInt_
 

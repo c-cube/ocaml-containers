@@ -3,7 +3,7 @@
 
 (* Copyright (C) 2015 Simon Cruanes, Carmelo Piccione *)
 
-(** {1 Circular Buffer (Deque)}
+(** Circular Buffer (Deque)
 
     Useful for IO, or as a bounded-size alternative to {!Queue} when
     batch operations are needed.

@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Bijection}
+(** Functor to build a bijection
     Represents 1-to-1 mappings between two types. Each element from the "left"
     is mapped to one "right" value, and conversely.
 

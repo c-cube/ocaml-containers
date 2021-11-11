@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Multimap} *)
+(** Map that can map key to several values *)
 
 type 'a iter = ('a -> unit) -> unit
 

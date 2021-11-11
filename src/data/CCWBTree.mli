@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Weight-Balanced Tree}
+(** Weight-Balanced Tree
 
     {b status: experimental}
 

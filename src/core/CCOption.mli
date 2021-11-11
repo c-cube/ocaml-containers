@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** Options
+(** Basic operations on the option type.
 
    This module replaces `CCOpt`.
    @since 3.6 *)

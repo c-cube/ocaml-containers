@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Random Generators} *)
+(** Random Generators *)
 
 include module type of struct include Random end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Random.html} Documentation for the standard Random module}*)

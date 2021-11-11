@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Hash combinators}
+(** Hash combinators
 
     The API of this module is stable as per semantic versioning, like the
     rest of containers. However the exact implementation of hashing function

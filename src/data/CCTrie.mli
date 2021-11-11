@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Prefix Tree} *)
+(** Prefix Tree *)
 
 type 'a iter = ('a -> unit) -> unit
 type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]

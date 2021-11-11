@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Caches}
+(** Caches Utils
 
     Particularly useful for memoization. See {!with_cache} and {!with_cache_rec}
     for more details.

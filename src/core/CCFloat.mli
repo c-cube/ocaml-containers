@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Basic operations on floating-point numbers}
+(** Basic operations on floating-point numbers
     @since 0.6.1 *)
 
 open CCShims_

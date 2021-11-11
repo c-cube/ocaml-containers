@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Tuple Functions} *)
+(** Tuple Functions *)
 
 type ('a,'b) t = ('a * 'b)
 

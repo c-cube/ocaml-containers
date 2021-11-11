@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Extension to the standard Hashtbl}
+(** Extension to the standard Hashtbl
 
     @since 0.4 *)
 

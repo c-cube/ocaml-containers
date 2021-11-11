@@ -1,5 +1,5 @@
 
-(** {1 Unicode String, in UTF8} *)
+(** Unicode String, in UTF8 *)
 
 (** A unicode string represented by a utf8 bytestring. This representation
     is convenient for manipulating normal OCaml strings that are encoded

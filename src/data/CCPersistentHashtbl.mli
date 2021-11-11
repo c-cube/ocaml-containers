@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Persistent hash-table on top of OCaml's hashtables}
+(** Persistent hash-table on top of OCaml's hashtables
 
     Almost as efficient as the regular Hashtbl type, but with a persistent
     interface (rewinding changes to get back in the past history). This is

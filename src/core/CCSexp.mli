@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Handling S-expressions}
+(** Handling S-expressions
 
     @since 3.0 moved into containers-core, previously in [containers.sexp]
 *)

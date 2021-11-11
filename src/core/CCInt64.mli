@@ -1,8 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Int64}
-
-    Helpers for 64-bit integers.
+(** Helpers for 64-bit integers.
 
     This module provides operations on the type int64 of signed 64-bit integers.
     Unlike the built-in int type, the type int64 is guaranteed to be exactly

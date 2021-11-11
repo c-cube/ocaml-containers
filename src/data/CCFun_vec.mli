@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Functional Vectors} *)
+(** Functional Vectors *)
 
 (** Tree with a large branching factor for logarithmic operations with
     a low multiplicative factor.

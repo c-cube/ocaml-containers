@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Canonical S-expressions}
+(** Canonical S-expressions
 
     See {{: https://en.wikipedia.org/wiki/Canonical_S-expressions} wikipedia}.
     These S-expressions are binary safe.

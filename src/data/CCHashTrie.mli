@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Hash Tries}
+(** Hash Tries
 
     Trie indexed by the hash of the keys, where the branching factor is fixed.
     The goal is to have a quite efficient functional structure with fast

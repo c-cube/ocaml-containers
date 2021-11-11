@@ -1,9 +1,9 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Bit Field}
+(** Efficient Bit Field for up to 31 or 61 fiels
 
     This module defines efficient bitfields
-    up to 30 or 62 bits (depending on the architecture) in
+    up to 31 or 61 bits (depending on the architecture) in
     a relatively type-safe way.
 
     {[
