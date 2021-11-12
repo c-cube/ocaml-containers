@@ -4,6 +4,7 @@
 (** Basic Int functions *)
 
 include module type of CCShimsInt_
+(** @inline *)
 
 type t = int
 

@@ -4,6 +4,7 @@
 (** Basic operations on Functions *)
 
 include module type of CCShimsFun_
+(** @inline *)
 
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** [compose f g x] is [g (f x)]. Composition. *)

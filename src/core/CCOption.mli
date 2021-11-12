@@ -187,21 +187,19 @@ module Infix : sig
   (** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8 *)
+      @since 2.8
+      @inline *)
   include CCShimsMkLet_.S with type 'a t_let := 'a option
 
 end
 
-
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
-include CCShimsMkLet_.S with type 'a t_let := 'a option
+include module type of Infix
 
 (** {2 Conversion and IO} *)
 
 val to_list : 'a t -> 'a list
 (** [to_list o] returns [[x]] if [o] is [Some x] or the empty list [[]] if [o] is [None]. *)
-    
+
 val of_list : 'a list -> 'a t
 (** [of_list l] returns [Some x] (x being the head of the list l), or [None] if [l] is the empty list. *)
 

@@ -926,15 +926,15 @@ module Infix : sig
       @since 0.17 *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8 *)
+      @since 2.8
+      @inline *)
   include CCShimsMkLet_.S with type 'a t_let := 'a list
 
   include CCShimsMkLetList_.S
+  (** @inline *)
 end
 
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
-include CCShimsMkLet_.S with type 'a t_let := 'a list
+include module type of Infix
 
 (** {2 IO} *)
 

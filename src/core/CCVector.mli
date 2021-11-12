@@ -384,5 +384,6 @@ val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer
     (fun out -> Format.fprintf out ",@ "). *)
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
+    @since 2.8
+    @inline *)
 include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) t

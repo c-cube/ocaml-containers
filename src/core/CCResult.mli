@@ -191,16 +191,12 @@ module Infix : sig
       over the error of [b] if both fail. *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8 *)
+      @since 2.8
+      @inline *)
   include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
 end
 
 include module type of Infix
-
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
-include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
-
 
 (** {2 Collections} *)
 

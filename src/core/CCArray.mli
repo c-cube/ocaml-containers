@@ -15,6 +15,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 (** {2 Arrays} *)
 
 include module type of CCShimsArray_
+(** @inline *)
 
 val empty : 'a t
 (** [empty] is the empty array, physically equal to [[||]]. *)
@@ -177,6 +178,12 @@ val random_choose : 'a t -> 'a random_gen
 (** [random_choose a rs] randomly chooses an element of [a].
     @raise Not_found if the array/slice is empty. *)
 
+(*val of_list_map : ('a -> 'b) -> 'a list -> 'b t/*)
+(** [of_list_map f l] applies the function [f] to all the elements of the list [l]
+    and builds an array with the results returned by [f]. The result is equivalent to
+    [map f (Array.of_list l)].
+    @since NEXT_RELEASE *)
+
 val to_string : ?sep:string -> ('a -> string) -> 'a array -> string
 (** [to_string ~sep item_to_string a] print [a] to a string using [sep] as a separator
     between elements of [a].
@@ -294,7 +301,8 @@ module Infix : sig
       @since 0.17 *)
 
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8 *)
+      @since 2.8
+      @inline *)
   include CCShimsMkLet_.S with type 'a t_let := 'a array
 end
 
