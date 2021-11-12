@@ -178,12 +178,6 @@ val random_choose : 'a t -> 'a random_gen
 (** [random_choose a rs] randomly chooses an element of [a].
     @raise Not_found if the array/slice is empty. *)
 
-(*val of_list_map : ('a -> 'b) -> 'a list -> 'b t/*)
-(** [of_list_map f l] applies the function [f] to all the elements of the list [l]
-    and builds an array with the results returned by [f]. The result is equivalent to
-    [map f (Array.of_list l)].
-    @since NEXT_RELEASE *)
-
 val to_string : ?sep:string -> ('a -> string) -> 'a array -> string
 (** [to_string ~sep item_to_string a] print [a] to a string using [sep] as a separator
     between elements of [a].
