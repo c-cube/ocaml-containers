@@ -163,8 +163,8 @@ you first have to load the appropriate bytecode archives. After starting a
 session, e.g. `ocamldebug your_program.bc`,
 
 ```ocaml non-deterministic=command
-# #load_printer containers_monomorphic.cma
-# #load_printer containers.cma
+# #load_printer containers_monomorphic.cma;;
+# #load_printer containers.cma;;
 ```
 
 For these archives to be found, you may have to `run` the program first. Now
@@ -172,7 +172,7 @@ printing functions that have the appropriate type `Format.formatter -> 'a ->
 unit` can be installed. For example,
 
 ```ocaml non-deterministic=command
-# #install_printer Containers.Int.pp
+# #install_printer Containers.Int.pp;;
 ```
 
 However, printer combinators are not easily handled by `ocamldebug`. For
@@ -184,7 +184,7 @@ instance
 ```ocaml non-deterministic=command
 module M = struct
 	let pp_int_list = Containers.(List.pp Int.pp)
-end
+end;;
 ```
 
 loaded via `# load_printer m.cmo` and installed as `# install_printer
@@ -398,7 +398,7 @@ val l2 : int list = [1; 2; 3; 4; 5; 6; 7; 8; 9]
 
 ```ocaml
 (* an extension of Map.Make, compatible with Map.Make(CCInt) *)
-module IntMap = CCMap.Make(CCInt)
+module IntMap = CCMap.Make(CCInt);;
 ```
 
 ```ocaml
