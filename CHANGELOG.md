@@ -16,6 +16,11 @@
   * expose Position module, add `or_`, `both`, `lookahead`, `U.bool`
   * example Sexpr parser, and a test
   * example and test of an IRC log parser
+- fix bug in `CCIO.read_lines_seq`
+
+## 3.5.1
+
+- fix bug in `CCIO.read_lines_seq` (backported from 3.6)
 
 ## 3.5
 
