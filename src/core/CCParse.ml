@@ -106,10 +106,29 @@ open CCShims_
   ()
 *)
 
-(* TODO: [type position = {state: state; i: int}] and recompute line, col
-   on demand *)
+module Memo_tbl = Hashtbl.Make(struct
+    type t = int * int  (* id of parser, position *)
+    let equal ((a,b):t)(c,d) = a=c && b=d
+    let hash = Hashtbl.hash
+  end)
+
+module Memo_state = struct
+  (* table of closures, used to implement universal type *)
+  type t = (unit -> unit) Memo_tbl.t
+
+  (* unique ID for each parser *)
+  let id_ = ref 0
+end
+
+(* state common to all parser instances *)
+type common_state = {
+  str: string;
+  mutable line_offsets: int array option;
+  mutable memo: Memo_state.t option;
+}
+
 type position = {
-  pos_buffer: string;
+  pos_cs: common_state;
   pos_offset: int;
   mutable pos_lc: (int * int) option;
 }
@@ -117,27 +136,50 @@ type position = {
 module Position = struct
   type t = position
 
-  (* actually re-compute line and column from the buffer *)
-  let compute_line_and_col_ (s:string) (off:int) : int * int =
+  let compute_line_offsets_ (s:string): int array =
+    let lines = CCVector.create() in
     let i = ref 0 in
-    let continue = ref true in
-    let line = ref 1 in
-    let col = ref 1 in
-    while !continue && !i < off && !i < String.length s do
+    CCVector.push lines 0;
+    while !i < String.length s do
       match String.index_from s !i '\n' with
-        | exception Not_found ->
-          col := off - !i; continue := false;
-        | j when j > off ->
-          col := off - !i; continue := false;
-        | j -> incr line; i := j+1;
+      | exception Not_found -> i := String.length s
+      | j ->
+        CCVector.push lines j;
+        i := j + 1
     done;
-    !line, !col
+    CCVector.to_array lines
+  ;;
+
+  let line_offsets_ cs = match cs.line_offsets with
+    | Some lines -> lines
+    | None ->
+      let lines = compute_line_offsets_ cs.str in
+      cs.line_offsets <- Some lines;
+      lines
+
+  let int_cmp_ : int -> int -> int = compare
+
+  (* TODO: use pos_cs.line_offsets *)
+  (* actually re-compute line and column from the buffer *)
+  let compute_line_and_col_ (cs:common_state) (off:int) : int * int =
+    let offsets = line_offsets_ cs in
+    assert (offsets.(0) = 0);
+    begin match CCArray.bsearch ~cmp:int_cmp_ off offsets with
+      | `At 0 -> 0, 0
+      | `At n -> (n-1), off - offsets.(n-1) - 1
+      | `Just_after n -> n, off - offsets.(n)
+      | `Empty -> assert false
+      | `All_bigger -> assert false (* off >= 0, and offsets[0] == 0 *)
+      | `All_lower ->
+        let n = Array.length offsets - 1 in
+        n, off - offsets.(n)
+    end
 
   let line_and_column self =
     match self.pos_lc with
       | Some tup -> tup
       | None ->
-        let tup = compute_line_and_col_ self.pos_buffer self.pos_offset in
+        let tup = compute_line_and_col_ self.pos_cs self.pos_offset in
         self.pos_lc <- Some tup; (* save *)
         tup
 
@@ -169,26 +211,11 @@ end
 
 type +'a or_error = ('a, Error.t) result
 
-module Memo_tbl = Hashtbl.Make(struct
-    type t = int * int  (* id of parser, position *)
-    let equal ((a,b):t)(c,d) = a=c && b=d
-    let hash = Hashtbl.hash
-  end)
-
-module Memo_state = struct
-  (* table of closures, used to implement universal type *)
-  type t = (unit -> unit) Memo_tbl.t
-
-  (* unique ID for each parser *)
-  let id_ = ref 0
-end
-
 (** Purely functional state passed around *)
 type state = {
-  str: string; (* the input *)
+  cs: common_state;
   i: int; (* offset in [str] *)
   j: int; (* end pointer in [str], excluded. [len = j-i] *)
-  memo : Memo_state.t option ref; (* Memoization table, if any *)
 }
 (* FIXME: replace memo with:
    [global : global_st ref]
@@ -219,17 +246,16 @@ let[@inline] const_str_ x () : string = x
 
 let state_of_string str =
   let s = {
-    str;
+    cs={str; memo=None; line_offsets=None};
     i=0;
     j=String.length str;
-    memo=ref None;
   } in
   s
 
 let[@inline] is_done st = st.i >= st.j
-let[@inline] cur st = st.str.[st.i]
+let[@inline] cur st = st.cs.str.[st.i]
 
-let pos_of_st_ st : position = {pos_buffer=st.str; pos_offset=st.i; pos_lc=None}
+let pos_of_st_ st : position = {pos_cs=st.cs; pos_offset=st.i; pos_lc=None}
 let mk_error_ st msg : Error.t = {Error.msg; pos=pos_of_st_ st}
 
 (* consume one char, passing it to [ok]. *)
@@ -238,7 +264,7 @@ let consume_ st ~ok ~err =
     let msg = const_str_ "unexpected end of input" in
     err (mk_error_ st msg)
   ) else (
-    let c = st.str.[st.i] in
+    let c = st.cs.str.[st.i] in
     ok {st with i=st.i + 1} c
   )
 
@@ -367,6 +393,25 @@ let with_pos p : _ t = {
       ~err
 }
 
+let pos : _ t = {
+  run=fun st ~ok ~err:_ -> ok st (pos_of_st_ st)
+}
+
+(*$= & ~printer:Q.Print.(pair int int)
+  (0,5) (let p = any_char_n 5 *> pos in \
+  match parse_string p "abcde   " with \
+    | Ok p -> Position.line_and_column p \
+    | Error _ -> assert false)
+*)
+
+(*$= & ~printer:Q.Print.(list @@ pair int int)
+  [(0,2); (1,3); (2,1); (3,0); (4,0); (5,2)] \
+   (let p = each_line (skip_space *> pos) in \
+    match parse_string p "  a\n  b\nc\n\n\n a" with \
+      | Ok ps -> List.map Position.line_and_column ps \
+      | Error _ -> assert false)
+*)
+
 (* a slice is just a state, which makes {!recurse} quite easy. *)
 type slice = state
 
@@ -374,14 +419,14 @@ module Slice = struct
   type t = slice
   let length sl = sl.j - sl.i
   let is_empty sl = sl.i = sl.j
-  let to_string sl = String.sub sl.str sl.i (length sl)
+  let to_string sl = String.sub sl.cs.str sl.i (length sl)
 end
 
 let recurse slice p : _ t = {
   run=fun _st ~ok ~err ->
     (* make sure these states are related. all slices share the
        same reference as the initial state they derive from. *)
-    assert CCShims_.Stdlib.(_st.memo == slice.memo);
+    assert CCShims_.Stdlib.(_st.cs == slice.cs);
     p.run slice ~ok ~err
 }
 
@@ -807,7 +852,7 @@ let sep1 ~by p =
 let lookahead p : _ t = {
   run=fun st ~ok ~err ->
     p.run st
-      ~ok:(fun _st x -> ok st x) (* discard old state *)
+      ~ok:(fun _st x -> ok st x) (* discard p's new state *)
       ~err
 }
 
@@ -820,7 +865,7 @@ let lookahead_ignore p : _ t = {
 
 let set_current_slice sl : _ t = {
   run=fun _st ~ok ~err:_ ->
-    assert CCShims_.Stdlib.(_st.memo == sl.memo);
+    assert CCShims_.Stdlib.(_st.cs == sl.cs);
     ok sl () (* jump to slice *)
 }
 
@@ -841,7 +886,7 @@ let split_1 ~on_char : _ t = {
     if st.i >= st.j then (
       ok st (st, None)
     ) else (
-      match String.index_from st.str st.i on_char with
+      match String.index_from st.cs.str st.i on_char with
       | j ->
         let x = {st with j} in
         let y = {st with i=min st.j (j+1)} in
@@ -950,11 +995,11 @@ let memo (type a) (p:a t) : a t =
   let r = ref None in (* used for universal encoding *)
 
   {run=fun st ~ok ~err ->
-    let tbl = match !(st.memo) with
+    let tbl = match st.cs.memo with
       | Some t -> t
       | None ->
         let tbl = Memo_tbl.create 32 in
-        st.memo := Some tbl;
+        st.cs.memo <- Some tbl;
         tbl
     in
 

@@ -72,10 +72,10 @@ module Position : sig
   type t = position
 
   val line : t -> int
-  (** Line number *)
+  (** Line number, 0 based *)
 
   val column : t -> int
-  (** Column number *)
+  (** Column number, 0 based *)
 
   val line_and_column : t -> int * int
   (** Line and column number *)
@@ -177,6 +177,12 @@ val set_error_message : string -> 'a t -> 'a t
     [set_error_message msg p] fails with [msg] instead and at the current
     position. The internal error message of [p] is just discarded.
     @since 3.6 *)
+
+val pos : position t
+(** [pos] returns the current position in the buffer.
+
+    {b EXPERIMENTAL}
+    @since NEXT_RELEASE *)
 
 val with_pos : 'a t -> ('a * position) t
 (** [with_pos p] behaves like [p], but returns the (starting) position
