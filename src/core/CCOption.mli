@@ -45,9 +45,6 @@ val none : 'a t
 (** Alias to {!None}.
     @since 3.5 *)
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** [o >|= f] is the infix version of {!map}. *)
-
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** [flat_map f o] is equivalent to {!map} followed by {!flatten}.
     Flip version of {!>>=}. *)
@@ -56,9 +53,6 @@ val bind : 'a t -> ('a -> 'b t) -> 'b t
 (** [bind o f] is [f v] if [o] is [Some v], [None] otherwise.
     Monadic bind.
     @since 3.0 *)
-
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** [o >>= f] is the infix version of {!bind}. *)
 
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [map2 f o1 o2] maps ['a option] and ['b option] to a ['c option] using [f]. *)
@@ -135,12 +129,6 @@ val wrap2 : ?handler:(exn -> bool) -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c option
 val pure : 'a -> 'a t
 (** [pure x] is an alias to {!return}. *)
 
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-(** [f <*> (Some x)] returns [Some (f x)] and [f <*> None] returns [None]. *)
-
-val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-(** [f <$> o] is like [map f o].  *)
-
 (** {2 Alternatives} *)
 
 val or_ : else_:('a t) -> 'a t -> 'a t
@@ -150,9 +138,6 @@ val or_ : else_:('a t) -> 'a t -> 'a t
 val or_lazy : else_:(unit -> 'a t) -> 'a t -> 'a t
 (** [or_lazy ~else_ o] is [o] if [o] is [Some _], [else_ ()] if [o] is [None].
     @since 1.2 *)
-
-val (<+>) : 'a t -> 'a t -> 'a t
-(** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
 
 val choice : 'a t list -> 'a t
 (** [choice lo] returns the first non-[None] element of the list [lo], or [None]. *)
@@ -235,7 +220,7 @@ val choice_seq : 'a t Seq.t -> 'a t
 val to_gen : 'a t -> 'a gen
 (** [to_gen o] is [o] as a [gen]. [Some x] is the singleton [gen] containing [x]
     and [None] is the empty [gen]. *)
-    
+
 val to_seq : 'a t -> 'a Seq.t
 (** [to_seq o] is [o] as a sequence [Seq.t]. [Some x] is the singleton sequence containing [x]
     and [None] is the empty sequence.

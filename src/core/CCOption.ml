@@ -237,8 +237,6 @@ let to_iter o k = match o with
   | None -> ()
   | Some x -> k x
 
-let to_seq = to_iter
-
 let to_seq o () = match o with
   | None -> Seq.Nil
   | Some x -> Seq.Cons (x, Seq.empty)
