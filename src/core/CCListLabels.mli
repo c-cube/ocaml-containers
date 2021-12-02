@@ -27,10 +27,6 @@ val map : f:('a -> 'b) -> 'a t -> 'b t
 (** [map ~f [a0; a1; …; an]] applies function [f] in turn to [[a0; a1; …; an]].
     Safe version of {!List.map}. *)
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-(** [l >|= f] is the infix version of [map] with reversed arguments.
-    @since 0.5 *)
-
 val cons : 'a -> 'a t -> 'a t
 (** [cons x l] is [x::l].
     @since 0.12 *)
@@ -48,10 +44,6 @@ val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l].
     [cons_maybe None l] is [l].
     @since 0.13 *)
-
-val (@) : 'a t -> 'a t -> 'a t
-(** [l1 @ l2] is like [append l1 l2].
-    Concatenate the two lists [l1] and [l2]. *)
 
 val filter : f:('a -> bool) -> 'a t -> 'a t
 (** [filter ~f l] returns all the elements of the list [l]
@@ -172,7 +164,7 @@ val split : ('a * 'b) t -> 'a t * 'b t
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 (** [compare cmp l1 l2] compares the two lists [l1] and [l2]
     using the given comparison function [cmp]. *)
-    
+
 val compare_lengths : 'a t -> 'b t -> int
 (** [compare_lengths l1 l2] compare the lengths of the two lists [l1] and [l2].
     Equivalent to [compare (length l1) (length l2)] but more efficient.
@@ -197,16 +189,16 @@ val flat_map_i : f:(int -> 'a -> 'b t) -> 'a t -> 'b t
     @since 2.8 *)
 
 val flatten : 'a t t -> 'a t
-(** [flatten [l1]; [l2]; …] concatenates a list of lists. 
+(** [flatten [l1]; [l2]; …] concatenates a list of lists.
     Safe version of {!List.flatten}. *)
-    
+
 val product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [product ~f l1 l2] computes the cartesian product of the two lists, with the given combinator [f]. *)
 
 val fold_product : f:('c -> 'a -> 'b -> 'c) -> init:'c -> 'a t -> 'b t -> 'c
-(** [fold_product ~f ~init l1 l2] applies the function [f] with the accumulator [init] on all 
+(** [fold_product ~f ~init l1 l2] applies the function [f] with the accumulator [init] on all
     the pair of elements of [l1] and [l2]. Fold on the cartesian product. *)
-    
+
 val cartesian_product : 'a t t -> 'a t t
 (** [cartesian_product [[l1];[l2]; …; [ln]]] produces the cartesian product of this list of lists,
     by returning all the ways of picking one element per sublist.
@@ -366,7 +358,7 @@ val pure : 'a -> 'a t
 (** [pure x] is [return x]. *)
 
 val mguard : bool -> unit t
-(** [mguard c] is [pure ()] if [c] is true, [[]] otherwise. 
+(** [mguard c] is [pure ()] if [c] is true, [[]] otherwise.
     This is useful to define a list by comprehension, e.g.:
     {[
       # let square_even xs =
@@ -379,17 +371,8 @@ val mguard : bool -> unit t
     ]}
     @since 3.1 *)
 
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-(** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
-
-val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-(** [(<$>)] is [map]. *)
-
 val return : 'a -> 'a t
 (** [return x] is [x]. *)
-
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-(** [l >>= f] is [flat_map f l]. *)
 
 val take : int -> 'a t -> 'a t
 (** [take n l] takes the [n] first elements of the list [l], drop the rest. *)
@@ -424,7 +407,7 @@ val last : int -> 'a t -> 'a t
     [l] doesn't have that many elements). *)
 
 val head_opt : 'a t -> 'a option
-(** [head_opt l] returns [Some x] (the first element of the list [l]) 
+(** [head_opt l] returns [Some x] (the first element of the list [l])
     or [None] if the list [l] is empty.
     @since 0.20 *)
 
@@ -434,7 +417,7 @@ val tail_opt : 'a t -> 'a t option
     @since 2.0 *)
 
 val last_opt : 'a t -> 'a option
-(** [last_opt l] returns [Some x] (the last element of [l]) or [None] if the list [l] is empty. 
+(** [last_opt l] returns [Some x] (the last element of [l]) or [None] if the list [l] is empty.
     @since 0.20 *)
 
 val find_pred : f:('a -> bool) -> 'a t -> 'a option
@@ -518,11 +501,11 @@ val sorted_diff : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list ->
     [sorted_diff ~cmp (sorted_merge ~cmp l1 l2) l2]
     is always equal to [l1] for sorted lists [l1] and [l2].
     @since 3.5 *)
-    
+
 val sort_uniq : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list
 (** [sort_uniq ~cmp l] sorts the list [l] using the given comparison function [cmp]
     and remove duplicate elements. *)
-    
+
 val sorted_merge_uniq : cmp:(('a -> 'a -> int) [@keep_label]) -> 'a list -> 'a list -> 'a list
 (** [sorted_merge_uniq ~cmp l1 l2] merges the sorted lists [l1] and [l2] and
     removes duplicates.
@@ -593,7 +576,7 @@ val iteri2 : f:(int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
 val foldi : f:('b -> int -> 'a -> 'b) -> init:'b -> 'a t -> 'b
 (** [foldi ~f ~init l] is like [fold] but it also passes in the index of each element, from [0] to [length l - 1]
     as additional argument to the folded function [f]. Tail-recursive. *)
-    
+
 val foldi2 : f:('c -> int -> 'a -> 'b -> 'c) -> init:'c -> 'a t -> 'b t -> 'c
 (** [foldi2 ~f ~init l1 l2] folds on the two lists [l1] and [l2],
     with index of each element passed to the function [f].
@@ -655,11 +638,11 @@ val remove_one : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> 'a t
 val mem : ?eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> 'a t -> bool
 (** [mem ?eq x l] is [true] iff [x] is equal to an element of [l].
     A comparator function [eq] can be provided. Linear time. *)
-    
+
 val subset : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t -> bool
 (** [subset ~eq l1 l2] tests if all elements of the list [l1] are contained
     in the list [l2] by applying [eq]. *)
-    
+
 val uniq : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t
 (** [uniq ~eq l] removes duplicates in [l] w.r.t the equality predicate [eq].
     Complexity is quadratic in the length of the list, but the order
@@ -673,7 +656,7 @@ val union : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t -> 'a t
 val inter : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a t -> 'a t -> 'a t
 (** [inter ~eq l1 l2] is the intersection of the lists [l1] and [l2] w.r.t. the equality predicate [eq].
     Complexity is product of length of inputs. *)
-    
+
 (** {2 Other Constructors} *)
 
 val range_by : step:(int [@keep_label]) -> int -> int -> int t
@@ -691,15 +674,6 @@ val range' : int -> int -> int t
 (** [range' i j] is like {!range} but the second bound [j] is excluded.
     For instance [range' 0 5 = [0;1;2;3;4]]. *)
 
-val (--) : int -> int -> int t
-(** [i -- j] is the list of integers from [i] to [j] included.
-    Infix alias for [range]. *)
-    
-val (--^) : int -> int -> int t
-(** [i --^ j] is the list of integers from [i] to [j] excluded.
-    Infix alias for [range'].
-    @since 0.17 *)
-
 val replicate : int -> 'a -> 'a t
 (** [replicate n x] replicates the given element [x] [n] times. *)
 
@@ -714,7 +688,7 @@ module Assoc : sig
   val get : eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,'b) t -> 'b option
   (** [get ~eq k alist] returns [Some v] if the given key [k] is present into [alist],
       or [None] if not present. *)
-      
+
   val get_exn : eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,'b) t -> 'b
   (** [get_exn ~eq k alist] returns [v] if the element [k] is present into [alist].
       Like [get], but unsafe.
@@ -726,7 +700,7 @@ module Assoc : sig
   val mem : ?eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,_) t -> bool
   (** [mem ?eq k alist] returns [true] iff [k] is a key in [alist].
       @since 0.16 *)
-      
+
   val update :
     eq:(('a->'a->bool) [@keep_label]) -> f:(('b option -> 'b option) [@keep_label]) -> 'a -> ('a,'b) t -> ('a,'b) t
   (** [update ~eq ~f k alist] updates [alist] on the key [k], by calling [f (get alist k)]
@@ -780,7 +754,7 @@ module Ref : sig
   val pop : 'a t -> 'a option
   (** [pop rlist] removes and returns [Some e] (the first element of [rlist])
       or [None] if the [rlist] is empty *)
-      
+
   val pop_exn : 'a t -> 'a
   (** [pop_exn rlist] removes and returns the first element of [rlist].
       Unsafe version of {!pop}.
@@ -796,7 +770,7 @@ module Ref : sig
   (** [lift f rlist] applies a list function [f] to the content of [rlist]. *)
 
   val push_list : 'a t -> 'a list -> unit
-  (** [push_list rlist l] adds elements of the list [l] at the beginning of the list ref [rlist]. 
+  (** [push_list rlist l] adds elements of the list [l] at the beginning of the list ref [rlist].
       Elements at the end of the list [l] will be at the beginning of the list ref [rlist]. *)
 end
 
