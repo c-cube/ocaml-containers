@@ -758,7 +758,7 @@ let many p : _ t =
     (fun self ->
        try_or p
          ~f:(fun x -> self >|= fun tl -> x :: tl)
-         (pure []))
+         ~else_:(pure []))
 
 (*
 (* parse many [p], as a difference list *)
@@ -829,8 +829,8 @@ let sep ~by p =
           <|>
           try_or by
             ~f:(fun _ -> Lazy.force read_p >|= fun tl -> x :: tl)
-            (pure [x]))
-      (pure [])
+            ~else_:(pure [x]))
+      ~else_:(pure [])
   ) in
   Lazy.force read_p
 
