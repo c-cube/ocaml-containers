@@ -406,7 +406,7 @@ let to_array l =
       let a = Array.make len init in
       (* Subtract 1 for len->index conversion and 1 for the removed [init] *)
       let idx = len - 2 in
-      ignore (List.fold_left (fun i x -> a.(i) <- x; i - 1) idx rest);
+      ignore (List.fold_left (fun i x -> a.(i) <- x; i - 1) idx rest : int);
       a
 
 (*$Q
