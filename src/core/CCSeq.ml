@@ -395,14 +395,18 @@ let of_array a =
   aux a 0
 
 let to_array l =
-  match l() with
-    | Nil -> [| |]
-    | Cons (x, _) ->
-      let n = length l in
-      let a = Array.make n x in (* need first elem to create [a] *)
-      iteri
-        (fun i x -> a.(i) <- x)
-        l;
+  (* We contruct the length and list of seq elements (in reverse) in one pass *)
+  let len, ls = fold_left (fun (i, acc) x -> (i + 1, x :: acc)) (0, []) l in
+  (* The length is used to initialize the array, and then to derive the index for
+     each item, working back from the last. This lets us only traverse the list
+     twice, instead of having to reverse it. *)
+  match ls with
+    | [] -> [||]
+    | init::rest ->
+      let a = Array.make len init in
+      (* Subtract 1 for len->index conversion and 1 for the removed [init] *)
+      let idx = len - 2 in
+      ignore (List.fold_left (fun i x -> a.(i) <- x; i - 1) idx rest);
       a
 
 (*$Q
@@ -412,6 +416,9 @@ let to_array l =
 (*$T
   of_array [| 1; 2; 3 |] |> to_list = [1;2;3]
   of_list [1;2;3] |> to_array = [| 1; 2; 3; |]
+  let r = ref 1 in \
+  let s = unfold (fun i -> if i < 3 then let x = !r in incr r; Some (x, succ i) else None) 0 in \
+  to_array s = [| 1; 2; 3; |]
 *)
 
 let rec to_iter res k = match res () with
