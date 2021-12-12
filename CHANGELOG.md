@@ -3,6 +3,7 @@
 ## 3.6.1
 
 - use `either` compatibility library instead of shims
+- make `CCSeq.to_array` only traverse the sequence once
 
 ## 3.6
 
