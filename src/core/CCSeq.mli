@@ -270,7 +270,7 @@ val of_array : 'a array -> 'a t
     @since 0.13 *)
 
 val to_array : 'a t -> 'a array
-(** Convert into array. Iterate twice.
+(** Convert into array.
     @since 0.13 *)
 
 val to_rev_list : 'a t -> 'a list
