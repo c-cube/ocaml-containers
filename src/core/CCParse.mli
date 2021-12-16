@@ -362,7 +362,12 @@ val is_white : char -> bool
 
 val suspend : (unit -> 'a t) -> 'a t
 (** [suspend f] is  the same as [f ()], but evaluates [f ()] only
-    when needed. *)
+    when needed.
+
+    A practical use case is to implement recursive parsers manually,
+    as described in {!fix}. The parser is [let rec p () = …],
+    and [suspend p] can be used in the definition to use [p].
+*)
 
 val string : string -> string t
 (** [string s] parses exactly the string [s], and nothing else. *)
@@ -423,12 +428,15 @@ val try_or_l :
   'a t
 (** [try_or_l ?else_ l] tries each pair [(test, p)] in order.
     If the n-th [test] succeeds, then [try_or_l l] behaves like n-th [p],
-    whether [p] fails or not.
+    whether [p] fails or not. If [test] consumes input, the state is restored
+    before calling [p].
     If they all fail, and [else_] is defined, then it behaves like [else_].
     If all fail, and [else_] is [None], then it fails as well.
 
     This is a performance optimization compared to {!(<|>)}. We commit to a
     branch if the test succeeds, without backtracking at all.
+    It can also provide better error messages, because failures in the parser
+    will not be reported as failures in [try_or_l].
 
     See {!lookahead_ignore} for a convenient way of writing the test conditions.
 
@@ -481,7 +489,17 @@ val lookahead_ignore : 'a t -> unit t
     @since 3.6 *)
 
 val fix : ('a t -> 'a t) -> 'a t
-(** Fixpoint combinator. *)
+(** Fixpoint combinator. [fix (fun self -> p)] is the parser [p],
+    in which [self] refers to the parser [p] itself (which is useful to
+    parse recursive structures.
+
+    An alternative, manual implementation to [let p = fix (fun self -> q)]
+    is:
+    {[ let rec p () =
+        let self = suspend p in
+        q
+    ]}
+*)
 
 val line : slice t
 (** Parse a line, ['\n'] excluded, and position the cursor after the ['\n'].
@@ -634,9 +652,7 @@ module Infix : sig
 
       [a <|> b] tries to parse [a], and if [a] fails without
       consuming any input, backtracks and tries
-      to parse [b], otherwise it fails as [a].
-      See {!try_} to ensure [a] does not consume anything (but it is best
-      to avoid wrapping large parsers with {!try_}). *)
+      to parse [b], otherwise it fails as [a]. *)
 
   val (<?>) : 'a t -> string -> 'a t
   (** [a <?> msg] behaves like [a], but if [a] fails,
