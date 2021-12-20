@@ -63,7 +63,7 @@ changes in this release.
   and old-time iteration based on [iter](https://github.com/c-cube/iter)
   is now named `of_iter`, `to_iter`, etc.
 
-  Here you need to change you code, possibly using search and replace.
+  Here you need to change your code, possibly using search and replace.
   Thankfully, the typechecker should guide you.
 
 3. `Array_slice` and `String.Sub` have been removed to simplify the
@@ -127,7 +127,7 @@ that will cause comparison errors ie. identical hashtables will be seen as
 different or vice versa.
 
 Every time you use a polymorphic comparison where you're using a data type
-where structural comparison != semantic comparison, it's a bug. And ever time
+where structural comparison != semantic comparison, it's a bug. And every time
 you use polymorphic comparison where the type of data being compared may vary
 (e.g. it's an int now, but it may be a map later), you're planting a bug for
 the future.
