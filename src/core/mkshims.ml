@@ -40,10 +40,10 @@ let cc_update_funs funs f1 f2 =
 
 let shims_fun_pre_408 = "
   external id : 'a -> 'a = \"%identity\"
-  let flip f x y = f y x
-  let const x _ = x
-  let negate f x = not (f x)
-  let protect ~finally f =
+  let[@inline] flip f x y = f y x
+  let[@inline] const x _ = x
+  let[@inline] negate f x = not (f x)
+  let[@inline] protect ~finally f =
     try
       let x= f() in
       finally();
