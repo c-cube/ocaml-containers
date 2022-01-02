@@ -204,6 +204,42 @@ let shims_int_post_408 = "
   (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
 "
 
+let shims_unit_before_408 = {|
+type t = unit
+let[@inline] equal (_:t) (_:t) = true
+let[@inline] compare (_:t) (_:t) = 0
+let to_string () = "()"
+|}
+
+let shims_unit_after_408 = "include Unit"
+
+let shims_atomic_before_412 = {|
+  type 'a t = {mutable x: 'a}
+  let[@inline] make x = {x}
+  let[@inline] get {x} = x
+  let[@inline] set r x = r.x <- x
+  let[@inline] exchange r x =
+    let y = r.x in
+    r.x <- x;
+    y
+
+  let[@inline] compare_and_set r seen v =
+    if r.x == seen then (
+      r.x <- v;
+      true
+    ) else false
+
+  let[@inline] fetch_and_add r x =
+    let v = r.x in
+    r.x <- x + r.x;
+    v
+
+  let[@inline] incr r = r.x <- 1 + r.x
+  let[@inline] decr r = r.x <- r.x - 1
+  |}
+
+let shims_atomic_after_412 = {|include Atomic|}
+
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
@@ -225,4 +261,8 @@ let () =
     write_file "CCShimsMkLetList_.ml" (if (major, minor) >= (4,8) then shims_let_op_list_post_408 else shims_let_op_list_pre_408);
     write_file "CCShimsInt_.ml"
       (if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408);
+    write_file "CCAtomic.ml"
+      (if (major, minor) >= (4,12) then shims_atomic_after_412 else shims_atomic_before_412);
+    write_file "CCUnit.ml"
+      (if (major, minor) >= (4,8) then shims_unit_after_408 else shims_unit_before_408);
   )

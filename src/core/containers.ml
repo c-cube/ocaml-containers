@@ -45,6 +45,8 @@ module String = CCString
 module Vector = CCVector
 module Monomorphic = CCMonomorphic
 module Utf8_string = CCUtf8_string
+module Unit = CCUnit
+module Atomic = CCAtomic
 
 module Sexp = CCSexp
 module Sexp_intf = CCSexp_intf
