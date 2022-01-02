@@ -214,6 +214,8 @@ let to_string () = "()"
 let shims_unit_after_408 = "include Unit"
 
 let shims_atomic_before_412 = {|
+  open CCShims_.Stdlib (* for == *)
+
   type 'a t = {mutable x: 'a}
   let[@inline] make x = {x}
   let[@inline] get {x} = x
