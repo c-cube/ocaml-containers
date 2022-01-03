@@ -152,4 +152,6 @@ val pp : Format.formatter -> t -> unit
 
 (**/**)
 val __to_word_l : t -> char list
+val __popcount8 : int -> int
+val __lsb_mask : int -> int
 (**/**)

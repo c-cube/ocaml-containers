@@ -22,27 +22,80 @@ let[@inline] mul_ n = n lsl 3
 
 let zero = Char.unsafe_chr 0
 
-(** We use OCamls chars to store the bits. We index them from the
-    least significant bit. We create masks to zero out the most significant
-    bits that aren't used to store values. This is necessary when we are
-    constructing or negating a bit vector. *)
-let[@inline] lsb_masks_ n = (1 lsl n) - 1
+(* 0b11111111 *)
+let all_ones_ = Char.unsafe_chr ((1 lsl width_) - 1)
 
-let all_ones_ = Char.unsafe_chr (lsb_masks_ width_)
+let() = assert (all_ones_ = Char.chr 0b1111_1111)
 
-let count_bits_ n =
-  let table = [| 0; 1; 1; 2; 1; 2; 2; 3; 1; 2; 2; 3; 2; 3; 3; 4; 1; 2; 2; 3; 2; 3; 3; 4;
-                 2; 3; 3; 4; 3; 4; 4; 5; 1; 2; 2; 3; 2; 3; 3; 4; 2; 3; 3; 4; 3; 4; 4; 5;
-                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 1; 2; 2; 3; 2; 3; 3; 4;
-                 2; 3; 3; 4; 3; 4; 4; 5; 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6;
-                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 3; 4; 4; 5; 4; 5; 5; 6;
-                 4; 5; 5; 6; 5; 6; 6; 7; 1; 2; 2; 3; 2; 3; 3; 4; 2; 3; 3; 4; 3; 4; 4; 5;
-                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 2; 3; 3; 4; 3; 4; 4; 5;
-                 3; 4; 4; 5; 4; 5; 5; 6; 3; 4; 4; 5; 4; 5; 5; 6; 4; 5; 5; 6; 5; 6; 6; 7;
-                 2; 3; 3; 4; 3; 4; 4; 5; 3; 4; 4; 5; 4; 5; 5; 6; 3; 4; 4; 5; 4; 5; 5; 6;
-                 4; 5; 5; 6; 5; 6; 6; 7; 3; 4; 4; 5; 4; 5; 5; 6; 4; 5; 5; 6; 5; 6; 6; 7;
-                 4; 5; 5; 6; 5; 6; 6; 7; 5; 6; 6; 7; 6; 7; 7; 8; |] in
-  Array.unsafe_get table n
+(* [lsb_mask_ n] is [0b111111] with [n] ones. *)
+let[@inline] __lsb_mask n = (1 lsl n) - 1
+
+(*$= & ~printer:CCInt.to_string
+  0b0 (__lsb_mask 0)
+  0b1 (__lsb_mask 1)
+  0b11 (__lsb_mask 2)
+  0b111 (__lsb_mask 3)
+  0b1111 (__lsb_mask 4)
+  0b1_1111 (__lsb_mask 5)
+  0b11_1111 (__lsb_mask 6)
+  0b111_1111 (__lsb_mask 7)
+  0b1111_1111 (__lsb_mask 8)
+*)
+
+(*
+  from https://en.wikipedia.org/wiki/Hamming_weight
+
+  //This uses fewer arithmetic operations than any other known
+  //implementation on machines with slow multiplication.
+  //It uses 17 arithmetic operations.
+  int popcount_2(uint64_t x) {
+    x -= (x >> 1) & m1;             //put count of each 2 bits into those 2 bits
+    x = (x & m2) + ((x >> 2) & m2); //put count of each 4 bits into those 4 bits
+    x = (x + (x >> 4)) & m4;        //put count of each 8 bits into those 8 bits
+
+   // not necessary for int8
+    // x += x >>  8;  //put count of each 16 bits into their lowest 8 bits
+    // x += x >> 16;  //put count of each 32 bits into their lowest 8 bits
+    // x += x >> 32;  //put count of each 64 bits into their lowest 8 bits
+
+    return x & 0x7f;
+  }
+
+   m1 = 0x5555555555555555
+   m2 = 0x3333333333333333
+   m4 = 0x0f0f0f0f0f0f0f0f
+*)
+let[@inline] __popcount8 (b:int) : int =
+  let m1 = 0x55 in
+  let m2 = 0x33 in
+  let m4 = 0x0f in
+
+  let b = b - ((b lsr 1) land m1) in
+  let b = (b land m2) + ((b lsr 2) land m2) in
+  let b = (b + (b lsr 4)) land m4 in
+  b land 0x7f
+
+(*$inject
+  let popcount8_ref n =
+    let rec loop n =
+      if n=0 then 0
+      else if (n land 1) = 0 then loop (n lsr 1)
+      else 1 + loop (n lsr 1)
+    in
+    loop n
+*)
+
+(* test __popcount8 just to be sure. *)
+(*$R
+  for i=0 to 255 do
+    let n = __popcount8 i in
+    let n2 = popcount8_ref i in
+    if n<>n2 then (
+      Printf.printf "bad: i=%d => %d,%d\n" i n n2;
+      assert false
+    );
+  done
+*)
 
 (*  Can I access the "private" members in testing? $Q
     (Q.int_bound (Sys.word_size - 1)) (fun i -> count_bits_ lsb_masks_.(i) = i)
@@ -71,7 +124,7 @@ let create ~size default =
     (* adjust last bits *)
     let r = mod_ size in
     if default && r <> 0 then (
-      Bytes.unsafe_set b (n-1) (Char.unsafe_chr (lsb_masks_ r));
+      Bytes.unsafe_set b (n-1) (Char.unsafe_chr (__lsb_mask r));
     );
     { b; size }
   )
@@ -102,7 +155,7 @@ let cardinal bv =
   else (
     let n = ref 0 in
     for i = 0 to Bytes.length bv.b - 1 do
-      n := !n + count_bits_ (get_ bv.b i) (* MSB of last element are all 0 *)
+      n := !n + __popcount8 (get_ bv.b i) (* MSB of last element are all 0 *)
     done;
     !n
   )
@@ -420,7 +473,7 @@ let negate_self b =
   let r = mod_ b.size in
   if r <> 0 then
     let l = Bytes.length b.b - 1 in
-    unsafe_set_ b.b l (lsb_masks_ r land (unsafe_get_ b.b l))
+    unsafe_set_ b.b l (__lsb_mask r land (unsafe_get_ b.b l))
 
 (*$= & ~printer:(CCFormat.to_string ppli)
   [0;3;4;6] (let v = of_list [1;2;5;7;] in negate_self v; to_sorted_list v)
@@ -431,7 +484,7 @@ let negate a =
   let r = mod_ a.size in
   if r <> 0 then (
     let l = Bytes.length a.b - 1 in
-    unsafe_set_ b l (lsb_masks_ r land (unsafe_get_ b l))
+    unsafe_set_ b l (__lsb_mask r land (unsafe_get_ b l))
   );
   { b ; size = a.size }
 
