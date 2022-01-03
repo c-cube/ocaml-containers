@@ -32,6 +32,36 @@ let pow a b =
   pow 0l 1l = 0l
 *)
 
+(* see {!CCInt.popcount} for more details *)
+let[@inline] popcount (b:t) : int =
+  let m1 = 0x55555555l in
+  let m2 = 0x33333333l in
+  let m4 = 0x0f0f0f0fl in
+
+  let b = sub b (logand (shift_right_logical b 1) m1) in
+  let b = add (logand b m2) (logand (shift_right_logical b 2) m2) in
+  let b = logand (add b (shift_right_logical b 4)) m4 in
+  let b = add b (shift_right_logical b 8) in
+  let b = add b (shift_right_logical b 16) in
+  let b = logand b 0x7fl in
+  to_int b
+
+(*$Q
+  Q.(0 -- (Int32.max_int |> Int32.to_int)) (fun i -> \
+    let n1 = CCInt.popcount i in \
+    let n2 = CCInt32.popcount (Int32.of_int i) in \
+    CCInt.(n1 = n2))
+  *)
+
+(*$= & ~printer:CCInt.to_string
+  0 (popcount 0l)
+  1 (popcount 1l)
+  31 (popcount max_int)
+  1 (popcount min_int)
+  10 (popcount 0b1110010110110001010l)
+  5 (popcount 0b1101110000000000l)
+*)
+
 let floor_div a n =
   if compare a 0l < 0 && compare n 0l >= 0 then
     sub (div (add a 1l) n) 1l

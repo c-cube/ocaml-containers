@@ -41,6 +41,10 @@ val pow : t -> t -> t
     Raises [Invalid_argument] if [x = y = 0] or [y] < 0.
     @since 0.11 *)
 
+val popcount : t -> int
+(** Number of bits set to 1.
+    @since NEXT_RELEASE *)
+
 val floor_div : t -> t -> t
 (** [floor_div x n] is integer division rounding towards negative infinity.
     It satisfies [x = m * floor_div x n + rem x n].
