@@ -62,6 +62,10 @@ val get : t -> int -> bool
 val reset : t -> int -> unit
 (** Set i-th bit to 0, extending the bitvector if needed. *)
 
+val set_bool : t -> int -> bool -> unit
+(** Set or reset [i]-th bit.
+    @since NEXT_RELEASE *)
+
 val flip : t -> int -> unit
 (** Flip i-th bit, extending the bitvector if needed. *)
 

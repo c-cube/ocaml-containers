@@ -279,6 +279,9 @@ let[@inline] reset bv i =
   let bv = create ~size:3 false in set bv 0; reset bv 0; not (get bv 0)
 *)
 
+let[@inline] set_bool bv i b =
+  if b then set bv i else reset bv i
+
 let flip bv i =
   if i < 0 then invalid_arg "reset: negative index"
   else (
