@@ -141,14 +141,14 @@ let create ~size default =
   create ~size:29 true |> to_sorted_list = CCList.range 0 28
 *)
 
-let copy bv = { bv with b = Bytes.copy bv.b }
+let[@inline] copy bv = { bv with b = Bytes.copy bv.b }
 
 (*$Q
   (Q.list Q.small_int) (fun l -> \
     let bv = of_list l in to_list bv = to_list (copy bv))
 *)
 
-let capacity bv = mul_ (Bytes.length bv.b)
+let[@inline] capacity bv = mul_ (Bytes.length bv.b)
 
 let cardinal bv =
   if bv.size = 0 then 0
@@ -206,18 +206,18 @@ let resize bv size =
 let is_empty bv =
   try
     for i = 0 to Bytes.length bv.b - 1 do
-      if get_ bv.b i <> 0 then raise Exit
+      if get_ bv.b i <> 0 then raise_notrace Exit
     done;
     true
   with Exit ->
     false
 
-let get bv i =
+let[@inline] get bv i =
   if i < 0 then invalid_arg "get: negative index";
-  let n = div_ i in
-  let i = mod_ i in
-  if n < Bytes.length bv.b
-  then (unsafe_get_ bv.b n) land (1 lsl i) <> 0
+  let idx_bucket = div_ i in
+  let idx_in_byte = mod_ i in
+  if idx_bucket < Bytes.length bv.b
+  then (unsafe_get_ bv.b idx_bucket) land (1 lsl idx_in_byte) <> 0
   else false
 
 (*$R
@@ -236,13 +236,13 @@ let get bv i =
   assert_bool "1 must be false" (not (CCBV.get bv 1));
 *)
 
-let set bv i =
+let[@inline] set bv i =
   if i < 0 then invalid_arg "set: negative index"
   else (
-    let n = div_ i in
-    let j = mod_ i in
+    let idx_bucket = div_ i in
+    let idx_in_byte = mod_ i in
     if i >= bv.size then grow_ bv (i+1);
-    unsafe_set_ bv.b n ((unsafe_get_ bv.b n) lor (1 lsl j))
+    unsafe_set_ bv.b idx_bucket ((unsafe_get_ bv.b idx_bucket) lor (1 lsl idx_in_byte))
   )
 
 (*$T
@@ -250,7 +250,7 @@ let set bv i =
   let bv = create ~size:3 false in set bv 1; not (get bv 0)
 *)
 
-let reset bv i =
+let[@inline] reset bv i =
   if i < 0 then invalid_arg "reset: negative index"
   else (
     let n = div_ i in
@@ -443,7 +443,7 @@ exception FoundFirst of int
 
 let first_exn bv =
   try
-    iter_true bv (fun i -> raise (FoundFirst i));
+    iter_true bv (fun i -> raise_notrace (FoundFirst i));
     raise Not_found
   with FoundFirst i ->
     i
@@ -607,8 +607,8 @@ let inter b1 b2 =
   assert_equal [3;4] l;
 *)
 
-(* Underlying size depends on the 'in_' set for diff, so we don't change
-   it's size! *)
+(* Underlying size depends on the [in_] set for diff, so we don't change
+   its size! *)
 let diff_into ~into bv =
   let n = min (Bytes.length into.b) (Bytes.length bv.b) in
   for i = 0 to n - 1 do
@@ -642,7 +642,7 @@ let select bv arr =
       iter_true bv
         (fun i ->
            if i >= Array.length arr
-           then raise Exit
+           then raise_notrace Exit
            else l := arr.(i) :: !l)
     with Exit -> ()
   end;
@@ -661,7 +661,7 @@ let selecti bv arr =
       iter_true bv
         (fun i ->
            if i >= Array.length arr
-           then raise Exit
+           then raise_notrace Exit
            else l := (arr.(i), i) :: !l)
     with Exit -> ()
   end;
