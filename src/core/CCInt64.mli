@@ -30,6 +30,10 @@ val hash : t -> int
 (** [hash x] computes the hash of [x].
     Like {!Stdlib.abs (to_int x)}. *)
 
+val popcount : t -> int
+(** Number of bits set to 1.
+    @since NEXT_RELEASE *)
+
 val sign : t -> int
 (** [sign x] return [0] if [x = 0], [-1] if [x < 0] and [1] if [x > 0].
     Same as [compare x zero].
