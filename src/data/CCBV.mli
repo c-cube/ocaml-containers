@@ -39,10 +39,16 @@ val capacity : t -> int
     @since 1.2 *)
 
 val resize : t -> int -> unit
-(** Resize the BV so that it has the specified length. This can grow or shrink
-    the underlying bitvector.
+(** Resize the BV so that it has the specified length. This can grow
+    the underlying array, but it will not shrink it, to minimize
+    memory traffic.
+    @raise Invalid_argument on negative sizes. *)
 
-    @raise Invalid_arg on negative sizes. *)
+val resize_minimize_memory : t -> int -> unit
+(** Same as {!resize}, but this can also shrink the underlying
+    array if this reduces the size.
+    @raise Invalid_argument on negative sizes.
+    @since NEXT_RELEASE *)
 
 val is_empty : t -> bool
 (** Are there any true bits? *)

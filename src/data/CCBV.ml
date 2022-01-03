@@ -165,20 +165,28 @@ let cardinal bv =
 *)
 
 let really_resize_ bv ~desired ~current size =
-  let b = Bytes.make desired zero in
-  Bytes.blit bv.b 0 b 0 current;
-  bv.b <- b;
-  bv.size <- size
+  bv.size <- size;
+  if desired <> current then (
+    let b = Bytes.make desired zero in
+    Bytes.blit bv.b 0 b 0 current;
+    bv.b <- b;
+  )
+
+let[@inline never] grow_real_ bv size =
+  (* beyond capacity *)
+  let desired = bytes_length_of_size size in
+  let current = Bytes.length bv.b in
+  assert (desired > current);
+  really_resize_ bv ~desired ~current size
 
 let grow_ bv size =
-  if size <= capacity bv (* within capacity *)
-  then bv.size <- size
-  else (
-    (* beyond capacity *)
-    let desired = bytes_length_of_size size in
-    let current = Bytes.length bv.b in
-    assert (desired > current);
-    really_resize_ bv ~desired ~current size
+  if size <= capacity bv then (
+    (* within capacity *)
+    bv.size <- size
+  ) else (
+    (* resize. This is a separate function so it's easier to
+       inline the happy path. *)
+    grow_real_ bv size
   )
 
 let shrink_ bv size =
@@ -188,11 +196,19 @@ let shrink_ bv size =
 
 let resize bv size =
   if size < 0 then invalid_arg "resize: negative size";
-  if size < bv.size (* shrink *)
-  then shrink_ bv size
-  else if size = bv.size
-  then ()
-  else grow_ bv size
+  if size < bv.size then (
+    bv.size <- size;
+  ) else if size > bv.size then (
+    grow_ bv size
+  )
+
+let resize_minimize_memory bv size =
+  if size < 0 then invalid_arg "resize: negative size";
+  if size < bv.size then (
+    shrink_ bv size
+  ) else if size > bv.size then (
+    grow_ bv size
+  )
 
 (*$R
   let bv1 = CCBV.create ~size:87 true in
