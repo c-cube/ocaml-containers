@@ -178,6 +178,12 @@ val zip : 'a t -> 'b t -> ('a * 'b) t
 (** Combine elements pairwise. Stop as soon as one of the lists stops.
     @since 0.13 *)
 
+val zip_with : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** Generalization of {!zip}. Combine elements with the function given as the first
+    argument. Stop as soon as one of the lists stops.
+
+    @since NEXT_RELEASE *)
+
 val unzip : ('a * 'b) t -> 'a t * 'b t
 (** Split each tuple in the list.
     @since 0.13 *)

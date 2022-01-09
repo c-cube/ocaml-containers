@@ -341,6 +341,18 @@ let rec zip a b () = match a(), b() with
   | _, Nil -> Nil
   | Cons (x, a'), Cons (y, b') -> Cons ((x,y), zip a' b')
 
+let rec zip_with f a b () = match a(), b() with
+  | Nil, _
+  | _, Nil -> Nil
+  | Cons (x, a'), Cons (y, b') -> Cons (f x y, zip_with f a' b')
+
+(*$Q
+  Q.(pair (list int) (list int)) (fun (l1, l2) -> \
+    let l1 = of_list l1 in \
+    let l2 = of_list l2 in \
+    zip l1 l2 |> to_list = (zip_with (fun x y -> (x, y)) l1 l2 |> to_list))
+*)
+
 let unzip l =
   let rec first l () = match l() with
     | Nil -> Nil
