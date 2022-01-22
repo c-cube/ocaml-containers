@@ -15,7 +15,7 @@ jobs:
       - name: Use OCaml
         uses: ocaml/setup-ocaml@v2
         with:
-          ocaml-compiler: '4.12.x'
+          ocaml-compiler: '4.13.x'
 
       - name: Pin
         run: opam pin -n .
