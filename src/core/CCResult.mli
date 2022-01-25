@@ -63,6 +63,9 @@ val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) fo
     ]}
     @since 1.2 *)
 
+val opt_map : ('a -> ('b, 'c) t) -> 'a option -> ('b option, 'c) t
+(** Map optional success *)
+
 val map : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
 (** Map on success. *)
 

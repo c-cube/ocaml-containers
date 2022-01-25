@@ -68,6 +68,12 @@ let of_exn_trace e =
   in
   Error res
 
+let opt_map f e = match e with 
+  | None -> Ok None 
+  | Some x -> (match f x with 
+      | Ok x -> Ok (Some x)
+      | Error e -> Error e)
+
 let map f e = match e with
   | Ok x -> Ok (f x)
   | Error s -> Error s
