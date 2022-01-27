@@ -356,6 +356,17 @@ let unzip l =
     let l = of_list l in let a, b = unzip l in equal (=) l (zip a b))
 *)
 
+let zip_i seq =
+  let rec loop i seq () = match seq() with
+    | Nil -> Nil
+    | Cons (x,tl) -> Cons ((i,x), loop (i+1) tl)
+  in
+  loop 0 seq
+
+(*$=
+  [0,'a'; 1, 'b'; 2, 'c'] (of_string "abcde" |> zip_i |> take 3 |> to_list)
+*)
+
 (** {2 Implementations} *)
 
 let return x () = Cons (x, nil)
@@ -393,6 +404,13 @@ let of_array a =
     else Cons (a.(i), aux a (i+1))
   in
   aux a 0
+
+let of_string s =
+  let rec aux s i () =
+    if i=String.length s then Nil
+    else Cons (String.get s i, aux s (i+1))
+  in
+  aux s 0
 
 let to_array l =
   (* We contruct the length and list of seq elements (in reverse) in one pass *)

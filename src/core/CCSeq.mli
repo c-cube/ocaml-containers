@@ -166,6 +166,11 @@ val zip : 'a t -> 'b t -> ('a * 'b) t
 val unzip : ('a * 'b) t -> 'a t * 'b t
 (** Split each tuple in the list. *)
 
+val zip_i : 'a t -> (int * 'a) t
+(** [zip_i seq] zips the index of each element with the element itself.
+    @since NEXT
+*)
+
 (** {2 Misc} *)
 
 val sort : cmp:'a ord -> 'a t -> 'a t
@@ -253,6 +258,10 @@ val to_gen : 'a t -> 'a gen
 
 val of_gen : 'a gen -> 'a t
 (** [of_gen g] consumes the generator and caches intermediate results. *)
+
+val of_string : string -> char t
+(** Iterate on characters.
+    @since NEXT_RELEASE *)
 
 (** {2 IO} *)
 
