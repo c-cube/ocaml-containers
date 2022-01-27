@@ -1,9 +1,9 @@
 
-(* This file is free software, part of containers. See file "license" for more details. *)
-
 (** Helpers for the standard {b Seq} type
 
     See {{: https://github.com/c-cube/oseq/} oseq} for a richer API.
+
+    @since 3.0
 *)
 
 type 'a iter = ('a -> unit) -> unit
@@ -29,38 +29,31 @@ val singleton : 'a -> 'a t
 
 val repeat : ?n:int -> 'a -> 'a t
 (** [repeat ~n x] repeats [x] [n] times then stops. If [n] is omitted,
-    then [x] is repeated forever.
-    @since 0.3.3 *)
+    then [x] is repeated forever. *)
 
 val cycle : 'a t -> 'a t
-(** Cycle through the iterator infinitely. The iterator shouldn't be empty.
-    @since 0.3.3 *)
+(** Cycle through the iterator infinitely. The iterator shouldn't be empty. *)
 
 val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
 (** [unfold f acc] calls [f acc] and:
     - if [f acc = Some (x, acc')], yield [x], continue with [unfold f acc'].
-    - if [f acc = None], stops.
-    @since 0.13 *)
+    - if [f acc = None], stops. *)
 
 val is_empty : 'a t -> bool
 
 val head : 'a t -> 'a option
-(** Head of the list.
-    @since 0.13 *)
+(** Head of the list. *)
 
 val head_exn : 'a t -> 'a
 (** Unsafe version of {!head}.
-    @raise Not_found if the list is empty.
-    @since 0.13 *)
+    @raise Not_found if the list is empty. *)
 
 val tail : 'a t -> 'a t option
-(** Tail of the list.
-    @since 0.13 *)
+(** Tail of the list. *)
 
 val tail_exn : 'a t -> 'a t
 (** Unsafe version of {!tail}.
-    @raise Not_found if the list is empty.
-    @since 0.13 *)
+    @raise Not_found if the list is empty. *)
 
 val equal : 'a equal -> 'a t equal
 (** Equality step by step. Eager. *)
@@ -77,8 +70,7 @@ val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 val iter : ('a -> unit) -> 'a t -> unit
 
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
-(** Iterate with index (starts at 0).
-    @since 0.13 *)
+(** Iterate with index (starts at 0). *)
 
 val length : _ t -> int
 (** Number of elements in the list.
@@ -96,8 +88,7 @@ val drop_while : ('a -> bool) -> 'a t -> 'a t
 val map : ('a -> 'b) -> 'a t -> 'b t
 
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
-(** Map with index (starts at 0).
-    @since 0.13 *)
+(** Map with index (starts at 0). *)
 
 val fmap : ('a -> 'b option) -> 'a t -> 'b t
 
@@ -107,24 +98,20 @@ val append : 'a t -> 'a t -> 'a t
 
 val product_with : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** Fair product of two (possibly infinite) lists into a new list. Lazy.
-    The first parameter is used to combine each pair of elements.
-    @since 0.3.3 *)
+    The first parameter is used to combine each pair of elements. *)
 
 val product : 'a t -> 'b t -> ('a * 'b) t
-(** Specialization of {!product_with} producing tuples.
-    @since 0.3.3 *)
+(** Specialization of {!product_with} producing tuples. *)
 
 val group : 'a equal -> 'a t -> 'a t t
 (** [group eq l] groups together consecutive elements that satisfy [eq]. Lazy.
     For instance [group (=) [1;1;1;2;2;3;3;1]] yields
-      [[1;1;1]; [2;2]; [3;3]; [1]].
-    @since 0.3.3 *)
+      [[1;1;1]; [2;2]; [3;3]; [1]]. *)
 
 val uniq : 'a equal -> 'a t -> 'a t
 (** [uniq eq l] returns [l] but removes consecutive duplicates. Lazy.
     In other words, if several values that are equal follow one another,
-    only the first of them is kept.
-    @since 0.3.3 *)
+    only the first of them is kept. *)
 
 val for_all : ('a -> bool) -> 'a t -> bool
 (** [for_all p [a1; ...; an]] checks if all elements of the sequence satisfy the
@@ -153,8 +140,7 @@ val (--) : int -> int -> int t
     [a] and [b] (therefore, never empty). *)
 
 val (--^) : int -> int -> int t
-(** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
-    @since 0.17 *)
+(** [a -- b] is the integer range from [a] to [b], where [b] is excluded. *)
 
 (** {2 Operations on two Collections} *)
 
@@ -175,45 +161,36 @@ val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator. *)
 
 val zip : 'a t -> 'b t -> ('a * 'b) t
-(** Combine elements pairwise. Stop as soon as one of the lists stops.
-    @since 0.13 *)
+(** Combine elements pairwise. Stop as soon as one of the lists stops. *)
 
 val unzip : ('a * 'b) t -> 'a t * 'b t
-(** Split each tuple in the list.
-    @since 0.13 *)
+(** Split each tuple in the list. *)
 
 (** {2 Misc} *)
 
 val sort : cmp:'a ord -> 'a t -> 'a t
 (** Eager sort. Require the iterator to be finite. [O(n ln(n))] time
-    and space.
-    @since 0.3.3 *)
+    and space. *)
 
 val sort_uniq : cmp:'a ord -> 'a t -> 'a t
 (** Eager sort that removes duplicate values. Require the iterator to be
-    finite. [O(n ln(n))] time and space.
-    @since 0.3.3 *)
+    finite. [O(n ln(n))] time and space. *)
 
 val memoize : 'a t -> 'a t
-(** Avoid recomputations by caching intermediate results.
-    @since 0.14 *)
+(** Avoid recomputations by caching intermediate results. *)
 
 (** {2 Fair Combinations} *)
 
 val interleave : 'a t -> 'a t -> 'a t
-(** Fair interleaving of both streams.
-    @since 0.13 *)
+(** Fair interleaving of both streams. *)
 
 val fair_flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** Fair version of {!flat_map}.
-    @since 0.13 *)
+(** Fair version of {!flat_map}. *)
 
 val fair_app : ('a -> 'b) t -> 'a t -> 'b t
-(** Fair version of {!(<*>)}.
-    @since 0.13 *)
+(** Fair version of {!(<*>)}. *)
 
-(** {2 Implementations}
-    @since 0.3.3 *)
+(** {2 Implementations} *)
 
 val return : 'a -> 'a t
 val pure : 'a -> 'a t
@@ -222,16 +199,12 @@ val (>|=) : 'a t -> ('a -> 'b) -> 'b t
 val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
 val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
-(** Infix version of {! fair_flat_map}.
-    @since 0.13 *)
+(** Infix version of {! fair_flat_map}. *)
 
 val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
-(** Infix version of {!fair_app}.
-    @since 0.13 *)
+(** Infix version of {!fair_app}. *)
 
-(** {2 Infix operators}
-
-    @since 0.17 *)
+(** {2 Infix operators} *)
 
 module Infix : sig
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
@@ -266,12 +239,10 @@ val to_list : 'a t -> 'a list
 (** Gather all values into a list. *)
 
 val of_array : 'a array -> 'a t
-(** Iterate on the array.
-    @since 0.13 *)
+(** Iterate on the array. *)
 
 val to_array : 'a t -> 'a array
-(** Convert into array.
-    @since 0.13 *)
+(** Convert into array. *)
 
 val to_rev_list : 'a t -> 'a list
 (** Convert to a list, in reverse order. More efficient than {!to_list}. *)
@@ -281,8 +252,7 @@ val to_iter : 'a t -> 'a iter
 val to_gen : 'a t -> 'a gen
 
 val of_gen : 'a gen -> 'a t
-(** [of_gen g] consumes the generator and caches intermediate results.
-    @since 0.13 *)
+(** [of_gen g] consumes the generator and caches intermediate results. *)
 
 (** {2 IO} *)
 

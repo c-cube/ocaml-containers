@@ -132,6 +132,7 @@ api:
 - remove slice APIs in string and array.
 - change pp functions to take unit printer for sep/stop/start (#295)
 - CCPair: use more standard name for some map functions (#316)
+- add CCSeq module, mostly adapted from `CCKlist`
 - remove `CCKlist` from everywhere
 - CCGraph: remove deprecated module and function
 - rename `<op>_std_seq` to `<op>_seq`, making `Seq.t` the standard everywhere;
