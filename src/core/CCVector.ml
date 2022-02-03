@@ -79,8 +79,12 @@ let init n f = {
 }
 
 (* is the underlying array empty? *)
-let array_is_empty_ v =
+let[@inline] array_is_empty_ v =
   Array.length v.vec = 0
+
+(* next capacity, if current one is [n] *)
+let[@inline] next_grow_ n =
+  min Sys.max_array_length (n + n lsl 1 + 5)
 
 (* resize the underlying array using x to temporarily fill the array *)
 let resize_ v newcapacity x =
@@ -128,7 +132,7 @@ let grow_with_ v ~filler:x =
     fill_with_junk_ v.vec 0 len;
   ) else (
     let n = Array.length v.vec in
-    let size = min (2 * n + 3) Sys.max_array_length in
+    let size = next_grow_ n in
     if size = n then invalid_arg "vec: can't grow any further";
     resize_ v size v.vec.(0)
   )
@@ -143,8 +147,8 @@ let ensure_assuming_not_empty_ v ~size =
   ) else if size < Array.length v.vec then (
     () (* nothing to do *)
   ) else (
-    let n = ref (max 8 (Array.length v.vec)) in
-    while !n < size do n := min Sys.max_array_length (2* !n) done;
+    let n = ref (Array.length v.vec) in
+    while !n < size do n := next_grow_ !n done;
     resize_ v !n v.vec.(0)
   )
 
