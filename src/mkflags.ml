@@ -13,7 +13,7 @@ let () =
       if after_4_3 then (
         ["-O3"; "-unbox-closures"; "-unbox-closures-factor"; "20"; "-color"; "always"]
       ) else (
-        []
+        ["-inline"; "100"]
       ) in
     C.Flags.write_sexp "flambda.flags" sexp
   )
