@@ -5,6 +5,7 @@
 
 module Array = CCArrayLabels
 module Bool = CCBool
+module Byte_buf = CCByte_buf
 module Char = CCChar
 module Equal = CCEqualLabels
 module Either = CCEither
