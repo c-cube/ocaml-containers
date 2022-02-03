@@ -1,15 +1,10 @@
-(executable
-  (name mkflags)
-  (modules mkflags)
-  (libraries dune.configurator))
 
 (env
-  (_ (flags :standard -warn-error -3)))
-
-(rule
-  (targets flambda.flags)
-  (mode fallback)
-  (action (run ./mkflags.exe)))
+  (_
+    (flags :standard -warn-error -3 -color always)
+    (ocamlopt_flags :standard -O3 -unbox-closures -unbox-closures-factor 20
+                    -inline 100)
+     ))
 
 (executable
   (name mdx_runner)
