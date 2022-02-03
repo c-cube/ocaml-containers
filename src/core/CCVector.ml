@@ -165,7 +165,7 @@ let ensure v size =
     ensure_assuming_not_empty_  v ~size
   )
 
-let clear v =
+let[@inline] clear v =
   v.size <- 0
 
 (*$R
@@ -192,9 +192,9 @@ let clear_and_reset v =
   OUnit.assert_equal None (Weak.get a 0);
 *)
 
-let is_empty v = v.size = 0
+let[@inline] is_empty v = v.size = 0
 
-let push_unsafe_ v x =
+let[@inline] push_unsafe_ v x =
   Array.unsafe_set v.vec v.size x;
   v.size <- v.size + 1
 
@@ -300,11 +300,11 @@ let append a b =
   OUnit.assert_equal (Iter.to_array Iter.(6 -- 10)) (to_array b);
 *)
 
-let get v i =
+let[@inline] get v i =
   if i < 0 || i >= v.size then invalid_arg "CCVector.get";
   Array.unsafe_get v.vec i
 
-let set v i x =
+let[@inline] set v i x =
   if i < 0 || i >= v.size then invalid_arg "CCVector.set";
   Array.unsafe_set v.vec i x
 
@@ -345,7 +345,7 @@ let remove_unordered v i =
     to_list v1 = (List.sort CCInt.compare (to_list v2)))
 *)
 
-let append_iter a i = i (fun x -> push a x)
+let[@inline] append_iter a i = i (fun x -> push a x)
 
 let append_seq a seq = Seq.iter (fun x -> push a x) seq
 
@@ -481,12 +481,12 @@ let pop v =
   try Some (pop_exn v)
   with Empty -> None
 
-let top v =
-  if v.size = 0 then None else Some v.vec.(v.size-1)
+let[@inline] top v =
+  if v.size = 0 then None else Some (Array.unsafe_get v.vec (v.size-1))
 
-let top_exn v =
+let[@inline] top_exn v =
   if v.size = 0 then raise Empty;
-  v.vec.(v.size-1)
+  Array.unsafe_get v.vec (v.size-1)
 
 (*$T
   1 -- 10 |> top = Some 10
@@ -494,7 +494,7 @@ let top_exn v =
   1 -- 10 |> top_exn = 10
 *)
 
-let copy v = {
+let[@inline] copy v = {
   size = v.size;
   vec = Array.sub v.vec 0 v.size;
 }
