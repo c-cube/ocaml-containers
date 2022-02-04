@@ -84,7 +84,7 @@ let[@inline] array_is_empty_ v =
 
 (* next capacity, if current one is [n] *)
 let[@inline] next_grow_ n =
-  min Sys.max_array_length (n + n lsr 1 + 5)
+  min Sys.max_array_length (n + n lsr 1 + 2)
 
 (* resize the underlying array using x to temporarily fill the array *)
 let resize_ v newcapacity x =
