@@ -19,7 +19,6 @@
  (modules :standard \ mkshims)
  (flags :standard -warn-error -a+8 -w -32 -safe-string -strict-sequence -nolabels -open
    CCMonomorphic)
- (ocamlopt_flags (:include ../flambda.flags))
  (libraries seq either containers.monomorphic))
 
 (ocamllex (modules CCSexp_lex))
