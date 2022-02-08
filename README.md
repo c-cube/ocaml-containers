@@ -431,7 +431,7 @@ map =
 - : string option = Some "33"
 ```
 
-### New types: `CCVector`, `CCHeap`, `CCResult`, `CCSexp`
+### New types: `CCVector`, `CCHeap`, `CCResult`, `CCSexp`, `CCByte_buffer`
 
 Containers also contains (!) a few datatypes that are not from the standard
 library but that are useful in a lot of situations:
@@ -458,6 +458,10 @@ library but that are useful in a lot of situations:
   functorized printer and parser for S-expressions, respectively as
   actual S-expressions (like `sexplib`) and as canonical binary-safe
   S-expressions (like `csexp`)
+- `CCByte_buffer`: a better version of the standard `Buffer.t` which cannot be
+  extended and prevents access to its internal byte array. This type is
+  designed for (blocking) IOs and to produce complex strings incrementally
+  in an efficient way.
 
 Now for a few examples:
 

@@ -5,7 +5,7 @@
 
 module Array = CCArray
 module Bool = CCBool
-module Byte_buf = CCByte_buf
+module Byte_buffer = CCByte_buffer
 module Char = CCChar
 module Equal = CCEqual
 module Either = CCEither
