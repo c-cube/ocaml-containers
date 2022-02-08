@@ -15,6 +15,9 @@ val create : ?cap:int -> unit -> t
 val length : t -> int
 (** Current length. *)
 
+val is_empty : t -> bool
+(** [is_empty b] is [length b=0] *)
+
 val capacity : t -> int
 (** Current capacity (size of the array returned by {!bytes}) *)
 
@@ -55,6 +58,12 @@ val unsafe_get : t -> int -> char
 val set : t -> int -> char -> unit
 
 val unsafe_set : t -> int -> char -> unit
+
+val contents : t -> string
+(** Copy the internal data to a string *)
+
+val contents_bytes : t -> bytes
+(** Copy the internal data to a byte buffer *)
 
 val iter : (char -> unit) -> t -> unit
 
