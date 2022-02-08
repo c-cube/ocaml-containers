@@ -9,7 +9,8 @@ type t
 
 type 'a iter = ('a -> unit) -> unit
 
-val create : ?size:int -> unit -> t
+val create : ?cap:int -> unit -> t
+(** Create a new buffer with given initial capacity. *)
 
 val length : t -> int
 (** Current length. *)
