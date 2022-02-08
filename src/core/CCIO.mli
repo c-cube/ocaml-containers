@@ -288,3 +288,107 @@ module File : sig
         See {!Filename.temp_file}.
         @since 0.17 *)
 end
+
+(** Generic input stream of data.
+
+    Streams are used to represent a series of bytes that can arrive progressively.
+    For example, an uploaded file will be sent as a series of chunks.
+
+    {b NOTE} experimental. Can change.
+
+    It's a pair of function to read data, and to close the stream.
+    @since NEXT_RELEASE *)
+type istream = (bytes -> int -> int -> int) * (unit -> unit)
+
+(** An output stream, into which we can push bytes.
+
+    This is a tuple made of:
+    - a write function, to output byte.
+    - a flush function, to flush bytes to storage or network.
+    - a close function, to flush and dispose of resources.
+
+    {b NOTE} experimental. Can change.
+
+    @since NEXT_RELEASE *)
+type ostream = (bytes -> int -> int -> unit) * (unit -> unit) * (unit -> unit)
+
+(** Input streams.
+
+    @since NEXT_RELEASE *)
+module Istream : sig
+  type t = istream
+
+  val close : t -> unit
+
+  val empty : t
+
+  val of_chan : in_channel -> t
+  (** Make a buffered stream from the given channel. *)
+
+  val of_chan_close_noerr : in_channel -> t
+  (** Same as {!of_chan} but the [close] method will never fail. *)
+
+  val of_bytes : ?i:int -> ?len:int -> bytes -> t
+  (** A stream that just returns the slice of bytes starting from [i]
+      and of length [len]. *)
+
+  val of_string : ?i:int -> ?len:int -> string -> t
+
+  val read_all : ?buf:CCByte_buffer.t -> t -> string
+  (** Read the whole stream into a string.
+      @param buf a buffer that will be cleared and used to store the content. *)
+end
+
+(** Buffered input stream, with an accessible buffer.
+
+    {b NOTE} experimental. Can change.
+    @since NEXT_RELEASE *)
+module Buffered_istream : sig
+  type t
+
+  val istream : t -> istream
+
+  val buf_bytes : t -> bytes
+
+  val buf_length : t -> int
+
+  val consume : t -> int -> unit
+
+  val make : ?buf_size:int -> istream -> t
+  (** Create a buffered stream. *)
+
+  val read_line : t -> string
+  (** Read one line. *)
+
+  val read_lines_gen : t -> string gen
+  (** Generator of lines *)
+end
+
+(** Output streams.
+
+    @since NEXT_RELEASE *)
+module Ostream : sig
+  type t = ostream
+
+  val of_chan : out_channel -> t
+
+  val of_buffer : Buffer.t -> t
+
+  val of_byte_buf : CCByte_buffer.t -> t
+
+  val write : t -> bytes -> int -> int -> unit
+
+  val write_string : t -> string -> unit
+
+  val flush : t -> unit
+
+  val close : t -> unit
+end
+
+val transfer : ?buf:bytes -> istream -> ostream -> unit
+(** [transfer is os] transfers the whole content of [is] into [os].
+    If [is] is infinite this will never return.
+
+    @param buf an optional buffer to use as an intermediate storage for bytes.
+    @since NEXT_RELEASE
+*)
