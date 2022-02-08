@@ -5,10 +5,10 @@ type t = {
   mutable sz: int;
 }
 
-let create ?(size=0) () : t =
+let create ?(cap=0) () : t =
   let bytes =
-    if size=0 then Bytes.unsafe_of_string "" else Bytes.create size in
-  { sz=size; bytes }
+    if cap=0 then Bytes.unsafe_of_string "" else Bytes.create cap in
+  { sz=0; bytes }
 
 let[@inline] capacity self : int = Bytes.length self.bytes
 let[@inline] bytes self = self.bytes
@@ -95,12 +95,12 @@ let iter f self =
   done
 
 let of_seq seq =
-  let self = create ~size:32 () in
+  let self = create ~cap:32 () in
   append_seq self seq;
   self
 
 let of_iter iter =
-  let self = create ~size:32 () in
+  let self = create ~cap:32 () in
   append_iter self iter;
   self
 
