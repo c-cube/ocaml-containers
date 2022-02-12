@@ -414,16 +414,17 @@ let of_string s =
 
 let to_array l =
   (* We contruct the length and list of seq elements (in reverse) in one pass *)
-  let len, ls = fold_left (fun (i, acc) x -> (i + 1, x :: acc)) (0, []) l in
+  let len = ref 0 in
+  let ls = fold_left (fun acc x -> incr len;  x :: acc) [] l in
   (* The length is used to initialize the array, and then to derive the index for
      each item, working back from the last. This lets us only traverse the list
      twice, instead of having to reverse it. *)
   match ls with
     | [] -> [||]
     | init::rest ->
-      let a = Array.make len init in
+      let a = Array.make !len init in
       (* Subtract 1 for len->index conversion and 1 for the removed [init] *)
-      let idx = len - 2 in
+      let idx = !len - 2 in
       ignore (List.fold_left (fun i x -> a.(i) <- x; i - 1) idx rest : int);
       a
 
