@@ -221,7 +221,7 @@ In a toplevel, using ocamlfind:
 # #require "containers-data";;
 # CCList.flat_map;;
 - : ('a -> 'b list) -> 'a list -> 'b list = <fun>
-# open Containers;;  (* optional *)
+# open Containers (* optional *);;
 # List.flat_map ;;
 - : ('a -> 'b list) -> 'a list -> 'b list = <fun>
 ```
@@ -359,7 +359,7 @@ the library is loaded, e.g. with:
 
 ```ocaml
 # #require "containers";;
-# Format.set_margin 50;; (* for readability here *)
+# Format.set_margin 50 (* for readability here *);;
 - : unit = ()
 ```
 
@@ -369,7 +369,7 @@ We will start with a few list helpers, then look at other parts of
 the library, including printers, maps, etc.
 
 ```ocaml
-# (|>) ;;  (* quick reminder of this awesome standard operator *)
+# (|>) (* quick reminder of this awesome standard operator *);;
 - : 'a -> ('a -> 'b) -> 'b = <fun>
 # 10 |> succ;;
 - : int = 11
@@ -412,7 +412,7 @@ module IntMap = CCMap.Make(CCInt);;
     |> IntMap.of_iter;;
 val map : string IntMap.t = <abstr>
 
-# CCList.to_iter;; (* check the type *)
+# CCList.to_iter (* check the type *);;
 - : 'a list -> 'a CCList.iter = <fun>
 # IntMap.of_iter ;;
 - : (int * 'a) CCMap.iter -> 'a IntMap.t = <fun>
@@ -492,7 +492,7 @@ v = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 # CCVector.push v 42;;
 - : unit = ()
 
-# v;; (* now v is a mutable vector *)
+# v (* now v is a mutable vector *);;
 - : (int, CCVector.rw) CCVector.t = <abstr>
 
 # (* functional combinators! *)
@@ -531,7 +531,7 @@ h = [2,4,6,8,10]
 val h' : IntHeap.t = <abstr>
 val x : int = 2
 
-# IntHeap.to_list h' ;; (* see, 2 is removed *)
+# IntHeap.to_list h' (* see, 2 is removed *);;
 - : int list = [4; 6; 8; 10]
 ```
 
@@ -614,7 +614,7 @@ A quick example based on purely functional double-ended queues:
 
 ```ocaml
 # #require "containers-data";;
-# #install_printer CCFQueue.pp;;  (* better printing of queues! *)
+# #install_printer CCFQueue.pp  (* better printing of queues! *);;
 
 # let q = CCFQueue.of_list [2;3;4] ;;
 val q : int CCFQueue.t = queue {2; 3; 4}
