@@ -414,7 +414,7 @@ module SCC = struct
     mutable min_id: int; (* min ID of the vertex' scc *)
     id: int;  (* ID of the vertex *)
     mutable on_stack: bool;
-    mutable vertex: 'v;
+    vertex: 'v;
   }
 
   let mk_cell v n = {
