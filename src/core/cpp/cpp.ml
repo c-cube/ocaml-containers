@@ -1,0 +1,101 @@
+
+module C = Configurator.V1
+
+type op = Le | Ge
+
+type line =
+  | If of op * int * int
+  | Elseif of op * int * int
+  | Else
+  | Endif
+  | Raw of string
+  | Eof
+
+let prefix ~pre s =
+  let len = String.length pre in
+  if len > String.length s then false
+  else (
+    let rec check i =
+      if i=len then true
+      else if Stdlib.(<>) (String.unsafe_get s i) (String.unsafe_get pre i) then false
+      else check (i+1)
+    in
+    check 0
+  )
+
+type state =
+  | St_normal
+  | St_parsing_cond
+
+let eval ~major ~minor op i j =
+  match op with
+    | Le -> (major,minor) <= (i,j)
+    | Ge -> (major,minor) >= (i,j)
+
+let preproc_lines ~major ~minor (ic:in_channel) : unit =
+  let pos = ref 0 in
+  let fail msg = failwith (Printf.sprintf "at line %d: %s" !pos msg) in
+
+  let parse_line () : line =
+    match input_line ic with
+      | exception End_of_file -> Eof
+      | line ->
+        incr pos;
+        if prefix line ~pre:"[%IFLE" then
+          Scanf.sscanf line "[%%IFLE %d.%d]" (fun x y -> If(Le,x,y))
+        else if prefix line ~pre:"[%IFGE" then
+          Scanf.sscanf line "[%%IFGE %d.%d]" (fun x y -> If(Ge,x,y))
+        else if prefix line ~pre:"[%ELIFLE" then
+          Scanf.sscanf line "[%%ELIFLE %d.%d]" (fun x y -> Elseif(Le,x,y))
+        else if prefix line ~pre:"[%ELIFGE" then
+          Scanf.sscanf line "[%%ELIFGE %d.%d]" (fun x y -> Elseif(Ge,x,y))
+        else if line="[%ENDIF]" then Endif
+        else Raw line
+  in
+
+  (* entry point *)
+  let rec top () =
+    match parse_line () with
+      | Eof -> ()
+      | If (op,i,j) ->
+        if eval ~major ~minor op i j
+        then cat_block () else skip_block ~elseok:true ()
+      | Raw s -> print_endline s; top()
+      | Elseif _ | Else | Endif ->
+        fail "unexpected elseif|else|endif"
+
+  (* current block is the valid one *)
+  and cat_block () =
+    match parse_line () with
+      | Eof -> fail "unexpected EOF"
+      | If _ -> fail "nested if not supported"
+      | Raw s -> print_endline s; cat_block()
+      | Endif -> top()
+      | Elseif _ | Else -> skip_block ~elseok:false ()
+
+  (* skip current block.
+     @param elseok if true, we should evaluate "elseif" *)
+  and skip_block ~elseok () =
+    match parse_line () with
+      | Eof -> fail "unexpected EOF"
+      | If _ -> fail "nested if not supported"
+      | Raw _ -> skip_block ~elseok ()
+      | Endif -> top()
+      | Elseif (op,i,j) ->
+        if elseok && eval ~major ~minor op i j
+        then cat_block ()
+        else skip_block ~elseok ()
+      | Else ->
+        if elseok then cat_block() else skip_block ~elseok ()
+  in
+  top()
+
+let () =
+  let file = Sys.argv.(1) in
+  C.main ~name:"cpp" (fun c ->
+    let version = C.ocaml_config_var_exn c "version" in
+    let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
+
+    let ic = open_in_bin file in
+    preproc_lines ~major ~minor ic
+  )
