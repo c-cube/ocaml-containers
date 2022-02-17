@@ -469,8 +469,13 @@ module Split = struct
   *)
 end
 
+[@@@ifge 4.04]
+[@@@else_]
+
 let split_on_char c s: _ list =
   Split.list_cpy ~drop:Split.no_drop ~by:(String.make 1 c) s
+
+[@@@endif]
 
 (*$= & ~printer:Q.Print.(list string)
   ["a"; "few"; "words"; "from"; "our"; "sponsors"] \
