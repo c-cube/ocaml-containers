@@ -32,9 +32,10 @@ let eval ~major ~minor op i j =
     | Le -> (major,minor) <= (i,j)
     | Ge -> (major,minor) >= (i,j)
 
-let preproc_lines ~major ~minor (ic:in_channel) : unit =
+let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
   let pos = ref 0 in
   let fail msg = failwith (Printf.sprintf "at line %d: %s" !pos msg) in
+  let pp_pos () = Printf.printf "#%d %S\n" !pos file in
 
   let parse_line () : line =
     match input_line ic with
@@ -49,6 +50,7 @@ let preproc_lines ~major ~minor (ic:in_channel) : unit =
           Scanf.sscanf line "[%%ELIFLE %d.%d]" (fun x y -> Elseif(Le,x,y))
         else if prefix line ~pre:"[%ELIFGE" then
           Scanf.sscanf line "[%%ELIFGE %d.%d]" (fun x y -> Elseif(Ge,x,y))
+        else if line="[%ELSE]" then Else
         else if line="[%ENDIF]" then Endif
         else Raw line
   in
@@ -58,8 +60,10 @@ let preproc_lines ~major ~minor (ic:in_channel) : unit =
     match parse_line () with
       | Eof -> ()
       | If (op,i,j) ->
-        if eval ~major ~minor op i j
-        then cat_block () else skip_block ~elseok:true ()
+        if eval ~major ~minor op i j then (
+          pp_pos();
+          cat_block ()
+        ) else skip_block ~elseok:true ()
       | Raw s -> print_endline s; top()
       | Elseif _ | Else | Endif ->
         fail "unexpected elseif|else|endif"
@@ -82,20 +86,23 @@ let preproc_lines ~major ~minor (ic:in_channel) : unit =
       | Raw _ -> skip_block ~elseok ()
       | Endif -> top()
       | Elseif (op,i,j) ->
-        if elseok && eval ~major ~minor op i j
-        then cat_block ()
-        else skip_block ~elseok ()
+        if elseok && eval ~major ~minor op i j then (
+          pp_pos();
+          cat_block ()
+        ) else skip_block ~elseok ()
       | Else ->
-        if elseok then cat_block() else skip_block ~elseok ()
+        if elseok then (
+          pp_pos();
+          cat_block()
+        ) else skip_block ~elseok ()
   in
   top()
 
 let () =
   let file = Sys.argv.(1) in
-  C.main ~name:"cpp" (fun c ->
-    let version = C.ocaml_config_var_exn c "version" in
-    let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
+  let c = C.create "main" in
+  let version = C.ocaml_config_var_exn c "version" in
+  let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
 
-    let ic = open_in_bin file in
-    preproc_lines ~major ~minor ic
-  )
+  let ic = open_in_bin file in
+  preproc_lines ~file ~major ~minor ic

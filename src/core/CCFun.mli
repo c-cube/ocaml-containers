@@ -3,8 +3,21 @@
 
 (** Basic operations on Functions *)
 
-include module type of CCShimsFun_
+[%IFGE 4.8]
+include module type of Fun
 (** @inline *)
+
+[%ELSE]
+(** This is an API imitating the new standard Fun module *)
+external id : 'a -> 'a = "%identity"
+val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
+val const : 'a -> _ -> 'a
+val negate : ('a -> bool) -> 'a -> bool
+
+val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
+(* this doesn't have the exact same semantics as the stdlib's finally.
+    It will not attempt to catch exceptions raised from [finally] at all. *)
+[%ENDIF]
 
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** [compose f g x] is [g (f x)]. Composition. *)
