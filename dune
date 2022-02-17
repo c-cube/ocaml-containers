@@ -3,7 +3,7 @@
  (deps (package containers-data) ./src/mdx_runner.exe)
  (action (run ./src/mdx_runner.exe)))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (package containers-data)
  (action (diff README.md README.md.corrected)))

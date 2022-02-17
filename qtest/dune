@@ -6,8 +6,8 @@
 
 (rule
   (targets run_qtest.ml)
-  (deps make.bc (source_tree ../src))
-  (action (run ./make.bc -target %{targets} ../src/core ../src/unix/)))
+  (deps ./make.exe (source_tree ../src))
+  (action (run ./make.exe -target %{targets} ../src/core ../src/unix/)))
 
 (executable
   (name run_qtest)
@@ -17,16 +17,16 @@
   (flags :standard -warn-error -a -w -3-33-35-27-39-50)
   (libraries iter gen qcheck containers containers.unix unix uutf threads))
 
-(alias
-  (name    runtest)
+(rule
+  (alias runtest)
   (locks /ctest)
   (package containers)
   (action  (run ./run_qtest.exe)))
 
 (rule
   (targets run_qtest_data.ml)
-  (deps make.bc (source_tree ../src/data))
-  (action (run ./make.bc -target %{targets} ../src/data)))
+  (deps make.exe (source_tree ../src/data))
+  (action (run ./make.exe -target %{targets} ../src/data)))
 
 (executable
   (name run_qtest_data)
@@ -36,16 +36,16 @@
   (flags :standard -warn-error -a -w -3-33-35-27-39-50)
   (libraries iter gen qcheck containers containers-data))
 
-(alias
-  (name    runtest)
+(rule
+  (alias runtest)
   (package containers-data)
   (locks /ctest)
   (action  (run ./run_qtest_data.exe)))
 
 (rule
   (targets run_qtest_thread.ml)
-  (deps make.bc (source_tree ../src/threads))
-  (action (run ./make.bc -target %{targets} ../src/threads)))
+  (deps make.exe (source_tree ../src/threads))
+  (action (run ./make.exe -target %{targets} ../src/threads)))
 
 (executable
   (name run_qtest_thread)
@@ -55,8 +55,8 @@
   (flags :standard -warn-error -a -w -3-33-35-27-39-50)
   (libraries qcheck containers containers-thread iter threads))
 
-(alias
-  (name    runtest)
+(rule
+  (alias runtest)
   (locks /ctest)
   (package containers-thread)
   (action  (run ./run_qtest_thread.exe)))

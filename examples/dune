@@ -4,16 +4,16 @@
   (libraries containers)
   (flags :standard -warn-error -a+8))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (locks /ctest)
   (deps (source_tree test_data))
   (action
     (ignore-stdout
       (run ./id_sexp.exe test_data/benchpress.sexp))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (locks /ctest)
   (deps (source_tree test_data))
   (action
@@ -30,8 +30,8 @@
   (enabled_if (< %{ocaml_version} "4.08"))
   (action (with-stdout-to %{targets} (run echo "let() = print_endline {|ok|}"))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (locks /ctest)
   (deps (source_tree test_data))
   (enabled_if (>= %{ocaml_version} "4.08"))
