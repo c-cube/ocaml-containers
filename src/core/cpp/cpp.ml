@@ -42,16 +42,16 @@ let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
       | exception End_of_file -> Eof
       | line ->
         incr pos;
-        if prefix line ~pre:"[%IFLE" then
-          Scanf.sscanf line "[%%IFLE %d.%d]" (fun x y -> If(Le,x,y))
-        else if prefix line ~pre:"[%IFGE" then
-          Scanf.sscanf line "[%%IFGE %d.%d]" (fun x y -> If(Ge,x,y))
-        else if prefix line ~pre:"[%ELIFLE" then
-          Scanf.sscanf line "[%%ELIFLE %d.%d]" (fun x y -> Elseif(Le,x,y))
-        else if prefix line ~pre:"[%ELIFGE" then
-          Scanf.sscanf line "[%%ELIFGE %d.%d]" (fun x y -> Elseif(Ge,x,y))
-        else if line="[%ELSE]" then Else
-        else if line="[%ENDIF]" then Endif
+        if prefix line ~pre:"[@@@ifle" then
+          Scanf.sscanf line "[@@@ifle %d.%d]" (fun x y -> If(Le,x,y))
+        else if prefix line ~pre:"[@@@ifge" then
+          Scanf.sscanf line "[@@@ifge %d.%d]" (fun x y -> If(Ge,x,y))
+        else if prefix line ~pre:"[@@@elifle" then
+          Scanf.sscanf line "[@@@elifle %d.%d]" (fun x y -> Elseif(Le,x,y))
+        else if prefix line ~pre:"[@@@elifge" then
+          Scanf.sscanf line "[@@@elifge %d.%d]" (fun x y -> Elseif(Ge,x,y))
+        else if line="[@@@else_]" then Else
+        else if line="[@@@endif]" then Endif
         else Raw line
   in
 

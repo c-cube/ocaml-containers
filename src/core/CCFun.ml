@@ -10,11 +10,11 @@ let opaque_identity x = x
 include Sys
 include CCShims_.Stdlib
 
-[%IFGE 4.8]
+[@@@ifge 4.8]
 
 include Fun
 
-[%ELSE]
+[@@@else_]
 
 external id : 'a -> 'a = "%identity"
 let[@inline] flip f x y = f y x
@@ -29,7 +29,7 @@ let[@inline] protect ~finally f =
     finally();
     raise e
 
-[%ENDIF]
+[@@@endif]
 
 let compose f g x = g (f x)
 

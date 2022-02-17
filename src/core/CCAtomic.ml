@@ -1,10 +1,10 @@
 
-[%IFGE 4.12]
+[@@@ifge 4.12]
 
 include Atomic
 
 
-[%ELSE]
+[@@@else_]
 
 open CCShims_.Stdlib (* for == *)
 
@@ -32,4 +32,4 @@ let[@inline] incr r = r.x <- 1 + r.x
 let[@inline] decr r = r.x <- r.x - 1
 
 
-[%ENDIF]
+[@@@endif]

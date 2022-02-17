@@ -3,11 +3,12 @@
 
 (** Basic operations on Functions *)
 
-[%IFGE 4.8]
+[@@@ifge 4.8]
 include module type of Fun
 (** @inline *)
 
-[%ELSE]
+[@@@else_]
+
 (** This is an API imitating the new standard Fun module *)
 external id : 'a -> 'a = "%identity"
 val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
@@ -17,7 +18,8 @@ val negate : ('a -> bool) -> 'a -> bool
 val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
 (* this doesn't have the exact same semantics as the stdlib's finally.
     It will not attempt to catch exceptions raised from [finally] at all. *)
-[%ENDIF]
+
+[@@@endif]
 
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** [compose f g x] is [g (f x)]. Composition. *)
