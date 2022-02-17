@@ -74,7 +74,7 @@ let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
       | Eof -> fail "unexpected EOF"
       | If _ -> fail "nested if not supported"
       | Raw s -> print_endline s; cat_block()
-      | Endif -> top()
+      | Endif -> pp_pos(); top()
       | Elseif _ | Else -> skip_block ~elseok:false ()
 
   (* skip current block.
@@ -84,7 +84,7 @@ let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
       | Eof -> fail "unexpected EOF"
       | If _ -> fail "nested if not supported"
       | Raw _ -> skip_block ~elseok ()
-      | Endif -> top()
+      | Endif -> pp_pos(); top()
       | Elseif (op,i,j) ->
         if elseok && eval ~major ~minor op i j then (
           pp_pos();
