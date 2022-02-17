@@ -17,7 +17,7 @@ let prefix ~pre s =
   else (
     let rec check i =
       if i=len then true
-      else if Stdlib.(<>) (String.unsafe_get s i) (String.unsafe_get pre i) then false
+      else if (String.unsafe_get s i) <> (String.unsafe_get pre i) then false
       else check (i+1)
     in
     check 0
