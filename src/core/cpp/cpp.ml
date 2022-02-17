@@ -104,5 +104,5 @@ let () =
   let version = C.ocaml_config_var_exn c "version" in
   let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
 
-  let ic = open_in_bin file in
+  let ic = open_in file in
   preproc_lines ~file ~major ~minor ic
