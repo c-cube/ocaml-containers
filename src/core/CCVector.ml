@@ -345,6 +345,24 @@ let remove_unordered v i =
     to_list v1 = (List.sort CCInt.compare (to_list v2)))
 *)
 
+let insert v i x =
+  (* Note that we can insert at i=v.size *)
+  if i < 0 || i > v.size then invalid_arg "CCVector.insert";
+  if v.size = Array.length v.vec
+  then grow_with_ v ~filler:x;
+  (* Shift the following elements, then put the element at i *)
+  if i < v.size then Array.blit v.vec i v.vec (i+1) (v.size - i);
+  v.vec.(i) <- x;
+  v.size <- v.size + 1
+
+(*$T
+  let v = (1 -- 5) in insert v 3 9; to_list v = [1;2;3;9;4;5]
+  let v = create () in insert v 0 2; to_list v = [2]
+  let v = (1 -- 3) in remove_and_shift v 1; insert v 1 5; to_list v = [1;5;3]
+  let v = (1 -- 3) in remove_and_shift v 0; insert v 2 5; to_list v = [2;3;5]
+  let v = (1 -- 3) in insert v 3 5; to_list v = [1;2;3;5]
+*)
+
 let[@inline] append_iter a i = i (fun x -> push a x)
 
 let append_seq a seq = Seq.iter (fun x -> push a x) seq

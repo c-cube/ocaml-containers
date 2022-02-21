@@ -277,6 +277,12 @@ val remove_unordered : ('a, rw) t -> int -> unit
     (might swap with the last element).
     See {!remove_and_shift} if you want to keep the ordering. *)
 
+val insert : ('a, rw) t -> int -> 'a -> unit
+(** [insert v i x] insert the given element at index i.
+    Elements at location [i] and later are first shifted over in linear time before inserting [x].
+    Preserve the order of elements in [v].
+    @since 3.7 *)
+
 val rev : ('a,_) t -> ('a, 'mut) t
 (** Reverse the vector. *)
 
