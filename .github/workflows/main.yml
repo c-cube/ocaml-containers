@@ -38,6 +38,8 @@ jobs:
       - run: opam install -t containers containers-data containers-thread --deps-only
         if: matrix.os == 'ubuntu-latest'
 
+      - run: opam pin dune 2.9.3 -y -n
+
       - run: |
           opam install -t containers --deps-only
           opam install containers-data containers-thread --deps-only  # no test deps
