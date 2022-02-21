@@ -1,16 +1,5 @@
-
-(executable
-  (name mkshims)
-  (modules mkshims)
-  (libraries dune.configurator))
-
-(rule
-  (targets CCMonomorphicShims_.ml)
-  (deps ./mkshims.exe)
-  (action (with-stdout-to %{targets} (run ./mkshims.exe))))
-
 (library
   (name containers_monomorphic)
   (public_name containers.monomorphic)
-  (modules CCMonomorphic CCMonomorphicShims_)
+  (modules CCMonomorphic)
   (wrapped false))

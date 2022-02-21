@@ -4,10 +4,6 @@ let write_file f s =
   let out = open_out f in
   output_string out s; flush out; close_out out
 
-let shims_pre_407 = "module Stdlib = Pervasives"
-
-let shims_post_407 = "module Stdlib = Stdlib"
-
 let shims_fmt_pre_408 = "
 include Format
 let cc_update_funs funs f1 f2 =
@@ -184,26 +180,10 @@ let shims_let_op_list_post_408 =
   end
 "
 
-let shims_int_pre_408 = ""
-let shims_int_post_408 = "
-  include Int
-  (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
-"
-
-let shims_unit_before_408 = {|
-type t = unit
-let[@inline] equal (_:t) (_:t) = true
-let[@inline] compare (_:t) (_:t) = 0
-let to_string () = "()"
-|}
-
-let shims_unit_after_408 = "include Unit"
-
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
     let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
-    write_file "CCShims_.ml" (if (major, minor) >= (4,7) then shims_post_407 else shims_pre_407);
     write_file "CCShimsList_.ml" (if (major, minor) >= (4,8) then shims_list_post_408 else shims_list_pre_408);
     write_file "CCShimsArray_.ml"
       (if (major, minor) >= (4,8) then shims_array_post_408
@@ -216,8 +196,4 @@ let () =
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
     write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
     write_file "CCShimsMkLetList_.ml" (if (major, minor) >= (4,8) then shims_let_op_list_post_408 else shims_let_op_list_pre_408);
-    write_file "CCShimsInt_.ml"
-      (if (major, minor) >= (4,8) then shims_int_post_408 else shims_int_pre_408);
-    write_file "CCUnit.ml"
-      (if (major, minor) >= (4,8) then shims_unit_after_408 else shims_unit_before_408);
   )

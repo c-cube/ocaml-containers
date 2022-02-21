@@ -1,7 +1,10 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-open CCMonomorphicShims_
+[@@@ifle 4.07]
+[@@@else_]
+module Stdlib = Pervasives
+[@@@endif]
 
 let (=) : int -> int -> bool = Stdlib.(=)
 let (<>) : int -> int -> bool  = Stdlib.(<>)

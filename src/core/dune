@@ -5,9 +5,9 @@
  (libraries dune.configurator))
 
 (rule
- (targets CCShims_.ml CCShimsList_.ml
+ (targets CCShimsList_.ml
    CCShimsArray_.ml CCShimsFormat_.ml CCShimsMkLet_.ml CCShimsMkLetList_.ml
-   CCShimsArrayLabels_.ml CCShimsInt_.ml CCUnit.ml)
+   CCShimsArrayLabels_.ml)
  (deps ./mkshims.exe)
  (action
   (run ./mkshims.exe)))

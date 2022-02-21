@@ -3,8 +3,14 @@
 
 (** Basic Int functions *)
 
-include module type of CCShimsInt_
-(** @inline *)
+[@@@ifge 4.08]
+
+include module type of Int
+(** @inline
+
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
+
+[@@@endif]
 
 type t = int
 
