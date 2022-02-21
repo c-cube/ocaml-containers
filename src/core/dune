@@ -18,7 +18,7 @@
  (wrapped false)
  (modules :standard \ mkshims)
  (preprocess (action (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
- (flags :standard -warn-error -a+8 -w -32 -safe-string
+ (flags :standard -warn-error -a+8 -w -32-70 -safe-string
         -strict-sequence -nolabels -open CCMonomorphic)
  (libraries seq either containers.monomorphic))
 
