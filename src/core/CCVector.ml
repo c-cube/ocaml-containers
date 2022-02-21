@@ -351,7 +351,7 @@ let insert v i x =
   if v.size = Array.length v.vec
   then grow_with_ v ~filler:x;
   (* Shift the following elements, then put the element at i *)
-  Array.blit v.vec i v.vec (i+1) (v.size - i);
+  if i < v.size then Array.blit v.vec i v.vec (i+1) (v.size - i);
   v.vec.(i) <- x;
   v.size <- v.size + 1
 
