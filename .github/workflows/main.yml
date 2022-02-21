@@ -38,14 +38,12 @@ jobs:
       - run: opam install -t containers containers-data containers-thread --deps-only
         if: matrix.os == 'ubuntu-latest'
 
-      - run: opam pin dune 2.9.3 -y -n
-
       - run: |
-          opam install -t containers --deps-only
+          opam install -t containers --deps-only ;
           opam install containers-data containers-thread --deps-only  # no test deps
         if: matrix.os != 'ubuntu-latest'
 
-      - run: opam exec -- dune build @install
+      - run: opam exec -- dune build '@install'
 
       - run: opam exec -- dune runtest
         if: ${{ matrix.os == 'ubuntu-latest' }}
