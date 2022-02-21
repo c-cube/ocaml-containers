@@ -78,6 +78,7 @@ val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
 val iter : ('a -> unit) -> 'a t -> unit
 (** [iter f t] applies function [f] to all elements of the persistent array,
     in order from element [0] to element [length t - 1]. *)
+
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
 
 val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
