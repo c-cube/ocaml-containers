@@ -123,6 +123,57 @@ let to_seq self =
   in
   s 0
 
+[@@@ifge 4.8]
+
+let add_int16_le self (i:int) : unit =
+  ensure_cap self (length self+2);
+  Bytes.set_int16_le self.bytes self.sz i;
+  self.sz <- self.sz + 2
+
+let add_int16_be self (i:int) : unit =
+  ensure_cap self (length self+2);
+  Bytes.set_int16_be self.bytes self.sz i;
+  self.sz <- self.sz + 2
+
+let add_int16_ne self (i:int) : unit =
+  ensure_cap self (length self+2);
+  Bytes.set_int16_ne self.bytes self.sz i;
+  self.sz <- self.sz + 2
+
+let add_int32_le self (i:int32) : unit =
+  ensure_cap self (length self+4);
+  Bytes.set_int32_le self.bytes self.sz i;
+  self.sz <- self.sz + 4
+
+let add_int32_be self (i:int32) : unit =
+  ensure_cap self (length self+4);
+  Bytes.set_int32_be self.bytes self.sz i;
+  self.sz <- self.sz + 4
+
+let add_int32_ne self (i:int32) : unit =
+  ensure_cap self (length self+4);
+  Bytes.set_int32_ne self.bytes self.sz i;
+  self.sz <- self.sz + 4
+
+let add_int64_le self (i:int64) : unit =
+  ensure_cap self (length self+8);
+  Bytes.set_int64_le self.bytes self.sz i;
+  self.sz <- self.sz + 8
+
+let add_int64_be self (i:int64) : unit =
+  ensure_cap self (length self+8);
+  Bytes.set_int64_be self.bytes self.sz i;
+  self.sz <- self.sz + 8
+
+let add_int64_ne self (i:int64) : unit =
+  ensure_cap self (length self+8);
+  Bytes.set_int64_ne self.bytes self.sz i;
+  self.sz <- self.sz + 8
+
+
+[@@@endif]
+
+
 (* TODO: unicode operators.*)
 
 (*$inject
@@ -138,6 +189,15 @@ let to_seq self =
     | Clear
     | Shrink_to of int
     | Set of int * char
+    | Add_int16_le of int
+    | Add_int16_be of int
+    | Add_int16_ge of int
+    | Add_int32_le of int32
+    | Add_int32_be of int32
+    | Add_int32_ge of int32
+    | Add_int64_le of int64
+    | Add_int64_be of int64
+    | Add_int64_ge of int64
 
   let spf = Printf.sprintf
 
@@ -149,13 +209,33 @@ let to_seq self =
     | Clear -> "clear"
     | Shrink_to n -> spf "shrink %d" n
     | Set (i,c) -> spf "set %d %C" i c
+    | Add_int16_ne i -> spf "add_int16_ne %d" i
+    | Add_int16_ge i -> spf "add_int16_ge %d" i
+    | Add_int16_le i -> spf "add_int16_le %d" i
+    | Add_int32_ne i -> spf "add_int32_ne %ld" i
+    | Add_int32_ge i -> spf "add_int32_ge %ld" i
+    | Add_int32_le i -> spf "add_int32_le %ld" i
+    | Add_int64_ne i -> spf "add_int64_ne %Ld" i
+    | Add_int64_ge i -> spf "add_int64_ge %Ld" i
+    | Add_int64_le i -> spf "add_int64_le %Ld" i
 
   let gen_op size : (_*_) Gen.t =
     let open Gen in
+    let int16 = (0 -- (1 lsl 16)-1) in
+    let int32 = int32 and int64 = int64 in
     let base = if size>0 then
         [1, ((0--size) >|= fun x -> Get x, size);
          1, ((0--size) >>= fun x -> printable >|= fun c -> Set (x,c), size);
          1, ((0--size) >|= fun x -> Shrink_to x, x);
+         1, (int16 >|= fun x -> Add_int16_ge x);
+         1, (int16 >|= fun x -> Add_int16_le x);
+         1, (int16 >|= fun x -> Add_int16_ne x);
+         1, (int32 >|= fun x -> Add_int32_ge x);
+         1, (int32 >|= fun x -> Add_int32_le x);
+         1, (int32 >|= fun x -> Add_int32_ne x);
+         1, (int64 >|= fun x -> Add_int64_ge x);
+         1, (int64 >|= fun x -> Add_int64_le x);
+         1, (int64 >|= fun x -> Add_int64_ne x);
         ]
       else []
     in
@@ -186,6 +266,15 @@ let to_seq self =
       | (Get n | Set (n,_)) :: tl -> n < sz && loop sz tl
       | Get_contents :: tl -> loop sz tl
       | Shrink_to x :: tl -> x <= sz && loop x tl
+      | Add_int16_ne _
+      | Add_int16_ge _
+      | Add_int16_le _ -> loop (sz+2) tl
+      | Add_int32_ne _
+      | Add_int32_ge _
+      | Add_int32_le _ -> loop (sz+4) tl
+      | Add_int64_ne _
+      | Add_int64_ge _
+      | Add_int64_le _ -> loop (sz+8) tl
     in loop 0 ops
 
   let shrink_op = Iter.(function
@@ -197,12 +286,27 @@ let to_seq self =
     | Set (n,c) ->
       (Shrink.int n >|= fun n-> Set(n,c)) <+>
       (Shrink.char c >|= fun c-> Set(n,c))
+    | Add_int16_ne _
+    | Add_int16_ge _
+    | Add_int16_le _
+    | Add_int32_ne _
+    | Add_int32_ge _
+    | Add_int32_le _
+    | Add_int64_ne _
+    | Add_int64_ge _
+    | Add_int64_le _ -> empty
     )
 
   let arb = make gen ~print:(Print.list str_op)
       ~shrink:Shrink.(filter is_valid @@ list ~shrink:shrink_op)
 
   exception Nope of string
+
+  let b2str n f x =
+    let b = Bytes.create n in
+    f b 0 x;
+    Bytes.unsafe_to_string b
+
   let prop_consistent ops =
     let buf = ref "" in
     let b = create ~cap:32 () in
@@ -231,6 +335,17 @@ let to_seq self =
           buf := Bytes.unsafe_to_string b';
         );
         set b n c
+
+      | Add_int16_ne i -> buf := !buf ^ b2str 2 Bytes.set_int16_le i; add_int16_ne b i
+      | Add_int16_ge i -> buf := !buf ^ b2str 2 Bytes.set_int16_ge i; add_int16_ge b i
+      | Add_int16_le i -> buf := !buf ^ b2str 2 Bytes.set_int16_le i; add_int16_le b i
+      | Add_int32_ne i -> buf := !buf ^ b2str 4 Bytes.set_int32_le i; add_int32_ne b i
+      | Add_int32_ge i -> buf := !buf ^ b2str 4 Bytes.set_int32_le i; add_int32_ge b i
+      | Add_int32_le i -> buf := !buf ^ b2str 4 Bytes.set_int32_le i; add_int32_le b i
+      | Add_int64_ne i -> buf := !buf ^ b2str 8 Bytes.set_int64_le i; add_int64_ne b i
+      | Add_int64_ge i -> buf := !buf ^ b2str 8 Bytes.set_int64_le i; add_int64_ge b i
+      | Add_int64_le i -> buf := !buf ^ b2str 8 Bytes.set_int64_le i; add_int64_le b i
+
     in
 
     assume (is_valid ops);
