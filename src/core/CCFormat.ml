@@ -336,15 +336,23 @@ module ANSI_codes = struct
     | _ -> raise No_such_style
 end
 
+type stag +=
+  | Style of ANSI_codes.style list
+
 let color_enabled = ref false
+
+let mark_open_style st style =
+  Stack.push style st;
+  if !color_enabled then string_of_style_list style else ""
+
+let mark_close_style st style =
 
 (* either prints the tag of [s] or delegate to [or_else] *)
 let mark_open_tag st ~or_else s =
   let open ANSI_codes in
   try
     let style = style_of_tag_ s in
-    Stack.push style st;
-    if !color_enabled then string_of_style_list style else ""
+    mark_open_style st style
   with No_such_style -> or_else s
 
 let mark_close_tag st ~or_else s =
@@ -377,6 +385,11 @@ let update_tag_funs_ funs f1 f2 =
     mark_open_tag = f1 ~or_else:funs.mark_open_tag;
     mark_close_tag = f2 ~or_else:funs.mark_close_tag;
   }
+
+let styling stl pp out x =
+  pp_open_stag out (Style stl);
+  try pp out x; pp_close_stag out ()
+  with e -> pp_close_stag out (); raise e
 
 [@@@ocaml.warning "+3"]
 

@@ -324,6 +324,17 @@ module ANSI_codes : sig
       is a very shiny style. *)
 end
 
+[@@@ifge 4.8]
+
+val styling : ANSI_codes.style list -> 'a printer -> 'a printer
+(** [styling st p] is the same printer as [p], except it locally sets
+    the style [st].
+
+    Available only on OCaml >= 4.08.
+    @since NEXT_RELEASE *)
+
+[@@@endif]
+
 (** {2 IO} *)
 
 val output : t -> 'a printer -> 'a -> unit
