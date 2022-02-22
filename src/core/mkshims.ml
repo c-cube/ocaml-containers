@@ -93,38 +93,10 @@ let shims_let_op_list_pre_408 =
    module type S = sig end
    module Make(X:sig end) = struct end
 "
-let shims_let_op_list_post_408 =
-  "module type S = sig
-   val (and&) : 'a list -> 'b list -> ('a * 'b) list
-   (** [(and&)] is {!combine_shortest}.
-      It allows to perform a synchronized product between two lists,
-        stopping gently at the shortest. Usable both with [let+] and [let*].
-    {[
-        # let f xs ys zs =
-            let+ x = xs
-            and& y = ys
-            and& z = zs in
-            x + y + z;;
-        val f : int list -> int list -> int list -> int list = <fun>
-        # f [1;2] [5;6;7] [10;10];;
-        - : int list = [16; 18]
-    ]}
-    @since 3.1
-  *)
-  end
-
-  module Make(X:sig
-    val combine_shortest : 'a list -> 'b list -> ('a*'b) list
-  end) = struct
-    let (and&) = X.combine_shortest
-  end
-"
 
 let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
     let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
-    write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
-    write_file "CCShimsMkLetList_.ml" (if (major, minor) >= (4,8) then shims_let_op_list_post_408 else shims_let_op_list_pre_408);
   )

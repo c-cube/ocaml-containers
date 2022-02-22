@@ -196,12 +196,14 @@ let pure x _st = x
 
 let (<*>) f g st = f st (g st)
 
-include CCShimsMkLet_.Make(struct
-    type nonrec 'a t = 'a t
-    let (>>=) = (>>=)
-    let (>|=) = (>|=)
-    let monoid_product a1 a2 st = a1 st, a2 st
-  end)
+[@@@ifge 4.8]
+
+let (let+) = (>|=)
+let (let*) = (>>=)
+let[@inline] (and+) a1 a2 st = a1 st, a2 st
+let (and*) = (and+)
+
+[@@@endif]
 
 let __default_state = Random.State.make_self_init ()
 

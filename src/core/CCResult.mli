@@ -194,10 +194,21 @@ module Infix : sig
       [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
       over the error of [b] if both fail. *)
 
-  (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8
-      @inline *)
-  include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
+  [@@@ifge 4.08]
+
+  val (let+) : ('a,'e) t -> ('a -> 'b) -> ('b,'e) t
+  (** @since 2.8 *)
+
+  val (and+) : ('a,'e) t -> ('b,'e) t -> ('a * 'b, 'e) t
+  (** @since 2.8 *)
+
+  val (let*) : ('a,'e) t -> ('a -> ('b,'e) t) -> ('b,'e) t
+  (** @since 2.8 *)
+
+  val (and*) : ('a,'e) t -> ('b,'e) t -> ('a * 'b,'e) t
+  (** @since 2.8 *)
+
+  [@@@endif]
 end
 
 include module type of Infix

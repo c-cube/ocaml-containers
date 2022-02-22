@@ -334,10 +334,14 @@ module Infix : sig
   (** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
       @since 0.17 *)
 
+  [@@@ifge 4.8]
+
+  include CCShims_syntax.LET with type 'a t := 'a array
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
       @since 2.8
       @inline *)
-  include CCShimsMkLet_.S with type 'a t_let := 'a array
+
+  [@@@endif]
 end
 
 include module type of Infix

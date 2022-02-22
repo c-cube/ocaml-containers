@@ -5,8 +5,7 @@
  (libraries dune.configurator))
 
 (rule
- (targets
-   CCShimsFormat_.ml CCShimsMkLet_.ml CCShimsMkLetList_.ml)
+ (targets CCShimsFormat_.ml)
  (deps ./mkshims.exe)
  (action
   (run ./mkshims.exe)))
@@ -16,6 +15,7 @@
  (public_name containers)
  (wrapped false)
  (modules :standard \ mkshims)
+ (modules_without_implementation CCShims_syntax)
  (preprocess (action (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
  (flags :standard -warn-error -a+8 -w -32-70 -safe-string
         -strict-sequence -nolabels -open CCMonomorphic)

@@ -154,23 +154,15 @@ module Make(P : PARAM) : sig
       val (>|=) : 'a t -> ('a -> 'b) -> 'b t
       val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
 
+      [@@@ifge 4.08]
+
+      include CCShims_syntax.LET with type 'a t := 'a t
       (** Let operators on OCaml >= 4.08.0, nothing otherwise
           @since 2.8 *)
-      include CCShimsMkLet_.S with type 'a t_let := 'a t
+
+      [@@@endif]
     end
 
-    val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-
-    val (>>) : 'a t -> (unit -> 'b t) -> 'b t
-
-    val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-    (** Alias to {!map}. *)
-
-    val (<*>): ('a -> 'b) t -> 'a t -> 'b t
-    (** Alias to {!app}. *)
-
-    (** Let operators on OCaml >= 4.08.0, nothing otherwise
-        @since 2.8 *)
-    include CCShimsMkLet_.S with type 'a t_let := 'a t
+    include module type of Infix
   end
 end

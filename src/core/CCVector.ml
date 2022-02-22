@@ -1141,9 +1141,13 @@ let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
     ) v;
   pp_stop fmt ()
 
-include CCShimsMkLet_.Make2(struct
-    type nonrec ('a,'e) t = ('a,'e) t
-    let (>|=) = (>|=)
-    let (>>=) = (>>=)
-    let monoid_product a1 a2 = monoid_product (fun x y->x,y) a1 a2
-  end)
+[@@@ifge 4.8]
+
+let (let+) = (>|=)
+let (let*) = (>>=)
+let[@inline] (and+) a1 a2 = monoid_product (fun x y->x,y) a1 a2
+let (and*) = (and+)
+
+[@@@endif]
+
+

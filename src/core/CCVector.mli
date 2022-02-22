@@ -383,7 +383,20 @@ val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer
     By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
     (fun out -> Format.fprintf out ",@ "). *)
 
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8
-    @inline *)
-include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) t
+
+
+[@@@ifge 4.08]
+
+val (let+) : ('a,'e) t -> ('a -> 'b) -> ('b,'e) t
+(** @since 2.8 *)
+
+val (and+) : ('a,'e) t -> ('b,'e) t -> ('a * 'b, 'e) t
+(** @since 2.8 *)
+
+val (let*) : ('a,'e) t -> ('a -> ('b,'e) t) -> ('b,'e) t
+(** @since 2.8 *)
+
+val (and*) : ('a,'e) t -> ('b,'e) t -> ('a * 'b,'e) t
+(** @since 2.8 *)
+
+[@@@endif]

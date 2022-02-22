@@ -295,15 +295,17 @@ module Infix = struct
   let (>>=) e f = flat_map f e
   let (<*>) = (<*>)
 
-  include CCShimsMkLet_.Make2(struct
-      type ('a,'e) t = ('a,'e) result
-      let (>>=) = (>>=)
-      let (>|=) = (>|=)
-      let monoid_product x1 x2 = match x1, x2 with
-        | Ok x, Ok y -> Ok (x,y)
-        | Error e, _ -> Error e
-        | _, Error e -> Error e
-    end)
+  [@@@ifge 4.8]
+
+  let (let+) = (>|=)
+  let (let*) = (>>=)
+  let[@inline] (and+) x1 x2 = match x1, x2 with
+    | Ok x, Ok y -> Ok (x,y)
+    | Error e, _ -> Error e
+    | _, Error e -> Error e
+  let (and*) = (and+)
+
+  [@@@endif]
 end
 
 include Infix

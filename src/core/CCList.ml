@@ -2001,16 +2001,16 @@ module Infix = struct
   let (--) = (--)
   let (--^) = (--^)
 
-  include CCShimsMkLet_.Make(struct
-      type 'a t = 'a list
-      let (>|=) = (>|=)
-      let (>>=) = (>>=)
-      let[@inline] monoid_product l1 l2 = product (fun x y -> x,y) l1 l2
-    end)
+  [@@@ifge 4.8]
 
-  include CCShimsMkLetList_.Make(struct
-      let combine_shortest=combine_shortest
-    end)
+  let (let+) = (>|=)
+  let (let*) = (>>=)
+  let[@inline] (and+) l1 l2 = product (fun x y -> x,y) l1 l2
+  let (and*) = (and+)
+
+  let (and&) = combine_shortest
+
+  [@@@endif]
 end
 
 include Infix

@@ -41,17 +41,18 @@ let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
     match input_line ic with
       | exception End_of_file -> Eof
       | line ->
+        let line' = String.trim line in
         incr pos;
-        if prefix line ~pre:"[@@@ifle" then
-          Scanf.sscanf line "[@@@ifle %d.%d]" (fun x y -> If(Le,x,y))
-        else if prefix line ~pre:"[@@@ifge" then
-          Scanf.sscanf line "[@@@ifge %d.%d]" (fun x y -> If(Ge,x,y))
-        else if prefix line ~pre:"[@@@elifle" then
-          Scanf.sscanf line "[@@@elifle %d.%d]" (fun x y -> Elseif(Le,x,y))
-        else if prefix line ~pre:"[@@@elifge" then
-          Scanf.sscanf line "[@@@elifge %d.%d]" (fun x y -> Elseif(Ge,x,y))
-        else if line="[@@@else_]" then Else
-        else if line="[@@@endif]" then Endif
+        if prefix line' ~pre:"[@@@ifle" then
+          Scanf.sscanf line' "[@@@ifle %d.%d]" (fun x y -> If(Le,x,y))
+        else if prefix line' ~pre:"[@@@ifge" then
+          Scanf.sscanf line' "[@@@ifge %d.%d]" (fun x y -> If(Ge,x,y))
+        else if prefix line' ~pre:"[@@@elifle" then
+          Scanf.sscanf line' "[@@@elifle %d.%d]" (fun x y -> Elseif(Le,x,y))
+        else if prefix line' ~pre:"[@@@elifge" then
+          Scanf.sscanf line' "[@@@elifge %d.%d]" (fun x y -> Elseif(Ge,x,y))
+        else if line'="[@@@else_]" then Else
+        else if line'="[@@@endif]" then Endif
         else Raw line
   in
 
