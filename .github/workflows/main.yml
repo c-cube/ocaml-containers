@@ -12,33 +12,6 @@ jobs:
   run:
     name: Build
     strategy:
-      fail-fast: true
-      matrix:
-        os:
-            - ubuntu-latest
-        ocaml-compiler:
-            - '4.03.x'
-            - '4.06.x'
-            - '4.07.x'
-            - '4.08.x'
-            - '4.13.x'
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
-
-      - run: opam pin -n .
-      - run: opam depext -y containers containers-data containers-thread
-      - run: opam install containers containers-data containers-thread --deps-only
-      - run: opam exec -- dune build '@install'
-
-  run:
-    name: Build and test
-    strategy:
       fail-fast: false
       matrix:
         os:
