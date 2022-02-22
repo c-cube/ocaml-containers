@@ -23,10 +23,6 @@ let prefix ~pre s =
     check 0
   )
 
-type state =
-  | St_normal
-  | St_parsing_cond
-
 let eval ~major ~minor op i j =
   match op with
     | Le -> (major,minor) <= (i,j)
@@ -43,17 +39,19 @@ let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
       | line ->
         let line' = String.trim line in
         incr pos;
-        if prefix line' ~pre:"[@@@ifle" then
-          Scanf.sscanf line' "[@@@ifle %d.%d]" (fun x y -> If(Le,x,y))
-        else if prefix line' ~pre:"[@@@ifge" then
-          Scanf.sscanf line' "[@@@ifge %d.%d]" (fun x y -> If(Ge,x,y))
-        else if prefix line' ~pre:"[@@@elifle" then
-          Scanf.sscanf line' "[@@@elifle %d.%d]" (fun x y -> Elseif(Le,x,y))
-        else if prefix line' ~pre:"[@@@elifge" then
-          Scanf.sscanf line' "[@@@elifge %d.%d]" (fun x y -> Elseif(Ge,x,y))
-        else if line'="[@@@else_]" then Else
-        else if line'="[@@@endif]" then Endif
-        else Raw line
+        if line' <> "" && line'.[0] = '[' then (
+          if prefix line' ~pre:"[@@@ifle" then
+            Scanf.sscanf line' "[@@@ifle %d.%d]" (fun x y -> If(Le,x,y))
+          else if prefix line' ~pre:"[@@@ifge" then
+            Scanf.sscanf line' "[@@@ifge %d.%d]" (fun x y -> If(Ge,x,y))
+          else if prefix line' ~pre:"[@@@elifle" then
+            Scanf.sscanf line' "[@@@elifle %d.%d]" (fun x y -> Elseif(Le,x,y))
+          else if prefix line' ~pre:"[@@@elifge" then
+            Scanf.sscanf line' "[@@@elifge %d.%d]" (fun x y -> Elseif(Ge,x,y))
+          else if line'="[@@@else_]" then Else
+          else if line'="[@@@endif]" then Endif
+          else Raw line
+        ) else Raw line
   in
 
   (* entry point *)
@@ -100,10 +98,14 @@ let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
   top()
 
 let () =
+  let t0 = Unix.gettimeofday()in
   let file = Sys.argv.(1) in
   let c = C.create "main" in
   let version = C.ocaml_config_var_exn c "version" in
   let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
 
   let ic = open_in file in
-  preproc_lines ~file ~major ~minor ic
+  preproc_lines ~file ~major ~minor ic;
+
+  Printf.printf "(* file preprocessed in %.3fs *)\n" (Unix.gettimeofday() -. t0);
+  ()
