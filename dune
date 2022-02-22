@@ -8,4 +8,5 @@
  (alias runtest)
  (package containers-data)
  (enabled_if (= %{system} "linux"))
+ (locks /ctest)
  (action (diff README.md README.md.corrected)))
