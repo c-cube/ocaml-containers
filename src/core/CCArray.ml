@@ -720,11 +720,15 @@ module Infix = struct
   let (--) = (--)
   let (--^) = (--^)
 
+  [@@@ifge 4.8]
+
   type 'a t = 'a array
   let ( let* ) = (>>=)
   let (let+) = (>|=)
   let[@inline] (and+) a1 a2 = monoid_product (fun x y->x,y) a1 a2
   let ( and* ) = (and+)
+
+  [@@@endif]
 end
 
 include Infix
