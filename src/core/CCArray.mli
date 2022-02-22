@@ -14,8 +14,31 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-include module type of CCShimsArray_
-(** @inline *)
+[@@@ifge 4.8]
+
+include module type of Array
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+[@@@elifge 4.6]
+
+include module type of Array
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+type 'a t = 'a array
+
+[@@@else_]
+
+include module type of Array
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+module Floatarray : sig type t = float array end
+
+type 'a t = 'a array
+
+[@@@endif]
 
 val empty : 'a t
 (** [empty] is the empty array, physically equal to [[||]]. *)

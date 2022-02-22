@@ -66,7 +66,16 @@ let rec assq_opt x = function
 
 (* end of backport *)
 
-include CCShimsList_
+[@@@ifge 4.8]
+
+include List
+
+[@@@else_]
+
+include List
+type +'a t = 'a list
+
+[@@@endif]
 
 let empty = []
 

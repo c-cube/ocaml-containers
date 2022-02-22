@@ -16,8 +16,24 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-include CCShims_
-include CCShimsArray_
+open CCShims_
+
+[@@@ifge 4.8]
+
+include Array
+
+[@@@elifge 4.6]
+
+include Array
+type 'a t = 'a array
+
+[@@@else_]
+
+include Array
+module Floatarray = struct type t = float array end
+type 'a t = 'a array
+
+[@@@endif]
 
 let empty = [| |]
 

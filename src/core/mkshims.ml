@@ -34,66 +34,6 @@ let cc_update_funs funs f1 f2 =
   }
 "
 
-let shims_fun_pre_408 = "
-  external id : 'a -> 'a = \"%identity\"
-  let[@inline] flip f x y = f y x
-  let[@inline] const x _ = x
-  let[@inline] negate f x = not (f x)
-  let[@inline] protect ~finally f =
-    try
-      let x= f() in
-      finally();
-      x
-    with e ->
-      finally();
-      raise e
-
-"
-
-let shims_list_pre_408 = "
-  include List
-  type +'a t = 'a list
-"
-let shims_list_post_408 = "include List"
-
-let shims_array_pre_406 = "
-  include Array
-  (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
-
-  module Floatarray = struct type t = float array end
-  type 'a t = 'a array
-  "
-
-let shims_array_label_pre_406 = "
-  include ArrayLabels
-  (** {{: http://caml.inria.fr/pub/docs/manual-ocaml/libref/ArrayLabels.html} Documentation for the standard ArrayLabels module}*)
-
-  module Floatarray = CCShimsArray_.Floatarray
-  type 'a t = 'a array
-  "
-
-let shims_array_label_406_408 = "
-  include (ArrayLabels : module type of ArrayLabels with module Floatarray = Array.Floatarray)
-  (** {{: http://caml.inria.fr/pub/docs/manual-ocaml/libref/ArrayLabels.html} Documentation for the standard ArrayLabels module}*)
-
-  type 'a t = 'a array
-  "
-
-let shims_array_406_408 = "
-  include Array
-  (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
-
-  type 'a t = 'a array
-"
-let shims_array_post_408 = "
-  include Array
-  (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
-"
-let shims_array_label_post_408 = "
-  include (ArrayLabels : module type of ArrayLabels with module Floatarray = Array.Floatarray)
-  (** {{: http://caml.inria.fr/pub/docs/manual-ocaml/libref/ArrayLabels.html} Documentation for the standard ArrayLabels module}*)
-"
-
 let shims_let_op_pre_408 =
   "
    (** glue code for let-operators on OCaml < 4.08 (auto generated) *)
@@ -184,15 +124,6 @@ let () =
   C.main ~name:"mkshims" (fun c ->
     let version = C.ocaml_config_var_exn c "version" in
     let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
-    write_file "CCShimsList_.ml" (if (major, minor) >= (4,8) then shims_list_post_408 else shims_list_pre_408);
-    write_file "CCShimsArray_.ml"
-      (if (major, minor) >= (4,8) then shims_array_post_408
-       else if (major, minor) >= (4,6) then shims_array_406_408
-       else shims_array_pre_406);
-    write_file "CCShimsArrayLabels_.ml"
-      (if (major, minor) >= (4,8) then shims_array_label_post_408
-       else if (major, minor) >= (4,6) then shims_array_label_406_408
-       else shims_array_label_pre_406);
     write_file "CCShimsFormat_.ml" (if (major, minor) >= (4,8) then shims_fmt_post_408 else shims_fmt_pre_408);
     write_file "CCShimsMkLet_.ml" (if (major, minor) >= (4,8) then shims_let_op_post_408 else shims_let_op_pre_408);
     write_file "CCShimsMkLetList_.ml" (if (major, minor) >= (4,8) then shims_let_op_list_post_408 else shims_let_op_list_pre_408);

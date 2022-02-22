@@ -1,7 +1,7 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-[@@@ifle 4.07]
+[@@@ifge 4.07]
 [@@@else_]
 module Stdlib = Pervasives
 [@@@endif]

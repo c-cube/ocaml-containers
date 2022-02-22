@@ -11,10 +11,23 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
-include module type of List
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+[@@@ifge 4.8]
 
-type 'a t = 'a list
+include module type of List with type 'a t := 'a list
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+
+type +'a t = 'a list
+
+[@@@else_]
+
+include module type of List
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+
+type +'a t = 'a list
+
+[@@@endif]
 
 val empty : 'a t
 (** [empty] is [[]]. *)
