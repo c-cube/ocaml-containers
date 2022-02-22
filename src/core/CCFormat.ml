@@ -362,18 +362,45 @@ let mark_close_tag st ~or_else s =
       if !color_enabled then string_of_style_list style else ""
     | exception No_such_style -> or_else s
 
+[@@@ifge 4.8]
+
+
+let pp_open_tag out s = pp_open_stag out (String_tag s)
+let pp_close_tag out () = pp_close_stag out ()
+
+[@@@ocaml.warning "-3"]
+let pp_get_formatter_tag_functions = pp_get_formatter_tag_functions
+let pp_set_formatter_tag_functions = pp_set_formatter_tag_functions
+
+let update_tag_funs_ funs f1 f2 =
+  { funs with
+    mark_open_tag = f1 ~or_else:funs.mark_open_tag;
+    mark_close_tag = f2 ~or_else:funs.mark_close_tag;
+  }
+
+[@@@ocaml.warning "+3"]
+
+[@@@else_]
+
+let update_tag_funs_ funs f1 f2 =
+  { funs with
+    mark_open_tag = f1 funs.mark_open_tag;
+    mark_close_tag = f2 funs.mark_close_tag;
+  }
+
+[@@@endif]
+
 (* add color handling to formatter [ppf] *)
 let set_color_tag_handling ppf =
-  let open Format in
-  let functions = CCShimsFormat_.pp_get_formatter_tag_functions ppf () in
+  let functions = pp_get_formatter_tag_functions ppf () in
   let st = Stack.create () in (* stack of styles *)
   let functions' =
-    CCShimsFormat_.cc_update_funs functions
+    update_tag_funs_ functions
       (mark_open_tag st)
       (mark_close_tag st)
   in
   pp_set_mark_tags ppf true; (* enable tags *)
-  CCShimsFormat_.pp_set_formatter_tag_functions ppf functions'
+  pp_set_formatter_tag_functions ppf functions'
 
 let set_color_default =
   let first = ref true in
@@ -398,14 +425,14 @@ let set_color_default =
 *)
 
 let with_color s pp out x =
-  CCShimsFormat_.pp_open_tag out s;
+  pp_open_tag out s;
   pp out x;
-  CCShimsFormat_.pp_close_tag out ()
+  pp_close_tag out ()
 
 let with_colorf s out fmt =
-  CCShimsFormat_.pp_open_tag out s;
+  pp_open_tag out s;
   Format.kfprintf
-    (fun out -> CCShimsFormat_.pp_close_tag out ())
+    (fun out -> pp_close_tag out ())
     out fmt
 
 (* c: whether colors are enabled *)
@@ -422,10 +449,10 @@ let with_color_ksf ~f s fmt =
   let buf = Buffer.create 64 in
   let out = Format.formatter_of_buffer buf in
   if !color_enabled then set_color_tag_handling out;
-  CCShimsFormat_.pp_open_tag out s;
+  pp_open_tag out s;
   Format.kfprintf
     (fun out ->
-       CCShimsFormat_.pp_close_tag out ();
+       pp_close_tag out ();
        Format.pp_print_flush out ();
        f (Buffer.contents buf))
     out fmt

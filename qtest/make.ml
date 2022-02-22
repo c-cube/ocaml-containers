@@ -22,10 +22,7 @@ let do_not_test file =
   is_suffix ~sub:".pp.mli" file ||
   is_suffix ~sub:"containers.ml" file ||
   is_suffix ~sub:"_top.ml" file ||
-  is_suffix ~sub:"mkflags.ml" file ||
-  is_suffix ~sub:"mkshims.ml" file ||
   is_suffix ~sub:"cpp.ml" file ||
-  is_suffix ~sub:"unlabel.ml" file ||
   is_suffix ~sub:"check_labelled_mods.ml" file ||
   is_suffix ~sub:"test_random.ml" file ||
   is_suffix ~sub:"test_hash.ml" file ||
