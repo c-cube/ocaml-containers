@@ -14,8 +14,32 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-include module type of CCShimsArrayLabels_
-(** @inline *)
+[@@@ifge 4.8]
+
+
+include module type of ArrayLabels with module Floatarray = Array.Floatarray
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+[@@@elifge 4.6]
+
+include module type of ArrayLabels with module Floatarray = Array.Floatarray
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+type 'a t = 'a array
+
+[@@@else_]
+
+include module type of ArrayLabels
+(** {{: http://caml.inria.fr/pub/docs/manual-ocaml/libref/ArrayLabels.html} Documentation for the standard ArrayLabels module}*)
+
+module Floatarray = CCArray.Floatarray
+type 'a t = 'a array
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+[@@@endif]
 
 val empty : 'a t
 (** [empty] is the empty array, physically equal to [||]. *)
@@ -310,10 +334,14 @@ module Infix : sig
   (** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
       @since 0.17 *)
 
+  [@@@ifge 4.8]
+
+  include CCShims_syntax.LET with type 'a t := 'a array
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
       @since 2.8
       @inline *)
-  include CCShimsMkLet_.S with type 'a t_let := 'a array
+
+  [@@@endif]
 end
 
 include module type of Infix

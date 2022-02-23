@@ -20,7 +20,7 @@ let () =
       printf "warning: ocaml-mdx exited with code %d\n" e;
       just_copy();
     ) else (
-      print_endline "ocaml-mdx returned 0";
+      print_endline "ocaml-mdx returned 0 ✔";
     )
   with Sys_error e ->
     printf "error when running mdx: %s\n" e;

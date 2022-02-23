@@ -176,14 +176,16 @@ module Infix = struct
   let (<$>) = map
   let (<+>) = (<+>)
 
-  include CCShimsMkLet_.Make(struct
-      type 'a t = 'a option
-      let (>|=) = (>|=)
-      let (>>=) = (>>=)
-      let[@inline] monoid_product o1 o2 = match o1, o2 with
-        | Some x, Some y -> Some (x,y)
-        | _ -> None
-    end)
+  [@@@ifge 4.8]
+
+  let (let+) = (>|=)
+  let (let*) = (>>=)
+  let[@inline] (and+) o1 o2 = match o1, o2 with
+    | Some x, Some y -> Some (x,y)
+    | _ -> None
+  let (and*) = (and+)
+
+  [@@@endif]
 end
 
 include Infix

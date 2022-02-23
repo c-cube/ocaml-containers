@@ -14,8 +14,31 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-include module type of CCShimsArray_
-(** @inline *)
+[@@@ifge 4.8]
+
+include module type of Array
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+[@@@elifge 4.6]
+
+include module type of Array
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+type 'a t = 'a array
+
+[@@@else_]
+
+include module type of Array
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+module Floatarray : sig type t = float array end
+
+type 'a t = 'a array
+
+[@@@endif]
 
 val empty : 'a t
 (** [empty] is the empty array, physically equal to [[||]]. *)
@@ -294,10 +317,14 @@ module Infix : sig
   (** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
       @since 0.17 *)
 
+  [@@@ifge 4.8]
+
+  include CCShims_syntax.LET with type 'a t := 'a array
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
       @since 2.8
       @inline *)
-  include CCShimsMkLet_.S with type 'a t_let := 'a array
+
+  [@@@endif]
 end
 
 include module type of Infix

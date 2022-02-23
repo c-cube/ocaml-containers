@@ -1,9 +1,17 @@
 
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-open CCShims_
+[@@@ifge 4.07]
+[@@@else_]
 
-include CCShimsInt_
+module Stdlib = Pervasives
+[@@@endif]
+
+[@@@ifge 4.08]
+
+include Int
+
+[@@@endif]
 
 type t = int
 type 'a iter = ('a -> unit) -> unit

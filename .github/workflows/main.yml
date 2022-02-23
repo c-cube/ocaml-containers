@@ -1,4 +1,4 @@
-name: Build and test
+name: build and test
 
 on:
   push:
@@ -10,9 +10,9 @@ on:
 
 jobs:
   run:
-    name: Build
+    name: build
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os:
             - macos-latest
@@ -20,7 +20,6 @@ jobs:
             - windows-latest
         ocaml-compiler:
             - '4.03.x'
-            - '4.08.x'
             - '4.13.x'
 
     runs-on: ${{ matrix.os }}
@@ -39,11 +38,11 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
 
       - run: |
-          opam install -t containers --deps-only
+          opam install -t containers --deps-only ;
           opam install containers-data containers-thread --deps-only  # no test deps
         if: matrix.os != 'ubuntu-latest'
 
-      - run: opam exec -- dune build
+      - run: opam exec -- dune build '@install'
 
       - run: opam exec -- dune runtest
         if: ${{ matrix.os == 'ubuntu-latest' }}

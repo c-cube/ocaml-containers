@@ -11,10 +11,23 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
-include module type of List
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+[@@@ifge 4.8]
 
-type 'a t = 'a list
+include module type of List with type 'a t := 'a list
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+
+type +'a t = 'a list
+
+[@@@else_]
+
+include module type of List
+(** @inline
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+
+type +'a t = 'a list
+
+[@@@endif]
 
 val empty : 'a t
 (** [empty] is [[]]. *)
@@ -925,13 +938,29 @@ module Infix : sig
   (** [i --^ j] is the infix alias for [range']. Second bound [j] excluded.
       @since 0.17 *)
 
-  (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8
-      @inline *)
-  include CCShimsMkLet_.S with type 'a t_let := 'a list
+  [@@@ifge 4.08]
 
-  include CCShimsMkLetList_.S
+  include CCShims_syntax.LET with type 'a t := 'a t
   (** @inline *)
+
+  val (and&) : 'a list -> 'b list -> ('a * 'b) list
+  (** [(and&)] is {!combine_shortest}.
+      It allows to perform a synchronized product between two lists,
+      stopping gently at the shortest. Usable both with [let+] and [let*].
+    {[
+        # let f xs ys zs =
+            let+ x = xs
+            and& y = ys
+            and& z = zs in
+            x + y + z;;
+        val f : int list -> int list -> int list -> int list = <fun>
+        # f [1;2] [5;6;7] [10;10];;
+        - : int list = [16; 18]
+    ]}
+    @since 3.1
+  *)
+
+  [@@@endif]
 end
 
 include module type of Infix

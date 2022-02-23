@@ -852,38 +852,7 @@ val of_gen : 'a gen -> 'a t
 
     @since 0.16 *)
 
-module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  (** [l >|= f] is the infix version of [map] with reversed arguments. *)
-
-  val (@) : 'a t -> 'a t -> 'a t
-  (** [l1 @ l2] concatenates two lists [l1] and [l2].
-      As {!append}. *)
-
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
-
-  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-  (** [f <$> l] is like {!map}. *)
-
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  (** [l >>= f] is [flat_map f l]. *)
-
-  val (--) : int -> int -> int t
-  (** [i -- j] is the infix alias for [range]. Bounds included. *)
-
-  val (--^) : int -> int -> int t
-  (** [i --^ j] is the infix alias for [range']. Second bound [j] excluded.
-      @since 0.17 *)
-
-  (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8
-      @inline *)
-  include CCShimsMkLet_.S with type 'a t_let := 'a list
-
-  include CCShimsMkLetList_.S
-  (** @inline *)
-end
+module Infix : module type of CCList.Infix
 
 include module type of Infix
 

@@ -355,12 +355,14 @@ module Infix = struct
   let (|||) = both
   let[@inline] (<?>) p msg = set_error_message msg p
 
-  include CCShimsMkLet_.Make(struct
-      type nonrec 'a t = 'a t
-      let (>>=) = (>>=)
-      let (>|=) = (>|=)
-      let monoid_product = both
-    end)
+  [@@@ifge 4.8]
+
+  let (let+) = (>|=)
+  let (let*) = (>>=)
+  let (and+) = both
+  let (and*) = (and+)
+
+  [@@@endif]
 end
 
 include Infix

@@ -710,13 +710,14 @@ module Make(P : PARAM) = struct
       let (>|=) a f = map f a
       let (<*>) = app
 
+      [@@@ifge 4.8]
 
-    include CCShimsMkLet_.Make(struct
-        type nonrec 'a t = 'a t
-        let (>>=) = (>>=)
-        let (>|=) = (>|=)
-        let monoid_product a1 a2 = monoid_product (fun x y->x,y) a1 a2
-      end)
+      let (let+) = (>|=)
+      let (let*) = (>>=)
+      let[@inline] (and+) a1 a2 = monoid_product (fun x y->x,y) a1 a2
+      let (and*) = (and+)
+
+      [@@@endif]
     end
 
     include Infix

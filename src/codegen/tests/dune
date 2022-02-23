@@ -19,6 +19,6 @@
   (flags :standard -warn-error -a+8)
   (libraries containers))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (action (run ./test_bitfield.exe)))
