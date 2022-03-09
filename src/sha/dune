@@ -1,0 +1,9 @@
+
+(library
+  (name containers_sha)
+  (public_name containers.sha)
+  (synopsis "SHA hashing functions for containers")
+  (foreign_stubs
+   (language c)
+   (names sha_stubs sha224-256 usha)
+   (flags -std=c11 -Wall)))
