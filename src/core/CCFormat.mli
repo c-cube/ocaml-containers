@@ -330,6 +330,26 @@ val styling : ANSI_codes.style list -> 'a printer -> 'a printer
 (** [styling st p] is the same printer as [p], except it locally sets
     the style [st].
 
+    Example:
+    {[
+
+    open CCFormat;
+    set_color_default true;
+    sprintf
+      "what is your %a? %a! No, %a! Ahhhhhhh@."
+      (styling [`FG `White; `Bold] string) "favorite color"
+      (styling [`FG `Blue] string) "blue"
+      (styling [`FG `Red] string) "red"
+    ]}
+
+    Available only on OCaml >= 4.08.
+    @since NEXT_RELEASE *)
+
+val with_styling : ANSI_codes.style list -> t -> (unit -> 'a) -> 'a
+(** [with_styling style fmt f] sets the given style on [fmt],
+    calls [f()], then restores the previous style.
+    It is useful in imperative-style printers (a sequence of "print a; print b; …").
+
     Available only on OCaml >= 4.08.
     @since NEXT_RELEASE *)
 
