@@ -312,8 +312,7 @@ module ANSI_codes = struct
 
   exception No_such_style
 
-  (* parse a string tag.
-     TODO: use [stag], for OCaml >= 4.08… *)
+  (* parse a string tag. *)
   let style_of_tag_ s = match String.trim s with
     | "reset" -> [`Reset]
     | "black" -> [`FG `Black]
@@ -338,69 +337,122 @@ end
 
 let color_enabled = ref false
 
-(* either prints the tag of [s] or delegate to [or_else] *)
-let mark_open_tag st ~or_else s =
-  let open ANSI_codes in
-  try
-    let style = style_of_tag_ s in
-    Stack.push style st;
-    if !color_enabled then string_of_style_list style else ""
-  with No_such_style -> or_else s
+let mark_open_style st style =
+  Stack.push style st;
+  if !color_enabled then ANSI_codes.string_of_style_list style else ""
 
-let mark_close_tag st ~or_else s =
-  let open ANSI_codes in
-  (* check if it's indeed about color *)
-  match style_of_tag_ s with
-    | _ ->
-      let style =
-        try
-          ignore (Stack.pop st); (* pop current style (if well-scoped …) *)
-          Stack.top st (* look at previous style *)
-        with Stack.Empty ->
-          [`Reset]
-      in
-      if !color_enabled then string_of_style_list style else ""
-    | exception No_such_style -> or_else s
+let mark_close_style st : string =
+  let style =
+    try
+      ignore (Stack.pop st); (* pop current style (if well-scoped …) *)
+      Stack.top st (* look at previous style *)
+    with Stack.Empty ->
+      [`Reset]
+  in
+  if !color_enabled then ANSI_codes.string_of_style_list style else ""
 
 [@@@ifge 4.8]
 
+type stag +=
+  | Style of ANSI_codes.style list
 
 let pp_open_tag out s = pp_open_stag out (String_tag s)
 let pp_close_tag out () = pp_close_stag out ()
 
-[@@@ocaml.warning "-3"]
-let pp_get_formatter_tag_functions = pp_get_formatter_tag_functions
-let pp_set_formatter_tag_functions = pp_set_formatter_tag_functions
+(* either prints the tag of [s] or delegate to [or_else] *)
+let mark_open_stag st ~or_else (tag:stag) : string =
+  match tag with
+  | Style style ->
+    mark_open_style st style;
+  | String_tag s ->
+    let open ANSI_codes in
+    begin
+      try
+        let style = style_of_tag_ s in
+        mark_open_style st style
+      with No_such_style -> or_else tag
+    end
+  | _ -> or_else tag
 
-let update_tag_funs_ funs f1 f2 =
-  { funs with
-    mark_open_tag = f1 ~or_else:funs.mark_open_tag;
-    mark_close_tag = f2 ~or_else:funs.mark_close_tag;
-  }
+let mark_close_stag st ~or_else (tag:stag) : string =
+  match tag with
+  | Style _ -> mark_close_style st
+  | String_tag s ->
+    let open ANSI_codes in
+    (* check if it's indeed about color *)
+    begin match style_of_tag_ s with
+      | _ -> mark_close_style st
+      | exception No_such_style -> or_else tag
+    end
+  | _ -> or_else tag
 
-[@@@ocaml.warning "+3"]
+let with_styling stl out f =
+  pp_open_stag out (Style stl);
+  try let x = f() in pp_close_stag out (); x
+  with e -> pp_close_stag out (); raise e
 
-[@@@else_]
-
-let update_tag_funs_ funs f1 f2 =
-  { funs with
-    mark_open_tag = f1 funs.mark_open_tag;
-    mark_close_tag = f2 funs.mark_close_tag;
-  }
-
-[@@@endif]
+let styling stl pp out x =
+  with_styling stl out @@ fun () -> pp out x
 
 (* add color handling to formatter [ppf] *)
 let set_color_tag_handling ppf =
-  let functions = pp_get_formatter_tag_functions ppf () in
   let st = Stack.create () in (* stack of styles *)
-  let functions' =
-    update_tag_funs_ functions
-      (mark_open_tag st)
-      (mark_close_tag st)
-  in
   pp_set_mark_tags ppf true; (* enable tags *)
-  pp_set_formatter_tag_functions ppf functions'
+  let funs = pp_get_formatter_stag_functions ppf () in
+  let funs' = {
+    funs with
+      mark_open_stag = mark_open_stag st ~or_else:funs.mark_open_stag;
+      mark_close_stag = mark_close_stag st ~or_else:funs.mark_close_stag;
+  }
+  in
+  pp_set_formatter_stag_functions ppf funs'
+
+(*$R
+  set_color_default true;
+  let s = sprintf
+    "what is your %a? %a! No, %a! Ahhhhhhh@."
+    (styling [`FG `White; `Bold] string) "favorite color"
+    (styling [`FG `Blue] string) "blue"
+    (styling [`FG `Red] string) "red"
+  in
+  assert_equal ~printer:CCFun.id
+    "what is your \027[37;1mfavorite color\027[0m? \027[34mblue\027[0m! No, \027[31mred\027[0m! Ahhhhhhh\n"
+    s
+*)
+
+[@@@else_]
+
+(* either prints the tag of [s] or delegate to [or_else] *)
+let mark_open_tag st ~or_else (s:string) : string =
+  let open ANSI_codes in
+  begin
+    try
+      let style = style_of_tag_ s in
+      mark_open_style st style
+    with No_such_style -> or_else s
+  end
+
+let mark_close_tag st ~or_else (s:string) : string =
+  let open ANSI_codes in
+  (* check if it's indeed about color *)
+  begin match style_of_tag_ s with
+    | _ -> mark_close_style st
+    | exception No_such_style -> or_else s
+  end
+
+(* add color handling to formatter [ppf] *)
+let set_color_tag_handling ppf =
+  let st = Stack.create () in (* stack of styles *)
+  pp_set_mark_tags ppf true; (* enable tags *)
+  let funs = pp_get_formatter_tag_functions ppf () in
+  let functions = {
+    funs with
+      mark_open_tag = mark_open_tag st ~or_else:funs.mark_open_tag;
+      mark_close_tag = mark_close_tag st ~or_else:funs.mark_close_tag;
+  } in
+  pp_set_formatter_tag_functions ppf functions
+
+[@@@endif]
 
 let set_color_default =
   let first = ref true in
