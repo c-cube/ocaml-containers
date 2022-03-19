@@ -407,6 +407,19 @@ let set_color_tag_handling ppf =
   in
   pp_set_formatter_stag_functions ppf funs'
 
+(*$R
+  set_color_default true;
+  let s = sprintf
+    "what is your %a? %a! No, %a! Ahhhhhhh@."
+    (styling [`FG `White; `Bold] string) "favorite color"
+    (styling [`FG `Blue] string) "blue"
+    (styling [`FG `Red] string) "red"
+  in
+  assert_equal ~printer:CCFun.id
+    "what is your \027[37;1mfavorite color\027[0m? \027[34mblue\027[0m! No, \027[31mred\027[0m! Ahhhhhhh\n"
+    s
+*)
+
 [@@@else_]
 
 (* either prints the tag of [s] or delegate to [or_else] *)
@@ -435,9 +448,9 @@ let set_color_tag_handling ppf =
   let functions = {
     funs with
       mark_open_tag = mark_open_tag st ~or_else:funs.mark_open_tag;
-      mark_close_stag = mark_close_tag st ~or_else:funs.mark_close_tag;
+      mark_close_tag = mark_close_tag st ~or_else:funs.mark_close_tag;
   } in
-  pp_set_formatter_stag_functions ppf functions
+  pp_set_formatter_tag_functions ppf functions
 
 [@@@endif]
 
@@ -457,19 +470,6 @@ let set_color_default =
   set_color_default true;
   let s = sprintf
     "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@."
-  in
-  assert_equal ~printer:CCFun.id
-    "what is your \027[37;1mfavorite color\027[0m? \027[34mblue\027[0m! No, \027[31mred\027[0m! Ahhhhhhh\n"
-    s
-*)
-
-(*$R
-  set_color_default true;
-  let s = sprintf
-    "what is your %a? %a! No, %a! Ahhhhhhh@."
-    (styling [`FG `White; `Bold] string) "favorite color"
-    (styling [`FG `Blue] string) "blue"
-    (styling [`FG `Red] string) "red"
   in
   assert_equal ~printer:CCFun.id
     "what is your \027[37;1mfavorite color\027[0m? \027[34mblue\027[0m! No, \027[31mred\027[0m! Ahhhhhhh\n"

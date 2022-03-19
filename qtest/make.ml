@@ -19,6 +19,7 @@ let do_not_test file =
   assert (not (is_suffix ~sub:"make.ml" file));
   str_sub ~sub:"Labels.ml" file ||
   is_suffix ~sub:".pp.ml" file ||
+  (if Sys.ocaml_version < "4.08" then Filename.basename file = "CCFormat.ml" else false) ||
   is_suffix ~sub:".pp.mli" file ||
   is_suffix ~sub:"containers.ml" file ||
   is_suffix ~sub:"_top.ml" file ||
