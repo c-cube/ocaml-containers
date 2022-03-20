@@ -12,6 +12,11 @@ module Int_map = Map.Make(CCInt)
 
 let app_int f n = string_of_int n @> lazy (f n)
 let app_ints f l = B.Tree.concat (List.map (app_int f) l)
+let app_ints2 f l1 l2 =
+  B.Tree.concat @@
+  List.concat @@
+  List.map (fun n1 ->
+      List.map (fun n2 -> Printf.sprintf "%d/%d" n1 n2 @> lazy (f n1 n2)) l2) l1
 
 (* for benchmark *)
 let repeat = 3
@@ -1207,6 +1212,92 @@ module Deque = struct
     ; "length" @>> app_ints bench_length [100; 1_000]
     ]
   )
+end
+
+module Sync_queue = struct
+  module type S = sig
+    type 'a t
+    val create : dummy:'a -> unit -> 'a t
+    val push : 'a t -> 'a -> unit
+    val pop_nonblock : 'a t -> 'a option
+  end
+
+  module Mutex_queue : S = struct
+    type 'a t = {
+      q: 'a Queue.t;
+      m: Mutex.t;
+      cond: Condition.t;
+    }
+
+    let create ~dummy:_ () = {
+      q=Queue.create();
+      m=Mutex.create();
+      cond=Condition.create()
+    }
+
+    let push self x =
+      Mutex.lock self.m;
+      Queue.push x self.q;
+      Condition.signal self.cond;
+      Mutex.unlock self.m
+
+    let pop_nonblock self =
+      Mutex.lock self.m;
+      let r = try Some (Queue.pop self.q) with _ -> None in
+      Mutex.unlock self.m;
+      r
+  end
+
+  module Blocking_queue : S = struct
+    include CCBlockingQueue
+
+    let create ~dummy:_ () = create max_int
+    let pop_nonblock = try_take
+  end
+
+  let mutex_queue = (module Mutex_queue : S)
+  let blocking_queue = (module Blocking_queue : S)
+  let lfqueue = (module Containers_lfqueue : S)
+
+  let bench1 n_th n =
+    let make (module Q : S) () =
+      let q = Q.create ~dummy:0 () in
+      let write () =
+        for i = 1 to n do
+          Q.push q i
+        done
+      and read () =
+        let missing = ref n in
+        while !missing > 0 do
+          match Q.pop_nonblock q with
+            | None -> Thread.yield();
+            | Some _ -> decr missing
+        done
+      in
+      let writers = Array.init n_th (fun _ -> Thread.create write ()) in
+      let readers = Array.init n_th (fun _ -> Thread.create read ()) in
+      Array.iter Thread.join writers;
+      Array.iter Thread.join readers;
+      ()
+    in
+    B.throughputN 3 ~repeat
+      [ "mutex_queue", make mutex_queue, ()
+      ; "blocking_queue", make blocking_queue, ()
+      ; "lfqueue", make lfqueue, ()
+      ]
+
+  let () = B.Tree.register (
+    "sync_queue" @>>> [
+      "b1" @>> app_ints2 bench1 [2;3;4] [100_000; 1_000_000];
+      (*
+      "iter" @>> app_ints bench_iter [100; 1_000; 100_000];
+      "push_front" @>> app_ints bench_push_front [100; 1_000; 100_000];
+      "push_back" @>> app_ints bench_push_back [100; 1_000; 100_000];
+      "append_back" @>> app_ints bench_append [100; 1_000; 100_000];
+      "length" @>> app_ints bench_length [100; 1_000];
+         *)
+
+    ])
 end
 
 module Graph = struct

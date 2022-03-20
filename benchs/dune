@@ -1,6 +1,7 @@
  (executables
   (names run_benchs run_bench_hash run_objsize)
-  (libraries containers containers-data
+  (libraries containers containers-data threads
+             containers.lfqueue
              containers-thread benchmark gen iter qcheck oseq
              batteries base sek)
   (flags :standard -warn-error -3-5 -safe-string -color always -open CCShims_)
