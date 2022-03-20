@@ -1220,6 +1220,7 @@ module Sync_queue = struct
     val create : dummy:'a -> unit -> 'a t
     val push : 'a t -> 'a -> unit
     val pop_nonblock : 'a t -> 'a option
+    val pop_block : 'a t -> 'a
   end
 
   module Mutex_queue : S = struct
@@ -1246,6 +1247,17 @@ module Sync_queue = struct
       let r = try Some (Queue.pop self.q) with _ -> None in
       Mutex.unlock self.m;
       r
+
+    let rec pop_block self =
+      Mutex.lock self.m;
+      match Queue.pop self.q with
+        | x ->
+          Mutex.unlock self.m;
+          x
+        | exception _ ->
+          Condition.wait self.cond self.m;
+          Mutex.unlock self.m;
+          pop_block self
   end
 
   module Blocking_queue : S = struct
@@ -1253,26 +1265,42 @@ module Sync_queue = struct
 
     let create ~dummy:_ () = create max_int
     let pop_nonblock = try_take
+    let pop_block = take
+  end
+
+  module Lfqueue = struct
+    include Containers_lfqueue
+    let pop_block _ = assert false
   end
 
   let mutex_queue = (module Mutex_queue : S)
   let blocking_queue = (module Blocking_queue : S)
-  let lfqueue = (module Containers_lfqueue : S)
+  let lfqueue = (module Lfqueue : S)
 
   let bench1 n_th n =
-    let make (module Q : S) () =
+    let make ~block (module Q : S) () =
       let q = Q.create ~dummy:0 () in
       let write () =
         for i = 1 to n do
           Q.push q i
         done
-      and read () =
-        let missing = ref n in
-        while !missing > 0 do
-          match Q.pop_nonblock q with
-            | None -> Thread.yield();
-            | Some _ -> decr missing
-        done
+      and read =
+        if block then (
+          fun() ->
+          let missing = ref n in
+          while !missing > 0 do
+            let _ = Q.pop_block q in
+            decr missing
+          done
+        ) else (
+          fun() ->
+          let missing = ref n in
+          while !missing > 0 do
+            match Q.pop_nonblock q with
+              | None -> Thread.yield();
+              | Some _ -> decr missing
+          done
+        )
       in
       let writers = Array.init n_th (fun _ -> Thread.create write ()) in
       let readers = Array.init n_th (fun _ -> Thread.create read ()) in
@@ -1281,14 +1309,16 @@ module Sync_queue = struct
       ()
     in
     B.throughputN 3 ~repeat
-      [ "mutex_queue", make mutex_queue, ()
-      ; "blocking_queue", make blocking_queue, ()
-      ; "lfqueue", make lfqueue, ()
+      [ "mutex_queue", make mutex_queue ~block:false, ()
+      ; "mutex_queue_block", make mutex_queue ~block:true, ()
+      ; "blocking_queue", make blocking_queue ~block:false, ()
+      ; "blocking_queue_block", make blocking_queue ~block:true, ()
+      ; "lfqueue", make lfqueue ~block:false, ()
       ]
 
   let () = B.Tree.register (
     "sync_queue" @>>> [
-      "b1" @>> app_ints2 bench1 [2;3;4] [100_000; 1_000_000];
+      "b1" @>> app_ints2 bench1 [1;2;3;4] [20_000; 100_000; 200_000];
       (*
       "iter" @>> app_ints bench_iter [100; 1_000; 100_000];
       "push_front" @>> app_ints bench_push_front [100; 1_000; 100_000];
