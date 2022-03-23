@@ -69,6 +69,7 @@ let pop_nonblock self : _ option =
   assert_equal None (pop_nonblock q);
 *)
 
+(* basic concurrency check *)
 (*$R
   let q = create ~dummy:0 () in
 
@@ -92,4 +93,32 @@ let pop_nonblock self : _ option =
   let th = [Thread.create gen (); Thread.create consume ()] in
   List.iter Thread.join th;
   assert_equal [5;4;3;2;1;0] !out
+*)
+
+(* heavier concurrency check *)
+(*$R
+  let q = create ~dummy:0 () in
+  let n = 200_000 in
+
+  let gen _ =
+    for i = 1 to n do
+      push q i
+    done
+  in
+
+  let count = Atomic.make 0 in
+  let consume _ =
+    let missing = ref n in
+    while !missing > 0 do
+      match pop_nonblock q with
+        | Some x -> Atomic.incr count; decr missing
+        | None -> Thread.yield();
+    done
+  in
+
+  let th =
+    List.init 3 (Thread.create gen) @
+    List.init 3 (Thread.create consume) in
+  List.iter Thread.join th;
+  assert_equal ~printer:string_of_int (3*n) (Atomic.get count);
 *)
