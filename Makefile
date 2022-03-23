@@ -6,7 +6,7 @@ build:
 	dune build @install -p $(PACKAGES)
 
 test: build
-	dune runtest --cache=disabled --no-buffer --force
+	dune runtest --profile=release --cache=disabled --no-buffer --force
 
 clean:
 	dune clean
@@ -21,7 +21,7 @@ benchs:
 	@for i in $(BENCH_TARGETS) ; do ln -sf _build/default/benchs/$$i ; done
 
 examples:
-	dune build examples/id_sexp.exe
+	dune build --profile=release examples/id_sexp.exe
 
 VERSION=$(shell awk '/^version:/ {print $$2}' containers.opam)
 
@@ -32,7 +32,7 @@ update_next_tag:
 
 WATCH?=@all
 watch:
-	@dune build $(WATCH) -w
+	@dune build --profile=release $(WATCH) -w
 
 reindent:
 	@which ocp-indent || ( echo "require ocp-indent" ; exit 1 )
