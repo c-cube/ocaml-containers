@@ -57,55 +57,39 @@ let pop_nonblock self : _ option =
   done;
   !res
 
-module Blocking = struct
-  type nonrec 'a t = {
-    q: 'a t;
-    n_parked: int A.t; (* threads waiting *)
-    park_lock: Mutex.t;
-    park_cond: Condition.t;
-  }
+(*$R
+  let q = create ~dummy:0 () in
+  push q 1;
+  push q 2;
+  assert_equal (Some 1) (pop_nonblock q);
+  assert_equal (Some 2) (pop_nonblock q);
+  assert_equal None (pop_nonblock q);
+  push q 3;
+  assert_equal (Some 3) (pop_nonblock q);
+  assert_equal None (pop_nonblock q);
+*)
 
-  let create ~dummy () : _ t =
-    { q=create ~dummy ();
-      n_parked=A.make 0;
-      park_lock=Mutex.create();
-      park_cond=Condition.create();
-    }
+(*$R
+  let q = create ~dummy:0 () in
 
-  let push (self:_ t) x : unit =
-    push self.q x;
-    (* if any thread is parked, try to unpark one thread. It is possible
-       that a thread was parked, and woke up from another signal, to pick the
-       value already, but this should be safe. *)
-    if A.get self.n_parked > 0 then (
-      Mutex.lock self.park_lock;
-      Condition.signal self.park_cond;
-      Mutex.unlock self.park_lock;
-    )
+  let gen () =
+    for i = 0 to 5 do
+      Thread.delay 0.01;
+      push q i
+    done
+  in
 
-  let[@inline] pop_nonblock self : _ option =
-    pop_nonblock self.q
+  let out = ref [] in
+  let consume () =
+    let missing = ref 6 in
+    while !missing > 0 do
+      match pop_nonblock q with
+        | Some x -> out := x :: !out; decr missing
+        | None -> Thread.yield();
+    done
+  in
 
-  let pop_block (self:'a t) : 'a =
-
-    (* be on the safe side: assume we're going to park,
-       so that if another thread pushes after the "PARK" line it'll unpark us *)
-    A.incr self.n_parked;
-
-    let rec loop () =
-      match pop_nonblock self with
-        | Some x ->
-          (* release the token in self.n_parked *)
-          A.decr self.n_parked;
-          x
-        | None ->
-          (* PARK *)
-          Mutex.lock self.park_lock;
-          Condition.wait self.park_cond self.park_lock;
-          Mutex.unlock self.park_lock;
-          (* try again *)
-          (loop [@tailcall]) ()
-    in
-    loop()
-
-end
+  let th = [Thread.create gen (); Thread.create consume ()] in
+  List.iter Thread.join th;
+  assert_equal [5;4;3;2;1;0] !out
+*)

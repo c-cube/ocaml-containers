@@ -17,21 +17,3 @@ val push : 'a t -> 'a -> unit
 
 val pop_nonblock : 'a t -> 'a option
 (** pop the first element, or return [None]. *)
-
-(** Blocking queue.
-
-    This couples the non-blocking queue {!_ t} above,
-    with mutex/condition for the blocking case.
-*)
-module Blocking : sig
-  type 'a t
-
-  val create : dummy:'a -> unit -> 'a t
-
-  val push : 'a t -> 'a -> unit
-
-  val pop_nonblock : 'a t -> 'a option
-
-  (* FIXME *)
-  val pop_block : 'a t -> 'a
-end
