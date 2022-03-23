@@ -15,7 +15,7 @@ val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
     @since 0.16 *)
 
 val map_lazy : (unit -> 'b) -> ('a -> 'b) -> 'a t -> 'b
-(** [map_lazy default_fn f o] if [f o] if [o = Some x], [default_fn ()] otherwise.
+(** [map_lazy default_fn f o] is [f x] if [o = Some x], [default_fn ()] otherwise.
     @since 1.2 *)
 
 val is_some : _ t -> bool
