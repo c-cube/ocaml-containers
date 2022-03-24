@@ -2,6 +2,9 @@
 (** Byte buffer.
 
     A dynamic vector of bytes.
+
+    {b status: UNSTABLE}
+
     @since NEXT_RELEASE
 *)
 
@@ -74,3 +77,43 @@ val of_seq : char Seq.t -> t
 
 val to_iter : t -> char iter
 val to_seq : t -> char Seq.t
+
+[@@@ifge 4.8]
+
+val add_int16_le : t -> int -> unit
+(** Add a little endian 16 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int16_be : t -> int -> unit
+(** Add a big endian 16 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int16_ne : t -> int -> unit
+(** Add a native endian 16 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int32_le : t -> int32 -> unit
+(** Add a little endian 32 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int32_be : t -> int32 -> unit
+(** Add a big endian 32 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int32_ne : t -> int32 -> unit
+(** Add a native endian 32 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int64_le : t -> int64 -> unit
+(** Add a little endian 64 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int64_be : t -> int64 -> unit
+(** Add a big endian 64 bits int.
+    Only on OCaml >= 4.08 *)
+
+val add_int64_ne : t -> int64 -> unit
+(** Add a native endian 64 bits int.
+    Only on OCaml >= 4.08 *)
+
+[@@@endif]
