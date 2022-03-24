@@ -182,7 +182,7 @@ val pos : position t
 (** [pos] returns the current position in the buffer.
 
     {b EXPERIMENTAL}
-    @since NEXT_RELEASE *)
+    @since 3.7 *)
 
 val with_pos : 'a t -> ('a * position) t
 (** [with_pos p] behaves like [p], but returns the (starting) position

@@ -2,7 +2,7 @@
 (** Byte buffer.
 
     A dynamic vector of bytes.
-    @since NEXT_RELEASE
+    @since 3.7
 *)
 
 type t

@@ -89,7 +89,7 @@ val resize_with : ('a, rw) t -> (int -> 'a) -> int -> unit
     to [length vec].
     @raise Invalid_argument if the size is too big
 
-    @since NEXT_RELEASE *)
+    @since 3.7 *)
 
 val resize_with_init : ('a, rw) t -> init:'a -> int -> unit
 (** [resize_with_init vec init size] resizes vector [vec] up to [size],
@@ -98,7 +98,7 @@ val resize_with_init : ('a, rw) t -> init:'a -> int -> unit
     to [length vec].
     @raise Invalid_argument if the size is too big
 
-    @since NEXT_RELEASE *)
+    @since 3.7 *)
 
 val append : ('a, rw) t -> ('a, _) t -> unit
 (** [append a b] adds all elements of b to a. *)

@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.7
+
+- add `Format.styling`
+- make `Format` compatible with OCaml 5.0, using Stag for colors
+- new preprocessor, compatible with merlin, using `[@@@ifge 4.12]`-style pragmas
+- feat: add `Byte_buf`, a byte buffer.
+- add `CCSeq.{zip_i,of_string}`
+- add `CCResult.opt_map` to simplify result function application over optionals (#397)
+- add shims for Atomic and Unit
+- expose `CCParse.pos` to get current pos; improve perf
+- add `CCVector.resize_with` and `CCVector.resize_with_init`, tests and doc (#389)
+- add `CCVector.insert`
+- update dune to 1.10, condition some rules to unix
+
+- perf: reduce allocations in `CCSeq.to_array`
+
+- fix asymptotic behavior of resize functions in `CCVector`
+- fix: rely on `either` compatibility library
+
 ## 3.6.1
 
 - use `either` compatibility library instead of shims

@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "containers"
-version: "3.6.1"
+version: "3.7"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 license: "BSD-2-Clause"

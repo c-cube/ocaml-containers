@@ -261,7 +261,7 @@ val of_gen : 'a gen -> 'a t
 
 val of_string : string -> char t
 (** Iterate on characters.
-    @since NEXT_RELEASE *)
+    @since 3.7 *)
 
 (** {2 IO} *)
 

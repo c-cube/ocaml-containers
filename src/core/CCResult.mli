@@ -65,7 +65,7 @@ val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) fo
 
 val opt_map : ('a -> ('b, 'c) t) -> 'a option -> ('b option, 'c) t
 (** Map a fallible operation through an option.
-    @since NEXT_RELEASE *)
+    @since 3.7 *)
 
 val map : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
 (** Map on success. *)

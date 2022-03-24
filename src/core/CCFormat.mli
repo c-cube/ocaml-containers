@@ -343,7 +343,7 @@ val styling : ANSI_codes.style list -> 'a printer -> 'a printer
     ]}
 
     Available only on OCaml >= 4.08.
-    @since NEXT_RELEASE *)
+    @since 3.7 *)
 
 val with_styling : ANSI_codes.style list -> t -> (unit -> 'a) -> 'a
 (** [with_styling style fmt f] sets the given style on [fmt],
@@ -351,7 +351,7 @@ val with_styling : ANSI_codes.style list -> t -> (unit -> 'a) -> 'a
     It is useful in imperative-style printers (a sequence of "print a; print b; …").
 
     Available only on OCaml >= 4.08.
-    @since NEXT_RELEASE *)
+    @since 3.7 *)
 
 [@@@endif]
 
