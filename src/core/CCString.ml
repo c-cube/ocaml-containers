@@ -1134,6 +1134,49 @@ let equal_caseless s1 s2: bool =
   Q.(printable_string) (fun s -> equal_caseless (uppercase_ascii s) s)
 *)
 
+let to_hex (s:string) : string =
+  let i_to_hex (i:int) =
+    if i < 10 then Char.chr (i + Char.code '0')
+    else Char.chr (i - 10 + Char.code 'a')
+  in
+
+  let res = Bytes.create (2 * length s) in
+  for i = 0 to length s-1 do
+    let n = Char.code (get s i) in
+    Bytes.set res (2 * i) (i_to_hex ((n land 0xf0) lsr 4));
+    Bytes.set res (2 * i + 1) (i_to_hex (n land 0x0f));
+  done;
+  Bytes.unsafe_to_string res
+
+let of_hex_exn (s:string) : string =
+  let n_of_c = function
+    | '0' .. '9' as c -> Char.code c - Char.code '0'
+    | 'a' .. 'f' as c -> 10 + Char.code c - Char.code 'a'
+    | _ -> invalid_arg "string: invalid hex"
+  in
+  if (String.length s mod 2 <> 0) then invalid_arg "string: hex sequence must be of even length";
+  let res = Bytes.make (String.length s / 2) '\x00' in
+  for i=0 to String.length s/2-1 do
+    let n1 = n_of_c (String.get s (2*i)) in
+    let n2 = n_of_c (String.get s (2*i+1)) in
+    let n = (n1 lsl 4) lor n2 in
+    Bytes.set res i (Char.chr n)
+  done;
+  Bytes.unsafe_to_string res
+
+let of_hex s = try Some (of_hex_exn s) with Invalid_argument _ -> None
+
+(*$= & ~printer:(Printf.sprintf "%S")
+  "0068656c6c6f20776f726c64" (to_hex "\000hello world")
+  "" (to_hex "")
+  "\000hello world" (of_hex_exn "0068656c6c6f20776f726c64")
+*)
+
+(*$Q
+    Q.(string) (fun s -> \
+        of_hex_exn (to_hex s) = s)
+    *)
+
 let pp_buf buf s =
   Buffer.add_char buf '"';
   Buffer.add_string buf s;

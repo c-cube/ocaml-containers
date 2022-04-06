@@ -325,6 +325,19 @@ val equal_caseless : string -> string -> bool
 (** [equal_caseless s1 s2] compares [s1] and [s2] without respect to {b ascii} lowercase.
     @since 1.2 *)
 
+val to_hex : string -> string
+(** Convert a string with arbitrary content into a hexadecimal string.
+    @since NEXT_RELEASE *)
+
+val of_hex : string -> string option
+(** Convert a string in hex into a string with arbitrary content.
+    @since NEXT_RELEASE *)
+
+val of_hex_exn : string -> string
+(** Same as {!of_hex} but fails harder.
+    @raise Invalid_argument if the input is not valid hex.
+    @since NEXT_RELEASE *)
+
 (** {2 Finding}
 
     A relatively efficient algorithm for finding sub-strings.
