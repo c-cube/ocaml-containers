@@ -9,7 +9,7 @@ module Data = struct
 
   let rec pp out = function
     | Simple_string s -> Format.fprintf out "%S" s
-    | Bulk_string s -> Format.fprintf out "bulk %S" s
+    | Bulk_string s -> Format.fprintf out "bulk %d %S" (String.length s) s
     | Int i -> Format.fprintf out "%d" i
     | Error s -> Format.fprintf out "error %S" s
     | Array l ->
@@ -38,21 +38,20 @@ module Parse = struct
 
   let rec cont_parser () : Data.t action =
     read_char @@ function
-    | '+' ->
-      read_line @@ fun line -> return (Data.Simple_string (String.trim line))
-    | '-' -> read_line @@ fun line -> return (Data.Error (String.trim line))
+    | '+' -> read_line @@ fun line -> return (Data.Simple_string line)
+    | '-' -> read_line @@ fun line -> return (Data.Error line)
     | ':' ->
       read_line @@ fun line ->
-      (try return (Data.Int (int_of_string @@ String.trim line))
+      (try return (Data.Int (int_of_string line))
        with _ -> fail "expected integer")
     | '$' ->
       read_line @@ fun line ->
-      (match int_of_string @@ String.trim line with
+      (match int_of_string line with
       | exception _ -> fail "expected integer (length of bulk string)"
       | i -> read_exact i @@ fun str -> return (Data.Bulk_string str))
     | '*' ->
       read_line @@ fun line ->
-      (match int_of_string @@ String.trim line with
+      (match int_of_string line with
       | exception _ -> fail "expected integer (length of array)"
       | i ->
         let rec loop acc i =
@@ -79,12 +78,17 @@ module Parse = struct
         (match String.index_from str i '\n' with
         | exception Not_found -> failwith "expected a line"
         | j ->
-          let line = String.sub str i (j - i) in
+          if str.[j - 1] <> '\r' then
+            failwith "expected '\\r' before the newline";
+          let line = String.sub str i (j - i - 1) in
           run (j + 1) (f line) k)
       | Read_exact (n, f) ->
-        if i + n > String.length str then failwith "not enough bytes";
+        if i + n + 2 > String.length str then failwith "not enough bytes";
         let sub = String.sub str i n in
-        run (i + n) (f sub) k
+        let i = i + n in
+        if str.[i] <> '\r' || str.[i + 1] <> '\n' then
+          failwith "bytes must be followed by '\\r\\n'";
+        run (i + 2) (f sub) k
     in
     run 0 (cont_parser ()) (fun _ x -> x)
 
@@ -101,7 +105,7 @@ module Parse = struct
         let c = input_char ic in
         run (f c)
       | Read_line f ->
-        let line = input_line ic in
+        let line = input_line ic |> String.trim in
         run (f line)
       | Read_exact (n, f) ->
         let sub = really_input_string ic n in
