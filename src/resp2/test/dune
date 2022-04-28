@@ -1,3 +1,4 @@
 (tests
   (names t)
+  (locks /ctest)
   (libraries qcheck containers containers.resp2 threads unix))
