@@ -1,0 +1,5 @@
+
+(library
+  (name containers_resp2)
+  (public_name containers.resp2)
+  (synopsis "encoding and decoding for RESP2 (redis wire format)"))
