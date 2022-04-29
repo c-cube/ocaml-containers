@@ -200,7 +200,7 @@ See [this file](./CHANGELOG.md).
 - [Mailing List](http://lists.ocaml.org/listinfo/containers-users)
   the address is <mailto:containers-users@lists.ocaml.org>
 - the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
-- on IRC, ask `companion_cube` on `#ocaml@freenode.net`
+- on IRC, ask `companion_cube` on `#ocaml@irc.libera.chat`
 - there is a `#containers` channel on OCaml's discord server.
 
 ## Use
