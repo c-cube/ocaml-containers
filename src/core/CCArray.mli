@@ -58,6 +58,9 @@ val get_safe : 'a t -> int -> 'a option
 (** [get_safe a i] returns [Some a.(i)] if [i] is a valid index.
     @since 0.18 *)
 
+val map_inplace : ('a -> 'a) -> 'a t -> unit
+(** [map_inplace f a] replace all elements of [a] by its image by [f]. *)
+
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** [fold f init a] computes [f (… (f (f init a.(0)) a.(1)) …) a.(n-1)],
     where [n] is the length of the array [a].

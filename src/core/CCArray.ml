@@ -52,6 +52,16 @@ let get_safe a i =
   None (get_safe [|1;2;3|] ~-42)
 *)
 
+let map_inplace f a =
+  Array.iteri (fun i e -> Array.unsafe_set a i (f e)) a
+
+(*$Q
+  Q.(array int) (fun a -> \
+    let b = map ((+) 1) a in \
+    map_inplace ((+) 1) a; \
+    b = a)
+*)
+
 let fold = Array.fold_left
 
 let foldi f acc a =

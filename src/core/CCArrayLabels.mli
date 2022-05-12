@@ -32,17 +32,17 @@ type 'a t = 'a array
 [@@@else_]
 
 include module type of ArrayLabels
-(** {{: http://caml.inria.fr/pub/docs/manual-ocaml/libref/ArrayLabels.html} Documentation for the standard ArrayLabels module}*)
-
-module Floatarray = CCArray.Floatarray
-type 'a t = 'a array
 (** @inline
     {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+
+module Floatarray = CCArray.Floatarray
+
+type 'a t = 'a array
 
 [@@@endif]
 
 val empty : 'a t
-(** [empty] is the empty array, physically equal to [||]. *)
+(** [empty] is the empty array, physically equal to [[||]]. *)
 
 val equal : 'a equal -> 'a t equal
 (** [equal eq a1 a2] is [true] if the lengths of [a1] and [a2] are the same
@@ -58,6 +58,9 @@ val swap : 'a t -> int -> int -> unit
 val get_safe : 'a t -> int -> 'a option
 (** [get_safe a i] returns [Some a.(i)] if [i] is a valid index.
     @since 0.18 *)
+
+val map_inplace : f:('a -> 'a) -> 'a t -> unit
+(** [map_inplace ~f a] replace all elements of [a] by its image by [f]. *)
 
 val fold : f:('a -> 'b -> 'a) -> init:'a -> 'b t -> 'a
 (** [fold ~f ~init a] computes [f (… (f (f init a.(0)) a.(1)) …) a.(n-1)],
