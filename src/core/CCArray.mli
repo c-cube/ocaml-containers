@@ -59,7 +59,8 @@ val get_safe : 'a t -> int -> 'a option
     @since 0.18 *)
 
 val map_inplace : ('a -> 'a) -> 'a t -> unit
-(** [map_inplace f a] replace all elements of [a] by its image by [f]. *)
+(** [map_inplace f a] replace all elements of [a] by its image by [f].
+    @since NEXT_RELEASE *)
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** [fold f init a] computes [f (… (f (f init a.(0)) a.(1)) …) a.(n-1)],
