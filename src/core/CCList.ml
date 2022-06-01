@@ -1814,6 +1814,12 @@ module Assoc = struct
     [1,"1"; 2,"2"] \
       (Assoc.remove ~eq:CCInt.equal 3 [1,"1"; 2,"2"] |> lsort)
   *)
+
+  let keys l = map (fun (k, _) -> k) l
+
+  let values l = map (fun (_, v) -> v) l
+
+  let map_values f l = map (fun (k, v) -> (k, f v)) l
 end
 
 let assoc = Assoc.get_exn
