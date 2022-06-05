@@ -711,6 +711,19 @@ module Assoc : sig
   val remove : eq:(('a->'a->bool) [@keep_label]) -> 'a -> ('a,'b) t -> ('a,'b) t
   (** [remove ~eq k alist] returns the [alist] without the first pair with key [k], if any.
       @since 0.17 *)
+
+  val keys : ('a, 'b) t -> 'a list
+  (** [keys alist] returns a list of all keys of [alist].
+      @since 3.8 *)
+
+  val values : ('a, 'b) t -> 'b list
+  (** [values alist] returns a list of all values of [alist].
+      @since 3.8 *)
+
+  val map_values : ('b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
+  (** [map_values f alist] applies function [f] to all values of [alist].
+      @since 3.8 *)
+
 end
 
 val assoc : eq:(('a -> 'a -> bool) [@keep_label]) -> 'a -> ('a * 'b) t -> 'b
