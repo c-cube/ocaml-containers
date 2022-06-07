@@ -91,15 +91,15 @@ open CCShims_
   let integer =
   P.chars1_if (function '0'..'9'->true|_->false) >|= int_of_string in
 
-  let chainl1 e op =
+  let chainr1 e op =
   P.fix (fun r ->
     e >>= fun x -> (op <*> P.return x <*> r) <|> P.return x) in
 
   let expr : int P.t =
   P.fix (fun expr ->
     let factor = parens expr <|> integer in
-    let term = chainl1 factor (mul <|> div) in
-    chainl1 term (add <|> sub)) in
+    let term = chainr1 factor (mul <|> div) in
+    chainr1 term (add <|> sub)) in
 
   assert_equal (Ok 6) (P.parse_string expr "4*1+2");
   assert_equal (Ok 12) (P.parse_string expr "4*(1+2)");
