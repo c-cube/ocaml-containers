@@ -134,14 +134,23 @@ let if_ b then_ else_ h =
 
 let poly x = Hashtbl.hash x
 
+let array_of_hashes_ arr =
+  Array.sort CCInt.compare arr; (* sort the hashes, so their order does not matter *)
+  Array.fold_left combine2 0x42 arr
+
 let array_comm f a =
   let arr = Array.init (Array.length a) (fun i -> f a.(i)) in
-  Array.sort CCInt.compare arr; (* sort the hashes, so their order does not matter *)
-  array (fun h->h) arr
+  array_of_hashes_ arr
 
 let list_comm f l =
-  let a = Array.of_list l in
-  array_comm f a
+  let arr = Array.make (List.length l) 0 in
+  List.iteri (fun i x -> arr.(i) <- f x) l;
+  array_of_hashes_ arr
+
+(*$T
+  list_comm int [1;2] = list_comm int [2;1]
+  list_comm int [1;2] <> list_comm int [2;3]
+*)
 
 let iter f seq =
   let h = ref 0x43 in
