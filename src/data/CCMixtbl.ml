@@ -16,17 +16,17 @@ type 'b injection = {
 (*$R
   let inj_int = create_inj () in
   let tbl = create 10 in
-  OUnit.assert_equal None (get ~inj:inj_int tbl "a");
+  OUnit2.assert_equal None (get ~inj:inj_int tbl "a");
   set ~inj:inj_int tbl "a" 1;
-  OUnit.assert_equal (Some 1) (get ~inj:inj_int tbl "a");
+  OUnit2.assert_equal (Some 1) (get ~inj:inj_int tbl "a");
   let inj_string = create_inj () in
   set ~inj:inj_string tbl "b" "Hello";
-  OUnit.assert_equal (Some "Hello") (get ~inj:inj_string tbl "b");
-  OUnit.assert_equal None (get ~inj:inj_string tbl "a");
-  OUnit.assert_equal (Some 1) (get ~inj:inj_int tbl "a");
+  OUnit2.assert_equal (Some "Hello") (get ~inj:inj_string tbl "b");
+  OUnit2.assert_equal None (get ~inj:inj_string tbl "a");
+  OUnit2.assert_equal (Some 1) (get ~inj:inj_int tbl "a");
   set ~inj:inj_string tbl "a" "Bye";
-  OUnit.assert_equal None (get ~inj:inj_int tbl "a");
-  OUnit.assert_equal (Some "Bye") (get ~inj:inj_string tbl "a");
+  OUnit2.assert_equal None (get ~inj:inj_int tbl "a");
+  OUnit2.assert_equal (Some "Bye") (get ~inj:inj_string tbl "a");
 *)
 
 type 'a t = ('a, unit -> unit) Hashtbl.t
@@ -58,12 +58,12 @@ let length tbl = Hashtbl.length tbl
   let tbl = create 5 in
   set ~inj:inj_int tbl "foo" 1;
   set ~inj:inj_int tbl "bar" 2;
-  OUnit.assert_equal 2 (length tbl);
-  OUnit.assert_equal 2 (find ~inj:inj_int tbl "bar");
+  OUnit2.assert_equal 2 (length tbl);
+  OUnit2.assert_equal 2 (find ~inj:inj_int tbl "bar");
   set ~inj:inj_int tbl "foo" 42;
-  OUnit.assert_equal 2 (length tbl);
+  OUnit2.assert_equal 2 (length tbl);
   remove tbl "bar";
-  OUnit.assert_equal 1 (length tbl);
+  OUnit2.assert_equal 1 (length tbl);
 *)
 
 let clear tbl = Hashtbl.clear tbl
@@ -75,9 +75,9 @@ let clear tbl = Hashtbl.clear tbl
   set ~inj:inj_int tbl "foo" 1;
   set ~inj:inj_int tbl "bar" 2;
   set ~inj:inj_str tbl "baaz" "hello";
-  OUnit.assert_equal 3 (length tbl);
+  OUnit2.assert_equal 3 (length tbl);
   clear tbl;
-  OUnit.assert_equal 0 (length tbl);
+  OUnit2.assert_equal 0 (length tbl);
 *)
 
 let remove tbl x = Hashtbl.remove tbl x
@@ -100,12 +100,12 @@ let mem ~inj tbl x =
   set ~inj:inj_int tbl "foo" 1;
   set ~inj:inj_int tbl "bar" 2;
   set ~inj:inj_str tbl "baaz" "hello";
-  OUnit.assert_bool "mem foo int" (mem ~inj:inj_int tbl "foo");
-  OUnit.assert_bool "mem bar int" (mem ~inj:inj_int tbl "bar");
-  OUnit.assert_bool "not mem baaz int" (not (mem ~inj:inj_int tbl "baaz"));
-  OUnit.assert_bool "not mem foo str" (not (mem ~inj:inj_str tbl "foo"));
-  OUnit.assert_bool "not mem bar str" (not (mem ~inj:inj_str tbl "bar"));
-  OUnit.assert_bool "mem baaz str" (mem ~inj:inj_str tbl "baaz");
+  OUnit2.assert_bool "mem foo int" (mem ~inj:inj_int tbl "foo");
+  OUnit2.assert_bool "mem bar int" (mem ~inj:inj_int tbl "bar");
+  OUnit2.assert_bool "not mem baaz int" (not (mem ~inj:inj_int tbl "baaz"));
+  OUnit2.assert_bool "not mem foo str" (not (mem ~inj:inj_str tbl "foo"));
+  OUnit2.assert_bool "not mem bar str" (not (mem ~inj:inj_str tbl "bar"));
+  OUnit2.assert_bool "mem baaz str" (mem ~inj:inj_str tbl "baaz");
 *)
 
 let find ~inj tbl x =
@@ -136,7 +136,7 @@ let keys_iter tbl yield =
   set ~inj:inj_int tbl "bar" 2;
   set ~inj:inj_str tbl "baaz" "hello";
   let l = keys_iter tbl |> Iter.to_list in
-  OUnit.assert_equal ["baaz"; "bar"; "foo"] (List.sort compare l);
+  OUnit2.assert_equal ["baaz"; "bar"; "foo"] (List.sort compare l);
 *)
 
 let bindings_of ~inj tbl yield =
@@ -164,7 +164,7 @@ let bindings tbl yield =
   set ~inj:inj_str tbl "baaz" "hello";
   set ~inj:inj_str tbl "str" "rts";
   let l_int = bindings_of ~inj:inj_int tbl |> Iter.to_list in
-  OUnit.assert_equal ["bar", 2; "foo", 1] (List.sort compare l_int);
+  OUnit2.assert_equal ["bar", 2; "foo", 1] (List.sort compare l_int);
   let l_str = bindings_of ~inj:inj_str tbl |> Iter.to_list in
-  OUnit.assert_equal ["baaz", "hello"; "str", "rts"] (List.sort compare l_str);
+  OUnit2.assert_equal ["baaz", "hello"; "str", "rts"] (List.sort compare l_str);
 *)

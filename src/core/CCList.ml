@@ -1349,7 +1349,7 @@ let join ~join_row s1 s2 : _ t =
     if string_of_int i = j then Some (string_of_int i ^ " = " ^ j) else None
   in
   let s = join ~join_row s1 s2 in
-  OUnit.assert_equal ["1 = 1"; "2 = 2"] s;
+  OUnit2.assert_equal ["1 = 1"; "2 = 2"] s;
 *)
 
 let join_by (type a) ?(eq=Stdlib.(=)) ?(hash=Hashtbl.hash) f1 f2 ~merge c1 c2 =

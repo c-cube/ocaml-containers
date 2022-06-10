@@ -224,13 +224,13 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   (*$R
     let h = H.of_iter my_iter in
-    OUnit.assert_equal "a" (H.find h 1);
-    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+    OUnit2.assert_equal "a" (H.find h 1);
+    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
     let h' = H.replace h 5 "e" in
-    OUnit.assert_equal "a" (H.find h' 1);
-    OUnit.assert_equal "e" (H.find h' 5);
-    OUnit.assert_equal "a" (H.find h 1);
-    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+    OUnit2.assert_equal "a" (H.find h' 1);
+    OUnit2.assert_equal "e" (H.find h' 5);
+    OUnit2.assert_equal "a" (H.find h 1);
+    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
   *)
 
   (*$R
@@ -239,9 +239,9 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let h = H.of_iter seq in
     Iter.iter
       (fun (k,v) ->
-        OUnit.assert_equal ~printer:(fun x -> x) v (H.find h k))
+        OUnit2.assert_equal ~printer:(fun x -> x) v (H.find h k))
       seq;
-    OUnit.assert_raises Not_found (fun () -> H.find h (n+1));
+    OUnit2.assert_raises Not_found (fun () -> H.find h (n+1));
   *)
 
   (*$QR
@@ -271,7 +271,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let h = H.of_iter
       Iter.(map (fun i -> i, string_of_int i)
         (0 -- 200)) in
-    OUnit.assert_equal 201 (H.length h);
+    OUnit2.assert_equal 201 (H.length h);
   *)
 
   (*$QR
@@ -371,21 +371,21 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   (*$R
     let h = H.of_iter my_iter in
-    OUnit.assert_equal "a" (H.find h 1);
-    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+    OUnit2.assert_equal "a" (H.find h 1);
+    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
     let h1 = H.add h 5 "e" in
-    OUnit.assert_equal "a" (H.find h1 1);
-    OUnit.assert_equal "e" (H.find h1 5);
-    OUnit.assert_equal "a" (H.find h 1);
+    OUnit2.assert_equal "a" (H.find h1 1);
+    OUnit2.assert_equal "e" (H.find h1 5);
+    OUnit2.assert_equal "a" (H.find h 1);
     let h2 = H.add h1 5 "ee" in
-    OUnit.assert_equal "ee" (H.find h2 5);
-    OUnit.assert_raises Not_found (fun () -> H.find h 5);
+    OUnit2.assert_equal "ee" (H.find h2 5);
+    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
     let h3 = H.remove h2 1 in
-    OUnit.assert_equal "ee" (H.find h3 5);
-    OUnit.assert_raises Not_found (fun () -> H.find h3 1);
+    OUnit2.assert_equal "ee" (H.find h3 5);
+    OUnit2.assert_raises Not_found (fun () -> H.find h3 1);
     let h4 = H.remove h3 5 in
-    OUnit.assert_equal "e" (H.find h4 5);
-    OUnit.assert_equal "ee" (H.find h3 5);
+    OUnit2.assert_equal "e" (H.find h4 5);
+    OUnit2.assert_equal "ee" (H.find h3 5);
   *)
 
 
@@ -415,14 +415,14 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   (*$R
     let h = H.of_iter my_iter in
-    OUnit.assert_equal (H.find h 2) "b";
-    OUnit.assert_equal (H.find h 3) "c";
-    OUnit.assert_equal (H.find h 4) "d";
-    OUnit.assert_equal (H.length h) 4;
+    OUnit2.assert_equal (H.find h 2) "b";
+    OUnit2.assert_equal (H.find h 3) "c";
+    OUnit2.assert_equal (H.find h 4) "d";
+    OUnit2.assert_equal (H.length h) 4;
     let h = H.remove h 2 in
-    OUnit.assert_equal (H.find h 3) "c";
-    OUnit.assert_equal (H.length h) 3;
-    OUnit.assert_raises Not_found (fun () -> H.find h 2)
+    OUnit2.assert_equal (H.find h 3) "c";
+    OUnit2.assert_equal (H.length h) 3;
+    OUnit2.assert_raises Not_found (fun () -> H.find h 2)
   *)
 
   (*$R
@@ -430,10 +430,10 @@ module Make(H : HashedType) : S with type key = H.t = struct
     let n = 10000 in
     let seq = Iter.map (fun i -> i, string_of_int i) (0 -- n) in
     let h = H.of_iter seq in
-    OUnit.assert_equal (n+1) (H.length h);
+    OUnit2.assert_equal (n+1) (H.length h);
     let h = Iter.fold (fun h i -> H.remove h i) h (0 -- 500) in
-    OUnit.assert_equal (n-500) (H.length h);
-    OUnit.assert_bool "is_empty" (H.is_empty (H.create 16));
+    OUnit2.assert_equal (n-500) (H.length h);
+    OUnit2.assert_bool "is_empty" (H.is_empty (H.create 16));
   *)
 
   (*$QR
@@ -569,10 +569,10 @@ module Make(H : HashedType) : S with type key = H.t = struct
         | `Both (s1,s2) -> if s1 < s2 then Some s1 else Some s2)
       t1 t2
     in
-    OUnit.assert_equal ~printer:string_of_int 3 (H.length t);
-    OUnit.assert_equal "a" (H.find t 1);
-    OUnit.assert_equal "b1" (H.find t 2);
-    OUnit.assert_equal "c" (H.find t 3);
+    OUnit2.assert_equal ~printer:string_of_int 3 (H.length t);
+    OUnit2.assert_equal "a" (H.find t 1);
+    OUnit2.assert_equal "b1" (H.find t 2);
+    OUnit2.assert_equal "c" (H.find t 3);
   *)
 
   let add_iter init seq =
@@ -611,7 +611,7 @@ module Make(H : HashedType) : S with type key = H.t = struct
   (*$R
     let h = H.of_iter my_iter in
     let l = Iter.to_list (H.to_iter h) in
-    OUnit.assert_equal my_list (List.sort compare l)
+    OUnit2.assert_equal my_list (List.sort compare l)
   *)
 
   let to_iter t =
@@ -620,9 +620,9 @@ module Make(H : HashedType) : S with type key = H.t = struct
 
   (*$R
     let h = H.of_iter my_iter in
-    OUnit.assert_equal "b" (H.find h 2);
-    OUnit.assert_equal "a" (H.find h 1);
-    OUnit.assert_raises Not_found (fun () -> H.find h 42);
+    OUnit2.assert_equal "b" (H.find h 2);
+    OUnit2.assert_equal "a" (H.find h 1);
+    OUnit2.assert_raises Not_found (fun () -> H.find h 42);
   *)
 
   let equal eq t1 t2 =

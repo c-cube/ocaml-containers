@@ -304,7 +304,7 @@ module Make(P : PARAM) = struct
                 1
             )) l in
           let l' = List.map Fut.get l in
-          OUnit.assert_equal n (List.fold_left (+) 0 l');
+          OUnit2.assert_equal n (List.fold_left (+) 0 l');
         )
         [ 10; 300; ]
     *)
@@ -320,7 +320,7 @@ module Make(P : PARAM) = struct
                 1
             )) l in
           let l' = List.map Fut2.get l in
-          OUnit.assert_equal n (List.fold_left (+) 0 l');
+          OUnit2.assert_equal n (List.fold_left (+) 0 l');
         )
         [ 10; 300; ]
     *)
@@ -443,21 +443,21 @@ module Make(P : PARAM) = struct
       let a = Fut.make (fun () -> 1) in
       let b = Fut.return 42 in
       let c = Fut.monoid_product CCPair.make a b in
-      OUnit.assert_equal (1,42) (Fut.get c)
+      OUnit2.assert_equal (1,42) (Fut.get c)
     *)
 
     (*$R
       let a = Fut.make (fun () -> 1) in
       let b = Fut.make (fun () -> 42) in
       let c = Fut.monoid_product CCPair.make a b in
-      OUnit.assert_equal (1,42) (Fut.get c)
+      OUnit2.assert_equal (1,42) (Fut.get c)
     *)
 
     (*$R
       let a = Fut.make (fun () -> 1) in
       let b = Fut.map succ @@ Fut.make (fun () -> 41) in
       let c = Fut.monoid_product CCPair.make a b in
-      OUnit.assert_equal (1,42) (Fut.get c)
+      OUnit2.assert_equal (1,42) (Fut.get c)
     *)
 
     let monoid_product f x y = match x, y with
@@ -582,7 +582,7 @@ module Make(P : PARAM) = struct
         |> Fut.map (List.fold_left (+) 0)
       in
       let expected = List.fold_left (fun acc x -> acc + 10 * x) 0 l in
-      OUnit.assert_equal expected (Fut.get l')
+      OUnit2.assert_equal expected (Fut.get l')
     *)
 
     (*$R
@@ -594,7 +594,7 @@ module Make(P : PARAM) = struct
         |> Fut.map (List.fold_left (+) 0)
       in
       let expected = 100_000 in
-      OUnit.assert_equal expected (Fut.get l')
+      OUnit2.assert_equal expected (Fut.get l')
     *)
 
     (*$R
@@ -605,7 +605,7 @@ module Make(P : PARAM) = struct
         |> Fut.sequence_l
         |> Fut.map (List.fold_left (+) 0)
       in
-      OUnit.assert_raises Exit (fun () -> Fut.get l')
+      OUnit2.assert_raises Exit (fun () -> Fut.get l')
     *)
 
     (*$R
@@ -616,9 +616,9 @@ module Make(P : PARAM) = struct
           (fun x-> Fut.make (fun () -> Thread.yield(); fib (x mod 20)))
         |> Fut.(map_l (fun x->x>|= fun x->x+1))
       in
-      OUnit.assert_bool "not done" (Fut.state l = Waiting);
+      OUnit2.assert_bool "not done" (Fut.state l = Waiting);
       let l' = Fut.get l in
-      OUnit.assert_equal 10_000 (List.length l');
+      OUnit2.assert_equal 10_000 (List.length l');
     *)
 
     (*$R
@@ -630,7 +630,7 @@ module Make(P : PARAM) = struct
         |> Fut2.map (List.fold_left (+) 0)
       in
       let expected = List.fold_left (fun acc x -> acc + 10 * x) 0 l in
-      OUnit.assert_equal expected (Fut2.get l')
+      OUnit2.assert_equal expected (Fut2.get l')
     *)
 
     (*$R
@@ -641,7 +641,7 @@ module Make(P : PARAM) = struct
         |> Fut2.sequence_l
         |> Fut2.map (List.fold_left (+) 0)
       in
-      OUnit.assert_raises Exit (fun () -> Fut2.get l')
+      OUnit2.assert_raises Exit (fun () -> Fut2.get l')
     *)
 
     (*$R
@@ -652,9 +652,9 @@ module Make(P : PARAM) = struct
           (fun x-> Fut2.make (fun () -> Thread.yield(); fib (x mod 20)))
         |> Fut2.(map_l (fun x->x>|= fun x->x+1))
       in
-      OUnit.assert_bool "not done" (Fut2.state l = Waiting);
+      OUnit2.assert_bool "not done" (Fut2.state l = Waiting);
       let l' = Fut2.get l in
-      OUnit.assert_equal 10_000 (List.length l');
+      OUnit2.assert_equal 10_000 (List.length l');
     *)
 
 
@@ -690,7 +690,7 @@ module Make(P : PARAM) = struct
       in
       List.iter Fut.get l;
       let stop = Unix.gettimeofday () in
-      OUnit.assert_bool "some_parallelism" (stop -. start < float_of_int n *. pause);
+      OUnit2.assert_bool "some_parallelism" (stop -. start < float_of_int n *. pause);
     *)
 
     (*$R
@@ -701,7 +701,7 @@ module Make(P : PARAM) = struct
       in
       List.iter Fut2.get l;
       let stop = Unix.gettimeofday () in
-      OUnit.assert_bool "some_parallelism" (stop -. start < float_of_int n *. pause);
+      OUnit2.assert_bool "some_parallelism" (stop -. start < float_of_int n *. pause);
     *)
 
     module Infix = struct

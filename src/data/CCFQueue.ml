@@ -36,7 +36,7 @@ let empty : type a. a t = Shallow Zero
 
 (*$R
   let q = empty in
-  OUnit.assert_bool "is_empty" (is_empty q)
+  OUnit2.assert_bool "is_empty" (is_empty q)
 *)
 
 exception Empty
@@ -95,7 +95,7 @@ let rec snoc : type a. a t -> a -> a t
   let q = tail q in
   let q = List.fold_left snoc q [6;7;8] in
   let l = Iter.to_list (to_iter q) in
-  OUnit.assert_equal ~printer:pp_ilist [2;3;4;5;6;7;8] l
+  OUnit2.assert_equal ~printer:pp_ilist [2;3;4;5;6;7;8] l
 *)
 
 let rec take_front_exn : 'a. 'a t -> ('a *'a t)
@@ -124,11 +124,11 @@ let rec take_front_exn : 'a. 'a t -> ('a *'a t)
 (*$R
   let q = of_list [1;2;3;4] in
   let x, q = take_front_exn q in
-  OUnit.assert_equal 1 x;
+  OUnit2.assert_equal 1 x;
   let q = List.fold_left snoc q [5;6;7] in
-  OUnit.assert_equal 2 (first_exn q);
+  OUnit2.assert_equal 2 (first_exn q);
   let x, q = take_front_exn q in
-  OUnit.assert_equal 2 x;
+  OUnit2.assert_equal 2 x;
 *)
 
 let take_front q =
@@ -363,7 +363,7 @@ let append q1 q2 =
   let q2 = of_iter (Iter.of_list [5;6;7;8]) in
   let q = append q1 q2 in
   let l = Iter.to_list (to_iter q) in
-  OUnit.assert_equal ~printer:pp_ilist [1;2;3;4;5;6;7;8] l
+  OUnit2.assert_equal ~printer:pp_ilist [1;2;3;4;5;6;7;8] l
 *)
 
 let add_seq_front seq q =
@@ -443,7 +443,7 @@ let rec fold : 'a 'b. ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (*$R
   let q = of_iter (Iter.of_list [1;2;3;4]) in
   let n = fold (+) 0 q in
-  OUnit.assert_equal 10 n;
+  OUnit2.assert_equal 10 n;
 *)
 
 let iter f q = to_iter q f

@@ -168,9 +168,9 @@ let every ?delay timer d ~f =
         raise ExitEvery
       ));
   CCSemaphore.acquire 1 sem; (* wait *)
-  OUnit.assert_equal ~printer:CCInt.to_string 6 (CCLock.get res);
-  OUnit.assert_bool "delay >= 0.5" (!stop -. start >= 0.49999);
-  OUnit.assert_bool "delay < 2." (!stop -. start < 2.);
+  OUnit2.assert_equal ~printer:CCInt.to_string 6 (CCLock.get res);
+  OUnit2.assert_bool "delay >= 0.5" (!stop -. start >= 0.49999);
+  OUnit2.assert_bool "delay < 2." (!stop -. start < 2.);
 *)
 (* NOTE: could be tighter bounds, but travis' mac OS seems to be dog slow. *)
 
@@ -201,5 +201,5 @@ let stop timer =
   after timer 0.1
     ~f:(fun () -> CCLock.update n (fun x -> x * 4));
   Thread.delay 0.6 ;
-  OUnit.assert_equal ~printer:Q.Print.int 6 (CCLock.get res);
+  OUnit2.assert_equal ~printer:Q.Print.int 6 (CCLock.get res);
 *)

@@ -40,25 +40,25 @@ end
 (*$R
   let h = H.of_list [5;3;4;1;42;0] in
   let h, x = H.take_exn h in
-  OUnit.assert_equal ~printer:string_of_int 0 x;
+  OUnit2.assert_equal ~printer:string_of_int 0 x;
   let h, x = H.take_exn h in
-  OUnit.assert_equal ~printer:string_of_int 1 x;
+  OUnit2.assert_equal ~printer:string_of_int 1 x;
   let h, x = H.take_exn h in
-  OUnit.assert_equal ~printer:string_of_int 3 x;
+  OUnit2.assert_equal ~printer:string_of_int 3 x;
   let h, x = H.take_exn h in
-  OUnit.assert_equal ~printer:string_of_int 4 x;
+  OUnit2.assert_equal ~printer:string_of_int 4 x;
   let h, x = H.take_exn h in
-  OUnit.assert_equal ~printer:string_of_int 5 x;
+  OUnit2.assert_equal ~printer:string_of_int 5 x;
   let h, x = H.take_exn h in
-  OUnit.assert_equal ~printer:string_of_int 42 x;
-  OUnit.assert_raises H.Empty (fun () -> H.take_exn h);
+  OUnit2.assert_equal ~printer:string_of_int 42 x;
+  OUnit2.assert_raises H.Empty (fun () -> H.take_exn h);
 *)
 
 (*$QR & ~count:30
   Q.(list_of_size Gen.(return 1_000) int) (fun l ->
     (* put elements into a heap *)
     let h = H.of_iter (Iter.of_list l) in
-    OUnit.assert_equal 1_000 (H.size h);
+    OUnit2.assert_equal 1_000 (H.size h);
     let l' = extract_list h in
     is_sorted l'
   )
@@ -70,7 +70,7 @@ end
     (* put elements into a heap *)
     let h = H.of_iter (Iter.of_list l) in
     let h = H.filter (fun x->x mod 2=0) h in
-    OUnit.assert_bool "all odd"
+    OUnit2.assert_bool "all odd"
       (H.to_iter h |> Iter.for_all (fun x -> x mod 2 = 0));
     let l' = extract_list h in
     is_sorted l'

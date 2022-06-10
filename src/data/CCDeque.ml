@@ -129,14 +129,14 @@ let peek_front d = match peek_front_opt d with
 (*$R
   let d = of_iter Iter.(1 -- 10) in
   let printer = pint in
-  OUnit.assert_equal ~printer 1 (peek_front d);
+  OUnit2.assert_equal ~printer 1 (peek_front d);
   push_front d 42;
-  OUnit.assert_equal ~printer 42 (peek_front d);
-  OUnit.assert_equal ~printer 42 (take_front d);
-  OUnit.assert_equal ~printer 1 (take_front d);
-  OUnit.assert_equal ~printer 2 (take_front d);
-  OUnit.assert_equal ~printer 3 (take_front d);
-  OUnit.assert_equal ~printer 10 (peek_back d);
+  OUnit2.assert_equal ~printer 42 (peek_front d);
+  OUnit2.assert_equal ~printer 42 (take_front d);
+  OUnit2.assert_equal ~printer 1 (take_front d);
+  OUnit2.assert_equal ~printer 2 (take_front d);
+  OUnit2.assert_equal ~printer 3 (take_front d);
+  OUnit2.assert_equal ~printer 10 (peek_back d);
 *)
 
 let peek_back_opt d =
@@ -159,14 +159,14 @@ let peek_back d = match peek_back_opt d with
 (*$R
   let d = of_iter Iter.(1 -- 10) in
   let printer = pint in
-  OUnit.assert_equal ~printer 1 (peek_front d);
+  OUnit2.assert_equal ~printer 1 (peek_front d);
   push_back d 42;
-  OUnit.assert_equal ~printer 42 (peek_back d);
-  OUnit.assert_equal ~printer 42 (take_back d);
-  OUnit.assert_equal ~printer 10 (take_back d);
-  OUnit.assert_equal ~printer 9 (take_back d);
-  OUnit.assert_equal ~printer 8 (take_back d);
-  OUnit.assert_equal ~printer 1 (peek_front d);
+  OUnit2.assert_equal ~printer 42 (peek_back d);
+  OUnit2.assert_equal ~printer 42 (take_back d);
+  OUnit2.assert_equal ~printer 10 (take_back d);
+  OUnit2.assert_equal ~printer 9 (take_back d);
+  OUnit2.assert_equal ~printer 8 (take_back d);
+  OUnit2.assert_equal ~printer 1 (peek_front d);
 *)
 
 let take_back_node_ n = match n.cell with
@@ -365,7 +365,7 @@ let iter f d =
   let d = of_iter Iter.(1 -- 5) in
   let s = Iter.from_iter (fun k -> iter k d) in
   let l = Iter.to_list s in
-  OUnit.assert_equal ~printer:plist [1;2;3;4;5] l;
+  OUnit2.assert_equal ~printer:plist [1;2;3;4;5] l;
 *)
 
 let append_front ~into q = iter (push_front into) q
@@ -411,7 +411,7 @@ let length d = d.size
 
 (*$R
   let d = of_iter Iter.(1 -- 10) in
-  OUnit.assert_equal ~printer:pint 10 (length d)
+  OUnit2.assert_equal ~printer:pint 10 (length d)
 *)
 
 type 'a iter = ('a -> unit) -> unit

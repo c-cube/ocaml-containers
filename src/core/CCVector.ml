@@ -170,10 +170,10 @@ let[@inline] clear v =
 
 (*$R
   let v = of_iter Iter.(1 -- 10) in
-  OUnit.assert_equal 10 (size v);
+  OUnit2.assert_equal 10 (size v);
   clear v;
-  OUnit.assert_equal 0 (size v);
-  OUnit.assert_bool "empty_after_clear" (Iter.is_empty (to_iter v));
+  OUnit2.assert_equal 0 (size v);
+  OUnit2.assert_bool "empty_after_clear" (Iter.is_empty (to_iter v));
 *)
 
 let clear_and_reset v =
@@ -187,9 +187,9 @@ let clear_and_reset v =
   push v ("hello"^"world");
   Weak.set a 0 (Some (get v 0));
   Gc.full_major(); Gc.compact();
-  OUnit.assert_bool "is alive" (Weak.check a 0);
+  OUnit2.assert_bool "is alive" (Weak.check a 0);
   Gc.full_major(); Gc.compact();
-  OUnit.assert_equal None (Weak.get a 0);
+  OUnit2.assert_equal None (Weak.get a 0);
 *)
 
 let[@inline] is_empty v = v.size = 0
@@ -295,9 +295,9 @@ let append a b =
   let a = of_iter Iter.(1 -- 5) in
   let b = of_iter Iter.(6 -- 10) in
   append a b;
-  OUnit.assert_equal 10 (size a);
-  OUnit.assert_equal (Iter.to_array Iter.(1 -- 10)) (to_array a);
-  OUnit.assert_equal (Iter.to_array Iter.(6 -- 10)) (to_array b);
+  OUnit2.assert_equal 10 (size a);
+  OUnit2.assert_equal (Iter.to_array Iter.(1 -- 10)) (to_array a);
+  OUnit2.assert_equal (Iter.to_array Iter.(6 -- 10)) (to_array b);
 *)
 
 let[@inline] get v i =
@@ -525,12 +525,12 @@ let[@inline] copy v = {
 
 (*$R
   let v = of_iter Iter.(1 -- 100) in
-  OUnit.assert_equal 100 (size v);
+  OUnit2.assert_equal 100 (size v);
   let v' = copy v in
-  OUnit.assert_equal 100 (size v');
+  OUnit2.assert_equal 100 (size v');
   clear v';
-  OUnit.assert_bool "empty" (is_empty v');
-  OUnit.assert_bool "not_empty" (not (is_empty v));
+  OUnit2.assert_bool "empty" (is_empty v');
+  OUnit2.assert_bool "not_empty" (not (is_empty v));
 *)
 
 (*$QR
@@ -551,7 +551,7 @@ let truncate v n =
 (*$R
   let v = of_iter Iter.(1 -- 10) in
   truncate v 5;
-  OUnit.assert_equal [1;2;3;4;5] (to_list v);
+  OUnit2.assert_equal [1;2;3;4;5] (to_list v);
 *)
 
 (*$QR

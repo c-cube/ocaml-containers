@@ -170,13 +170,14 @@ let read_all ?(size=1024) ic = read_all_ ~op:Ret_string ~size ic
 (*$R
   let s = String.make 200 'y' in
   let s = Printf.sprintf "a\nb\n %s\nlast line\n" s in
-  OUnit.bracket_tmpfile ~prefix:"test_containers" ~mode:[Open_creat; Open_trunc]
-    (fun (name, oc) ->
+  File.with_temp ~prefix:"test_containers" ~suffix:""
+    (fun name ->
+      with_out name @@ fun oc ->
       output_string oc s;
       flush oc;
       let s' = with_in name read_all in
-      OUnit.assert_equal ~printer:(fun s->s) s s'
-    ) ()
+      OUnit2.assert_equal ~printer:(fun s->s) s s'
+    )
 *)
 
 
@@ -237,12 +238,13 @@ let write_lines_l oc l =
 (*$QR
    Q.(list_of_size Gen.(0 -- 40) printable_string) (fun l ->
      let l' = ref [] in
-     OUnit.bracket_tmpfile ~prefix:"test_containers" ~mode:[Open_creat; Open_trunc]
-      (fun (name, oc) ->
+     File.with_temp ~prefix:"test_containers" ~suffix:""
+      (fun name ->
+        with_out name @@ fun oc ->
         write_lines_l oc l;
         flush oc;
         l' := with_in name read_lines_l;
-      ) ();
+      );
      String.concat "\n" l = String.concat "\n" !l'
     )
 *)
@@ -250,12 +252,13 @@ let write_lines_l oc l =
 (*$QR
    Q.(list_of_size Gen.(0 -- 40) printable_string) (fun l ->
      let l' = ref [] in
-     OUnit.bracket_tmpfile ~prefix:"test_containers" ~mode:[Open_creat; Open_trunc]
-      (fun (name, oc) ->
+     File.with_temp ~prefix:"test_containers" ~suffix:""
+      (fun name ->
+        with_out name @@ fun oc ->
         write_lines oc (Gen.of_list l);
         flush oc;
         l' := with_in name (fun ic -> read_lines_gen ic |> Gen.to_list);
-      ) ();
+      );
      String.concat "\n" l = String.concat "\n" !l'
     )
 *)
@@ -288,16 +291,18 @@ let copy_into ?(bufsize=4_096) ic oc : unit =
 (*$QR
    Q.(list_of_size Gen.(0 -- 40) printable_string) (fun l ->
      let s = ref "" in
-     OUnit.bracket_tmpfile ~prefix:"test_containers1" ~mode:[Open_creat; Open_trunc]
-      (fun (name1, oc1) ->
+     File.with_temp ~prefix:"test_containers1" ~suffix:""
+      (fun name1 ->
+        with_out name1 @@ fun oc1 ->
         write_gen ~sep:"" oc1 (Gen.of_list l);
         flush oc1;
-        OUnit.bracket_tmpfile ~prefix:"test_containers2" ~mode:[Open_creat; Open_trunc]
-          (fun (name2, oc2) ->
+        File.with_temp ~prefix:"test_containers2" ~suffix:""
+          (fun name2 ->
+             with_out name2 @@ fun oc2 ->
              CCIO.with_in name1 (fun ic1 -> copy_into ic1 oc2);
              flush oc2;
-             s := with_in name2 read_all;) ();
-      ) ();
+             s := with_in name2 read_all;);
+      );
      String.concat "" l = !s
     )
 *)
@@ -390,7 +395,7 @@ module File = struct
     else gen_singleton (`File, d)
 
   (*$R
-    OUnit.assert_bool "walk categorizes files"
+    OUnit2.assert_bool "walk categorizes files"
       (File.walk "."
         |> Gen.for_all
           (function

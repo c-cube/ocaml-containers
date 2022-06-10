@@ -11,23 +11,23 @@
 
       let tbl = CCMixtbl.create 10 ;;
 
-      OUnit.assert_equal None (CCMixtbl.get ~inj:inj_int tbl "a");;
+      OUnit2.assert_equal None (CCMixtbl.get ~inj:inj_int tbl "a");;
 
       CCMixtbl.set inj_int tbl "a" 1;;
 
-      OUnit.assert_equal (Some 1) (CCMixtbl.get ~inj:inj_int tbl "a");;
+      OUnit2.assert_equal (Some 1) (CCMixtbl.get ~inj:inj_int tbl "a");;
 
       let inj_string = CCMixtbl.create_inj () ;;
 
       CCMixtbl.set inj_string tbl "b" "Hello";
 
-      OUnit.assert_equal (Some "Hello") (CCMixtbl.get inj_string tbl "b");;
-      OUnit.assert_equal None (CCMixtbl.get inj_string tbl "a");;
-      OUnit.assert_equal (Some 1) (CCMixtbl.get inj_int tbl "a");;
+      OUnit2.assert_equal (Some "Hello") (CCMixtbl.get inj_string tbl "b");;
+      OUnit2.assert_equal None (CCMixtbl.get inj_string tbl "a");;
+      OUnit2.assert_equal (Some 1) (CCMixtbl.get inj_int tbl "a");;
       CCMixtbl.set inj_string tbl "a" "Bye";;
 
-      OUnit.assert_equal None (CCMixtbl.get inj_int tbl "a");;
-      OUnit.assert_equal (Some "Bye") (CCMixtbl.get inj_string tbl "a");;
+      OUnit2.assert_equal None (CCMixtbl.get inj_int tbl "a");;
+      OUnit2.assert_equal (Some "Bye") (CCMixtbl.get inj_string tbl "a");;
     ]}
 
     @since 0.6 *)
