@@ -7,7 +7,7 @@
 (rule
   (targets run_qtest.ml)
   (deps ./make.exe (source_tree ../src))
-  (action (run ./make.exe -target %{targets} ../src/core ../src/unix/)))
+  (action (run ./make.exe -target %{targets} ../src/core ../src/bencode ../src/unix/)))
 
 (executable
   (name run_qtest)
@@ -15,7 +15,7 @@
   (modules run_qtest)
   ; disable some warnings in qtests
   (flags :standard -warn-error -a -w -3-33-35-27-39-50)
-  (libraries iter gen qcheck containers containers.unix unix uutf threads))
+  (libraries iter gen qcheck containers containers.unix containers.bencode unix uutf threads))
 
 (rule
   (alias runtest)

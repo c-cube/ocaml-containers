@@ -17,7 +17,7 @@ depends: [
   "seq" # compat
   "either" # compat
   "qtest" { with-test }
-  "qcheck" { with-test }
+  "qcheck" { >= "0.14" & with-test }
   "ounit" { with-test }
   "iter" { with-test }
   "gen" { with-test }
