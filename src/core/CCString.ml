@@ -1176,7 +1176,7 @@ let of_hex s = try Some (of_hex_exn s) with Invalid_argument _ -> None
   Q.(string) (fun s -> \
     of_hex_exn (to_hex s) = s)
   Q.(string) (fun s -> \
-    String.for_all (function 'A'..'F'|'a'..'f'|'0'..'9' -> true |  _ -> false) @@ to_hex s)
+    CCString.for_all (function 'A'..'F'|'a'..'f'|'0'..'9' -> true |  _ -> false) @@ to_hex s)
 *)
 
 let pp_buf buf s =
