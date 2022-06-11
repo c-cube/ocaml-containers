@@ -4,4 +4,5 @@
   (name containers_top)
   (public_name containers.top)
   (wrapped false)
+  (modes byte)
   (libraries compiler-libs.common containers containers.unix))
