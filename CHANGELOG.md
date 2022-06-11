@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.8
+
+- add `Containers_bencode` for lightweight (de)ser
+- perf(CCHash): improve a bit commutative hashing of arrays/lists
+- perf(CCHash): only hash prefix of string/bytes
+- feat(CCList): Add `Assoc.{keys,values,map_values}`
+- feat(CCArray): add `CCArray.map_inplace`
+- add `CCString.{to_hex,of_hex}`
+
+- fix(Atomic): prevent race conditions under flambda, for now
+
 ## 3.7
 
 - add `Format.styling`

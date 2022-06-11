@@ -168,7 +168,7 @@ val unzip : ('a * 'b) t -> 'a t * 'b t
 
 val zip_i : 'a t -> (int * 'a) t
 (** [zip_i seq] zips the index of each element with the element itself.
-    @since NEXT
+    @since 3.8
 *)
 
 (** {2 Misc} *)

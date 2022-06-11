@@ -327,16 +327,16 @@ val equal_caseless : string -> string -> bool
 
 val to_hex : string -> string
 (** Convert a string with arbitrary content into a hexadecimal string.
-    @since NEXT_RELEASE *)
+    @since 3.8 *)
 
 val of_hex : string -> string option
 (** Convert a string in hex into a string with arbitrary content.
-    @since NEXT_RELEASE *)
+    @since 3.8 *)
 
 val of_hex_exn : string -> string
 (** Same as {!of_hex} but fails harder.
     @raise Invalid_argument if the input is not valid hex.
-    @since NEXT_RELEASE *)
+    @since 3.8 *)
 
 (** {2 Finding}
 

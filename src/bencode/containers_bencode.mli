@@ -2,7 +2,7 @@
 
     See https://en.wikipedia.org/wiki/Bencode .
 
-    @since NEXT_RELEASE *)
+    @since 3.8 *)
 
 module Str_map : module type of Map.Make(String)
 
