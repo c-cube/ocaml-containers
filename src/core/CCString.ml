@@ -1152,6 +1152,7 @@ let of_hex_exn (s:string) : string =
   let n_of_c = function
     | '0' .. '9' as c -> Char.code c - Char.code '0'
     | 'a' .. 'f' as c -> 10 + Char.code c - Char.code 'a'
+    | 'A' .. 'F' as c -> 10 + Char.code c - Char.code 'A'
     | _ -> invalid_arg "string: invalid hex"
   in
   if (String.length s mod 2 <> 0) then invalid_arg "string: hex sequence must be of even length";
@@ -1170,6 +1171,7 @@ let of_hex s = try Some (of_hex_exn s) with Invalid_argument _ -> None
   "0068656c6c6f20776f726c64" (to_hex "\000hello world")
   "" (to_hex "")
   "\000hello world" (of_hex_exn "0068656c6c6f20776f726c64")
+  "hello world" (of_hex_exn "68656C6C6F20776F726C64")
 *)
 
 (*$Q
