@@ -1,0 +1,4 @@
+(library
+  (name containers_cbor)
+  (libraries containers)
+  (public_name containers.cbor))
