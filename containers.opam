@@ -19,6 +19,7 @@ depends: [
   "qtest" { with-test }
   "qcheck" { >= "0.14" & with-test }
   "ounit2" { with-test }
+  "yojson" { with-test }
   "iter" { with-test }
   "gen" { with-test }
   "csexp" { with-test }
