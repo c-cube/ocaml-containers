@@ -1,0 +1,5 @@
+
+(library
+  (name containers_testlib)
+  (synopsis "Test library for containers")
+  (libraries containers qcheck-core unix))
