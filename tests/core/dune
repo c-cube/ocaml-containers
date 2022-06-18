@@ -1,0 +1,5 @@
+(test
+ (name t)
+ (flags :standard -strict-sequence -warn-error -a+8 -open
+   Containers_testlib.Prelude)
+ (libraries containers containers_testlib))
