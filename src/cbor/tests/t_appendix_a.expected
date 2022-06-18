@@ -1,0 +1,322 @@
+  decoded into 0
+> RUN test "00"
+  roundtrip ok
+  expect: OK
+  decoded into 1
+> RUN test "01"
+  roundtrip ok
+  expect: OK
+  decoded into 10
+> RUN test "0a"
+  roundtrip ok
+  expect: OK
+  decoded into 23
+> RUN test "17"
+  roundtrip ok
+  expect: OK
+  decoded into 24
+> RUN test "1818"
+  roundtrip ok
+  expect: OK
+  decoded into 25
+> RUN test "1819"
+  roundtrip ok
+  expect: OK
+  decoded into 100
+> RUN test "1864"
+  roundtrip ok
+  expect: OK
+  decoded into 1000
+> RUN test "1903e8"
+  roundtrip ok
+  expect: OK
+  decoded into 1000000
+> RUN test "1a000f4240"
+  roundtrip ok
+  expect: OK
+  decoded into 1000000000000
+> RUN test "1b000000e8d4a51000"
+  roundtrip ok
+  expect: OK
+  decoded into -1
+> SKIP "1bffffffffffffffff" (reason: (requires int64 loss of precision))
+  decoded into 2(h'010000000000000000')
+> SKIP "c249010000000000000000" (reason: (bigint))
+  decoded into 0
+> SKIP "3bffffffffffffffff" (reason: (requires int64, loss of precision))
+  decoded into 3(h'010000000000000000')
+> RUN test "c349010000000000000000"
+  roundtrip ok
+  TODO: compare with `Intlit ("-18446744073709551617")
+  expect: OK
+  decoded into -1
+> RUN test "20"
+  roundtrip ok
+  expect: OK
+  decoded into -10
+> RUN test "29"
+  roundtrip ok
+  expect: OK
+  decoded into -100
+> RUN test "3863"
+  roundtrip ok
+  expect: OK
+  decoded into -1000
+> RUN test "3903e7"
+  roundtrip ok
+  expect: OK
+  decoded into 0.
+> RUN test "f90000"
+  TODO: compare with `Float (0.)
+  expect: OK
+  decoded into -0.
+> RUN test "f98000"
+  TODO: compare with `Float (-0.)
+  expect: OK
+  decoded into 1.
+> RUN test "f93c00"
+  TODO: compare with `Float (1.)
+  expect: OK
+  decoded into 1.1
+> RUN test "fb3ff199999999999a"
+  TODO: compare with `Float (1.1)
+  expect: OK
+  decoded into 1.5
+> RUN test "f93e00"
+  TODO: compare with `Float (1.5)
+  expect: OK
+  decoded into 65504.
+> RUN test "f97bff"
+  TODO: compare with `Float (65504.)
+  expect: OK
+  decoded into 100000.
+> RUN test "fa47c35000"
+  TODO: compare with `Float (100000.)
+  expect: OK
+  decoded into 3.40282346639e+38
+> RUN test "fa7f7fffff"
+  TODO: compare with `Float (3.40282346639e+38)
+  expect: OK
+  decoded into 1e+300
+> RUN test "fb7e37e43c8800759c"
+  TODO: compare with `Float (1e+300)
+  expect: OK
+  decoded into 5.96046447754e-08
+> RUN test "f90001"
+  TODO: compare with `Float (5.96046447754e-08)
+  expect: OK
+  decoded into 6.103515625e-05
+> RUN test "f90400"
+  TODO: compare with `Float (6.103515625e-05)
+  expect: OK
+  decoded into -4.
+> RUN test "f9c400"
+  TODO: compare with `Float (-4.)
+  expect: OK
+  decoded into -4.1
+> RUN test "fbc010666666666666"
+  TODO: compare with `Float (-4.1)
+  expect: OK
+  decoded into inf
+> RUN test "f97c00"
+  OK
+  decoded into nan
+> RUN test "f97e00"
+  OK
+  decoded into -inf
+> RUN test "f9fc00"
+  OK
+  decoded into inf
+> RUN test "fa7f800000"
+  OK
+  decoded into nan
+> RUN test "fa7fc00000"
+  OK
+  decoded into -inf
+> RUN test "faff800000"
+  OK
+  decoded into inf
+> RUN test "fb7ff0000000000000"
+  OK
+  decoded into nan
+> RUN test "fb7ff8000000000000"
+  OK
+  decoded into -inf
+> RUN test "fbfff0000000000000"
+  OK
+  decoded into false
+> RUN test "f4"
+  roundtrip ok
+  TODO: compare with `Bool (false)
+  expect: OK
+  decoded into true
+> RUN test "f5"
+  roundtrip ok
+  TODO: compare with `Bool (true)
+  expect: OK
+  decoded into null
+> RUN test "f6"
+  roundtrip ok
+  TODO: compare with `Null
+  expect: OK
+  decoded into undefined
+> RUN test "f7"
+  roundtrip ok
+  OK
+  decoded into simple(16)
+> RUN test "f0"
+  roundtrip ok
+  OK
+  decoded into simple(24)
+> RUN test "f818"
+  roundtrip ok
+  OK
+  decoded into simple(255)
+> RUN test "f8ff"
+  roundtrip ok
+  OK
+  decoded into 0("2013-03-21T20:04:00Z")
+> RUN test "c074323031332d30332d32315432303a30343a30305a"
+  roundtrip ok
+  OK
+  decoded into 1(1363896240)
+> RUN test "c11a514b67b0"
+  roundtrip ok
+  OK
+  decoded into 1(1363896240.5)
+> RUN test "c1fb41d452d9ec200000"
+  roundtrip ok
+  OK
+  decoded into 23(h'01020304')
+> RUN test "d74401020304"
+  roundtrip ok
+  OK
+  decoded into 24(h'6449455446')
+> RUN test "d818456449455446"
+  roundtrip ok
+  OK
+  decoded into 32("http://www.example.com")
+> RUN test "d82076687474703a2f2f7777772e6578616d706c652e636f6d"
+  roundtrip ok
+  OK
+  decoded into h''
+> RUN test "40"
+  roundtrip ok
+  OK
+  decoded into h'01020304'
+> RUN test "4401020304"
+  roundtrip ok
+  OK
+  decoded into ""
+> RUN test "60"
+  roundtrip ok
+  expect: OK
+  decoded into "a"
+> RUN test "6161"
+  roundtrip ok
+  expect: OK
+  decoded into "IETF"
+> RUN test "6449455446"
+  roundtrip ok
+  expect: OK
+  decoded into "\"\\"
+> RUN test "62225c"
+  roundtrip ok
+  expect: OK
+  decoded into "\195\188"
+> RUN test "62c3bc"
+  roundtrip ok
+  expect: OK
+  decoded into "\230\176\180"
+> RUN test "63e6b0b4"
+  roundtrip ok
+  expect: OK
+  decoded into "\240\144\133\145"
+> RUN test "64f0908591"
+  roundtrip ok
+  expect: OK
+  decoded into []
+> RUN test "80"
+  roundtrip ok
+  expect: OK
+  decoded into [1, 2, 3]
+> RUN test "83010203"
+  roundtrip ok
+  expect: OK
+  decoded into [1, [2, 3], [4, 5]]
+> RUN test "8301820203820405"
+  roundtrip ok
+  expect: OK
+  decoded into [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                18, 19, 20, 21, 22, 23, 24, 25]
+> RUN test "98190102030405060708090a0b0c0d0e0f101112131415161718181819"
+  roundtrip ok
+  expect: OK
+  decoded into {}
+> RUN test "a0"
+  roundtrip ok
+  TODO: compare with `Assoc ([])
+  expect: OK
+  decoded into {1: 2, 3: 4}
+> RUN test "a201020304"
+  roundtrip ok
+  OK
+  decoded into {"a": 1, "b": [2, 3]}
+> RUN test "a26161016162820203"
+  roundtrip ok
+  TODO: compare with `Assoc ([("a", `Int (1));
+                               ("b", `List ([`Int (2); `Int (3)]))])
+  expect: OK
+  decoded into ["a", {"b": "c"}]
+> RUN test "826161a161626163"
+  roundtrip ok
+  TODO: compare with `Assoc ([("b", `String ("c"))])
+  expect: OK
+  decoded into {"a": "A", "b": "B", "c": "C", "d": "D", "e": "E"}
+> RUN test "a56161614161626142616361436164614461656145"
+  roundtrip ok
+  TODO: compare with `Assoc ([("a", `String ("A")); ("b", `String ("B"));
+                               ("c", `String ("C")); ("d", `String ("D"));
+                               ("e", `String ("E"))])
+  expect: OK
+  decoded into h'0102030405'
+> SKIP "5f42010243030405ff" (reason: (requires representation of indefinite length))
+  decoded into "streaming"
+> RUN test "7f657374726561646d696e67ff"
+  expect: OK
+  decoded into []
+> RUN test "9fff"
+  expect: OK
+  decoded into [1, [2, 3], [4, 5]]
+> RUN test "9f018202039f0405ffff"
+  expect: OK
+  decoded into [1, [2, 3], [4, 5]]
+> RUN test "9f01820203820405ff"
+  expect: OK
+  decoded into [1, [2, 3], [4, 5]]
+> RUN test "83018202039f0405ff"
+  expect: OK
+  decoded into [1, [2, 3], [4, 5]]
+> RUN test "83019f0203ff820405"
+  expect: OK
+  decoded into [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                18, 19, 20, 21, 22, 23, 24, 25]
+> RUN test "9f0102030405060708090a0b0c0d0e0f101112131415161718181819ff"
+  expect: OK
+  decoded into {"a": 1, "b": [2, 3]}
+> RUN test "bf61610161629f0203ffff"
+  TODO: compare with `Assoc ([("a", `Int (1));
+                               ("b", `List ([`Int (2); `Int (3)]))])
+  expect: OK
+  decoded into ["a", {"b": "c"}]
+> RUN test "826161bf61626163ff"
+  TODO: compare with `Assoc ([("b", `String ("c"))])
+  expect: OK
+  decoded into {"Fun": true, "Amt": -2}
+> RUN test "bf6346756ef563416d7421ff"
+  TODO: compare with `Assoc ([("Fun", `Bool (true)); ("Amt", `Int (-2))])
+  expect: OK
+
+
+#####
+OK: 78 ok, 4 skip
