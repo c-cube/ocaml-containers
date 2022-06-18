@@ -21,6 +21,8 @@ type t =
 
 val pp_diagnostic : t CCFormat.printer
 
+val to_string_diagnostic : t -> string
+
 (* we use funtions from Bytes *)
 [@@@ifge 4.08]
 

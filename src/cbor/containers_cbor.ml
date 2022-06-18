@@ -36,10 +36,13 @@ let rec pp_diagnostic out (self:t) =
     Fmt.fprintf out "{@[";
     List.iteri
       (fun i (k,v) ->
-        if i>0  then Fmt.fprintf out "m@ ";
+        if i>0  then Fmt.fprintf out ",@ ";
         Fmt.fprintf out "@[%a:@ %a@]" pp_diagnostic k pp_diagnostic v) l;
-    Fmt.fprintf out "@}]"
+    Fmt.fprintf out "@]}"
   | `Tag (i,x) -> Fmt.fprintf out "%d(@[%a@])" i pp_diagnostic x
+
+let to_string_diagnostic (self:t) : string =
+  Format.asprintf "@[<h>%a@]" pp_diagnostic self
 
 (* we use funtions from Bytes *)
 [@@@ifge 4.08]
@@ -81,7 +84,7 @@ let decode_exn (s:string) : t =
 
   let reserve_n n =
     let j = !i in
-    if j + n >= String.length s then failwith "cbor: cannot extract slice";
+    if j + n > String.length s then failwith "cbor: cannot extract slice";
     i := !i + n;
     j
   in
@@ -108,10 +111,36 @@ let decode_exn (s:string) : t =
     | _ -> assert false
   in
 
+  (* appendix D
+
+     double decode_half(unsigned char *halfp) {
+       unsigned half = (halfp[0] << 8) + halfp[1];
+       unsigned exp = (half >> 10) & 0x1f;
+       unsigned mant = half & 0x3ff;
+       double val;
+       if (exp == 0) val = ldexp(mant, -24);
+       else if (exp != 31) val = ldexp(mant + 1024, exp - 25);
+       else val = mant == 0 ? INFINITY : NAN;
+       return half & 0x8000 ? -val : val;
+     }
+  *)
+  let decode_f16 (half:int) : float =
+    (* exponent is bits 15:10 *)
+    let exp = (half lsr 10) land 0x1f in
+    (* mantissa is bits 9:0 *)
+    let mant = half land 0x3ff in
+    let value =
+      if exp = 0 then ldexp (float mant) (-24)
+      else if exp <> 31 then ldexp (float (mant + 1024)) (exp - 25)
+      else if mant = 0 then infinity else nan
+    in
+    if half land 0x8000 <> 0 then -. value else value
+  in
+
   (* roughly follow https://www.rfc-editor.org/rfc/rfc8949.html#pseudocode *)
   let rec read_value () =
     let c = read_i8() in
-    let high = c land 0b111_00000 in
+    let high = (c land 0b111_00000) lsr 5 in
     let low  = c land 0b000_11111 in
     begin match high with
       | 0 -> `Int (read_int ~allow_indefinite:false low |> i64_to_int)
@@ -169,7 +198,7 @@ let decode_exn (s:string) : t =
           | 23 -> `Undefined
           | _ when low<=24 -> `Simple (i64_to_int i)
           | 25 -> (* float16 *)
-            assert false (* TODO *)
+            `Float (decode_f16 (Int64.to_int i))
           | 26 -> (* float 32 *)
             `Float (Int32.float_of_bits (Int64.to_int32 i))
           | 27 -> (* float 64 *)
@@ -225,7 +254,7 @@ let encode ?(buf=Buffer.create 32) (self:t) : string =
   (* add unsigned integer, including first tag byte *)
   let add_uint (high:int) (x:int) =
     assert (x >= 0);
-    if x <= 24 then add_byte high x
+    if x < 24 then add_byte high x
     else if x <= 0xff then (
       add_byte high 24;
       Buffer.add_char buf (Char.unsafe_chr x)
@@ -249,7 +278,6 @@ let encode ?(buf=Buffer.create 32) (self:t) : string =
     | `Undefined -> add_byte 7 23
     | `Simple i ->
       if i < 24 then add_byte 7 i
-      else if i < 32 then failwith "cbor: simple value in [24, 32["
       else if i <= 0xff then (
         add_byte 7 24;
         Buffer.add_char buf (Char.unsafe_chr i)
@@ -269,7 +297,7 @@ let encode ?(buf=Buffer.create 32) (self:t) : string =
       add_uint 3 (String.length s);
       Buffer.add_string buf s
     | `Bytes s ->
-      add_uint 4 (String.length s);
+      add_uint 2 (String.length s);
       Buffer.add_string buf s
     | `Tag (t, v) ->
       add_uint 6 t;
