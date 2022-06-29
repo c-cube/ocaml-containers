@@ -28,6 +28,7 @@ module Test = struct
       self.hex pp_expect self.expect self.roundtrip
 end
 
+  let list_assoc_opt x l = try Some (List.assoc x l) with _ -> None
 
 let extract_tests (j:json) : Test.t list =
   let l = J.Util.to_list j in
@@ -37,7 +38,7 @@ let extract_tests (j:json) : Test.t list =
     let raw = CCString.of_hex_exn @@ hex in
     let roundtrip = J.Util.to_bool @@ List.assoc "roundtrip" o in
     let expect =
-      match List.assoc_opt "decoded" o, List.assoc_opt "diagnostic" o with
+      match list_assoc_opt "decoded" o, list_assoc_opt "diagnostic" o with
       | None, Some (`String s) -> Test.Diagnostic s
       | Some o, _ -> Test.Decoded o
       | _ -> failwith "cannot find expected result"
