@@ -4,11 +4,6 @@
  (libraries yojson containers containers.cbor))
 
 (rule
- (targets t_appendix_a.out)
+ (alias runtest)
  (action
-   (with-stdout-to %{targets}
-    (run ./t_appendix_a.exe ./appendix_a.json))))
-
-(rule
-  (alias runtest)
-  (action (diff ./t_appendix_a.expected ./t_appendix_a.out)))
+   (run ./t_appendix_a.exe ./appendix_a.json)))
