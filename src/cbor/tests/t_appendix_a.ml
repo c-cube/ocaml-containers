@@ -1,5 +1,5 @@
 
-let verbose = Sys.getenv_opt "VERBOSE"=Some "1"
+let verbose = try Sys.getenv "VERBOSE"="1" with _ -> false
 
 [@@@ifge 4.08]
 
