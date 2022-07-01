@@ -41,11 +41,6 @@ let triple f g h (x1,y1,z1)(x2,y2,z2) = f x1 x2 && g y1 y2 && h z1 z2
 
 let map f eq x y = eq (f x) (f y)
 
-(*$Q
-  Q.(let p = small_list (pair small_int bool) in pair p p) (fun (l1,l2) -> \
-    CCEqual.(list (pair int bool)) l1 l2 = (l1=l2))
-*)
-
 let always_eq _ _ = true
 let never_eq _ _ = false
 

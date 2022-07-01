@@ -15,31 +15,11 @@ let right r = Right r
 
 let is_left = function Left _ -> true | Right _ -> false
 
-(*$=
-  (is_left (Left 1)) (true)
-  (is_left (Right 1)) (false)
-*)
-
 let is_right = function Left _ -> false | Right _ -> true
-
-(*$=
-  (is_right (Left 1)) (false)
-  (is_right (Right 1)) (true)
-*)
 
 let find_left = function Left l -> Some l | Right _ -> None
 
-(*$=
-  (find_left (Left 1)) (Some 1)
-  (find_left (Right 1)) (None)
-*)
-
 let find_right = function Left _ -> None | Right r -> Some r
-
-(*$=
-  (find_right (Left 1)) (None)
-  (find_right (Right 1)) (Some 1)
-*)
 
 let map_left f = function Left l -> Left (f l) | Right r -> Right r
 

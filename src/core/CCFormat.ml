@@ -16,17 +16,6 @@ let silent _fmt _ = ()
 
 let return fmt_str out () = Format.fprintf out "%(%)" fmt_str
 
-(*$inject
-  let to_string_test s = CCFormat.sprintf_no_color "@[<h>%a@]%!" s ()
-*)
-
-(*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
-  "a b" (to_string_test (return "a@ b"))
-  ", " (to_string_test (return ",@ "))
-  "and then" (to_string_test (return "@{<Red>and then@}@,"))
-  "a b" (to_string_test (return "@[<h>a@ b@]"))
-*)
-
 let unit fmt () = Format.pp_print_string fmt "()"
 let int fmt i = Format.pp_print_string fmt (string_of_int i)
 let string = Format.pp_print_string
@@ -51,11 +40,6 @@ let substring out (s,i,len): unit =
 
 let text = Format.pp_print_text
 
-(*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
-  "a\nb\nc" (sprintf_no_color "@[<v>%a@]%!" text "a b c")
-  "a b\nc" (sprintf_no_color "@[<h>%a@]%!" text "a b\nc")
-*)
-
 let string_lines out (s:string) : unit =
   fprintf out "@[<v>";
   let i = ref 0 in
@@ -68,10 +52,6 @@ let string_lines out (s:string) : unit =
     i := j+1;
   done;
   fprintf out "@]"
-
-(*$= & ~printer:(fun s->CCFormat.sprintf "%S" s)
-  "(a\n b\n c)" (sprintf_no_color "(@[<v>%a@])" string_lines "a\nb\nc")
-*)
 
 let list ?(sep=return ",@ ") pp fmt l =
   let rec pp_list l = match l with
@@ -128,20 +108,8 @@ let append ppa ppb fmt () =
   ppa fmt ();
   ppb fmt ()
 
-(*$= append & ~printer:(fun s -> CCFormat.sprintf "%S" s)
-  "foobar" (to_string_test (append (return "foo") (return "bar")))
-  "bar" (to_string_test (append (return "") (return "bar")))
-  "foo" (to_string_test (append (return "foo") (return "")))
-*)
-
 let append_l ppl fmt () =
   List.iter (fun pp -> pp fmt ()) ppl
-
-(*$= append_l & ~printer:(fun s -> CCFormat.sprintf "%S" s)
-  "" (to_string_test @@ append_l [])
-  "foobarbaz" (to_string_test @@ append_l (List.map return ["foo"; "bar"; "baz"]))
-  "3141" (to_string_test @@ append_l (List.map (const int) [3; 14; 1]))
-*)
 
 let within a b p out x =
   string out a;
@@ -227,17 +195,6 @@ let tee a b =
        fb.Format.out_string str i len)
     (fun () -> fa.Format.out_flush (); fb.Format.out_flush ())
 
-(*$R
-  let buf1 = Buffer.create 42 in
-  let buf2 = Buffer.create 42 in
-  let f1 = Format.formatter_of_buffer buf1 in
-  let f2 = Format.formatter_of_buffer buf2 in
-  let fmt = tee f1 f2 in
-  Format.fprintf fmt "coucou@.";
-  assert_equal ~printer:CCFun.id "coucou\n" (Buffer.contents buf1);
-  assert_equal ~printer:CCFun.id "coucou\n" (Buffer.contents buf2);
-*)
-
 let to_file filename format =
   let oc = open_out filename in
   let fmt = Format.formatter_of_out_channel oc in
@@ -286,10 +243,6 @@ module ANSI_codes = struct
   let clear_line = "\x1b[2K\r"
 
   let reset = string_of_style `Reset
-
-  (*$=
-    ANSI_codes.reset "\x1b[0m"
-  *)
 
   let string_of_style_list = function
     | [] -> reset
@@ -407,19 +360,6 @@ let set_color_tag_handling ppf =
   in
   pp_set_formatter_stag_functions ppf funs'
 
-(*$R
-  set_color_default true;
-  let s = sprintf
-    "what is your %a? %a! No, %a! Ahhhhhhh@."
-    (styling [`FG `White; `Bold] string) "favorite color"
-    (styling [`FG `Blue] string) "blue"
-    (styling [`FG `Red] string) "red"
-  in
-  assert_equal ~printer:CCFun.id
-    "what is your \027[37;1mfavorite color\027[0m? \027[34mblue\027[0m! No, \027[31mred\027[0m! Ahhhhhhh\n"
-    s
-*)
-
 [@@@else_]
 
 (* either prints the tag of [s] or delegate to [or_else] *)
@@ -465,16 +405,6 @@ let set_color_default =
         set_color_tag_handling stderr;
       );
     ) else if not b && !color_enabled then color_enabled := false
-
-(*$R
-  set_color_default true;
-  let s = sprintf
-    "what is your @{<White>favorite color@}? @{<blue>blue@}! No, @{<red>red@}! Ahhhhhhh@."
-  in
-  assert_equal ~printer:CCFun.id
-    "what is your \027[37;1mfavorite color\027[0m? \027[34mblue\027[0m! No, \027[31mred\027[0m! Ahhhhhhh\n"
-    s
-*)
 
 let with_color s pp out x =
   pp_open_tag out s;
@@ -522,18 +452,6 @@ let fprintf_dyn_color ~colors out fmt =
     (fun out -> Format.pp_set_mark_tags out old_tags)
     out fmt
 
-(*$T
-  sprintf "yolo %s %d" "a b" 42 = "yolo a b 42"
-  sprintf "%d " 0 = "0 "
-  sprintf_no_color "%d " 0 = "0 "
-*)
-
-(*$R
-  set_color_default true;
-  assert_equal "\027[31myolo\027[0m" (sprintf "@{<red>yolo@}");
-  assert_equal "yolo" (sprintf_no_color "@{<red>yolo@}");
-*)
-
 let ksprintf ?margin ~f fmt =
   let buf = Buffer.create 32 in
   let out = Format.formatter_of_buffer buf in
@@ -542,11 +460,6 @@ let ksprintf ?margin ~f fmt =
   Format.kfprintf
     (fun _ -> Format.pp_print_flush out (); f (Buffer.contents buf))
     out fmt
-
-(*$= & ~printer:CCFormat.(to_string (opt string))
-  (Some "hello world") \
-    (ksprintf ~f:(fun s -> Some s) "hello %a" CCFormat.string "world")
-*)
 
 module Dump = struct
   type 'a t = 'a printer
@@ -573,14 +486,6 @@ module Dump = struct
   let result pok = result' pok string
   let to_string = to_string
 end
-
-(*$= & ~printer:(fun s->s)
-  "[1;2;3]" (to_string Dump.(list int) [1;2;3])
-  "Some 1" (to_string Dump.(option int) (Some 1))
-  "[None;Some \"a b\"]" (to_string Dump.(list (option string)) [None; Some "a b"])
-  "[(Ok \"a b c\");(Error \"nope\")]" \
-    (to_string Dump.(list (result string)) [Ok "a b c"; Error "nope"])
-*)
 
 module Infix = struct
   let (++) = append

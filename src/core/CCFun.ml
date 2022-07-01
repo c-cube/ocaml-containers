@@ -80,18 +80,6 @@ let rec iterate n f x =
   else
     iterate (n - 1) f (f x)
 
-(*$= iterate & ~printer:Q.Print.int
-  10 (iterate 0 succ 10)
-  11 (iterate 1 succ 10)
-  12 (iterate 2 succ 10)
-  15 (iterate 5 succ 10)
-*)
-(*$R
-  assert_raises
-  (Invalid_argument "CCFun.iterate")
-  (fun () -> iterate (-1) succ 10)
-*)
-
 module Infix = struct
   (* default implem for some operators *)
   let (|>) x f = f x
@@ -100,13 +88,6 @@ module Infix = struct
   let (%>) = compose
   let (%) f g x = f (g x)
 end
-
-(*$T
-  CCFun.((succ %> string_of_int) 2 = "3")
-  CCFun.((( * ) 3 % succ) 5 = 18)
-  CCFun.(succ @@ ( * ) 2 @@ pred @@ 3 = 5)
-  CCFun.(3 |> succ |> ( * ) 5 |> pred = 19)
-*)
 
 include Infix
 

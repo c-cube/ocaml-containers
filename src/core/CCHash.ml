@@ -100,16 +100,6 @@ let bytes (x:bytes) =
 
 let string (x:string) = bytes (Bytes.unsafe_of_string x)
 
-(*$T
-  int 42 >= 0
-  int max_int >= 0
-  int max_int = int max_int
-  int min_int >= 0
-  int 0 >= 0
-  char 'c' >= 0
-  int 152352 = int 152352
-*)
-
 let slice x i len =
   let j=i+len in
   let rec aux i s =
@@ -146,11 +136,6 @@ let list_comm f l =
   let arr = Array.make (List.length l) 0 in
   List.iteri (fun i x -> arr.(i) <- f x) l;
   array_of_hashes_ arr
-
-(*$T
-  list_comm int [1;2] = list_comm int [2;1]
-  list_comm int [1;2] <> list_comm int [2;3]
-*)
 
 let iter f seq =
   let h = ref 0x43 in
