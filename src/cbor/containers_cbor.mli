@@ -3,6 +3,13 @@
 
   The type is chosen to be compatible with ocaml-cbor.
   See {{: https://www.rfc-editor.org/rfc/rfc8949.html} the RFC}.
+
+  {b note} this is experimental.
+
+  {b note} this is only available on OCaml >= 4.08. Below that, the module
+    is empty.
+
+  @since NEXT_RELEASE
   *)
 
 type t =
