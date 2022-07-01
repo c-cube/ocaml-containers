@@ -6,7 +6,6 @@ type 'a eq = 'a -> 'a -> bool
 type 'a print = 'a -> string
 
 module Test = struct
-
   type run =
     | T of (unit -> bool)
     | Eq : {
@@ -22,17 +21,14 @@ module Test = struct
     } -> run
 
   type t = {
-    __FILE__: string;
-    __LINE__: int;
     run: run;
+    __FILE__: string;
+    n: int;
   }
 
   (** Location for this test *)
   let str_loc (self:t) : string =
-    Printf.sprintf "(test :file '%s' :line %d)" self.__FILE__ self.__LINE__
-
-  let mk ~__FILE__ ~__LINE__ run : t =
-    { __FILE__; __LINE__; run }
+    Printf.sprintf "(test :file '%s' :n %d)" self.__FILE__ self.n
 
   let run ~seed (self:t) : _ result =
     match
@@ -93,22 +89,49 @@ module Test = struct
     | res -> res
     | exception e ->
         Error (spf "failed: raised %s" (Printexc.to_string e))
-        end
+end
 
-let all_ : Test.t list ref = ref []
-let add_ t = all_ := t :: !all_
-
-module Prelude = struct
+module type S = sig
   module Q = QCheck
 
-  let t ~__FILE__ ~__LINE__ f : unit =
-    add_ @@ Test.mk ~__FILE__ ~__LINE__ @@ Test.T f
+  val t : (unit -> bool) -> unit
 
-  let eq ~__FILE__ ~__LINE__ ?cmp ?printer lhs rhs : unit =
-    add_ @@ Test.mk ~__FILE__ ~__LINE__ @@ Test.Eq {eq=cmp; print=printer; lhs; rhs}
+  val eq : ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
 
-  let q ~__FILE__ ~__LINE__ ?count arb prop : unit =
-    add_ @@ Test.mk ~__FILE__ ~__LINE__ @@ Test.Q {arb; prop; count}
+  val q : ?count:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
+
+  val assert_equal :
+    ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) ->
+    'a -> 'a -> unit
+
+  val assert_failure : string -> 'a
+
+  val assert_raises : (exn -> bool) -> (unit -> 'b) -> unit
+
+  val get : unit -> Test.t list
+end
+
+module Make_test(X:sig val file: string end) = struct
+  module Q = QCheck
+
+  let all_ : Test.t list ref = ref []
+  let add_ t = all_ := t :: !all_
+
+  let n_ = ref 0
+
+  let mk run : Test.t =
+    let n = !n_ in
+    incr n_;
+    { __FILE__=X.file; n; run }
+
+  let t f : unit =
+    add_ @@ mk @@ Test.T f
+
+  let eq ?cmp ?printer lhs rhs : unit =
+    add_ @@ mk @@ Test.Eq {eq=cmp; print=printer; lhs; rhs}
+
+  let q ?count arb prop : unit =
+    add_ @@ mk @@ Test.Q {arb; prop; count}
 
   let assert_equal ?printer ?(cmp=(=)) x y : unit =
     if not @@ cmp x y then (
@@ -117,9 +140,25 @@ module Prelude = struct
       | Some p ->
         failwith @@ spf "not equal: lhs=%s, rhs=%s" (p x) (p y)
     )
+
+  let assert_failure s = failwith s
+
+  let assert_raises check f =
+    try ignore (f()); failwith "did not raise"
+    with e ->
+      if check e then ()
+      else failwith ("raised unexpected exception " ^ Printexc.to_string e)
+
+  let get () = !all_
 end
 
-let run_all ?seed:seed_hex ~descr () : unit =
+let make ~__FILE__ () : (module S) =
+  let module M = Make_test(struct
+    let file = __FILE__
+  end) in
+  (module M)
+
+let run_all ?seed:seed_hex ~descr (l:Test.t list list) : unit =
   let start = Unix.gettimeofday() in
 
   (* generate or parse seed *)
@@ -143,7 +182,7 @@ let run_all ?seed:seed_hex ~descr () : unit =
 
   (* now run the suite *)
 
-  let suite = List.rev !all_ in
+  let suite = List.flatten l in
   Format.printf "testing %s: running %d tests…@." descr (List.length suite);
   let failed = ref [] in
 

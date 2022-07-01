@@ -2,16 +2,30 @@
 type 'a eq = 'a -> 'a -> bool
 type 'a print = 'a -> string
 
-
-module Prelude : sig
-
-  module Q = QCheck
-
-  val t : __FILE__:string -> __LINE__:int -> (unit -> bool) -> unit
-  val eq : __FILE__:string -> __LINE__:int -> ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
-  val q : __FILE__:string -> __LINE__:int -> ?count:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
-
-  val assert_equal : ?printer:'a print -> ?cmp:'a eq -> 'a -> 'a -> unit
+module Test : sig
+  type t
 end
 
-val run_all : ?seed:string -> descr:string -> unit -> unit
+module type S = sig
+  module Q = QCheck
+
+  val t : (unit -> bool) -> unit
+
+  val eq : ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
+
+  val q : ?count:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
+
+  val assert_equal :
+    ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) ->
+    'a -> 'a -> unit
+
+  val assert_failure : string -> 'a
+
+  val assert_raises : (exn -> bool) -> (unit -> 'b) -> unit
+
+  val get : unit -> Test.t list
+end
+
+val make : __FILE__:string -> unit -> (module S)
+
+val run_all : ?seed:string -> descr:string -> Test.t list list -> unit
