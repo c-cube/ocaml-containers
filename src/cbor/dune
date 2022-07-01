@@ -1,0 +1,5 @@
+(library
+  (name containers_cbor)
+  (libraries containers)
+  (preprocess (action (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+  (public_name containers.cbor))
