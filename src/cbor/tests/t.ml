@@ -15,13 +15,22 @@ let gen_c : Cbor.t Q.Gen.t =
       (1, return `Undefined);
       (3, let+ x = int in `Int x);
       (1, let+ b = bool in `Bool b);
+      (1, let+ x = 0 -- 19 in `Simple x);
+      (1, let+ x = 26 -- 127 in `Simple x);
       (1, let+ f = float in `Float f);
       (2, let+ s = string_size ~gen:printable (0--150) in `Text s);
       (2, let+ s = string_size ~gen:char (0--150) in `Bytes s);
     ] in
+    let g_base = frequency base in
     let rec_ = [
-      (2, let+ l = list_size (0--5) recurse in `Array l);
-      (2, let+ l = list_size (0--5) (pair (frequency base) recurse) in `Map l);
+      (2, let+ l =
+          if size>10 then list_size (0--1024) g_base
+          else list_size (0--10) recurse
+      in `Array l);
+      (2, let+ l =
+          if size>10 then list_size (0--1024) (pair g_base g_base)
+          else list_size (0--5) (pair g_base recurse)
+      in `Map l);
     ]in
     frequency (if size>0  then base @ rec_ else base)
 
@@ -50,7 +59,7 @@ let rec shrink (c:Cbor.t) : Cbor.t Q.Iter.t =
 let arb = Q.make ~shrink ~print:Cbor.to_string_diagnostic gen_c
 
 let t1 =
-  Q.Test.make ~count:100_000 ~name:"to_from_same" arb @@ fun c ->
+  Q.Test.make ~count:10_000 ~name:"to_from_same" arb @@ fun c ->
     let s = Cbor.encode c in
     let c' = Cbor.decode_exn s in
     if not (c = c') then
