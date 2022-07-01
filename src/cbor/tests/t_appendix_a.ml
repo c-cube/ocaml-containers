@@ -1,4 +1,6 @@
 
+let verbose = Sys.getenv_opt "VERBOSE"=Some "1"
+
 [@@@ifge 4.08]
 
 module J = Yojson.Safe
@@ -71,16 +73,18 @@ let run_test (c:count) (t:Test.t) : unit =
     c.n_err <- c.n_err + 1;
     Fmt.printf "error when decoding %S: %s@." t.hex (Printexc.to_string e)
   | cbor ->
-    Fmt.printf "  decoded into %a@." Cbor.pp_diagnostic cbor;
+      if verbose then
+        Fmt.printf "  decoded into %a@." Cbor.pp_diagnostic cbor;
 
     (* do we skip the rest of the test? *)
     match List.assoc_opt t.hex skip with
     | Some reason ->
       c.n_skip <- 1 + c.n_skip;
-      Fmt.printf "> @{<Yellow>SKIP@} %S (reason: %s)@." t.hex reason
+      if verbose then
+        Fmt.printf "> @{<Yellow>SKIP@} %S (reason: %s)@." t.hex reason
 
     | None ->
-      Fmt.printf "> RUN test %S@." t.hex;
+        if verbose then Fmt.printf "> RUN test %S@." t.hex;
 
       (* check roundtrip, except on floats because we always use float64 *)
       if t.roundtrip && (match cbor with `Float _ -> false | _ -> true) then (
@@ -91,7 +95,7 @@ let run_test (c:count) (t:Test.t) : unit =
           c.n_err <- c.n_err + 1;
           raise Exit;
         ) else (
-          Fmt.printf "  roundtrip ok@.";
+          if verbose then Fmt.printf "  roundtrip ok@.";
         )
       );
 
@@ -107,7 +111,8 @@ let run_test (c:count) (t:Test.t) : unit =
         in
         if s=s' then (
           c.n_ok <- c.n_ok + 1;
-          Fmt.printf "  @{<Green>OK@}@."
+          if verbose then
+            Fmt.printf "  @{<Green>OK@}@."
         ) else (
           Fmt.printf "  @{<Red>ERR@}: expected diagnostic %S, got %S@." s s';
           c.n_err <- c.n_err + 1;
@@ -115,13 +120,26 @@ let run_test (c:count) (t:Test.t) : unit =
       | Test.Decoded j ->
         let rec compare_cj (cbor:Cbor.t) (j:json) =
           match cbor, j with
+          | `Null, `Null -> true
+          | `Float f1, `Float f2 -> Float.equal f1 f2
+          | `Bool b1, `Bool b2 -> b1=b2
+          | `Map l, `Assoc l2 ->
+            List.for_all (fun (k,v) ->
+              try compare_cj (List.assoc (`Text k) l) v
+              with Not_found -> false)
+            l2
           | `Int i, `Int j -> i=j
           | `Text s1, `String s2 -> s1=s2
           | `Array l1, `List l2 ->
-              List.length l1 = List.length l2 &&
-              List.for_all2 compare_cj l1 l2
+            List.length l1 = List.length l2 &&
+            List.for_all2 compare_cj l1 l2
+          | `Int i, `Intlit s ->
+            string_of_int i = s
+          | _, `Intlit "-18446744073709551617" ->
+            (* skip bigint test*)
+            true
           | _ ->
-            Fmt.printf "  TODO: compare with %a@." J.pp j;
+            Fmt.printf "  TODO: compare %a with %a@." Cbor.pp_diagnostic cbor J.pp j;
             true
         in
 
@@ -129,7 +147,7 @@ let run_test (c:count) (t:Test.t) : unit =
 
         if ok then (
           c.n_ok <- 1 + c.n_ok;
-          Fmt.printf "  expect: @{<Green>OK@}@."
+          if verbose then Fmt.printf "  expect: @{<Green>OK@}@."
         ) else (
           c.n_err <- 1 + c.n_err;
           Fmt.printf "  expect: @{<Red>ERROR@} (got %a, expected %a)@."
@@ -141,13 +159,14 @@ let run_test (c:count) (t:Test.t) : unit =
 let run_tests (l:Test.t list) =
   let c = {n_err=0; n_ok=0; n_skip=0} in
   List.iter (run_test c) l;
+  let has_err = c.n_err <> 0 in
 
   let total = c.n_err + c.n_ok + c.n_skip in
-  if total <> List.length l then
+  if (verbose ||has_err) && total <> List.length l then
     Fmt.printf "@{<Blue>warning@}: ran %d tests, for list of %d tests@."
       total (List.length l);
 
-  if c.n_err > 0 then (
+  if has_err then (
     Fmt.printf "@.@.#####@.@{<Red>FAIL@}: %d errors, %d ok, %d skip@."
       c.n_err c.n_ok c.n_skip;
     exit 1
