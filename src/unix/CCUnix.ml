@@ -50,12 +50,6 @@ let escape_str s =
     Buffer.contents buf
   ) else s
 
-(*$T
-  escape_str "foo" = "foo"
-  escape_str "foo bar" = "'foo bar'"
-  escape_str "fo'o b'ar" = "'fo'\\''o b'\\''ar'"
-*)
-
 let read_all ?(size=1024) ic =
   let buf = ref (Bytes.create size) in
   let len = ref 0 in
@@ -113,12 +107,6 @@ let call_full ?bufsize ?stdin ?env cmd =
         method errcode = int_of_process_status status
       end)
 
-(*$T
-  call_full ~stdin:(`Str "abc") "cat" |> stdout = "abc"
-  call_full "echo %s" (escape_str "a'b'c") |> stdout = "a'b'c\n"
-  call_full "echo %s" "a'b'c" |> stdout = "abc\n"
-*)
-
 let call ?bufsize ?stdin ?env cmd =
   call_full_inner ?bufsize ?stdin ?env cmd
     ~f:(fun (out,err,status) -> out, err, int_of_process_status status)
@@ -126,12 +114,6 @@ let call ?bufsize ?stdin ?env cmd =
 let call_stdout ?bufsize ?stdin ?env cmd =
   call_full_inner ?bufsize ?stdin ?env cmd
     ~f:(fun (out,_err,_status) -> out)
-
-(*$T
-  call_stdout ~stdin:(`Str "abc") "cat" = "abc"
-  call_stdout "echo %s" (escape_str "a'b'c") = "a'b'c\n"
-  call_stdout "echo %s" "a'b'c" = "abc\n"
-*)
 
 type line = string
 
@@ -270,29 +252,6 @@ let with_file_lock ~kind filename f =
     Unix.close lock_file;
     raise e
 
-(*$R
-  let m = 200 in
-  let n = 50 in
-  let write_atom filename s =
-    with_file_lock ~kind:`Write filename
-      (fun () ->
-        CCIO.with_out ~flags:[Open_append; Open_creat]
-          filename (fun oc -> output_string oc s; flush oc))
-  in
-  let f filename =
-    for j=1 to m do
-      write_atom filename "foo\n"
-    done
-  in
-  CCIO.File.with_temp ~prefix:"containers_" ~suffix:".txt"
-    (fun filename ->
-        let a = Array.init n (fun _ -> Thread.create f filename) in
-        Array.iter Thread.join a;
-        let lines = CCIO.with_in filename CCIO.read_lines_l in
-        assert_equal ~printer:string_of_int (n * m) (List.length lines);
-        assert_bool "all valid" (List.for_all ((=) "foo") lines))
-*)
-
 module Infix = struct
   let (?|) fmt = call_full fmt
 
@@ -334,15 +293,3 @@ let with_temp_dir ?(mode=0o700) ?dir pat (f: string -> 'a) : 'a =
     )
   in
   loop 1000
-
-(*$R
-  let filename = with_temp_dir "test_containers"
-      (fun dir ->
-         let name = Filename.concat dir "test" in
-         CCIO.with_out name (fun oc -> output_string oc "content"; flush oc);
-         assert_bool ("file exists:"^name) (Sys.file_exists name);
-         name)
-  in
-  assert_bool ("file does not exist"^filename) (not (Sys.file_exists filename));
-  ()
-*)

@@ -47,11 +47,6 @@ let pick_list l =
   fun st ->
     List.nth l (Random.State.int st n)
 
-(*$Q
-  Q.(list small_int) (fun l -> \
-    l=[] || List.mem (run (pick_list l)) l)
-*)
-
 let pick_array a =
   let n = Array.length a in
   if n=0 then raise Pick_from_empty;
@@ -122,13 +117,6 @@ let split_list i ~len st =
     _diff_list ~last:i (0::xs)
   ) else
     None
-
-(*$Q
-  Q.(pair small_int small_int) (fun (i,j) -> \
-    let len, n = 2+min i j, max i j in \
-    let l = QCheck.Gen.generate1 (split_list n ~len) in \
-    match l with None -> true | Some l -> l<> [] && List.for_all (fun x->x>0) l)
-*)
 
 let retry ?(max=10) g st =
   let rec aux n =
@@ -208,8 +196,3 @@ let (and*) = (and+)
 let __default_state = Random.State.make_self_init ()
 
 let run ?(st=__default_state) g = g st
-
-(*$R
-  let open Containers in
-  ignore @@ List.random_choose [1;2;3] (Random.get_state())
-*)

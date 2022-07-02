@@ -19,10 +19,6 @@ module Poly = struct
     try Hashtbl.find tbl x
     with Not_found -> default
 
-  (*$=
-    "c" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 3 ~default:"c")
-    "b" (let tbl = of_list [1,"a"; 2,"b"] in get_or tbl 2 ~default:"c")
-  *)
 
   let keys tbl k = Hashtbl.iter (fun key _ -> k key) tbl
 
@@ -53,11 +49,6 @@ module Poly = struct
     Hashtbl.fold
       (fun x y acc -> f x y :: acc)
       h []
-
-  (*$T
-    of_list [1,"a"; 2,"b"] |> map_list (fun x y -> string_of_int x ^ y) \
-      |> List.sort Stdlib.compare = ["1a"; "2b"]
-  *)
 
   let to_iter tbl k = Hashtbl.iter (fun key v -> k (key,v)) tbl
 
@@ -123,36 +114,12 @@ module Poly = struct
       | Some _, Some v' -> Hashtbl.replace tbl k v'
       | Some _, None -> Hashtbl.remove tbl k
 
-  (*$R
-    let tbl = Hashtbl.create 32 in
-    update tbl ~f:(fun _ _ -> Some "1") ~k:1;
-    assert_equal (Some "1") (get tbl 1);
-    update tbl ~f:(fun _ v->match v with Some _ -> assert false | None -> Some "2") ~k:2;
-    assert_equal (Some "2") (get tbl 2);
-    assert_equal 2 (Hashtbl.length tbl);
-    update tbl ~f:(fun _ _ -> None) ~k:1;
-    assert_equal None (get tbl 1);
-  *)
-
   let get_or_add tbl ~f ~k =
     try Hashtbl.find tbl k
     with Not_found ->
       let v = f k in
       Hashtbl.add tbl k v;
       v
-
-  (*$R
-    let tbl = Hashtbl.create 32 in
-    let v1 = get_or_add tbl ~f:(fun _ -> "1") ~k:1 in
-    assert_equal "1" v1;
-    assert_equal (Some "1") (get tbl 1);
-    let v2 = get_or_add tbl ~f:(fun _ ->"2") ~k:2 in
-    assert_equal "2" v2;
-    assert_equal (Some "2") (get tbl 2);
-    assert_equal "2" (get_or_add tbl ~f:(fun _ -> assert false) ~k:2);
-    assert_equal 2 (Hashtbl.length tbl);
-    ()
-  *)
 
   let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
       ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ")
@@ -342,10 +309,6 @@ module type S = sig
       @since 0.13 *)
 end
 
-(*$inject
-  module T = Make(CCInt)
-*)
-
 module Make(X : Hashtbl.HashedType)
   : S with type key = X.t and type 'a t = 'a Hashtbl.Make(X).t
 = struct
@@ -359,30 +322,11 @@ module Make(X : Hashtbl.HashedType)
     try find tbl x
     with Not_found -> default
 
-  (*$=
-    "c" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 3 ~default:"c")
-    "b" (let tbl = T.of_list [1,"a"; 2,"b"] in T.get_or tbl 2 ~default:"c")
-  *)
-
   let incr ?(by=1) tbl x =
     let n = get_or tbl x ~default:0 in
     if n+by <= 0
     then remove tbl x
     else replace tbl x (n+by)
-
-  (*$R
-    let tbl = T.create 32 in
-    T.incr tbl 1 ;
-    T.incr tbl 2;
-    T.incr tbl 1;
-    assert_equal 2 (T.find tbl 1);
-    assert_equal 1 (T.find tbl 2);
-    assert_equal 2 (T.length tbl);
-    T.decr tbl 2;
-    assert_equal 0 (T.get_or tbl 2 ~default:0);
-    assert_equal 1 (T.length tbl);
-    assert_bool "2 removed" (not (T.mem tbl 2));
-  *)
 
   let add_list tbl k v =
     let l = try find tbl k with Not_found -> [] in

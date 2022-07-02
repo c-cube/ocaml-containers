@@ -27,12 +27,6 @@ let repeat ?n x = match n with
   | None -> _forever x
   | Some n -> _repeat n x
 
-(*$T
-  repeat ~n:4 0 |> to_list = [0;0;0;0]
-  repeat ~n:0 1 |> to_list = []
-  repeat 1 |> take 20 |> to_list = (repeat ~n:20 1 |> to_list)
-*)
-
 let is_empty l = match l () with
   | Nil -> true
   | Cons _ -> false
@@ -89,10 +83,6 @@ let rec take_while p l () = match l () with
   | Cons (x,l') ->
     if p x then Cons (x, take_while p l') else Nil
 
-(*$T
-  of_list [1;2;3;4] |> take_while (fun x->x < 4) |> to_list = [1;2;3]
-*)
-
 let rec drop n (l:'a t) () = match l () with
   | l' when n=0 -> l'
   | Nil -> Nil
@@ -103,19 +93,9 @@ let rec drop_while p l () = match l() with
   | Cons (x,l') when p x -> drop_while p l' ()
   | Cons _ as res -> res
 
-(*$Q
-  (Q.pair (Q.list Q.small_int) Q.small_int) (fun (l,n) -> \
-    let s = of_list l in let s1, s2 = take n s, drop n s in \
-    append s1 s2 |> to_list = l  )
-*)
-
 let rec map f l () = match l () with
   | Nil -> Nil
   | Cons (x, l') -> Cons (f x, map f l')
-
-(*$T
-  (map ((+) 1) (1 -- 5) |> to_list) = (2 -- 6 |> to_list)
-*)
 
 let mapi f l =
   let rec aux f l i () = match l() with
@@ -125,10 +105,6 @@ let mapi f l =
   in
   aux f l 0
 
-(*$T
-  mapi (fun i x -> i,x) (1 -- 3) |> to_list = [0, 1; 1, 2; 2, 3]
-*)
-
 let rec fmap f (l:'a t) () = match l() with
   | Nil -> Nil
   | Cons (x, l') ->
@@ -136,11 +112,6 @@ let rec fmap f (l:'a t) () = match l() with
       | None -> fmap f l' ()
       | Some y -> Cons (y, fmap f l')
     end
-
-(*$T
-  fmap (fun x -> if x mod 2=0 then Some (x*3) else None) (1--10) |> to_list \
-    = [6;12;18;24;30]
-*)
 
 let rec filter p l () = match l () with
   | Nil -> Nil
@@ -155,53 +126,19 @@ let rec append l1 l2 () = match l1 () with
 
 let rec cycle l () = append l (cycle l) ()
 
-(*$T
-  cycle (of_list [1;2]) |> take 5 |> to_list = [1;2;1;2;1]
-  cycle (of_list [1; ~-1]) |> take 100_000 |> fold (+) 0 = 0
-*)
-
 let rec unfold f acc () = match f acc with
   | None -> Nil
   | Some (x, acc') -> Cons (x, unfold f acc')
-
-(*$T
-  let f = function  10 -> None | x -> Some (x, x+1) in \
-  unfold f 0 |> to_list = [0;1;2;3;4;5;6;7;8;9]
-*)
 
 let rec for_all p l =
   match l () with
   | Nil -> true
   | Cons (x, tl) -> p x && for_all p tl
 
-(*$T
-  for_all ((=) 1) (of_list []) = true
-  for_all ((=) 1) (of_list [0]) = false
-  for_all ((=) 1) (of_list [1]) = true
-  for_all ((=) 1) (of_list [1; 0]) = false
-  for_all ((=) 1) (of_list [0; 1]) = false
-  for_all ((=) 1) (of_list [1; 1]) = true
-
-  let l () = Cons (0, fun () -> failwith "no second element") in \
-  try ignore (for_all ((=) 1) l); true with Failure _ -> false
-*)
-
 let rec exists p l =
   match l () with
   | Nil -> false
   | Cons (x, tl) -> p x || exists p tl
-
-(*$T
-  exists ((=) 1) (of_list []) = false
-  exists ((=) 1) (of_list [0]) = false
-  exists ((=) 1) (of_list [1]) = true
-  exists ((=) 1) (of_list [1; 0]) = true
-  exists ((=) 1) (of_list [0; 1]) = true
-  exists ((=) 1) (of_list [0; 0]) = false
-
-  let l () = Cons (1, fun () -> failwith "no second element") in \
-  try ignore (exists ((=) 1) l); true with Failure _ -> false
-*)
 
 let rec flat_map f l () = match l () with
   | Nil -> Nil
@@ -245,11 +182,6 @@ let rec group eq l () = match l() with
   | Cons (x, l') ->
     Cons (cons x (take_while (eq x) l'), group eq (drop_while (eq x) l'))
 
-(*$T
-  of_list [1;1;1;2;2;3;3;1] |> group (=) |> map to_list |> to_list = \
-    [[1;1;1]; [2;2]; [3;3]; [1]]
-*)
-
 let rec _uniq eq prev l () = match prev, l() with
   | _, Nil -> Nil
   | None, Cons (x, l') ->
@@ -278,25 +210,12 @@ let range i j =
     else Cons (i, aux (i-1) j)
   in aux i j
 
-(*$T
-  range 0 5 |> to_list = [0;1;2;3;4;5]
-  range 0 0 |> to_list = [0]
-  range 5 2 |> to_list = [5;4;3;2]
-*)
-
 let (--) = range
 
 let (--^) i j =
   if i=j then empty
   else if i<j then range i (j-1)
   else range i (j+1)
-
-(*$T
-  1 --^ 5 |> to_list = [1;2;3;4]
-  5 --^ 1 |> to_list = [5;4;3;2]
-  1 --^ 2 |> to_list = [1]
-  0 --^ 0 |> to_list = []
-*)
 
 let rec fold2 f acc l1 l2 = match l1(), l2() with
   | Nil, _
@@ -351,21 +270,12 @@ let unzip l =
   in
   first l, second l
 
-(*$Q
-  Q.(list (pair int int)) (fun l -> \
-    let l = of_list l in let a, b = unzip l in equal (=) l (zip a b))
-*)
-
 let zip_i seq =
   let rec loop i seq () = match seq() with
     | Nil -> Nil
     | Cons (x,tl) -> Cons ((i,x), loop (i+1) tl)
   in
   loop 0 seq
-
-(*$=
-  [0,'a'; 1, 'b'; 2, 'c'] (of_string "abcde" |> zip_i |> take 3 |> to_list)
-*)
 
 (** {2 Implementations} *)
 
@@ -428,18 +338,6 @@ let to_array l =
       ignore (List.fold_left (fun i x -> a.(i) <- x; i - 1) idx rest : int);
       a
 
-(*$Q
-   Q.(array int) (fun a -> of_array a |> to_array = a)
-*)
-
-(*$T
-  of_array [| 1; 2; 3 |] |> to_list = [1;2;3]
-  of_list [1;2;3] |> to_array = [| 1; 2; 3; |]
-  let r = ref 1 in \
-  let s = unfold (fun i -> if i < 3 then let x = !r in incr r; Some (x, succ i) else None) 0 in \
-  to_array s = [| 1; 2; 3; |]
-*)
-
 let rec to_iter res k = match res () with
   | Nil -> ()
   | Cons (s, f) -> k s; to_iter f k
@@ -474,14 +372,6 @@ let of_gen g =
   in
   consume (ref (Of_gen_thunk g))
 
-(*$R
-  let g = let n = ref 0 in fun () -> Some (incr n; !n) in
-  let l = of_gen g in
-  assert_equal [1;2;3;4;5;6;7;8;9;10] (take 10 l |> to_list);
-  assert_equal [1;2;3;4;5;6;7;8;9;10] (take 10 l |> to_list);
-  assert_equal [11;12] (drop 10 l |> take 2 |> to_list);
-*)
-
 let sort ~cmp l =
   let l = to_list l in
   of_list (List.sort cmp l)
@@ -506,20 +396,6 @@ let rec memoize f =
       r := MemoSave l;
       l
 
-(*$R
-  let printer = Q.Print.(list int) in
-  let gen () =
-    let rec l = let r = ref 0 in fun () -> incr r; Cons (!r, l) in l
-  in
-  let l1 = gen () in
-  assert_equal ~printer [1;2;3;4] (take 4 l1 |> to_list);
-  assert_equal ~printer [5;6;7;8] (take 4 l1 |> to_list);
-  let l2 = gen () |> memoize in
-  assert_equal ~printer [1;2;3;4] (take 4 l2 |> to_list);
-  assert_equal ~printer [1;2;3;4] (take 4 l2 |> to_list);
-*)
-
-
 (** {2 Fair Combinations} *)
 
 let rec interleave a b () = match a() with
@@ -539,12 +415,6 @@ let rec fair_app f a () = match f() with
 
 let (>>-) a f = fair_flat_map f a
 let (<.>) f a = fair_app f a
-
-(*$T
-  interleave (of_list [1;3;5]) (of_list [2;4;6]) |> to_list = [1;2;3;4;5;6]
-  fair_app (of_list [(+)1; ( * ) 3]) (of_list [1; 10]) \
-    |> to_list |> List.sort Stdlib.compare = [2; 3; 11; 30]
-*)
 
 (** {2 Infix} *)
 

@@ -36,24 +36,19 @@ val map : f:('a -> 'b) -> 'b t -> 'a t
     [map fst int] compares values of type [(int * 'a)]  by their
       first component. *)
 
+val always_eq : _ t
+(** Always returns true. All values are equal.
+    @since NEXT_RELEASE *)
+
+val never_eq : _ t
+(** Always returns false. No values are, so this
+    is not even reflexive (i.e. [x=x] is false).
+    Be careful!
+    @since NEXT_RELEASE *)
+
 module Infix : sig
   val (>|=) : 'b t -> ('a -> 'b) -> 'a t
   (** Infix equivalent of {!map}. *)
 end
 
 include module type of Infix
-
-(* test consistency of interfaces *)
-(*$inject
-  module type L = module type of CCEqual
-  module type LL = module type of CCEqualLabels
-*)
-
-(*$R
-  ignore (module CCEqualLabels : L)
-*)
-
-(*$R
-  ignore (module CCEqual : LL)
-*)
-

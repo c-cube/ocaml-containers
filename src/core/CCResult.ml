@@ -27,20 +27,12 @@ let fail_printf format =
     (fun buf -> fail (Buffer.contents buf))
     buf format
 
-(*$T
-  (Error "ohno 42") = (fail_printf "ohno %d" 42)
-*)
-
 let fail_fprintf format =
   let buf = Buffer.create 64 in
   let out = Format.formatter_of_buffer buf in
   Format.kfprintf
     (fun out -> Format.pp_print_flush out (); fail (Buffer.contents buf))
     out format
-
-(*$T
-  (Error "ohno 42") = (fail_fprintf "ohno %d" 42)
-*)
 
 let add_ctx msg x = match x with
   | Error e -> Error (e ^ "\ncontext:" ^ msg)
@@ -52,11 +44,6 @@ let add_ctxf msg =
   Format.kfprintf
     (fun out e -> Format.pp_print_flush out (); add_ctx (Buffer.contents buf) e)
     out msg
-
-(*$=
-   (Error "error\ncontext:message(number 42, foo: true)") \
-     (add_ctxf "message(number %d, foo: %B)" 42 true (Error "error"))
-*)
 
 let of_exn e =
   let msg = Printexc.to_string e in
@@ -96,15 +83,6 @@ let iter_err f e = match e with
   | Ok _ -> ()
   | Error err -> f err
 
-(*$R iter_err
-  let called_with = ref None in
-  let f e = called_with := Some e in
-  iter_err f (Ok 1);
-  assert_bool "should not apply when Ok" (!called_with = None);
-  iter_err f (Error 1);
-  assert_bool "should apply f to Error" (!called_with = Some 1)
-*)
-
 exception Get_error
 
 let get_exn = function
@@ -123,19 +101,9 @@ let get_or_failwith = function
   | Ok x -> x
   | Error msg -> failwith msg
 
-(*$T
-  get_or_failwith (Ok 1) = 1
-  try ignore @@ get_or_failwith (Error "e"); false with Failure msg -> msg = "e"
-*)
-
 let get_lazy default_fn x = match x with
   | Ok x -> x
   | Error e -> default_fn e
-
-(*$= get_lazy
-  (get_lazy (fun _ -> 2) (Ok 1)) (1)
-  (get_lazy (fun _ -> 2) (Error "error")) (2)
-*)
 
 let map_or f e ~default = match e with
   | Ok x -> f x
@@ -167,11 +135,6 @@ let fold ~ok ~error x = match x with
 let fold_ok f acc r = match r with
   | Ok x -> f acc x
   | Error _ -> acc
-
-(*$=
-  42 (fold_ok (+) 2 (Ok 40))
-  40 (fold_ok (+) 40 (Error "foo"))
-*)
 
 let is_ok = function
   | Ok _ -> true
@@ -242,12 +205,6 @@ let flatten_l l =
     | Ok x::l' -> loop (x::acc) l'
     | Error e::_ -> Error e
   in loop [] l
-
-(*$=
-  (Ok []) (flatten_l [])
-  (Ok [1;2;3]) (flatten_l [Ok 1; Ok 2; Ok 3])
-  (Error "ohno") (flatten_l [Ok 1; Error "ohno"; Ok 2; Ok 3; Error "wut"])
-*)
 
 exception LocalExit
 

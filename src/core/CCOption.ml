@@ -76,12 +76,6 @@ let filter p = function
   | Some x as o when p x -> o
   | _ -> None
 
-(*$=
-  None (filter ((=) 0) (Some 1))
-  (Some 0) (filter ((=) 0) (Some 0))
-  None (filter (fun _ -> true) None)
-*)
-
 let if_ p x = if p x then Some x else None
 
 let exists p = function
@@ -116,11 +110,6 @@ let get_exn_or msg = function
   | Some x -> x
   | None -> invalid_arg msg
 
-(*$T
-  (try get_exn_or "ohno" (None:unit option); false with Invalid_argument s->s= "ohno")
-  123 = get_exn_or "yes" (Some 123)
-*)
-
 let get_lazy default_fn x = match x with
   | None -> default_fn ()
   | Some y -> y
@@ -132,12 +121,6 @@ let sequence_l l =
     | None :: _ -> raise Exit
   in
   try aux [] l with Exit -> None
-
-(*$T
-  sequence_l [None; Some 1; Some 2] = None
-  sequence_l [Some 1; Some 2; Some 3] = Some [1;2;3]
-  sequence_l [] = Some []
-*)
 
 let wrap ?(handler=fun _ -> true) f x =
   try Some (f x)
@@ -211,22 +194,10 @@ let choice_iter s =
   end;
   !r
 
-(*$T
-  choice_iter (Iter.of_list [None; Some 1; Some 2]) = Some 1
-  choice_iter Iter.empty = None
-  choice_iter (Iter.repeat None |> Iter.take 100) = None
-*)
-
 let rec choice_seq s = match s() with
   | Seq.Nil -> None
   | Seq.Cons (Some x, _) -> Some x
   | Seq.Cons (None, tl) -> choice_seq tl
-
-(*$T
-  choice_seq (CCSeq.of_list [None; Some 1; Some 2]) = Some 1
-  choice_seq CCSeq.empty = None
-  choice_seq (CCSeq.repeat None |> CCSeq.take 100) = None
-*)
 
 let to_gen o =
   match o with
@@ -251,19 +222,8 @@ let flatten = function
   | Some x -> x
   | None -> None
 
-(*$T
-  flatten None = None
-  flatten (Some None) = None
-  flatten (Some (Some 1)) = Some 1
-*)
-
 let return_if b x =
   if b then
     Some x
   else
     None
-
-(*$T
-  return_if false 1 = None
-  return_if true 1 = Some 1
-*)

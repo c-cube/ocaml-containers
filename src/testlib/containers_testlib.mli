@@ -13,7 +13,7 @@ module type S = sig
 
   val eq : ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
 
-  val q : ?count:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
+  val q : ?count:int -> ?long_factor:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
 
   val assert_equal :
     ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) ->

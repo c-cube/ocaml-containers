@@ -8,13 +8,6 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 module type OrderedType = Set.OrderedType
 
-(*$inject
-  module S = CCSet.Make(struct
-    type t = int
-    let compare x y = Stdlib.compare x y
-  end)
-*)
-
 module type S = sig
   include Set.S
 
@@ -164,22 +157,6 @@ module Make(O : Map.OrderedType) = struct
   let to_string ?(start="") ?(stop="") ?(sep=",") elt_to_string h =
     to_list h
     |> CCList.to_string ~start ~stop ~sep elt_to_string
-
-  (*$= & ~printer:(fun s -> s)
-    (S.to_string string_of_int (S.of_list [4; 3])) "3,4"
-  *)
-  (*$Q
-    Q.(list int) (fun l -> \
-      let s = S.of_list l in \
-      (S.to_string string_of_int s) \
-        = (CCList.sort_uniq ~cmp:CCInt.compare l \
-           |> List.map string_of_int |> String.concat ","))
-    Q.(list int) (fun l -> \
-      let s = S.of_list l in \
-      (S.to_string ~sep:" " string_of_int s) \
-        = (CCList.sort_uniq ~cmp:CCInt.compare l \
-           |> List.map string_of_int |> String.concat " "))
-  *)
 
   let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
       ?(pp_sep=fun fmt () -> Format.fprintf fmt ",@ ") pp_x fmt m =

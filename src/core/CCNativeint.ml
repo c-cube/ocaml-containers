@@ -24,14 +24,6 @@ let pow a b =
     | b when compare b 0n < 0 -> raise (Invalid_argument "pow: can't raise int to negative power")
     | b -> aux a b
 
-(*$T
-  pow 2n 10n = 1024n
-  pow 2n 15n = 32768n
-  pow 10n 5n = 100000n
-  pow 42n 0n = 1n
-  pow 0n 1n = 0n
-*)
-
 let floor_div a n =
   if compare a 0n < 0 && compare n 0n >= 0 then
     sub (div (add a 1n) n) 1n
@@ -39,38 +31,6 @@ let floor_div a n =
     sub (div (sub a 1n) n) 1n
   else
     div a n
-
-(*$T
-  (floor_div 3n 5n = 0n)
-  (floor_div 5n 5n = 1n)
-  (floor_div 20n 5n = 4n)
-  (floor_div 12n 5n = 2n)
-  (floor_div 0n 5n = 0n)
-  (floor_div (-1n) 5n = -1n)
-  (floor_div (-5n) 5n = -1n)
-  (floor_div (-12n) 5n = -3n)
-
-  (floor_div 0n (-5n) = 0n)
-  (floor_div 3n (-5n) = -1n)
-  (floor_div 5n (-5n) = -1n)
-  (floor_div 9n (-5n) = -2n)
-  (floor_div 20n (-5n) = -4n)
-  (floor_div (-2n) (-5n) = 0n)
-  (floor_div (-8n) (-5n) = 1n)
-  (floor_div (-35n) (-5n) = 7n)
-
-  try ignore (floor_div 12n 0n); false with Division_by_zero -> true
-  try ignore (floor_div (-12n) 0n); false with Division_by_zero -> true
-*)
-
-(*$Q
-  (Q.pair (Q.map of_int Q.small_signed_int) (Q.map of_int Q.small_nat)) \
-      (fun (n, m) -> let m = m + 1n in \
-                     floor_div n m = of_float @@ floor (to_float n /. to_float m))
-  (Q.pair (Q.map of_int Q.small_signed_int) (Q.map of_int Q.small_nat)) \
-      (fun (n, m) -> let m = m + 1n in \
-                     floor_div n (-m) = of_float @@ floor (to_float n /. to_float (-m)))
-*)
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
@@ -92,12 +52,6 @@ let range i j yield =
   in
   if compare i j <= 0 then up i j yield else down i j yield
 
-(*$= & ~printer:Q.Print.(list to_string)
-  [0n;1n;2n;3n;4n;5n] (range 0n 5n |> Iter.to_list)
-  [0n]                (range 0n 0n |> Iter.to_list)
-  [5n;4n;3n;2n]       (range 5n 2n |> Iter.to_list)
-*)
-
 let range' i j yield =
   if compare i j < 0 then range i (sub j 1n) yield
   else if equal i j then ()
@@ -115,29 +69,6 @@ let range_by ~step i j yield =
     raise (Invalid_argument "CCNativeint.range_by")
   else if (if compare step 0n > 0 then compare i j > 0 else compare i j < 0) then ()
   else range i (add (mul (div (sub j i) step) step) i) yield
-
-(* note: the last test checks that no error occurs due to overflows. *)
-(*$= & ~printer:Q.Print.(list to_string)
-  [0n]       (range_by ~step:1n   0n 0n      |> Iter.to_list)
-  []         (range_by ~step:1n   5n 0n      |> Iter.to_list)
-  []         (range_by ~step:2n   1n 0n      |> Iter.to_list)
-  [0n;2n;4n] (range_by ~step:2n   0n 4n      |> Iter.to_list)
-  [0n;2n;4n] (range_by ~step:2n   0n 5n      |> Iter.to_list)
-  [0n]       (range_by ~step:(neg 1n) 0n 0n  |> Iter.to_list)
-  []         (range_by ~step:(neg 1n) 0n 5n  |> Iter.to_list)
-  []         (range_by ~step:(neg 2n) 0n 1n  |> Iter.to_list)
-  [5n;3n;1n] (range_by ~step:(neg 2n) 5n 1n  |> Iter.to_list)
-  [5n;3n;1n] (range_by ~step:(neg 2n) 5n 0n  |> Iter.to_list)
-  [0n]       (range_by ~step:max_int 0n 2n   |> Iter.to_list)
-*)
-
-(*$Q
-  Q.(pair (map of_int small_int) (map of_int small_int)) (fun (i,j) -> \
-    let i = min i j and j = max i j in \
-    CCList.equal CCNativeint.equal \
-      (CCNativeint.range_by ~step:1n i j |> Iter.to_list) \
-      (CCNativeint.range i j |> Iter.to_list) )
-*)
 
 let random n st = Random.State.nativeint st n
 let random_small = random 100n
@@ -180,12 +111,6 @@ let to_string_binary n =
   let buf = Buffer.create 16 in
   to_binary_gen (Buffer.add_char buf) n;
   Buffer.contents buf
-
-(*$= & ~printer:CCFun.id
-  "0b111" (to_string_binary 7n)
-  "-0b111" (to_string_binary (-7n))
-  "0b0" (to_string_binary 0n)
-*)
 
 (** {2 Printing} *)
 

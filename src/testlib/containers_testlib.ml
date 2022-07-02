@@ -18,6 +18,7 @@ module Test = struct
       count: int option;
       arb: 'a Q.arbitrary;
       prop: 'a -> bool;
+      long_factor: int option;
     } -> run
 
   type t = {
@@ -45,7 +46,7 @@ module Test = struct
           in
           Error msg
         )
-      | Q {count; arb; prop} ->
+      | Q {count; arb; prop; long_factor} ->
 
         (* create a random state from the seed *)
         let rand =
@@ -54,7 +55,7 @@ module Test = struct
         in
 
         let module Fmt = CCFormat in
-        let cell = Q.Test.make_cell ?count ~name:(str_loc self) arb prop in
+        let cell = Q.Test.make_cell ?count ?long_factor ~name:(str_loc self) arb prop in
 
         let pp_cex out (cx: _ Q.TestResult.counter_ex) =
           let {Q.TestResult.instance; shrink_steps=n; msg_l} = cx in
@@ -98,7 +99,7 @@ module type S = sig
 
   val eq : ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
 
-  val q : ?count:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
+  val q : ?count:int -> ?long_factor:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
 
   val assert_equal :
     ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) ->
@@ -130,8 +131,8 @@ module Make_test(X:sig val file: string end) = struct
   let eq ?cmp ?printer lhs rhs : unit =
     add_ @@ mk @@ Test.Eq {eq=cmp; print=printer; lhs; rhs}
 
-  let q ?count arb prop : unit =
-    add_ @@ mk @@ Test.Q {arb; prop; count}
+  let q ?count ?long_factor arb prop : unit =
+    add_ @@ mk @@ Test.Q {arb; prop; count; long_factor}
 
   let assert_equal ?printer ?(cmp=(=)) x y : unit =
     if not @@ cmp x y then (

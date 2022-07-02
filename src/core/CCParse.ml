@@ -4,108 +4,6 @@
 
 open CCShims_
 
-(*$inject
-  module T = struct
-    type tree = L of int | N of tree * tree
-  end
-  open T
-
-  let mk_leaf x = L x
-  let mk_node x y = N(x,y)
-
-  let ptree = fix @@ fun self ->
-    skip_space *>
-    ( (char '(' *> (pure mk_node <*> self <*> self) <* char ')')
-      <|>
-      (U.int >|= mk_leaf) )
-
-  let ptree' = fix_memo @@ fun self ->
-    skip_space *>
-    ( (char '(' *> (pure mk_node <*> self <*> self) <* char ')')
-      <|>
-      (U.int >|= mk_leaf) )
-
-  let rec pptree = function
-    | N (a,b) -> Printf.sprintf "N (%s, %s)" (pptree a) (pptree b)
-    | L x -> Printf.sprintf "L %d" x
-
-  let errpp pp = function
-    | Ok x -> "Ok " ^ pp x
-    | Error s -> "Error " ^ s
-
-  let errpptree = errpp pptree
-
-  let erreq eq x y = match x, y with
-    | Ok x, Ok y -> eq x y
-    | Error _ , Error _ -> true
-    | _ -> false ;;
-*)
-
-(*$= & ~printer:errpptree
-  (Ok (N (L 1, N (L 2, L 3)))) \
-    (parse_string ptree "(1 (2 3))" )
-  (Ok (N (N (L 1, L 2), N (L 3, N (L 4, L 5))))) \
-    (parse_string ptree "((1 2) (3 (4 5)))" )
-  (Ok (N (L 1, N (L 2, L 3)))) \
-    (parse_string ptree' "(1 (2 3))" )
-  (Ok (N (N (L 1, L 2), N (L 3, N (L 4, L 5))))) \
-    (parse_string ptree' "((1 2) (3 (4 5)))" )
-*)
-
-(*$R
-  let p = U.list ~sep:"," U.word in
-  let printer = function
-    | Ok l -> "Ok " ^ CCFormat.(to_string (Dump.list string_quoted)) l
-    | Error s -> "Error " ^ s
-  in
-  assert_equal ~printer
-    (Ok ["abc"; "de"; "hello"; "world"])
-    (parse_string p "[abc , de, hello ,world  ]");
-*)
-
-(*$R
-  let test n =
-    let p = CCParse.(U.list ~sep:"," U.int) in
-
-    let l = CCList.(1 -- n) in
-    let l_printed =
-      CCFormat.(to_string (within "[" "]" (list ~sep:(return ",") int))) l in
-
-    let l' = CCParse.parse_string_exn p l_printed in
-
-    assert_equal ~printer:Q.Print.(list int) l l'
-  in
-  test 300_000;
-
-*)
-
-(*$R
-  let open CCParse.Infix in
-  let module P = CCParse in
-
-  let parens p = P.char '(' *> p <* P.char ')' in
-  let add = P.char '+' *> P.return (+) in
-  let sub = P.char '-' *> P.return (-) in
-  let mul = P.char '*' *> P.return ( * ) in
-  let div = P.char '/' *> P.return ( / ) in
-  let integer =
-  P.chars1_if (function '0'..'9'->true|_->false) >|= int_of_string in
-
-  let chainr1 e op =
-  P.fix (fun r ->
-    e >>= fun x -> (op <*> P.return x <*> r) <|> P.return x) in
-
-  let expr : int P.t =
-  P.fix (fun expr ->
-    let factor = parens expr <|> integer in
-    let term = chainr1 factor (mul <|> div) in
-    chainr1 term (add <|> sub)) in
-
-  assert_equal (Ok 6) (P.parse_string expr "4*1+2");
-  assert_equal (Ok 12) (P.parse_string expr "4*(1+2)");
-  ()
-*)
-
 module Memo_tbl = Hashtbl.Make(struct
     type t = int * int  (* id of parser, position *)
     let equal ((a,b):t)(c,d) = a=c && b=d
@@ -381,12 +279,6 @@ let eoi = {
   else err (mk_error_ st (const_str_ "expected end of input"))
 }
 
-(*$= & ~printer:(errpp Q.Print.bool) ~cmp:(erreq (=))
-  (Ok true) (parse_string (U.bool <* eoi) "true")
-  (Error "") (parse_string (U.bool <* eoi) "true ")
-  (Ok true) (parse_string (U.bool <* skip_white <* eoi) "true")
-*)
-
 let with_pos p : _ t = {
   run=fun st ~ok ~err ->
     p.run st
@@ -398,21 +290,6 @@ let with_pos p : _ t = {
 let pos : _ t = {
   run=fun st ~ok ~err:_ -> ok st (pos_of_st_ st)
 }
-
-(*$= & ~printer:Q.Print.(pair int int)
-  (0,5) (let p = any_char_n 5 *> pos in \
-  match parse_string p "abcde   " with \
-    | Ok p -> Position.line_and_column p \
-    | Error _ -> assert false)
-*)
-
-(*$= & ~printer:Q.Print.(list @@ pair int int)
-  [(0,2); (1,3); (2,1); (3,0); (4,0); (5,2)] \
-   (let p = each_line (skip_space *> pos) in \
-    match parse_string p "  a\n  b\nc\n\n\n a" with \
-      | Ok ps -> List.map Position.line_and_column ps \
-      | Error _ -> assert false)
-*)
 
 (* a slice is just a state, which makes {!recurse} quite easy. *)
 type slice = state
@@ -442,16 +319,6 @@ let all = {
 }
 
 let all_str = all >|= Slice.to_string
-
-(*$= & ~printer:(errpp Q.Print.string) ~cmp:(erreq (=))
-  (Ok "abcd") (parse_string all_str "abcd")
-  (Ok "cd") (parse_string (string "ab" *> all_str) "abcd")
-  (Ok "") (parse_string (string "ab" *> all_str) "ab")
-*)
-
-(*$= & ~printer:(errpp Q.Print.(pair string string)) ~cmp:(erreq (=))
-  (Ok ("foobar", "")) (parse_string (both all_str all_str) "foobar")
-  *)
 
 let fail msg : _ t = {
   run=fun st ~ok:_ ~err ->
@@ -558,19 +425,6 @@ let chars1_if ?descr p = {
           ) else ok st s)
       ~err
 }
-
-(*$QR
-    Q.(printable_string) (fun s ->
-        let pred = (function 'a'..'z' | 'A' .. 'Z' | '{' | '}' -> true | _ -> false) in
-        let p1 = chars1_if pred in
-        let p2 = take1_if pred >|= Slice.to_string in
-        parse_string p1 s = parse_string p2 s)
-    *)
-
-(*$T
-  let pred = (function 'a'..'z' | 'A' .. 'Z' | '{' | '}' -> true | _ -> false) in \
-  parse_string (chars_if pred) "coucou{lol} 123" = Ok "coucou{lol}"
-*)
 
 exception Fold_fail of state * string
 
@@ -787,16 +641,6 @@ let many p : _ t = {
 }
    *)
 
-(*$R
-  let p0 = skip_white *> U.int in
-  let p = (skip_white *> char '(' *> many p0) <* (skip_white <* char ')') in
-  let printer =  CCFormat.(to_string @@ Dump.result  @@ Dump.list int) in
-  assert_equal ~printer
-    (Ok [1;2;3]) (parse_string p "(1 2 3)");
-  assert_equal ~printer
-    (Ok [1;2; -30; 4]) (parse_string p "( 1 2    -30 4 )")
-  *)
-
 
 let many1 p =
   p >>= fun x ->
@@ -836,16 +680,6 @@ let sep ~by p =
   ) in
   Lazy.force read_p
 
-(*$inject
-  let aword = chars1_if (function 'a'..'z'|'A'..'Z'->true|_ -> false);;
-*)
-(*$= & ~printer:(errpp Q.Print.(list string))
-(Ok ["a";"b";"c"]) \
-  (parse_string (optional (char '/') *> sep ~by:(char '/') aword) "/a/b/c")
-(Ok ["a";"b";"c"]) \
-  (parse_string (optional (char '/') *> sep ~by:(char '/') aword) "a/b/c")
-*)
-
 let sep1 ~by p =
   p >>= fun x ->
   sep ~by p >|= fun tl ->
@@ -870,18 +704,6 @@ let set_current_slice sl : _ t = {
     assert CCShims_.Stdlib.(_st.cs == sl.cs);
     ok sl () (* jump to slice *)
 }
-
-(*$= & ~printer:(errpp Q.Print.(string))
-  (Ok "abc") (parse_string (lookahead (string "ab") *> (string "abc")) "abcd")
-*)
-
-(*$= & ~printer:(errpp Q.Print.(string))
-  (Ok "1234") (parse_string line_str "1234\nyolo")
-  *)
-
-(*$= & ~printer:(errpp Q.Print.(pair String.escaped String.escaped))
-  (Ok ("1234", "yolo")) (parse_string (line_str ||| line_str) "1234\nyolo\nswag")
-*)
 
 let split_1 ~on_char : _ t = {
   run=fun st ~ok ~err:_ ->
@@ -921,13 +743,6 @@ let split_list_at_most ~on_char n : slice list t =
       | Some rest -> recurse rest (loop acc (n-1))
   in
   loop [] n
-
-(*$= & ~printer:(errpp Q.Print.(list string)) ~cmp:(erreq (=))
-  (Ok ["a";"b";"c";"d,e,f"]) \
-    (parse_string (split_list_at_most ~on_char:',' 3 >|= List.map Slice.to_string) "a,b,c,d,e,f")
-  (Ok ["a";"bc"]) \
-    (parse_string (split_list_at_most ~on_char:',' 3 >|= List.map Slice.to_string) "a,bc")
-*)
 
 let split_list ~on_char : _ t =
   split_list_at_most ~on_char max_int
@@ -985,11 +800,6 @@ let line_str = line >|= Slice.to_string
 
 let each_line p : _ t =
   each_split ~on_char:'\n' p
-
-(*$= & ~printer:(errpp Q.Print.(list @@ list int))
-  (Ok ([[1;1];[2;2];[3;3];[]])) \
-    (parse_string (each_line (sep ~by:skip_space U.int)) "1 1\n2 2\n3   3\n")
-*)
 
 let memo (type a) (p:a t) : a t =
   let id = !Memo_state.id_ in
@@ -1094,13 +904,6 @@ module U = struct
     try return (int_of_string s)
     with Failure _ -> fail "expected an int"
 
-  (*$= & ~printer:(errpp Q.Print.int) ~cmp:(erreq (=))
-    (Ok 42) (parse_string U.int " 42")
-    (Ok 2) (parse_string U.int "2")
-    (Error "") (parse_string U.int "abc")
-    (Error "") (parse_string U.int "")
-  *)
-
   let in_paren (p:'a t) : 'a t =
     skip_white *>
     (char '(' *> skip_white *> p <* skip_white <* char ')')
@@ -1113,29 +916,12 @@ module U = struct
         ~f:(fun _ -> skip_white *> self <* skip_white <* char ')')
         ~else_:p)
 
-  (*$= & ~printer:(errpp Q.Print.int) ~cmp:(erreq (=))
-    (Ok 15) (parse_string (U.in_paren (U.in_paren U.int)) "( ( 15) )")
-    (Ok 2) (parse_string (U.in_paren U.int) "(2)")
-    (Error "") (parse_string (U.in_paren U.int) "2")
-    (Error "") (parse_string (U.in_paren U.int) "")
-    (Ok 2) (parse_string (U.in_parens_opt U.int) "((((2))))")
-    (Ok 2) (parse_string (U.in_parens_opt U.int) "2")
-    (Ok 200) (parse_string (U.in_parens_opt U.int) "( (  200 ) )")
-  *)
-
   let option p =
     skip_white *>
     try_or
       (string "Some")
       ~f:(fun _ -> skip_white *> p >|= fun x -> Some x)
       ~else_:(string "None" *> return None)
-
-  (*$= & ~printer:(errpp Q.Print.(option int)) ~cmp:(erreq (=))
-    (Ok (Some 12)) (parse_string U.(option int) " Some 12")
-    (Ok None) (parse_string U.(option int) "  None")
-    (Ok (Some 0)) (parse_string U.(option int) "Some 0")
-    (Ok (Some 0)) (parse_string U.(in_parens_opt @@ option int) "(( Some 0) )")
-  *)
 
   let hexa_int =
     (exact "0x" <|> return "") *>
@@ -1156,13 +942,6 @@ module U = struct
       !i
     end
 
-  (*$= & ~printer:(errpp Q.Print.int) ~cmp:(erreq (=))
-    (Ok 16) (parse_string U.hexa_int "0x10")
-    (Ok 16) (parse_string U.hexa_int "10")
-    (Error "") (parse_string U.hexa_int "x10")
-    (Error "") (parse_string U.hexa_int "0xz")
-  *)
-
   let prepend_str c s = String.make 1 c ^ s
 
   let word =
@@ -1171,10 +950,6 @@ module U = struct
   let bool =
     skip_white *>
     ((string "true" *> return true) <|> (string "false" *> return false))
-  (*$= & ~printer:(errpp Q.Print.bool) ~cmp:(erreq (=))
-    (Ok true) (parse_string U.bool "true")
-    (Ok false) (parse_string U.bool "false")
-    *)
 
   let pair ?(start="(") ?(stop=")") ?(sep=",") p1 p2 =
     skip_white *> string start *> skip_white *>
@@ -1182,10 +957,6 @@ module U = struct
     skip_white *> string sep *> skip_white *>
       p2 >>= fun x2 ->
     skip_white *> string stop *> return (x1,x2)
-
-  (*$= & ~printer:Q.Print.(errpp (pair int int))
-    (Ok(1,2)) U.(parse_string (pair int int) "(1 , 2 )")
-  *)
 
   let triple ?(start="(") ?(stop=")") ?(sep=",") p1 p2 p3 =
     string start *> skip_white *>

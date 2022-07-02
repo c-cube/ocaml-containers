@@ -23,69 +23,6 @@ module type TOTAL_ORD = sig
       a positive value if [a] is greater than [b] *)
 end
 
-(*$inject
-  module H = CCHeap.Make(struct
-    type t = int
-    let leq x y = x<=y
-  end)
-
-  let rec is_sorted l = match l with
-    | [_]
-    | [] -> true
-    | x::((y::_) as l') -> x <= y && is_sorted l'
-
-  let extract_list = H.to_list_sorted
-*)
-
-(*$R
-  let h = H.of_list [5;3;4;1;42;0] in
-  let h, x = H.take_exn h in
-  OUnit2.assert_equal ~printer:string_of_int 0 x;
-  let h, x = H.take_exn h in
-  OUnit2.assert_equal ~printer:string_of_int 1 x;
-  let h, x = H.take_exn h in
-  OUnit2.assert_equal ~printer:string_of_int 3 x;
-  let h, x = H.take_exn h in
-  OUnit2.assert_equal ~printer:string_of_int 4 x;
-  let h, x = H.take_exn h in
-  OUnit2.assert_equal ~printer:string_of_int 5 x;
-  let h, x = H.take_exn h in
-  OUnit2.assert_equal ~printer:string_of_int 42 x;
-  OUnit2.assert_raises H.Empty (fun () -> H.take_exn h);
-*)
-
-(*$QR & ~count:30
-  Q.(list_of_size Gen.(return 1_000) int) (fun l ->
-    (* put elements into a heap *)
-    let h = H.of_iter (Iter.of_list l) in
-    OUnit2.assert_equal 1_000 (H.size h);
-    let l' = extract_list h in
-    is_sorted l'
-  )
-*)
-
-(* test filter *)
-(*$QR & ~count:30
-  Q.(list_of_size Gen.(return 1_000) int) (fun l ->
-    (* put elements into a heap *)
-    let h = H.of_iter (Iter.of_list l) in
-    let h = H.filter (fun x->x mod 2=0) h in
-    OUnit2.assert_bool "all odd"
-      (H.to_iter h |> Iter.for_all (fun x -> x mod 2 = 0));
-    let l' = extract_list h in
-    is_sorted l'
-  )
-*)
-
-(*$QR
-  Q.(list_of_size Gen.(return 1_000) int) (fun l ->
-    (* put elements into a heap *)
-    let h = H.of_iter (Iter.of_list l) in
-    let l' = H.to_iter_sorted h |> Iter.to_list in
-    is_sorted l'
-  )
-*)
-
 module type S = sig
   type elt
   type t
@@ -405,16 +342,6 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
           Some x
     in next
 
-  (*$Q
-    Q.(list int) (fun l -> \
-      extract_list (H.of_list l) = \
-        extract_list (H.of_gen (CCList.to_gen l)))
-    Q.(list int) (fun l -> \
-      let h = H.of_list l in \
-      (H.to_gen h |> CCList.of_gen |> List.sort Stdlib.compare) \
-        = (H.to_list h |> List.sort Stdlib.compare))
-  *)
-
   let rec to_tree h () = match h with
     | E -> `Nil
     | N (_, x, l, r) -> `Node(x, [to_tree l; to_tree r])
@@ -423,17 +350,6 @@ module Make(E : PARTIAL_ORD) : S with type elt = E.t = struct
     to_list_sorted h
     |> List.map elt_to_string
     |> String.concat sep
-
-  (*$Q
-    Q.(list int) (fun l -> \
-      let h = H.of_list l in \
-      (H.to_string string_of_int h) \
-        = (List.sort Stdlib.compare l |> List.map string_of_int |> String.concat ","))
-    Q.(list int) (fun l -> \
-      let h = H.of_list l in \
-      (H.to_string ~sep:" " string_of_int h) \
-        = (List.sort Stdlib.compare l |> List.map string_of_int |> String.concat " "))
-  *)
 
   let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
       ?(pp_sep=fun out () -> Format.fprintf out ",") pp_elt out h =
@@ -453,11 +369,3 @@ module Make_from_compare(E : TOTAL_ORD) =
     let leq a b = E.compare a b <= 0
   end)
 
-(*$QR
-  Q.(list_of_size Gen.(return 1_000) int) (fun l ->
-    let module H' = Make_from_compare(CCInt) in
-    let h = H'.of_list l in
-    let l' = H'.to_list_sorted h in
-    is_sorted l'
-  )
-*)
