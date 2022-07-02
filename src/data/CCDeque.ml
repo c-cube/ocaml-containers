@@ -27,24 +27,6 @@ type 'a t = {
 }
 (** The deque, a double linked list of cells *)
 
-(*$inject
-  let plist l = CCFormat.(to_string (list int)) l
-  let pint i = string_of_int i
-*)
-
-(*$R
-  let q = create () in
-  add_iter_back q Iter.(3 -- 5);
-  assert_equal [3;4;5] (to_list q);
-  add_iter_front q Iter.(of_list [2;1]);
-  assert_equal [1;2;3;4;5] (to_list q);
-  push_front q 0;
-  assert_equal [0;1;2;3;4;5] (to_list q);
-  assert_equal 5 (take_back q);
-  assert_equal 0 (take_front q);
-  assert_equal 4 (length q);
-*)
-
 exception Empty
 
 let create () =
@@ -54,15 +36,6 @@ let clear q =
   q.cur <- Empty;
   q.size <- 0;
   ()
-
-(*$R
-  let q = of_iter Iter.(1 -- 100) in
-  assert_equal 100 (length q);
-  clear q;
-  assert_equal 0 (length q);
-  assert_raises Empty (fun () -> peek_front q);
-  assert_raises Empty (fun () -> peek_back q);
-*)
 
 let incr_size_ d = d.size <- d.size + 1
 let decr_size_ d = d.size <- d.size - 1
@@ -121,24 +94,6 @@ let peek_front d = match peek_front_opt d with
   | None -> raise Empty
   | Some x -> x
 
-(*$T
-  of_list [1;2;3] |> peek_front = 1
-  try (ignore (of_list [] |> peek_front); false) with Empty -> true
-*)
-
-(*$R
-  let d = of_iter Iter.(1 -- 10) in
-  let printer = pint in
-  OUnit2.assert_equal ~printer 1 (peek_front d);
-  push_front d 42;
-  OUnit2.assert_equal ~printer 42 (peek_front d);
-  OUnit2.assert_equal ~printer 42 (take_front d);
-  OUnit2.assert_equal ~printer 1 (take_front d);
-  OUnit2.assert_equal ~printer 2 (take_front d);
-  OUnit2.assert_equal ~printer 3 (take_front d);
-  OUnit2.assert_equal ~printer 10 (peek_back d);
-*)
-
 let peek_back_opt d =
   match d.cur with
   | Empty -> None
@@ -151,23 +106,6 @@ let peek_back_opt d =
 let peek_back d = match peek_back_opt d with
   | None -> raise Empty
   | Some x -> x
-(*$T
-  of_list [1;2;3] |> peek_back = 3
-  try (ignore (of_list [] |> peek_back); false) with Empty -> true
-*)
-
-(*$R
-  let d = of_iter Iter.(1 -- 10) in
-  let printer = pint in
-  OUnit2.assert_equal ~printer 1 (peek_front d);
-  push_back d 42;
-  OUnit2.assert_equal ~printer 42 (peek_back d);
-  OUnit2.assert_equal ~printer 42 (take_back d);
-  OUnit2.assert_equal ~printer 10 (take_back d);
-  OUnit2.assert_equal ~printer 9 (take_back d);
-  OUnit2.assert_equal ~printer 8 (take_back d);
-  OUnit2.assert_equal ~printer 1 (peek_front d);
-*)
 
 let take_back_node_ n = match n.cell with
   | One x -> (true, x)
@@ -203,21 +141,10 @@ let take_back d = match take_back_opt d with
   | None -> raise Empty
   | Some x -> x
 
-(*$T
-  let q = of_list [1] in take_back q = 1 && to_list q = []
-  let q = of_list [1;2] in take_back q = 2 && to_list q = [1]
-  let q = of_list [1;2;3] in take_back q = 3 && to_list q = [1;2]
-  let q = of_list [1;2;3;4;5;6;7;] in take_back q = 7 && to_list q = [1;2;3;4;5;6]
-*)
-
 let take_front_node_ n = match n.cell with
   | One x -> (true, x)
   | Two (x,y) -> n.cell <- One y; (false, x)
   | Three (x,y,z) -> n.cell <- Two (y,z); (false, x)
-
-(*$T
-  let q = of_list [1;2;3] in take_front q = 1 && to_list q = [2;3]
-*)
 
 let take_front_opt d =
   match d.cur with
@@ -247,15 +174,7 @@ let take_front d = match take_front_opt d with
 
 let remove_back d = ignore (take_back_opt d)
 
-(*$T remove_back
-  let q = of_list [1;2;3;4;5;6;7] in remove_back q; to_list q = [1;2;3;4;5;6]
-*)
-
 let remove_front d = ignore (take_front_opt d)
-
-(*$T remove_front
-  let q = of_list [1;2;3;4;5;6;7] in remove_front q; to_list q = [2;3;4;5;6;7]
-*)
 
 let update_front d f =
   match d.cur with
@@ -285,23 +204,6 @@ let update_front d f =
         | Some x -> cur.cell <- Three (x,y,z)
       end
 
-(*$T update_front
-  let q = of_list [1;2;3;4;5;6;7] in update_front q (fun _ -> None); to_list q = [2;3;4;5;6;7]
-  let q = of_list [1;2;3;4;5;6;7] in update_front q (fun _ -> Some 9); to_list q = [9;2;3;4;5;6;7]
-*)
-(*$Q update_front
-  Q.(list int) (fun l -> \
-    let q = of_list l in \
-    update_front q (fun _ -> None); \
-    let output_list = if l = [] then [] else List.tl l in \
-    to_list q = output_list)
-  Q.(list int) (fun l -> \
-    let q = of_list l in \
-    update_front q (fun x -> Some (x + 42)); \
-    let output_list = if l = [] then [] else List.((hd l + 42)::(tl l)) in \
-    to_list q = output_list)
-*)
-
 let update_back d f =
   match d.cur with
   | Empty -> ()
@@ -326,23 +228,6 @@ let update_back d f =
         | Some z -> n.cell <- Three (x,y,z)
       end
 
-(*$T update_back
-  let q = of_list [1;2;3;4;5;6;7] in update_back q (fun _ -> None); to_list q = [1;2;3;4;5;6]
-  let q = of_list [1;2;3;4;5;6;7] in update_back q (fun _ -> Some 9); to_list q = [1;2;3;4;5;6;9]
-*)
-(*$Q update_back
-  Q.(list int) (fun l -> \
-    let q = of_list l in \
-    update_back q (fun _ -> None); \
-    let output_list = if l = [] then [] else List.(rev l |> tl) in \
-    (to_list q |> List.rev) = output_list)
-  Q.(list int) (fun l -> \
-    let q = of_list l in \
-    update_back q (fun x -> Some (x + 42)); \
-    let output_list = if l = [] then [] else List.(rev l |> fun l -> (hd l + 42)::(tl l)) in \
-    (to_list q |> List.rev) = output_list)
-*)
-
 let iter f d =
   let rec iter f ~first n =
     begin match n.cell with
@@ -357,28 +242,9 @@ let iter f d =
   | Node cur ->
     iter f ~first:cur cur
 
-(*$T
-  let n = ref 0 in iter (fun _ -> incr n) (of_list [1;2;3]); !n = 3
-*)
-
-(*$R
-  let d = of_iter Iter.(1 -- 5) in
-  let s = Iter.from_iter (fun k -> iter k d) in
-  let l = Iter.to_list s in
-  OUnit2.assert_equal ~printer:plist [1;2;3;4;5] l;
-*)
-
 let append_front ~into q = iter (push_front into) q
 
 let append_back ~into q = iter (push_back into) q
-
-(*$R
-  let q = of_list [3;4] in
-  append_front ~into:q (of_list [2;1]);
-  assert_equal [1;2;3;4] (to_list q);
-  append_back ~into:q (of_list [5;6]);
-  assert_equal [1;2;3;4;5;6] (to_list q);
-*)
 
 let fold f acc d =
   let rec aux ~first f acc n =
@@ -394,25 +260,7 @@ let fold f acc d =
   | Node cur ->
     aux ~first:cur f acc cur
 
-(*$T
-  fold (+) 0 (of_list [1;2;3]) = 6
-  fold (fun acc x -> x::acc) [] (of_list [1;2;3]) = [3;2;1]
-*)
-
 let length d = d.size
-
-(*$Q
-  Q.(list int) (fun l -> \
-    let q = of_list l in \
-    append_front ~into:q (of_list l); \
-    append_back ~into:q (of_list l); \
-    length q = 3 * List.length l)
-*)
-
-(*$R
-  let d = of_iter Iter.(1 -- 10) in
-  OUnit2.assert_equal ~printer:pint 10 (length d)
-*)
 
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -421,14 +269,6 @@ let add_iter_back q seq = seq (fun x -> push_back q x)
 
 let add_iter_front q seq = seq (fun x -> push_front q x)
 
-(*$R
-  let q = of_list [4;5] in
-  add_iter_front q Iter.(of_list [3;2;1]);
-  assert_equal [1;2;3;4;5] (to_list q);
-  add_iter_back q Iter.(of_list [6;7]);
-  assert_equal [1;2;3;4;5;6;7] (to_list q);
-*)
-
 let of_iter seq =
   let deque = create () in
   seq (fun x -> push_back deque x);
@@ -436,23 +276,10 @@ let of_iter seq =
 
 let to_iter d k = iter k d
 
-(*$Q
-  Q.(list int) (fun l -> \
-    Iter.of_list l |> of_iter |> to_iter |> Iter.to_list = l)
-*)
-
 let of_list l =
   let q = create() in
   List.iter (push_back q) l;
   q
-
-(*$R
-  let q = of_list [1;2;3] in
-  assert_equal 1 (take_front q);
-  assert_equal 3 (take_back q);
-  assert_equal 2 (take_front q);
-  assert_equal true (is_empty q)
-*)
 
 let to_rev_list q = fold (fun l x -> x::l) [] q
 
@@ -546,36 +373,10 @@ let filter_in_place (d:_ t) f : unit =
         cur.cell <- c;
         loop ~stop_at:cur cur.next
 
-(*$R
-   let q = of_list [1;2;3;4;5;6] in
-   filter_in_place q (fun x -> x mod 2 = 0);
-   assert_equal [2;4;6] (to_list q)
-  *)
-
-(*$R
-   let q = of_list [2;1;4;6;10;20] in
-   filter_in_place q (fun x -> x mod 2 = 0);
-   assert_equal [2;4;6;10;20] (to_list q)
-  *)
-
-(*$Q
-  Q.(list small_nat) (fun l -> \
-    let f = fun x -> x mod 2=0 in \
-    let q = of_list l in \
-    (filter_in_place q f; to_list q) = (List.filter f l))
-  *)
-
 let filter f q =
   let q' = create() in
   iter (fun x -> if f x then push_back q' x) q;
   q'
-
-(*$Q
-  Q.(list small_nat) (fun l -> \
-    let f = fun x -> x mod 2=0 in \
-    let q = filter f (of_list l) in \
-    (to_list q) = (List.filter f l))
-  *)
 
 let filter_map f q =
   let q' = create() in
@@ -613,34 +414,11 @@ let to_gen q =
     in
     next
 
-(*$T
-  of_list [1;2;3] |> to_gen |> of_gen |> to_list = [1;2;3]
-*)
-
-(*$Q
-  Q.(list int) (fun l -> \
-    of_list l |> to_gen |> of_gen |> to_list = l)
-*)
-
 (* naive implem of copy, for now *)
 let copy d =
   let d' = create () in
   iter (fun x -> push_back d' x) d;
   d'
-
-(*$R
-  let q = of_list [1;2;3;4] in
-  assert_equal 4 (length q);
-  let q' = copy q in
-  let cmp = equal ~eq:CCInt.equal in
-  assert_equal 4 (length q');
-  assert_equal ~cmp q q';
-  push_front q 0;
-  assert_bool "not equal" (not (cmp q q'));
-  assert_equal 5 (length q);
-  push_front q' 0;
-  assert_equal ~cmp q q'
-*)
 
 let equal ~eq a b =
   let rec aux eq a b = match a() , b() with
@@ -659,12 +437,6 @@ let compare ~cmp a b =
       let c = cmp x y in
       if c=0 then aux cmp a b else c
   in aux cmp (to_gen a) (to_gen b)
-
-(*$Q
-   Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    CCOrd.equiv (compare ~cmp:Stdlib.compare (of_list l1) (of_list l2)) \
-      (CCList.compare Stdlib.compare l1 l2))
-*)
 
 type 'a printer = Format.formatter -> 'a -> unit
 

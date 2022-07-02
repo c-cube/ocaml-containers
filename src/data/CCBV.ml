@@ -4,10 +4,6 @@
 (* TODO: move to [bytes] and replace all [mod] and [/] with bitshifts
    because width_=8 *)
 
-(*$inject
-  let ppli = CCFormat.(Dump.list int)
-*)
-
 let width_ = Sys.word_size - 1
 
 (** We use OCamls ints to store the bits. We index them from the
@@ -62,24 +58,7 @@ let create ~size default =
     { a; size }
   )
 
-(*$Q
-  (Q.pair Q.small_int Q.bool) (fun (size, b) -> create ~size b |> length = size)
-*)
-
-(*$T
-  create ~size:17 true |> cardinal = 17
-  create ~size:32 true |> cardinal = 32
-  create ~size:132 true |> cardinal = 132
-  create ~size:200 false |> cardinal = 0
-  create ~size:29 true |> to_sorted_list = CCList.range 0 28
-*)
-
 let copy bv = { bv with a = Array.copy bv.a }
-
-(*$Q
-  (Q.list Q.small_int) (fun l -> \
-    let bv = of_list l in to_list bv = to_list (copy bv))
-*)
 
 let capacity bv = width_ * Array.length bv.a
 
@@ -92,10 +71,6 @@ let cardinal bv =
     done;
     !n
   )
-
-(*$Q
-  Q.small_int (fun size -> create ~size true |> cardinal = size)
-*)
 
 let really_resize_ bv ~desired ~current size =
   let a' = Array.make desired 0 in
@@ -127,15 +102,6 @@ let resize bv size =
   then ()
   else grow_ bv size
 
-(*$R
-  let bv1 = CCBV.create ~size:87 true in
-  assert_equal ~printer:string_of_int 87 (CCBV.cardinal bv1);
-*)
-
-(*$Q
-  Q.small_int (fun n -> CCBV.cardinal (CCBV.create ~size:n true) = n)
-*)
-
 let is_empty bv =
   try
     for i = 0 to Array.length bv.a - 1 do
@@ -153,22 +119,6 @@ let get bv i =
   then (Array.unsafe_get bv.a n) land (1 lsl i) <> 0
   else false
 
-(*$R
-  let bv = CCBV.create ~size:99 false in
-  assert_bool "32 must be false" (not (CCBV.get bv 32));
-  assert_bool "88 must be false" (not (CCBV.get bv 88));
-  assert_bool "5 must be false" (not (CCBV.get bv 5));
-  CCBV.set bv 32;
-  CCBV.set bv 88;
-  CCBV.set bv 5;
-  assert_bool "32 must be true" (CCBV.get bv 32);
-  assert_bool "88 must be true" (CCBV.get bv 88);
-  assert_bool "5 must be true" (CCBV.get bv 5);
-  assert_bool "33 must be false" (not (CCBV.get bv 33));
-  assert_bool "44 must be false" (not (CCBV.get bv 44));
-  assert_bool "1 must be false" (not (CCBV.get bv 1));
-*)
-
 let set bv i =
   if i < 0 then invalid_arg "set: negative index"
   else (
@@ -177,11 +127,6 @@ let set bv i =
     if i >= bv.size then grow_ bv (i+1);
     Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lor (1 lsl j))
   )
-
-(*$T
-  let bv = create ~size:3 false in set bv 0; get bv 0
-  let bv = create ~size:3 false in set bv 1; not (get bv 0)
-*)
 
 let reset bv i =
   if i < 0 then invalid_arg "reset: negative index"
@@ -192,10 +137,6 @@ let reset bv i =
     Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) land (lnot (1 lsl j)))
   )
 
-(*$T
-  let bv = create ~size:3 false in set bv 0; reset bv 0; not (get bv 0)
-*)
-
 let flip bv i =
   if i < 0 then invalid_arg "reset: negative index"
   else (
@@ -205,47 +146,12 @@ let flip bv i =
     Array.unsafe_set bv.a n ((Array.unsafe_get bv.a n) lxor (1 lsl j))
   )
 
-(*$R
-  let bv = of_list [1;10; 11; 30] in
-  flip bv 10;
-  assert_equal ~printer:Q.Print.(list int) [1;11;30] (to_sorted_list bv);
-  assert_equal ~printer:Q.Print.bool false (get bv 10);
-  flip bv 10;
-  assert_equal ~printer:Q.Print.bool true (get bv 10);
-  flip bv 5;
-  assert_equal ~printer:Q.Print.(list int) [1;5;10;11;30] (to_sorted_list bv);
-  assert_equal ~printer:Q.Print.bool true (get bv 5);
-  flip bv 100;
-  assert_equal ~printer:Q.Print.(list int) [1;5;10;11;30;100] (to_sorted_list bv);
-  assert_equal ~printer:Q.Print.bool true (get bv 100);
-*)
-
 let clear bv =
   Array.fill bv.a 0 (Array.length bv.a) 0
-
-(*$T
-  let bv = create ~size:37 true in cardinal bv = 37 && (clear bv; cardinal bv= 0)
-*)
-
-(*$R
-  let bv = CCBV.of_list [1; 5; 200] in
-  assert_equal ~printer:string_of_int 3 (CCBV.cardinal bv);
-  CCBV.clear bv;
-  assert_equal ~printer:string_of_int 0 (CCBV.cardinal bv);
-  assert_bool "must be empty" (CCBV.is_empty bv);
-*)
 
 let equal x y : bool =
   x.size = y.size &&
   x.a = y.a
-
-(*$T
-  equal (of_list [1; 3; 4]) (of_list [1; 3; 4])
-  equal (empty()) (empty())
-  not (equal (empty ()) (of_list [1]))
-  not (equal (empty ()) (of_list [2; 5]))
-  not (equal (of_list [1;3]) (of_list [2; 3]))
-*)
 
 let iter bv f =
   let len = array_length_of_size bv.size in
@@ -267,94 +173,13 @@ let iter bv f =
     done
   )
 
-(*$R
-  List.iter
-    (fun size ->
-      let bv = create ~size false in
-      set bv 5;
-      let n = ref 0 in
-      iter bv (fun i b -> incr n; assert_equal b (i=5));
-      assert_bool "exactly size" (!n = size))
-    [30; 100; 255; 256;10_000]
-*)
-
-(*$inject
-  let iter_zip s k = s (fun x y -> k(x,y))
-*)
-
-(*$= & ~printer:Q.Print.(list (pair int bool))
-  [] (iter (create ~size:0 false) |> iter_zip |> Iter.to_list)
-  [0, false; 1, true; 2, false] \
-    (iter (let bv = create ~size:3 false in set bv 1; bv) |> iter_zip |> Iter.to_list)
-*)
-
-(*$Q
-  Q.(small_int) (fun n -> \
-    assert (n >= 0); \
-    let bv = create ~size:n true in \
-    let l = iter bv |> iter_zip |> Iter.to_list in \
-    List.length l = n && List.for_all (fun (_,b) -> b) l)
-*)
-
 let[@inline] iter_true bv f =
   iter bv (fun i b -> if b then f i else ())
-
-(*$T
-  of_list [1;5;7] |> iter_true |> Iter.to_list |> List.sort CCOrd.compare = [1;5;7]
-*)
-
-(*$inject
-  let _gen = Q.Gen.(map of_list (list nat))
-  let _pp bv = Q.Print.(list string) (List.map string_of_int (to_list bv))
-  let _small bv = length bv
-
-  let gen_bv = Q.make ~small:_small ~print:_pp _gen
-*)
-
-(*$QR
-  gen_bv (fun bv ->
-    let l' = Iter.to_rev_list (CCBV.iter_true bv) in
-    let bv' = CCBV.of_list l' in
-    CCBV.cardinal bv = CCBV.cardinal bv'
-  )
-*)
 
 let to_list bv =
   let l = ref [] in
   iter_true bv (fun i -> l := i :: !l);
   !l
-
-(*$R
-  let bv = CCBV.of_list [1; 5; 156; 0; 222] in
-  assert_equal ~printer:string_of_int 5 (CCBV.cardinal bv);
-  CCBV.set bv 201;
-  assert_equal ~printer:string_of_int 6 (CCBV.cardinal bv);
-  let l = CCBV.to_list bv in
-  let l = List.sort compare l in
-  assert_equal [0;1;5;156;201;222] l;
-*)
-
-(*$= & ~printer:(CCFormat.to_string ppli)
-  [1;2;3;4;64;130] (of_list [1;2;3;4;64;130] |> to_sorted_list)
-*)
-
-(*$Q
-  Q.(small_list small_nat) (fun l -> \
-    let l = List.sort_uniq CCOrd.compare l in \
-    let l2 = of_list l |> to_sorted_list in \
-    if l=l2 then true else Q.Test.fail_reportf "l1=%a, l2=%a" ppli l ppli l2)
-  Q.(small_list small_nat) (fun l -> \
-    let bv = of_list l in \
-    let l1 = bv |> to_sorted_list in \
-    let l2 = \
-      (CCList.init (length bv) (get bv) |> List.mapi (fun i b->i,b) \
-       |>CCList.filter_map (function (i,true) -> Some i| _ ->None)) in \
-    if l1=l2 then true else Q.Test.fail_reportf "l1=%a, l2=%a" ppli l1 ppli l2)
-  *)
-
-(*$= & ~cmp:equal ~printer:(CCFormat.to_string pp)
-  (of_list [0]) (let bv=empty() in set bv 0; bv)
-*)
 
 let to_sorted_list bv =
   List.rev (to_list bv)
@@ -365,12 +190,6 @@ let of_list l =
   let bv = create ~size false in
   List.iter (fun i -> set bv i) l;
   bv
-
-(*$T
-  of_list [1;32;64] |> CCFun.flip get 64
-  of_list [1;32;64] |> CCFun.flip get 32
-  of_list [1;31;63] |> CCFun.flip get 63
-*)
 
 exception FoundFirst of int
 
@@ -385,18 +204,9 @@ let first bv =
   try Some (first_exn bv)
   with Not_found -> None
 
-(*$T
-  of_list [50; 10; 17; 22; 3; 12] |> first = Some 3
-*)
-
 let filter bv p =
   iter_true bv
     (fun i -> if not (p i) then reset bv i)
-
-(*$T
-  let bv = of_list [1;2;3;4;5;6;7] in filter bv (fun x->x mod 2=0); \
-    to_sorted_list bv = [2;4;6]
-*)
 
 let negate_self b =
   let len = Array.length b.a in
@@ -408,10 +218,6 @@ let negate_self b =
     let l = Array.length b.a - 1 in
     Array.unsafe_set b.a l (lsb_masks_.(r) land (Array.unsafe_get b.a l))
 
-(*$= & ~printer:(CCFormat.to_string ppli)
-  [0;3;4;6] (let v = of_list [1;2;5;7;] in negate_self v; to_sorted_list v)
-*)
-
 let negate b =
   let a =  Array.map (lnot) b.a in
   let r = b.size mod width_ in
@@ -420,10 +226,6 @@ let negate b =
     Array.unsafe_set a l (lsb_masks_.(r) land (Array.unsafe_get a l))
   );
   { a ; size = b.size }
-
-(*$Q
-  Q.small_int (fun size -> create ~size false |> negate |> cardinal = size)
-*)
 
 let union_into_no_resize_ ~into bv =
   assert (Array.length into.a >= Array.length bv.a);
@@ -452,47 +254,6 @@ let union b1 b2 =
     into
   )
 
-(*$R
-  let bv1 = CCBV.of_list [1;2;3;4] in
-  let bv2 = CCBV.of_list [4;200;3] in
-  let bv = CCBV.union bv1 bv2 in
-  let l = List.sort compare (CCBV.to_list bv) in
-  assert_equal ~printer:(CCFormat.(to_string (Dump.list int)))
-    [1;2;3;4;200] l;
-  ()
-*)
-
-(*$R
-  let bv1 = CCBV.of_list [1;2;3;4;64;130] in
-  let bv2 = CCBV.of_list [4;64;3;120] in
-  let bv = CCBV.union bv1 bv2 in
-  assert_equal ~cmp:equal ~printer:(CCFormat.to_string pp)
-    (of_list [1;2;3;4;64;120;130]) bv;
-  ()
-*)
-
-(*$R
-  let bv1 = CCBV.of_list [1;2;3;4] in
-  let bv2 = CCBV.of_list [4;200;3] in
-  let bv = CCBV.union bv1 bv2 in
-  assert_equal ~cmp:equal ~printer:(CCFormat.to_string pp)
-    (of_list [1;2;3;4;200]) bv;
-  ()
-*)
-
-(*$R
-  let v1 = CCBV.empty () in
-  let () = CCBV.set v1 64 in
-  let v2 = CCBV.diff (CCBV.empty ()) (CCBV.empty ()) in
-  let v3 = CCBV.union v1 v2 in
-  assert_equal ~printer:(CCFormat.to_string pp) ~cmp:CCBV.equal v1 v3
-*)
-
-(*$T
-  union (of_list [1;2;3;4;5]) (of_list [7;3;5;6]) |> to_sorted_list = CCList.range 1 7
-*)
-
-
 let inter_into_no_resize_ ~into bv =
   assert (Array.length into.a <= Array.length bv.a);
   for i = 0 to (Array.length into.a) - 1 do
@@ -518,28 +279,6 @@ let inter b1 b2 =
     into
   )
 
-(*$T
-  inter (of_list [1;2;3;4]) (of_list [2;4;6;1]) |> to_sorted_list = [1;2;4]
-*)
-
-(*$R
-  let bv1 = CCBV.of_list [1;2;3;4;200;201] in
-  let bv2 = CCBV.of_list [4;200;3] in
-  let bv = CCBV.inter bv1 bv2 in
-  let l = List.sort compare (CCBV.to_list bv) in
-  assert_equal ~printer:(CCFormat.(to_string (Dump.list int)))
-    [3;4;200] l;
-  ()
-*)
-
-(*$R
-  let bv1 = CCBV.of_list [1;2;3;4] in
-  let bv2 = CCBV.of_list [4;200;3] in
-  CCBV.inter_into ~into:bv1 bv2;
-  let l = List.sort compare (CCBV.to_list bv1) in
-  assert_equal [3;4] l;
-*)
-
 (* Underlying size depends on the 'in_' set for diff, so we don't change
    it's size! *)
 let diff_into ~into bv =
@@ -554,21 +293,6 @@ let diff in_ not_in =
   diff_into ~into not_in;
   into
 
-(*$T
-  diff (of_list [1;2;3])    (of_list [1;2;3])   |> to_list = [];
-  diff (of_list [1;2;3])    (of_list [1;2;3;4]) |> to_list = [];
-  diff (of_list [1;2;3;4])  (of_list [1;2;3])   |> to_list = [4];
-  diff (of_list [1;2;3])      (of_list [1;2;3;400]) |> to_list = [];
-  diff (of_list [1;2;3;400])  (of_list [1;2;3])     |> to_list = [400];
-*)
-
-(*$R
-  let v1 = CCBV.empty () in
-  set v1 65;
-  let v2 = CCBV.diff v1 v1 in
-  assert_bool (CCFormat.asprintf "bv: %a" pp v2) (CCBV.is_empty v2)
-*)
-
 let select bv arr =
   let l = ref [] in
   begin try
@@ -580,13 +304,6 @@ let select bv arr =
     with Exit -> ()
   end;
   !l
-
-(*$R
-  let bv = CCBV.of_list [1;2;5;400] in
-  let arr = [|"a"; "b"; "c"; "d"; "e"; "f"|] in
-  let l = List.sort compare (CCBV.select bv arr) in
-  assert_equal ["b"; "c"; "f"] l;
-*)
 
 let selecti bv arr =
   let l = ref [] in
@@ -600,28 +317,9 @@ let selecti bv arr =
   end;
   !l
 
-(*$R
-  let bv = CCBV.of_list [1;2;5;400] in
-  let arr = [|"a"; "b"; "c"; "d"; "e"; "f"|] in
-  let l = List.sort compare (CCBV.selecti bv arr) in
-  assert_equal [("b",1); ("c",2); ("f",5)] l;
-*)
-
-(*$= & ~printer:Q.Print.(list (pair int int))
-  [1,1; 3,3; 4,4] (selecti (of_list [1;4;3]) [| 0;1;2;3;4;5;6;7;8 |] \
-    |> List.sort CCOrd.compare)
-*)
-
 type 'a iter = ('a -> unit) -> unit
 
 let to_iter bv k = iter_true bv k
-
-(*$Q
-  Q.(small_int) (fun i -> \
-      let i = max 1 i in \
-      let bv = create ~size:i true in \
-      i = (to_iter bv |> Iter.length))
-*)
 
 let of_iter seq =
   let l = ref [] and maxi = ref 0 in
@@ -630,11 +328,6 @@ let of_iter seq =
   List.iter (fun i -> set bv i) !l;
   bv
 
-(*$T
-  CCList.range 0 10 |> CCList.to_iter |> of_iter |> to_iter \
-    |> CCList.of_iter |> List.sort CCOrd.compare = CCList.range 0 10
-*)
-
 let pp out bv =
   Format.pp_print_string out "bv {";
   iter bv
@@ -642,9 +335,5 @@ let pp out bv =
        Format.pp_print_char out (if b then '1' else '0')
     );
   Format.pp_print_string out "}"
-
-(*$= & ~printer:CCFun.id
-  "bv {00001}" (CCFormat.to_string pp (of_list [4]))
-*)
 
 let __to_word_l bv = Array.to_list bv.a

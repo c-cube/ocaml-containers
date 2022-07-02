@@ -117,17 +117,3 @@ module Make(L : OrderedType)(R : OrderedType) = struct
 
   let to_iter m yield = MapL.iter (fun k v -> yield (k,v)) m.left
 end
-
-(*$inject
-  open Containers
-  module M = Make(Int)(String)
-
-*)
-
-(*$=
-  2     (M.of_list [1,"1"; 2, "2"] |> M.cardinal)
-  "1"   (M.of_list [1,"1"; 2, "2"] |> M.find_left 1)
-  "2"   (M.of_list [1,"1"; 2, "2"] |> M.find_left 2)
-  1     (M.of_list [1,"1"; 2, "2"] |> M.find_right "1")
-  2     (M.of_list [1,"1"; 2, "2"] |> M.find_right "2")
-*)

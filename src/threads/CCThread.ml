@@ -28,14 +28,6 @@ module Arr = struct
   let join a = Array.iter Thread.join a
 end
 
-(*$R
-  let l = CCLock.create 0 in
-  let a = Arr.spawn 101 (fun i -> CCLock.update l ((+) i)) in
-  Arr.join a;
-  let n = Iter.(1 -- 100 |> fold (+) 0) in
-  assert_equal ~printer:CCInt.to_string n (CCLock.get l)
-*)
-
 module Barrier = struct
   type t = {
     lock: Mutex.t;
@@ -71,15 +63,3 @@ module Barrier = struct
 
   let activated b = with_lock_ b (fun () -> b.activated)
 end
-
-(*$R
-  let b = Barrier.create () in
-  let res = CCLock.create 0 in
-  let t1 = spawn (fun _ -> Barrier.wait b; CCLock.incr res)
-  and t2 = spawn (fun _ -> Barrier.wait b; CCLock.incr res) in
-  Thread.delay 0.2;
-  assert_equal 0 (CCLock.get res);
-  Barrier.activate b;
-  Thread.join t1; Thread.join t2;
-  assert_equal 2 (CCLock.get res)
-*)

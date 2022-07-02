@@ -105,6 +105,8 @@ module type S = sig
     ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) ->
     'a -> 'a -> unit
 
+  val assert_bool : string -> bool -> unit
+
   val assert_failure : string -> 'a
 
   val assert_raises : (exn -> bool) -> (unit -> 'b) -> unit
@@ -140,6 +142,11 @@ module Make_test(X:sig val file: string end) = struct
       | None -> failwith "not equal"
       | Some p ->
         failwith @@ spf "not equal: lhs=%s, rhs=%s" (p x) (p y)
+    )
+
+  let assert_bool what b =
+    if not b then (
+      failwith what
     )
 
   let assert_failure s = failwith s

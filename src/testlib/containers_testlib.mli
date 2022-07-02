@@ -19,6 +19,8 @@ module type S = sig
     ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) ->
     'a -> 'a -> unit
 
+  val assert_bool : string -> bool -> unit
+
   val assert_failure : string -> 'a
 
   val assert_raises : (exn -> bool) -> (unit -> 'b) -> unit
