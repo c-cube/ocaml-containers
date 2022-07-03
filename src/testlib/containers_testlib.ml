@@ -31,6 +31,20 @@ module Test = struct
   let str_loc (self:t) : string =
     Printf.sprintf "(test :file '%s' :n %d)" self.__FILE__ self.n
 
+
+[@@@ifge 4.08]
+
+  let get_state (r:_ QCheck.TestResult.t) : _ QCheck.TestResult.state =
+    QCheck.TestResult.get_state r
+
+[@@@else_]
+
+  (* must have qcheck < 0.17 *)
+  let get_state (r:_ QCheck.TestResult.t) : _ QCheck.TestResult.state =
+    r.state
+
+[@@@endif]
+
   let run ~seed (self:t) : _ result =
     match
       match self.run with
@@ -50,7 +64,7 @@ module Test = struct
 
         (* create a random state from the seed *)
         let rand =
-          let bits = String.to_seq seed |> Seq.map Char.code |> CCArray.of_seq in
+          let bits = CCString.to_list seed |> List.map Char.code |> Array.of_list in
           Random.State.make bits
         in
 
@@ -70,17 +84,17 @@ module Test = struct
 
         let res = Q.Test.check_cell ~rand cell in
 
-        begin match Q.TestResult.get_state res with
-        | QCheck2.TestResult.Success -> Ok ()
-        | QCheck2.TestResult.Failed { instances } ->
+        begin match get_state res with
+        | QCheck.TestResult.Success -> Ok ()
+        | QCheck.TestResult.Failed { instances } ->
           let msg = Format.asprintf "@[<v2>failed on instances:@ %a@]"
             (Fmt.list ~sep:(Fmt.return ";@ ") pp_cex) instances
           in
           Error msg
-        | QCheck2.TestResult.Failed_other {msg} ->
+        | QCheck.TestResult.Failed_other {msg} ->
           let msg = spf "failed: %s" msg in
           Error msg
-        | QCheck2.TestResult.Error {instance; exn; backtrace} ->
+        | QCheck.TestResult.Error {instance; exn; backtrace} ->
           let msg = Format.asprintf "@[<v2>raised %s@ on instance %a@ :backtrace %s@]"
             (Printexc.to_string exn) pp_cex instance backtrace
           in
@@ -166,12 +180,14 @@ let make ~__FILE__ () : (module S) =
   end) in
   (module M)
 
+let getenv_opt s = try Some (Sys.getenv s) with _ -> None
+
 let run_all ?seed:seed_hex ~descr (l:Test.t list list) : unit =
   let start = Unix.gettimeofday() in
 
   (* generate or parse seed *)
 
-  let seed_hex = match seed_hex, Sys.getenv_opt "SEED" with
+  let seed_hex = match seed_hex, getenv_opt "SEED" with
     | Some s, _ -> s
     | None, Some s -> s
     | None, None ->

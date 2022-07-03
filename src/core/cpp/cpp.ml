@@ -30,7 +30,7 @@ let eval ~major ~minor op i j =
 
 let preproc_lines ~file ~major ~minor (ic:in_channel) : unit =
   let pos = ref 0 in
-  let fail msg = failwith (Printf.sprintf "at line %d: %s" !pos msg) in
+  let fail msg = failwith (Printf.sprintf "at line %d in '%s': %s" !pos file msg) in
   let pp_pos () = Printf.printf "#%d %S\n" !pos file in
 
   let parse_line () : line =
