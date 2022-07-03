@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Immutable Arrays} *)
@@ -7,18 +6,12 @@
 
 type 'a t = 'a array
 
-let empty = [| |]
-
+let empty = [||]
 let length = Array.length
-
 let singleton x = [| x |]
-
 let doubleton x y = [| x; y |]
-
 let make n x = Array.make n x
-
 let init n f = Array.init n f
-
 let get = Array.get
 
 let set a n x =
@@ -26,30 +19,33 @@ let set a n x =
   a'.(n) <- x;
   a'
 
-let sub = Array.sub (* Would this not be better implemented with CCArray_slice *)
+let sub = Array.sub
+(* Would this not be better implemented with CCArray_slice *)
 
 let map = Array.map
-
 let mapi = Array.mapi
 
 let append a b =
   let na = length a in
-  Array.init (na + length b)
-    (fun i -> if i < na then a.(i) else b.(i-na))
+  Array.init
+    (na + length b)
+    (fun i ->
+      if i < na then
+        a.(i)
+      else
+        b.(i - na))
 
 let iter = Array.iter
-
 let iteri = Array.iteri
-
 let fold = Array.fold_left
 
 let foldi f acc a =
   let n = ref 0 in
   Array.fold_left
     (fun acc x ->
-       let acc = f acc !n x in
-       incr n;
-       acc)
+      let acc = f acc !n x in
+      incr n;
+      acc)
     acc a
 
 exception ExitNow
@@ -72,9 +68,7 @@ type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 let of_list = Array.of_list
-
 let to_list = Array.to_list
-
 let of_array_unsafe a = a (* careful with that axe, Eugene *)
 
 let to_iter a k = iter k a
@@ -84,9 +78,10 @@ let of_iter s =
   s (fun x -> l := x :: !l);
   Array.of_list (List.rev !l)
 
-let rec gen_to_list_ acc g = match g() with
+let rec gen_to_list_ acc g =
+  match g () with
   | None -> List.rev acc
-  | Some x -> gen_to_list_ (x::acc) g
+  | Some x -> gen_to_list_ (x :: acc) g
 
 let of_gen g =
   let l = gen_to_list_ [] g in
@@ -99,14 +94,15 @@ let to_gen a =
       let x = a.(!i) in
       incr i;
       Some x
-    ) else None
+    ) else
+      None
 
 (** {2 IO} *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-let pp ?(pp_start=fun _ () -> ()) ?(pp_stop=fun _ () -> ())
-    ?(pp_sep=fun out () -> Format.fprintf out ",@ ") pp_item out a =
+let pp ?(pp_start = fun _ () -> ()) ?(pp_stop = fun _ () -> ())
+    ?(pp_sep = fun out () -> Format.fprintf out ",@ ") pp_item out a =
   pp_start out ();
   for k = 0 to Array.length a - 1 do
     if k > 0 then pp_sep out ();

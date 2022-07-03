@@ -23,7 +23,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-
 (** Persistent Arrays
 
     From the paper by Jean-Christophe Filliâtre,
@@ -52,12 +51,12 @@ val init : int -> (int -> 'a) -> 'a t
     If the value of x is a floating-point number, then the maximum size is
     only [Sys.max_array_length / 2]. *)
 
-val get  : 'a t -> int -> 'a
+val get : 'a t -> int -> 'a
 (** [get a i] returns the element with index [i] from the array [a].
     @raise Invalid_argument "index out of bounds" if [n] is outside the
     range [0] to [Array.length a - 1]. *)
 
-val set  : 'a t -> int -> 'a -> 'a t
+val set : 'a t -> int -> 'a -> 'a t
 (** [set a i v] sets the element index [i] from the array [a] to [v].
     @raise Invalid_argument "index out of bounds" if [n] is outside the
     range [0] to [Array.length a - 1]. *)
@@ -69,6 +68,7 @@ val copy : 'a t -> 'a t
 (** [copy a] returns a fresh copy of [a]. Both copies are independent. *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
+
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
 (** Apply the given function to all elements of the array, and return
     a persistent array initialized by the results of f. In the case of [mapi],
@@ -80,8 +80,8 @@ val iter : ('a -> unit) -> 'a t -> unit
     in order from element [0] to element [length t - 1]. *)
 
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
-
 val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
+
 val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 (** Fold on the elements of the array. *)
 
@@ -119,7 +119,6 @@ type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 val to_iter : 'a t -> 'a iter
-
 val of_iter : 'a iter -> 'a t
 
 val of_gen : 'a gen -> 'a t

@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Functional queues *)
@@ -13,11 +12,8 @@ type +'a t
 (** Queue containing elements of type 'a *)
 
 val empty : 'a t
-
 val is_empty : 'a t -> bool
-
 val singleton : 'a -> 'a t
-
 val doubleton : 'a -> 'a -> 'a t
 
 exception Empty
@@ -31,7 +27,7 @@ val snoc : 'a t -> 'a -> 'a t
 val take_front : 'a t -> ('a * 'a t) option
 (** Get and remove the first element. *)
 
-val take_front_exn : 'a t -> ('a * 'a t)
+val take_front_exn : 'a t -> 'a * 'a t
 (** Same as {!take_front}, but fails on empty queues.
     @raise Empty if the queue is empty. *)
 
@@ -45,7 +41,7 @@ val take_front_while : ('a -> bool) -> 'a t -> 'a list * 'a t
 val take_back : 'a t -> ('a t * 'a) option
 (** Take last element. *)
 
-val take_back_exn : 'a t -> ('a t * 'a)
+val take_back_exn : 'a t -> 'a t * 'a
 (** Same as {!take_back}, but fails on empty queues.
     @raise Empty if the queue is empty. *)
 
@@ -99,16 +95,14 @@ val rev : 'a t -> 'a t
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** Map values. *)
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
 (** Synonym to {!map}. *)
 
 val size : 'a t -> int
 (** Number of elements in the queue (constant time). *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-
 val iter : ('a -> unit) -> 'a t -> unit
-
 val equal : 'a equal -> 'a t equal
 
 (** {2 Conversions} *)
@@ -140,11 +134,11 @@ val to_seq : 'a t -> 'a Seq.t
 val of_seq : 'a Seq.t -> 'a t
 (** @since 3.0 *)
 
-val (--) : int -> int -> int t
+val ( -- ) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], both included.
     @since 0.10 *)
 
-val (--^) : int -> int -> int t
+val ( --^ ) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], where [b] is excluded.
     @since 0.17 *)
 

@@ -1,20 +1,20 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Basic operations on Functions *)
 
 [@@@ifge 4.8]
+
 include module type of Fun
 (** @inline *)
 
 [@@@else_]
 
-(** This is an API imitating the new standard Fun module *)
 external id : 'a -> 'a = "%identity"
+(** This is an API imitating the new standard Fun module *)
+
 val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
 val const : 'a -> _ -> 'a
 val negate : ('a -> bool) -> 'a -> bool
-
 val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
 (* this doesn't have the exact same semantics as the stdlib's finally.
     It will not attempt to catch exceptions raised from [finally] at all. *)
@@ -34,7 +34,7 @@ val curry : ('a * 'b -> 'c) -> 'a -> 'b -> 'c
 (** [curry f x y] is [f (x,y)].
     Convert a function which accepts a pair of arguments into a function which accepts two arguments. *)
 
-val uncurry : ('a -> 'b -> 'c) -> ('a * 'b) -> 'c
+val uncurry : ('a -> 'b -> 'c) -> 'a * 'b -> 'c
 (** [uncurry f (x,y)] is  [f x y].
     Convert a function which accepts a two arguments into a function which accepts a pair of arguments. *)
 
@@ -87,18 +87,17 @@ val iterate : int -> ('a -> 'a) -> 'a -> 'a
     Infix operators. *)
 
 module Infix : sig
-
-  val (|>) : 'a -> ('a -> 'b) -> 'b
+  val ( |> ) : 'a -> ('a -> 'b) -> 'b
   (** [x |> f] is the same as [f x]. A 'pipe' operator. *)
 
-  val (@@) : ('a -> 'b) -> 'a -> 'b
+  val ( @@ ) : ('a -> 'b) -> 'a -> 'b
   (** [f @@ x] is the same as [f x], but right-associative.
       @since 0.5 *)
 
-  val (%>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
+  val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
   (** [(f %> g) x] or [(%>) f g x] is [g (f x)]. Alias to [compose]. *)
 
-  val (%) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
+  val ( % ) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
   (** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
 end
 
@@ -108,13 +107,16 @@ include module type of Infix
 
     Functions with a fixed domain are monads in their codomain. *)
 
-module Monad(X : sig type t end) : sig
+module Monad (X : sig
+  type t
+end) : sig
   type 'a t = X.t -> 'a
+
   val return : 'a -> 'a t
   (** Monadic [return]. *)
 
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
 
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** Monadic [bind]. *)
 end

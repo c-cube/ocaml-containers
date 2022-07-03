@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Hash combinators
@@ -33,6 +32,7 @@ val char : char t
 val int32 : int32 t
 val int64 : int64 t
 val nativeint : nativeint t
+
 val slice : string -> int -> int t
 (** [slice s i len state] hashes the slice [i, …, i+len-1] of [s]
     into [state]. *)
@@ -42,7 +42,6 @@ val bytes : bytes t
     @since 3.5 *)
 
 val string : string t
-
 val list : 'a t -> 'a list t
 val array : 'a t -> 'a array t
 val opt : 'a t -> 'a option t
@@ -83,7 +82,6 @@ val array_comm : 'a t -> 'a array t
 (** {2 Base hash combinators} *)
 
 val combine : 'a t -> hash -> 'a -> hash
-
 val combine2 : hash -> hash -> hash
 val combine3 : hash -> hash -> hash -> hash
 val combine4 : hash -> hash -> hash -> hash -> hash

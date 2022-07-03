@@ -11,7 +11,6 @@
     @since 3.1 *)
 
 module type RANKED = CCMutHeap_intf.RANKED
-
 module type S = CCMutHeap_intf.S
 
-module Make(X : RANKED) : S with type elt = X.t
+module Make (X : RANKED) : S with type elt = X.t

@@ -1,4 +1,3 @@
-
 (** Helpers for the standard {b Seq} type
 
     See {{: https://github.com/c-cube/oseq/} oseq} for a richer API.
@@ -14,17 +13,12 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type + 'a t = unit -> 'a node
-and +'a node = 'a Seq.node =
-  | Nil
-  | Cons of 'a * 'a t
+type +'a t = unit -> 'a node
+and +'a node = 'a Seq.node = Nil | Cons of 'a * 'a t
 
 val nil : 'a t
-
 val empty : 'a t
-
 val cons : 'a -> 'a t -> 'a t
-
 val singleton : 'a -> 'a t
 
 val repeat : ?n:int -> 'a -> 'a t
@@ -78,22 +72,16 @@ val length : _ t -> int
     use (for instance) {!take} to make the list finite if necessary. *)
 
 val take : int -> 'a t -> 'a t
-
 val take_while : ('a -> bool) -> 'a t -> 'a t
-
 val drop : int -> 'a t -> 'a t
-
 val drop_while : ('a -> bool) -> 'a t -> 'a t
-
 val map : ('a -> 'b) -> 'a t -> 'b t
 
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
 (** Map with index (starts at 0). *)
 
 val fmap : ('a -> 'b option) -> 'a t -> 'b t
-
 val filter : ('a -> bool) -> 'a t -> 'a t
-
 val append : 'a t -> 'a t -> 'a t
 
 val product_with : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
@@ -128,18 +116,15 @@ val exists : ('a -> bool) -> 'a t -> bool
     @since 3.3 *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
-
 val flatten : 'a t t -> 'a t
-
 val range : int -> int -> int t
 
-val (--) : int -> int -> int t
+val ( -- ) : int -> int -> int t
 (** [a -- b] is the range of integers containing
     [a] and [b] (therefore, never empty). *)
 
-val (--^) : int -> int -> int t
+val ( --^ ) : int -> int -> int t
 (** [a -- b] is the integer range from [a] to [b], where [b] is excluded. *)
 
 (** {2 Operations on two Collections} *)
@@ -199,40 +184,39 @@ val fair_app : ('a -> 'b) t -> 'a t -> 'b t
 
 val return : 'a -> 'a t
 val pure : 'a -> 'a t
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
+val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
 
-val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
+val ( >>- ) : 'a t -> ('a -> 'b t) -> 'b t
 (** Infix version of {! fair_flat_map}. *)
 
-val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
+val ( <.> ) : ('a -> 'b) t -> 'a t -> 'b t
 (** Infix version of {!fair_app}. *)
 
 (** {2 Infix operators} *)
 
 module Infix : sig
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-  val (>>-) : 'a t -> ('a -> 'b t) -> 'b t
-  val (<.>) : ('a -> 'b) t -> 'a t -> 'b t
-  val (--) : int -> int -> int t
-  val (--^) : int -> int -> int t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
+  val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
+  val ( >>- ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( <.> ) : ('a -> 'b) t -> 'a t -> 'b t
+  val ( -- ) : int -> int -> int t
+  val ( --^ ) : int -> int -> int t
 end
 
 (** {2 Monadic Operations} *)
 module type MONAD = sig
   type 'a t
+
   val return : 'a -> 'a t
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
 end
 
-module Traverse(M : MONAD) : sig
+module Traverse (M : MONAD) : sig
   val sequence_m : 'a M.t t -> 'a t M.t
-
   val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> 'a t -> 'b M.t
-
   val map_m : ('a -> 'b M.t) -> 'a t -> 'b t M.t
 end
 
@@ -253,7 +237,6 @@ val to_rev_list : 'a t -> 'a list
 (** Convert to a list, in reverse order. More efficient than {!to_list}. *)
 
 val to_iter : 'a t -> 'a iter
-
 val to_gen : 'a t -> 'a gen
 
 val of_gen : 'a gen -> 'a t
@@ -265,8 +248,12 @@ val of_string : string -> char t
 
 (** {2 IO} *)
 
-val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-  'a printer -> 'a t printer
+val pp :
+  ?pp_start:unit printer ->
+  ?pp_stop:unit printer ->
+  ?pp_sep:unit printer ->
+  'a printer ->
+  'a t printer
 (** [pp ~pp_start ~pp_stop ~pp_sep pp_item ppf s] formats the sequence [s] on [ppf].
     Each element is formatted with [pp_item], [pp_start] is called at the beginning,
     [pp_stop] is called at the end, [pp_sep] is called between each elements.

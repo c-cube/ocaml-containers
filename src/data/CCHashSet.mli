@@ -69,7 +69,6 @@ module type S = sig
   (** [equal a b] is extensional equality ([a] and [b] have the same elements). *)
 
   val for_all : (elt -> bool) -> t -> bool
-
   val exists : (elt -> bool) -> t -> bool
 
   val iter : (elt -> unit) -> t -> unit
@@ -82,11 +81,8 @@ module type S = sig
   (** List of elements. *)
 
   val of_list : elt list -> t
-
   val to_iter : t -> elt iter
-
   val of_iter : elt iter -> t
-
   val add_iter : t -> elt iter -> unit
 
   val pp : ?pp_sep:unit printer -> elt printer -> t printer
@@ -96,8 +92,11 @@ end
 
 module type ELEMENT = sig
   type t
+
   val equal : t -> t -> bool
-  val hash : t -> int (** Positive value *)
+
+  val hash : t -> int
+  (** Positive value *)
 end
 
-module Make(E : ELEMENT) : S with type elt = E.t
+module Make (E : ELEMENT) : S with type elt = E.t

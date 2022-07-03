@@ -1,11 +1,11 @@
-
 (* This code is extracted from Msat ( https://github.com/Gbury/mSAT ). *)
 
 (** {1 Imperative Heaps} *)
 
 module type RANKED = sig
   type t
-  val idx: t -> int
+
+  val idx : t -> int
   (** Index in heap. return -1 if never set *)
 
   val set_idx : t -> int -> unit

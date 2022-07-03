@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Utils around Mutex}
@@ -30,9 +29,7 @@ module LockRef : sig
   type 'a t
 
   val get : 'a t -> 'a
-
   val set : 'a t -> 'a -> unit
-
   val update : 'a t -> ('a -> 'a) -> unit
 end
 

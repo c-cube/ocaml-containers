@@ -34,7 +34,9 @@ include module type of Array
 (** @inline
     {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
 
-module Floatarray : sig type t = float array end
+module Floatarray : sig
+  type t = float array
+end
 
 type 'a t = 'a array
 
@@ -71,7 +73,7 @@ val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** [foldi f init a] is just like {!fold}, but it also passes in the index
     of each element as the second argument to the folded function [f]. *)
 
-val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+val fold_while : ('a -> 'b -> 'a * [ `Stop | `Continue ]) -> 'a -> 'b t -> 'a
 (** [fold_while f init a] folds left on array [a] until a stop condition via [('a, `Stop)]
     is indicated by the accumulator.
     @since 0.8 *)
@@ -150,7 +152,10 @@ val lookup_exn : cmp:'a ord -> 'a -> 'a t -> int
 (** [lookup_exn ~cmp key a] is like {!lookup}, but
     @raise Not_found if the key [key] is not present. *)
 
-val bsearch : cmp:('a -> 'a -> int) -> 'a -> 'a t ->
+val bsearch :
+  cmp:('a -> 'a -> int) ->
+  'a ->
+  'a t ->
   [ `All_lower | `All_bigger | `Just_after of int | `Empty | `At of int ]
 (** [bsearch ~cmp key a] finds the index of the object [key] in the array [a],
     provided [a] is {b sorted} using [cmp]. If the array is not sorted,
@@ -229,16 +234,24 @@ val to_gen : 'a t -> 'a gen
 
 (** {2 IO} *)
 
-val pp: ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-  'a printer -> 'a t printer
+val pp :
+  ?pp_start:unit printer ->
+  ?pp_stop:unit printer ->
+  ?pp_sep:unit printer ->
+  'a printer ->
+  'a t printer
 (** [pp ~pp_start ~pp_stop ~pp_sep pp_item ppf a] formats the array [a] on [ppf].
     Each element is formatted with [pp_item], [pp_start] is called at the beginning,
     [pp_stop] is called at the end, [pp_sep] is called between each elements.
     By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
     (fun out -> Format.fprintf out ",@ "). *)
 
-val pp_i: ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-  (int -> 'a printer) -> 'a t printer
+val pp_i :
+  ?pp_start:unit printer ->
+  ?pp_stop:unit printer ->
+  ?pp_sep:unit printer ->
+  (int -> 'a printer) ->
+  'a t printer
 (** [pp_i ~pp_start ~pp_stop ~pp_sep pp_item ppf a] prints the array [a] on [ppf].
     The printing function [pp_item] is giving both index and element.
     [pp_start] is called at the beginning,
@@ -282,19 +295,18 @@ module type MONO_ARRAY = sig
   type t
 
   val length : t -> int
-
   val get : t -> int -> elt
-
   val set : t -> int -> elt -> unit
 end
 
 val sort_generic :
   (module MONO_ARRAY with type t = 'arr and type elt = 'elt) ->
-  cmp:('elt -> 'elt -> int) -> 'arr -> unit
+  cmp:('elt -> 'elt -> int) ->
+  'arr ->
+  unit
 (** [sort_generic (module M) ~cmp a] sorts the array [a], without allocating (eats stack space though).
     Performance might be lower than {!Array.sort}.
     @since 0.14 *)
-
 
 (** {3 Infix Operators}
     It is convenient to {!open CCArray.Infix} to access the infix operators
@@ -303,21 +315,21 @@ val sort_generic :
     @since 2.7 *)
 
 module Infix : sig
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** [a >>= f] is the infix version of {!flat_map}. *)
 
-  val (>>|) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >>| ) : 'a t -> ('a -> 'b) -> 'b t
   (** [a >>| f] is the infix version of {!map}.
       @since 0.8 *)
 
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
   (** [a >|= f] is the infix version of {!map}.
       @since 0.8 *)
 
-  val (--) : int -> int -> int t
+  val ( -- ) : int -> int -> int t
   (** [x -- y] creates an array containing integers in the range [x .. y]. Bounds included. *)
 
-  val (--^) : int -> int -> int t
+  val ( --^ ) : int -> int -> int t
   (** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
       @since 0.17 *)
 

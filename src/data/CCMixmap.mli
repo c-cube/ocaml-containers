@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Maps with Heterogeneous Values
@@ -70,7 +69,7 @@ module type S = sig
   val remove : key -> t -> t
   (** Remove the binding for this key. *)
 
-  val mem : inj:_ injection-> key -> t -> bool
+  val mem : inj:_ injection -> key -> t -> bool
   (** Is the given key in the map, with the right type? *)
 
   val iter_keys : f:(key -> unit) -> t -> unit
@@ -89,8 +88,7 @@ module type S = sig
   val bindings_of : inj:'a injection -> t -> (key * 'a) iter
   (** All the bindings that come from the corresponding injection. *)
 
-  type value =
-    | Value : ('a injection -> 'a option) -> value
+  type value = Value : ('a injection -> 'a option) -> value
 
   val bindings : t -> (key * value) iter
   (** Iterate on all bindings. *)
@@ -98,7 +96,8 @@ end
 
 module type ORD = sig
   type t
+
   val compare : t -> t -> int
 end
 
-module Make(X : ORD) : S with type key = X.t
+module Make (X : ORD) : S with type key = X.t

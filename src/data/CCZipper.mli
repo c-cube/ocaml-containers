@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** List Zipper
@@ -73,5 +72,3 @@ val drop_after : 'a t -> 'a t
 val drop_after_and_focused : 'a t -> 'a t
 (** Drop every element on the "right" (calling {!right} then will do nothing),
     {i including} the focused element if it is present. *)
-
-

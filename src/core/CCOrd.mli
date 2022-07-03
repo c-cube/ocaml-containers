@@ -13,7 +13,7 @@ val poly : 'a t
     @since 3.6 *)
 
 val compare : 'a t
-[@@deprecated "use CCOrd.poly instead, this name is too general"]
+  [@@deprecated "use CCOrd.poly instead, this name is too general"]
 (** Polymorphic "magic" comparison.
     @deprecated since 3.6 in favor of {!poly}. The reason is that
     [compare] is easily shadowed, can shadow other comparators, and is just
@@ -33,7 +33,7 @@ val float : float t
 
 (** {2 Lexicographic Combination} *)
 
-val (<?>) : int -> ('a t * 'a * 'a) -> int
+val ( <?> ) : int -> 'a t * 'a * 'a -> int
 (** [c1 <?> (ord, x, y)] returns the same as [c1] if [c1] is not [0];
     otherwise it uses [ord] to compare the two values [x] and [y],
     of type ['a].
@@ -54,7 +54,6 @@ val option : 'a t -> 'a option t
     @since 0.15 *)
 
 val pair : 'a t -> 'b t -> ('a * 'b) t
-
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 
 val list : 'a t -> 'a list t
@@ -70,16 +69,15 @@ val map : ('a -> 'b) -> 'b t -> 'a t
     [map fst CCInt.compare] compares values of type [(int * 'a)]  by their
       first component. *)
 
-val (>|=) : 'b t -> ('a -> 'b) -> 'a t
+val ( >|= ) : 'b t -> ('a -> 'b) -> 'a t
 (** Infix equivalent of {!map}. *)
 
 module Infix : sig
-  val (<?>) : int -> ('a t * 'a * 'a) -> int
+  val ( <?> ) : int -> 'a t * 'a * 'a -> int
   (** [c1 <?> (ord, x, y)] returns the same as [c1] if [c1] is not [0];
       otherwise it uses [ord] to compare the two values [x] and [y],
       of type ['a]. *)
 
-  val (>|=) : 'b t -> ('a -> 'b) -> 'a t
+  val ( >|= ) : 'b t -> ('a -> 'b) -> 'a t
   (** Infix equivalent of {!map}. *)
-
 end

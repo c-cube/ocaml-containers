@@ -73,23 +73,14 @@ val get_and_remove_exn : 'a t -> int -> 'a * 'a t
     @raise Invalid_argument if the list has less than [i+1] elements. *)
 
 val append : 'a t -> 'a t -> 'a t
-
 val filter : f:('a -> bool) -> 'a t -> 'a t
-
 val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
-
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-
 val flatten : 'a t t -> 'a t
-
 val app : ('a -> 'b) t -> 'a t -> 'b t
-
 val take : int -> 'a t -> 'a t
-
 val take_while : f:('a -> bool) -> 'a t -> 'a t
-
 val drop : int -> 'a t -> 'a t
-
 val drop_while : f:('a -> bool) -> 'a t -> 'a t
 
 val take_drop : int -> 'a t -> 'a t * 'a t
@@ -144,43 +135,37 @@ val of_list_map : f:('a -> 'b) -> 'a list -> 'b t
 (** Combination of {!of_list} and {!map}. *)
 
 val of_array : 'a array -> 'a t
-
 val add_array : 'a t -> 'a array -> 'a t
 
 val to_array : 'a t -> 'a array
 (** More efficient than on usual lists. *)
 
 val add_iter : 'a t -> 'a iter -> 'a t
-
 val of_iter : 'a iter -> 'a t
-
 val to_iter : 'a t -> 'a iter
-
 val add_gen : 'a t -> 'a gen -> 'a t
-
 val of_gen : 'a gen -> 'a t
-
 val to_gen : 'a t -> 'a gen
 
 (** {2 Infix} *)
 
 module Infix : sig
-  val (@+) : 'a -> 'a t -> 'a t
+  val ( @+ ) : 'a -> 'a t -> 'a t
   (** Cons (alias to {!cons}). *)
 
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** Alias to {!flat_map}. *)
 
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
   (** Alias to {!map}. *)
 
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
   (** Alias to {!app}. *)
 
-  val (--) : int -> int -> int t
+  val ( -- ) : int -> int -> int t
   (** Alias to {!range}. *)
 
-  val (--^) : int -> int -> int t
+  val ( --^ ) : int -> int -> int t
   (** [a --^ b] is the integer range from [a] to [b], where [b] is excluded.
       @since 0.17 *)
 end

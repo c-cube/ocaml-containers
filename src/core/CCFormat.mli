@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Helpers for Format
@@ -10,8 +9,11 @@ type 'a iter = ('a -> unit) -> unit
 (* include Format, and alias all its types.
    see https://discuss.ocaml.org/t/extend-existing-module/1389/4
 *)
-include module type of struct include Format end
+
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Format.html} Documentation for the standard Format module}*)
+include module type of struct
+  include Format
+end
 
 type t = Format.formatter
 type -'a printer = t -> 'a -> unit
@@ -28,6 +30,7 @@ val int : int printer
 val string : string printer
 val bool : bool printer
 val float3 : float printer (* 3 digits after . *)
+
 val float : float printer
 
 val exn : exn printer
@@ -71,13 +74,17 @@ val string_lines : string printer
     formatter without mangling the indentation.
     @since 3.3 *)
 
-val char : char printer (** @since 0.14 *)
+val char : char printer
+(** @since 0.14 *)
 
-val int32 : int32 printer (** @since 0.14 *)
+val int32 : int32 printer
+(** @since 0.14 *)
 
-val int64 : int64 printer (** @since 0.14 *)
+val int64 : int64 printer
+(** @since 0.14 *)
 
-val nativeint : nativeint printer (** @since 0.14 *)
+val nativeint : nativeint printer
+(** @since 0.14 *)
 
 val flush : unit printer
 (** Alias to {!Format.pp_print_flush}.
@@ -102,9 +109,21 @@ val opt : 'a printer -> 'a option printer
     @since 0.17 *)
 
 val pair : ?sep:unit printer -> 'a printer -> 'b printer -> ('a * 'b) printer
-val triple : ?sep:unit printer -> 'a printer -> 'b printer -> 'c printer -> ('a * 'b * 'c) printer
-val quad : ?sep:unit printer -> 'a printer -> 'b printer ->
-  'c printer -> 'd printer -> ('a * 'b * 'c * 'd) printer
+
+val triple :
+  ?sep:unit printer ->
+  'a printer ->
+  'b printer ->
+  'c printer ->
+  ('a * 'b * 'c) printer
+
+val quad :
+  ?sep:unit printer ->
+  'a printer ->
+  'b printer ->
+  'c printer ->
+  'd printer ->
+  ('a * 'b * 'c * 'd) printer
 
 val append : unit printer -> unit printer -> unit printer
 (** [append ppa ppb] first prints [ppa ()], then prints [ppb ()].
@@ -262,7 +281,8 @@ val with_color_sf : string -> ('a, t, unit, string) format4 -> 'a
     {b status: unstable}
     @since 0.21 *)
 
-val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 'a
+val with_color_ksf :
+  f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 'a
 (** [with_color_ksf "Blue" ~f "%s %d" "yolo" 42] will behave like
     {!ksprintf}, but wrapping the content with the given style.
 
@@ -273,28 +293,18 @@ val with_color_ksf : f:(string -> 'b) -> string -> ('a, t, unit, 'b) format4 -> 
     ]}
     @since 1.2 *)
 
-
 (** ANSI escape codes. This contains lower level functions for them.
     @since 3.5 *)
 module ANSI_codes : sig
   type color =
-    [ `Black
-    | `Red
-    | `Yellow
-    | `Green
-    | `Blue
-    | `Magenta
-    | `Cyan
-    | `White
-    ]
+    [ `Black | `Red | `Yellow | `Green | `Blue | `Magenta | `Cyan | `White ]
   (** An ANSI color *)
 
   type style =
-    [ `FG of color (** foreground *)
-    | `BG of color (** background *)
+    [ `FG of color  (** foreground *)
+    | `BG of color  (** background *)
     | `Bold
-    | `Reset
-    ]
+    | `Reset ]
   (** A style. Styles can be composed in a list. *)
 
   val clear_line : string
@@ -400,11 +410,11 @@ val sprintf_dyn_color : colors:bool -> ('a, t, unit, string) format4 -> 'a
     ]}
     @since 0.21 *)
 
-val fprintf : t -> ('a, t, unit ) format -> 'a
+val fprintf : t -> ('a, t, unit) format -> 'a
 (** Alias to {!Format.fprintf}.
     @since 0.14 *)
 
-val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit ) format -> 'a
+val fprintf_dyn_color : colors:bool -> t -> ('a, t, unit) format -> 'a
 (** Like {!fprintf} but enable/disable colors depending on [colors].
     @since 0.21 *)
 
@@ -438,6 +448,7 @@ val to_file : string -> ('a, t, unit, unit) format4 -> 'a
 
 module Dump : sig
   type 'a t = 'a printer
+
   val unit : unit t
   val int : int t
   val string : string t
@@ -452,17 +463,16 @@ module Dump : sig
   val option : 'a t -> 'a option t
   val pair : 'a t -> 'b t -> ('a * 'b) t
   val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
-  val quad :
-    'a t -> 'b t -> 'c t -> 'd t ->
-    ('a * 'b * 'c * 'd) t
+  val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
   val result : 'a t -> ('a, string) result t
   val result' : 'a t -> 'e t -> ('a, 'e) result t
+
   val to_string : 'a t -> 'a -> string
   (** Alias to {!CCFormat.to_string}. *)
 end
 
 module Infix : sig
-  val (++) : unit printer -> unit printer -> unit printer
+  val ( ++ ) : unit printer -> unit printer -> unit printer
   (** Alias to {!append}.
       @since 3.2 *)
 end

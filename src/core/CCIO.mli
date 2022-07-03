@@ -54,13 +54,14 @@
 
 type 'a or_error = ('a, string) result
 type 'a iter = ('a -> unit) -> unit
+
 type 'a gen = unit -> 'a option
 (** See [Gen] in the {{: https://github.com/c-cube/gen} gen library}. *)
 
 (** {2 Input} *)
 
-val with_in : ?mode:int -> ?flags:open_flag list ->
-  string -> (in_channel -> 'a) -> 'a
+val with_in :
+  ?mode:int -> ?flags:open_flag list -> string -> (in_channel -> 'a) -> 'a
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
@@ -116,15 +117,15 @@ val read_all_bytes : ?size:int -> in_channel -> Bytes.t
 
 (** {2 Output} *)
 
-val with_out : ?mode:int -> ?flags:open_flag list ->
-  string -> (out_channel -> 'a) -> 'a
+val with_out :
+  ?mode:int -> ?flags:open_flag list -> string -> (out_channel -> 'a) -> 'a
 (** Like {!with_in} but for an output channel.
     @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]).
     @raise Sys_error in case of error (same as {!open_out} and {!close_out}).
     [Open_wronly] is used in any cases. *)
 
-val with_out_a : ?mode:int -> ?flags:open_flag list ->
-  string -> (out_channel -> 'a) -> 'a
+val with_out_a :
+  ?mode:int -> ?flags:open_flag list -> string -> (out_channel -> 'a) -> 'a
 (** Like {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
     flags activated, to append to the file.
     @raise Sys_error in case of error (same as {!open_out} and {!close_out}). *)
@@ -156,8 +157,12 @@ val write_lines_l : out_channel -> string list -> unit
 
 (** {2 Both} *)
 
-val with_in_out : ?mode:int -> ?flags:open_flag list ->
-  string -> (in_channel -> out_channel -> 'a) -> 'a
+val with_in_out :
+  ?mode:int ->
+  ?flags:open_flag list ->
+  string ->
+  (in_channel -> out_channel -> 'a) ->
+  'a
 (** Combines {!with_in} and {!with_out}.
     @param flags opening flags (default [[Open_creat]]).
     @raise Sys_error in case of error.
@@ -202,7 +207,6 @@ module File : sig
   (** Build a file representation from a path (absolute or relative). *)
 
   val exists : t -> bool
-
   val is_directory : t -> bool
 
   val remove_exn : t -> unit
@@ -254,7 +258,7 @@ module File : sig
   (** Write the given string into the given file.
       @since 0.16 *)
 
-  type walk_item = [`File | `Dir] * t
+  type walk_item = [ `File | `Dir ] * t
 
   val walk : t -> walk_item gen
   (** Like {!read_dir} (with [recurse=true]), this function walks
@@ -279,9 +283,8 @@ module File : sig
   val show_walk_item : walk_item -> string
 
   val with_temp :
-    ?temp_dir:string -> prefix:string -> suffix:string ->
-    (string -> 'a) -> 'a
-    (** [with_temp ~prefix ~suffix f] will call [f] with the name of a new
+    ?temp_dir:string -> prefix:string -> suffix:string -> (string -> 'a) -> 'a
+  (** [with_temp ~prefix ~suffix f] will call [f] with the name of a new
         temporary file (located in [temp_dir]).
         After [f] returns, the file is deleted. Best to be used in
         combination with {!with_out}.
