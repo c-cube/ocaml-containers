@@ -4,7 +4,6 @@ module Test = (val Containers_testlib.make ~__FILE__())
 open Test
 
 module Mixmap = struct
-  open CCMixmap;;
 
   t @@ fun () ->
     let module M = CCMixmap.Make(CCInt) in
@@ -138,7 +137,6 @@ module Mixtbl = struct
 end
 
 module Multiset = struct
-  open CCMultiSet;;
 
   t @@ fun () -> let module S = CCMultiSet.Make(String) in
       S.count (S.add_mult S.empty "a" 5) "a" = 5;;

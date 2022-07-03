@@ -2,7 +2,6 @@
 
 module Test = (val Containers_testlib.make ~__FILE__())
 open Test
-open CCMutHeap;;
 
 type elt = {
   x: string;
