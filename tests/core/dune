@@ -2,6 +2,7 @@
  (name t)
  (flags :standard -strict-sequence -warn-error -a+8 -open CCShims_)
  (modes native)
+ (package containers)
  (preprocess
   (action
    (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
