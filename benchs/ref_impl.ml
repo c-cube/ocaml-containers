@@ -1,58 +1,55 @@
-
 (* reference implementations for some structures, for comparison purpose *)
 
-module PersistentHashtbl(H : Hashtbl.HashedType) = struct
-  module Table = Hashtbl.Make(H)
-    (** Imperative hashtable *)
+module PersistentHashtbl (H : Hashtbl.HashedType) = struct
+  module Table = Hashtbl.Make (H)
+  (** Imperative hashtable *)
 
   type key = H.t
+
   type 'a t = 'a zipper ref
+
   and 'a zipper =
-    | Table of 'a Table.t         (** Concrete table *)
-    | Add of key * 'a * 'a t      (** Add key *)
+    | Table of 'a Table.t  (** Concrete table *)
+    | Add of key * 'a * 'a t  (** Add key *)
     | Replace of key * 'a * 'a t  (** Replace key by value *)
-    | Remove of key * 'a t        (** As the table, but without given key *)
+    | Remove of key * 'a t  (** As the table, but without given key *)
 
-  let create i =
-    ref (Table (Table.create i))
-
+  let create i = ref (Table (Table.create i))
   let empty () = create 11
 
   (* pass continuation to get a tailrec rerooting *)
-  let rec _reroot t k = match !t with
-  | Table tbl -> k tbl  (* done *)
-  | Add (key, v, t') ->
-    _reroot t'
-      (fun tbl ->
-        t' := Remove (key, t);
-        Table.add tbl key v;
-        t := Table tbl;
-        k tbl)
-  | Replace (key, v, t') ->
-    _reroot t'
-      (fun tbl ->
-        let v' = Table.find tbl key in
-        t' := Replace (key, v', t);
-        t := Table tbl;
-        Table.replace tbl key v;
-        k tbl)
-  | Remove (key, t') ->
-    _reroot t'
-      (fun tbl ->
-        let v = Table.find tbl key in
-        t' := Add (key, v, t);
-        t := Table tbl;
-        Table.remove tbl key;
-        k tbl)
+  let rec _reroot t k =
+    match !t with
+    | Table tbl -> k tbl (* done *)
+    | Add (key, v, t') ->
+      _reroot t' (fun tbl ->
+          t' := Remove (key, t);
+          Table.add tbl key v;
+          t := Table tbl;
+          k tbl)
+    | Replace (key, v, t') ->
+      _reroot t' (fun tbl ->
+          let v' = Table.find tbl key in
+          t' := Replace (key, v', t);
+          t := Table tbl;
+          Table.replace tbl key v;
+          k tbl)
+    | Remove (key, t') ->
+      _reroot t' (fun tbl ->
+          let v = Table.find tbl key in
+          t' := Add (key, v, t);
+          t := Table tbl;
+          Table.remove tbl key;
+          k tbl)
 
   (* Reroot: modify the zipper so that the current node is a proper
      hashtable, and return the hashtable *)
-  let reroot t = match !t with
+  let reroot t =
+    match !t with
     | Table tbl -> tbl
     | _ -> _reroot t (fun x -> x)
 
   let is_empty t = Table.length (reroot t) = 0
-
   let find t k = Table.find (reroot t) k
 
   (*$R
@@ -91,13 +88,8 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
   *)
 
   let get_exn k t = find t k
-
-  let get k t =
-    try Some (find t k)
-    with Not_found -> None
-
+  let get k t = try Some (find t k) with Not_found -> None
   let mem t k = Table.mem (reroot t) k
-
   let length t = Table.length (reroot t)
 
   (*$R
@@ -120,11 +112,9 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
     let t' = ref (Table tbl) in
     (* update [t] to point to the new hashtable *)
     (try
-      let v' = Table.find tbl k in
-      t := Replace (k, v', t')
-    with Not_found ->
-      t := Remove (k, t')
-    );
+       let v' = Table.find tbl k in
+       t := Replace (k, v', t')
+     with Not_found -> t := Remove (k, t'));
     (* modify the underlying hashtable *)
     Table.replace tbl k v;
     t'
@@ -138,9 +128,8 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
       t := Add (k, v', t');
       Table.remove tbl k;
       t'
-    with Not_found ->
-      (* not member, nothing to do *)
-      t
+    with Not_found -> (* not member, nothing to do *)
+                      t
 
   (*$R
     let h = H.of_seq my_seq in
@@ -170,12 +159,12 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
       let h = H.of_list l in
       let h = List.fold_left (fun h (k,_) -> H.remove h k) h l in
       H.is_empty h)
-    *)
+  *)
 
   let update t k f =
     let v = get k t in
     match v, f v with
-    | None, None -> t  (* no change *)
+    | None, None -> t (* no change *)
     | Some _, None -> remove t k
     | _, Some v' -> replace t k v'
 
@@ -209,10 +198,11 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
     let tbl = reroot t in
     let res = Table.create (Table.length tbl) in
     Table.iter
-      (fun k v -> match f k v with
+      (fun k v ->
+        match f k v with
         | None -> ()
-        | Some v' -> Table.replace res k v'
-      ) tbl;
+        | Some v' -> Table.replace res k v')
+      tbl;
     ref (Table res)
 
   exception ExitPTbl
@@ -231,17 +221,17 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
 
   let merge f t1 t2 =
     let tbl = Table.create (max (length t1) (length t2)) in
-    iter t1
-      (fun k v1 ->
+    iter t1 (fun k v1 ->
         let v2 = try Some (find t2 k) with Not_found -> None in
         match f k (Some v1) v2 with
         | None -> ()
         | Some v' -> Table.replace tbl k v');
-    iter t2
-      (fun k v2 ->
-        if not (mem t1 k) then match f k None (Some v2) with
+    iter t2 (fun k v2 ->
+        if not (mem t1 k) then (
+          match f k None (Some v2) with
           | None -> ()
-          | Some _ -> Table.replace tbl k v2);
+          | Some _ -> Table.replace tbl k v2
+        ));
     ref (Table tbl)
 
   (*$R
@@ -262,13 +252,11 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
 
   let add_seq init seq =
     let tbl = ref init in
-    seq (fun (k,v) -> tbl := replace !tbl k v);
+    seq (fun (k, v) -> tbl := replace !tbl k v);
     !tbl
 
   let of_seq seq = add_seq (empty ()) seq
-
-  let add_list init l =
-    add_seq init (fun k -> List.iter k l)
+  let add_list init l = add_seq init (fun k -> List.iter k l)
 
   (*$QR
     _list_int_int (fun l ->
@@ -293,7 +281,7 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
 
   let to_list t =
     let tbl = reroot t in
-    let bindings = Table.fold (fun k v acc -> (k,v)::acc) tbl [] in
+    let bindings = Table.fold (fun k v acc -> (k, v) :: acc) tbl [] in
     bindings
 
   (*$R
@@ -302,10 +290,9 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
     OUnit.assert_equal my_list (List.sort compare l)
   *)
 
-  let to_seq t =
-    fun k ->
-      let tbl = reroot t in
-      Table.iter (fun x y -> k (x,y)) tbl
+  let to_seq t k =
+    let tbl = reroot t in
+    Table.iter (fun x y -> k (x, y)) tbl
 
   (*$R
     let h = H.of_seq my_seq in
@@ -316,31 +303,34 @@ module PersistentHashtbl(H : Hashtbl.HashedType) = struct
 
   let equal eq t1 t2 =
     length t1 = length t2
-    &&
-    for_all
-      (fun k v -> match get k t2 with
-        | None -> false
-        | Some v' -> eq v v'
-      ) t1
+    && for_all
+         (fun k v ->
+           match get k t2 with
+           | None -> false
+           | Some v' -> eq v v')
+         t1
 
   let pp pp_k pp_v buf t =
     Buffer.add_string buf "{";
     let first = ref true in
-    iter t
-      (fun k v ->
-        if !first then first:=false else Buffer.add_string buf ", ";
-        Printf.bprintf buf "%a -> %a" pp_k k pp_v v
-      );
+    iter t (fun k v ->
+        if !first then
+          first := false
+        else
+          Buffer.add_string buf ", ";
+        Printf.bprintf buf "%a -> %a" pp_k k pp_v v);
     Buffer.add_string buf "}"
 
   let print pp_k pp_v fmt t =
     Format.pp_print_string fmt "{";
     let first = ref true in
-    iter t
-      (fun k v ->
-        if !first then first:=false
-        else (Format.pp_print_string fmt ", "; Format.pp_print_cut fmt ());
-        Format.fprintf fmt "%a -> %a" pp_k k pp_v v
-      );
+    iter t (fun k v ->
+        if !first then
+          first := false
+        else (
+          Format.pp_print_string fmt ", ";
+          Format.pp_print_cut fmt ()
+        );
+        Format.fprintf fmt "%a -> %a" pp_k k pp_v v);
     Format.pp_print_string fmt "}"
 end

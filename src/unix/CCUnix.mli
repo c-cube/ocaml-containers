@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 High-level Functions on top of Unix}
@@ -17,15 +16,14 @@ val escape_str : string -> string
 (** Escape a string so it can be a shell argument. *)
 
 type call_result =
-  < stdout:string;
-    stderr:string;
-    status:Unix.process_status;
-    errcode:int; (** Extracted from status *)
-  >
+  < stdout : string
+  ; stderr : string
+  ; status : Unix.process_status
+  ; errcode : int  (** Extracted from status *) >
 
 val call_full :
   ?bufsize:int ->
-  ?stdin:[`Gen of string gen | `Str of string] ->
+  ?stdin:[ `Gen of string gen | `Str of string ] ->
   ?env:string array ->
   ('a, Buffer.t, unit, call_result) format4 ->
   'a
@@ -40,7 +38,7 @@ val call_full :
 
 val call :
   ?bufsize:int ->
-  ?stdin:[`Gen of string gen | `Str of string] ->
+  ?stdin:[ `Gen of string gen | `Str of string ] ->
   ?env:string array ->
   ('a, Buffer.t, unit, string * string * int) format4 ->
   'a
@@ -49,7 +47,7 @@ val call :
 
 val call_stdout :
   ?bufsize:int ->
-  ?stdin:[`Gen of string gen | `Str of string] ->
+  ?stdin:[ `Gen of string gen | `Str of string ] ->
   ?env:string array ->
   ('a, Buffer.t, unit, string) format4 ->
   'a
@@ -57,23 +55,21 @@ val call_stdout :
 type line = string
 
 type async_call_result =
-  < stdout:line gen;
-    stderr:line gen;
-    stdin:line -> unit; (* send a line *)
-    close_in:unit; (* close stdin *)
-    close_err:unit;
-    close_out:unit;
-    close_all:unit;  (* close all 3 channels *) (** @since 0.11 *)
-    wait:Unix.process_status;  (* block until the process ends *)
-    wait_errcode:int; (* block until the process ends, then extract errcode *)
-    (** @since 0.11 *)
-  >
+  < stdout : line gen
+  ; stderr : line gen
+  ; stdin : line -> unit (* send a line *)
+  ; close_in : unit (* close stdin *)
+  ; close_err : unit
+  ; close_out : unit
+  ; close_all : unit (* close all 3 channels *)  (** @since 0.11 *)
+  ; wait : Unix.process_status (* block until the process ends *)
+  ; wait_errcode : int  (** @since 0.11 *)
+  (* block until the process ends, then extract errcode *) >
 (** A subprocess for interactive usage (read/write channels line by line)
     @since 0.11 *)
 
-val async_call : ?env:string array ->
-  ('a, Buffer.t, unit, async_call_result) format4 ->
-  'a
+val async_call :
+  ?env:string array -> ('a, Buffer.t, unit, async_call_result) format4 -> 'a
 (** Spawns a subprocess, like {!call}, but the subprocess's channels are
     line generators and line sinks (for stdin).
     If [p] is [async_call "cmd"], then [p#wait] waits for the subprocess
@@ -84,23 +80,31 @@ val async_call : ?env:string array ->
 
     @since 0.11 *)
 
-val stdout : < stdout : 'a; .. > -> 'a
-val stderr : < stderr : 'a; .. > -> 'a
-val status : < status : 'a; .. > -> 'a
-val errcode : < errcode : 'a; .. > -> 'a
+val stdout : < stdout : 'a ; .. > -> 'a
+val stderr : < stderr : 'a ; .. > -> 'a
+val status : < status : 'a ; .. > -> 'a
+val errcode : < errcode : 'a ; .. > -> 'a
 
 (** {2 Simple IO} *)
 
-val with_in : ?mode:int -> ?flags:Unix.open_flag list ->
-  string -> f:(in_channel -> 'a) -> 'a
+val with_in :
+  ?mode:int ->
+  ?flags:Unix.open_flag list ->
+  string ->
+  f:(in_channel -> 'a) ->
+  'a
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
     @param flags opening flags. [Unix.O_RDONLY] is used in any cases.
     @since 0.16 *)
 
-val with_out : ?mode:int -> ?flags:Unix.open_flag list ->
-  string -> f:(out_channel -> 'a) -> 'a
+val with_out :
+  ?mode:int ->
+  ?flags:Unix.open_flag list ->
+  string ->
+  f:(out_channel -> 'a) ->
+  'a
 (** Same as {!with_in} but for an output channel.
     @param flags opening flags (default [[Unix.O_CREAT; Unix.O_TRUNC]])
       [Unix.O_WRONLY] is used in any cases.
@@ -119,16 +123,16 @@ val with_process_out : string -> f:(out_channel -> 'a) -> 'a
 (** Open a shell command in a subprocess and obtain a handle to its stdin.
     @since 0.16 *)
 
+type process_full =
+  < stdin : out_channel
+  ; stdout : in_channel
+  ; stderr : in_channel
+  ; close : Unix.process_status  (** Will block until the process stops *) >
 (** Handle to a subprocess.
     @since 0.16 *)
-type process_full = <
-  stdin: out_channel;
-  stdout: in_channel;
-  stderr: in_channel;
-  close: Unix.process_status; (** Will block until the process stops *)
->
 
-val with_process_full : ?env:string array -> string -> f:(process_full -> 'a) -> 'a
+val with_process_full :
+  ?env:string array -> string -> f:(process_full -> 'a) -> 'a
 (** Open a subprocess and obtain a handle to its channels.
     @param env environment to pass to the subprocess.
     @since 0.16 *)
@@ -149,7 +153,8 @@ val with_connection : Unix.sockaddr -> f:(in_channel -> out_channel -> 'a) -> 'a
 
 exception ExitServer
 
-val establish_server : Unix.sockaddr -> f:(in_channel -> out_channel -> _) -> unit
+val establish_server :
+  Unix.sockaddr -> f:(in_channel -> out_channel -> _) -> unit
 (** Listen on the address and calls the handler in a blocking fashion.
     Using {!Thread} is recommended if handlers might take time.
     The callback should raise {!ExitServer} to stop the loop.
@@ -157,7 +162,7 @@ val establish_server : Unix.sockaddr -> f:(in_channel -> out_channel -> _) -> un
 
 (** {2 File lock} *)
 
-val with_file_lock : kind:[`Read|`Write] -> string -> (unit -> 'a) -> 'a
+val with_file_lock : kind:[ `Read | `Write ] -> string -> (unit -> 'a) -> 'a
 (** [with_file_lock ~kind filename f] puts a lock on the offset 0
     of the file named [filename], calls [f] and returns its result after
     the file is unlocked. If [f ()] raises an exception the exception is
@@ -169,23 +174,20 @@ val with_file_lock : kind:[`Read|`Write] -> string -> (unit -> 'a) -> 'a
 (** {2 Infix Functions} *)
 
 module Infix : sig
-  val (?|) : ('a, Buffer.t, unit, call_result) format4 -> 'a
+  val ( ?| ) : ('a, Buffer.t, unit, call_result) format4 -> 'a
   (** Infix version of {!call}.
       @since 0.11 *)
 
-  val (?|&) : ('a, Buffer.t, unit, async_call_result) format4 -> 'a
+  val ( ?|& ) : ('a, Buffer.t, unit, async_call_result) format4 -> 'a
   (** Infix version of {!async_call}.
       @since 0.11 *)
 end
 
 include module type of Infix
 
-
 (** {2 Temporary directory} *)
 
-val with_temp_dir :
-  ?mode:int -> ?dir:string ->
-  string -> (string -> 'a) -> 'a
+val with_temp_dir : ?mode:int -> ?dir:string -> string -> (string -> 'a) -> 'a
 (** Create a temporary directory, call the function, and then destroy the
     directory afterwards. Usage [with_temp_dir pattern f].
     @param pattern the naming pattern for the temporary directory.

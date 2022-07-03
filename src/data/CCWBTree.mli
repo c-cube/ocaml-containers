@@ -12,11 +12,13 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 module type ORD = sig
   type t
+
   val compare : t -> t -> int
 end
 
 module type KEY = sig
   include ORD
+
   val weight : t -> int
 end
 
@@ -24,17 +26,12 @@ end
 
 module type S = sig
   type key
-
   type +'a t
 
   val empty : 'a t
-
   val is_empty : _ t -> bool
-
   val singleton : key -> 'a -> 'a t
-
   val mem : key -> _ t -> bool
-
   val get : key -> 'a t -> 'a option
 
   val get_exn : key -> 'a t -> 'a
@@ -47,14 +44,13 @@ module type S = sig
   val nth_exn : int -> 'a t -> key * 'a
   (** @raise Not_found if the index is invalid. *)
 
-  val get_rank : key -> 'a t -> [`At of int | `After of int | `First]
+  val get_rank : key -> 'a t -> [ `At of int | `After of int | `First ]
   (** [get_rank k m] looks for the rank of [k] in [m], i.e. the index
       of [k] in the sorted list of bindings of [m].
       [let (`At n) = get_rank k m in nth_exn n m = get m k] should hold.
       @since 1.4 *)
 
   val add : key -> 'a -> 'a t -> 'a t
-
   val remove : key -> 'a t -> 'a t
 
   val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
@@ -63,9 +59,7 @@ module type S = sig
       if [f] returns [None] it removes [k]. *)
 
   val cardinal : _ t -> int
-
   val weight : _ t -> int
-
   val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
   val mapi : f:(key -> 'a -> 'b) -> 'a t -> 'b t
@@ -85,7 +79,8 @@ module type S = sig
       with keys smaller than [k], [r] has keys bigger than [k],
       and [o = Some v] if [k, v] belonged to the map. *)
 
-  val merge : f:(key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
+  val merge :
+    f:(key -> 'a option -> 'b option -> 'c option) -> 'a t -> 'b t -> 'c t
   (** Like {!Map.S.merge}. *)
 
   val extract_min : 'a t -> key * 'a * 'a t
@@ -109,37 +104,37 @@ module type S = sig
       @raise Not_found if the tree is empty. *)
 
   val add_list : 'a t -> (key * 'a) list -> 'a t
-
   val of_list : (key * 'a) list -> 'a t
-
   val to_list : 'a t -> (key * 'a) list
-
   val add_iter : 'a t -> (key * 'a) iter -> 'a t
-
   val of_iter : (key * 'a) iter -> 'a t
-
   val to_iter : 'a t -> (key * 'a) iter
-
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
-
   val of_gen : (key * 'a) gen -> 'a t
-
   val to_gen : 'a t -> (key * 'a) gen
 
-  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_arrow:unit printer ->
-    ?pp_sep:unit printer -> key printer -> 'a printer -> 'a t printer
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_arrow:unit printer ->
+    ?pp_sep:unit printer ->
+    key printer ->
+    'a printer ->
+    'a t printer
   (** Renamed from [val print].
       @since 2.0 *)
 
   (**/**)
+
   val node_ : key -> 'a -> 'a t -> 'a t -> 'a t
   val balanced : _ t -> bool
+
   (**/**)
 end
 
 (** {2 Functor} *)
 
-module Make(X : ORD) : S with type key = X.t
+module Make (X : ORD) : S with type key = X.t
 
-module MakeFull(X : KEY) : S with type key = X.t
 (** Use the custom [X.weight] function *)
+module MakeFull (X : KEY) : S with type key = X.t

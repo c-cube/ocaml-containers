@@ -36,10 +36,12 @@ end
 
 (* all bits from 0 to w-1 set to true *)
 let rec all_bits_ acc w =
-  if w=0 then acc
-  else
-    let acc = acc lor (1 lsl w-1) in
-    all_bits_ acc (w-1)
+  if w = 0 then
+    acc
+  else (
+    let acc = acc lor ((1 lsl w) - 1) in
+    all_bits_ acc (w - 1)
+  )
 
 (* increment and return previous value *)
 let get_then_incr n =
@@ -47,20 +49,22 @@ let get_then_incr n =
   incr n;
   x
 
-module Make(X : sig end) : S = struct
+module Make (X : sig end) : S = struct
   type t = int
 
   let empty = 0
-
   let width_ = ref 0
   let frozen_ = ref false
 
   type field = int (* a mask *)
 
-  let get field x = (x land field) <> 0
+  let get field x = x land field <> 0
 
   let set field b x =
-    if b then x lor field else x land (lnot field)
+    if b then
+      x lor field
+    else
+      x land lnot field
 
   let mk_field () =
     if !frozen_ then raise Frozen;
@@ -70,6 +74,5 @@ module Make(X : sig end) : S = struct
     mask
 
   let freeze () = frozen_ := true
-
   let total_width () = !width_
 end

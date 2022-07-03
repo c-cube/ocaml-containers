@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Complements to List *)
@@ -40,7 +39,7 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 (** [map f [a0; a1; …; an]] applies function [f] in turn to [a0; a1; …; an].
     Safe version of {!List.map}. *)
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
 (** [l >|= f] is the infix version of [map] with reversed arguments.
     @since 0.5 *)
 
@@ -58,7 +57,7 @@ val cons' : 'a t -> 'a -> 'a t
     functions such as {!List.fold_left} or {!Array.fold_left}.
     @since 3.3 *)
 
-val (@) : 'a t -> 'a t -> 'a t
+val ( @ ) : 'a t -> 'a t -> 'a t
 (** [l1 @ l2] is like [append l1 l2].
     Concatenate the two lists [l1] and [l2]. *)
 
@@ -73,7 +72,7 @@ val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
     [f a1 (f a2 ( … (f an b) … ))].
     Safe version of {!List.fold_right}. *)
 
-val fold_while : ('a -> 'b -> 'a * [`Stop | `Continue]) -> 'a -> 'b t -> 'a
+val fold_while : ('a -> 'b -> 'a * [ `Stop | `Continue ]) -> 'a -> 'b t -> 'a
 (** [fold_while f init l] folds until a stop condition via [('a, `Stop)] is
     indicated by the accumulator.
     @since 0.8 *)
@@ -83,12 +82,14 @@ val fold_map : ('acc -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
     list to another list.
     @since 0.14 *)
 
-val fold_map_i : ('acc -> int -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_map_i :
+  ('acc -> int -> 'a -> 'acc * 'b) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_map_i f init l] is a [foldi]-like function, but it also maps the
     list to another list.
     @since 2.8 *)
 
-val fold_on_map : f:('a -> 'b) -> reduce:('acc -> 'b -> 'acc) -> 'acc -> 'a list -> 'acc
+val fold_on_map :
+  f:('a -> 'b) -> reduce:('acc -> 'b -> 'acc) -> 'acc -> 'a list -> 'acc
 (** [fold_on_map ~f ~reduce init l] combines [map f] and [fold_left reduce init]
     in one operation.
     @since 2.8 *)
@@ -109,27 +110,36 @@ val reduce_exn : ('a -> 'a -> 'a) -> 'a list -> 'a
     @raise Invalid_argument if the given list is empty.
     @since 3.2 *)
 
-val fold_map2 : ('acc -> 'a -> 'b -> 'acc * 'c) -> 'acc -> 'a list -> 'b list -> 'acc * 'c list
+val fold_map2 :
+  ('acc -> 'a -> 'b -> 'acc * 'c) ->
+  'acc ->
+  'a list ->
+  'b list ->
+  'acc * 'c list
 (** [fold_map2 f init l1 l2] is to [fold_map] what [List.map2] is to [List.map].
     @raise Invalid_argument if the lists do not have the same length.
     @since 0.16 *)
 
-val fold_filter_map : ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_filter_map :
+  ('acc -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_filter_map f init l] is a [fold_left]-like function, but also
     generates a list of output in a way similar to {!filter_map}.
     @since 0.17 *)
 
-val fold_filter_map_i : ('acc -> int -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_filter_map_i :
+  ('acc -> int -> 'a -> 'acc * 'b option) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_filter_map_i f init l] is a [foldi]-like function, but also
     generates a list of output in a way similar to {!filter_map}.
     @since 2.8 *)
 
-val fold_flat_map : ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_flat_map :
+  ('acc -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map f init l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
     @since 0.14 *)
 
-val fold_flat_map_i : ('acc -> int -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
+val fold_flat_map_i :
+  ('acc -> int -> 'a -> 'acc * 'b list) -> 'acc -> 'a list -> 'acc * 'b list
 (** [fold_flat_map_i f init l] is a [fold_left]-like function, but it also maps the
     list to a list of lists that is then [flatten]'d.
     @since 2.8 *)
@@ -244,29 +254,32 @@ val diagonal : 'a t -> ('a * 'a) t
 (** [diagonal l] returns all pairs of distinct positions of the list [l],
     that is the list of [List.nth i l, List.nth j l] if [i < j]. *)
 
-val partition_map_either : ('a -> ('b, 'c) CCEither.t) ->
-  'a list -> 'b list * 'c list
+val partition_map_either :
+  ('a -> ('b, 'c) CCEither.t) -> 'a list -> 'b list * 'c list
 (** [partition_map_either f l] maps [f] on [l] and gather results in lists:
     - if [f x = Left y], adds [y] to the first list.
     - if [f x = Right z], adds [z] to the second list.
     @since 3.3 *)
 
-val partition_filter_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
-  'a list -> 'b list * 'c list
+val partition_filter_map :
+  ('a -> [< `Left of 'b | `Right of 'c | `Drop ]) ->
+  'a list ->
+  'b list * 'c list
 (** [partition_filter_map f l] maps [f] on [l] and gather results in lists:
     - if [f x = `Left y], adds [y] to the first list.
     - if [f x = `Right z], adds [z] to the second list.
     - if [f x = `Drop], ignores [x].
     @since 3.3 *)
 
-val partition_map : ('a -> [<`Left of 'b | `Right of 'c | `Drop]) ->
-  'a list -> 'b list * 'c list
-[@@ocaml.deprecated "use CCList.partition_filter_map instead"]
+val partition_map :
+  ('a -> [< `Left of 'b | `Right of 'c | `Drop ]) ->
+  'a list ->
+  'b list * 'c list
+  [@@ocaml.deprecated "use CCList.partition_filter_map instead"]
 (** @deprecated use {!partition_filter_map} instead
     @since 0.11 *)
 
-val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) ->
-  'a t -> 'a list t
+val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) -> 'a t -> 'a list t
 (** [group_by ?hash ?eq l] groups equal elements, regardless of their order of appearance.
     precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
     @since 2.3 *)
@@ -278,8 +291,11 @@ val join : join_row:('a -> 'b -> 'c option) -> 'a t -> 'b t -> 'c t
     iterations.
     @since 2.3 *)
 
-val join_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
-  ('a -> 'key) -> ('b -> 'key) ->
+val join_by :
+  ?eq:('key -> 'key -> bool) ->
+  ?hash:('key -> int) ->
+  ('a -> 'key) ->
+  ('b -> 'key) ->
   merge:('key -> 'a -> 'b -> 'c option) ->
   'a t ->
   'b t ->
@@ -293,8 +309,11 @@ val join_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
     precondition: for any [x] and [y], if [eq x y] then [hash x=hash y] must hold.
     @since 2.3 *)
 
-val join_all_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
-  ('a -> 'key) -> ('b -> 'key) ->
+val join_all_by :
+  ?eq:('key -> 'key -> bool) ->
+  ?hash:('key -> int) ->
+  ('a -> 'key) ->
+  ('b -> 'key) ->
   merge:('key -> 'a list -> 'b list -> 'c option) ->
   'a t ->
   'b t ->
@@ -310,7 +329,9 @@ val join_all_by : ?eq:('key -> 'key -> bool) -> ?hash:('key -> int) ->
       and [c] is inserted in the result.
     @since 2.3 *)
 
-val group_join_by : ?eq:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+val group_join_by :
+  ?eq:('a -> 'a -> bool) ->
+  ?hash:('a -> int) ->
   ('b -> 'a) ->
   'a t ->
   'b t ->
@@ -389,16 +410,16 @@ val mguard : bool -> unit t
     ]}
     @since 3.1 *)
 
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
 (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
 
-val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+val ( <$> ) : ('a -> 'b) -> 'a t -> 'b t
 (** [(<$>)] is [map]. *)
 
 val return : 'a -> 'a t
 (** [return x] is [x]. *)
 
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
 (** [l >>= f] is [flat_map f l]. *)
 
 val take : int -> 'a t -> 'a t
@@ -477,10 +498,10 @@ val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
     and [p x] holds. Otherwise returns [None]. *)
 
 val remove : eq:('a -> 'a -> bool) -> key:'a -> 'a t -> 'a t
-    (* FIXME: the original CCList.mli uses ~x instead of ~key !! *)
 (** [remove ~eq ~key l] removes every instance of [key] from [l]. Tail-recursive.
     @param eq equality function.
     @since 0.11 *)
+(* FIXME: the original CCList.mli uses ~x instead of ~key !! *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
 (** [filter_map f l] is the sublist of [l] containing only elements for which
@@ -553,14 +574,16 @@ val is_sorted : cmp:('a -> 'a -> int) -> 'a list -> bool
     @param cmp the comparison function.
     @since 0.17 *)
 
-val sorted_insert : cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
+val sorted_insert :
+  cmp:('a -> 'a -> int) -> ?uniq:bool -> 'a -> 'a list -> 'a list
 (** [sorted_insert ~cmp ?uniq x l] inserts [x] into [l] such that, if [l] was sorted,
     then [sorted_insert x l] is sorted too.
     @param uniq if [true] and [x] is already in sorted position in [l], then
       [x] is not duplicated. Default [false] ([x] will be inserted in any case).
     @since 0.17 *)
 
-val sorted_remove : cmp:('a -> 'a -> int) -> ?all:bool -> 'a -> 'a list -> 'a list
+val sorted_remove :
+  cmp:('a -> 'a -> int) -> ?all:bool -> 'a -> 'a list -> 'a list
 (** [sorted_remove ~cmp x l] removes [x] from a sorted list [l] such that
     the return value is sorted too. By default, it is the left inverse of
     [sorted_insert]; that is, [sorted_remove ~cmp x (sorted_insert ~cmp x l)]
@@ -701,11 +724,11 @@ val range' : int -> int -> int t
 (** [range' i j] is like {!range} but the second bound [j] is excluded.
     For instance [range' 0 5 = [0;1;2;3;4]]. *)
 
-val (--) : int -> int -> int t
+val ( -- ) : int -> int -> int t
 (** [i -- j] is the list of integers from [i] to [j] included.
     Infix alias for [range]. *)
 
-val (--^) : int -> int -> int t
+val ( --^ ) : int -> int -> int t
 (** [i --^ j] is the list of integers from [i] to [j] excluded.
     Infix alias for [range'].
     @since 0.17 *)
@@ -719,32 +742,36 @@ val repeat : int -> 'a t -> 'a t
 (** {2 Association Lists} *)
 
 module Assoc : sig
-  type ('a, 'b) t = ('a*'b) list
+  type ('a, 'b) t = ('a * 'b) list
 
-  val get : eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b option
+  val get : eq:('a -> 'a -> bool) -> 'a -> ('a, 'b) t -> 'b option
   (** [get ~eq k alist] returns [Some v] if the given key [k] is present into [alist],
       or [None] if not present. *)
 
-  val get_exn : eq:('a->'a->bool) -> 'a -> ('a,'b) t -> 'b
+  val get_exn : eq:('a -> 'a -> bool) -> 'a -> ('a, 'b) t -> 'b
   (** [get_exn ~eq k alist] returns [v] if the element [k] is present into [alist].
       Like [get], but unsafe.
       @raise Not_found if the element is not present. *)
 
-  val set : eq:('a->'a->bool) -> 'a -> 'b -> ('a,'b) t -> ('a,'b) t
+  val set : eq:('a -> 'a -> bool) -> 'a -> 'b -> ('a, 'b) t -> ('a, 'b) t
   (** [set ~eq k v alist] adds the binding [k, v] into the list [alist] (erase it if already present). *)
 
-  val mem : ?eq:('a->'a->bool) -> 'a -> ('a,_) t -> bool
+  val mem : ?eq:('a -> 'a -> bool) -> 'a -> ('a, _) t -> bool
   (** [mem ?eq k alist] returns [true] iff [k] is a key in [alist].
       @since 0.16 *)
 
   val update :
-    eq:('a->'a->bool) -> f:('b option -> 'b option) -> 'a -> ('a,'b) t -> ('a,'b) t
+    eq:('a -> 'a -> bool) ->
+    f:('b option -> 'b option) ->
+    'a ->
+    ('a, 'b) t ->
+    ('a, 'b) t
   (** [update ~eq ~f k alist] updates [alist] on the key [k], by calling [f (get k alist)]
       and removing [k] if it returns [None], mapping [k] to [v'] if it
       returns [Some v'].
       @since 0.16 *)
 
-  val remove : eq:('a->'a->bool) -> 'a -> ('a,'b) t -> ('a,'b) t
+  val remove : eq:('a -> 'a -> bool) -> 'a -> ('a, 'b) t -> ('a, 'b) t
   (** [remove ~eq k alist] returns the [alist] without the first pair with key [k], if any.
       @since 0.17 *)
 
@@ -825,10 +852,11 @@ end
 (** {2 Monadic Operations} *)
 module type MONAD = sig
   type 'a t
+
   val return : 'a -> 'a t
   (** [return] is the Monadic [return]. *)
 
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** [ (>>=) ] is the Monadic [bind]. *)
 end
 
@@ -849,7 +877,7 @@ end
     of {!map} and [sequence_m]; [map_m_par] is like [map_m] but useful
     for some pseudo monads like Lwt.
 *)
-module Traverse(M : MONAD) : sig
+module Traverse (M : MONAD) : sig
   val sequence_m : 'a M.t t -> 'a t M.t
   (** Traverse the list of monadic values using {!M.(>>=)}, re-combining
       elements with [(::)]. See the documentation of the {!Traverse}
@@ -882,8 +910,13 @@ val random_choose : 'a t -> 'a random_gen
 
 val random_sequence : 'a random_gen t -> 'a t random_gen
 
-val to_string : ?start:string -> ?stop:string -> ?sep:string ->
-  ('a -> string) -> 'a t -> string
+val to_string :
+  ?start:string ->
+  ?stop:string ->
+  ?sep:string ->
+  ('a -> string) ->
+  'a t ->
+  string
 (** [to_string ?start ?stop ?sep item_to_string l] prints [l] to a string using
     [sep] as a separator between elements of [l].
     @since 2.7 *)
@@ -927,26 +960,26 @@ val of_gen : 'a gen -> 'a t
     @since 0.16 *)
 
 module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
   (** [l >|= f] is the infix version of [map] with reversed arguments. *)
 
-  val (@) : 'a t -> 'a t -> 'a t
+  val ( @ ) : 'a t -> 'a t -> 'a t
   (** [l1 @ l2] concatenates two lists [l1] and [l2].
       As {!append}. *)
 
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
   (** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
 
-  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val ( <$> ) : ('a -> 'b) -> 'a t -> 'b t
   (** [f <$> l] is like {!map}. *)
 
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** [l >>= f] is [flat_map f l]. *)
 
-  val (--) : int -> int -> int t
+  val ( -- ) : int -> int -> int t
   (** [i -- j] is the infix alias for [range]. Bounds included. *)
 
-  val (--^) : int -> int -> int t
+  val ( --^ ) : int -> int -> int t
   (** [i --^ j] is the infix alias for [range']. Second bound [j] excluded.
       @since 0.17 *)
 
@@ -955,7 +988,7 @@ module Infix : sig
   include CCShims_syntax.LET with type 'a t := 'a t
   (** @inline *)
 
-  val (and&) : 'a list -> 'b list -> ('a * 'b) list
+  val ( and& ) : 'a list -> 'b list -> ('a * 'b) list
   (** [(and&)] is {!combine_shortest}.
       It allows to perform a synchronized product between two lists,
       stopping gently at the shortest. Usable both with [let+] and [let*].
@@ -979,6 +1012,10 @@ include module type of Infix
 
 (** {2 IO} *)
 
-val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-  'a printer -> 'a t printer
+val pp :
+  ?pp_start:unit printer ->
+  ?pp_stop:unit printer ->
+  ?pp_sep:unit printer ->
+  'a printer ->
+  'a t printer
 (** [pp ?pp_start ?pp_stop ?pp_sep ppf l] prints the contents of a list. *)

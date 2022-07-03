@@ -1,4 +1,3 @@
-
 (** CBOR encoder/decoder.
 
   The type is chosen to be compatible with ocaml-cbor.
@@ -23,23 +22,19 @@ type t =
   | `Text of string
   | `Array of t list
   | `Map of (t * t) list
-  | `Tag of int * t
-  ]
+  | `Tag of int * t ]
 
 val pp_diagnostic : t CCFormat.printer
-
 val to_string_diagnostic : t -> string
 
 (* we use funtions from Bytes *)
 [@@@ifge 4.08]
 
 val encode : ?buf:Buffer.t -> t -> string
-
 val decode : string -> (t, string) result
 
 val decode_exn : string -> t
 (** Like {!decode}.
     @raise Failure if the string isn't valid *)
-
 
 [@@@endif]

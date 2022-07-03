@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Equality Combinators (Labeled version of {!CCEqual}) *)
@@ -20,10 +19,8 @@ val string : string t
 val bool : bool t
 val float : float t
 val unit : unit t
-
 val list : 'a t -> 'a list t
 val array : 'a t -> 'a array t
-
 val option : 'a t -> 'a option t
 val pair : 'a t -> 'b t -> ('a * 'b) t
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
@@ -47,7 +44,7 @@ val never_eq : _ t
     @since NEXT_RELEASE *)
 
 module Infix : sig
-  val (>|=) : 'b t -> ('a -> 'b) -> 'a t
+  val ( >|= ) : 'b t -> ('a -> 'b) -> 'a t
   (** Infix equivalent of {!map}. *)
 end
 

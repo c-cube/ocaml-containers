@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (* Copyright (C) 2015 Simon Cruanes, Carmelo Piccione *)
@@ -20,11 +19,11 @@
 (** The abstract type for arrays *)
 module Array : sig
   module type S = sig
-    (** The element type *)
     type elt
+    (** The element type *)
 
-    (** The type of an array instance *)
     type t
+    (** The type of an array instance *)
 
     val dummy : elt
     (** A dummy element used for empty slots in the array
@@ -33,16 +32,16 @@ module Array : sig
     val create : int -> t
     (** Make an array of the given size, filled with dummy elements. *)
 
-    val length: t -> int
+    val length : t -> int
     (** [length t] gets the total number of elements currently in [t]. *)
 
-    val get: t -> int -> elt
+    val get : t -> int -> elt
     (** [get t i] gets the element at position [i]. *)
 
-    val set: t -> int -> elt -> unit
+    val set : t -> int -> elt -> unit
     (** [set t i e] sets the element at position [i] to [e]. *)
 
-    val sub: t -> int -> int -> t
+    val sub : t -> int -> int -> t
     (** [sub t i len] gets the sub-array of [t] from
         position [i] to [i + len]. *)
 
@@ -59,12 +58,14 @@ module Array : sig
   end
 
   (** Efficient array version for the [char] type *)
-  module Byte :
-    S with type elt = char and type t = Bytes.t
+  module Byte : S with type elt = char and type t = Bytes.t
 
   (** Makes an array given an arbitrary element type *)
-  module Make(Elt:sig type t val dummy : t end) :
-    S with type elt = Elt.t and type t = Elt.t array
+  module Make (Elt : sig
+    type t
+
+    val dummy : t
+  end) : S with type elt = Elt.t and type t = Elt.t array
 end
 
 (** {2 Ring Buffer}
@@ -72,14 +73,14 @@ end
     The abstract ring buffer type, made concrete by choice of
     [ARRAY] module implementation *)
 module type S = sig
-  (** The module type of Array for this ring buffer *)
   module Array : Array.S
+  (** The module type of Array for this ring buffer *)
 
-  (** Defines the bounded ring buffer type *)
   type t
+  (** Defines the bounded ring buffer type *)
 
-  (** Raised in querying functions when the buffer is empty *)
   exception Empty
+  (** Raised in querying functions when the buffer is empty *)
 
   val create : int -> t
   (** [create size] creates a new bounded buffer with given size.
@@ -123,7 +124,7 @@ module type S = sig
   val clear : t -> unit
   (** Clear the content of the buffer *)
 
-  val is_empty :t -> bool
+  val is_empty : t -> bool
   (** Is the buffer empty (i.e. contains no elements)? *)
 
   val junk_front : t -> unit
@@ -200,14 +201,15 @@ module type S = sig
       @since 0.11 *)
 end
 
-(** An efficient byte based ring buffer *)
 module Byte : S with module Array = Array.Byte
+(** An efficient byte based ring buffer *)
 
 (** Makes a ring buffer module with the given array type *)
-module MakeFromArray(A : Array.S) : S with module Array = A
+module MakeFromArray (A : Array.S) : S with module Array = A
 
 (** Buffer using regular arrays *)
-module Make(X : sig
-    type t
-    val dummy : t
-  end) : S with type Array.elt = X.t and type Array.t = X.t array
+module Make (X : sig
+  type t
+
+  val dummy : t
+end) : S with type Array.elt = X.t and type Array.t = X.t array

@@ -1,12 +1,18 @@
 (rule
  (targets README.md.corrected)
- (deps (package containers-data) ./src/mdx_runner.exe)
- (enabled_if (= %{system} "linux"))
- (action (run ./src/mdx_runner.exe)))
+ (deps
+  (package containers-data)
+  ./src/mdx_runner.exe)
+ (enabled_if
+  (= %{system} "linux"))
+ (action
+  (run ./src/mdx_runner.exe)))
 
 (rule
  (alias runtest)
  (package containers-data)
- (enabled_if (= %{system} "linux"))
+ (enabled_if
+  (= %{system} "linux"))
  (locks /ctest)
- (action (diff README.md README.md.corrected)))
+ (action
+  (diff README.md README.md.corrected)))

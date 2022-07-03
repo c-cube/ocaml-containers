@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Lazy List
@@ -6,9 +5,7 @@
     @since 0.17 *)
 
 type +'a t = 'a node lazy_t
-and +'a node =
-  | Nil
-  | Cons of 'a * 'a t
+and +'a node = Nil | Cons of 'a * 'a t
 
 val empty : 'a t
 (** Empty list. *)
@@ -50,9 +47,10 @@ val default : default:'a t -> 'a t -> 'a t
     @since 2.1 *)
 
 module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val (<|>) : 'a t -> 'a t -> 'a t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+
+  val ( <|> ) : 'a t -> 'a t -> 'a t
   (** Alias to {!default}.
       @since 2.1 *)
 end
@@ -62,11 +60,7 @@ include module type of Infix
 type 'a gen = unit -> 'a option
 
 val of_gen : 'a gen -> 'a t
-
 val of_list : 'a list -> 'a t
-
 val to_list : 'a t -> 'a list
-
-val to_list_rev  : 'a t -> 'a list
-
+val to_list_rev : 'a t -> 'a list
 val to_gen : 'a t -> 'a gen

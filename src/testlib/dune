@@ -1,6 +1,7 @@
-
 (library
-  (name containers_testlib)
-  (synopsis "Test library for containers")
-  (preprocess (action (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
-  (libraries containers qcheck-core unix))
+ (name containers_testlib)
+ (synopsis "Test library for containers")
+ (preprocess
+  (action
+   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+ (libraries containers qcheck-core unix))

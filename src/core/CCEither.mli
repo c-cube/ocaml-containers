@@ -41,7 +41,8 @@ val map_left : ('a1 -> 'a2) -> ('a1, 'b) t -> ('a2, 'b) t
 val map_right : ('b1 -> 'b2) -> ('a, 'b1) t -> ('a, 'b2) t
 (** Map of the Right variant. *)
 
-val map : left:('a1 -> 'a2) -> right:('b1 -> 'b2) -> ('a1, 'b1) t -> ('a2, 'b2) t
+val map :
+  left:('a1 -> 'a2) -> right:('b1 -> 'b2) -> ('a1, 'b1) t -> ('a2, 'b2) t
 (** Map using [left] or [right]. *)
 
 val fold : left:('a -> 'c) -> right:('b -> 'c) -> ('a, 'b) t -> 'c
@@ -53,13 +54,21 @@ val iter : left:('a -> unit) -> right:('b -> unit) -> ('a, 'b) t -> unit
 val for_all : left:('a -> bool) -> right:('b -> bool) -> ('a, 'b) t -> bool
 (** Check some property on [Left] or [Right] variant. *)
 
-val equal : left:('a -> 'a -> bool) -> right:('b -> 'b -> bool) ->
-  ('a, 'b) t -> ('a, 'b) t -> bool
+val equal :
+  left:('a -> 'a -> bool) ->
+  right:('b -> 'b -> bool) ->
+  ('a, 'b) t ->
+  ('a, 'b) t ->
+  bool
 
-val compare : left:('a -> 'a -> int) -> right:('b -> 'b -> int) ->
-  ('a, 'b) t -> ('a, 'b) t -> int
+val compare :
+  left:('a -> 'a -> int) ->
+  right:('b -> 'b -> int) ->
+  ('a, 'b) t ->
+  ('a, 'b) t ->
+  int
 
 (** {2 IO} *)
 
-val pp : left:('a printer) -> right:('b printer) -> ('a, 'b) t printer
+val pp : left:'a printer -> right:'b printer -> ('a, 'b) t printer
 (** Pretty printer. *)

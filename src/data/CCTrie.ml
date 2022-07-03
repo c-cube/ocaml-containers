@@ -1,10 +1,9 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Prefix Tree} *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+type 'a ktree = unit -> [ `Nil | `Node of 'a * 'a ktree list ]
 
 (** {2 Signatures} *)
 
@@ -24,11 +23,9 @@ end
 module type S = sig
   type char_
   type key
-
   type 'a t
 
   val empty : 'a t
-
   val is_empty : _ t -> bool
 
   val add : key -> 'a -> 'a t -> 'a t
@@ -89,16 +86,11 @@ module type S = sig
   (** {6 Conversions} *)
 
   val to_list : 'a t -> (key * 'a) list
-
   val of_list : (key * 'a) list -> 'a t
-
   val to_iter : 'a t -> (key * 'a) iter
-
   val of_iter : (key * 'a) iter -> 'a t
-
   val to_iter_values : 'a t -> 'a iter
-
-  val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
+  val to_tree : 'a t -> [ `Char of char_ | `Val of 'a | `Switch ] ktree
 
   (** {6 Ranges} *)
 
@@ -111,24 +103,25 @@ module type S = sig
       in decreasing order *)
 
   (**/**)
-  val check_invariants: _ t -> bool
+
+  val check_invariants : _ t -> bool
+
   (**/**)
 end
 
-module Make(W : WORD)
-  : S with type char_ = W.char_ and type key = W.t
-= struct
+module Make (W : WORD) : S with type char_ = W.char_ and type key = W.t = struct
   type char_ = W.char_
   type key = W.t
 
-  module M = Map.Make(struct
-      type t = char_
-      let compare = W.compare
-    end)
+  module M = Map.Make (struct
+    type t = char_
+
+    let compare = W.compare
+  end)
 
   type 'a t =
     | Empty
-    | Cons of char_ * 'a t  (* simple case *)
+    | Cons of char_ * 'a t (* simple case *)
     | Node of 'a option * 'a t M.t
 
   (* invariants:
@@ -146,8 +139,7 @@ module Make(W : WORD)
     | Empty -> true
     | Cons (_, t) -> check_invariants t
     | Node (None, map) when M.is_empty map -> false
-    | Node (_, map) ->
-      M.for_all (fun _ v -> check_invariants v) map
+    | Node (_, map) -> M.for_all (fun _ v -> check_invariants v) map
 
   let is_empty = function
     | Empty -> true
@@ -163,9 +155,10 @@ module Make(W : WORD)
     finish !acc
 
   let _filter_map_iter f seq k =
-    seq (fun x -> match f x with
-      | None -> ()
-      | Some y -> k y)
+    seq (fun x ->
+        match f x with
+        | None -> ()
+        | Some y -> k y)
 
   let _iter_map f seq k = seq (fun x -> k (f x))
 
@@ -174,102 +167,106 @@ module Make(W : WORD)
     seq (fun x -> l := x :: !l);
     !l
 
-  let _iter_append_list l seq =
-    List.rev_append (_iter_append_list_rev [] seq) l
-
-  let iter_of_map map k =
-    M.iter (fun key v -> k (key,v)) map
+  let _iter_append_list l seq = List.rev_append (_iter_append_list_rev [] seq) l
+  let iter_of_map map k = M.iter (fun key v -> k (key, v)) map
 
   (* return common prefix, and disjoint suffixes *)
-  let rec _merge_lists l1 l2 = match l1, l2 with
-    | [], _
-    | _, [] -> [], l1, l2
-    | c1::l1', c2::l2' ->
-      if W.compare c1 c2 = 0
-      then
+  let rec _merge_lists l1 l2 =
+    match l1, l2 with
+    | [], _ | _, [] -> [], l1, l2
+    | c1 :: l1', c2 :: l2' ->
+      if W.compare c1 c2 = 0 then (
         let pre, rest1, rest2 = _merge_lists l1' l2' in
-        c1::pre, rest1, rest2
-      else
+        c1 :: pre, rest1, rest2
+      ) else
         [], l1, l2
-
 
   (* sub-tree t prefixed with c *)
   let _cons c t = Cons (c, t)
+
   (* build a Node value *)
-  let _mk_node value map = match value with
+  let _mk_node value map =
+    match value with
     | Some _ -> Node (value, map)
     | None ->
-      if M.is_empty map then Empty
-      else
-      if M.cardinal map = 1
-      then
+      if M.is_empty map then
+        Empty
+      else if M.cardinal map = 1 then (
         let c, sub = M.min_binding map in
         _cons c sub
-      else Node (value,map)
+      ) else
+        Node (value, map)
 
   (* remove key [c] from [t] *)
-  let _remove c t = match t with
+  let _remove c t =
+    match t with
     | Empty -> t
     | Cons (c', _) ->
-      if W.compare c c' = 0
-      then Empty
-      else t
+      if W.compare c c' = 0 then
+        Empty
+      else
+        t
     | Node (value, map) ->
-      if M.mem c map
-      then
+      if M.mem c map then (
         let map' = M.remove c map in
         _mk_node value map'
-      else t
+      ) else
+        t
 
   let update key f t =
     (* first arg: current subtree and rebuild function; [c]: current char *)
     let goto (t, rebuild) c =
       match t with
-        | Empty -> empty, fun t -> rebuild (_cons c t)
-        | Cons (c', t') ->
-          if W.compare c c' = 0
-          then t', (fun t -> rebuild (_cons c t))
-          else
-            let rebuild' new_child =
-              rebuild (
-                if is_empty new_child then t
-                else
-                  let map = M.singleton c new_child in
-                  let map = M.add c' t' map in
-                  _mk_node None map
-              ) in
-            empty, rebuild'
-        | Node (value, map) ->
-          try
-            let t' = M.find c map in
-            (* rebuild: we modify [t], so we put the new version in [map]
-               if it's not empty, and make the node again *)
-            let rebuild' new_child =
-              rebuild (
-                if is_empty new_child
-                then _mk_node value (M.remove c map)
-                else _mk_node value (M.add c new_child map)
-              )
-            in
-            t', rebuild'
-          with Not_found ->
-            let rebuild' new_child =
-              if is_empty new_child
-              then rebuild t (* ignore *)
-              else
-                let map' = M.add c new_child map in
-                rebuild (_mk_node value map')
-            in
-            empty, rebuild'
+      | Empty -> empty, fun t -> rebuild (_cons c t)
+      | Cons (c', t') ->
+        if W.compare c c' = 0 then
+          t', fun t -> rebuild (_cons c t)
+        else (
+          let rebuild' new_child =
+            rebuild
+              (if is_empty new_child then
+                t
+              else (
+                let map = M.singleton c new_child in
+                let map = M.add c' t' map in
+                _mk_node None map
+              ))
+          in
+          empty, rebuild'
+        )
+      | Node (value, map) ->
+        (try
+           let t' = M.find c map in
+           (* rebuild: we modify [t], so we put the new version in [map]
+              if it's not empty, and make the node again *)
+           let rebuild' new_child =
+             rebuild
+               (if is_empty new_child then
+                 _mk_node value (M.remove c map)
+               else
+                 _mk_node value (M.add c new_child map))
+           in
+           t', rebuild'
+         with Not_found ->
+           let rebuild' new_child =
+             if is_empty new_child then
+               rebuild t
+             (* ignore *)
+             else (
+               let map' = M.add c new_child map in
+               rebuild (_mk_node value map')
+             )
+           in
+           empty, rebuild')
     in
-    let finish (t,rebuild) = match t with
+    let finish (t, rebuild) =
+      match t with
       | Empty -> rebuild (_mk_node (f None) M.empty)
       | Cons (c, t') ->
         rebuild
           (match f None with
-            | None -> t
-            | Some _ as v -> _mk_node v (M.singleton c t')
-          )
+          | None -> t
+          | Some _ as v -> _mk_node v (M.singleton c t'))
       | Node (value, map) ->
         let value' = f value in
         rebuild (_mk_node value' map)
@@ -278,236 +275,248 @@ module Make(W : WORD)
     _fold_iter_and_then goto ~finish (t, _id) word
 
   let add k v t = update k (fun _ -> Some v) t
-
   let remove k t = update k (fun _ -> None) t
 
   let find_exn k t =
     (* at subtree [t], and character [c] *)
-    let goto t c = match t with
+    let goto t c =
+      match t with
       | Empty -> raise Not_found
       | Cons (c', t') ->
-        if W.compare c c' = 0
-        then t'
-        else raise Not_found
+        if W.compare c c' = 0 then
+          t'
+        else
+          raise Not_found
       | Node (_, map) -> M.find c map
-    and finish t = match t with
+    and finish t =
+      match t with
       | Node (Some v, _) -> v
       | _ -> raise Not_found
     in
     let word = W.to_iter k in
     _fold_iter_and_then goto ~finish t word
 
-  let find k t =
-    try Some (find_exn k t)
-    with Not_found -> None
+  let find k t = try Some (find_exn k t) with Not_found -> None
 
   type 'a difflist = 'a list -> 'a list
 
-  let _difflist_add
-    : 'a difflist -> 'a -> 'a difflist
-    = fun f x -> fun l' -> f (x :: l')
+  let _difflist_add : 'a difflist -> 'a -> 'a difflist =
+   fun f x l' -> f (x :: l')
 
   let longest_prefix k t =
     (* at subtree [t], and character [c] *)
-    let goto (t,prefix) c = match t with
+    let goto (t, prefix) c =
+      match t with
       | Empty -> Empty, prefix
       | Cons (c', t') ->
-        if W.compare c c' = 0
-        then t', _difflist_add prefix c
-        else Empty, prefix
-      | Node (_, map) ->
-        try
-          let t' = M.find c map in
+        if W.compare c c' = 0 then
           t', _difflist_add prefix c
-        with Not_found -> Empty, prefix
-    and finish (_,prefix) =
-      W.of_list (prefix [])
-    in
+        else
+          Empty, prefix
+      | Node (_, map) ->
+        (try
+           let t' = M.find c map in
+           t', _difflist_add prefix c
+         with Not_found -> Empty, prefix)
+    and finish (_, prefix) = W.of_list (prefix []) in
     let word = W.to_iter k in
-    _fold_iter_and_then goto ~finish (t,_id) word
+    _fold_iter_and_then goto ~finish (t, _id) word
 
   (* fold that also keeps the path from the root, so as to provide the list
       of chars that lead to a value. The path is a difference list, ie
       a function that prepends a list to some suffix *)
-  let rec _fold f path t acc = match t with
+  let rec _fold f path t acc =
+    match t with
     | Empty -> acc
     | Cons (c, t') -> _fold f (_difflist_add path c) t' acc
     | Node (v, map) ->
-      let acc = match v with
+      let acc =
+        match v with
         | None -> acc
         | Some v -> f acc path v
       in
-      M.fold
-        (fun c t' acc -> _fold f (_difflist_add path c) t' acc)
-        map acc
+      M.fold (fun c t' acc -> _fold f (_difflist_add path c) t' acc) map acc
 
   let fold f acc t =
     _fold
       (fun acc path v ->
-         let key = W.of_list (path []) in
-         f acc key v)
+        let key = W.of_list (path []) in
+        f acc key v)
       _id t acc
 
   let mapi f t =
-    let rec map_ prefix t = match t with
+    let rec map_ prefix t =
+      match t with
       | Empty -> Empty
       | Cons (c, t') -> Cons (c, map_ (_difflist_add prefix c) t')
       | Node (v, map) ->
-        let v' = match v with
+        let v' =
+          match v with
           | None -> None
           | Some v -> Some (f (W.of_list (prefix [])) v)
-        in let map' =
-             M.mapi (fun c t' ->
-               let prefix' = _difflist_add prefix c in
-               map_ prefix' t')
-               map
-        in Node (v', map')
-    in map_ _id t
+        in
+        let map' =
+          M.mapi
+            (fun c t' ->
+              let prefix' = _difflist_add prefix c in
+              map_ prefix' t')
+            map
+        in
+        Node (v', map')
+    in
+    map_ _id t
 
   let map f t =
     let rec map_ = function
       | Empty -> Empty
       | Cons (c, t') -> Cons (c, map_ t')
       | Node (v, map) ->
-        let v' = match v with
+        let v' =
+          match v with
           | None -> None
           | Some v -> Some (f v)
-        in let map' = M.map map_ map
-        in Node (v', map')
-    in map_ t
+        in
+        let map' = M.map map_ map in
+        Node (v', map')
+    in
+    map_ t
 
-  let iter f t =
-    _fold
-      (fun () path y -> f (W.of_list (path [])) y)
-      _id t ()
+  let iter f t = _fold (fun () path y -> f (W.of_list (path [])) y) _id t ()
 
   let _iter_prefix ~prefix f t =
     _fold
       (fun () path y ->
-         let key = W.of_list (prefix (path [])) in
-         f key y)
+        let key = W.of_list (prefix (path [])) in
+        f key y)
       _id t ()
 
-  let rec fold_values f acc t = match t with
+  let rec fold_values f acc t =
+    match t with
     | Empty -> acc
     | Cons (_, t') -> fold_values f acc t'
     | Node (v, map) ->
-      let acc = match v with
+      let acc =
+        match v with
         | None -> acc
         | Some v -> f acc v
       in
-      M.fold
-        (fun _c t' acc -> fold_values f acc t')
-        map acc
+      M.fold (fun _c t' acc -> fold_values f acc t') map acc
 
   let iter_values f t = fold_values (fun () x -> f x) () t
 
-  let rec merge f t1 t2 = match t1, t2 with
+  let rec merge f t1 t2 =
+    match t1, t2 with
     | Empty, _ -> t2
     | _, Empty -> t1
-    | Cons (c1,t1'), Cons (c2,t2') ->
-      if W.compare c1 c2 = 0
-      then _cons c1 (merge f t1' t2')
-      else
+    | Cons (c1, t1'), Cons (c2, t2') ->
+      if W.compare c1 c2 = 0 then
+        _cons c1 (merge f t1' t2')
+      else (
         let map = M.add c1 t1' M.empty in
         let map = M.add c2 t2' map in
         _mk_node None map
-
+      )
     | Cons (c1, t1'), Node (value, map) ->
-      begin try
-          (* collision *)
-          let t2' = M.find c1 map in
-          let new_t = merge f t1' t2' in
-          let map' = if is_empty new_t
-            then M.remove c1 map
-            else M.add c1 new_t map
-          in
-          _mk_node value map'
-        with Not_found ->
-          (* no collision *)
-          assert (not(is_empty t1'));
-          Node (value, M.add c1 t1' map)
-      end
-    | Node _, Cons _ -> merge f t2 t1  (* previous case *)
-    | Node(v1, map1), Node (v2, map2) ->
-      let v = match v1, v2 with
+      (try
+         (* collision *)
+         let t2' = M.find c1 map in
+         let new_t = merge f t1' t2' in
+         let map' =
+           if is_empty new_t then
+             M.remove c1 map
+           else
+             M.add c1 new_t map
+         in
+         _mk_node value map'
+       with Not_found ->
+         (* no collision *)
+         assert (not (is_empty t1'));
+         Node (value, M.add c1 t1' map))
+    | Node _, Cons _ -> merge f t2 t1 (* previous case *)
+    | Node (v1, map1), Node (v2, map2) ->
+      let v =
+        match v1, v2 with
         | None, _ -> v2
         | _, None -> v1
         | Some v1, Some v2 -> f v1 v2
       in
-      let map' = M.merge
-          (fun _c t1 t2 -> match t1, t2 with
-             | None, None -> assert false
-             | Some t, None
-             | None, Some t -> Some t
-             | Some t1, Some t2 ->
-               let new_t = merge f t1 t2 in
-               if is_empty new_t then None else Some new_t
-          ) map1 map2
+      let map' =
+        M.merge
+          (fun _c t1 t2 ->
+            match t1, t2 with
+            | None, None -> assert false
+            | Some t, None | None, Some t -> Some t
+            | Some t1, Some t2 ->
+              let new_t = merge f t1 t2 in
+              if is_empty new_t then
+                None
+              else
+                Some new_t)
+          map1 map2
       in
       _mk_node v map'
 
-  let rec size t = match t with
+  let rec size t =
+    match t with
     | Empty -> 0
     | Cons (_, t') -> size t'
     | Node (v, map) ->
-      let s = match v with None -> 0 | Some _ -> 1 in
-      M.fold
-        (fun _ t' acc -> size t' + acc)
-        map s
+      let s =
+        match v with
+        | None -> 0
+        | Some _ -> 1
+      in
+      M.fold (fun _ t' acc -> size t' + acc) map s
 
-  let to_list t = fold (fun acc k v -> (k,v)::acc) [] t
-
-  let of_list l =
-    List.fold_left (fun acc (k,v) -> add k v acc) empty l
-
-  let to_iter t k = iter (fun key v -> k (key,v)) t
-
+  let to_list t = fold (fun acc k v -> (k, v) :: acc) [] t
+  let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
+  let to_iter t k = iter (fun key v -> k (key, v)) t
   let to_iter_values t k = iter_values k t
 
   let of_iter seq =
-    _fold_iter_and_then (fun acc (k,v) -> add k v acc) ~finish:_id empty seq
+    _fold_iter_and_then (fun acc (k, v) -> add k v acc) ~finish:_id empty seq
 
   let rec to_tree t () =
-    let _tree_node x l () = `Node (x,l) in
+    let _tree_node x l () = `Node (x, l) in
     match t with
-      | Empty -> `Nil
-      | Cons (c, t') -> `Node (`Char c, [to_tree t'])
-      | Node (v, map) ->
-        let x = match v with
-          | None -> `Switch
-          | Some v -> `Val v
-        in
-        let l = M.bindings map in
-        `Node(x, List.map (fun (c,t') -> _tree_node (`Char c) [to_tree t']) l)
+    | Empty -> `Nil
+    | Cons (c, t') -> `Node (`Char c, [ to_tree t' ])
+    | Node (v, map) ->
+      let x =
+        match v with
+        | None -> `Switch
+        | Some v -> `Val v
+      in
+      let l = M.bindings map in
+      `Node (x, List.map (fun (c, t') -> _tree_node (`Char c) [ to_tree t' ]) l)
 
   (* stack of actions for [above] and [below] *)
   type 'a alternative =
     | Yield of 'a * char_ difflist
     | Explore of 'a t * char_ difflist
 
-  type direction =
-    | Above
-    | Below
+  type direction = Above | Below
 
-  let rec explore ~dir k alt = match alt with
-    | Yield (v,prefix) -> k (W.of_list (prefix[]), v)
+  let rec explore ~dir k alt =
+    match alt with
+    | Yield (v, prefix) -> k (W.of_list (prefix []), v)
     | Explore (Empty, _) -> ()
-    | Explore (Cons (c,t), prefix) ->
+    | Explore (Cons (c, t), prefix) ->
       explore ~dir k (Explore (t, _difflist_add prefix c))
-    | Explore (Node (o,map), prefix) ->
+    | Explore (Node (o, map), prefix) ->
       (* if above, yield value now *)
-      begin match o, dir with
-        | Some v, Above -> k (W.of_list (prefix[]), v)
-        | _ -> ()
-      end;
+      (match o, dir with
+      | Some v, Above -> k (W.of_list (prefix []), v)
+      | _ -> ());
       let seq = iter_of_map map in
-      let seq = _iter_map (fun (c,t') -> Explore (t', _difflist_add prefix c)) seq in
-      let l' = match o, dir with
+      let seq =
+        _iter_map (fun (c, t') -> Explore (t', _difflist_add prefix c)) seq
+      in
+      let l' =
+        match o, dir with
         | _, Above -> _iter_append_list [] seq
         | None, Below -> _iter_append_list_rev [] seq
-        | Some v, Below ->
-          _iter_append_list_rev [Yield (v, prefix)] seq
+        | Some v, Below -> _iter_append_list_rev [ Yield (v, prefix) ] seq
       in
       List.iter (explore ~dir k) l'
 
@@ -515,8 +524,7 @@ module Make(W : WORD)
     try List.for_all2 (fun x y -> W.compare x y = 0) l1 l2
     with Invalid_argument _ -> false
 
-  let _key_to_list key =
-    List.rev (_iter_append_list_rev [] (W.to_iter key))
+  let _key_to_list key = List.rev (_iter_append_list_rev [] (W.to_iter key))
 
   (* range above (if [above = true]) or below a threshold .
      [p c c'] must return [true] if [c'], in the tree, meets some criterion
@@ -526,60 +534,58 @@ module Make(W : WORD)
         [alternatives], and char [c] in [key]. *)
     let on_char (cur, alternatives) c =
       match cur with
-        | None -> (None, alternatives)
-        | Some (Empty,_) -> (None, alternatives)
-        | Some (Cons (c', t'), trail) ->
-          if W.compare c c' = 0
-          then Some (t', _difflist_add trail c), alternatives
-          else None, alternatives
-        | Some (Node (o, map), trail) ->
-          (* if [dir=Below], [o]'s key is below [key] and the other
-             alternatives in [map] *)
-          let alternatives = match o, dir with
-            | Some v, Below -> Yield (v, trail) :: alternatives
-            | _ -> alternatives
+      | None -> None, alternatives
+      | Some (Empty, _) -> None, alternatives
+      | Some (Cons (c', t'), trail) ->
+        if W.compare c c' = 0 then
+          Some (t', _difflist_add trail c), alternatives
+        else
+          None, alternatives
+      | Some (Node (o, map), trail) ->
+        (* if [dir=Below], [o]'s key is below [key] and the other
+           alternatives in [map] *)
+        let alternatives =
+          match o, dir with
+          | Some v, Below -> Yield (v, trail) :: alternatives
+          | _ -> alternatives
+        in
+        let alternatives =
+          let seq = iter_of_map map in
+          let seq =
+            _filter_map_iter
+              (fun (c', t') ->
+                if p ~cur:c ~other:c' then
+                  Some (Explore (t', _difflist_add trail c'))
+                else
+                  None)
+              seq
           in
-          let alternatives =
-            let seq = iter_of_map map in
-            let seq = _filter_map_iter
-                (fun (c', t') ->
-                   if p ~cur:c ~other:c'
-                   then Some (Explore (t', _difflist_add trail c'))
-                   else None)
-                seq
-            in
-            (* ordering:
-               - Above: explore alternatives in increasing order
-               - Below: explore alternatives in decreasing order *)
-            match dir with
-              | Above -> _iter_append_list alternatives seq
-              | Below -> _iter_append_list_rev alternatives seq
-          in
-          begin
-            try
-              let t' = M.find c map in
-              Some (t', _difflist_add trail c), alternatives
-            with Not_found ->
-              None, alternatives
-          end
-
+          (* ordering:
+             - Above: explore alternatives in increasing order
+             - Below: explore alternatives in decreasing order *)
+          match dir with
+          | Above -> _iter_append_list alternatives seq
+          | Below -> _iter_append_list_rev alternatives seq
+        in
+        (try
+           let t' = M.find c map in
+           Some (t', _difflist_add trail c), alternatives
+         with Not_found -> None, alternatives)
     (* run through the current path (if any) and alternatives *)
-    and finish (cur,alternatives) =
-      begin match cur, dir with
-        | Some (t, prefix), Above ->
-          (* subtree prefixed by input key, therefore above key *)
-          _iter_prefix ~prefix (fun key' v -> k (key', v)) t
-        | Some (Node (Some v, _), prefix), Below ->
-          (* yield the value for key *)
-          assert (_list_eq (prefix []) (_key_to_list key));
-          k (key, v)
-        | Some _, _
-        | None, _ -> ()
-      end;
+    and finish (cur, alternatives) =
+      (match cur, dir with
+      | Some (t, prefix), Above ->
+        (* subtree prefixed by input key, therefore above key *)
+        _iter_prefix ~prefix (fun key' v -> k (key', v)) t
+      | Some (Node (Some v, _), prefix), Below ->
+        (* yield the value for key *)
+        assert (_list_eq (prefix []) (_key_to_list key));
+        k (key, v)
+      | Some _, _ | None, _ -> ());
       List.iter (explore ~dir k) alternatives
     in
     let word = W.to_iter key in
-    _fold_iter_and_then on_char ~finish (Some(t,_id), []) word
+    _fold_iter_and_then on_char ~finish (Some (t, _id), []) word
 
   let above key t =
     _half_range ~dir:Above ~p:(fun ~cur ~other -> W.compare cur other < 0) key t
@@ -590,32 +596,37 @@ end
 
 module type ORDERED = sig
   type t
+
   val compare : t -> t -> int
 end
 
-module MakeArray(X : ORDERED) = Make(struct
-    type t = X.t array
-    type char_ = X.t
-    let compare = X.compare
-    let to_iter a k = Array.iter k a
-    let of_list = Array.of_list
-  end)
+module MakeArray (X : ORDERED) = Make (struct
+  type t = X.t array
+  type char_ = X.t
 
-module MakeList(X : ORDERED) = Make(struct
-    type t = X.t list
-    type char_ = X.t
-    let compare = X.compare
-    let to_iter a k = List.iter k a
-    let of_list l = l
-  end)
+  let compare = X.compare
+  let to_iter a k = Array.iter k a
+  let of_list = Array.of_list
+end)
 
-module String = Make(struct
-    type t = string
-    type char_ = char
-    let compare = Char.compare
-    let to_iter s k = String.iter k s
-    let of_list l =
-      let buf = Buffer.create (List.length l) in
-      List.iter (fun c -> Buffer.add_char buf c) l;
-      Buffer.contents buf
-  end)
+module MakeList (X : ORDERED) = Make (struct
+  type t = X.t list
+  type char_ = X.t
+
+  let compare = X.compare
+  let to_iter a k = List.iter k a
+  let of_list l = l
+end)
+
+module String = Make (struct
+  type t = string
+  type char_ = char
+
+  let compare = Char.compare
+  let to_iter s k = String.iter k s
+
+  let of_list l =
+    let buf = Buffer.create (List.length l) in
+    List.iter (fun c -> Buffer.add_char buf c) l;
+    Buffer.contents buf
+end)

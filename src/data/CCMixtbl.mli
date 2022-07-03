@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Hash Table with Heterogeneous Keys
@@ -51,7 +50,7 @@ val create_inj : unit -> 'b injection
     retrieved with the matching getter.  The same key can be reused
     across multiple tables (although not in a thread-safe way). *)
 
-val get : inj:'b injection -> 'a t  -> 'a -> 'b option
+val get : inj:'b injection -> 'a t -> 'a -> 'b option
 (** Get the value corresponding to this key, if it exists and
     belongs to the same key. *)
 
@@ -75,7 +74,7 @@ val remove : 'a t -> 'a -> unit
 val copy : 'a t -> 'a t
 (** Copy of the table. *)
 
-val mem : inj:_ injection-> 'a t -> 'a -> bool
+val mem : inj:_ injection -> 'a t -> 'a -> bool
 (** Is the given key in the table, with the right type? *)
 
 val iter_keys : 'a t -> ('a -> unit) -> unit
@@ -94,8 +93,7 @@ val keys_iter : 'a t -> 'a iter
 val bindings_of : inj:'b injection -> 'a t -> ('a * 'b) iter
 (** All the bindings that come from the corresponding injection. *)
 
-type value =
-  | Value : ('b injection -> 'b option) -> value
+type value = Value : ('b injection -> 'b option) -> value
 
-val bindings : 'a t -> ('a *  value) iter
+val bindings : 'a t -> ('a * value) iter
 (** Iterate on all bindings. *)

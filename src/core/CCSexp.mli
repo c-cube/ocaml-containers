@@ -8,15 +8,15 @@
 type 'a or_error = ('a, string) result
 type 'a gen = unit -> 'a option
 
+module type SEXP = CCSexp_intf.SEXP
 (** {2 Abstract representation of S-expressions (extended)}
 
     @since 2.7 *)
-module type SEXP = CCSexp_intf.SEXP
 
+module type S = CCSexp_intf.S
 (** {2 Operations over S-expressions}
 
     @since 2.7 *)
-module type S = CCSexp_intf.S
 
 (** {2 Functorized operations}
 
@@ -27,15 +27,12 @@ module type S = CCSexp_intf.S
 
     @since 3.4 re-bind [loc] to [Sexp.loc]
 *)
-module Make(Sexp : SEXP) : S with type t = Sexp.t and type loc = Sexp.loc
+module Make (Sexp : SEXP) : S with type t = Sexp.t and type loc = Sexp.loc
 
 (** {2 Basics} *)
 
+type t = [ `Atom of string | `List of t list ]
 (** A simple, structural representation of S-expressions. *)
-type t = [
-  | `Atom of string
-  | `List of t list
-]
 
 include S with type t := t
 

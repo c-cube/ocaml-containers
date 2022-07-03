@@ -65,7 +65,6 @@ module type S = sig
   (** [equal a b] is extensional equality ([a] and [b] have the same elements) *)
 
   val for_all : (elt -> bool) -> t -> bool
-
   val exists : (elt -> bool) -> t -> bool
 
   val iter : (elt -> unit) -> t -> unit
@@ -78,11 +77,8 @@ module type S = sig
   (** List of elements *)
 
   val of_list : elt list -> t
-
   val to_iter : t -> elt iter
-
   val of_iter : elt iter -> t
-
   val add_iter : t -> elt iter -> unit
 
   val pp : ?pp_sep:unit printer -> elt printer -> t printer
@@ -92,16 +88,18 @@ end
 
 module type ELEMENT = sig
   type t
+
   val equal : t -> t -> bool
-  val hash : t -> int (** Positive value *)
+
+  val hash : t -> int
+  (** Positive value *)
 end
 
-module Make(E : ELEMENT) : S with type elt = E.t = struct
-  module Tbl = Hashtbl.Make(E)
+module Make (E : ELEMENT) : S with type elt = E.t = struct
+  module Tbl = Hashtbl.Make (E)
 
   type elt = E.t
-
-  type t = elt Tbl.t  (* map [x -> x], for find *)
+  type t = elt Tbl.t (* map [x -> x], for find *)
 
   let create = Tbl.create
 
@@ -111,28 +109,15 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     s
 
   let clear = Tbl.clear
-
   let copy = Tbl.copy
-
-  let copy_into ~into s =
-    Tbl.iter (fun x _ -> Tbl.replace into x x) s
-
+  let copy_into ~into s = Tbl.iter (fun x _ -> Tbl.replace into x x) s
   let insert s x = Tbl.replace s x x
-
   let remove = Tbl.remove
-
   let cardinal = Tbl.length
-
   let mem = Tbl.mem
-
   let find_exn = Tbl.find
-
-  let find s x =
-    try Some (Tbl.find s x)
-    with Not_found -> None
-
+  let find s x = try Some (Tbl.find s x) with Not_found -> None
   let iter f s = Tbl.iter (fun x _ -> f x) s
-
   let fold f acc s = Tbl.fold (fun x _ acc -> f acc x) s acc
 
   let inter a b =
@@ -141,23 +126,18 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     res
 
   let inter_mut ~into a =
-    iter
-      (fun x ->
-         if not (mem a x) then remove into x
-      ) into
+    iter (fun x -> if not (mem a x) then remove into x) into
 
   let union a b =
     let res = copy a in
     copy_into ~into:res b;
     res
 
-  let union_mut ~into a =
-    copy_into ~into a
+  let union_mut ~into a = copy_into ~into a
 
   let diff a b =
     let res = copy a in
-    iter
-      (fun x -> remove res x) b;
+    iter (fun x -> remove res x) b;
     res
 
   exception FastExit
@@ -174,13 +154,9 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
       false
     with FastExit -> true
 
-  let subset a b =
-    for_all (fun x -> mem b x) a
-
+  let subset a b = for_all (fun x -> mem b x) a
   let equal a b = subset a b && subset b a
-
-  let elements s =
-    Tbl.fold (fun x _ acc -> x::acc) s []
+  let elements s = Tbl.fold (fun x _ acc -> x :: acc) s []
 
   let of_list l =
     let res = create (List.length l) in
@@ -188,7 +164,6 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     res
 
   let to_iter s yield = iter yield s
-
   let add_iter s seq = seq (insert s)
 
   let of_iter seq =
@@ -196,15 +171,16 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     seq (insert s);
     s
 
-  let pp ?(pp_sep=fun out () -> Format.fprintf out ",@ ") pp_x out s =
+  let pp ?(pp_sep = fun out () -> Format.fprintf out ",@ ") pp_x out s =
     Format.pp_print_string out "{";
     let first = ref true in
     Tbl.iter
       (fun x _ ->
-         if !first
-         then first := false
-         else pp_sep out ();
-         pp_x out x
-      ) s;
+        if !first then
+          first := false
+        else
+          pp_sep out ();
+        pp_x out x)
+      s;
     Format.pp_print_string out "}"
 end

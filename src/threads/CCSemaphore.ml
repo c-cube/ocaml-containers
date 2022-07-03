@@ -1,24 +1,17 @@
 (** {1 Semaphores} *)
 
-type t = {
-  mutable n : int;
-  mutex : Mutex.t;
-  cond : Condition.t;
-}
+type t = { mutable n: int; mutex: Mutex.t; cond: Condition.t }
 
 let create n =
   if n <= 0 then invalid_arg "Semaphore.create";
-  { n;
-    mutex=Mutex.create();
-    cond=Condition.create();
-  }
+  { n; mutex = Mutex.create (); cond = Condition.create () }
 
 let get t = t.n
 
 (* assume [t.mutex] locked, try to acquire [t] *)
 let acquire_once_locked_ m t =
   while t.n < m do
-    Condition.wait t.cond t.mutex;
+    Condition.wait t.cond t.mutex
   done;
   assert (t.n >= m);
   t.n <- t.n - m;
@@ -43,7 +36,7 @@ let release m t =
 let with_acquire ~n t ~f =
   acquire n t;
   try
-    let x = f() in
+    let x = f () in
     release n t;
     x
   with e ->
@@ -53,7 +46,7 @@ let with_acquire ~n t ~f =
 let wait_until_at_least ~n t ~f =
   Mutex.lock t.mutex;
   while t.n < n do
-    Condition.wait t.cond t.mutex;
+    Condition.wait t.cond t.mutex
   done;
   assert (t.n >= n);
   Mutex.unlock t.mutex;

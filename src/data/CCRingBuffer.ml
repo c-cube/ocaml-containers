@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (* Copyright (C) 2015 Simon Cruanes, Carmelo Piccione *)
@@ -12,11 +11,11 @@
 module Array = struct
   (** The abstract type for arrays *)
   module type S = sig
-    (** The element type *)
     type elt
+    (** The element type *)
 
-    (** The type of an array instance *)
     type t
+    (** The type of an array instance *)
 
     val dummy : elt
     (** A dummy element used for empty slots in the array
@@ -25,16 +24,16 @@ module Array = struct
     val create : int -> t
     (** Make an array of the given size, filled with dummy elements *)
 
-    val length: t -> int
+    val length : t -> int
     (** [length t] gets the total number of elements currently in [t] *)
 
-    val get: t -> int -> elt
+    val get : t -> int -> elt
     (** [get t i] gets the element at position [i] *)
 
-    val set: t -> int -> elt -> unit
+    val set : t -> int -> elt -> unit
     (** [set t i e] sets the element at position [i] to [e] *)
 
-    val sub: t -> int -> int -> t
+    val sub : t -> int -> int -> t
     (** [sub t i len] gets the subarray of [t] from
         position [i] to [i + len] *)
 
@@ -50,17 +49,22 @@ module Array = struct
         the current element, in array order *)
   end
 
-  module Byte :
-    S with type elt = char and type t = Bytes.t = struct
+  module Byte : S with type elt = char and type t = Bytes.t = struct
     type elt = char
+
     let dummy = '\x00'
+
     include Bytes
   end
 
-  module Make(Elt:sig type t val dummy : t end) :
-    S with type elt = Elt.t and type t = Elt.t array = struct
+  module Make (Elt : sig
+    type t
+
+    val dummy : t
+  end) : S with type elt = Elt.t and type t = Elt.t array = struct
     type elt = Elt.t
     type t = Elt.t array
+
     let dummy = Elt.dummy
     let create size = Array.make size Elt.dummy
     let length = Array.length
@@ -74,14 +78,14 @@ module Array = struct
 end
 
 module type S = sig
-  (** The module type of Array for this ring buffer *)
   module Array : Array.S
+  (** The module type of Array for this ring buffer *)
 
-  (** Defines the bounded ring buffer type *)
   type t
+  (** Defines the bounded ring buffer type *)
 
-  (** Raised in querying functions when the buffer is empty *)
   exception Empty
+  (** Raised in querying functions when the buffer is empty *)
 
   val create : int -> t
   (** [create size] creates a new bounded buffer with given size.
@@ -125,7 +129,7 @@ module type S = sig
   val clear : t -> unit
   (** Clear the content of the buffer. Doesn't actually destroy the content. *)
 
-  val is_empty :t -> bool
+  val is_empty : t -> bool
   (** Is the buffer empty (i.e. contains no elements)? *)
 
   val junk_front : t -> unit
@@ -202,41 +206,47 @@ module type S = sig
       @since 0.11 *)
 end
 
-module MakeFromArray(A:Array.S) : S with module Array = A = struct
+module MakeFromArray (A : Array.S) : S with module Array = A = struct
   module Array = A
 
   type t = {
-    mutable start : int;
-    mutable stop : int; (* excluded *)
-    buf : Array.t;
+    mutable start: int;
+    mutable stop: int; (* excluded *)
+    buf: Array.t;
   }
 
   exception Empty
 
   let create size =
     if size < 1 then invalid_arg "CCRingBuffer.create";
-    { start=0;
-      stop=0;
-      buf = A.create (size+1);  (* keep room for extra slot *)
+    {
+      start = 0;
+      stop = 0;
+      buf = A.create (size + 1) (* keep room for extra slot *);
     }
 
-  let copy b =
-    { b with buf=A.copy b.buf; }
+  let copy b = { b with buf = A.copy b.buf }
 
   let capacity b =
     let len = A.length b.buf in
-    match len with 0 -> 0 | l -> l - 1
+    match len with
+    | 0 -> 0
+    | l -> l - 1
 
   let length b =
-    if b.stop >= b.start
-    then b.stop - b.start
-    else (A.length b.buf - b.start) + b.stop
+    if b.stop >= b.start then
+      b.stop - b.start
+    else
+      A.length b.buf - b.start + b.stop
 
   let is_full b = length b + 1 = Array.length b.buf
 
   let next_ b i =
-    let j = i+1 in
-    if j = A.length b.buf then 0 else j
+    let j = i + 1 in
+    if j = A.length b.buf then
+      0
+    else
+      j
 
   let incr_start_ b = b.start <- next_ b b.start
   let incr_stop_ b = b.stop <- next_ b b.stop
@@ -244,22 +254,22 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
   let push_back b e =
     A.set b.buf b.stop e;
     incr_stop_ b;
-    if b.start = b.stop then incr_start_ b; (* overwritten one element *)
+    if b.start = b.stop then incr_start_ b;
+    (* overwritten one element *)
     ()
 
   let blit_from b from_buf o len =
-    if len = 0 then ()
-    else if o + len > A.length from_buf then invalid_arg "CCRingBuffer.blit_from"
-    else (
-      for i=o to o+len-1 do
+    if len = 0 then
+      ()
+    else if o + len > A.length from_buf then
+      invalid_arg "CCRingBuffer.blit_from"
+    else
+      for i = o to o + len - 1 do
         push_back b (A.get from_buf i)
       done
-    )
 
   let blit_into b to_buf o len =
-    if o+len > A.length to_buf then (
-      invalid_arg "CCRingBuffer.blit_into";
-    );
+    if o + len > A.length to_buf then invalid_arg "CCRingBuffer.blit_into";
     if b.stop >= b.start then (
       let n = min (b.stop - b.start) len in
       A.blit b.buf b.start to_buf o n;
@@ -267,11 +277,12 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     ) else (
       let len_end = A.length b.buf - b.start in
       A.blit b.buf b.start to_buf o (min len_end len);
-      if len_end >= len
-      then len  (* done *)
+      if len_end >= len then
+        len
+      (* done *)
       else (
         let n = min b.stop (len - len_end) in
-        A.blit b.buf 0 to_buf (o+len_end) n;
+        A.blit b.buf 0 to_buf (o + len_end) n;
         n + len_end
       )
     )
@@ -289,9 +300,10 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
 
   let take_back_exn b =
     if b.start = b.stop then raise Empty;
-    if b.stop = 0
-    then b.stop <- A.length b.buf - 1
-    else b.stop <- b.stop - 1;
+    if b.stop = 0 then
+      b.stop <- A.length b.buf - 1
+    else
+      b.stop <- b.stop - 1;
     let c = A.get b.buf b.stop in
     A.set b.buf b.stop A.dummy;
     c
@@ -301,90 +313,115 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
   let junk_front b =
     if b.start = b.stop then raise Empty;
     A.set b.buf b.start A.dummy;
-    if b.start + 1 = A.length b.buf
-    then b.start <- 0
-    else b.start <- b.start + 1
+    if b.start + 1 = A.length b.buf then
+      b.start <- 0
+    else
+      b.start <- b.start + 1
 
   let junk_back b =
     if b.start = b.stop then raise Empty;
-    if b.stop = 0
-      then b.stop <- A.length b.buf - 1
-      else b.stop <- b.stop - 1;
+    if b.stop = 0 then
+      b.stop <- A.length b.buf - 1
+    else
+      b.stop <- b.stop - 1;
     A.set b.buf b.stop A.dummy
 
   let skip b len =
-    if len > length b then (
-      invalid_arg "CCRingBuffer.skip";
-    );
+    if len > length b then invalid_arg "CCRingBuffer.skip";
     for _ = 1 to len do
       junk_front b
     done
 
-  let clear b =
-    skip b (length b)
+  let clear b = skip b (length b)
 
   let iter b ~f =
-    if b.stop >= b.start
-    then for i = b.start to b.stop - 1 do f (A.get b.buf i) done
+    if b.stop >= b.start then
+      for i = b.start to b.stop - 1 do
+        f (A.get b.buf i)
+      done
     else (
-      for i = b.start to A.length b.buf -1 do f (A.get b.buf i) done;
-      for i = 0 to b.stop - 1 do f (A.get b.buf i) done;
+      for i = b.start to A.length b.buf - 1 do
+        f (A.get b.buf i)
+      done;
+      for i = 0 to b.stop - 1 do
+        f (A.get b.buf i)
+      done
     )
 
   let iteri b ~f =
-    if b.stop >= b.start
-    then for i = b.start to b.stop - 1 do f i (A.get b.buf i) done
+    if b.stop >= b.start then
+      for i = b.start to b.stop - 1 do
+        f i (A.get b.buf i)
+      done
     else (
-      for i = b.start to A.length b.buf -1 do f i (A.get b.buf i) done;
-      for i = 0 to b.stop - 1 do f i (A.get b.buf i) done;
+      for i = b.start to A.length b.buf - 1 do
+        f i (A.get b.buf i)
+      done;
+      for i = 0 to b.stop - 1 do
+        f i (A.get b.buf i)
+      done
     )
 
   let get b i =
-    if b.stop >= b.start
-    then (
-      if i >= b.stop - b.start then (
+    if b.stop >= b.start then
+      if i >= b.stop - b.start then
         invalid_arg "CCRingBuffer.get"
-      ) else A.get b.buf (b.start + i)
-    ) else (
+      else
+        A.get b.buf (b.start + i)
+    else (
       let len_end = A.length b.buf - b.start in
-      if i < len_end then A.get b.buf (b.start + i)
-      else if i - len_end > b.stop then (
+      if i < len_end then
+        A.get b.buf (b.start + i)
+      else if i - len_end > b.stop then
         invalid_arg "CCRingBuffer.get"
-      ) else A.get b.buf (i - len_end)
+      else
+        A.get b.buf (i - len_end)
     )
 
   let get_front b i =
-    if is_empty b then (
+    if is_empty b then
       invalid_arg "CCRingBuffer.get_front"
-    ) else get b i
+    else
+      get b i
 
   let get_back b i =
-    let offset = ((length b) - i - 1) in
-    if offset < 0 then (
+    let offset = length b - i - 1 in
+    if offset < 0 then
       invalid_arg "CCRingBuffer.get_back"
-    ) else get b offset
+    else
+      get b offset
 
   let to_list b =
     let len = length b in
     let rec build l i =
-      if i < 0 then l else build ((get_front b i)::l) (i-1)
+      if i < 0 then
+        l
+      else
+        build (get_front b i :: l) (i - 1)
     in
-    build [] (len-1)
+    build [] (len - 1)
 
   (* TODO: more efficient version, with one or two blit *)
-  let append b ~into =
-    iter b ~f:(push_back into)
+  let append b ~into = iter b ~f:(push_back into)
 
   let peek_front_exn b =
-    if is_empty b then raise Empty
-    else A.get b.buf b.start
+    if is_empty b then
+      raise Empty
+    else
+      A.get b.buf b.start
 
   let peek_front b = try Some (peek_front_exn b) with Empty -> None
 
-  let peek_back_exn b = if is_empty b
-    then raise Empty
+  let peek_back_exn b =
+    if is_empty b then
+      raise Empty
     else (
-      let i = if b.stop = 0 then A.length b.buf - 1 else b.stop-1 in
+      let i =
+        if b.stop = 0 then
+          A.length b.buf - 1
+        else
+          b.stop - 1
+      in
       A.get b.buf i
     )
 
@@ -402,9 +439,11 @@ module MakeFromArray(A:Array.S) : S with module Array = A = struct
     a
 end
 
-module Byte = MakeFromArray(Array.Byte)
+module Byte = MakeFromArray (Array.Byte)
 
-module Make(Elt:sig
-    type t
-    val dummy : t
-  end) = MakeFromArray(Array.Make(Elt))
+module Make (Elt : sig
+  type t
+
+  val dummy : t
+end) =
+  MakeFromArray (Array.Make (Elt))

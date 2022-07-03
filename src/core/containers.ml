@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Drop-In replacement to Stdlib *)
@@ -16,15 +15,20 @@ module Hash = CCHash
 
 (** @since 0.14 *)
 module Hashtbl = struct
-  include (Hashtbl : module type of Hashtbl
-    with type statistics = Hashtbl.statistics
-     and module Make = Hashtbl.Make
-     and type ('a,'b) t = ('a,'b) Hashtbl.t
-  )
+  include (
+    Hashtbl :
+      module type of Hashtbl
+        with type statistics = Hashtbl.statistics
+         and module Make = Hashtbl.Make
+         and type ('a, 'b) t = ('a, 'b) Hashtbl.t)
+
   include CCHashtbl.Poly
+
   module type S' = CCHashtbl.S
+
   module Make' = CCHashtbl.Make
 end
+
 module Heap = CCHeap
 module Int = CCInt
 module Int32 = CCInt32
@@ -48,11 +52,8 @@ module Monomorphic = CCMonomorphic
 module Utf8_string = CCUtf8_string
 module Unit = CCUnit
 module Atomic = CCAtomic
-
 module Sexp = CCSexp
 module Sexp_intf = CCSexp_intf
 module Canonical_sexp = CCCanonical_sexp
-
 module Stdlib = CCShims_.Stdlib
-
 include Monomorphic

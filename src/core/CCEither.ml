@@ -10,41 +10,55 @@ type 'a printer = Format.formatter -> 'a -> unit
 type ('a, 'b) t = ('a, 'b) Either.t = Left of 'a | Right of 'b
 
 let left l = Left l
-
 let right r = Right r
 
-let is_left = function Left _ -> true | Right _ -> false
+let is_left = function
+  | Left _ -> true
+  | Right _ -> false
 
-let is_right = function Left _ -> false | Right _ -> true
+let is_right = function
+  | Left _ -> false
+  | Right _ -> true
 
-let find_left = function Left l -> Some l | Right _ -> None
+let find_left = function
+  | Left l -> Some l
+  | Right _ -> None
 
-let find_right = function Left _ -> None | Right r -> Some r
+let find_right = function
+  | Left _ -> None
+  | Right r -> Some r
 
-let map_left f = function Left l -> Left (f l) | Right r -> Right r
+let map_left f = function
+  | Left l -> Left (f l)
+  | Right r -> Right r
 
-let map_right f = function Left l -> Left l | Right r -> Right (f r)
+let map_right f = function
+  | Left l -> Left l
+  | Right r -> Right (f r)
 
-let map ~left ~right = function Left l -> Left (left l) | Right r -> Right (right r)
+let map ~left ~right = function
+  | Left l -> Left (left l)
+  | Right r -> Right (right r)
 
-let fold ~left ~right = function Left l -> left l | Right r -> right r
+let fold ~left ~right = function
+  | Left l -> left l
+  | Right r -> right r
 
 let iter = fold
-
 let for_all = fold
 
 let equal ~left ~right e1 e2 =
   match e1, e2 with
-    | (Left l1, Left l2) -> left l1 l2
-    | (Right r1, Right r2) -> right r1 r2
-    | _ -> false
+  | Left l1, Left l2 -> left l1 l2
+  | Right r1, Right r2 -> right r1 r2
+  | _ -> false
 
 let compare ~left ~right e1 e2 =
   match e1, e2 with
-    | (Left _, Right _) -> -1
-    | (Right _, Left _) -> 1
-    | (Left l1, Left l2) -> left l1 l2
-    | (Right r1, Right r2) -> right r1 r2
+  | Left _, Right _ -> -1
+  | Right _, Left _ -> 1
+  | Left l1, Left l2 -> left l1 l2
+  | Right r1, Right r2 -> right r1 r2
 
 (** {2 IO} *)
 

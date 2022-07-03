@@ -65,9 +65,7 @@ module type S = sig
   (** [submap m1 m2] is true iff all bindings of [m1] are also in [m2] *)
 
   val to_iter : t -> (key * value) iter
-
   val of_iter : ?init:t -> (key * value) iter -> t
-
   val keys : t -> key iter
 
   val values : t -> value iter
@@ -76,21 +74,21 @@ end
 
 module type OrderedType = sig
   type t
+
   val compare : t -> t -> int
 end
 
-module Make(K : OrderedType)(V : OrderedType) = struct
+module Make (K : OrderedType) (V : OrderedType) = struct
   type key = K.t
   type value = V.t
 
-  module M = Map.Make(K)
-  module S = Set.Make(V)
+  module M = Map.Make (K)
+  module S = Set.Make (V)
 
   type t = S.t M.t
   (** Map of sets *)
 
   let empty = M.empty
-
   let is_empty = M.is_empty
 
   let add m k v =
@@ -101,40 +99,34 @@ module Make(K : OrderedType)(V : OrderedType) = struct
     try
       let set = M.find k m in
       let set' = S.remove v set in
-      if S.is_empty set'
-      then M.remove k m
-      else M.add k set' m
-    with Not_found ->
-      m
+      if S.is_empty set' then
+        M.remove k m
+      else
+        M.add k set' m
+    with Not_found -> m
 
-  let remove_all m k =
-    M.remove k m
-
+  let remove_all m k = M.remove k m
   let mem m k = M.mem k m
 
   let find m k =
     try
       let set = M.find k m in
       S.elements set
-    with Not_found ->
-      []
+    with Not_found -> []
 
   let find_iter m k f =
     try
       let set = M.find k m in
       S.iter f set
-    with Not_found ->
-      ()
+    with Not_found -> ()
 
   let count m k =
     try
       let set = M.find k m in
       S.cardinal set
-    with Not_found ->
-      0
+    with Not_found -> 0
 
-  let iter m f =
-    M.iter (fun k set -> S.iter (fun v -> f k v) set) m
+  let iter m f = M.iter (fun k set -> S.iter (fun v -> f k v) set) m
 
   let fold m acc f =
     M.fold (fun k set acc -> S.fold (fun v acc -> f acc k v) set acc) m acc
@@ -143,62 +135,60 @@ module Make(K : OrderedType)(V : OrderedType) = struct
 
   let union m1 m2 =
     M.merge
-      (fun _k v1 v2 -> match v1, v2 with
-         | None, None -> None
-         | Some set1, Some set2 -> Some (S.union set1 set2)
-         | Some set, None
-         | None, Some set -> Some set)
+      (fun _k v1 v2 ->
+        match v1, v2 with
+        | None, None -> None
+        | Some set1, Some set2 -> Some (S.union set1 set2)
+        | Some set, None | None, Some set -> Some set)
       m1 m2
 
   let inter m1 m2 =
     M.merge
-      (fun _k v1 v2 -> match v1, v2 with
-         | None, _
-         | _, None -> None
-         | Some set1, Some set2 ->
-           let set = S.inter set1 set2 in
-           if S.is_empty set
-           then None
-           else Some set)
+      (fun _k v1 v2 ->
+        match v1, v2 with
+        | None, _ | _, None -> None
+        | Some set1, Some set2 ->
+          let set = S.inter set1 set2 in
+          if S.is_empty set then
+            None
+          else
+            Some set)
       m1 m2
 
   let diff m1 m2 =
     M.merge
-      (fun _k v1 v2 -> match v1, v2 with
-         | None, _ -> None
-         | Some set, None -> Some set
-         | Some set1, Some set2 ->
-           let set' = S.diff set1 set2 in
-           if S.is_empty set'
-           then None
-           else Some set')
+      (fun _k v1 v2 ->
+        match v1, v2 with
+        | None, _ -> None
+        | Some set, None -> Some set
+        | Some set1, Some set2 ->
+          let set' = S.diff set1 set2 in
+          if S.is_empty set' then
+            None
+          else
+            Some set')
       m1 m2
 
-  let equal m1 m2 =
-    M.equal S.equal m1 m2
-
-  let compare m1 m2 =
-    M.compare S.compare m1 m2
+  let equal m1 m2 = M.equal S.equal m1 m2
+  let compare m1 m2 = M.compare S.compare m1 m2
 
   let submap m1 m2 =
     M.for_all
       (fun k set1 ->
-         try
-           let set2 = M.find k m2 in
-           S.subset set1 set2
-         with Not_found ->
-           false)
+        try
+          let set2 = M.find k m2 in
+          S.subset set1 set2
+        with Not_found -> false)
       m1
 
-  let to_iter m k = iter m (fun x y -> k (x,y))
+  let to_iter m k = iter m (fun x y -> k (x, y))
 
-  let of_iter ?(init=empty) seq =
+  let of_iter ?(init = empty) seq =
     let m = ref init in
-    seq (fun (k,v) -> m := add !m k v);
+    seq (fun (k, v) -> m := add !m k v);
     !m
 
   let keys m k = M.iter (fun x _ -> k x) m
-
   let values m k = iter m (fun _ v -> k v)
 end
 
@@ -208,7 +198,6 @@ module type BIDIR = sig
   type right
 
   val empty : t
-
   val is_empty : t -> bool
 
   val add : t -> left -> right -> t
@@ -267,70 +256,42 @@ let _fold_iter f acc seq =
 
 let _head_iter seq =
   let r = ref None in
-  begin try seq (fun x -> r := Some x; raise Exit)
-    with Exit -> ();
-  end;
+  (try
+     seq (fun x ->
+         r := Some x;
+         raise Exit)
+   with Exit -> ());
   !r
 
-module MakeBidir(L : OrderedType)(R : OrderedType) = struct
+module MakeBidir (L : OrderedType) (R : OrderedType) = struct
   type left = L.t
   type right = R.t
 
-  module MapL = Make(L)(R)
-  module MapR = Make(R)(L)
+  module MapL = Make (L) (R)
+  module MapR = Make (R) (L)
 
-  type t = {
-    left : MapL.t;
-    right : MapR.t;
-  }
+  type t = { left: MapL.t; right: MapR.t }
 
-  let empty = {
-    left = MapL.empty;
-    right = MapR.empty;
-  }
-
+  let empty = { left = MapL.empty; right = MapR.empty }
   let is_empty m = MapL.is_empty m.left
+  let add m a b = { left = MapL.add m.left a b; right = MapR.add m.right b a }
 
-  let add m a b = {
-    left = MapL.add m.left a b;
-    right = MapR.add m.right b a;
-  }
-
-  let remove m a b = {
-    left = MapL.remove m.left a b;
-    right = MapR.remove m.right b a;
-  }
+  let remove m a b =
+    { left = MapL.remove m.left a b; right = MapR.remove m.right b a }
 
   let cardinal_left m = MapL.size m.left
   let cardinal_right m = MapR.size m.right
-
   let find_left m a = MapL.find_iter m.left a
   let find_right m b = MapR.find_iter m.right b
-
-  let remove_left m a =
-    _fold_iter
-      (fun m b -> remove m a b)
-      m (find_left m a)
-
-  let remove_right m b =
-    _fold_iter
-      (fun m a -> remove m a b)
-      m (find_right m b)
-
+  let remove_left m a = _fold_iter (fun m b -> remove m a b) m (find_left m a)
+  let remove_right m b = _fold_iter (fun m a -> remove m a b) m (find_right m b)
   let mem_left m a = MapL.mem m.left a
   let mem_right m b = MapR.mem m.right b
-
   let find1_left m a = _head_iter (find_left m a)
   let find1_right m b = _head_iter (find_right m b)
-
-  let fold f acc m =
-    MapL.fold m.left acc f
-
+  let fold f acc m = MapL.fold m.left acc f
   let pairs m = MapL.to_iter m.left
-
-  let add_pairs m seq = _fold_iter (fun m (a,b) -> add m a b) m seq
-
+  let add_pairs m seq = _fold_iter (fun m (a, b) -> add m a b) m seq
   let iter_left m = MapL.keys m.left
-
   let iter_right m = MapR.keys m.right
 end

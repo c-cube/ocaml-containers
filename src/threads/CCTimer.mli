@@ -1,4 +1,3 @@
-
 (** Event timer
 
     Used to be part of [CCFuture].

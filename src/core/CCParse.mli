@@ -1,4 +1,3 @@
-
 (* This file is free software. See file "license" for more details. *)
 
 (** Very Simple Parser Combinators
@@ -133,9 +132,7 @@ val pure : 'a -> 'a t
 (** Synonym to {!return}. *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-
 val map3 : ('a -> 'b -> 'c -> 'd) -> 'a t -> 'b t -> 'c t -> 'd t
 
 val bind : ('a -> 'b t) -> 'a t -> 'b t
@@ -158,7 +155,7 @@ val empty : unit t
 val fail : string -> 'a t
 (** [fail msg] fails with the given message. It can trigger a backtrack. *)
 
-val failf: ('a, unit, string, 'b t) format4 -> 'a
+val failf : ('a, unit, string, 'b t) format4 -> 'a
 (** [Format.sprintf] version of {!fail}. *)
 
 val fail_lazy : (unit -> string) -> 'a t
@@ -258,8 +255,13 @@ val set_current_slice : slice -> unit t
     @since 3.6 *)
 
 val chars_fold :
-  f:('acc -> char ->
-     [`Continue of 'acc | `Consume_and_stop of 'acc | `Stop of 'acc | `Fail of string]) ->
+  f:
+    ('acc ->
+    char ->
+    [ `Continue of 'acc
+    | `Consume_and_stop of 'acc
+    | `Stop of 'acc
+    | `Fail of string ]) ->
   'acc ->
   ('acc * slice) t
 (** [chars_fold f acc0] folds over characters of the input.
@@ -282,9 +284,14 @@ val chars_fold :
    @since 3.6 *)
 
 val chars_fold_transduce :
-  f:('acc -> char ->
-     [ `Continue of 'acc | `Yield of 'acc * char
-     | `Consume_and_stop | `Stop | `Fail of string]) ->
+  f:
+    ('acc ->
+    char ->
+    [ `Continue of 'acc
+    | `Yield of 'acc * char
+    | `Consume_and_stop
+    | `Stop
+    | `Fail of string ]) ->
   'acc ->
   ('acc * string) t
 (** Same as {!char_fold} but with the following differences:
@@ -388,7 +395,7 @@ val optional : _ t -> unit t
     @since 3.6 *)
 
 val try_ : 'a t -> 'a t
-[@@deprecated "plays no role anymore, just replace [try foo] with [foo]"]
+  [@@deprecated "plays no role anymore, just replace [try foo] with [foo]"]
 (** [try_ p] is just like [p] (it used to play a role in backtracking
     semantics but no more).
 
@@ -421,11 +428,7 @@ val try_or : 'a t -> f:('a -> 'b t) -> else_:'b t -> 'b t
     @since 3.6
 *)
 
-val try_or_l :
-  ?msg:string ->
-  ?else_:'a t ->
-  (unit t * 'a t) list ->
-  'a t
+val try_or_l : ?msg:string -> ?else_:'a t -> (unit t * 'a t) list -> 'a t
 (** [try_or_l ?else_ l] tries each pair [(test, p)] in order.
     If the n-th [test] succeeds, then [try_or_l l] behaves like n-th [p],
     whether [p] fails or not. If [test] consumes input, the state is restored
@@ -466,7 +469,7 @@ val skip : _ t -> unit t
 val sep : by:_ t -> 'a t -> 'a list t
 (** [sep ~by p] parses a list of [p] separated by [by]. *)
 
-val sep_until: until:_ t -> by:_ t -> 'a t -> 'a list t
+val sep_until : until:_ t -> by:_ t -> 'a t -> 'a list t
 (** Same as {!sep} but stop when [until] parses successfully.
     @since 3.6 *)
 
@@ -548,7 +551,6 @@ val split_list_at_most : on_char:char -> int -> slice list t
     {b EXPERIMENTAL}
     @since 3.6 *)
 
-
 val split_2 : on_char:char -> (slice * slice) t
 (** [split_2 ~on_char] splits the input into exactly 2 fields,
     and fails if the split yields less or more than 2 items.
@@ -597,11 +599,11 @@ val all_str : string t
     @since 3.6 *)
 
 (* TODO
-val trim : slice t
-(** [trim] is like {!all}, but removes whitespace on the left and right.
-   {b EXPERIMENTAL}
-    @since 3.6 *)
- *)
+   val trim : slice t
+   (** [trim] is like {!all}, but removes whitespace on the left and right.
+      {b EXPERIMENTAL}
+       @since 3.6 *)
+*)
 
 val memo : 'a t -> 'a t
 (** Memoize the parser. [memo p] will behave like [p], but when called
@@ -627,40 +629,40 @@ val fix_memo : ('a t -> 'a t) -> 'a t
 (** {2 Infix} *)
 
 module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
   (** Alias to {!map}. [p >|= f] parses an item [x] using [p],
       and returns [f x]. *)
 
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** Alias to {!bind}.
       [p >>= f] results in a new parser which behaves as [p] then,
       in case of success, applies [f] to the result. *)
 
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
   (** Applicative. *)
 
-  val (<* ) : 'a t -> _ t -> 'a t
+  val ( <* ) : 'a t -> _ t -> 'a t
   (** [a <* b] parses [a] into [x], parses [b] and ignores its result,
       and returns [x]. *)
 
-  val ( *>) : _ t -> 'a t -> 'a t
+  val ( *> ) : _ t -> 'a t -> 'a t
   (** [a *> b] parses [a], then parses [b] into [x], and returns [x]. The
       result of [a] is ignored. *)
 
-  val (<|>) : 'a t -> 'a t -> 'a t
+  val ( <|> ) : 'a t -> 'a t -> 'a t
   (** Alias to {!or_}.
 
       [a <|> b] tries to parse [a], and if [a] fails without
       consuming any input, backtracks and tries
       to parse [b], otherwise it fails as [a]. *)
 
-  val (<?>) : 'a t -> string -> 'a t
+  val ( <?> ) : 'a t -> string -> 'a t
   (** [a <?> msg] behaves like [a], but if [a] fails,
       [a <?> msg] fails with [msg] instead.
       Useful as the last choice in a series of [<|>]. For example:
       [a <|> b <|> c <?> "expected one of a, b, c"]. *)
 
-  val (|||) : 'a t -> 'b t -> ('a * 'b) t
+  val ( ||| ) : 'a t -> 'b t -> ('a * 'b) t
   (** Alias to {!both}.
       [a ||| b] parses [a], then [b], then returns the pair of their results.
       @since 3.6 *)
@@ -702,7 +704,6 @@ val parse_file_e : 'a t -> string -> 'a or_error
 val parse_file_exn : 'a t -> string -> 'a
 (** Same as {!parse_file}, but
     @raise ParseError if it fails. *)
-
 
 (** {2 Utils}
 
@@ -748,13 +749,19 @@ module U : sig
 
   (* TODO: quoted string *)
 
-  val pair : ?start:string -> ?stop:string -> ?sep:string ->
-    'a t -> 'b t -> ('a * 'b) t
+  val pair :
+    ?start:string -> ?stop:string -> ?sep:string -> 'a t -> 'b t -> ('a * 'b) t
   (** Parse a pair using OCaml syntactic conventions.
       The default is "(a, b)". *)
 
-  val triple : ?start:string -> ?stop:string -> ?sep:string ->
-    'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+  val triple :
+    ?start:string ->
+    ?stop:string ->
+    ?sep:string ->
+    'a t ->
+    'b t ->
+    'c t ->
+    ('a * 'b * 'c) t
   (** Parse a triple using OCaml syntactic conventions.
       The default is "(a, b, c)". *)
 end
@@ -773,5 +780,5 @@ module Debug_ : sig
       prints successful runs of [p] using [print]. *)
 
   val trace_success_or_fail : string -> print:('a -> string) -> 'a t -> 'a t
-      (** Trace both error or success *)
+  (** Trace both error or success *)
 end

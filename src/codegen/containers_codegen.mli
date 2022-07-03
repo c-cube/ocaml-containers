@@ -1,4 +1,3 @@
-
 (** {1 Code generators}
 
     The code generator library is designed to be used from a build system
@@ -42,7 +41,6 @@ module Code : sig
 
   val pp : t Fmt.printer
   val to_string : t -> string
-
   val mk_pp : unit Fmt.printer -> t
   val mk_str : string -> t
   val in_struct : string -> t list -> t
@@ -53,10 +51,7 @@ end
 module Bitfield : sig
   type t
 
-  val make :
-    ?emit_failure_if_too_wide:bool ->
-    name:string ->
-    unit -> t
+  val make : ?emit_failure_if_too_wide:bool -> name:string -> unit -> t
   (** Make a new bitfield with the given name.
       @param name the name of the generated type
       @param emit_failure_if_too_wide if true, generated code includes a runtime
@@ -68,7 +63,7 @@ module Bitfield : sig
       a boolean. *)
 
   val field_int : t -> width:int -> string -> unit
-(** [field_int ty name ~width] adds a field of size [width] to
+  (** [field_int ty name ~width] adds a field of size [width] to
     the bitfield with name [name].
     The accessors will be for integers of [width] bits, and the
     setter might assert that the provided integer fits. *)
@@ -88,6 +83,4 @@ val emit_file : string -> code list -> unit
     at path [file] *)
 
 val emit_chan : out_channel -> code list -> unit
-
 val emit_string : code list -> string
-
