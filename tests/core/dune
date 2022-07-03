@@ -3,4 +3,4 @@
  (flags :standard -strict-sequence -warn-error -a+8 -open CCShims_)
  (modes native)
  (libraries containers containers.bencode containers.unix threads
-   containers_testlib iter gen uutf))
+   containers_testlib iter gen uutf csexp))
