@@ -2,4 +2,5 @@
  (name t)
  (flags :standard -strict-sequence -warn-error -a+8 -open CCShims_)
  (modes native)
+ (package containers-thread)
  (libraries containers containers-thread containers_testlib iter threads))
