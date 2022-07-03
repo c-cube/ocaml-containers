@@ -17,7 +17,6 @@ depends: [
   "containers" { = version }
   "iter" { with-test }
   "qcheck-core" { with-test }
-  "ounit" { with-test }
   "uutf" { with-test }
   "odoc" { with-doc }
 ]

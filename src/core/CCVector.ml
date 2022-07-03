@@ -143,9 +143,9 @@ let clear_and_reset v =
   push v ("hello"^"world");
   Weak.set a 0 (Some (get v 0));
   Gc.full_major(); Gc.compact();
-  OUnit2.assert_bool "is alive" (Weak.check a 0);
+  assert_bool "is alive" (Weak.check a 0);
   Gc.full_major(); Gc.compact();
-  OUnit2.assert_equal None (Weak.get a 0);
+  assert_equal None (Weak.get a 0);
 *)
 
 let[@inline] is_empty v = v.size = 0

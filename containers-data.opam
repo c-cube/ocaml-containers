@@ -15,7 +15,6 @@ depends: [
   "containers" { = version }
   "seq"
   "qcheck-core" { with-test }
-  "ounit" { with-test }
   "iter" { with-test }
   "gen" { with-test }
   #"mdx" { with-test & >= "1.5.0" & < "2.0.0" }
