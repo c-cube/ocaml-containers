@@ -5,9 +5,6 @@
 
 (* TODO: transient API? for batch modifications *)
 
-(*$inject let print_array f a = to_list a |> Array.of_list |> Q.Print.(array f)
-*)
-
 type 'a t = 'a array
 
 let empty = [| |]
@@ -29,11 +26,6 @@ let set a n x =
   a'.(n) <- x;
   a'
 
-(*$= set & ~printer:(print_array Q.Print.int)
-  (of_list [0]) (set (of_list [5]) 0 0)
-  (of_list [1; 3; 4; 5]) (set (of_list [1; 2; 4; 5]) 1 3)
-*)
-
 let sub = Array.sub (* Would this not be better implemented with CCArray_slice *)
 
 let map = Array.map
@@ -44,13 +36,6 @@ let append a b =
   let na = length a in
   Array.init (na + length b)
     (fun i -> if i < na then a.(i) else b.(i-na))
-
-(*$= append & ~printer:(print_array Q.Print.int)
-  empty (append empty empty)
-  (of_list [1; 2; 3]) (append empty (of_list [1; 2; 3]))
-  (of_list [1; 2; 3]) (append (of_list [1; 2; 3]) empty)
-  (of_list [3; 1; 4; 1; 5]) (append (of_list [3; 1]) (of_list [4; 1; 5]))
-*)
 
 let iter = Array.iter
 
@@ -67,10 +52,6 @@ let foldi f acc a =
        acc)
     acc a
 
-(*$= foldi & ~printer:Q.Print.(list (pair int string))
-  ([2, "baz"; 1, "bar"; 0, "foo"]) (foldi (fun l i a -> (i, a) :: l) [] (of_list ["foo"; "bar"; "baz"]))
-*)
-
 exception ExitNow
 
 let for_all p a =
@@ -79,36 +60,11 @@ let for_all p a =
     true
   with ExitNow -> false
 
-(*$= for_all & ~printer:Q.Print.bool
-  true (for_all (fun _ -> false) empty)
-  false (for_all (fun _ -> false) (singleton 3))
-  true (for_all (fun n -> n mod 2 = 0) (of_list [2; 4; 8]))
-  false (for_all (fun n -> n mod 2 = 0) (of_list [2; 4; 5; 8]))
-*)
-
 let exists p a =
   try
     Array.iter (fun x -> if p x then raise ExitNow) a;
     false
   with ExitNow -> true
-
-(*$= exists & ~printer:Q.Print.bool
-  false (exists (fun _ -> true) empty)
-  true (exists (fun _ -> true) (singleton 3))
-  false (exists (fun _ -> false) (singleton 3))
-  false (exists (fun n -> n mod 2 = 1) (of_list [2; 4; 8]))
-  true (exists (fun n -> n mod 2 = 1) (of_list [2; 4; 5; 8]))
-*)
-
-(*$Q
-  Q.(list bool) (fun l -> let a = of_list l in not @@ exists (fun b -> b) a = for_all not a)
-  Q.(list bool) (fun l -> let a = of_list l in not @@ for_all (fun b -> b) a = exists not a)
-*)
-
-(*$Q
- Q.(list bool) (fun l -> exists (fun b -> b) (of_list l) = List.fold_left (||) false l)
- Q.(list bool) (fun l -> for_all (fun b -> b) (of_list l) = List.fold_left (&&) true l)
- *)
 
 (** {2 Conversions} *)
 
@@ -128,12 +84,6 @@ let of_iter s =
   s (fun x -> l := x :: !l);
   Array.of_list (List.rev !l)
 
-(*$Q
-  Q.(list int) (fun l -> \
-    let g = Iter.of_list l in \
-    of_iter g |> to_iter |> Iter.to_list = l)
-*)
-
 let rec gen_to_list_ acc g = match g() with
   | None -> List.rev acc
   | Some x -> gen_to_list_ (x::acc) g
@@ -150,12 +100,6 @@ let to_gen a =
       incr i;
       Some x
     ) else None
-
-(*$Q
-  Q.(list int) (fun l -> \
-    let g = Gen.of_list l in \
-    of_gen g |> to_gen |> Gen.to_list = l)
-*)
 
 (** {2 IO} *)
 

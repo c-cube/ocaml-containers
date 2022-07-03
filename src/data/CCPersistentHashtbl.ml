@@ -118,27 +118,6 @@ module type S = sig
       @since 0.14 *)
 end
 
-(*$inject
-  module H = Make(CCInt)
-
-  let my_list =
-    [ 1, "a";
-      2, "b";
-      3, "c";
-      4, "d";
-    ]
-
-  let my_iter = Iter.of_list my_list
-
-  let _list_uniq = CCList.sort_uniq
-    ~cmp:(fun a b -> Stdlib.compare (fst a) (fst b))
-
-  let _list_int_int = Q.(
-    map_same_type _list_uniq
-      (list_of_size Gen.(0 -- 40) (pair small_int small_int))
-  )
-*)
-
 (** {2 Implementation} *)
 
 module Make(H : HashedType) : S with type key = H.t = struct
@@ -222,41 +201,6 @@ module Make(H : HashedType) : S with type key = H.t = struct
                   | Cons (k4,v4,l4) ->
                     if H.equal k k4 then v4 else find_rec_ k l4
 
-  (*$R
-    let h = H.of_iter my_iter in
-    OUnit2.assert_equal "a" (H.find h 1);
-    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
-    let h' = H.replace h 5 "e" in
-    OUnit2.assert_equal "a" (H.find h' 1);
-    OUnit2.assert_equal "e" (H.find h' 5);
-    OUnit2.assert_equal "a" (H.find h 1);
-    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
-  *)
-
-  (*$R
-    let n = 10000 in
-    let seq = Iter.map (fun i -> i, string_of_int i) Iter.(0--n) in
-    let h = H.of_iter seq in
-    Iter.iter
-      (fun (k,v) ->
-        OUnit2.assert_equal ~printer:(fun x -> x) v (H.find h k))
-      seq;
-    OUnit2.assert_raises Not_found (fun () -> H.find h (n+1));
-  *)
-
-  (*$QR
-    _list_int_int
-      (fun l ->
-        let h = H.of_list l in
-        List.for_all
-          (fun (k,v) ->
-            try
-              H.find h k = v
-            with Not_found -> false)
-          l
-      )
-  *)
-
   let get_exn k t = find t k
 
   let get k t =
@@ -266,20 +210,6 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let mem t k =
     try ignore (find t k); true
     with Not_found -> false
-
-  (*$R
-    let h = H.of_iter
-      Iter.(map (fun i -> i, string_of_int i)
-        (0 -- 200)) in
-    OUnit2.assert_equal 201 (H.length h);
-  *)
-
-  (*$QR
-    _list_int_int (fun l ->
-      let h = H.of_list l in
-      H.length h = List.length l
-    )
-  *)
 
   let rec buck_rev_iter_ ~f l = match l with
     | Nil -> ()
@@ -369,26 +299,6 @@ module Make(H : HashedType) : S with type key = H.t = struct
       t'
     )
 
-  (*$R
-    let h = H.of_iter my_iter in
-    OUnit2.assert_equal "a" (H.find h 1);
-    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
-    let h1 = H.add h 5 "e" in
-    OUnit2.assert_equal "a" (H.find h1 1);
-    OUnit2.assert_equal "e" (H.find h1 5);
-    OUnit2.assert_equal "a" (H.find h 1);
-    let h2 = H.add h1 5 "ee" in
-    OUnit2.assert_equal "ee" (H.find h2 5);
-    OUnit2.assert_raises Not_found (fun () -> H.find h 5);
-    let h3 = H.remove h2 1 in
-    OUnit2.assert_equal "ee" (H.find h3 5);
-    OUnit2.assert_raises Not_found (fun () -> H.find h3 1);
-    let h4 = H.remove h3 5 in
-    OUnit2.assert_equal "e" (H.find h4 5);
-    OUnit2.assert_equal "ee" (H.find h3 5);
-  *)
-
-
   (* return [Some l'] if [l] changed into [l'] by removing [k] *)
   let rec remove_rec_ k l = match l with
     | Nil -> None
@@ -412,36 +322,6 @@ module Make(H : HashedType) : S with type key = H.t = struct
             let t' = {length=t.length-1; arr=Arr a} in
             t.arr <- Set (i,l,t');
             t'
-
-  (*$R
-    let h = H.of_iter my_iter in
-    OUnit2.assert_equal (H.find h 2) "b";
-    OUnit2.assert_equal (H.find h 3) "c";
-    OUnit2.assert_equal (H.find h 4) "d";
-    OUnit2.assert_equal (H.length h) 4;
-    let h = H.remove h 2 in
-    OUnit2.assert_equal (H.find h 3) "c";
-    OUnit2.assert_equal (H.length h) 3;
-    OUnit2.assert_raises Not_found (fun () -> H.find h 2)
-  *)
-
-  (*$R
-    let open Iter.Infix in
-    let n = 10000 in
-    let seq = Iter.map (fun i -> i, string_of_int i) (0 -- n) in
-    let h = H.of_iter seq in
-    OUnit2.assert_equal (n+1) (H.length h);
-    let h = Iter.fold (fun h i -> H.remove h i) h (0 -- 500) in
-    OUnit2.assert_equal (n-500) (H.length h);
-    OUnit2.assert_bool "is_empty" (H.is_empty (H.create 16));
-  *)
-
-  (*$QR
-    _list_int_int (fun l ->
-      let h = H.of_list l in
-      let h = List.fold_left (fun h (k,_) -> H.remove h k) h l in
-      H.is_empty h)
-  *)
 
   let update t k f =
     let v = get k t in
@@ -559,22 +439,6 @@ module Make(H : HashedType) : S with type key = H.t = struct
            | Some v' -> replace tbl k v'
       ) tbl t2
 
-  (*$R
-    let t1 = H.of_list [1, "a"; 2, "b1"] in
-    let t2 = H.of_list [2, "b2"; 3, "c"] in
-    let t = H.merge
-      ~f:(fun _ -> function
-        | `Right v2 -> Some v2
-        | `Left v1 -> Some v1
-        | `Both (s1,s2) -> if s1 < s2 then Some s1 else Some s2)
-      t1 t2
-    in
-    OUnit2.assert_equal ~printer:string_of_int 3 (H.length t);
-    OUnit2.assert_equal "a" (H.find t 1);
-    OUnit2.assert_equal "b1" (H.find t 2);
-    OUnit2.assert_equal "c" (H.find t 3);
-  *)
-
   let add_iter init seq =
     let tbl = ref init in
     seq (fun (k,v) -> tbl := replace !tbl k v);
@@ -585,45 +449,13 @@ module Make(H : HashedType) : S with type key = H.t = struct
   let add_list init l =
     add_iter init (fun k -> List.iter k l)
 
-  (*$QR
-    _list_int_int (fun l ->
-      let l1, l2 = List.partition (fun (x,_) -> x mod 2 = 0) l in
-      let h1 = H.of_list l1 in
-      let h2 = H.add_list h1 l2 in
-      List.for_all
-        (fun (k,v) -> H.find h2 k = v)
-        l
-      &&
-      List.for_all
-        (fun (k,v) -> H.find h1 k = v)
-        l1
-      &&
-      List.length l1 = H.length h1
-      &&
-      List.length l = H.length h2
-      )
-  *)
-
   let of_list l = add_list (empty ()) l
 
   let to_list t = fold (fun acc k v -> (k,v)::acc) [] t
 
-  (*$R
-    let h = H.of_iter my_iter in
-    let l = Iter.to_list (H.to_iter h) in
-    OUnit2.assert_equal my_list (List.sort compare l)
-  *)
-
   let to_iter t =
     fun k ->
       iter t (fun x y -> k (x,y))
-
-  (*$R
-    let h = H.of_iter my_iter in
-    OUnit2.assert_equal "b" (H.find h 2);
-    OUnit2.assert_equal "a" (H.find h 1);
-    OUnit2.assert_raises Not_found (fun () -> H.find h 42);
-  *)
 
   let equal eq t1 t2 =
     length t1 = length t2

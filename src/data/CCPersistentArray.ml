@@ -99,13 +99,6 @@ let flat_map f a =
   let a' = map f a in
   flatten a'
 
-(*$T
-  of_list [ of_list [1]; of_list []; of_list [2;3;4]; of_list [5]; of_list [6;7]] \
-    |> flatten |> to_list =  [1;2;3;4;5;6;7]
-  of_list [ of_list []; of_list []; of_list []] |> flatten |> length = 0
-  of_list [] |> flatten |> length = 0
-*)
-
 let to_array t = Array.copy (reroot t)
 let of_array a = init (Array.length a) (fun i -> a.(i))
 
@@ -155,11 +148,6 @@ let to_gen a =
       incr i;
       Some x
     )
-
-(*$Q
-  Q.(list int) (fun l -> \
-    of_list l |> to_gen |> of_gen |> to_list = l)
-*)
 
 type 'a printer = Format.formatter -> 'a -> unit
 

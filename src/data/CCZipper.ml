@@ -11,23 +11,9 @@ let is_empty = function
   | [], [] -> true
   | _ -> false
 
-(*$T
-  (is_empty empty)
-  not ([42] |> make |> right |> is_empty)
-*)
-
 let to_list (l,r) = List.rev_append l r
 
 let to_rev_list (l,r) = List.rev_append r l
-
-(*$inject
-  let zip_gen = Q.(pair (small_list int)(small_list int))
-*)
-
-(*$Q
-  zip_gen (fun z -> \
-    to_list z = List.rev (to_rev_list z))
-*)
 
 let make l = [], l
 
@@ -67,11 +53,6 @@ let focused = function
   | _, x::_ -> Some x
   | _, [] -> None
 
-(*$Q
-  zip_gen (fun g -> \
-    is_focused g = (focused g |> CCOption.is_some))
-*)
-
 let focused_exn = function
   | _, x::_ -> x
   | _, [] -> raise Not_found
@@ -82,11 +63,6 @@ let remove (l,r) = match r with
   | [] -> l, []
   | _ :: r' -> l, r'
 
-(*$Q
-  Q.(triple int (list small_int)(list small_int)) (fun (x,l,r) -> \
-    insert x (l,r) |> remove = (l,r))
-*)
-
 let drop_before (_, r) = [], r
 
 let drop_after (l, r) = match r with
@@ -94,9 +70,3 @@ let drop_after (l, r) = match r with
   | x :: _ -> l, [x]
 
 let drop_after_and_focused (l, _) = l, []
-
-(*$=
-  ([1], [2]) (drop_after ([1], [2;3]))
-  ([1], []) (drop_after ([1], []))
-  ([1], []) (drop_after_and_focused ([1], [2;3]))
-*)

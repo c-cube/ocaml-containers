@@ -258,12 +258,3 @@ module Make(O : Set.OrderedType) = struct
     seq (fun (x,n) -> m := add_mult !m x n);
     !m
 end
-
-(*$T
-  let module S = CCMultiSet.Make(String) in \
-    S.count (S.add_mult S.empty "a" 5) "a" = 5
-  let module S = CCMultiSet.Make(String) in \
-    S.count (S.remove_mult (S.add_mult S.empty "a" 5) "a" 3) "a" = 2
-  let module S = CCMultiSet.Make(String) in \
-    S.count (S.remove_mult (S.add_mult S.empty "a" 4) "a" 6) "a" = 0
-*)

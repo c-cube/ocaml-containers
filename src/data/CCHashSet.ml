@@ -123,11 +123,6 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
 
   let cardinal = Tbl.length
 
-  (*$T
-    let module IS = Make(CCInt) in \
-      IS.cardinal (IS.create 10) = 0
-  *)
-
   let mem = Tbl.mem
 
   let find_exn = Tbl.find
@@ -135,11 +130,6 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
   let find s x =
     try Some (Tbl.find s x)
     with Not_found -> None
-
-  (*$T
-    let module IS = Make(CCInt) in IS.find (IS.of_list [1;2;3]) 3 = Some 3
-    let module IS = Make(CCInt) in IS.find (IS.of_list [1;2;3]) 5 = None
-  *)
 
   let iter f s = Tbl.iter (fun x _ -> f x) s
 
@@ -149,11 +139,6 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     let res = create (min (cardinal a) (cardinal b)) in
     iter (fun x -> if mem a x then insert res x) b;
     res
-
-  (*$T
-    let module IS = Make(CCInt) in \
-      IS.(equal (inter (of_list [1;2;3]) (of_list [2;5;4])) (of_list [2]))
-  *)
 
   let inter_mut ~into a =
     iter
@@ -166,11 +151,6 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     copy_into ~into:res b;
     res
 
-  (*$T
-    let module IS = Make(CCInt) in \
-      IS.(equal (union (of_list [1;2;3]) (of_list [2;5;4])) (of_list [1;2;3;4;5]))
-  *)
-
   let union_mut ~into a =
     copy_into ~into a
 
@@ -179,11 +159,6 @@ module Make(E : ELEMENT) : S with type elt = E.t = struct
     iter
       (fun x -> remove res x) b;
     res
-
-  (*$T
-    let module IS = Make(CCInt) in \
-      IS.(equal (diff (of_list [1;2;3]) (of_list [2;4;5])) (of_list [1;3]))
-  *)
 
   exception FastExit
 

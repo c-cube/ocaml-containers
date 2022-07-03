@@ -115,32 +115,6 @@ module type S = sig
   (**/**)
 end
 
-(*$inject
-  module T = MakeList(CCInt)
-  module S = String
-
-  let l1 = [ [1;2], "12"; [1], "1"; [2;1], "21"; [1;2;3], "123"; [], "[]" ]
-  let t1 = T.of_list l1
-
-  let small_l l = List.fold_left (fun acc (k,v) -> List.length k+acc) 0 l
-
-  let s1 = String.of_list ["cat", 1; "catogan", 2; "foo", 3]
-*)
-
-(*$T
-  String.of_list ["a", 1; "b", 2] |> String.size = 2
-  String.of_list ["a", 1; "b", 2; "a", 3] |> String.size = 2
-  String.of_list ["a", 1; "b", 2] |> String.find_exn "a" = 1
-  String.of_list ["a", 1; "b", 2] |> String.find_exn "b" = 2
-  String.of_list ["a", 1; "b", 2] |> String.find "c" = None
-
-  s1 |> String.find_exn "cat" = 1
-  s1 |> String.find_exn "catogan" = 2
-  s1 |> String.find_exn "foo" = 3
-  s1 |> String.find "cato" = None
-*)
-
-
 module Make(W : WORD)
   : S with type char_ = W.char_ and type key = W.t
 = struct
@@ -307,14 +281,6 @@ module Make(W : WORD)
 
   let remove k t = update k (fun _ -> None) t
 
-  (*$T
-    T.add [3] "3" t1 |> T.find_exn [3] = "3"
-    T.add [3] "3" t1 |> T.find_exn [1;2] = "12"
-    T.remove [1;2] t1 |> T.find [1;2] = None
-    T.remove [1;2] t1 |> T.find [1] = Some "1"
-    T.remove [1;2] t1 |> T.find [] = Some "[]"
-  *)
-
   let find_exn k t =
     (* at subtree [t], and character [c] *)
     let goto t c = match t with
@@ -360,20 +326,6 @@ module Make(W : WORD)
     let word = W.to_iter k in
     _fold_iter_and_then goto ~finish (t,_id) word
 
-  (*$= & ~printer:CCFun.id
-    "ca" (String.longest_prefix "carte" s1)
-    "" (String.longest_prefix "yolo" s1)
-    "cat" (String.longest_prefix "cat" s1)
-    "catogan" (String.longest_prefix "catogan" s1)
-  *)
-
-  (*$Q
-    Q.(pair (list (pair (printable_string_of_size Gen.(0 -- 30)) int)) printable_string) (fun (l,s) -> \
-      let m = String.of_list l in \
-      let s' = String.longest_prefix s m in \
-      CCString.prefix ~pre:s' s)
-  *)
-
   (* fold that also keeps the path from the root, so as to provide the list
       of chars that lead to a value. The path is a difference list, ie
       a function that prepends a list to some suffix *)
@@ -396,11 +348,6 @@ module Make(W : WORD)
          f acc key v)
       _id t acc
 
-  (*$T
-    T.fold (fun acc k v -> (k,v) :: acc) [] t1 \
-      |> List.sort Stdlib.compare = List.sort Stdlib.compare l1
-  *)
-
   let mapi f t =
     let rec map_ prefix t = match t with
       | Empty -> Empty
@@ -417,12 +364,6 @@ module Make(W : WORD)
         in Node (v', map')
     in map_ _id t
 
-  (*$= & ~printer:Q.Print.(list (pair (list int) string))
-    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Stdlib.compare) \
-      (T.mapi (fun k v -> v ^ "!") t1 \
-        |> T.to_list |> List.sort Stdlib.compare)
-  *)
-
   let map f t =
     let rec map_ = function
       | Empty -> Empty
@@ -434,12 +375,6 @@ module Make(W : WORD)
         in let map' = M.map map_ map
         in Node (v', map')
     in map_ t
-  (*$= & ~printer:Q.Print.(list (pair (list int) string))
-    (List.map (fun (k, v) -> (k, v ^ "!")) l1 |> List.sort Stdlib.compare) \
-      (T.map (fun v -> v ^ "!") t1 \
-        |> T.to_list |> List.sort Stdlib.compare)
-  *)
-
 
   let iter f t =
     _fold
@@ -512,17 +447,6 @@ module Make(W : WORD)
       in
       _mk_node v map'
 
-  (*$QR & ~count:30
-    Q.(let p = list_of_size Gen.(0--100) (pair printable_string small_int) in pair p p)
-      (fun (l1,l2) ->
-        let t1 = S.of_list l1 and t2 = S.of_list l2 in
-        let t = S.merge (fun a _ -> Some a) t1 t2 in
-        S.to_iter t |> Iter.for_all
-          (fun (k,v) -> S.find k t1 = Some v || S.find k t2 = Some v) &&
-        S.to_iter t1 |> Iter.for_all (fun (k,v) -> S.find k t <> None) &&
-        S.to_iter t2 |> Iter.for_all (fun (k,v) -> S.find k t <> None))
-  *)
-
   let rec size t = match t with
     | Empty -> 0
     | Cons (_, t') -> size t'
@@ -531,10 +455,6 @@ module Make(W : WORD)
       M.fold
         (fun _ t' acc -> size t' + acc)
         map s
-
-  (*$T
-    T.size t1 = List.length l1
-  *)
 
   let to_list t = fold (fun acc k v -> (k,v)::acc) [] t
 
@@ -560,8 +480,6 @@ module Make(W : WORD)
         in
         let l = M.bindings map in
         `Node(x, List.map (fun (c,t') -> _tree_node (`Char c) [to_tree t']) l)
-
-  (** {6 Ranges} *)
 
   (* stack of actions for [above] and [below] *)
   type 'a alternative =
@@ -668,70 +586,6 @@ module Make(W : WORD)
 
   let below key t =
     _half_range ~dir:Below ~p:(fun ~cur ~other -> W.compare cur other > 0) key t
-
-  (*$= & ~printer:CCFormat.(to_string (list (pair (list int) string)))
-    [ [1], "1"; [1;2], "12"; [1;2;3], "123"; [2;1], "21" ] \
-      (T.above [1] t1 |> Iter.to_list)
-    [ [1;2], "12"; [1;2;3], "123"; [2;1], "21" ] \
-      (T.above [1;1] t1 |> Iter.to_list)
-    [ [1;2], "12"; [1], "1"; [], "[]" ] \
-      (T.below [1;2] t1 |> Iter.to_list)
-    [ [1], "1"; [], "[]" ] \
-      (T.below [1;1] t1 |> Iter.to_list)
-  *)
-
-  (* NOTE: Regression test. See #158 *)
-  (*$T
-    let module TPoly = Make (struct \
-        type t = (unit -> char) list \
-        type char_ = char \
-        let compare = compare \
-        let to_iter a k = List.iter (fun c -> k (c ())) a \
-        let of_list l = List.map (fun c -> (fun () -> c)) l \
-      end) \
-    in \
-    let trie = TPoly.of_list [[fun () -> 'a'], 1; [fun () -> 'b'], 2] in \
-    ignore (TPoly.below [fun () -> 'a'] trie |> Iter.to_list); \
-    true
-  *)
-
-  (*$Q & ~count:30
-    Q.(list_of_size Gen.(0--100) (pair printable_string small_int)) (fun l -> \
-      let t = S.of_list l in \
-      S.check_invariants t)
-  *)
-
-  (*$inject
-    let rec sorted ~rev = function
-      | [] | [_] -> true
-      | x :: ((y ::_) as tl) ->
-        (if rev then x >= y else x <= y) && sorted ~rev tl
-
-    let gen_str = Q.small_printable_string
-  *)
-
-  (*$Q & ~count:200
-    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
-      (fun l -> let t = String.of_list l in \
-        List.for_all (fun (k,_) -> \
-          String.above k t |> Iter.for_all (fun (k',v) -> k' >= k)) \
-          l)
-    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
-      (fun l -> let t = String.of_list l in \
-        List.for_all (fun (k,_) -> \
-          String.below k t |> Iter.for_all (fun (k',v) -> k' <= k)) \
-          l)
-    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
-      (fun l -> let t = String.of_list l in \
-        List.for_all (fun (k,_) -> \
-          String.above k t |> Iter.to_list |> sorted ~rev:false) \
-          l)
-    Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int)) \
-      (fun l -> let t = String.of_list l in \
-        List.for_all (fun (k,_) -> \
-          String.below k t |> Iter.to_list |> sorted ~rev:true) \
-          l)
-  *)
 end
 
 module type ORDERED = sig

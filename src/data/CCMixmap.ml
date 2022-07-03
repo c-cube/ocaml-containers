@@ -3,28 +3,6 @@
 
 (** {1 Maps with Heterogeneous Values} *)
 
-(*$R
-  let module M = CCMixmap.Make(CCInt) in
-
-  let inj_int = CCMixmap.create_inj() in
-  let inj_str = CCMixmap.create_inj() in
-  let inj_list_int = CCMixmap.create_inj() in
-
-  let m =
-    M.empty
-    |> M.add ~inj:inj_int 1 1
-    |> M.add ~inj:inj_str 2 "2"
-    |> M.add ~inj:inj_list_int 3 [3;3;3]
-  in
-
-  assert_equal (M.get ~inj:inj_int 1 m) (Some 1) ;
-  assert_equal (M.get ~inj:inj_str 1 m) None ;
-  assert_equal (M.get ~inj:inj_str 2 m) (Some "2") ;
-  assert_equal (M.get ~inj:inj_int 2 m) None ;
-  assert_equal (M.get ~inj:inj_list_int 3 m) (Some [3;3;3]) ;
-  assert_equal (M.get ~inj:inj_str 3 m) None ;
-*)
-
 type 'b injection = {
   get : (unit -> unit) -> 'b option;
   set : 'b -> (unit -> unit);

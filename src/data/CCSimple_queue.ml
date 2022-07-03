@@ -52,12 +52,6 @@ let pop q =
   try Some (pop_exn q)
   with Invalid_argument _ -> None
 
-(*$Q
-  Q.(list small_int) (fun l -> \
-    let q = of_list l in \
-    equal CCInt.equal (Gen.unfold pop q |> of_gen) q)
-*)
-
 let junk q =
   try
     let _, q' = pop_exn q in
@@ -68,25 +62,7 @@ let map f q = { hd=List.map f q.hd; tl=List.map f q.tl; }
 
 let rev q = make_ q.tl q.hd
 
-(*$Q
-  Q.(list small_int) (fun l -> \
-    equal CCInt.equal (of_list l |> rev) (of_list (List.rev l)))
-  Q.(list small_int) (fun l -> \
-    let q = of_list l in \
-    equal CCInt.equal q (q |> rev |> rev))
-*)
-
 let length q = List.length q.hd + List.length q.tl
-
-(*$Q
-  Q.(list small_int)(fun l -> \
-    length (of_list l) = List.length l)
-*)
-
-(*$Q
-  Q.(list small_int)(fun l -> \
-    equal CCInt.equal (of_list l) (List.fold_left snoc empty l))
-*)
 
 let fold f acc q =
   let acc' = List.fold_left f acc q.hd in
@@ -114,15 +90,6 @@ let add_iter q seq =
   !q
 
 let of_iter s = add_iter empty s
-
-(*$Q
-  Q.(list small_int) (fun l -> \
-    equal CCInt.equal \
-      (of_iter (Iter.of_list l)) \
-      (of_list l))
-  Q.(list small_int) (fun l -> \
-    l = (of_list l |> to_iter |> Iter.to_list))
-*)
 
 let add_seq q l = add_iter q (fun k -> Seq.iter k l)
 let of_seq l = add_seq empty l
@@ -164,22 +131,10 @@ let rec seq_equal eq l1 l2 = match l1(), l2() with
 
 let equal eq q1 q2 = seq_equal eq (to_seq q1) (to_seq q2)
 
-(*$Q
-  Q.(pair (list small_int)(list small_int)) (fun (l1,l2) -> \
-    equal CCInt.equal (of_list l1)(of_list l2) = (l1=l2))
-*)
-
 let append q1 q2 =
   add_seq q1
     (fun yield ->
        to_seq q2 yield)
-
-(*$Q
-  Q.(pair (list small_int)(list small_int)) (fun (l1,l2) -> \
-    equal CCInt.equal \
-      (append (of_list l1)(of_list l2)) \
-      (of_list (List.append l1 l2)))
-*)
 
 module Infix = struct
   let (>|=) q f = map f q
@@ -188,8 +143,6 @@ module Infix = struct
 end
 
 include Infix
-
-(** {2 IO} *)
 
 let pp ?(sep=fun out () -> Format.fprintf out ",@ ") pp_item out l =
   let first = ref true in

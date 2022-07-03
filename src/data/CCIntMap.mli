@@ -1,6 +1,4 @@
 
-(* This file is free software, part of containers. See file "license" for more details. *)
-
 (** Map specialized for Int keys
 
     {b status: stable}

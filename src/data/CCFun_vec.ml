@@ -1,16 +1,5 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(*$inject
-
-  let _listuniq =
-    let g = Q.(small_list (pair small_int small_int)) in
-    Q.map_same_type
-      (fun l ->
-        CCList.sort_uniq ~cmp:(fun a b -> Stdlib.compare (fst a)(fst b)) l
-      ) g
-  ;;
-*)
-
 (** {1 Hash Tries} *)
 
 type 'a iter = ('a -> unit) -> unit
@@ -140,16 +129,7 @@ let empty = {size=0; leaves=A.empty; subs=A.empty}
 
 let is_empty {size;_} = size=0
 
-(*$T
-  is_empty empty
-*)
-
 let length {size;_} = size
-
-(*$T
-  not (is_empty (return 2))
-  length (return 2) = 1
-*)
 
 let return x = {leaves=A.return x; subs=A.empty; size=1}
 
@@ -181,12 +161,6 @@ let get_ (i:int) (m:'a t) : 'a =
     | I_cons (x, tl) -> aux tl (A.get m.subs x)
   in
   aux (split_idx i) m
-
-(*$Q
-   _listuniq (fun l -> \
-    let m = of_list l in \
-    List.for_all (fun (i,y) -> get_exn i m = y) @@ List.mapi CCPair.make l)
-*)
 
 let get_exn i v =
   if i >= 0 && i < length v then get_ i v else raise Not_found
@@ -241,27 +215,6 @@ let pop_exn (v:'a t) : 'a * 'a t =
 let pop (v:'a t) : ('a * 'a t) option =
   if v.size=0 then None else Some (pop_ (v.size-1) v)
 
-(* regression test for #298 *)
-(*$R
-  let rec consume x = match CCFun_vec.pop x with
-    | None -> () | Some (_, x) -> consume x
-  in
-  consume (of_list (CCList.(1 -- 100)));
-  ()
-*)
-
-(*$QR
-    Q.(pair int (small_list int)) (fun (x,l) ->
-        let q0 = of_list l in
-        let q = push x q0 in
-        assert_equal (length q) (length q0+1);
-        let y, q = pop_exn q in
-        assert_equal x y;
-        assert_equal (to_list q) (to_list q0);
-        true
-      )
-    *)
-
 let iteri ~f (m : 'a t) : unit =
   (* basically, a 32-way BFS traversal.
      The queue contains subtrees to explore, along with their high_idx_ offsets *)
@@ -306,33 +259,15 @@ let rec map f m : _ t =
     size=m.size;
   }
 
-(*$QR
-  Q.(pair (fun1 Observable.int bool)(small_list int)) (fun (f,l) ->
-    let f = Q.Fn.apply f in
-    (List.map f l) = (of_list l |> map f |> to_list)
-  )
-*)
-
 let append a b =
   if is_empty b then a
   else fold ~f:(fun v x -> push x v) ~x:a b
-
-(*$QR
-  Q.(pair (small_list int)(small_list int)) (fun (l1,l2) ->
-    (l1 @ l2) = (append (of_list l1)(of_list l2) |> to_list)
-  )
-*)
 
 let add_list v l = List.fold_left (fun v x -> push x v) v l
 
 let of_list l = add_list empty l
 
 let to_list m = fold_rev m ~f:(fun acc x -> x::acc) ~x:[]
-
-(*$QR
-  Q.(small_list int) (fun l ->
-    l = to_list (of_list l))
-*)
 
 let add_iter v seq =
   let v = ref v in
@@ -342,13 +277,6 @@ let add_iter v seq =
 let of_iter s = add_iter empty s
 
 let to_iter m yield = iteri ~f:(fun _ v -> yield v) m
-
-(*$Q
-  _listuniq (fun l -> \
-    (List.sort Stdlib.compare l) = \
-      (l |> Iter.of_list |> of_iter |> to_iter |> Iter.to_list \
-        |> List.sort Stdlib.compare) )
-*)
 
 let rec add_gen m g = match g() with
   | None -> m
@@ -374,19 +302,7 @@ let to_gen m =
     ) else None
   in next
 
-(*$Q
-  _listuniq (fun l -> \
-    (List.sort Stdlib.compare l) = \
-      (l |> Gen.of_list |> of_gen |> to_gen |> Gen.to_list \
-        |> List.sort Stdlib.compare) )
-*)
-
 let choose m = to_gen m ()
-
-(*$T
-  choose empty = None
-  choose (of_list [1,1; 2,2]) <> None
-*)
 
 let choose_exn m = match choose m with
   | None -> raise Not_found

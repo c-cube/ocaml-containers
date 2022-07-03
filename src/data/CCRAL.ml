@@ -54,21 +54,6 @@ and tree_update_ size t i v =match t, i with
     then Node (x, tree_update_ size' t1 (i-1) v, t2)
     else Node (x, t1, tree_update_ size' t2 (i-1-size') v)
 
-(*$Q & ~small:(CCFun.compose snd List.length)
-   Q.(pair (pair small_int int) (list int)) (fun ((i,v),l) -> \
-    l=[] ||  \
-      (let i = (abs i) mod (List.length l) in \
-      let ral = of_list l in let ral = set ral i v in \
-      get_exn ral i = v))
-*)
-
-(*$Q & ~small:List.length
-   Q.(list small_int) (fun l -> \
-    let l1 = of_list l in \
-    CCList.mapi (fun i x -> i,x) l \
-      |> List.for_all (fun (i,x) -> get_exn l1 i = x))
-*)
-
 let cons x l = match l with
   | Cons (size1, t1, Cons (size2, t2, l')) when size1=size2 ->
     Cons (1 + size1 + size2, Node (x, t1, t2), l')
@@ -87,17 +72,6 @@ let tl l = match l with
   | Cons (size, Node (_, t1, t2), l') ->
     let size' = size / 2 in
     Cons (size', t1, Cons (size', t2, l'))
-
-(*$T
-  let l = of_list[1;2;3] in hd l = 1
-  let l = of_list[1;2;3] in tl l |> to_list = [2;3]
-*)
-
-(*$Q
-  Q.(list_of_size Gen.(1--100) int) (fun l -> \
-    let l' =  of_list l in \
-    (not (is_empty l')) ==> (equal ~eq:CCInt.equal l' (cons (hd l') (tl l'))) )
-*)
 
 let front l = match l with
   | Nil -> None
@@ -121,10 +95,6 @@ let rec _remove prefix l i =
 
 let remove l i = _remove [] l i
 
-(*$= & ~printer:Q.Print.(list int)
-  [1;2;4] (to_list @@ remove (of_list [1;2;3;4]) 2)
-*)
-
 let rec _get_and_remove_exn prefix l i =
   let x, l' = front_exn l in
   if i=0
@@ -133,10 +103,6 @@ let rec _get_and_remove_exn prefix l i =
 
 let get_and_remove_exn l i =
   _get_and_remove_exn [] l i
-
-(*$= & ~printer:Q.Print.(pair int (list int))
-  (3,[1;2;4]) (CCPair.map_snd to_list @@ get_and_remove_exn (of_list [1;2;3;4]) 2)
-*)
 
 let rec _map_tree f t = match t with
   | Leaf x -> Leaf (f x)
@@ -158,20 +124,6 @@ let mapi ~f l =
       Node (x, l, aux_t f ~size:(size/2) (i+1+size/2) r)
   in
   aux f 0 l
-
-(*$QR
-  Q.small_int (fun n ->
-    let l = CCList.(0 -- n) in
-    let l' = of_list l |> mapi ~f:(fun i x ->i,x) in
-    List.mapi (fun i x->i,x) l = to_list l'
-  )
-*)
-
-(*$Q
-  Q.(pair (list small_int)(fun2 Observable.int Observable.int bool)) (fun (l,f) -> \
-    let f = Q.Fn.apply f in \
-    mapi ~f (of_list l) |> to_list = List.mapi f l )
-*)
 
 let rec length l = match l with
   | Nil -> 0
@@ -229,27 +181,9 @@ and fold_tree_rev t acc f = match t with
 
 let rev_map ~f l = fold ~f:(fun acc x -> cons (f x) acc) ~x:empty l
 
-(*$Q
-   Q.(list int) (fun l -> \
-    let f x = x+1 in \
-    of_list l |> rev_map ~f |> to_list = List.rev_map f l)
-*)
-
 let rev l = fold ~f:cons' ~x:empty l
 
-(*$Q
-  Q.(list small_int) (fun l -> \
-    let l = of_list l in rev (rev l) = l)
-  Q.(list small_int) (fun l -> \
-    let l1 = of_list l in length l1 = List.length l)
-*)
-
 let append l1 l2 = fold_rev ~f:(fun l2 x -> cons x l2) ~x:l2 l1
-
-(*$Q & ~small:(CCPair.merge (CCFun.compose_binop List.length (+)))
-  Q.(pair (list int) (list int)) (fun (l1,l2) -> \
-    append (of_list l1) (of_list l2) = of_list (l1 @ l2))
-*)
 
 let append_tree_ t l = fold_tree_rev t l cons'
 
@@ -263,10 +197,6 @@ let filter_map ~f l =
       | Some y -> cons y acc
     )
 
-(*$T
-  of_list [1;2;3;4;5;6] |> filter ~f:(fun x -> x mod 2=0) |> to_list = [2;4;6]
-*)
-
 let flat_map f l =
   fold_rev ~x:empty l
     ~f:(fun acc x ->
@@ -274,24 +204,7 @@ let flat_map f l =
       append l acc
     )
 
-(*$Q
-  Q.(pair (fun1 Observable.int (small_list int)) (small_list int)) (fun (f,l) -> \
-    let f x = Q.Fn.apply f x in \
-    let f' x = f x |> of_list in \
-    of_list l |> flat_map f' |> to_list = CCList.(flat_map f l))
-*)
-
 let flatten l = fold_rev ~f:(fun acc l -> append l acc) ~x:empty l
-
-(*$T
-  flatten (of_list [of_list [1]; of_list []; of_list [2;3]]) = \
-    of_list [1;2;3;]
-*)
-
-(*$Q
-  Q.(small_list (small_list int)) (fun l -> \
-    of_list l |> map ~f:of_list |> flatten |> to_list = CCList.flatten l)
-*)
 
 let app funs l =
   fold_rev ~x:empty funs
@@ -299,11 +212,6 @@ let app funs l =
       fold_rev ~x:acc l
         ~f:(fun acc x -> cons (f x) acc)
     )
-
-(*$T
-  app (of_list [(+) 2; ( * ) 10]) (of_list [1;10]) |> to_list = \
-    [3; 12; 10; 100]
-*)
 
 type 'a stack =
   | St_nil
@@ -330,17 +238,6 @@ and take_tree_ ~size n t = match t with
     then cons x (append_tree_ l (take_tree_ ~size:size' (n-size'-1) r))
     else cons x (take_tree_ ~size:size' (n-1) l)
 
-(*$T
-  take 3 (of_list CCList.(1--10)) |> to_list = [1;2;3]
-  take 5 (of_list CCList.(1--10)) |> to_list = [1;2;3;4;5]
-  take 0 (of_list CCList.(1--10)) |> to_list = []
-*)
-
-(*$Q
-  Q.(pair small_int (list int)) (fun (n,l) -> \
-    of_list l |> take n |> to_list = CCList.take n l)
-*)
-
 let take_while ~f l =
   (* st: stack of subtrees *)
   let rec aux p st = match st with
@@ -352,15 +249,6 @@ let take_while ~f l =
     | St_tree (Node (x,l,r), st') ->
       if p x then cons x (aux p (St_tree (l, St_tree (r, st')))) else Nil
   in aux f (St_list (l, St_nil))
-
-(*$Q
-  Q.(list int) (fun l -> \
-    let f x = x mod 7 <> 0 in \
-    of_list l |> take_while ~f |> to_list = CCList.take_while f l)
-  Q.(pair (fun1 Observable.int bool) (list int)) (fun (f,l) -> \
-    let f x = Q.Fn.apply f x in \
-    of_list l |> take_while ~f |> to_list = CCList.take_while f l)
-*)
 
 (* drop [n < size] elements from [t] *)
 let rec drop_tree_ ~size n t tail = match t with
@@ -392,15 +280,6 @@ let rec drop n l = match l with
     if n >= size then drop (n-size) tl
     else drop_tree_ ~size n t tl
 
-(*$T
-  of_list [1;2;3] |> drop 2 |> length = 1
-*)
-
-(*$Q
-  Q.(pair small_int (list int)) (fun (n,l) -> \
-    of_list l |> drop n |> to_list = CCList.drop n l)
-*)
-
 let drop_while ~f l =
   let rec aux p st = match st with
     | St_nil -> Nil
@@ -414,19 +293,6 @@ let drop_while ~f l =
       then aux p (St_tree (l, St_tree (r, st')))
       else append_tree_ tree (stack_to_list st')
   in aux f (St_list (l, St_nil))
-
-(*$T
-  drop 3 (of_list CCList.(1--10)) |> to_list = CCList.(4--10)
-  drop 5 (of_list CCList.(1--10)) |> to_list = [6;7;8;9;10]
-  drop 0 (of_list CCList.(1--10)) |> to_list = CCList.(1--10)
-  drop 15 (of_list CCList.(1--10)) |> to_list = []
-*)
-
-(*$Q
-  Q.(list_of_size Gen.(0 -- 200) int) (fun l -> \
-    let f x = x mod 10 <> 0 in \
-    of_list l |> drop_while ~f |> to_list = CCList.drop_while f l)
-*)
 
 let take_drop n l = take n l, drop n l
 
@@ -446,11 +312,6 @@ let equal ~eq l1 l2 =
   in
   aux ~eq l1 l2
 
-(*$Q
-  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
-    equal ~eq:CCInt.equal (of_list l1) (of_list l2) = (l1=l2))
-*)
-
 (** {2 Utils} *)
 
 let make n x =
@@ -465,12 +326,6 @@ let repeat n l =
   in
   aux n l empty
 
-
-(*$Q
-  Q.(pair small_int (small_list int)) (fun (n,l) -> \
-    of_list l |> repeat n |> to_list = CCList.(repeat n l))
-*)
-
 let range i j =
   let rec aux i j acc =
     if i=j then cons i acc
@@ -481,28 +336,10 @@ let range i j =
   in
   aux i j empty
 
-(*$T
-  range 0 3 |> to_list = [0;1;2;3]
-  range 3 0 |> to_list = [3;2;1;0]
-  range 17 17 |> to_list = [17]
-*)
-
-(*$Q
-  Q.(pair small_int small_int) (fun (i,j) -> \
-    range i j |> to_list = CCList.(i -- j) )
-*)
-
 let range_r_open_ i j =
   if i=j then empty
   else if i<j then range i (j-1)
   else range i (j+1)
-
-(*$= & ~printer:CCFormat.(to_string (hbox (list int)))
-  [1;2;3;4] (1 --^ 5 |> to_list)
-  [5;4;3;2] (5 --^ 1 |> to_list)
-  [1]       (1 --^ 2 |> to_list)
-  []        (0 --^ 0 |> to_list)
-*)
 
 (** {2 Conversions} *)
 
@@ -511,18 +348,9 @@ type 'a gen = unit -> 'a option
 
 let add_list l l2 = List.fold_left (fun acc x -> cons x acc) l (List.rev l2)
 
-(*$Q & ~small:(CCPair.merge (CCFun.compose_binop List.length (+)))
-  Q.(pair (list small_int) (list small_int)) (fun (l1,l2) -> \
-    add_list (of_list l2) l1 |> to_list = l1 @ l2)
-*)
-
 let of_list l = add_list empty l
 
 let to_list l = fold_rev ~f:(fun acc x -> x :: acc) ~x:[] l
-
-(*$Q
-  Q.(list int) (fun l -> to_list (of_list l) = l)
-*)
 
 let add_array l a = Array.fold_right cons a l
 
@@ -537,11 +365,6 @@ let to_array l = match l with
     iteri ~f:(fun i x -> Array.set arr i x) l;
     arr
 
-(*$Q
-  Q.(array int) (fun a -> \
-    of_array a |> to_array = a)
-*)
-
 let of_iter s =
   let l = ref empty in
   s (fun x -> l := cons x !l);
@@ -553,17 +376,6 @@ let add_iter l s =
   fold ~f:(fun acc x -> cons x acc) ~x:l !l1
 
 let to_iter l yield = iter ~f:yield l
-
-(*$Q & ~small:List.length
-  Q.(list small_int) (fun l -> \
-    of_list l |> to_iter |> Iter.to_list = l)
-  Q.(list small_int) (fun l -> \
-    Iter.of_list l |> of_iter |> to_list = l)
-*)
-
-(*$T
-  add_iter (of_list [3;4]) (Iter.of_list [1;2]) |> to_list = [1;2;3;4]
-*)
 
 let rec gen_iter_ f g = match g() with
   | None -> ()
@@ -596,12 +408,6 @@ let to_gen l =
   in
   next
 
-(*$Q & ~small:List.length
-  Q.(list small_int) (fun l -> of_list l |> to_gen |> Gen.to_list = l)
-  Q.(list small_int) (fun l -> \
-    Gen.of_list l |> of_gen |> to_list = l)
-*)
-
 let rec of_list_map ~f l = match l with
   | [] -> empty
   | x::l' ->
@@ -618,11 +424,6 @@ let compare ~cmp l1 l2 =
       if c<> 0 then c else cmp_gen ~cmp g1 g2
   in
   cmp_gen ~cmp (to_gen l1)(to_gen l2)
-
-(*$Q
-  Q.(pair (list int)(list int)) (fun (l1,l2) -> \
-    compare ~cmp:CCInt.compare (of_list l1) (of_list l2) = (Stdlib.compare l1 l2))
-*)
 
 (** {2 Infix} *)
 
