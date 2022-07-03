@@ -1,10 +1,8 @@
 
-module Q = QCheck
-module Cbor = Containers_cbor
+include (val Containers_testlib.make ~__FILE__ ())
+module Cbor = Containers_cbor;;
 
-let suite = ref []
-
-[@@@ifge 4.08]
+[@@@ifge 4.08];;
 
 let gen_c : Cbor.t Q.Gen.t =
   let open Q.Gen in
@@ -55,20 +53,14 @@ let rec shrink (c:Cbor.t) : Cbor.t Q.Iter.t =
   | `Bytes s ->
     let+ s = Q.Shrink.string s in `Bytes s
 
+let arb = Q.make ~shrink ~print:Cbor.to_string_diagnostic gen_c;;
 
-let arb = Q.make ~shrink ~print:Cbor.to_string_diagnostic gen_c
-
-let t1 =
-  Q.Test.make ~count:10_000 ~name:"to_from_same" arb @@ fun c ->
-    let s = Cbor.encode c in
-    let c' = Cbor.decode_exn s in
-    if not (c = c') then
-      Q.Test.fail_reportf "@[<hv2>roundtrip failed:@ from %a@ to %a@]"
-      Cbor.pp_diagnostic c Cbor.pp_diagnostic c';
-    true
-
-let () = suite := t1 :: !suite
+q ~count:10_000 arb @@ fun c ->
+  let s = Cbor.encode c in
+  let c' = Cbor.decode_exn s in
+  if not (c = c') then
+    Q.Test.fail_reportf "@[<hv2>roundtrip failed:@ from %a@ to %a@]"
+    Cbor.pp_diagnostic c Cbor.pp_diagnostic c';
+  true;;
 
 [@@@endif]
-
-let () = QCheck_base_runner.run_tests_main !suite

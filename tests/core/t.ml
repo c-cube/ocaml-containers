@@ -33,5 +33,6 @@ Containers_testlib.run_all ~descr:"containers" [
   T_utf8string.get();
   T_vector.get();
   T_bencode.get();
+  T_cbor.get();
   T_unix.get();
 ];;
