@@ -144,7 +144,7 @@ let resize_minimize_memory bv size =
 let is_empty bv =
   try
     for i = 0 to Bytes.length bv.b - 1 do
-      if get_ bv.b i <> 1 then raise_notrace Exit
+      if get_ bv.b i <> 0 then raise_notrace Exit
     done;
     true
   with Exit -> false
