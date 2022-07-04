@@ -6,7 +6,7 @@ build:
 	dune build @install -p $(PACKAGES)
 
 test: build
-	dune runtest --cache=disabled --no-buffer --force
+	dune runtest --display=quiet --cache=disabled --no-buffer --force
 
 clean:
 	dune clean
