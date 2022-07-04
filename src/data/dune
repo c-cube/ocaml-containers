@@ -1,8 +1,7 @@
-
 (library
-  (name containers_data)
-  (public_name containers-data)
-  (wrapped false)
-  (flags :standard -w +a-4-42-44-48-50-58-32-60@8 -safe-string -open CCShims_)
-  (ocamlopt_flags :standard (:include ../flambda.flags))
-  (libraries containers))
+ (name containers_data)
+ (public_name containers-data)
+ (wrapped false)
+ (flags :standard -warn-error -3 -w -70 -color always -safe-string
+   -strict-sequence -open CCShims_)
+ (libraries containers))

@@ -1,7 +1,8 @@
+(** Imperative Bitvectors.
 
-(* This file is free software, part of containers. See file "license" for more details. *)
-
-(** {2 Imperative Bitvectors}
+    A bitvector is stored in some form of internal array (on the heap).
+    Is it a bit similar to a more storage-efficient version of [bool
+    CCVector.vector], with additional operations.
 
     {b BREAKING CHANGES} since 1.2:
     size is now stored along with the bitvector. Some functions have
@@ -148,7 +149,7 @@ val selecti : t -> 'a array -> ('a * int) list
 
 val equal : t -> t -> bool
 (** Bitwise comparison, including the size ([equal a b] implies [length a=length b]).
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 type 'a iter = ('a -> unit) -> unit
 
@@ -159,9 +160,12 @@ val pp : Format.formatter -> t -> unit
 (** Print the bitvector as a string of bits.
     @since 0.13 *)
 
-
 (**/**)
-val __to_word_l : t -> char list
-val __popcount8 : int -> int
-val __lsb_mask : int -> int
+
+module Internal_ : sig
+  val __to_word_l : t -> char list
+  val __popcount8 : int -> int
+  val __lsb_mask : int -> int
+end
+
 (**/**)

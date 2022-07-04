@@ -1,14 +1,12 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 References}
+(** Helpers for references
     @since 0.9 *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ord = 'a -> 'a -> int
 type 'a eq = 'a -> 'a -> bool
 type 'a iter = ('a -> unit) -> unit
-
 type 'a t = 'a ref
 
 val map : ('a -> 'b) -> 'a t -> 'b t
@@ -36,9 +34,7 @@ val swap : 'a t -> 'a t -> unit
     @since 1.4 *)
 
 val compare : 'a ord -> 'a t ord
-
 val equal : 'a eq -> 'a t eq
-
 val to_list : 'a t -> 'a list
 
 val to_iter : 'a t -> 'a iter

@@ -1,0 +1,7 @@
+; our little preprocessor
+
+(executable
+ (name cpp)
+ (flags :standard -warn-error -a+8)
+ (modes native)
+ (libraries dune.configurator))

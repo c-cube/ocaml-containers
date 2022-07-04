@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Functional Vectors} *)
+(** Functional Vectors *)
 
 (** Tree with a large branching factor for logarithmic operations with
     a low multiplicative factor.
@@ -13,7 +13,7 @@
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
-type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+type 'a ktree = unit -> [ `Nil | `Node of 'a * 'a ktree list ]
 
 (* TODO: restore this
    (** {2 Transient Identifiers} *)
@@ -54,11 +54,8 @@ type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
 type 'a t
 
 val empty : 'a t
-
 val is_empty : _ t -> bool
-
 val return : 'a -> 'a t
-
 val length : _ t -> int
 
 val push : 'a -> 'a t -> 'a t
@@ -85,13 +82,9 @@ val iteri_rev : f:(int -> 'a -> unit) -> 'a t -> unit
 (** Iterate on elements with their index, but starting from the end. *)
 
 val fold : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
-
 val foldi : f:('b -> int -> 'a -> 'b) -> x:'b -> 'a t -> 'b
-
 val append : 'a t -> 'a t -> 'a t
-
 val map : ('a -> 'b) -> 'a t -> 'b t
-
 val choose : 'a t -> 'a option
 
 (* TODO
@@ -113,21 +106,13 @@ val choose : 'a t -> 'a option
 (** {5 Conversions} *)
 
 val to_list : 'a t -> 'a list
-
 val of_list : 'a list -> 'a t
-
 val add_list : 'a t -> 'a list -> 'a t
-
 val add_iter : 'a t -> 'a iter -> 'a t
-
 val of_iter : 'a iter -> 'a t
-
 val to_iter : 'a t -> 'a iter
-
 val add_gen : 'a t -> 'a gen -> 'a t
-
 val of_gen : 'a gen -> 'a t
-
 val to_gen : 'a t -> 'a gen
 
 (* TODO

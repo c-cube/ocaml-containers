@@ -1,11 +1,9 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Functional queues (fifo)} *)
+(** Functional queues (fifo) *)
 
 (** Simple implementation of functional queues
     @since 1.3 *)
-
 
 type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
@@ -18,7 +16,6 @@ type +'a t
 (** Queue containing elements of type 'a *)
 
 val empty : 'a t
-
 val is_empty : 'a t -> bool
 
 val push : 'a -> 'a t -> 'a t
@@ -37,7 +34,7 @@ val peek_exn : 'a t -> 'a
 val pop : 'a t -> ('a * 'a t) option
 (** Get and remove the first element. *)
 
-val pop_exn : 'a t -> ('a * 'a t)
+val pop_exn : 'a t -> 'a * 'a t
 (** Same as {!pop}, but fails on empty queues.
     @raise Invalid_argument if the queue is empty. *)
 
@@ -58,12 +55,14 @@ val rev : 'a t -> 'a t
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 
 module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t (** Alias to {!map}. *)
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
+  (** Alias to {!map}. *)
 
-  val (@) : 'a t -> 'a t -> 'a t (** Alias to {!append}. *)
+  val ( @ ) : 'a t -> 'a t -> 'a t
+  (** Alias to {!append}. *)
 
-  val (<::) : 'a t -> 'a -> 'a t (** Alias to {!snoc}. *)
-
+  val ( <:: ) : 'a t -> 'a -> 'a t
+  (** Alias to {!snoc}. *)
 end
 
 include module type of Infix
@@ -72,13 +71,10 @@ val length : 'a t -> int
 (** Number of elements in the queue (linear in time). *)
 
 val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
-
 val iter : ('a -> unit) -> 'a t -> unit
-
 val to_list : 'a t -> 'a list
 val add_list : 'a t -> 'a list -> 'a t
 val of_list : 'a list -> 'a t
-
 val to_iter : 'a t -> 'a iter
 val add_iter : 'a t -> 'a iter -> 'a t
 val of_iter : 'a iter -> 'a t

@@ -1,12 +1,12 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Basic operations on floating-point numbers}
+(** Basic operations on floating-point numbers
     @since 0.6.1 *)
 
 open CCShims_
 
 type t = float
+
 type fpclass = Stdlib.fpclass =
   | FP_normal
   | FP_subnormal
@@ -69,9 +69,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
 val pp : t printer
-
 val hash : t -> int
-
 val random : t -> t random_gen
 val random_small : t random_gen
 val random_range : t -> t -> t random_gen
@@ -122,33 +120,33 @@ val classify : t -> fpclass
     @since 0.17 *)
 
 module Infix : sig
-  val (=) : t -> t -> bool
+  val ( = ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (<>) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (<) : t -> t -> bool
+  val ( < ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (>) : t -> t -> bool
+  val ( > ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (<=) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (>=) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (+) : t -> t -> t
+  val ( + ) : t -> t -> t
   (** Addition.
       @since 2.1 *)
 
-  val (-) : t -> t -> t
+  val ( - ) : t -> t -> t
   (** Subtraction.
       @since 2.1 *)
 
-  val (~-) : t -> t
+  val ( ~- ) : t -> t
   (** Unary negation.
       @since 2.1 *)
 
@@ -156,7 +154,7 @@ module Infix : sig
   (** Multiplication.
       @since 2.1 *)
 
-  val (/) : t -> t -> t
+  val ( / ) : t -> t -> t
   (** Division.
       @since 2.1 *)
 end

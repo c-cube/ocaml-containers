@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Lazy Tree Structure}
+(** Lazy Tree Structure
     This structure can be used to represent trees and directed
     graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
     is a structural type. *)
@@ -11,10 +11,9 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type +'a t = unit -> [`Nil | `Node of 'a * 'a t list]
+type +'a t = unit -> [ `Nil | `Node of 'a * 'a t list ]
 
 val empty : 'a t
-
 val is_empty : _ t -> bool
 
 val singleton : 'a -> 'a t
@@ -42,8 +41,7 @@ val height : _ t -> int
 (** Length of the longest path to empty leaves. *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
 
 val cut_depth : int -> 'a t -> 'a t
 (** Cut the tree at the given depth, so it becomes finite. *)
@@ -51,10 +49,11 @@ val cut_depth : int -> 'a t -> 'a t
 (** {2 Graph Traversals} *)
 
 (** Abstract Set structure *)
-class type ['a] pset = object
-  method add : 'a -> 'a pset
-  method mem : 'a -> bool
-end
+class type ['a] pset =
+  object
+    method add : 'a -> 'a pset
+    method mem : 'a -> bool
+  end
 
 val set_of_cmp : cmp:('a -> 'a -> int) -> unit -> 'a pset
 (** Build a set structure given a total ordering. *)
@@ -102,17 +101,17 @@ val pp : 'a printer -> 'a t printer
 (** {2 Pretty printing in the DOT (graphviz) format} *)
 
 module Dot : sig
-  type attribute = [
-    | `Color of string
+  type attribute =
+    [ `Color of string
     | `Shape of string
     | `Weight of int
     | `Style of string
     | `Label of string
     | `Id of string  (** Unique ID in the graph. Allows sharing. *)
-    | `Other of string * string
-  ] (** Dot attributes for nodes *)
+    | `Other of string * string ]
+  (** Dot attributes for nodes *)
 
-  type graph = (string * attribute list t list)
+  type graph = string * attribute list t list
   (** A dot graph is a name, plus a list of trees labelled with attributes *)
 
   val mk_id : ('a, Buffer.t, unit, attribute) format4 -> 'a
@@ -122,9 +121,7 @@ module Dot : sig
   (** Using a formatter string, build a label. *)
 
   val make : name:string -> attribute list t list -> graph
-
   val singleton : name:string -> attribute list t -> graph
-
   val pp_single : string -> attribute list t printer
 
   val pp : graph printer

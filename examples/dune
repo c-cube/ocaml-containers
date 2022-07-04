@@ -1,8 +1,49 @@
+(executables
+ (names id_sexp ccparse_sexp ccparse_irclogs)
+ (libraries containers)
+ (flags :standard -warn-error -a+8))
 
-(executable
-  (name id_sexp)
-  (libraries containers)
-  (modules id_sexp)
-  (flags :standard -warn-error -a+8 -safe-string -color always)
-  (ocamlopt_flags :standard -O3 -color always
-                   -unbox-closures -unbox-closures-factor 20))
+(rule
+ (alias runtest)
+ (locks /ctest)
+ (deps
+  (source_tree test_data))
+ (action
+  (ignore-stdout
+   (run ./id_sexp.exe test_data/benchpress.sexp))))
+
+(rule
+ (alias runtest)
+ (locks /ctest)
+ (deps
+  (source_tree test_data))
+ (action
+  (ignore-stdout
+   (run ./ccparse_sexp.exe test_data/benchpress.sexp))))
+
+(rule
+ (targets ccparse_irclogs.ml)
+ (enabled_if
+  (>= %{ocaml_version} "4.08"))
+ (action
+  (copy ccparse_irclogs_real.cond.ml %{targets})))
+
+(rule
+ (targets ccparse_irclogs.ml)
+ (enabled_if
+  (< %{ocaml_version} "4.08"))
+ (action
+  (with-stdout-to
+   %{targets}
+   (run echo "let() = print_endline {|ok|}"))))
+
+(rule
+ (alias runtest)
+ (locks /ctest)
+ (deps
+  (source_tree test_data))
+ (enabled_if
+  (>= %{ocaml_version} "4.08"))
+ (action
+  (ignore-stdout
+   (run ./ccparse_irclogs.exe test_data/irc-logs.txt))))

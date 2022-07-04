@@ -1,9 +1,9 @@
 opam-version: "2.0"
-version: "3.4"
+version: "3.8"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 synopsis: "A set of advanced datatypes for containers"
-license: "BSD-2"
+license: "BSD-2-Clause"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "build" "@doc" "-p" name ] {with-doc}
@@ -11,12 +11,10 @@ build: [
 ]
 depends: [
   "ocaml" { >= "4.03.0" }
-  "dune" { >= "1.1" }
+  "dune" { >= "2.0" }
   "containers" { = version }
   "seq"
-  "qtest" { with-test }
-  "qcheck" { with-test }
-  "ounit" { with-test }
+  "qcheck-core" { with-test }
   "iter" { with-test }
   "gen" { with-test }
   #"mdx" { with-test & >= "1.5.0" & < "2.0.0" }

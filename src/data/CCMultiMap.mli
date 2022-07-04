@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Multimap} *)
+(** Map that can map key to several values *)
 
 type 'a iter = ('a -> unit) -> unit
 
@@ -65,9 +65,7 @@ module type S = sig
   (** [submap m1 m2] is [true] iff all bindings of [m1] are also in [m2]. *)
 
   val to_iter : t -> (key * value) iter
-
   val of_iter : ?init:t -> (key * value) iter -> t
-
   val keys : t -> key iter
 
   val values : t -> value iter
@@ -76,10 +74,12 @@ end
 
 module type OrderedType = sig
   type t
+
   val compare : t -> t -> int
 end
 
-module Make(K : OrderedType)(V : OrderedType) : S with type key = K.t and type value = V.t
+module Make (K : OrderedType) (V : OrderedType) :
+  S with type key = K.t and type value = V.t
 
 (** {2 Two-Way Multimap}
     Represents n-to-n mappings between two types. Each element from the "left"
@@ -93,7 +93,6 @@ module type BIDIR = sig
   type right
 
   val empty : t
-
   val is_empty : t -> bool
 
   val add : t -> left -> right -> t
@@ -145,5 +144,5 @@ module type BIDIR = sig
   val iter_right : t -> right iter
 end
 
-module MakeBidir(L : OrderedType)(R : OrderedType) : BIDIR
-  with type left = L.t and type right = R.t
+module MakeBidir (L : OrderedType) (R : OrderedType) :
+  BIDIR with type left = L.t and type right = R.t

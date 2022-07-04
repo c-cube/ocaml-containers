@@ -1,7 +1,6 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Associative containers with Heterogeneous Values}
+(** Associative containers with Heterogeneous Values
 
     This is similar to {!CCMixtbl}, but the injection is directly used as
     a key.
@@ -20,40 +19,28 @@ module Key : sig
   (** Compare two keys that have compatible types. *)
 end
 
-type pair =
-  | Pair : 'a Key.t * 'a -> pair
+type pair = Pair : 'a Key.t * 'a -> pair
 
 (** {2 Imperative table indexed by [Key]} *)
 module Tbl : sig
   type t
 
   val create : ?size:int -> unit -> t
-
   val mem : t -> _ Key.t -> bool
-
   val add : t -> 'a Key.t -> 'a -> unit
-
   val remove : t -> _ Key.t -> unit
-
   val length : t -> int
-
   val find : t -> 'a Key.t -> 'a option
 
   val find_exn : t -> 'a Key.t -> 'a
   (** @raise Not_found if the key is not in the table. *)
 
   val iter : (pair -> unit) -> t -> unit
-
   val to_iter : t -> pair iter
-
   val of_iter : pair iter -> t
-
   val add_iter : t -> pair iter -> unit
-
   val add_list : t -> pair list -> unit
-
   val of_list : pair list -> t
-
   val to_list : t -> pair list
 end
 
@@ -62,33 +49,21 @@ module Map : sig
   type t
 
   val empty : t
-
   val mem : _ Key.t -> t -> bool
-
   val add : 'a Key.t -> 'a -> t -> t
-
   val remove : _ Key.t -> t -> t
-
   val length : t -> int
-
   val cardinal : t -> int
-
   val find : 'a Key.t -> t -> 'a option
 
   val find_exn : 'a Key.t -> t -> 'a
   (** @raise Not_found if the key is not in the table. *)
 
   val iter : (pair -> unit) -> t -> unit
-
   val to_iter : t -> pair iter
-
   val of_iter : pair iter -> t
-
   val add_iter : t -> pair iter -> t
-
   val add_list : t -> pair list -> t
-
   val of_list : pair list -> t
-
   val to_list : t -> pair list
 end

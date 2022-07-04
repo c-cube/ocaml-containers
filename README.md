@@ -63,7 +63,7 @@ changes in this release.
   and old-time iteration based on [iter](https://github.com/c-cube/iter)
   is now named `of_iter`, `to_iter`, etc.
 
-  Here you need to change you code, possibly using search and replace.
+  Here you need to change your code, possibly using search and replace.
   Thankfully, the typechecker should guide you.
 
 3. `Array_slice` and `String.Sub` have been removed to simplify the
@@ -127,7 +127,7 @@ that will cause comparison errors ie. identical hashtables will be seen as
 different or vice versa.
 
 Every time you use a polymorphic comparison where you're using a data type
-where structural comparison != semantic comparison, it's a bug. And ever time
+where structural comparison != semantic comparison, it's a bug. And every time
 you use polymorphic comparison where the type of data being compared may vary
 (e.g. it's an int now, but it may be a map later), you're planting a bug for
 the future.
@@ -163,8 +163,8 @@ you first have to load the appropriate bytecode archives. After starting a
 session, e.g. `ocamldebug your_program.bc`,
 
 ```ocaml non-deterministic=command
-# #load_printer containers_monomorphic.cma
-# #load_printer containers.cma
+# #load_printer containers_monomorphic.cma;;
+# #load_printer containers.cma;;
 ```
 
 For these archives to be found, you may have to `run` the program first. Now
@@ -172,7 +172,7 @@ printing functions that have the appropriate type `Format.formatter -> 'a ->
 unit` can be installed. For example,
 
 ```ocaml non-deterministic=command
-# #install_printer Containers.Int.pp
+# #install_printer Containers.Int.pp;;
 ```
 
 However, printer combinators are not easily handled by `ocamldebug`. For
@@ -184,7 +184,7 @@ instance
 ```ocaml non-deterministic=command
 module M = struct
 	let pp_int_list = Containers.(List.pp Int.pp)
-end
+end;;
 ```
 
 loaded via `# load_printer m.cmo` and installed as `# install_printer
@@ -200,7 +200,7 @@ See [this file](./CHANGELOG.md).
 - [Mailing List](http://lists.ocaml.org/listinfo/containers-users)
   the address is <mailto:containers-users@lists.ocaml.org>
 - the [github wiki](https://github.com/c-cube/ocaml-containers/wiki)
-- on IRC, ask `companion_cube` on `#ocaml@freenode.net`
+- on IRC, ask `companion_cube` on `#ocaml@irc.libera.chat`
 - there is a `#containers` channel on OCaml's discord server.
 
 ## Use
@@ -221,7 +221,7 @@ In a toplevel, using ocamlfind:
 # #require "containers-data";;
 # CCList.flat_map;;
 - : ('a -> 'b list) -> 'a list -> 'b list = <fun>
-# open Containers;;  (* optional *)
+# open Containers (* optional *);;
 # List.flat_map ;;
 - : ('a -> 'b list) -> 'a list -> 'b list = <fun>
 ```
@@ -266,10 +266,10 @@ You need dune (formerly jbuilder).
 $ make
 ```
 
-To build and run tests (requires `oUnit`, [qtest](https://github.com/vincent-hugot/qtest), `gen`, `iter`):
+To build and run tests (requires `qcheck-core`, `gen`, `iter`):
 
 ```
-$ opam install oUnit qtest
+$ opam install qcheck-core
 $ make test
 ```
 
@@ -302,7 +302,7 @@ to list authors based on the git commits.
 Assuming your are in a clone of the repository:
 
 1. Some dependencies are required, you'll need
-  `opam install benchmark qcheck qtest iter gen mdx uutf`.
+  `opam install benchmark qcheck-core iter gen mdx uutf`.
 2. run `make all` to enable everything (including tests).
 3. make your changes, commit, push, and open a PR.
 4. use `make test` without moderation! It must pass before a PR
@@ -318,7 +318,7 @@ A few guidelines to follow the philosophy of containers:
 
 - no dependencies between basic modules (even just for signatures);
 - add `@since` tags for new functions;
-- add tests if possible (using [qtest](https://github.com/vincent-hugot/qtest/)).
+- add tests if possible (see `tests/` dir)
   There are numerous inline tests already,
   to see what it looks like search for comments starting with `(*$`
   in source files.
@@ -359,7 +359,7 @@ the library is loaded, e.g. with:
 
 ```ocaml
 # #require "containers";;
-# Format.set_margin 50;; (* for readability here *)
+# Format.set_margin 50 (* for readability here *);;
 - : unit = ()
 ```
 
@@ -369,7 +369,7 @@ We will start with a few list helpers, then look at other parts of
 the library, including printers, maps, etc.
 
 ```ocaml
-# (|>) ;;  (* quick reminder of this awesome standard operator *)
+# (|>) (* quick reminder of this awesome standard operator *);;
 - : 'a -> ('a -> 'b) -> 'b = <fun>
 # 10 |> succ;;
 - : int = 11
@@ -398,7 +398,7 @@ val l2 : int list = [1; 2; 3; 4; 5; 6; 7; 8; 9]
 
 ```ocaml
 (* an extension of Map.Make, compatible with Map.Make(CCInt) *)
-module IntMap = CCMap.Make(CCInt)
+module IntMap = CCMap.Make(CCInt);;
 ```
 
 ```ocaml
@@ -412,7 +412,7 @@ module IntMap = CCMap.Make(CCInt)
     |> IntMap.of_iter;;
 val map : string IntMap.t = <abstr>
 
-# CCList.to_iter;; (* check the type *)
+# CCList.to_iter (* check the type *);;
 - : 'a list -> 'a CCList.iter = <fun>
 # IntMap.of_iter ;;
 - : (int * 'a) CCMap.iter -> 'a IntMap.t = <fun>
@@ -427,11 +427,11 @@ map =
 - : unit = ()
 
 # (* options are good *)
-  IntMap.get 3 map |> CCOpt.map (fun s->s ^ s);;
+  IntMap.get 3 map |> CCOption.map (fun s->s ^ s);;
 - : string option = Some "33"
 ```
 
-### New types: `CCVector`, `CCHeap`, `CCResult`, `CCSexp`
+### New types: `CCVector`, `CCHeap`, `CCResult`, `CCSexp`, `CCByte_buffer`
 
 Containers also contains (!) a few datatypes that are not from the standard
 library but that are useful in a lot of situations:
@@ -458,6 +458,10 @@ library but that are useful in a lot of situations:
   functorized printer and parser for S-expressions, respectively as
   actual S-expressions (like `sexplib`) and as canonical binary-safe
   S-expressions (like `csexp`)
+- `CCByte_buffer`: a better version of the standard `Buffer.t` which cannot be
+  extended and prevents access to its internal byte array. This type is
+  designed for (blocking) IOs and to produce complex strings incrementally
+  in an efficient way.
 
 Now for a few examples:
 
@@ -488,7 +492,7 @@ v = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 # CCVector.push v 42;;
 - : unit = ()
 
-# v;; (* now v is a mutable vector *)
+# v (* now v is a mutable vector *);;
 - : (int, CCVector.rw) CCVector.t = <abstr>
 
 # (* functional combinators! *)
@@ -527,7 +531,7 @@ h = [2,4,6,8,10]
 val h' : IntHeap.t = <abstr>
 val x : int = 2
 
-# IntHeap.to_list h' ;; (* see, 2 is removed *)
+# IntHeap.to_list h' (* see, 2 is removed *);;
 - : int list = [4; 6; 8; 10]
 ```
 
@@ -610,7 +614,7 @@ A quick example based on purely functional double-ended queues:
 
 ```ocaml
 # #require "containers-data";;
-# #install_printer CCFQueue.pp;;  (* better printing of queues! *)
+# #install_printer CCFQueue.pp  (* better printing of queues! *);;
 
 # let q = CCFQueue.of_list [2;3;4] ;;
 val q : int CCFQueue.t = queue {2; 3; 4}

@@ -1,10 +1,11 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Random Generators} *)
+(** Random Generators *)
 
-include module type of struct include Random end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Random.html} Documentation for the standard Random module}*)
+include module type of struct
+  include Random
+end
 
 type state = Random.State.t
 
@@ -20,13 +21,13 @@ val return : 'a -> 'a t
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** [flat_map f g st] is [f (g st) st]. *)
 
-val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
 (** Monadic [bind]. *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 (** [map f g st] is [f (g st)]. *)
 
-val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
 
 val delay : (unit -> 'a t) -> 'a t
 (** Delay evaluation. Useful for side-effectful generators that
@@ -60,7 +61,7 @@ val replicate : int -> 'a t -> 'a list t
 (** [replicate n g] makes a list of [n] elements which are all generated
     randomly using [g]. *)
 
-val sample_without_duplicates:
+val sample_without_duplicates :
   cmp:('a -> 'a -> int) -> int -> 'a t -> 'a list t
 (** [sample_without_replacement n g] makes a list of [n] elements which are all
     generated randomly using [g] with the added constraint that none of the generated
@@ -128,7 +129,7 @@ val try_successively : 'a option t list -> 'a option t
     If some generator succeeds its result is returned, else the
     next generator is tried. *)
 
-val (<?>) : 'a option t -> 'a option t -> 'a option t
+val ( <?> ) : 'a option t -> 'a option t -> 'a option t
 (** [a <?> b] is a choice operator. It first tries [a], and returns its
     result if successful. If [a] fails, then [b] is returned. *)
 
@@ -136,7 +137,9 @@ val fix :
   ?sub1:('a t -> 'a t) list ->
   ?sub2:('a t -> 'a t -> 'a t) list ->
   ?subn:(int t * ('a list t -> 'a t)) list ->
-  base:'a t -> int t -> 'a t
+  base:'a t ->
+  int t ->
+  'a t
 (** Recursion combinators, for building recursive values.
     The integer generator is used to provide fuel. The [sub_] generators
     should use their arguments only once!
@@ -147,12 +150,16 @@ val fix :
 (** {4 Applicative} *)
 
 val pure : 'a -> 'a t
+val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
 
-val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+[@@@ifge 4.08]
 
+include CCShims_syntax.LET with type 'a t := 'a t
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
-include CCShimsMkLet_.S with type 'a t_let := 'a t
+    @since 2.8
+    @inline *)
+
+[@@@endif]
 
 (** {4 Run a generator} *)
 

@@ -1,7 +1,6 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Persistent hash-table on top of OCaml's hashtables}
+(** Persistent hash-table on top of OCaml's hashtables
 
     Almost as efficient as the regular Hashtbl type, but with a persistent
     interface (rewinding changes to get back in the past history). This is
@@ -16,6 +15,7 @@ type 'a equal = 'a -> 'a -> bool
 
 module type HashedType = sig
   type t
+
   val equal : t -> t -> bool
   val hash : t -> int
 end
@@ -74,8 +74,10 @@ module type S = sig
       anymore, so using both tables alternatively will be efficient. *)
 
   val merge :
-    f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
-    'a t -> 'b t -> 'c t
+    f:(key -> [ `Left of 'a | `Right of 'b | `Both of 'a * 'b ] -> 'c option) ->
+    'a t ->
+    'b t ->
+    'c t
   (** Merge two tables together into a new table. The function's argument
       correspond to values associated with the key (if present); if the
       function returns [None] the key will not appear in the result. *)
@@ -90,11 +92,8 @@ module type S = sig
   (** Map all values. *)
 
   val filter : (key -> 'a -> bool) -> 'a t -> 'a t
-
   val filter_map : (key -> 'a -> 'b option) -> 'a t -> 'b t
-
   val for_all : (key -> 'a -> bool) -> 'a t -> bool
-
   val exists : (key -> 'a -> bool) -> 'a t -> bool
 
   (** {3 Conversions} *)
@@ -103,10 +102,8 @@ module type S = sig
   (** Add (replace) bindings from the sequence to the table. *)
 
   val of_list : (key * 'a) list -> 'a t
-
   val add_iter : 'a t -> (key * 'a) iter -> 'a t
-
-  val add_list : 'a t -> (key  * 'a) list -> 'a t
+  val add_list : 'a t -> (key * 'a) list -> 'a t
 
   val to_iter : 'a t -> (key * 'a) iter
   (** Iter of the bindings of the table. *)
@@ -117,8 +114,14 @@ module type S = sig
 
   val equal : 'a equal -> 'a t equal
 
-  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-    ?pp_arrow:unit printer -> key printer -> 'a printer -> 'a t printer
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer ->
+    key printer ->
+    'a printer ->
+    'a t printer
 
   val stats : _ t -> Hashtbl.statistics
   (** Statistics on the internal table.
@@ -127,4 +130,4 @@ end
 
 (** {2 Implementation} *)
 
-module Make(H : HashedType) : S with type key = H.t
+module Make (H : HashedType) : S with type key = H.t

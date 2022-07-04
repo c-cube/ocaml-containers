@@ -1,5 +1,72 @@
 # Changelog
 
+## 3.8
+
+- add `Containers_bencode` for lightweight (de)ser
+- perf(CCHash): improve a bit commutative hashing of arrays/lists
+- perf(CCHash): only hash prefix of string/bytes
+- feat(CCList): Add `Assoc.{keys,values,map_values}`
+- feat(CCArray): add `CCArray.map_inplace`
+- add `CCString.{to_hex,of_hex}`
+
+- fix(Atomic): prevent race conditions under flambda, for now
+
+## 3.7
+
+- add `Format.styling`
+- make `Format` compatible with OCaml 5.0, using Stag for colors
+- new preprocessor, compatible with merlin, using `[@@@ifge 4.12]`-style pragmas
+- feat: add `Byte_buf`, a byte buffer.
+- add `CCSeq.{zip_i,of_string}`
+- add `CCResult.opt_map` to simplify result function application over optionals (#397)
+- add shims for Atomic and Unit
+- expose `CCParse.pos` to get current pos; improve perf
+- add `CCVector.resize_with` and `CCVector.resize_with_init`, tests and doc (#389)
+- add `CCVector.insert`
+- update dune to 1.10, condition some rules to unix
+
+- perf: reduce allocations in `CCSeq.to_array`
+
+- fix asymptotic behavior of resize functions in `CCVector`
+- fix: rely on `either` compatibility library
+
+## 3.6.1
+
+- use `either` compatibility library instead of shims
+
+## 3.6
+
+- rename `CCOpt` to `CCOption` and deprecate `CCOpt`
+- add iterator functions to `CCIO`
+- `CCOrd`: add `poly`, deprecate `compare`
+- add `CCIO.File.walk_iter`
+- `CCParse`: heavy refactoring, many new functions
+  * backtracking by default
+  * add `slice` and the ability to recurse on them
+  * expose Position module, add `or_`, `both`, `lookahead`, `U.bool`
+  * example Sexpr parser, and a test
+  * example and test of an IRC log parser
+- fix bug in `CCIO.read_lines_seq`
+
+## 3.5.1
+
+- fix bug in `CCIO.read_lines_seq` (backported from 3.6)
+
+## 3.5
+
+- add `CCHash.map` and `CCHash.bytes`
+- CCIO: add many `Seq.t` based functions
+- CCUtf8string: add `{make,empty,of_uchar}`
+- add `CCFormat.{const_string,opaque}`
+- add `CCOpt.{some,none}`
+- CCFormat: expose `ANSI_codes` module
+- CCBV: add `equal`, refactor for performance and readability
+- CCList: add `{sorted_diff_uniq,sorted_mem,sorted_diff,sorted_remove}`
+
+- fix(bv): index error in union
+- test: add some property tests on `Csexp/Canonical_sexp`
+- bv: add more tests, including regression for #370
+
 ## 3.4
 
 - Add `CCOpt.get_exn_or` and deprecate `CCOpt.get_exn`
@@ -95,6 +162,7 @@ api:
 - remove slice APIs in string and array.
 - change pp functions to take unit printer for sep/stop/start (#295)
 - CCPair: use more standard name for some map functions (#316)
+- add CCSeq module, mostly adapted from `CCKlist`
 - remove `CCKlist` from everywhere
 - CCGraph: remove deprecated module and function
 - rename `<op>_std_seq` to `<op>_seq`, making `Seq.t` the standard everywhere;

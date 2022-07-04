@@ -8,28 +8,18 @@ include Char
 
 let pp_buf = Buffer.add_char
 let pp = Format.pp_print_char
-
 let of_int_exn = Char.chr
 let of_int c = try Some (of_int_exn c) with Invalid_argument _ -> None
 let to_int = Char.code
-
-(*$=
-  (Some 'a') (of_int (to_int 'a'))
-  None (of_int 257)
-*)
-
 let to_string c = String.make 1 c
 
-(*$Q to_string
-  (Q.string_of_size (Q.Gen.return 1)) (fun s -> CCShims_.Stdlib.(=) (to_string s.[0]) s)
-*)
-
 module Infix = struct
-  let (=) : t -> t -> bool = CCShims_.Stdlib.(=)
-  let (<>) : t -> t -> bool = CCShims_.Stdlib.(<>)
-  let (<) : t -> t -> bool = CCShims_.Stdlib.(<)
-  let (>) : t -> t -> bool = CCShims_.Stdlib.(>)
-  let (<=) : t -> t -> bool = CCShims_.Stdlib.(<=)
-  let (>=) : t -> t -> bool = CCShims_.Stdlib.(>=)
+  let ( = ) : t -> t -> bool = CCShims_.Stdlib.( = )
+  let ( <> ) : t -> t -> bool = CCShims_.Stdlib.( <> )
+  let ( < ) : t -> t -> bool = CCShims_.Stdlib.( < )
+  let ( > ) : t -> t -> bool = CCShims_.Stdlib.( > )
+  let ( <= ) : t -> t -> bool = CCShims_.Stdlib.( <= )
+  let ( >= ) : t -> t -> bool = CCShims_.Stdlib.( >= )
 end
+
 include Infix

@@ -1,7 +1,6 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Immutable Arrays}
+(** Immutable Arrays
 
     Purely functional use of arrays. Update is costly, but reads are very fast.
     Sadly, it is not possible to make this type covariant without using black
@@ -16,11 +15,8 @@ type 'a t
     It should be covariant but OCaml will not accept it. *)
 
 val empty : 'a t
-
 val length : _ t -> int
-
 val singleton : 'a -> 'a t
-
 val doubleton : 'a -> 'a -> 'a t
 
 val make : int -> 'a -> 'a t
@@ -46,21 +42,13 @@ val sub : 'a t -> int -> int -> 'a t
     @since 1.5 *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
-
 val append : 'a t -> 'a t -> 'a t
-
 val iter : ('a -> unit) -> 'a t -> unit
-
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
-
 val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
-
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
-
 val for_all : ('a -> bool) -> 'a t -> bool
-
 val exists : ('a -> bool) -> 'a t -> bool
 
 (** {2 Conversions} *)
@@ -69,7 +57,6 @@ type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 val of_list : 'a list -> 'a t
-
 val to_list : 'a t -> 'a list
 
 val of_array_unsafe : 'a array -> 'a t
@@ -77,23 +64,22 @@ val of_array_unsafe : 'a array -> 'a t
     be modified afterwards! *)
 
 val to_iter : 'a t -> 'a iter
-
 val of_iter : 'a iter -> 'a t
-
 val of_gen : 'a gen -> 'a t
-
 val to_gen : 'a t -> 'a gen
 
 (** {2 IO} *)
 
 type 'a printer = Format.formatter -> 'a -> unit
 
-val pp: ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-  'a printer -> 'a t printer
+val pp :
+  ?pp_start:unit printer ->
+  ?pp_stop:unit printer ->
+  ?pp_sep:unit printer ->
+  'a printer ->
+  'a t printer
 (** [pp ~pp_start ~pp_stop ~pp_sep pp_item ppf a] formats the array [a] on [ppf].
     Each element is formatted with [pp_item], [pp_start] is called at the beginning,
     [pp_stop] is called at the end, [pp_sep] is called between each elements.
     By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
     (fun out -> Format.fprintf out ",@ "). *)
-
-

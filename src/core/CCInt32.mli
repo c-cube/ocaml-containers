@@ -1,8 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Int32}
-
-    Helpers for 32-bit integers.
+(** Helpers for 32-bit integers.
 
     This module provides operations on the type int32 of signed 32-bit integers.
     Unlike the built-in int type, the type int32 is guaranteed to be exactly
@@ -15,8 +13,10 @@
 
     @since 2.1 *)
 
-include module type of struct include Int32 end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int32.html} Documentation for the standard Int32 module}*)
+include module type of struct
+  include Int32
+end
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
@@ -54,7 +54,6 @@ type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 type 'a iter = ('a -> unit) -> unit
 
-
 val range_by : step:t -> t -> t -> t iter
 (** [range_by ~step i j] iterates on integers from [i] to [j] included,
     where the difference between successive elements is [step].
@@ -75,7 +74,6 @@ val range' : t -> t -> t iter
 val random : t -> t random_gen
 val random_small : t random_gen
 val random_range : t -> t -> t random_gen
-
 
 (** {2 Conversion} *)
 
@@ -108,7 +106,6 @@ val to_string_binary : t -> string
 (** [to_string_binary x] returns the string representation of the integer [x], in binary.
     @since 3.0 *)
 
-
 (** {2 Printing} *)
 
 val pp : t printer
@@ -119,7 +116,6 @@ val pp_binary : t printer
 (** [pp_binary ppf x] prints [x] on [ppf].
     Print as "0b00101010".
     @since 3.0 *)
-
 
 (** {2 Infix Operators} *)
 
@@ -157,11 +153,11 @@ module Infix : sig
   (** Alias to {!pow}
       @since 3.0 *)
 
-  val (--) : t -> t -> t iter
+  val ( -- ) : t -> t -> t iter
   (** Alias to {!range}.
       @since 3.0 *)
 
-  val (--^) : t -> t -> t iter
+  val ( --^ ) : t -> t -> t iter
   (** Alias to {!range'}.
       @since 3.0 *)
 
@@ -193,12 +189,12 @@ module Infix : sig
       and inserted in the vacated bits.
       The result is unspecified if [y < 0] or [y >= 32]. *)
 
-  val (=) : t -> t -> bool
-  val (<>) : t -> t -> bool
-  val (>) : t -> t -> bool
-  val (>=) : t -> t -> bool
-  val (<=) : t -> t -> bool
-  val (<) : t -> t -> bool
+  val ( = ) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
+  val ( > ) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
+  val ( < ) : t -> t -> bool
 end
 
 include module type of Infix

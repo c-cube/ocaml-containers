@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Error Monad}
+(** Error Monad
 
     Uses the new "result" type from OCaml 4.03.
 
@@ -20,9 +20,7 @@ type nonrec (+'good, +'bad) result = ('good, 'bad) result =
   | Ok of 'good
   | Error of 'bad
 
-type (+'good, +'bad) t = ('good, 'bad) result =
-  | Ok of 'good
-  | Error of 'bad
+type (+'good, +'bad) t = ('good, 'bad) result = Ok of 'good | Error of 'bad
 
 val return : 'a -> ('a, 'err) t
 (** Successfully return a value. *)
@@ -54,7 +52,8 @@ val add_ctx : string -> ('a, string) t -> ('a, string) t
     context given by [msg].
     @since 1.2 *)
 
-val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) format4 -> 'a
+val add_ctxf :
+  ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) format4 -> 'a
 (** [add_ctxf format_message] is similar to {!add_ctx} but with
     {!Format} for printing the message (eagerly).
     Example:
@@ -62,6 +61,10 @@ val add_ctxf : ('a, Format.formatter, unit, ('b, string) t -> ('b, string) t) fo
       add_ctxf "message(number %d, foo: %B)" 42 true (Error "error)"
     ]}
     @since 1.2 *)
+
+val opt_map : ('a -> ('b, 'c) t) -> 'a option -> ('b option, 'c) t
+(** Map a fallible operation through an option.
+    @since 3.7 *)
 
 val map : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
 (** Map on success. *)
@@ -93,7 +96,7 @@ val get_or : ('a, _) t -> default:'a -> 'a
 
 val get_lazy : ('e -> 'a) -> ('a, 'e) t -> 'a
 (** [get_lazy f e] returns [x] if [e = Ok x], [f msg]  if [e = Error msg].
-    This is similar to {!CCOpt.get_lazy}.
+    This is similar to {!CCOption.get_lazy}.
     @since 3.0 *)
 
 val get_or_failwith : ('a, string) t -> 'a
@@ -105,7 +108,7 @@ val get_lazy : ('b -> 'a) -> ('a, 'b) t -> 'a
 (** [get_lazy default_fn x] unwraps [x], but if [x = Error e] it returns [default_fr e] instead.
     @since 3.0 *)
 
-val map_or : ('a -> 'b) ->  ('a, 'c) t -> default:'b -> 'b
+val map_or : ('a -> 'b) -> ('a, 'c) t -> default:'b -> 'b
 (** [map_or f e ~default] returns [f x] if [e = Ok x], [default] otherwise. *)
 
 val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
@@ -113,9 +116,7 @@ val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
     the value of [e]. *)
 
 val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
-
 val equal : err:'err equal -> 'a equal -> ('a, 'err) t equal
-
 val compare : err:'err ord -> 'a ord -> ('a, 'err) t ord
 
 val fold : ok:('a -> 'b) -> error:('err -> 'b) -> ('a, 'err) t -> 'b
@@ -166,7 +167,7 @@ val join : (('a, 'err) t, 'err) t -> ('a, 'err) t
 (** [join t], in case of success, returns [Ok o] from [Ok (Ok o)]. Otherwise,
     it fails with [Error e] where [e] is the unwrapped error of [t]. *)
 
-val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
+val both : ('a, 'err) t -> ('b, 'err) t -> ('a * 'b, 'err) t
 (** [both a b], in case of success, returns [Ok (o, o')] with the ok values
     of [a] and [b]. Otherwise, it fails, and the error of [a] is chosen over the
     error of [b] if both fail. *)
@@ -174,33 +175,40 @@ val both : ('a, 'err) t  -> ('b, 'err) t -> (('a * 'b), 'err) t
 (** {2 Infix} *)
 
 module Infix : sig
-  val (<$>) : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
+  val ( <$> ) : ('a -> 'b) -> ('a, 'err) t -> ('b, 'err) t
   (** Infix version of [map].
       @since 3.0 *)
 
-  val (>|=) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
+  val ( >|= ) : ('a, 'err) t -> ('a -> 'b) -> ('b, 'err) t
   (** Infix version of [map] with reversed arguments. *)
 
-  val (>>=) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
+  val ( >>= ) : ('a, 'err) t -> ('a -> ('b, 'err) t) -> ('b, 'err) t
   (** Monadic composition. [e >>= f] proceeds as [f x] if [e] is [Ok x]
       or returns [e] if [e] is an [Error]. *)
 
-  val (<*>) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
+  val ( <*> ) : ('a -> 'b, 'err) t -> ('a, 'err) t -> ('b, 'err) t
   (** [a <*> b] evaluates [a] and [b], and, in case of success, returns
       [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
       over the error of [b] if both fail. *)
 
-  (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8 *)
-  include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
+  [@@@ifge 4.08]
+
+  val ( let+ ) : ('a, 'e) t -> ('a -> 'b) -> ('b, 'e) t
+  (** @since 2.8 *)
+
+  val ( and+ ) : ('a, 'e) t -> ('b, 'e) t -> ('a * 'b, 'e) t
+  (** @since 2.8 *)
+
+  val ( let* ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
+  (** @since 2.8 *)
+
+  val ( and* ) : ('a, 'e) t -> ('b, 'e) t -> ('a * 'b, 'e) t
+  (** @since 2.8 *)
+
+  [@@@endif]
 end
 
 include module type of Infix
-
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8 *)
-include CCShimsMkLet_.S2 with type ('a,'e) t_let2 := ('a,'e) result
-
 
 (** {2 Collections} *)
 
@@ -234,20 +242,18 @@ val retry : int -> (unit -> ('a, 'err) t) -> ('a, 'err list) t
 (** {2 Monadic Operations} *)
 module type MONAD = sig
   type 'a t
+
   val return : 'a -> 'a t
   (** Monadic [return]. *)
 
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** Monadic [bind]. *)
 end
 
-module Traverse(M : MONAD) : sig
+module Traverse (M : MONAD) : sig
   val sequence_m : ('a M.t, 'err) t -> ('a, 'err) t M.t
-
   val fold_m : ('b -> 'a -> 'b M.t) -> 'b -> ('a, 'err) t -> 'b M.t
-
   val map_m : ('a -> 'b M.t) -> ('a, 'err) t -> ('b, 'err) t M.t
-
   val retry_m : int -> (unit -> ('a, 'err) t M.t) -> ('a, 'err list) t M.t
 end
 
@@ -266,7 +272,7 @@ val to_seq : ('a, _) t -> 'a Seq.t
 (** Renamed from [to_std_seq] since 3.0.
     @since 3.0 *)
 
-type ('a, 'b) error = [`Ok of 'a | `Error of 'b]
+type ('a, 'b) error = [ `Ok of 'a | `Error of 'b ]
 
 val of_err : ('a, 'b) error -> ('a, 'b) t
 (** @since 0.17 *)
@@ -278,5 +284,5 @@ val to_err : ('a, 'b) t -> ('a, 'b) error
 
 val pp : 'a printer -> ('a, string) t printer
 
-val pp': 'a printer -> 'e printer -> ('a, 'e) t printer
+val pp' : 'a printer -> 'e printer -> ('a, 'e) t printer
 (** Printer that is generic on the error type. *)

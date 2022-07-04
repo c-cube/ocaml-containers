@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 IO Utils}
+(** IO Utils
 
     Simple utilities to deal with basic Input/Output tasks in a resource-safe
     way. For advanced IO tasks, the user is advised to use something
@@ -31,7 +31,7 @@
 
     - Note that the lifetime of an IO generator is tied to the underlying
       channel. In the example above, [chunks] must be used in the scope of [ic].
-      This will raise an error: 
+      This will raise an error:
 
     {[
       # CCIO.(
@@ -53,13 +53,15 @@
 *)
 
 type 'a or_error = ('a, string) result
+type 'a iter = ('a -> unit) -> unit
+
 type 'a gen = unit -> 'a option
 (** See [Gen] in the {{: https://github.com/c-cube/gen} gen library}. *)
 
 (** {2 Input} *)
 
-val with_in : ?mode:int -> ?flags:open_flag list ->
-  string -> (in_channel -> 'a) -> 'a
+val with_in :
+  ?mode:int -> ?flags:open_flag list -> string -> (in_channel -> 'a) -> 'a
 (** Open an input file with the given optional flag list, calls the function
     on the input channel. When the function raises or returns, the
     channel is closed.
@@ -67,9 +69,19 @@ val with_in : ?mode:int -> ?flags:open_flag list ->
     @param flags opening flags (default [[Open_text]]). [Open_rdonly] is used in any cases. *)
 
 val read_chunks_gen : ?size:int -> in_channel -> string gen
-(** Read the channel's content into chunks of size [size].
+(** Read the channel's content into chunks of size at most [size].
     {b NOTE} the generator must be used within the lifetime of the channel,
     see warning at the top of the file. *)
+
+val read_chunks_seq : ?size:int -> in_channel -> string Seq.t
+(** Read the channel's content into chunks of size at most [size].
+    {b NOTE} the generator must be used within the lifetime of the channel,
+    see warning at the top of the file.
+    @since 3.5 *)
+
+val read_chunks_iter : ?size:int -> in_channel -> string iter
+(** Read the channel's content into chunks of size at most [size]
+    @since 3.6 *)
 
 val read_line : in_channel -> string option
 (** Read a line from the channel. Returns [None] if the input is terminated.
@@ -79,6 +91,16 @@ val read_lines_gen : in_channel -> string gen
 (** Read all lines. The generator should be traversed only once.
     {b NOTE} the generator must be used within the lifetime of the channel,
     see warning at the top of the file. *)
+
+val read_lines_seq : in_channel -> string Seq.t
+(** Read all lines.
+    {b NOTE} the seq must be used within the lifetime of the channel,
+    see warning at the top of the file.
+    @since 3.5 *)
+
+val read_lines_iter : in_channel -> string iter
+(** Read all lines.
+    @since 3.6 *)
 
 val read_lines_l : in_channel -> string list
 (** Read all lines into a list. *)
@@ -95,15 +117,15 @@ val read_all_bytes : ?size:int -> in_channel -> Bytes.t
 
 (** {2 Output} *)
 
-val with_out : ?mode:int -> ?flags:open_flag list ->
-  string -> (out_channel -> 'a) -> 'a
+val with_out :
+  ?mode:int -> ?flags:open_flag list -> string -> (out_channel -> 'a) -> 'a
 (** Like {!with_in} but for an output channel.
     @param flags opening flags (default [[Open_creat; Open_trunc; Open_text]]).
     @raise Sys_error in case of error (same as {!open_out} and {!close_out}).
     [Open_wronly] is used in any cases. *)
 
-val with_out_a : ?mode:int -> ?flags:open_flag list ->
-  string -> (out_channel -> 'a) -> 'a
+val with_out_a :
+  ?mode:int -> ?flags:open_flag list -> string -> (out_channel -> 'a) -> 'a
 (** Like {!with_out} but with the [[Open_append; Open_creat; Open_wronly]]
     flags activated, to append to the file.
     @raise Sys_error in case of error (same as {!open_out} and {!close_out}). *)
@@ -115,15 +137,32 @@ val write_gen : ?sep:string -> out_channel -> string gen -> unit
 (** Write the given strings on the output. If provided, add [sep] between
     every two strings (but not at the end). *)
 
+val write_seq : ?sep:string -> out_channel -> string Seq.t -> unit
+(** Write the given strings on the output. If provided, add [sep] between
+    every two strings (but not at the end).
+    @since 3.5 *)
+
 val write_lines : out_channel -> string gen -> unit
 (** Write every string on the output, followed by "\n". *)
+
+val write_lines_iter : out_channel -> string iter -> unit
+(** Write every string on the output, followed by "\n".
+    @since 3.6 *)
+
+val write_lines_seq : out_channel -> string Seq.t -> unit
+(** Write every string on the output, followed by "\n".
+    @since 3.5 *)
 
 val write_lines_l : out_channel -> string list -> unit
 
 (** {2 Both} *)
 
-val with_in_out : ?mode:int -> ?flags:open_flag list ->
-  string -> (in_channel -> out_channel -> 'a) -> 'a
+val with_in_out :
+  ?mode:int ->
+  ?flags:open_flag list ->
+  string ->
+  (in_channel -> out_channel -> 'a) ->
+  'a
 (** Combines {!with_in} and {!with_out}.
     @param flags opening flags (default [[Open_creat]]).
     @raise Sys_error in case of error.
@@ -168,7 +207,6 @@ module File : sig
   (** Build a file representation from a path (absolute or relative). *)
 
   val exists : t -> bool
-
   val is_directory : t -> bool
 
   val remove_exn : t -> unit
@@ -220,7 +258,7 @@ module File : sig
   (** Write the given string into the given file.
       @since 0.16 *)
 
-  type walk_item = [`File | `Dir] * t
+  type walk_item = [ `File | `Dir ] * t
 
   val walk : t -> walk_item gen
   (** Like {!read_dir} (with [recurse=true]), this function walks
@@ -229,17 +267,24 @@ module File : sig
       symlinks, etc.)
       @raise Sys_error in case of error (e.g. permission denied) during iteration. *)
 
+  val walk_iter : t -> walk_item iter
+  (** Like {!walk} but with an imperative iterator.
+      @since 3.6 *)
+
   val walk_l : t -> walk_item list
   (** Like {!walk} but returns a list (therefore it's eager and might
       take some time on large directories).
       @since 1.1 *)
 
+  val walk_seq : t -> walk_item Seq.t
+  (** Like {!walk} but returns a Seq
+      @since 3.6 *)
+
   val show_walk_item : walk_item -> string
 
   val with_temp :
-    ?temp_dir:string -> prefix:string -> suffix:string ->
-    (string -> 'a) -> 'a
-    (** [with_temp ~prefix ~suffix f] will call [f] with the name of a new
+    ?temp_dir:string -> prefix:string -> suffix:string -> (string -> 'a) -> 'a
+  (** [with_temp ~prefix ~suffix f] will call [f] with the name of a new
         temporary file (located in [temp_dir]).
         After [f] returns, the file is deleted. Best to be used in
         combination with {!with_out}.

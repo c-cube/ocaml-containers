@@ -1,5 +1,4 @@
-
-(** {1 Unicode String, in UTF8} *)
+(** Unicode String, in UTF8 *)
 
 (** A unicode string represented by a utf8 bytestring. This representation
     is convenient for manipulating normal OCaml strings that are encoded
@@ -15,7 +14,6 @@
     @since 2.1
 *)
 
-
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option
 
@@ -23,16 +21,12 @@ type 'a iter = ('a -> unit) -> unit
 (** Fast internal iterator.
     @since 2.8 *)
 
-
 type t = private string
 (** A UTF8 string *)
 
 val equal : t -> t -> bool
-
 val hash : t -> int
-
 val compare : t -> t -> int
-
 val pp : Format.formatter -> t -> unit
 
 val to_string : t -> string
@@ -62,7 +56,6 @@ val to_list : ?idx:int -> t -> uchar list
     @param idx offset where to start the decoding. *)
 
 val fold : ?idx:int -> ('a -> uchar -> 'a) -> 'a -> t -> 'a
-
 val iter : ?idx:int -> (uchar -> unit) -> t -> unit
 
 val n_chars : t -> int
@@ -72,14 +65,27 @@ val n_bytes : t -> int
 (** Number of bytes. *)
 
 val map : (uchar -> uchar) -> t -> t
-
 val filter_map : (uchar -> uchar option) -> t -> t
-
 val flat_map : (uchar -> t) -> t -> t
 
+val empty : t
+(** Empty string.
+    @since 3.5 *)
+
 val append : t -> t -> t
+(** Append two string together. *)
 
 val concat : t -> t list -> t
+(** [concat sep l] concatenates each string in [l], inserting [sep]
+    in between each string. Similar to {!String.concat}. *)
+
+val of_uchar : uchar -> t
+(** [of_char c] is a string with only one unicode char in it.
+    @since 3.5 *)
+
+val make : int -> uchar -> t
+(** [make n c] makes a new string with [n] copies of [c] in it.
+    @since 3.5 *)
 
 val of_seq : uchar Seq.t -> t
 (** Build a string from unicode codepoints
@@ -98,7 +104,6 @@ val uchar_to_bytes : uchar -> char iter
     @since 3.2 *)
 
 val of_gen : uchar gen -> t
-
 val of_list : uchar list -> t
 
 val of_string_exn : string -> t
@@ -117,4 +122,3 @@ val unsafe_of_string : string -> t
     in this module. Use only if you're sure the string is valid UTF8.
     Upon iteration, if an invalid substring is met, Malformed will be raised.
 *)
-

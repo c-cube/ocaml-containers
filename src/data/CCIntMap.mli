@@ -1,7 +1,4 @@
-
-(* This file is free software, part of containers. See file "license" for more details. *)
-
-(** {1 Map specialized for Int keys}
+(** Map specialized for Int keys
 
     {b status: stable}
     @since 0.10 *)
@@ -15,11 +12,8 @@ val is_empty : _ t -> bool
     @since 2.3 *)
 
 val singleton : int -> 'a -> 'a t
-
 val doubleton : int -> 'a -> int -> 'a -> 'a t
-
 val mem : int -> _ t -> bool
-
 val find : int -> 'a t -> 'a option
 
 val find_exn : int -> 'a t -> 'a
@@ -27,7 +21,6 @@ val find_exn : int -> 'a t -> 'a
     @raise Not_found if key is not present. *)
 
 val add : int -> 'a -> 'a t -> 'a t
-
 val remove : int -> 'a t -> 'a t
 
 val equal : eq:('a -> 'a -> bool) -> 'a t -> 'a t -> bool
@@ -53,7 +46,6 @@ val cardinal : _ t -> int
 (** Number of bindings in the map. Linear time. *)
 
 val iter : (int -> 'a -> unit) -> 'a t -> unit
-
 val fold : (int -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 
 val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
@@ -68,12 +60,13 @@ val choose_exn : 'a t -> int * 'a
 (** @raise Not_found if not pair was found. *)
 
 val union : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
-
 val inter : (int -> 'a -> 'a -> 'a) -> 'a t -> 'a t -> 'a t
 
 val merge :
-  f:(int -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
-  'a t -> 'b t -> 'c t
+  f:(int -> [ `Left of 'a | `Right of 'b | `Both of 'a * 'b ] -> 'c option) ->
+  'a t ->
+  'b t ->
+  'c t
 (** [merge ~f m1 m2] merges [m1] and [m2] together, calling [f] once on every
     key that occurs in at least one of [m1] and [m2].
     if [f k binding = Some c] then [k -> c] is part of the result,
@@ -86,19 +79,12 @@ type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
 val add_list : 'a t -> (int * 'a) list -> 'a t
-
 val of_list : (int * 'a) list -> 'a t
-
 val to_list : 'a t -> (int * 'a) list
-
 val add_iter : 'a t -> (int * 'a) iter -> 'a t
-
 val of_iter : (int * 'a) iter -> 'a t
-
 val to_iter : 'a t -> (int * 'a) iter
-
 val keys : _ t -> int iter
-
 val values : 'a t -> 'a iter
 
 val add_gen : 'a t -> (int * 'a) gen -> 'a t
@@ -119,9 +105,9 @@ val of_seq : (int * 'a) Seq.t -> 'a t
 val to_seq : 'a t -> (int * 'a) Seq.t
 (** @since 3.0 *)
 
-type 'a tree = unit -> [`Nil | `Node of 'a * 'a tree list]
+type 'a tree = unit -> [ `Nil | `Node of 'a * 'a tree list ]
 
-val as_tree : 'a t -> [`Node of int * int | `Leaf of int * 'a ] tree
+val as_tree : 'a t -> [ `Node of int * int | `Leaf of int * 'a ] tree
 
 (** {2 IO} *)
 
@@ -136,10 +122,12 @@ val pp : 'a printer -> 'a t printer
 
 module Bit : sig
   type t = private int
+
   val min_int : t
   val highest : int -> t
   val equal_int : int -> t -> bool
 end
+
 val check_invariants : _ t -> bool
 
 (**/**)

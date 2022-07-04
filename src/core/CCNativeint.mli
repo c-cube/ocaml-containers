@@ -1,8 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Nativeint}
-
-    Helpers for processor-native integers
+(** Helpers for processor-native integers
 
     This module provides operations on the type [nativeint] of signed 32-bit integers 
     (on 32-bit platforms) or signed 64-bit integers (on 64-bit platforms). 
@@ -16,8 +14,10 @@
 
     @since 2.1 *)
 
-include module type of struct include Nativeint end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Nativeint.html} Documentation for the standard Nativeint module}*)
+include module type of struct
+  include Nativeint
+end
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
@@ -51,7 +51,6 @@ type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 type 'a iter = ('a -> unit) -> unit
 
-
 val range_by : step:t -> t -> t -> t iter
 (** [range_by ~step i j] iterates on integers from [i] to [j] included,
     where the difference between successive elements is [step].
@@ -72,7 +71,6 @@ val range' : t -> t -> t iter
 val random : t -> t random_gen
 val random_small : t random_gen
 val random_range : t -> t -> t random_gen
-
 
 (** {2 Conversion} *)
 
@@ -104,7 +102,6 @@ val to_string_binary : t -> string
 (** [to_string_binary x] returns the string representation of the integer [x], in binary.
     @since 3.0 *)
 
-
 (** {2 Printing} *)
 
 val pp : t printer
@@ -115,7 +112,6 @@ val pp_binary : t printer
 (** [pp_binary ppf x] prints [x] on [ppf].
     Print as "0b00101010".
     @since 3.0 *)
-
 
 (** {2 Infix Operators} *)
 
@@ -153,11 +149,11 @@ module Infix : sig
   (** Alias to {!pow}
       @since 3.0 *)
 
-  val (--) : t -> t -> t iter
+  val ( -- ) : t -> t -> t iter
   (** Alias to {!range}.
       @since 3.0 *)
 
-  val (--^) : t -> t -> t iter
+  val ( --^ ) : t -> t -> t iter
   (** Alias to {!range'}.
       @since 3.0 *)
 
@@ -190,12 +186,12 @@ module Infix : sig
       and inserted in the vacated bits.
       The result is unspecified if [y < 0] or [y >= bitsize]. *)
 
-  val (=) : t -> t -> bool
-  val (<>) : t -> t -> bool
-  val (>) : t -> t -> bool
-  val (>=) : t -> t -> bool
-  val (<=) : t -> t -> bool
-  val (<) : t -> t -> bool
+  val ( = ) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
+  val ( > ) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
+  val ( < ) : t -> t -> bool
 end
 
 include module type of Infix

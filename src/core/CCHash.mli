@@ -1,7 +1,6 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Hash combinators}
+(** Hash combinators
 
     The API of this module is stable as per semantic versioning, like the
     rest of containers. However the exact implementation of hashing function
@@ -33,22 +32,35 @@ val char : char t
 val int32 : int32 t
 val int64 : int64 t
 val nativeint : nativeint t
+
 val slice : string -> int -> int t
 (** [slice s i len state] hashes the slice [i, …, i+len-1] of [s]
     into [state]. *)
 
 val bytes : bytes t
 (** Hash a byte array.
-    @since NEXT_RELEASE *)
+    @since 3.5 *)
 
 val string : string t
-
 val list : 'a t -> 'a list t
 val array : 'a t -> 'a array t
 val opt : 'a t -> 'a option t
 val pair : 'a t -> 'b t -> ('a * 'b) t
 val triple : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
 val quad : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
+
+val map : ('a -> 'b) -> 'b t -> 'a t
+(** [map f h] is the hasher that takes [x],
+    and uses [h] to hash [f x].
+
+    For example:
+    {[
+      module Str_set = Set.Make(String)
+
+      let hash_str_set : Str_set.t CCHash.t = CCHash.(map Str_set.to_seq @@ seq string)
+    ]}
+
+    @since 3.5 *)
 
 val if_ : bool -> 'a t -> 'a t -> 'a t
 (** Decide which hash function to use depending on the boolean. *)
@@ -70,7 +82,6 @@ val array_comm : 'a t -> 'a array t
 (** {2 Base hash combinators} *)
 
 val combine : 'a t -> hash -> 'a -> hash
-
 val combine2 : hash -> hash -> hash
 val combine3 : hash -> hash -> hash -> hash
 val combine4 : hash -> hash -> hash -> hash -> hash

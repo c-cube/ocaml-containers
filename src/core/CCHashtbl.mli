@@ -1,7 +1,6 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Extension to the standard Hashtbl}
+(** Extension to the standard Hashtbl
 
     @since 0.4 *)
 
@@ -18,20 +17,20 @@ type 'a printer = Format.formatter -> 'a -> unit
 (** This sub-module contains the extension of the standard polymorphic Hashtbl. *)
 
 module Poly : sig
-  val get : ('a,'b) Hashtbl.t -> 'a -> 'b option
+  val get : ('a, 'b) Hashtbl.t -> 'a -> 'b option
   (** [get tbl k] finds a binding for the key [k] if present,
       or returns [None] if no value is found.
       Safe version of {!Hashtbl.find}. *)
 
-  val get_or : ('a,'b) Hashtbl.t -> 'a -> default:'b -> 'b
+  val get_or : ('a, 'b) Hashtbl.t -> 'a -> default:'b -> 'b
   (** [get_or tbl k ~default] returns the value associated to [k] if present,
       and returns [default] otherwise (if [k] doesn't belong in [tbl]).
       @since 0.16 *)
 
-  val keys : ('a,'b) Hashtbl.t -> 'a iter
+  val keys : ('a, 'b) Hashtbl.t -> 'a iter
   (** [keys tbl f] iterates on keys (similar order as {!Hashtbl.iter}). *)
 
-  val values : ('a,'b) Hashtbl.t -> 'b iter
+  val values : ('a, 'b) Hashtbl.t -> 'b iter
   (** [values tbl f] iterates on values in the table [tbl]. *)
 
   val keys_list : ('a, 'b) Hashtbl.t -> 'a list
@@ -59,7 +58,7 @@ module Poly : sig
       This does nothing if the key is not already present in the table.
       @since 0.16 *)
 
-  val to_iter : ('a,'b) Hashtbl.t -> ('a * 'b) iter
+  val to_iter : ('a, 'b) Hashtbl.t -> ('a * 'b) iter
   (** Iterate on bindings in the table.
       @since 2.8 *)
 
@@ -68,51 +67,47 @@ module Poly : sig
       not bound, it becomes bound to [y].
       @since 0.16 *)
 
-  val add_iter : ('a,'b) Hashtbl.t -> ('a * 'b) iter -> unit
+  val add_iter : ('a, 'b) Hashtbl.t -> ('a * 'b) iter -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       @since 2.8 *)
 
   val add_iter_with :
-    f:('a -> 'b -> 'b -> 'b) ->
-    ('a,'b) Hashtbl.t -> ('a * 'b) iter -> unit
+    f:('a -> 'b -> 'b -> 'b) -> ('a, 'b) Hashtbl.t -> ('a * 'b) iter -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
       @since 3.3 *)
 
-  val add_seq : ('a,'b) Hashtbl.t -> ('a * 'b) Seq.t -> unit
+  val add_seq : ('a, 'b) Hashtbl.t -> ('a * 'b) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       Renamed from [add_std_seq] since 3.0.
       @since 3.0 *)
 
   val add_seq_with :
-    f:('a -> 'b -> 'b -> 'b) ->
-    ('a,'b) Hashtbl.t -> ('a * 'b) Seq.t -> unit
+    f:('a -> 'b -> 'b -> 'b) -> ('a, 'b) Hashtbl.t -> ('a * 'b) Seq.t -> unit
   (** Add the corresponding pairs to the table.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
       @since 3.3 *)
 
-  val of_iter : ('a * 'b) iter -> ('a,'b) Hashtbl.t
+  val of_iter : ('a * 'b) iter -> ('a, 'b) Hashtbl.t
   (** From the given bindings, added in order.
       @since 2.8 *)
 
   val of_iter_with :
-    f:('a -> 'b -> 'b -> 'b) ->
-    ('a * 'b) iter -> ('a,'b) Hashtbl.t
+    f:('a -> 'b -> 'b -> 'b) -> ('a * 'b) iter -> ('a, 'b) Hashtbl.t
   (** From the given bindings, added in order.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
       @since 3.3 *)
 
-  val of_seq : ('a * 'b) Seq.t -> ('a,'b) Hashtbl.t
+  val of_seq : ('a * 'b) Seq.t -> ('a, 'b) Hashtbl.t
   (** From the given bindings, added in order.
       Renamed from [of_std_seq] since 3.0.
       @since 3.0 *)
 
   val of_seq_with :
-    f:('a -> 'b -> 'b -> 'b) ->
-    ('a * 'b) Seq.t -> ('a,'b) Hashtbl.t
+    f:('a -> 'b -> 'b -> 'b) -> ('a * 'b) Seq.t -> ('a, 'b) Hashtbl.t
   (** From the given bindings, added in order.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
@@ -140,24 +135,24 @@ module Poly : sig
       Renamed from [of_std_seq_count] since 3.0.
       @since 3.0 *)
 
-  val to_list : ('a,'b) Hashtbl.t -> ('a * 'b) list
+  val to_list : ('a, 'b) Hashtbl.t -> ('a * 'b) list
   (** [to_list tbl] returns the list of (key,value) bindings (order unspecified). *)
 
-  val of_list : ('a * 'b) list -> ('a,'b) Hashtbl.t
+  val of_list : ('a * 'b) list -> ('a, 'b) Hashtbl.t
   (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i],
       added in order using {!add}. If a key occurs several times,
       it will be added several times, and the visible binding
       will be the last one. *)
 
   val of_list_with :
-    f:('a -> 'b -> 'b -> 'b) ->
-    ('a * 'b) list -> ('a,'b) Hashtbl.t
+    f:('a -> 'b -> 'b -> 'b) -> ('a * 'b) list -> ('a, 'b) Hashtbl.t
   (** From the given bindings, added in order.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
       @since 3.3 *)
 
-  val update : ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> unit
+  val update :
+    ('a, 'b) Hashtbl.t -> f:('a -> 'b option -> 'b option) -> k:'a -> unit
   (** [update tbl ~f ~k] updates key [k] by calling [f k (Some v)] if
       [k] was mapped to [v], or [f k None] otherwise; if the call
       returns [None] then [k] is removed/stays removed, if the call
@@ -172,8 +167,14 @@ module Poly : sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-    ?pp_arrow:unit printer -> 'a printer -> 'b printer -> ('a, 'b) Hashtbl.t printer
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer ->
+    'a printer ->
+    'b printer ->
+    ('a, 'b) Hashtbl.t printer
   (** [pp ~pp_start ~pp_stop ~pp_sep ~pp arrow pp_k pp_v] returns a table printer
       given a [pp_k] printer
       for individual key and a [pp_v] printer for individual value.
@@ -246,8 +247,7 @@ module type S = sig
       @since 2.8 *)
 
   val add_iter_with :
-    f:(key -> 'a -> 'a -> 'a) ->
-    'a t -> (key * 'a) iter -> unit
+    f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) iter -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
@@ -259,8 +259,7 @@ module type S = sig
       @since 3.0 *)
 
   val add_seq_with :
-    f:(key -> 'a -> 'a -> 'a) ->
-    'a t -> (key * 'a) Seq.t -> unit
+    f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
@@ -270,9 +269,7 @@ module type S = sig
   (** From the given bindings, added in order.
       @since 2.8 *)
 
-  val of_iter_with :
-    f:(key -> 'a -> 'a -> 'a) ->
-    (key * 'a) iter -> 'a t
+  val of_iter_with : f:(key -> 'a -> 'a -> 'a) -> (key * 'a) iter -> 'a t
   (** From the given bindings, added in order.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
@@ -283,9 +280,7 @@ module type S = sig
       Renamed from [of_std_seq] since 3.0.
       @since 3.0 *)
 
-  val of_seq_with :
-    f:(key -> 'a -> 'a -> 'a) ->
-    (key * 'a) Seq.t -> 'a t
+  val of_seq_with : f:(key -> 'a -> 'a -> 'a) -> (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
@@ -322,9 +317,7 @@ module type S = sig
       it will be added several times, and the visible binding
       will be the last one. *)
 
-  val of_list_with :
-    f:(key -> 'a -> 'a -> 'a) ->
-    (key * 'a) list -> 'a t
+  val of_list_with : f:(key -> 'a -> 'a -> 'a) -> (key * 'a) list -> 'a t
   (** [of_list l] builds a table from the given list [l] of bindings [k_i -> v_i].
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
@@ -345,8 +338,14 @@ module type S = sig
       to [tbl] and [v] is returned.
       @since 1.0 *)
 
-  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-    ?pp_arrow:unit printer -> key printer -> 'a printer -> 'a t printer
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_sep:unit printer ->
+    ?pp_arrow:unit printer ->
+    key printer ->
+    'a printer ->
+    'a t printer
   (** [pp ~pp_start ~pp_stop ~pp_sep ~pp arrow pp_k pp_v] returns a table printer
       given a [pp_k] printer
       for individual key and a [pp_v] printer for individual value. 
@@ -357,6 +356,5 @@ module type S = sig
       @since 0.13 *)
 end
 
-module Make(X : Hashtbl.HashedType) :
+module Make (X : Hashtbl.HashedType) :
   S with type key = X.t and type 'a t = 'a Hashtbl.Make(X).t
-

@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Caches} *)
@@ -10,6 +9,13 @@ let default_hash_ = Hashtbl.hash
 
 (** {2 Value interface} *)
 
+type ('a, 'b) t = {
+  set: 'a -> 'b -> unit;
+  get: 'a -> 'b; (* or raise Not_found *)
+  size: unit -> int;
+  iter: ('a -> 'b -> unit) -> unit;
+  clear: unit -> unit;
+}
 (** Invariants:
     - after [cache.set x y], [get cache x] must return [y] or raise [Not_found]
     - [cache.set x y] is only called if [get cache x] fails, never if [x] is already bound
@@ -17,13 +23,6 @@ let default_hash_ = Hashtbl.hash
     - [cache.iter f] calls [f x y] with every [x] such that [cache.get x = y]
     - after [cache.clear()], [cache.get x] fails for every [x]
 *)
-type ('a,'b) t = {
-  set : 'a -> 'b -> unit;
-  get : 'a -> 'b;  (* or raise Not_found *)
-  size : unit -> int;
-  iter : ('a -> 'b -> unit) -> unit;
-  clear : unit -> unit;
-}
 
 type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
 
@@ -40,7 +39,7 @@ let add c x y =
 
 let default_callback_ ~in_cache:_ _ _ = ()
 
-let with_cache ?(cb=default_callback_) c f x =
+let with_cache ?(cb = default_callback_) c f x =
   try
     let y = c.get x in
     cb ~in_cache:true x y;
@@ -51,50 +50,34 @@ let with_cache ?(cb=default_callback_) c f x =
     cb ~in_cache:false x y;
     y
 
-let with_cache_rec ?(cb=default_callback_) c f =
+let with_cache_rec ?(cb = default_callback_) c f =
   let rec f' x = with_cache ~cb c (f f') x in
   f'
 
-(*$R
-  let c = unbounded ~eq:Int64.equal 256 in
-  let fib = with_cache_rec c
-    (fun self n -> match n with
-      | 1L | 2L -> 1L
-      | _ -> CCInt64.(self (n-1L) + self (n-2L))
-    )
-  in
-  assert_equal 55L (fib 10L);
-  assert_equal 832040L (fib 30L);
-  assert_equal 12586269025L (fib 50L);
-  assert_equal 190392490709135L (fib 70L)
-*)
-
 let size c = c.size ()
-
 let iter c f = c.iter f
 
-let dummy = {
-  set=(fun _ _ -> ());
-  get=(fun _ -> raise Not_found);
-  clear=(fun _ -> ());
-  size=(fun _ -> 0);
-  iter=(fun _ -> ());
-}
+let dummy =
+  {
+    set = (fun _ _ -> ());
+    get = (fun _ -> raise Not_found);
+    clear = (fun _ -> ());
+    size = (fun _ -> 0);
+    iter = (fun _ -> ());
+  }
 
 module Linear = struct
-  type ('a,'b) bucket =
-    | Empty
-    | Pair of 'a * 'b
+  type ('a, 'b) bucket = Empty | Pair of 'a * 'b
 
-  type ('a,'b) t = {
-    eq : 'a equal;
-    arr : ('a,'b) bucket array;
-    mutable i : int;  (* index for next assertion, cycles through *)
+  type ('a, 'b) t = {
+    eq: 'a equal;
+    arr: ('a, 'b) bucket array;
+    mutable i: int; (* index for next assertion, cycles through *)
   }
 
   let make eq size =
-    assert (size>0);
-    {arr=Array.make size Empty; eq; i=0; }
+    assert (size > 0);
+    { arr = Array.make size Empty; eq; i = 0 }
 
   let clear c =
     Array.fill c.arr 0 (Array.length c.arr) Empty;
@@ -102,20 +85,23 @@ module Linear = struct
 
   (* linear lookup *)
   let rec search_ c i x =
-    if i=Array.length c.arr then raise Not_found;
+    if i = Array.length c.arr then raise Not_found;
     match c.arr.(i) with
-      | Pair (x', y) when c.eq x x' -> y
-      | Pair _
-      | Empty -> search_ c (i+1) x
+    | Pair (x', y) when c.eq x x' -> y
+    | Pair _ | Empty -> search_ c (i + 1) x
 
   let get c x = search_ c 0 x
 
   let set c x y =
-    c.arr.(c.i) <- Pair (x,y);
+    c.arr.(c.i) <- Pair (x, y);
     c.i <- (c.i + 1) mod Array.length c.arr
 
   let iter c f =
-    Array.iter (function Pair (x,y) -> f x y | Empty -> ()) c.arr
+    Array.iter
+      (function
+        | Pair (x, y) -> f x y
+        | Empty -> ())
+      c.arr
 
   let size c () =
     let r = ref 0 in
@@ -126,28 +112,27 @@ end
 let linear ~eq size =
   let size = max size 1 in
   let arr = Linear.make eq size in
-  { get=(fun x -> Linear.get arr x);
-    set=(fun x y -> Linear.set arr x y);
-    clear=(fun () -> Linear.clear arr);
-    size=Linear.size arr;
-    iter=Linear.iter arr;
+  {
+    get = (fun x -> Linear.get arr x);
+    set = (fun x y -> Linear.set arr x y);
+    clear = (fun () -> Linear.clear arr);
+    size = Linear.size arr;
+    iter = Linear.iter arr;
   }
 
 module Replacing = struct
-  type ('a,'b) bucket =
-    | Empty
-    | Pair of 'a * 'b
+  type ('a, 'b) bucket = Empty | Pair of 'a * 'b
 
-  type ('a,'b) t = {
-    eq : 'a equal;
-    hash : 'a hash;
-    arr : ('a,'b) bucket array;
-    mutable c_size : int;
+  type ('a, 'b) t = {
+    eq: 'a equal;
+    hash: 'a hash;
+    arr: ('a, 'b) bucket array;
+    mutable c_size: int;
   }
 
   let make eq hash size =
-    assert (size>0);
-    {arr=Array.make size Empty; eq; hash; c_size=0 }
+    assert (size > 0);
+    { arr = Array.make size Empty; eq; hash; c_size = 0 }
 
   let clear c =
     c.c_size <- 0;
@@ -156,9 +141,8 @@ module Replacing = struct
   let get c x =
     let i = c.hash x mod Array.length c.arr in
     match c.arr.(i) with
-      | Pair (x', y) when c.eq x x' -> y
-      | Pair _
-      | Empty -> raise Not_found
+    | Pair (x', y) when c.eq x x' -> y
+    | Pair _ | Empty -> raise Not_found
 
   let is_empty = function
     | Empty -> true
@@ -167,52 +151,57 @@ module Replacing = struct
   let set c x y =
     let i = c.hash x mod Array.length c.arr in
     if is_empty c.arr.(i) then c.c_size <- c.c_size + 1;
-    c.arr.(i) <- Pair (x,y)
+    c.arr.(i) <- Pair (x, y)
 
   let iter c f =
-    Array.iter (function Empty -> () | Pair (x,y) -> f x y) c.arr
+    Array.iter
+      (function
+        | Empty -> ()
+        | Pair (x, y) -> f x y)
+      c.arr
 
   let size c () = c.c_size
 end
 
-let replacing ~eq ?(hash=default_hash_) size =
+let replacing ~eq ?(hash = default_hash_) size =
   let c = Replacing.make eq hash size in
-  { get=(fun x -> Replacing.get c x);
-    set=(fun x y -> Replacing.set c x y);
-    clear=(fun () -> Replacing.clear c);
-    size=Replacing.size c;
-    iter=Replacing.iter c;
+  {
+    get = (fun x -> Replacing.get c x);
+    set = (fun x y -> Replacing.set c x y);
+    clear = (fun () -> Replacing.clear c);
+    size = Replacing.size c;
+    iter = Replacing.iter c;
   }
 
 module type HASH = sig
   type t
+
   val equal : t equal
   val hash : t hash
 end
 
-module LRU(X:HASH) = struct
+module LRU (X : HASH) = struct
   type key = X.t
 
-  module H = Hashtbl.Make(X)
+  module H = Hashtbl.Make (X)
 
   type 'a t = {
-    table : 'a node H.t;  (* hashtable key -> node *)
-    mutable first : 'a node option;
-    size : int;           (* max size *)
+    table: 'a node H.t; (* hashtable key -> node *)
+    mutable first: 'a node option;
+    size: int; (* max size *)
   }
+
   and 'a node = {
-    mutable key : key;
-    mutable value : 'a;
-    mutable next : 'a node;
-    mutable prev : 'a node;
-  } (** Meta data for the value, making a chained list *)
+    mutable key: key;
+    mutable value: 'a;
+    mutable next: 'a node;
+    mutable prev: 'a node;
+  }
+  (** Meta data for the value, making a chained list *)
 
   let make size =
     assert (size > 0);
-    { table = H.create size;
-      size;
-      first=None;
-    }
+    { table = H.create size; size; first = None }
 
   let clear c =
     H.clear c.table;
@@ -222,31 +211,30 @@ module LRU(X:HASH) = struct
   (* take first from queue *)
   let take_ c =
     match c.first with
-      | Some n when Stdlib.(==) n.next n ->
-        (* last element *)
-        c.first <- None;
-        n
-      | Some n ->
-        c.first <- Some n.next;
-        n.prev.next <- n.next;
-        n.next.prev <- n.prev;
-        n
-      | None ->
-        failwith "LRU: empty queue"
+    | Some n when Stdlib.( == ) n.next n ->
+      (* last element *)
+      c.first <- None;
+      n
+    | Some n ->
+      c.first <- Some n.next;
+      n.prev.next <- n.next;
+      n.next.prev <- n.prev;
+      n
+    | None -> failwith "LRU: empty queue"
 
   (* push at back of queue *)
   let push_ c n =
     match c.first with
-      | None ->
-        n.next <- n;
-        n.prev <- n;
-        c.first <- Some n
-      | Some n1 when Stdlib.(==) n1 n -> ()
-      | Some n1 ->
-        n.prev <- n1.prev;
-        n.next <- n1;
-        n1.prev.next <- n;
-        n1.prev <- n
+    | None ->
+      n.next <- n;
+      n.prev <- n;
+      c.first <- Some n
+    | Some n1 when Stdlib.( == ) n1 n -> ()
+    | Some n1 ->
+      n.prev <- n1.prev;
+      n.next <- n1;
+      n1.prev.next <- n;
+      n1.prev <- n
 
   (* remove from queue *)
   let remove_ n =
@@ -267,12 +255,7 @@ module LRU(X:HASH) = struct
 
   (* Insert x->y in the cache, increasing its entry count *)
   let insert_ c x y =
-    let rec n = {
-      key = x;
-      value = y;
-      next = n;
-      prev = n;
-    } in
+    let rec n = { key = x; value = y; next = n; prev = n } in
     H.add c.table x n;
     push_ c n;
     ()
@@ -287,88 +270,57 @@ module LRU(X:HASH) = struct
   let set c x y =
     let len = H.length c.table in
     assert (len <= c.size);
-    if len = c.size
-    then replace_ c x y
-    else insert_ c x y
+    if len = c.size then
+      replace_ c x y
+    else
+      insert_ c x y
 
   let size c () = H.length c.table
-
-  let iter c f =
-    H.iter (fun x node -> f x node.value) c.table
+  let iter c f = H.iter (fun x node -> f x node.value) c.table
 end
 
-let lru (type a) ~eq ?(hash=default_hash_) size =
-  let module L = LRU(struct
-      type t = a
-      let equal = eq
-      let hash = hash
-    end) in
+let lru (type a) ~eq ?(hash = default_hash_) size =
+  let module L = LRU (struct
+    type t = a
+
+    let equal = eq
+    let hash = hash
+  end) in
   let c = L.make size in
-  { get=(fun x -> L.get c x);
-    set=(fun x y -> L.set c x y);
-    clear=(fun () -> L.clear c);
-    size=L.size c;
-    iter=L.iter c;
+  {
+    get = (fun x -> L.get c x);
+    set = (fun x y -> L.set c x y);
+    clear = (fun () -> L.clear c);
+    size = L.size c;
+    iter = L.iter c;
   }
 
-(*$T
-  let eq (i1,_)(i2,_) = i1=i2 and hash (i,_) = CCInt.hash i in \
-  let c = lru ~eq ~hash 2 in \
-  ignore (with_cache c CCFun.id (1, true)); \
-  ignore (with_cache c CCFun.id (1, false)); \
-  with_cache c CCFun.id (1, false) = (1, true)
-*)
-
-(*$T
-  let f = (let r = ref 0 in fun _ -> incr r; !r) in \
-  let c = lru ~eq:CCInt.equal 2 in \
-  let res1 = with_cache c f 1 in \
-  let res2 = with_cache c f 2 in \
-  let res3 = with_cache c f 3 in \
-  let res1_bis = with_cache c f 1 in \
-  res1 <> res2 && res2 <> res3 && res3 <> res1_bis && res1_bis <> res1
-*)
-
-(*$R
-  let f = (let r = ref 0 in fun _ -> incr r; !r) in
-  let c = lru ~eq:CCEqual.unit 2 in
-  let x = with_cache c f () in
-  assert_equal 1 x;
-  assert_equal 1 (size c);
-  clear c ;
-  assert_equal 0 (size c);
-  let y = with_cache c f () in
-  assert_equal 2 y ;
-*)
-
-module UNBOUNDED(X:HASH) = struct
-  module H = Hashtbl.Make(X)
+module UNBOUNDED (X : HASH) = struct
+  module H = Hashtbl.Make (X)
 
   let make size =
     assert (size > 0);
     H.create size
 
   let clear c = H.clear c
-
   let get c x = H.find c x
-
   let set c x y = H.replace c x y
-
   let size c () = H.length c
-
   let iter c f = H.iter f c
 end
 
-let unbounded (type a) ~eq ?(hash=default_hash_) size =
-  let module C = UNBOUNDED(struct
-      type t = a
-      let equal = eq
-      let hash = hash
-    end) in
+let unbounded (type a) ~eq ?(hash = default_hash_) size =
+  let module C = UNBOUNDED (struct
+    type t = a
+
+    let equal = eq
+    let hash = hash
+  end) in
   let c = C.make size in
-  { get=(fun x -> C.get c x);
-    set=(fun x y -> C.set c x y);
-    clear=(fun () -> C.clear c);
-    iter=C.iter c;
-    size=C.size c;
+  {
+    get = (fun x -> C.get c x);
+    set = (fun x y -> C.set c x y);
+    clear = (fun () -> C.clear c);
+    iter = C.iter c;
+    size = C.size c;
   }

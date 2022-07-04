@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Thread Pool, and Futures}
@@ -6,10 +5,7 @@
     Renamed and heavily updated from [CCFuture].
     @since 0.16 *)
 
-type +'a state =
-  | Done of 'a
-  | Waiting
-  | Failed of exn
+type +'a state = Done of 'a | Waiting | Failed of exn
 
 module type PARAM = sig
   val max_size : int
@@ -19,7 +15,7 @@ end
 exception Stopped
 
 (** {2 Create a new Pool} *)
-module Make(P : PARAM) : sig
+module Make (P : PARAM) : sig
   val run : (unit -> _) -> unit
   (** [run f] schedules [f] for being executed in the thread pool. *)
 
@@ -27,9 +23,7 @@ module Make(P : PARAM) : sig
   (** [run1 f x] is similar to [run (fun () -> f x)]. *)
 
   val run2 : ('a -> 'b -> _) -> 'a -> 'b -> unit
-
   val run3 : ('a -> 'b -> 'c -> _) -> 'a -> 'b -> 'c -> unit
-
   val set_exn_handler : (exn -> unit) -> unit
 
   val active : unit -> bool
@@ -62,7 +56,6 @@ module Make(P : PARAM) : sig
           the function. If the function raises, the future will fail. *)
 
     val make1 : ('a -> 'b) -> 'a -> 'b t
-
     val make2 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c t
 
     (** {2 Basics} *)
@@ -149,28 +142,20 @@ module Make(P : PARAM) : sig
         using {!CCTimer}. *)
 
     module Infix : sig
-      val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-      val (>>) : 'a t -> (unit -> 'b t) -> 'b t
-      val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-      val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+      val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+      val ( >> ) : 'a t -> (unit -> 'b t) -> 'b t
+      val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
+      val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
 
+      [@@@ifge 4.08]
+
+      include CCShims_syntax.LET with type 'a t := 'a t
       (** Let operators on OCaml >= 4.08.0, nothing otherwise
           @since 2.8 *)
-      include CCShimsMkLet_.S with type 'a t_let := 'a t
+
+      [@@@endif]
     end
 
-    val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-
-    val (>>) : 'a t -> (unit -> 'b t) -> 'b t
-
-    val (>|=) : 'a t -> ('a -> 'b) -> 'b t
-    (** Alias to {!map}. *)
-
-    val (<*>): ('a -> 'b) t -> 'a t -> 'b t
-    (** Alias to {!app}. *)
-
-    (** Let operators on OCaml >= 4.08.0, nothing otherwise
-        @since 2.8 *)
-    include CCShimsMkLet_.S with type 'a t_let := 'a t
+    include module type of Infix
   end
 end

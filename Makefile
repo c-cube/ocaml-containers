@@ -17,7 +17,7 @@ doc:
 BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
 
 benchs:
-	dune build $(addprefix benchs/, $(BENCH_TARGETS))
+	dune build $(addprefix benchs/, $(BENCH_TARGETS)) --profile=release
 	@for i in $(BENCH_TARGETS) ; do ln -sf _build/default/benchs/$$i ; done
 
 examples:
@@ -29,12 +29,6 @@ update_next_tag:
 	@echo "update version to $(VERSION)..."
 	sed -i "s/NEXT_VERSION/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
 	sed -i "s/NEXT_RELEASE/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
-
-release: update_next_tag
-	@echo "release version $(VERSION)..."
-	git tag -f $(VERSION) ; git push origin :$(VERSION) ; git push origin $(VERSION)
-	opam publish prepare https://github.com/c-cube/qcheck/archive/$(VERSION).tar.gz
-	@echo "review the release, then type 'opam publish submit qcheck.$(VERSION)/'"
 
 WATCH?=@all
 watch:

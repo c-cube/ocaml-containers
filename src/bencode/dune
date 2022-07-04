@@ -1,0 +1,5 @@
+(library
+ (name containers_bencode)
+ (public_name containers.bencode)
+ (libraries containers)
+ (synopsis "Bencode codec for containers (the format for bittorrent files)"))

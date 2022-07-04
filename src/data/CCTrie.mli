@@ -1,10 +1,9 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Prefix Tree} *)
+(** Prefix Tree *)
 
 type 'a iter = ('a -> unit) -> unit
-type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+type 'a ktree = unit -> [ `Nil | `Node of 'a * 'a ktree list ]
 
 (** {2 Signatures} *)
 
@@ -24,11 +23,9 @@ end
 module type S = sig
   type char_
   type key
-
   type 'a t
 
   val empty : 'a t
-
   val is_empty : _ t -> bool
 
   val add : key -> 'a -> 'a t -> 'a t
@@ -89,16 +86,11 @@ module type S = sig
   (** {4 Conversions} *)
 
   val to_list : 'a t -> (key * 'a) list
-
   val of_list : (key * 'a) list -> 'a t
-
   val to_iter : 'a t -> (key * 'a) iter
-
   val of_iter : (key * 'a) iter -> 'a t
-
   val to_iter_values : 'a t -> 'a iter
-
-  val to_tree : 'a t -> [`Char of char_ | `Val of 'a | `Switch] ktree
+  val to_tree : 'a t -> [ `Char of char_ | `Val of 'a | `Switch ] ktree
 
   (** {4 Ranges} *)
 
@@ -111,21 +103,24 @@ module type S = sig
       in decreasing order. *)
 
   (**/**)
-  val check_invariants: _ t -> bool
+
+  val check_invariants : _ t -> bool
+
   (**/**)
 end
 
 (** {2 Implementation} *)
 
-module Make(W : WORD) : S with type key = W.t and type char_ = W.char_
+module Make (W : WORD) : S with type key = W.t and type char_ = W.char_
 
 module type ORDERED = sig
   type t
+
   val compare : t -> t -> int
 end
 
-module MakeArray(X : ORDERED) : S with type key = X.t array and type char_ = X.t
+module MakeArray (X : ORDERED) :
+  S with type key = X.t array and type char_ = X.t
 
-module MakeList(X : ORDERED) : S with type key = X.t list and type char_ = X.t
-
+module MakeList (X : ORDERED) : S with type key = X.t list and type char_ = X.t
 module String : S with type key = string and type char_ = char

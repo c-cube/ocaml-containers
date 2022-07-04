@@ -7,20 +7,15 @@ on:
 
 jobs:
   deploy:
+    name: Deploy doc
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
 
-      - name: Cache opam
-        id: cache-opam
-        uses: actions/cache@v2
+      - name: Use OCaml
+        uses: ocaml/setup-ocaml@v2
         with:
-          path: ~/.opam
-          key: opam-ubuntu-latest-4.12.0
-
-      - uses: avsm/setup-ocaml@v1
-        with:
-          ocaml-version: '4.12.0'
+          ocaml-compiler: '4.13.x'
 
       - name: Pin
         run: opam pin -n .

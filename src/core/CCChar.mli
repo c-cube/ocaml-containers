@@ -1,11 +1,13 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Utils around char}
+(** Utils around char
 
     @since 0.14 *)
 
-include module type of struct include Char end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Char.html} Documentation for the standard Char module}*)
+include module type of struct
+  include Char
+end
 
 val compare : t -> t -> int
 (** The comparison function for characters, with the same specification as
@@ -43,22 +45,22 @@ val pp : Format.formatter -> t -> unit
     @since 3.3 *)
 
 module Infix : sig
-  val (=) : t -> t -> bool
+  val ( = ) : t -> t -> bool
   (** @since 3.3 *)
 
-  val (<>) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
   (** @since 3.3 *)
 
-  val (<) : t -> t -> bool
+  val ( < ) : t -> t -> bool
   (** @since 3.3 *)
 
-  val (>) : t -> t -> bool
+  val ( > ) : t -> t -> bool
   (** @since 3.3 *)
 
-  val (<=) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
   (** @since 3.3 *)
 
-  val (>=) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
   (** @since 3.3 *)
 end
 

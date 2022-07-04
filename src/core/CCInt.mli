@@ -1,9 +1,15 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** {1 Basic Int functions} *)
+(** Basic Int functions *)
 
-include module type of CCShimsInt_
+[@@@ifge 4.08]
+
+include module type of Int
+(** @inline
+
+    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
+
+[@@@endif]
 
 type t = int
 
@@ -202,60 +208,73 @@ val shift_right_logical : t -> int -> t
     @since 0.17 *)
 
 module Infix : sig
-  val (=) : t -> t -> bool
+  val ( = ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (<>) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (<) : t -> t -> bool
+  val ( < ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (>) : t -> t -> bool
+  val ( > ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (<=) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (>=) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
   (** @since 0.17 *)
 
-  val (--) : t -> t -> t iter
+  val ( -- ) : t -> t -> t iter
   (** Alias to {!range}.
       @since 1.2 *)
 
-  val (--^) : t -> t -> t iter
+  val ( --^ ) : t -> t -> t iter
   (** Alias to {!range'}.
       @since 1.2 *)
 
-  val (+) : t -> t -> t (** @since 2.1 *)
+  val ( + ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val (-) : t -> t -> t (** @since 2.1 *)
+  val ( - ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val (~-) : t -> t (** @since 2.1 *)
+  val ( ~- ) : t -> t
+  (** @since 2.1 *)
 
-  val ( * ) : t -> t -> t (** @since 2.1 *)
+  val ( * ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val (/) : t -> t -> t (** @since 2.1 *)
+  val ( / ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val ( ** ) : t -> t -> t (** @since 2.4 *)
+  val ( ** ) : t -> t -> t
+  (** @since 2.4 *)
 
-  val (mod) : t -> t -> t (** @since 2.1 *)
+  val ( mod ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val (land) : t -> t -> t (** @since 2.1 *)
+  val ( land ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val (lor) : t -> t -> t (** @since 2.1 *)
+  val ( lor ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val (lxor) : t -> t -> t (** @since 2.1 *)
+  val ( lxor ) : t -> t -> t
+  (** @since 2.1 *)
 
-  val lnot : t -> t (** @since 2.1 *)
+  val lnot : t -> t
+  (** @since 2.1 *)
 
-  val (lsl) : t -> int -> t (** @since 2.1 *)
+  val ( lsl ) : t -> int -> t
+  (** @since 2.1 *)
 
-  val (lsr) : t -> int -> t (** @since 2.1 *)
+  val ( lsr ) : t -> int -> t
+  (** @since 2.1 *)
 
-  val (asr) : t -> int -> t (** @since 2.1 *)
-
+  val ( asr ) : t -> int -> t
+  (** @since 2.1 *)
 end
 
 include module type of Infix

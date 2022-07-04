@@ -1,25 +1,14 @@
-
-(executable
- (name mkshims)
- (modules mkshims)
- (libraries dune.configurator))
-
-(rule
- (targets CCShims_.ml CCShimsList_.ml CCShimsFun_.ml CCShimsFun_.mli
-   CCShimsArray_.ml CCShimsFormat_.ml CCShimsMkLet_.ml CCShimsMkLetList_.ml
-   CCShimsArrayLabels_.ml CCShimsInt_.ml CCShimsEither_.ml)
- (deps ./mkshims.exe)
- (action
-  (run ./mkshims.exe)))
-
 (library
  (name containers)
  (public_name containers)
  (wrapped false)
- (modules :standard \ mkshims)
- (flags :standard :standard -warn-error -a+8 -w -32-67 -safe-string -nolabels -open
-   CCMonomorphic)
- (ocamlopt_flags (:include ../flambda.flags))
- (libraries seq containers.monomorphic))
+ (modules_without_implementation CCShims_syntax)
+ (preprocess
+  (action
+   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+ (flags :standard -warn-error -a+8 -w -32-70 -safe-string -strict-sequence
+   -nolabels -open CCMonomorphic)
+ (libraries seq either containers.monomorphic))
 
-(ocamllex (modules CCSexp_lex))
+(ocamllex
+ (modules CCSexp_lex))

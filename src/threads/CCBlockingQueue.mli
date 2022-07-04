@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** {1 Blocking Queue}
@@ -47,4 +46,3 @@ val size : _ t -> int
 
 val capacity : _ t -> int
 (** Number of values the queue can hold. *)
-
