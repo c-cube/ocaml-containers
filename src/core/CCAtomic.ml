@@ -1,17 +1,17 @@
-
 [@@@ifge 4.12]
 
 include Atomic
-
 
 [@@@else_]
 
 open CCShims_.Stdlib (* for == *)
 
-type 'a t = {mutable x: 'a}
-let[@inline] make x = {x}
-let[@inline] get {x} = x
+type 'a t = { mutable x: 'a }
+
+let[@inline] make x = { x }
+let[@inline] get { x } = x
 let[@inline] set r x = r.x <- x
+
 let[@inline never] exchange r x =
   (* atomic *)
   let y = r.x in
@@ -25,7 +25,8 @@ let[@inline never] compare_and_set r seen v =
     r.x <- v;
     (* atomic *)
     true
-  ) else false
+  ) else
+    false
 
 let[@inline never] fetch_and_add r x =
   (* atomic *)
@@ -37,12 +38,11 @@ let[@inline never] fetch_and_add r x =
 let[@inline never] incr r =
   (* atomic *)
   r.x <- 1 + r.x
-  (* atomic *)
+(* atomic *)
 
 let[@inline never] decr r =
   (* atomic *)
   r.x <- r.x - 1
-  (* atomic *)
+(* atomic *)
 
 [@@@endif]
-

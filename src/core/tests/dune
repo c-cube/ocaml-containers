@@ -1,44 +1,33 @@
-
+(executable
+ (name check_labelled_mods)
+ (modules check_labelled_mods)
+ (flags :standard -warn-error -a -w -3-33-35-27-39-50 -nolabels)
+ (libraries containers))
 
 (executable
-  (name check_labelled_mods)
-  (modules check_labelled_mods)
-  (flags :standard -warn-error -a -w -3-33-35-27-39-50 -nolabels)
-  (libraries containers))
+ (name test_hash)
+ (modules test_hash)
+ (flags :standard -warn-error -a+8)
+ (libraries containers iter))
 
 (executable
-  (name test_hash)
-  (modules test_hash)
-  (flags :standard -warn-error -a+8)
-  (libraries containers iter))
-
-(executable
-  (name test_random)
-  (flags :standard -warn-error -a+8)
-  (modules test_random)
-  (libraries containers))
-
-(executable
-  (name test_csexp)
-  (flags :standard -warn-error -a+8)
-  (modules test_csexp)
-  (libraries containers csexp qcheck-core qcheck))
+ (name test_random)
+ (flags :standard -warn-error -a+8)
+ (modules test_random)
+ (libraries containers))
 
 (rule
-  (alias runtest)
-  (locks /ctest)
-  (package containers)
-  (action (run ./test_random.exe)))
-
-(rule
-  (alias runtest)
-  (locks /ctest)
-  (package containers)
-  (action (run ./test_csexp.exe)))
+ (alias runtest)
+ (locks /ctest)
+ (package containers)
+ (action
+  (run ./test_random.exe)))
 
 ; what matters is that it compiles
+
 (rule
-  (alias runtest)
-  (locks /ctest)
-  (package containers)
-  (action  (run ./check_labelled_mods.exe)))
+ (alias runtest)
+ (locks /ctest)
+ (package containers)
+ (action
+  (run ./check_labelled_mods.exe)))

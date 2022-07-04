@@ -1,4 +1,3 @@
-
 (** Byte buffer.
 
     A dynamic vector of bytes.
@@ -6,7 +5,6 @@
 *)
 
 type t
-
 type 'a iter = ('a -> unit) -> unit
 
 val create : ?cap:int -> unit -> t
@@ -38,25 +36,15 @@ val add_char : t -> char -> unit
 (** Push a character at the end. *)
 
 val append_bytes : t -> bytes -> unit
-
 val append_subbytes : t -> bytes -> int -> int -> unit
-
 val append_string : t -> string -> unit
-
 val append_substring : t -> string -> int -> int -> unit
-
 val append_buf : t -> Buffer.t -> unit
-
 val append_iter : t -> char iter -> unit
-
 val append_seq : t -> char Seq.t -> unit
-
 val get : t -> int -> char
-
 val unsafe_get : t -> int -> char
-
 val set : t -> int -> char -> unit
-
 val unsafe_set : t -> int -> char -> unit
 
 val contents : t -> string
@@ -66,11 +54,8 @@ val contents_bytes : t -> bytes
 (** Copy the internal data to a byte buffer *)
 
 val iter : (char -> unit) -> t -> unit
-
 val fold_left : ('a -> char -> 'a) -> 'a -> t -> 'a
-
 val of_iter : char iter -> t
 val of_seq : char Seq.t -> t
-
 val to_iter : t -> char iter
 val to_seq : t -> char Seq.t

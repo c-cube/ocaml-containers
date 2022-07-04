@@ -11,16 +11,3 @@
  (deps t_appendix_a.exe appendix_a.json)
  (action
   (run ./t_appendix_a.exe ./appendix_a.json)))
-
-(executable
- (name t)
- (modules t)
- (preprocess
-  (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
- (libraries qcheck-core qcheck-core.runner containers containers.cbor))
-
-(rule
- (alias runtest)
- (action
-  (run ./t.exe --no-colors)))

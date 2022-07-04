@@ -16,9 +16,7 @@ depends: [
   "dune-configurator"
   "containers" { = version }
   "iter" { with-test }
-  "qtest" { with-test }
-  "qcheck" { with-test }
-  "ounit" { with-test }
+  "qcheck-core" { with-test }
   "uutf" { with-test }
   "odoc" { with-doc }
 ]

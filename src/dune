@@ -1,12 +1,11 @@
-
 (env
-  (_
-    (flags :standard -warn-error -a+8 -w -32-70 -color always -safe-string -strict-sequence)
-    (ocamlopt_flags :standard -O3 -unbox-closures -unbox-closures-factor 20
-                    -inline 100)
-     ))
+ (_
+  (flags :standard -warn-error -a+8 -w -32-70 -color always -safe-string
+    -strict-sequence)
+  (ocamlopt_flags :standard -O3 -unbox-closures -unbox-closures-factor 20
+    -inline 100)))
 
 (executable
-  (name mdx_runner)
-  (libraries containers)
-  (modules mdx_runner))
+ (name mdx_runner)
+ (libraries containers)
+ (modules mdx_runner))

@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Leftist Heaps
@@ -10,17 +9,19 @@ type 'a iter = ('a -> unit) -> unit
     @since 2.8 *)
 
 type 'a gen = unit -> 'a option
-type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+type 'a ktree = unit -> [ `Nil | `Node of 'a * 'a ktree list ]
 type 'a printer = Format.formatter -> 'a -> unit
 
 module type PARTIAL_ORD = sig
   type t
+
   val leq : t -> t -> bool
   (** [leq x y] shall return [true] iff [x] is lower or equal to [y]. *)
 end
 
 module type TOTAL_ORD = sig
   type t
+
   val compare : t -> t -> int
   (** [compare a b] shall return
       a negative value if [a] is smaller than [b],
@@ -49,7 +50,7 @@ module type S = sig
   val add : t -> elt -> t
   (** [add h x] inserts an element [x] into the heap [h]. *)
 
-  val filter :  (elt -> bool) -> t -> t
+  val filter : (elt -> bool) -> t -> t
   (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
       Linear time at least. *)
 
@@ -164,8 +165,12 @@ module type S = sig
        (converted to a string using [f]).
        @since 2.7 *)
 
-  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-    elt printer -> t printer
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_sep:unit printer ->
+    elt printer ->
+    t printer
   (** [pp ?pp_start ?pp_stop ?pp_sep ppf h] prints [h] on [ppf].
       Each element is formatted with [ppf], [pp_start] is called at the beginning,
       [pp_stop] is called at the end, [pp_sep] is called between each elements.
@@ -175,10 +180,10 @@ module type S = sig
       @since 0.16 *)
 end
 
-module Make(E : PARTIAL_ORD) : S with type elt = E.t
+module Make (E : PARTIAL_ORD) : S with type elt = E.t
 
 (** A convenient version of [Make] that take a [TOTAL_ORD] instead of
     a partially ordered module.
     It allow to directly pass modules that implement [compare]
     without implementing [leq] explicitly *)
-module Make_from_compare(E : TOTAL_ORD) : S with type elt = E.t
+module Make_from_compare (E : TOTAL_ORD) : S with type elt = E.t

@@ -1,7 +1,4 @@
-
-(* This file is free software, part of containers. See file "license" for more details. *)
-
-(** {1 Event timer}
+(** Event timer
 
     Used to be part of [CCFuture].
     @since 0.16 *)

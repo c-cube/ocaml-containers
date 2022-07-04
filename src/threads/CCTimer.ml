@@ -1,34 +1,28 @@
+type job = Job : float * (unit -> 'a) -> job
 
-(* This file is free software, part of containers. See file "license" for more details. *)
+let ( <= ) (a : float) b = Stdlib.( <= ) a b
+let ( >= ) (a : float) b = Stdlib.( >= ) a b
+let ( < ) (a : float) b = Stdlib.( < ) a b
+let ( > ) (a : float) b = Stdlib.( > ) a b
 
-(** {1 Event timer} *)
+module TaskHeap = CCHeap.Make (struct
+  type t = job
 
-type job =
-  | Job : float * (unit -> 'a) -> job
-
-let (<=) (a : float) b = Stdlib.(<=) a b
-let (>=) (a : float) b = Stdlib.(>=) a b
-let (<) (a : float) b = Stdlib.(<) a b
-let (>) (a : float) b = Stdlib.(>) a b
-
-module TaskHeap = CCHeap.Make(struct
-    type t = job
-    let leq (Job(f1,_)) (Job (f2,_)) = f1 <= f2
-  end)
+  let leq (Job (f1, _)) (Job (f2, _)) = f1 <= f2
+end)
 
 exception Stopped
 
 type t = {
-  mutable stop : bool;
-  mutable tasks : TaskHeap.t;
-  mutable exn_handler : (exn -> unit);
-  t_mutex : Mutex.t;
-  fifo_in : Unix.file_descr;
-  fifo_out : Unix.file_descr;
+  mutable stop: bool;
+  mutable tasks: TaskHeap.t;
+  mutable exn_handler: exn -> unit;
+  t_mutex: Mutex.t;
+  fifo_in: Unix.file_descr;
+  fifo_out: Unix.file_descr;
 }
 
 let set_exn_handler timer f = timer.exn_handler <- f
-
 let standby_wait = 10.
 (* when no task is scheduled, this is the amount of time that is waited
    in a row for something to happen. This is also the maximal delay
@@ -48,39 +42,38 @@ let with_lock_ t f =
     Mutex.unlock t.t_mutex;
     raise e
 
-type command =
-  | Quit
-  | Run : (unit -> _) -> command
-  | Wait of float
+type command = Quit | Run : (unit -> _) -> command | Wait of float
 
 let pop_task_ t =
   let tasks, _ = TaskHeap.take_exn t.tasks in
   t.tasks <- tasks
 
-let call_ timer f =
-  try ignore (f ())
-  with e -> timer.exn_handler e
+let call_ timer f = try ignore (f ()) with e -> timer.exn_handler e
 
 (* check next task *)
-let next_task_ timer = match TaskHeap.find_min timer.tasks with
+let next_task_ timer =
+  match TaskHeap.find_min timer.tasks with
   | _ when timer.stop -> Quit
   | None -> Wait standby_wait
-  | Some Job (time, f) ->
+  | Some (Job (time, f)) ->
     let now = Unix.gettimeofday () in
     if now +. epsilon > time then (
       (* now! *)
       pop_task_ timer;
       Run f
-    ) else Wait (time -. now)
+    ) else
+      Wait (time -. now)
 
 (* The main thread function: wait for next event, run it, and loop *)
 let serve timer =
   let buf = Bytes.make 1 '_' in
   (* acquire lock, call [process_task] and do as it commands *)
-  let rec next () = match with_lock_ timer next_task_ with
+  let rec next () =
+    match with_lock_ timer next_task_ with
     | Quit -> ()
     | Run f ->
-      call_ timer f; (* call outside of any lock *)
+      call_ timer f;
+      (* call outside of any lock *)
       next ()
     | Wait delay -> wait delay
   (* wait for [delay] seconds, or until something happens on [fifo_in] *)
@@ -96,14 +89,16 @@ let nop_handler_ _ = ()
 
 let create () =
   let fifo_in, fifo_out = Unix.pipe () in
-  let timer = {
-    stop = false;
-    tasks = TaskHeap.empty;
-    exn_handler = nop_handler_;
-    t_mutex = Mutex.create ();
-    fifo_in;
-    fifo_out;
-  } in
+  let timer =
+    {
+      stop = false;
+      tasks = TaskHeap.empty;
+      exn_handler = nop_handler_;
+      t_mutex = Mutex.create ();
+      fifo_in;
+      fifo_out;
+    }
+  in
   (* start a thread to process tasks *)
   let _t = Thread.create serve timer in
   timer
@@ -111,29 +106,27 @@ let create () =
 let underscore_ = Bytes.make 1 '_'
 
 (* awake the thread *)
-let awaken_ timer =
-  ignore (Unix.single_write timer.fifo_out underscore_ 0 1)
+let awaken_ timer = ignore (Unix.single_write timer.fifo_out underscore_ 0 1)
 
 (** [at s t ~f] will run [f ()] at the Unix echo [t] *)
 let at timer time ~f =
   if timer.stop then raise Stopped;
   let now = Unix.gettimeofday () in
-  if now >= time
-  then call_ timer f
+  if now >= time then
+    call_ timer f
   else
-    with_lock_ timer
-      (fun timer ->
-         if timer.stop then raise Stopped;
-         (* time of the next scheduled event *)
-         let next_time = match TaskHeap.find_min timer.tasks with
-           | None -> max_float
-           | Some Job (d, _) -> d
-         in
-         (* insert task *)
-         timer.tasks <- TaskHeap.insert (Job (time, f)) timer.tasks;
-         (* see if the timer thread needs to be awaken earlier *)
-         if time < next_time then awaken_ timer
-      )
+    with_lock_ timer (fun timer ->
+        if timer.stop then raise Stopped;
+        (* time of the next scheduled event *)
+        let next_time =
+          match TaskHeap.find_min timer.tasks with
+          | None -> max_float
+          | Some (Job (d, _)) -> d
+        in
+        (* insert task *)
+        timer.tasks <- TaskHeap.insert (Job (time, f)) timer.tasks;
+        (* see if the timer thread needs to be awaken earlier *)
+        if time < next_time then awaken_ timer)
 
 let after timer delay ~f =
   assert (delay >= 0.);
@@ -146,60 +139,23 @@ let every ?delay timer d ~f =
   let rec run () =
     try
       ignore (f ());
-      schedule()
-    with ExitEvery -> () (* stop *)
+      schedule ()
+    with ExitEvery -> ()
+  (* stop *)
   and schedule () = after timer d ~f:run in
   match delay with
-    | None -> run()
-    | Some d -> after timer d ~f:run
-
-(*$R
-  let start = Unix.gettimeofday() in
-  let timer = create() in
-  let res = CCLock.create 0 in
-  let sem = CCSemaphore.create 1 in
-  CCSemaphore.acquire 1 sem;
-  let stop = ref 0. in
-  every timer 0.1
-    ~f:(fun () ->
-      if CCLock.incr_then_get res > 5 then (
-        stop := Unix.gettimeofday();
-        CCSemaphore.release 1 sem;
-        raise ExitEvery
-      ));
-  CCSemaphore.acquire 1 sem; (* wait *)
-  OUnit2.assert_equal ~printer:CCInt.to_string 6 (CCLock.get res);
-  OUnit2.assert_bool "delay >= 0.5" (!stop -. start >= 0.49999);
-  OUnit2.assert_bool "delay < 2." (!stop -. start < 2.);
-*)
-(* NOTE: could be tighter bounds, but travis' mac OS seems to be dog slow. *)
+  | None -> run ()
+  | Some d -> after timer d ~f:run
 
 let active timer = not timer.stop
 
 (** Stop the given timer, cancelling pending tasks *)
 let stop timer =
-  with_lock_ timer
-    (fun timer ->
-       if not timer.stop then (
-         timer.stop <- true;
-         (* empty heap of tasks *)
-         timer.tasks <- TaskHeap.empty;
-         (* tell the thread to stop *)
-         awaken_ timer;
-       )
-    )
-
-(*$R
-  (* scenario:  n := 1; n := n*4 ; n := n+2; res := n *)
-  let timer = create () in
-  let n = CCLock.create 1 in
-  let res = CCLock.create 0 in
-  after timer 0.3
-    ~f:(fun () -> CCLock.update n (fun x -> x+2));
-  ignore (Thread.create
-    (fun _ -> Thread.delay 0.4; CCLock.set res (CCLock.get n)) ());
-  after timer 0.1
-    ~f:(fun () -> CCLock.update n (fun x -> x * 4));
-  Thread.delay 0.6 ;
-  OUnit2.assert_equal ~printer:Q.Print.int 6 (CCLock.get res);
-*)
+  with_lock_ timer (fun timer ->
+      if not timer.stop then (
+        timer.stop <- true;
+        (* empty heap of tasks *)
+        timer.tasks <- TaskHeap.empty;
+        (* tell the thread to stop *)
+        awaken_ timer
+      ))

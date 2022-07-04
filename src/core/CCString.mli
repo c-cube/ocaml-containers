@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Basic String Utils *)
@@ -9,8 +8,10 @@ type 'a iter = ('a -> unit) -> unit
 
 type 'a gen = unit -> 'a option
 
-include module type of struct include String end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/String.html} Documentation for the standard String module}*)
+include module type of struct
+  include String
+end
 
 val length : t -> int
 (** [length s] returns the length (number of characters) of the given string [s]. *)
@@ -79,7 +80,7 @@ val rev : string -> string
 (** [rev s] returns the reverse of [s].
     @since 0.17 *)
 
-val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
+val pad : ?side:[ `Left | `Right ] -> ?c:char -> int -> string -> string
 (** [pad ~side ~c n s] ensures that the string [s] is at least [n] bytes long,
     and pads it on the [side] with [c] if it's not the case.
     @param side determines where padding occurs (default: [`Left]).
@@ -136,7 +137,12 @@ val rfind : sub:string -> string -> int
     Should only be used with very small [sub].
     @since 0.12 *)
 
-val replace : ?which:[`Left|`Right|`All] -> sub:string -> by:string -> string -> string
+val replace :
+  ?which:[ `Left | `Right | `All ] ->
+  sub:string ->
+  by:string ->
+  string ->
+  string
 (** [replace ~which ~sub ~by s] replaces some occurrences of [sub] by [by] in [s].
     @param which decides whether the occurrences to replace are:
       {ul
@@ -291,17 +297,17 @@ val map2 : (char -> char -> char) -> string -> string -> string
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
 
-val iter2: (char -> char -> unit) -> string -> string -> unit
+val iter2 : (char -> char -> unit) -> string -> string -> unit
 (** [iter2 f s1 s2] iterates on pairs of chars.
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
 
-val iteri2: (int -> char -> char -> unit) -> string -> string -> unit
+val iteri2 : (int -> char -> char -> unit) -> string -> string -> unit
 (** [iteri2 f s1 s2] iterates on pairs of chars with their index.
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
 
-val fold2: ('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a
+val fold2 : ('a -> char -> char -> 'a) -> 'a -> string -> string -> 'a
 (** [fold2 f init s1 s2] folds on pairs of chars.
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
@@ -347,15 +353,14 @@ module Find : sig
   type _ pattern
 
   val compile : string -> [ `Direct ] pattern
-
   val rcompile : string -> [ `Reverse ] pattern
 
-  val find : ?start:int -> pattern:([`Direct] pattern) -> string -> int
+  val find : ?start:int -> pattern:[ `Direct ] pattern -> string -> int
   (** [find ~start ~pattern s] searches for [pattern] in the string [s], left-to-right.
       @return the offset of the first match, -1 otherwise.
       @param start offset in string at which we start. *)
 
-  val rfind : ?start:int -> pattern:([`Reverse] pattern) -> string -> int
+  val rfind : ?start:int -> pattern:[ `Reverse ] pattern -> string -> int
   (** [rfind ~start ~pattern s] searches for [pattern] in the string [s], right-to-left.
       @return the offset of the start of the first match from the right, -1 otherwise.
       @param start right-offset in string at which we start. *)
@@ -364,6 +369,7 @@ end
 (** {2 Splitting} *)
 
 module Split : sig
+  type drop_if_empty = { first: bool; last: bool }
   (** Specification of what to do with empty blocks, as in [split ~by:"-" "-a-b-"].
 
       - [{first=false; last=false}] will return [""; "a"; "b"; ""]
@@ -374,16 +380,13 @@ module Split : sig
       The default value of all remaining functions is [Drop_none].
       @since 1.5
   *)
-  type drop_if_empty = {
-    first: bool;
-    last: bool;
-  }
 
   val no_drop : drop_if_empty
   (** [no_drop] does not drop any group, even empty and on borders.
       @since 1.5 *)
 
-  val list_ : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) list
+  val list_ :
+    ?drop:drop_if_empty -> by:string -> string -> (string * int * int) list
   (** [list_ ~drop ~by s] splits the given string [s] along the given separator [by].
       Should only be used with very small separators, otherwise use {!Containers_string.KMP}.
       @return a [list] of slices [(s,index,length)] that are
@@ -391,16 +394,19 @@ module Split : sig
       a string from the slice.
       @raise Failure if [by = ""]. *)
 
-  val gen : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) gen
+  val gen :
+    ?drop:drop_if_empty -> by:string -> string -> (string * int * int) gen
   (** [gen ~drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [gen] of slices. *)
 
-  val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) iter
+  val iter :
+    ?drop:drop_if_empty -> by:string -> string -> (string * int * int) iter
   (** [iter ~drop ~by s] splits the given string [s] along the given separator [by].
       Returns an [iter] of slices.
       @since 2.8 *)
 
-  val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
+  val seq :
+    ?drop:drop_if_empty -> by:string -> string -> (string * int * int) Seq.t
   (** [seq ~drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [Seq.t] of slices.
       Renamed from [std_seq] since 3.0.
@@ -451,7 +457,6 @@ module Split : sig
       of the string [s].
       @raise Not_found if [by] is not part of the string [s].
       @since 0.16 *)
-
 end
 
 val split_on_char : char -> string -> string list
@@ -494,22 +499,22 @@ val edit_distance : ?cutoff:int -> string -> string -> int
     @since 3.0 *)
 
 module Infix : sig
-  val (=) : t -> t -> bool
+  val ( = ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (<>) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (<) : t -> t -> bool
+  val ( < ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (<=) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (>=) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (>) : t -> t -> bool
+  val ( > ) : t -> t -> bool
   (** @since 3.0 *)
 end
 

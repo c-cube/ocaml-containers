@@ -1,4 +1,3 @@
-
 (* parse IRC logs *)
 
 type datetime = {
@@ -11,19 +10,15 @@ type datetime = {
 }
 
 let pp_datetime out d =
-  let {year;month;day;hour;min;sec} = d in
-  CCFormat.(fprintf out "{y=%d;M=%d;d=%d;h=%d;m=%d;s=%d}"
-              year month day hour min sec)
+  let { year; month; day; hour; min; sec } = d in
+  CCFormat.(
+    fprintf out "{y=%d;M=%d;d=%d;h=%d;m=%d;s=%d}" year month day hour min sec)
 
-type msg = {
-  timestamp: datetime;
-  user: string;
-  msg: string;
-}
+type msg = { timestamp: datetime; user: string; msg: string }
 
 let pp_msg out m =
-  CCFormat.fprintf out "{@[time=%a;@ user=%S;@ msg=%S@]}"
-    pp_datetime m.timestamp m.user m.msg
+  CCFormat.fprintf out "{@[time=%a;@ user=%S;@ msg=%S@]}" pp_datetime
+    m.timestamp m.user m.msg
 
 open CCParse
 
@@ -37,42 +32,45 @@ let p_datetime : datetime t =
   let* hour, min, sec =
     recurse time
       (let* hour = int in
-        char ':' *>
-        let* min = int in
-        char ':' *>
-        let+ sec = int in
-        hour,min,sec)
+       char ':'
+       *> let* min = int in
+          char ':'
+          *> let+ sec = int in
+             hour, min, sec)
   in
-  let dt = {year;month;day;hour;min;sec} in
+  let dt = { year; month; day; hour; min; sec } in
   return dt
 
 let p_line =
   let* line = lookahead all in
 
-  if Slice.is_empty line then return None
-  else (
+  if Slice.is_empty line then
+    return None
+  else
     let* fields = split_list ~on_char:'\t' in
     match fields with
-      | [date; user; rest] ->
-        let+ timestamp = recurse date p_datetime
-        and+ user = recurse user (chars_if (function '>' -> false | _ -> true))
-        and+ msg = recurse rest (all_str >|= String.trim) in
-        Some {timestamp; user; msg}
+    | [ date; user; rest ] ->
+      let+ timestamp = recurse date p_datetime
+      and+ user =
+        recurse user
+          (chars_if (function
+            | '>' -> false
+            | _ -> true))
+      and+ msg = recurse rest (all_str >|= String.trim) in
+      Some { timestamp; user; msg }
+    | _ ->
+      failf "expected 3 fields, got [%s]"
+        (String.concat ";" @@ List.map String.escaped
+        @@ List.map Slice.to_string fields)
 
-      | _ ->
-        failf "expected 3 fields, got [%s]"
-          (String.concat ";" @@ List.map String.escaped @@ List.map Slice.to_string fields)
-  )
-
-let p_file =
-  each_line (parsing "line" p_line) >|=
-  CCList.keep_some
+let p_file = each_line (parsing "line" p_line) >|= CCList.keep_some
 
 let () =
   let s = CCIO.File.read_exn Sys.argv.(1) in
   match parse_string p_file s with
-    | Ok l ->
-      Format.printf "parsed:@.";
-      List.iter (Format.printf "%a@." pp_msg) l
-    | Error e ->
-      Format.printf "parse error: %s@." e; exit 1
+  | Ok l ->
+    Format.printf "parsed:@.";
+    List.iter (Format.printf "%a@." pp_msg) l
+  | Error e ->
+    Format.printf "parse error: %s@." e;
+    exit 1

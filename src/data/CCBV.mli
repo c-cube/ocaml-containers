@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Imperative Bitvectors
@@ -149,7 +148,8 @@ val pp : Format.formatter -> t -> unit
 (** Print the bitvector as a string of bits.
     @since 0.13 *)
 
-
 (**/**)
+
 val __to_word_l : t -> int list
+
 (**/**)

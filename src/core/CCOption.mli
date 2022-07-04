@@ -93,7 +93,7 @@ val value : 'a t -> default:'a -> 'a
     @since 2.8 *)
 
 val get_exn : 'a t -> 'a
-[@@ocaml.deprecated "use CCOption.get_exn_or instead"]
+  [@@ocaml.deprecated "use CCOption.get_exn_or instead"]
 (** [get_exn o] returns [x] if [o] is [Some x] or fails if [o] is [None].
     @raise Invalid_argument if the option is [None].
     @deprecated use {!get_exn_or} instead
@@ -131,7 +131,7 @@ val pure : 'a -> 'a t
 
 (** {2 Alternatives} *)
 
-val or_ : else_:('a t) -> 'a t -> 'a t
+val or_ : else_:'a t -> 'a t -> 'a t
 (** [or_ ~else_ o] is [o] if [o] is [Some _], [else_] if [o] is [None].
     @since 1.2 *)
 
@@ -156,19 +156,19 @@ val return_if : bool -> 'a -> 'a t
     @since 0.16 *)
 
 module Infix : sig
-  val (>|=) : 'a t -> ('a -> 'b) -> 'b t
+  val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
   (** [o >|= f] is [map f o]. *)
 
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** [o >>= f] is the monadic bind. *)
 
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
   (** [f <*> o] returns [Some (f x)] if [o] is [Some x] and [None] if [o] is [None]. *)
 
-  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val ( <$> ) : ('a -> 'b) -> 'a t -> 'b t
   (** [f <$> o] is like [map f o].  *)
 
-  val (<+>) : 'a t -> 'a t -> 'a t
+  val ( <+> ) : 'a t -> 'a t -> 'a t
   (** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
 
   [@@@ifge 4.08]
@@ -177,7 +177,6 @@ module Infix : sig
   (** Let operators on OCaml >= 4.08.0, nothing otherwise
       @since 2.8
       @inline *)
-
 
   [@@@endif]
 end

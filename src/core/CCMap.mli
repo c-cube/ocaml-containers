@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Extensions of Standard Map
@@ -70,8 +69,10 @@ module type S = sig
       @since 1.5 *)
 
   val merge_safe :
-    f:(key -> [`Left of 'a | `Right of 'b | `Both of 'a * 'b] -> 'c option) ->
-    'a t -> 'b t -> 'c t
+    f:(key -> [ `Left of 'a | `Right of 'b | `Both of 'a * 'b ] -> 'c option) ->
+    'a t ->
+    'b t ->
+    'c t
   (** [merge_safe ~f a b] merges the maps [a] and [b] together.
       @since 0.17 *)
 
@@ -81,7 +82,8 @@ module type S = sig
       Renamed from [add_std_seq] since 3.0.
       @since 3.0 *)
 
-  val add_seq_with : f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) Seq.t -> 'a t
+  val add_seq_with :
+    f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) Seq.t -> 'a t
   (** [add_seq ~f m l] adds the given seq [l] of bindings to the map [m],
       using [f] to combine values that have the same key.
       If a key occurs several times, all its bindings are combined using the
@@ -108,7 +110,8 @@ module type S = sig
       Like {!add_list}.
       @since 2.8 *)
 
-  val add_iter_with : f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) iter -> 'a t
+  val add_iter_with :
+    f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) iter -> 'a t
   (** [add_iter ~f m l] adds the given iter [l] of bindings to the map [m],
       using [f] to combine values that have the same key.
       If a key occurs several times, all its bindings are combined using the
@@ -152,7 +155,8 @@ module type S = sig
   (** [add_list m l] adds the given list [l] of bindings to the map [m].
       @since 0.14 *)
 
-  val add_list_with : f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) list -> 'a t
+  val add_list_with :
+    f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) list -> 'a t
   (** [add_list ~f m l] adds the given list [l] of bindings to the map [m],
       using [f] to combine values that have the same key.
       If a key occurs several times, all its bindings are combined using the
@@ -172,12 +176,17 @@ module type S = sig
   (** [to_list m] builds a list of the bindings of the given map [m].
       The order is unspecified. *)
 
-  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_arrow:unit printer ->
-    ?pp_sep:unit printer -> key printer -> 'a printer -> 'a t printer
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_arrow:unit printer ->
+    ?pp_sep:unit printer ->
+    key printer ->
+    'a printer ->
+    'a t printer
   (** [pp ?pp_start ?pp_stop ?pp_arrow ?pp_sep pp_key pp_v m] pretty-prints the
       contents of the map. *)
 end
 
-module Make(O : Map.OrderedType) : S
-  with type 'a t = 'a Map.Make(O).t
-   and type key = O.t
+module Make (O : Map.OrderedType) :
+  S with type 'a t = 'a Map.Make(O).t and type key = O.t

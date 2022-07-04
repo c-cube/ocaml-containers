@@ -18,7 +18,7 @@
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
-type 'a ktree = unit -> [`Nil | `Node of 'a * 'a ktree list]
+type 'a ktree = unit -> [ `Nil | `Node of 'a * 'a ktree list ]
 
 (** {2 Transient Identifiers} *)
 module Transient : sig
@@ -55,19 +55,13 @@ end
 (** {2 Signature} *)
 module type S = sig
   type key
-
   type 'a t
 
   val empty : 'a t
-
   val is_empty : _ t -> bool
-
   val singleton : key -> 'a -> 'a t
-
   val add : key -> 'a -> 'a t -> 'a t
-
   val mem : key -> _ t -> bool
-
   val get : key -> 'a t -> 'a option
 
   val get_exn : key -> 'a t -> 'a
@@ -92,48 +86,42 @@ module type S = sig
   (** Same as {!remove}, but modifies in place whenever possible.
       @raise Transient.Frozen if [id] is frozen. *)
 
-  val update_mut : id:Transient.t -> key -> f:('a option -> 'a option) -> 'a t -> 'a t
+  val update_mut :
+    id:Transient.t -> key -> f:('a option -> 'a option) -> 'a t -> 'a t
   (** Same as {!update} but with mutability.
       @raise Transient.Frozen if [id] is frozen. *)
 
   val cardinal : _ t -> int
-
   val choose : 'a t -> (key * 'a) option
 
   val choose_exn : 'a t -> key * 'a
   (** @raise Not_found if not pair was found. *)
 
   val iter : f:(key -> 'a -> unit) -> 'a t -> unit
-
   val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
   (** {5 Conversions} *)
 
   val to_list : 'a t -> (key * 'a) list
-
   val add_list : 'a t -> (key * 'a) list -> 'a t
 
   val add_list_mut : id:Transient.t -> 'a t -> (key * 'a) list -> 'a t
   (** @raise Frozen if the ID is frozen. *)
 
   val of_list : (key * 'a) list -> 'a t
-
   val add_iter : 'a t -> (key * 'a) iter -> 'a t
 
   val add_iter_mut : id:Transient.t -> 'a t -> (key * 'a) iter -> 'a t
   (** @raise Frozen if the ID is frozen. *)
 
   val of_iter : (key * 'a) iter -> 'a t
-
   val to_iter : 'a t -> (key * 'a) iter
-
   val add_gen : 'a t -> (key * 'a) gen -> 'a t
 
   val add_gen_mut : id:Transient.t -> 'a t -> (key * 'a) gen -> 'a t
   (** @raise Frozen if the ID is frozen. *)
 
   val of_gen : (key * 'a) gen -> 'a t
-
   val to_gen : 'a t -> (key * 'a) gen
 
   (** {5 IO} *)
@@ -142,7 +130,7 @@ module type S = sig
   (** Renamed from [val print].
       @since 2.0 *)
 
-  val as_tree : 'a t -> [`L of int * (key * 'a) list | `N ] ktree
+  val as_tree : 'a t -> [ `L of int * (key * 'a) list | `N ] ktree
   (** For debugging purpose: explore the structure of the tree,
       with [`L (h,l)] being a leaf (with shared hash [h])
       and [`N] an inner node. *)
@@ -151,13 +139,16 @@ end
 (** {2 Type for keys} *)
 module type KEY = sig
   type t
+
   val equal : t -> t -> bool
   val hash : t -> int
 end
 
 (** {2 Functors} *)
-module Make(K : KEY) : S with type key = K.t
+module Make (K : KEY) : S with type key = K.t
 
 (**/**)
+
 val popcount : int64 -> int
+
 (**/**)

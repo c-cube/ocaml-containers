@@ -1,6 +1,8 @@
 (library
-  (name containers_monomorphic)
-  (public_name containers.monomorphic)
-  (preprocess (action (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
-  (modules CCMonomorphic)
-  (wrapped false))
+ (name containers_monomorphic)
+ (public_name containers.monomorphic)
+ (preprocess
+  (action
+   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+ (modules CCMonomorphic)
+ (wrapped false))

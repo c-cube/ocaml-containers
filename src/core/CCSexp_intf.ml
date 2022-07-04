@@ -1,4 +1,3 @@
-
 type 'a or_error = ('a, string) result
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
@@ -10,7 +9,6 @@ module type BASIC_SEXP = sig
 
   val atom : string -> t
   val list : t list -> t
-
   val match_ : t -> atom:(string -> 'a) -> list:(t list -> 'a) -> 'a
 end
 
@@ -22,7 +20,7 @@ module type SEXP = sig
 
   type loc
 
-  val make_loc : ((int * int) -> (int * int) -> string -> loc) option
+  val make_loc : (int * int -> int * int -> string -> loc) option
   (** If provided, builds a location from a pair of [(line,column)] positions, and
       a (possibly dummy) filename *)
 
@@ -52,7 +50,8 @@ module type S0 = sig
   val of_int : int -> t
   val of_bool : bool -> t
   val of_list : t list -> t
-  val of_rev_list : t list -> t  
+
+  val of_rev_list : t list -> t
   (** Reverse the list. *)
 
   val of_float : float -> t
@@ -75,9 +74,7 @@ module type S0 = sig
   (** {2 Printing} *)
 
   val to_buf : Buffer.t -> t -> unit
-
   val to_string : t -> string
-
   val to_file : string -> t -> unit
 
   val to_file_iter : string -> t iter -> unit
@@ -115,7 +112,6 @@ module type S0 = sig
 
   val parse_file_list : string -> t list or_error
   (** Open the file and read a S-exp from it. *)
-
 end
 
 (** {2 Operations over S-expressions (extended)}
@@ -133,10 +129,7 @@ module type S = sig
   (** A parser of ['a] can return [Yield x] when it parsed a value,
       or [Fail e] when a parse error was encountered, or
       [End] if the input was empty. *)
-  type 'a parse_result =
-    | Yield of 'a
-    | Fail of string
-    | End
+  type 'a parse_result = Yield of 'a | Fail of string | End
 
   module Decoder : sig
     type t

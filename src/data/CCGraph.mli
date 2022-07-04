@@ -1,6 +1,3 @@
-
-(* This file is free software, part of containers. See file "license" for more details. *)
-
 (** Simple Graph Interface
 
     A collections of algorithms on (mostly read-only) graph structures.
@@ -40,12 +37,13 @@ exception Iter_once
 
 module Iter : sig
   type 'a t = 'a iter
+
   val return : 'a -> 'a t
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   val map : ('a -> 'b) -> 'a t -> 'b t
   val filter_map : ('a -> 'b option) -> 'a t -> 'b t
   val iter : ('a -> unit) -> 'a t -> unit
-  val fold: ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
+  val fold : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   val to_list : 'a t -> 'a list
 end
 
@@ -53,53 +51,54 @@ end
 
     This interface is designed for oriented graphs with labels on edges *)
 
+type ('v, 'e) t = 'v -> ('e * 'v) iter
 (** Directed graph with vertices of type ['v] and edges labeled with [e'] *)
-type ('v, 'e) t = ('v -> ('e * 'v) iter)
 
 type ('v, 'e) graph = ('v, 'e) t
 
 val make : ('v -> ('e * 'v) iter) -> ('v, 'e) t
 (** Make a graph by providing the children function. *)
 
+type 'v tag_set = {
+  get_tag: 'v -> bool;
+  set_tag: 'v -> unit;  (** Set tag for the given element *)
+}
 (** {2 Tags}
 
     Mutable tags from values of type ['v] to tags of type [bool] *)
-type 'v tag_set = {
-  get_tag: 'v -> bool;
-  set_tag: 'v -> unit; (** Set tag for the given element *)
-}
 
-(** {2 Table}
-
-    Mutable table with keys ['k] and values ['a] *)
 type ('k, 'a) table = {
   mem: 'k -> bool;
   find: 'k -> 'a;  (** @raise Not_found if element not added before *)
-  add: 'k -> 'a -> unit; (** Erases previous binding *)
+  add: 'k -> 'a -> unit;  (** Erases previous binding *)
 }
+(** {2 Table}
 
-(** Mutable set *)
+    Mutable table with keys ['k] and values ['a] *)
+
 type 'a set = ('a, unit) table
+(** Mutable set *)
 
-val mk_table: eq:('k -> 'k -> bool) -> ?hash:('k -> int) -> int -> ('k, 'a) table
+val mk_table :
+  eq:('k -> 'k -> bool) -> ?hash:('k -> int) -> int -> ('k, 'a) table
 (** Default implementation for {!table}: a {!Hashtbl.t}. *)
 
-val mk_map: cmp:('k -> 'k -> int) -> unit -> ('k, 'a) table
+val mk_map : cmp:('k -> 'k -> int) -> unit -> ('k, 'a) table
 (** Use a {!Map.S} underneath. *)
 
 (** {2 Bags of vertices} *)
 
-(** Bag of elements of type ['a] *)
 type 'a bag = {
   push: 'a -> unit;
   is_empty: unit -> bool;
   pop: unit -> 'a;  (** raises some exception is empty *)
 }
+(** Bag of elements of type ['a] *)
 
-val mk_queue: unit -> 'a bag
-val mk_stack: unit -> 'a bag
+val mk_queue : unit -> 'a bag
+val mk_stack : unit -> 'a bag
 
-val mk_heap: leq:('a -> 'a -> bool) -> 'a bag
+val mk_heap : leq:('a -> 'a -> bool) -> 'a bag
 (** [mk_heap ~leq] makes a priority queue where [leq x y = true] means that
     [x] is smaller than [y] and should be prioritary. *)
 
@@ -108,90 +107,74 @@ val mk_heap: leq:('a -> 'a -> bool) -> 'a bag
 module Traverse : sig
   type ('v, 'e) path = ('v * 'e * 'v) list
 
-  val generic: tbl:'v set ->
-    bag:'v bag ->
-    graph:('v, 'e) t ->
-    'v iter ->
-    'v iter_once
+  val generic :
+    tbl:'v set -> bag:'v bag -> graph:('v, 'e) t -> 'v iter -> 'v iter_once
   (** Traversal of the given graph, starting from a sequence
       of vertices, using the given bag to choose the next vertex to
       explore. Each vertex is visited at most once. *)
 
-  val generic_tag: tags:'v tag_set ->
-    bag:'v bag ->
-    graph:('v, 'e) t ->
-    'v iter ->
-    'v iter_once
+  val generic_tag :
+    tags:'v tag_set -> bag:'v bag -> graph:('v, 'e) t -> 'v iter -> 'v iter_once
   (** One-shot traversal of the graph using a tag set and the given bag. *)
 
-  val dfs: tbl:'v set ->
-    graph:('v, 'e) t ->
-    'v iter ->
-    'v iter_once
+  val dfs : tbl:'v set -> graph:('v, 'e) t -> 'v iter -> 'v iter_once
+  val dfs_tag : tags:'v tag_set -> graph:('v, 'e) t -> 'v iter -> 'v iter_once
+  val bfs : tbl:'v set -> graph:('v, 'e) t -> 'v iter -> 'v iter_once
+  val bfs_tag : tags:'v tag_set -> graph:('v, 'e) t -> 'v iter -> 'v iter_once
 
-  val dfs_tag: tags:'v tag_set ->
-    graph:('v, 'e) t ->
-    'v iter ->
-    'v iter_once
-
-  val bfs: tbl:'v set ->
-    graph:('v, 'e) t ->
-    'v iter ->
-    'v iter_once
-
-  val bfs_tag: tags:'v tag_set ->
-    graph:('v, 'e) t ->
-    'v iter ->
-    'v iter_once
-
-  val dijkstra : tbl:'v set ->
+  val dijkstra :
+    tbl:'v set ->
     ?dist:('e -> int) ->
     graph:('v, 'e) t ->
     'v iter ->
-    ('v * int * ('v,'e) path) iter_once
+    ('v * int * ('v, 'e) path) iter_once
   (** Dijkstra algorithm, traverses a graph in increasing distance order.
       Yields each vertex paired with its distance to the set of initial vertices
       (the smallest distance needed to reach the node from the initial vertices).
       @param dist distance from origin of the edge to destination,
         must be strictly positive. Default is 1 for every edge. *)
 
-  val dijkstra_tag : ?dist:('e -> int) ->
+  val dijkstra_tag :
+    ?dist:('e -> int) ->
     tags:'v tag_set ->
     graph:('v, 'e) t ->
     'v iter ->
-    ('v * int * ('v,'e) path) iter_once
+    ('v * int * ('v, 'e) path) iter_once
 
   (** {2 More detailed interface} *)
   module Event : sig
-    type edge_kind = [`Forward | `Back | `Cross ]
+    type edge_kind = [ `Forward | `Back | `Cross ]
 
-    (** A traversal is a sequence of such events *)
-    type ('v,'e) t =
-      [ `Enter of 'v * int * ('v,'e) path  (* unique index in traversal, path from start *)
+    type ('v, 'e) t =
+      [ `Enter of
+        'v * int * ('v, 'e) path
+        (* unique index in traversal, path from start *)
       | `Exit of 'v
-      | `Edge of 'v * 'e * 'v * edge_kind
-      ]
+      | `Edge of 'v * 'e * 'v * edge_kind ]
+    (** A traversal is a sequence of such events *)
 
-    val get_vertex : ('v, 'e) t -> ('v * [`Enter | `Exit]) option
+    val get_vertex : ('v, 'e) t -> ('v * [ `Enter | `Exit ]) option
     val get_enter : ('v, 'e) t -> 'v option
     val get_exit : ('v, 'e) t -> 'v option
     val get_edge : ('v, 'e) t -> ('v * 'e * 'v) option
     val get_edge_kind : ('v, 'e) t -> ('v * 'e * 'v * edge_kind) option
 
-    val dfs: tbl:'v set ->
+    val dfs :
+      tbl:'v set ->
       eq:('v -> 'v -> bool) ->
       graph:('v, 'e) graph ->
       'v iter ->
-      ('v,'e) t iter_once
+      ('v, 'e) t iter_once
     (** Full version of DFS.
         @param eq equality predicate on vertices. *)
 
-    val dfs_tag: eq:('v -> 'v -> bool) ->
+    val dfs_tag :
+      eq:('v -> 'v -> bool) ->
       tags:'v tag_set ->
       graph:('v, 'e) graph ->
       'v iter ->
-      ('v,'e) t iter_once
-      (** Full version of DFS using integer tags.
+      ('v, 'e) t iter_once
+    (** Full version of DFS using integer tags.
           @param eq equality predicate on vertices. *)
   end
 end
@@ -199,11 +182,7 @@ end
 (** {2 Cycles} *)
 
 val is_dag :
-  tbl:'v set ->
-  eq:('v -> 'v -> bool) ->
-  graph:('v, _) t ->
-  'v iter ->
-  bool
+  tbl:'v set -> eq:('v -> 'v -> bool) -> graph:('v, _) t -> 'v iter -> bool
 (** [is_dag ~graph vs] returns [true] if the subset of [graph] reachable
     from [vs] is acyclic.
     @since 0.18 *)
@@ -212,7 +191,8 @@ val is_dag :
 
 exception Has_cycle
 
-val topo_sort : eq:('v -> 'v -> bool) ->
+val topo_sort :
+  eq:('v -> 'v -> bool) ->
   ?rev:bool ->
   tbl:'v set ->
   graph:('v, 'e) t ->
@@ -229,7 +209,8 @@ val topo_sort : eq:('v -> 'v -> bool) ->
       [v'] occurs before [v]).
     @raise Has_cycle if the graph is not a DAG. *)
 
-val topo_sort_tag : eq:('v -> 'v -> bool) ->
+val topo_sort_tag :
+  eq:('v -> 'v -> bool) ->
   ?rev:bool ->
   tags:'v tag_set ->
   graph:('v, 'e) t ->
@@ -241,34 +222,26 @@ val topo_sort_tag : eq:('v -> 'v -> bool) ->
 (** {2 Lazy Spanning Tree} *)
 
 module Lazy_tree : sig
-  type ('v, 'e) t = {
-    vertex: 'v;
-    children: ('e * ('v, 'e) t) list Lazy.t;
-  }
+  type ('v, 'e) t = { vertex: 'v; children: ('e * ('v, 'e) t) list Lazy.t }
 
   val map_v : ('a -> 'b) -> ('a, 'e) t -> ('b, 'e) t
-
   val fold_v : ('acc -> 'v -> 'acc) -> 'acc -> ('v, _) t -> 'acc
 end
 
-val spanning_tree : tbl:'v set ->
-  graph:('v, 'e) t ->
-  'v ->
-  ('v, 'e) Lazy_tree.t
+val spanning_tree : tbl:'v set -> graph:('v, 'e) t -> 'v -> ('v, 'e) Lazy_tree.t
 (** [spanning_tree ~graph v] computes a lazy spanning tree that has [v]
     as a root. The table [tbl] is used for the memoization part. *)
 
-val spanning_tree_tag : tags:'v tag_set ->
-  graph:('v, 'e) t ->
-  'v ->
-  ('v, 'e) Lazy_tree.t
+val spanning_tree_tag :
+  tags:'v tag_set -> graph:('v, 'e) t -> 'v -> ('v, 'e) Lazy_tree.t
 
 (** {2 Strongly Connected Components} *)
 
 type 'v scc_state
 (** Hidden state for {!scc}. *)
 
-val scc : tbl:('v, 'v scc_state) table ->
+val scc :
+  tbl:('v, 'v scc_state) table ->
   graph:('v, 'e) t ->
   'v iter ->
   'v list iter_once
@@ -298,24 +271,25 @@ val scc : tbl:('v, 'v scc_state) table ->
 *)
 
 module Dot : sig
-  type attribute = [
-    | `Color of string
+  type attribute =
+    [ `Color of string
     | `Shape of string
     | `Weight of int
     | `Style of string
     | `Label of string
-    | `Other of string * string
-  ] (** Dot attribute *)
+    | `Other of string * string ]
+  (** Dot attribute *)
 
   type vertex_state
   (** Hidden state associated to a vertex *)
 
-  val pp : tbl:('v,vertex_state) table ->
+  val pp :
+    tbl:('v, vertex_state) table ->
     eq:('v -> 'v -> bool) ->
     ?attrs_v:('v -> attribute list) ->
     ?attrs_e:('e -> attribute list) ->
     ?name:string ->
-    graph:('v,'e) t ->
+    graph:('v, 'e) t ->
     Format.formatter ->
     'v ->
     unit
@@ -324,12 +298,13 @@ module Dot : sig
       @param attrs_e attributes for edges.
       @param name name of the graph. *)
 
-  val pp_all : tbl:('v,vertex_state) table ->
+  val pp_all :
+    tbl:('v, vertex_state) table ->
     eq:('v -> 'v -> bool) ->
     ?attrs_v:('v -> attribute list) ->
     ?attrs_e:('e -> attribute list) ->
     ?name:string ->
-    graph:('v,'e) t ->
+    graph:('v, 'e) t ->
     Format.formatter ->
     'v iter ->
     unit
@@ -345,13 +320,11 @@ end
 type ('v, 'e) mut_graph = {
   graph: ('v, 'e) t;
   add_edge: 'v -> 'e -> 'v -> unit;
-  remove : 'v -> unit;
+  remove: 'v -> unit;
 }
 
-val mk_mut_tbl : eq:('v -> 'v -> bool) ->
-  ?hash:('v -> int) ->
-  int ->
-  ('v, 'a) mut_graph
+val mk_mut_tbl :
+  eq:('v -> 'v -> bool) -> ?hash:('v -> int) -> int -> ('v, 'a) mut_graph
 (** Make a new mutable graph from a Hashtbl. Edges are labelled with type ['a]. *)
 
 (** {2 Immutable Graph}
@@ -369,9 +342,7 @@ module type MAP = sig
   (** Graph view of the map. *)
 
   val empty : 'a t
-
   val add_edge : vertex -> 'a -> vertex -> 'a t -> 'a t
-
   val remove_edge : vertex -> vertex -> 'a t -> 'a t
 
   val add : vertex -> 'a t -> 'a t
@@ -383,15 +354,10 @@ module type MAP = sig
       manually removed with {!remove_edge}. *)
 
   val union : 'a t -> 'a t -> 'a t
-
   val vertices : _ t -> vertex iter
-
   val vertices_l : _ t -> vertex list
-
   val of_list : (vertex * 'a * vertex) list -> 'a t
-
   val add_list : (vertex * 'a * vertex) list -> 'a t -> 'a t
-
   val to_list : 'a t -> (vertex * 'a * vertex) list
 
   val of_iter : (vertex * 'a * vertex) iter -> 'a t
@@ -404,7 +370,7 @@ module type MAP = sig
   (** @since 2.8 *)
 end
 
-module Map(O : Map.OrderedType) : MAP with type vertex = O.t
+module Map (O : Map.OrderedType) : MAP with type vertex = O.t
 
 (** {2 Misc} *)
 

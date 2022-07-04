@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Multiset *)
@@ -10,17 +9,11 @@ module type S = sig
   type t
 
   val empty : t
-
   val is_empty : t -> bool
-
   val mem : t -> elt -> bool
-
   val count : t -> elt -> int
-
   val singleton : elt -> t
-
   val add : t -> elt -> t
-
   val remove : t -> elt -> t
 
   val add_mult : t -> elt -> int -> t
@@ -70,22 +63,16 @@ module type S = sig
   (** [contains a x = (count m x > 0)]. *)
 
   val compare : t -> t -> int
-
   val equal : t -> t -> bool
 
   val cardinal : t -> int
   (** Number of distinct elements. *)
 
   val iter : t -> (int -> elt -> unit) -> unit
-
   val fold : t -> 'b -> ('b -> int -> elt -> 'b) -> 'b
-
   val of_list : elt list -> t
-
   val to_list : t -> elt list
-
   val to_iter : t -> elt iter
-
   val of_iter : elt iter -> t
 
   val of_list_mult : (elt * int) list -> t
@@ -101,4 +88,4 @@ module type S = sig
   (** @since 0.19 *)
 end
 
-module Make(O : Set.OrderedType) : S with type elt = O.t
+module Make (O : Set.OrderedType) : S with type elt = O.t

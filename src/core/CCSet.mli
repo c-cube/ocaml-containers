@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Wrapper around Set
@@ -73,16 +72,24 @@ module type S = sig
   val to_list : t -> elt list
   (** [to_list t] converts the set [t] to a list of the elements. *)
 
-  val to_string : ?start:string -> ?stop:string -> ?sep:string ->
-    (elt -> string) -> t -> string
+  val to_string :
+    ?start:string ->
+    ?stop:string ->
+    ?sep:string ->
+    (elt -> string) ->
+    t ->
+    string
   (**  Print the set in a string
        @since 2.7 *)
 
-  val pp : ?pp_start:unit printer -> ?pp_stop:unit printer -> ?pp_sep:unit printer ->
-    elt printer -> t printer
-    (** Print the set. *)
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_sep:unit printer ->
+    elt printer ->
+    t printer
+  (** Print the set. *)
 end
 
-module Make(O : Set.OrderedType) : S
-  with type t = Set.Make(O).t
-   and type elt = O.t
+module Make (O : Set.OrderedType) :
+  S with type t = Set.Make(O).t and type elt = O.t

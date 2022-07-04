@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Basic String Utils (Labeled version of {!CCString}) *)
@@ -9,8 +8,10 @@ type 'a iter = ('a -> unit) -> unit
 
 type 'a gen = unit -> 'a option
 
-include module type of struct include StringLabels end
 (** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/StringLabels.html} Documentation for the standard StringLabels module} *)
+include module type of struct
+  include StringLabels
+end
 
 val length : t -> int
 (** [length s] returns the length (number of characters) of the given string [s]. *)
@@ -84,7 +85,7 @@ val rev : string -> string
 (** [rev s] returns the reverse of [s].
     @since 0.17 *)
 
-val pad : ?side:[`Left|`Right] -> ?c:char -> int -> string -> string
+val pad : ?side:[ `Left | `Right ] -> ?c:char -> int -> string -> string
 (** [pad ?side ?c n s] ensures that the string [s] is at least [n] bytes long,
     and pads it on the [side] with [c] if it's not the case.
     @param side determines where padding occurs (default: [`Left]).
@@ -116,32 +117,37 @@ val of_array : char array -> string
 val to_array : string -> char array
 (** [to_array s] returns the array of characters contained in the string [s]. *)
 
-val find : ?start:int -> sub:(string [@keep_label]) -> string -> int
+val find : ?start:int -> sub:(string[@keep_label]) -> string -> int
 (** [find ?start ~sub s] returns the starting index of the first occurrence of [sub] within [s] or [-1]. 
     @param start starting position in [s]. *)
 
-val find_all : ?start:int -> sub:(string [@keep_label]) -> string -> int gen
+val find_all : ?start:int -> sub:(string[@keep_label]) -> string -> int gen
 (** [find_all ?start ~sub s] finds all occurrences of [sub] in [s], even overlapping instances
     and returns them in a generator [gen].
     @param start starting position in [s].
     @since 0.17 *)
 
-val find_all_l : ?start:int -> sub:(string [@keep_label]) -> string -> int list
+val find_all_l : ?start:int -> sub:(string[@keep_label]) -> string -> int list
 (** [find_all_l ?start ~sub s] finds all occurrences of [sub] in [s]
     and returns them in a list.
     @param start starting position in [s].
     @since 0.17 *)
 
-val mem : ?start:int -> sub:(string [@keep_label]) -> string -> bool
+val mem : ?start:int -> sub:(string[@keep_label]) -> string -> bool
 (** [mem ?start ~sub s] is [true] iff [sub] is a substring of [s].
     @since 0.12 *)
 
-val rfind : sub:(string [@keep_label]) -> string -> int
+val rfind : sub:(string[@keep_label]) -> string -> int
 (** [rfind ~sub s] finds [sub] in string [s] from the right, returns its first index or [-1].
     Should only be used with very small [sub].
     @since 0.12 *)
 
-val replace : ?which:[`Left|`Right|`All] -> sub:(string [@keep_label]) -> by:(string [@keep_label]) -> string -> string
+val replace :
+  ?which:[ `Left | `Right | `All ] ->
+  sub:(string[@keep_label]) ->
+  by:(string[@keep_label]) ->
+  string ->
+  string
 (** [replace ?which ~sub ~by s] replaces some occurrences of [sub] by [by] in [s].
     @param which decides whether the occurrences to replace are:
       {ul
@@ -152,7 +158,13 @@ val replace : ?which:[`Left|`Right|`All] -> sub:(string [@keep_label]) -> by:(st
     @raise Invalid_argument if [sub = ""].
     @since 0.14 *)
 
-val is_sub : sub:(string [@keep_label]) -> sub_pos:int -> string -> pos:int -> sub_len:(int [@keep_label]) -> bool
+val is_sub :
+  sub:(string[@keep_label]) ->
+  sub_pos:int ->
+  string ->
+  pos:int ->
+  sub_len:(int[@keep_label]) ->
+  bool
 (** [is_sub ~sub ~sub_pos s ~pos ~sub_len] returns [true] iff the substring of [sub]
     starting at position [sub_pos] and of length [sub_len] is a substring of [s]
     starting at position [pos]. *)
@@ -160,19 +172,19 @@ val is_sub : sub:(string [@keep_label]) -> sub_pos:int -> string -> pos:int -> s
 val repeat : string -> int -> string
 (** [repeat s n] creates a string by repeating the string [s] [n] times. *)
 
-val prefix : pre:(string [@keep_label]) -> string -> bool
+val prefix : pre:(string[@keep_label]) -> string -> bool
 (** [prefix ~pre s] returns [true] iff [pre] is a prefix of [s]. *)
 
-val suffix : suf:(string [@keep_label]) -> string -> bool
+val suffix : suf:(string[@keep_label]) -> string -> bool
 (** [suffix ~suf s] returns [true] iff [suf] is a suffix of [s].
     @since 0.7 *)
 
-val chop_prefix : pre:(string [@keep_label]) -> string -> string option
+val chop_prefix : pre:(string[@keep_label]) -> string -> string option
 (** [chop_prefix ~pre s] removes [pre] from [s] if [pre] really is a prefix
     of [s], returns [None] otherwise.
     @since 0.17 *)
 
-val chop_suffix : suf:(string [@keep_label]) -> string -> string option
+val chop_suffix : suf:(string[@keep_label]) -> string -> string option
 (** [chop_suffix ~suf s] removes [suf] from [s] if [suf] really is a suffix
     of [s], returns [None] otherwise.
     @since 0.17 *)
@@ -209,7 +221,7 @@ val concat_iter : sep:string -> string iter -> string
 (** [concat_iter ~sep iter] concatenates all strings of [iter], separated with [sep].
     @since 3.2 *)
 
-val concat_gen : sep:(string [@keep_label]) -> string gen -> string
+val concat_gen : sep:(string[@keep_label]) -> string gen -> string
 (** [concat_gen ~sep gen] concatenates all strings of [gen], separated with [sep].
     @since 0.10 *)
 
@@ -296,17 +308,17 @@ val map2 : f:(char -> char -> char) -> string -> string -> string
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
 
-val iter2: f:(char -> char -> unit) -> string -> string -> unit
+val iter2 : f:(char -> char -> unit) -> string -> string -> unit
 (** [iter2 ~f s1 s2] iterates on pairs of chars.
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
 
-val iteri2: f:(int -> char -> char -> unit) -> string -> string -> unit
+val iteri2 : f:(int -> char -> char -> unit) -> string -> string -> unit
 (** [iteri2 ~f s1 s2] iterates on pairs of chars with their index.
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
 
-val fold2: f:('a -> char -> char -> 'a) -> init:'a -> string -> string -> 'a
+val fold2 : f:('a -> char -> char -> 'a) -> init:'a -> string -> string -> 'a
 (** [fold2 ~f ~init s1 s2] folds on pairs of chars.
     @raise Invalid_argument if the strings have not the same length.
     @since 0.12 *)
@@ -376,15 +388,16 @@ module Find : sig
   type _ pattern
 
   val compile : string -> [ `Direct ] pattern
-
   val rcompile : string -> [ `Reverse ] pattern
 
-  val find : ?start:int -> pattern:(([`Direct] pattern) [@keep_label]) -> string -> int
+  val find :
+    ?start:int -> pattern:([ `Direct ] pattern[@keep_label]) -> string -> int
   (** [find ?start ~pattern s] searches for [pattern] in the string [s], left-to-right.
       @return the offset of the first match, -1 otherwise.
       @param start offset in string at which we start. *)
 
-  val rfind : ?start:int -> pattern:(([`Reverse] pattern) [@keep_label]) -> string -> int
+  val rfind :
+    ?start:int -> pattern:([ `Reverse ] pattern[@keep_label]) -> string -> int
   (** [rfind ?start ~pattern s] searches for [pattern] in the string [s], right-to-left.
       @return the offset of the start of the first match from the right, -1 otherwise.
       @param start right-offset in string at which we start. *)
@@ -393,6 +406,7 @@ end
 (** {2 Splitting} *)
 
 module Split : sig
+  type drop_if_empty = { first: bool; last: bool }
   (** Specification of what to do with empty blocks, as in [split ~by:"-" "-a-b-"].
 
       - [{first=false; last=false}] will return [""; "a"; "b"; ""]
@@ -403,16 +417,16 @@ module Split : sig
       The default value of all remaining functions is [Drop_none].
       @since 1.5
   *)
-  type drop_if_empty = {
-    first: bool;
-    last: bool;
-  }
 
   val no_drop : drop_if_empty
   (** [no_drop] does not drop any group, even empty and on borders.
       @since 1.5 *)
 
-  val list_ : ?drop:drop_if_empty -> by:(string [@keep_label]) -> string -> (string*int*int) list
+  val list_ :
+    ?drop:drop_if_empty ->
+    by:(string[@keep_label]) ->
+    string ->
+    (string * int * int) list
   (** [list_ ?drop ~by s] splits the given string [s] along the given separator [by].
       Should only be used with very small separators, otherwise use {!Containers_string.KMP}.
       @return a [list] of slices [(s,index,length)] that are
@@ -420,16 +434,19 @@ module Split : sig
       a string from the slice.
       @raise Failure if [by = ""]. *)
 
-  val gen : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) gen
+  val gen :
+    ?drop:drop_if_empty -> by:string -> string -> (string * int * int) gen
   (** [gen ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [gen] of slices. *)
 
-  val iter : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) iter
+  val iter :
+    ?drop:drop_if_empty -> by:string -> string -> (string * int * int) iter
   (** [iter ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns an [iter] of slices.
       @since 2.8 *)
 
-  val seq : ?drop:drop_if_empty -> by:string -> string -> (string*int*int) Seq.t
+  val seq :
+    ?drop:drop_if_empty -> by:string -> string -> (string * int * int) Seq.t
   (** [seq ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [Seq.t] of slices.
       Renamed from [std_seq] since 3.0.
@@ -445,7 +462,7 @@ module Split : sig
       Returns a [list] of strings. *)
 
   val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
- (** [gen_cpy ?drop ~by s] splits the given string [s] along the given separator [by].
+  (** [gen_cpy ?drop ~by s] splits the given string [s] along the given separator [by].
       Returns a [gen] of strings. *)
 
   val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string iter
@@ -459,35 +476,34 @@ module Split : sig
       Renamed from [std_seq_cpy] since 3.0.
       @since 3.0 *)
 
-  val left : by:(string [@keep_label]) -> string -> (string * string) option
+  val left : by:(string[@keep_label]) -> string -> (string * string) option
   (** [left ~by s] splits on the first occurrence of [by] from the leftmost part
       of the string [s].
       @since 0.12 *)
 
-  val left_exn : by:(string [@keep_label]) -> string -> string * string
+  val left_exn : by:(string[@keep_label]) -> string -> string * string
   (** [left_exn ~by s] splits on the first occurrence of [by] from the leftmost part
       of the string [s].
       @raise Not_found if [by] is not part of the string [s].
       @since 0.16 *)
 
-  val right : by:(string [@keep_label]) -> string -> (string * string) option
+  val right : by:(string[@keep_label]) -> string -> (string * string) option
   (** [right ~by s] splits on the first occurrence of [by] from the rightmost part
       of the string [s].
       @since 0.12 *)
 
-  val right_exn : by:(string [@keep_label]) -> string -> string * string
+  val right_exn : by:(string[@keep_label]) -> string -> string * string
   (** [right_exn ~by s] splits on the first occurrence of [by] from the rightmost part
       of the string [s].
       @raise Not_found if [by] is not part of the string [s].
       @since 0.16 *)
-
 end
 
 val split_on_char : by:char -> string -> string list
 (** [split_on_char ~by s] splits the string [s] along the given char [by].
     @since 1.2 *)
 
-val split : by:(string [@keep_label]) -> string -> string list
+val split : by:(string[@keep_label]) -> string -> string list
 (** [split ~by s] splits the string [s] along the given string [by].
     Alias to {!Split.list_cpy}.
     @since 1.2 *)
@@ -518,22 +534,22 @@ val edit_distance : ?cutoff:int -> string -> string -> int
     @since 3.0 *)
 
 module Infix : sig
-  val (=) : t -> t -> bool
+  val ( = ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (<>) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (<) : t -> t -> bool
+  val ( < ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (<=) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (>=) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
   (** @since 3.0 *)
 
-  val (>) : t -> t -> bool
+  val ( > ) : t -> t -> bool
   (** @since 3.0 *)
 end
 

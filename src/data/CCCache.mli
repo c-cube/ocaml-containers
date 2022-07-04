@@ -1,4 +1,3 @@
-
 (* This file is free software, part of containers. See file "license" for more details. *)
 
 (** Caches Utils
@@ -28,7 +27,7 @@ type 'a hash = 'a -> int
 
 type ('a, 'b) t
 
-val clear : (_,_) t -> unit
+val clear : (_, _) t -> unit
 (** Clear the content of the cache. *)
 
 type ('a, 'b) callback = in_cache:bool -> 'a -> 'b -> unit
@@ -46,7 +45,8 @@ val with_cache : ?cb:('a, 'b) callback -> ('a, 'b) t -> ('a -> 'b) -> 'a -> 'b
     However, [f] may not be called if [x] is in the cache.
     @param cb called after the value is generated or retrieved. *)
 
-val with_cache_rec : ?cb:('a, 'b) callback -> ('a,'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
+val with_cache_rec :
+  ?cb:('a, 'b) callback -> ('a, 'b) t -> (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
 (** [with_cache_rec c f] is a function that first, applies [f] to
     some [f' = fix f], such that recursive calls to [f'] are cached in [c].
     It is similar to {!with_cache} but with a function that takes as
@@ -64,11 +64,11 @@ val with_cache_rec : ?cb:('a, 'b) callback -> ('a,'b) t -> (('a -> 'b) -> 'a -> 
     @param cb called after the value is generated or retrieved.
 *)
 
-val size : (_,_) t -> int
+val size : (_, _) t -> int
 (** Size of the cache (number of entries). At most linear in the number
     of entries. *)
 
-val iter : ('a,'b) t -> ('a -> 'b -> unit) -> unit
+val iter : ('a, 'b) t -> ('a -> 'b -> unit) -> unit
 (** Iterate on cached values. Should yield [size cache] pairs. *)
 
 val add : ('a, 'b) t -> 'a -> 'b -> bool
@@ -76,7 +76,7 @@ val add : ('a, 'b) t -> 'a -> 'b -> bool
     been added, and [false] if the value was already bound.
     @since 1.5 *)
 
-val dummy : ('a,'b) t
+val dummy : ('a, 'b) t
 (** Dummy cache, never stores any value. *)
 
 val linear : eq:'a equal -> int -> ('a, 'b) t
@@ -85,20 +85,17 @@ val linear : eq:'a equal -> int -> ('a, 'b) t
     with small size.
     @param eq optional equality predicate for keys. *)
 
-val replacing : eq:'a equal -> ?hash:'a hash ->
-  int -> ('a,'b) t
+val replacing : eq:'a equal -> ?hash:'a hash -> int -> ('a, 'b) t
 (** Replacing cache of the given size. Equality and hash functions can be
     parametrized. It's a hash table that handles collisions by replacing
     the old value with the new (so a cache entry is evicted when another
     entry with the same hash (modulo size) is added).
     Never grows wider than the given size. *)
 
-val lru : eq:'a equal -> ?hash:'a hash ->
-  int -> ('a,'b) t
+val lru : eq:'a equal -> ?hash:'a hash -> int -> ('a, 'b) t
 (** LRU cache of the given size ("Least Recently Used": keys that have not been
     used recently are deleted first). Never grows wider than the given size. *)
 
-val unbounded : eq:'a equal -> ?hash:'a hash ->
-  int -> ('a,'b) t
+val unbounded : eq:'a equal -> ?hash:'a hash -> int -> ('a, 'b) t
 (** Unbounded cache, backed by a Hash table. Will grow forever
     unless {!clear} is called manually. *)

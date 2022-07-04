@@ -1,0 +1,4 @@
+(tests
+ (names t_compat)
+ (flags :standard -nolabels)
+ (libraries containers))

@@ -266,10 +266,10 @@ You need dune (formerly jbuilder).
 $ make
 ```
 
-To build and run tests (requires `oUnit`, [qtest](https://github.com/vincent-hugot/qtest), `gen`, `iter`):
+To build and run tests (requires `qcheck-core`, `gen`, `iter`):
 
 ```
-$ opam install oUnit qtest
+$ opam install qcheck-core
 $ make test
 ```
 
@@ -302,7 +302,7 @@ to list authors based on the git commits.
 Assuming your are in a clone of the repository:
 
 1. Some dependencies are required, you'll need
-  `opam install benchmark qcheck qtest iter gen mdx uutf`.
+  `opam install benchmark qcheck-core iter gen mdx uutf`.
 2. run `make all` to enable everything (including tests).
 3. make your changes, commit, push, and open a PR.
 4. use `make test` without moderation! It must pass before a PR
@@ -318,7 +318,7 @@ A few guidelines to follow the philosophy of containers:
 
 - no dependencies between basic modules (even just for signatures);
 - add `@since` tags for new functions;
-- add tests if possible (using [qtest](https://github.com/vincent-hugot/qtest/)).
+- add tests if possible (see `tests/` dir)
   There are numerous inline tests already,
   to see what it looks like search for comments starting with `(*$`
   in source files.
