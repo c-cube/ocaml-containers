@@ -8,11 +8,16 @@ end
 module type S = sig
   module Q = QCheck
 
-  val t : (unit -> bool) -> unit
-  val eq : ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
+  val t : ?name:string -> (unit -> bool) -> unit
+  val eq : ?name:string -> ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
 
   val q :
-    ?count:int -> ?long_factor:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
+    ?name:string ->
+    ?count:int ->
+    ?long_factor:int ->
+    'a Q.arbitrary ->
+    ('a -> bool) ->
+    unit
 
   val assert_equal :
     ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) -> 'a -> 'a -> unit

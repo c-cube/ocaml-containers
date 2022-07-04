@@ -7,7 +7,7 @@ type 'a print = 'a -> string
 
 module Test = struct
   type run =
-    | T of (unit -> bool)
+    | T of { prop: unit -> bool }
     | Eq : { eq: 'a eq option; print: 'a print option; lhs: 'a; rhs: 'a } -> run
     | Q : {
         count: int option;
@@ -17,11 +17,16 @@ module Test = struct
       }
         -> run
 
-  type t = { run: run; __FILE__: string; n: int }
+  type t = { name: string option; run: run; __FILE__: string; n: int }
 
   (** Location for this test *)
   let str_loc (self : t) : string =
-    Printf.sprintf "(test :file '%s' :n %d)" self.__FILE__ self.n
+    let what =
+      match self.name with
+      | None -> ""
+      | Some f -> spf " :name %S" f
+    in
+    Printf.sprintf "(test :file '%s'%s :n %d)" self.__FILE__ what self.n
 
   [@@@ifge 4.08]
 
@@ -38,12 +43,15 @@ module Test = struct
 
   let run ~seed (self : t) : _ result =
     match
+      let what = CCOption.map_or ~default:"" (fun s -> s ^ " ") self.name in
       match self.run with
-      | T f ->
-        if f () then
-          Ok ()
-        else
-          Error "failed: returns false"
+      | T { prop } ->
+        let fail msg = Error (spf "%sfailed: %s" what msg) in
+
+        (match prop () with
+        | exception e -> fail (spf "raised %s" (Printexc.to_string e))
+        | true -> Ok ()
+        | false -> fail "returns false")
       | Eq { eq; print; lhs; rhs } ->
         let eq =
           match eq with
@@ -55,8 +63,9 @@ module Test = struct
         else (
           let msg =
             match print with
-            | None -> "failed: not equal"
-            | Some p -> spf "failed: not equal:\nlhs=%s\nrhs=%s" (p lhs) (p rhs)
+            | None -> spf "%sfailed: not equal" what
+            | Some p ->
+              spf "%s failed: not equal:\nlhs=%s\nrhs=%s" what (p lhs) (p rhs)
           in
           Error msg
         )
@@ -97,18 +106,18 @@ module Test = struct
         | QCheck.TestResult.Success -> Ok ()
         | QCheck.TestResult.Failed { instances } ->
           let msg =
-            Format.asprintf "@[<v2>failed on instances:@ %a@]"
+            Format.asprintf "@[<v2>%sfailed on instances:@ %a@]" what
               (Fmt.list ~sep:(Fmt.return ";@ ") pp_cex)
               instances
           in
           Error msg
         | QCheck.TestResult.Failed_other { msg } ->
-          let msg = spf "failed: %s" msg in
+          let msg = spf "%sfailed: %s" what msg in
           Error msg
         | QCheck.TestResult.Error { instance; exn; backtrace } ->
           let msg =
-            Format.asprintf "@[<v2>raised %s@ on instance %a@ :backtrace %s@]"
-              (Printexc.to_string exn) pp_cex instance backtrace
+            Format.asprintf "@[<v2>%sraised %s@ on instance %a@ :backtrace %s@]"
+              what (Printexc.to_string exn) pp_cex instance backtrace
           in
           Error msg)
     with
@@ -119,11 +128,16 @@ end
 module type S = sig
   module Q = QCheck
 
-  val t : (unit -> bool) -> unit
-  val eq : ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
+  val t : ?name:string -> (unit -> bool) -> unit
+  val eq : ?name:string -> ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
 
   val q :
-    ?count:int -> ?long_factor:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
+    ?name:string ->
+    ?count:int ->
+    ?long_factor:int ->
+    'a Q.arbitrary ->
+    ('a -> bool) ->
+    unit
 
   val assert_equal :
     ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) -> 'a -> 'a -> unit
@@ -144,18 +158,18 @@ struct
   let add_ t = all_ := t :: !all_
   let n_ = ref 0
 
-  let mk run : Test.t =
+  let mk ?name run : Test.t =
     let n = !n_ in
     incr n_;
-    { __FILE__ = X.file; n; run }
+    { __FILE__ = X.file; name; n; run }
 
-  let t f : unit = add_ @@ mk @@ Test.T f
+  let t ?name f : unit = add_ @@ mk ?name @@ Test.T { prop = f }
 
-  let eq ?cmp ?printer lhs rhs : unit =
-    add_ @@ mk @@ Test.Eq { eq = cmp; print = printer; lhs; rhs }
+  let eq ?name ?cmp ?printer lhs rhs : unit =
+    add_ @@ mk ?name @@ Test.Eq { eq = cmp; print = printer; lhs; rhs }
 
-  let q ?count ?long_factor arb prop : unit =
-    add_ @@ mk @@ Test.Q { arb; prop; count; long_factor }
+  let q ?name ?count ?long_factor arb prop : unit =
+    add_ @@ mk ?name @@ Test.Q { arb; prop; count; long_factor }
 
   let assert_equal ?printer ?(cmp = ( = )) x y : unit =
     if not @@ cmp x y then (
