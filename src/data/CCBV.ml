@@ -196,7 +196,16 @@ let flip bv i =
   )
 
 let clear bv = Bytes.fill bv.b 0 (Bytes.length bv.b) zero
-let equal x y : bool = x.size = y.size && x.b = y.b
+
+let equal_bytes_ size b1 b2 =
+  try
+    for i = 0 to bytes_length_of_size size - 1 do
+      if Bytes.get b1 i <> Bytes.get b2 i then raise_notrace Exit
+    done;
+    true
+  with Exit -> false
+
+let equal x y : bool = x.size = y.size && equal_bytes_ x.size x.b y.b
 
 let iter bv f =
   let len = bytes_length_of_size bv.size in
