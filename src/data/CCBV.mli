@@ -17,10 +17,11 @@ type t
 (** A resizable bitvector *)
 
 val empty : unit -> t
-(** Empty bitvector. *)
+(** Empty bitvector. Length is 0. *)
 
 val create : size:int -> bool -> t
-(** Create a bitvector of given size, with given default value. *)
+(** Create a bitvector of given size, with given default value.
+    Length of result is [size]. *)
 
 val copy : t -> t
 (** Copy of bitvector. *)
@@ -108,15 +109,17 @@ val first_exn : t -> int
 
 val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]
-    satisfies [p index]. *)
+    satisfies [p index].
+    Length is unchanged. *)
 
 val negate_self : t -> unit
-(** [negate_self t] flips all of the bits in [t].
+(** [negate_self t] flips all of the bits in [t]. Length is unchanged.
 
     @since 1.2 *)
 
 val negate : t -> t
-(** [negate t] returns a copy of [t] with all of the bits flipped. *)
+(** [negate t] returns a copy of [t] with all of the bits flipped.
+    Length is unchanged. *)
 
 val union_into : into:t -> t -> unit
 (** [union_into ~into bv] sets [into] to the union of itself and [bv].
@@ -132,10 +135,12 @@ val inter_into : into:t -> t -> unit
   *)
 
 val union : t -> t -> t
-(** [union bv1 bv2] returns the union of the two sets. *)
+(** [union bv1 bv2] returns the union of the two sets. The length
+     of the result is the max of the inputs' lengths. *)
 
 val inter : t -> t -> t
-(** [inter bv1 bv2] returns the intersection of the two sets. *)
+(** [inter bv1 bv2] returns the intersection of the two sets. The length
+    of the result is the min of the inputs' lengths. *)
 
 val diff_into : into:t -> t -> unit
 (** [diff_into ~into t] modifies [into] with only the bits set but not in [t].
@@ -163,7 +168,10 @@ val equal : t -> t -> bool
 type 'a iter = ('a -> unit) -> unit
 
 val to_iter : t -> int iter
+(** Iterate over the true bits. *)
+
 val of_iter : int iter -> t
+(** Build from true bits. *)
 
 val pp : Format.formatter -> t -> unit
 (** Print the bitvector as a string of bits.
