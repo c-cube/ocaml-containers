@@ -520,6 +520,23 @@ t ~name:(spf "line %d" __LINE__) (fun () ->
 ;;
 
 t ~name:(spf "line %d" __LINE__) (fun () ->
+    let l = [ 1; 3; 10; 29; 55 ] in
+    let v = init 120 (fun i -> List.mem i l) in
+    assert_equal ~printer:(CCFormat.to_string ppli) l (to_sorted_list v);
+    true)
+;;
+
+q ~name:(spf "line %d" __LINE__)
+  Q.(small_list small_nat)
+  (fun l ->
+    let l = CCList.sort_uniq ~cmp:CCInt.compare l in
+    let max = 1 + List.fold_left max 0 l in
+    let v = init max (fun i -> List.mem i l) in
+    assert_equal ~printer:(CCFormat.to_string ppli) l (to_sorted_list v);
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) (fun () ->
     let bv = empty () in
     flip bv 0;
     resize bv 0;
