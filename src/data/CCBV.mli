@@ -71,7 +71,11 @@ val flip : t -> int -> unit
 (** Flip i-th bit, extending the bitvector if needed. *)
 
 val clear : t -> unit
-(** Set every bit to 0. *)
+(** Set every bit to 0. Does not change the length. *)
+
+val clear_and_shrink : t -> unit
+(** Set every bit to 0, and set length to 0.
+    @since NEXT_RELEASE *)
 
 val iter : t -> (int -> bool -> unit) -> unit
 (** Iterate on all bits. *)
@@ -120,7 +124,12 @@ val union_into : into:t -> t -> unit
 
 val inter_into : into:t -> t -> unit
 (** [inter_into ~into bv] sets [into] to the intersection of itself and [bv].
-    Also updates the length of [into] to be at most [length bv]. *)
+    Also updates the length of [into] to be at most [length bv].
+
+    After executing:
+    - [length ~into' = min (length into) (length bv)].
+    - [for all i: get into' ==> get into i /\ get bv i]
+  *)
 
 val union : t -> t -> t
 (** [union bv1 bv2] returns the union of the two sets. *)
@@ -166,6 +175,7 @@ module Internal_ : sig
   val __to_word_l : t -> char list
   val __popcount8 : int -> int
   val __lsb_mask : int -> int
+  val __check_invariant : t -> unit
 end
 
 (**/**)
