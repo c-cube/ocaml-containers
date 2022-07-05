@@ -39,7 +39,7 @@ q (Q.list Q.small_int) (fun l ->
 q Q.small_int (fun size -> create ~size true |> cardinal = size);;
 
 q Q.small_int (fun size ->
-    create ~size true |> to_sorted_list = List.init size CCFun.id)
+    create ~size true |> to_sorted_list = CCList.init size CCFun.id)
 ;;
 
 t ~name:(spf "line %d" __LINE__) @@ fun () ->
@@ -225,7 +225,7 @@ q
     let l1 = bv |> to_sorted_list in
     let l2 =
       CCList.init (length bv) (get bv)
-      |> List.mapi (fun i b -> i, b)
+      |> CCList.mapi (fun i b -> i, b)
       |> CCList.filter_map (function
            | i, true -> Some i
            | _ -> None)
@@ -629,7 +629,7 @@ module Op = struct
     (* random list of integers *)
     let rand_list =
       0 -- 200 >>= fun n st ->
-      List.init n (fun i ->
+      CCList.init n (fun i ->
           if bool st then
             Some i
           else
@@ -762,7 +762,7 @@ module Ref_ = struct
     | Filter_is_odd -> self.set <- Intset.filter (fun x -> x mod 2 = 1) self.set
     | Negate ->
       let l' =
-        List.init self.size (fun x -> x)
+        CCList.init self.size (fun x -> x)
         |> List.filter (fun x -> not (Intset.mem x self.set))
       in
       self.set <- Intset.of_list l'
