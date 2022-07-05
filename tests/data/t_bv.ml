@@ -536,6 +536,14 @@ t ~name:(spf "line %d" __LINE__) (fun () ->
     negate_self bv;
     assert_equal ~printer:(CCFormat.to_string ppli) [] (to_list bv);
     true)
+;;
+
+t ~name:(spf "line %d" __LINE__) (fun () ->
+    let v = empty () in
+    union_into ~into:v (of_list [ 9; 16 ]);
+    resize_minimize_memory v 9;
+    Internal_.__check_invariant v;
+    is_empty v)
 
 module Op = struct
   type t =
@@ -621,11 +629,14 @@ module Op = struct
              []);
            [
              1, return Clear;
+             1, return Clear_and_shrink;
              1, return Negate;
              1, return Filter_is_odd;
              (1, rand_list >|= fun l -> Inter l);
              (1, rand_list >|= fun l -> Union l);
+             (1, rand_list >|= fun l -> Diff l);
              (1, 0 -- 100 >|= fun x -> Resize x);
+             (1, 0 -- 100 >|= fun x -> Resize_min_mem x);
            ];
          ]
 
