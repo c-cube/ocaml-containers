@@ -38,6 +38,10 @@ q (Q.list Q.small_int) (fun l ->
 
 q Q.small_int (fun size -> create ~size true |> cardinal = size);;
 
+q Q.small_int (fun size ->
+    create ~size true |> to_sorted_list = List.init size CCFun.id)
+;;
+
 t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.create ~size:87 true in
 assert_equal ~printer:string_of_int 87 (CCBV.cardinal bv1);
@@ -536,6 +540,7 @@ t ~name:(spf "line %d" __LINE__) (fun () ->
 module Op = struct
   type t =
     | Resize of int
+    | Resize_min_mem of int
     | Set of int
     | Reset of int
     | Set_bool of int * bool
@@ -546,10 +551,12 @@ module Op = struct
     | Negate
     | Inter of int list
     | Union of int list
+    | Diff of int list
 
   let apply (self : CCBV.t) (op : t) : unit =
     match op with
     | Resize n -> resize self n
+    | Resize_min_mem n -> resize_minimize_memory self n
     | Set i -> set self i
     | Reset i -> reset self i
     | Set_bool (i, b) -> set_bool self i b
@@ -564,15 +571,22 @@ module Op = struct
     | Union l ->
       let bv' = of_list l in
       union_into ~into:self bv'
+    | Diff l ->
+      let bv' = of_list l in
+      diff_into ~into:self bv'
 
   let post_size sz (self : t) =
     match self with
     | Resize i -> i
+    | Resize_min_mem i -> i
     | Set j | Reset j | Set_bool (j, _) | Flip j -> max sz (j + 1)
     | Clear -> sz
     | Clear_and_shrink -> 0
     | Filter_is_odd | Negate -> sz
-    | Inter l | Union l -> List.fold_left max sz l
+    | Diff _ -> sz
+    | Inter [] | Union [] -> sz
+    | Union l -> max sz (succ (List.fold_left max 0 l))
+    | Inter l -> min sz (succ (List.fold_left max 0 l))
 
   let gen_ size : t Q.Gen.t =
     let open Q.Gen in
@@ -620,6 +634,7 @@ module Op = struct
     let module S = Q.Shrink in
     function
     | Resize i -> S.int i >|= fun i -> Resize i
+    | Resize_min_mem i -> S.int i >|= fun i -> Resize_min_mem i
     | Set i -> S.int i >|= fun i -> Resize i
     | Reset i -> S.int i >|= fun i -> Resize i
     | Set_bool (i, b) ->
@@ -634,11 +649,13 @@ module Op = struct
     | Clear | Clear_and_shrink | Filter_is_odd | Negate -> empty
     | Inter l -> S.list ~shrink:S.int l >|= fun l -> Inter l
     | Union l -> S.list ~shrink:S.int l >|= fun l -> Union l
+    | Diff l -> S.list ~shrink:S.int l >|= fun l -> Diff l
 
   let pp out =
     let fpf = Format.fprintf in
     function
     | Resize i -> fpf out "resize %d" i
+    | Resize_min_mem i -> fpf out "resize_minimize_memory %d" i
     | Set i -> fpf out "set %d" i
     | Reset i -> fpf out "reset %d" i
     | Set_bool (i, b) -> fpf out "set_bool(%d,%b)" i b
@@ -647,8 +664,9 @@ module Op = struct
     | Clear_and_shrink -> fpf out "clear_and_shrink"
     | Filter_is_odd -> fpf out "filter_is_odd"
     | Negate -> fpf out "negate"
-    | Inter l -> fpf out "inter %a" CCFormat.(Dump.list int) l
-    | Union l -> fpf out "union %a" CCFormat.(Dump.list int) l
+    | Inter l -> fpf out "inter %a" ppli l
+    | Union l -> fpf out "union %a" ppli l
+    | Diff l -> fpf out "diff %a" ppli l
 
   let arb_l =
     let rec gen_l sz n =
@@ -687,7 +705,7 @@ module Ref_ = struct
 
   let rec apply_op (self : t) (op : Op.t) =
     match op with
-    | Resize n ->
+    | Resize n | Resize_min_mem n ->
       self.set <- Intset.filter (fun x -> x < n) self.set;
       self.size <- n
     | Set i ->
@@ -729,6 +747,9 @@ module Ref_ = struct
       let s' = Intset.of_list l in
       self.size <- List.fold_left (fun s x -> max s (x + 1)) self.size l;
       self.set <- Intset.union self.set s'
+    | Diff l ->
+      let s' = Intset.of_list l in
+      self.set <- Intset.diff self.set s'
 end
 ;;
 
