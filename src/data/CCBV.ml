@@ -67,7 +67,7 @@ let bytes_length_of_size size =
   else
     div_ size + 1
 
-let create ~size default =
+let create ~size default : t =
   if size = 0 then
     empty ()
   else (
@@ -209,6 +209,13 @@ let[@inline] set bv i =
     unsafe_set_ bv.b idx_bucket
       (unsafe_get_ bv.b idx_bucket lor (1 lsl idx_in_byte))
   )
+
+let init size f : t =
+  let v = create ~size false in
+  for i = 0 to size - 1 do
+    if f i then set v i
+  done;
+  v
 
 let[@inline] reset bv i =
   if i < 0 then

@@ -23,6 +23,11 @@ val create : size:int -> bool -> t
 (** Create a bitvector of given size, with given default value.
     Length of result is [size]. *)
 
+val init : int -> (int -> bool) -> t
+(** [init len f] initializes a bitvector of length [len], where bit [i]
+    is true iff [f i] is.
+    @since NEXT_RELEASE *)
+
 val copy : t -> t
 (** Copy of bitvector. *)
 
