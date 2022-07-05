@@ -3,15 +3,33 @@ open Test
 open CCBV
 open Internal_
 
-let ppli = CCFormat.(Dump.list int);;
+let spf = Printf.sprintf
+let ppli = CCFormat.(Dump.list int)
+
+module Intset = CCSet.Make (CCInt);;
 
 q (Q.pair Q.small_int Q.bool) (fun (size, b) -> create ~size b |> length = size)
 ;;
-t @@ fun () -> create ~size:17 true |> cardinal = 17;;
-t @@ fun () -> create ~size:32 true |> cardinal = 32;;
-t @@ fun () -> create ~size:132 true |> cardinal = 132;;
-t @@ fun () -> create ~size:200 false |> cardinal = 0;;
-t @@ fun () -> create ~size:29 true |> to_sorted_list = CCList.range 0 28;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+create ~size:17 true |> cardinal = 17
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+create ~size:32 true |> cardinal = 32
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+create ~size:132 true |> cardinal = 132
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+create ~size:200 false |> cardinal = 0
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+create ~size:29 true |> to_sorted_list = CCList.range 0 28
+;;
 
 q (Q.list Q.small_int) (fun l ->
     let bv = of_list l in
@@ -20,7 +38,7 @@ q (Q.list Q.small_int) (fun l ->
 
 q Q.small_int (fun size -> create ~size true |> cardinal = size);;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.create ~size:87 true in
 assert_equal ~printer:string_of_int 87 (CCBV.cardinal bv1);
 true
@@ -28,7 +46,7 @@ true
 
 q Q.small_int (fun n -> CCBV.cardinal (CCBV.create ~size:n true) = n);;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = CCBV.create ~size:99 false in
 assert_bool "32 must be false" (not (CCBV.get bv 32));
 assert_bool "88 must be false" (not (CCBV.get bv 88));
@@ -45,26 +63,26 @@ assert_bool "1 must be false" (not (CCBV.get bv 1));
 true
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = create ~size:3 false in
 set bv 0;
 get bv 0
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = create ~size:3 false in
 set bv 1;
 not (get bv 0)
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = create ~size:3 false in
 set bv 0;
 reset bv 0;
 not (get bv 0)
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = of_list [ 1; 10; 11; 30 ] in
 flip bv 10;
 assert_equal ~printer:Q.Print.(list int) [ 1; 11; 30 ] (to_sorted_list bv);
@@ -84,7 +102,7 @@ assert_equal ~printer:Q.Print.bool true (get bv 100);
 true
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = create ~size:37 true in
 cardinal bv = 37
 &&
@@ -92,7 +110,7 @@ cardinal bv = 37
  cardinal bv = 0)
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = CCBV.of_list [ 1; 5; 200 ] in
 assert_equal ~printer:string_of_int 3 (CCBV.cardinal bv);
 CCBV.clear bv;
@@ -101,13 +119,25 @@ assert_bool "must be empty" (CCBV.is_empty bv);
 true
 ;;
 
-t @@ fun () -> equal (of_list [ 1; 3; 4 ]) (of_list [ 1; 3; 4 ]);;
-t @@ fun () -> equal (empty ()) (empty ());;
-t @@ fun () -> not (equal (empty ()) (of_list [ 1 ]));;
-t @@ fun () -> not (equal (empty ()) (of_list [ 2; 5 ]));;
-t @@ fun () -> not (equal (of_list [ 1; 3 ]) (of_list [ 2; 3 ]));;
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+equal (of_list [ 1; 3; 4 ]) (of_list [ 1; 3; 4 ])
+;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () -> equal (empty ()) (empty ());;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+not (equal (empty ()) (of_list [ 1 ]))
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+not (equal (empty ()) (of_list [ 2; 5 ]))
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+not (equal (of_list [ 1; 3 ]) (of_list [ 2; 3 ]))
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 List.iter
   (fun size ->
     let bv = create ~size false in
@@ -143,7 +173,7 @@ q
     List.length l = n && List.for_all (fun (_, b) -> b) l)
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 of_list [ 1; 5; 7 ]
 |> iter_true |> Iter.to_list |> List.sort CCOrd.poly = [ 1; 5; 7 ]
 
@@ -158,7 +188,7 @@ q gen_bv (fun bv ->
     CCBV.cardinal bv = CCBV.cardinal bv')
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = CCBV.of_list [ 1; 5; 156; 0; 222 ] in
 assert_equal ~printer:string_of_int 5 (CCBV.cardinal bv);
 CCBV.set bv 201;
@@ -209,12 +239,23 @@ eq ~cmp:equal ~printer:(CCFormat.to_string pp)
    bv)
 ;;
 
-t @@ fun () -> of_list [ 1; 32; 64 ] |> CCFun.flip get 64;;
-t @@ fun () -> of_list [ 1; 32; 64 ] |> CCFun.flip get 32;;
-t @@ fun () -> of_list [ 1; 31; 63 ] |> CCFun.flip get 63;;
-t @@ fun () -> of_list [ 50; 10; 17; 22; 3; 12 ] |> first = Some 3;;
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+of_list [ 1; 32; 64 ] |> CCFun.flip get 64
+;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+of_list [ 1; 32; 64 ] |> CCFun.flip get 32
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+of_list [ 1; 31; 63 ] |> CCFun.flip get 63
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+of_list [ 50; 10; 17; 22; 3; 12 ] |> first = Some 3
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = of_list [ 1; 2; 3; 4; 5; 6; 7 ] in
 filter bv (fun x -> x mod 2 = 0);
 to_sorted_list bv = [ 2; 4; 6 ]
@@ -228,7 +269,7 @@ eq ~printer:(CCFormat.to_string ppli) [ 0; 3; 4; 6 ]
 
 q Q.small_int (fun size -> create ~size false |> negate |> cardinal = size);;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.of_list [ 1; 2; 3; 4 ] in
 let bv2 = CCBV.of_list [ 4; 200; 3 ] in
 let bv = CCBV.union bv1 bv2 in
@@ -237,7 +278,20 @@ assert_equal ~printer:CCFormat.(to_string (Dump.list int)) [ 1; 2; 3; 4; 200 ] l
 true
 ;;
 
-t @@ fun () ->
+q ~name:"union"
+  Q.(pair (small_list small_nat) (small_list small_nat))
+  (fun (l1, l2) ->
+    let bv1 = of_list l1 in
+    let bv2 = of_list l2 in
+    let l' = CCList.sort_uniq ~cmp:CCInt.compare (l1 @ l2) in
+    let bv = union bv1 bv2 in
+    let bv' = of_list l' in
+    if not (equal bv bv') then
+      Q.Test.fail_reportf "union (%a, %a) <> %a" ppli l1 ppli l2 ppli l';
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.of_list [ 1; 2; 3; 4; 64; 130 ] in
 let bv2 = CCBV.of_list [ 4; 64; 3; 120 ] in
 let bv = CCBV.union bv1 bv2 in
@@ -247,7 +301,7 @@ assert_equal ~cmp:equal ~printer:(CCFormat.to_string pp)
 true
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.of_list [ 1; 2; 3; 4 ] in
 let bv2 = CCBV.of_list [ 4; 200; 3 ] in
 let bv = CCBV.union bv1 bv2 in
@@ -257,7 +311,7 @@ assert_equal ~cmp:equal ~printer:(CCFormat.to_string pp)
 true
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let v1 = CCBV.empty () in
 let () = CCBV.set v1 64 in
 let v2 = CCBV.diff (CCBV.empty ()) (CCBV.empty ()) in
@@ -266,17 +320,17 @@ assert_equal ~printer:(CCFormat.to_string pp) ~cmp:CCBV.equal v1 v3;
 true
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 union (of_list [ 1; 2; 3; 4; 5 ]) (of_list [ 7; 3; 5; 6 ])
 |> to_sorted_list = CCList.range 1 7
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 inter (of_list [ 1; 2; 3; 4 ]) (of_list [ 2; 4; 6; 1 ])
 |> to_sorted_list = [ 1; 2; 4 ]
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.of_list [ 1; 2; 3; 4; 200; 201 ] in
 let bv2 = CCBV.of_list [ 4; 200; 3 ] in
 let bv = CCBV.inter bv1 bv2 in
@@ -285,7 +339,25 @@ assert_equal ~printer:CCFormat.(to_string (Dump.list int)) [ 3; 4; 200 ] l;
 true
 ;;
 
-t @@ fun () ->
+q ~name:"inter" ~count:10_000
+  Q.(pair (small_list small_nat) (small_list small_nat))
+  (fun (l1, l2) ->
+    let bv1 = of_list l1 in
+    let bv2 = of_list l2 in
+    let l' = CCList.inter ~eq:CCInt.equal l1 l2 in
+    let bv = inter bv1 bv2 in
+    let bv' = of_list l' in
+    (* make sure both are of the same length before comparing *)
+    let len = max (length bv) (length bv') in
+    resize bv len;
+    resize bv' len;
+    if not (equal bv bv') then
+      Q.Test.fail_reportf "inter (%a, %a) <> %a@ (@[<hv>bv= %a,@ bv'=%a@])" ppli
+        l1 ppli l2 ppli l' pp bv pp bv';
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.of_list [ 1; 2; 3; 4 ] in
 let bv2 = CCBV.of_list [ 4; 200; 3 ] in
 CCBV.inter_into ~into:bv1 bv2;
@@ -294,33 +366,52 @@ assert_equal [ 3; 4 ] l;
 true
 ;;
 
-t @@ fun () -> diff (of_list [ 1; 2; 3 ]) (of_list [ 1; 2; 3 ]) |> to_list = []
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
+diff (of_list [ 1; 2; 3 ]) (of_list [ 1; 2; 3 ]) |> to_list = []
 ;;
 
-t @@ fun () ->
+q ~name:"diff" ~count:10_000
+  Q.(pair (small_list small_nat) (small_list small_nat))
+  (fun (l1, l2) ->
+    let bv1 = of_list l1 in
+    let bv2 = of_list l2 in
+    let bv = diff bv1 bv2 in
+    let l' = Intset.(diff (of_list l1) (of_list l2) |> to_list) in
+    let bv' = of_list l' in
+    (* make sure both are of the same length before comparing *)
+    let len = max (length bv) (length bv') in
+    resize bv len;
+    resize bv' len;
+    if not (equal bv bv') then
+      Q.Test.fail_reportf "idff (%a, %a) <> %a@ (@[<hv>bv= %a,@ bv'=%a@])" ppli
+        l1 ppli l2 ppli l' pp bv pp bv';
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 diff (of_list [ 1; 2; 3 ]) (of_list [ 1; 2; 3; 4 ]) |> to_list = []
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 diff (of_list [ 1; 2; 3; 4 ]) (of_list [ 1; 2; 3 ]) |> to_list = [ 4 ]
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 diff (of_list [ 1; 2; 3 ]) (of_list [ 1; 2; 3; 400 ]) |> to_list = []
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 diff (of_list [ 1; 2; 3; 400 ]) (of_list [ 1; 2; 3 ]) |> to_list = [ 400 ]
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let v1 = CCBV.empty () in
 set v1 65;
 let v2 = CCBV.diff v1 v1 in
 CCBV.is_empty v2
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = CCBV.of_list [ 1; 2; 5; 400 ] in
 let arr = [| "a"; "b"; "c"; "d"; "e"; "f" |] in
 let l = List.sort compare (CCBV.select bv arr) in
@@ -328,7 +419,7 @@ assert_equal [ "b"; "c"; "f" ] l;
 true
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = CCBV.of_list [ 1; 2; 5; 400 ] in
 let arr = [| "a"; "b"; "c"; "d"; "e"; "f" |] in
 let l = List.sort compare (CCBV.selecti bv arr) in
@@ -351,7 +442,7 @@ q
     i = (to_iter bv |> Iter.length))
 ;;
 
-t @@ fun () ->
+t ~name:(spf "line %d" __LINE__) @@ fun () ->
 CCList.range 0 10 |> CCList.to_iter |> of_iter |> to_iter |> CCList.of_iter
 |> List.sort CCOrd.poly = CCList.range 0 10
 ;;
@@ -383,13 +474,306 @@ let popcount8_ref n =
 ;;
 
 (* test __popcount8 just to be sure. *)
-t @@ fun () ->
-for i = 0 to 255 do
-  let n = __popcount8 i in
-  let n2 = popcount8_ref i in
-  if n <> n2 then (
-    Printf.printf "bad: i=%d => %d,%d\n" i n n2;
-    assert false
-  )
-done;
-true
+t ~name:(spf "line %d" __LINE__) (fun () ->
+    for i = 0 to 255 do
+      let n = __popcount8 i in
+      let n2 = popcount8_ref i in
+      if n <> n2 then (
+        Printf.printf "bad: i=%d => %d,%d\n" i n n2;
+        assert false
+      )
+    done;
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) (fun () ->
+    let b = create ~size:10 false in
+    assert_equal 10 (length b);
+    set b 9;
+    for i = 0 to 9 do
+      assert (i = 9 || not (get b i))
+    done;
+
+    resize b 42;
+    assert_equal 42 (length b);
+    for i = 0 to 41 do
+      assert (i = 9 || not (get b i))
+    done;
+    resize b 11;
+    assert_equal 11 (length b);
+    for i = 0 to 11 do
+      assert (i = 9 || not (get b i))
+    done;
+
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) (fun () ->
+    let v = empty () in
+    resize v 9;
+    inter_into ~into:v (of_list []);
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) (fun () ->
+    let bv = empty () in
+    flip bv 0;
+    resize bv 0;
+    negate_self bv;
+    union_into ~into:bv (of_list [ 2 ]);
+    assert_equal ~printer:(CCFormat.to_string ppli) [ 2 ] (to_list bv);
+    true)
+;;
+
+t ~name:(spf "line %d" __LINE__) (fun () ->
+    let bv = empty () in
+    flip bv 0;
+    inter_into ~into:bv (of_list []);
+    negate_self bv;
+    assert_equal ~printer:(CCFormat.to_string ppli) [] (to_list bv);
+    true)
+
+module Op = struct
+  type t =
+    | Resize of int
+    | Set of int
+    | Reset of int
+    | Set_bool of int * bool
+    | Flip of int
+    | Clear
+    | Clear_and_shrink
+    | Filter_is_odd
+    | Negate
+    | Inter of int list
+    | Union of int list
+
+  let apply (self : CCBV.t) (op : t) : unit =
+    match op with
+    | Resize n -> resize self n
+    | Set i -> set self i
+    | Reset i -> reset self i
+    | Set_bool (i, b) -> set_bool self i b
+    | Flip i -> flip self i
+    | Clear -> clear self
+    | Clear_and_shrink -> clear_and_shrink self
+    | Filter_is_odd -> filter self (fun i -> i mod 2 = 1)
+    | Negate -> negate_self self
+    | Inter l ->
+      let bv' = of_list l in
+      inter_into ~into:self bv'
+    | Union l ->
+      let bv' = of_list l in
+      union_into ~into:self bv'
+
+  let post_size sz (self : t) =
+    match self with
+    | Resize i -> i
+    | Set j | Reset j | Set_bool (j, _) | Flip j -> max sz (j + 1)
+    | Clear -> sz
+    | Clear_and_shrink -> 0
+    | Filter_is_odd | Negate -> sz
+    | Inter l | Union l -> List.fold_left max sz l
+
+  let gen_ size : t Q.Gen.t =
+    let open Q.Gen in
+    let nonzero =
+      [
+        (3, 0 -- size >|= fun x -> Set x);
+        (3, 0 -- size >|= fun x -> Reset x);
+        ( 3,
+          0 -- size >>= fun x ->
+          bool >|= fun y -> Set_bool (x, y) );
+        (3, 0 -- size >|= fun x -> Flip x);
+      ]
+    in
+
+    (* random list of integers *)
+    let rand_list =
+      0 -- 200 >>= fun n st ->
+      List.init n (fun i ->
+          if bool st then
+            Some i
+          else
+            None)
+      |> CCList.keep_some
+    in
+
+    frequency
+    @@ List.flatten
+         [
+           (if size > 0 then
+             nonzero
+           else
+             []);
+           [
+             1, return Clear;
+             1, return Negate;
+             1, return Filter_is_odd;
+             (1, rand_list >|= fun l -> Inter l);
+             (1, rand_list >|= fun l -> Union l);
+             (1, 0 -- 100 >|= fun x -> Resize x);
+           ];
+         ]
+
+  let shrink =
+    let open Q.Iter in
+    let module S = Q.Shrink in
+    function
+    | Resize i -> S.int i >|= fun i -> Resize i
+    | Set i -> S.int i >|= fun i -> Resize i
+    | Reset i -> S.int i >|= fun i -> Resize i
+    | Set_bool (i, b) ->
+      S.int i
+      >|= (fun i -> Set_bool (i, b))
+      <+>
+      if b then
+        return @@ Set_bool (i, b)
+      else
+        empty
+    | Flip i -> S.int i >|= fun i -> Flip i
+    | Clear | Clear_and_shrink | Filter_is_odd | Negate -> empty
+    | Inter l -> S.list ~shrink:S.int l >|= fun l -> Inter l
+    | Union l -> S.list ~shrink:S.int l >|= fun l -> Union l
+
+  let pp out =
+    let fpf = Format.fprintf in
+    function
+    | Resize i -> fpf out "resize %d" i
+    | Set i -> fpf out "set %d" i
+    | Reset i -> fpf out "reset %d" i
+    | Set_bool (i, b) -> fpf out "set_bool(%d,%b)" i b
+    | Flip i -> fpf out "flip %d" i
+    | Clear -> fpf out "clear"
+    | Clear_and_shrink -> fpf out "clear_and_shrink"
+    | Filter_is_odd -> fpf out "filter_is_odd"
+    | Negate -> fpf out "negate"
+    | Inter l -> fpf out "inter %a" CCFormat.(Dump.list int) l
+    | Union l -> fpf out "union %a" CCFormat.(Dump.list int) l
+
+  let arb_l =
+    let rec gen_l sz n =
+      let open Q.Gen in
+      if n = 0 then
+        return []
+      else
+        gen_ sz >>= fun op ->
+        let sz' = post_size sz op in
+        gen_l sz' (n - 1) >|= fun tl -> op :: tl
+    in
+
+    Q.make
+      ~print:CCFormat.(to_string @@ Dump.list pp)
+      ~shrink:(Q.Shrink.list ~shrink)
+      Q.Gen.(0 -- 30 >>= fun len -> gen_l 0 len)
+end
+
+module Ref_ = struct
+  type t = { mutable set: Intset.t; mutable size: int }
+
+  let empty () = { size = 0; set = Intset.empty }
+
+  let to_list self =
+    Intset.to_list self.set |> List.filter (fun x -> x < self.size)
+
+  let pp out (self : t) = ppli out (to_list self)
+
+  let equal_to_bv (self : t) (bv : CCBV.t) : bool =
+    to_list self = CCBV.to_sorted_list bv
+
+  let cardinal self : int =
+    Intset.filter (fun x -> x < self.size) self.set |> Intset.cardinal
+
+  let get (self : t) i = Intset.mem i self.set
+
+  let rec apply_op (self : t) (op : Op.t) =
+    match op with
+    | Resize n ->
+      self.set <- Intset.filter (fun x -> x < n) self.set;
+      self.size <- n
+    | Set i ->
+      self.size <- max self.size (i + 1);
+      self.set <- Intset.add i self.set
+    | Reset i ->
+      self.size <- max self.size (i + 1);
+      self.set <- Intset.remove i self.set
+    | Set_bool (i, b) ->
+      apply_op self
+        (if b then
+          Set i
+        else
+          Reset i)
+    | Flip i ->
+      self.size <- max self.size (i + 1);
+      apply_op self
+        (if Intset.mem i self.set then
+          Reset i
+        else
+          Set i)
+    | Clear -> self.set <- Intset.empty
+    | Clear_and_shrink ->
+      self.set <- Intset.empty;
+      self.size <- 0
+    | Filter_is_odd -> self.set <- Intset.filter (fun x -> x mod 2 = 1) self.set
+    | Negate ->
+      let l' =
+        List.init self.size (fun x -> x)
+        |> List.filter (fun x -> not (Intset.mem x self.set))
+      in
+      self.set <- Intset.of_list l'
+    | Inter l ->
+      let s' = Intset.of_list l in
+      let sz' = List.fold_left (fun s x -> max s (x + 1)) 0 l in
+      self.size <- min self.size sz';
+      self.set <- Intset.inter self.set s'
+    | Union l ->
+      let s' = Intset.of_list l in
+      self.size <- List.fold_left (fun s x -> max s (x + 1)) self.size l;
+      self.set <- Intset.union self.set s'
+end
+;;
+
+q ~name:"list ops: invariant" ~max_fail:1 ~count:20_000 Op.arb_l (fun ops ->
+    let bv = empty () in
+
+    Internal_.__check_invariant bv;
+    List.iter
+      (fun op ->
+        Op.apply bv op;
+        Internal_.__check_invariant bv)
+      ops;
+    true)
+;;
+
+q ~name:"list ops: compare to ref" ~max_fail:1 ~count:2_000 Op.arb_l (fun ops ->
+    let bv = empty () in
+    let bv' = Ref_.empty () in
+
+    List.iter
+      (fun op ->
+        Op.apply bv op;
+        Ref_.apply_op bv' op;
+
+        if cardinal bv <> Ref_.cardinal bv' then
+          Q.Test.fail_reportf
+            "@[<v2>different cardinal:@ actual=%a@ ref=%a@ @[<v2>actual.card \
+             %d@]@ @[<v2>ref.cardinal %d@]@]"
+            pp bv Ref_.pp bv' (cardinal bv) (Ref_.cardinal bv');
+
+        let bad_idx =
+          Iter.(0 -- CCBV.length bv)
+          |> Iter.find_pred (fun i -> get bv i <> Ref_.get bv' i)
+        in
+        (match bad_idx with
+        | None -> ()
+        | Some idx ->
+          Q.Test.fail_reportf
+            "at idx %d, not same `get`@ actual.get=%b,@ ref.get=%b" idx
+            (get bv idx) (Ref_.get bv' idx));
+
+        if not (Ref_.equal_to_bv bv' bv) then
+          Q.Test.fail_reportf
+            "@[<v2>not equal:@ actual=%a@ ref=%a@ @[<v2>actual.to_list@ %a@]@ \
+             @[<v2>ref.to_list@ %a@]@]"
+            pp bv Ref_.pp bv' ppli (to_sorted_list bv) ppli (Ref_.to_list bv'))
+      ops;
+    true)
