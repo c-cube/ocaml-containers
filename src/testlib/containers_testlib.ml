@@ -14,6 +14,9 @@ module Test = struct
         arb: 'a Q.arbitrary;
         prop: 'a -> bool;
         long_factor: int option;
+        max_gen: int option;
+        max_fail: int option;
+        if_assumptions_fail: ([ `Fatal | `Warning ] * float) option;
       }
         -> run
 
@@ -69,7 +72,16 @@ module Test = struct
           in
           Error msg
         )
-      | Q { count; arb; prop; long_factor } ->
+      | Q
+          {
+            count;
+            arb;
+            prop;
+            long_factor;
+            max_fail;
+            max_gen;
+            if_assumptions_fail;
+          } ->
         (* create a random state from the seed *)
         let rand =
           let bits =
@@ -80,7 +92,8 @@ module Test = struct
 
         let module Fmt = CCFormat in
         let cell =
-          Q.Test.make_cell ?count ?long_factor ~name:(str_loc self) arb prop
+          Q.Test.make_cell ?if_assumptions_fail ?max_gen ?max_fail ?count
+            ?long_factor ~name:(str_loc self) arb prop
         in
 
         let pp_cex out (cx : _ Q.TestResult.counter_ex) =
@@ -135,6 +148,9 @@ module type S = sig
     ?name:string ->
     ?count:int ->
     ?long_factor:int ->
+    ?max_gen:int ->
+    ?max_fail:int ->
+    ?if_assumptions_fail:[ `Fatal | `Warning ] * float ->
     'a Q.arbitrary ->
     ('a -> bool) ->
     unit
@@ -168,8 +184,19 @@ struct
   let eq ?name ?cmp ?printer lhs rhs : unit =
     add_ @@ mk ?name @@ Test.Eq { eq = cmp; print = printer; lhs; rhs }
 
-  let q ?name ?count ?long_factor arb prop : unit =
-    add_ @@ mk ?name @@ Test.Q { arb; prop; count; long_factor }
+  let q ?name ?count ?long_factor ?max_gen ?max_fail ?if_assumptions_fail arb
+      prop : unit =
+    add_ @@ mk ?name
+    @@ Test.Q
+         {
+           arb;
+           prop;
+           count;
+           long_factor;
+           max_gen;
+           max_fail;
+           if_assumptions_fail;
+         }
 
   let assert_equal ?printer ?(cmp = ( = )) x y : unit =
     if not @@ cmp x y then (

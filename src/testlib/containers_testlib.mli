@@ -15,6 +15,9 @@ module type S = sig
     ?name:string ->
     ?count:int ->
     ?long_factor:int ->
+    ?max_gen:int ->
+    ?max_fail:int ->
+    ?if_assumptions_fail:[ `Fatal | `Warning ] * float ->
     'a Q.arbitrary ->
     ('a -> bool) ->
     unit
