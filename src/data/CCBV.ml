@@ -161,7 +161,7 @@ let shrink_ bv size =
   if size < bv.size then (
     let desired = bytes_length_of_size size in
     let current = Bytes.length bv.b in
-    if desired = current then clear_bits_above_ bv size;
+    clear_bits_above_ bv size;
     really_resize_ bv ~desired ~current size
   )
 
