@@ -781,7 +781,8 @@ module Ref_ = struct
 end
 ;;
 
-q ~name:"list ops: invariant" ~max_fail:1 ~count:20_000 Op.arb_l (fun ops ->
+q ~name:"list ops: invariant" ~max_fail:1 ~long_factor:10 ~count:20_000 Op.arb_l
+  (fun ops ->
     let bv = empty () in
 
     Internal_.__check_invariant bv;
@@ -793,7 +794,8 @@ q ~name:"list ops: invariant" ~max_fail:1 ~count:20_000 Op.arb_l (fun ops ->
     true)
 ;;
 
-q ~name:"list ops: compare to ref" ~max_fail:1 ~count:2_000 Op.arb_l (fun ops ->
+q ~name:"list ops: compare to ref" ~max_fail:1 ~long_factor:10 ~count:2_000
+  Op.arb_l (fun ops ->
     let bv = empty () in
     let bv' = Ref_.empty () in
 
