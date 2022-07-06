@@ -44,7 +44,7 @@ module Test = struct
 
   [@@@endif]
 
-  let run ~seed (self : t) : _ result =
+  let run ?(long = false) ~seed (self : t) : _ result =
     match
       let what = CCOption.map_or ~default:"" (fun s -> s ^ " ") self.name in
       match self.run with
@@ -113,7 +113,7 @@ module Test = struct
         in
 
         (* TODO: if verbose, print stats, etc. *)
-        let res = Q.Test.check_cell ~rand cell in
+        let res = Q.Test.check_cell ~long ~rand cell in
 
         (match get_state res with
         | QCheck.TestResult.Success -> Ok ()
@@ -229,7 +229,12 @@ let make ~__FILE__ () : (module S) =
 
 let getenv_opt s = try Some (Sys.getenv s) with _ -> None
 
-let run_all ?seed:seed_hex ~descr (l : Test.t list list) : unit =
+let long =
+  match getenv_opt "LONG" with
+  | Some ("true" | "1") -> true
+  | _ -> false
+
+let run_all ?seed:seed_hex ?(long = long) ~descr (l : Test.t list list) : unit =
   let start = Unix.gettimeofday () in
 
   (* generate or parse seed *)
@@ -264,7 +269,7 @@ let run_all ?seed:seed_hex ~descr (l : Test.t list list) : unit =
       NOTE: we probably want this to be silent?
       Format.printf "> run %s@." (Test.str_loc t);
       *)
-      match Test.run ~seed t with
+      match Test.run ~long ~seed t with
       | Ok () -> ()
       | Error msg ->
         Format.printf "FAILED: %s@." (Test.str_loc t);

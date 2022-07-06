@@ -32,4 +32,6 @@ module type S = sig
 end
 
 val make : __FILE__:string -> unit -> (module S)
-val run_all : ?seed:string -> descr:string -> Test.t list list -> unit
+
+val run_all :
+  ?seed:string -> ?long:bool -> descr:string -> Test.t list list -> unit
