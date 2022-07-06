@@ -1,6 +1,8 @@
-(* This file is free software, part of containers. See file "license" for more details. *)
+(** Imperative Bitvectors.
 
-(** Imperative Bitvectors
+    A bitvector is stored in some form of internal array (on the heap).
+    Is it a bit similar to a more storage-efficient version of [bool
+    CCVector.vector], with additional operations.
 
     {b BREAKING CHANGES} since 1.2:
     size is now stored along with the bitvector. Some functions have
@@ -15,10 +17,16 @@ type t
 (** A resizable bitvector *)
 
 val empty : unit -> t
-(** Empty bitvector. *)
+(** Empty bitvector. Length is 0. *)
 
 val create : size:int -> bool -> t
-(** Create a bitvector of given size, with given default value. *)
+(** Create a bitvector of given size, with given default value.
+    Length of result is [size]. *)
+
+val init : int -> (int -> bool) -> t
+(** [init len f] initializes a bitvector of length [len], where bit [i]
+    is true iff [f i] is.
+    @since NEXT_RELEASE *)
 
 val copy : t -> t
 (** Copy of bitvector. *)
@@ -38,10 +46,16 @@ val capacity : t -> int
     @since 1.2 *)
 
 val resize : t -> int -> unit
-(** Resize the BV so that it has the specified length. This can grow or shrink
-    the underlying bitvector.
+(** Resize the BV so that it has the specified length. This can grow
+    the underlying array, but it will not shrink it, to minimize
+    memory traffic.
+    @raise Invalid_argument on negative sizes. *)
 
-    @raise Invalid_arg on negative sizes. *)
+val resize_minimize_memory : t -> int -> unit
+(** Same as {!resize}, but this can also shrink the underlying
+    array if this reduces the size.
+    @raise Invalid_argument on negative sizes.
+    @since NEXT_RELEASE *)
 
 val is_empty : t -> bool
 (** Are there any true bits? *)
@@ -55,11 +69,19 @@ val get : t -> int -> bool
 val reset : t -> int -> unit
 (** Set i-th bit to 0, extending the bitvector if needed. *)
 
+val set_bool : t -> int -> bool -> unit
+(** Set or reset [i]-th bit.
+    @since NEXT_RELEASE *)
+
 val flip : t -> int -> unit
 (** Flip i-th bit, extending the bitvector if needed. *)
 
 val clear : t -> unit
-(** Set every bit to 0. *)
+(** Set every bit to 0. Does not change the length. *)
+
+val clear_and_shrink : t -> unit
+(** Set every bit to 0, and set length to 0.
+    @since NEXT_RELEASE *)
 
 val iter : t -> (int -> bool -> unit) -> unit
 (** Iterate on all bits. *)
@@ -92,15 +114,17 @@ val first_exn : t -> int
 
 val filter : t -> (int -> bool) -> unit
 (** [filter bv p] only keeps the true bits of [bv] whose [index]
-    satisfies [p index]. *)
+    satisfies [p index].
+    Length is unchanged. *)
 
 val negate_self : t -> unit
-(** [negate_self t] flips all of the bits in [t].
+(** [negate_self t] flips all of the bits in [t]. Length is unchanged.
 
     @since 1.2 *)
 
 val negate : t -> t
-(** [negate t] returns a copy of [t] with all of the bits flipped. *)
+(** [negate t] returns a copy of [t] with all of the bits flipped.
+    Length is unchanged. *)
 
 val union_into : into:t -> t -> unit
 (** [union_into ~into bv] sets [into] to the union of itself and [bv].
@@ -108,13 +132,20 @@ val union_into : into:t -> t -> unit
 
 val inter_into : into:t -> t -> unit
 (** [inter_into ~into bv] sets [into] to the intersection of itself and [bv].
-    Also updates the length of [into] to be at most [length bv]. *)
+    Also updates the length of [into] to be at most [length bv].
+
+    After executing:
+    - [length ~into' = min (length into) (length bv)].
+    - [for all i: get into' ==> get into i /\ get bv i]
+  *)
 
 val union : t -> t -> t
-(** [union bv1 bv2] returns the union of the two sets. *)
+(** [union bv1 bv2] returns the union of the two sets. The length
+     of the result is the max of the inputs' lengths. *)
 
 val inter : t -> t -> t
-(** [inter bv1 bv2] returns the intersection of the two sets. *)
+(** [inter bv1 bv2] returns the intersection of the two sets. The length
+    of the result is the min of the inputs' lengths. *)
 
 val diff_into : into:t -> t -> unit
 (** [diff_into ~into t] modifies [into] with only the bits set but not in [t].
@@ -142,7 +173,10 @@ val equal : t -> t -> bool
 type 'a iter = ('a -> unit) -> unit
 
 val to_iter : t -> int iter
+(** Iterate over the true bits. *)
+
 val of_iter : int iter -> t
+(** Build from true bits. *)
 
 val pp : Format.formatter -> t -> unit
 (** Print the bitvector as a string of bits.
@@ -150,6 +184,11 @@ val pp : Format.formatter -> t -> unit
 
 (**/**)
 
-val __to_word_l : t -> int list
+module Internal_ : sig
+  val __to_word_l : t -> char list
+  val __popcount8 : int -> int
+  val __lsb_mask : int -> int
+  val __check_invariant : t -> unit
+end
 
 (**/**)

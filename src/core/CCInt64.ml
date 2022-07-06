@@ -8,6 +8,21 @@ let max : t -> t -> t = Stdlib.max
 let hash x = Stdlib.abs (to_int x)
 let sign i = compare i zero
 
+(* see {!CCInt.popcount} for more details *)
+let[@inline] popcount (b : t) : int =
+  let m1 = 0x5555555555555555L in
+  let m2 = 0x3333333333333333L in
+  let m4 = 0x0f0f0f0f0f0f0f0fL in
+
+  let b = sub b (logand (shift_right_logical b 1) m1) in
+  let b = add (logand b m2) (logand (shift_right_logical b 2) m2) in
+  let b = logand (add b (shift_right_logical b 4)) m4 in
+  let b = add b (shift_right_logical b 8) in
+  let b = add b (shift_right_logical b 16) in
+  let b = add b (shift_right_logical b 32) in
+  let b = logand b 0x7fL in
+  to_int b
+
 let pow a b =
   let rec aux acc = function
     | 1L -> acc

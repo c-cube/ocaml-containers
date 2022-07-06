@@ -8,11 +8,19 @@ end
 module type S = sig
   module Q = QCheck
 
-  val t : (unit -> bool) -> unit
-  val eq : ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
+  val t : ?name:string -> (unit -> bool) -> unit
+  val eq : ?name:string -> ?cmp:'a eq -> ?printer:'a print -> 'a -> 'a -> unit
 
   val q :
-    ?count:int -> ?long_factor:int -> 'a Q.arbitrary -> ('a -> bool) -> unit
+    ?name:string ->
+    ?count:int ->
+    ?long_factor:int ->
+    ?max_gen:int ->
+    ?max_fail:int ->
+    ?if_assumptions_fail:[ `Fatal | `Warning ] * float ->
+    'a Q.arbitrary ->
+    ('a -> bool) ->
+    unit
 
   val assert_equal :
     ?printer:('a -> string) -> ?cmp:('a -> 'a -> bool) -> 'a -> 'a -> unit
@@ -24,4 +32,6 @@ module type S = sig
 end
 
 val make : __FILE__:string -> unit -> (module S)
-val run_all : ?seed:string -> descr:string -> Test.t list list -> unit
+
+val run_all :
+  ?seed:string -> ?long:bool -> descr:string -> Test.t list list -> unit

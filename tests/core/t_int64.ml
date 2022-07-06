@@ -92,3 +92,12 @@ q
 eq ~printer:CCFun.id "0b111" (to_string_binary 7L);;
 eq ~printer:CCFun.id "-0b111" (to_string_binary (-7L));;
 eq ~printer:CCFun.id "0b0" (to_string_binary 0L)
+
+let eq' = eq ~printer:CCInt.to_string;;
+
+eq' 0 (popcount 0L);;
+eq' 1 (popcount 1L);;
+eq' 63 (popcount max_int);;
+eq' 1 (popcount min_int);;
+eq' 10 (popcount 0b1110010110110001010L);;
+eq' 5 (popcount 0b1101110000000000L)

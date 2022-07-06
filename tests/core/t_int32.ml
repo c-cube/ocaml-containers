@@ -83,4 +83,20 @@ q
 
 eq ~printer:CCFun.id "0b111" (to_string_binary 7l);;
 eq ~printer:CCFun.id "-0b111" (to_string_binary (-7l));;
-eq ~printer:CCFun.id "0b0" (to_string_binary 0l)
+eq ~printer:CCFun.id "0b0" (to_string_binary 0l);;
+
+q
+  Q.(0 -- (Int32.max_int |> Int32.to_int))
+  (fun i ->
+    let n1 = CCInt.popcount i in
+    let n2 = CCInt32.popcount (Int32.of_int i) in
+    CCInt.(n1 = n2))
+
+let eq' = eq ~printer:CCInt.to_string;;
+
+eq' 0 (popcount 0l);;
+eq' 1 (popcount 1l);;
+eq' 31 (popcount max_int);;
+eq' 1 (popcount min_int);;
+eq' 10 (popcount 0b1110010110110001010l);;
+eq' 5 (popcount 0b1101110000000000l)
