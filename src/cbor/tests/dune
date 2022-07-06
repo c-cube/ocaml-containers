@@ -9,5 +9,6 @@
 (rule
  (alias runtest)
  (deps t_appendix_a.exe appendix_a.json)
+ (package containers)
  (action
   (run ./t_appendix_a.exe ./appendix_a.json)))

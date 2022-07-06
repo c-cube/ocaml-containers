@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "containers"
-version: "3.8"
+version: "3.9"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 license: "BSD-2-Clause"
@@ -16,7 +16,8 @@ depends: [
   "dune-configurator"
   "seq" # compat
   "either" # compat
-  "qcheck-core" { >= "0.14" & with-test }
+  (("ocaml" {with-test & < "4.08"} & "qcheck-core" {>= "0.17" & with-test})
+  | ("ocaml" {with-test & >= "4.08"} & "qcheck-core" {>= "0.18" & with-test}))
   "yojson" { with-test }
   "iter" { with-test }
   "gen" { with-test }

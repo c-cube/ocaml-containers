@@ -8,7 +8,7 @@
   {b note} this is only available on OCaml >= 4.08. Below that, the module
     is empty.
 
-  @since NEXT_RELEASE
+  @since 3.9
   *)
 
 type t =

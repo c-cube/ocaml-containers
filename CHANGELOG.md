@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.9
+
+- feat: add `Containers_cbor` module
+- feat(CCInt32): add popcount function
+- feat(CCInt64): add `popcount` operation
+- CCBV:
+  * more extensive test suite
+  * use `bytes` underneath, not an array of integers
+- add `containers_testlib`, removing qtest and ounit.
+
+- fix: handle uppercase in string/hex
+
 ## 3.8
 
 - add `Containers_bencode` for lightweight (de)ser

@@ -43,7 +43,7 @@ val pow : t -> t -> t
 
 val popcount : t -> int
 (** Number of bits set to 1.
-    @since NEXT_RELEASE *)
+    @since 3.9 *)
 
 val floor_div : t -> t -> t
 (** [floor_div x n] is integer division rounding towards negative infinity.

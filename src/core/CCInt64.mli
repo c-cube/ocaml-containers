@@ -32,7 +32,7 @@ val hash : t -> int
 
 val popcount : t -> int
 (** Number of bits set to 1.
-    @since NEXT_RELEASE *)
+    @since 3.9 *)
 
 val sign : t -> int
 (** [sign x] return [0] if [x = 0], [-1] if [x < 0] and [1] if [x > 0].

@@ -26,7 +26,7 @@ val create : size:int -> bool -> t
 val init : int -> (int -> bool) -> t
 (** [init len f] initializes a bitvector of length [len], where bit [i]
     is true iff [f i] is.
-    @since NEXT_RELEASE *)
+    @since 3.9 *)
 
 val copy : t -> t
 (** Copy of bitvector. *)
@@ -55,7 +55,7 @@ val resize_minimize_memory : t -> int -> unit
 (** Same as {!resize}, but this can also shrink the underlying
     array if this reduces the size.
     @raise Invalid_argument on negative sizes.
-    @since NEXT_RELEASE *)
+    @since 3.9 *)
 
 val is_empty : t -> bool
 (** Are there any true bits? *)
@@ -71,7 +71,7 @@ val reset : t -> int -> unit
 
 val set_bool : t -> int -> bool -> unit
 (** Set or reset [i]-th bit.
-    @since NEXT_RELEASE *)
+    @since 3.9 *)
 
 val flip : t -> int -> unit
 (** Flip i-th bit, extending the bitvector if needed. *)
@@ -81,7 +81,7 @@ val clear : t -> unit
 
 val clear_and_shrink : t -> unit
 (** Set every bit to 0, and set length to 0.
-    @since NEXT_RELEASE *)
+    @since 3.9 *)
 
 val iter : t -> (int -> bool -> unit) -> unit
 (** Iterate on all bits. *)
