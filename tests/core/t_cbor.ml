@@ -13,7 +13,7 @@ let gen_c : Cbor.t Q.Gen.t =
       1, return `Null;
       1, return `Undefined;
       ( 3,
-        let+ x = int in
+        let+ x = int >|= Int64.of_int in
         `Int x );
       ( 1,
         let+ b = bool in
@@ -71,8 +71,8 @@ let rec shrink (c : Cbor.t) : Cbor.t Q.Iter.t =
     let+ i = Q.Shrink.int i in
     `Simple i
   | `Int i ->
-    let+ i = Q.Shrink.int i in
-    `Int i
+    let+ i = Q.Shrink.int (Int64.to_int i) in
+    `Int (Int64.of_int i)
   | `Tag (t, i) ->
     let+ i = shrink i in
     `Tag (t, i)

@@ -16,7 +16,7 @@ type t =
   | `Undefined
   | `Simple of int
   | `Bool of bool
-  | `Int of int
+  | `Int of int64
   | `Float of float
   | `Bytes of string
   | `Text of string

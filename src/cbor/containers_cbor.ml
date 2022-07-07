@@ -5,7 +5,7 @@ type t =
   | `Undefined
   | `Simple of int
   | `Bool of bool
-  | `Int of int
+  | `Int of int64
   | `Float of float
   | `Bytes of string
   | `Text of string
@@ -19,7 +19,7 @@ let rec pp_diagnostic out (self : t) =
   | `Undefined -> Fmt.string out "undefined"
   | `Simple i -> Fmt.fprintf out "simple(%d)" i
   | `Bool b -> Fmt.bool out b
-  | `Int i -> Fmt.int out i
+  | `Int i -> Fmt.int64 out i
   | `Float f -> Fmt.float out f
   | `Bytes b -> Fmt.fprintf out "h'%s'" (CCString.to_hex b)
   | `Text s -> Fmt.fprintf out "%S" s
@@ -48,6 +48,13 @@ let to_string_diagnostic (self : t) : string =
 [@@@ifge 4.08]
 
 exception Indefinite
+
+let[@inline] i64_to_int i =
+  let j = Int64.to_int i in
+  if Int64.(of_int j = i) then
+    j
+  else
+    failwith "int64 does not fit in int"
 
 let decode_exn (s : string) : t =
   let b = Bytes.unsafe_of_string s in
@@ -85,14 +92,6 @@ let decode_exn (s : string) : t =
     if j + n > String.length s then failwith "cbor: cannot extract slice";
     i := !i + n;
     j
-  in
-
-  let[@inline] i64_to_int i =
-    let j = Int64.to_int i in
-    if Int64.(of_int j = i) then
-      j
-    else
-      failwith "int64 does not fit in int"
   in
 
   (* read integer value from least significant bits *)
@@ -153,10 +152,10 @@ let decode_exn (s : string) : t =
     let high = (c land 0b111_00000) lsr 5 in
     let low = c land 0b000_11111 in
     match high with
-    | 0 -> `Int (read_int ~allow_indefinite:false low |> i64_to_int)
+    | 0 -> `Int (read_int ~allow_indefinite:false low)
     | 1 ->
-      let i = read_int ~allow_indefinite:false low |> i64_to_int in
-      `Int (-1 - i)
+      let i = read_int ~allow_indefinite:false low in
+      `Int Int64.(sub minus_one i)
     | 2 ->
       let s = read_bytes ~ty:`Bytes low in
       `Bytes s
@@ -255,22 +254,22 @@ let encode ?(buf = Buffer.create 32) (self : t) : string =
   let add_i64 (i : int64) = Buffer.add_int64_be buf i in
 
   (* add unsigned integer, including first tag byte *)
-  let add_uint (high : int) (x : int) =
-    assert (x >= 0);
-    if x < 24 then
-      add_byte high x
-    else if x <= 0xff then (
+  let add_uint (high : int) (x : int64) =
+    assert (x >= 0L);
+    if x < 24L then
+      add_byte high (i64_to_int x)
+    else if x <= 0xffL then (
       add_byte high 24;
-      Buffer.add_char buf (Char.unsafe_chr x)
-    ) else if x <= 0xff_ff then (
+      Buffer.add_char buf (Char.unsafe_chr (i64_to_int x))
+    ) else if x <= 0xff_ffL then (
       add_byte high 25;
-      Buffer.add_uint16_be buf x
-    ) else if x <= 0xff_ff_ff_ff then (
+      Buffer.add_uint16_be buf (i64_to_int x)
+    ) else if x <= 0xff_ff_ff_ffL then (
       add_byte high 26;
-      Buffer.add_int32_be buf (Int32.of_int x)
+      Buffer.add_int32_be buf (Int64.to_int32 x)
     ) else (
       add_byte high 27;
-      Buffer.add_int64_be buf (Int64.of_int x)
+      Buffer.add_int64_be buf x
     )
   in
 
@@ -293,33 +292,33 @@ let encode ?(buf = Buffer.create 32) (self : t) : string =
       (* float 64 *)
       add_i64 (Int64.bits_of_float f)
     | `Array l ->
-      add_uint 4 (List.length l);
+      add_uint 4 (Int64.of_int (List.length l));
       List.iter encode_val l
     | `Map l ->
-      add_uint 5 (List.length l);
+      add_uint 5 (Int64.of_int (List.length l));
       List.iter
         (fun (k, v) ->
           encode_val k;
           encode_val v)
         l
     | `Text s ->
-      add_uint 3 (String.length s);
+      add_uint 3 (Int64.of_int (String.length s));
       Buffer.add_string buf s
     | `Bytes s ->
-      add_uint 2 (String.length s);
+      add_uint 2 (Int64.of_int (String.length s));
       Buffer.add_string buf s
     | `Tag (t, v) ->
-      add_uint 6 t;
+      add_uint 6 (Int64.of_int t);
       encode_val v
     | `Int i ->
-      if i >= 0 then
+      if i >= Int64.zero then
         add_uint 0 i
-      else if min_int + 2 > i then (
+      else if Int64.(add min_int 2L) > i then (
         (* large negative int, be careful. encode [(-i)-1] via int64. *)
         add_byte 1 27;
-        Buffer.add_int64_be buf Int64.(neg (add 1L (of_int i)))
+        Buffer.add_int64_be buf Int64.(neg (add 1L i))
       ) else
-        add_uint 1 (-i - 1)
+        add_uint 1 Int64.(sub (neg i) one)
   in
   encode_val self;
   Buffer.contents buf

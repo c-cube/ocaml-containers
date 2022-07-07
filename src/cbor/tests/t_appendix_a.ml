@@ -122,11 +122,11 @@ let run_test (c : count) (t : Test.t) : unit =
                   try compare_cj (List.assoc (`Text k) l) v
                   with Not_found -> false)
                 l2
-            | `Int i, `Int j -> i = j
+            | `Int i, `Int j -> i = Int64.of_int j
             | `Text s1, `String s2 -> s1 = s2
             | `Array l1, `List l2 ->
               List.length l1 = List.length l2 && List.for_all2 compare_cj l1 l2
-            | `Int i, `Intlit s -> string_of_int i = s
+            | `Int i, `Intlit s -> Int64.to_string i = s
             | _, `Intlit "-18446744073709551617" ->
               (* skip bigint test*)
               true
