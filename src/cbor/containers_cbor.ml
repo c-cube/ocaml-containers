@@ -216,8 +216,9 @@ let decode_exn (s : string) : t =
       | 28 | 29 | 30 -> failwith "cbor: malformed"
       | 31 -> failwith "uncaught 'break' stop code"
       | _ -> assert false (* unreachable *))
-    | _ -> assert false
-  (* unreachable *)
+    | _ ->
+      (* unreachable *)
+      assert false
   and read_bytes ~ty low =
     match read_int ~allow_indefinite:true low |> i64_to_int with
     | exception Indefinite ->
