@@ -32,6 +32,17 @@ let swap a b =
   a := !b;
   b := x
 
+let protect r x f =
+  let old = !r in
+  r := x;
+  try
+    let res = f () in
+    r := old;
+    res
+  with e ->
+    r := old;
+    raise e
+
 let to_list r = [ !r ]
 let to_iter r yield = yield !r
 let pp pp_x out r = pp_x out !r

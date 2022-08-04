@@ -33,6 +33,11 @@ val swap : 'a t -> 'a t -> unit
 (** [swap t1 t2] puts [!t2] in [t1] and [!t1] in [t2].
     @since 1.4 *)
 
+val protect : 'a t -> 'a -> (unit -> 'b) -> 'b
+(** [protect r x f] sets [r := x]; calls [f()]; restores [r] to its old value;
+    and returns the result of [f()].
+    @since NEXT_RELEASE *)
+
 val compare : 'a ord -> 'a t ord
 val equal : 'a eq -> 'a t eq
 val to_list : 'a t -> 'a list
