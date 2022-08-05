@@ -263,7 +263,7 @@ val to_opt : ('a, _) t -> 'a option
 (** Convert a result to an option. *)
 
 val of_opt : 'a option -> ('a, string) t
-(** Convert an option to a result. *)
+(** [of_opt opt] converts [Some v] to [Ok v] and [None] to [Error "of_opt"].*)
 
 val to_iter : ('a, _) t -> 'a iter
 (** @since 2.8 *)
