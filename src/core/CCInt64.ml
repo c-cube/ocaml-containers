@@ -5,8 +5,24 @@ include Int64
 
 let min : t -> t -> t = Stdlib.min
 let max : t -> t -> t = Stdlib.max
-let hash x = Stdlib.abs (to_int x)
 let sign i = compare i zero
+
+(* use FNV:
+   https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function *)
+let hash_to_int64 (n : t) =
+  let offset_basis = 0xcbf29ce484222325L in
+  let prime = 0x100000001b3L in
+
+  let h = ref offset_basis in
+  for k = 0 to 7 do
+    h := mul !h prime;
+    (* h := h xor (k-th bit of n) *)
+    h := logxor !h (logand (shift_left n (k * 8)) 0xffL)
+  done;
+  logand !h max_int
+
+let[@inline] hash (n : t) : int =
+  to_int (hash_to_int64 n) land CCShims_.Stdlib.max_int
 
 (* see {!CCInt.popcount} for more details *)
 let[@inline] popcount (b : t) : int =
