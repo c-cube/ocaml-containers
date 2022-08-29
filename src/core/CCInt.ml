@@ -39,7 +39,7 @@ let hash (n : int) : int =
   let h = ref offset_basis in
   for k = 0 to 7 do
     (h := Int64.(mul !h prime));
-    (* h := h xor (k-th bit of n) *)
+    (* h := h xor (k-th byte of n) *)
     h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff)))
   done;
   Int64.to_int !h land max_int

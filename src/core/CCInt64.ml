@@ -16,8 +16,8 @@ let hash_to_int64 (n : t) =
   let h = ref offset_basis in
   for k = 0 to 7 do
     h := mul !h prime;
-    (* h := h xor (k-th bit of n) *)
-    h := logxor !h (logand (shift_left n (k * 8)) 0xffL)
+    (* h := h xor (k-th byte of n) *)
+    h := logxor !h (logand (shift_right n (k * 8)) 0xffL)
   done;
   logand !h max_int
 
