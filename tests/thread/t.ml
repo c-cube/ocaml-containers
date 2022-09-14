@@ -6,4 +6,5 @@ Containers_testlib.run_all ~descr:"containers-thread"
     T_semaphore.Test.get ();
     T_thread.Test.get ();
     T_timer.Test.get ();
+    T_local_storage.Test.get ();
   ]
