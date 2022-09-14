@@ -29,9 +29,6 @@ val set : 'a t -> 'a -> unit
 val set_get : 'a t -> 'a -> 'a option
 (** Set content for this thread, and return the old value. *)
 
-val remove : 'a t -> unit
-(** Remove value *)
-
 val n_entries : _ t -> int
 (** Number of entries in the map currently.
 
