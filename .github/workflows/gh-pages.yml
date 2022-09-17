@@ -16,6 +16,7 @@ jobs:
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: '4.14.x'
+          dune-cache: true
 
       - name: Pin
         run: opam pin -n .
