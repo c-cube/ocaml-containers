@@ -1,10 +1,16 @@
 module C = Configurator.V1
 
+type conf = { os_type: string; major: int; minor: int }
+
 type op = Le | Ge
 
+type condition =
+  | Version of op * int * int
+  | Os_type of string
+
 type line =
-  | If of op * int * int
-  | Elseif of op * int * int
+  | If of condition
+  | Elseif of condition
   | Else
   | Endif
   | Raw of string
@@ -26,12 +32,15 @@ let prefix ~pre s =
     check 0
   )
 
-let eval ~major ~minor op i j =
-  match op with
-  | Le -> (major, minor) <= (i, j)
-  | Ge -> (major, minor) >= (i, j)
+let eval ~conf = function
+  | Os_type ty -> conf.os_type = ty
+  | Version (op, i, j) ->
+    match op with
+    | Le -> (conf.major, conf.minor) <= (i, j)
+    | Ge -> (conf.major, conf.minor) >= (i, j)
 
-let preproc_lines ~file ~major ~minor (ic : in_channel) : unit =
+
+let preproc_lines ~file ~conf (ic : in_channel) : unit =
   let pos = ref 0 in
   let fail msg =
     failwith (Printf.sprintf "at line %d in '%s': %s" !pos file msg)
@@ -46,13 +55,19 @@ let preproc_lines ~file ~major ~minor (ic : in_channel) : unit =
       incr pos;
       if line' <> "" && line'.[0] = '[' then
         if prefix line' ~pre:"[@@@ifle" then
-          Scanf.sscanf line' "[@@@ifle %d.%d]" (fun x y -> If (Le, x, y))
+          Scanf.sscanf line' "[@@@ifle %d.%d]" (fun x y -> If (Version (Le, x, y)))
         else if prefix line' ~pre:"[@@@ifge" then
-          Scanf.sscanf line' "[@@@ifge %d.%d]" (fun x y -> If (Ge, x, y))
+          Scanf.sscanf line' "[@@@ifge %d.%d]" (fun x y -> If (Version (Ge, x, y)))
         else if prefix line' ~pre:"[@@@elifle" then
-          Scanf.sscanf line' "[@@@elifle %d.%d]" (fun x y -> Elseif (Le, x, y))
+          Scanf.sscanf line' "[@@@elifle %d.%d]" (fun x y -> Elseif (Version (Le, x, y)))
         else if prefix line' ~pre:"[@@@elifge" then
-          Scanf.sscanf line' "[@@@elifge %d.%d]" (fun x y -> Elseif (Ge, x, y))
+          Scanf.sscanf line' "[@@@elifge %d.%d]" (fun x y -> Elseif (Version (Ge, x, y)))
+        else if prefix line' ~pre:"[@@@ifos" then
+          Scanf.sscanf line' "[@@@ifos %s@]" (fun os_type ->
+              If (Os_type (String.lowercase_ascii os_type)))
+        else if prefix line' ~pre:"[@@@elifos" then
+          Scanf.sscanf line' "[@@@elifos %s@]" (fun os_type ->
+              Elseif (Os_type (String.lowercase_ascii os_type)))
         else if line' = "[@@@else_]" then
           Else
         else if line' = "[@@@endif]" then
@@ -67,8 +82,8 @@ let preproc_lines ~file ~major ~minor (ic : in_channel) : unit =
   let rec top () =
     match parse_line () with
     | Eof -> ()
-    | If (op, i, j) ->
-      if eval ~major ~minor op i j then (
+    | If condition ->
+      if eval ~conf condition then (
         pp_pos ();
         cat_block ()
       ) else
@@ -99,8 +114,8 @@ let preproc_lines ~file ~major ~minor (ic : in_channel) : unit =
     | Endif ->
       pp_pos ();
       top ()
-    | Elseif (op, i, j) ->
-      if elseok && eval ~major ~minor op i j then (
+    | Elseif condition ->
+      if elseok && eval ~conf condition then (
         pp_pos ();
         cat_block ()
       ) else
@@ -120,9 +135,10 @@ let () =
   let c = C.create "main" in
   let version = C.ocaml_config_var_exn c "version" in
   let major, minor = Scanf.sscanf version "%u.%u" (fun maj min -> maj, min) in
+  let os_type = String.lowercase_ascii (C.ocaml_config_var_exn c "os_type") in
 
   let ic = open_in file in
-  preproc_lines ~file ~major ~minor ic;
+  preproc_lines ~file ~conf:{os_type; major; minor} ic;
 
   Printf.printf "(* file preprocessed in %.3fs *)\n" (Unix.gettimeofday () -. t0);
   ()
