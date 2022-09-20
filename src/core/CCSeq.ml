@@ -6,8 +6,16 @@ type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a printer = Format.formatter -> 'a -> unit
 
+[@@@ifge 4.07]
+
+include Seq
+
+[@@@else_]
+
 type +'a t = unit -> 'a node
 and +'a node = 'a Seq.node = Nil | Cons of 'a * 'a t
+
+[@@@endif]
 
 let nil () = Nil
 let cons a b () = Cons (a, b)

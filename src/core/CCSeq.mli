@@ -13,8 +13,16 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
+[@@@ifge 4.07]
+
+include module type of Seq
+
+[@@@else_]
+
 type +'a t = unit -> 'a node
 and +'a node = 'a Seq.node = Nil | Cons of 'a * 'a t
+
+[@@@endif]
 
 val nil : 'a t
 val empty : 'a t
