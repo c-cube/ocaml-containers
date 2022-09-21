@@ -29,11 +29,17 @@ val call_full :
   'a
 (** [call_full cmd] wraps the result of [Unix.open_process_full cmd] into an
     object. It reads the full stdout and stderr of the subprocess before
-    returning.
+    returning. [cmd] can be a format string as in {!Printf}.
+
     @param stdin if provided, the generator or string is consumed and fed to
       the subprocess input channel, which is then closed.
     @param bufsize buffer size used to read stdout and stderr.
     @param env environment to run the command in.
+
+    Example:
+    {[
+      # CCUnix.call_full "ls %s" (CCUnix.escape_str "/");;
+    ]}
 *)
 
 val call :
@@ -42,7 +48,7 @@ val call :
   ?env:string array ->
   ('a, Buffer.t, unit, string * string * int) format4 ->
   'a
-(** [call cmd] is similar to [call_full cmd] but returns
+(** [call cmd] is similar to {!call_full} but returns
     a tuple [stdout, stderr, errcode] instead of an object. *)
 
 val call_stdout :
