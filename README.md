@@ -35,6 +35,10 @@ Containers is:
 - A separate library for threaded programming in `containers-thread`,
   including a blocking queue, semaphores, an extension of `Mutex`, and
   thread-pool based futures. This is in its own package since 3.0.
+- A bencode codec in `containers.bencode`. This is a tiny json-like
+  serialization format that is extremely simple. It comes from bittorrent files.
+- A [CBOR](https://cbor.io) codec in `containers.cbor`. This is a
+  compact binary serialization format.
 
 Some of the modules have been moved to their own repository (e.g. `sequence` (now `iter`),
 `gen`, `qcheck`) and are on opam for great fun and profit.
