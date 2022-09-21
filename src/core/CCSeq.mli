@@ -29,12 +29,26 @@ val empty : 'a t
 val cons : 'a -> 'a t -> 'a t
 val singleton : 'a -> 'a t
 
+val init : int -> (int -> 'a) -> 'a t
+(** [init n f] corresponds to the sequence [f 0; f 1; ...; f (n-1)].
+    @raise Invalid_argument if n is negative.
+    @since NEXT_RELEASE *)
+
 val repeat : ?n:int -> 'a -> 'a t
 (** [repeat ~n x] repeats [x] [n] times then stops. If [n] is omitted,
     then [x] is repeated forever. *)
 
+val forever : (unit -> 'a) -> 'a t
+(** [forever f] corresponds to the infinit sequence containing all the [f ()].
+    @since NEXT_RELEASE *)
+
 val cycle : 'a t -> 'a t
 (** Cycle through the iterator infinitely. The iterator shouldn't be empty. *)
+
+val iterate : ('a -> 'a) -> 'a -> 'a t
+(** [iterate f a] corresponds to the infinit sequence containing [a], [f a], [f (f a)],
+    ...]
+    @since NEXT_RELEASE *)
 
 val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
 (** [unfold f acc] calls [f acc] and:
@@ -42,6 +56,7 @@ val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t
     - if [f acc = None], stops. *)
 
 val is_empty : 'a t -> bool
+(** [is_empty xs] checks in the sequence [xs] is empty *)
 
 val head : 'a t -> 'a option
 (** Head of the list. *)
@@ -57,6 +72,10 @@ val tail_exn : 'a t -> 'a t
 (** Unsafe version of {!tail}.
     @raise Not_found if the list is empty. *)
 
+val uncons : 'a t -> ('a * 'a t) option
+(** [uncons xs] return [None] if [xs] is empty other
+    @since NEXT_RELEASE *)
+
 val equal : 'a equal -> 'a t equal
 (** Equality step by step. Eager. *)
 
@@ -68,6 +87,16 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
 val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** Alias for {!fold} *)
+
+val foldi : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+(** [fold_lefti f init xs] applies [f acc i x] where [acc] is the result of the previous
+    computation or [init] for the first one, [i] is the index in the sequence (starts at
+    0) and [x] is the element of the sequence.
+    @since NEXT_RELEASE *)
+
+val fold_lefti : ('a -> int -> 'b -> 'a) -> 'a -> 'b t -> 'a
+(** Alias of {!foldi}.
+    @since NEXT_RELEASE *)
 
 val iter : ('a -> unit) -> 'a t -> unit
 
@@ -96,6 +125,10 @@ val product_with : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** Fair product of two (possibly infinite) lists into a new list. Lazy.
     The first parameter is used to combine each pair of elements. *)
 
+val map_product : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+(** Alias of {!product_with}.
+    @since NEXT_RELEASE *)
+
 val product : 'a t -> 'b t -> ('a * 'b) t
 (** Specialization of {!product_with} producing tuples. *)
 
@@ -123,9 +156,33 @@ val exists : ('a -> bool) -> 'a t -> bool
     sequence until it finds an element satisfying the predicate.
     @since 3.3 *)
 
+val find : ('a -> bool) -> 'a t -> 'a option
+(** [find p [a1; ...; an]] return [Some ai] for the first [ai] satisfying the predicate
+    [p] and return [None] otherwise.
+    @since NEXT_RELEASE *)
+
+val find_map : ('a -> 'b option) -> 'a t -> 'b option
+(** [find f [a1; ...; an]] return [Some (f ai)] for the first [ai] such that
+    [f ai = Some _] and return [None] otherwise.
+    @since NEXT_RELEASE *)
+
+val scan : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a t
+(** [scan f init xs] is the sequence containing the intermediate result of
+    [fold f init xs].
+    @since NEXT_RELEASE *)
+
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+val concat_map : ('a -> 'b t) -> 'a t -> 'b t
+(** Aliass of {!flat_map}
+    @since NEXT_RELEASE *)
+
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
+
 val flatten : 'a t t -> 'a t
+val concat : 'a t t -> 'a t
+(** Alias of {!flatten}.
+    @since NEXT_RELEASE *)
+
 val range : int -> int -> int t
 
 val ( -- ) : int -> int -> int t
@@ -140,6 +197,10 @@ val ( --^ ) : int -> int -> int t
 val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
 (** Fold on two collections at once. Stop at soon as one of them ends. *)
 
+val fold_left2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
+(** Alias for {!fold2}.
+    @since NEXT_RELEASE *)
+
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** Map on two collections at once. Stop as soon as one of the
     arguments is exhausted. *)
@@ -153,11 +214,19 @@ val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val merge : 'a ord -> 'a t -> 'a t -> 'a t
 (** Merge two sorted iterators into a sorted iterator. *)
 
+val sorted_merge : 'a ord -> 'a t -> 'a t -> 'a t
+(** Alias of {!merge}.
+    @since NEXT_RELEASE *)
+
 val zip : 'a t -> 'b t -> ('a * 'b) t
 (** Combine elements pairwise. Stop as soon as one of the lists stops. *)
 
 val unzip : ('a * 'b) t -> 'a t * 'b t
 (** Split each tuple in the list. *)
+
+val split : ('a * 'b) t -> 'a t * 'b t
+(** Alias of {!unzip}.
+    @since NEXT_RELEASE *)
 
 val zip_i : 'a t -> (int * 'a) t
 (** [zip_i seq] zips the index of each element with the element itself.
