@@ -241,7 +241,7 @@ and _flat_map_app f l l' () =
   | Nil -> flat_map f l' ()
   | Cons (x, tl) -> Cons (x, _flat_map_app f tl l')
 
-let concat = flat_map
+let concat_map = flat_map
 
 let product_with f l1 l2 =
   let rec _next_left h1 tl1 h2 tl2 () =
