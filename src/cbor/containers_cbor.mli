@@ -28,7 +28,7 @@ val pp_diagnostic : t CCFormat.printer
 val to_string_diagnostic : t -> string
 
 (* we use funtions from Bytes *)
-[@@@ifge 4.08]
+[@@@if ge 4.08]
 
 val encode : ?buf:Buffer.t -> t -> string
 val decode : string -> (t, string) result

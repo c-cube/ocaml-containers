@@ -14,13 +14,13 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 include module type of ArrayLabels with module Floatarray = Array.Floatarray
 (** @inline
     {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
 
-[@@@elifge 4.6]
+[@@@elif ge 4.6]
 
 include module type of ArrayLabels with module Floatarray = Array.Floatarray
 (** @inline
@@ -347,7 +347,7 @@ module Infix : sig
   (** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
       @since 0.17 *)
 
-  [@@@ifge 4.8]
+  [@@@if ge 4.8]
 
   include CCShims_syntax.LET with type 'a t := 'a array
   (** Let operators on OCaml >= 4.08.0, nothing otherwise

@@ -48,7 +48,7 @@ let rec assq_opt x = function
 
 (* end of backport *)
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 include List
 
@@ -1470,7 +1470,7 @@ module Infix = struct
   let ( -- ) = ( -- )
   let ( --^ ) = ( --^ )
 
-  [@@@ifge 4.8]
+  [@@@if ge 4.8]
 
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )

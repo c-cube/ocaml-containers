@@ -177,7 +177,7 @@ module Infix = struct
   let ( <$> ) = map
   let ( <+> ) = ( <+> )
 
-  [@@@ifge 4.8]
+  [@@@if ge 4.8]
 
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )

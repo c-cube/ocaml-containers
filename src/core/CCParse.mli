@@ -667,7 +667,7 @@ module Infix : sig
       [a ||| b] parses [a], then [b], then returns the pair of their results.
       @since 3.6 *)
 
-  [@@@ifge 4.08]
+  [@@@if ge 4.08]
 
   include CCShims_syntax.LET with type 'a t := 'a t
   (** Let operators on OCaml >= 4.08.0, nothing otherwise

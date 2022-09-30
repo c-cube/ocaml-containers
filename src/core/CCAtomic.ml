@@ -1,4 +1,4 @@
-[@@@ifge 4.12]
+[@@@if ge 4.12]
 
 include Atomic
 

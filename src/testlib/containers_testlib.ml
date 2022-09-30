@@ -31,7 +31,7 @@ module Test = struct
     in
     Printf.sprintf "(test :file '%s'%s :n %d)" self.__FILE__ what self.n
 
-  [@@@ifge 4.08]
+  [@@@if ge 4.08]
 
   let get_state (r : _ QCheck.TestResult.t) : _ QCheck.TestResult.state =
     QCheck.TestResult.get_state r

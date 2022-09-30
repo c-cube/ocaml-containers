@@ -147,7 +147,7 @@ module Make (P : PARAM) : sig
       val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
       val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
 
-      [@@@ifge 4.08]
+      [@@@if ge 4.08]
 
       include CCShims_syntax.LET with type 'a t := 'a t
       (** Let operators on OCaml >= 4.08.0, nothing otherwise

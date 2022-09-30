@@ -251,7 +251,7 @@ module Infix = struct
   let ( ||| ) = both
   let[@inline] ( <?> ) p msg = set_error_message msg p
 
-  [@@@ifge 4.8]
+  [@@@if ge 4.8]
 
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )

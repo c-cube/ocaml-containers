@@ -1,4 +1,4 @@
-[@@@ifge 4.07]
+[@@@if ge 4.07]
 
 module Stdlib = Stdlib
 

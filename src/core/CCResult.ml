@@ -269,7 +269,7 @@ module Infix = struct
   let ( >>= ) e f = flat_map f e
   let ( <*> ) = ( <*> )
 
-  [@@@ifge 4.8]
+  [@@@if ge 4.8]
 
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )

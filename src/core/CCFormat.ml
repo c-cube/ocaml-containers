@@ -301,7 +301,7 @@ let mark_close_style st : string =
   else
     ""
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 type stag += Style of ANSI_codes.style list
 

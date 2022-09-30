@@ -1,7 +1,7 @@
 include (val Containers_testlib.make ~__FILE__ ())
 module Cbor = Containers_cbor
 
-[@@@ifge 4.08]
+[@@@if ge 4.08]
 
 let gen_c : Cbor.t Q.Gen.t =
   let open Q.Gen in

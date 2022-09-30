@@ -45,7 +45,7 @@ t @@ fun () ->
   assert_equal ~printer:CCFun.id "coucou\n" (Buffer.contents buf2);
   true;;
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 t @@ fun () ->
   set_color_default true;
