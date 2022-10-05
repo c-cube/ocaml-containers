@@ -1,0 +1,6 @@
+
+(library
+  (name containers_scc)
+  (public_name containers.scc)
+  (synopsis "strongly connected components algorithm")
+  (libraries containers))

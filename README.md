@@ -26,8 +26,15 @@ Containers is:
   `Containers` (intended to be opened, replaces some stdlib modules
   with extended ones), and a small S-expression printer and parser
   that can be functorized over the representation of values.
-- Utilities around the `unix` library in `containers.unix` (mainly to spawn
-  sub-processes easily and deal with resources safely)
+- Some sub-libraries with a specific focus each:
+  * Utilities around the `unix` library in `containers.unix` (mainly to spawn
+    sub-processes easily and deal with resources safely)
+  * A bencode codec in `containers.bencode`. This is a tiny json-like
+    serialization format that is extremely simple. It comes from bittorrent files.
+  * A [CBOR](https://cbor.io) codec in `containers.cbor`. This is a
+    compact binary serialization format.
+  * The [Strongly Connected Component](https://en.wikipedia.org/wiki/Strongly_connected_component)
+    algorithm, functorized, in `containers.scc`
 - A separate library `containers-data` with additional
   data structures that don't have an equivalent in the standard library,
   typically not as thoroughly maintained. This is now in its own package
@@ -35,10 +42,6 @@ Containers is:
 - A separate library for threaded programming in `containers-thread`,
   including a blocking queue, semaphores, an extension of `Mutex`, and
   thread-pool based futures. This is in its own package since 3.0.
-- A bencode codec in `containers.bencode`. This is a tiny json-like
-  serialization format that is extremely simple. It comes from bittorrent files.
-- A [CBOR](https://cbor.io) codec in `containers.cbor`. This is a
-  compact binary serialization format.
 
 Some of the modules have been moved to their own repository (e.g. `sequence` (now `iter`),
 `gen`, `qcheck`) and are on opam for great fun and profit.
