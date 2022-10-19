@@ -44,6 +44,7 @@ let get_safe a i =
     None
 
 let map_inplace f a = Array.iteri (fun i e -> Array.unsafe_set a i (f e)) a
+let mapi_inplace f a = Array.iteri (fun i e -> Array.unsafe_set a i (f i e)) a
 let fold = Array.fold_left
 
 let foldi f acc a =
