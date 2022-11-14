@@ -411,7 +411,7 @@ module IntMap = CCMap.Make(CCInt);;
 ```ocaml
 # (* conversions using the "iter" type, fast iterators that are
    pervasively used in containers. Combinators can be found
-   in the opam library "sequence". *)
+   in the opam library "iter". *)
   let map : string IntMap.t =
     l2
     |> List.map (fun x -> x, string_of_int x)
@@ -648,10 +648,13 @@ Some structural types are used throughout the library:
 
 - `gen`: `'a gen = unit -> 'a option` is an iterator type. Many combinators
   are defined in the opam library [gen](https://github.com/c-cube/gen)
-- `sequence`: `'a sequence = (unit -> 'a) -> unit` is also an iterator type.
+- `iter`: `'a iter = (unit -> 'a) -> unit` is also an iterator type, formerly
+  named `sequence`.
   It is easier to define on data structures than `gen`, but it a bit less
   powerful. The opam library [iter](https://github.com/c-cube/iter)
-  can be used to consume and produce values of this type. It was renamed
+  can be used to consume and produce values of this type.
+
+  It was renamed
   from `'a sequence` to `'a iter` to distinguish it better from `Core.Sequence`
   and the standard `seq`.
 - `error`: `'a or_error = ('a, string) result = Error of string | Ok of 'a`
