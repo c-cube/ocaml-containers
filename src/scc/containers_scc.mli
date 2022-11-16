@@ -24,3 +24,11 @@ val scc :
   nodes:'node list ->
   unit ->
   'node list list
+(** Compute the strongly connected components of the given [graph],
+      reachable from [nodes].
+
+    @param graph the graph state
+    @param children maps a node to its direct descendants (children)
+    @param nodes initial nodes.
+    @param tbl a hashtable implementation that takes nodes as keys
+*)
