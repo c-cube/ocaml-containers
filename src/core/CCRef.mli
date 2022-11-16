@@ -36,7 +36,7 @@ val swap : 'a t -> 'a t -> unit
 val protect : 'a t -> 'a -> (unit -> 'b) -> 'b
 (** [protect r x f] sets [r := x]; calls [f()]; restores [r] to its old value;
     and returns the result of [f()].
-    @since NEXT_RELEASE *)
+    @since 3.10 *)
 
 val compare : 'a ord -> 'a t ord
 val equal : 'a eq -> 'a t eq

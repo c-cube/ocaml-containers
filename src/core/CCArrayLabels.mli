@@ -64,7 +64,7 @@ val map_inplace : f:('a -> 'a) -> 'a t -> unit
 
 val mapi_inplace : f:(int -> 'a -> 'a) -> 'a t -> unit
 (** [mapi_inplace ~f a] replace all elements of [a] by its image by [f].
-    @since NEXT_RELEASE *)
+    @since 3.10 *)
 
 val fold : f:('a -> 'b -> 'a) -> init:'a -> 'b t -> 'a
 (** [fold ~f ~init a] computes [f (… (f (f init a.(0)) a.(1)) …) a.(n-1)],

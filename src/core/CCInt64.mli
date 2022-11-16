@@ -28,12 +28,12 @@ val max : t -> t -> t
 
 val hash : t -> int
 (** [hash x] computes the hash of [x], a non-negative integer.
-    Uses FNV since NEXT_RELEASE *)
+    Uses FNV since 3.10 *)
 
 val hash_to_int64 : t -> t
 (** Like {!hash} but does not truncate.
     Uses FNV.
-    @since NEXT_RELEASE *)
+    @since 3.10 *)
 
 val popcount : t -> int
 (** Number of bits set to 1.

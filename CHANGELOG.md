@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.10
+
+- `CCArray`: add `mapi_inplace`
+- add sublibrary `containers.scc` for strongly connected components
+- `CCSeq`: add `concat_map`
+- `CCSeq`: add some missing function from 4.14
+- add `CCInt64.{hash,hash_to_int64}`
+- `Ref`: add `protect` function
+
+- fix: include `Seq` in `CCSeq` for ocaml >= 4.07
+
 ## 3.9
 
 - feat: add `Containers_cbor` module
@@ -9,6 +20,7 @@
   * more extensive test suite
   * use `bytes` underneath, not an array of integers
 - add `containers_testlib`, removing qtest and ounit.
+- `cbor`: use int64 as main int type
 
 - fix: handle uppercase in string/hex
 
