@@ -39,14 +39,14 @@ val repeat : ?n:int -> 'a -> 'a t
     then [x] is repeated forever. *)
 
 val forever : (unit -> 'a) -> 'a t
-(** [forever f] corresponds to the infinit sequence containing all the [f ()].
+(** [forever f] corresponds to the infinite sequence containing all the [f ()].
     @since 3.10 *)
 
 val cycle : 'a t -> 'a t
 (** Cycle through the iterator infinitely. The iterator shouldn't be empty. *)
 
 val iterate : ('a -> 'a) -> 'a -> 'a t
-(** [iterate f a] corresponds to the infinit sequence containing [a], [f a], [f (f a)],
+(** [iterate f a] corresponds to the infinite sequence containing [a], [f a], [f (f a)],
     ...]
     @since 3.10 *)
 
