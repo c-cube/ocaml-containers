@@ -173,7 +173,7 @@ val scan : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 val concat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** Aliass of {!flat_map}
+(** Alias of {!flat_map}
     @since 3.10 *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
@@ -195,7 +195,7 @@ val ( --^ ) : int -> int -> int t
 (** {2 Operations on two Collections} *)
 
 val fold2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
-(** Fold on two collections at once. Stop at soon as one of them ends. *)
+(** Fold on two collections at once. Stop as soon as one of them ends. *)
 
 val fold_left2 : ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a t -> 'b t -> 'acc
 (** Alias for {!fold2}.
