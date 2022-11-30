@@ -85,6 +85,8 @@ module Tbl = struct
   let to_list t = M.fold (fun _ p l -> pair_of_e_pair p :: l) t []
   let add_list t l = List.iter (add_pair_ t) l
   let add_iter t seq = seq (add_pair_ t)
+  let clear t = M.clear t
+  let reset t = M.reset t
 
   let of_list l =
     let t = create () in

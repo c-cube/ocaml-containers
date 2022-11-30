@@ -1,5 +1,3 @@
-(* This file is free software, part of containers. See file "license" for more details. *)
-
 (** Associative containers with Heterogeneous Values
 
     This is similar to {!CCMixtbl}, but the injection is directly used as
@@ -7,13 +5,21 @@
 
     @since 0.17 *)
 
+(* This file is free software, part of containers. See file "license" for more details. *)
+
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
+(** Keys with a type witness. *)
 module Key : sig
   type 'a t
+  (** A key of type ['a t] is used to access the portion of the
+      map or table that associates keys of type ['a] to values. *)
 
   val create : unit -> 'a t
+  (** Make a new key. This is generative, so calling [create ()] twice with the
+      same return type will produce incompatible keys that cannot see each
+      other's bindings. *)
 
   val equal : 'a t -> 'a t -> bool
   (** Compare two keys that have compatible types. *)
@@ -31,6 +37,14 @@ module Tbl : sig
   val remove : t -> _ Key.t -> unit
   val length : t -> int
   val find : t -> 'a Key.t -> 'a option
+
+  val clear : t -> unit
+  (** clear the table (like {!Hashtbl.clear})
+      @since NEXT_RELEASE *)
+
+  val reset : t -> unit
+  (** reset the table (like {!Hashtbl.reset})
+      @since NEXT_RELEASE *)
 
   val find_exn : t -> 'a Key.t -> 'a
   (** @raise Not_found if the key is not in the table. *)
