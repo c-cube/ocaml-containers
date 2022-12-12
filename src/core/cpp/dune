@@ -3,5 +3,5 @@
 (executable
  (name cpp)
  (flags :standard -warn-error -a+8)
- (modes native)
+ (modes (best exe))
  (libraries dune.configurator))
