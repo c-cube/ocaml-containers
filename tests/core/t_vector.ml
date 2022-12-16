@@ -612,10 +612,11 @@ q
 
 (* check it frees memory properly *)
 t @@ fun () ->
-let s = "coucou" ^ "lol" in
 let w = Weak.create 1 in
-Weak.set w 0 (Some s);
-let v = of_list [ "a"; s ] in
+let v =
+  let s = "coucou" ^ "lol" in
+  Weak.set w 0 (Some s) ;
+  of_list [ "a"; s ] in
 filter_in_place (fun s -> String.length s <= 1) v;
 assert_equal 1 (length v);
 assert_equal "a" (get v 0);
