@@ -1,5 +1,4 @@
-
-name: Main workflow
+name: Opam Dependencies
 
 on:
   pull_request:
@@ -32,4 +31,3 @@ jobs:
       - run: opam install . --deps-only --with-test --with-doc
 
       - uses: ocaml/setup-ocaml/analysis@analysis
-
