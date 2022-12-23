@@ -18,7 +18,7 @@ depends: [
   | ("ocaml" {with-test & >= "4.08"} & "qcheck-core" {>= "0.18" & with-test}))
   "iter" { with-test }
   "gen" { with-test }
-  #"mdx" { with-test & >= "1.5.0" & < "2.0.0" }
+  "mdx" { with-test }
   "odoc" { with-doc }
 ]
 tags: [ "containers" "RAL" "functional" "vector" "okasaki" ]
