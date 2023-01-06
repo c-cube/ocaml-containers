@@ -333,34 +333,40 @@ let uniq_sort cmp v =
 (* start at 1, to get the first element in hand *)
 
 let iter k v =
-  let n = v.size in
+  let { vec; size = n } = v in
   for i = 0 to n - 1 do
-    k (Array.unsafe_get v.vec i)
+    k (Array.unsafe_get vec i)
   done
 
 let iteri k v =
-  let n = v.size in
+  let { vec; size = n } = v in
   for i = 0 to n - 1 do
-    k i (Array.unsafe_get v.vec i)
+    k i (Array.unsafe_get vec i)
   done
 
 let map f v =
   if array_is_empty_ v then
     create ()
   else (
-    let vec = Array.init v.size (fun i -> f (Array.unsafe_get v.vec i)) in
-    { size = v.size; vec }
+    let { vec; size } = v in
+    let vec = Array.init size (fun i -> f (Array.unsafe_get vec i)) in
+    { size; vec }
   )
 
 let mapi f v =
   if array_is_empty_ v then
     create ()
   else (
-    let vec = Array.init v.size (fun i -> f i (Array.unsafe_get v.vec i)) in
-    { size = v.size; vec }
+    let { vec; size } = v in
+    let vec = Array.init size (fun i -> f i (Array.unsafe_get vec i)) in
+    { size; vec }
   )
 
-let map_in_place f v = iteri (fun i x -> Array.unsafe_set v.vec i (f x)) v
+let map_in_place f v =
+  let { vec; size = n } = v in
+  for i = 0 to n - 1 do
+    Array.unsafe_set vec i (f (Array.unsafe_get vec i))
+  done
 
 let filter_in_place p v =
   let i = ref 0 in
@@ -392,11 +398,12 @@ let filter p v =
   )
 
 let fold f acc v =
+  let { vec; size } = v in
   let rec fold acc i =
-    if i = v.size then
+    if i = size then
       acc
     else (
-      let x = Array.unsafe_get v.vec i in
+      let x = Array.unsafe_get vec i in
       fold (f acc x) (i + 1)
     )
   in
@@ -545,9 +552,9 @@ let rev v =
   v'
 
 let rev_iter f v =
-  let n = v.size in
+  let { vec; size = n } = v in
   for i = n - 1 downto 0 do
-    f (Array.unsafe_get v.vec i)
+    f (Array.unsafe_get vec i)
   done
 
 let size v = v.size
@@ -566,9 +573,9 @@ let of_seq ?(init = create ()) seq =
 let to_iter v k = iter k v
 
 let to_iter_rev v k =
-  let n = v.size in
+  let { vec; size = n } = v in
   for i = n - 1 downto 0 do
-    k (Array.unsafe_get v.vec i)
+    k (Array.unsafe_get vec i)
   done
 
 let to_seq v =
@@ -592,9 +599,10 @@ let to_seq_rev v =
 let slice_iter v start len =
   assert (start >= 0 && len >= 0);
   fun k ->
-    assert (start + len <= v.size);
+    let { size; vec } = v in
+    assert (start + len <= size);
     for i = start to start + len - 1 do
-      let x = Array.unsafe_get v.vec i in
+      let x = Array.unsafe_get vec i in
       k x
     done
 
