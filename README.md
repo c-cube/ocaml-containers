@@ -224,6 +224,7 @@ In a toplevel, using ocamlfind:
 
 ```ocaml
 # #use "topfind";;
+...
 # #require "containers";;
 # #require "containers-data";;
 # CCList.flat_map;;
