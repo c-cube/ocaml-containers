@@ -19,6 +19,7 @@ contains a tutorial and more explanations about what Containers is about.
 
 - [last](last)
 
+- [3.11](3.11)
 - [3.10](3.10)
 - [3.9](3.9)
 - [3.8](3.8)
