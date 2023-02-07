@@ -40,11 +40,11 @@ module Tbl : sig
 
   val clear : t -> unit
   (** clear the table (like {!Hashtbl.clear})
-      @since NEXT_RELEASE *)
+      @since 3.11 *)
 
   val reset : t -> unit
   (** reset the table (like {!Hashtbl.reset})
-      @since NEXT_RELEASE *)
+      @since 3.11 *)
 
   val find_exn : t -> 'a Key.t -> 'a
   (** @raise Not_found if the key is not in the table. *)

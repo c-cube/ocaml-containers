@@ -107,7 +107,7 @@ module Infix : sig
   val ( let@ ) : ('a -> 'b) -> 'a -> 'b
   (** [let@ x = foo in bar] is the equivalent of [foo @@ fun x -> bar].
       It can be very useful for resource management, alongside with {!protect}.
-      @since NEXT_RELEASE *)
+      @since 3.11 *)
 
   [@@@endif]
 end

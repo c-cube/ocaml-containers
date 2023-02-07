@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.11
+
+- official OCaml 5 support
+- add `CCFun.(let@)` (if OCaml >= 4.08)
+- add `CCHet.Tbl.{clear,reset}`
+
+- fix(CCVector): concurrent modification safety in `resize_with`
+- fix(CCVector): always obtain a copy of array before using unsafe_{set,get}
+- CI: add ocaml 5.0.x
+
 ## 3.10
 
 - `CCArray`: add `mapi_inplace`
