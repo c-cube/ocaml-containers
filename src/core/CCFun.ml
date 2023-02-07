@@ -85,10 +85,16 @@ let rec iterate n f x =
 
 module Infix = struct
   (* default implem for some operators *)
-  let ( |> ) x f = f x
-  let ( @@ ) f x = f x
+  let ( |> ) = CCShims_.Stdlib.( |> )
+  let ( @@ ) = CCShims_.Stdlib.( @@ )
   let ( %> ) = compose
-  let ( % ) f g x = f (g x)
+  let[@inline] ( % ) f g x = f (g x)
+
+  [@@@ifge 4.8]
+
+  let ( let@ ) = ( @@ )
+
+  [@@@endif]
 end
 
 include Infix
@@ -99,7 +105,8 @@ end) =
 struct
   type 'a t = X.t -> 'a
 
-  let return x _ = x
-  let ( >|= ) f g x = g (f x)
-  let ( >>= ) f g x = g (f x) x
+  let[@inline] return x _ = x
+  let[@inline] ( >|= ) f g x = g (f x)
+  let[@inline] ( >>= ) f g x = g (f x) x
 end
+[@@inline]

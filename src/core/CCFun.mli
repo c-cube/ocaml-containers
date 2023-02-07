@@ -9,6 +9,8 @@ include module type of Fun
 
 [@@@else_]
 
+(* port from stdlib *)
+
 external id : 'a -> 'a = "%identity"
 (** This is an API imitating the new standard Fun module *)
 
@@ -99,6 +101,15 @@ module Infix : sig
 
   val ( % ) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
   (** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
+
+  [@@@ifge 4.8]
+
+  val ( let@ ) : ('a -> 'b) -> 'a -> 'b
+  (** [let@ x = foo in bar] is the equivalent of [foo @@ fun x -> bar].
+      It can be very useful for resource management, alongside with {!protect}.
+      @since NEXT_RELEASE *)
+
+  [@@@endif]
 end
 
 include module type of Infix
