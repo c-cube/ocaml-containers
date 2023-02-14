@@ -176,7 +176,7 @@ module type S = sig
       [pp_stop] is called at the end, [pp_sep] is called between each elements.
       By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
       (fun out -> Format.fprintf out ",@ ").
-      Renamed from {!print} since 2.0
+      Renamed from [print] since 2.0
       @since 0.16 *)
 end
 

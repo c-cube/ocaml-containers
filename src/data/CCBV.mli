@@ -9,7 +9,7 @@
     a new signature.
 
     The size of the bitvector used to be rounded up to the multiple of 30 or 62.
-    In other words some functions such as {!iter} would iterate on more
+    In other words some functions such as {!val-iter} would iterate on more
     bits than what was originally asked for. This is not the case anymore.
 *)
 

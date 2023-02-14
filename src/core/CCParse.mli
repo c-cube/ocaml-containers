@@ -239,7 +239,7 @@ end
 val recurse : slice -> 'a t -> 'a t
 (** [recurse slice p] parses the [slice]
     (most likely obtained via another combinator, such as {!split_1}
-    or {!split_n}), using [p].
+    or {!split_list}), using [p].
 
     The slice contains a position which is used to relocate error
     messages to their position in the whole input, not just relative to
@@ -294,7 +294,7 @@ val chars_fold_transduce :
     | `Fail of string ]) ->
   'acc ->
   ('acc * string) t
-(** Same as {!char_fold} but with the following differences:
+(** Same as {!chars_fold} but with the following differences:
 
     - returns a string along with the accumulator, rather than the slice
       of all the characters accepted by [`Continue _].

@@ -910,7 +910,7 @@ val of_gen : 'a gen -> 'a t
     In the result, elements appear in the same order as they did in the source [gen]. *)
 
 (** {2 Infix Operators}
-    It is convenient to {!open CCList.Infix} to access the infix operators
+    It is convenient to [open CCList.Infix] to access the infix operators
     without cluttering the scope too much.
 
     @since 0.16 *)

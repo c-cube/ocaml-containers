@@ -428,7 +428,7 @@ module Split : sig
     string ->
     (string * int * int) list
   (** [list_ ?drop ~by s] splits the given string [s] along the given separator [by].
-      Should only be used with very small separators, otherwise use {!Containers_string.KMP}.
+      Should only be used with very small separators.
       @return a [list] of slices [(s,index,length)] that are
       separated by [by]. {!String.sub} can then be used to actually extract
       a string from the slice.
