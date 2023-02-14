@@ -63,7 +63,7 @@ module type S = sig
   val fold : f:('b -> key -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 
   val mapi : f:(key -> 'a -> 'b) -> 'a t -> 'b t
-  (** Map values, giving both key and value. Will use {!WORD.of_list} to rebuild keys.
+  (** Map values, giving both key and value.
       @since 0.17
   *)
 
