@@ -2,10 +2,10 @@
 
 (** Random Generators *)
 
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Random.html} Documentation for the standard Random module}*)
 include module type of struct
   include Random
 end
+(** @inline *)
 
 type state = Random.State.t
 

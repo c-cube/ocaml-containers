@@ -10,10 +10,10 @@ type 'a iter = ('a -> unit) -> unit
    see https://discuss.ocaml.org/t/extend-existing-module/1389/4
 *)
 
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Format.html} Documentation for the standard Format module}*)
 include module type of struct
   include Format
 end
+(** @inline *)
 
 type t = Format.formatter
 type -'a printer = t -> 'a -> unit

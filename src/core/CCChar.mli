@@ -4,10 +4,10 @@
 
     @since 0.14 *)
 
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Char.html} Documentation for the standard Char module}*)
 include module type of struct
   include Char
 end
+(** @inline *)
 
 val compare : t -> t -> int
 (** The comparison function for characters, with the same specification as

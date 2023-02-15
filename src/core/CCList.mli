@@ -13,16 +13,14 @@ type 'a random_gen = Random.State.t -> 'a
 [@@@ifge 4.8]
 
 include module type of List with type 'a t := 'a list
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}
-    @inline *)
+(** @inline *)
 
 type +'a t = 'a list
 
 [@@@else_]
 
 include module type of List
-(** @inline
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+(** @inline *)
 
 type +'a t = 'a list
 

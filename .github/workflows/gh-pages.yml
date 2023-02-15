@@ -19,15 +19,17 @@ jobs:
           dune-cache: false
 
       - name: Deps
-        run: opam install -d . --deps-only
+        run: |
+          opam install -d . --deps-only;
+          opam install odig
 
       - name: Build
-        run: opam exec -- dune build @doc
+        run: opam exec -- odig odoc --cache-dir=_doc/ containers containers-data containers-thread
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_build/default/_doc/_html/
+          publish_dir: ./_doc/html/
           destination_dir: dev
           enable_jekyll: true

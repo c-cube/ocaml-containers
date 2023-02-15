@@ -13,10 +13,10 @@
 
     @since 0.13 *)
 
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int64.html} Documentation for the standard Int64 module}*)
 include module type of struct
   include Int64
 end
+(** @inline *)
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
