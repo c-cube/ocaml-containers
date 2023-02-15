@@ -18,12 +18,6 @@ jobs:
           ocaml-compiler: '4.14.x'
           dune-cache: false
 
-      - name: Pin
-        run: opam pin -n .
-
-      - name: Depext
-        run: opam depext -yt containers containers-data containers-thread
-
       - name: Deps
         run: opam install -d . --deps-only
 

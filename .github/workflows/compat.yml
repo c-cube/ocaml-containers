@@ -32,7 +32,5 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           dune-cache: true
 
-      - run: opam pin -n .
-      - run: opam depext -y containers containers-data containers-thread
       - run: opam install containers containers-data containers-thread --deps-only
       - run: opam exec -- dune build '@install'

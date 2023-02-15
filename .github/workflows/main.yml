@@ -31,10 +31,6 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           dune-cache: true
 
-      - run: opam pin -n .
-
-      - run: opam depext -yt containers containers-data containers-thread
-
       - run: opam install -t containers containers-data containers-thread --deps-only
         if: matrix.os == 'ubuntu-latest'
 
