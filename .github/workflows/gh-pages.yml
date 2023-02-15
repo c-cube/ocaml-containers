@@ -19,9 +19,7 @@ jobs:
           dune-cache: false
 
       - name: Deps
-        run: |
-          opam install -d . --deps-only;
-          opam install odig
+        run: opam install odig containers containers-data containers-thread
 
       - name: Build
         run: opam exec -- odig odoc --cache-dir=_doc/ containers containers-data containers-thread
