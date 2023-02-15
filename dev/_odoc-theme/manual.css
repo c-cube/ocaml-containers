@@ -1,0 +1,376 @@
+@charset "UTF-8";
+@import url("fonts/fonts.css");
+@import url("theme.css");
+
+/* Copyright (c) 2019 The odig programmers. All rights reserved.
+   Distributed under the ISC license, see terms at the end of the file.
+   odig v0.0.8 */
+
+:root { --font-headings: "PT-Sans-Caption";
+        --font-body: "PT-Sans";
+        --font-mono: "DejaVu-SansMono";
+
+        --size-font: 0.96875rem;
+        --size-font-micro: calc(0.675 * var(--size-font));
+        --size-font-tiny-ratio: 0.75;
+        --size-font-tiny:  calc(var(--size-font-tiny-ratio) * var(--size-font));
+        --size-font-small: calc(0.875 * var(--size-font));
+        --size-font-large: calc(1.25 * var(--size-font));
+        --size-font-big:   calc(1.5 * var(--size-font));
+        --size-font-huge:  calc(1.75 * var(--size-font));
+        --size-font-mono-ratio: 0.87097;
+        --size-line-ratio: 1.5;
+        --size-line: calc(var(--size-line-ratio) * var(--size-font));
+        --size-half-line: calc(0.5 * var(--size-line)); }
+
+/* Reset a few things. */
+
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,
+a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,select,
+small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,
+fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,
+article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,
+menu,nav,output,ruby,section,summary,time,mark,audio,video,button,input
+{ margin: 0; padding: 0; border: 0; /* outline: 0; */
+  font-size: inherit; font: inherit; font-weight: inherit;
+  line-height: inherit; vertical-align: baseline;
+  text-align: inherit; color: inherit; background: transparent; }
+
+table { border-collapse: collapse; border-spacing: 0; }
+*,  *:before,  *:After { box-sizing: border-box; }
+
+/* Note the stylesheet has quite hackish CSS selectors as the markup's
+   classification is sometimes a bit lacking. */
+
+/* Geometry.
+   See also media adjustements at the end of the stylesheet. */
+
+body { background-color: var(--color-bg);
+       color: var(--color-fg);
+       font-size: var(--size-font);
+       font-family: var(--font-body), sans-serif;
+       font-weight: 400;
+       line-height: var(--size-line);
+       text-align: left;
+       position: relative;
+       max-width: 120ch;
+       margin: 0 auto;
+       padding: calc(1.5 * var(--size-line));
+       padding-top: calc(0.5 * var(--size-line)); }
+
+body > * { max-width: 80ch; width: 75% }
+body > ul:first-of-type:not(.itemize):not(.ftoc2) /* toc */
+{ position: absolute;
+  top: 0px; right: 0px;
+  width: 20%;
+  margin-left: var(--size-line);
+  margin-top: calc(2 * var(--size-line));
+  margin-right: var(--size-line);
+  border-top: solid thin var(--color-rule); }
+
+/* Rules
+   We remove the top one, keep the last one and add one over h1 and h2 */
+
+body > hr:last-of-type {
+  margin-top: var(--size-line);
+  border-style: none;
+  width: 100%;
+  max-width: 100%;
+  text-align: right;
+  border-top: solid thin var(--color-rule); }
+
+body > hr:first-of-type { display: none } /* order with last-of-type imporant */
+h1, h2 { border-top: solid thin var(--color-rule) }
+
+/* Hacks */
+
+body > a > img /* Navigation arrows, a bit problematic for dark themes */
+{ display: inline-block; margin:0;
+  background-color: var(--color-code-block-bg); /* bof */ }
+
+body > p br, h1 br { display: none; } /* brs should die */
+
+/* Basic markup */
+
+h1, h2, h3, h4, h5, h6
+{ font-family: var(--font-headings), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  margin-top: var(--size-line); }
+
+h1, h2 { line-height: calc(1.5 * var(--size-line));
+         padding-top: calc(0.75 * var(--size-line)); }
+
+hr + h1, hr + h2 { margin-top: calc(0.25 * var(--size-line)) }
+
+h1 { font-size: var(--size-font-huge); }
+h2 { font-size: var(--size-font-big); }
+h3 { font-size: var(--size-font-large); }
+
+div, nav, p, ol, ul, dl, pre, table, blockquote
+{ margin-top: var(--size-half-line); }
+
+ul, ol { list-style-position: outside }
+ul { list-style-type: square }
+ul > li { margin-left: 2.25ch; }
+ol > li { margin-left: 2ch; }
+
+em { font-style: italic }
+b, strong { font-weight: 700 }
+small { font-size: var(--size-font-small); }
+
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+sup, sub { font-size : calc(1em * var(--size-font-tiny-ratio));
+           line-height: 0; margin-left: 0.2ex; }
+
+img { display: block;
+      margin-top: var(--size-half-line); margin-bottom: var(--size-half-line); }
+
+blockquote { margin-left: var(--size-half-line); }
+
+/* Links and anchors. Note anchors need to be refined a bit further down
+   in certain cases. */
+
+a { text-decoration:none; color: var(--color-link); }
+a:hover { box-shadow:0 1px 0 0 var(--color-link); }
+a.anchor:before { content: "#" }
+a.anchor:hover { box-shadow: none; text-decoration: underline; }
+*:hover > a.anchor { visibility: visible }
+a.anchor
+{ visibility: hidden; position: absolute;
+  font-weight: normal;
+  font-style: normal;
+  margin-left: -2.5ch;
+  padding-right: 1ch; padding-left: 1ch; /* To remain selectable */
+  color: var(--color-link);
+  text-align: right;
+ }
+
+*:target /* Linked highlight */
+{ background-color: var(--color-bg-highlight);
+  box-shadow: 0 0 0 3px var(--color-bg-highlight) }
+
+/* Code and code highlighting */
+
+.c003, .c004, .c005, .c006, .c015,
+code, pre
+{ font-family: var(--font-mono), monospace;
+  font-weight: 400;
+  font-size: calc(1em * var(--size-font-mono-ratio));
+  color: var(--color-code-fg); }
+
+.c004, .c002 { color: var(--color-code-type-id); }
+.c005 { font-style: oblique }
+.c006 { font-weight: 700 }
+.c015 { text-align: left }
+
+pre .c003, pre .c004, pre .c005, pre .c006,
+pre code { font-size: inherit } /* don't apply transform twice... */
+a code { color: inherit }
+h1 code, h2 code, h3 code, h4 code, h5 code, h6 code { text-transform: none; }
+
+pre { background: var(--color-code-block-bg);
+      padding-left: 0.8ch; padding-right: 0.8ch;
+      margin-left: -0.8ch; margin-right: -0.8ch;
+      padding-top: 1ch; padding-bottom: 1ch;
+      white-space: pre-wrap;
+      word-wrap: break-word; }
+
+/* Table of contents, like in odoc.css except we don't have a class */
+
+body > ul:first-of-type:not(.itemize):not(.ftoc2)
+{ font-size: var(--size-font-small); }
+
+body > ul:first-of-type:not(.itemize):not(.ftoc2) a
+{ color : var(--color-fg); }
+
+body > ul:first-of-type:not(.itemize):not(.ftoc2) a:hover
+{ color : var(--color-link); }
+
+body > ul:first-of-type:not(.itemize):not(.ftoc2)
+{ font-family: var(--font-headings); text-transform: uppercase;
+  list-style-type: none; padding-top: var(--size-line) }
+
+body > ul:first-of-type:not(.itemize):not(.ftoc2) li
+{ margin-left: 0; padding-left: 3.25ch; text-indent: -3.25ch; }
+
+body > ul:first-of-type:not(.itemize):not(.ftoc2) ul
+{ font-family: var(--font-body);
+  text-transform: none;
+  margin-top:0; }
+
+/* toplevel examples */
+
+div.caml-example.toplevel div.caml-input::before { content: "#" }
+div.caml-input, div.caml-output { margin-top: 0; }
+
+.caml-input {}
+.caml-output { color: var(--color-code-string) /* why not */ }
+
+/* Other HeVeA classes */
+
+.c000 { border-spacing: 2ch; border-collapse: separate; margin: 0 auto; }
+.c001 { border-spacing: 1ch; border-collapse: separate }
+.c008 { font-size: var(--size-font-small) }
+.c009 { font-style:italic }
+.c010 { font-style:italic; color:var(--color-link) }
+.c011 { font-style:italic; font-weight:700 }
+.c012 { font-style:italic }
+.c013 { font-style:italic }
+.c018 { text-align: right }
+.c019 { text-align: left}
+.dcenter { margin: 0 auto; }
+.description { margin-left: var(--size-line) }
+.dd-description br { display: none }
+dd + dt { margin-top: var(--size-half-line) }
+
+dt .c003 { font-style:normal; font-weight:700 } /* options */
+
+.indexenv { list-style-type: none }
+.indexenv li { margin-left: 0 }
+
+/* Page specific */
+
+/* Cover page */
+
+div.maintitle > span > span
+{ text-transform: uppercase;
+  font-family: var(--font-headings);
+  line-height: var(--size-line-ratio);
+  font-size: calc(2.25 * var(--size-font)) !important;
+  margin-left: -0.25ch; /* compensate nbsp */ }
+
+div.maintitle > span > span > br { display: none }
+div.maintitle > span > span > span
+{ display: block;
+  text-transform: none;
+  font-style: italic;
+  font-family: var(--font-body);
+  font-size: var(--size-font-big) !important; }
+
+div.maintitle > span > span > span > span /* ugh */
+{ font-style: normal;
+  line-height: var(--size-line);
+  font-size: var(--size-font) !important; }
+
+div.maintitle > span > span > span > span > span /* ugh bis */
+{ font-size: var(--size-font-small) !important;
+  font-style: italic;
+  margin-left: -1.25ch; }
+
+div.maintitle + blockquote hr { display : none }
+div.maintitle + blockquote
+{ margin: 0;
+/*  margin-top: calc(-1 * var(--size-line)); chrome but not FF, bah... */
+  font-size: var(--size-font-small);
+  border-bottom: solid thin var(--color-rule);
+  padding-bottom: var(--size-half-line); }
+
+div.maintitle ~ blockquote:last-of-type { display: none } /* remove branding */
+
+div.maintitle ~ ul:first-of-type:not(.itemize):not(.ftoc2) /* undo side toc */
+{ position: static;
+  padding: 0;
+  margin: 0; margin-top: var(--size-line);
+  width: 100%; }
+
+div.maintitle ~ br { display: none }
+div.maintitle ~ ul:first-of-type:not(.itemize):not(.ftoc2) > li { margin: 0; }
+div.maintitle ~ ul:first-of-type:not(.itemize):not(.ftoc2) a
+{ color: var(--color-link) }
+
+div.maintitle ~ table { margin-top: 0 }
+div.maintitle ~ ul:first-of-type:not(.itemize):not(.ftoc2)
+{ list-style-type: none;
+  font-family: inherit; text-transform: inherit;
+  font-size: inherit;
+  margin-top: var(--size-half-line);
+  border: none; }
+
+div.maintitle ~ ul { list-style-type: none }
+div.maintitle ~ ul li { margin-left: 0 }
+
+/* Contents page */
+
+h1#sec1 + ul:first-of-type /* undo side toc */
+{ position: static;
+  list-style-type: none;
+  margin: 0; margin-top: var(--size-half-line);
+  width: 100%; border: none; padding: 0;
+  font-size: var(--size-font-big); }
+
+h1#sec1 + ul:first-of-type li
+{ margin-left: 0; padding-left: 0; text-indent: 0 }
+
+h1#sec1 ~ ul ul
+{ list-style-type: none; font-size: var(--size-font-large); font-style: italic;}
+
+h1#sec1 ~ ul ul ul
+{ font-size: var(--size-font); font-style: normal;
+  margin-top: var(--size-half-line); }
+
+h1#sec1 ~ ul ul ul ul { margin-left: 2.5ch; margin-top: 0;}
+h1#sec1 ~ ul > li { margin-top: var(--size-line); }
+h1#sec1 ~ ul > li > ul > li { margin-top: var(--size-half-line); }
+
+/* Media adjustments */
+
+@media only screen and (min-width:160ch) /* and (min-height: 60rem) */
+{
+:root { --size-font: 1.125rem; } /* consider using vmin units */
+}
+
+@media only screen and (max-width:80ch)
+{
+  body { padding: var(--size-line); }
+  body > * { width: 100%; }
+  body > ul:first-of-type:not(.itemize):not(.ftoc2)
+  { position: static;
+    margin: 0; margin-top: var(--size-line);
+    width: 100%; }
+  pre { font-size: var(--size-font-tiny); }
+}
+
+@media print
+{
+  * { -webkit-print-color-adjust: exact; }
+  .content nav:first-child { visibility: hidden }
+  body > * { width: 100%; }
+  body > ul:first-of-type:not(.itemize):not(.ftoc2)
+  { position: static; width: 100%;
+    margin: 0; margin-top: var(--size-line); }
+
+  /* odig.light with slight adjustements */
+  :root
+  { --color-bg: white;
+    --color-bg-highlight: #CAD7EF;
+    --color-fg: black;
+    --color-rule: #DADBDB;
+
+    --color-code-block-bg: #E8E8E8;
+    --color-code-fg: #16191D;
+    --color-code-comment: #747679;
+    --color-code-keyword: #874aa9;
+    --color-code-type-id: #a9874a;
+    --color-code-string: #4aa987;
+
+    --color-link:  #557dcc;
+    --color-broken-link: #f71414; }
+}
+
+/*
+Copyright (c) 2019 The odig programmers
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/

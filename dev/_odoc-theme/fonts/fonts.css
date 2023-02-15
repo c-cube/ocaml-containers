@@ -1,0 +1,59 @@
+@charset "UTF-8";
+
+/* PT Sans */
+
+@font-face
+{ font-family: 'PT-Sans';
+  src: url('PTS55F.woff2') format('woff2');
+  font-weight: 400; font-style: normal; }
+
+@font-face
+{ font-family: 'PT-Sans';
+  src: url('PTS75F.woff2') format('woff2');
+  font-weight: 700; font-style: normal; }
+
+@font-face
+{ font-family: 'PT-Sans';
+  src: url('PTS56F.woff2') format('woff2');
+  font-weight: 400; font-style: italic; }
+
+@font-face
+{ font-family: 'PT-Sans';
+  src: url('PTS76F.woff2') format('woff2');
+  font-weight: 700; font-style: italic; }
+
+/* PT Sans caption */
+
+@font-face
+{ font-family: 'PT-Sans-Caption';
+  src: url('PTC55F.woff2') format('woff2');
+  font-weight: 400; font-style: normal; }
+
+@font-face
+{ font-family: 'PT-Sans-Caption';
+  src: url('PTC75F.woff2') format('woff2');
+  font-weight: 700; font-style: normal; }
+
+/* DejaVu 400 */
+
+@font-face
+{ font-family: 'DejaVu-SansMono';
+  src: url('DejaVuSansMono.woff2') format('woff2');
+  font-weight: 400; font-style: normal; }
+
+@font-face
+{ font-family: 'DejaVu-SansMono';
+  src: url('DejaVuSansMono-Oblique.woff2') format('woff2');
+  font-weight: 400; font-style: oblique; }
+
+/* DejaVu 700 */
+
+@font-face
+{ font-family: 'DejaVu-SansMono';
+  src: url('DejaVuSansMono-Bold.woff2') format('woff2');
+  font-weight: 700; font-style: normal; }
+
+@font-face
+{ font-family: 'DejaVu-SansMono';
+  src: url('DejaVuSansMono-BoldOblique.woff2') format('woff2');
+  font-weight: 700; font-style: oblique; }
