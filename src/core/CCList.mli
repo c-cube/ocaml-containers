@@ -13,8 +13,8 @@ type 'a random_gen = Random.State.t -> 'a
 [@@@ifge 4.8]
 
 include module type of List with type 'a t := 'a list
-(** @inline
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}*)
+(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html} Documentation for the standard List module}
+    @inline *)
 
 type +'a t = 'a list
 
@@ -612,7 +612,7 @@ val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
     itself as second argument. *)
 
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
-(** [iteri f l] is like {!iter}, but the function [f] is applied to the index of
+(** [iteri f l] is like {!val-iter}, but the function [f] is applied to the index of
     the element as first argument (counting from 0), and the element
     itself as second argument. *)
 

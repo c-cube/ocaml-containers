@@ -47,7 +47,7 @@ val cycle : 'a t -> 'a t
 
 val iterate : ('a -> 'a) -> 'a -> 'a t
 (** [iterate f a] corresponds to the infinite sequence containing [a], [f a], [f (f a)],
-    ...]
+    ...
     @since 3.10 *)
 
 val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t

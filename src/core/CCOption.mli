@@ -47,7 +47,7 @@ val none : 'a t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** [flat_map f o] is equivalent to {!map} followed by {!flatten}.
-    Flip version of {!>>=}. *)
+    Flip version of {!(>>=)}. *)
 
 val bind : 'a t -> ('a -> 'b t) -> 'b t
 (** [bind o f] is [f v] if [o] is [Some v], [None] otherwise.

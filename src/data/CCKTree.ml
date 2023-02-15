@@ -2,7 +2,7 @@
 
 (** {1 Lazy Tree Structure}
     This structure can be used to represent trees and directed
-    graphs (as infinite trees) in a lazy fashion. Like {!CCKList}, it
+    graphs (as infinite trees) in a lazy fashion. It
     is a structural type. *)
 
 type 'a iter = ('a -> unit) -> unit

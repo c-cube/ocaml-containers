@@ -5,9 +5,8 @@
 [@@@ifge 4.08]
 
 include module type of Int
-(** @inline
-
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}*)
+(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Int.html} Documentation for the standard Int module}
+    @inline *)
 
 [@@@endif]
 

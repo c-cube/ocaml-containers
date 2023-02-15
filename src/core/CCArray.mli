@@ -17,8 +17,8 @@ type 'a printer = Format.formatter -> 'a -> unit
 [@@@ifge 4.8]
 
 include module type of Array
-(** @inline
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}
+    @inline *)
 
 [@@@elifge 4.6]
 
@@ -313,7 +313,7 @@ val sort_generic :
     @since 0.14 *)
 
 (** {3 Infix Operators}
-    It is convenient to {!open CCArray.Infix} to access the infix operators
+    It is convenient to [open CCArray.Infix] to access the infix operators
     without cluttering the scope too much.
 
     @since 2.7 *)
