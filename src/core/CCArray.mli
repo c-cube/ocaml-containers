@@ -17,22 +17,19 @@ type 'a printer = Format.formatter -> 'a -> unit
 [@@@ifge 4.8]
 
 include module type of Array
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}
-    @inline *)
+(** @inline *)
 
 [@@@elifge 4.6]
 
 include module type of Array
-(** @inline
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+(** @inline *)
 
 type 'a t = 'a array
 
 [@@@else_]
 
 include module type of Array
-(** @inline
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+(** @inline *)
 
 module Floatarray : sig
   type t = float array

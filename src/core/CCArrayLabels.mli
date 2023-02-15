@@ -17,22 +17,19 @@ type 'a printer = Format.formatter -> 'a -> unit
 [@@@ifge 4.8]
 
 include module type of ArrayLabels with module Floatarray = Array.Floatarray
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}
-    @inline *)
+(** @inline *)
 
 [@@@elifge 4.6]
 
 include module type of ArrayLabels with module Floatarray = Array.Floatarray
-(** @inline
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+(** @inline *)
 
 type 'a t = 'a array
 
 [@@@else_]
 
 include module type of ArrayLabels
-(** @inline
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Array.html} Documentation for the standard Array module}*)
+(** @inline *)
 
 module Floatarray = CCArray.Floatarray
 

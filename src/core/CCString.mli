@@ -8,10 +8,10 @@ type 'a iter = ('a -> unit) -> unit
 
 type 'a gen = unit -> 'a option
 
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/String.html} Documentation for the standard String module}*)
 include module type of struct
   include String
 end
+(** @inline *)
 
 val length : t -> int
 (** [length s] returns the length (number of characters) of the given string [s]. *)
