@@ -40,6 +40,11 @@ module type S = sig
   (** Safe version of {!find_first}.
       @since 1.5 *)
 
+  val find_first_map : (elt -> 'a option) -> t -> 'a option
+  (** [find_first_map f s] find the minimum element [x] of [s] such that [f x = Some y]
+      and return [Some y]. Otherwise returns [None].
+      @since NEXT_RELEASE *)
+
   val find_last : (elt -> bool) -> t -> elt
   (** Find maximum element satisfying predicate.
       @since 1.5 *)
@@ -47,6 +52,11 @@ module type S = sig
   val find_last_opt : (elt -> bool) -> t -> elt option
   (** Safe version of {!find_last}.
       @since 1.5 *)
+
+  val find_last_map : (elt -> 'a option) -> t -> 'a option
+  (** [find_last_map f s] find the maximum element [x] of [s] such that [f x = Some y]
+      and return [Some y]. Otherwise returns [None].
+      @since NEXT_RELEASE *)
 
   val of_iter : elt iter -> t
   (** Build a set from the given [iter] of elements.
