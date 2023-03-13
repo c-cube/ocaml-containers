@@ -20,8 +20,8 @@ let hash_int_ n =
     (h := Int64.(mul !h fnv_prime));
     h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff)))
   done;
+  (* truncate back to int and remove sign *)
   Int64.to_int !h land max_int
-(* truncate back to int and remove sign *)
 
 let combine2 a b =
   let h = ref fnv_offset_basis in
@@ -82,11 +82,19 @@ let bool b =
       2)
 
 let char x = hash_int_ (Char.code x)
-let int32 (x : int32) = Hashtbl.hash x (* TODO: FNV *)
 
-let int64 (x : int64) = Hashtbl.hash x (* TODO: FNV *)
+(* hash an integer *)
+let int64 n : int =
+  let h = ref fnv_offset_basis in
+  for k = 0 to 7 do
+    (h := Int64.(mul !h fnv_prime));
+    h := Int64.(logxor !h (logand (shift_right_logical n (k * 8)) 0xffL))
+  done;
+  (* truncate back to int and remove sign *)
+  Int64.to_int !h land max_int
 
-let nativeint (x : nativeint) = Hashtbl.hash x
+let int32 (x : int32) = int64 (Int64.of_int32 x)
+let nativeint (x : nativeint) = int64 (Int64.of_nativeint x)
 
 (* do not hash more than 128 bytes in strings/bytes *)
 let max_len_b_ = 128
