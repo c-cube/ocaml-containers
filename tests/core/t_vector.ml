@@ -92,6 +92,31 @@ assert (Iter.is_empty (to_iter v));
 true
 ;;
 
+t (fun () ->
+    let v = of_iter Iter.(1 -- 10) in
+    assert_equal CCList.(1 -- 10) (to_seq v |> CCList.of_seq);
+
+    (* test that we capture the length *)
+    let seq = to_seq v in
+    push v 11;
+    assert_equal CCList.(1 -- 10) (seq |> CCList.of_seq);
+    assert_equal CCList.(1 -- 11) (to_seq v |> CCList.of_seq);
+
+    clear v;
+    assert_equal 0 (size v);
+    assert (CCSeq.is_empty (to_seq v));
+    true)
+;;
+
+t (fun () ->
+    let v = of_iter Iter.(1 -- 10) in
+    assert_equal CCList.(1 -- 10 |> rev) (to_seq_rev v |> CCList.of_seq);
+    clear v;
+    assert_equal 0 (size v);
+    assert (CCSeq.is_empty (to_seq v));
+    true)
+;;
+
 t @@ fun () ->
 let v = create () in
 push v 1;
@@ -615,8 +640,9 @@ t @@ fun () ->
 let w = Weak.create 1 in
 let v =
   let s = "coucou" ^ "lol" in
-  Weak.set w 0 (Some s) ;
-  of_list [ "a"; s ] in
+  Weak.set w 0 (Some s);
+  of_list [ "a"; s ]
+in
 filter_in_place (fun s -> String.length s <= 1) v;
 assert_equal 1 (length v);
 assert_equal "a" (get v 0);
