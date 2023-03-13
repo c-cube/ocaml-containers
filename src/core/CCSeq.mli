@@ -16,6 +16,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 [@@@ifge 4.07]
 
 include module type of Seq
+(** @inline *)
 
 [@@@else_]
 

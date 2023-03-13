@@ -8,10 +8,10 @@ type 'a iter = ('a -> unit) -> unit
 
 type 'a gen = unit -> 'a option
 
-(** {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/StringLabels.html} Documentation for the standard StringLabels module} *)
 include module type of struct
   include StringLabels
 end
+(** @inline *)
 
 val length : t -> int
 (** [length s] returns the length (number of characters) of the given string [s]. *)
