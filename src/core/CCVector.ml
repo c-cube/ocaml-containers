@@ -132,7 +132,7 @@ let resize_with v f size =
     v.size <- size
   ) else (
     ensure_assuming_not_empty_ v size;
-    let {size=cur_size; vec} = v in
+    let { size = cur_size; vec } = v in
     for i = cur_size to size - 1 do
       Array.unsafe_set vec i (f i)
     done;
@@ -582,22 +582,24 @@ let to_iter_rev v k =
   done
 
 let to_seq v =
+  let { size; vec } = v in
   let rec aux i () =
-    if i >= size v then
+    if i >= size then
       Seq.Nil
     else
-      Seq.Cons (v.vec.(i), aux (i + 1))
+      Seq.Cons (vec.(i), aux (i + 1))
   in
   aux 0
 
 let to_seq_rev v =
+  let { size; vec } = v in
   let rec aux i () =
-    if i < 0 || i > size v then
+    if i < 0 then
       Seq.Nil
     else
-      Seq.Cons (v.vec.(i), aux (i - 1))
+      Seq.Cons (vec.(i), aux (i - 1))
   in
-  aux (size v - 1)
+  aux (size - 1)
 
 let slice_iter v start len =
   assert (start >= 0 && len >= 0);
@@ -655,10 +657,11 @@ let of_gen ?(init = create ()) g =
   aux g
 
 let to_gen v =
+  let { size; vec } = v in
   let i = ref 0 in
   fun () ->
-    if !i < v.size then (
-      let x = v.vec.(!i) in
+    if !i < size then (
+      let x = vec.(!i) in
       incr i;
       Some x
     ) else
