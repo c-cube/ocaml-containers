@@ -151,18 +151,18 @@ module Make (O : Map.OrderedType) = struct
     | None -> raise Not_found
     | Some x -> x
 
-  (* linear time, must traverse the whole set… *)
+  include S
+
+  (* Use find_last which is linear time on OCaml < 4.05 *)
   let find_last_map f m =
     let res = ref None in
-    S.iter
+    let _ = S.find_last_opt
       (fun x ->
         match f x with
-        | None -> ()
-        | Some y -> res := Some y)
-      m;
+        | None -> false
+        | Some y -> res := Some y; true)
+      m in
     !res
-
-  include S
 
   let add_seq seq set =
     let set = ref set in
