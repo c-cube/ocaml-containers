@@ -1,5 +1,6 @@
 Containers_testlib.run_all ~descr:"containers"
   [
+    T_pp.get ();
     T_list.get ();
     T_array.get ();
     T_bool.get ();

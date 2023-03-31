@@ -6,5 +6,6 @@
  (preprocess
   (action
    (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
- (libraries containers containers.bencode containers.cbor containers.unix
+ (libraries containers containers.bencode containers.cbor
+            containers.unix containers.pp
    threads containers_testlib iter gen uutf csexp))
