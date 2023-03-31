@@ -1,3 +1,33 @@
+module B = Buffer
+
+module Ext = struct
+  module type OUT = sig
+    val char : char -> unit
+    val sub_string : string -> int -> int -> unit
+    val string : string -> unit
+    val newline : unit -> unit
+  end
+
+  type out = (module OUT)
+
+  let out_of_buf (buf : Buffer.t) : out =
+    (module struct
+      let char = B.add_char buf
+      let sub_string = B.add_substring buf
+      let string = B.add_string buf
+      let newline () = B.add_char buf '\n'
+    end)
+
+  module type S = sig
+    type t
+
+    val pre : out -> t -> unit
+    val post : out -> t -> unit
+  end
+
+  type 'a t = (module S with type t = 'a)
+end
+
 type t = {
   view: view;  (** Document view *)
   wfl: int;  (** Width if flattened *)
@@ -13,6 +43,7 @@ and view =
   | Text_sub of string * int * int
   | Group of t
   | Fill of { sep: t; l: t list }
+  | Wrap : 'a Ext.t * 'a * t -> view
 
 let nil : t = { view = Nil; wfl = 0 }
 let newline : t = { view = Newline; wfl = 1 }
@@ -42,6 +73,7 @@ let group d : t =
   | Group _ -> d
   | _ -> { view = Group d; wfl = d.wfl }
 
+let wrap ext v d : t = { view = Wrap (ext, v, d); wfl = d.wfl }
 let ( ^ ) = append
 let text_sub_ s i len : t = { view = Text_sub (s, i, len); wfl = len }
 
@@ -76,8 +108,6 @@ let text (str : string) : t =
 let textpf fmt = Printf.ksprintf text fmt
 let textf fmt = Format.kasprintf text fmt
 
-module B = Buffer
-
 module Flatten = struct
   let to_buffer buf (self : t) : unit =
     let rec loop (d : t) =
@@ -98,7 +128,13 @@ module Flatten = struct
             if i > 0 then loop sep;
             loop x)
           l
+      | Wrap ((module E), v, d) ->
+        let out = Ext.out_of_buf buf in
+        E.pre out v;
+        loop d;
+        E.post out v
     in
+
     loop self
 
   let to_string self : string =
@@ -145,6 +181,12 @@ module Pretty = struct
           n := !n + pp_flatten st x)
         l;
       !n
+    | Wrap ((module E), v, d) ->
+      let out = Ext.out_of_buf st.buf in
+      E.pre out v;
+      let n = pp_flatten st d in
+      E.post out v;
+      n
 
   (** Does [x] fit in the current line when flattened, given that [k] chars
           are already on the line? *)
@@ -194,6 +236,12 @@ module Pretty = struct
       ) else
         pp_rec_top st ~k ~i x kont
     | Fill { sep; l } -> pp_fill st ~k ~i sep l kont
+    | Wrap ((module E), v, d) ->
+      let out = Ext.out_of_buf st.buf in
+      E.pre out v;
+      pp_rec_top st ~k ~i d (fun k ->
+          E.post out v;
+          kont k)
 
   and pp_fill st ~k ~i sep l (kont : int -> unit) : unit =
     (* [k] is the current offset in the line *)

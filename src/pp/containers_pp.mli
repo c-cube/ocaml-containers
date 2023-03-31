@@ -55,13 +55,42 @@ val newline : t
 val nl : t
 (** Alias for {!newline} *)
 
-(* TODO:
-val ext : pre:(unit -> string) -> post:(unit -> string) -> t -> t
-(** Extension. This is a custom-rendered document.
-    TODO: customize how long it is?
-    TODO: generic output, not [unit -> string]
- *)
- *)
+(** Extension node.
+
+    In here, we can stuff custom printer nodes. *)
+module Ext : sig
+  module type OUT = sig
+    val char : char -> unit
+    val sub_string : string -> int -> int -> unit
+    val string : string -> unit
+    val newline : unit -> unit
+  end
+
+  type out = (module OUT)
+
+  module type S = sig
+    type t
+
+    val pre : out -> t -> unit
+    val post : out -> t -> unit
+  end
+
+  type 'a t = (module S with type t = 'a)
+end
+
+val wrap : 'a Ext.t -> 'a -> t -> t
+(** [wrap ext v d] wraps [d] with value [v].
+
+    It is a document that has the same
+    shape (and size) as [d], except that additional data will
+    be output when it is rendered.
+
+    Let [(module Ext)] be [ext], and [out]
+    be the output buffer/stream for rendering.
+
+    When this is rendered, first [Ext.pre out v] is called;
+    then [d] is printed; then [Exp.post out v] is called.
+*)
 
 (** {2 Pretty print and rendering} *)
 

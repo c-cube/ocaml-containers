@@ -39,3 +39,22 @@ let () =
          [ text "bar"; text "baaz"; sexp_apply "g" [ int 42; int 10 ] ]
      in
      Pretty.to_string ~width:10 d)
+
+module Ext_coucou : Ext.S with type t = unit = struct
+  type t = unit
+
+  let pre (module O : Ext.OUT) () = O.string "<coucou>"
+  let post (module O : Ext.OUT) () = O.string "</coucou>"
+end
+
+let () =
+  eq ~name:"wrap1" ~printer:(spf "%S")
+    "(foo\n bar\n <coucou>(g 42 10)</coucou>)"
+    (let d =
+       sexp_apply "foo"
+         [
+           text "bar";
+           wrap (module Ext_coucou) () (sexp_apply "g" [ int 42; int 10 ]);
+         ]
+     in
+     Pretty.to_string ~width:10 d)
