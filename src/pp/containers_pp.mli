@@ -55,6 +55,8 @@ val newline : t
 val nl : t
 (** Alias for {!newline} *)
 
+(** {2 Output device} *)
+
 (** Arbitrary output.
 
     This is used for user-provided output. *)
@@ -73,9 +75,14 @@ module Out : sig
   val of_buffer : Buffer.t -> t
 end
 
+(** {2 Extensibility} *)
+
 (** Extension node.
 
-    In here, we can stuff custom printer nodes. *)
+    Custom nodes can be used to add user-defined behavior to
+    the rendered output. For example, documents
+    might be annotated with ANSI-terminal colors, or
+    with HTML tags. *)
 module Ext : sig
   type 'a t = {
     pre: Out.t -> 'a -> unit;  (** Printed before the wrapped value. *)
@@ -83,18 +90,17 @@ module Ext : sig
   }
 end
 
-val wrap : 'a Ext.t -> 'a -> t -> t
-(** [wrap ext v d] wraps [d] with value [v].
+val ext : 'a Ext.t -> 'a -> t -> t
+(** [ext e v d] wraps [d] with value [v].
 
     It is a document that has the same
     shape (and size) as [d], except that additional data will
-    be output when it is rendered.
+    be output when it is rendered using extension [e].
 
-    Let [(module Ext)] be [ext], and [out]
-    be the output buffer/stream for rendering.
+    When this is rendered, first [e.pre out v] is called;
+    then [d] is printed; then [e.post out v] is called.
+    Here [out] is the output buffer/stream for rendering.
 
-    When this is rendered, first [Ext.pre out v] is called;
-    then [d] is printed; then [Exp.post out v] is called.
 *)
 
 (** {2 Pretty print and rendering} *)
@@ -127,8 +133,9 @@ module Flatten : sig
 end
 
 val pp : Format.formatter -> t -> unit
+(** Pretty-print, using {!Pretty} and an unspecified margin. *)
 
-(** {2 Convenience functions *)
+(** {2 Convenience functions} *)
 
 module Infix : sig
   val ( ^ ) : t -> t -> t
@@ -161,10 +168,16 @@ val int : int -> t
 val float : float -> t
 val float_hex : float -> t
 
+val text_quoted : string -> t
+(** [text_quoted s] is [text (spf "%S" s)] *)
+
 val of_list : ?sep:t -> ('a -> t) -> 'a list -> t
 (** [of_list f l] maps each element of [l] to a document
     and concatenates them.
     @param sep separator inserted between elements (default [nil]) *)
+
+val of_seq : ?sep:t -> ('a -> t) -> 'a Seq.t -> t
+(** Same as {!of_list} but with sequences. *)
 
 val bracket : string -> t -> string -> t
 (** [bracket l d r] groups [d], indented, between brackets [l] and [r] *)

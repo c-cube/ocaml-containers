@@ -51,6 +51,6 @@ let () =
     "(foo\n bar\n <coucou>(g 42 10)</coucou>)"
     (let d =
        sexp_apply "foo"
-         [ text "bar"; wrap ext_coucou () (sexp_apply "g" [ int 42; int 10 ]) ]
+         [ text "bar"; ext ext_coucou () (sexp_apply "g" [ int 42; int 10 ]) ]
      in
      Pretty.to_string ~width:10 d)

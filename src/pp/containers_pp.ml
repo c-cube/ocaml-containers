@@ -73,7 +73,7 @@ let group d : t =
   | Group _ -> d
   | _ -> { view = Group d; wfl = d.wfl }
 
-let wrap ext v d : t = { view = Wrap (ext, v, d); wfl = d.wfl }
+let ext ext v d : t = { view = Wrap (ext, v, d); wfl = d.wfl }
 let ( ^ ) = append
 let text_sub_ s i len : t = { view = Text_sub (s, i, len); wfl = len }
 
@@ -317,6 +317,7 @@ let bool b =
 let int x : t = text (string_of_int x)
 let float x : t = text (string_of_float x)
 let float_hex x : t = textpf "%h" x
+let text_quoted s : t = text (Printf.sprintf "%S" s)
 
 let append_l ?(sep = nil) l =
   let rec loop = function
@@ -349,6 +350,20 @@ let of_list ?(sep = nil) f l =
     | x :: tl -> f x ^ sep ^ loop tl
   in
   loop l
+
+let of_seq ?(sep = nil) f seq : t =
+  let rec loop first seq =
+    match seq () with
+    | Seq.Nil -> nil
+    | Seq.Cons (x, tl) ->
+      let x = f x in
+      (if first then
+        x
+      else
+        sep ^ x)
+      ^ loop false tl
+  in
+  loop true seq
 
 let bracket l d r : t = group (text l ^ nest 2 (nl ^ d) ^ nl ^ text r)
 let sexp_l l : t = char '(' ^ nest 1 (group (append_nl l ^ char ')'))
