@@ -1,31 +1,31 @@
 module B = Buffer
 
+module Out = struct
+  type t = {
+    char: char -> unit;
+        (** Output a single char. The char is assumed not to be ['\n']. *)
+    sub_string: string -> int -> int -> unit;
+        (** Output a string slice (optim for [string]) *)
+    string: string -> unit;  (** Output a string *)
+    raw_string: string -> unit;
+        (** Output a string that should not be modified in any way *)
+    newline: unit -> unit;  (** Output a newline *)
+  }
+
+  let of_buffer (buf : Buffer.t) : t =
+    let char = B.add_char buf in
+    let sub_string = B.add_substring buf in
+    let string = B.add_string buf in
+    let newline () = B.add_char buf '\n' in
+    let raw_string = string in
+    { char; sub_string; string; newline; raw_string }
+end
+
 module Ext = struct
-  module type OUT = sig
-    val char : char -> unit
-    val sub_string : string -> int -> int -> unit
-    val string : string -> unit
-    val newline : unit -> unit
-  end
-
-  type out = (module OUT)
-
-  let out_of_buf (buf : Buffer.t) : out =
-    (module struct
-      let char = B.add_char buf
-      let sub_string = B.add_substring buf
-      let string = B.add_string buf
-      let newline () = B.add_char buf '\n'
-    end)
-
-  module type S = sig
-    type t
-
-    val pre : out -> t -> unit
-    val post : out -> t -> unit
-  end
-
-  type 'a t = (module S with type t = 'a)
+  type 'a t = {
+    pre: Out.t -> 'a -> unit;  (** Printed before the wrapped value. *)
+    post: Out.t -> 'a -> unit;  (** Printed after the wrapped value. *)
+  }
 end
 
 type t = {
@@ -109,18 +109,18 @@ let textpf fmt = Printf.ksprintf text fmt
 let textf fmt = Format.kasprintf text fmt
 
 module Flatten = struct
-  let to_buffer buf (self : t) : unit =
+  let to_out (out : Out.t) (self : t) : unit =
     let rec loop (d : t) =
       match d.view with
       | Nil -> ()
-      | Char c -> B.add_char buf c
-      | Newline -> B.add_char buf ' '
+      | Char c -> out.char c
+      | Newline -> out.char ' '
       | Nest (_, x) -> loop x
       | Append (x, y) ->
         loop x;
         loop y
-      | Text s -> B.add_string buf s
-      | Text_sub (s, i, len) -> B.add_substring buf s i len
+      | Text s -> out.string s
+      | Text_sub (s, i, len) -> out.sub_string s i len
       | Group x -> loop x
       | Fill { sep; l } ->
         List.iteri
@@ -128,14 +128,16 @@ module Flatten = struct
             if i > 0 then loop sep;
             loop x)
           l
-      | Wrap ((module E), v, d) ->
-        let out = Ext.out_of_buf buf in
-        E.pre out v;
+      | Wrap (ext, v, d) ->
+        ext.pre out v;
         loop d;
-        E.post out v
+        ext.post out v
     in
-
     loop self
+
+  let to_buffer buf (self : t) : unit =
+    let out = Out.of_buffer buf in
+    to_out out self
 
   let to_string self : string =
     let buf = Buffer.create 32 in
@@ -144,32 +146,32 @@ module Flatten = struct
 end
 
 module Pretty = struct
-  type st = { buf: Buffer.t; width: int }
+  type st = { out: Out.t; width: int }
 
   (** Add [i] spaces of indentation. *)
-  let add_indent (st : st) (i : int) =
+  let add_indent st (i : int) =
     for _i = 1 to i do
-      B.add_char st.buf ' '
+      st.out.char ' '
     done
 
   let rec pp_flatten (st : st) (self : t) : int =
     match self.view with
     | Nil -> 0
     | Char c ->
-      B.add_char st.buf c;
+      st.out.char c;
       1
     | Newline ->
-      B.add_char st.buf ' ';
+      st.out.char ' ';
       1
     | Nest (_i, x) -> pp_flatten st x
     | Append (x, y) ->
       let n = pp_flatten st x in
       n + pp_flatten st y
     | Text s ->
-      B.add_string st.buf s;
+      st.out.string s;
       String.length s
     | Text_sub (s, i, len) ->
-      B.add_substring st.buf s i len;
+      st.out.sub_string s i len;
       len
     | Group x -> pp_flatten st x
     | Fill { sep; l } ->
@@ -181,19 +183,18 @@ module Pretty = struct
           n := !n + pp_flatten st x)
         l;
       !n
-    | Wrap ((module E), v, d) ->
-      let out = Ext.out_of_buf st.buf in
-      E.pre out v;
+    | Wrap (ext, v, d) ->
+      ext.pre st.out v;
       let n = pp_flatten st d in
-      E.post out v;
+      ext.post st.out v;
       n
 
   (** Does [x] fit in the current line when flattened, given that [k] chars
           are already on the line? *)
   let[@inline] fits_flattened st k x = x.wfl <= st.width - k
 
-  let pp_newline st i =
-    B.add_char st.buf '\n';
+  let pp_newline (st : st) i =
+    st.out.char '\n';
     add_indent st i
 
   (** Print [self] into the buffer.
@@ -212,7 +213,7 @@ module Pretty = struct
     match d.view with
     | Nil -> kont k
     | Char c ->
-      B.add_char st.buf c;
+      st.out.char c;
       kont (k + 1)
     | Newline ->
       pp_newline st i;
@@ -222,10 +223,10 @@ module Pretty = struct
       (* print [x], then print [y] *)
       pp_rec_top st ~k ~i x (fun k -> pp_rec_top st ~k ~i y kont)
     | Text s ->
-      B.add_string st.buf s;
+      st.out.string s;
       kont (k + String.length s)
     | Text_sub (s, i, len) ->
-      B.add_substring st.buf s i len;
+      st.out.sub_string s i len;
       kont (k + len)
     | Group x ->
       if fits_flattened st k x then (
@@ -236,11 +237,10 @@ module Pretty = struct
       ) else
         pp_rec_top st ~k ~i x kont
     | Fill { sep; l } -> pp_fill st ~k ~i sep l kont
-    | Wrap ((module E), v, d) ->
-      let out = Ext.out_of_buf st.buf in
-      E.pre out v;
+    | Wrap (ext, v, d) ->
+      ext.pre st.out v;
       pp_rec_top st ~k ~i d (fun k ->
-          E.post out v;
+          ext.post st.out v;
           kont k)
 
   and pp_fill st ~k ~i sep l (kont : int -> unit) : unit =
@@ -274,9 +274,12 @@ module Pretty = struct
     in
     loop 0 k l
 
-  let to_buffer ~width (buf : Buffer.t) (self : t) : unit =
-    let st = { buf; width } in
+  let to_out ~width out (self : t) : unit =
+    let st = { out; width } in
     pp_rec st 0 [ 0, self ]
+
+  let to_buffer ~width (buf : Buffer.t) (self : t) : unit =
+    to_out ~width (Out.of_buffer buf) self
 
   let to_string ~width (self : t) : string =
     let buf = Buffer.create 32 in
@@ -284,7 +287,7 @@ module Pretty = struct
     Buffer.contents buf
 
   let to_format ~width out self : unit =
-    (* TODO: more efficient implementation *)
+    (* TODO: more efficient implementation based on out *)
     CCFormat.string_lines out (to_string ~width self)
 end
 

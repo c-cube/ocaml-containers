@@ -55,27 +55,32 @@ val newline : t
 val nl : t
 (** Alias for {!newline} *)
 
+(** Arbitrary output.
+
+    This is used for user-provided output. *)
+module Out : sig
+  type t = {
+    char: char -> unit;
+        (** Output a single char. The char is assumed not to be ['\n']. *)
+    sub_string: string -> int -> int -> unit;
+        (** Output a string slice (optim for [string]) *)
+    string: string -> unit;  (** Output a string *)
+    raw_string: string -> unit;
+        (** Output a string that should not be modified in any way *)
+    newline: unit -> unit;  (** Output a newline *)
+  }
+
+  val of_buffer : Buffer.t -> t
+end
+
 (** Extension node.
 
     In here, we can stuff custom printer nodes. *)
 module Ext : sig
-  module type OUT = sig
-    val char : char -> unit
-    val sub_string : string -> int -> int -> unit
-    val string : string -> unit
-    val newline : unit -> unit
-  end
-
-  type out = (module OUT)
-
-  module type S = sig
-    type t
-
-    val pre : out -> t -> unit
-    val post : out -> t -> unit
-  end
-
-  type 'a t = (module S with type t = 'a)
+  type 'a t = {
+    pre: Out.t -> 'a -> unit;  (** Printed before the wrapped value. *)
+    post: Out.t -> 'a -> unit;  (** Printed after the wrapped value. *)
+  }
 end
 
 val wrap : 'a Ext.t -> 'a -> t -> t
@@ -99,6 +104,9 @@ val wrap : 'a Ext.t -> 'a -> t -> t
     These functions are parametrized by a width,
     and will try to fit the result within this width. *)
 module Pretty : sig
+  val to_out : width:int -> Out.t -> t -> unit
+  (** Render to an arbitrary output. *)
+
   val to_string : width:int -> t -> string
   (** Render to a string. *)
 
@@ -113,6 +121,7 @@ end
     This is generally ugly, but it's simple and fast when we do not
     care about looks. *)
 module Flatten : sig
+  val to_out : Out.t -> t -> unit
   val to_buffer : Buffer.t -> t -> unit
   val to_string : t -> string
 end
