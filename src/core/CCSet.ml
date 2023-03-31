@@ -156,7 +156,7 @@ module Make (O : Map.OrderedType) = struct
   (* Use find_last which is linear time on OCaml < 4.05 *)
   let find_last_map f m =
     let res = ref None in
-    let _ = S.find_last_opt
+    let _ = find_last_opt
       (fun x ->
         match f x with
         | None -> false
