@@ -13,7 +13,7 @@ let () =
 
 let () =
   eq ~name:"l1" ~printer:(spf "%S") "[0; 1; 2; 3;\n 4; 5; 6; 7;\n 8; 9]"
-    (let d = Dump.list (List.init 10 int) in
+    (let d = Dump.list (CCList.init 10 int) in
      Pretty.to_string ~width:10 d)
 
 let () =
@@ -32,8 +32,8 @@ let () =
     \  9; 10]]"
     (let d =
        Dump.list
-         (List.init 6 (fun i ->
-              Dump.list (List.init 6 (fun j -> int @@ (i + j)))))
+         (CCList.init 6 (fun i ->
+              Dump.list (CCList.init 6 (fun j -> int @@ (i + j)))))
      in
      Pretty.to_string ~width:10 d)
 
