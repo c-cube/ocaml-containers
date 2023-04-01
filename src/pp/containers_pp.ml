@@ -287,7 +287,9 @@ module Pretty = struct
     Buffer.contents buf
 
   let to_format ~width out self : unit =
-    (* TODO: more efficient implementation based on out *)
+    (* TODO: more efficient implementation based on:
+      open a vbox; make custom out that directly emit Format.pp_foo calls;
+      render to this out. *)
     CCFormat.string_lines out (to_string ~width self)
 end
 
