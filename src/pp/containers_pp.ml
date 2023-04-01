@@ -45,6 +45,21 @@ and view =
   | Fill of { sep: t; l: t list }
   | Wrap : 'a Ext.t * 'a * t -> view
 
+(* debug printer *)
+let rec debug out (self : t) : unit =
+  match self.view with
+  | Nil -> Format.fprintf out "nil"
+  | Newline -> Format.fprintf out "nl"
+  | Nest (i, x) -> Format.fprintf out "(@[nest %d@ %a@])" i debug x
+  | Append (a, b) -> Format.fprintf out "@[%a ^@ %a@]" debug a debug b
+  | Char c -> Format.fprintf out "%C" c
+  | Text s -> Format.fprintf out "%S" s
+  | Text_sub (s, i, len) -> Format.fprintf out "%S" (String.sub s i len)
+  | Group d -> Format.fprintf out "(@[group@ %a@])" debug d
+  | Fill { sep = _; l } ->
+    Format.fprintf out "(@[fill@ %a@])" (Format.pp_print_list debug) l
+  | Wrap (_, _, d) -> Format.fprintf out "(@[ext@ %a@])" debug d
+
 let nil : t = { view = Nil; wfl = 0 }
 let newline : t = { view = Newline; wfl = 1 }
 let nl = newline
@@ -342,8 +357,6 @@ let fill sep = function
       + ((List.length l - 1) * sep.wfl)
     in
     { view = Fill { sep; l }; wfl }
-
-let fill_map sep f l = fill sep (List.map f l)
 
 let of_list ?(sep = nil) f l =
   let rec loop = function

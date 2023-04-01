@@ -135,6 +135,10 @@ end
 val pp : Format.formatter -> t -> unit
 (** Pretty-print, using {!Pretty} and an unspecified margin. *)
 
+val debug : Format.formatter -> t -> unit
+(** Debug printer. This prints the structure of the document,
+    it does {b not} pretty-print it. See {!pp} or {!Pretty}. *)
+
 (** {2 Convenience functions} *)
 
 module Infix : sig
