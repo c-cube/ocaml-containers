@@ -89,10 +89,10 @@ let split_text_ (str : string) : t =
     match String.index_from str !i '\n' with
     | exception Not_found ->
       (* last chunk *)
-      if !i + 1 < len then cur := !cur ^ text_sub_ str !i (len - 1 - !i);
+      if !i + 1 < len then cur := !cur ^ text_sub_ str !i (len - !i);
       i := len
     | j ->
-      cur := !cur ^ text_sub_ str !i (j - 1 - !i) ^ nl;
+      cur := !cur ^ text_sub_ str !i (j - !i) ^ nl;
       i := j + 1
   done;
   group !cur
@@ -288,8 +288,8 @@ module Pretty = struct
 
   let to_format ~width out self : unit =
     (* TODO: more efficient implementation based on:
-      open a vbox; make custom out that directly emit Format.pp_foo calls;
-      render to this out. *)
+       open a vbox; make custom out that directly emit Format.pp_foo calls;
+       render to this out. *)
     CCFormat.string_lines out (to_string ~width self)
 end
 

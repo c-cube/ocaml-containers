@@ -7,6 +7,11 @@ let () =
   eq "hello world" (Flatten.to_string @@ text "hello" ^ newline ^ text "world")
 
 let () =
+  eq ~name:"split text" ~printer:(spf "%S") "let rec f x =\n x+2\n"
+    (let d = text "let rec f x =\n x+2\n" in
+     Pretty.to_string ~width:15 d)
+
+let () =
   eq ~name:"l1" ~printer:(spf "%S") "[0; 1; 2; 3;\n 4; 5; 6; 7;\n 8; 9]"
     (let d = Dump.list (List.init 10 int) in
      Pretty.to_string ~width:10 d)
