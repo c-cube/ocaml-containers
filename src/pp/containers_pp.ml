@@ -358,6 +358,8 @@ let fill sep = function
     in
     { view = Fill { sep; l }; wfl }
 
+let fill_map sep f l = fill sep (List.map f l)
+
 let of_list ?(sep = nil) f l =
   let rec loop = function
     | [] -> nil

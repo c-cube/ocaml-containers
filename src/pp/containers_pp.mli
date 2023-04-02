@@ -55,6 +55,12 @@ val newline : t
 val nl : t
 (** Alias for {!newline} *)
 
+val fill : t -> t list -> t
+(** [fill sep l] resembles [group (append_l ~sep l)], except it tries
+    to put as many items of [l] as possible on each line.
+
+    In terms of {!Format}, this is like the hov box. *)
+
 (** {2 Output device} *)
 
 (** Arbitrary output.
@@ -166,6 +172,9 @@ val append_sp : t list -> t
 
 val append_nl : t list -> t
 (** Same as {!append_l} with [sep=nl] *)
+
+val fill_map : t -> ('a -> t) -> 'a list -> t
+(** [fill_map sep f l] is [fill sep (List.map f l)] *)
 
 val bool : bool -> t
 val int : int -> t
