@@ -118,6 +118,11 @@ module Ext : sig
     pre: Out.t -> 'a -> unit;  (** Printed before the wrapped value. *)
     post: Out.t -> 'a -> unit;  (** Printed after the wrapped value. *)
   }
+  (**  An extension is a custom document node. It takes a value of type ['a],
+      and a document [d], and can output what it wants based
+      on the custom value before and after [d] is printed.
+
+      The extension is considered to have width [0]. *)
 end
 
 val ext : 'a Ext.t -> 'a -> t -> t
