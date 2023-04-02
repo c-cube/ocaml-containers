@@ -9,6 +9,25 @@
     This follows Wadler's paper "A prettier printer", but with
     some changes in the rendering part because we can't rely on lazyness
     to make the algebraic implementation efficient.
+
+    Some general considerations: the type [t] is the type of documents,
+    a tree with text leaves that is pretty printed within a given width.
+
+    Layout is controlled via the combination of a few primitives:
+    - [newline] will either print a space or a newline. It is similar
+      to {!Format}'s ["@ "] in that sense. A big difference with [Format]
+      is that by default [newline] is actually a newline. It only
+      becomes a space if it's in a [group] small enough to fit
+      in the remainder of the current line.
+    - [group d] tries to write [d] on a single line if there's room.
+      If not, it has no effect.
+    - [nest n d] increases the indentation level inside [d]. Any newline
+      that is rendered as a new line is indented by [n] more spaces (which
+      are cumulative with surrounding [nest] calls).
+    - [append a b] (or [a ^ b]) just prints [a] followed by [b].
+    - [fill d] is a bit like [group] but it will try to cram
+      as much as possible on each line. It is not all-or-nothing
+      like [group].
 *)
 
 (** {2 Core} *)
@@ -23,7 +42,8 @@ val char : char -> t
 (** Single char. *)
 
 val text : string -> t
-(** Text. The string will be split on ['\n']. *)
+(** Text. The string will be split on ['\n'], which are replaced
+    by {!newline}. *)
 
 val textpf : ('a, unit, string, t) format4 -> 'a
 (** Text, with a {!Printf}-compatible format.
@@ -38,7 +58,9 @@ val textf : ('a, Format.formatter, unit, t) format4 -> 'a
     in the resulting document. *)
 
 val nest : int -> t -> t
-(** Increase indentation by [n]. *)
+(** [nest n d] increases indentation by [n] inside [d].
+    If current indentation is [m], then every newline inside [d]
+    will be followed by [n + m] leading spaces. *)
 
 val group : t -> t
 (** Group the documents inside this.
@@ -73,12 +95,14 @@ module Out : sig
     sub_string: string -> int -> int -> unit;
         (** Output a string slice (optim for [string]) *)
     string: string -> unit;  (** Output a string *)
-    raw_string: string -> unit;
-        (** Output a string that should not be modified in any way *)
     newline: unit -> unit;  (** Output a newline *)
   }
 
   val of_buffer : Buffer.t -> t
+  val char : t -> char -> unit
+  val string : t -> string -> unit
+  val sub_string : t -> string -> int -> int -> unit
+  val newline : t -> unit
 end
 
 (** {2 Extensibility} *)

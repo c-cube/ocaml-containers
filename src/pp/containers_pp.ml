@@ -7,8 +7,6 @@ module Out = struct
     sub_string: string -> int -> int -> unit;
         (** Output a string slice (optim for [string]) *)
     string: string -> unit;  (** Output a string *)
-    raw_string: string -> unit;
-        (** Output a string that should not be modified in any way *)
     newline: unit -> unit;  (** Output a newline *)
   }
 
@@ -17,8 +15,12 @@ module Out = struct
     let sub_string = B.add_substring buf in
     let string = B.add_string buf in
     let newline () = B.add_char buf '\n' in
-    let raw_string = string in
-    { char; sub_string; string; newline; raw_string }
+    { char; sub_string; string; newline }
+
+  let[@inline] char self c = self.char c
+  let[@inline] string self s = self.string s
+  let[@inline] sub_string self s i len = self.sub_string s i len
+  let[@inline] newline self = self.newline ()
 end
 
 module Ext = struct
