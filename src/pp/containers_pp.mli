@@ -244,25 +244,10 @@ end
 (** Simple colors in terminals *)
 module Term_color : sig
   type color =
-    [ `Black
-    | `Blue
-    | `Cyan
-    | `Green
-    | `Magenta
-    | `Red
-    | `White
-    | `Yellow
-    ]
+    [ `Black | `Blue | `Cyan | `Green | `Magenta | `Red | `White | `Yellow ]
 
-  type style =
-    [ `BG of color
-    | `Bold
-    | `FG of color
-    | `Reset
-    | `Underline
-    ]
+  type style = [ `BG of color | `Bold | `FG of color | `Reset | `Underline ]
 
   val color : color -> t -> t
-
   val style_l : style list -> t -> t
 end

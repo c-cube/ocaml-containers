@@ -343,7 +343,6 @@ let int x : t = text (string_of_int x)
 let float x : t = text (string_of_float x)
 let float_hex x : t = textpf "%h" x
 let text_quoted s : t = text (Printf.sprintf "%S" s)
-
 let text_zero_width s : t = { view = Text_zero_width s; wfl = 0 }
 
 let append_l ?(sep = nil) l =
@@ -393,9 +392,7 @@ let of_seq ?(sep = nil) f seq : t =
   loop true seq
 
 let bracket l d r : t = group (text l ^ nest (String.length l) d ^ text r)
-
 let bracket2 l d r : t = group (text l ^ nest 2 (nl ^ d) ^ nl ^ text r)
-
 let sexp_l l : t = char '(' ^ nest 1 (group (append_nl l ^ char ')'))
 let sexp_apply a l : t = sexp_l (text a :: l)
 
@@ -407,76 +404,60 @@ end
 
 module Term_color = struct
   type color =
-    [ `Black
-    | `Red
-    | `Yellow
-    | `Green
-    | `Blue
-    | `Magenta
-    | `Cyan
-    | `White
-    ]
+    [ `Black | `Red | `Yellow | `Green | `Blue | `Magenta | `Cyan | `White ]
 
   type style =
     [ `FG of color (* foreground *)
     | `BG of color (* background *)
     | `Bold
     | `Reset
-    | `Underline
-    ]
+    | `Underline ]
 
-  open struct
-    let int_of_color_ = function
-      | `Black -> 0
-      | `Red -> 1
-      | `Green -> 2
-      | `Yellow -> 3
-      | `Blue -> 4
-      | `Magenta -> 5
-      | `Cyan -> 6
-      | `White -> 7
+  let int_of_color_ = function
+    | `Black -> 0
+    | `Red -> 1
+    | `Green -> 2
+    | `Yellow -> 3
+    | `Blue -> 4
+    | `Magenta -> 5
+    | `Cyan -> 6
+    | `White -> 7
 
-    let code_of_style : style -> int = function
-      | `FG c -> 30 + int_of_color_ c
-      | `BG c -> 40 + int_of_color_ c
-      | `Bold -> 1
-      | `Reset -> 0
-      | `Underline -> 4
+  let code_of_style : style -> int = function
+    | `FG c -> 30 + int_of_color_ c
+    | `BG c -> 40 + int_of_color_ c
+    | `Bold -> 1
+    | `Reset -> 0
+    | `Underline -> 4
 
-    let spf = Printf.sprintf
+  let spf = Printf.sprintf
+  let string_of_style a = spf "\x1b[%dm" (code_of_style a)
+  let reset = string_of_style `Reset
 
-    let string_of_style a = spf "\x1b[%dm" (code_of_style a)
+  let string_of_style_list = function
+    | [] -> reset
+    | [ a ] -> string_of_style a
+    | [ a; b ] -> spf "\x1b[%d;%dm" (code_of_style a) (code_of_style b)
+    | [ a; b; c ] ->
+      spf "\x1b[%d;%d;%dm" (code_of_style a) (code_of_style b) (code_of_style c)
+    | l ->
+      let buf = Buffer.create 32 in
+      let pp_num c = Buffer.add_string buf (string_of_int (code_of_style c)) in
+      Buffer.add_string buf "\x1b[";
+      List.iteri
+        (fun i c ->
+          if i > 0 then Buffer.add_char buf ';';
+          pp_num c)
+        l;
+      Buffer.add_string buf "m";
+      Buffer.contents buf
 
-    let reset = string_of_style `Reset
-
-    let string_of_style_list = function
-      | [] -> reset
-      | [ a ] -> string_of_style a
-      | [ a; b ] -> spf "\x1b[%d;%dm" (code_of_style a) (code_of_style b)
-      | [ a; b; c ] ->
-        spf "\x1b[%d;%d;%dm" (code_of_style a) (code_of_style b)
-          (code_of_style c)
-      | l ->
-        let buf = Buffer.create 32 in
-        let pp_num c =
-          Buffer.add_string buf (string_of_int (code_of_style c))
-        in
-        Buffer.add_string buf "\x1b[";
-        List.iteri
-          (fun i c ->
-            if i > 0 then Buffer.add_char buf ';';
-            pp_num c)
-          l;
-        Buffer.add_string buf "m";
-        Buffer.contents buf
-
-    (* TODO: handle nested styles *)
-    let ext_style_ : style list Ext.t =
-      {
-        pre = (fun out l -> Out.string out (string_of_style_list l));
-        post = (fun out _l -> Out.string out reset);
-      }
-  end
+  (* TODO: handle nested styles *)
+  let ext_style_ : style list Ext.t =
+    {
+      pre = (fun out l -> Out.string out (string_of_style_list l));
+      post = (fun out _l -> Out.string out reset);
+    }
 
   (** Set the foreground color. *)
   let color (c : color) (d : t) : t = ext ext_style_ [ `FG c ] d
