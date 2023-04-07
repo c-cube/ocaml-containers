@@ -600,6 +600,36 @@ let take len : slice t =
         ));
   }
 
+let take_until_success p : (slice * _) t =
+  {
+    run =
+      (fun st ~ok ~err ->
+        let i = ref st.i in
+        let st_after_p = ref st in
+        let continue = ref true in
+        let res = ref None in
+
+        while !continue && !i < st.j do
+          let st' = { st with i = !i } in
+          p.run st'
+            ~ok:(fun new_st x ->
+              (* success *)
+              res := Some x;
+              continue := false;
+              (* parsing will continue where [p] left off *)
+              st_after_p := new_st)
+            ~err:(fun _ -> incr i)
+        done;
+
+        match !res with
+        | None ->
+          err
+            (mk_error_ st (const_str_ "take_until_success: no position worked"))
+        | Some x ->
+          let slice = { st with j = !i } in
+          ok !st_after_p (slice, x));
+  }
+
 let any_char_n len : _ t = take len >|= Slice.to_string
 
 let exact s =

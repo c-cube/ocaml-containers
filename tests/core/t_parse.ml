@@ -287,3 +287,14 @@ eq
   ~printer:Q.Print.(errpp (pair int int))
   (Ok (1, 2))
   U.(parse_string (pair int int) "(1 , 2 )")
+;;
+
+eq
+  ~printer:Q.Print.(errpp (pair (pair string string) string))
+  (Ok (("!this is the text between!", "LOL"), " and a lot of other stuff"))
+  (parse_string
+     (string "COUCOU"
+     *> let* slice, x = take_until_success (string "LOL") in
+        let+ rest = take_if (fun _ -> true) <* eoi in
+        (Slice.to_string slice, x), Slice.to_string rest)
+     "COUCOU!this is the text between!LOL and a lot of other stuff")

@@ -304,6 +304,15 @@ val chars_fold_transduce :
 
     @since 3.6 *)
 
+val take_until_success : 'a t -> (slice * 'a) t
+(** [take_until_success p] accumulates characters of the input into a slice,
+      until [p] successfully parses a value [x]; then it returns [slice, x].
+
+      {b NOTE} performance wise, if [p] does a lot of work at each position,
+      this can be costly (thing naive substring search if [p] is [string "very long needle"]).
+
+    @since NEXT_RELEASE *)
+
 val take : int -> slice t
 (** [take len] parses exactly [len] characters from the input.
     Fails if the input doesn't contain at least [len] chars.
