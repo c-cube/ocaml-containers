@@ -43,6 +43,7 @@ and view =
   | Char of char
   | Text of string
   | Text_sub of string * int * int
+  | Text_zero_width of string
   | Group of t
   | Fill of { sep: t; l: t list }
   | Wrap : 'a Ext.t * 'a * t -> view
@@ -56,6 +57,7 @@ let rec debug out (self : t) : unit =
   | Append (a, b) -> Format.fprintf out "@[%a ^@ %a@]" debug a debug b
   | Char c -> Format.fprintf out "%C" c
   | Text s -> Format.fprintf out "%S" s
+  | Text_zero_width s -> Format.fprintf out "(zw %S)" s
   | Text_sub (s, i, len) -> Format.fprintf out "%S" (String.sub s i len)
   | Group d -> Format.fprintf out "(@[group@ %a@])" debug d
   | Fill { sep = _; l } ->
@@ -112,7 +114,7 @@ let split_text_ (str : string) : t =
       cur := !cur ^ text_sub_ str !i (j - !i) ^ nl;
       i := j + 1
   done;
-  group !cur
+  !cur
 
 let text (str : string) : t =
   if str = "" then
@@ -136,7 +138,7 @@ module Flatten = struct
       | Append (x, y) ->
         loop x;
         loop y
-      | Text s -> out.string s
+      | Text s | Text_zero_width s -> out.string s
       | Text_sub (s, i, len) -> out.sub_string s i len
       | Group x -> loop x
       | Fill { sep; l } ->
@@ -187,6 +189,9 @@ module Pretty = struct
     | Text s ->
       st.out.string s;
       String.length s
+    | Text_zero_width s ->
+      st.out.string s;
+      0
     | Text_sub (s, i, len) ->
       st.out.sub_string s i len;
       len
@@ -242,6 +247,9 @@ module Pretty = struct
     | Text s ->
       st.out.string s;
       kont (k + String.length s)
+    | Text_zero_width s ->
+      st.out.string s;
+      kont k
     | Text_sub (s, i, len) ->
       st.out.sub_string s i len;
       kont (k + len)
@@ -304,9 +312,7 @@ module Pretty = struct
     Buffer.contents buf
 
   let to_format ~width out self : unit =
-    (* TODO: more efficient implementation based on:
-       open a vbox; make custom out that directly emit Format.pp_foo calls;
-       render to this out. *)
+    (* TODO: more efficient implementation based on out *)
     CCFormat.string_lines out (to_string ~width self)
 end
 
@@ -337,6 +343,8 @@ let int x : t = text (string_of_int x)
 let float x : t = text (string_of_float x)
 let float_hex x : t = textpf "%h" x
 let text_quoted s : t = text (Printf.sprintf "%S" s)
+
+let text_zero_width s : t = { view = Text_zero_width s; wfl = 0 }
 
 let append_l ?(sep = nil) l =
   let rec loop = function
@@ -384,7 +392,10 @@ let of_seq ?(sep = nil) f seq : t =
   in
   loop true seq
 
-let bracket l d r : t = group (text l ^ nest 2 (nl ^ d) ^ nl ^ text r)
+let bracket l d r : t = group (text l ^ nest (String.length l) d ^ text r)
+
+let bracket2 l d r : t = group (text l ^ nest 2 (nl ^ d) ^ nl ^ text r)
+
 let sexp_l l : t = char '(' ^ nest 1 (group (append_nl l ^ char ')'))
 let sexp_apply a l : t = sexp_l (text a :: l)
 

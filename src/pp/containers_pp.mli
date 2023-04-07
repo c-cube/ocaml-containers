@@ -213,6 +213,9 @@ val float_hex : float -> t
 val text_quoted : string -> t
 (** [text_quoted s] is [text (spf "%S" s)] *)
 
+val text_zero_width : string -> t
+(** Text but we assume it takes no space on screen. *)
+
 val of_list : ?sep:t -> ('a -> t) -> 'a list -> t
 (** [of_list f l] maps each element of [l] to a document
     and concatenates them.
@@ -222,7 +225,10 @@ val of_seq : ?sep:t -> ('a -> t) -> 'a Seq.t -> t
 (** Same as {!of_list} but with sequences. *)
 
 val bracket : string -> t -> string -> t
-(** [bracket l d r] groups [d], indented, between brackets [l] and [r] *)
+(** [bracket l d r] groups [d], between brackets [l] and [r] *)
+
+val bracket2 : string -> t -> string -> t
+(** [bracket2 l d r] groups [d], indented by 2, between brackets [l] and [r] *)
 
 val sexp_apply : string -> t list -> t
 (** [sexp_apply a l] is the S-expr ["(text a …l)"], pretty-printed *)
