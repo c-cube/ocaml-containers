@@ -294,7 +294,7 @@ eq
   (Ok (("!this is the text between!", "LOL"), " and a lot of other stuff"))
   (parse_string
      (string "COUCOU"
-     *> let* slice, x = take_until_success (string "LOL") in
-        let+ rest = take_if (fun _ -> true) <* eoi in
-        (Slice.to_string slice, x), Slice.to_string rest)
+     *> ( take_until_success (string "LOL") >>= fun (slice, x) ->
+          take_if (fun _ -> true) <* eoi >|= fun rest ->
+          (Slice.to_string slice, x), Slice.to_string rest ))
      "COUCOU!this is the text between!LOL and a lot of other stuff")
