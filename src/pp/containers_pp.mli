@@ -240,3 +240,29 @@ val sexp_l : t list -> t
 module Dump : sig
   val list : t list -> t
 end
+
+(** Simple colors in terminals *)
+module Term_color : sig
+  type color =
+    [ `Black
+    | `Blue
+    | `Cyan
+    | `Green
+    | `Magenta
+    | `Red
+    | `White
+    | `Yellow
+    ]
+
+  type style =
+    [ `BG of color
+    | `Bold
+    | `FG of color
+    | `Reset
+    | `Underline
+    ]
+
+  val color : color -> t -> t
+
+  val style_l : style list -> t -> t
+end
