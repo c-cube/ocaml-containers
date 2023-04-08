@@ -49,6 +49,10 @@ val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** [flat_map f o] is equivalent to {!map} followed by {!flatten}.
     Flip version of {!(>>=)}. *)
 
+val flat_map_l : ('a -> 'b list) -> 'a t -> 'b list
+(** [flat_map_l f o] is [[]] if [o] is [None], or [f x] if [o] is [Some x].
+    @since NEXT_RELEASE *)
+
 val bind : 'a t -> ('a -> 'b t) -> 'b t
 (** [bind o f] is [f v] if [o] is [Some v], [None] otherwise.
     Monadic bind.

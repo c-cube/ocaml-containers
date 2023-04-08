@@ -46,6 +46,11 @@ let[@inline] flat_map f o =
   | None -> None
   | Some x -> f x
 
+let[@inline] flat_map_l f o =
+  match o with
+  | None -> []
+  | Some x -> f x
+
 let[@inline] bind o f = flat_map f o
 let ( >>= ) = bind
 let pure x = Some x
