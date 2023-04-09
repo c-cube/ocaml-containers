@@ -67,7 +67,8 @@ val get_exn : int -> 'a t -> 'a
 (** @raise Not_found if key not present. *)
 
 val pop_exn : 'a t -> 'a * 'a t
-(** Pop last element. *)
+(** Pop last element.
+ @raise Invalid_argument in case the vec is empty. *)
 
 val pop : 'a t -> ('a * 'a t) option
 (** Pop last element.

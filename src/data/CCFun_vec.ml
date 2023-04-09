@@ -213,7 +213,7 @@ let pop_ i (m : 'a t) : 'a * 'a t =
   aux (split_idx i) m
 
 let pop_exn (v : 'a t) : 'a * 'a t =
-  if v.size = 0 then failwith "Fun_vec.pop_exn";
+  if v.size = 0 then invalid_arg "Fun_vec.pop_exn";
   pop_ (v.size - 1) v
 
 let pop (v : 'a t) : ('a * 'a t) option =

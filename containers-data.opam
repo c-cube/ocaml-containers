@@ -14,7 +14,7 @@ depends: [
   "dune" { >= "2.0" }
   "containers" { = version }
   "seq"
-  (("ocaml" {with-test & < "4.08"} & "qcheck-core" {>= "0.17" & with-test})
+  (("ocaml" {with-test & < "4.08"} & "qcheck-core" {>= "0.20" & with-test})
   | ("ocaml" {with-test & >= "4.08"} & "qcheck-core" {>= "0.18" & with-test}))
   "iter" { with-test }
   "gen" { with-test }
