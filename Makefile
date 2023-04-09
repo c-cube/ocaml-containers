@@ -30,9 +30,9 @@ update_next_tag:
 	sed -i "s/NEXT_VERSION/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
 	sed -i "s/NEXT_RELEASE/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
 
-WATCH?="@src/all @tests/runtest"
+WATCH?=@src/all @tests/runtest
 watch:
-	@dune build "$(WATCH)" -w
+	@dune build $(WATCH) -w
 
 reindent:
 	@which ocp-indent || ( echo "require ocp-indent" ; exit 1 )
