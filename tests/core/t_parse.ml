@@ -177,6 +177,17 @@ in
 parse_string (chars_if pred) "coucou{lol} 123" = Ok "coucou{lol}"
 ;;
 
+eq
+  ~printer:(errpp Q.Print.(pair string string))
+  (Ok ("hello", " world"))
+  (parse_string
+     (let* slice = take_if (fun c -> c <> ' ') in
+      let* x = recurse slice all_str in
+      let* rest = all_str in
+      return (x, rest))
+     "hello world")
+;;
+
 t @@ fun () ->
 let p0 = skip_white *> U.int in
 let p = skip_white *> char '(' *> many p0 <* (skip_white <* char ')') in
