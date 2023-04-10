@@ -1,4 +1,3 @@
-
 open CCShims_
 
 module Memo_tbl = Hashtbl.Make (struct
@@ -300,11 +299,11 @@ end
 let recurse slice p : _ t =
   {
     run =
-      (fun _st ~ok ~err ->
+      (fun st ~ok ~err ->
         (* make sure these states are related. all slices share the
            same reference as the initial state they derive from. *)
-        assert (CCShims_.Stdlib.(_st.cs == slice.cs));
-        p.run slice ~ok ~err);
+        assert (CCShims_.Stdlib.(st.cs == slice.cs));
+        p.run slice ~ok:(fun _st x -> ok st x) ~err);
   }
 
 let all =
