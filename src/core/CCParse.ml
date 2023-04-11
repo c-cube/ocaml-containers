@@ -774,17 +774,22 @@ let split_1 ~on_char : _ t =
         if st.i >= st.j then
           ok st (st, None)
         else (
-          match String.index_from st.cs.str st.i on_char with
-          | j ->
-            let x = { st with j } in
-            let y = { st with i = min st.j (j + 1) } in
-            let st_done = { st with i = st.j } in
-            (* empty *)
-            ok st_done (x, Some y)
-          | exception Not_found ->
+          let ret_empty () =
             let st_done = { st with i = st.j } in
             (* empty *)
             ok st_done (st, None)
+          in
+          match String.index_from st.cs.str st.i on_char with
+          | j ->
+            if j <= st.j then (
+              let x = { st with j } in
+              let y = { st with i = min st.j (j + 1) } in
+              let st_done = { st with i = st.j } in
+              (* empty *)
+              ok st_done (x, Some y)
+            ) else
+              ret_empty ()
+          | exception Not_found -> ret_empty ()
         ));
   }
 

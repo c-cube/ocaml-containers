@@ -1,5 +1,6 @@
 module Tst = (val Containers_testlib.make ~__FILE__ ())
 include Tst
+module P = CCParse
 open CCParse
 
 module T = struct
@@ -38,10 +39,10 @@ let erreq eq x y =
   | Ok x, Ok y -> eq x y
   | Error _, Error _ -> true
   | _ -> false
-;;
+
+let strquoted = Printf.sprintf "%S";;
 
 (* ### start tests ### *)
-
 eq ~printer:errpptree
   (Ok (N (L 1, N (L 2, L 3))))
   (parse_string ptree "(1 (2 3))")
@@ -310,7 +311,7 @@ eq
 ;;
 
 eq
-  ~printer:Q.Print.(errpp (pair (pair string string) string))
+  ~printer:Q.Print.(errpp (pair (pair string strquoted) strquoted))
   (Ok (("!this is the text between!", "LOL"), " and a lot of other stuff"))
   (parse_string
      (string "COUCOU"
@@ -318,3 +319,22 @@ eq
           take_if (fun _ -> true) <* eoi >|= fun rest ->
           (Slice.to_string slice, x), Slice.to_string rest ))
      "COUCOU!this is the text between!LOL and a lot of other stuff")
+;;
+
+eq
+  ~printer:Q.Print.(errpp @@ pair (list strquoted) (list strquoted))
+  (Ok ([ "\n  lorem"; "\n  ipsum"; "\n" ], [ "\n  lorem2"; "\n  ipsum2"; "" ]))
+  (let parser_complex1 =
+     let ws = skip_white in
+     let s2 = lookahead_ignore @@ string "Section2" in
+     let* slice1, () = ws *> string "Section1" *> take_until_success s2 in
+     let* slice2, () =
+       ws *> string "Section2" *> take_until_success (ws *> eoi)
+     in
+     Printf.printf "slice1: %S\n%!" (Slice.to_string slice1);
+     let* sect1 = recurse slice1 (each_split ~on_char:';' all_str) in
+     let* sect2 = recurse slice2 (each_split ~on_char:';' all_str) in
+     return (sect1, sect2)
+   in
+   parse_string parser_complex1
+     "\nSection1\n  lorem;\n  ipsum;\nSection2\n  lorem2;\n  ipsum2;\n")
