@@ -605,7 +605,7 @@ let take_until_success p : (slice * _) t =
         let continue = ref true in
         let res = ref None in
 
-        while !continue && !i < st.j do
+        while !continue && !i <= st.j do
           let st' = { st with i = !i } in
           p.run st'
             ~ok:(fun new_st x ->

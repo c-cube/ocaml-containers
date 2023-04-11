@@ -188,6 +188,15 @@ eq
      "hello world")
 ;;
 
+eq
+  ~printer:(errpp Q.Print.(string))
+  (Ok "ahahahah")
+  (parse_string
+     (let+ slice, () = take_until_success eoi in
+      Slice.to_string slice)
+     "ahahahah")
+;;
+
 t @@ fun () ->
 let p0 = skip_white *> U.int in
 let p = skip_white *> char '(' *> many p0 <* (skip_white <* char ')') in
