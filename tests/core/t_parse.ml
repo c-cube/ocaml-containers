@@ -331,7 +331,6 @@ eq
      let* slice2, () =
        ws *> string "Section2" *> take_until_success (ws *> eoi)
      in
-     Printf.printf "slice1: %S\n%!" (Slice.to_string slice1);
      let* sect1 = recurse slice1 (each_split ~on_char:';' all_str) in
      let* sect2 = recurse slice2 (each_split ~on_char:';' all_str) in
      return (sect1, sect2)
