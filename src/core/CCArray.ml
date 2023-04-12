@@ -163,7 +163,7 @@ let max cmp a =
 
 let max_exn cmp a =
   match max cmp a with
-    | None -> invalid_arg __FUNCTION__
+    | None -> invalid_arg "CCArray.max_exn"
     | Some elt -> elt
 
 
@@ -177,7 +177,7 @@ let argmax cmp a =
 
 let argmax_exn cmp a =
   match argmax cmp a with
-    | None -> invalid_arg __FUNCTION__
+    | None -> invalid_arg "CCArray.argmax_exn"
     | Some elt -> elt
 
 let min cmp a =
@@ -190,7 +190,7 @@ let min cmp a =
 
 let min_exn cmp a =
   match min cmp a with
-    | None -> invalid_arg __FUNCTION__
+    | None -> invalid_arg "CCArray.min_exn"
     | Some elt -> elt
 
 
@@ -204,7 +204,7 @@ let argmin cmp a =
 
 let argmin_exn cmp a =
   match argmin cmp a with
-    | None -> invalid_arg __FUNCTION__
+    | None -> invalid_arg "CCArray.argmin_exn"
     | Some elt -> elt
 
 let filter_map f a =
