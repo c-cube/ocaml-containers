@@ -140,6 +140,22 @@ t @@ fun () -> rev [| 1; 2 |] = [| 2; 1 |];;
 t @@ fun () -> rev [||] = [||];;
 q Q.(array small_int) (fun a -> mem 1 a = Array.mem 1 a);;
 
+eq (Some 3) (max Stdlib.compare [| 1; 2; 3 |]);;
+eq (Some 4) (max Stdlib.compare [| 4; -1; 2; 3 |]);;
+eq (None) (max Stdlib.compare [||]);;
+
+eq (Some 2) (argmax Stdlib.compare [| 1; 2; 3 |]);;
+eq (Some 0) (argmax Stdlib.compare [| 4; -1; 2; 3 |]);;
+eq (None) (argmax Stdlib.compare [||]);;
+
+eq (Some 1) (min Stdlib.compare [| 1; 2; 3 |]);;
+eq (Some ~-1) (min Stdlib.compare [| 4; -1; 2; 3 |]);;
+eq (None) (min Stdlib.compare [||]);;
+
+eq (Some 0) (argmin Stdlib.compare [| 1; 2; 3 |]);;
+eq (Some 1) (argmin Stdlib.compare [| 4; -1; 2; 3 |]);;
+eq (None) (argmin Stdlib.compare [||]);;
+
 t @@ fun () ->
 filter_map
   (fun x ->

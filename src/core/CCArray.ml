@@ -153,6 +153,60 @@ let find_idx p a =
         None)
     a 0
 
+let max cmp a =
+  if Array.length a = 0 then None
+  else Some (
+      fold
+        (fun acc elt -> if cmp acc elt < 0 then elt else acc)
+        a.(0)
+        a)
+
+let max_exn cmp a =
+  match max cmp a with
+    | None -> invalid_arg __FUNCTION__
+    | Some elt -> elt
+
+
+let argmax cmp a =
+  if Array.length a = 0 then None
+  else Some (
+      foldi
+        (fun acc i elt -> if cmp a.(acc) elt < 0 then i else acc)
+        0
+        a)
+
+let argmax_exn cmp a =
+  match argmax cmp a with
+    | None -> invalid_arg __FUNCTION__
+    | Some elt -> elt
+
+let min cmp a =
+  if Array.length a = 0 then None
+  else Some (
+      fold
+        (fun acc elt -> if cmp acc elt > 0 then elt else acc)
+        a.(0)
+        a)
+
+let min_exn cmp a =
+  match min cmp a with
+    | None -> invalid_arg __FUNCTION__
+    | Some elt -> elt
+
+
+let argmin cmp a =
+  if Array.length a = 0 then None
+  else Some (
+      foldi
+        (fun acc i elt -> if cmp a.(acc) elt > 0 then i else acc)
+        0
+        a)
+
+let argmin_exn cmp a =
+  match argmin cmp a with
+    | None -> invalid_arg __FUNCTION__
+    | Some elt -> elt
+
 let filter_map f a =
   let rec aux acc i =
     if i = Array.length a then (
@@ -275,7 +329,7 @@ let rec _exists2 p a1 a2 i1 i2 ~len =
   && (p a1.(i1) a2.(i2) || _exists2 p a1 a2 (i1 + 1) (i2 + 1) ~len:(len - 1))
 
 let exists2 p a b =
-  _exists2 p a b 0 0 ~len:(min (Array.length a) (Array.length b))
+  _exists2 p a b 0 0 ~len:(Stdlib.min (Array.length a) (Array.length b))
 
 let _fold2 f acc a b i j ~len =
   let rec aux acc o =
