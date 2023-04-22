@@ -2,7 +2,7 @@
 
 (** Basic Int functions *)
 
-[@@@ifge 4.08]
+[@@@if ge 4.08]
 
 include module type of Int
 (** @inline *)

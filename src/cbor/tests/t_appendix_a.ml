@@ -1,6 +1,6 @@
 let verbose = try Sys.getenv "VERBOSE" = "1" with _ -> false
 
-[@@@ifge 4.08]
+[@@@if ge 4.08]
 
 module J = Yojson.Safe
 module Fmt = CCFormat

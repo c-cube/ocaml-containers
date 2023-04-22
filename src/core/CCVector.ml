@@ -680,7 +680,7 @@ let pp ?(pp_start = fun _ () -> ()) ?(pp_stop = fun _ () -> ())
     v;
   pp_stop fmt ()
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 let ( let+ ) = ( >|= )
 let ( let* ) = ( >>= )

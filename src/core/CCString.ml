@@ -388,7 +388,7 @@ module Split = struct
   let right ~by s = try Some (right_exn ~by s) with Not_found -> None
 end
 
-[@@@ifge 4.04]
+[@@@if ge 4.04]
 [@@@else_]
 
 let split_on_char c s : _ list =

@@ -9,7 +9,7 @@ let opaque_identity x = x
 include Sys
 include CCShims_.Stdlib
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 include Fun
 

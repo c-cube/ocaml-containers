@@ -519,7 +519,7 @@ module Make (P : PARAM) = struct
       let ( >|= ) a f = map f a
       let ( <*> ) = app
 
-      [@@@ifge 4.8]
+      [@@@if ge 4.8]
 
       let ( let+ ) = ( >|= )
       let ( let* ) = ( >>= )

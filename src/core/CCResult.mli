@@ -191,7 +191,7 @@ module Infix : sig
       [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
       over the error of [b] if both fail. *)
 
-  [@@@ifge 4.08]
+  [@@@if ge 4.08]
 
   val ( let+ ) : ('a, 'e) t -> ('a -> 'b) -> ('b, 'e) t
   (** @since 2.8 *)

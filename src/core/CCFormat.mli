@@ -334,7 +334,7 @@ module ANSI_codes : sig
       is a very shiny style. *)
 end
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 val styling : ANSI_codes.style list -> 'a printer -> 'a printer
 (** [styling st p] is the same printer as [p], except it locally sets

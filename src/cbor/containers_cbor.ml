@@ -45,7 +45,7 @@ let to_string_diagnostic (self : t) : string =
   Format.asprintf "@[<h>%a@]" pp_diagnostic self
 
 (* we use funtions from Bytes *)
-[@@@ifge 4.08]
+[@@@if ge 4.08]
 
 exception Indefinite
 

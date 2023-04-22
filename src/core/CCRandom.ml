@@ -178,7 +178,7 @@ let fix ?(sub1 = []) ?(sub2 = []) ?(subn = []) ~base fuel st =
 let pure x _st = x
 let ( <*> ) f g st = f st (g st)
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 let ( let+ ) = ( >|= )
 let ( let* ) = ( >>= )

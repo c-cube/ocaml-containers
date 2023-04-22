@@ -13,11 +13,11 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 open CCShims_
 
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 include Array
 
-[@@@elifge 4.6]
+[@@@elif ge 4.6]
 
 include Array
 
@@ -597,7 +597,7 @@ module Infix = struct
   let ( -- ) = ( -- )
   let ( --^ ) = ( --^ )
 
-  [@@@ifge 4.8]
+  [@@@if ge 4.8]
 
   type 'a t = 'a array
 

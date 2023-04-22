@@ -1,4 +1,4 @@
-[@@@ifge 4.8]
+[@@@if ge 4.8]
 
 (** Let operators on OCaml >= 4.08.0, nothing otherwise
   @since 2.8 *)
