@@ -229,7 +229,7 @@ module File : sig
       in the directory [d] (or an empty stream if [d] is not a directory).
       @raise Sys_error in case of error (e.g. permission denied).
       @param recurse if true (default [false]), sub-directories are also
-        explored. *)
+        explored, and the sequence only contains files. *)
 
   val read_exn : t -> string
   (** Read the content of the given file, or raises some exception.
@@ -261,10 +261,16 @@ module File : sig
   type walk_item = [ `File | `Dir ] * t
 
   val walk : t -> walk_item gen
-  (** Like {!read_dir} (with [recurse=true]), this function walks
-      a directory recursively and yields either files or directories.
-      Is a file anything that doesn't satisfy {!is_directory} (including
-      symlinks, etc.)
+  (** [walk p] generates the files and directories contained in a directory
+      tree by walking the tree. {!walk} treats anything for which {!is_directory}
+      returns [false] (including symlinks, etc.) as a file.
+      
+      The argument is treated as part of its own directory tree, so the
+      result of [walk p] always includes [p].
+      
+      This is similar to {!read_dir} with [recurse=True], except that {!read_dir}
+      with [recurse=True] only generates file entries.
+      
       @raise Sys_error in case of error (e.g. permission denied) during iteration. *)
 
   val walk_iter : t -> walk_item iter
