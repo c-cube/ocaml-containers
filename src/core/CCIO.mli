@@ -268,8 +268,8 @@ module File : sig
       The argument is treated as part of its own directory tree, so the
       result of [walk p] always includes [p].
       
-      This is similar to {!read_dir} with [recurse=True], except that {!read_dir}
-      with [recurse=True] only generates file entries.
+      This is similar to {!read_dir} with [recurse=true], except that {!read_dir}
+      with [recurse=true] only generates file entries.
       
       @raise Sys_error in case of error (e.g. permission denied) during iteration. *)
 
