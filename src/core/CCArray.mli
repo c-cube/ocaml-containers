@@ -145,43 +145,43 @@ val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 val max : ('a -> 'a -> int) -> 'a t -> 'a option
 (** [max cmp a] returns [None] if [a] is empty, otherwise, returns [Some e] where [e]
     is a maximum element in [a] with respect to [cmp].
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val max_exn : ('a -> 'a -> int) -> 'a t -> 'a
 (** [max_exn cmp a] is like {!max}, but
     @raise Invalid_argument if [a] is empty.
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 
 val argmax : ('a -> 'a -> int) -> 'a t -> int option
 (** [argmax cmp a] returns [None] if [a] is empty, otherwise, returns [Some i] where [i]
     is the index of a maximum element in [a] with respect to [cmp].
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val argmax_exn : ('a -> 'a -> int) -> 'a t -> int
 (** [argmax_exn cmp a] is like {!argmax}, but
     @raise Invalid_argument if [a] is empty.
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val min : ('a -> 'a -> int) -> 'a t -> 'a option
 (** [min cmp a] returns [None] if [a] is empty, otherwise, returns [Some e] where [e]
     is a minimum element in [a] with respect to [cmp].
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val min_exn : ('a -> 'a -> int) -> 'a t -> 'a
 (** [min_exn cmp a] is like {!min}, but
     @raise Invalid_argument if [a] is empty.
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val argmin : ('a -> 'a -> int) -> 'a t -> int option
 (** [argmin cmp a] returns [None] if [a] is empty, otherwise, returns [Some i] where [i]
     is the index of a minimum element in [a] with respect to [cmp].
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val argmin_exn : ('a -> 'a -> int) -> 'a t -> int
 (** [argmin_exn cmp a] is like {!argmin}, but
     @raise Invalid_argument if [a] is empty.
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val lookup : cmp:'a ord -> 'a -> 'a t -> int option
 (** [lookup ~cmp key a] lookups the index of some key [key] in a sorted array [a].

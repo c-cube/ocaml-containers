@@ -310,7 +310,7 @@ val take_until_success : 'a t -> (slice * 'a) t
       {b NOTE} performance wise, if [p] does a lot of work at each position,
       this can be costly (thing naive substring search if [p] is [string "very long needle"]).
 
-    @since NEXT_RELEASE *)
+    @since 3.12 *)
 
 val take : int -> slice t
 (** [take len] parses exactly [len] characters from the input.
