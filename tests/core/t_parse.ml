@@ -182,10 +182,9 @@ eq
   ~printer:(errpp Q.Print.(pair string string))
   (Ok ("hello", " world"))
   (parse_string
-     (let* slice = take_if (fun c -> c <> ' ') in
-      let* x = recurse slice all_str in
-      let* rest = all_str in
-      return (x, rest))
+     ( take_if (fun c -> c <> ' ') >>= fun slice ->
+       recurse slice all_str >>= fun x ->
+       all_str >>= fun rest -> return (x, rest) )
      "hello world")
 ;;
 
@@ -193,8 +192,7 @@ eq
   ~printer:(errpp Q.Print.(string))
   (Ok "ahahahah")
   (parse_string
-     (let+ slice, () = take_until_success eoi in
-      Slice.to_string slice)
+     (take_until_success eoi >|= fun (slice, ()) -> Slice.to_string slice)
      "ahahahah")
 ;;
 
@@ -327,12 +325,11 @@ eq
   (let parser_complex1 =
      let ws = skip_white in
      let s2 = lookahead_ignore @@ string "Section2" in
-     let* slice1, () = ws *> string "Section1" *> take_until_success s2 in
-     let* slice2, () =
-       ws *> string "Section2" *> take_until_success (ws *> eoi)
-     in
-     let* sect1 = recurse slice1 (each_split ~on_char:';' all_str) in
-     let* sect2 = recurse slice2 (each_split ~on_char:';' all_str) in
+     ws *> string "Section1" *> take_until_success s2 >>= fun (slice1, ()) ->
+     ws *> string "Section2" *> take_until_success (ws *> eoi)
+     >>= fun (slice2, ()) ->
+     recurse slice1 (each_split ~on_char:';' all_str) >>= fun sect1 ->
+     recurse slice2 (each_split ~on_char:';' all_str) >>= fun sect2 ->
      return (sect1, sect2)
    in
    parse_string parser_complex1
