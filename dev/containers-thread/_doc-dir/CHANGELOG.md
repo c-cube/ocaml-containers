@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.12
+
+- add `containers.pp` sublibrary, with Wadler-style pretty printing combinators
+- add `CCArray.{max,argmax,min,argmin}` and their _exn counterparts
+- add `CCParse.take_until_success`
+- add `Option.flat_map_l`
+- add `CCSet.{find_first_map,find_last_map}`
+- `CCHash`: native FNV hash for int64/int32
+
+- fix bugs in CCParse related to `recurse` and `Slice`
+- fix: fix Set.find_last_map on OCaml 4.03
+- fix: make sure `Vector.to_{seq,gen}` captures the length initially
+
 ## 3.11
 
 - official OCaml 5 support
