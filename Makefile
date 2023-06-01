@@ -30,7 +30,7 @@ update_next_tag:
 	sed -i "s/NEXT_VERSION/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
 	sed -i "s/NEXT_RELEASE/$(VERSION)/g" $(wildcard src/**/*.ml) $(wildcard src/**/*.mli)
 
-WATCH?=@src/all @tests/runtest
+WATCH?=@src/check @tests/runtest
 watch:
 	@dune build $(WATCH) -w
 

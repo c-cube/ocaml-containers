@@ -1,0 +1,7 @@
+
+(library
+  (name containers_pp)
+  (public_name containers.pp)
+  (synopsis "Pretty printer for Containers")
+  (flags :standard)
+  (libraries containers seq))
