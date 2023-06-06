@@ -66,7 +66,7 @@ changes in this release.
 
 2. Another large change is the removal (at last!) of functions deprecated
   in 2.8, related to the spread of `Seq.t` as the standard iterator type.
-  Functions like `CCVector.of_seq` now operate on this standard `Seq.t` type,
+  Functions like `CCVec.of_seq` now operate on this standard `Seq.t` type,
   and old-time iteration based on [iter](https://github.com/c-cube/iter)
   is now named `of_iter`, `to_iter`, etc.
 
@@ -439,18 +439,14 @@ map =
 - : string option = Some "33"
 ```
 
-### New types: `CCVector`, `CCHeap`, `CCResult`, `CCSexp`, `CCByte_buffer`
+### New types: `CCVec`, `CCHeap`, `CCResult`, `CCSexp`, `CCByte_buffer`
 
 Containers also contains (!) a few datatypes that are not from the standard
 library but that are useful in a lot of situations:
 
-- `CCVector`:
-  A resizable array, with a mutability parameter. A value of type
-  `('a, CCVector.ro) CCVector.t` is an immutable vector of values of type `'a`,
-  whereas a `('a, CCVector.rw) CCVector.t` is a mutable vector that
-  can be modified. This way, vectors can be used in a quite functional
-  way, using operations such as `map` or `flat_map`, or in a more
-  imperative way.
+- `CCVec`:
+  A simple and efficient dynamic array.
+  This was called `CCVector` but the old module is deprecated now.
 - `CCHeap`:
   A priority queue (currently, leftist heaps) functorized over
   a module `sig val t val leq : t -> t -> bool` that provides a type `t`
@@ -474,43 +470,42 @@ library but that are useful in a lot of situations:
 Now for a few examples:
 
 ```ocaml
-# (* create a new empty vector. It is mutable, for otherwise it would
-   not be very useful. *)
-  CCVector.create;;
-- : unit -> ('a, CCVector.rw) CCVector.t = <fun>
+# (* create a new empty vector. *)
+  CCVec.create;;
+- : unit -> 'a CCVec.t = <fun>
 
-# (* init, similar to Array.init, can be used to produce a
-   vector that is mutable OR immutable (see the 'mut parameter?) *)
-  CCVector.init ;;
-- : int -> (int -> 'a) -> ('a, 'mut) CCVector.t = <fun>
+# (* init, similar to Array.init, can be used to produce a new vector
+     of given size *)
+  CCVec.init ;;
+- : int -> (int -> 'a) -> 'a CCVec.t = <fun>
 ```
 
 ```ocaml non-deterministic=output
 # (* use the infix (--) operator for creating a range. Notice
    that v is a vector of integer but its mutability is not
    decided yet. *)
-  let v = CCVector.(1 -- 10);;
+  let v = CCVec.(1 -- 10);;
 val v : (int, '_a) CCVector.t = <abstr>
 ```
 
 ```ocaml
-# Format.printf "v = @[%a@]@." (CCVector.pp CCInt.pp) v;;
+# Format.printf "v = @[%a@]@." (CCVec.pp CCInt.pp) v;;
 v = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 - : unit = ()
-# CCVector.push v 42;;
+# CCVec.push v 42;;
 - : unit = ()
 
 # v (* now v is a mutable vector *);;
-- : (int, CCVector.rw) CCVector.t = <abstr>
+- : int CCVec.t = <abstr>
 
 # (* functional combinators! *)
-  let v2 : _ CCVector.ro_vector = v
-  |> CCVector.map (fun x-> x+1)
-  |> CCVector.filter (fun x-> x mod 2=0)
-  |> CCVector.rev ;;
-val v2 : int CCVector.ro_vector = <abstr>
+  let v2 : _ CCVec.t = v
+  |> CCVec.map (fun x-> x+1)
+  |> CCVec.filter (fun x-> x mod 2=0)
+  |> CCVec.rev ;;
+val v2 : int CCVec.t = <abstr>
 
-# Format.printf "v2 = @[%a@]@." (CCVector.pp CCInt.pp) v2;;
+# Format.printf "v2 = @[%a@]@." (CCVec.pp CCInt.pp) v2;;
 v2 = 10, 8, 6, 4, 2
 - : unit = ()
 ```
@@ -521,7 +516,7 @@ module IntHeap = CCHeap.Make(struct type t = int let leq = (<=) end);;
 ```
 
 ```ocaml
-# let h = v2 |> CCVector.to_iter |> IntHeap.of_iter ;;
+# let h = v2 |> CCVec.to_iter |> IntHeap.of_iter ;;
 val h : IntHeap.t = <abstr>
 
 # (* We can print the content of h
