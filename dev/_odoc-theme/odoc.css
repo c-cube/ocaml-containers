@@ -175,6 +175,8 @@ code, pre
   color: var(--color-code-fg);
   overflow-wrap: anywhere; }
 
+code span span { white-space: nowrap } /* Do not break these units */
+
 pre code { font-size: inherit } /* don't apply transform twice... */
 a code { color: inherit }
 h1 code, h2 code, h3 code, h4 code, h5 code, h6 code { text-transform: none; }
@@ -259,13 +261,16 @@ a.anchor
 .spec.type { padding-left: 0; text-indent: 0 }
 .spec.type > a.anchor
 { padding-left: 1ch; padding-right: 1ch; /* values from a.anchor */ }
-
-.spec td > a.anchor, .spec > a.anchor
+.spec li > a.anchor, .spec > a.anchor
 { padding-right: 0.5ch; padding-left: 2ch; }
 
-.odoc-spec table { margin-top: 0 }
-.odoc-spec .def-doc { padding-left: 1ch; }
-.odoc-spec .def-doc *:first-child { margin-top: 0 }
+.spec ol { margin:0; list-style-type: none; }
+.spec li { margin-left: 0; padding-left: 4ch; text-indent: -4ch }
+.spec li.record.field { margin-left: 2ch }
+
+.spec .def-doc { display: inline-block }
+.spec .def-doc { padding-left: /* 4 + 3 */ 7ch; }
+.spec .def-doc p { margin-left: -4ch; text-indent: 0 }
 
 .odoc-include summary { cursor: pointer }
 
