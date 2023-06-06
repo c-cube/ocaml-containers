@@ -59,8 +59,8 @@ module type S = sig
   (** Current width of the bitfield. *)
 end
 
+module Make () : S
 (** Create a new bitfield type *)
-module Make : functor (_ : sig end) -> S
 
 (**/**)
 

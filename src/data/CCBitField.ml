@@ -49,7 +49,7 @@ let get_then_incr n =
   incr n;
   x
 
-module Make (X : sig end) : S = struct
+module Make () : S = struct
   type t = int
 
   let empty = 0
