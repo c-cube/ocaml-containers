@@ -92,18 +92,6 @@ let clear_and_reset v =
   v.size <- 0;
   v.vec <- [||]
 
-(* TODO*)
-(*
-  let v = create() in
-  let a = Weak.create 1 in
-  push v ("hello"^"world");
-  Weak.set a 0 (Some (get v 0));
-  Gc.full_major(); Gc.compact();
-  assert_bool "is alive" (Weak.check a 0);
-  Gc.full_major(); Gc.compact();
-  assert_equal None (Weak.get a 0);
-*)
-
 let[@inline] is_empty v = v.size = 0
 
 let[@inline] push_unsafe_ v x =
