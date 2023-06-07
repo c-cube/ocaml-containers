@@ -2,7 +2,11 @@
 
 (** {1 Basic Functions} *)
 
+[@@@ocaml.warning "-32"]
+
 let opaque_identity x = x
+
+[@@@ocaml.warning "+32"]
 
 (* import standard implementations, if any *)
 
@@ -14,12 +18,9 @@ include CCShims_.Stdlib
 include Fun
 
 [@@@else_]
+[@@@ocaml.warning "-32"]
 
 external id : 'a -> 'a = "%identity"
-
-let[@inline] flip f x y = f y x
-let[@inline] const x _ = x
-let[@inline] negate f x = not (f x)
 
 let[@inline] protect ~finally f =
   try
@@ -29,6 +30,12 @@ let[@inline] protect ~finally f =
   with e ->
     finally ();
     raise e
+
+[@@@ocaml.warning "+32"]
+
+let[@inline] flip f x y = f y x
+let[@inline] const x _ = x
+let[@inline] negate f x = not (f x)
 
 [@@@endif]
 

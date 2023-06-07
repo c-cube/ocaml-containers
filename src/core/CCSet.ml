@@ -101,6 +101,8 @@ module Make (O : Map.OrderedType) = struct
   (* backport functions from recent stdlib.
      they will be shadowed by inclusion of [S] if present. *)
 
+  [@@@ocaml.warning "-32"]
+
   let find_opt x s = try Some (S.find x s) with Not_found -> None
   let choose_opt s = try Some (S.choose s) with Not_found -> None
   let min_elt_opt s = try Some (S.min_elt s) with Not_found -> None
@@ -151,17 +153,23 @@ module Make (O : Map.OrderedType) = struct
     | None -> raise Not_found
     | Some x -> x
 
+  [@@@ocaml.warning "+32"]
+
   include S
 
   (* Use find_last which is linear time on OCaml < 4.05 *)
   let find_last_map f m =
     let res = ref None in
-    let _ = find_last_opt
-      (fun x ->
-        match f x with
-        | None -> false
-        | Some y -> res := Some y; true)
-      m in
+    let _ =
+      find_last_opt
+        (fun x ->
+          match f x with
+          | None -> false
+          | Some y ->
+            res := Some y;
+            true)
+        m
+    in
     !res
 
   let add_seq seq set =

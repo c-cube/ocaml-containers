@@ -94,11 +94,6 @@ val get_exn : ('a, _) t -> 'a
 val get_or : ('a, _) t -> default:'a -> 'a
 (** [get_or e ~default] returns [x] if [e = Ok x], [default] otherwise. *)
 
-val get_lazy : ('e -> 'a) -> ('a, 'e) t -> 'a
-(** [get_lazy f e] returns [x] if [e = Ok x], [f msg]  if [e = Error msg].
-    This is similar to {!CCOption.get_lazy}.
-    @since 3.0 *)
-
 val get_or_failwith : ('a, string) t -> 'a
 (** [get_or_failwith e] returns [x] if [e = Ok x], fails otherwise.
     @raise Failure with [msg] if [e = Error msg].

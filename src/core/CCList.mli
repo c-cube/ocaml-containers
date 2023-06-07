@@ -33,18 +33,6 @@ val is_empty : _ t -> bool
 (** [is_empty l] returns [true] iff [l = []].
     @since 0.11 *)
 
-val map : ('a -> 'b) -> 'a t -> 'b t
-(** [map f [a0; a1; …; an]] applies function [f] in turn to [a0; a1; …; an].
-    Safe version of {!List.map}. *)
-
-val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
-(** [l >|= f] is the infix version of [map] with reversed arguments.
-    @since 0.5 *)
-
-val append : 'a t -> 'a t -> 'a t
-(** [append l1 l2] returns the list that is the concatenation of [l1] and [l2].
-    Safe version of {!List.append}. *)
-
 val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l].
     [cons_maybe None l] is [l].
@@ -54,21 +42,6 @@ val cons' : 'a t -> 'a -> 'a t
 (** [cons' l x] is the same as [x :: l]. This is convenient for fold
     functions such as {!List.fold_left} or {!Array.fold_left}.
     @since 3.3 *)
-
-val ( @ ) : 'a t -> 'a t -> 'a t
-(** [l1 @ l2] is like [append l1 l2].
-    Concatenate the two lists [l1] and [l2]. *)
-
-val filter : ('a -> bool) -> 'a t -> 'a t
-(** [filter p l] returns all the elements of the list [l]
-    that satisfy the predicate [p].  The order of the elements
-    in the input list [l] is preserved.
-    Safe version of {!List.filter}. *)
-
-val fold_right : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
-(** [fold_right f [a1; …; an] b] is
-    [f a1 (f a2 ( … (f an b) … ))].
-    Safe version of {!List.fold_right}. *)
 
 val fold_while : ('a -> 'b -> 'a * [ `Stop | `Continue ]) -> 'a -> 'b t -> 'a
 (** [fold_while f init l] folds until a stop condition via [('a, `Stop)] is
@@ -408,17 +381,8 @@ val mguard : bool -> unit t
     ]}
     @since 3.1 *)
 
-val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
-(** [funs <*> l] is [product (fun f x -> f x) funs l]. *)
-
-val ( <$> ) : ('a -> 'b) -> 'a t -> 'b t
-(** [(<$>)] is [map]. *)
-
 val return : 'a -> 'a t
 (** [return x] is [x]. *)
-
-val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
-(** [l >>= f] is [flat_map f l]. *)
 
 val take : int -> 'a t -> 'a t
 (** [take n l] takes the [n] first elements of the list [l], drop the rest. *)
@@ -721,15 +685,6 @@ val range : int -> int -> int t
 val range' : int -> int -> int t
 (** [range' i j] is like {!range} but the second bound [j] is excluded.
     For instance [range' 0 5 = [0;1;2;3;4]]. *)
-
-val ( -- ) : int -> int -> int t
-(** [i -- j] is the list of integers from [i] to [j] included.
-    Infix alias for [range]. *)
-
-val ( --^ ) : int -> int -> int t
-(** [i --^ j] is the list of integers from [i] to [j] excluded.
-    Infix alias for [range'].
-    @since 0.17 *)
 
 val replicate : int -> 'a -> 'a t
 (** [replicate n x] replicates the given element [x] [n] times. *)

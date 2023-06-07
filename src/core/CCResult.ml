@@ -108,11 +108,6 @@ let get_or_failwith = function
   | Ok x -> x
   | Error msg -> failwith msg
 
-let get_lazy default_fn x =
-  match x with
-  | Ok x -> x
-  | Error e -> default_fn e
-
 let map_or f e ~default =
   match e with
   | Ok x -> f x

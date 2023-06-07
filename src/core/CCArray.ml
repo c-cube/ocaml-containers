@@ -139,10 +139,14 @@ let rec find_aux f a i =
     | None -> find_aux f a (i + 1)
   )
 
+[@@@ocaml.warning "-32"]
+
 let find_map f a = find_aux (fun _ -> f) a 0
 let find = find_map
 let find_map_i f a = find_aux f a 0
 let findi = find_map_i
+
+[@@@ocaml.warning "+32"]
 
 let find_idx p a =
   find_aux
@@ -154,58 +158,76 @@ let find_idx p a =
     a 0
 
 let max cmp a =
-  if Array.length a = 0 then None
-  else Some (
-      fold
-        (fun acc elt -> if cmp acc elt < 0 then elt else acc)
-        a.(0)
-        a)
+  if Array.length a = 0 then
+    None
+  else
+    Some
+      (fold
+         (fun acc elt ->
+           if cmp acc elt < 0 then
+             elt
+           else
+             acc)
+         a.(0) a)
 
 let max_exn cmp a =
   match max cmp a with
-    | None -> invalid_arg "CCArray.max_exn"
-    | Some elt -> elt
-
+  | None -> invalid_arg "CCArray.max_exn"
+  | Some elt -> elt
 
 let argmax cmp a =
-  if Array.length a = 0 then None
-  else Some (
-      foldi
-        (fun acc i elt -> if cmp a.(acc) elt < 0 then i else acc)
-        0
-        a)
+  if Array.length a = 0 then
+    None
+  else
+    Some
+      (foldi
+         (fun acc i elt ->
+           if cmp a.(acc) elt < 0 then
+             i
+           else
+             acc)
+         0 a)
 
 let argmax_exn cmp a =
   match argmax cmp a with
-    | None -> invalid_arg "CCArray.argmax_exn"
-    | Some elt -> elt
+  | None -> invalid_arg "CCArray.argmax_exn"
+  | Some elt -> elt
 
 let min cmp a =
-  if Array.length a = 0 then None
-  else Some (
-      fold
-        (fun acc elt -> if cmp acc elt > 0 then elt else acc)
-        a.(0)
-        a)
+  if Array.length a = 0 then
+    None
+  else
+    Some
+      (fold
+         (fun acc elt ->
+           if cmp acc elt > 0 then
+             elt
+           else
+             acc)
+         a.(0) a)
 
 let min_exn cmp a =
   match min cmp a with
-    | None -> invalid_arg "CCArray.min_exn"
-    | Some elt -> elt
-
+  | None -> invalid_arg "CCArray.min_exn"
+  | Some elt -> elt
 
 let argmin cmp a =
-  if Array.length a = 0 then None
-  else Some (
-      foldi
-        (fun acc i elt -> if cmp a.(acc) elt > 0 then i else acc)
-        0
-        a)
+  if Array.length a = 0 then
+    None
+  else
+    Some
+      (foldi
+         (fun acc i elt ->
+           if cmp a.(acc) elt > 0 then
+             i
+           else
+             acc)
+         0 a)
 
 let argmin_exn cmp a =
   match argmin cmp a with
-    | None -> invalid_arg "CCArray.argmin_exn"
-    | Some elt -> elt
+  | None -> invalid_arg "CCArray.argmin_exn"
+  | Some elt -> elt
 
 let filter_map f a =
   let rec aux acc i =

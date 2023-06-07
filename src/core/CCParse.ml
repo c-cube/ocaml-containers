@@ -338,7 +338,6 @@ let parsing what p =
   }
 
 let empty = { run = (fun st ~ok ~err:_ -> ok st ()) }
-let nop = empty
 let any_char = { run = (fun st ~ok ~err -> consume_ st ~ok ~err) }
 
 let char c : _ t =
@@ -811,8 +810,6 @@ let split_list_at_most ~on_char n : slice list t =
   in
   loop [] n
 
-let split_list ~on_char : _ t = split_list_at_most ~on_char max_int
-
 let split_2 ~on_char : _ t =
   split_list_at_most ~on_char 3 >>= function
   | [ a; b ] -> return (a, b)
@@ -948,8 +945,6 @@ let parse_file_exn p file =
   | Error e -> raise (ParseError e)
 
 module U = struct
-  let sep_ = sep
-
   let list ?(start = "[") ?(stop = "]") ?(sep = ";") p =
     string start *> skip_white
     *> sep_until

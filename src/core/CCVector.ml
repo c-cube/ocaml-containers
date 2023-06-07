@@ -500,15 +500,6 @@ let flat_map f v =
   iter (fun x -> iter (push v') (f x)) v;
   v'
 
-let flat_map_iter f v =
-  let v' = create () in
-  iter
-    (fun x ->
-      let seq = f x in
-      append_iter v' seq)
-    v;
-  v'
-
 let flat_map_seq f v =
   let v' = create () in
   iter

@@ -178,6 +178,8 @@ module Make (O : Map.OrderedType) = struct
   (* backport functions from recent stdlib.
      they will be shadowed by inclusion of [S] if present. *)
 
+  [@@@ocaml.warning "-32"]
+
   let union f a b =
     M.merge
       (fun k v1 v2 ->
@@ -229,6 +231,8 @@ module Make (O : Map.OrderedType) = struct
     match find_last_opt f m with
     | None -> raise Not_found
     | Some (k, v) -> k, v
+
+  [@@@ocaml.warning "+32"]
 
   (* === include M.
      This will shadow some values depending on OCaml's current version

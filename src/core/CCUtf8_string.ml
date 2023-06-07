@@ -10,8 +10,17 @@ type uchar = Uchar.t
 type 'a gen = unit -> 'a option
 type 'a iter = ('a -> unit) -> unit
 
+(* compat shim *)
+
+[@@@ocaml.warning "-32"]
+
 let equal (a : string) b = Stdlib.( = ) a b
 let hash : string -> int = Hashtbl.hash
+
+[@@@ocaml.warning "+32"]
+
+(* end compat shim *)
+
 let pp = Format.pp_print_string
 
 include String

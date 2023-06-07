@@ -27,6 +27,8 @@ end
 
 include Infix
 
+[@@@ocaml.warning "-32"]
+
 let nan = Stdlib.nan
 let infinity = Stdlib.infinity
 let neg_infinity = Stdlib.neg_infinity
@@ -67,6 +69,8 @@ let max (x : t) y =
 let equal (a : float) b = a = b
 let hash : t -> int = Hashtbl.hash
 let compare (a : float) b = Stdlib.compare a b
+
+[@@@ocaml.warning "+32"]
 
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a

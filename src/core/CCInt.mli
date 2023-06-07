@@ -111,9 +111,13 @@ val to_float : t -> float
 (** [to_float] is the same as [float_of_int]
     @since 3.0*)
 
+[@@@ocaml.warning "-32"]
+
 val of_float : float -> t
 (** [to_float] is the same as [int_of_float]
     @since 3.0*)
+
+[@@@ocaml.warning "+32"]
 
 val to_string : t -> string
 (** [to_string x] returns the string representation of the integer [x], in signed decimal.

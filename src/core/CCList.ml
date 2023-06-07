@@ -6,6 +6,8 @@ open CCShims_
 
 (* backport new functions from stdlib here *)
 
+[@@@ocaml.warning "-32"]
+
 let nth_opt l n =
   if n < 0 then invalid_arg "nth_opt";
   let rec aux l n =
@@ -45,6 +47,8 @@ let rec assq_opt x = function
   | [] -> None
   | (y, v) :: _ when Stdlib.( == ) x y -> Some v
   | _ :: tail -> assq_opt x tail
+
+[@@@ocaml.warning "+32"]
 
 (* end of backport *)
 
