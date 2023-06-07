@@ -42,7 +42,6 @@ module A = struct
   let length = Array.length
   let iteri = Array.iteri
   let iter = Array.iter
-  let fold = Array.fold_left
   let map = Array.map
 
   let iteri_rev f a =
@@ -50,7 +49,6 @@ module A = struct
       f i a.(i)
     done
 
-  let create () = [||]
   let empty = [||]
   let is_empty a = length a = 0
   let return x = [| x |]
@@ -71,21 +69,6 @@ module A = struct
     let n = length a in
     if n = 0 then invalid_arg "A.pop";
     Array.sub a 0 (n - 1)
-
-  let append a b =
-    let n_a = length a in
-    let n_b = length b in
-    if n_a + n_b > max_length then invalid_arg "A.append";
-    if n_a = 0 then
-      b
-    else if n_b = 0 then
-      a
-    else (
-      let arr = Array.make (n_a + n_b) a.(0) in
-      Array.blit a 0 arr 0 n_a;
-      Array.blit b 0 arr n_a n_b;
-      arr
-    )
 
   let set ~mut a i x =
     if i < 0 || i > length a || i >= max_length then invalid_arg "A.set";
@@ -305,11 +288,6 @@ let to_gen m =
   next
 
 let choose m = to_gen m ()
-
-let choose_exn m =
-  match choose m with
-  | None -> raise Not_found
-  | Some (k, v) -> k, v
 
 let pp ppv out m =
   let first = ref true in

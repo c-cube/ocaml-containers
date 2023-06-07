@@ -3,7 +3,6 @@ let width_ = 8
 (* Helper functions *)
 let[@inline] get_ b i = Char.code (Bytes.get b i)
 let[@inline] unsafe_get_ b i = Char.code (Bytes.unsafe_get b i)
-let[@inline] set_ b i v = Bytes.set b i (Char.unsafe_chr v)
 let[@inline] unsafe_set_ b i v = Bytes.unsafe_set b i (Char.unsafe_chr v)
 let[@inline] mod_ n = n land 0b111
 let[@inline] div_ n = n lsr 3
