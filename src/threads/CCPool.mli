@@ -15,7 +15,7 @@ end
 exception Stopped
 
 (** {2 Create a new Pool} *)
-module Make (P : PARAM) : sig
+module Make (_ : PARAM) : sig
   val run : (unit -> _) -> unit
   (** [run f] schedules [f] for being executed in the thread pool. *)
 

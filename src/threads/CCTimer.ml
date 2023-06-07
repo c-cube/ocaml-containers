@@ -78,9 +78,9 @@ let serve timer =
     | Wait delay -> wait delay
   (* wait for [delay] seconds, or until something happens on [fifo_in] *)
   and wait delay =
-    let read = Thread.wait_timed_read timer.fifo_in delay in
+    ignore (Unix.select [ timer.fifo_in ] [] [] delay : _ * _ * _);
     (* remove char from fifo, so that next write can happen *)
-    if read then ignore (Unix.read timer.fifo_in buf 0 1);
+    (try ignore (Unix.read timer.fifo_in buf 0 1 : int) with _ -> ());
     next ()
   in
   next ()
@@ -89,6 +89,7 @@ let nop_handler_ _ = ()
 
 let create () =
   let fifo_in, fifo_out = Unix.pipe () in
+  Unix.set_nonblock fifo_in;
   let timer =
     {
       stop = false;
