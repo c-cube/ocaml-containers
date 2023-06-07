@@ -17,8 +17,6 @@ let fill_with_junk_ (a : _ array) i len : unit =
   else
     Array.fill (as_obj_arr a) i len (Obj.repr ())
 
-let freeze v = { size = v.size; vec = v.vec }
-let freeze_copy v = { size = v.size; vec = Array.sub v.vec 0 v.size }
 let create () = { size = 0; vec = [||] }
 
 let create_with ?(capacity = 128) x =
