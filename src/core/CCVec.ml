@@ -219,13 +219,6 @@ let append_list a b =
     List.iter (push_unsafe_ a) b;
     ()
 
-let rec append_gen a b =
-  match b () with
-  | None -> ()
-  | Some x ->
-    push a x;
-    append_gen a b
-
 let equal eq v1 v2 =
   v1.size = v2.size
   &&
@@ -492,15 +485,6 @@ let flat_map f v =
   iter (fun x -> iter (push v') (f x)) v;
   v'
 
-let flat_map_iter f v =
-  let v' = create () in
-  iter
-    (fun x ->
-      let seq = f x in
-      append_iter v' seq)
-    v;
-  v'
-
 let flat_map_seq f v =
   let v' = create () in
   iter
@@ -634,27 +618,6 @@ let of_list l =
 
 let to_array v = Array.sub v.vec 0 v.size
 let to_list v = List.rev (fold (fun acc x -> x :: acc) [] v)
-
-let of_gen ?(init = create ()) g =
-  let rec aux g =
-    match g () with
-    | None -> init
-    | Some x ->
-      push init x;
-      aux g
-  in
-  aux g
-
-let to_gen v =
-  let { size; vec } = v in
-  let i = ref 0 in
-  fun () ->
-    if !i < size then (
-      let x = vec.(!i) in
-      incr i;
-      Some x
-    ) else
-      None
 
 let to_string ?(start = "") ?(stop = "") ?(sep = ", ") item_to_string v =
   start ^ (to_list v |> List.map item_to_string |> String.concat sep) ^ stop
