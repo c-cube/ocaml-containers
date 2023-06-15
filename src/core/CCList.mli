@@ -391,7 +391,7 @@ val drop : int -> 'a t -> 'a t
 (** [drop n l] drops the [n] first elements of the list [l], keep the rest. *)
 
 val hd_tl : 'a t -> 'a * 'a t
-(** [hd_tl (x :: l)] returns [hd, l].
+(** [hd_tl (x :: l)] returns [x, l].
     @raise Failure if the list is empty.
     @since 0.16 *)
 
