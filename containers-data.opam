@@ -10,12 +10,10 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test & arch != "x86_32" & arch != "arm32"}
 ]
 depends: [
-  "ocaml" { >= "4.03.0" }
+  "ocaml" { >= "4.08.0" }
   "dune" { >= "2.0" }
   "containers" { = version }
-  "seq"
-  (("ocaml" {with-test & < "4.08"} & "qcheck-core" {>= "0.17" & with-test})
-  | ("ocaml" {with-test & >= "4.08"} & "qcheck-core" {>= "0.20" & with-test}))
+| "qcheck-core" {>= "0.20" & with-test}
   "iter" { with-test }
   "gen" { with-test }
   "mdx" { with-test }
