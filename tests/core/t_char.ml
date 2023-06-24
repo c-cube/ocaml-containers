@@ -7,4 +7,4 @@ eq None (of_int 257);;
 
 q
   (Q.string_of_size (Q.Gen.return 1))
-  (fun s -> CCShims_.Stdlib.( = ) (to_string s.[0]) s)
+  (fun s -> Stdlib.( = ) (to_string s.[0]) s)

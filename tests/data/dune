@@ -1,6 +1,6 @@
 (test
  (name t)
- (flags :standard -strict-sequence -warn-error -a+8 -open CCShims_)
+ (flags :standard -strict-sequence -warn-error -a+8)
  (modes (best exe))
  (package containers-data)
  (libraries containers containers-data containers_testlib iter gen))

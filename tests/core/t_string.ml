@@ -1,7 +1,6 @@
 module T = (val Containers_testlib.make ~__FILE__ ())
 include T
-open CCString
-.Stdlib;;
+open CCString.Stdlib;;
 
 q Q.printable_string (fun s -> s = rev (rev s));;
 q Q.printable_string (fun s -> length s = length (rev s));;
@@ -315,7 +314,7 @@ eq ~printer:Q.Print.string "abde"
 ;;
 
 q Q.printable_string (fun s -> filter (fun _ -> true) s = s);;
-eq ~printer:Q.Print.string "abcde" (uniq CCShims_.Stdlib.( = ) "abbccdeeeee");;
+eq ~printer:Q.Print.string "abcde" (uniq Stdlib.( = ) "abbccdeeeee");;
 eq ~printer:CCFun.id "abc " (ltrim " abc ");;
 eq ~printer:CCFun.id " abc" (rtrim " abc ");;
 q Q.(printable_string) (fun s -> String.trim s = (s |> ltrim |> rtrim));;
