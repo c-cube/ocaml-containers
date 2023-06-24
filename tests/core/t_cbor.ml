@@ -1,8 +1,6 @@
 include (val Containers_testlib.make ~__FILE__ ())
 module Cbor = Containers_cbor
 
-[@@@ifge 4.08]
-
 let gen_c : Cbor.t Q.Gen.t =
   let open Q.Gen in
   sized @@ fix
@@ -110,5 +108,3 @@ if not (c = c') then
   Q.Test.fail_reportf "@[<hv2>roundtrip failed:@ from %a@ to %a@]"
     Cbor.pp_diagnostic c Cbor.pp_diagnostic c';
 true
-
-[@@@endif]

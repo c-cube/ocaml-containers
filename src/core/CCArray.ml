@@ -11,29 +11,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-open CCShims_
-
-[@@@ifge 4.8]
-
 include Array
-
-[@@@elifge 4.6]
-
-include Array
-
-type 'a t = 'a array
-
-[@@@else_]
-
-include Array
-
-module Floatarray = struct
-  type t = float array
-end
-
-type 'a t = 'a array
-
-[@@@endif]
 
 let empty = [||]
 
@@ -619,16 +597,12 @@ module Infix = struct
   let ( -- ) = ( -- )
   let ( --^ ) = ( --^ )
 
-  [@@@ifge 4.8]
-
   type 'a t = 'a array
 
   let ( let* ) = ( >>= )
   let ( let+ ) = ( >|= )
   let[@inline] ( and+ ) a1 a2 = monoid_product (fun x y -> x, y) a1 a2
   let ( and* ) = ( and+ )
-
-  [@@@endif]
 end
 
 include Infix

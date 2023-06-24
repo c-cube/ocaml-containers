@@ -2,7 +2,7 @@
 
 (** {1 Equality Combinators} *)
 
-open CCShims_
+
 
 type 'a t = 'a -> 'a -> bool
 

@@ -2,10 +2,10 @@
 
 (** Random Generators *)
 
+(** @inline *)
 include module type of struct
   include Random
 end
-(** @inline *)
 
 type state = Random.State.t
 
@@ -151,15 +151,10 @@ val fix :
 
 val pure : 'a -> 'a t
 val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
-
-[@@@ifge 4.08]
-
-include CCShims_syntax.LET with type 'a t := 'a t
-(** Let operators on OCaml >= 4.08.0, nothing otherwise
-    @since 2.8
-    @inline *)
-
-[@@@endif]
+val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
+val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
+val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
 
 (** {4 Run a generator} *)
 

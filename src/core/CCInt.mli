@@ -2,12 +2,8 @@
 
 (** Basic Int functions *)
 
-[@@@ifge 4.08]
-
 include module type of Int
 (** @inline *)
-
-[@@@endif]
 
 type t = int
 

@@ -1,7 +1,7 @@
 module T = (val Containers_testlib.make ~__FILE__ ())
 include T
 open CCString
-open CCShims_.Stdlib;;
+.Stdlib;;
 
 q Q.printable_string (fun s -> s = rev (rev s));;
 q Q.printable_string (fun s -> length s = length (rev s));;

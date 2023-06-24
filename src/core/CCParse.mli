@@ -1,4 +1,3 @@
-
 (** Very Simple Parser Combinators
 
     These combinators can be used to write very simple parsers, for example
@@ -675,14 +674,10 @@ module Infix : sig
       [a ||| b] parses [a], then [b], then returns the pair of their results.
       @since 3.6 *)
 
-  [@@@ifge 4.08]
-
-  include CCShims_syntax.LET with type 'a t := 'a t
-  (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8
-      @inline *)
-
-  [@@@endif]
+  val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
+  val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
 end
 
 include module type of Infix

@@ -2,7 +2,7 @@
 
 (** {1 Simple S-expression parsing/printing} *)
 
-open CCShims_
+
 
 type 'a or_error = ('a, string) result
 type 'a gen = unit -> 'a option

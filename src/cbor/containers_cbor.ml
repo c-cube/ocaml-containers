@@ -44,9 +44,6 @@ let rec pp_diagnostic out (self : t) =
 let to_string_diagnostic (self : t) : string =
   Format.asprintf "@[<h>%a@]" pp_diagnostic self
 
-(* we use funtions from Bytes *)
-[@@@ifge 4.08]
-
 exception Indefinite
 
 let[@inline] i64_to_int i =
@@ -323,5 +320,3 @@ let encode ?(buf = Buffer.create 32) (self : t) : string =
   in
   encode_val self;
   Buffer.contents buf
-
-[@@@endif]

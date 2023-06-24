@@ -397,8 +397,6 @@ val pp :
     By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
     (fun out -> Format.fprintf out ",@ "). *)
 
-[@@@ifge 4.08]
-
 val ( let+ ) : ('a, 'e) t -> ('a -> 'b) -> ('b, 'e) t
 (** @since 2.8 *)
 
@@ -410,5 +408,3 @@ val ( let* ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
 
 val ( and* ) : ('a, 'e) t -> ('b, 'e) t -> ('a * 'b, 'e) t
 (** @since 2.8 *)
-
-[@@@endif]

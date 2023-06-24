@@ -263,9 +263,6 @@ module Infix = struct
   let ( >|= ) e f = map f e
   let ( >>= ) e f = flat_map f e
   let ( <*> ) = ( <*> )
-
-  [@@@ifge 4.8]
-
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )
 
@@ -276,8 +273,6 @@ module Infix = struct
     | _, Error e -> Error e
 
   let ( and* ) = ( and+ )
-
-  [@@@endif]
 end
 
 include Infix

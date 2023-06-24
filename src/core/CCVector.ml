@@ -671,11 +671,7 @@ let pp ?(pp_start = fun _ () -> ()) ?(pp_stop = fun _ () -> ())
     v;
   pp_stop fmt ()
 
-[@@@ifge 4.8]
-
 let ( let+ ) = ( >|= )
 let ( let* ) = ( >>= )
 let[@inline] ( and+ ) a1 a2 = monoid_product (fun x y -> x, y) a1 a2
 let ( and* ) = ( and+ )
-
-[@@@endif]

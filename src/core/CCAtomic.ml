@@ -4,7 +4,7 @@ include Atomic
 
 [@@@else_]
 
-open CCShims_.Stdlib (* for == *)
+open Stdlib (* for == *)
 
 type 'a t = { mutable x: 'a }
 

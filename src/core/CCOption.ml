@@ -181,9 +181,6 @@ module Infix = struct
   let ( <*> ) = ( <*> )
   let ( <$> ) = map
   let ( <+> ) = ( <+> )
-
-  [@@@ifge 4.8]
-
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )
 
@@ -193,8 +190,6 @@ module Infix = struct
     | _ -> None
 
   let ( and* ) = ( and+ )
-
-  [@@@endif]
 end
 
 include Infix

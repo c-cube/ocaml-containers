@@ -3,7 +3,7 @@
 (** Basic operations on floating-point numbers
     @since 0.6.1 *)
 
-open CCShims_
+
 
 type t = float
 

@@ -13,17 +13,8 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-[@@@ifge 4.07]
-
 include module type of Seq
 (** @inline *)
-
-[@@@else_]
-
-type +'a t = unit -> 'a node
-and +'a node = 'a Seq.node = Nil | Cons of 'a * 'a t
-
-[@@@endif]
 
 val nil : 'a t
 val empty : 'a t
@@ -173,13 +164,14 @@ val scan : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a t
     @since 3.10 *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+
 val concat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** Alias of {!flat_map}
     @since 3.10 *)
 
 val filter_map : ('a -> 'b option) -> 'a t -> 'b t
-
 val flatten : 'a t t -> 'a t
+
 val concat : 'a t t -> 'a t
 (** Alias of {!flatten}.
     @since 3.10 *)

@@ -10,21 +10,10 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a random_gen = Random.State.t -> 'a
 
-[@@@ifge 4.8]
-
 include module type of List with type 'a t := 'a list
 (** @inline *)
 
 type +'a t = 'a list
-
-[@@@else_]
-
-include module type of List
-(** @inline *)
-
-type +'a t = 'a list
-
-[@@@endif]
 
 val empty : 'a t
 (** [empty] is [[]]. *)
@@ -936,10 +925,10 @@ module Infix : sig
   (** [i --^ j] is the infix alias for [range']. Second bound [j] excluded.
       @since 0.17 *)
 
-  [@@@ifge 4.08]
-
-  include CCShims_syntax.LET with type 'a t := 'a t
-  (** @inline *)
+  val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
+  val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
 
   val ( and& ) : 'a list -> 'b list -> ('a * 'b) list
   (** [(and&)] is {!combine_shortest}.
@@ -957,8 +946,6 @@ module Infix : sig
     ]}
     @since 3.1
   *)
-
-  [@@@endif]
 end
 
 include module type of Infix

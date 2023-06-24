@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-open CCShims_
+
 include Int32
 
 let min : t -> t -> t = Stdlib.min

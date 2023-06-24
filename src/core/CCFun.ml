@@ -11,33 +11,8 @@ let opaque_identity x = x
 (* import standard implementations, if any *)
 
 include Sys
-include CCShims_.Stdlib
-
-[@@@ifge 4.8]
-
+include Stdlib
 include Fun
-
-[@@@else_]
-[@@@ocaml.warning "-32"]
-
-external id : 'a -> 'a = "%identity"
-
-let[@inline] protect ~finally f =
-  try
-    let x = f () in
-    finally ();
-    x
-  with e ->
-    finally ();
-    raise e
-
-[@@@ocaml.warning "+32"]
-
-let[@inline] flip f x y = f y x
-let[@inline] const x _ = x
-let[@inline] negate f x = not (f x)
-
-[@@@endif]
 
 let compose f g x = g (f x)
 let compose_binop f g x y = g (f x) (f y)
@@ -92,16 +67,11 @@ let rec iterate n f x =
 
 module Infix = struct
   (* default implem for some operators *)
-  let ( |> ) = CCShims_.Stdlib.( |> )
-  let ( @@ ) = CCShims_.Stdlib.( @@ )
+  let ( |> ) = Stdlib.( |> )
+  let ( @@ ) = Stdlib.( @@ )
   let ( %> ) = compose
   let[@inline] ( % ) f g x = f (g x)
-
-  [@@@ifge 4.8]
-
   let ( let@ ) = ( @@ )
-
-  [@@@endif]
 end
 
 include Infix

@@ -55,5 +55,5 @@ module Atomic = CCAtomic
 module Sexp = CCSexp
 module Sexp_intf = CCSexp_intf
 module Canonical_sexp = CCCanonical_sexp
-module Stdlib = CCShims_.Stdlib
+module Stdlib = Stdlib
 include Monomorphic

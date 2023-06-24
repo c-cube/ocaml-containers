@@ -2,8 +2,6 @@
 
 (** {1 Complements to list} *)
 
-open CCShims_
-
 (* backport new functions from stdlib here *)
 
 [@@@ocaml.warning "-32"]
@@ -52,17 +50,7 @@ let rec assq_opt x = function
 
 (* end of backport *)
 
-[@@@ifge 4.8]
-
 include List
-
-[@@@else_]
-
-include List
-
-type +'a t = 'a list
-
-[@@@endif]
 
 let empty = []
 
@@ -1473,16 +1461,11 @@ module Infix = struct
   let ( <$> ) = map
   let ( -- ) = ( -- )
   let ( --^ ) = ( --^ )
-
-  [@@@ifge 4.8]
-
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )
   let[@inline] ( and+ ) l1 l2 = product (fun x y -> x, y) l1 l2
   let ( and* ) = ( and+ )
   let ( and& ) = combine_shortest
-
-  [@@@endif]
 end
 
 include Infix

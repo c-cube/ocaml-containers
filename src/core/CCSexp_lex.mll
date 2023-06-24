@@ -1,5 +1,4 @@
 {
-  open CCShims_
   type token =
     | ATOM of string
     | LIST_OPEN

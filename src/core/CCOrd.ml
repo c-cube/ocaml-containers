@@ -2,7 +2,7 @@
 
 (** {1 Comparisons} *)
 
-open CCShims_
+
 
 type 'a t = 'a -> 'a -> int
 (** Comparison (total ordering) between two elements, that returns an int *)

@@ -31,18 +31,8 @@ module Test = struct
     in
     Printf.sprintf "(test :file '%s'%s :n %d)" self.__FILE__ what self.n
 
-  [@@@ifge 4.08]
-
   let get_state (r : _ QCheck.TestResult.t) : _ QCheck.TestResult.state =
     QCheck.TestResult.get_state r
-
-  [@@@else_]
-
-  (* must have qcheck < 0.17 *)
-  let get_state (r : _ QCheck.TestResult.t) : _ QCheck.TestResult.state =
-    r.state
-
-  [@@@endif]
 
   let run ?(long = false) ~seed (self : t) : _ result =
     match

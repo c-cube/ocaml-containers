@@ -1,6 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-open CCShims_
+
 include Int64
 
 let min : t -> t -> t = Stdlib.min
@@ -22,7 +22,7 @@ let hash_to_int64 (n : t) =
   logand !h max_int
 
 let[@inline] hash (n : t) : int =
-  to_int (hash_to_int64 n) land CCShims_.Stdlib.max_int
+  to_int (hash_to_int64 n) land Stdlib.max_int
 
 (* see {!CCInt.popcount} for more details *)
 let[@inline] popcount (b : t) : int =

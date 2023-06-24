@@ -2,8 +2,6 @@
 
 (** {1 Basic String Utils} *)
 
-open CCShims_
-
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
@@ -387,14 +385,6 @@ module Split = struct
 
   let right ~by s = try Some (right_exn ~by s) with Not_found -> None
 end
-
-[@@@ifge 4.04]
-[@@@else_]
-
-let split_on_char c s : _ list =
-  Split.list_cpy ~drop:Split.no_drop ~by:(String.make 1 c) s
-
-[@@@endif]
 
 let split ~by s = Split.list_cpy ~by s
 
@@ -979,10 +969,10 @@ let pp fmt s = Format.fprintf fmt "\"%s\"" s
 module Infix = struct
   let ( = ) = equal
   let ( <> ) a b = not (equal a b)
-  let ( > ) : t -> t -> bool = CCShims_.Stdlib.( > )
-  let ( >= ) : t -> t -> bool = CCShims_.Stdlib.( >= )
-  let ( < ) : t -> t -> bool = CCShims_.Stdlib.( < )
-  let ( <= ) : t -> t -> bool = CCShims_.Stdlib.( <= )
+  let ( > ) : t -> t -> bool = Stdlib.( > )
+  let ( >= ) : t -> t -> bool = Stdlib.( >= )
+  let ( < ) : t -> t -> bool = Stdlib.( < )
+  let ( <= ) : t -> t -> bool = Stdlib.( <= )
 end
 
 include Infix

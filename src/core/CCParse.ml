@@ -1,5 +1,3 @@
-open CCShims_
-
 module Memo_tbl = Hashtbl.Make (struct
   type t = int * int (* id of parser, position *)
 
@@ -246,15 +244,10 @@ module Infix = struct
   let ( <|> ) = or_
   let ( ||| ) = both
   let[@inline] ( <?> ) p msg = set_error_message msg p
-
-  [@@@ifge 4.8]
-
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )
   let ( and+ ) = both
   let ( and* ) = ( and+ )
-
-  [@@@endif]
 end
 
 include Infix
@@ -302,7 +295,7 @@ let recurse slice p : _ t =
       (fun st ~ok ~err ->
         (* make sure these states are related. all slices share the
            same reference as the initial state they derive from. *)
-        assert (CCShims_.Stdlib.(st.cs == slice.cs));
+        assert (Stdlib.(st.cs == slice.cs));
         p.run slice ~ok:(fun _st x -> ok st x) ~err);
   }
 
@@ -761,7 +754,7 @@ let set_current_slice sl : _ t =
   {
     run =
       (fun _st ~ok ~err:_ ->
-        assert (CCShims_.Stdlib.(_st.cs == sl.cs));
+        assert (Stdlib.(_st.cs == sl.cs));
         ok sl ())
       (* jump to slice *);
   }

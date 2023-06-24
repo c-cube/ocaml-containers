@@ -10,10 +10,10 @@ type 'a iter = ('a -> unit) -> unit
    see https://discuss.ocaml.org/t/extend-existing-module/1389/4
 *)
 
+(** @inline *)
 include module type of struct
   include Format
 end
-(** @inline *)
 
 type t = Format.formatter
 type -'a printer = t -> 'a -> unit
@@ -30,7 +30,6 @@ val int : int printer
 val string : string printer
 val bool : bool printer
 val float3 : float printer (* 3 digits after . *)
-
 val float : float printer
 
 val exn : exn printer
@@ -334,8 +333,6 @@ module ANSI_codes : sig
       is a very shiny style. *)
 end
 
-[@@@ifge 4.8]
-
 val styling : ANSI_codes.style list -> 'a printer -> 'a printer
 (** [styling st p] is the same printer as [p], except it locally sets
     the style [st].
@@ -362,8 +359,6 @@ val with_styling : ANSI_codes.style list -> t -> (unit -> 'a) -> 'a
 
     Available only on OCaml >= 4.08.
     @since 3.7 *)
-
-[@@@endif]
 
 (** {2 IO} *)
 

@@ -14,12 +14,12 @@ let to_int = Char.code
 let to_string c = String.make 1 c
 
 module Infix = struct
-  let ( = ) : t -> t -> bool = CCShims_.Stdlib.( = )
-  let ( <> ) : t -> t -> bool = CCShims_.Stdlib.( <> )
-  let ( < ) : t -> t -> bool = CCShims_.Stdlib.( < )
-  let ( > ) : t -> t -> bool = CCShims_.Stdlib.( > )
-  let ( <= ) : t -> t -> bool = CCShims_.Stdlib.( <= )
-  let ( >= ) : t -> t -> bool = CCShims_.Stdlib.( >= )
+  let ( = ) : t -> t -> bool = Stdlib.( = )
+  let ( <> ) : t -> t -> bool = Stdlib.( <> )
+  let ( < ) : t -> t -> bool = Stdlib.( < )
+  let ( > ) : t -> t -> bool = Stdlib.( > )
+  let ( <= ) : t -> t -> bool = Stdlib.( <= )
+  let ( >= ) : t -> t -> bool = Stdlib.( >= )
 end
 
 include Infix

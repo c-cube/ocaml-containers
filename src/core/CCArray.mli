@@ -14,30 +14,8 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Arrays} *)
 
-[@@@ifge 4.8]
-
 include module type of Array
 (** @inline *)
-
-[@@@elifge 4.6]
-
-include module type of Array
-(** @inline *)
-
-type 'a t = 'a array
-
-[@@@else_]
-
-include module type of Array
-(** @inline *)
-
-module Floatarray : sig
-  type t = float array
-end
-
-type 'a t = 'a array
-
-[@@@endif]
 
 val empty : 'a t
 (** [empty] is the empty array, physically equal to [[||]]. *)
@@ -151,7 +129,6 @@ val max_exn : ('a -> 'a -> int) -> 'a t -> 'a
 (** [max_exn cmp a] is like {!max}, but
     @raise Invalid_argument if [a] is empty.
     @since 3.12 *)
-
 
 val argmax : ('a -> 'a -> int) -> 'a t -> int option
 (** [argmax cmp a] returns [None] if [a] is empty, otherwise, returns [Some i] where [i]
@@ -375,14 +352,10 @@ module Infix : sig
   (** [x --^ y] creates an array containing integers in the range [x .. y]. Right bound excluded.
       @since 0.17 *)
 
-  [@@@ifge 4.8]
-
-  include CCShims_syntax.LET with type 'a t := 'a array
-  (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8
-      @inline *)
-
-  [@@@endif]
+  val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
+  val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
 end
 
 include module type of Infix

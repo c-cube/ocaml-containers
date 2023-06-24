@@ -4,7 +4,7 @@
 
     We only deal with UTF8 strings as they naturally map to OCaml bytestrings *)
 
-open CCShims_
+
 
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option

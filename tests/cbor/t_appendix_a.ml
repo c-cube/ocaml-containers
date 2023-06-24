@@ -1,7 +1,5 @@
 let verbose = try Sys.getenv "VERBOSE" = "1" with _ -> false
 
-[@@@ifge 4.08]
-
 module J = Yojson.Safe
 module Fmt = CCFormat
 module Cbor = Containers_cbor
@@ -174,5 +172,3 @@ let () =
   (*Format.printf "tests: %a@." (Fmt.Dump.list Test.pp) tests;*)
   run_tests tests;
   ()
-
-[@@@endif]

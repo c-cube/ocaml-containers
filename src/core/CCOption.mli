@@ -175,14 +175,10 @@ module Infix : sig
   val ( <+> ) : 'a t -> 'a t -> 'a t
   (** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
 
-  [@@@ifge 4.08]
-
-  include CCShims_syntax.LET with type 'a t := 'a t
-  (** Let operators on OCaml >= 4.08.0, nothing otherwise
-      @since 2.8
-      @inline *)
-
-  [@@@endif]
+  val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
+  val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
 end
 
 include module type of Infix

@@ -2,26 +2,8 @@
 
 (** Basic operations on Functions *)
 
-[@@@ifge 4.8]
-
 include module type of Fun
 (** @inline *)
-
-[@@@else_]
-
-(* port from stdlib *)
-
-external id : 'a -> 'a = "%identity"
-(** This is an API imitating the new standard Fun module *)
-
-val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
-val const : 'a -> _ -> 'a
-val negate : ('a -> bool) -> 'a -> bool
-val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
-(* this doesn't have the exact same semantics as the stdlib's finally.
-    It will not attempt to catch exceptions raised from [finally] at all. *)
-
-[@@@endif]
 
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** [compose f g x] is [g (f x)]. Composition. *)
@@ -102,14 +84,10 @@ module Infix : sig
   val ( % ) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
   (** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
 
-  [@@@ifge 4.8]
-
   val ( let@ ) : ('a -> 'b) -> 'a -> 'b
   (** [let@ x = foo in bar] is the equivalent of [foo @@ fun x -> bar].
       It can be very useful for resource management, alongside with {!protect}.
       @since 3.11 *)
-
-  [@@@endif]
 end
 
 include module type of Infix

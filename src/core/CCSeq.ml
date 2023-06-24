@@ -6,16 +6,7 @@ type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a printer = Format.formatter -> 'a -> unit
 
-[@@@ifge 4.07]
-
 include Seq
-
-[@@@else_]
-
-type +'a t = unit -> 'a node
-and +'a node = 'a Seq.node = Nil | Cons of 'a * 'a t
-
-[@@@endif]
 
 let nil () = Nil
 let cons a b () = Cons (a, b)
@@ -24,7 +15,10 @@ let singleton x () = Cons (x, nil)
 
 let init n f =
   let rec aux i () =
-    if i >= n then Nil else Cons (f i, aux (i+1))
+    if i >= n then
+      Nil
+    else
+      Cons (f i, aux (i + 1))
   in
   aux 0
 
@@ -101,8 +95,8 @@ let fold_left = fold
 let foldi f acc res =
   let rec aux acc i res =
     match res () with
-      | Nil -> acc
-      | Cons (s, cont) -> aux (f acc i s) (i+1) cont
+    | Nil -> acc
+    | Cons (s, cont) -> aux (f acc i s) (i + 1) cont
   in
   aux acc 0 res
 
@@ -193,7 +187,6 @@ let rec append l1 l2 () =
   | Cons (x, l1') -> Cons (x, append l1' l2)
 
 let rec cycle l () = append l (cycle l) ()
-
 let rec iterate f a () = Cons (a, iterate f (f a))
 
 let rec unfold f acc () =
@@ -213,23 +206,28 @@ let rec exists p l =
 
 let rec find p l =
   match l () with
-    | Nil -> None
-    | Cons (x, tl) ->
-      if p x then Some x else find p tl
+  | Nil -> None
+  | Cons (x, tl) ->
+    if p x then
+      Some x
+    else
+      find p tl
 
 let rec find_map f l =
   match l () with
-    | Nil -> None
-    | Cons (x, tl) ->
-      match f x with
-        | None -> find_map f tl
-        | e -> e
+  | Nil -> None
+  | Cons (x, tl) ->
+    (match f x with
+    | None -> find_map f tl
+    | e -> e)
 
-let rec scan f acc res () = Cons (acc, fun () ->
-  match res () with
-  | Nil -> Nil
-  | Cons (s, cont) -> scan f (f acc s) cont ())
-
+let rec scan f acc res () =
+  Cons
+    ( acc,
+      fun () ->
+        match res () with
+        | Nil -> Nil
+        | Cons (s, cont) -> scan f (f acc s) cont () )
 
 let rec flat_map f l () =
   match l () with
@@ -267,7 +265,6 @@ let product_with f l1 l2 =
   _next_left [] l1 [] l2
 
 let map_product = product_with
-
 let product l1 l2 = product_with (fun x y -> x, y) l1 l2
 
 let rec group eq l () =
@@ -297,7 +294,6 @@ let rec filter_map f l () =
     | Some y -> Cons (y, filter_map f l'))
 
 let flatten l = flat_map (fun x -> x) l
-
 let concat = flatten
 
 let range i j =
