@@ -6,6 +6,9 @@
 
     @since 0.8 *)
 
+[@@@deprecated
+"use moonpool or domainslib or saturn, libraries designed for multicore"]
+
 type 'a t
 (** A value surrounded with a lock *)
 

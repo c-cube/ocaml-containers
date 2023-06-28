@@ -1,6 +1,7 @@
 (library
  (name containers_thread)
  (public_name containers-thread)
+ (synopsis "DEPRECATED library for threading")
  (wrapped false)
  (optional)
  (flags :standard -warn-error -a+8 -w -32 -safe-string)
@@ -8,3 +9,4 @@
   (action
    (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
  (libraries containers threads))
+

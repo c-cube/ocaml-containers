@@ -7,6 +7,9 @@
 
     @since 0.16 *)
 
+[@@@deprecated
+"use moonpool or domainslib or saturn, libraries designed for multicore"]
+
 type 'a t
 (** Safe-thread queue for values of type ['a] *)
 

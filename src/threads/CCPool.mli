@@ -5,6 +5,9 @@
     Renamed and heavily updated from [CCFuture].
     @since 0.16 *)
 
+[@@@deprecated
+"use moonpool or domainslib or saturn, libraries designed for multicore"]
+
 type +'a state = Done of 'a | Waiting | Failed of exn
 
 module type PARAM = sig

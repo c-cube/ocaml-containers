@@ -4,6 +4,8 @@
 
     @since 0.13 *)
 
+[@@@deprecated "use the stdlib's Semaphore module"]
+
 type t
 (** A semaphore *)
 

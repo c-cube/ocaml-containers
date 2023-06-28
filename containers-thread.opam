@@ -3,7 +3,7 @@ version: "3.12"
 author: "Simon Cruanes"
 maintainer: "simon.cruanes.2007@m4x.org"
 license: "BSD-2-Clause"
-synopsis: "An extension of containers for threading"
+synopsis: "An extension of containers for threading. DEPRECATED: use moonpool, domainslib, etc."
 build: [
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "build" "@doc" "-p" name ] {with-doc}

@@ -3,6 +3,9 @@
     Used to be part of [CCFuture].
     @since 0.16 *)
 
+[@@@deprecated
+"use moonpool or domainslib or saturn, libraries designed for multicore"]
+
 type t
 (** A scheduler for events. It runs in its own thread. *)
 

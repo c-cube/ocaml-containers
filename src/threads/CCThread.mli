@@ -5,6 +5,9 @@
     {b status: unstable}
     @since 0.13 *)
 
+[@@@deprecated
+"use moonpool or domainslib or saturn, libraries designed for multicore"]
+
 type t = Thread.t
 
 val spawn : (unit -> _) -> t
