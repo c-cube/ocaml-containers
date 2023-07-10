@@ -71,13 +71,6 @@ val iterate : int -> ('a -> 'a) -> 'a -> 'a
     Infix operators. *)
 
 module Infix : sig
-  val ( |> ) : 'a -> ('a -> 'b) -> 'b
-  (** [x |> f] is the same as [f x]. A 'pipe' operator. *)
-
-  val ( @@ ) : ('a -> 'b) -> 'a -> 'b
-  (** [f @@ x] is the same as [f x], but right-associative.
-      @since 0.5 *)
-
   val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
   (** [(f %> g) x] or [(%>) f g x] is [g (f x)]. Alias to [compose]. *)
 

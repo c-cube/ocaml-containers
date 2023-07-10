@@ -2,24 +2,18 @@
 
 (** {1 Basic Functions} *)
 
-[@@@ocaml.warning "-32"]
-
-let opaque_identity x = x
-
-[@@@ocaml.warning "+32"]
-
 (* import standard implementations, if any *)
 
 include Sys
 include Stdlib
 include Fun
 
-let compose f g x = g (f x)
-let compose_binop f g x y = g (f x) (f y)
-let curry f x y = f (x, y)
-let uncurry f (x, y) = f x y
+let[@inline] compose f g x = g (f x)
+let[@inline] compose_binop f g x y = g (f x) (f y)
+let[@inline] curry f x y = f (x, y)
+let[@inline] uncurry f (x, y) = f x y
 
-let tap f x =
+let[@inline] tap f x =
   ignore (f x);
   x
 
@@ -67,8 +61,6 @@ let rec iterate n f x =
 
 module Infix = struct
   (* default implem for some operators *)
-  let ( |> ) = Stdlib.( |> )
-  let ( @@ ) = Stdlib.( @@ )
   let ( %> ) = compose
   let[@inline] ( % ) f g x = f (g x)
   let ( let@ ) = ( @@ )
