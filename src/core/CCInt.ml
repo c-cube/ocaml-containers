@@ -2,23 +2,7 @@
 
 include Int
 
-type t = int
 type 'a iter = ('a -> unit) -> unit
-
-let zero = 0
-let one = 1
-let minus_one = -1
-let add = ( + )
-let sub = ( - )
-let mul = ( * )
-let div = ( / )
-let succ = succ
-let pred = pred
-let abs = abs
-let max_int = max_int
-let min_int = min_int
-let equal (a : int) b = Stdlib.( = ) a b
-let compare (a : int) b = compare a b
 
 (* use FNV:
    https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function *)
@@ -65,7 +49,6 @@ let range' i j yield =
     range i (j + 1) yield
 
 let sign i = compare i 0
-let neg i = -i
 
 let pow a b =
   let rec aux acc = function
@@ -147,11 +130,8 @@ let random_small = random 100
 let random_range i j st = i + random (j - i) st
 let pp fmt = Format.pp_print_int fmt
 let most_significant_bit = -1 lxor (-1 lsr 1)
-let to_string = string_of_int
 let of_string s = try Some (int_of_string s) with Failure _ -> None
 let of_string_exn = Stdlib.int_of_string
-let to_float = float_of_int
-let of_float = int_of_float
 
 type output = char -> unit
 
@@ -248,11 +228,3 @@ let popcount (b : int) : int =
   let b = add b (shift_right_logical b 32) in
   let b = logand b 0x7fL in
   to_int b
-
-let logand = ( land )
-let logor = ( lor )
-let logxor = ( lxor )
-let lognot = lnot
-let shift_left = ( lsl )
-let shift_right = ( asr )
-let shift_right_logical = ( lsr )
