@@ -1,9 +1,6 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-type t = bool
-
-let equal (a : bool) b = Stdlib.( = ) a b
-let compare (a : bool) b = Stdlib.compare a b
+include Bool
 
 let if_then f x =
   if x then
@@ -16,12 +13,6 @@ let if_then_else f g x =
     f ()
   else
     g ()
-
-let to_int (x : bool) : int =
-  if x then
-    1
-  else
-    0
 
 let of_int x : t = x <> 0
 
