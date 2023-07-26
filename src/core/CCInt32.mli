@@ -81,9 +81,6 @@ val of_string : string -> t option
 (** [of_string s] is the safe version of {!of_string_exn}.
     Like {!of_string_exn}, but return [None] instead of raising. *)
 
-val of_string_opt : string -> t option
-(** [of_string_opt s] is an alias to {!of_string}. *)
-
 val of_string_exn : string -> t
 (** [of_string_exn s] converts the given string [s] into a 32-bit integer.
     Alias to {!Int32.of_string}.
