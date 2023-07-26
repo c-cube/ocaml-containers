@@ -5,76 +5,12 @@
 include module type of Int
 (** @inline *)
 
-type t = int
-
-val zero : t
-(** [zero] is the integer [0].
-    @since 3.0 *)
-
-val one : t
-(** [one] is the integer [1].
-    @since 3.0 *)
-
-val minus_one : t
-(** [minus_one] is the integer [-1].
-    @since 3.0 *)
-
-val add : t -> t -> t
-(** [add x y] is [x + y].
-    @since 3.0 *)
-
-val sub : t -> t -> t
-(** [sub x y] is [x - y].
-    @since 3.0 *)
-
-val mul : t -> t -> t
-(** [mul x y] is [x * y].
-    @since 3.0 *)
-
-val div : t -> t -> t
-(** [div x y] is [x / y]
-    @since 3.0 *)
-
-val succ : t -> t
-(** [succ x] is [x + 1].
-    @since 3.0 *)
-
-val pred : t -> t
-(** [pred x] is [x - 1].
-    @since 3.0 *)
-
-val abs : t -> t
-(** [abs x] is the absolute value of [x]. It is [x] if [x] is positive
-    and [neg x] otherwise.
-    @since 3.0 *)
-
-val max_int : t
-(** [max_int] is the maximum integer.
-    @since 3.0 *)
-
-val min_int : t
-(** [min_int] is the minimum integer.
-    @since 3.0 *)
-
-val compare : t -> t -> int
-(** [compare x y] is the comparison function for integers
-    with the same specification as {!Stdlib.compare}. *)
-
-val equal : t -> t -> bool
-(** [equal x y] is [true] iff [x] and [y] are equal.
-    Equality function for integers. *)
-
 val hash : t -> int
 (** [hash x] computes the hash of [x]. *)
 
 val sign : t -> int
 (** [sign x] return [0] if [x = 0], [-1] if [x < 0] and [1] if [x > 0].
     Same as [compare x 0].*)
-
-val neg : t -> t
-(** [neg x] is [- x].
-    Unary negation.
-    @since 0.5 *)
 
 val pow : t -> t -> t
 (** [pow base exponent] returns [base] raised to the power of [exponent].
@@ -103,22 +39,6 @@ val random_range : int -> int -> t random_gen
 val pp : t printer
 (** [pp ppf x] prints the integer [x] on [ppf]. *)
 
-val to_float : t -> float
-(** [to_float] is the same as [float_of_int]
-    @since 3.0*)
-
-[@@@ocaml.warning "-32"]
-
-val of_float : float -> t
-(** [to_float] is the same as [int_of_float]
-    @since 3.0*)
-
-[@@@ocaml.warning "+32"]
-
-val to_string : t -> string
-(** [to_string x] returns the string representation of the integer [x], in signed decimal.
-    @since 0.13 *)
-
 val of_string : string -> t option
 (** [of_string s] converts the given string [s] into an integer.
     Safe version of {!of_string_exn}.
@@ -128,11 +48,6 @@ val of_string_exn : string -> t
 (** [of_string_exn s] converts the given string [s] to an integer.
     Alias to {!int_of_string}.
     @raise Failure in case of failure.
-    @since 3.0 *)
-
-val of_float : float -> t
-(** [of_float x] converts the given floating-point number [x] to an integer.
-    Alias to {!int_of_float}.
     @since 3.0 *)
 
 val pp_binary : t printer
@@ -171,34 +86,6 @@ val range' : t -> t -> t iter
 
 val popcount : t -> int
 (** Number of bits set to 1
-    @since 3.0 *)
-
-val logand : t -> t -> t
-(** [logand] is the same as [(land)].
-    @since 3.0 *)
-
-val logor : t -> t -> t
-(** [logand] is the same as [(lor)].
-    @since 3.0 *)
-
-val logxor : t -> t -> t
-(** [logxor] is the same as [(lxor)].
-    @since 3.0 *)
-
-val lognot : t -> t
-(** [logand] is the same as [lnot].
-    @since 3.0 *)
-
-val shift_left : t -> int -> t
-(** [shift_left] is the same as [(lsl)].
-    @since 3.0 *)
-
-val shift_right : t -> int -> t
-(** [shift_right] is the same as [(asr)].
-    @since 3.0 *)
-
-val shift_right_logical : t -> int -> t
-(** [shift_right_logical] is the same as [(lsr)].
     @since 3.0 *)
 
 (** {2 Infix Operators}
