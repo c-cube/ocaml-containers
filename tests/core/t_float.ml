@@ -2,10 +2,10 @@ open CCFloat
 module T = (val Containers_testlib.make ~__FILE__ ())
 include T;;
 
-t @@ fun () -> max nan 1. = 1.;;
-t @@ fun () -> min nan 1. = 1.;;
-t @@ fun () -> max 1. nan = 1.;;
-t @@ fun () -> min 1. nan = 1.;;
+t @@ fun () -> is_nan (max nan 1.);;
+t @@ fun () -> is_nan (min nan 1.);;
+t @@ fun () -> is_nan (max 1. nan);;
+t @@ fun () -> is_nan (min 1. nan);;
 
 q
   Q.(pair float float)
