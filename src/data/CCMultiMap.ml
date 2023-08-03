@@ -30,7 +30,7 @@ module type S = sig
   val find : t -> key -> value list
   (** List of values for this key *)
 
-  val find_iter : t -> key -> (value -> unit) -> unit
+  val find_iter : t -> key -> value iter
   (** Iterate on bindings for this key *)
 
   val count : t -> key -> int
@@ -224,11 +224,19 @@ module type BIDIR = sig
   val mem_right : t -> right -> bool
   (** Is the right key present in at least one pair? *)
 
-  val find_left : t -> left -> right iter
-  (** Find all bindings for this given left-key *)
+  val find_left : t -> left -> right list
+  (** List of values for this given left-key *)
 
-  val find_right : t -> right -> left iter
-  (** Find all bindings for this given right-key *)
+  val find_left_iter : t -> left -> right iter
+  (** Iterate on bindings for this given left-key
+      @since 3.12 *)
+
+  val find_right : t -> right -> left list
+  (** List of values for this given right-key *)
+
+  val find_right_iter : t -> right -> left iter
+  (** Iterate on bindings for this given left-key
+      @since 3.12 *)
 
   val find1_left : t -> left -> right option
   (** like {!find_left} but returns at most one value *)
@@ -281,14 +289,21 @@ module MakeBidir (L : OrderedType) (R : OrderedType) = struct
 
   let cardinal_left m = MapL.size m.left
   let cardinal_right m = MapR.size m.right
-  let find_left m a = MapL.find_iter m.left a
-  let find_right m b = MapR.find_iter m.right b
-  let remove_left m a = _fold_iter (fun m b -> remove m a b) m (find_left m a)
-  let remove_right m b = _fold_iter (fun m a -> remove m a b) m (find_right m b)
+  let find_left m a = MapL.find m.left a
+  let find_left_iter m a = MapL.find_iter m.left a
+  let find_right m b = MapR.find m.right b
+  let find_right_iter m b = MapR.find_iter m.right b
+
+  let remove_left m a =
+    _fold_iter (fun m b -> remove m a b) m (find_left_iter m a)
+
+  let remove_right m b =
+    _fold_iter (fun m a -> remove m a b) m (find_right_iter m b)
+
   let mem_left m a = MapL.mem m.left a
   let mem_right m b = MapR.mem m.right b
-  let find1_left m a = _head_iter (find_left m a)
-  let find1_right m b = _head_iter (find_right m b)
+  let find1_left m a = _head_iter (find_left_iter m a)
+  let find1_right m b = _head_iter (find_right_iter m b)
   let fold f acc m = MapL.fold m.left acc f
   let pairs m = MapL.to_iter m.left
   let add_pairs m seq = _fold_iter (fun m (a, b) -> add m a b) m seq

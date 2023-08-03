@@ -30,7 +30,7 @@ module type S = sig
   val find : t -> key -> value list
   (** List of values for this key. *)
 
-  val find_iter : t -> key -> (value -> unit) -> unit
+  val find_iter : t -> key -> value iter
   (** Iterate on bindings for this key. *)
 
   val count : t -> key -> int
@@ -119,11 +119,19 @@ module type BIDIR = sig
   val mem_right : t -> right -> bool
   (** Is the right key present in at least one pair? *)
 
-  val find_left : t -> left -> right iter
-  (** Find all bindings for this given left-key. *)
+  val find_left : t -> left -> right list
+  (** List of values for this given left-key. *)
 
-  val find_right : t -> right -> left iter
-  (** Find all bindings for this given right-key. *)
+  val find_left_iter : t -> left -> right iter
+  (** Iterate on bindings for this given left-key.
+      @since 3.12 *)
+
+  val find_right : t -> right -> left list
+  (** List of values for this given right-key. *)
+
+  val find_right_iter : t -> right -> left iter
+  (** Iterate on bindings for this given left-key.
+      @since 3.12 *)
 
   val find1_left : t -> left -> right option
   (** Like {!find_left} but returns at most one value. *)
