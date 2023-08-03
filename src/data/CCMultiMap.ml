@@ -233,7 +233,8 @@ module type BIDIR = sig
       @since NEXT_RELEASE *)
 
   val find_right : t -> right -> left list
-  (** List of values for this given right-key *)
+  (** List of values for this given right-key.
+      This used to return an iter, but returns a list since NEXT_RELEASE. *)
 
   val find_right_iter : t -> right -> left iter
   (** Iterate on bindings for this given left-key
