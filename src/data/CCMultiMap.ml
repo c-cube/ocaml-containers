@@ -225,7 +225,8 @@ module type BIDIR = sig
   (** Is the right key present in at least one pair? *)
 
   val find_left : t -> left -> right list
-  (** List of values for this given left-key *)
+  (** List of values for this given left-key.
+      This used to return an iter, but returns a list since NEXT_RELEASE. *)
 
   val find_left_iter : t -> left -> right iter
   (** Iterate on bindings for this given left-key
