@@ -310,7 +310,7 @@ to list authors based on the git commits.
 Assuming your are in a clone of the repository:
 
 1. Some dependencies are required, you'll need
-  `opam install benchmark qcheck-core iter gen mdx uutf`.
+  `opam install benchmark qcheck-core iter gen mdx uutf yojson`.
 2. run `make all` to enable everything (including tests).
 3. make your changes, commit, push, and open a PR.
 4. use `make test` without moderation! It must pass before a PR
