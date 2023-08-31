@@ -21,8 +21,8 @@ let () =
   B.field_bit b "z";
   B.field_int b ~width:5 "foo";
 
-  CG.emit_file "foo.mli" (B.gen_mli b);
-  CG.emit_file "foo.ml" (B.gen_ml b);
+  CG.emit_file "foo.mli" [B.gen_mli b];
+  CG.emit_file "foo.ml" [B.gen_ml b];
   ()
 ]}
 
