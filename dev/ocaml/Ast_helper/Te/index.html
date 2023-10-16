@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Te (ocaml.Ast_helper.Te)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc 2.2.1"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml</a> &#x00BB; <a href="../index.html">Ast_helper</a> &#x00BB; Te</nav><header class="odoc-preamble"><h1>Module <code><span>Ast_helper.Te</span></code></h1><p>Type extensions</p></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-mk"><a href="#val-mk" class="anchor"></a><code><span><span class="keyword">val</span> mk : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?docs:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?params:
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Te (ocaml.Ast_helper.Te)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc v2.3.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml</a> &#x00BB; <a href="../index.html">Ast_helper</a> &#x00BB; Te</nav><header class="odoc-preamble"><h1>Module <code><span>Ast_helper.Te</span></code></h1><p>Type extensions</p></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-mk"><a href="#val-mk" class="anchor"></a><code><span><span class="keyword">val</span> mk : 
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?docs</span>:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?params</span>:
     <span><span>(<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> * <span>(<a href="../../Asttypes/index.html#type-variance">Asttypes.variance</a> * <a href="../../Asttypes/index.html#type-injectivity">Asttypes.injectivity</a>)</span>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?priv:<a href="../../Asttypes/index.html#type-private_flag">Asttypes.private_flag</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?priv</span>:<a href="../../Asttypes/index.html#type-private_flag">Asttypes.private_flag</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-lid">lid</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span><a href="../../Parsetree/index.html#type-extension_constructor">Parsetree.extension_constructor</a> list</span> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-type_extension">Parsetree.type_extension</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-mk_exception"><a href="#val-mk_exception" class="anchor"></a><code><span><span class="keyword">val</span> mk_exception : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?docs:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?docs</span>:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-extension_constructor">Parsetree.extension_constructor</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-type_exception">Parsetree.type_exception</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-constructor"><a href="#val-constructor" class="anchor"></a><code><span><span class="keyword">val</span> constructor : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?docs:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?info:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?docs</span>:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?info</span>:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-str">str</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-extension_constructor_kind">Parsetree.extension_constructor_kind</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-extension_constructor">Parsetree.extension_constructor</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-decl"><a href="#val-decl" class="anchor"></a><code><span><span class="keyword">val</span> decl : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?docs:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?info:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?vars:<span><a href="../index.html#type-str">str</a> list</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?args:<a href="../../Parsetree/index.html#type-constructor_arguments">Parsetree.constructor_arguments</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?res:<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?docs</span>:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?info</span>:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?vars</span>:<span><a href="../index.html#type-str">str</a> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?args</span>:<a href="../../Parsetree/index.html#type-constructor_arguments">Parsetree.constructor_arguments</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?res</span>:<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-str">str</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-extension_constructor">Parsetree.extension_constructor</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-rebind"><a href="#val-rebind" class="anchor"></a><code><span><span class="keyword">val</span> rebind : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?docs:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?info:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?docs</span>:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?info</span>:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-str">str</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-lid">lid</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-extension_constructor">Parsetree.extension_constructor</a></span></code></div></div></div></body></html>

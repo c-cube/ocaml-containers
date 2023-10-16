@@ -1,47 +1,47 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Cl (ocaml.Ast_helper.Cl)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc 2.2.1"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml</a> &#x00BB; <a href="../index.html">Ast_helper</a> &#x00BB; Cl</nav><header class="odoc-preamble"><h1>Module <code><span>Ast_helper.Cl</span></code></h1><p>Class expressions</p></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-mk"><a href="#val-mk" class="anchor"></a><code><span><span class="keyword">val</span> mk : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Cl (ocaml.Ast_helper.Cl)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc v2.3.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml</a> &#x00BB; <a href="../index.html">Ast_helper</a> &#x00BB; Cl</nav><header class="odoc-preamble"><h1>Module <code><span>Ast_helper.Cl</span></code></h1><p>Class expressions</p></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-mk"><a href="#val-mk" class="anchor"></a><code><span><span class="keyword">val</span> mk : 
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_expr_desc">Parsetree.class_expr_desc</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-attr"><a href="#val-attr" class="anchor"></a><code><span><span class="keyword">val</span> attr : <span><a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a> <span class="arrow">&#45;&gt;</span></span> <span><a href="../../Parsetree/index.html#type-attribute">Parsetree.attribute</a> <span class="arrow">&#45;&gt;</span></span> <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-constr"><a href="#val-constr" class="anchor"></a><code><span><span class="keyword">val</span> constr : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-lid">lid</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span><a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> list</span> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-structure"><a href="#val-structure" class="anchor"></a><code><span><span class="keyword">val</span> structure : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_structure">Parsetree.class_structure</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-fun_"><a href="#val-fun_" class="anchor"></a><code><span><span class="keyword">val</span> fun_ : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Asttypes/index.html#type-arg_label">Asttypes.arg_label</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span><a href="../../Parsetree/index.html#type-expression">Parsetree.expression</a> option</span> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-pattern">Parsetree.pattern</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-apply"><a href="#val-apply" class="anchor"></a><code><span><span class="keyword">val</span> apply : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span><span>(<a href="../../Asttypes/index.html#type-arg_label">Asttypes.arg_label</a> * <a href="../../Parsetree/index.html#type-expression">Parsetree.expression</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-let_"><a href="#val-let_" class="anchor"></a><code><span><span class="keyword">val</span> let_ : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Asttypes/index.html#type-rec_flag">Asttypes.rec_flag</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span><a href="../../Parsetree/index.html#type-value_binding">Parsetree.value_binding</a> list</span> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-constraint_"><a href="#val-constraint_" class="anchor"></a><code><span><span class="keyword">val</span> constraint_ : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_type">Parsetree.class_type</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-extension"><a href="#val-extension" class="anchor"></a><code><span><span class="keyword">val</span> extension : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-extension">Parsetree.extension</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-open_"><a href="#val-open_" class="anchor"></a><code><span><span class="keyword">val</span> open_ : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-open_description">Parsetree.open_description</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-class_expr">Parsetree.class_expr</a></span></code></div></div></div></body></html>

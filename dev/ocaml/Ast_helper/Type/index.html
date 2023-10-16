@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Type (ocaml.Ast_helper.Type)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc 2.2.1"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml</a> &#x00BB; <a href="../index.html">Ast_helper</a> &#x00BB; Type</nav><header class="odoc-preamble"><h1>Module <code><span>Ast_helper.Type</span></code></h1><p>Type declarations</p></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-mk"><a href="#val-mk" class="anchor"></a><code><span><span class="keyword">val</span> mk : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?docs:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?text:<a href="../../Docstrings/index.html#type-text">Docstrings.text</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?params:
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Type (ocaml.Ast_helper.Type)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc v2.3.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml</a> &#x00BB; <a href="../index.html">Ast_helper</a> &#x00BB; Type</nav><header class="odoc-preamble"><h1>Module <code><span>Ast_helper.Type</span></code></h1><p>Type declarations</p></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-mk"><a href="#val-mk" class="anchor"></a><code><span><span class="keyword">val</span> mk : 
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?docs</span>:<a href="../../Docstrings/index.html#type-docs">Docstrings.docs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?text</span>:<a href="../../Docstrings/index.html#type-text">Docstrings.text</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?params</span>:
     <span><span>(<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> * <span>(<a href="../../Asttypes/index.html#type-variance">Asttypes.variance</a> * <a href="../../Asttypes/index.html#type-injectivity">Asttypes.injectivity</a>)</span>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?cstrs:<span><span>(<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> * <a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> * <a href="../index.html#type-loc">loc</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?kind:<a href="../../Parsetree/index.html#type-type_kind">Parsetree.type_kind</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?priv:<a href="../../Asttypes/index.html#type-private_flag">Asttypes.private_flag</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?manifest:<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?cstrs</span>:<span><span>(<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> * <a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> * <a href="../index.html#type-loc">loc</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?kind</span>:<a href="../../Parsetree/index.html#type-type_kind">Parsetree.type_kind</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?priv</span>:<a href="../../Asttypes/index.html#type-private_flag">Asttypes.private_flag</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?manifest</span>:<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-str">str</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-type_declaration">Parsetree.type_declaration</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-constructor"><a href="#val-constructor" class="anchor"></a><code><span><span class="keyword">val</span> constructor : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?info:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?vars:<span><a href="../index.html#type-str">str</a> list</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?args:<a href="../../Parsetree/index.html#type-constructor_arguments">Parsetree.constructor_arguments</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?res:<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?info</span>:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?vars</span>:<span><a href="../index.html#type-str">str</a> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?args</span>:<a href="../../Parsetree/index.html#type-constructor_arguments">Parsetree.constructor_arguments</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?res</span>:<a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-str">str</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-constructor_declaration">Parsetree.constructor_declaration</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-field"><a href="#val-field" class="anchor"></a><code><span><span class="keyword">val</span> field : 
-  <span>?loc:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?attrs:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?info:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?mut:<a href="../../Asttypes/index.html#type-mutable_flag">Asttypes.mutable_flag</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?loc</span>:<a href="../index.html#type-loc">loc</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?attrs</span>:<a href="../index.html#type-attrs">attrs</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?info</span>:<a href="../../Docstrings/index.html#type-info">Docstrings.info</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?mut</span>:<a href="../../Asttypes/index.html#type-mutable_flag">Asttypes.mutable_flag</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../index.html#type-str">str</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../Parsetree/index.html#type-core_type">Parsetree.core_type</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../../Parsetree/index.html#type-label_declaration">Parsetree.label_declaration</a></span></code></div></div></div></body></html>
