@@ -23,11 +23,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+      - name: Set-up OCaml
         uses: ocaml/setup-ocaml@analysis
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          ocaml-compiler: "5.0"
+          allow-prelease-opam: true
 
-      - run: opam install . --deps-only --with-test --with-doc
-
-      - uses: ocaml/setup-ocaml/analysis@analysis
+      - name: Do the analysis
+        uses: ocaml/setup-ocaml/analysis@analysis
