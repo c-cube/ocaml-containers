@@ -74,6 +74,12 @@ val append : t -> t -> t
 val newline : t
 (** A line break. *)
 
+val newline_or_spaces : int -> t
+(** [newline_or_spaces n] either prints a newline (respecting indentation),
+    or prints [n] spaces. {!newline} is basically [newline_or_spaces 1].
+    @raise Invalid_argument if [n < 0].
+    @since NEXT_RELEASE *)
+
 val nl : t
 (** Alias for {!newline} *)
 
