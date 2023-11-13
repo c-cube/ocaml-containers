@@ -37,7 +37,7 @@ type t = {
 
 and view =
   | Nil
-  | Newline
+  | Newline of int
   | Nest of int * t
   | Append of t * t
   | Char of char
@@ -52,7 +52,8 @@ and view =
 let rec debug out (self : t) : unit =
   match self.view with
   | Nil -> Format.fprintf out "nil"
-  | Newline -> Format.fprintf out "nl"
+  | Newline 1 -> Format.fprintf out "nl"
+  | Newline i -> Format.fprintf out "nl(%d)" i
   | Nest (i, x) -> Format.fprintf out "(@[nest %d@ %a@])" i debug x
   | Append (a, b) -> Format.fprintf out "@[%a ^@ %a@]" debug a debug b
   | Char c -> Format.fprintf out "%C" c
@@ -65,7 +66,12 @@ let rec debug out (self : t) : unit =
   | Wrap (_, _, d) -> Format.fprintf out "(@[ext@ %a@])" debug d
 
 let nil : t = { view = Nil; wfl = 0 }
-let newline : t = { view = Newline; wfl = 1 }
+let newline : t = { view = Newline 1; wfl = 1 }
+
+let newline_or_spaces n : t =
+  if n < 0 then invalid_arg "Containers_pp.newline_or_spaces";
+  { view = Newline n; wfl = n }
+
 let nl = newline
 
 let char c =
@@ -131,9 +137,13 @@ module Flatten = struct
   let to_out (out : Out.t) (self : t) : unit =
     let rec loop (d : t) =
       match d.view with
-      | Nil -> ()
+      | Nil | Newline 0 -> ()
       | Char c -> out.char c
-      | Newline -> out.char ' '
+      | Newline 1 -> out.char ' '
+      | Newline n ->
+        for _i = 1 to n do
+          out.char ' '
+        done
       | Nest (_, x) -> loop x
       | Append (x, y) ->
         loop x;
@@ -175,13 +185,15 @@ module Pretty = struct
 
   let rec pp_flatten (st : st) (self : t) : int =
     match self.view with
-    | Nil -> 0
+    | Nil | Newline 0 -> 0
     | Char c ->
       st.out.char c;
       1
-    | Newline ->
-      st.out.char ' ';
-      1
+    | Newline n ->
+      for _i = 1 to n do
+        st.out.char ' '
+      done;
+      n
     | Nest (_i, x) -> pp_flatten st x
     | Append (x, y) ->
       let n = pp_flatten st x in
@@ -229,15 +241,15 @@ module Pretty = struct
       pp_rec_top st ~k ~i d (fun k -> pp_rec st k stack_tl)
 
   (** Print [d] at indentation [i], with [k] chars already printed
-        on the current line, then calls [kont] with the
-        new [k]. *)
+      on the current line, then calls [kont] with the
+      new [k]. *)
   and pp_rec_top st ~k ~i d (kont : int -> unit) : unit =
     match d.view with
     | Nil -> kont k
     | Char c ->
       st.out.char c;
       kont (k + 1)
-    | Newline ->
+    | Newline _ ->
       pp_newline st i;
       kont i
     | Nest (j, x) -> pp_rec_top st ~k ~i:(i + j) x kont
