@@ -46,10 +46,10 @@ let () =
      Pretty.to_string ~width:10 d)
 
 let ext_coucou =
-  {
-    Ext.pre = (fun out () -> out.string "<coucou>");
-    post = (fun out () -> out.string "</coucou>");
-  }
+  Ext.make ~name:"coucou"
+    ~pre:(fun out ~inside:_ () -> out.string "<coucou>")
+    ~post:(fun out ~inside:_ () -> out.string "</coucou>")
+    ()
 
 let () =
   eq ~name:"wrap1" ~printer:(spf "%S")
@@ -59,3 +59,16 @@ let () =
          [ text "bar"; ext ext_coucou () (sexp_apply "g" [ int 42; int 10 ]) ]
      in
      Pretty.to_string ~width:10 d)
+
+let () =
+  eq ~name:"nested color" ~printer:(spf "%S")
+    "hello \027[32mworld \027[31moh my!\027[32m!?\027[43moh well\027[32m\027[0m"
+    (let d =
+       text "hello"
+       ^+ Term_color.color `Green
+            (text "world"
+            ^+ Term_color.color `Red (text "oh my!")
+            ^ text "!?"
+            ^ Term_color.style_l [ `BG `Yellow ] (text "oh well"))
+     in
+     Pretty.to_string ~width:1000 d)
