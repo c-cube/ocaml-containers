@@ -120,15 +120,26 @@ end
     might be annotated with ANSI-terminal colors, or
     with HTML tags. *)
 module Ext : sig
-  type 'a t = {
-    pre: Out.t -> 'a -> unit;  (** Printed before the wrapped value. *)
-    post: Out.t -> 'a -> unit;  (** Printed after the wrapped value. *)
-  }
+  type 'a t
+
+  val make :
+    ?width:('a -> int) ->
+    name:string ->
+    pre:(Out.t -> inside:'a option -> 'a -> unit) ->
+    post:(Out.t -> inside:'a option -> 'a -> unit) ->
+    unit ->
+    'a t
   (**  An extension is a custom document node. It takes a value of type ['a],
       and a document [d], and can output what it wants based
       on the custom value before and after [d] is printed.
 
-      The extension is considered to have width [0]. *)
+      The extension is considered to have width [0], unless [width]
+      is specified.
+
+      @param pre called before the wrapped value is printed
+      @param post called after the wrapped value is printed
+
+      *)
 end
 
 val ext : 'a Ext.t -> 'a -> t -> t
