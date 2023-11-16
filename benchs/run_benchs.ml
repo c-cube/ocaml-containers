@@ -149,11 +149,13 @@ module L = struct
 
   let bench_flatten ?(time = 2) n =
     let fold_right_append_ l () =
-      ignore (List.fold_right List.append l [] : _ list)
+      opaque_ignore (List.fold_right List.append l [] : _ list)
     and cc_fold_right_append_ l () =
-      ignore (CCList.fold_right CCList.append l [] : _ list)
+      opaque_ignore (CCList.fold_right CCList.append l [] : _ list)
     and sek_flatten s () =
-      ignore (Sek.Persistent.flatten s : _ Sek.Persistent.t)
+      opaque_ignore (Sek.Persistent.flatten s : _ Sek.Persistent.t)
+    and funvec_flatten v () =
+      opaque_ignore (CCFun_vec.fold_rev ~x:CCFun_vec.empty ~f:(fun acc x -> CCFun_vec.append x acc) v : _ CCFun_vec.t)
     in
     let l =
       CCList.mapi (fun i x -> CCList.(x -- (x + min i 100))) CCList.(1 -- n)
@@ -162,11 +164,13 @@ module L = struct
       Sek.Persistent.of_list (Sek.Persistent.create 0)
         (List.map (Sek.Persistent.of_list 0) l)
     in
+    let v = CCFun_vec.of_list (List.map CCFun_vec.of_list l) in
     B.throughputN time ~repeat
       [
         "CCList.flatten", (fun () -> ignore (CCList.flatten l)), ();
         "List.flatten", (fun () -> ignore (List.flatten l)), ();
         "fold_right append", fold_right_append_ l, ();
+        "funvec.(fold_right append)", (funvec_flatten v), ();
         "CCList.(fold_right append)", cc_fold_right_append_ l, ();
         "Sek.flatten", sek_flatten sek, ();
       ]
@@ -220,7 +224,7 @@ module L = struct
   let bench_set ?(time = 2) n =
     let l = CCList.(0 -- (n - 1)) in
     let ral = CCRAL.of_list l in
-    (*     let v = CCFun_vec.of_list l in *)
+    (* let v = CCFun_vec.of_list l in *)
     let bv = BatVect.of_list l in
     let sek = Sek.Persistent.of_array 0 (Array.of_list l) in
     let map =
@@ -234,10 +238,10 @@ module L = struct
       for i = 0 to n - 1 do
         opaque_ignore (CCRAL.set l i (-i))
       done
-    (*
+      (* TODO: implement set
     and bench_funvec l () =
-      for _i = 0 to n-1 do opaque_ignore ((* TODO *)) done
-*)
+      for _i = 0 to n-1 do opaque_ignore (CCFun_vec.set (* TODO *)) done
+      *)
     and bench_batvec l () =
       for i = 0 to n - 1 do
         opaque_ignore (BatVect.set l i (-i))
@@ -250,8 +254,8 @@ module L = struct
     B.throughputN time ~repeat
       [
         "Map.add", bench_map map, ();
-        "RAL.set", bench_ral ral, ()
-        (*       ; "funvec.set", bench_funvec v, () *);
+        "RAL.set", bench_ral ral, ();
+        (* "funvec.set", bench_funvec v, (); *)
         "batvec.set", bench_batvec bv, ();
         "Sek.Persistent.set", bench_sek sek, ();
       ]
