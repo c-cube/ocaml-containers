@@ -83,6 +83,7 @@ val iteri_rev : f:(int -> 'a -> unit) -> 'a t -> unit
 (** Iterate on elements with their index, but starting from the end. *)
 
 val fold : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
+val fold_rev : f:('b -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 val foldi : f:('b -> int -> 'a -> 'b) -> x:'b -> 'a t -> 'b
 val append : 'a t -> 'a t -> 'a t
 val map : ('a -> 'b) -> 'a t -> 'b t
