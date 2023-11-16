@@ -7,7 +7,6 @@ module B = Benchmark
 let ( @> ) = B.Tree.( @> )
 let ( @>> ) = B.Tree.( @>> )
 let ( @>>> ) = B.Tree.( @>>> )
-let ( |> ) = CCFun.( |> )
 
 module Int_map = Map.Make (CCInt)
 
