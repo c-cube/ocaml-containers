@@ -768,10 +768,10 @@ q
 ;;
 
 t @@ fun () -> take_drop_while (fun _ -> true) [] = ([], []);;
-t @@ fun () -> take_drop_while (fun _ -> true) (1 -- 10) = ([], 1 -- 10);;
+t @@ fun () -> take_drop_while (fun _ -> true) (1 -- 10) = (1 -- 10, []);;
 
 t @@ fun () ->
-take_drop_while (fun _ -> true) (1 -- 300_000) = ([], 1 -- 300_000)
+take_drop_while (fun _ -> true) (1 -- 300_000) = (1 -- 300_000, [])
 ;;
 
 eq ~printer:Q.Print.(option (list int)) (Some [ 2; 3 ]) (tail_opt [ 1; 2; 3 ]);;

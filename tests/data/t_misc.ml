@@ -37,7 +37,6 @@ module Mixset = struct
 end
 
 module Mixtbl = struct
-  open CCFun
   open CCMixtbl;;
 
   t @@ fun () ->
