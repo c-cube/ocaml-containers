@@ -1,5 +1,3 @@
-(* This file is free software, part of containers. See file "license" for more details. *)
-
 (** Complements to List *)
 
 type 'a iter = ('a -> unit) -> unit

@@ -1,16 +1,6 @@
-(* This file is free software, part of containers. See file "license" for more details. *)
-
-(** {1 Complements to list} *)
-
 (* backport new functions from stdlib here *)
 
 [@@@ocaml.warning "-32"]
-
-let rec find_opt p l =
-  match l with
-  | [] -> None
-  | x :: _ when p x -> Some x
-  | _ :: tl -> find_opt p tl
 
 let rec compare_lengths l1 l2 =
   match l1, l2 with
@@ -57,6 +47,7 @@ let mguard c =
 (** max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
+(* TRMC on >= 5.1, no need to bring our own *)
 [@@@iflt 5.1]
 
 let tail_map f l =
@@ -1486,13 +1477,6 @@ let of_seq l =
     )
   in
   direct direct_depth_default_ l
-
-[@@@else_]
-
-let[@tail_mod_cons] rec of_seq seq =
-  match seq () with
-  | Seq.Nil -> []
-  | Seq.Cons (x, tl) -> x :: of_seq tl
 
 [@@@endif]
 
