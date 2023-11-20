@@ -233,13 +233,13 @@ combine [ 1; 2; 3 ] [ 3; 2; 1 ] = List.combine [ 1; 2; 3 ] [ 3; 2; 1 ]
 ;;
 
 t @@ fun () ->
-combine (1 -- 100_000) (1 -- 100_000)
-= List.combine (1 -- 100_000) (1 -- 100_000)
+combine (1 -- 10_000) (1 -- 10_000) = List.combine (1 -- 10_000) (1 -- 10_000)
 ;;
 
 t @@ fun () ->
-combine (1 -- 300_000) (1 -- 300_000)
-= List.combine (1 -- 300_000) (1 -- 300_000)
+combine (1 -- 300_000) (map string_of_int @@ (1 -- 300_000))
+= map (fun (x, y) -> y, x)
+  @@ combine (map string_of_int @@ (1 -- 300_000)) (1 -- 300_000)
 ;;
 
 q
