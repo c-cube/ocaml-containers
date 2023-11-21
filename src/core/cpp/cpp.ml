@@ -1,6 +1,6 @@
 module C = Configurator.V1
 
-type op = Le | Ge
+type op = Le | Ge | Gt | Lt
 
 type line =
   | If of op * int * int
@@ -29,7 +29,9 @@ let prefix ~pre s =
 let eval ~major ~minor op i j =
   match op with
   | Le -> (major, minor) <= (i, j)
+  | Lt -> (major, minor) < (i, j)
   | Ge -> (major, minor) >= (i, j)
+  | Gt -> (major, minor) > (i, j)
 
 let preproc_lines ~file ~major ~minor (ic : in_channel) : unit =
   let pos = ref 0 in
@@ -47,8 +49,12 @@ let preproc_lines ~file ~major ~minor (ic : in_channel) : unit =
       if line' <> "" && line'.[0] = '[' then
         if prefix line' ~pre:"[@@@ifle" then
           Scanf.sscanf line' "[@@@ifle %d.%d]" (fun x y -> If (Le, x, y))
+        else if prefix line' ~pre:"[@@@iflt" then
+          Scanf.sscanf line' "[@@@iflt %d.%d]" (fun x y -> If (Lt, x, y))
         else if prefix line' ~pre:"[@@@ifge" then
           Scanf.sscanf line' "[@@@ifge %d.%d]" (fun x y -> If (Ge, x, y))
+        else if prefix line' ~pre:"[@@@ifgt" then
+          Scanf.sscanf line' "[@@@ifgt %d.%d]" (fun x y -> If (Gt, x, y))
         else if prefix line' ~pre:"[@@@elifle" then
           Scanf.sscanf line' "[@@@elifle %d.%d]" (fun x y -> Elseif (Le, x, y))
         else if prefix line' ~pre:"[@@@elifge" then

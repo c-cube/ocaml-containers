@@ -233,8 +233,13 @@ combine [ 1; 2; 3 ] [ 3; 2; 1 ] = List.combine [ 1; 2; 3 ] [ 3; 2; 1 ]
 ;;
 
 t @@ fun () ->
-combine (1 -- 100_000) (1 -- 100_000)
-= List.combine (1 -- 100_000) (1 -- 100_000)
+combine (1 -- 10_000) (1 -- 10_000) = List.combine (1 -- 10_000) (1 -- 10_000)
+;;
+
+t @@ fun () ->
+combine (1 -- 300_000) (map string_of_int @@ (1 -- 300_000))
+= map (fun (x, y) -> y, x)
+  @@ combine (map string_of_int @@ (1 -- 300_000)) (1 -- 300_000)
 ;;
 
 q
@@ -741,6 +746,7 @@ t @@ fun () -> take_while (fun x -> x < 10) (1 -- 20) = 1 -- 9;;
 t @@ fun () -> take_while (fun x -> x <> 0) [ 0; 1; 2; 3 ] = [];;
 t @@ fun () -> take_while (fun _ -> true) [] = [];;
 t @@ fun () -> take_while (fun _ -> true) (1 -- 10) = 1 -- 10;;
+t @@ fun () -> take_while (fun _ -> true) (1 -- 300_000) = 1 -- 300_000;;
 
 q
   Q.(pair (fun1 Observable.int bool) (list small_int))
@@ -759,6 +765,13 @@ q
   (fun (f, l) ->
     let l1, l2 = take_drop_while (Q.Fn.apply f) l in
     l1 = take_while (Q.Fn.apply f) l && l2 = drop_while (Q.Fn.apply f) l)
+;;
+
+t @@ fun () -> take_drop_while (fun _ -> true) [] = ([], []);;
+t @@ fun () -> take_drop_while (fun _ -> true) (1 -- 10) = (1 -- 10, []);;
+
+t @@ fun () ->
+take_drop_while (fun _ -> true) (1 -- 300_000) = (1 -- 300_000, [])
 ;;
 
 eq ~printer:Q.Print.(option (list int)) (Some [ 2; 3 ]) (tail_opt [ 1; 2; 3 ]);;
@@ -1046,6 +1059,8 @@ random_len 10 CCInt.random_small (Random.State.make [||]) |> List.length = 10
 eq ~printer:(fun s -> s) (to_string string_of_int []) "";;
 eq ~printer:(fun s -> s) (to_string ~start:"[" ~stop:"]" string_of_int []) "[]"
 ;;
+eq (1 -- 100) (of_seq (to_seq (1 -- 100)));;
+eq (1 -- 100_000) (of_seq (to_seq (1 -- 100_000)));;
 
 eq
   ~printer:(fun s -> s)
@@ -1067,6 +1082,8 @@ eq
 
 q Q.(list int) (fun l -> of_iter (to_iter l) = l);;
 q Q.(list int) (fun l -> of_gen (to_gen l) = l);;
+eq (1 -- 100) (of_gen (to_gen (1 -- 100)));;
+eq (1 -- 100_000) (of_gen (to_gen (1 -- 100_000)));;
 
 eq
   ~printer:(fun s -> s)

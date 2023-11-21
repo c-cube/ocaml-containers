@@ -1,26 +1,6 @@
-(* This file is free software, part of containers. See file "license" for more details. *)
-
-(** {1 Complements to list} *)
-
 (* backport new functions from stdlib here *)
 
 [@@@ocaml.warning "-32"]
-
-let nth_opt l n =
-  if n < 0 then invalid_arg "nth_opt";
-  let rec aux l n =
-    match l, n with
-    | [], _ -> None
-    | x :: _, 0 -> Some x
-    | _ :: l, _ -> aux l (n - 1)
-  in
-  aux l n
-
-let rec find_opt p l =
-  match l with
-  | [] -> None
-  | x :: _ when p x -> Some x
-  | _ :: tl -> find_opt p tl
 
 let rec compare_lengths l1 l2 =
   match l1, l2 with
@@ -64,8 +44,11 @@ let mguard c =
   else
     []
 
-(* max depth for direct recursion *)
+(** max depth for direct recursion *)
 let direct_depth_default_ = 1000
+
+(* TRMC on >= 5.1, no need to bring our own *)
+[@@@iflt 5.1]
 
 let tail_map f l =
   (* Unwind the list of tuples, reconstructing the full list front-to-back.
@@ -136,6 +119,8 @@ let append l1 l2 =
   | [ x; y ] -> x :: y :: l2
   | _ -> direct direct_depth_append_ l1 l2
 
+[@@@endif]
+
 let ( @ ) = append
 let[@inline] cons' l x = x :: l
 
@@ -143,6 +128,9 @@ let cons_maybe o l =
   match o with
   | Some x -> x :: l
   | None -> l
+
+(* TRMC after 5.1 *)
+[@@@iflt 5.1]
 
 let direct_depth_filter_ = 10_000
 
@@ -177,6 +165,8 @@ let fold_right f l acc =
       safe f l' acc
   in
   direct direct_depth_default_ f l acc
+
+[@@@endif]
 
 let rec fold_while f acc = function
   | [] -> acc
@@ -286,6 +276,9 @@ let fold_flat_map_i f acc l =
   in
   aux f acc 0 [] l
 
+[@@@iflt 5.1]
+
+(* keep this because it's tailrec for < 5.1 *)
 let init len f =
   let rec indirect_ i acc =
     if i = len then
@@ -310,6 +303,8 @@ let init len f =
     []
   else
     direct_ 0
+
+[@@@endif]
 
 let rec compare f l1 l2 =
   match l1, l2 with
@@ -425,6 +420,8 @@ let partition_filter_map f l =
 
 let partition_map = partition_filter_map
 
+[@@@iflt 5.1]
+
 let combine l1 l2 =
   let rec direct i l1 l2 =
     match l1, l2 with
@@ -440,6 +437,16 @@ let combine l1 l2 =
   in
   direct direct_depth_default_ l1 l2
 
+[@@@else_]
+
+let[@tail_mod_cons] rec combine l1 l2 =
+  match l1, l2 with
+  | [], [] -> []
+  | x1 :: l1', x2 :: l2' -> (x1, x2) :: combine l1' l2'
+  | _, _ -> invalid_arg "CCList.combine"
+
+[@@@endif]
+
 let combine_gen l1 l2 =
   let l1 = ref l1 in
   let l2 = ref l2 in
@@ -450,6 +457,8 @@ let combine_gen l1 l2 =
       l1 := tail1;
       l2 := tail2;
       Some (x1, x2)
+
+[@@@iflt 5.1]
 
 let combine_shortest l1 l2 =
   let rec direct i l1 l2 =
@@ -465,6 +474,15 @@ let combine_shortest l1 l2 =
       safe l1' l2' acc
   in
   direct direct_depth_default_ l1 l2
+
+[@@@else_]
+
+let[@tail_mod_cons] rec combine_shortest l1 l2 =
+  match l1, l2 with
+  | _, [] | [], _ -> []
+  | x1 :: l1', x2 :: l2' -> (x1, x2) :: combine_shortest l1' l2'
+
+[@@@endif]
 
 let split l =
   let rec direct i l =
@@ -666,6 +684,8 @@ let sorted_diff_uniq ~cmp l1 l2 =
   in
   recurse ~cmp [] l1 l2
 
+[@@@iflt 5.1]
+
 let take n l =
   let rec direct i n l =
     match l with
@@ -683,6 +703,19 @@ let take n l =
     | x :: l' -> safe (n - 1) (x :: acc) l'
   in
   direct direct_depth_default_ n l
+
+[@@@else_]
+
+let[@tail_mod_cons] rec take n l =
+  match l with
+  | [] -> []
+  | x :: l' ->
+    if n > 0 then
+      x :: take (n - 1) l'
+    else
+      []
+
+[@@@endif]
 
 let rec drop n l =
   match l with
@@ -748,6 +781,8 @@ let interleave l1 l2 : _ list =
   in
   aux [] l1 l2
 
+[@@@iflt 5.1]
+
 let take_while p l =
   let rec direct i p l =
     match l with
@@ -768,6 +803,19 @@ let take_while p l =
         List.rev acc
   in
   direct direct_depth_default_ p l
+
+[@@@else_]
+
+let rec take_while p l =
+  match l with
+  | [] -> []
+  | x :: l' ->
+    if p x then
+      x :: take_while p l'
+    else
+      []
+
+[@@@endif]
 
 let rec drop_while p l =
   match l with
@@ -1416,6 +1464,8 @@ let of_seq_rev l =
   in
   loop [] l
 
+[@@@iflt 5.1]
+
 let of_seq l =
   let rec direct i seq =
     if i <= 0 then
@@ -1428,6 +1478,8 @@ let of_seq l =
   in
   direct direct_depth_default_ l
 
+[@@@endif]
+
 let to_gen l =
   let l = ref l in
   fun () ->
@@ -1436,6 +1488,8 @@ let to_gen l =
     | x :: l' ->
       l := l';
       Some x
+
+[@@@iflt 5.1]
 
 let of_gen g =
   let rec direct i g =
@@ -1452,6 +1506,15 @@ let of_gen g =
     | Some x -> safe (x :: acc) g
   in
   direct direct_depth_default_ g
+
+[@@@else_]
+
+let[@tail_mod_cons] rec of_gen g =
+  match g () with
+  | None -> []
+  | Some x -> x :: of_gen g
+
+[@@@endif]
 
 module Infix = struct
   let[@inline] ( >|= ) l f = map f l
