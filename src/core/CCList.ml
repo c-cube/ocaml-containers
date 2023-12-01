@@ -104,22 +104,27 @@ let map f l =
   in
   direct f direct_depth_default_ l
 
-let direct_depth_append_ = 10_000
-
 let append l1 l2 =
+  let[@inline] safe  l1 l2 = List.rev_append (List.rev l1) l2 in
   let rec direct i l1 l2 =
     match l1 with
     | [] -> l2
+    | [ x ] -> x :: l2
     | _ when i = 0 -> safe l1 l2
-    | x :: l1' -> x :: direct (i - 1) l1' l2
-  and safe l1 l2 = List.rev_append (List.rev l1) l2 in
-  match l1 with
-  | [] -> l2
-  | [ x ] -> x :: l2
-  | [ x; y ] -> x :: y :: l2
-  | _ -> direct direct_depth_append_ l1 l2
+    | x :: y :: tl1 -> x :: y :: direct (i - 1) tl1 l2
+  in
+  direct 1000 l1 l2
 
 [@@@endif]
+
+(* Wrapper around [append] to optimize for the case of short [l1],
+   and for the case of [l2 = []] (saves the whole copy of [l1]!) *)
+let[@inline] append l1 l2 =
+  match l1, l2 with
+  | [], _ -> l2
+  | _, [] -> l1
+  | [ x ], _ -> x :: l2
+  | x :: y :: tl1, _ -> x :: y :: append tl1 l2
 
 let ( @ ) = append
 let[@inline] cons' l x = x :: l
@@ -324,7 +329,23 @@ let rec equal f l1 l2 =
   | [], _ | _, [] -> false
   | x1 :: l1', x2 :: l2' -> f x1 x2 && equal f l1' l2'
 
-let flat_map f l =
+let rec flat_map_kont f l kont =
+  match l with
+  | [] -> kont []
+  | [x] ->
+    let x = f x in
+    kont x
+  | x :: l' ->
+    let x = f x in
+    let kont' tail = kont (append x tail) in
+    flat_map_kont f l' kont'
+
+[@@@iflt 5.1]
+
+let[@inline] flat_map f l = match l with
+  | [] -> []
+  | [x] -> f x
+  | x :: tl
   let rec aux f l kont =
     match l with
     | [] -> kont []
@@ -339,7 +360,26 @@ let flat_map f l =
       in
       aux f l' kont'
   in
-  aux f l (fun l -> l)
+  aux f l Fun.id
+
+[@@@else_]
+
+let flat_map f l =
+  let rec direct i f l =
+    match l with
+    | [] -> []
+    | [ x ] -> f x
+    | [ x; y ] -> append (f x) (f y)
+    | _ when i = 0 -> flat_map_kont f l Fun.id
+    | x :: y :: tl ->
+      let x = f x in
+      let y = f y in
+      let tl = direct (i - 1) f tl in
+      append x (append y tl)
+  in
+  direct 1000 f l
+
+[@@@endif]
 
 let flat_map_i f l =
   let rec aux f i l kont =
