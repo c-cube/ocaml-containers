@@ -105,7 +105,7 @@ let map f l =
   direct f direct_depth_default_ l
 
 let append l1 l2 =
-  let[@inline] safe  l1 l2 = List.rev_append (List.rev l1) l2 in
+  let[@inline] safe l1 l2 = List.rev_append (List.rev l1) l2 in
   let rec direct i l1 l2 =
     match l1 with
     | [] -> l2
@@ -332,7 +332,7 @@ let rec equal f l1 l2 =
 let rec flat_map_kont f l kont =
   match l with
   | [] -> kont []
-  | [x] ->
+  | [ x ] ->
     let x = f x in
     kont x
   | x :: l' ->
@@ -342,25 +342,11 @@ let rec flat_map_kont f l kont =
 
 [@@@iflt 5.1]
 
-let[@inline] flat_map f l = match l with
+let[@inline] flat_map f l =
+  match l with
   | [] -> []
-  | [x] -> f x
-  | x :: tl
-  let rec aux f l kont =
-    match l with
-    | [] -> kont []
-    | x :: l' ->
-      let y = f x in
-      let kont' tail =
-        match y with
-        | [] -> kont tail
-        | [ x ] -> kont (x :: tail)
-        | [ x; y ] -> kont (x :: y :: tail)
-        | l -> kont (append l tail)
-      in
-      aux f l' kont'
-  in
-  aux f l Fun.id
+  | [ x ] -> f x
+  | x :: tl -> flat_map_kont f l Fun.id
 
 [@@@else_]
 
