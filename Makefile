@@ -14,12 +14,6 @@ clean:
 doc:
 	dune build @doc
 
-BENCH_TARGETS=run_benchs.exe run_bench_hash.exe
-
-benchs:
-	dune build $(addprefix benchs/, $(BENCH_TARGETS)) --profile=release
-	@for i in $(BENCH_TARGETS) ; do ln -sf _build/default/benchs/$$i ; done
-
 examples:
 	dune build examples/id_sexp.exe
 
@@ -39,4 +33,4 @@ reindent:
 	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 echo "reindenting: "
 	@find src '(' -name '*.ml' -or -name '*.mli' ')' -type f -print0 | xargs -0 ocp-indent -i
 
-.PHONY: all benchs test clean build doc update_next_tag watch examples
+.PHONY: all test clean build doc update_next_tag watch examples
