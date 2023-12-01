@@ -93,18 +93,42 @@ module L = struct
     else
       Sek.Persistent.of_list 0 [ x; x + 1; x + 2; x + 3 ]
 
+  let flat_map_kont f l =
+    let rec aux f l kont =
+      match l with
+      | [] -> kont []
+      | x :: l' ->
+        let y = f x in
+        let kont' tail =
+          match y with
+          | [] -> kont tail
+          | [ x ] -> kont (x :: tail)
+          | [ x; y ] -> kont (x :: y :: tail)
+          | l -> kont (CCList.append l tail)
+        in
+        aux f l' kont'
+    in
+    aux f l (fun l -> l)
+
   let bench_flat_map ?(time = 2) n =
     let l = CCList.(1 -- n) in
     let ral = CCRAL.of_list l in
     let sek = Sek.Persistent.of_list 0 l in
-    let flatten_map_ l () = ignore @@ List.flatten (CCList.map f_ l)
-    and flatmap l () = ignore @@ CCList.flat_map f_ l
-    and flatten_ccmap_ l () = ignore @@ List.flatten (List.map f_ l)
-    and flatmap_ral_ l () = ignore @@ CCRAL.flat_map f_ral_ l
-    and flatmap_sek s () = ignore @@ Sek.Persistent.flatten_map 0 f_sek_ s in
+    let flatten_map_ l () =
+      ignore @@ Sys.opaque_identity @@ List.flatten (CCList.map f_ l)
+    and flatmap_kont l () = ignore @@ Sys.opaque_identity @@ flat_map_kont f_ l
+    and flatmap l () = ignore @@ Sys.opaque_identity @@ CCList.flat_map f_ l
+    and flatten_ccmap_ l () =
+      ignore @@ Sys.opaque_identity @@ List.flatten (List.map f_ l)
+    and flatmap_ral_ l () =
+      ignore @@ Sys.opaque_identity @@ CCRAL.flat_map f_ral_ l
+    and flatmap_sek s () =
+      ignore @@ Sys.opaque_identity @@ Sek.Persistent.flatten_map 0 f_sek_ s
+    in
     B.throughputN time ~repeat
       [
         "flat_map", flatmap l, ();
+        "flat_map_kont", flatmap_kont l, ();
         "flatten o CCList.map", flatten_ccmap_ l, ();
         "flatten o map", flatten_map_ l, ();
         "ral_flatmap", flatmap_ral_ ral, ();
@@ -155,7 +179,11 @@ module L = struct
     and sek_flatten s () =
       opaque_ignore (Sek.Persistent.flatten s : _ Sek.Persistent.t)
     and funvec_flatten v () =
-      opaque_ignore (CCFun_vec.fold_rev ~x:CCFun_vec.empty ~f:(fun acc x -> CCFun_vec.append x acc) v : _ CCFun_vec.t)
+      opaque_ignore
+        (CCFun_vec.fold_rev ~x:CCFun_vec.empty
+           ~f:(fun acc x -> CCFun_vec.append x acc)
+           v
+          : _ CCFun_vec.t)
     in
     let l =
       CCList.mapi (fun i x -> CCList.(x -- (x + min i 100))) CCList.(1 -- n)
@@ -170,7 +198,7 @@ module L = struct
         "CCList.flatten", (fun () -> ignore (CCList.flatten l)), ();
         "List.flatten", (fun () -> ignore (List.flatten l)), ();
         "fold_right append", fold_right_append_ l, ();
-        "funvec.(fold_right append)", (funvec_flatten v), ();
+        "funvec.(fold_right append)", funvec_flatten v, ();
         "CCList.(fold_right append)", cc_fold_right_append_ l, ();
         "Sek.flatten", sek_flatten sek, ();
       ]
@@ -239,8 +267,8 @@ module L = struct
         opaque_ignore (CCRAL.set l i (-i))
       done
       (* TODO: implement set
-    and bench_funvec l () =
-      for _i = 0 to n-1 do opaque_ignore (CCFun_vec.set (* TODO *)) done
+         and bench_funvec l () =
+           for _i = 0 to n-1 do opaque_ignore (CCFun_vec.set (* TODO *)) done
       *)
     and bench_batvec l () =
       for i = 0 to n - 1 do
@@ -375,6 +403,8 @@ module L = struct
              "flat_map"
              @>> B.Tree.concat
                    [
+                     app_int (bench_flat_map ~time:2) 2;
+                     app_int (bench_flat_map ~time:2) 30;
                      app_int (bench_flat_map ~time:2) 100;
                      app_int (bench_flat_map ~time:2) 10_000;
                      app_int (bench_flat_map ~time:4) 100_000;
