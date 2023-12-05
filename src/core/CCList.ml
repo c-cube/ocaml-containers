@@ -326,7 +326,7 @@ let[@inline] unfold f seed =
       | Some (v, next) -> v :: direct (i - 1) f next
     )
   in
-  direct 100 f seed
+  direct 20 f seed
 
 [@@@else_]
 
