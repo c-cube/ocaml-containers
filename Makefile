@@ -1,4 +1,4 @@
-PACKAGES=containers,containers-data,containers-thread
+PACKAGES=containers,containers-data
 
 all: build test
 

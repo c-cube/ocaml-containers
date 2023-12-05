@@ -39,12 +39,11 @@ Containers is:
   data structures that don't have an equivalent in the standard library,
   typically not as thoroughly maintained. This is now in its own package
   since 3.0.
-- A separate library for threaded programming in `containers-thread`,
-  including a blocking queue, semaphores, an extension of `Mutex`, and
-  thread-pool based futures. This is in its own package since 3.0.
 
 Some of the modules have been moved to their own repository (e.g. `sequence` (now `iter`),
 `gen`, `qcheck`) and are on opam for great fun and profit.
+
+Containers-thread has been removed in favor of [Moonpool](https://github.com/c-cube/moonpool/).
 
 ## Migration Guide
 
@@ -54,7 +53,7 @@ The [changelog's breaking section](CHANGELOG.md) contains a list of the breaking
 changes in this release.
 
 1. The biggest change is that some sub-libraries have been either turned into
-  their own packages (`containers-thread`, `containers-data`),
+  their own packages (`containers-data`),
   deleted (`containers.iter`),or merged elsewhere (`containers.sexp`).
   This means that if use these libraries you will have to edit your
   `dune`/`_oasis`/`opam` files.
