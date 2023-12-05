@@ -281,11 +281,6 @@ let fold_flat_map_i f acc l =
   in
   aux f acc 0 [] l
 
-let rec unfold f seed =
-  match f seed with
-  | None -> []
-  | Some (v, next) -> v :: unfold f next
-
 [@@@iflt 5.1]
 
 (* keep this because it's tailrec for < 5.1 *)
@@ -313,6 +308,32 @@ let init len f =
     []
   else
     direct_ 0
+
+let rec unfold_kont f seed k =
+  match f seed with
+  | None -> k []
+  | Some (v, next) ->
+    let k' tl = v :: tl in
+    unfold_kont f next k'
+
+let[@inline] unfold f seed =
+  let rec direct i f seed =
+    if i = 0 then
+      unfold_kont f seed (fun x -> x)
+    else (
+      match f seed with
+      | None -> []
+      | Some (v, next) -> v :: direct (i - 1) f next
+    )
+  in
+  direct 100 f seed
+
+[@@@else_]
+
+let[@tail_mod_cons] rec unfold f seed =
+  match f seed with
+  | None -> []
+  | Some (v, next) -> v :: unfold f next
 
 [@@@endif]
 

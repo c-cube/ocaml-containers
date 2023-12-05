@@ -141,6 +141,20 @@ in
 unfold f 0 = [ 0; 2; 4; 6; 8; 10 ]
 ;;
 
+t @@ fun () ->
+let l =
+  unfold
+    (fun n ->
+      if n < 1_000_000 then
+        Some (n, n + 1)
+      else
+        None)
+    0
+in
+assert_equal ~printer:Q.Print.int (List.length l) 1_000_000;
+true
+;;
+
 t @@ fun () -> init 0 (fun _ -> 0) = [];;
 t @@ fun () -> init 1 (fun x -> x) = [ 0 ];;
 t @@ fun () -> init 1000 (fun x -> x) = 0 -- 999;;
