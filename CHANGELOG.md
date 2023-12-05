@@ -1,5 +1,32 @@
 # Changelog
 
+## 3.13
+
+- breaking: delete containers-thread (which was deprecated)
+- breaking: pp: modify `Ext.t` so it takes surrounding value
+- CCMultiMap: Rename functions find_left and find_right in the bidirectional multimap
+    to find_left_iter and find_right_iter respectively to reflect their usage,
+    and add new functions to replace the old find_left and find_right
+    that return a list of values rather than an iterator,
+    to make the signatures of CCMultiMap.S and CCMultiMap.BIDIR cohere.
+    Additionally, change the return type of
+    `S.find_iter` from `t -> key -> (value -> unit) -> unit` to `t -> key -> value iter`.
+
+- CCList: add `unfold`
+- CCBool: Add functions if_then and if_then_else
+- CCList: remove some functions that are subsumed by the stdlib
+- CCList: use TRMC for many functions on 5.1
+- feat CCFunvec: add `fold_rev`
+- add `Containers_pp.newline_or_spaces`
+- cleanup: remove stubs for code always present on 4.08, rely on
+    newer functions in 5.1
+- remove last refs to `CCShims`
+
+- perf: accelerate `List.append` and `List.flat_map` on 5.1
+
+- more warnings, more tests, cleanup dead code
+- change COC to ocaml-coc
+
 ## 3.12
 
 - add `containers.pp` sublibrary, with Wadler-style pretty printing combinators

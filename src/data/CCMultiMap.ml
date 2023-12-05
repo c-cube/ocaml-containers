@@ -226,19 +226,19 @@ module type BIDIR = sig
 
   val find_left : t -> left -> right list
   (** List of values for this given left-key.
-      This used to return an iter, but returns a list since NEXT_RELEASE. *)
+      This used to return an iter, but returns a list since 3.13. *)
 
   val find_left_iter : t -> left -> right iter
   (** Iterate on bindings for this given left-key
-      @since NEXT_RELEASE *)
+      @since 3.13 *)
 
   val find_right : t -> right -> left list
   (** List of values for this given right-key.
-      This used to return an iter, but returns a list since NEXT_RELEASE. *)
+      This used to return an iter, but returns a list since 3.13. *)
 
   val find_right_iter : t -> right -> left iter
   (** Iterate on bindings for this given left-key
-      @since NEXT_RELEASE *)
+      @since 3.13 *)
 
   val find1_left : t -> left -> right option
   (** like {!find_left} but returns at most one value *)
