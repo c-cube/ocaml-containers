@@ -276,6 +276,11 @@ let fold_flat_map_i f acc l =
   in
   aux f acc 0 [] l
 
+let rec unfold f seed =
+  match f seed with
+  | None -> []
+  | Some (v, next) -> v :: unfold f next
+
 [@@@iflt 5.1]
 
 (* keep this because it's tailrec for < 5.1 *)
