@@ -131,6 +131,16 @@ q
     = (List.rev l, flat_map (fun x -> [ x; x + 10 ]) l))
 ;;
 
+t @@ fun () ->
+let f x =
+  if x <= 5 then
+    Some (2 * x, x + 1)
+  else
+    None
+in
+unfold f 0 = [ 0; 2; 4; 6; 8; 10 ]
+;;
+
 t @@ fun () -> init 0 (fun _ -> 0) = [];;
 t @@ fun () -> init 1 (fun x -> x) = [ 0 ];;
 t @@ fun () -> init 1000 (fun x -> x) = 0 -- 999;;

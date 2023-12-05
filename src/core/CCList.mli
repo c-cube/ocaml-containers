@@ -102,6 +102,16 @@ val fold_flat_map_i :
     list to a list of lists that is then [flatten]'d.
     @since 2.8 *)
 
+val unfold : ('seed -> ('b * 'seed) option) -> 'seed -> 'b list
+(** [unfold f init] builds up a list from a seed value.
+    When [f] produces [Some (next_seed, value)], [value] is added to the output list and
+    [next_seed] is used in the next call to [f]. However,
+    when [f] produces [None], list production ends.
+    {b NOTE} if [f] never produces [None], then a {b stack overflow will occur}. Therefore,
+    great care must be taken to ensure that [f] will produce [None].
+    @since 3.13
+*)
+
 val count : ('a -> bool) -> 'a list -> int
 (** [count p l] counts how many elements of [l] satisfy predicate [p].
     @since 1.5, but only
