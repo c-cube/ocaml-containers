@@ -109,7 +109,7 @@ val unfold : ('seed -> ('b * 'seed) option) -> 'seed -> 'b list
     when [f] produces [None], list production ends.
     {b NOTE} if [f] never produces [None], then a {b stack overflow will occur}. Therefore,
     great care must be taken to ensure that [f] will produce [None].
-    @since 3.13
+    @since NEXT_RELEASE
 *)
 
 val count : ('a -> bool) -> 'a list -> int
