@@ -19,10 +19,10 @@ jobs:
           dune-cache: false
 
       - name: Deps
-        run: opam install odig containers containers-data containers-thread
+        run: opam install odig containers containers-data
 
       - name: Build
-        run: opam exec -- odig odoc --cache-dir=_doc/ containers containers-data containers-thread
+        run: opam exec -- odig odoc --cache-dir=_doc/ containers containers-data
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
