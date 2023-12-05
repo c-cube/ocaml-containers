@@ -156,6 +156,20 @@ assert_equal ~printer:Q.Print.int (List.length l) 1_000_000;
 true
 ;;
 
+t ~name:"unfold3" @@ fun () ->
+let l =
+  unfold
+    (fun n ->
+      if n < 5_000 then
+        Some (n, n + 1)
+      else
+        None)
+    0
+in
+assert_equal ~printer:Q.Print.(list int) (List.init 5000 Fun.id) l;
+true
+;;
+
 t @@ fun () -> init 0 (fun _ -> 0) = [];;
 t @@ fun () -> init 1 (fun x -> x) = [ 0 ];;
 t @@ fun () -> init 1000 (fun x -> x) = 0 -- 999;;
