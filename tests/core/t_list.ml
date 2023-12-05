@@ -131,17 +131,18 @@ q
     = (List.rev l, flat_map (fun x -> [ x; x + 10 ]) l))
 ;;
 
-t @@ fun () ->
+eq ~printer:Q.Print.(list int) ~name:"unfold1" [ 0; 2; 4; 6; 8; 10 ]
+@@
 let f x =
   if x <= 5 then
     Some (2 * x, x + 1)
   else
     None
 in
-unfold f 0 = [ 0; 2; 4; 6; 8; 10 ]
+unfold f 0
 ;;
 
-t @@ fun () ->
+t ~name:"unfold2" @@ fun () ->
 let l =
   unfold
     (fun n ->

@@ -313,7 +313,7 @@ let rec unfold_kont f seed k =
   match f seed with
   | None -> k []
   | Some (v, next) ->
-    let k' tl = v :: tl in
+    let k' tl = v :: k tl in
     unfold_kont f next k'
 
 let[@inline] unfold f seed =
