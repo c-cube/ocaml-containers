@@ -4,6 +4,7 @@
 
 - breaking: delete containers-thread (which was deprecated)
 - breaking: pp: modify `Ext.t` so it takes surrounding value
+- breaking: remove CCShims
 - CCMultiMap: Rename functions find_left and find_right in the bidirectional multimap
     to find_left_iter and find_right_iter respectively to reflect their usage,
     and add new functions to replace the old find_left and find_right
@@ -20,7 +21,6 @@
 - add `Containers_pp.newline_or_spaces`
 - cleanup: remove stubs for code always present on 4.08, rely on
     newer functions in 5.1
-- remove last refs to `CCShims`
 
 - perf: accelerate `List.append` and `List.flat_map` on 5.1
 
