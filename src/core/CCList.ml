@@ -177,11 +177,10 @@ let[@tail_mod_cons] rec filter f l =
   | [] -> []
   | x :: tl ->
     let keep = f x in
-    let tl = filter f tl in
     if keep then
-      x :: tl
+      x :: filter f tl
     else
-      tl
+      filter f tl
 
 [@@@else_]
 (* stdlib's filter uses TRMC after 5.1 *)
@@ -895,7 +894,7 @@ let take_while p l =
 
 [@@@else_]
 
-let rec take_while p l =
+let[@tail_mod_cons] rec take_while p l =
   match l with
   | [] -> []
   | x :: l' ->
