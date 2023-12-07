@@ -47,8 +47,7 @@ let mguard c =
 (** max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
-(* TRMC on >= 5.1, no need to bring our own *)
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let tail_map f l =
   (* Unwind the list of tuples, reconstructing the full list front-to-back.
@@ -115,6 +114,24 @@ let append l1 l2 =
   in
   direct 1000 l1 l2
 
+[@@@eliflt 5.1]
+
+let[@tail_mod_cons] rec map f l =
+  match l with
+  | [] -> []
+  | x :: tl ->
+    let x = f x in
+    x :: map f tl
+
+let[@tail_mod_cons] rec append l1 l2 =
+  match l1 with
+  | [] -> l2
+  | x :: tl1 -> x :: append tl1 l2
+
+[@@@else_]
+
+(* TRMC functions on >= 5.1, no need to bring our own *)
+
 [@@@endif]
 
 (* Wrapper around [append] to optimize for the case of short [l1],
@@ -134,8 +151,7 @@ let cons_maybe o l =
   | Some x -> x :: l
   | None -> l
 
-(* TRMC after 5.1 *)
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let direct_depth_filter_ = 10_000
 
@@ -154,6 +170,24 @@ let filter p l =
   in
   direct direct_depth_filter_ p l
 
+[@@@eliflt 5.1]
+
+let[@tail_mod_cons] rec filter f l =
+  match l with
+  | [] -> []
+  | x :: tl ->
+    let keep = f x in
+    let tl = filter f tl in
+    if keep then
+      x :: tl
+    else
+      tl
+
+[@@@else_]
+(* stdlib's filter uses TRMC after 5.1 *)
+
+[@@@endif]
+
 let fold_right f l acc =
   let rec direct i f l acc =
     match l with
@@ -170,8 +204,6 @@ let fold_right f l acc =
       safe f l' acc
   in
   direct direct_depth_default_ f l acc
-
-[@@@endif]
 
 let rec fold_while f acc = function
   | [] -> acc
@@ -281,7 +313,7 @@ let fold_flat_map_i f acc l =
   in
   aux f acc 0 [] l
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 (* keep this because it's tailrec for < 5.1 *)
 let init len f =
@@ -328,6 +360,24 @@ let[@inline] unfold f seed =
   in
   direct 100 f seed
 
+[@@@eliflt 5.1]
+
+let init n f =
+  let[@tail_mod_cons] rec init_ i n f =
+    if i = n then
+      []
+    else (
+      let x = f i in
+      x :: init_ (i + 1) n f
+    )
+  in
+  init_ 0 n f
+
+let[@tail_mod_cons] rec unfold f seed =
+  match f seed with
+  | None -> []
+  | Some (v, next) -> v :: unfold f next
+
 [@@@else_]
 
 let[@tail_mod_cons] rec unfold f seed =
@@ -366,7 +416,7 @@ let rec flat_map_kont f l kont =
     let kont' tail = kont (append x tail) in
     flat_map_kont f l' kont'
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let[@inline] flat_map f l =
   match l with
@@ -459,7 +509,7 @@ let partition_filter_map f l =
 
 let partition_map = partition_filter_map
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let combine l1 l2 =
   let rec direct i l1 l2 =
@@ -497,7 +547,7 @@ let combine_gen l1 l2 =
       l2 := tail2;
       Some (x1, x2)
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let combine_shortest l1 l2 =
   let rec direct i l1 l2 =
@@ -723,7 +773,7 @@ let sorted_diff_uniq ~cmp l1 l2 =
   in
   recurse ~cmp [] l1 l2
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let take n l =
   let rec direct i n l =
@@ -820,7 +870,7 @@ let interleave l1 l2 : _ list =
   in
   aux [] l1 l2
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let take_while p l =
   let rec direct i p l =
@@ -1503,7 +1553,7 @@ let of_seq_rev l =
   in
   loop [] l
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let of_seq l =
   let rec direct i seq =
@@ -1528,7 +1578,7 @@ let to_gen l =
       l := l';
       Some x
 
-[@@@iflt 5.1]
+[@@@iflt 4.14]
 
 let of_gen g =
   let rec direct i g =

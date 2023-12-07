@@ -59,6 +59,10 @@ let preproc_lines ~file ~major ~minor (ic : in_channel) : unit =
           Scanf.sscanf line' "[@@@elifle %d.%d]" (fun x y -> Elseif (Le, x, y))
         else if prefix line' ~pre:"[@@@elifge" then
           Scanf.sscanf line' "[@@@elifge %d.%d]" (fun x y -> Elseif (Ge, x, y))
+        else if prefix line' ~pre:"[@@@eliflt" then
+          Scanf.sscanf line' "[@@@eliflt %d.%d]" (fun x y -> Elseif (Lt, x, y))
+        else if prefix line' ~pre:"[@@@elifge" then
+          Scanf.sscanf line' "[@@@elifge %d.%d]" (fun x y -> Elseif (Ge, x, y))
         else if line' = "[@@@else_]" then
           Else
         else if line' = "[@@@endif]" then
