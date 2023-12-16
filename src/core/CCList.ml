@@ -372,16 +372,20 @@ let[@inline] flat_map f l =
   match l with
   | [] -> []
   | [ x ] -> f x
-  | x :: tl -> flat_map_kont f l Fun.id
+  | _ :: _ -> flat_map_kont f l Fun.id
 
 [@@@else_]
 
+(* let flat_map = concat_map *)
 let flat_map f l =
   let rec direct i f l =
     match l with
     | [] -> []
     | [ x ] -> f x
-    | [ x; y ] -> append (f x) (f y)
+    | [ x; y ] ->
+      let x = f x in
+      let y = f y in
+      append x y
     | _ when i = 0 -> flat_map_kont f l Fun.id
     | x :: y :: tl ->
       let x = f x in
