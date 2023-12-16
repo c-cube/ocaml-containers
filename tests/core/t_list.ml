@@ -124,6 +124,21 @@ eq
    fold_flat_map (fun acc x -> acc + x, [ pf "%d" x; pf "a%d" x ]) 0 [ 1; 2; 3 ])
 ;;
 
+t @@ fun () ->
+let r = Atomic.make 0 in
+let f x =
+  let n = Atomic.fetch_and_add r 1 in
+  [ n, x ]
+in
+
+let l = CCList.flat_map f [ "a"; "b"; "c" ] in
+assert_equal
+  ~printer:Q.Print.(list @@ pair int string)
+  [ 0, "a"; 1, "b"; 2, "c" ]
+  l;
+true
+;;
+
 q
   Q.(list int)
   (fun l ->
