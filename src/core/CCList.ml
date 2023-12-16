@@ -376,24 +376,7 @@ let[@inline] flat_map f l =
 
 [@@@else_]
 
-(* let flat_map = concat_map *)
-let flat_map f l =
-  let rec direct i f l =
-    match l with
-    | [] -> []
-    | [ x ] -> f x
-    | [ x; y ] ->
-      let x = f x in
-      let y = f y in
-      append x y
-    | _ when i = 0 -> flat_map_kont f l Fun.id
-    | x :: y :: tl ->
-      let x = f x in
-      let y = f y in
-      let tl = direct (i - 1) f tl in
-      append x (append y tl)
-  in
-  direct 1000 f l
+let flat_map = concat_map
 
 [@@@endif]
 
