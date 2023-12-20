@@ -216,7 +216,11 @@ t @@ fun () ->
 flat_map (fun x -> [ x + 1; x * 2 ]) [ 10; 100 ] = [ 11; 20; 101; 200 ]
 ;;
 
+
 t @@ fun () -> List.length (flat_map (fun x -> [ x ]) (1 -- 300_000)) = 300_000
+;;
+t @@ fun () ->
+List.length (flat_map (fun _ -> 1 -- 300_000) (1 -- 2)) = 600_000
 ;;
 
 eq [ 1; 2; 2; 3; 3; 3 ]

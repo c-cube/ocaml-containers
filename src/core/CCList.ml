@@ -404,6 +404,8 @@ let rec equal f l1 l2 =
   | [], _ | _, [] -> false
   | x1 :: l1', x2 :: l2' -> f x1 x2 && equal f l1' l2'
 
+[@@@iflt 5.1]
+
 let rec flat_map_kont f l kont =
   match l with
   | [] -> kont []
@@ -414,8 +416,6 @@ let rec flat_map_kont f l kont =
     let x = f x in
     let kont' tail = kont (append x tail) in
     flat_map_kont f l' kont'
-
-[@@@iflt 4.14]
 
 let[@inline] flat_map f l =
   match l with
