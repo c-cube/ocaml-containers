@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.13.1
+
+- list: TRMC was in 4.14, we can use it earlier
+- fix insidious bug in CCList.flat_map linked to unspecified
+    evaluation order
+- perf: use `concat_map` for `CCList.flat_map` on >= 5.1
+    (this also re-fixes the same bug in `CCList.flat_map` anyway)
+
 ## 3.13
 
 - breaking: delete containers-thread (which was deprecated)

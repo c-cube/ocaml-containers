@@ -2,7 +2,7 @@
 (name containers)
 (generate_opam_files true)
 
-(version 3.13)
+(version 3.13.1)
 (authors c-cube)
 (maintainers c-cube)
 (license BSD-2-Clause)
