@@ -131,7 +131,7 @@ let resize_with v f size =
     v.vec <- new_vec;
     v.size <- size
   ) else (
-    ensure_assuming_not_empty_ v size;
+    ensure_assuming_not_empty_ v ~size;
     let { size = cur_size; vec } = v in
     for i = cur_size to size - 1 do
       Array.unsafe_set vec i (f i)
@@ -147,7 +147,7 @@ let resize_with_init v ~init size =
     v.vec <- vec;
     v.size <- size
   ) else (
-    ensure_assuming_not_empty_ v size;
+    ensure_assuming_not_empty_ v ~size;
     (* nothing will change [v] *)
     for i = v.size to size - 1 do
       Array.unsafe_set v.vec i init
