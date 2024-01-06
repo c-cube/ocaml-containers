@@ -1,0 +1,7 @@
+
+(test
+ (name t)
+ (flags :standard -strict-sequence -warn-error -a+8)
+ (modes (best exe))
+ (package containers)
+ (libraries containers containers.pvec containers_testlib iter))
