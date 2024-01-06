@@ -93,8 +93,8 @@ module Ref_impl = struct
 
   let choose l =
     match l with
-    | [] -> None
-    | x :: _ -> Some x
+    | [] -> false
+    | _ :: _ -> true
 end
 
 module Op = struct
@@ -230,7 +230,7 @@ let check_ops ~show_x (ops : 'a Op.t list) : unit =
       | Op.Check_to_list ->
         if to_list !cur <> Ref_impl.to_list !cur_ref then fail ()
       | Op.Check_choose ->
-        if choose !cur <> Ref_impl.choose !cur_ref then fail ()
+        if Option.is_some (choose !cur) <> Ref_impl.choose !cur_ref then fail ()
       | Op.Check_to_gen ->
         if
           to_seq !cur |> CCSeq.to_list
