@@ -32,8 +32,7 @@ module A = struct
     if n = 0 then invalid_arg "Pvec.pop";
     Array.sub self 0 (n - 1)
 
-  (* TODO: remove *)
-  let set ~mut (self : _ t) i x : _ t =
+  let set (self : _ t) i x : _ t =
     if i < 0 || i > length self || i >= branching_factor then
       invalid_arg "Pvec.set";
     if i = length self then (
@@ -41,10 +40,6 @@ module A = struct
       let arr = Array.make (i + 1) x in
       Array.blit self 0 arr 0 i;
       arr
-    ) else if mut then (
-      (* replace element at [i] in place *)
-      self.(i) <- x;
-      self
     ) else (
       (* replace element at [i] in copy *)
       let arr = Array.copy self in
