@@ -89,6 +89,12 @@ module Ref_impl = struct
     | x :: tl -> x, List.rev tl
     | [] -> invalid_arg "empty"
 
+  let last_opt l =
+    if l = [] then
+      None
+    else
+      Some (List.nth l (List.length l - 1))
+
   let is_empty l = l = []
 
   let choose l =
@@ -109,6 +115,7 @@ module Op = struct
     | Check_len
     | Check_to_list
     | Check_to_gen
+    | Check_last
 
   let well_formed ops : bool =
     let rec loop size = function
@@ -121,6 +128,7 @@ module Op = struct
       | Check_is_empty :: tl
       | Check_len :: tl
       | Check_to_list :: tl
+      | Check_last :: tl
       | Check_to_gen :: tl ->
         loop size tl
     in
@@ -137,6 +145,7 @@ module Op = struct
     | Check_len -> "check_len"
     | Check_to_list -> "check_to_list"
     | Check_to_gen -> "check_to_gen"
+    | Check_last -> "check_last"
 
   let shrink shrink_x (op : _ t) : _ Q.Iter.t =
     let open Q.Shrink in
@@ -146,7 +155,7 @@ module Op = struct
     | Pop -> empty
     | Add_list l -> list ~shrink:shrink_x l >|= fun x -> Add_list x
     | Check_get _ | Check_choose | Check_is_empty | Check_len | Check_to_list
-    | Check_to_gen ->
+    | Check_to_gen | Check_last ->
       empty
 
   let shrink_l shrink_x : _ t list Q.Shrink.t =
@@ -171,6 +180,7 @@ module Op = struct
                    1, return (Check_is_empty, size);
                    1, return (Check_to_list, size);
                    1, return (Check_to_gen, size);
+                   1, return (Check_last, size);
                  ];
                  (if size > 0 then
                    [
@@ -231,6 +241,8 @@ let check_ops ~show_x (ops : 'a Op.t list) : unit =
         if to_list !cur <> Ref_impl.to_list !cur_ref then fail ()
       | Op.Check_choose ->
         if Option.is_some (choose !cur) <> Ref_impl.choose !cur_ref then fail ()
+      | Op.Check_last ->
+        if last_opt !cur <> Ref_impl.last_opt !cur_ref then fail ()
       | Op.Check_to_gen ->
         if
           to_seq !cur |> CCSeq.to_list

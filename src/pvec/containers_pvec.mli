@@ -44,12 +44,22 @@ val get : 'a t -> int -> 'a
 
 val get_opt : 'a t -> int -> 'a option
 
+val last : 'a t -> 'a
+(** Last element.
+      @raise Invalid_argument if the vec is empty *)
+
+val last_opt : 'a t -> 'a option
+
 val pop : 'a t -> 'a * 'a t
 (** Pop last element.
    @raise Invalid_argument in case the vec is empty. *)
 
 val pop_opt : 'a t -> ('a * 'a t) option
 (** Pop last element. *)
+
+val drop_last : 'a t -> 'a t
+(** Like {!pop_opt} but doesn't return the last element.
+  Returns the same vector if it's empty. *)
 
 val iter : ('a -> unit) -> 'a t -> unit
 

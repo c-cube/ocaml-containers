@@ -213,6 +213,22 @@ let pop_opt (self : 'a t) : ('a * 'a t) option =
   else
     Some (pop self)
 
+let[@inline] last self =
+  if self.size = 0 then invalid_arg "pvec.last";
+  A.get self.tail (A.length self.tail - 1)
+
+let last_opt self =
+  if self.size = 0 then
+    None
+  else
+    Some (A.get self.tail (A.length self.tail - 1))
+
+let drop_last self =
+  if self.size = 0 then
+    self
+  else
+    snd (pop self)
+
 let rec iteri_rec_ f idx (self : _ tree) =
   match self with
   | Empty -> ()
