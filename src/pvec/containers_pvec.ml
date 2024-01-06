@@ -66,8 +66,6 @@ type 'a t = {
    - all leaves in [t] are at depth shift/5
 *)
 
-(* FIXME: remove *)
-let dbg_ = ref (fun _ _ _ -> assert false)
 let empty_tree = Empty
 let empty = { t = empty_tree; size = 0; shift = 0; tail = [||] }
 
@@ -110,9 +108,6 @@ let rec build_new_tail_spine_ shift tail : _ tree =
     Node [| build_new_tail_spine_ (shift - num_bits) tail |]
 
 let rec insert_tail_ (self : _ tree) shift i (tail : _ A.t) : _ tree =
-  Format.printf "insert tail shift=%d i=0x%x into %a@." shift i
-    (!dbg_ Format.pp_print_int)
-    (Obj.magic self : int tree);
   match self with
   | Empty ->
     if shift = 0 then
@@ -126,7 +121,6 @@ let rec insert_tail_ (self : _ tree) shift i (tail : _ A.t) : _ tree =
     (* would be in the {!build_new_tail_spine_} case *)
     assert (i <> 0);
     let idx = (i lsr shift) land bitmask in
-    Printf.printf "insert tail rec at idx=%d shift=%d i=0x%x\n%!" idx shift i;
     let sub, must_push =
       if idx < A.length a then
         A.get a idx, false
@@ -161,9 +155,6 @@ let[@inline] push (self : _ t) x : _ t =
     { self with tail = A.push self.tail x; size = self.size + 1 }
 
 let rec pop_tail_from_tree_ (self : _ tree) shift i : 'a A.t * 'a tree =
-  Format.printf "pop tail shift=%d i=0x%x from %a@." shift i
-    (!dbg_ Format.pp_print_int)
-    (Obj.magic self : int tree);
   match self with
   | Empty -> assert false
   | Leaf tail ->
@@ -191,13 +182,14 @@ let[@inline never] move_last_leaf_to_tail (self : _ t) : _ t =
     (* back to empty *)
     empty
   else (
-    (* before pop *)
-    let tail, t = pop_tail_from_tree_ self.t self.shift (self.size - 1) in
+    (* idx of the beginning of the tail *)
+    let idx = self.size - 1 - branching_factor in
+    let tail, t = pop_tail_from_tree_ self.t self.shift idx in
     let t, shift =
       match t with
       | Node [| t' |] ->
         (* all indices have 00000 as MSB, remove one level *)
-        t', self.shift - 1
+        t', self.shift - num_bits
       | _ -> t, self.shift
     in
     { tail; size = self.size - 1; shift; t }
@@ -363,6 +355,4 @@ module Private_ = struct
       "@[<v>pvec {@ size: %d; shift: %d;@ @[<2>tree:@ %a@];@ @[<2>tail:@ \
        %a@]@]}"
       self.size self.shift (debugtree ppx) self.t (pp_array ppx) self.tail
-
-  let () = dbg_ := debugtree
 end
