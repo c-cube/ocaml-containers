@@ -9,7 +9,16 @@
 *)
 
 type 'a iter = ('a -> unit) -> unit
+
+[@@@ifge 5.0]
+
 type !'a t
+
+[@@@else_]
+
+type 'a t
+
+[@@@endif]
 
 val empty : 'a t
 (** Empty vector. *)
