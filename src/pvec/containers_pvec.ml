@@ -127,7 +127,7 @@ let rec insert_tail_ (self : _ tree) shift i (tail : _ A.t) : _ tree =
       if must_push then
         A.push a new_sub
       else
-        A.set ~mut:false a idx new_sub
+        A.set a idx new_sub
     in
     Node a
 
@@ -167,7 +167,7 @@ let rec pop_tail_from_tree_ (self : _ tree) shift i : 'a A.t * 'a tree =
         else
           Node a
       ) else
-        Node (A.set ~mut:false a idx new_sub)
+        Node (A.set a idx new_sub)
     in
     tail, new_tree
 
