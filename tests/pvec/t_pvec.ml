@@ -84,6 +84,11 @@ module Ref_impl = struct
   let to_seq = CCSeq.of_list
   let add_list l l2 : _ t = List.append l l2
 
+  let to_list_via_reviter m =
+    let l = ref [] in
+    iter_rev (fun x -> l := x :: !l) m;
+    !l
+
   let pop_exn l =
     match List.rev l with
     | x :: tl -> x, List.rev tl
@@ -103,6 +108,16 @@ module Ref_impl = struct
     | _ :: _ -> true
 end
 
+let to_list_via_iter m =
+  let l = ref [] in
+  iter (fun x -> l := x :: !l) m;
+  List.rev !l
+
+let to_list_via_reviter m =
+  let l = ref [] in
+  iter_rev (fun x -> l := x :: !l) m;
+  !l
+
 module Op = struct
   type 'a t =
     | Push of 'a
@@ -114,6 +129,8 @@ module Op = struct
     | Check_is_empty
     | Check_len
     | Check_to_list
+    | Check_iter
+    | Check_rev_iter
     | Check_to_gen
     | Check_last
 
@@ -128,6 +145,8 @@ module Op = struct
       | Check_is_empty :: tl
       | Check_len :: tl
       | Check_to_list :: tl
+      | Check_iter :: tl
+      | Check_rev_iter :: tl
       | Check_last :: tl
       | Check_to_gen :: tl ->
         loop size tl
@@ -144,6 +163,8 @@ module Op = struct
     | Check_is_empty -> "check_is_empty"
     | Check_len -> "check_len"
     | Check_to_list -> "check_to_list"
+    | Check_iter -> "check_rev_iter"
+    | Check_rev_iter -> "check_rev_iter"
     | Check_to_gen -> "check_to_gen"
     | Check_last -> "check_last"
 
@@ -155,7 +176,7 @@ module Op = struct
     | Pop -> empty
     | Add_list l -> list ~shrink:shrink_x l >|= fun x -> Add_list x
     | Check_get _ | Check_choose | Check_is_empty | Check_len | Check_to_list
-    | Check_to_gen | Check_last ->
+    | Check_to_gen | Check_last | Check_rev_iter | Check_iter ->
       empty
 
   let shrink_l shrink_x : _ t list Q.Shrink.t =
@@ -239,6 +260,10 @@ let check_ops ~show_x (ops : 'a Op.t list) : unit =
       | Op.Check_len -> if length !cur <> Ref_impl.length !cur_ref then fail ()
       | Op.Check_to_list ->
         if to_list !cur <> Ref_impl.to_list !cur_ref then fail ()
+      | Op.Check_iter ->
+        if to_list_via_iter !cur <> Ref_impl.to_list !cur_ref then fail ()
+      | Op.Check_rev_iter ->
+        if to_list !cur <> Ref_impl.to_list !cur_ref then fail ()
       | Op.Check_choose ->
         if Option.is_some (choose !cur) <> Ref_impl.choose !cur_ref then fail ()
       | Op.Check_last ->
@@ -253,6 +278,6 @@ let check_ops ~show_x (ops : 'a Op.t list) : unit =
   ()
 
 let () =
-  q arb_ops_int (fun ops ->
+  q ~count:1000 ~name:"ops" ~long_factor:10 arb_ops_int (fun ops ->
       check_ops ~show_x:(spf "%d") ops;
       true)
