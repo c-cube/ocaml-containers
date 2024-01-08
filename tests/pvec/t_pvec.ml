@@ -202,6 +202,8 @@ module Op = struct
                    1, return (Check_to_list, size);
                    1, return (Check_to_gen, size);
                    1, return (Check_last, size);
+                   1, return (Check_iter, size);
+                   1, return (Check_rev_iter, size);
                  ];
                  (if size > 0 then
                    [
