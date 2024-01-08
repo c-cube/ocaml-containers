@@ -4,7 +4,7 @@
 
 type 'a iter = ('a -> unit) -> unit
 
-let num_bits = 5
+let num_bits = 4
 let branching_factor = 1 lsl num_bits
 let bitmask = branching_factor - 1
 
