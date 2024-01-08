@@ -191,10 +191,10 @@ module L = struct
       opaque_ignore (Sek.Persistent.flatten s : _ Sek.Persistent.t)
     and funvec_flatten v () =
       opaque_ignore
-        (CCFun_vec.fold_rev ~x:CCFun_vec.empty
-           ~f:(fun acc x -> CCFun_vec.append x acc)
-           v
+        (CCFun_vec.fold ~x:CCFun_vec.empty ~f:CCFun_vec.append v
           : _ CCFun_vec.t)
+    and pvec_flatten v () =
+      opaque_ignore (Pvec.fold_left Pvec.append Pvec.empty v : _ Pvec.t)
     in
     let l =
       CCList.mapi (fun i x -> CCList.(x -- (x + min i 100))) CCList.(1 -- n)
@@ -204,12 +204,15 @@ module L = struct
         (List.map (Sek.Persistent.of_list 0) l)
     in
     let v = CCFun_vec.of_list (List.map CCFun_vec.of_list l) in
+    let pv = Pvec.of_list (List.map Pvec.of_list l) in
+
     B.throughputN time ~repeat
       [
         "CCList.flatten", (fun () -> ignore (CCList.flatten l)), ();
         "List.flatten", (fun () -> ignore (List.flatten l)), ();
         "fold_right append", fold_right_append_ l, ();
-        "funvec.(fold_right append)", funvec_flatten v, ();
+        "funvec.(fold append)", funvec_flatten v, ();
+        "pvec.(fold append)", pvec_flatten pv, ();
         "CCList.(fold_right append)", cc_fold_right_append_ l, ();
         "Sek.flatten", sek_flatten sek, ();
       ]
