@@ -63,6 +63,9 @@ val drop_last : 'a t -> 'a t
 
 val iter : ('a -> unit) -> 'a t -> unit
 
+val iter_rev : ('a -> unit) -> 'a t -> unit
+(** Iterate on elements but starting from the end. *)
+
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
 (** Iterate on elements with their index, in increasing order. *)
 
@@ -72,6 +75,7 @@ val iteri_rev : (int -> 'a -> unit) -> 'a t -> unit
 val fold_left : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 val fold_rev : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 val fold_lefti : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
+val fold_revi : ('b -> int -> 'a -> 'b) -> 'b -> 'a t -> 'b
 
 val append : 'a t -> 'a t -> 'a t
 (** [append a b] adds all elements of [b] at the end of [a]. This is

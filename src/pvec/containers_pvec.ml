@@ -268,6 +268,24 @@ let iteri f (self : 'a t) : unit =
     f (i + tail_off) (Array.unsafe_get self.tail i)
   done
 
+let rec iter_rev_rec_ f (self : _ tree) =
+  match self with
+  | Empty -> ()
+  | Leaf a ->
+    for i = A.length a - 1 downto 0 do
+      f (Array.unsafe_get a i)
+    done
+  | Node a ->
+    for i = A.length a - 1 downto 0 do
+      iter_rev_rec_ f (Array.unsafe_get a i)
+    done
+
+let iter_rev f (self : 'a t) : unit =
+  for i = A.length self.tail - 1 downto 0 do
+    f (Array.unsafe_get self.tail i)
+  done;
+  iter_rev_rec_ f self.t
+
 let rec iteri_rev_rec_ f idx (self : _ tree) =
   match self with
   | Empty -> ()
@@ -294,12 +312,15 @@ let fold_lefti f x m =
   iteri (fun i x -> acc := f !acc i x) m;
   !acc
 
-let foldi_rev f x m =
+let fold_revi f x m =
   let acc = ref x in
   iteri_rev (fun i x -> acc := f !acc i x) m;
   !acc
 
-let fold_rev f x m = foldi_rev (fun acc _ x -> f acc x) x m
+let fold_rev f x m =
+  let acc = ref x in
+  iter_rev (fun x -> acc := f !acc x) m;
+  !acc
 
 let rec map_t f (self : _ tree) : _ tree =
   match self with
