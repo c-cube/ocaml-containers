@@ -224,6 +224,29 @@ let drop_last self =
   else
     snd (pop self)
 
+let rec iter_rec_ f (self : _ tree) =
+  match self with
+  | Empty -> ()
+  | Leaf a ->
+    for i = 0 to A.length a - 1 do
+      f (Array.unsafe_get a i)
+    done
+  | Node a ->
+    for i = 0 to A.length a - 1 do
+      iter_rec_ f (Array.unsafe_get a i)
+    done
+
+let iter f self =
+  iter_rec_ f self.t;
+  for i = 0 to A.length self.tail - 1 do
+    f (Array.unsafe_get self.tail i)
+  done
+
+let fold_left f x m =
+  let acc = ref x in
+  iter (fun x -> acc := f !acc x) m;
+  !acc
+
 let rec iteri_rec_ f idx (self : _ tree) =
   match self with
   | Empty -> ()
@@ -276,8 +299,6 @@ let foldi_rev f x m =
   iteri_rev (fun i x -> acc := f !acc i x) m;
   !acc
 
-let iter f m = iteri (fun _ x -> f x) m
-let fold_left f x m = fold_lefti (fun acc _ x -> f acc x) x m
 let fold_rev f x m = foldi_rev (fun acc _ x -> f acc x) x m
 
 let rec map_t f (self : _ tree) : _ tree =
