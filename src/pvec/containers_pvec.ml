@@ -1,4 +1,4 @@
-(* HAMT.
+(* Persistent vector structure with fast get/push/pop.
    We follow https://hypirion.com/musings/understanding-persistent-vector-pt-1
    and following posts. *)
 
