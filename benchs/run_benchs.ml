@@ -56,10 +56,12 @@ module L = struct
 
   let bench_map ?(time = 2) n =
     let l = CCList.(1 -- n) in
+    let pv = Pvec.of_list l in
     let ral = CCRAL.of_list l in
     let map_naive () = ignore (try List.map f_ l with Stack_overflow -> [])
     and map_naive2 () = ignore (try map_naive f_ l with Stack_overflow -> [])
     and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
+    and pvec_map () = ignore (Pvec.map f_ pv)
     and ccmap () = ignore (CCList.map f_ l)
     and ralmap () = ignore (CCRAL.map ~f:f_ ral) in
     B.throughputN time ~repeat
@@ -67,6 +69,7 @@ module L = struct
         "List.map", map_naive, ();
         "List.map(inline)", map_naive2, ();
         "List.rev_map o rev", map_tailrec, ();
+        "pvec.map", pvec_map, ();
         "CCList.map", ccmap, ();
         "CCRAL.map", ralmap, ();
       ]
