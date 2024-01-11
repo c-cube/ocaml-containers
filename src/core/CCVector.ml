@@ -412,6 +412,18 @@ let fold f acc v =
   in
   fold acc 0
 
+let foldi f acc v =
+  let { vec; size } = v in
+  let rec fold acc i =
+    if i = size then
+      acc
+    else (
+      let x = Array.unsafe_get vec i in
+      fold (f i acc x) (i + 1)
+    )
+  in
+  fold acc 0
+
 let exists p v =
   let n = v.size in
   let rec check i =

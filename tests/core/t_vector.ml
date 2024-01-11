@@ -737,3 +737,17 @@ t @@ fun () -> of_list CCList.(1 -- 300_000) |> to_list = CCList.(1 -- 300_000)
 t @@ fun () ->
 let v = 1 -- 10 in
 to_list v = Gen.to_list (to_gen v)
+;;
+
+t @@ fun () ->
+let v = create () in
+0 = foldi (fun i acc _ -> acc + i) 0 v
+;;
+
+t @@ fun () ->
+let v = create () in
+push v 0;
+push v 0;
+push v 0;
+push v 0;
+6 = foldi (fun i acc _ -> acc + i) 0 v
