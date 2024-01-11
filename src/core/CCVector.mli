@@ -206,6 +206,11 @@ val filter_in_place : ('a -> bool) -> ('a, rw) t -> unit
 val fold : ('b -> 'a -> 'b) -> 'b -> ('a, _) t -> 'b
 (** Fold on elements of the vector *)
 
+val foldi : (int -> 'b -> 'a -> 'b) -> 'b -> ('a, _) t -> 'b
+(** [foldi f init v] is just like {!fold}, but it also passes in the index
+    of each element as the first argument to the function [f].
+    @since NEXT_RELEASE *)
+
 val exists : ('a -> bool) -> ('a, _) t -> bool
 (** Existential test (is there an element that satisfies the predicate?). *)
 
