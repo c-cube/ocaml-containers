@@ -20,6 +20,16 @@ module A = struct
   let[@inline] return self = [| self |]
   let[@inline] is_full self = length self = branching_factor
 
+  let equal eq a b =
+    length a = length b
+    &&
+    try
+      for i = 0 to length a - 1 do
+        if not (eq (unsafe_get a i) (unsafe_get b i)) then raise_notrace Exit
+      done;
+      true
+    with Exit -> false
+
   let[@inline] push (self : _ t) x =
     let n = length self in
     if n = branching_factor then invalid_arg "Pvec.push";
@@ -338,6 +348,16 @@ let append a b =
     a
   else
     fold_left push a b
+
+let rec equal_tree eq t1 t2 =
+  match t1, t2 with
+  | Empty, Empty -> true
+  | Node a, Node b -> A.equal (equal_tree eq) a b
+  | Leaf a, Leaf b -> A.equal eq a b
+  | (Empty | Leaf _ | Node _), _ -> false
+
+let equal eq (a : _ t) (b : _ t) : bool =
+  a.size = b.size && A.equal eq a.tail b.tail && equal_tree eq a.t b.t
 
 let add_list v l = List.fold_left push v l
 let of_list l = add_list empty l

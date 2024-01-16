@@ -71,7 +71,43 @@ q _listuniq (fun l ->
 ;;
 
 t @@ fun () -> choose empty = None;;
-t @@ fun () -> choose (of_list [ 1, 1; 2, 2 ]) <> None
+t @@ fun () -> choose (of_list [ 1, 1; 2, 2 ]) <> None;;
+
+q
+  Q.(pair (small_list int) (small_list int))
+  (fun (l1, l2) -> equal CCInt.equal (of_list l1) (of_list l2) = (l1 = l2))
+;;
+
+q Q.(small_list int) (fun l1 -> equal CCInt.equal (of_list l1) (of_list l1))
+
+let arb_list_with_idx =
+  let open Q in
+  let shrink (l, i) =
+    Iter.(Shrink.(list ~shrink:int l) >|= fun l -> l, min i (List.length l - 1))
+  in
+  let gen =
+    Gen.(
+      let* l = small_list int in
+      let+ i =
+        if l = [] then
+          return 0
+        else
+          0 -- (List.length l - 1)
+      in
+      l, i)
+  in
+  make ~shrink ~print:Print.(pair (list int) int) gen
+;;
+
+q arb_list_with_idx (fun (l1, i) ->
+    if l1 <> [] then (
+      let l2 =
+        let x = List.nth l1 i in
+        CCList.set_at_idx i (x + 1) l1
+      in
+      not (equal CCInt.equal (of_list l1) (of_list l2))
+    ) else
+      true)
 
 module Ref_impl = struct
   type +'a t = 'a list

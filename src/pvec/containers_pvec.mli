@@ -61,6 +61,7 @@ val drop_last : 'a t -> 'a t
 (** Like {!pop_opt} but doesn't return the last element.
   Returns the same vector if it's empty. *)
 
+val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 val iter : ('a -> unit) -> 'a t -> unit
 
 val iter_rev : ('a -> unit) -> 'a t -> unit
