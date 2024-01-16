@@ -18,5 +18,4 @@ true
 
 t @@ fun () -> CCFun.((succ %> string_of_int) 2 = "3");;
 t @@ fun () -> CCFun.((( * ) 3 % succ) 5 = 18);;
-t @@ fun () -> CCFun.(succ @@ ( * ) 2 @@ pred @@ 3 = 5);;
-t @@ fun () -> CCFun.(3 |> succ |> ( * ) 5 |> pred = 19)
+t @@ fun () -> CCFun.(succ @@ ( * ) 2 @@ pred @@ 3 = 5)

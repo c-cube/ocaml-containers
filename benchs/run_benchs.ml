@@ -9,6 +9,7 @@ let ( @>> ) = B.Tree.( @>> )
 let ( @>>> ) = B.Tree.( @>>> )
 
 module Int_map = Map.Make (CCInt)
+module Pvec = Containers_pvec
 
 let app_int f n = string_of_int n @> lazy (f n)
 let app_ints f l = B.Tree.concat (List.map (app_int f) l)
@@ -26,16 +27,19 @@ module L = struct
     let l = CCList.(1 -- n) in
     let ral = CCRAL.of_list l in
     let vec = CCFun_vec.of_list l in
+    let pv = Pvec.of_list l in
     let sek = Sek.Persistent.of_array 0 (Array.of_list l) in
     let iter_list () = List.iter f l
     and raliter () = CCRAL.iter ~f ral
     and funvec_iter () = CCFun_vec.iter ~f vec
+    and pvec_iter () = Pvec.iter f pv
     and sek_iter () = Sek.Persistent.iter Sek.forward f sek in
     B.throughputN time ~repeat
       [
         "List.iter", iter_list, ();
         "CCRAL.iter", raliter, ();
         "CCFun_vec.iter", funvec_iter, ();
+        "Pvec.iter", pvec_iter, ();
         "Sek.Persistent.iter", sek_iter, ();
       ]
 
@@ -52,10 +56,12 @@ module L = struct
 
   let bench_map ?(time = 2) n =
     let l = CCList.(1 -- n) in
+    let pv = Pvec.of_list l in
     let ral = CCRAL.of_list l in
     let map_naive () = ignore (try List.map f_ l with Stack_overflow -> [])
     and map_naive2 () = ignore (try map_naive f_ l with Stack_overflow -> [])
     and map_tailrec () = ignore (List.rev (List.rev_map f_ l))
+    and pvec_map () = ignore (Pvec.map f_ pv)
     and ccmap () = ignore (CCList.map f_ l)
     and ralmap () = ignore (CCRAL.map ~f:f_ ral) in
     B.throughputN time ~repeat
@@ -63,6 +69,7 @@ module L = struct
         "List.map", map_naive, ();
         "List.map(inline)", map_naive2, ();
         "List.rev_map o rev", map_tailrec, ();
+        "pvec.map", pvec_map, ();
         "CCList.map", ccmap, ();
         "CCRAL.map", ralmap, ();
       ]
@@ -146,6 +153,9 @@ module L = struct
     let v1 = CCFun_vec.of_list l1 in
     let v2 = CCFun_vec.of_list l2 in
     let v3 = CCFun_vec.of_list l3 in
+    let pv1 = Pvec.of_list l1 in
+    let pv2 = Pvec.of_list l2 in
+    let pv3 = Pvec.of_list l3 in
     let s1 = Sek.Persistent.of_array 0 (Array.of_list l1) in
     let s2 = Sek.Persistent.of_array 0 (Array.of_list l2) in
     let s3 = Sek.Persistent.of_array 0 (Array.of_list l3) in
@@ -158,6 +168,9 @@ module L = struct
     let bench_funvec l1 l2 l3 () =
       opaque_ignore CCFun_vec.(append (append l1 l2) l3)
     in
+    let bench_pvec l1 l2 l3 () =
+      opaque_ignore Pvec.(append (append l1 l2) l3)
+    in
     let bench_sek l1 l2 l3 () =
       opaque_ignore Sek.Persistent.(concat (concat l1 l2) l3)
     in
@@ -166,6 +179,7 @@ module L = struct
         "CCList.append", bench_list l1 l2 l3, ();
         "List.append", bench_cclist l1 l2 l3, ();
         "CCFun_vec.append", bench_funvec v1 v2 v3, ();
+        "Pvec.append", bench_pvec pv1 pv2 pv3, ();
         "Sek.concat", bench_sek s1 s2 s3, ();
       ]
 
@@ -180,10 +194,10 @@ module L = struct
       opaque_ignore (Sek.Persistent.flatten s : _ Sek.Persistent.t)
     and funvec_flatten v () =
       opaque_ignore
-        (CCFun_vec.fold_rev ~x:CCFun_vec.empty
-           ~f:(fun acc x -> CCFun_vec.append x acc)
-           v
+        (CCFun_vec.fold ~x:CCFun_vec.empty ~f:CCFun_vec.append v
           : _ CCFun_vec.t)
+    and pvec_flatten v () =
+      opaque_ignore (Pvec.fold_left Pvec.append Pvec.empty v : _ Pvec.t)
     in
     let l =
       CCList.mapi (fun i x -> CCList.(x -- (x + min i 100))) CCList.(1 -- n)
@@ -193,12 +207,15 @@ module L = struct
         (List.map (Sek.Persistent.of_list 0) l)
     in
     let v = CCFun_vec.of_list (List.map CCFun_vec.of_list l) in
+    let pv = Pvec.of_list (List.map Pvec.of_list l) in
+
     B.throughputN time ~repeat
       [
         "CCList.flatten", (fun () -> ignore (CCList.flatten l)), ();
         "List.flatten", (fun () -> ignore (List.flatten l)), ();
         "fold_right append", fold_right_append_ l, ();
-        "funvec.(fold_right append)", funvec_flatten v, ();
+        "funvec.(fold append)", funvec_flatten v, ();
+        "pvec.(fold append)", pvec_flatten pv, ();
         "CCList.(fold_right append)", cc_fold_right_append_ l, ();
         "Sek.flatten", sek_flatten sek, ();
       ]
@@ -209,6 +226,7 @@ module L = struct
     let l = CCList.(0 -- (n - 1)) in
     let ral = CCRAL.of_list l in
     let v = CCFun_vec.of_list l in
+    let pv = Pvec.of_list l in
     let bv = BatVect.of_list l in
     let map =
       List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l
@@ -230,6 +248,10 @@ module L = struct
       for i = 0 to n - 1 do
         opaque_ignore (CCFun_vec.get_exn i l)
       done
+    and bench_pvec l () =
+      for i = 0 to n - 1 do
+        opaque_ignore (Pvec.get l i)
+      done
     and bench_batvec l () =
       for i = 0 to n - 1 do
         opaque_ignore (BatVect.get l i)
@@ -245,6 +267,7 @@ module L = struct
         "Map.find", bench_map map, ();
         "RAL.get", bench_ral ral, ();
         "funvec.get", bench_funvec v, ();
+        "pvec.get", bench_pvec pv, ();
         "batvec.get", bench_batvec bv, ();
         "Sek.Persistent.get", bench_sek sek, ();
       ]
@@ -290,11 +313,8 @@ module L = struct
 
   let bench_push ?(time = 2) n =
     (*let ral = ref CCRAL.empty in *)
-    let v = ref CCFun_vec.empty in
-    let bv = ref BatVect.empty in
-    let map = ref Int_map.empty in
-    let sek = ref (Sek.Persistent.create 0) in
-    let bench_map l () =
+    let bench_map () =
+      let l = ref Int_map.empty in
       for i = 0 to n - 1 do
         l := Int_map.add i i !l
       done;
@@ -304,17 +324,26 @@ module L = struct
         (* Note: Better implementation probably possible *)
         for i = 0 to n-1 do l := CCRAL.append !l (CCRAL.return i) done; opaque_ignore l
   *)
-    and bench_funvec l () =
+    and bench_funvec () =
+      let l = ref CCFun_vec.empty in
       for i = 0 to n - 1 do
         l := CCFun_vec.push i !l
       done;
       opaque_ignore l
-    and bench_batvec l () =
+    and bench_pvec () =
+      let l = ref Pvec.empty in
+      for i = 0 to n - 1 do
+        l := Pvec.push !l i
+      done;
+      opaque_ignore l
+    and bench_batvec () =
+      let l = ref BatVect.empty in
       for i = 0 to n - 1 do
         l := BatVect.append i !l
       done;
       opaque_ignore l
-    and bench_sek l () =
+    and bench_sek () =
+      let l = ref (Sek.Persistent.create 0) in
       for i = 0 to n - 1 do
         l := Sek.Persistent.push Sek.front !l i
       done;
@@ -322,18 +351,20 @@ module L = struct
     in
     B.throughputN time ~repeat
       [
-        "Map.add", bench_map map, ()
+        "Map.add", bench_map, ()
         (*       ; "RAL.append", bench_ral ral, () *)
         (* too slow *);
-        "Sek.Persistent.push", bench_sek sek, ();
-        "funvec.push", bench_funvec v, ();
-        "batvec.append", bench_batvec bv, ();
+        "Sek.Persistent.push", bench_sek, ();
+        "funvec.push", bench_funvec, ();
+        "pvec.push", bench_pvec, ();
+        "batvec.append", bench_batvec, ();
       ]
 
   let bench_pop ?(time = 2) n =
     let l = CCList.(0 -- (n - 1)) in
     let ral = CCRAL.of_list l in
     let v = CCFun_vec.of_list l in
+    let pv = Pvec.of_list l in
     let bv = BatVect.of_list l in
     let map =
       List.fold_left (fun map i -> Int_map.add i i map) Int_map.empty l
@@ -357,6 +388,12 @@ module L = struct
         l := snd (CCFun_vec.pop_exn !l)
       done;
       opaque_ignore l
+    and bench_pvec l () =
+      let l = ref l in
+      for _ = 0 to n - 1 do
+        l := snd (Pvec.pop !l)
+      done;
+      opaque_ignore l
     and bench_batvec l () =
       let l = ref l in
       for _ = 0 to n - 1 do
@@ -375,6 +412,7 @@ module L = struct
         "Map.remove", bench_map map, ();
         "RAL.tl", bench_ral ral, ();
         "funvec.pop", bench_funvec v, ();
+        "pvec.pop", bench_pvec pv, ();
         "batvec.pop", bench_batvec bv, ();
         "Sek.Persistent.pop", bench_sek sek, ();
       ]
