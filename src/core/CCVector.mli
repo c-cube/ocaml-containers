@@ -1,6 +1,11 @@
 (* This file is free software, part of containers. See file "license" for more details. *)
 
-(** Growable, mutable vector *)
+(** Growable, mutable vector
+
+
+    @deprecated since NEXT_RELEASE , see {!CCVec} instead *)
+
+[@@@deprecated "use CCVec"]
 
 type ro = [ `RO ]
 type rw = [ `RW ]
