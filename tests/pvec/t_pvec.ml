@@ -160,6 +160,8 @@ module Op = struct
     | Pop
     (* TODO: set *)
     | Add_list of 'a list
+    | Append of 'a list
+    | Append_iter of 'a list
     | Check_get of int
     | Check_choose
     | Check_is_empty
@@ -175,7 +177,8 @@ module Op = struct
       | [] -> true
       | Push _ :: tl -> loop (size + 1) tl
       | Pop :: tl -> size >= 0 && loop (size - 1) tl
-      | Add_list l :: tl -> loop (size + List.length l) tl
+      | Append_iter l :: tl | Append l :: tl | Add_list l :: tl ->
+        loop (size + List.length l) tl
       | Check_get x :: tl -> x < size && loop size tl
       | Check_choose :: tl
       | Check_is_empty :: tl
@@ -194,6 +197,9 @@ module Op = struct
     | Push x -> spf "push %s" (show_x x)
     | Pop -> "pop"
     | Add_list l -> spf "add_list [%s]" (String.concat ";" @@ List.map show_x l)
+    | Append l -> spf "append [%s]" (String.concat ";" @@ List.map show_x l)
+    | Append_iter l ->
+      spf "append_iter [%s]" (String.concat ";" @@ List.map show_x l)
     | Check_get i -> spf "check_get %d" i
     | Check_choose -> "check_choose"
     | Check_is_empty -> "check_is_empty"
@@ -211,6 +217,8 @@ module Op = struct
     | Push x -> shrink_x x >|= fun x -> Push x
     | Pop -> empty
     | Add_list l -> list ~shrink:shrink_x l >|= fun x -> Add_list x
+    | Append l -> list ~shrink:shrink_x l >|= fun x -> Append x
+    | Append_iter l -> list ~shrink:shrink_x l >|= fun x -> Append_iter x
     | Check_get _ | Check_choose | Check_is_empty | Check_len | Check_to_list
     | Check_to_gen | Check_last | Check_rev_iter | Check_iter ->
       empty
@@ -252,6 +260,12 @@ module Op = struct
                    ( 1,
                      small_list gen_x >|= fun l ->
                      Add_list l, size + List.length l );
+                   ( 1,
+                     small_list gen_x >|= fun l ->
+                     Append l, size + List.length l );
+                   ( 1,
+                     small_list gen_x >|= fun l ->
+                     Append_iter l, size + List.length l );
                  ];
                ]
         in
@@ -291,6 +305,12 @@ let check_ops ~show_x (ops : 'a Op.t list) : unit =
         if x1 <> x2 then fail ()
       | Op.Add_list l ->
         cur := add_list !cur l;
+        cur_ref := Ref_impl.add_list !cur_ref l
+      | Op.Append l ->
+        cur := append !cur (of_list l);
+        cur_ref := Ref_impl.add_list !cur_ref l
+      | Op.Append_iter l ->
+        cur := add_iter !cur (Iter.of_list l);
         cur_ref := Ref_impl.add_list !cur_ref l
       | Op.Check_get i -> if get !cur i <> Ref_impl.get i !cur_ref then fail ()
       | Op.Check_is_empty ->

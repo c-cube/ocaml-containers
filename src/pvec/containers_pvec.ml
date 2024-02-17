@@ -344,6 +344,14 @@ let map f (self : _ t) : _ t =
   { self with t = map_t f self.t; tail = Array.map f self.tail }
 
 let append a b =
+  let a = ref a in
+  let b = ref b in
+
+  let tail = ref @@ Array.copy (!a).tail in
+
+  while 
+
+
   if is_empty b then
     a
   else
