@@ -64,6 +64,7 @@ module Infix = struct
   let ( %> ) = compose
   let[@inline] ( % ) f g x = f (g x)
   let ( let@ ) = ( @@ )
+  let ( ||> ) (a, b) f = f a b
 end
 
 include Infix

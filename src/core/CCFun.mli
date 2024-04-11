@@ -81,6 +81,9 @@ module Infix : sig
   (** [let@ x = foo in bar] is the equivalent of [foo @@ fun x -> bar].
       It can be very useful for resource management, alongside with {!protect}.
       @since 3.11 *)
+
+  val ( ||> ) : 'a * 'b -> ('a -> 'b -> 'c) -> 'c
+  (** [x ||> f] is [f (fst x) (snd x)] *)
 end
 
 include module type of Infix
