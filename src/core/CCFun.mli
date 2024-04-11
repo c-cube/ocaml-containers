@@ -84,6 +84,9 @@ module Infix : sig
 
   val ( ||> ) : 'a * 'b -> ('a -> 'b -> 'c) -> 'c
   (** [x ||> f] is [f (fst x) (snd x)] *)
+
+  val ( |||> ) : 'a * 'b * 'c -> ('a -> 'b -> 'c -> 'd) -> 'd
+  (** like [||>] but for tuples of size 3 *)
 end
 
 include module type of Infix
