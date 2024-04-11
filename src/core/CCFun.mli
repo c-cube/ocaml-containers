@@ -83,10 +83,12 @@ module Infix : sig
       @since 3.11 *)
 
   val ( ||> ) : 'a * 'b -> ('a -> 'b -> 'c) -> 'c
-  (** [x ||> f] is [f (fst x) (snd x)] *)
+  (** [x ||> f] is [f (fst x) (snd x)]
+      @since NEXT_RELEASE *)
 
   val ( |||> ) : 'a * 'b * 'c -> ('a -> 'b -> 'c -> 'd) -> 'd
-  (** like [||>] but for tuples of size 3 *)
+  (** like [||>] but for tuples of size 3
+      @since NEXT_RELEASE *)
 end
 
 include module type of Infix
