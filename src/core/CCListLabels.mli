@@ -44,6 +44,11 @@ val cons_maybe : 'a option -> 'a t -> 'a t
     [cons_maybe None l] is [l].
     @since 0.13 *)
 
+val cons_when : bool -> 'a -> 'a t -> 'a t
+(** [cons_when true x l] is [x :: l].
+    [cons_when false x l] is [l].
+    @since NEXT_RELEASE *)
+
 val filter : f:('a -> bool) -> 'a t -> 'a t
 (** [filter ~f l] returns all the elements of the list [l]
     that satisfy the predicate [f].  The order of the elements
