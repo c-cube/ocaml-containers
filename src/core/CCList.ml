@@ -151,6 +151,12 @@ let cons_maybe o l =
   | Some x -> x :: l
   | None -> l
 
+let cons_when b x l =
+  if b then
+    x :: l
+  else
+    l
+
 [@@@iflt 4.14]
 
 let direct_depth_filter_ = 10_000
