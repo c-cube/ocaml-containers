@@ -18,13 +18,11 @@ let create ?(off = 0) ?len bs =
   in
   { bs; off; len }
 
-let[@inline] of_string s = create (Bytes.unsafe_of_string s)
+let[@inline] unsafe_of_string ?off ?len s =
+  create ?off ?len (Bytes.unsafe_of_string s)
+
 let[@inline] len self = self.len
 let[@inline] contents self = Bytes.sub_string self.bs self.off self.len
-
-let[@inline] clear self =
-  self.len <- 0;
-  self.off <- 0
 
 let[@inline] get self i : char =
   if i >= self.len then invalid_arg "Bslice: out of bound access";
