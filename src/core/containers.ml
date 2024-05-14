@@ -4,8 +4,6 @@
 
 module Array = CCArray
 module Bool = CCBool
-module Byte_buffer = CCByte_buffer
-module Byte_slice = CCByte_slice
 module Char = CCChar
 module Equal = CCEqual
 module Either = CCEither
@@ -30,6 +28,10 @@ module Hashtbl = struct
   module Make' = CCHashtbl.Make
 end
 
+(** {2 Additional modules} *)
+
+module Byte_buffer = CCByte_buffer
+module Byte_slice = CCByte_slice
 module Heap = CCHeap
 module Int = CCInt
 module Int32 = CCInt32

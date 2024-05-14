@@ -1,6 +1,7 @@
 (** Byte buffer.
 
-    A dynamic vector of bytes.
+    A dynamic vector of bytes that doesn't hide its internal from you.
+    Same use case as [Buffer.t] but with more power.
     @since 3.7
 *)
 
@@ -33,16 +34,24 @@ val bytes : t -> bytes
     operations that affect the capacity (e.g. {!add_char}). *)
 
 val clear : t -> unit
+(** [clear buf] sets [buf.len <- 0]. This doesn't resize the byte buffer. *)
 
 val ensure_cap : t -> int -> unit
-(** [ensure_cap self n] ensures that [capacity self >= n]. *)
+(** [ensure_cap self n] ensures that [capacity self >= n].
+    @raise Invalid_argument if this requires the buffer to grow beyond system limits. *)
+
+val ensure_free : t -> int -> unit
+(** [ensure_free buf n] ensures that the free space at the end of the
+    buffer is at least [n].
+    @raise Invalid_argument if this requires the buffer to grow beyond system limits. *)
 
 val shrink_to : t -> int -> unit
 (** [shrink_to buf n] reduces [length buf] to at most [n].
     Does nothing if the length is already <= n. *)
 
 val add_char : t -> char -> unit
-(** Push a character at the end. *)
+(** Push a character at the end.
+    @raise Invalid_argument if this requires the buffer to grow beyond system limits. *)
 
 val append_bytes : t -> bytes -> unit
 val append_subbytes : t -> bytes -> int -> int -> unit
@@ -57,12 +66,13 @@ val set : t -> int -> char -> unit
 val unsafe_set : t -> int -> char -> unit
 
 val contents : t -> string
-(** Copy the internal data to a string *)
+(** Copy the internal data to a string. Allocates. *)
 
 val contents_bytes : t -> bytes
-(** Copy the internal data to a byte buffer *)
+(** Copy the internal data to a {!bytes}. Allocates. *)
 
 val iter : (char -> unit) -> t -> unit
+val iteri : (int -> char -> unit) -> t -> unit
 val fold_left : ('a -> char -> 'a) -> 'a -> t -> 'a
 val of_iter : char iter -> t
 val of_seq : char Seq.t -> t

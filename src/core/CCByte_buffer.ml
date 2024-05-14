@@ -35,13 +35,19 @@ let[@inline never] grow_ self =
   let newcap = grow_cap_ self in
   grow_to_ self newcap
 
-let ensure_cap self n =
-  if n > capacity self then (
-    let newcap = max n (grow_cap_ self) in
-    grow_to_ self newcap
-  )
+let[@inline never] ensure_cap_grow_ self n =
+  (* new capacity, make sure it's at least [grow_cap_] so
+     that repeated calls to [ensure_cap] have the amortized complexity *)
+  let newcap = max n (grow_cap_ self) in
+  grow_to_ self newcap
 
-let shrink_to self n = if self.len > n then self.len <- n
+let[@inline] ensure_cap self n =
+  if n > capacity self then ensure_cap_grow_ self n
+
+let[@inline] ensure_free self n =
+  if n > capacity self - self.len then ensure_cap_grow_ self (self.len + n)
+
+let[@inline] shrink_to self n = if self.len > n then self.len <- n
 
 let append_buf (self : t) buf : unit =
   let n = Buffer.length buf in
@@ -54,10 +60,10 @@ let append_subbytes self b off len =
   Bytes.blit b off self.bs self.len len;
   self.len <- self.len + len
 
-let append_bytes self b = append_subbytes self b 0 (Bytes.length b)
-let append_string self s = append_bytes self (Bytes.unsafe_of_string s)
+let[@inline] append_bytes self b = append_subbytes self b 0 (Bytes.length b)
+let[@inline] append_string self s = append_bytes self (Bytes.unsafe_of_string s)
 
-let append_substring self s off len =
+let[@inline] append_substring self s off len =
   append_subbytes self (Bytes.unsafe_of_string s) off len
 
 let[@inline] add_char_unsafe_ self c =
@@ -94,11 +100,17 @@ let fold_left f acc self =
   done;
   !acc
 
-let iter f self =
-  let { bs; len } = self in
+let[@inline] iter f self =
   (* capture current content *)
+  let { bs; len } = self in
   for i = 0 to len do
     f (Bytes.unsafe_get bs i)
+  done
+
+let[@inline] iteri f self =
+  let { bs; len } = self in
+  for i = 0 to len do
+    f i (Bytes.unsafe_get bs i)
   done
 
 let of_seq seq =
