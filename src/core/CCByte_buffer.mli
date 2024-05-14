@@ -54,20 +54,42 @@ val add_char : t -> char -> unit
     @raise Invalid_argument if this requires the buffer to grow beyond system limits. *)
 
 val append_bytes : t -> bytes -> unit
+(** Add bytes at the end *)
+
 val append_subbytes : t -> bytes -> int -> int -> unit
+(** Add byte slice at the end *)
+
 val append_string : t -> string -> unit
+(** Add string at the end *)
+
 val append_substring : t -> string -> int -> int -> unit
+(** Add substring at the end *)
+
 val append_buf : t -> Buffer.t -> unit
+(** Add content of the buffer at the end *)
+
 val append_iter : t -> char iter -> unit
+(** Adds characters from the iter *)
+
 val append_seq : t -> char Seq.t -> unit
+(** Adds characters from the seq *)
+
 val get : t -> int -> char
+(** Get the char at the given offset *)
+
 val unsafe_get : t -> int -> char
+(** Get the char at the given offset, unsafe (no bound check) *)
+
 val set : t -> int -> char -> unit
+(** Set the char at the given offset *)
+
 val unsafe_set : t -> int -> char -> unit
+(** Set the char at the given offset, unsafe (no bound check) *)
 
 val to_slice : t -> CCByte_slice.t
 (** [to_slice buf] returns a slice of the current content.
-    The slice shares the same byte array as [buf] (until [buf] is resized). *)
+    The slice shares the same byte array as [buf] (until [buf] is resized).
+    @since NEXT_RELEASE *)
 
 val contents : t -> string
 (** Copy the internal data to a string. Allocates. *)
@@ -76,7 +98,12 @@ val contents_bytes : t -> bytes
 (** Copy the internal data to a {!bytes}. Allocates. *)
 
 val iter : (char -> unit) -> t -> unit
+(** Iterate on the content *)
+
 val iteri : (int -> char -> unit) -> t -> unit
+(** Iterate with index.
+    @since NEXT_RELEASE *)
+
 val fold_left : ('a -> char -> 'a) -> 'a -> t -> 'a
 val of_iter : char iter -> t
 val of_seq : char Seq.t -> t
