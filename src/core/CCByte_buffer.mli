@@ -5,11 +5,14 @@
 *)
 
 type t = {
-  mutable bytes: bytes;
+  mutable bs: bytes;  (** The backing bytes buffer *)
   mutable len: int;
+      (** Length of the "active" slice in [bs]. The actual content
+      of the buffer is [bs[0]..bs[len-1]]. What comes after
+      is undefined garbage. *)
 }
 (** The byte buffer.
-    The definition is public since NEXT_RELEASE *)
+    The definition is public since NEXT_RELEASE . *)
 
 type 'a iter = ('a -> unit) -> unit
 
