@@ -137,3 +137,44 @@ let to_seq self =
   s 0
 
 (* TODO: unicode operators.*)
+
+let[@inline] check_bound_ self what i len =
+  if i + len > self.len then invalid_arg what
+  
+
+let get_uint8 : t -> int -> int =
+  fun self i ->
+  check_bound_ self "get_uint8" i 1;
+  Bytes.get_uint8 self.bs i
+
+let get_int8 : t -> int -> int =
+  fun self i ->
+  check_bound_ self "get_int8" i 1;
+  Bytes.get_int8 self.bs i
+
+let get_uint16_ne : t -> int -> int
+let get_uint16_be : t -> int -> int
+let get_uint16_le : t -> int -> int
+let get_int16_ne : t -> int -> int
+let get_int16_be : t -> int -> int
+let get_int16_le : t -> int -> int
+let get_int32_ne : t -> int -> int32
+let get_int32_be : t -> int -> int32
+let get_int32_le : t -> int -> int32
+let get_int64_ne : t -> int -> int64
+let get_int64_be : t -> int -> int64
+let get_int64_le : t -> int -> int64
+let set_uint8 : t -> int -> int -> unit
+let set_int8 : t -> int -> int -> unit
+let set_uint16_ne : t -> int -> int -> unit
+let set_uint16_be : t -> int -> int -> unit
+let set_uint16_le : t -> int -> int -> unit
+let set_int16_ne : t -> int -> int -> unit
+let set_int16_be : t -> int -> int -> unit
+let set_int16_le : t -> int -> int -> unit
+let set_int32_ne : t -> int -> int32 -> unit
+let set_int32_be : t -> int -> int32 -> unit
+let set_int32_le : t -> int -> int32 -> unit
+let set_int64_ne : t -> int -> int64 -> unit
+let set_int64_be : t -> int -> int64 -> unit
+let set_int64_le : t -> int -> int64 -> unit

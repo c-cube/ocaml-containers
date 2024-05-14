@@ -109,3 +109,48 @@ val of_iter : char iter -> t
 val of_seq : char Seq.t -> t
 val to_iter : t -> char iter
 val to_seq : t -> char Seq.t
+
+(** {2 Endian operations} *)
+
+val get_uint8 : t -> int -> int
+val get_int8 : t -> int -> int
+val get_uint16_ne : t -> int -> int
+val get_uint16_be : t -> int -> int
+val get_uint16_le : t -> int -> int
+val get_int16_ne : t -> int -> int
+val get_int16_be : t -> int -> int
+val get_int16_le : t -> int -> int
+val get_int32_ne : t -> int -> int32
+val get_int32_be : t -> int -> int32
+val get_int32_le : t -> int -> int32
+val get_int64_ne : t -> int -> int64
+val get_int64_be : t -> int -> int64
+val get_int64_le : t -> int -> int64
+val set_uint8 : t -> int -> int -> unit
+val set_int8 : t -> int -> int -> unit
+val set_uint16_ne : t -> int -> int -> unit
+val set_uint16_be : t -> int -> int -> unit
+val set_uint16_le : t -> int -> int -> unit
+val set_int16_ne : t -> int -> int -> unit
+val set_int16_be : t -> int -> int -> unit
+val set_int16_le : t -> int -> int -> unit
+val set_int32_ne : t -> int -> int32 -> unit
+val set_int32_be : t -> int -> int32 -> unit
+val set_int32_le : t -> int -> int32 -> unit
+val set_int64_ne : t -> int -> int64 -> unit
+val set_int64_be : t -> int -> int64 -> unit
+val set_int64_le : t -> int -> int64 -> unit
+
+[@@@ifgeq 4.14]
+
+val get_utf_8_uchar : t -> int -> Uchar.utf_decode
+val set_utf_8_uchar : t -> int -> Uchar.t -> int
+val is_valid_utf_8 : t -> bool
+val get_utf_16be_uchar : t -> int -> Uchar.utf_decode
+val set_utf_16be_uchar : t -> int -> Uchar.t -> int
+val is_valid_utf_16be : t -> bool
+val get_utf_16le_uchar : t -> int -> Uchar.utf_decode
+val set_utf_16le_uchar : t -> int -> Uchar.t -> int
+val is_valid_utf_16le : t -> bool
+
+[@@@endif]
