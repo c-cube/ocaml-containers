@@ -12,9 +12,6 @@ let random_tree =
       ~subn:[ (int 10, fun sublist -> pure mk_node <*> small_int <*> sublist) ]
       (int_range 15 150))
 
-let random_list =
-  CCRandom.(int 5 >>= fun len -> CCList.random_len len random_tree)
-
 let rec eq t1 t2 =
   match t1, t2 with
   | Empty, Empty -> true

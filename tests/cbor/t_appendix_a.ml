@@ -6,9 +6,6 @@ module Cbor = Containers_cbor
 
 type json = Yojson.Safe.t
 
-let pp_json = J.pretty_print ~std:true
-let spf = Printf.sprintf
-
 module Test = struct
   type expect =
     | Diagnostic of string
@@ -20,14 +17,6 @@ module Test = struct
     expect: expect;
     roundtrip: bool;
   }
-
-  let pp_expect out = function
-    | Diagnostic s -> Fmt.fprintf out "(diagnostic %S)" s
-    | Decoded j -> Fmt.fprintf out "(@[decoded:@ %a@])" J.pp j
-
-  let pp out (self : t) =
-    Fmt.fprintf out "{@[hex: %S,@ expected: %a,@ roundtrip: %b@]}" self.hex
-      pp_expect self.expect self.roundtrip
 end
 
 let list_assoc_opt x l = try Some (List.assoc x l) with _ -> None

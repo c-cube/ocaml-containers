@@ -10,10 +10,6 @@ module Hist = struct
 
   let create () : t = { tbl = Hashtbl.create 32; n_samples = 0 }
 
-  let add self x =
-    Hashtbl.replace self.tbl x (1 + try Hashtbl.find self.tbl x with _ -> 0);
-    self.n_samples <- 1 + self.n_samples
-
   let add_n self x n =
     Hashtbl.replace self.tbl x (n + try Hashtbl.find self.tbl x with _ -> 0);
     self.n_samples <- n + self.n_samples

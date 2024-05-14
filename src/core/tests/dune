@@ -1,7 +1,7 @@
 (executable
  (name check_labelled_mods)
  (modules check_labelled_mods)
- (flags :standard -warn-error -a -w -3-33-35-27-39-50 -nolabels)
+ (flags :standard -warn-error -a -w -3-33-35-27-39-50-60 -nolabels)
  (libraries containers))
 
 (executable

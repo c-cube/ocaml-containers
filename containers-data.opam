@@ -9,7 +9,7 @@ tags: ["containers" "RAL" "function" "vector" "okasaki"]
 homepage: "https://github.com/c-cube/ocaml-containers/"
 bug-reports: "https://github.com/c-cube/ocaml-containers/issues"
 depends: [
-  "dune" {>= "2.9"}
+  "dune" {>= "3.0"}
   "ocaml" {>= "4.08"}
   "containers" {= version}
   "qcheck-core" {>= "0.18" & with-test}

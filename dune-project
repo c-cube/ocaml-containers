@@ -1,4 +1,4 @@
-(lang dune 2.9)
+(lang dune 3.0)
 (name containers)
 (generate_opam_files true)
 

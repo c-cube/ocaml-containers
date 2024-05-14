@@ -16,8 +16,6 @@ let rec pp_sexpr out (s : sexp) : unit =
       l;
     Format.fprintf out "@])"
 
-let str_of_sexp = CCFormat.to_string pp_sexpr
-
 let skip_white_and_comments =
   fix @@ fun self ->
   skip_white

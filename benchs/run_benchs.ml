@@ -16,9 +16,6 @@ let app_ints f l = B.Tree.concat (List.map (app_int f) l)
 
 (* for benchmark *)
 let repeat = 3
-
-(* composition *)
-let ( %% ) f g x = f (g x)
 let opaque_ignore x = ignore (Sys.opaque_identity x)
 
 module L = struct
@@ -143,8 +140,6 @@ module L = struct
       ]
 
   (* APPEND *)
-
-  let append_ f (l1, l2, l3) = ignore (f (f l1 l2) l3)
 
   let bench_append ?(time = 2) n =
     let l1 = CCList.(1 -- n) in

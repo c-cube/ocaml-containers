@@ -16,3 +16,26 @@
  (locks /ctest)
  (action
   (diff README.md README.md.corrected)))
+
+(env
+ (_
+  (flags
+   :standard
+   -warn-error
+   -a+8
+   -w
+   -32-48-60-70
+   -w
+   +a-4-40-42-44-70
+   -color
+   always
+   -safe-string
+   -strict-sequence)
+  (ocamlopt_flags
+   :standard
+   -O3
+   -unbox-closures
+   -unbox-closures-factor
+   20
+   -inline
+   100)))
