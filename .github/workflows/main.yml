@@ -9,6 +9,7 @@ on:
 jobs:
   run:
     name: build
+    timeout-minutes: 15
     strategy:
       fail-fast: true
       matrix:
@@ -47,4 +48,24 @@ jobs:
 
       - run: opam exec -- dune runtest -j 1 -p containers # test only core on non-ubuntu platform
         if: ${{ matrix.os != 'ubuntu-latest' }}
+
+
+  format:
+    name: format
+    strategy:
+      matrix:
+        ocaml-compiler:
+            - '5.1'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@main
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
+          allow-prerelease-opam: true
+
+      - run: opam install ocamlformat.0.24.1
+      - run: opam exec -- make format-check
 
