@@ -65,6 +65,10 @@ val unsafe_get : t -> int -> char
 val set : t -> int -> char -> unit
 val unsafe_set : t -> int -> char -> unit
 
+val to_slice : t -> CCByte_slice.t
+(** [to_slice buf] returns a slice of the current content.
+    The slice shares the same byte array as [buf] (until [buf] is resized). *)
+
 val contents : t -> string
 (** Copy the internal data to a string. Allocates. *)
 

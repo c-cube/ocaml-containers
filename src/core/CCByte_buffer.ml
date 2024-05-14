@@ -89,6 +89,7 @@ let[@inline] contents self = Bytes.sub_string self.bs 0 self.len
 let[@inline] contents_bytes self = Bytes.sub self.bs 0 self.len
 let[@inline] append_iter self i = i (add_char self)
 let[@inline] append_seq self seq = Seq.iter (add_char self) seq
+let[@inline] to_slice self = CCByte_slice.create ~len:self.len self.bs
 
 let fold_left f acc self =
   let { bs; len } = self in
