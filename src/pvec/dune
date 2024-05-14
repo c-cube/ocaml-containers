@@ -3,5 +3,5 @@
  (public_name containers.pvec)
  (preprocess
   (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+   (run %{project_root}/src/core/cpp/mucppo.exe %{input-file})))
  (synopsis "Persistent vector for OCaml"))

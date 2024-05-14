@@ -3,7 +3,7 @@
  (modules t_appendix_a)
  (preprocess
   (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+   (run %{project_root}/src/core/cpp/mucppo.exe %{input-file})))
  (libraries yojson containers containers.cbor))
 
 (rule

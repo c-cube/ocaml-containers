@@ -4,7 +4,7 @@
  (wrapped false)
  (preprocess
   (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+   (run %{project_root}/src/core/cpp/mucppo.exe %{input-file})))
  (flags :standard -nolabels -open CCMonomorphic)
  (libraries either containers.monomorphic))
 

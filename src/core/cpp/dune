@@ -1,8 +1,7 @@
-; our little preprocessor
+; https://github.com/Leonidas-from-XIV/mucppo, cause it slaps
 
 (executable
- (name cpp)
+ (name mucppo)
  (flags :standard -warn-error -a+8)
  (modes
-  (best exe))
- (libraries dune.configurator))
+  (best exe)))

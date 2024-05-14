@@ -3,5 +3,5 @@
  (libraries containers)
  (preprocess
   (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+   (run %{project_root}/src/core/cpp/mucppo.exe %{input-file})))
  (public_name containers.cbor))

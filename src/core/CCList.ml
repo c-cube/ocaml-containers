@@ -47,7 +47,7 @@ let mguard c =
 (** max depth for direct recursion *)
 let direct_depth_default_ = 1000
 
-[@@@iflt 4.14]
+#if OCAML_VERSION < (4,14,0)
 
 let tail_map f l =
   (* Unwind the list of tuples, reconstructing the full list front-to-back.
@@ -114,7 +114,7 @@ let append l1 l2 =
   in
   direct 1000 l1 l2
 
-[@@@eliflt 5.1]
+#elif OCAML_VERSION < (5,1,0)
 
 let[@tail_mod_cons] rec map f l =
   match l with
@@ -128,11 +128,11 @@ let[@tail_mod_cons] rec append l1 l2 =
   | [] -> l2
   | x :: tl1 -> x :: append tl1 l2
 
-[@@@else_]
+#else
 
 (* TRMC functions on >= 5.1, no need to bring our own *)
 
-[@@@endif]
+#endif
 
 (* Wrapper around [append] to optimize for the case of short [l1],
    and for the case of [l2 = []] (saves the whole copy of [l1]!) *)
@@ -157,7 +157,7 @@ let cons_when b x l =
   else
     l
 
-[@@@iflt 4.14]
+#if OCAML_VERSION < (4,14,0)
 
 let direct_depth_filter_ = 10_000
 
@@ -176,7 +176,7 @@ let filter p l =
   in
   direct direct_depth_filter_ p l
 
-[@@@eliflt 5.1]
+#elif OCAML_VERSION < (5,1,0)
 
 let[@tail_mod_cons] rec filter f l =
   match l with
@@ -188,10 +188,10 @@ let[@tail_mod_cons] rec filter f l =
     else
       filter f tl
 
-[@@@else_]
+#else
 (* stdlib's filter uses TRMC after 5.1 *)
 
-[@@@endif]
+#endif
 
 let fold_right f l acc =
   let rec direct i f l acc =

@@ -10,15 +10,15 @@
 
 type 'a iter = ('a -> unit) -> unit
 
-[@@@ifge 5.0]
+#if OCAML_VERSION >= (5,0,0)
 
 type !'a t
 
-[@@@else_]
+#else
 
 type 'a t
 
-[@@@endif]
+#endif
 
 val empty : 'a t
 (** Empty vector. *)

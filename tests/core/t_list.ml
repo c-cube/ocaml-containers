@@ -124,7 +124,8 @@ eq
    fold_flat_map (fun acc x -> acc + x, [ pf "%d" x; pf "a%d" x ]) 0 [ 1; 2; 3 ])
 ;;
 
-[@@@ifge 4.12]
+#if OCAML_VERSION >= (4,12,0)
+
 t @@ fun () ->
 let r = Atomic.make 0 in
 let f x =
@@ -140,7 +141,7 @@ assert_equal
 true
 ;;
 
-[@@@endif]
+#endif
 
 q
   Q.(list int)

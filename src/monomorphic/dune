@@ -3,6 +3,6 @@
  (public_name containers.monomorphic)
  (preprocess
   (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+   (run %{project_root}/src/core/cpp/mucppo.exe %{input-file})))
  (modules CCMonomorphic)
  (wrapped false))
