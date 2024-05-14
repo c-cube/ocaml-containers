@@ -1,5 +1,5 @@
 type 'a iter = ('a -> unit) -> unit
-type t = { mutable bytes: bytes; mutable sz: int }
+type t = { mutable bytes: bytes; mutable len: int }
 
 let create ?(cap = 0) () : t =
   let bytes =
@@ -8,13 +8,13 @@ let create ?(cap = 0) () : t =
     else
       Bytes.create cap
   in
-  { sz = 0; bytes }
+  { len = 0; bytes }
 
 let[@inline] capacity self : int = Bytes.length self.bytes
 let[@inline] bytes self = self.bytes
-let[@inline] length self = self.sz
-let[@inline] is_empty self = self.sz = 0
-let[@inline] clear self = self.sz <- 0
+let[@inline] length self = self.len
+let[@inline] is_empty self = self.len = 0
+let[@inline] clear self = self.len <- 0
 
 let grow_cap_ self =
   min Sys.max_string_length
@@ -24,7 +24,7 @@ let grow_cap_ self =
 let grow_to_ self newcap =
   if newcap = capacity self then invalid_arg "byte_buf: cannot grow further";
   let newbytes = Bytes.create newcap in
-  Bytes.blit self.bytes 0 newbytes 0 self.sz;
+  Bytes.blit self.bytes 0 newbytes 0 self.len;
   self.bytes <- newbytes
 
 let[@inline never] grow_ self =
@@ -37,18 +37,18 @@ let ensure_cap self n =
     grow_to_ self newcap
   )
 
-let shrink_to self n = if self.sz > n then self.sz <- n
+let shrink_to self n = if self.len > n then self.len <- n
 
 let append_buf (self : t) buf : unit =
   let n = Buffer.length buf in
   ensure_cap self (length self + n);
-  Buffer.blit buf 0 self.bytes self.sz n;
-  self.sz <- self.sz + n
+  Buffer.blit buf 0 self.bytes self.len n;
+  self.len <- self.len + n
 
 let append_subbytes self b off len =
   ensure_cap self (length self + len);
-  Bytes.blit b off self.bytes self.sz len;
-  self.sz <- self.sz + len
+  Bytes.blit b off self.bytes self.len len;
+  self.len <- self.len + len
 
 let append_bytes self b = append_subbytes self b 0 (Bytes.length b)
 let append_string self s = append_bytes self (Bytes.unsafe_of_string s)
@@ -57,43 +57,43 @@ let append_substring self s off len =
   append_subbytes self (Bytes.unsafe_of_string s) off len
 
 let[@inline] add_char_unsafe_ self c =
-  Bytes.unsafe_set self.bytes self.sz c;
-  self.sz <- self.sz + 1
+  Bytes.unsafe_set self.bytes self.len c;
+  self.len <- self.len + 1
 
 let[@inline] add_char self c =
-  if self.sz = capacity self then grow_ self;
+  if self.len = capacity self then grow_ self;
   add_char_unsafe_ self c
 
 let[@inline] unsafe_get self i = Bytes.unsafe_get self.bytes i
 let[@inline] unsafe_set self i c = Bytes.unsafe_set self.bytes i c
 
 let[@inline] get self i =
-  if i < 0 || i >= self.sz then invalid_arg "Byte_buf.get";
+  if i < 0 || i >= self.len then invalid_arg "Byte_buf.get";
   unsafe_get self i
 
 let[@inline] set self i c =
-  if i < 0 || i >= self.sz then invalid_arg "Byte_buf.set";
+  if i < 0 || i >= self.len then invalid_arg "Byte_buf.set";
   unsafe_set self i c
 
-let[@inline] contents self = Bytes.sub_string self.bytes 0 self.sz
-let[@inline] contents_bytes self = Bytes.sub self.bytes 0 self.sz
+let[@inline] contents self = Bytes.sub_string self.bytes 0 self.len
+let[@inline] contents_bytes self = Bytes.sub self.bytes 0 self.len
 let[@inline] append_iter self i = i (add_char self)
 let[@inline] append_seq self seq = Seq.iter (add_char self) seq
 
 let fold_left f acc self =
-  let { bytes; sz } = self in
+  let { bytes; len } = self in
 
   (* capture current content *)
   let acc = ref acc in
-  for i = 0 to sz do
+  for i = 0 to len do
     acc := f !acc (Bytes.unsafe_get bytes i)
   done;
   !acc
 
 let iter f self =
-  let { bytes; sz } = self in
+  let { bytes; len } = self in
   (* capture current content *)
-  for i = 0 to sz do
+  for i = 0 to len do
     f (Bytes.unsafe_get bytes i)
   done
 
@@ -110,9 +110,9 @@ let of_iter iter =
 let to_iter self yield = iter yield self
 
 let to_seq self =
-  let { bytes; sz } = self in
+  let { bytes; len } = self in
   let rec s i () =
-    if i = sz then
+    if i = len then
       Seq.Nil
     else
       Seq.Cons (Bytes.unsafe_get bytes i, s (i + 1))

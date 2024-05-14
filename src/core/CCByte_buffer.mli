@@ -4,7 +4,10 @@
     @since 3.7
 *)
 
-type t
+type t = { mutable bytes: bytes; mutable len: int }
+(** The byte buffer.
+    The definition is public since NEXT_RELEASE *)
+
 type 'a iter = ('a -> unit) -> unit
 
 val create : ?cap:int -> unit -> t
