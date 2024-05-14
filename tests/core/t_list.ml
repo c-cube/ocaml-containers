@@ -122,25 +122,25 @@ eq
   (6, [ "1"; "a1"; "2"; "a2"; "3"; "a3" ])
   (let pf = Printf.sprintf in
    fold_flat_map (fun acc x -> acc + x, [ pf "%d" x; pf "a%d" x ]) 0 [ 1; 2; 3 ])
-;;
 
 [@@@ifge 4.12]
-t @@ fun () ->
-let r = Atomic.make 0 in
-let f x =
-  let n = Atomic.fetch_and_add r 1 in
-  [ n, x ]
-in
 
-let l = CCList.flat_map f [ "a"; "b"; "c" ] in
-assert_equal
-  ~printer:Q.Print.(list @@ pair int string)
-  [ 0, "a"; 1, "b"; 2, "c" ]
-  l;
-true
-;;
+let () =
+  t @@ fun () ->
+  let r = Atomic.make 0 in
+  let f x =
+    let n = Atomic.fetch_and_add r 1 in
+    [ n, x ]
+  in
 
-[@@@endif]
+  let l = CCList.flat_map f [ "a"; "b"; "c" ] in
+  assert_equal
+    ~printer:Q.Print.(list @@ pair int string)
+    [ 0, "a"; 1, "b"; 2, "c" ]
+    l;
+  true
+
+[@@@endif];;
 
 q
   Q.(list int)
@@ -219,11 +219,9 @@ t @@ fun () ->
 flat_map (fun x -> [ x + 1; x * 2 ]) [ 10; 100 ] = [ 11; 20; 101; 200 ]
 ;;
 
-
 t @@ fun () -> List.length (flat_map (fun x -> [ x ]) (1 -- 300_000)) = 300_000
 ;;
-t @@ fun () ->
-List.length (flat_map (fun _ -> 1 -- 300_000) (1 -- 2)) = 600_000
+t @@ fun () -> List.length (flat_map (fun _ -> 1 -- 300_000) (1 -- 2)) = 600_000
 ;;
 
 eq [ 1; 2; 2; 3; 3; 3 ]
