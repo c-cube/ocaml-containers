@@ -280,7 +280,10 @@ module MakeBidir (L : OrderedType) (R : OrderedType) = struct
   module MapL = Make (L) (R)
   module MapR = Make (R) (L)
 
-  type t = { left: MapL.t; right: MapR.t }
+  type t = {
+    left: MapL.t;
+    right: MapR.t;
+  }
 
   let empty = { left = MapL.empty; right = MapR.empty }
   let is_empty m = MapL.is_empty m.left

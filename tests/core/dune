@@ -1,11 +1,21 @@
 (test
  (name t)
  (flags :standard -strict-sequence -warn-error -a+8)
- (modes (best exe))
+ (modes
+  (best exe))
  (package containers)
  (preprocess
   (action
    (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
- (libraries containers containers.bencode containers.cbor
-            containers.unix containers.pp
-   threads containers_testlib iter gen uutf csexp))
+ (libraries
+  containers
+  containers.bencode
+  containers.cbor
+  containers.unix
+  containers.pp
+  threads
+  containers_testlib
+  iter
+  gen
+  uutf
+  csexp))

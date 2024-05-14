@@ -91,7 +91,11 @@ end
 
 (** {2 Functors} *)
 
-type 'a t = { size: int; leaves: 'a A.t; subs: 'a t A.t }
+type 'a t = {
+  size: int;
+  leaves: 'a A.t;
+  subs: 'a t A.t;
+}
 (* invariant:
    - [A.length leaves < A.max_length ==> A.is_empty subs]
    - either:
@@ -108,7 +112,9 @@ let is_empty { size; _ } = size = 0
 let length { size; _ } = size
 let return x = { leaves = A.return x; subs = A.empty; size = 1 }
 
-type idx_l = I_one of int | I_cons of int * idx_l
+type idx_l =
+  | I_one of int
+  | I_cons of int * idx_l
 
 (* split an index into a low and high parts *)
 let low_idx_ i = i land A.mask

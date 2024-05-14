@@ -26,7 +26,13 @@ end
 
 module Ext = struct
   type view = ..
-  type 'a key = { id: int; inject: 'a -> view; extract: view -> 'a option }
+
+  type 'a key = {
+    id: int;
+    inject: 'a -> view;
+    extract: view -> 'a option;
+  }
+
   type map = view Int_map.t
 
   let empty : map = Int_map.empty
@@ -79,7 +85,10 @@ and view =
   | Text_sub of string * int * int
   | Text_zero_width of string
   | Group of t
-  | Fill of { sep: t; l: t list }
+  | Fill of {
+      sep: t;
+      l: t list;
+    }
   | Wrap : 'a Ext.t * 'a * t -> view
 
 (* debug printer *)
@@ -214,7 +223,11 @@ module Flatten = struct
 end
 
 module Pretty = struct
-  type st = { out: Out.t; width: int; ext_map: Ext.map }
+  type st = {
+    out: Out.t;
+    width: int;
+    ext_map: Ext.map;
+  }
 
   (** Add [i] spaces of indentation. *)
   let add_indent st (i : int) =
@@ -460,14 +473,23 @@ end
 
 module Term_color = struct
   type color =
-    [ `Black | `Red | `Yellow | `Green | `Blue | `Magenta | `Cyan | `White ]
+    [ `Black
+    | `Red
+    | `Yellow
+    | `Green
+    | `Blue
+    | `Magenta
+    | `Cyan
+    | `White
+    ]
 
   type style =
     [ `FG of color (* foreground *)
     | `BG of color (* background *)
     | `Bold
     | `Reset
-    | `Underline ]
+    | `Underline
+    ]
 
   let int_of_color_ = function
     | `Black -> 0

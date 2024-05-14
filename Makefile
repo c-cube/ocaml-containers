@@ -17,6 +17,13 @@ doc:
 examples:
 	dune build examples/id_sexp.exe
 
+format:
+	@dune build $(DUNE_OPTS) @fmt --auto-promote
+
+format-check:
+	@dune build $(DUNE_OPTS) @fmt --display=quiet
+
+
 VERSION=$(shell awk '/^version:/ {print $$2}' containers.opam)
 
 update_next_tag:

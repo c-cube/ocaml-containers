@@ -108,7 +108,8 @@ module Dot : sig
     | `Style of string
     | `Label of string
     | `Id of string  (** Unique ID in the graph. Allows sharing. *)
-    | `Other of string * string ]
+    | `Other of string * string
+    ]
   (** Dot attributes for nodes *)
 
   type graph = string * attribute list t list

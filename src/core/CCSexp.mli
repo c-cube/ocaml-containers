@@ -31,7 +31,10 @@ module Make (Sexp : SEXP) : S with type t = Sexp.t and type loc = Sexp.loc
 
 (** {2 Basics} *)
 
-type t = [ `Atom of string | `List of t list ]
+type t =
+  [ `Atom of string
+  | `List of t list
+  ]
 (** A simple, structural representation of S-expressions. *)
 
 include S with type t := t

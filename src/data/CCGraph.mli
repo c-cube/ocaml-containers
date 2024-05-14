@@ -143,14 +143,19 @@ module Traverse : sig
 
   (** {2 More detailed interface} *)
   module Event : sig
-    type edge_kind = [ `Forward | `Back | `Cross ]
+    type edge_kind =
+      [ `Forward
+      | `Back
+      | `Cross
+      ]
 
     type ('v, 'e) t =
       [ `Enter of
         'v * int * ('v, 'e) path
         (* unique index in traversal, path from start *)
       | `Exit of 'v
-      | `Edge of 'v * 'e * 'v * edge_kind ]
+      | `Edge of 'v * 'e * 'v * edge_kind
+      ]
     (** A traversal is a sequence of such events *)
 
     val get_vertex : ('v, 'e) t -> ('v * [ `Enter | `Exit ]) option
@@ -222,7 +227,10 @@ val topo_sort_tag :
 (** {2 Lazy Spanning Tree} *)
 
 module Lazy_tree : sig
-  type ('v, 'e) t = { vertex: 'v; children: ('e * ('v, 'e) t) list Lazy.t }
+  type ('v, 'e) t = {
+    vertex: 'v;
+    children: ('e * ('v, 'e) t) list Lazy.t;
+  }
 
   val map_v : ('a -> 'b) -> ('a, 'e) t -> ('b, 'e) t
   val fold_v : ('acc -> 'v -> 'acc) -> 'acc -> ('v, _) t -> 'acc
@@ -277,7 +285,8 @@ module Dot : sig
     | `Weight of int
     | `Style of string
     | `Label of string
-    | `Other of string * string ]
+    | `Other of string * string
+    ]
   (** Dot attribute *)
 
   type vertex_state

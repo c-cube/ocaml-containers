@@ -3,8 +3,6 @@
 (** Basic operations on floating-point numbers
     @since 0.6.1 *)
 
-
-
 type t = float
 
 type fpclass = Stdlib.fpclass =

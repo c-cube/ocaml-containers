@@ -121,7 +121,9 @@ let mk_stack () =
 
 (** Implementation from http://en.wikipedia.org/wiki/Skew_heap *)
 module Heap = struct
-  type 'a t = E | N of 'a * 'a t * 'a t
+  type 'a t =
+    | E
+    | N of 'a * 'a t * 'a t
 
   let is_empty = function
     | E -> true
@@ -212,14 +214,19 @@ module Traverse = struct
     generic_tag ~tags ~bag:(mk_stack ()) ~graph iter
 
   module Event = struct
-    type edge_kind = [ `Forward | `Back | `Cross ]
+    type edge_kind =
+      [ `Forward
+      | `Back
+      | `Cross
+      ]
 
     type ('v, 'e) t =
       [ `Enter of
         'v * int * ('v, 'e) path
         (* unique index in traversal, path from start *)
       | `Exit of 'v
-      | `Edge of 'v * 'e * 'v * edge_kind ]
+      | `Edge of 'v * 'e * 'v * edge_kind
+      ]
     (** A traversal is a iteruence of such events *)
 
     let get_vertex = function
@@ -333,7 +340,10 @@ let topo_sort ~eq ?rev ~tbl ~graph iter =
 (** {2 Lazy Spanning Tree} *)
 
 module Lazy_tree = struct
-  type ('v, 'e) t = { vertex: 'v; children: ('e * ('v, 'e) t) list Lazy.t }
+  type ('v, 'e) t = {
+    vertex: 'v;
+    children: ('e * ('v, 'e) t) list Lazy.t;
+  }
 
   let make_ vertex children = { vertex; children }
 
@@ -462,7 +472,8 @@ module Dot = struct
     | `Weight of int
     | `Style of string
     | `Label of string
-    | `Other of string * string ]
+    | `Other of string * string
+    ]
   (** Dot attribute *)
 
   let pp_list pp_x out l =
@@ -474,7 +485,10 @@ module Dot = struct
       l;
     Format.pp_print_string out "]"
 
-  type vertex_state = { mutable explored: bool; id: int }
+  type vertex_state = {
+    mutable explored: bool;
+    id: int;
+  }
 
   (** Print an enum of Full.traverse_event *)
   let pp_all ~tbl ~eq ?(attrs_v = fun _ -> []) ?(attrs_e = fun _ -> [])

@@ -3,7 +3,10 @@ open Test
 open CCWBTree
 module M = Make (CCInt)
 
-type op = Add of int * int | Remove of int | Remove_min
+type op =
+  | Add of int * int
+  | Remove of int
+  | Remove_min
 
 let gen_op =
   CCRandom.(

@@ -11,7 +11,8 @@ type t =
   | `Text of string
   | `Array of t list
   | `Map of (t * t) list
-  | `Tag of int * t ]
+  | `Tag of int * t
+  ]
 
 let rec pp_diagnostic out (self : t) =
   match self with

@@ -8,7 +8,13 @@ type 'a print = 'a -> string
 module Test = struct
   type run =
     | T of { prop: unit -> bool }
-    | Eq : { eq: 'a eq option; print: 'a print option; lhs: 'a; rhs: 'a } -> run
+    | Eq : {
+        eq: 'a eq option;
+        print: 'a print option;
+        lhs: 'a;
+        rhs: 'a;
+      }
+        -> run
     | Q : {
         count: int option;
         arb: 'a Q.arbitrary;
@@ -20,7 +26,12 @@ module Test = struct
       }
         -> run
 
-  type t = { name: string option; run: run; __FILE__: string; n: int }
+  type t = {
+    name: string option;
+    run: run;
+    __FILE__: string;
+    n: int;
+  }
 
   (** Location for this test *)
   let str_loc (self : t) : string =

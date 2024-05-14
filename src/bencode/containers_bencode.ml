@@ -1,6 +1,10 @@
 module Str_map = Map.Make (String)
 
-type t = Int of int64 | String of string | List of t list | Map of t Str_map.t
+type t =
+  | Int of int64
+  | String of string
+  | List of t list
+  | Map of t Str_map.t
 
 let rec equal t1 t2 =
   match t1, t2 with

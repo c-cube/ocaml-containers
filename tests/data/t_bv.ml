@@ -236,8 +236,7 @@ q
       Q.Test.fail_reportf "l1=%a, l2=%a" ppli l1 ppli l2)
 ;;
 
-eq ~cmp:equal ~printer:(CCFormat.to_string pp)
-  (of_list [ 0 ])
+eq ~cmp:equal ~printer:(CCFormat.to_string pp) (of_list [ 0 ])
   (let bv = empty () in
    set bv 0;
    bv)
@@ -714,7 +713,10 @@ module Op = struct
 end
 
 module Ref_ = struct
-  type t = { mutable set: Intset.t; mutable size: int }
+  type t = {
+    mutable set: Intset.t;
+    mutable size: int;
+  }
 
   let empty () = { size = 0; set = Intset.empty }
 

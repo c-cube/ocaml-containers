@@ -153,7 +153,9 @@ let read_lines_l ic =
   with End_of_file -> List.rev !l
 
 (* thanks to nicoo for this trick *)
-type _ ret_type = Ret_string : string ret_type | Ret_bytes : Bytes.t ret_type
+type _ ret_type =
+  | Ret_string : string ret_type
+  | Ret_bytes : Bytes.t ret_type
 
 let read_all_ : type a. op:a ret_type -> size:int -> in_channel -> a =
  fun ~op ~size ic ->

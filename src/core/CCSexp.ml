@@ -2,8 +2,6 @@
 
 (** {1 Simple S-expression parsing/printing} *)
 
-
-
 type 'a or_error = ('a, string) result
 type 'a gen = unit -> 'a option
 
@@ -151,7 +149,10 @@ module Make (Sexp : SEXP) = struct
   (** A parser of ['a] can return [Yield x] when it parsed a value,
       or [Fail e] when a parse error was encountered, or
       [End] if the input was empty *)
-  type 'a parse_result = Yield of 'a | Fail of string | End
+  type 'a parse_result =
+    | Yield of 'a
+    | Fail of string
+    | End
 
   module Decoder = struct
     module L = CCSexp_lex
@@ -311,7 +312,10 @@ module Make (Sexp : SEXP) = struct
     _with_in filename (parse_chan_list_ ~file:filename)
 end
 
-type t = [ `Atom of string | `List of t list ]
+type t =
+  [ `Atom of string
+  | `List of t list
+  ]
 
 let rec equal a b =
   match a, b with

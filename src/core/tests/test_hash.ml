@@ -3,7 +3,10 @@
 module H = CCHash
 
 module Hist = struct
-  type t = { tbl: (int, int) Hashtbl.t; mutable n_samples: int }
+  type t = {
+    tbl: (int, int) Hashtbl.t;
+    mutable n_samples: int;
+  }
 
   let create () : t = { tbl = Hashtbl.create 32; n_samples = 0 }
 

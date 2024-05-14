@@ -3,7 +3,9 @@
 (** {1 Random-Access Lists} *)
 
 (** A complete binary tree *)
-type +'a tree = Leaf of 'a | Node of 'a * 'a tree * 'a tree
+type +'a tree =
+  | Leaf of 'a
+  | Node of 'a * 'a tree * 'a tree
 
 and +'a t =
   | Nil

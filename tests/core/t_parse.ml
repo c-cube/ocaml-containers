@@ -4,7 +4,9 @@ module P = CCParse
 open CCParse
 
 module T = struct
-  type tree = L of int | N of tree * tree
+  type tree =
+    | L of int
+    | N of tree * tree
 end
 
 open T

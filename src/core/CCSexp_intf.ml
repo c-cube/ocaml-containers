@@ -129,7 +129,10 @@ module type S = sig
   (** A parser of ['a] can return [Yield x] when it parsed a value,
       or [Fail e] when a parse error was encountered, or
       [End] if the input was empty. *)
-  type 'a parse_result = Yield of 'a | Fail of string | End
+  type 'a parse_result =
+    | Yield of 'a
+    | Fail of string
+    | End
 
   module Decoder : sig
     type t

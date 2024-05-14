@@ -794,7 +794,9 @@ module Tbl = struct
     val compare : t -> t -> int
   end
 
-  type _ key_type = Int : int key_type | Str : string key_type
+  type _ key_type =
+    | Int : int key_type
+    | Str : string key_type
 
   let arg_make : type a. a key_type -> (module KEY with type t = a) * string =
     function
@@ -918,7 +920,10 @@ module Tbl = struct
 
       module M = CCHashTrie.Make (K)
 
-      type 'a t = { id: CCHashTrie.Transient.t; mutable map: 'a M.t }
+      type 'a t = {
+        id: CCHashTrie.Transient.t;
+        mutable map: 'a M.t;
+      }
 
       let create _ = { id = CCHashTrie.Transient.create (); map = M.empty }
       let find m k = M.get_exn k m.map
@@ -1237,7 +1242,11 @@ module Deque = struct
   end
 
   module Base : DEQUE = struct
-    type 'a elt = { content: 'a; mutable prev: 'a elt; mutable next: 'a elt }
+    type 'a elt = {
+      content: 'a;
+      mutable prev: 'a elt;
+      mutable next: 'a elt;
+    }
     (** A cell holding a single element *)
 
     and 'a t = 'a elt option ref

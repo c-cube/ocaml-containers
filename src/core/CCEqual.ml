@@ -2,8 +2,6 @@
 
 (** {1 Equality Combinators} *)
 
-
-
 type 'a t = 'a -> 'a -> bool
 
 let poly = Stdlib.( = )

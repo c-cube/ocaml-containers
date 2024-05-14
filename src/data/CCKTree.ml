@@ -109,7 +109,10 @@ let dfs ~pset t =
 
 (** Functional queues for BFS *)
 module FQ = struct
-  type 'a t = { hd: 'a list; tl: 'a list }
+  type 'a t = {
+    hd: 'a list;
+    tl: 'a list;
+  }
 
   exception Empty
 
@@ -216,7 +219,8 @@ module Dot = struct
     | `Style of string
     | `Label of string
     | `Id of string
-    | `Other of string * string ]
+    | `Other of string * string
+    ]
   (** Dot attributes for nodes *)
 
   type graph = string * attribute list t list

@@ -14,9 +14,7 @@ module Make (Elt : RANKED) = struct
   let _absent_index = -1
   let create () = { heap = Vec.create () }
   let[@inline] left i = (i lsl 1) + 1 (* i*2 + 1 *)
-
   let[@inline] right i = (i + 1) lsl 1 (* (i+1)*2 *)
-
   let[@inline] parent i = (i - 1) asr 1 (* (i-1) / 2 *)
 
   (*

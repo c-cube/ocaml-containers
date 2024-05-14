@@ -22,7 +22,10 @@ type 'a node =
     be anything but [Three] (all the intermediate ones are [Three])
     *)
 
-type 'a t = { mutable cur: 'a node; mutable size: int }
+type 'a t = {
+  mutable cur: 'a node;
+  mutable size: int;
+}
 (** The deque, a double linked list of cells *)
 
 exception Empty

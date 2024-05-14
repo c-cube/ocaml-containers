@@ -85,7 +85,10 @@ module Position = struct
 end
 
 module Error = struct
-  type t = { msg: unit -> string; pos: position }
+  type t = {
+    msg: unit -> string;
+    pos: position;
+  }
 
   let position self = self.pos
   let line_and_column self = Position.line_and_column self.pos

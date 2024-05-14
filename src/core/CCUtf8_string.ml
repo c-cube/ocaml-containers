@@ -4,8 +4,6 @@
 
     We only deal with UTF8 strings as they naturally map to OCaml bytestrings *)
 
-
-
 type uchar = Uchar.t
 type 'a gen = unit -> 'a option
 type 'a iter = ('a -> unit) -> unit
@@ -30,7 +28,11 @@ let to_string x = x
 
 (** State for decoding *)
 module Dec = struct
-  type t = { s: string; len: int; (* max offset *) mutable i: int (* offset *) }
+  type t = {
+    s: string;
+    len: int;
+    (* max offset *) mutable i: int; (* offset *)
+  }
 
   let make ?(idx = 0) (s : string) : t = { s; i = idx; len = String.length s }
 end

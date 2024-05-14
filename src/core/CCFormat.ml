@@ -204,7 +204,15 @@ let to_file filename format =
 
 module ANSI_codes = struct
   type color =
-    [ `Black | `Red | `Yellow | `Green | `Blue | `Magenta | `Cyan | `White ]
+    [ `Black
+    | `Red
+    | `Yellow
+    | `Green
+    | `Blue
+    | `Magenta
+    | `Cyan
+    | `White
+    ]
 
   let int_of_color_ = function
     | `Black -> 0
@@ -220,7 +228,8 @@ module ANSI_codes = struct
     [ `FG of color (* foreground *)
     | `BG of color (* background *)
     | `Bold
-    | `Reset ]
+    | `Reset
+    ]
 
   let code_of_style : style -> int = function
     | `FG c -> 30 + int_of_color_ c

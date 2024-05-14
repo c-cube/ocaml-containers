@@ -4,10 +4,10 @@
 
     @since 0.14 *)
 
+(** @inline *)
 include module type of struct
   include Char
 end
-(** @inline *)
 
 val compare : t -> t -> int
 (** The comparison function for characters, with the same specification as

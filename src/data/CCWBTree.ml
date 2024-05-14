@@ -135,7 +135,10 @@ end
 module MakeFull (K : KEY) : S with type key = K.t = struct
   type key = K.t
   type weight = int
-  type +'a t = E | N of key * 'a * 'a t * 'a t * weight
+
+  type +'a t =
+    | E
+    | N of key * 'a * 'a t * 'a t * weight
 
   let empty = E
 

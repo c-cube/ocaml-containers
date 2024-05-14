@@ -19,7 +19,8 @@ type t =
   | `Text of string
   | `Array of t list
   | `Map of (t * t) list
-  | `Tag of int * t ]
+  | `Tag of int * t
+  ]
 
 val pp_diagnostic : t CCFormat.printer
 val to_string_diagnostic : t -> string

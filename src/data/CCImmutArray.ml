@@ -70,7 +70,6 @@ type 'a gen = unit -> 'a option
 let of_list = Array.of_list
 let to_list = Array.to_list
 let of_array_unsafe a = a (* careful with that axe, Eugene *)
-
 let to_iter a k = iter k a
 
 let of_iter s =

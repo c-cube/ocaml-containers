@@ -6,7 +6,10 @@ type 'a iter = ('a -> unit) -> unit
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a gen = unit -> 'a option
 
-type 'a t = { hd: 'a list; tl: 'a list }
+type 'a t = {
+  hd: 'a list;
+  tl: 'a list;
+}
 (** Queue containing elements of type 'a *)
 
 let empty = { hd = []; tl = [] }

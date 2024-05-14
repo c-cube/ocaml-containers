@@ -12,7 +12,6 @@ module Transient = struct
   type t = { mutable frozen: bool }
 
   let empty = { frozen = true } (* special value *)
-
   let equal a b = Stdlib.( == ) a b
   let create () = { frozen = false }
   let active st = not st.frozen
@@ -166,7 +165,11 @@ let popcount (b : I64.t) : int =
 
 (* sparse array, using a bitfield and POPCOUNT *)
 module A_SPARSE = struct
-  type 'a t = { bits: int64; arr: 'a array; id: Transient.t }
+  type 'a t = {
+    bits: int64;
+    arr: 'a array;
+    id: Transient.t;
+  }
 
   let length_log = 6
   let length = 1 lsl length_log
@@ -283,11 +286,9 @@ module Make (Key : KEY) : S with type key = Key.t = struct
 
     val make : Key.t -> t
     val zero : t (* special "hash" *)
-
     val is_0 : t -> bool
     val equal : t -> t -> bool
     val rem : t -> int (* [A.length_log] last bits *)
-
     val quotient : t -> t (* remove [A.length_log] last bits *)
   end = struct
     type t = int

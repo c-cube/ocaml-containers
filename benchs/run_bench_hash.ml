@@ -1,6 +1,8 @@
 (** Test hash functions *)
 
-type tree = Empty | Node of int * tree list
+type tree =
+  | Empty
+  | Node of int * tree list
 
 let mk_node i l = Node (i, l)
 

@@ -67,7 +67,9 @@ let dummy =
   }
 
 module Linear = struct
-  type ('a, 'b) bucket = Empty | Pair of 'a * 'b
+  type ('a, 'b) bucket =
+    | Empty
+    | Pair of 'a * 'b
 
   type ('a, 'b) t = {
     eq: 'a equal;
@@ -121,7 +123,9 @@ let linear ~eq size =
   }
 
 module Replacing = struct
-  type ('a, 'b) bucket = Empty | Pair of 'a * 'b
+  type ('a, 'b) bucket =
+    | Empty
+    | Pair of 'a * 'b
 
   type ('a, 'b) t = {
     eq: 'a equal;

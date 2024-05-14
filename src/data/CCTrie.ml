@@ -495,7 +495,9 @@ module Make (W : WORD) : S with type char_ = W.char_ and type key = W.t = struct
     | Yield of 'a * char_ difflist
     | Explore of 'a t * char_ difflist
 
-  type direction = Above | Below
+  type direction =
+    | Above
+    | Below
 
   let rec explore ~dir k alt =
     match alt with

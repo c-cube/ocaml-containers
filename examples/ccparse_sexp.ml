@@ -1,6 +1,8 @@
 open CCParse
 
-type sexp = Atom of string | List of sexp list
+type sexp =
+  | Atom of string
+  | List of sexp list
 
 let rec pp_sexpr out (s : sexp) : unit =
   match s with

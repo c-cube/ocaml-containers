@@ -165,7 +165,10 @@ end
 
 module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
   type elt = E.t
-  type t = E | N of int * elt * t * t
+
+  type t =
+    | E
+    | N of int * elt * t * t
 
   let empty = E
 

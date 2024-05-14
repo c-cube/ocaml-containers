@@ -1,5 +1,9 @@
 type 'a iter = ('a -> unit) -> unit
-type t = { mutable bytes: bytes; mutable len: int }
+
+type t = {
+  mutable bytes: bytes;
+  mutable len: int;
+}
 
 let create ?(cap = 0) () : t =
   let bytes =

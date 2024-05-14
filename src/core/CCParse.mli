@@ -259,7 +259,8 @@ val chars_fold :
     [ `Continue of 'acc
     | `Consume_and_stop of 'acc
     | `Stop of 'acc
-    | `Fail of string ]) ->
+    | `Fail of string
+    ]) ->
   'acc ->
   ('acc * slice) t
 (** [chars_fold f acc0] folds over characters of the input.
@@ -289,7 +290,8 @@ val chars_fold_transduce :
     | `Yield of 'acc * char
     | `Consume_and_stop
     | `Stop
-    | `Fail of string ]) ->
+    | `Fail of string
+    ]) ->
   'acc ->
   ('acc * string) t
 (** Same as {!chars_fold} but with the following differences:

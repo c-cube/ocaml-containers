@@ -10,7 +10,10 @@ type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a printer = Format.formatter -> 'a -> unit
 
-type ('a, 'mut) t = { mutable size: int; mutable vec: 'a array }
+type ('a, 'mut) t = {
+  mutable size: int;
+  mutable vec: 'a array;
+}
 (** A vector of 'a. *)
 
 type 'a vector = ('a, rw) t

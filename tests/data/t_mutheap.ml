@@ -1,7 +1,11 @@
 module Test = (val Containers_testlib.make ~__FILE__ ())
 open Test
 
-type elt = { x: string; mutable rank: int; mutable idx: int }
+type elt = {
+  x: string;
+  mutable rank: int;
+  mutable idx: int;
+}
 
 module Elt = struct
   type t = elt

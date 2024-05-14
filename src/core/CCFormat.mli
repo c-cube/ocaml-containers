@@ -296,14 +296,23 @@ val with_color_ksf :
     @since 3.5 *)
 module ANSI_codes : sig
   type color =
-    [ `Black | `Red | `Yellow | `Green | `Blue | `Magenta | `Cyan | `White ]
+    [ `Black
+    | `Red
+    | `Yellow
+    | `Green
+    | `Blue
+    | `Magenta
+    | `Cyan
+    | `White
+    ]
   (** An ANSI color *)
 
   type style =
     [ `FG of color  (** foreground *)
     | `BG of color  (** background *)
     | `Bold
-    | `Reset ]
+    | `Reset
+    ]
   (** A style. Styles can be composed in a list. *)
 
   val clear_line : string

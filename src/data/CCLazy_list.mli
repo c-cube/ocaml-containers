@@ -5,7 +5,10 @@
     @since 0.17 *)
 
 type +'a t = 'a node lazy_t
-and +'a node = Nil | Cons of 'a * 'a t
+
+and +'a node =
+  | Nil
+  | Cons of 'a * 'a t
 
 val empty : 'a t
 (** Empty list. *)

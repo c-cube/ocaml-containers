@@ -55,7 +55,10 @@ let[@inline] __popcount8 (b : int) : int =
   - [Bytes.length v.b >= div_ v.size] (enough storage)
   - all bits above [size] are 0 in [v.b]
 *)
-type t = { mutable b: bytes; mutable size: int }
+type t = {
+  mutable b: bytes;
+  mutable size: int;
+}
 
 let length t = t.size
 let empty () = { b = Bytes.empty; size = 0 }

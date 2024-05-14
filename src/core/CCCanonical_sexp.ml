@@ -2,8 +2,6 @@
 
 (** {1 Simple S-expression parsing/printing} *)
 
-
-
 type 'a or_error = ('a, string) result
 type 'a gen = unit -> 'a option
 
@@ -255,7 +253,10 @@ module Make (Sexp : SEXP) = struct
     _with_in filename (parse_chan_list_ ~file:filename)
 end
 
-type t = [ `Atom of string | `List of t list ]
+type t =
+  [ `Atom of string
+  | `List of t list
+  ]
 
 let rec equal a b =
   match a, b with

@@ -3,7 +3,10 @@
 (** {1 Lazy List} *)
 
 type +'a t = 'a node lazy_t
-and +'a node = Nil | Cons of 'a * 'a t
+
+and +'a node =
+  | Nil
+  | Cons of 'a * 'a t
 
 let empty = Lazy.from_val Nil
 let return x = Lazy.from_val (Cons (x, empty))

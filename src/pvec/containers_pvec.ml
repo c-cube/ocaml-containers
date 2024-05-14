@@ -58,7 +58,10 @@ module A = struct
     )
 end
 
-type 'a tree = Empty | Node of 'a tree A.t | Leaf of 'a A.t
+type 'a tree =
+  | Empty
+  | Node of 'a tree A.t
+  | Leaf of 'a A.t
 
 type 'a t = {
   t: 'a tree;  (** The 32-way tree *)

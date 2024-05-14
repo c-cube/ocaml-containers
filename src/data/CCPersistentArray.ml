@@ -26,7 +26,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (* Persistent arrays *)
 
 type 'a t = 'a data ref
-and 'a data = Array of 'a array | Diff of int * 'a * 'a t
+
+and 'a data =
+  | Array of 'a array
+  | Diff of int * 'a * 'a t
 
 let make n a = ref (Array (Array.make n a))
 let init n f = ref (Array (Array.init n f))

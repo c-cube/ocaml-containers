@@ -44,7 +44,10 @@ type _ direction =
 
 (* we follow https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm *)
 module Find = struct
-  type 'a kmp_pattern = { failure: int array; str: string }
+  type 'a kmp_pattern = {
+    failure: int array;
+    str: string;
+  }
   (* invariant: [length failure = length str].
      We use a phantom type to avoid mixing the directions. *)
 
@@ -169,7 +172,9 @@ module Find = struct
     else
       -1
 
-  type 'a pattern = P_char of char | P_KMP of 'a kmp_pattern
+  type 'a pattern =
+    | P_char of char
+    | P_KMP of 'a kmp_pattern
 
   let pattern_length = function
     | P_char _ -> 1
@@ -279,12 +284,17 @@ let replace ?(which = `All) ~sub ~by s =
     Buffer.contents b
 
 module Split = struct
-  type drop_if_empty = { first: bool; last: bool }
+  type drop_if_empty = {
+    first: bool;
+    last: bool;
+  }
 
   let no_drop = { first = false; last = false }
   let default_drop = no_drop
 
-  type split_state = SplitStop | SplitAt of int (* previous *)
+  type split_state =
+    | SplitStop
+    | SplitAt of int (* previous *)
 
   let rec _split ~by s state =
     match state with
@@ -414,7 +424,9 @@ let compare_versions a b =
   in
   cmp_rec (Split.gen_cpy ~by:"." a) (Split.gen_cpy ~by:"." b)
 
-type nat_chunk = NC_char of char | NC_int of int
+type nat_chunk =
+  | NC_char of char
+  | NC_int of int
 
 let compare_natural a b =
   (* stream of chunks *)

@@ -31,8 +31,15 @@ module Code = struct
 end
 
 module Bitfield = struct
-  type field = { f_name: string; f_offset: int; f_def: field_def }
-  and field_def = F_bit | F_int of { width: int }
+  type field = {
+    f_name: string;
+    f_offset: int;
+    f_def: field_def;
+  }
+
+  and field_def =
+    | F_bit
+    | F_int of { width: int }
 
   type t = {
     name: string;

@@ -481,7 +481,9 @@ let to_gen l =
       l := l';
       Some x
 
-type 'a of_gen_state = Of_gen_thunk of 'a gen | Of_gen_saved of 'a node
+type 'a of_gen_state =
+  | Of_gen_thunk of 'a gen
+  | Of_gen_saved of 'a node
 
 let of_gen g =
   let rec consume r () =
@@ -508,7 +510,9 @@ let sort_uniq ~cmp l =
   let l = to_list l in
   uniq (fun x y -> cmp x y = 0) (of_list (List.sort cmp l))
 
-type 'a memoize = MemoThunk | MemoSave of 'a node
+type 'a memoize =
+  | MemoThunk
+  | MemoSave of 'a node
 
 let rec memoize f =
   let r = ref MemoThunk in

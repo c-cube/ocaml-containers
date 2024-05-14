@@ -6,7 +6,11 @@
 
 module Str_map : module type of Map.Make (String)
 
-type t = Int of int64 | String of string | List of t list | Map of t Str_map.t
+type t =
+  | Int of int64
+  | String of string
+  | List of t list
+  | Map of t Str_map.t
 
 val equal : t -> t -> bool
 val hash : t -> int

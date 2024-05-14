@@ -14,7 +14,11 @@ let pp_datetime out d =
   CCFormat.(
     fprintf out "{y=%d;M=%d;d=%d;h=%d;m=%d;s=%d}" year month day hour min sec)
 
-type msg = { timestamp: datetime; user: string; msg: string }
+type msg = {
+  timestamp: datetime;
+  user: string;
+  msg: string;
+}
 
 let pp_msg out m =
   CCFormat.fprintf out "{@[time=%a;@ user=%S;@ msg=%S@]}" pp_datetime

@@ -11,7 +11,6 @@ module Bit : sig
   val is_0 : bit:t -> int -> bool
   val is_1 : bit:t -> int -> bool
   val mask : mask:t -> int -> int (* zeroes the bit, puts all lower bits to 1 *)
-
   val lt : t -> t -> bool
   val gt : t -> t -> bool
   val equal_int : int -> t -> bool

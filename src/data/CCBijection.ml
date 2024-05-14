@@ -46,7 +46,10 @@ module Make (L : OrderedType) (R : OrderedType) = struct
   module MapL = Map.Make (L)
   module MapR = Map.Make (R)
 
-  type t = { left: right MapL.t; right: left MapR.t }
+  type t = {
+    left: right MapL.t;
+    right: left MapR.t;
+  }
 
   let empty = { left = MapL.empty; right = MapR.empty }
   let cardinal m = MapL.cardinal m.left

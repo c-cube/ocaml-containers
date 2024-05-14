@@ -8,10 +8,10 @@ type 'a iter = ('a -> unit) -> unit
 
 type 'a gen = unit -> 'a option
 
+(** @inline *)
 include module type of struct
   include StringLabels
 end
-(** @inline *)
 
 val length : t -> int
 (** [length s] returns the length (number of characters) of the given string [s]. *)
@@ -406,7 +406,10 @@ end
 (** {2 Splitting} *)
 
 module Split : sig
-  type drop_if_empty = { first: bool; last: bool }
+  type drop_if_empty = {
+    first: bool;
+    last: bool;
+  }
   (** Specification of what to do with empty blocks, as in [split ~by:"-" "-a-b-"].
 
       - [{first=false; last=false}] will return [""; "a"; "b"; ""]

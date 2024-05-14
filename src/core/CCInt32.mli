@@ -13,10 +13,10 @@
 
     @since 2.1 *)
 
+(** @inline *)
 include module type of struct
   include Int32
 end
-(** @inline *)
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].

@@ -20,7 +20,9 @@ type nonrec (+'good, +'bad) result = ('good, 'bad) result =
   | Ok of 'good
   | Error of 'bad
 
-type (+'good, +'bad) t = ('good, 'bad) result = Ok of 'good | Error of 'bad
+type (+'good, +'bad) t = ('good, 'bad) result =
+  | Ok of 'good
+  | Error of 'bad
 
 val return : 'a -> ('a, 'err) t
 (** Successfully return a value. *)
@@ -263,7 +265,10 @@ val to_seq : ('a, _) t -> 'a Seq.t
 (** Renamed from [to_std_seq] since 3.0.
     @since 3.0 *)
 
-type ('a, 'b) error = [ `Ok of 'a | `Error of 'b ]
+type ('a, 'b) error =
+  [ `Ok of 'a
+  | `Error of 'b
+  ]
 
 val of_err : ('a, 'b) error -> ('a, 'b) t
 (** @since 0.17 *)

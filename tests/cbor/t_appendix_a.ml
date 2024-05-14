@@ -10,8 +10,16 @@ let pp_json = J.pretty_print ~std:true
 let spf = Printf.sprintf
 
 module Test = struct
-  type expect = Diagnostic of string | Decoded of json
-  type t = { hex: string; raw: string; expect: expect; roundtrip: bool }
+  type expect =
+    | Diagnostic of string
+    | Decoded of json
+
+  type t = {
+    hex: string;
+    raw: string;
+    expect: expect;
+    roundtrip: bool;
+  }
 
   let pp_expect out = function
     | Diagnostic s -> Fmt.fprintf out "(diagnostic %S)" s
@@ -51,7 +59,11 @@ let skip =
     "5f42010243030405ff", "(requires representation of indefinite length)";
   ]
 
-type count = { mutable n_ok: int; mutable n_err: int; mutable n_skip: int }
+type count = {
+  mutable n_ok: int;
+  mutable n_err: int;
+  mutable n_skip: int;
+}
 
 let run_test (c : count) (t : Test.t) : unit =
   try

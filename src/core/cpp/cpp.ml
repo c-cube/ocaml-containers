@@ -1,6 +1,10 @@
 module C = Configurator.V1
 
-type op = Le | Ge | Gt | Lt
+type op =
+  | Le
+  | Ge
+  | Gt
+  | Lt
 
 type line =
   | If of op * int * int

@@ -13,7 +13,9 @@ type nonrec (+'good, +'bad) result = ('good, 'bad) result =
   | Ok of 'good
   | Error of 'bad
 
-type (+'good, +'bad) t = ('good, 'bad) result = Ok of 'good | Error of 'bad
+type (+'good, +'bad) t = ('good, 'bad) result =
+  | Ok of 'good
+  | Error of 'bad
 
 let return x = Ok x
 let fail s = Error s
@@ -333,7 +335,10 @@ let to_iter e k =
   | Ok x -> k x
   | Error _ -> ()
 
-type ('a, 'b) error = [ `Ok of 'a | `Error of 'b ]
+type ('a, 'b) error =
+  [ `Ok of 'a
+  | `Error of 'b
+  ]
 
 let of_err = function
   | `Ok x -> Ok x

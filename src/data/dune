@@ -2,6 +2,14 @@
  (name containers_data)
  (public_name containers-data)
  (wrapped false)
- (flags :standard -warn-error -3 -w -70 -color always -safe-string
-   -strict-sequence)
+ (flags
+  :standard
+  -warn-error
+  -3
+  -w
+  -70
+  -color
+  always
+  -safe-string
+  -strict-sequence)
  (libraries containers))

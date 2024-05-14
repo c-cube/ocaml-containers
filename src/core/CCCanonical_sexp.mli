@@ -19,7 +19,10 @@ module Make (Sexp : SEXP) : S with type t = Sexp.t
 
 (** {2 Basics} *)
 
-type t = [ `Atom of string | `List of t list ]
+type t =
+  [ `Atom of string
+  | `List of t list
+  ]
 (** A simple, structural representation of S-expressions.
     Compatible with {!CCSexp}. *)
 

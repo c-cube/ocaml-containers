@@ -15,7 +15,9 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type ('a, 'b) t = ('a, 'b) Either.t = Left of 'a | Right of 'b
+type ('a, 'b) t = ('a, 'b) Either.t =
+  | Left of 'a
+  | Right of 'b
 
 val left : 'a -> ('a, 'b) t
 (** [left l] is [Left l] *)

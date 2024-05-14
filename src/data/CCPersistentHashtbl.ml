@@ -133,10 +133,14 @@ module Make (H : HashedType) : S with type key = H.t = struct
   }
 
   (* piece of a persistent array *)
-  and 'a p_array = Arr of 'a bucket array | Set of int * 'a bucket * 'a t
+  and 'a p_array =
+    | Arr of 'a bucket array
+    | Set of int * 'a bucket * 'a t
 
   (* bucket of the hashtbl *)
-  and 'a bucket = Nil | Cons of key * 'a * 'a bucket
+  and 'a bucket =
+    | Nil
+    | Cons of key * 'a * 'a bucket
 
   (* first power of two that is bigger than [than], starting from [n] *)
   let rec power_two_larger ~than n =

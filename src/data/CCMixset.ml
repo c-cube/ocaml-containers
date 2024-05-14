@@ -9,7 +9,11 @@ module IMap = Map.Make (struct
 end)
 
 type t = (unit -> unit) IMap.t
-and 'a key = { id: int; mutable opt: 'a option }
+
+and 'a key = {
+  id: int;
+  mutable opt: 'a option;
+}
 
 let newkey_n_ = ref 0
 
