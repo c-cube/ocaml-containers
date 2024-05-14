@@ -14,9 +14,7 @@ jobs:
       fail-fast: true
       matrix:
         os:
-            - macos-latest
             - ubuntu-latest
-              #- windows-latest
         ocaml-compiler:
             - '4.08'
             - '4.14'
@@ -32,23 +30,37 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           dune-cache: true
           allow-prerelease-opam: true
-
       - run: opam install -t containers containers-data --deps-only
-        if: matrix.os == 'ubuntu-latest'
+      - run: opam exec -- dune build '@install'
+      - run: opam exec -- dune runtest
 
+  compat:
+    name: build
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        os:
+            - macos-latest
+            - ubuntu-latest
+              #- windows-latest
+        ocaml-compiler:
+            - '5.1'
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@main
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
+          allow-prerelease-opam: true
       - run: |
           opam install -t containers --deps-only ;
           opam install containers-data --deps-only  # no test deps
-        if: matrix.os != 'ubuntu-latest'
-
       - run: opam exec -- dune build '@install'
-
-      - run: opam exec -- dune runtest
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-
       - run: opam exec -- dune runtest -j 1 -p containers # test only core on non-ubuntu platform
-        if: ${{ matrix.os != 'ubuntu-latest' }}
-
 
   format:
     name: format

@@ -140,13 +140,14 @@ let () =
     l;
   true
 
-[@@@endif];;
+[@@@endif]
 
-q
-  Q.(list int)
-  (fun l ->
-    fold_flat_map (fun acc x -> x :: acc, [ x; x + 10 ]) [] l
-    = (List.rev l, flat_map (fun x -> [ x; x + 10 ]) l))
+let () =
+  q
+    Q.(list int)
+    (fun l ->
+      fold_flat_map (fun acc x -> x :: acc, [ x; x + 10 ]) [] l
+      = (List.rev l, flat_map (fun x -> [ x; x + 10 ]) l))
 ;;
 
 eq ~printer:Q.Print.(list int) ~name:"unfold1" [ 0; 2; 4; 6; 8; 10 ]
