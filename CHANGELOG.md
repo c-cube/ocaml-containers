@@ -1,4 +1,7 @@
 
+## main
+- change the semantic of CCFloat.{min,max} with respect to NaN to follow the Stdlib
+- change the semantic of CCInt.rem with respect to negative number to follow the Stdlib
 
 ## 3.17
 
@@ -60,6 +63,7 @@
 
 ## 3.13
 
+- breaking: bump minimum version of OCaml to 4.08
 - breaking: delete containers-thread (which was deprecated)
 - breaking: pp: modify `Ext.t` so it takes surrounding value
 - breaking: remove CCShims
