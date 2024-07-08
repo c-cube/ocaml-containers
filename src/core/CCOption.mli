@@ -58,6 +58,9 @@ val bind : 'a t -> ('a -> 'b t) -> 'b t
     Monadic bind.
     @since 3.0 *)
 
+val k_compose : ('a -> 'b t) -> ('b -> 'c t) -> ('a -> 'c t)
+(** Kleisli composition. Monadic equivalent of CCFun.compose *)
+
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [map2 f o1 o2] maps ['a option] and ['b option] to a ['c option] using [f]. *)
 
@@ -179,6 +182,11 @@ module Infix : sig
   val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
   val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
+
+  val ( >=> ) : ('a -> 'b t) -> ('b -> 'c t) -> ('a -> 'c t)
+  (** Monadic [k_compose]. *)
+  val ( <=< ) : ('b -> 'c t) -> ('a -> 'b t) -> ('a -> 'c t)
+  (** Reverse monadic [k_compose]. *)
 end
 
 include module type of Infix

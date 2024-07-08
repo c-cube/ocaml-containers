@@ -77,7 +77,11 @@ struct
   type 'a t = X.t -> 'a
 
   let[@inline] return x _ = x
+  let[@inline] k_compose f g =
+    (fun x -> f x |> flat_map g)
   let[@inline] ( >|= ) f g x = g (f x)
   let[@inline] ( >>= ) f g x = g (f x) x
+  let[@inline] ( >=> ) = k_compose
+  let[@inline] ( <=< ) = flip k_compose
 end
 [@@inline]

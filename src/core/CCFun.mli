@@ -105,8 +105,18 @@ end) : sig
   val return : 'a -> 'a t
   (** Monadic [return]. *)
 
+  val k_compose : ('a -> 'b t) -> ('b -> 'c t) -> ('a -> 'c t)
+  (** Kleisli composition. Monadic equivalent of [compose]. *)
+
   val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
+  (** Mondaic [map]. *)
 
   val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** Monadic [bind]. *)
+
+  val ( >=> ) : ('a -> 'b t) -> ('b -> 'c t) -> ('a -> 'c t)
+  (** Monadic [k_compose]. *)
+
+  val ( <=< ) : ('b -> 'c t) -> ('a -> 'b t) -> ('a -> 'c t)
+  (** Reverse monadic [k_compose]. *)
 end

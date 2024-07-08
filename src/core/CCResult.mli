@@ -113,6 +113,10 @@ val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
     the value of [e]. *)
 
 val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
+
+val k_compose : ('a -> ('b, 'err) t) -> ('b -> ('c, 'err) t) -> ('a -> ('c, 'err) t)
+(** Kleisli composition. Monadic equivalent of CCFun.compose *)
+
 val equal : err:'err equal -> 'a equal -> ('a, 'err) t equal
 val compare : err:'err ord -> 'a ord -> ('a, 'err) t ord
 
@@ -199,6 +203,11 @@ module Infix : sig
 
   val ( and* ) : ('a, 'e) t -> ('b, 'e) t -> ('a * 'b, 'e) t
   (** @since 2.8 *)
+
+  val ( >=> ) : ('a -> ('b, 'err) t) -> ('b -> ('c, 'err) t) -> ('a -> ('c, 'err) t)
+  (** Monadic [k_compose]. *)
+  val ( <=< ) : ('b -> ('c, 'err) t) -> ('a -> ('b, 'err) t) -> ('a -> ('c, 'err) t)
+  (** Reverse monadic [k_compose]. *)
 end
 
 include module type of Infix

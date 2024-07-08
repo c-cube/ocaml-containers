@@ -125,6 +125,12 @@ let flat_map f e =
   | Ok x -> f x
   | Error s -> Error s
 
+let k_compose f g =
+  (fun x -> flat_map g @@ f x)
+
+let ( >=> ) = k_compose
+let ( <=< ) f g = ( >=> ) g f 
+
 let equal ~err eq a b =
   match a, b with
   | Ok x, Ok y -> eq x y
@@ -275,6 +281,9 @@ module Infix = struct
     | _, Error e -> Error e
 
   let ( and* ) = ( and+ )
+
+  let ( >=> ) = ( >=> )
+  let ( <=< ) = ( <=< )
 end
 
 include Infix
