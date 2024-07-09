@@ -109,7 +109,7 @@ end) : sig
   (** Kleisli composition. Monadic equivalent of [compose]. *)
 
   val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
-  (** Mondaic [map]. *)
+  (** Monadic [map]. *)
 
   val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** Monadic [bind]. *)

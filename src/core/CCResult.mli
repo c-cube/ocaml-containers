@@ -206,6 +206,7 @@ module Infix : sig
 
   val ( >=> ) : ('a -> ('b, 'err) t) -> ('b -> ('c, 'err) t) -> ('a -> ('c, 'err) t)
   (** Monadic [k_compose]. *)
+  
   val ( <=< ) : ('b -> ('c, 'err) t) -> ('a -> ('b, 'err) t) -> ('a -> ('c, 'err) t)
   (** Reverse monadic [k_compose]. *)
 end
