@@ -132,11 +132,10 @@ let flat_map f e =
   | Ok x -> f x
   | Error s -> Error s
 
-let k_compose f g =
-  (fun x -> flat_map g @@ f x)
+let k_compose f g x = f x |> flat_map g
 
 let ( >=> ) = k_compose
-let ( <=< ) f g = ( >=> ) g f 
+let ( <=< ) f g = g >=> f 
 
 let equal ~err eq a b =
   match a, b with

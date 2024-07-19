@@ -55,10 +55,9 @@ let[@inline] bind o f = flat_map f o
 let ( >>= ) = bind
 let pure x = Some x
 
-let k_compose f g =
-  (fun x -> f x |> flat_map g)
+let k_compose f g x = f x |> flat_map g
 let ( >=> ) = k_compose
-let ( <=< ) f g = (>=>) g f 
+let ( <=< ) f g = g >=> f 
 
 let ( <*> ) f x =
   match f, x with
