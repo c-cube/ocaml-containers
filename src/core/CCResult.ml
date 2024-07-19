@@ -133,9 +133,8 @@ let flat_map f e =
   | Error s -> Error s
 
 let k_compose f g x = f x |> flat_map g
-
 let ( >=> ) = k_compose
-let ( <=< ) f g = g >=> f 
+let ( <=< ) f g = g >=> f
 
 let equal ~err eq a b =
   match a, b with
@@ -288,7 +287,6 @@ module Infix = struct
     | _, Error e -> Error e
 
   let ( and* ) = ( and+ )
-
   let ( >=> ) = ( >=> )
   let ( <=< ) = ( <=< )
 end

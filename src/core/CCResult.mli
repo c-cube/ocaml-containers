@@ -120,7 +120,7 @@ val catch : ('a, 'err) t -> ok:('a -> 'b) -> err:('err -> 'b) -> 'b
 
 val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
 
-val k_compose : 
+val k_compose :
   ('a -> ('b, 'err) t) -> ('b -> ('c, 'err) t) -> 'a -> ('c, 'err) t
 (** Kleisli composition. Monadic equivalent of CCFun.compose *)
 
@@ -216,7 +216,7 @@ module Infix : sig
   val ( >=> ) :
     ('a -> ('b, 'err) t) -> ('b -> ('c, 'err) t) -> 'a -> ('c, 'err) t
   (** Monadic [k_compose]. *)
-  
+
   val ( <=< ) :
     ('b -> ('c, 'err) t) -> ('a -> ('b, 'err) t) -> 'a -> ('c, 'err) t
   (** Reverse monadic [k_compose]. *)
