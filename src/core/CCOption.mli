@@ -58,6 +58,9 @@ val bind : 'a t -> ('a -> 'b t) -> 'b t
     Monadic bind.
     @since 3.0 *)
 
+val k_compose : ('a -> 'b t) -> ('b -> 'c t) -> 'a -> 'c t
+(** Kleisli composition. Monadic equivalent of CCFun.compose *)
+
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [map2 f o1 o2] maps ['a option] and ['b option] to a ['c option] using [f]. *)
 
@@ -91,6 +94,12 @@ val get_or : default:'a -> 'a t -> 'a
 (** [get_or ~default o] extracts the value from [o], or
     returns [default] if [o] is [None].
     @since 0.18 *)
+
+val apply_or : ('a -> 'a t) -> 'a -> 'a
+(** [apply_or f x] returns the original [x] if [f] fails, or unwraps [f x] if it succeeds.
+    Useful for piping preprocessing functions together (such as string processing),
+    turning functions like "remove" into "remove_if_it_exists".
+    *)
 
 val value : 'a t -> default:'a -> 'a
 (** [value o ~default] is similar to the Stdlib's [Option.value] and to {!get_or}.
@@ -175,10 +184,19 @@ module Infix : sig
   val ( <+> ) : 'a t -> 'a t -> 'a t
   (** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
 
+  val ( |?> ) : 'a -> ('a -> 'a t) -> 'a
+  (** [x |?> f] is [apply_or f x] *)
+
   val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
   val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
   val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
+
+  val ( >=> ) : ('a -> 'b t) -> ('b -> 'c t) -> 'a -> 'c t
+  (** Monadic [k_compose]. *)
+  
+  val ( <=< ) : ('b -> 'c t) -> ('a -> 'b t) -> 'a -> 'c t
+  (** Reverse monadic [k_compose]. *)
 end
 
 include module type of Infix

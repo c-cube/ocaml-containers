@@ -101,11 +101,13 @@ module Monad (X : sig
   type t
 end) : sig
   type 'a t = X.t -> 'a
+  (** Definition of a monad in continuation-passing style. *)
 
   val return : 'a -> 'a t
   (** Monadic [return]. *)
 
   val ( >|= ) : 'a t -> ('a -> 'b) -> 'b t
+  (** Monadic [map]. *)
 
   val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** Monadic [bind]. *)

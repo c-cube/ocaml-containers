@@ -101,6 +101,13 @@ let get_or e ~default =
   | Ok x -> x
   | Error _ -> default
 
+let apply_or f x =
+  match f x with
+  | Error _ -> x
+  | Ok y -> y
+
+let ( |?> ) x f = apply_or f x
+
 let get_lazy f e =
   match e with
   | Ok x -> x
@@ -124,6 +131,11 @@ let flat_map f e =
   match e with
   | Ok x -> f x
   | Error s -> Error s
+
+let k_compose f g x = f x |> flat_map g
+
+let ( >=> ) = k_compose
+let ( <=< ) f g = g >=> f 
 
 let equal ~err eq a b =
   match a, b with
@@ -265,6 +277,7 @@ module Infix = struct
   let ( >|= ) e f = map f e
   let ( >>= ) e f = flat_map f e
   let ( <*> ) = ( <*> )
+  let ( |?> ) = ( |?> )
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )
 
@@ -275,6 +288,9 @@ module Infix = struct
     | _, Error e -> Error e
 
   let ( and* ) = ( and+ )
+
+  let ( >=> ) = ( >=> )
+  let ( <=< ) = ( <=< )
 end
 
 include Infix
