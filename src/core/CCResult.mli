@@ -96,6 +96,12 @@ val get_exn : ('a, _) t -> 'a
 val get_or : ('a, _) t -> default:'a -> 'a
 (** [get_or e ~default] returns [x] if [e = Ok x], [default] otherwise. *)
 
+val apply_or : ('a -> ('a, _) t) -> 'a -> 'a
+(** [apply_or f x] returns the original [x] if [f] fails, or unwraps [f x] if it succeeds.
+    Useful for piping preprocessing functions together (such as string processing),
+    turning functions like "remove" into "remove_if_it_exists".
+    *)
+
 val get_or_failwith : ('a, string) t -> 'a
 (** [get_or_failwith e] returns [x] if [e = Ok x], fails otherwise.
     @raise Failure with [msg] if [e = Error msg].
@@ -191,6 +197,8 @@ module Infix : sig
   (** [a <*> b] evaluates [a] and [b], and, in case of success, returns
       [Ok (a b)]. Otherwise, it fails, and the error of [a] is chosen
       over the error of [b] if both fail. *)
+
+  val ( |?> ) : 'a -> ('a -> ('a, _) t) -> 'a
 
   val ( let+ ) : ('a, 'e) t -> ('a -> 'b) -> ('b, 'e) t
   (** @since 2.8 *)

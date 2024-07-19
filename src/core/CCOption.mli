@@ -95,6 +95,12 @@ val get_or : default:'a -> 'a t -> 'a
     returns [default] if [o] is [None].
     @since 0.18 *)
 
+val apply_or : ('a -> 'a t) -> 'a -> 'a
+(** [apply_or f x] returns the original [x] if [f] fails, or unwraps [f x] if it succeeds.
+    Useful for piping preprocessing functions together (such as string processing),
+    turning functions like "remove" into "remove_if_it_exists".
+    *)
+
 val value : 'a t -> default:'a -> 'a
 (** [value o ~default] is similar to the Stdlib's [Option.value] and to {!get_or}.
     @since 2.8 *)
@@ -177,6 +183,9 @@ module Infix : sig
 
   val ( <+> ) : 'a t -> 'a t -> 'a t
   (** [o1 <+> o2] is [o1] if [o1] is [Some _], [o2] if [o1] is [None]. *)
+
+  val ( |?> ) : 'a -> ('a -> 'a t) -> 'a
+  (** [x |?> f] is [apply_or f x] *)
 
   val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
   val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t

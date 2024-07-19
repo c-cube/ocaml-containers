@@ -116,6 +116,13 @@ let get_or ~default x =
   | None -> default
   | Some y -> y
 
+let apply_or f x =
+  match f x with
+  | None -> x
+  | Some y -> y
+
+let ( |?> ) x f = apply_or f x
+
 let value x ~default =
   match x with
   | None -> default
@@ -186,6 +193,7 @@ module Infix = struct
   let ( <*> ) = ( <*> )
   let ( <$> ) = map
   let ( <+> ) = ( <+> )
+  let ( |?> ) = ( |?> )
   let ( let+ ) = ( >|= )
   let ( let* ) = ( >>= )
 
