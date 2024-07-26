@@ -30,17 +30,17 @@ module Position = struct
   type t = position
 
   let compute_line_offsets_ (s : string) : int array =
-    let lines = CCVector.create () in
+    let lines = CCVec.create () in
     let i = ref 0 in
-    CCVector.push lines 0;
+    CCVec.push lines 0;
     while !i < String.length s do
       match String.index_from s !i '\n' with
       | exception Not_found -> i := String.length s
       | j ->
-        CCVector.push lines j;
+        CCVec.push lines j;
         i := j + 1
     done;
-    CCVector.to_array lines
+    CCVec.to_array lines
 
   let line_offsets_ cs =
     match cs.line_offsets with
@@ -117,7 +117,7 @@ type state = {
    where:
    [type global = {
      mutable memo: Memo_state.t option;
-     line_offsets: int CCVector.vector;
+     line_offsets: int CCVec.vector;
    }
 
    with line_offsets used to cache the offset where each line begins,

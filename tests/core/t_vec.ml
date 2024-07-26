@@ -1,21 +1,18 @@
 module T = (val Containers_testlib.make ~__FILE__ ())
 include T
+open CCVec;;
 
-[@@@ocaml.alert "-deprecated"]
+t ~name:__LOC__ @@ fun () -> create_with ~capacity:200 1 |> capacity >= 200;;
+t ~name:__LOC__ @@ fun () -> return 42 |> to_list = [ 42 ];;
+t ~name:__LOC__ @@ fun () -> return 42 |> length = 1;;
 
-open CCVector;;
-
-t @@ fun () -> create_with ~capacity:200 1 |> capacity >= 200;;
-t @@ fun () -> return 42 |> to_list = [ 42 ];;
-t @@ fun () -> return 42 |> length = 1;;
-
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create_with ~capacity:10 1 in
 ensure v 200;
 capacity v >= 200
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 0.;
 push v 1.;
@@ -23,7 +20,7 @@ push v 2.;
 3 = length v
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 1.;
 push v 2.;
@@ -31,7 +28,7 @@ push v 3.;
 6. = get v 0 +. get v 1 +. get v 2
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 0;
 push v 1;
@@ -39,7 +36,7 @@ push v 2;
 3 = length v
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 1;
 push v 2;
@@ -47,7 +44,7 @@ push v 3;
 6 = get v 0 + get v 1 + get v 2
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v "a";
 push v "b";
@@ -55,7 +52,7 @@ push v "c";
 3 = length v
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v "a";
 push v "b";
@@ -63,7 +60,7 @@ push v "c";
 "abc" = String.concat "" (to_list v)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 0.;
 push v 1.;
@@ -86,7 +83,7 @@ assert_equal (1. +. 7. +. 10. +. 12.) (fold ( +. ) 0. v);
 true
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = of_iter Iter.(1 -- 10) in
 assert_equal 10 (size v);
 clear v;
@@ -95,7 +92,7 @@ assert (Iter.is_empty (to_iter v));
 true
 ;;
 
-t (fun () ->
+t ~name:__LOC__ (fun () ->
     let v = of_iter Iter.(1 -- 10) in
     assert_equal CCList.(1 -- 10) (to_seq v |> CCList.of_seq);
 
@@ -111,7 +108,7 @@ t (fun () ->
     true)
 ;;
 
-t (fun () ->
+t ~name:__LOC__ (fun () ->
     let v = of_iter Iter.(1 -- 10) in
     assert_equal CCList.(1 -- 10 |> rev) (to_seq_rev v |> CCList.of_seq);
     clear v;
@@ -120,49 +117,49 @@ t (fun () ->
     true)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 1;
 to_list v = [ 1 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = of_list [ 1; 2; 3 ] in
 push v 4;
 to_list v = [ 1; 2; 3; 4 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 1 0 in
 resize_with v (fun i -> i) 5;
 to_list v = [ 0; 1; 2; 3; 4 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 1 0 in
 resize_with v (fun i -> i) 5;
 CCList.length (to_list v) = 5
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create_with ~capacity:2 0 in
 resize_with v (fun i -> i) 5;
 to_list v = [ 0; 1; 2; 3; 4 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 5 0 in
 resize_with v (fun i -> i) 5;
 to_list v = [ 0; 0; 0; 0; 0 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 5 0 in
 resize_with v (fun i -> i) 6;
 to_list v = [ 0; 0; 0; 0; 0; 5 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 5 0 in
 try
   resize_with v (fun i -> i) (-1);
@@ -170,43 +167,43 @@ try
 with Invalid_argument _ -> true
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 5 0 in
 resize_with v (fun i -> i) 5;
 List.length (to_list v) = 5
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 1 0 in
 resize_with_init v ~init:1 5;
 to_list v = [ 0; 1; 1; 1; 1 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 1 0 in
 resize_with_init v ~init:1 5;
 List.length (to_list v) = 5
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create_with ~capacity:2 0 in
 resize_with_init v ~init:1 5;
 to_list v = [ 1; 1; 1; 1; 1 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 5 0 in
 resize_with_init v ~init:1 5;
 to_list v = [ 0; 0; 0; 0; 0 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 3 0 in
 resize_with_init v ~init:1 5;
 to_list v = [ 0; 0; 0; 1; 1 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 5 0 in
 try
   resize_with_init v ~init:1 (-1);
@@ -214,14 +211,14 @@ try
 with Invalid_argument _ -> true
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 5 0 in
 resize_with_init v ~init:1 5;
 List.length (to_list v) = 5
 ;;
 
 (* test for asymptotic behavior *)
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = make 1 0 in
 for i = 0 to 100_000 do
   resize_with_init v ~init:10 i
@@ -229,37 +226,37 @@ done;
 true
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v1 = init 5 (fun i -> i) and v2 = init 5 (fun i -> i + 5) in
 append v1 v2;
 to_list v1 = CCList.(0 -- 9)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let empty = create () and v2 = init 5 (fun i -> i) in
 append empty v2;
 to_list empty = CCList.(0 -- 4)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v1 = init 5 (fun i -> i) and empty = create () in
 append v1 empty;
 to_list v1 = CCList.(0 -- 4)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = init 3 (fun i -> i) in
 append v v;
 to_list v = [ 0; 1; 2; 0; 1; 2 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let empty = create () in
 append empty empty;
 to_list empty = []
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let a = of_iter Iter.(1 -- 5) in
 let b = of_iter Iter.(6 -- 10) in
 append a b;
@@ -297,57 +294,57 @@ q
     to_list v1 = List.sort CCInt.compare (to_list v2))
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = 1 -- 5 in
 insert v 3 9;
 to_list v = [ 1; 2; 3; 9; 4; 5 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 insert v 0 2;
 to_list v = [ 2 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = 1 -- 3 in
 remove_and_shift v 1;
 insert v 1 5;
 to_list v = [ 1; 5; 3 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = 1 -- 3 in
 remove_and_shift v 0;
 insert v 2 5;
 to_list v = [ 2; 3; 5 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = 1 -- 3 in
 insert v 3 5;
 to_list v = [ 1; 2; 3; 5 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v1 = init 5 (fun i -> i) and v2 = Array.init 5 (fun i -> i + 5) in
 append_array v1 v2;
 to_list v1 = CCList.(0 -- 9)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let empty = create () in
 append_array empty CCArray.(0 -- 5);
 to_list empty = CCList.(0 -- 5)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v1 = init 5 (fun i -> i) in
 append_array v1 [||];
 to_list v1 = CCList.(0 -- 4)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let empty = create () in
 append_array empty [||];
 to_list empty = []
@@ -367,27 +364,11 @@ q
     let v = of_list l1 in
     append_list v l2;
     length v = List.length l1 + List.length l2)
-;;
-
-q
-  Q.(pair (list int) (list int))
-  (fun (l1, l2) ->
-    let v = of_list l1 in
-    append_gen v (Gen.of_list l2);
-    to_list v = l1 @ l2)
-;;
-
-q
-  Q.(pair (list int) (list int))
-  (fun (l1, l2) ->
-    let v = of_list l1 in
-    append_gen v (Gen.of_list l2);
-    length v = List.length l1 + List.length l2)
 
 let gen x =
   let small = length in
   let print =
-    CCOption.map (fun p x -> Q.Print.list p (CCVector.to_list x)) x.Q.print
+    CCOption.map (fun p x -> Q.Print.list p (CCVec.to_list x)) x.Q.print
   in
   Q.make ?print ~small Q.Gen.(list x.Q.gen >|= of_list)
 ;;
@@ -401,10 +382,10 @@ q
     = Iter.(to_list (append (of_list l1) (to_iter v2))))
 ;;
 
-t @@ fun () -> equal ( = ) (create ()) (create ());;
-t @@ fun () -> equal ( = ) (return 42) (return 42);;
-t @@ fun () -> not (equal ( = ) (create ()) (return 42));;
-t @@ fun () -> not (equal ( = ) (return 42) (create ()));;
+t ~name:__LOC__ @@ fun () -> equal ( = ) (create ()) (create ());;
+t ~name:__LOC__ @@ fun () -> equal ( = ) (return 42) (return 42);;
+t ~name:__LOC__ @@ fun () -> not (equal ( = ) (create ()) (return 42));;
+t ~name:__LOC__ @@ fun () -> not (equal ( = ) (return 42) (create ()));;
 
 q
   Q.(
@@ -429,19 +410,19 @@ q
     compare Stdlib.compare v1 v2 = CCList.compare Stdlib.compare l1 l2)
 ;;
 
-t @@ fun () -> 1 -- 10 |> top = Some 10;;
-t @@ fun () -> create () |> top = None;;
-t @@ fun () -> 1 -- 10 |> top_exn = 10;;
+t ~name:__LOC__ @@ fun () -> 1 -- 10 |> top = Some 10;;
+t ~name:__LOC__ @@ fun () -> create () |> top = None;;
+t ~name:__LOC__ @@ fun () -> 1 -- 10 |> top_exn = 10;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = of_list [ 1; 2; 3 ] in
 let v' = copy v in
 to_list v' = [ 1; 2; 3 ]
 ;;
 
-t @@ fun () -> create () |> copy |> is_empty;;
+t ~name:__LOC__ @@ fun () -> create () |> copy |> is_empty;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = of_iter Iter.(1 -- 100) in
 assert_equal 100 (size v);
 let v' = copy v in
@@ -460,7 +441,7 @@ q
     equal ( = ) v v')
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = of_iter Iter.(1 -- 10) in
 truncate v 5;
 assert_equal [ 1; 2; 3; 4; 5 ] (to_list v);
@@ -483,13 +464,19 @@ q (gen Q.small_int) (fun v ->
 ;;
 
 q (gen Q.small_int) (fun v ->
-    let v' = copy v in
-    sort' Stdlib.compare v';
+    let v' = sorted Stdlib.compare v in
     let l = to_list v' in
     List.sort Stdlib.compare l = l)
 ;;
 
-t @@ fun () ->
+q (gen Q.small_int) (fun v ->
+    let v' = copy v in
+    sort Stdlib.compare v';
+    let l = to_list v' in
+    List.sort Stdlib.compare l = l)
+;;
+
+t ~name:__LOC__ @@ fun () ->
 let v = of_list [ 1; 4; 5; 3; 2; 4; 1 ] in
 uniq_sort Stdlib.compare v;
 to_list v = [ 1; 2; 3; 4; 5 ]
@@ -503,13 +490,13 @@ q ~long_factor:10
     to_list v = CCList.sort_uniq ~cmp:Stdlib.compare l)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = 0 -- 6 in
 iteri (fun i _ -> if i = 3 then remove_unordered v i) v;
 length v = 6
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 1;
 push v 2;
@@ -524,7 +511,7 @@ q
     to_list (map f v) = List.map f l)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = create () in
 push v 1;
 push v 2;
@@ -548,7 +535,7 @@ q
     to_list v = List.map f l)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = 1 -- 10 in
 filter_in_place (fun x -> x < 4) v;
 to_list v = [ 1; 2; 3 ]
@@ -562,11 +549,11 @@ q
     to_list v = List.filter f l)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 filter (fun x -> x mod 2 = 0) (of_list [ 1; 2; 3; 4; 5 ]) |> to_list = [ 2; 4 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 filter (fun x -> x mod 2 = 0) (1 -- 1_000_000) |> length = 500_000
 ;;
 
@@ -577,8 +564,8 @@ q
     to_list (filter f v) = List.filter f l)
 ;;
 
-t @@ fun () -> fold ( + ) 0 (of_list [ 1; 2; 3; 4; 5 ]) = 15;;
-t @@ fun () -> fold ( + ) 0 (create ()) = 0;;
+t ~name:__LOC__ @@ fun () -> fold ( + ) 0 (of_list [ 1; 2; 3; 4; 5 ]) = 15;;
+t ~name:__LOC__ @@ fun () -> fold ( + ) 0 (create ()) = 0;;
 
 q
   Q.(pair (fun2 Observable.int Observable.int small_int) (small_list small_int))
@@ -639,7 +626,7 @@ q
 ;;
 
 (* check it frees memory properly *)
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let w = Weak.create 1 in
 let v =
   let s = "coucou" ^ "lol" in
@@ -658,14 +645,14 @@ eq ~cmp:( = )
   ~printer:Q.Print.(list int)
   [ 11; 12; 21; 22 ]
   (List.sort CCInt.compare @@ to_list
-  @@ monoid_product ( + ) (of_list [ 10; 20 ]) (of_list [ 1; 2 ]))
+  @@ cartesian_product ( + ) (of_list [ 10; 20 ]) (of_list [ 1; 2 ]))
 ;;
 
 eq ~cmp:( = )
   ~printer:Q.Print.(list int)
   [ 11; 12; 13; 14 ]
   (List.sort CCInt.compare @@ to_list
-  @@ monoid_product ( + ) (of_list [ 10 ]) (of_list [ 1; 2; 3; 4 ]))
+  @@ cartesian_product ( + ) (of_list [ 10 ]) (of_list [ 1; 2; 3; 4 ]))
 ;;
 
 q
@@ -676,9 +663,15 @@ q
     to_list v = List.rev l)
 ;;
 
-t @@ fun () -> rev (of_list [ 1; 2; 3; 4 ]) |> to_list = [ 4; 3; 2; 1 ];;
-t @@ fun () -> rev (of_list [ 1; 2; 3; 4; 5 ]) |> to_list = [ 5; 4; 3; 2; 1 ];;
-t @@ fun () -> rev (create ()) |> to_list = [];;
+t ~name:__LOC__ @@ fun () ->
+rev (of_list [ 1; 2; 3; 4 ]) |> to_list = [ 4; 3; 2; 1 ]
+;;
+
+t ~name:__LOC__ @@ fun () ->
+rev (of_list [ 1; 2; 3; 4; 5 ]) |> to_list = [ 5; 4; 3; 2; 1 ]
+;;
+
+t ~name:__LOC__ @@ fun () -> rev (create ()) |> to_list = [];;
 
 q
   Q.(small_list small_int)
@@ -687,7 +680,7 @@ q
     to_list (rev v) = List.rev l)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 let v = of_list [ 1; 2; 3 ] in
 (fun f -> rev_iter f v) |> Iter.to_list = [ 3; 2; 1 ]
 ;;
@@ -699,7 +692,9 @@ q
     (fun f -> rev_iter f v) |> Iter.to_list = List.rev l)
 ;;
 
-t @@ fun () -> of_iter Iter.(1 -- 10) |> to_list = CCList.(1 -- 10);;
+t ~name:__LOC__ @@ fun () ->
+of_iter Iter.(1 -- 10) |> to_list = CCList.(1 -- 10)
+;;
 
 q
   Q.(list int)
@@ -708,21 +703,21 @@ q
     v |> to_iter_rev |> Iter.to_rev_list = l)
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 slice_iter (of_list [ 0; 1; 2; 3; 4 ]) 1 3 |> CCList.of_iter = [ 1; 2; 3 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 slice_iter (of_list [ 0; 1; 2; 3; 4 ]) 1 4 |> CCList.of_iter = [ 1; 2; 3; 4 ]
 ;;
 
-t @@ fun () ->
+t ~name:__LOC__ @@ fun () ->
 slice_iter (of_list [ 0; 1; 2; 3; 4 ]) 0 5 |> CCList.of_iter = [ 0; 1; 2; 3; 4 ]
 ;;
 
-t @@ fun () -> 1 -- 4 |> to_list = [ 1; 2; 3; 4 ];;
-t @@ fun () -> 4 -- 1 |> to_list = [ 4; 3; 2; 1 ];;
-t @@ fun () -> 0 -- 0 |> to_list = [ 0 ];;
+t ~name:__LOC__ @@ fun () -> 1 -- 4 |> to_list = [ 1; 2; 3; 4 ];;
+t ~name:__LOC__ @@ fun () -> 4 -- 1 |> to_list = [ 4; 3; 2; 1 ];;
+t ~name:__LOC__ @@ fun () -> 0 -- 0 |> to_list = [ 0 ];;
 
 q
   Q.(pair small_int small_int)
@@ -734,23 +729,5 @@ q
   (fun (a, b) -> a --^ b |> to_list = CCList.(a --^ b))
 ;;
 
-t @@ fun () -> of_list CCList.(1 -- 300_000) |> to_list = CCList.(1 -- 300_000)
-;;
-
-t @@ fun () ->
-let v = 1 -- 10 in
-to_list v = Gen.to_list (to_gen v)
-;;
-
-t @@ fun () ->
-let v = create () in
-0 = foldi (fun i acc _ -> acc + i) 0 v
-;;
-
-t @@ fun () ->
-let v = create () in
-push v 0;
-push v 0;
-push v 0;
-push v 0;
-6 = foldi (fun i acc _ -> acc + i) 0 v
+t ~name:__LOC__ @@ fun () ->
+of_list CCList.(1 -- 300_000) |> to_list = CCList.(1 -- 300_000)
