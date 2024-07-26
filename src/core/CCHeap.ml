@@ -74,18 +74,20 @@ module type S = sig
       @raise Empty if the heap is empty. *)
 
   val delete_one : (elt -> elt -> bool) -> elt -> t -> t
-  (** Delete one occurrence of a value if it exist in the heap.
-      [delete_one eq x h], use [eq] to find one [x] in [h] and delete it.
-      If [h] do not contain [x] then it return [h].
+  (** [delete_one eq x h] deletes an occurrence of the value [x] from the heap
+      [h],
+      if there is some.
+      If [h] does not contain [x], then [h] itself is returned.
+      Elements are identified by the equality function [eq].
       Complexity: [O(n)].
       @since 2.0 *)
 
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
-  (** Delete all occurrences of a value in the heap.
-      [delete_all eq x h], use [eq] to find all [x] in [h] and delete them.
-      If [h] do not contain [x] then it return [h].
-      The difference with {!filter} is that [delete_all] stops as soon as
-      it enters a subtree whose root is bigger than the element.
+  (** [delete_all eq x h] deletes all occurrences of the value [x] from the heap [h].
+      If [h] does not contain [x], then [h] itself is returned.
+      Elements are identified by the equality function [eq].
+      By contrast with {!filter}, [delete_all] stops as soon as
+      it enters a subtree whose root is greater than [x].
       Complexity: [O(n log n)].
       @since 2.0 *)
 

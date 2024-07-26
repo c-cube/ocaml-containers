@@ -79,17 +79,19 @@ module type S = sig
       @raise Empty if the heap is empty. *)
 
   val delete_one : (elt -> elt -> bool) -> elt -> t -> t
-  (** [delete_one eq x h] uses [eq] to find one occurrence of a value [x]
-      if it exist in the heap [h], and delete it.
-      If [h] do not contain [x] then it return [h].
+  (** [delete_one eq x h] deletes an occurrence of the value [x] from the heap [h],
+      if there is some.
+      If [h] does not contain [x], then [h] itself is returned.
+      Elements are identified by the equality function [eq].
       Complexity: [O(n)].
       @since 2.0 *)
 
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
-  (** [delete_all eq x h] uses [eq] to find all [x] in [h] and delete them.
-      If [h] do not contain [x] then it return [h].
-      The difference with {!filter} is that [delete_all] stops as soon as
-      it enters a subtree whose root is bigger than the element.
+  (** [delete_all eq x h] deletes all occurrences of the value [x] from the heap [h].
+      If [h] does not contain [x], then [h] itself is returned.
+      Elements are identified by the equality function [eq].
+      By contrast with {!filter}, [delete_all] stops as soon as
+      it enters a subtree whose root is greater than [x].
       Complexity: [O(n log n)].
       @since 2.0 *)
 
@@ -196,9 +198,9 @@ module type S = sig
   (** {2 Pretty-printing} *)
 
   val to_string : ?sep:string -> (elt -> string) -> t -> string
-  (**  [to_string ?sep f h] prints the heap [h] in a string
-       using [sep] as a given separator (default ",") between each element
-       (converted to a string using [f]).
+  (**  [to_string ?sep f h] prints the heap [h] to a string,
+       using [f] to convert elements to strings
+       and [sep] (default: [","]) as a separator between elements.
        @since 2.7 *)
 
   val pp :
@@ -209,17 +211,17 @@ module type S = sig
     t printer
   (** [pp ?pp_start ?pp_stop ?pp_sep ppf h] prints [h] on [ppf].
       Each element is formatted with [ppf], [pp_start] is called at the beginning,
-      [pp_stop] is called at the end, [pp_sep] is called between each elements.
-      By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
-      (fun out -> Format.fprintf out ",@ ").
+      [pp_stop] is called at the end, [pp_sep] is called between each element.
+      By default, [pp_start] and [pp_stop] do nothing, and [pp_sep] is
+      [(fun out -> Format.fprintf out ",@ ")].
       Renamed from [print] since 2.0
       @since 0.16 *)
 end
 
 module Make (E : PARTIAL_ORD) : S with type elt = E.t
 
-(** A convenient version of [Make] that take a [TOTAL_ORD] instead of
+(** A convenient version of [Make] that takes a [TOTAL_ORD] instead of
     a partially ordered module.
-    It allow to directly pass modules that implement [compare]
-    without implementing [leq] explicitly *)
+    It allows to directly pass modules that implement [compare]
+    without implementing [leq] explicitly. *)
 module Make_from_compare (E : TOTAL_ORD) : S with type elt = E.t
