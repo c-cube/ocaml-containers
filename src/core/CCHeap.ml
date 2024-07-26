@@ -49,11 +49,6 @@ module type S = sig
   val add : t -> elt -> t
   (** [add h x] is [insert x h]. *)
 
-  val filter : (elt -> bool) -> t -> t
-  (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
-      Complexity: [O(n log n)].
-  *)
-
   val find_min : t -> elt option
   (** [find_min h] find the minimal element of the heap [h].
       Complexity: [O(1)].
@@ -90,6 +85,11 @@ module type S = sig
       it enters a subtree whose root is greater than [x].
       Complexity: [O(n log n)].
       @since 2.0 *)
+
+  val filter : (elt -> bool) -> t -> t
+  (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
+      Complexity: [O(n log n)].
+  *)
 
   val iter : (elt -> unit) -> t -> unit
   (** [iter f h] iterates over the heap [h] invoking [f] with the current element. *)
@@ -251,12 +251,6 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
   let insert x h = merge (N (1, x, E, E)) h
   let add h x = insert x h
 
-  let rec filter p h =
-    match h with
-    | E -> E
-    | N (_, x, l, r) when p x -> _make_node x (filter p l) (filter p r)
-    | N (_, _, l, r) -> merge (filter p l) (filter p r)
-
   let find_min_exn = function
     | E -> raise Empty
     | N (_, x, _, _) -> x
@@ -305,6 +299,12 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
         _make_node y (delete_all eq x l) (delete_all eq x r)
       else
         h
+
+  let rec filter p h =
+    match h with
+    | E -> E
+    | N (_, x, l, r) when p x -> _make_node x (filter p l) (filter p r)
+    | N (_, _, l, r) -> merge (filter p l) (filter p r)
 
   let rec iter f h =
     match h with
