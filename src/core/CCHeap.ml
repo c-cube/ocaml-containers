@@ -89,20 +89,10 @@ module type S = sig
 
   (** {2 Conversions} *)
 
-  val to_list : t -> elt list
-  (** Return the elements of the heap, in no particular order. *)
-
-  val to_list_sorted : t -> elt list
-  (** Return the elements in increasing order.
-      @since 1.1 *)
-
   val add_list : t -> elt list -> t
   (** Add the elements of the list to the heap. An element occurring several
       times will be added that many times to the heap.
       @since 0.16 *)
-
-  val of_list : elt list -> t
-  (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
 
   val add_iter : t -> elt iter -> t
   (** Like {!add_list}.
@@ -112,6 +102,12 @@ module type S = sig
   (** Like {!add_list}.
       @since 2.8 *)
 
+  val add_gen : t -> elt gen -> t
+  (** @since 0.16 *)
+
+  val of_list : elt list -> t
+  (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
+
   val of_iter : elt iter -> t
   (** Build a heap from a given [iter]. Complexity: [O(n log n)].
       @since 2.8 *)
@@ -119,6 +115,12 @@ module type S = sig
   val of_seq : elt Seq.t -> t
   (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
       @since 2.8 *)
+
+  val of_gen : elt gen -> t
+  (** Build a heap from a given [gen]. Complexity: [O(n log n)]. *)
+
+  val to_list : t -> elt list
+  (** Return the elements of the heap, in no particular order. *)
 
   val to_iter : t -> elt iter
   (** Return a [iter] of the elements of the heap.
@@ -128,6 +130,13 @@ module type S = sig
   (** Return a [Seq.t] of the elements of the heap.
       @since 2.8 *)
 
+  val to_gen : t -> elt gen
+  (** Return a [gen] of the elements of the heap. *)
+
+  val to_list_sorted : t -> elt list
+  (** Return the elements in increasing order.
+      @since 1.1 *)
+
   val to_iter_sorted : t -> elt iter
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
@@ -135,15 +144,6 @@ module type S = sig
   val to_seq_sorted : t -> elt Seq.t
   (** Iterate on the elements, in increasing order.
       @since 2.8 *)
-
-  val add_gen : t -> elt gen -> t
-  (** @since 0.16 *)
-
-  val of_gen : elt gen -> t
-  (** Build a heap from a given [gen]. Complexity: [O(n log n)]. *)
-
-  val to_gen : t -> elt gen
-  (** Return a [gen] of the elements of the heap. *)
 
   val to_tree : t -> elt ktree
   (** Return a [ktree] of the elements of the heap. *)
@@ -283,24 +283,7 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
 
   (** {2 Conversions} *)
 
-  let to_list h =
-    let rec aux acc h =
-      match h with
-      | E -> acc
-      | N (_, x, l, r) -> x :: aux (aux acc l) r
-    in
-    aux [] h
-
-  let to_list_sorted heap =
-    let rec recurse acc h =
-      match take h with
-      | None -> List.rev acc
-      | Some (h', x) -> recurse (x :: acc) h'
-    in
-    recurse [] heap
-
   let add_list h l = List.fold_left add h l
-  let of_list l = add_list empty l
 
   let add_iter h i =
     let h = ref h in
@@ -312,8 +295,24 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
     Seq.iter (fun x -> h := insert x !h) seq;
     !h
 
+  let rec add_gen h g =
+    match g () with
+    | None -> h
+    | Some x -> add_gen (add h x) g
+
+  let of_list l = add_list empty l
   let of_iter i = add_iter empty i
   let of_seq seq = add_seq empty seq
+  let of_gen g = add_gen empty g
+
+  let to_list h =
+    let rec aux acc h =
+      match h with
+      | E -> acc
+      | N (_, x, l, r) -> x :: aux (aux acc l) r
+    in
+    aux [] h
+
   let to_iter h k = iter k h
 
   let to_seq h =
@@ -325,28 +324,6 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
       | N (_, x, l, r) :: st' -> Seq.Cons (x, aux (l :: r :: st'))
     in
     aux [ h ]
-
-  let to_iter_sorted heap =
-    let rec recurse h k =
-      match take h with
-      | None -> ()
-      | Some (h', x) ->
-        k x;
-        recurse h' k
-    in
-    fun k -> recurse heap k
-
-  let rec to_seq_sorted h () =
-    match take h with
-    | None -> Seq.Nil
-    | Some (h', x) -> Seq.Cons (x, to_seq_sorted h')
-
-  let rec add_gen h g =
-    match g () with
-    | None -> h
-    | Some x -> add_gen (add h x) g
-
-  let of_gen g = add_gen empty g
 
   let to_gen h =
     let stack = Stack.create () in
@@ -364,6 +341,29 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
       )
     in
     next
+
+  let to_list_sorted heap =
+    let rec recurse acc h =
+      match take h with
+      | None -> List.rev acc
+      | Some (h', x) -> recurse (x :: acc) h'
+    in
+    recurse [] heap
+
+  let to_iter_sorted heap =
+    let rec recurse h k =
+      match take h with
+      | None -> ()
+      | Some (h', x) ->
+        k x;
+        recurse h' k
+    in
+    fun k -> recurse heap k
+
+  let rec to_seq_sorted h () =
+    match take h with
+    | None -> Seq.Nil
+    | Some (h', x) -> Seq.Cons (x, to_seq_sorted h')
 
   let rec to_tree h () =
     match h with

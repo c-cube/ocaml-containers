@@ -93,20 +93,10 @@ module type S = sig
 
   (** {2 Conversions} *)
 
-  val to_list : t -> elt list
-  (** [to_list h] returns the elements of the heap [h], in no particular order. *)
-
-  val to_list_sorted : t -> elt list
-  (** [to_list_sorted h] returns the elements of the heap [h] in increasing order.
-      @since 1.1 *)
-
   val add_list : t -> elt list -> t
   (** [add_list h l] adds the elements of the list [l] into the heap [h].
       An element occurring several times will be added that many times to the heap.
       @since 0.16 *)
-
-  val of_list : elt list -> t
-  (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
 
   val add_iter : t -> elt iter -> t
   (** [add_iter h iter] is like {!add_list}.
@@ -117,6 +107,13 @@ module type S = sig
       Renamed from [add_std_seq] since 3.0.
       @since 3.0 *)
 
+  val add_gen : t -> elt gen -> t
+  (** [add_gen h gen] adds the gen [gen] to the heap [h].
+      @since 0.16 *)
+
+  val of_list : elt list -> t
+  (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
+
   val of_iter : elt iter -> t
   (** [of_iter iter] builds a heap from a given [iter]. Complexity: [O(n log n)].
       @since 2.8 *)
@@ -126,6 +123,12 @@ module type S = sig
       Renamed from [of_seq] since 3.0.
       @since 3.0 *)
 
+  val of_gen : elt gen -> t
+  (** [of_gen gen] builds a heap from a given [gen]. Complexity: [O(n log n)]. *)
+
+  val to_list : t -> elt list
+  (** [to_list h] returns the elements of the heap [h], in no particular order. *)
+
   val to_iter : t -> elt iter
   (** [to_iter h] returns a [iter] of the elements of the heap [h].
       @since 2.8 *)
@@ -134,6 +137,13 @@ module type S = sig
   (** [to_seq h] returns a [Seq.t] of the elements of the heap [h].
       Renamed from [to_std_seq] since 3.0.
       @since 3.0 *)
+
+  val to_gen : t -> elt gen
+  (** [to_gen h] returns a [gen] of the elements of the heap [h]. *)
+
+  val to_list_sorted : t -> elt list
+  (** [to_list_sorted h] returns the elements of the heap [h] in increasing order.
+      @since 1.1 *)
 
   val to_iter_sorted : t -> elt iter
   (** [to_iter_sorted h] returns a [iter] by iterating on the elements of [h], 
@@ -145,16 +155,6 @@ module type S = sig
       in increasing order.
       Renamed from [to_std_seq_sorted] since 3.0.
       @since 3.0 *)
-
-  val add_gen : t -> elt gen -> t
-  (** [add_gen h gen] adds the gen [gen] to the heap [h].
-      @since 0.16 *)
-
-  val of_gen : elt gen -> t
-  (** [of_gen gen] builds a heap from a given [gen]. Complexity: [O(n log n)]. *)
-
-  val to_gen : t -> elt gen
-  (** [to_gen h] returns a [gen] of the elements of the heap [h]. *)
 
   val to_tree : t -> elt ktree
   (** [to_tree h] returns a [ktree] of the elements of the heap [h]. *)
