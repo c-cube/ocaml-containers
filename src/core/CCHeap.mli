@@ -42,20 +42,27 @@ module type S = sig
   exception Empty
 
   val merge : t -> t -> t
-  (** [merge h1 h2] merges the two heaps [h1] and [h2]. *)
+  (** [merge h1 h2] merges the two heaps [h1] and [h2].
+      Complexity: [O(log (m+n))] where [m] and [n] are the number of elements in each heap.
+  *)
 
   val insert : elt -> t -> t
-  (** [insert x h] inserts an element [x] into the heap [h]. *)
+  (** [insert x h] inserts an element [x] into the heap [h].
+      Complexity: [O(log n)] where [n] is the number of elements in [h].
+  *)
 
   val add : t -> elt -> t
-  (** [add h x] inserts an element [x] into the heap [h]. *)
+  (** [add h x] is [insert x h]. *)
 
   val filter : (elt -> bool) -> t -> t
   (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
-      Linear time at least. *)
+      Complexity: [O(n log n)].
+  *)
 
   val find_min : t -> elt option
-  (** [find_min h] find the minimal element of the heap [h]. *)
+  (** [find_min h] find the minimal element of the heap [h].
+      Complexity: [O(1)].
+  *)
 
   val find_min_exn : t -> elt
   (** [find_min_exn h] is like {!find_min} but can fail.
@@ -63,7 +70,9 @@ module type S = sig
 
   val take : t -> (t * elt) option
   (** [take h] extracts and returns the minimum element, and the new heap (without
-      this element), or [None] if the heap [h] is empty. *)
+      this element), or [None] if the heap [h] is empty.
+      Complexity: [O(log n)].
+  *)
 
   val take_exn : t -> t * elt
   (** [take_exn h] is like {!take}, but can fail.
@@ -73,6 +82,7 @@ module type S = sig
   (** [delete_one eq x h] uses [eq] to find one occurrence of a value [x]
       if it exist in the heap [h], and delete it.
       If [h] do not contain [x] then it return [h].
+      Complexity: [O(n)].
       @since 2.0 *)
 
   val delete_all : (elt -> elt -> bool) -> elt -> t -> t
@@ -80,6 +90,7 @@ module type S = sig
       If [h] do not contain [x] then it return [h].
       The difference with {!filter} is that [delete_all] stops as soon as
       it enters a subtree whose root is bigger than the element.
+      Complexity: [O(n log n)].
       @since 2.0 *)
 
   val iter : (elt -> unit) -> t -> unit
@@ -89,13 +100,17 @@ module type S = sig
   (** [fold f acc h] folds on all values of [h]. *)
 
   val size : t -> int
-  (** [size h] is the number of elements in the heap [h]. Linear complexity. *)
+  (** [size h] is the number of elements in the heap [h].
+      Complexity: [O(n)].
+  *)
 
   (** {2 Adding many elements at once} *)
 
   val add_list : t -> elt list -> t
   (** [add_list h l] adds the elements of the list [l] into the heap [h].
       An element occurring several times will be added that many times to the heap.
+      Complexity: [O(n log (m+n))]
+      where [m] and [n] are the number of elements in [h] and [l], respectively.
       @since 0.16 *)
 
   val add_iter : t -> elt iter -> t
@@ -140,6 +155,7 @@ module type S = sig
   val to_list : t -> elt list
   (** [to_list h] returns a list of the elements of the heap [h],
       in no particular order.
+      Complexity: [O(n)].
   *)
 
   val to_iter : t -> elt iter
@@ -157,6 +173,7 @@ module type S = sig
   val to_list_sorted : t -> elt list
   (** [to_list_sorted h] returns the list of elements of the heap [h]
       in increasing order.
+      Complexity: [O(n log n)].
       @since 1.1 *)
 
   val to_iter_sorted : t -> elt iter
@@ -172,7 +189,9 @@ module type S = sig
 
   val to_tree : t -> elt ktree
   (** [to_tree h] returns a [ktree] of the elements of the heap [h].
-      The layout is not specified. *)
+      The layout is not specified.
+      Complexity: [O(n)].
+  *)
 
   (** {2 Pretty-printing} *)
 
