@@ -87,66 +87,90 @@ module type S = sig
   val size : t -> int
   (** Number of elements (linear complexity). *)
 
-  (** {2 Conversions} *)
+  (** {2 Adding many elements at once} *)
 
   val add_list : t -> elt list -> t
-  (** Add the elements of the list to the heap. An element occurring several
-      times will be added that many times to the heap.
+  (** [add_list h l] adds the elements of the list [l] into the heap [h].
+      An element occurring several times will be added that many times to the heap.
       @since 0.16 *)
 
   val add_iter : t -> elt iter -> t
-  (** Like {!add_list}.
+  (** [add_iter h iter] is akin to {!add_list},
+      but taking an [iter] of elements as input.
       @since 2.8 *)
 
   val add_seq : t -> elt Seq.t -> t
-  (** Like {!add_list}.
-      @since 2.8 *)
+  (** [add_seq h seq] is akin to {!add_list},
+      but taking a [Seq.t] of elements as input.
+      Renamed from [add_std_seq] since 3.0.
+      @since 3.0 *)
 
   val add_gen : t -> elt gen -> t
-  (** @since 0.16 *)
+  (** [add_gen h gen] is akin to {!add_list},
+      but taking a [gen] of elements as input.
+      @since 0.16 *)
+
+  (** {2 Conversions} *)
 
   val of_list : elt list -> t
-  (** [of_list l] is [add_list empty l]. Complexity: [O(n log n)]. *)
+  (** [of_list l] builds a heap from a given list of elements.
+      It is equivalent to [add_list empty l].
+      Complexity: [O(n log n)].
+  *)
 
   val of_iter : elt iter -> t
-  (** Build a heap from a given [iter]. Complexity: [O(n log n)].
+  (** [of_iter iter] is akin to {!of_list},
+      but taking an [iter] of elements as input.
       @since 2.8 *)
 
   val of_seq : elt Seq.t -> t
-  (** Build a heap from a given [Seq.t]. Complexity: [O(n log n)].
-      @since 2.8 *)
+  (** [of_seq seq] is akin to {!of_list},
+      but taking a [Seq.t] of elements as input.
+      Renamed from [of_seq] since 3.0.
+      @since 3.0 *)
 
   val of_gen : elt gen -> t
-  (** Build a heap from a given [gen]. Complexity: [O(n log n)]. *)
+  (** [of_gen gen] is akin to {!of_list},
+      but taking a [gen] of elements as input. *)
 
   val to_list : t -> elt list
-  (** Return the elements of the heap, in no particular order. *)
+  (** [to_list h] returns a list of the elements of the heap [h],
+      in no particular order.
+  *)
 
   val to_iter : t -> elt iter
-  (** Return a [iter] of the elements of the heap.
+  (** [to_iter h] is akin to {!to_list}, but returning an [iter] of elements.
       @since 2.8 *)
 
   val to_seq : t -> elt Seq.t
-  (** Return a [Seq.t] of the elements of the heap.
-      @since 2.8 *)
+  (** [to_seq h] is akin to {!to_list}, but returning a [Seq.t] of elements
+      Renamed from [to_std_seq] since 3.0.
+      @since 3.0 *)
 
   val to_gen : t -> elt gen
-  (** Return a [gen] of the elements of the heap. *)
+  (** [to_gen h] is akin to {!to_list}, but returning a [gen] of elements. *)
 
   val to_list_sorted : t -> elt list
-  (** Return the elements in increasing order.
+  (** [to_list_sorted h] returns the list of elements of the heap [h]
+      in increasing order.
       @since 1.1 *)
 
   val to_iter_sorted : t -> elt iter
-  (** Iterate on the elements, in increasing order.
+  (** [to_iter_sorted h] is akin to {!to_list_sorted},
+      but returning an [iter] of elements.
       @since 2.8 *)
 
   val to_seq_sorted : t -> elt Seq.t
-  (** Iterate on the elements, in increasing order.
-      @since 2.8 *)
+  (** [to_seq_sorted h] is akin to {!to_list_sorted},
+      but returning a [Seq.t] of elements.
+      Renamed from [to_std_seq_sorted] since 3.0.
+      @since 3.0 *)
 
   val to_tree : t -> elt ktree
-  (** Return a [ktree] of the elements of the heap. *)
+  (** [to_tree h] returns a [ktree] of the elements of the heap [h].
+      The layout is not specified. *)
+
+  (** {2 Pretty-printing} *)
 
   val to_string : ?sep:string -> (elt -> string) -> t -> string
   (**  Print the heap in a string
@@ -281,7 +305,7 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
     | E -> 0
     | N (_, _, l, r) -> 1 + size l + size r
 
-  (** {2 Conversions} *)
+  (** {2 Adding many elements at once} *)
 
   let add_list h l = List.fold_left add h l
 
@@ -299,6 +323,8 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
     match g () with
     | None -> h
     | Some x -> add_gen (add h x) g
+
+  (** {2 Conversions} *)
 
   let of_list l = add_list empty l
   let of_iter i = add_iter empty i
@@ -369,6 +395,8 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
     match h with
     | E -> `Nil
     | N (_, x, l, r) -> `Node (x, [ to_tree l; to_tree r ])
+
+  (** {2 Pretty-printing} *)
 
   let to_string ?(sep = ",") elt_to_string h =
     to_list_sorted h |> List.map elt_to_string |> String.concat sep
