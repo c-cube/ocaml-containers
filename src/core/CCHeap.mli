@@ -43,6 +43,7 @@ module type S = sig
 
   val merge : t -> t -> t
   (** [merge h1 h2] merges the two heaps [h1] and [h2].
+      If one heap is empty, the result is physically equal to the other heap.
       Complexity: [O(log (m+n))] where [m] and [n] are the number of elements in each heap.
   *)
 
