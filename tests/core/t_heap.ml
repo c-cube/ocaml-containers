@@ -17,6 +17,16 @@ let medium_nat =
        else Random.State.int st 10_000
     )
 
+let list_delete_first (x0 : int) (xs : int list) : int list =
+  let rec aux acc xs =
+    begin match xs with
+    | [] -> List.rev acc
+    | x :: xs' when x = x0 -> List.rev_append acc xs'
+    | x :: xs' -> aux (x :: acc) xs'
+    end
+  in
+  aux [] xs
+
 module H = CCHeap.Make (struct
   type t = int
   let leq x y = x <= y
@@ -24,22 +34,30 @@ end)
 
 ;;
 
-t ~name:"of_list, take_exn" @@ fun () ->
+t ~name:"of_list, find_min_exn, take_exn" @@ fun () ->
   let h = H.of_list [ 5; 4; 3; 4; 1; 42; 0 ] in
+  assert_equal ~printer:string_of_int 0 (H.find_min_exn h);
   let h, x = H.take_exn h in
   assert_equal ~printer:string_of_int 0 x;
+  assert_equal ~printer:string_of_int 1 (H.find_min_exn h);
   let h, x = H.take_exn h in
   assert_equal ~printer:string_of_int 1 x;
+  assert_equal ~printer:string_of_int 3 (H.find_min_exn h);
   let h, x = H.take_exn h in
   assert_equal ~printer:string_of_int 3 x;
+  assert_equal ~printer:string_of_int 4 (H.find_min_exn h);
   let h, x = H.take_exn h in
   assert_equal ~printer:string_of_int 4 x;
+  assert_equal ~printer:string_of_int 4 (H.find_min_exn h);
   let h, x = H.take_exn h in
   assert_equal ~printer:string_of_int 4 x;
+  assert_equal ~printer:string_of_int 5 (H.find_min_exn h);
   let h, x = H.take_exn h in
   assert_equal ~printer:string_of_int 5 x;
+  assert_equal ~printer:string_of_int 42 (H.find_min_exn h);
   let h, x = H.take_exn h in
   assert_equal ~printer:string_of_int 42 x;
+  assert_raises ((=) H.Empty) (fun () -> H.find_min_exn h);
   assert_raises ((=) H.Empty) (fun () -> H.take_exn h);
   true
 ;;
@@ -71,6 +89,41 @@ q ~name:"size"
     = (l |> List.length))
 ;;
 
+q ~name:"insert"
+  Q.(pair medium_nat (list medium_nat))
+  (fun (x, l) ->
+    (l |> H.of_list |> H.insert x |> H.to_list_sorted)
+    = ((x::l) |> List.sort CCInt.compare))
+;;
+
+q ~name:"merge"
+  Q.(pair (list medium_nat) (list medium_nat))
+  (fun (l1, l2) ->
+    (H.merge (H.of_list l1) (H.of_list l2) |> H.to_list_sorted)
+    = ((l1@l2) |> List.sort CCInt.compare))
+;;
+
+q ~name:"add_list"
+  Q.(pair (list medium_nat) (list medium_nat))
+  (fun (l1, l2) ->
+    (H.add_list (H.of_list l1) l2 |> H.to_list_sorted)
+    = ((l1@l2) |> List.sort CCInt.compare))
+;;
+
+q ~name:"delete_one"
+  Q.(pair medium_nat (list medium_nat))
+  (fun (x, l) ->
+    (l |> H.of_list |> H.delete_one (=) x |> H.to_list_sorted)
+    = (l |> list_delete_first x |> List.sort CCInt.compare))
+;;
+
+q ~name:"delete_all"
+  Q.(pair medium_nat (list medium_nat))
+  (fun (x, l) ->
+    (l |> H.of_list |> H.delete_all (=) x |> H.to_list_sorted)
+    = (l |> List.filter ((<>) x) |> List.sort CCInt.compare))
+;;
+
 q ~name:"filter"
   Q.(list medium_nat)
   (fun l ->
@@ -79,10 +132,68 @@ q ~name:"filter"
     List.for_all p l' && List.length l' = List.length (List.filter p l))
 ;;
 
+t ~name:"physical equality" @@ fun () ->
+  let h = H.of_list [ 5; 4; 3; 4; 1; 42; 0 ] in
+  assert_bool "physical equality of merge with left empty"
+    (CCEqual.physical h (H.merge H.empty h)) ;
+  assert_bool "physical equality of merge with right empty"
+    (CCEqual.physical h (H.merge h H.empty)) ;
+  assert_bool "physical equality of delete_one with element lesser than min"
+    (CCEqual.physical h (H.delete_one (=) (-999) h)) ;
+  assert_bool "physical equality of delete_one with element between min and max"
+    (CCEqual.physical h (H.delete_one (=) 2 h)) ;
+  assert_bool "physical equality of delete_one with element greater than max"
+    (CCEqual.physical h (H.delete_one (=) 999 h)) ;
+  assert_bool "physical equality of delete_all with element lesser than min"
+    (CCEqual.physical h (H.delete_all (=) (-999) h)) ;
+  assert_bool "physical equality of delete_all with element between min and max"
+    (CCEqual.physical h (H.delete_all (=) 2 h)) ;
+  assert_bool "physical equality of delete_all with element greater than max"
+    (CCEqual.physical h (H.delete_all (=) 999 h)) ;
+  assert_bool "physical equality of filter"
+    (CCEqual.physical h (H.filter (fun _ -> true) h)) ;
+  true
+;;
+
+q ~name:"fold"
+  Q.(list_of_size Gen.small_nat medium_nat)
+  (fun l ->
+    (l |> H.of_list |> H.fold (+) 0)
+    = (l |> List.fold_left (+) 0))
+;;
+
+q ~name:"of_iter"
+  Q.(list_of_size Gen.small_nat medium_nat)
+  (fun l ->
+    (l |> CCList.to_iter |> H.of_iter |> H.to_list_sorted)
+    = (l |> List.sort CCInt.compare))
+;;
+
+q ~name:"of_seq"
+  Q.(list_of_size Gen.small_nat medium_nat)
+  (fun l ->
+    (l |> CCList.to_seq |> H.of_seq |> H.to_list_sorted)
+    = (l |> List.sort CCInt.compare))
+;;
+
 q ~name:"of_gen"
   Q.(list_of_size Gen.small_nat medium_nat)
   (fun l ->
     (l |> CCList.to_gen |> H.of_gen |> H.to_list_sorted)
+    = (l |> List.sort CCInt.compare))
+;;
+
+q ~name:"to_iter"
+  Q.(list_of_size Gen.small_nat medium_nat)
+  (fun l ->
+    (l |> H.of_list |> H.to_iter |> CCList.of_iter |> List.sort CCInt.compare)
+    = (l |> List.sort CCInt.compare))
+;;
+
+q ~name:"to_seq"
+  Q.(list_of_size Gen.small_nat medium_nat)
+  (fun l ->
+    (l |> H.of_list |> H.to_seq |> CCList.of_seq |> List.sort CCInt.compare)
     = (l |> List.sort CCInt.compare))
 ;;
 
@@ -97,6 +208,13 @@ q ~name:"to_iter_sorted"
   Q.(list_of_size Gen.small_nat medium_nat)
   (fun l ->
     (l |> H.of_list |> H.to_iter_sorted |> Iter.to_list)
+    = (l |> List.sort CCInt.compare))
+;;
+
+q ~name:"to_seq_sorted"
+  Q.(list_of_size Gen.small_nat medium_nat)
+  (fun l ->
+    (l |> H.of_list |> H.to_seq_sorted |> CCList.of_seq |> List.sort CCInt.compare)
     = (l |> List.sort CCInt.compare))
 ;;
 
