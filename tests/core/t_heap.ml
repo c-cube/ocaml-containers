@@ -79,13 +79,6 @@ q ~name:"filter"
     List.for_all p l' && List.length l' = List.length (List.filter p l))
 ;;
 
-q ~name:"to_iter_sorted"
-  Q.(list_of_size Gen.small_nat medium_nat)
-  (fun l ->
-    (l |> H.of_list |> H.to_iter_sorted |> Iter.to_list)
-    = (l |> List.sort CCInt.compare))
-;;
-
 q ~name:"of_gen"
   Q.(list_of_size Gen.small_nat medium_nat)
   (fun l ->
@@ -97,6 +90,13 @@ q ~name:"to_gen"
   Q.(list_of_size Gen.small_nat medium_nat)
   (fun l ->
     (l |> H.of_list |> H.to_gen |> CCList.of_gen |> List.sort CCInt.compare)
+    = (l |> List.sort CCInt.compare))
+;;
+
+q ~name:"to_iter_sorted"
+  Q.(list_of_size Gen.small_nat medium_nat)
+  (fun l ->
+    (l |> H.of_list |> H.to_iter_sorted |> Iter.to_list)
     = (l |> List.sort CCInt.compare))
 ;;
 
