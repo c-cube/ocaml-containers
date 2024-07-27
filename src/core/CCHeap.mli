@@ -87,12 +87,13 @@ module type S = sig
       Elements are identified by the equality function [eq].
       By contrast with {!filter}, [delete_all] stops as soon as
       it enters a subtree whose root is greater than [x].
-      Complexity: [O(n log n)].
+      Complexity: [O(n)].
       @since 2.0 *)
 
   val filter : (elt -> bool) -> t -> t
   (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
-      Complexity: [O(n log n)].
+      If no element in [h] satisfies [p], then [h] itself is returned.
+      Complexity: [O(n)].
   *)
 
   val iter : (elt -> unit) -> t -> unit

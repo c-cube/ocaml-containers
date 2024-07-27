@@ -4,6 +4,9 @@
 
 - perf: `CCHeap`: building a heap from n elements is now in time O(n)
   instead of O(n log n)
+- perf: `CCHeap`: `filter` and `delete_all` are now in time O(n)
+  instead of O(n log n), and they ensure physical equality
+  (for `delete_all` this is a bugfix)
 
 ## 3.13.1
 

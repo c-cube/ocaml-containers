@@ -91,12 +91,13 @@ module type S = sig
       Elements are identified by the equality function [eq].
       By contrast with {!filter}, [delete_all] stops as soon as
       it enters a subtree whose root is greater than [x].
-      Complexity: [O(n log n)].
+      Complexity: [O(n)].
       @since 2.0 *)
 
   val filter : (elt -> bool) -> t -> t
   (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
-      Complexity: [O(n log n)].
+      If no element in [h] satisfies [p], then [h] itself is returned.
+      Complexity: [O(n)].
   *)
 
   val iter : (elt -> unit) -> t -> unit
@@ -279,45 +280,6 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
     | E -> raise Empty
     | N (_, x, l, r) -> merge l r, x
 
-  let delete_one eq x h =
-    let rec aux = function
-      | E -> false, E
-      | N (_, y, l, r) as h ->
-        if eq x y then
-          true, merge l r
-        else if E.leq y x then (
-          let found_left, l1 = aux l in
-          let found, r1 =
-            if found_left then
-              true, r
-            else
-              aux r
-          in
-          if found then
-            true, _make_node y l1 r1
-          else
-            false, h
-        ) else
-          false, h
-    in
-    snd (aux h)
-
-  let rec delete_all eq x = function
-    | E -> E
-    | N (_, y, l, r) as h ->
-      if eq x y then
-        merge (delete_all eq x l) (delete_all eq x r)
-      else if E.leq y x then
-        _make_node y (delete_all eq x l) (delete_all eq x r)
-      else
-        h
-
-  let rec filter p h =
-    match h with
-    | E -> E
-    | N (_, x, l, r) when p x -> _make_node x (filter p l) (filter p r)
-    | N (_, _, l, r) -> merge (filter p l) (filter p r)
-
   let rec iter f h =
     match h with
     | E -> ()
@@ -353,7 +315,9 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
      is in time O(log n), this runs in time O(k + k*log(N/k)). Notice that this
      is a O(k + N) (if k is small wrt. N, this last upper bound is very loose).
      The code below uses additional space of only O(log(k)) at any moment;
-     it avoids storing an intermediate list of length O(k). *)
+     it avoids storing an intermediate list of length O(k).
+     When at most one of the input heaps is non-empty, the result is physically
+     equal to it. *)
   let _merge_heap_iter (hs : t iter) : t =
     let rec cons_and_merge h0 hs weights =
       begin match hs with
@@ -461,6 +425,80 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
     match h with
     | E -> `Nil
     | N (_, x, l, r) -> `Node (x, [ to_tree l; to_tree r ])
+
+  (** {2 Filtering} *)
+
+  let delete_one eq x h =
+    let rec aux = function
+      | E -> false, E
+      | N (_, y, l, r) as h ->
+        if eq x y then
+          true, merge l r
+        else if E.leq y x then (
+          let found_left, l1 = aux l in
+          let found, r1 =
+            if found_left then
+              true, r
+            else
+              aux r
+          in
+          if found then
+            true, _make_node y l1 r1
+          else
+            false, h
+        ) else
+          false, h
+    in
+    snd (aux h)
+
+
+  let delete_all eq x0 h =
+    (* Iterates [k] on sub-heaps of [h] whose merger is equal to [h] minus
+       the deleted elements [x0]; we do this, instead of merging the subheaps
+       directly, in order to ensure complexity O(n).
+       When no element is deleted, the iterator does nothing and the function
+       returns true; this makes sure that the result shares sub-heaps with the
+       input as much as possible, and ensures physical equality when no element
+       is deleted. *)
+    let rec iter_subheaps eq x0 h k =
+      begin match h with
+      | N (_, x, l, r) when E.leq x x0 ->
+          let keep_x = not (eq x0 x) in
+          let keep_l = iter_subheaps eq x0 l k in
+          let keep_r = iter_subheaps eq x0 r k in
+          if keep_x && keep_l && keep_r then
+            true
+          else begin
+            if keep_x then k (singleton x) ;
+            if keep_l then k l ;
+            if keep_r then k r ;
+            false
+          end
+      | _ -> true
+      end
+    in
+    _merge_heap_iter (fun k -> if iter_subheaps eq x0 h k then k h)
+
+  let filter p h =
+    (* similar to [delete_all] *)
+    let rec iter_subheaps p k h =
+      begin match h with
+      | E -> true
+      | N (_, x, l, r) ->
+          let keep_x = p x in
+          let keep_l = iter_subheaps p k l in
+          let keep_r = iter_subheaps p k r in
+          if keep_x && keep_l && keep_r then
+            true
+          else begin
+            if keep_x then k (singleton x) ;
+            if keep_l then k l ;
+            if keep_r then k r ;
+            false
+          end
+      end
+    in
+    _merge_heap_iter (fun k -> if iter_subheaps p k h then k h)
 
   (** {2 Pretty-printing} *)
 
