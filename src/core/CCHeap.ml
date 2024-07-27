@@ -7,6 +7,14 @@ type 'a gen = unit -> 'a option
 type 'a printer = Format.formatter -> 'a -> unit
 type 'a ktree = unit -> [ `Nil | `Node of 'a * 'a ktree list ]
 
+let[@inline] _iter_map f xs k = xs (fun x -> k (f x))
+
+let rec _gen_iter k g =
+  begin match g () with
+  | None -> ()
+  | Some x -> k x; _gen_iter k g
+  end
+
 module type PARTIAL_ORD = sig
   type t
 
@@ -107,7 +115,8 @@ module type S = sig
   val add_list : t -> elt list -> t
   (** [add_list h l] adds the elements of the list [l] into the heap [h].
       An element occurring several times will be added that many times to the heap.
-      Complexity: [O(n log (m+n))]
+      Elements need not be given in any particular order.
+      Complexity: [O(log m + n)]
       where [m] and [n] are the number of elements in [h] and [l], respectively.
       @since 0.16 *)
 
@@ -132,7 +141,8 @@ module type S = sig
   val of_list : elt list -> t
   (** [of_list l] builds a heap from a given list of elements.
       It is equivalent to [add_list empty l].
-      Complexity: [O(n log n)].
+      Elements need not be given in any particular order.
+      Complexity: [O(n)].
   *)
 
   val of_iter : elt iter -> t
@@ -223,6 +233,8 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
 
   exception Empty
 
+  let singleton x = N (1, x, E, E)
+
   (* Rank of the tree *)
   let _rank = function
     | E -> 0
@@ -248,7 +260,7 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
       else
         _make_node y a2 (merge t1 b2)
 
-  let insert x h = merge (N (1, x, E, E)) h
+  let insert x h = merge (singleton x) h
   let add h x = insert x h
 
   let find_min_exn = function
@@ -326,31 +338,64 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
     | E -> 0
     | N (_, _, l, r) -> 1 + size l + size r
 
+  (** {2 Conversions from sequences} *)
+
+  (* Merge an [iter] of k heaps into one.
+     Instead of folding [merge] in one pass (which would run in time O(k log N)
+     where k is the number of heaps and N is the total number of elements), it
+     is more efficient to merge heaps pairwise until only one remains; see e.g.
+         Robert Tarjan, "Data Structures and Network Algorithms",
+         Chapter 3.3 "Leftist heaps", 1983.
+     or:
+         Chris Okasaki, "Purely Functional Data Structures",
+         Chapter 3.2 "Leftist heaps", Exercise 3.3, 1998
+     This is independent of the representation of heaps, and, as long as merging
+     is in time O(log n), this runs in time O(k + k*log(N/k)). Notice that this
+     is a O(k + N) (if k is small wrt. N, this last upper bound is very loose).
+     The code below uses additional space of only O(log(k)) at any moment;
+     it avoids storing an intermediate list of length O(k). *)
+  let _merge_heap_iter (hs : t iter) : t =
+    let rec cons_and_merge h0 hs weights =
+      begin match hs with
+      | h1 :: hs' when weights land 1 = 0 ->
+          cons_and_merge (merge h0 h1) hs' (weights lsr 1)
+      | _ ->
+          h0 :: hs
+      end
+    in
+    (* the i-th heap in this list is a merger of 2^{w_i} input heaps, each
+       having gone through w_i merge operations, where the "weights" 2^{w_i} are
+       strictly increasing wrt. i: *)
+    let mergers = ref [] in
+    (* The w_i are the 1-bits in the binary writing of [count], the number of
+       input heaps merged so far; adding a heap to the mergers works like binary
+       incrementation: *)
+    let count = ref 0 in
+    hs begin fun h ->
+      incr count ;
+      mergers := cons_and_merge h !mergers !count ;
+    end ;
+    List.fold_left merge E !mergers
+
+  (* To build a heap with n given values, instead of repeated insertions,
+     it is more efficient to do pairwise merging, running in time O(n). *)
+  let of_iter xs =
+    xs
+    |> _iter_map singleton
+    |> _merge_heap_iter
+
+  let of_list xs = of_iter (fun k -> List.iter k xs)
+  let of_seq xs = of_iter (fun k -> Seq.iter k xs)
+  let of_gen xs = of_iter (fun k -> _gen_iter k xs)
+
   (** {2 Adding many elements at once} *)
 
-  let add_list h l = List.fold_left add h l
+  let add_list h xs = merge h (of_list xs)
+  let add_iter h xs = merge h (of_iter xs)
+  let add_seq h xs = merge h (of_seq xs)
+  let add_gen h xs = merge h (of_gen xs)
 
-  let add_iter h i =
-    let h = ref h in
-    i (fun x -> h := insert x !h);
-    !h
-
-  let add_seq h seq =
-    let h = ref h in
-    Seq.iter (fun x -> h := insert x !h) seq;
-    !h
-
-  let rec add_gen h g =
-    match g () with
-    | None -> h
-    | Some x -> add_gen (add h x) g
-
-  (** {2 Conversions} *)
-
-  let of_list l = add_list empty l
-  let of_iter i = add_iter empty i
-  let of_seq seq = add_seq empty seq
-  let of_gen g = add_gen empty g
+  (** {2 Conversions to sequences} *)
 
   let to_list h =
     let rec aux acc h =

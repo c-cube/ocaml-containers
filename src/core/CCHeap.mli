@@ -111,7 +111,8 @@ module type S = sig
   val add_list : t -> elt list -> t
   (** [add_list h l] adds the elements of the list [l] into the heap [h].
       An element occurring several times will be added that many times to the heap.
-      Complexity: [O(n log (m+n))]
+      Elements need not be given in any particular order.
+      Complexity: [O(log m + n)]
       where [m] and [n] are the number of elements in [h] and [l], respectively.
       @since 0.16 *)
 
@@ -136,7 +137,8 @@ module type S = sig
   val of_list : elt list -> t
   (** [of_list l] builds a heap from a given list of elements.
       It is equivalent to [add_list empty l].
-      Complexity: [O(n log n)].
+      Elements need not be given in any particular order.
+      Complexity: [O(n)].
   *)
 
   val of_iter : elt iter -> t

@@ -1,5 +1,10 @@
 # Changelog
 
+## main
+
+- perf: `CCHeap`: building a heap from n elements is now in time O(n)
+  instead of O(n log n)
+
 ## 3.13.1
 
 - list: TRMC was in 4.14, we can use it earlier
