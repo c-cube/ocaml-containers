@@ -429,29 +429,22 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
 
   (** {2 Filtering} *)
 
-  let delete_one eq x h =
-    let rec aux = function
-      | E -> false, E
-      | N (_, y, l, r) as h ->
-        if eq x y then
-          true, merge l r
-        else if E.leq y x then (
-          let found_left, l1 = aux l in
-          let found, r1 =
-            if found_left then
-              true, r
+  let rec delete_one eq x0 = function
+    | N (_, x, l, r) as h when E.leq x x0 ->
+        if eq x0 x then
+          merge l r
+        else begin
+          let l' = delete_one eq x0 l in
+          if CCEqual.physical l' l then
+            let r' = delete_one eq x0 r in
+            if CCEqual.physical r' r then
+              h
             else
-              aux r
-          in
-          if found then
-            true, _make_node y l1 r1
+              _make_node x l r'
           else
-            false, h
-        ) else
-          false, h
-    in
-    snd (aux h)
-
+            _make_node x l' r
+        end
+    | h -> h
 
   let delete_all eq x0 h =
     (* Iterates [k] on sub-heaps of [h] whose merger is equal to [h] minus
