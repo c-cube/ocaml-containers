@@ -36,13 +36,15 @@ module type S = sig
   type elt
   type t
 
+  exception Empty
+
+  (** {2 Basing heap operations} *)
+
   val empty : t
   (** Empty heap. *)
 
   val is_empty : t -> bool
   (** Is the heap empty? *)
-
-  exception Empty
 
   val merge : t -> t -> t
   (** [merge h1 h2] merges the two heaps [h1] and [h2].
@@ -59,23 +61,34 @@ module type S = sig
   (** [add h x] is [insert x h]. *)
 
   val find_min : t -> elt option
-  (** [find_min h] find the minimal element of the heap [h].
+  (** [find_min h] returns the minimal element of [h],
+      or [None] if [h] is empty.
       Complexity: [O(1)].
   *)
 
   val find_min_exn : t -> elt
-  (** [find_min_exn h] is like {!find_min} but can fail.
+  (** [find_min_exn h] is akin to {!find_min},
+      but it raises {!Empty} when the heap is empty.
       @raise Empty if the heap is empty. *)
 
   val take : t -> (t * elt) option
-  (** [take h] extracts and returns the minimum element, and the new heap (without
-      this element), or [None] if the heap [h] is empty.
+  (** [take h] returns the minimum element of [h]
+      and the new heap without this element,
+      or [None] if [h] is empty.
       Complexity: [O(log n)].
   *)
 
   val take_exn : t -> t * elt
-  (** [take_exn h] is like {!take}, but can fail.
+  (** [take_exn h] is akin to {!take},
+      but it raises {!Empty} when the heap is empty.
       @raise Empty if the heap is empty. *)
+
+  val size : t -> int
+  (** [size h] is the number of elements in the heap [h].
+      Complexity: [O(n)].
+  *)
+
+  (** {2 Deleting elements} *)
 
   val delete_one : (elt -> elt -> bool) -> elt -> t -> t
   (** [delete_one eq x h] deletes an occurrence of the value [x] from the heap
@@ -90,27 +103,25 @@ module type S = sig
   (** [delete_all eq x h] deletes all occurrences of the value [x] from the heap [h].
       If [h] does not contain [x], then [h] itself is returned.
       Elements are identified by the equality function [eq].
-      By contrast with {!filter}, [delete_all] stops as soon as
-      it enters a subtree whose root is greater than [x].
+      This function is more efficient than {!filter}
+      because it avoids considering elements greater than [x].
       Complexity: [O(n)].
       @since 2.0 *)
 
   val filter : (elt -> bool) -> t -> t
-  (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
+  (** [filter p h] filters the elements of [h],
+      only retaining those that satisfy the predicate [p].
       If no element in [h] satisfies [p], then [h] itself is returned.
       Complexity: [O(n)].
   *)
 
+  (** {2 Iterating on elements} *)
+
   val iter : (elt -> unit) -> t -> unit
-  (** [iter f h] iterates over the heap [h] invoking [f] with the current element. *)
+  (** [iter f h] invokes [f] on every element of the heap [h]. *)
 
   val fold : ('a -> elt -> 'a) -> 'a -> t -> 'a
-  (** [fold f acc h] folds on all values of [h]. *)
-
-  val size : t -> int
-  (** [size h] is the number of elements in the heap [h].
-      Complexity: [O(n)].
-  *)
+  (** [fold f acc h] folds on all elements of [h]. *)
 
   (** {2 Adding many elements at once} *)
 
@@ -118,6 +129,7 @@ module type S = sig
   (** [add_list h l] adds the elements of the list [l] into the heap [h].
       An element occurring several times will be added that many times to the heap.
       Elements need not be given in any particular order.
+      This function is more efficient than repeated insertions.
       Complexity: [O(log m + n)]
       where [m] and [n] are the number of elements in [h] and [l], respectively.
       @since 0.16 *)
@@ -141,9 +153,10 @@ module type S = sig
   (** {2 Conversions} *)
 
   val of_list : elt list -> t
-  (** [of_list l] builds a heap from a given list of elements.
-      It is equivalent to [add_list empty l].
+  (** [of_list l] builds a heap from the list of elements [l].
       Elements need not be given in any particular order.
+      This function is more efficient than repeated insertions.
+      It is equivalent to [add_list empty l].
       Complexity: [O(n)].
   *)
 
@@ -155,7 +168,7 @@ module type S = sig
   val of_seq : elt Seq.t -> t
   (** [of_seq seq] is akin to {!of_list},
       but taking a [Seq.t] of elements as input.
-      Renamed from [of_seq] since 3.0.
+      Renamed from [of_std_seq] since 3.0.
       @since 3.0 *)
 
   val of_gen : elt gen -> t
@@ -173,7 +186,7 @@ module type S = sig
       @since 2.8 *)
 
   val to_seq : t -> elt Seq.t
-  (** [to_seq h] is akin to {!to_list}, but returning a [Seq.t] of elements
+  (** [to_seq h] is akin to {!to_list}, but returning a [Seq.t] of elements.
       Renamed from [to_std_seq] since 3.0.
       @since 3.0 *)
 
@@ -453,7 +466,13 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
        When no element is deleted, the iterator does nothing and the function
        returns true; this makes sure that the result shares sub-heaps with the
        input as much as possible, and ensures physical equality when no element
-       is deleted. *)
+       is deleted.
+       In [delete_all], by contrast with [filter], we can avoid considering
+       elements greater than [x0]. As a consequence, the complexity is more
+       precisely O(k + k log(n/k)), where k is the number of elements not
+       greater than [x0]. This is a O(n), but it is also a O(k log n), which is
+       much smaller than O(n) if k is asymptotically smaller than n.
+    *)
     let rec iter_subheaps eq x0 h k =
       begin match h with
       | N (_, x, l, r) when E.leq x x0 ->

@@ -33,13 +33,15 @@ module type S = sig
   type elt
   type t
 
+  exception Empty
+
+  (** {2 Basic heap operations} *)
+
   val empty : t
   (** [empty] returns the empty heap. *)
 
   val is_empty : t -> bool
-  (** [is_empty h] returns [true] if the heap [h] is empty. *)
-
-  exception Empty
+  (** [is_empty h] returns [true] iff the heap [h] is empty. *)
 
   val merge : t -> t -> t
   (** [merge h1 h2] merges the two heaps [h1] and [h2].
@@ -56,23 +58,34 @@ module type S = sig
   (** [add h x] is [insert x h]. *)
 
   val find_min : t -> elt option
-  (** [find_min h] find the minimal element of the heap [h].
+  (** [find_min h] returns the minimal element of [h],
+      or [None] if [h] is empty.
       Complexity: [O(1)].
   *)
 
   val find_min_exn : t -> elt
-  (** [find_min_exn h] is like {!find_min} but can fail.
+  (** [find_min_exn h] is akin to {!find_min},
+      but it raises {!Empty} when the heap is empty.
       @raise Empty if the heap is empty. *)
 
   val take : t -> (t * elt) option
-  (** [take h] extracts and returns the minimum element, and the new heap (without
-      this element), or [None] if the heap [h] is empty.
+  (** [take h] returns the minimum element of [h]
+      and the new heap without this element,
+      or [None] if [h] is empty.
       Complexity: [O(log n)].
   *)
 
   val take_exn : t -> t * elt
-  (** [take_exn h] is like {!take}, but can fail.
+  (** [take_exn h] is akin to {!take},
+      but it raises {!Empty} when the heap is empty.
       @raise Empty if the heap is empty. *)
+
+  val size : t -> int
+  (** [size h] is the number of elements in the heap [h].
+      Complexity: [O(n)].
+  *)
+
+  (** {2 Deleting elements} *)
 
   val delete_one : (elt -> elt -> bool) -> elt -> t -> t
   (** [delete_one eq x h] deletes an occurrence of the value [x] from the heap [h],
@@ -86,27 +99,25 @@ module type S = sig
   (** [delete_all eq x h] deletes all occurrences of the value [x] from the heap [h].
       If [h] does not contain [x], then [h] itself is returned.
       Elements are identified by the equality function [eq].
-      By contrast with {!filter}, [delete_all] stops as soon as
-      it enters a subtree whose root is greater than [x].
+      This function is more efficient than {!filter}
+      because it avoids considering elements greater than [x].
       Complexity: [O(n)].
       @since 2.0 *)
 
   val filter : (elt -> bool) -> t -> t
-  (** [filter p h] filters values, only retaining the ones that satisfy the predicate [p].
+  (** [filter p h] filters the elements of [h],
+      only retaining those that satisfy the predicate [p].
       If no element in [h] satisfies [p], then [h] itself is returned.
       Complexity: [O(n)].
   *)
 
+  (** {2 Iterating on elements} *)
+
   val iter : (elt -> unit) -> t -> unit
-  (** [iter f h] iterates over the heap [h] invoking [f] with the current element. *)
+  (** [iter f h] invokes [f] on every element of the heap [h]. *)
 
   val fold : ('a -> elt -> 'a) -> 'a -> t -> 'a
-  (** [fold f acc h] folds on all values of [h]. *)
-
-  val size : t -> int
-  (** [size h] is the number of elements in the heap [h].
-      Complexity: [O(n)].
-  *)
+  (** [fold f acc h] folds on all elements of [h]. *)
 
   (** {2 Adding many elements at once} *)
 
@@ -114,13 +125,14 @@ module type S = sig
   (** [add_list h l] adds the elements of the list [l] into the heap [h].
       An element occurring several times will be added that many times to the heap.
       Elements need not be given in any particular order.
+      This function is more efficient than repeated insertions.
       Complexity: [O(log m + n)]
       where [m] and [n] are the number of elements in [h] and [l], respectively.
       @since 0.16 *)
 
   val add_iter : t -> elt iter -> t
   (** [add_iter h iter] is akin to {!add_list},
-      but taking an [iter] of elements as input.
+      but taking an {!type:iter} of elements as input.
       @since 2.8 *)
 
   val add_seq : t -> elt Seq.t -> t
@@ -131,32 +143,33 @@ module type S = sig
 
   val add_gen : t -> elt gen -> t
   (** [add_gen h gen] is akin to {!add_list},
-      but taking a [gen] of elements as input.
+      but taking a {!type:gen} of elements as input.
       @since 0.16 *)
 
   (** {2 Conversions} *)
 
   val of_list : elt list -> t
-  (** [of_list l] builds a heap from a given list of elements.
-      It is equivalent to [add_list empty l].
+  (** [of_list l] builds a heap from the list of elements [l].
       Elements need not be given in any particular order.
+      This function is more efficient than repeated insertions.
+      It is equivalent to {!add_list}[ empty l].
       Complexity: [O(n)].
   *)
 
   val of_iter : elt iter -> t
   (** [of_iter iter] is akin to {!of_list},
-      but taking an [iter] of elements as input.
+      but taking an {!type:iter} of elements as input.
       @since 2.8 *)
 
   val of_seq : elt Seq.t -> t
   (** [of_seq seq] is akin to {!of_list},
       but taking a [Seq.t] of elements as input.
-      Renamed from [of_seq] since 3.0.
+      Renamed from [of_std_seq] since 3.0.
       @since 3.0 *)
 
   val of_gen : elt gen -> t
   (** [of_gen gen] is akin to {!of_list},
-      but taking a [gen] of elements as input. *)
+      but taking a {!type:gen} of elements as input. *)
 
   val to_list : t -> elt list
   (** [to_list h] returns a list of the elements of the heap [h],
@@ -165,16 +178,16 @@ module type S = sig
   *)
 
   val to_iter : t -> elt iter
-  (** [to_iter h] is akin to {!to_list}, but returning an [iter] of elements.
+  (** [to_iter h] is akin to {!to_list}, but returning an {!type:iter} of elements.
       @since 2.8 *)
 
   val to_seq : t -> elt Seq.t
-  (** [to_seq h] is akin to {!to_list}, but returning a [Seq.t] of elements
+  (** [to_seq h] is akin to {!to_list}, but returning a [Seq.t] of elements.
       Renamed from [to_std_seq] since 3.0.
       @since 3.0 *)
 
   val to_gen : t -> elt gen
-  (** [to_gen h] is akin to {!to_list}, but returning a [gen] of elements. *)
+  (** [to_gen h] is akin to {!to_list}, but returning a {!type:gen} of elements. *)
 
   val to_list_sorted : t -> elt list
   (** [to_list_sorted h] returns the list of elements of the heap [h]
@@ -184,7 +197,7 @@ module type S = sig
 
   val to_iter_sorted : t -> elt iter
   (** [to_iter_sorted h] is akin to {!to_list_sorted},
-      but returning an [iter] of elements.
+      but returning an {!type:iter} of elements.
       @since 2.8 *)
 
   val to_seq_sorted : t -> elt Seq.t
@@ -194,7 +207,7 @@ module type S = sig
       @since 3.0 *)
 
   val to_tree : t -> elt ktree
-  (** [to_tree h] returns a [ktree] of the elements of the heap [h].
+  (** [to_tree h] returns a {!type:ktree} of the elements of the heap [h].
       The layout is not specified.
       Complexity: [O(n)].
   *)
