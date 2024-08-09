@@ -150,6 +150,14 @@ module type S = sig
       but taking a [gen] of elements as input.
       @since 0.16 *)
 
+  val add_iter_almost_sorted : t -> elt iter -> t
+  (** [add_iter_almost_sorted h iter] is equivalent to
+      [merge h (of_iter_almost_sorted iter)].
+      See {!of_iter_almost_sorted}.
+      Complexity: [O(log m + n)].
+      @since NEXT_RELEASE
+  *)
+
   (** {2 Conversions} *)
 
   val of_list : elt list -> t
@@ -174,6 +182,20 @@ module type S = sig
   val of_gen : elt gen -> t
   (** [of_gen gen] is akin to {!of_list},
       but taking a [gen] of elements as input. *)
+
+  val of_iter_almost_sorted : elt iter -> t
+  (** [of_iter iter] builds a heap from the {!type:iter} sequence of elements.
+      Elements need not be given in any particular order.
+      However, the heap takes advantage of partial sorting found in the input:
+      the closer the input sequence is to being sorted,
+      the more efficient it is to convert the heap to a sorted sequence.
+      This enables heap-sorting that is faster than [O(n log n)]
+      when the input is almost sorted.
+      In the best case, when only a constant number of elements are misplaced,
+      then successive {!take} run in [O(1)],
+      and {!to_list_sorted} runs in [O(n)].
+      Complexity: [O(n)].
+  *)
 
   val to_list : t -> elt list
   (** [to_list h] returns a list of the elements of the heap [h],
@@ -366,12 +388,40 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
   let of_seq xs = of_iter (fun k -> Seq.iter k xs)
   let of_gen xs = of_iter (fun k -> _gen_iter k xs)
 
+  (* When input values are sorted in reverse order, then repeated insertions in
+     a leftist heap run in time O(n) and build a list-like heap where elements
+     are totally sorted, which makes a subsequent conversion to sorted sequence
+     run in O(n). *)
+  let _of_list_rev_sorted (xs : elt list) : t =
+    List.fold_left (fun h x -> N (1, x, h, E)) E xs
+
+  (* We use this to convert an arbitrary input sequence to a heap in time O(n),
+     while achieving an efficient heap structure in the common situation when
+     the input is almost sorted. This improves heap-sorting, for instance. *)
+  let of_iter_almost_sorted xs =
+    let sorted_chunk = ref [] in
+    let iter_sorted_heaps k =
+      xs begin fun x ->
+        begin match !sorted_chunk with
+        | (y :: _) as ys when not (E.leq y x) ->
+            k (_of_list_rev_sorted ys) ;
+            sorted_chunk := [x]
+        | ys ->
+            sorted_chunk := x :: ys
+        end ;
+      end ;
+      k (_of_list_rev_sorted !sorted_chunk)
+    in
+    _merge_heap_iter iter_sorted_heaps
+
   (** {2 Adding many elements at once} *)
 
   let add_list h xs = merge h (of_list xs)
   let add_iter h xs = merge h (of_iter xs)
   let add_seq h xs = merge h (of_seq xs)
   let add_gen h xs = merge h (of_gen xs)
+
+  let add_iter_almost_sorted h xs = merge h (of_iter_almost_sorted xs)
 
   (** {2 Conversions to sequences} *)
 

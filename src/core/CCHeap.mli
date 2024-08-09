@@ -146,6 +146,14 @@ module type S = sig
       but taking a {!type:gen} of elements as input.
       @since 0.16 *)
 
+  val add_iter_almost_sorted : t -> elt iter -> t
+  (** [add_iter_almost_sorted h iter] is equivalent to
+      [merge h (of_iter_almost_sorted iter)].
+      See {!of_iter_almost_sorted}.
+      Complexity: [O(log m + n)].
+      @since NEXT_RELEASE
+  *)
+
   (** {2 Conversions} *)
 
   val of_list : elt list -> t
@@ -170,6 +178,21 @@ module type S = sig
   val of_gen : elt gen -> t
   (** [of_gen gen] is akin to {!of_list},
       but taking a {!type:gen} of elements as input. *)
+
+  val of_iter_almost_sorted : elt iter -> t
+  (** [of_iter iter] builds a heap from the {!type:iter} sequence of elements.
+      Elements need not be given in any particular order.
+      However, the heap takes advantage of partial sorting found in the input:
+      the closer the input sequence is to being sorted,
+      the more efficient it is to convert the heap to a sorted sequence.
+      This enables heap-sorting that is faster than [O(n log n)]
+      when the input is almost sorted.
+      In the best case, when only a constant number of elements are misplaced,
+      then successive {!take} run in [O(1)],
+      and {!to_list_sorted} runs in [O(n)].
+      Complexity: [O(n)].
+      @since NEXT_RELEASE
+  *)
 
   val to_list : t -> elt list
   (** [to_list h] returns a list of the elements of the heap [h],

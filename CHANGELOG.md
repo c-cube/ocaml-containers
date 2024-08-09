@@ -2,6 +2,7 @@
 
 ## main
 
+- `CCHeap`: building a heap from an almost-sorted sequence
 - perf: `CCHeap`: building a heap from n elements is now in time O(n)
   instead of O(n log n)
 - perf: `CCHeap`: `filter` and `delete_all` are now in time O(n)
