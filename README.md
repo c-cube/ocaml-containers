@@ -539,7 +539,7 @@ val h' : IntHeap.t = <abstr>
 val x : int = 2
 
 # IntHeap.to_list h' (* see, 2 is removed *);;
-- : int list = [4; 6; 8; 10]
+- : int list = [4; 8; 10; 6]
 ```
 
 ### IO helpers
