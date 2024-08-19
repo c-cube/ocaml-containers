@@ -1,6 +1,8 @@
 module B = Buffer
 module Int_map = Map.Make (CCInt)
 
+type 'a iter = ('a -> unit) -> unit
+
 module Out = struct
   type t = {
     char: char -> unit;
@@ -464,11 +466,64 @@ let bracket l d r : t = group (text l ^ nest (String.length l) d ^ text r)
 let bracket2 l d r : t = group (text l ^ nest 2 (nl ^ d) ^ nl ^ text r)
 let sexp_l l : t = char '(' ^ nest 1 (group (append_nl l ^ char ')'))
 let sexp_apply a l : t = sexp_l (text a :: l)
+let surround ?(width = 1) l b r = group (l ^ nest width b ^ r)
+
+module Char = struct
+  let bang = char '!'
+  let at = char '@'
+  let hash = char '#'
+  let dollar = char '$'
+  let tilde = char '~'
+  let backquote = char '`'
+  let percent = char '%'
+  let caret = char '^'
+  let ampersand = char '&'
+  let star = char '*'
+  let minus = char '-'
+  let underscore = char '_'
+  let plus = char '+'
+  let equal = char '='
+  let pipe = char '|'
+  let slash = char '/'
+  let backslash = char '\\'
+  let colon = char ':'
+  let semi = char ';'
+  let guillemet = char '"'
+  let quote = char '\''
+  let comma = char ','
+  let dot = char '.'
+  let question = char '?'
+  let lparen = char '('
+  let rparen = char ')'
+  let lbrace = char '{'
+  let rbrace = char '}'
+  let lbracket = char '['
+  let rbracket = char ']'
+  let langle = char '<'
+  let rangle = char '>'
+end
 
 module Dump = struct
   let list l : t =
     let sep = char ';' ^ nl in
     group (char '[' ^ nest 1 (fill sep l) ^ char ']')
+
+  let parens d = surround Char.lparen d Char.rparen
+  let braces d = surround Char.lbrace d Char.rbrace
+  let brackets d = surround Char.lbracket d Char.rbracket
+  let angles d = surround Char.langle d Char.rangle
+
+  let of_iter ?(sep = nil) g it =
+    let r = ref nil in
+    it (fun elt -> r := !r ^ sep ^ g elt);
+    !r
+
+  let of_array ?(sep = nil) g arr =
+    let r = ref nil in
+    for i = 0 to Array.length arr - 1 do
+      r := !r ^ sep ^ g arr.(i)
+    done;
+    !r
 end
 
 module Term_color = struct
