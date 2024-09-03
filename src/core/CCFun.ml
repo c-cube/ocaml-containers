@@ -8,10 +8,11 @@ include Sys
 include Stdlib
 include Fun
 
-let[@inline] and_p f g x = f x && g x
-let[@inline] or_p f g x = f x || g x
+let[@inline] and_pred f g x = f x && g x
+let[@inline] or_pred f g x = f x || g x
 let[@inline] compose f g x = g (f x)
 let[@inline] compose_binop f g x y = g (f x) (f y)
+
 let[@inline] curry f x y = f (x, y)
 let[@inline] uncurry f (x, y) = f x y
 

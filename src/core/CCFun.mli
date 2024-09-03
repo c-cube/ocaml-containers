@@ -5,12 +5,12 @@
 include module type of Fun
 (** @inline *)
 
-val and_p : ('a -> bool) -> ('a -> bool) -> 'a -> bool
+val and_pred : ('a -> bool) -> ('a -> bool) -> 'a -> bool
 (** [and_p f g x] is [(f x) && (g x)].
     Produces a predicate which is a conjunction of the two predicates.
 *)
 
-val or_p : ('a -> bool) -> ('a -> bool) -> 'a -> bool
+val or_pred : ('a -> bool) -> ('a -> bool) -> 'a -> bool
 (** [or_p f g x] is [(f x) || (g x)].
     Produces a predicate which is a disjunction of the two predicates.
 *)
