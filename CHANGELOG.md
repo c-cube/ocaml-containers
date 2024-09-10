@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.14
+
+
+- predicate combinators: `and_pred` and `or_pred`
+- feat `pp`: add a bunch of extensions
+- Kleisli Composition Operator and Apply_or for option/result/fun (#455)
+- add `CCByte_buffer.to_slice`
+- add a byte slice type `CCByte_slice`
+- add `cons_when` to `CCListLabels`
+- add `(|||>)` and `||>` to `CCFun`
+- `CCVector`: Add function foldi
+- add `containers.pvec`, a persistent vector type.
+
+- perf: use a monomorphic impl for `CCMonomorphic.{min,max}`
+
 ## 3.13.1
 
 - list: TRMC was in 4.14, we can use it earlier

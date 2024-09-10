@@ -260,24 +260,24 @@ module Dump : sig
   val list : t list -> t
 
   val of_iter : ?sep:t -> ('a -> t) -> 'a iter -> t
-  (** @since NEXT_RELEASE *)
+  (** @since 3.13.1 *)
 
   val of_array : ?sep:t -> ('a -> t) -> 'a array -> t
-  (** @since NEXT_RELEASE *)
+  (** @since 3.13.1 *)
 
   val parens : t -> t
-  (** @since NEXT_RELEASE *)
+  (** @since 3.13.1 *)
 
   val braces : t -> t
-  (** @since NEXT_RELEASE *)
+  (** @since 3.13.1 *)
 
   val brackets : t -> t
   (** Adds '[' ']' around the term
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 
   val angles : t -> t
   (** Adds '<' '>' around the term
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 end
 
 (** Simple colors in terminals *)
@@ -305,7 +305,7 @@ module Term_color : sig
   val style_l : style list -> t -> t
 end
 
-(** @since NEXT_RELEASE *)
+(** @since 3.13.1 *)
 module Char : sig
   val bang : t
   val at : t
@@ -343,4 +343,4 @@ end
 
 val surround : ?width:int -> t -> t -> t -> t
 (** Generalization of {!bracket}
-    @since NEXT_RELEASE *)
+    @since 3.13.1 *)

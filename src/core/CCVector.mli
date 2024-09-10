@@ -209,7 +209,7 @@ val fold : ('b -> 'a -> 'b) -> 'b -> ('a, _) t -> 'b
 val foldi : (int -> 'b -> 'a -> 'b) -> 'b -> ('a, _) t -> 'b
 (** [foldi f init v] is just like {!fold}, but it also passes in the index
     of each element as the first argument to the function [f].
-    @since NEXT_RELEASE *)
+    @since 3.13.1 *)
 
 val exists : ('a -> bool) -> ('a, _) t -> bool
 (** Existential test (is there an element that satisfies the predicate?). *)

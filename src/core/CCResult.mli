@@ -100,7 +100,7 @@ val apply_or : ('a -> ('a, _) t) -> 'a -> 'a
 (** [apply_or f x] returns the original [x] if [f] fails, or unwraps [f x] if it succeeds.
     Useful for piping preprocessing functions together (such as string processing),
     turning functions like "remove" into "remove_if_it_exists".
-    @since NEXT_RELEASE *)
+    @since 3.13.1 *)
 
 val get_or_failwith : ('a, string) t -> 'a
 (** [get_or_failwith e] returns [x] if [e = Ok x], fails otherwise.
@@ -123,7 +123,7 @@ val flat_map : ('a -> ('b, 'err) t) -> ('a, 'err) t -> ('b, 'err) t
 val k_compose :
   ('a -> ('b, 'err) t) -> ('b -> ('c, 'err) t) -> 'a -> ('c, 'err) t
 (** Kleisli composition. Monadic equivalent of {!CCFun.compose}.
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 
 val equal : err:'err equal -> 'a equal -> ('a, 'err) t equal
 val compare : err:'err ord -> 'a ord -> ('a, 'err) t ord
@@ -202,7 +202,7 @@ module Infix : sig
 
   val ( |?> ) : 'a -> ('a -> ('a, _) t) -> 'a
   (** Alias for {!apply_or}
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 
   val ( let+ ) : ('a, 'e) t -> ('a -> 'b) -> ('b, 'e) t
   (** @since 2.8 *)
@@ -219,12 +219,12 @@ module Infix : sig
   val ( >=> ) :
     ('a -> ('b, 'err) t) -> ('b -> ('c, 'err) t) -> 'a -> ('c, 'err) t
   (** Monadic [k_compose].
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 
   val ( <=< ) :
     ('b -> ('c, 'err) t) -> ('a -> ('b, 'err) t) -> 'a -> ('c, 'err) t
   (** Reverse monadic [k_compose].
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 end
 
 include module type of Infix
