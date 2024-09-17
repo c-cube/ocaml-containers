@@ -1,6 +1,8 @@
 module T = (val Containers_testlib.make ~__FILE__ ())
 include T
-open CCVector;;
+open CCVector
+
+let spf = Printf.sprintf;;
 
 t @@ fun () -> create_with ~capacity:200 1 |> capacity >= 200;;
 t @@ fun () -> return 42 |> to_list = [ 42 ];;
@@ -751,3 +753,15 @@ push v 0;
 push v 0;
 push v 0;
 6 = foldi (fun i acc _ -> acc + i) 0 v
+;;
+
+t ~name:"reg454" @@ fun () ->
+let arr : Int32.t vector = create () in
+CCVector.push arr (Int32.of_int 123456);
+let s = spf "%d\n" (Int32.to_int (CCVector.get arr 0)) in
+Printf.eprintf "%d\n" (Int32.to_int (CCVector.get arr 0));
+let x = CCVector.get arr 0 in
+let s2 = spf "%d\n" (Int32.to_int x) in
+Printf.eprintf "%d\n" (Int32.to_int x);
+assert_equal ~printer:(spf "%S") s s2;
+true

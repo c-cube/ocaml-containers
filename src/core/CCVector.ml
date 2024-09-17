@@ -176,7 +176,8 @@ let append a b =
 
 let[@inline] get v i =
   if i < 0 || i >= v.size then invalid_arg "CCVector.get";
-  Array.unsafe_get v.vec i
+  (* NOTE: over eager inlining seems to miscompile for int32 at least (#454) *)
+  Sys.opaque_identity (Array.unsafe_get v.vec i)
 
 let[@inline] set v i x =
   if i < 0 || i >= v.size then invalid_arg "CCVector.set";
@@ -282,7 +283,8 @@ let[@inline] top v =
 
 let[@inline] top_exn v =
   if v.size = 0 then raise Empty;
-  Array.unsafe_get v.vec (v.size - 1)
+  (* NOTE: over eager inlining seems to miscompile for int32 at least (#454) *)
+  Sys.opaque_identity (Array.unsafe_get v.vec (v.size - 1))
 
 let[@inline] copy v = { size = v.size; vec = Array.sub v.vec 0 v.size }
 
