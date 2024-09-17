@@ -6,7 +6,8 @@ build:
 	dune build @install -p $(PACKAGES)
 
 test: build
-	dune runtest --display=quiet --cache=disabled --no-buffer --force
+	# run tests in release mode to expose bug in #454
+	dune runtest --display=quiet --cache=disabled --no-buffer --force --profile=release
 
 clean:
 	dune clean
