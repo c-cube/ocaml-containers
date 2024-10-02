@@ -1,0 +1,5 @@
+
+(tests
+ (ocamlopt_flags :standard -inline 1000)
+ (names t_reg454)
+ (libraries containers))

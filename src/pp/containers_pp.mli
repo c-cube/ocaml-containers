@@ -32,6 +32,8 @@
 
 (** {2 Core} *)
 
+type 'a iter = ('a -> unit) -> unit
+
 type t
 (** The type of documents *)
 
@@ -256,6 +258,26 @@ val sexp_l : t list -> t
 (** Printers that correspond closely to OCaml's syntax. *)
 module Dump : sig
   val list : t list -> t
+
+  val of_iter : ?sep:t -> ('a -> t) -> 'a iter -> t
+  (** @since 3.13.1 *)
+
+  val of_array : ?sep:t -> ('a -> t) -> 'a array -> t
+  (** @since 3.13.1 *)
+
+  val parens : t -> t
+  (** @since 3.13.1 *)
+
+  val braces : t -> t
+  (** @since 3.13.1 *)
+
+  val brackets : t -> t
+  (** Adds '[' ']' around the term
+      @since 3.13.1 *)
+
+  val angles : t -> t
+  (** Adds '<' '>' around the term
+      @since 3.13.1 *)
 end
 
 (** Simple colors in terminals *)
@@ -282,3 +304,43 @@ module Term_color : sig
   val color : color -> t -> t
   val style_l : style list -> t -> t
 end
+
+(** @since 3.13.1 *)
+module Char : sig
+  val bang : t
+  val at : t
+  val hash : t
+  val dollar : t
+  val tilde : t
+  val backquote : t
+  val percent : t
+  val caret : t
+  val ampersand : t
+  val star : t
+  val minus : t
+  val underscore : t
+  val plus : t
+  val equal : t
+  val pipe : t
+  val slash : t
+  val backslash : t
+  val colon : t
+  val semi : t
+  val guillemet : t
+  val quote : t
+  val comma : t
+  val dot : t
+  val question : t
+  val lparen : t
+  val rparen : t
+  val lbrace : t
+  val rbrace : t
+  val lbracket : t
+  val rbracket : t
+  val langle : t
+  val rangle : t
+end
+
+val surround : ?width:int -> t -> t -> t -> t
+(** Generalization of {!bracket}
+    @since 3.13.1 *)

@@ -5,6 +5,18 @@
 include module type of Fun
 (** @inline *)
 
+val and_pred : ('a -> bool) -> ('a -> bool) -> 'a -> bool
+(** [and_p f g x] is [(f x) && (g x)].
+    Produces a predicate which is a conjunction of the two predicates.
+    @since 3.13.1
+*)
+
+val or_pred : ('a -> bool) -> ('a -> bool) -> 'a -> bool
+(** [or_p f g x] is [(f x) || (g x)].
+    Produces a predicate which is a disjunction of the two predicates.
+    @since 3.13.1
+*)
+
 val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** [compose f g x] is [g (f x)]. Composition. *)
 
@@ -84,11 +96,11 @@ module Infix : sig
 
   val ( ||> ) : 'a * 'b -> ('a -> 'b -> 'c) -> 'c
   (** [x ||> f] is [f (fst x) (snd x)]
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 
   val ( |||> ) : 'a * 'b * 'c -> ('a -> 'b -> 'c -> 'd) -> 'd
   (** like [||>] but for tuples of size 3
-      @since NEXT_RELEASE *)
+      @since 3.13.1 *)
 end
 
 include module type of Infix

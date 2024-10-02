@@ -1,6 +1,6 @@
 (** A simple byte slice.
 
-    @since NEXT_RELEASE *)
+    @since 3.13.1 *)
 
 type t = {
   bs: bytes;  (** The bytes, potentially shared between many slices *)

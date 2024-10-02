@@ -13,7 +13,7 @@ type t = {
       is undefined garbage. *)
 }
 (** The byte buffer.
-    The definition is public since NEXT_RELEASE . *)
+    The definition is public since 3.13.1 . *)
 
 type 'a iter = ('a -> unit) -> unit
 
@@ -89,7 +89,7 @@ val unsafe_set : t -> int -> char -> unit
 val to_slice : t -> CCByte_slice.t
 (** [to_slice buf] returns a slice of the current content.
     The slice shares the same byte array as [buf] (until [buf] is resized).
-    @since NEXT_RELEASE *)
+    @since 3.13.1 *)
 
 val contents : t -> string
 (** Copy the internal data to a string. Allocates. *)
@@ -102,7 +102,7 @@ val iter : (char -> unit) -> t -> unit
 
 val iteri : (int -> char -> unit) -> t -> unit
 (** Iterate with index.
-    @since NEXT_RELEASE *)
+    @since 3.13.1 *)
 
 val fold_left : ('a -> char -> 'a) -> 'a -> t -> 'a
 val of_iter : char iter -> t

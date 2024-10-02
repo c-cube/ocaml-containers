@@ -1,6 +1,8 @@
 module T = (val Containers_testlib.make ~__FILE__ ())
 include T
-open CCVector;;
+open CCVector
+
+let spf = Printf.sprintf;;
 
 t @@ fun () -> create_with ~capacity:200 1 |> capacity >= 200;;
 t @@ fun () -> return 42 |> to_list = [ 42 ];;

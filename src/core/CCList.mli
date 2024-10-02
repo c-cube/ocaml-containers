@@ -28,7 +28,7 @@ val cons_maybe : 'a option -> 'a t -> 'a t
 val cons_when : bool -> 'a -> 'a t -> 'a t
 (** [cons_when true x l] is [x :: l].
     [cons_when false x l] is [l].
-    @since NEXT_RELEASE *)
+    @since 3.13.1 *)
 
 val cons' : 'a t -> 'a -> 'a t
 (** [cons' l x] is the same as [x :: l]. This is convenient for fold

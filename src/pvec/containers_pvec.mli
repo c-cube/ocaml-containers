@@ -5,7 +5,7 @@
 
     {b status: experimental}
 
-    @since NEXT_RELEASE
+    @since 3.13.1
 *)
 
 type 'a iter = ('a -> unit) -> unit
