@@ -10,10 +10,11 @@ type 'a ktree = unit -> [ `Nil | `Node of 'a * 'a ktree list ]
 let[@inline] _iter_map f xs k = xs (fun x -> k (f x))
 
 let rec _gen_iter k g =
-  begin match g () with
+  match g () with
   | None -> ()
-  | Some x -> k x; _gen_iter k g
-  end
+  | Some x ->
+    k x;
+    _gen_iter k g
 
 module type PARTIAL_ORD = sig
   type t
@@ -356,12 +357,10 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
      equal to it. *)
   let _merge_heap_iter (hs : t iter) : t =
     let rec cons_and_merge h0 hs weights =
-      begin match hs with
+      match hs with
       | h1 :: hs' when weights land 1 = 0 ->
-          cons_and_merge (merge h0 h1) hs' (weights lsr 1)
-      | _ ->
-          h0 :: hs
-      end
+        cons_and_merge (merge h0 h1) hs' (weights lsr 1)
+      | _ -> h0 :: hs
     in
     (* the i-th heap in this list is a merger of 2^{w_i} input heaps, each
        having gone through w_i merge operations, where the "weights" 2^{w_i} are
@@ -371,19 +370,14 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
        input heaps merged so far; adding a heap to the mergers works like binary
        incrementation: *)
     let count = ref 0 in
-    hs begin fun h ->
-      incr count ;
-      mergers := cons_and_merge h !mergers !count ;
-    end ;
+    hs (fun h ->
+        incr count;
+        mergers := cons_and_merge h !mergers !count);
     List.fold_left merge E !mergers
 
   (* To build a heap with n given values, instead of repeated insertions,
      it is more efficient to do pairwise merging, running in time O(n). *)
-  let of_iter xs =
-    xs
-    |> _iter_map singleton
-    |> _merge_heap_iter
-
+  let of_iter xs = xs |> _iter_map singleton |> _merge_heap_iter
   let of_list xs = of_iter (fun k -> List.iter k xs)
   let of_seq xs = of_iter (fun k -> Seq.iter k xs)
   let of_gen xs = of_iter (fun k -> _gen_iter k xs)
@@ -401,15 +395,12 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
   let of_iter_almost_sorted xs =
     let sorted_chunk = ref [] in
     let iter_sorted_heaps k =
-      xs begin fun x ->
-        begin match !sorted_chunk with
-        | (y :: _) as ys when not (E.leq y x) ->
-            k (_of_list_rev_sorted ys) ;
-            sorted_chunk := [x]
-        | ys ->
-            sorted_chunk := x :: ys
-        end ;
-      end ;
+      xs (fun x ->
+          match !sorted_chunk with
+          | y :: _ as ys when not (E.leq y x) ->
+            k (_of_list_rev_sorted ys);
+            sorted_chunk := [ x ]
+          | ys -> sorted_chunk := x :: ys);
       k (_of_list_rev_sorted !sorted_chunk)
     in
     _merge_heap_iter iter_sorted_heaps
@@ -420,7 +411,6 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
   let add_iter h xs = merge h (of_iter xs)
   let add_seq h xs = merge h (of_seq xs)
   let add_gen h xs = merge h (of_gen xs)
-
   let add_iter_almost_sorted h xs = merge h (of_iter_almost_sorted xs)
 
   (** {2 Conversions to sequences} *)
@@ -494,19 +484,19 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
 
   let rec delete_one eq x0 = function
     | N (_, x, l, r) as h when E.leq x x0 ->
-        if eq x0 x then
-          merge l r
-        else begin
-          let l' = delete_one eq x0 l in
-          if CCEqual.physical l' l then
-            let r' = delete_one eq x0 r in
-            if CCEqual.physical r' r then
-              h
-            else
-              _make_node x l r'
+      if eq x0 x then
+        merge l r
+      else (
+        let l' = delete_one eq x0 l in
+        if CCEqual.physical l' l then (
+          let r' = delete_one eq x0 r in
+          if CCEqual.physical r' r then
+            h
           else
-            _make_node x l' r
-        end
+            _make_node x l r'
+        ) else
+          _make_node x l' r
+      )
     | h -> h
 
   let delete_all eq x0 h =
@@ -524,42 +514,40 @@ module Make (E : PARTIAL_ORD) : S with type elt = E.t = struct
        much smaller than O(n) if k is asymptotically smaller than n.
     *)
     let rec iter_subheaps eq x0 h k =
-      begin match h with
+      match h with
       | N (_, x, l, r) when E.leq x x0 ->
-          let keep_x = not (eq x0 x) in
-          let keep_l = iter_subheaps eq x0 l k in
-          let keep_r = iter_subheaps eq x0 r k in
-          if keep_x && keep_l && keep_r then
-            true
-          else begin
-            if keep_x then k (singleton x) ;
-            if keep_l then k l ;
-            if keep_r then k r ;
-            false
-          end
+        let keep_x = not (eq x0 x) in
+        let keep_l = iter_subheaps eq x0 l k in
+        let keep_r = iter_subheaps eq x0 r k in
+        if keep_x && keep_l && keep_r then
+          true
+        else (
+          if keep_x then k (singleton x);
+          if keep_l then k l;
+          if keep_r then k r;
+          false
+        )
       | _ -> true
-      end
     in
     _merge_heap_iter (fun k -> if iter_subheaps eq x0 h k then k h)
 
   let filter p h =
     (* similar to [delete_all] *)
     let rec iter_subheaps p k h =
-      begin match h with
+      match h with
       | E -> true
       | N (_, x, l, r) ->
-          let keep_x = p x in
-          let keep_l = iter_subheaps p k l in
-          let keep_r = iter_subheaps p k r in
-          if keep_x && keep_l && keep_r then
-            true
-          else begin
-            if keep_x then k (singleton x) ;
-            if keep_l then k l ;
-            if keep_r then k r ;
-            false
-          end
-      end
+        let keep_x = p x in
+        let keep_l = iter_subheaps p k l in
+        let keep_r = iter_subheaps p k r in
+        if keep_x && keep_l && keep_r then
+          true
+        else (
+          if keep_x then k (singleton x);
+          if keep_l then k l;
+          if keep_r then k r;
+          false
+        )
     in
     _merge_heap_iter (fun k -> if iter_subheaps p k h then k h)
 
