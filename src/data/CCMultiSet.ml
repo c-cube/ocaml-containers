@@ -3,6 +3,7 @@
 (** {1 Multiset} *)
 
 type 'a iter = ('a -> unit) -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 let max_int = max
 let min_int = min
@@ -89,6 +90,15 @@ module type S = sig
 
   val of_iter_mult : (elt * int) iter -> t
   (** @since 0.19 *)
+
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_sep:unit printer ->
+    elt printer ->
+    t printer
+  (** Print the multiset.
+      @since NEXT_RELEASE *)
 end
 
 module Make (O : Set.OrderedType) = struct
@@ -233,4 +243,25 @@ module Make (O : Set.OrderedType) = struct
     let m = ref empty in
     seq (fun (x, n) -> m := add_mult !m x n);
     !m
+
+  let pp ?(pp_start = fun _ () -> ()) ?(pp_stop = fun _ () -> ())
+      ?(pp_sep = fun fmt () -> Format.fprintf fmt ",@ ") pp_x fmt m =
+    let rec pp_mult ?(first = true) x n =
+      if n = 0 then ()
+      else (
+        if not first then pp_sep fmt ();
+        pp_x fmt x;
+        pp_mult ~first:false x (n-1)
+      )
+    in
+    pp_start fmt ();
+    let first = ref true in
+    iter m
+      (fun x n ->
+        if !first then
+          first := false
+        else
+          pp_sep fmt ();
+        pp_mult n x);
+    pp_stop fmt ()
 end

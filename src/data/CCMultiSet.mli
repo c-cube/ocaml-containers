@@ -3,6 +3,7 @@
 (** Multiset *)
 
 type 'a iter = ('a -> unit) -> unit
+type 'a printer = Format.formatter -> 'a -> unit
 
 module type S = sig
   type elt
@@ -86,6 +87,15 @@ module type S = sig
 
   val of_iter_mult : (elt * int) iter -> t
   (** @since 0.19 *)
+
+  val pp :
+    ?pp_start:unit printer ->
+    ?pp_stop:unit printer ->
+    ?pp_sep:unit printer ->
+    elt printer ->
+    t printer
+  (** Print the multiset.
+      @since NEXT_RELEASE *)
 end
 
 module Make (O : Set.OrderedType) : S with type elt = O.t
