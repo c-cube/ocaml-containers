@@ -167,6 +167,11 @@ let is_error = function
   | Ok _ -> false
   | Error _ -> true
 
+let split_ok_error results =
+  results
+  |> CCList.partition_filter_map (fun x ->
+         match x with Ok o -> `Left o | Error e -> `Right e)
+
 (** {2 Wrappers} *)
 
 let guard f = try Ok (f ()) with e -> Error e
