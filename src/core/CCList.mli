@@ -498,7 +498,7 @@ val all_ok : ('a, 'err) result t -> ('a t, 'err) result
 val split_result : ('ok, 'error) result list -> 'ok list * 'error list
 (** Split a list of results into [Ok]s and [Error]s.
     @since NEXT_RELEASE *)
-    
+
 val sorted_mem : cmp:('a -> 'a -> int) -> 'a -> 'a list -> bool
 (** [sorted_mem ~cmp x l] and [mem x l] give the same result for any sorted list [l],
     but potentially more efficiently.

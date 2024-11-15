@@ -247,17 +247,17 @@ module Make (O : Set.OrderedType) = struct
   let pp ?(pp_start = fun _ () -> ()) ?(pp_stop = fun _ () -> ())
       ?(pp_sep = fun fmt () -> Format.fprintf fmt ",@ ") pp_x fmt m =
     let rec pp_mult ?(first = true) x n =
-      if n = 0 then ()
+      if n = 0 then
+        ()
       else (
         if not first then pp_sep fmt ();
         pp_x fmt x;
-        pp_mult ~first:false x (n-1)
+        pp_mult ~first:false x (n - 1)
       )
     in
     pp_start fmt ();
     let first = ref true in
-    iter m
-      (fun x n ->
+    iter m (fun x n ->
         if !first then
           first := false
         else
