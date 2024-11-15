@@ -1048,6 +1048,13 @@ let all_ok l =
     | None -> assert false
     | Some e -> Error e)
 
+let split_result results =
+  results
+  |> partition_filter_map (fun x ->
+         match x with 
+         | Ok o -> `Left o 
+         | Error e -> `Right e)
+
 let group_by (type k) ?(hash = Hashtbl.hash) ?(eq = Stdlib.( = )) l =
   let module Tbl = Hashtbl.Make (struct
     type t = k
