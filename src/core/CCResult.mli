@@ -145,10 +145,6 @@ val is_error : ('a, 'err) t -> bool
 (** Return true if [Error].
     @since 1.0 *)
 
-val split_ok_error : ('ok, 'error) result list -> 'ok list * 'error list
-(** Split a list of results into [Ok]s and [Error]s.
-    @since 3.14.1 *)
-
 (** {2 Wrappers} *)
 
 val guard : (unit -> 'a) -> ('a, exn) t
