@@ -2,6 +2,10 @@
 
 ## main
 
+## 3.15
+
+- Add `CCList.split_result` (#459)
+- pretty printer in MultiSet
 - `CCHeap`: building a heap from an almost-sorted sequence
 - perf: `CCHeap`: building a heap from n elements is now in time O(n)
   instead of O(n log n)

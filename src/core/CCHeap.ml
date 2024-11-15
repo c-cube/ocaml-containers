@@ -156,7 +156,7 @@ module type S = sig
       [merge h (of_iter_almost_sorted iter)].
       See {!of_iter_almost_sorted}.
       Complexity: [O(log m + n)].
-      @since NEXT_RELEASE
+      @since 3.14
   *)
 
   (** {2 Conversions} *)

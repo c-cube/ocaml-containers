@@ -95,7 +95,7 @@ module type S = sig
     elt printer ->
     t printer
   (** Print the multiset.
-      @since NEXT_RELEASE *)
+      @since 3.14 *)
 end
 
 module Make (O : Set.OrderedType) : S with type elt = O.t

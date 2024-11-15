@@ -151,7 +151,7 @@ module type S = sig
       [merge h (of_iter_almost_sorted iter)].
       See {!of_iter_almost_sorted}.
       Complexity: [O(log m + n)].
-      @since NEXT_RELEASE
+      @since 3.14
   *)
 
   (** {2 Conversions} *)
@@ -191,7 +191,7 @@ module type S = sig
       then successive {!take} run in [O(1)],
       and {!to_list_sorted} runs in [O(n)].
       Complexity: [O(n)].
-      @since NEXT_RELEASE
+      @since 3.14
   *)
 
   val to_list : t -> elt list
