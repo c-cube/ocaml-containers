@@ -33,7 +33,7 @@ jobs:
           allow-prerelease-opam: true
       - run: opam install -t containers containers-data --deps-only
       - run: opam exec -- dune build '@install'
-      - run: opam exec -- dune runtest
+      - run: opam exec -- dune runtest --force --profile=release
 
   compat:
     name: build
@@ -61,7 +61,7 @@ jobs:
           opam install -t containers --deps-only ;
           opam install containers-data --deps-only  # no test deps
       - run: opam exec -- dune build '@install'
-      - run: opam exec -- dune runtest -j 1 -p containers # test only core on non-ubuntu platform
+      - run: opam exec -- dune runtest -j 1 -p containers --profile=release # test only core on non-ubuntu platform
 
   format:
     name: format
