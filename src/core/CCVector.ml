@@ -119,9 +119,19 @@ let clear_and_reset v =
 
 let[@inline] is_empty v = v.size = 0
 
+[@@@ifge 4.13]
+
 let[@inline] push_unsafe_ v x =
+  Sys.opaque_identity (Array.unsafe_set v.vec v.size x);
+  v.size <- v.size + 1
+
+[@@@else_]
+
+let[@inline never] push_unsafe_ v x =
   Array.unsafe_set v.vec v.size x;
   v.size <- v.size + 1
+
+[@@@endif]
 
 let push v x =
   if v.size = Array.length v.vec then grow_with_ v ~filler:x;
@@ -174,6 +184,8 @@ let append a b =
     a.size <- a.size + b.size
   )
 
+[@@@ifge 4.13]
+
 let[@inline] get v i =
   if i < 0 || i >= v.size then invalid_arg "CCVector.get";
   (* NOTE: over eager inlining seems to miscompile for int32 at least (#454) *)
@@ -182,6 +194,18 @@ let[@inline] get v i =
 let[@inline] set v i x =
   if i < 0 || i >= v.size then invalid_arg "CCVector.set";
   Array.unsafe_set v.vec i x
+
+[@@@else_]
+
+let[@inline never] get v i =
+  if i < 0 || i >= v.size then invalid_arg "CCVector.get";
+  Array.unsafe_get v.vec i
+
+let[@inline never] set v i x =
+  if i < 0 || i >= v.size then invalid_arg "CCVector.set";
+  Array.unsafe_set v.vec i x
+
+[@@@endif]
 
 let remove_and_shift v i =
   if i < 0 || i >= v.size then invalid_arg "CCVector.remove";
