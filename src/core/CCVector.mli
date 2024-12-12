@@ -220,6 +220,9 @@ val for_all : ('a -> bool) -> ('a, _) t -> bool
 val find : ('a -> bool) -> ('a, _) t -> 'a option
 (** Find an element that satisfies the predicate. *)
 
+val findi : ('a -> bool) -> ('a, _) t -> (int * 'a) option
+(** Find an element and its index that satisfies the predicate. *)
+
 val find_exn : ('a -> bool) -> ('a, _) t -> 'a
 (** Find an element that satisfies the predicate, or
     @raise Not_found if no element does. *)
