@@ -490,8 +490,24 @@ let find_internal_ p v =
   in
   check 0
 
+let find_internal_i_ p v =
+  let n = v.size in
+  let rec check i =
+    if i = n then
+      raise_notrace Not_found
+    else (
+      let x = v.vec.(i) in
+      if p x then
+        i,x
+      else
+        check (i + 1)
+    )
+  in
+  check 0
+
 let find_exn p v = try find_internal_ p v with Not_found -> raise Not_found
 let find p v = try Some (find_internal_ p v) with Not_found -> None
+let findi p v = try Some (find_internal_i_ p v) with Not_found -> None
 
 let find_map f v =
   let n = v.size in
