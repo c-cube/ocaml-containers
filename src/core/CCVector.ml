@@ -498,7 +498,7 @@ let find_internal_i_ p v =
     else (
       let x = v.vec.(i) in
       if p x then
-        i,x
+        i, x
       else
         check (i + 1)
     )

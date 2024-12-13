@@ -248,7 +248,7 @@ val partition_map :
   ('a -> [< `Left of 'b | `Right of 'c | `Drop ]) ->
   'a list ->
   'b list * 'c list
-  [@@ocaml.deprecated "use CCList.partition_filter_map instead"]
+[@@ocaml.deprecated "use CCList.partition_filter_map instead"]
 (** @deprecated use {!partition_filter_map} instead
     @since 0.11 *)
 

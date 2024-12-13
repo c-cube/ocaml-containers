@@ -26,8 +26,8 @@ let arb_uchar =
   let rec gen =
     lazy
       (let open Q.Gen in
-      Q.Gen.int_range Uchar.(to_int min) Uchar.(to_int max) >>= fun n ->
-      try return (Uchar.of_int n) with _ -> Lazy.force gen)
+       Q.Gen.int_range Uchar.(to_int min) Uchar.(to_int max) >>= fun n ->
+       try return (Uchar.of_int n) with _ -> Lazy.force gen)
   in
   Q.make
     ~print:(fun c -> Printf.sprintf "<uchar '%d'>" (Uchar.to_int c))

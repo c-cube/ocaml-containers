@@ -455,9 +455,9 @@ let of_seq ?(sep = nil) f seq : t =
     | Seq.Cons (x, tl) ->
       let x = f x in
       (if first then
-        x
-      else
-        sep ^ x)
+         x
+       else
+         sep ^ x)
       ^ loop false tl
   in
   loop true seq

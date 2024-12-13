@@ -107,7 +107,7 @@ val value : 'a t -> default:'a -> 'a
     @since 2.8 *)
 
 val get_exn : 'a t -> 'a
-  [@@ocaml.deprecated "use CCOption.get_exn_or instead"]
+[@@ocaml.deprecated "use CCOption.get_exn_or instead"]
 (** [get_exn o] returns [x] if [o] is [Some x] or fails if [o] is [None].
     @raise Invalid_argument if the option is [None].
     @deprecated use {!get_exn_or} instead

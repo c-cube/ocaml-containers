@@ -640,9 +640,9 @@ module Op = struct
     @@ List.flatten
          [
            (if size > 0 then
-             nonzero
-           else
-             []);
+              nonzero
+            else
+              []);
            [
              1, return Clear;
              1, return Clear_and_shrink;
@@ -747,16 +747,16 @@ module Ref_ = struct
     | Set_bool (i, b) ->
       apply_op self
         (if b then
-          Set i
-        else
-          Reset i)
+           Set i
+         else
+           Reset i)
     | Flip i ->
       self.size <- max self.size (i + 1);
       apply_op self
         (if Intset.mem i self.set then
-          Reset i
-        else
-          Set i)
+           Reset i
+         else
+           Set i)
     | Clear -> self.set <- Intset.empty
     | Clear_and_shrink ->
       self.set <- Intset.empty;

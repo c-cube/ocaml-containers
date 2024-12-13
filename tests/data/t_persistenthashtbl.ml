@@ -108,15 +108,14 @@ let t1 = H.of_list [ 1, "a"; 2, "b1" ] in
 let t2 = H.of_list [ 2, "b2"; 3, "c" ] in
 let t =
   H.merge
-    ~f:
-      (fun _ -> function
-        | `Right v2 -> Some v2
-        | `Left v1 -> Some v1
-        | `Both (s1, s2) ->
-          if s1 < s2 then
-            Some s1
-          else
-            Some s2)
+    ~f:(fun _ -> function
+      | `Right v2 -> Some v2
+      | `Left v1 -> Some v1
+      | `Both (s1, s2) ->
+        if s1 < s2 then
+          Some s1
+        else
+          Some s2)
     t1 t2
 in
 assert_equal ~printer:string_of_int 3 (H.length t);

@@ -404,7 +404,7 @@ val optional : _ t -> unit t
     @since 3.6 *)
 
 val try_ : 'a t -> 'a t
-  [@@deprecated "plays no role anymore, just replace [try foo] with [foo]"]
+[@@deprecated "plays no role anymore, just replace [try foo] with [foo]"]
 (** [try_ p] is just like [p] (it used to play a role in backtracking
     semantics but no more).
 

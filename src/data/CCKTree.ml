@@ -66,11 +66,10 @@ let rec cut_depth n t () =
 (** {2 Graph Traversals} *)
 
 (** Abstract Set structure *)
-class type ['a] pset =
-  object
-    method add : 'a -> 'a pset
-    method mem : 'a -> bool
-  end
+class type ['a] pset = object
+  method add : 'a -> 'a pset
+  method mem : 'a -> bool
+end
 
 let set_of_cmp (type elt) ~cmp () =
   let module S = Set.Make (struct

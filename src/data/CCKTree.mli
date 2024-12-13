@@ -49,11 +49,10 @@ val cut_depth : int -> 'a t -> 'a t
 (** {2 Graph Traversals} *)
 
 (** Abstract Set structure *)
-class type ['a] pset =
-  object
-    method add : 'a -> 'a pset
-    method mem : 'a -> bool
-  end
+class type ['a] pset = object
+  method add : 'a -> 'a pset
+  method mem : 'a -> bool
+end
 
 val set_of_cmp : cmp:('a -> 'a -> int) -> unit -> 'a pset
 (** Build a set structure given a total ordering. *)

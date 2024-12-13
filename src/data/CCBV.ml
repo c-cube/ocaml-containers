@@ -407,9 +407,9 @@ let pp out bv =
   iter bv (fun _i b ->
       Format.pp_print_char out
         (if b then
-          '1'
-        else
-          '0'));
+           '1'
+         else
+           '0'));
   Format.pp_print_string out "}"
 
 module Internal_ = struct

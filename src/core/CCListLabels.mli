@@ -281,7 +281,7 @@ val partition_map :
   f:('a -> [< `Left of 'b | `Right of 'c | `Drop ]) ->
   'a list ->
   'b list * 'c list
-  [@@ocaml.deprecated "use CCList.partition_filter_map instead"]
+[@@ocaml.deprecated "use CCList.partition_filter_map instead"]
 (** @deprecated use {!partition_filter_map} instead *)
 
 val group_by : ?hash:('a -> int) -> ?eq:('a -> 'a -> bool) -> 'a t -> 'a list t

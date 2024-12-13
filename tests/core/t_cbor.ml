@@ -61,9 +61,9 @@ let gen_c : Cbor.t Q.Gen.t =
   in
   frequency
     (if size > 0 then
-      base @ rec_
-    else
-      base)
+       base @ rec_
+     else
+       base)
 
 let rec shrink (c : Cbor.t) : Cbor.t Q.Iter.t =
   let open Q.Iter in

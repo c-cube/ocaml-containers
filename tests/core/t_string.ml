@@ -162,9 +162,9 @@ q
     let e = edit_distance s1 s2 in
     let e' = edit_distance ~cutoff:3 s1 s2 in
     (if e' < 3 then
-      e = e'
-    else
-      e >= 3)
+       e = e'
+     else
+       e >= 3)
     &&
     if e <= 3 then
       e = e'

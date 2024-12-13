@@ -199,8 +199,8 @@ module A_SPARSE = struct
       arr.(real_idx) <- x;
       if real_idx > 0 then Array.blit a.arr 0 arr 0 real_idx;
       (if real_idx < n then
-        let open Stdlib in
-        Array.blit a.arr real_idx arr (real_idx + 1) (n - real_idx));
+         let open Stdlib in
+         Array.blit a.arr real_idx arr (real_idx + 1) (n - real_idx));
       { a with bits; arr }
     ) else if (* replace element at [real_idx] *)
               mut then (
@@ -230,8 +230,8 @@ module A_SPARSE = struct
       let arr = Array.make Stdlib.(n + 1) x in
       if real_idx > 0 then Array.blit a.arr 0 arr 0 real_idx;
       (if real_idx < n then
-        let open Stdlib in
-        Array.blit a.arr real_idx arr (real_idx + 1) (n - real_idx));
+         let open Stdlib in
+         Array.blit a.arr real_idx arr (real_idx + 1) (n - real_idx));
       { a with bits; arr }
     ) else (
       let x = f a.arr.(real_idx) in

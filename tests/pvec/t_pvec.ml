@@ -242,12 +242,12 @@ module Op = struct
                    1, return (Check_rev_iter, size);
                  ];
                  (if size > 0 then
-                   [
-                     1, return (Pop, size - 1);
-                     (1, 0 -- (size - 1) >|= fun x -> Check_get x, size);
-                   ]
-                 else
-                   []);
+                    [
+                      1, return (Pop, size - 1);
+                      (1, 0 -- (size - 1) >|= fun x -> Check_get x, size);
+                    ]
+                  else
+                    []);
                  [
                    ( 1,
                      small_list gen_x >|= fun l ->

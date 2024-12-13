@@ -295,9 +295,9 @@ module Make (H : HashedType) : S with type key = H.t = struct
           {
             length =
               (if is_new then
-                t.length + 1
-              else
-                t.length);
+                 t.length + 1
+               else
+                 t.length);
             arr = Arr a;
           }
         in

@@ -37,9 +37,8 @@ val ( >=. ) : float -> float -> bool
 (** {2 Shadow Dangerous Operators} *)
 
 val ( == ) : [ `Consider_using_CCEqual_physical ]
-  [@@ocaml.deprecated "Please use CCEqual.physical or Stdlib.(==) instead."]
+[@@ocaml.deprecated "Please use CCEqual.physical or Stdlib.(==) instead."]
 
 val ( != ) : [ `Consider_using_CCEqual_physical ]
-  [@@ocaml.deprecated
-    "Please use [not CCEqual.physical] or Stdlib.(!=) instead."]
+[@@ocaml.deprecated "Please use [not CCEqual.physical] or Stdlib.(!=) instead."]
 (** @since 2.1 *)

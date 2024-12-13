@@ -77,9 +77,9 @@ let int = hash_int_
 let bool b =
   hash_int_
     (if b then
-      1
-    else
-      2)
+       1
+     else
+       2)
 
 let char x = hash_int_ (Char.code x)
 

@@ -13,7 +13,7 @@ val poly : 'a t
     @since 3.6 *)
 
 val compare : 'a t
-  [@@deprecated "use CCOrd.poly instead, this name is too general"]
+[@@deprecated "use CCOrd.poly instead, this name is too general"]
 (** Polymorphic "magic" comparison.
     @deprecated since 3.6 in favor of {!poly}. The reason is that
     [compare] is easily shadowed, can shadow other comparators, and is just

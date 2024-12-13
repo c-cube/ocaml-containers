@@ -118,9 +118,9 @@ let rec sorted ~rev = function
   | [] | [ _ ] -> true
   | x :: (y :: _ as tl) ->
     (if rev then
-      x >= y
-    else
-      x <= y)
+       x >= y
+     else
+       x <= y)
     && sorted ~rev tl
 
 let gen_str = Q.small_printable_string;;

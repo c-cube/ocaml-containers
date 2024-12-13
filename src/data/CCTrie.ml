@@ -225,12 +225,12 @@ module Make (W : WORD) : S with type char_ = W.char_ and type key = W.t = struct
           let rebuild' new_child =
             rebuild
               (if is_empty new_child then
-                t
-              else (
-                let map = M.singleton c new_child in
-                let map = M.add c' t' map in
-                _mk_node None map
-              ))
+                 t
+               else (
+                 let map = M.singleton c new_child in
+                 let map = M.add c' t' map in
+                 _mk_node None map
+               ))
           in
           empty, rebuild'
         )
@@ -242,9 +242,9 @@ module Make (W : WORD) : S with type char_ = W.char_ and type key = W.t = struct
            let rebuild' new_child =
              rebuild
                (if is_empty new_child then
-                 _mk_node value (M.remove c map)
-               else
-                 _mk_node value (M.add c new_child map))
+                  _mk_node value (M.remove c map)
+                else
+                  _mk_node value (M.add c new_child map))
            in
            t', rebuild'
          with Not_found ->

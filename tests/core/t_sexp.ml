@@ -183,10 +183,11 @@ let arb_csexp_arb =
   let genstr = Q.Gen.(string_size ~gen:genchar (0 -- 15)) in
   Q.make ~print:Sexp0.to_string ~shrink:shrink_csexp (gen_csexp genstr)
 
-module Make (X : sig
-  val arb : Csexp.t Q.arbitrary
-end)
-() =
+module Make
+    (X : sig
+      val arb : Csexp.t Q.arbitrary
+    end)
+    () =
 struct
   open X;;
 
