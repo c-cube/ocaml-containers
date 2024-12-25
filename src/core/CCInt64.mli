@@ -18,6 +18,8 @@ include module type of struct
   include Int64
 end
 
+[@@@iflt 4.13]
+
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
     @since 3.0 *)
@@ -26,9 +28,14 @@ val max : t -> t -> t
 (** [max x y] returns the maximum of the two integers [x] and [y].
     @since 3.0 *)
 
+[@@@endif]
+[@@@iflt 5.1]
+
 val hash : t -> int
 (** [hash x] computes the hash of [x], a non-negative integer.
     Uses FNV since 3.10 *)
+
+[@@@endif]
 
 val hash_to_int64 : t -> t
 (** Like {!hash} but does not truncate.
