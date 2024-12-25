@@ -2,8 +2,13 @@
 
 include Int64
 
+[@@@iflt 4.13]
+
 let min : t -> t -> t = Stdlib.min
 let max : t -> t -> t = Stdlib.max
+
+[@@@endif]
+
 let sign i = compare i zero
 
 (* use FNV:
