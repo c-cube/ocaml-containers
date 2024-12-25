@@ -1,8 +1,9 @@
 # Changelog
 
 ## main
-- change the semantic of CCFloat.{min,max} with respect to NaN to follow the Stdlib
-- change the semantic of CCInt.rem with respect to negative number to follow the Stdlib
+- breaking: invert the argument of CCFun.compose to align it with the Stdlib
+- breaking: change the semantic of CCFloat.{min,max} with respect to NaN to follow the Stdlib
+- breaking: change the semantic of CCInt.rem with respect to negative number to follow the Stdlib
 
 ## 3.15
 
