@@ -18,6 +18,8 @@ include module type of struct
   include Int32
 end
 
+[@@@iflt 4.13]
+
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
     @since 3.0 *)
@@ -26,9 +28,14 @@ val max : t -> t -> t
 (** [max x y] returns the maximum of the two integers [x] and [y].
     @since 3.0 *)
 
+[@@@endif]
+[@@@iflt 5.1]
+
 val hash : t -> int
 (** [hash x] computes the hash of [x].
     Like {!Stdlib.abs (to_int x)}. *)
+
+[@@@endif]
 
 val sign : t -> int
 (** [sign x] return [0] if [x = 0], [-1] if [x < 0] and [1] if [x > 0].

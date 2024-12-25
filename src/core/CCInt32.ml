@@ -2,9 +2,18 @@
 
 include Int32
 
+[@@@iflt 4.13]
+
 let min : t -> t -> t = Stdlib.min
 let max : t -> t -> t = Stdlib.max
+
+[@@@endif]
+[@@@iflt 5.1]
+
 let hash x = Stdlib.abs (to_int x)
+
+[@@@endif]
+
 let sign i = compare i zero
 
 let pow a b =
