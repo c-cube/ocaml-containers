@@ -9,12 +9,6 @@ include module type of struct
   include Char
 end
 
-val compare : t -> t -> int
-(** The comparison function for characters, with the same specification as
-    {!Stdlib.compare}.  Along with the type [t], this function [compare]
-    allows the module [Char] to be passed as argument to the functors
-    {!Set.Make} and {!Map.Make}. *)
-
 val of_int_exn : int -> t
 (** Alias to {!Char.chr}.
     Return the character with the given ASCII code.
