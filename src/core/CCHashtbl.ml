@@ -189,11 +189,6 @@ module type S = sig
       using [f] in an unspecified order.
       @since 3.3 *)
 
-  val add_seq : 'a t -> (key * 'a) Seq.t -> unit
-  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      Renamed from [add_std_seq] since 3.0.
-      @since 3.0 *)
-
   val add_seq_with :
     f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
@@ -210,11 +205,6 @@ module type S = sig
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
       @since 3.3 *)
-
-  val of_seq : (key * 'a) Seq.t -> 'a t
-  (** From the given bindings, added in order.
-      Renamed from [of_std_seq] since 3.0.
-      @since 3.0 *)
 
   val of_seq_with : f:(key -> 'a -> 'a -> 'a) -> (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.
@@ -349,8 +339,6 @@ module Make (X : Hashtbl.HashedType) :
         | exception Not_found -> add tbl k v
         | v2 -> replace tbl k (f k v v2))
 
-  let add_seq tbl seq = Seq.iter (fun (k, v) -> add tbl k v) seq
-
   let add_seq_with ~f tbl seq =
     Seq.iter
       (fun (k, v) ->
@@ -366,7 +354,6 @@ module Make (X : Hashtbl.HashedType) :
     tbl
 
   let of_iter i = mk_tbl_ add_iter i
-  let of_seq i = mk_tbl_ add_seq i
   let of_iter_with ~f i = mk_tbl_ (add_iter_with ~f) i
   let of_seq_with ~f i = mk_tbl_ (add_seq_with ~f) i
   let add_iter_count tbl i = i (fun k -> incr tbl k)
