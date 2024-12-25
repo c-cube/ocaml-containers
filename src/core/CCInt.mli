@@ -59,6 +59,8 @@ val to_string_binary : t -> string
 (** [to_string_binary x] returns the string representation of the integer [x], in binary.
     @since 0.20 *)
 
+[@@@iflt 4.13]
+
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
     @since 0.17 *)
@@ -66,6 +68,8 @@ val min : t -> t -> t
 val max : t -> t -> t
 (** [max x y] returns the maximum of the two integers [x] and [y].
     @since 0.17 *)
+
+[@@@endif]
 
 val range_by : step:t -> t -> t -> t iter
 (** [range_by ~step i j] iterates on integers from [i] to [j] included,
