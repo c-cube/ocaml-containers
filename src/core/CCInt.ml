@@ -102,8 +102,12 @@ end
 
 include Infix
 
+[@@@iflt 4.13]
+
 let min : t -> t -> t = Stdlib.min
 let max : t -> t -> t = Stdlib.max
+
+[@@@endif]
 
 let floor_div a n =
   if a < 0 && n >= 0 then
