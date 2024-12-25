@@ -16,9 +16,13 @@ type +'a t = 'a list
 val empty : 'a t
 (** [empty] is [[]]. *)
 
+[@@@iflt 5.1]
+
 val is_empty : _ t -> bool
 (** [is_empty l] returns [true] iff [l = []].
     @since 0.11 *)
+
+[@@@endif]
 
 val cons_maybe : 'a option -> 'a t -> 'a t
 (** [cons_maybe (Some x) l] is [x :: l].
@@ -127,11 +131,6 @@ val count_true_false : ('a -> bool) -> 'a list -> int * int
     that satisfy the predicate [p], and [int2] the number of elements that do not satisfy [p].
     @since 2.4 *)
 
-val init : int -> (int -> 'a) -> 'a t
-(** [init len f] is [f 0; f 1; …; f (len-1)].
-    @raise Invalid_argument if len < 0.
-    @since 0.6 *)
-
 val combine : 'a list -> 'b list -> ('a * 'b) list
 (** [combine [a1; …; an] [b1; …; bn]] is [[(a1,b1); …; (an,bn)]].
     Transform two lists into a list of pairs.
@@ -161,24 +160,16 @@ val split : ('a * 'b) t -> 'a t * 'b t
     @since 1.2, but only
     @since 2.2 with labels *)
 
+[@@@iflt 4.12]
+
 val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
 (** [compare cmp l1 l2] compares the two lists [l1] and [l2]
     using the given comparison function [cmp]. *)
 
-val compare_lengths : 'a t -> 'b t -> int
-(** [compare_lengths l1 l2] compare the lengths of the two lists [l1] and [l2].
-    Equivalent to [compare (length l1) (length l2)] but more efficient.
-    @since 1.5, but only
-    @since 2.2 with labels *)
-
-val compare_length_with : 'a t -> int -> int
-(** [compare_length_with l x] compares the length of the list [l] to an integer [x].
-    Equivalent to [compare (length l) x] but more efficient.
-    @since 1.5, but only
-    @since 2.2 with labels *)
-
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
 (** [equal p l1 l2] returns [true] if [l1] and [l2] are equal. *)
+
+[@@@endif]
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** [flat_map f l] maps and flattens at the same time (safe). Evaluation order is not guaranteed. *)
@@ -437,15 +428,12 @@ val find_pred : ('a -> bool) -> 'a t -> 'a option
     or returns [None] if no element satisfies [p].
     @since 0.11 *)
 
-val find_opt : ('a -> bool) -> 'a t -> 'a option
-(** [find_opt p l] is the safe version of {!find}.
-    @since 1.5, but only
-    @since 2.2 with labels *)
-
 val find_pred_exn : ('a -> bool) -> 'a t -> 'a
 (** [find_pred_exn p l] is the unsafe version of {!find_pred}.
     @raise Not_found if no such element is found.
     @since 0.11 *)
+
+[@@@iflt 4.10]
 
 val find_map : ('a -> 'b option) -> 'a t -> 'b option
 (** [find_map f l] traverses [l], applying [f] to each element. If for
@@ -453,9 +441,14 @@ val find_map : ('a -> 'b option) -> 'a t -> 'b option
     the call returns [None].
     @since 0.11 *)
 
+[@@@endif]
+[@@@iflt 5.1]
+
 val find_mapi : (int -> 'a -> 'b option) -> 'a t -> 'b option
 (** [find_mapi f l] is like {!find_map}, but also pass the index to the predicate function.
     @since 0.11 *)
+
+[@@@endif]
 
 val find_idx : ('a -> bool) -> 'a t -> (int * 'a) option
 (** [find_idx p x] returns [Some (i,x)] where [x] is the [i]-th element of [l],
@@ -466,11 +459,6 @@ val remove : eq:('a -> 'a -> bool) -> key:'a -> 'a t -> 'a t
     @param eq equality function.
     @since 0.11 *)
 (* FIXME: the original CCList.mli uses ~x instead of ~key !! *)
-
-val filter_map : ('a -> 'b option) -> 'a t -> 'b t
-(** [filter_map f l] is the sublist of [l] containing only elements for which
-    [f] returns [Some e].
-    Map and remove elements at the same time. *)
 
 val keep_some : 'a option t -> 'a t
 (** [keep_some l] retains only elements of the form [Some x].
@@ -573,16 +561,6 @@ val group_succ : eq:('a -> 'a -> bool) -> 'a list -> 'a list list
     @since 0.11 *)
 
 (** {2 Indices} *)
-
-val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
-(** [mapi f l] is like {!map}, but the function [f] is applied to the index of
-    the element as first argument (counting from 0), and the element
-    itself as second argument. *)
-
-val iteri : (int -> 'a -> unit) -> 'a t -> unit
-(** [iteri f l] is like {!val-iter}, but the function [f] is applied to the index of
-    the element as first argument (counting from 0), and the element
-    itself as second argument. *)
 
 val iteri2 : (int -> 'a -> 'b -> unit) -> 'a t -> 'b t -> unit
 (** [iteri2 f l1 l2] applies [f] to the two lists [l1] and [l2] simultaneously.
@@ -758,14 +736,6 @@ val assoc_opt : eq:('a -> 'a -> bool) -> 'a -> ('a * 'b) t -> 'b option
     @since 1.5, but only
     @since 2.0 with labels *)
 
-val assq_opt : 'a -> ('a * 'b) t -> 'b option
-(** [assq_opt k alist] returns [Some v] if the given key [k] is present into [alist].
-    Like [Assoc.assoc_opt] but use physical equality instead of structural equality
-    to compare keys.
-    Safe version of {!assq}.
-    @since 1.5, but only
-    @since 2.0 with labels *)
-
 val mem_assoc : ?eq:('a -> 'a -> bool) -> 'a -> ('a * _) t -> bool
 (** [mem_assoc ?eq k alist] returns [true] iff [k] is a key in [alist].
     Like [Assoc.mem].
@@ -884,11 +854,6 @@ val to_iter : 'a t -> 'a iter
 (** [to_iter l] returns a [iter] of the elements of the list [l].
     @since 2.8 *)
 
-val to_seq : 'a t -> 'a Seq.t
-(** [to_seq l] returns a [Seq.t] of the elements of the list [l].
-    Renamed from [to_std_seq] since 3.0.
-    @since 3.0 *)
-
 val of_iter : 'a iter -> 'a t
 (** [of_iter iter] builds a list from a given [iter].
     In the result, elements appear in the same order as they did in the source [iter].
@@ -897,12 +862,6 @@ val of_iter : 'a iter -> 'a t
 val of_seq_rev : 'a Seq.t -> 'a t
 (** [of_seq_rev seq] builds a list from a given [Seq.t], in reverse order.
     Renamed from [to_std_seq_rev] since 3.0.
-    @since 3.0 *)
-
-val of_seq : 'a Seq.t -> 'a t
-(** [of_seq seq] builds a list from a given [Seq.t].
-    In the result, elements appear in the same order as they did in the source [Seq.t].
-    Renamed from [of_std_seq] since 3.0.
     @since 3.0 *)
 
 val to_gen : 'a t -> 'a gen
