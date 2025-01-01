@@ -2,7 +2,7 @@
 
 (** Either Monad
 
-    Module that is compatible with Either form OCaml 4.12 but can be use with any
+    Module that is compatible with Either from OCaml 4.12 but can be use with any
     ocaml version compatible with container
 
     @since 3.2
