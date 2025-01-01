@@ -585,17 +585,17 @@ let take n s =
   else
     s
 
-let take_while p s =
+let take_while f s =
   let i = ref 0 in
-  while !i < String.length s && p (String.unsafe_get s !i) do
+  while !i < String.length s && f (String.unsafe_get s !i) do
     incr i
   done;
   String.sub s 0 !i
 
-let rtake_while p s =
+let rtake_while f s =
   let s_len_pred = String.length s - 1 in
   let i = ref s_len_pred in
-  while !i >= 0 && p (String.unsafe_get s !i) do
+  while !i >= 0 && f (String.unsafe_get s !i) do
     decr i
   done ;
   if !i < s_len_pred

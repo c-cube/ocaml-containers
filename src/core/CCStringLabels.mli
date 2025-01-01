@@ -193,14 +193,14 @@ val take : int -> string -> string
 (** [take n s] keeps only the [n] first chars of [s].
     @since 0.17 *)
 
-val take_while : p:(char -> bool) -> string -> string
-(** [take_while ~p s] keeps only the longest prefix [t] of [s] such that every
-    character [c] in [t] satisfies [p c].
+val take_while : f:(char -> bool) -> string -> string
+(** [take_while ~f s] keeps only the longest prefix [t] of [s] such that every
+    character [c] in [t] satisfies [f c].
     @since 3.16 *)
 
-val rtake_while : p:(char -> bool) -> string -> string
-(** [rtake_while ~p s] keeps only the longest suffix [t] of [s] such that every
-    character [c] in [t] satisfies [p c].
+val rtake_while : f:(char -> bool) -> string -> string
+(** [rtake_while ~f s] keeps only the longest suffix [t] of [s] such that every
+    character [c] in [t] satisfies [f c].
     @since 3.16 *)
 
 val drop : int -> string -> string
