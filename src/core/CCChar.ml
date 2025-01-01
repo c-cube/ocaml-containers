@@ -23,3 +23,9 @@ module Infix = struct
 end
 
 include Infix
+
+let is_uppercase_ascii c = c > '\064' && c < '\091'
+let is_lowercase_ascii c = c > '\097' && c < '\123'
+let is_letter_ascii c = is_uppercase_ascii c || is_lowercase_ascii c
+let is_whitespace_ascii c = c = '\032' || (c > '\008' && c < '\014')
+let is_digit_ascii c = c > '\047' && c < '\058'
