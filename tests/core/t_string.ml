@@ -280,18 +280,23 @@ eq ~printer:CCFun.id "" (unlines []);;
 eq ~printer:CCFun.id "ab\nc\n" (unlines [ "ab"; "c" ]);;
 q Q.printable_string (fun s -> trim (unlines (lines s)) = trim s);;
 q Q.printable_string (fun s -> trim (unlines_gen (lines_gen s)) = trim s);;
-
 eq ~printer:CCFun.id "" (take_while (Char.equal 'c') "heloo_cc");;
 eq ~printer:CCFun.id "" (take_while (Char.equal 'c') "");;
 eq ~printer:CCFun.id "c" (take_while (Char.equal 'c') "c");;
 eq ~printer:CCFun.id "ccc" (take_while (Char.equal 'c') "cccujsuy");;
-eq ~printer:CCFun.id "THIS" (take_while (fun c -> Char.code c < 91) "THISisNotWHAtIwANTED");;
+
+eq ~printer:CCFun.id "THIS"
+  (take_while (fun c -> Char.code c < 91) "THISisNotWHAtIwANTED")
+;;
 
 eq ~printer:CCFun.id "cc" (rtake_while (Char.equal 'c') "heloo_cc");;
 eq ~printer:CCFun.id "" (rtake_while (Char.equal 'c') "");;
 eq ~printer:CCFun.id "c" (rtake_while (Char.equal 'c') "c");;
 eq ~printer:CCFun.id "" (rtake_while (Char.equal 'c') "cccujsuy");;
-eq ~printer:CCFun.id "ANTED" (rtake_while (fun c -> Char.code c < 91) "THISisNotWHAtIwANTED");;
+
+eq ~printer:CCFun.id "ANTED"
+  (rtake_while (fun c -> Char.code c < 91) "THISisNotWHAtIwANTED")
+;;
 
 q
   Q.(small_list small_string)
