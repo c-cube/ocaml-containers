@@ -597,9 +597,9 @@ let rtake_while f s =
   let i = ref s_len_pred in
   while !i >= 0 && f (String.unsafe_get s !i) do
     decr i
-  done ;
-  if !i < s_len_pred
-    then String.sub s (!i + 1) (s_len_pred - !i)
+  done;
+  if !i < s_len_pred then
+    String.sub s (!i + 1) (s_len_pred - !i)
   else
     ""
 
