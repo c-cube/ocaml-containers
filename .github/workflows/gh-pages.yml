@@ -13,9 +13,9 @@ jobs:
       - uses: actions/checkout@main
 
       - name: Use OCaml
-        uses: ocaml/setup-ocaml@v2
+        uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: '4.14'
+          ocaml-compiler: '5.2'
           dune-cache: false
 
       - name: Deps
