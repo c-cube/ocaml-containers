@@ -62,7 +62,8 @@ val is_digit_ascii : t -> bool
 
 val is_whitespace_ascii : t -> bool
 (** [is_whitespace_ascii c] is true exactly when [c] is an ASCII
-    whitespace character, i.e. either [c = ' '] or ['\008'] < [c] < ['\014'].
+    whitespace character as defined by Unicode, i.e. either [c = ' ']
+    or ['\008'] < [c] < ['\014'].
     @since 3.16 *)
 
 (** {2 Infix Operators}
