@@ -229,7 +229,28 @@ t @@ fun () -> not (suffix ~suf:"cd" "abcde");;
 t @@ fun () -> not (suffix ~suf:"abcd" "cd");;
 eq ("ab", "cd") (take_drop 2 "abcd");;
 eq ("abc", "") (take_drop 3 "abc");;
-eq ("abc", "") (take_drop 5 "abc")
+eq ("abc", "") (take_drop 5 "abc");;
+
+q
+  Q.(printable_string)
+  (fun s ->
+    let predicate c = Char.code c mod 2 = 0 in
+    let prefix = take_while predicate s in
+    let suffix = drop_while predicate s in
+    if prefix ^ suffix <> s then
+      Q.Test.fail_reportf "s=%S, pre=%S, post=%S" s prefix suffix;
+    true)
+;;
+
+q
+  Q.(printable_string)
+  (fun s ->
+    let predicate c = Char.code c mod 2 = 0 in
+    let prefix = rdrop_while predicate s in
+    let suffix = rtake_while predicate s in
+    if prefix ^ suffix <> s then
+      Q.Test.fail_reportf "s=%S, pre=%S, post=%S" s prefix suffix;
+    true)
 
 let eq' = eq ~printer:Q.Print.(option string);;
 
