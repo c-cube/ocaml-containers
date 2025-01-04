@@ -40,6 +40,32 @@ val pp_buf : Buffer.t -> t -> unit
 val pp : Format.formatter -> t -> unit
 (** Renamed from [print] since 2.0. *)
 
+val is_uppercase_ascii : t -> bool
+(** [is_uppercase_ascii c] is true exactly when  [c] is an
+    uppercase ASCII character, i.e. ['\064'] < [c] < ['\091'].
+    @since 3.16 *)
+
+val is_lowercase_ascii : t -> bool
+(** [is_lowercase_ascii c] is true exactly when [c] is a
+    lowercase ASCII character, i.e. ['\096'] < [c] < ['\123'].
+    @since 3.16 *)
+
+val is_letter_ascii : t -> bool
+(** [is_letter_ascii c] is true exactly when [c] is an ASCII
+    letter, i.e. [is_uppercase_ascii c || is_lowercase_ascii c].
+    @since 3.16 *)
+
+val is_digit_ascii : t -> bool
+(** [is_digit_ascii c] is true exactly when [c] is an
+    ASCII digit, i.e. ['\047'] < [c] < ['\058'].
+    @since 3.16 *)
+
+val is_whitespace_ascii : t -> bool
+(** [is_whitespace_ascii c] is true exactly when [c] is an ASCII
+    whitespace character as defined by Unicode, i.e. either [c = ' ']
+    or ['\008'] < [c] < ['\014'].
+    @since 3.16 *)
+
 (** {2 Infix Operators}
 
     @since 3.3 *)
