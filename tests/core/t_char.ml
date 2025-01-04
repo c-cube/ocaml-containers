@@ -43,8 +43,41 @@ q
   (fun c -> not @@ CCChar.is_digit_ascii c)
 ;;
 
-eq true (String.for_all CCChar.is_whitespace_ascii "\n\t \010\011\012\013");;
+eq true
+  (Stdlib.List.for_all CCChar.is_whitespace_ascii
+     [ '\n'; '\t'; ' '; '\010'; '\011'; '\012'; '\013' ])
+;;
 
 eq false
-  (String.for_all CCChar.is_whitespace_ascii
-     "Hello!--NOthina\055kag$$$%^bch\008h")
+  (Stdlib.List.exists CCChar.is_whitespace_ascii
+     [
+       'H';
+       'e';
+       'l';
+       'l';
+       'o';
+       '!';
+       '-';
+       '-';
+       'N';
+       'O';
+       't';
+       'h';
+       'i';
+       'n';
+       'a';
+       '\055';
+       'k';
+       'a';
+       'g';
+       '$';
+       '$';
+       '$';
+       '%';
+       '^';
+       'b';
+       'c';
+       'h';
+       '\008';
+       'h';
+     ])
