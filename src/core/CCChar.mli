@@ -47,7 +47,7 @@ val is_uppercase_ascii : t -> bool
 
 val is_lowercase_ascii : t -> bool
 (** [is_lowercase_ascii c] is true exactly when [c] is a
-    lowercase ASCII character, i.e. ['\097'] < [c] < ['\123'].
+    lowercase ASCII character, i.e. ['\096'] < [c] < ['\123'].
     @since 3.16 *)
 
 val is_letter_ascii : t -> bool
