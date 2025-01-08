@@ -384,7 +384,7 @@ val mguard : bool -> unit t
     @since 3.1 *)
 
 val return : 'a -> 'a t
-(** [return x] is [x]. *)
+(** [return x] is [[x]]. *)
 
 val take : int -> 'a t -> 'a t
 (** [take n l] takes the [n] first elements of the list [l], drop the rest. *)
