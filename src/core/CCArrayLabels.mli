@@ -219,13 +219,6 @@ val fold2 : f:('acc -> 'a -> 'b -> 'acc) -> init:'acc -> 'a t -> 'b t -> 'acc
     @raise Invalid_argument if [a] and [b] have distinct lengths.
     @since 0.20 *)
 
-val iter2 : f:('a -> 'b -> unit) -> 'a t -> 'b t -> unit
-(** [iter2 ~f a b] iterates on the two arrays [a] and [b] stepwise.
-    It is equivalent to  [f a0 b0; …; f a.(length a - 1) b.(length b - 1); ()].
-
-    @raise Invalid_argument if [a] and [b] have distinct lengths.
-    @since 0.20 *)
-
 val shuffle : 'a t -> unit
 (** [shuffle a] randomly shuffles the array [a], in place. *)
 
@@ -247,14 +240,6 @@ val to_iter : 'a t -> 'a iter
     The input array [a] is shared with the sequence and modification of it will result
     in modification of the iterator.
     @since 2.8 *)
-
-val to_seq : 'a t -> 'a Seq.t
-(** [to_seq a] returns a [Seq.t] of the elements of an array [a].
-    The input array [a] is shared with the sequence and modification of it will result
-    in modification of the sequence.
-    Renamed from [to_std_seq] since 3.0.
-    @since 3.0
-*)
 
 val to_gen : 'a t -> 'a gen
 (** [to_gen a] returns a [gen] of the elements of an array [a]. *)
@@ -286,14 +271,6 @@ val pp_i :
     By defaults [pp_start] and [pp_stop] does nothing and [pp_sep] defaults to
     (fun out -> Format.fprintf out ",@ "). *)
 
-val map2 : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** [map2 ~f a b] applies function [f] to all elements of [a] and [b],
-    and builds an array with the results returned by [f]:
-    [[| f a.(0) b.(0); …; f a.(length a - 1) b.(length b - 1)|]].
-
-    @raise Invalid_argument if [a] and [b] have distinct lengths.
-    @since 0.20 *)
-
 val rev : 'a t -> 'a t
 (** [rev a] copies the array [a] and reverses it in place.
     @since 0.20 *)
@@ -308,7 +285,7 @@ val filter_map : f:('a -> 'b option) -> 'a t -> 'b t
     element of [a] is discarded. *)
 
 val monoid_product : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
-(** [monoid_product ~f a b] passes all combinaisons of tuples from the two arrays [a] and [b] 
+(** [monoid_product ~f a b] passes all combinaisons of tuples from the two arrays [a] and [b]
     to the function [f].
     @since 2.8 *)
 

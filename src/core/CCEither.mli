@@ -13,6 +13,13 @@ type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a printer = Format.formatter -> 'a -> unit
 
+[@@@ifge 4.12]
+
+include module type of Either
+(** @inline *)
+
+[@@@else_]
+
 (** {2 Basics} *)
 
 type ('a, 'b) t = ('a, 'b) Either.t =
@@ -69,6 +76,8 @@ val compare :
   ('a, 'b) t ->
   ('a, 'b) t ->
   int
+
+[@@@endif]
 
 (** {2 IO} *)
 
