@@ -309,3 +309,6 @@ q ~count:300 arr_arbitrary (fun a ->
     Array.sort CCInt.compare a1;
     sort_generic (module IA) ~cmp:CCInt.compare a2;
     a1 = a2)
+;;
+
+q Q.(array int) (fun a -> of_iter (to_iter a) = a)
