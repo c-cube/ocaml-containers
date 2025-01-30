@@ -1153,12 +1153,14 @@ module Iter_ = struct
   let bench_to_array n =
     let iter () = Iter.to_array Iter.(1 -- n)
     and gen () = Gen.to_array Gen.(1 -- n)
-    and oseq () = OSeq.to_array OSeq.(1 -- n) in
+    and oseq () = OSeq.to_array OSeq.(1 -- n)
+    and of_iter () = CCArray.of_iter Iter.(1 -- n) in
     B.throughputN 3 ~repeat
       [
         "iter.to_array", iter, ();
         "gen.to_array", gen, ();
         "oseq.to_array", oseq, ();
+        "ccarray.of_iter", of_iter, ();
       ]
 
   let bench_cons n =
