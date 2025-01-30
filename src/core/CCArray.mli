@@ -243,7 +243,7 @@ val to_iter : 'a t -> 'a iter
 val of_iter : 'a iter -> 'a t
 (** [of_iter iter] builds a array from a given [iter].
         In the result, elements appear in the same order as they did in the source [iter].
-     @since 3.15    *)
+     @since NEXT_RELEASE *)
 
 val to_seq : 'a t -> 'a Seq.t
 (** [to_seq a] returns a [Seq.t] of the elements of an array [a].
