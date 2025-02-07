@@ -78,6 +78,22 @@ val iterate : int -> ('a -> 'a) -> 'a -> 'a
     [x], [iterate 1 f x] is [f x], [iterate 2 f x] is [f (f x)], etc.
     @since 2.1 *)
 
+val with_return : (('ret -> 'a) -> 'ret) -> 'ret
+(** [with_return f] is [f return], where [return] is a function
+  that can be invoked to exit the scope early.
+
+  For example:
+{[
+let find_array arr x =
+  let@ return = with_return in
+  for i = 0 to Array.length arr-1 do
+    if arr.(i) = x then return i;
+  done;
+  -1
+]}
+
+  @since NEXT_RELEASE *)
+
 (** {2 Infix}
 
     Infix operators. *)

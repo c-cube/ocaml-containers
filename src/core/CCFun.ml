@@ -61,6 +61,13 @@ let rec iterate n f x =
   else
     iterate (n - 1) f (f x)
 
+let[@inline] with_return (type ret) f : ret =
+  let exception E of ret in
+  let return x = raise_notrace (E x) in
+  match f return with
+  | res -> res
+  | exception E res -> res
+
 module Infix = struct
   (* default implem for some operators *)
   let ( %> ) = compose
