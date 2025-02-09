@@ -455,15 +455,6 @@ let pp_i ?(pp_start = fun _ () -> ()) ?(pp_stop = fun _ () -> ())
 let to_string ?(sep = ", ") item_to_string a =
   Array.to_list a |> List.map item_to_string |> String.concat sep
 
-let to_seq a =
-  let rec aux i () =
-    if i >= length a then
-      Seq.Nil
-    else
-      Seq.Cons (a.(i), aux (i + 1))
-  in
-  aux 0
-
 let to_iter a k = iter k a
 
 let to_gen a =

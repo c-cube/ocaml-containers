@@ -5,6 +5,12 @@ type 'a equal = 'a -> 'a -> bool
 type 'a ord = 'a -> 'a -> int
 type 'a printer = Format.formatter -> 'a -> unit
 
+[@@@ifge 4.12]
+
+include Either
+
+[@@@else_]
+
 (** {2 Basics} *)
 
 type ('a, 'b) t = ('a, 'b) Either.t =
@@ -61,6 +67,8 @@ let compare ~left ~right e1 e2 =
   | Right _, Left _ -> 1
   | Left l1, Left l2 -> left l1 l2
   | Right r1, Right r2 -> right r1 r2
+
+[@@@endif]
 
 (** {2 IO} *)
 
