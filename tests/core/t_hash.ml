@@ -11,6 +11,8 @@ t @@ fun () -> char 'c' >= 0;;
 t @@ fun () -> int 152352 = int 152352;;
 t @@ fun () -> list_comm int [ 1; 2 ] = list_comm int [ 2; 1 ];;
 t @@ fun () -> list_comm int [ 1; 2 ] <> list_comm int [ 2; 3 ];;
+t @@ fun () -> string "abcd" >= 0;;
+t @@ fun () -> string "abc" <> string "abcd";;
 
 q Q.int (fun i ->
     Q.assume (i >= 0);
