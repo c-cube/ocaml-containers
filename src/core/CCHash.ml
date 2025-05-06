@@ -101,7 +101,7 @@ let max_len_b_ = 128
 
 let bytes (x : bytes) =
   let h = ref fnv_offset_basis in
-  for i = 0 to min max_len_b_ (Bytes.length x) do
+  for i = 0 to min max_len_b_ (Bytes.length x-1) do
     (h := Int64.(mul !h fnv_prime));
     let byte = Char.code (Bytes.unsafe_get x i) in
     h := Int64.(logxor !h (of_int byte))
