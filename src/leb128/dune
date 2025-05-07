@@ -1,0 +1,11 @@
+(library
+ (name containers_leb128)
+ (public_name containers.leb128)
+ (synopsis
+  "LEB128 encoding (https://en.wikipedia.org/wiki/LEB128) for cephalopod")
+ (libraries containers)
+ (foreign_stubs
+  (language c)
+  (flags :standard -std=c99 -O2)
+  (names stubs))
+ (ocamlopt_flags :standard -inline 100))
