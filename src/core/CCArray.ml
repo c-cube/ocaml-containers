@@ -93,7 +93,7 @@ let sort_indices cmp a =
   Array.sort (fun k1 k2 -> cmp a.(k1) a.(k2)) b;
   b
 
-let sort_ranking cmp a = sort_indices compare (sort_indices cmp a)
+let sort_ranking cmp a = sort_indices CCInt.compare (sort_indices cmp a)
 
 let rev a =
   let b = Array.copy a in
