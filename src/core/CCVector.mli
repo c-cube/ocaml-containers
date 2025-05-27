@@ -222,7 +222,7 @@ val find : ('a -> bool) -> ('a, _) t -> 'a option
 
 val findi : ('a -> bool) -> ('a, _) t -> (int * 'a) option
 (** Find an element and its index that satisfies the predicate.
-    @since NEXT_RELEASE *)
+    @since 3.15 *)
 
 val find_exn : ('a -> bool) -> ('a, _) t -> 'a
 (** Find an element that satisfies the predicate, or

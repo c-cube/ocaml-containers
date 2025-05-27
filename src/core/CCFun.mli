@@ -92,7 +92,7 @@ let find_array arr x =
   -1
 ]}
 
-  @since NEXT_RELEASE *)
+  @since 3.15 *)
 
 (** {2 Infix}
 

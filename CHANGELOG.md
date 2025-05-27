@@ -1,6 +1,17 @@
-# Changelog
 
-## main
+## 3.16
+
+
+- breaking: Renamed predicate parameter of `take_while`, `rtake_while` from `p` to `f`, aligining it with pre-existing `drop_while`.
+
+- feat: add `containers.leb128` library
+- feat: add `CCFun.with_return`
+- Added functions to the `Char` module to check common character properties.
+- feat: add `CCVector.findi`
+
+
+- fix: compat with OCaml 5.4
+- fix: oob(!!) in CCHash.bytes
 
 ## 3.15
 
