@@ -99,11 +99,11 @@ let rec shrink (c : Cbor.t) : Cbor.t Q.Iter.t =
     let+ s = Q.Shrink.string s in
     `Bytes s
 
-let arb = Q.make ~shrink ~print:Cbor.to_string_diagnostic gen_c;;
+let arb = Q.make ~shrink ~print:Cbor.to_string_diagnostic gen_c
 
-let rec eq_c c c' = match c,c' with
-  | `Null, `Null
-  | `Undefined, `Undefined -> true
+let rec eq_c c c' =
+  match c, c' with
+  | `Null, `Null | `Undefined, `Undefined -> true
   | `Simple i, `Simple i' -> Int.equal i i'
   | `Bool b, `Bool b' -> Bool.equal b b'
   | `Int i, `Int i' -> Int64.equal i i'
@@ -112,9 +112,10 @@ let rec eq_c c c' = match c,c' with
   | `Text t, `Text t' -> String.equal t t'
   | `Array a, `Array a' -> CCList.equal eq_c a a'
   | `Map m, `Map m' ->
-    CCList.equal (fun (t0,t1) (t0',t1') -> eq_c t0 t0' && eq_c t1 t1') m m'
-  | `Tag (i,t), `Tag (i',t') -> Int.equal i i' && eq_c t t'
-  | _ -> false;;
+    CCList.equal (fun (t0, t1) (t0', t1') -> eq_c t0 t0' && eq_c t1 t1') m m'
+  | `Tag (i, t), `Tag (i', t') -> Int.equal i i' && eq_c t t'
+  | _ -> false
+;;
 
 q ~count:1_000 ~long_factor:10 arb @@ fun c ->
 let s = Cbor.encode c in
