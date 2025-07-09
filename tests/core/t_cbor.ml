@@ -110,9 +110,9 @@ let rec eq_c c c' = match c,c' with
   | `Float f, `Float f' -> Float.equal f f'
   | `Bytes s, `Bytes s' -> String.equal s s'
   | `Text t, `Text t' -> String.equal t t'
-  | `Array a, `Array a' -> List.equal eq_c a a'
+  | `Array a, `Array a' -> CCList.equal eq_c a a'
   | `Map m, `Map m' ->
-    List.equal (fun (t0,t1) (t0',t1') -> eq_c t0 t0' && eq_c t1 t1') m m'
+    CCList.equal (fun (t0,t1) (t0',t1') -> eq_c t0 t0' && eq_c t1 t1') m m'
   | `Tag (i,t), `Tag (i',t') -> Int.equal i i' && eq_c t t'
   | _ -> false;;
 
