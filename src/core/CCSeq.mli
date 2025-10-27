@@ -183,7 +183,7 @@ val ( -- ) : int -> int -> int t
     [a] and [b] (therefore, never empty). *)
 
 val ( --^ ) : int -> int -> int t
-(** [a -- b] is the integer range from [a] to [b], where [b] is excluded. *)
+(** [a --^ b] is the integer range from [a] to [b], where [b] is excluded. *)
 
 (** {2 Operations on two Collections} *)
 
