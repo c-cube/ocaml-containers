@@ -466,6 +466,12 @@ let to_seq a =
 
 let to_iter a k = iter k a
 
+let of_iter (i : 'a iter) : 'a array =
+  let open CCVector in
+  let vec = create () in
+  i (push vec);
+  to_array vec
+
 let to_gen a =
   let k = ref 0 in
   fun () ->
