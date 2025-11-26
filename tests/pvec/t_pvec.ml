@@ -120,7 +120,7 @@ module Ref_impl = struct
   let to_seq = CCSeq.of_list
   let add_list l l2 : _ t = List.append l l2
   let append self l2 : _ t = List.append self l2
-  let flat_map sub l : _ t = CCList.flat_map (fun x -> sub @ [x]) l
+  let flat_map sub l : _ t = CCList.flat_map (fun x -> sub @ [ x ]) l
 
   let to_list_via_reviter m =
     let l = ref [] in
@@ -181,7 +181,7 @@ module Op = struct
       | Pop :: tl -> size >= 0 && loop (size - 1) tl
       | Add_list l :: tl -> loop (size + List.length l) tl
       | Append l :: tl -> loop (size + List.length l) tl
-      | Flat_map sub :: tl -> loop (size * (1+ List.length sub)) tl
+      | Flat_map sub :: tl -> loop (size * (1 + List.length sub)) tl
       | Check_get x :: tl -> x < size && loop size tl
       | Check_choose :: tl
       | Check_is_empty :: tl
@@ -266,8 +266,8 @@ module Op = struct
                      small_list gen_x >|= fun l ->
                      Append l, size + List.length l );
                    ( 1,
-                     list_size (0--5) gen_x >|= fun l ->
-                     Flat_map l, size * (1+ List.length l ));
+                     list_size (0 -- 5) gen_x >|= fun l ->
+                     Flat_map l, size * (1 + List.length l) );
                  ];
                ]
         in

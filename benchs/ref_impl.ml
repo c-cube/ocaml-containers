@@ -128,8 +128,9 @@ module PersistentHashtbl (H : Hashtbl.HashedType) = struct
       t := Add (k, v', t');
       Table.remove tbl k;
       t'
-    with Not_found -> (* not member, nothing to do *)
-                      t
+    with Not_found ->
+      (* not member, nothing to do *)
+      t
 
   (*$R
     let h = H.of_seq my_seq in

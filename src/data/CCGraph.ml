@@ -221,8 +221,7 @@ module Traverse = struct
       ]
 
     type ('v, 'e) t =
-      [ `Enter of
-        'v * int * ('v, 'e) path
+      [ `Enter of 'v * int * ('v, 'e) path
         (* unique index in traversal, path from start *)
       | `Exit of 'v
       | `Edge of 'v * 'e * 'v * edge_kind

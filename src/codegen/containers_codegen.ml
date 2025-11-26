@@ -108,7 +108,8 @@ module Bitfield = struct
     if self.emit_failure_if_too_wide then
       fpf out
         "(* check that int size is big enough *)@,\
-         @[let () = assert (Sys.int_size >= %d);;@]" (total_width self);
+         @[let () = assert (Sys.int_size >= %d);;@]"
+        (total_width self);
     fpf out "@]"
 
   let gen_mli self : code =

@@ -37,8 +37,7 @@ let _empty = Shallow Zero
 let _single x = Shallow (One x)
 let _double x y = Shallow (Two (x, y))
 
-let _deep :
-    type l0 l1.
+let _deep : type l0 l1.
     int ->
     ('a, l0 succ) digit ->
     ('a * 'a) t lazy_t ->

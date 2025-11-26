@@ -97,7 +97,6 @@ module L = struct
     else
       Sek.Persistent.of_list 0 [ x; x + 1; x + 2; x + 3 ]
 
-
   let f_pvec x =
     if x mod 10 = 0 then
       Pvec.empty
@@ -149,7 +148,7 @@ module L = struct
         "flatten o map", flatten_map_ l, ();
         "ral_flatmap", flatmap_ral_ ral, ();
         "sek_flatmap", flatmap_sek sek, ();
-        "pvec.flatmap", flat_map_pvec pvec, ()
+        "pvec.flatmap", flat_map_pvec pvec, ();
       ]
 
   (* APPEND *)
@@ -297,7 +296,7 @@ module L = struct
       for i = 0 to n - 1 do
         opaque_ignore (CCRAL.set l i (-i))
       done
-      (* TODO: implement set
+    (* TODO: implement set
          and bench_funvec l () =
            for _i = 0 to n-1 do opaque_ignore (CCFun_vec.set (* TODO *)) done
       *)
@@ -823,8 +822,8 @@ module Tbl = struct
     end in
     (module T)
 
-  let persistent_hashtbl_ref :
-      type a. a key_type -> (module MUT with type key = a) =
+  let persistent_hashtbl_ref : type a.
+      a key_type -> (module MUT with type key = a) =
    fun key ->
     let (module Key), name = arg_make key in
     let module T = Ref_impl.PersistentHashtbl (Key) in

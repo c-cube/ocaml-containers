@@ -1,4 +1,4 @@
-version = 0.26.2
+version = 0.27.0
 profile=conventional
 margin=80
 if-then-else=k-r
@@ -12,3 +12,4 @@ field-space=tight-decl
 leading-nested-match-parens=true
 module-item-spacing=compact
 quiet=true
+parse-docstrings=false

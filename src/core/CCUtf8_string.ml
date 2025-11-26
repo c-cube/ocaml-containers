@@ -65,8 +65,10 @@ let next_ (type a) (st : Dec.t) ~(yield : uchar -> a) ~(stop : unit -> a) () : a
       (* except for first, each char gives 6 bits *)
       let next = (acc lsl 6) lor (c land 0b111111) in
       if j = n_bytes then
-        if (* done reading the codepoint *)
-           Uchar.is_valid next then (
+        if
+          (* done reading the codepoint *)
+          Uchar.is_valid next
+        then (
           st.i <- st.i + j + 1;
           (* +1 for first char *)
           yield (Uchar.unsafe_of_int next)

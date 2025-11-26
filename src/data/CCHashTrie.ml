@@ -202,8 +202,10 @@ module A_SPARSE = struct
          let open Stdlib in
          Array.blit a.arr real_idx arr (real_idx + 1) (n - real_idx));
       { a with bits; arr }
-    ) else if (* replace element at [real_idx] *)
-              mut then (
+    ) else if
+        (* replace element at [real_idx] *)
+        mut
+      then (
       a.arr.(real_idx) <- x;
       a
     ) else (
