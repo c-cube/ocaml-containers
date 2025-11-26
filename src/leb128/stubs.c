@@ -58,14 +58,14 @@ static inline void ix_leb128_varint(unsigned char *str, uint64_t i) {
 
 // write `i` starting at `idx`
 CAMLprim value caml_cc_leb128_varint(value _str, intnat idx, int64_t i) {
-  char *str = Bytes_val(_str);
+  unsigned char *str = Bytes_val(_str);
   ix_leb128_varint(str + idx, i);
   return Val_unit;
 }
 
 CAMLprim value caml_cc_leb128_varint_byte(value _str, value _idx, value _i) {
   CAMLparam3(_str, _idx, _i);
-  char *str = Bytes_val(_str);
+  unsigned char *str = Bytes_val(_str);
   int idx = Int_val(_idx);
   int64_t i = Int64_val(_i);
   ix_leb128_varint(str + idx, i);
