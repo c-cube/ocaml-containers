@@ -119,6 +119,8 @@ module Ref_impl = struct
   let to_list l = l
   let to_seq = CCSeq.of_list
   let add_list l l2 : _ t = List.append l l2
+  let append self l2 : _ t = List.append self l2
+  let flat_map sub l : _ t = CCList.flat_map (fun x -> sub @ [x]) l
 
   let to_list_via_reviter m =
     let l = ref [] in
@@ -159,7 +161,9 @@ module Op = struct
     | Push of 'a
     | Pop
     (* TODO: set *)
+    | Append of 'a list
     | Add_list of 'a list
+    | Flat_map of 'a list
     | Check_get of int
     | Check_choose
     | Check_is_empty
@@ -176,6 +180,8 @@ module Op = struct
       | Push _ :: tl -> loop (size + 1) tl
       | Pop :: tl -> size >= 0 && loop (size - 1) tl
       | Add_list l :: tl -> loop (size + List.length l) tl
+      | Append l :: tl -> loop (size + List.length l) tl
+      | Flat_map sub :: tl -> loop (size * (1+ List.length sub)) tl
       | Check_get x :: tl -> x < size && loop size tl
       | Check_choose :: tl
       | Check_is_empty :: tl
@@ -194,6 +200,8 @@ module Op = struct
     | Push x -> spf "push %s" (show_x x)
     | Pop -> "pop"
     | Add_list l -> spf "add_list [%s]" (String.concat ";" @@ List.map show_x l)
+    | Append l -> spf "append [%s]" (String.concat ";" @@ List.map show_x l)
+    | Flat_map l -> spf "flat_map [%s]" (String.concat ";" @@ List.map show_x l)
     | Check_get i -> spf "check_get %d" i
     | Check_choose -> "check_choose"
     | Check_is_empty -> "check_is_empty"
@@ -211,6 +219,8 @@ module Op = struct
     | Push x -> shrink_x x >|= fun x -> Push x
     | Pop -> empty
     | Add_list l -> list ~shrink:shrink_x l >|= fun x -> Add_list x
+    | Append l -> list ~shrink:shrink_x l >|= fun x -> Append x
+    | Flat_map l -> list ~shrink:shrink_x l >|= fun x -> Flat_map x
     | Check_get _ | Check_choose | Check_is_empty | Check_len | Check_to_list
     | Check_to_gen | Check_last | Check_rev_iter | Check_iter ->
       empty
@@ -252,6 +262,12 @@ module Op = struct
                    ( 1,
                      small_list gen_x >|= fun l ->
                      Add_list l, size + List.length l );
+                   ( 1,
+                     small_list gen_x >|= fun l ->
+                     Append l, size + List.length l );
+                   ( 1,
+                     list_size (0--5) gen_x >|= fun l ->
+                     Flat_map l, size * (1+ List.length l ));
                  ];
                ]
         in
@@ -292,6 +308,12 @@ let check_ops ~show_x (ops : 'a Op.t list) : unit =
       | Op.Add_list l ->
         cur := add_list !cur l;
         cur_ref := Ref_impl.add_list !cur_ref l
+      | Op.Append l ->
+        cur := append !cur (of_list l);
+        cur_ref := Ref_impl.append !cur_ref l
+      | Op.Flat_map sub ->
+        cur := flat_map (fun x -> push (of_list sub) x) !cur;
+        cur_ref := Ref_impl.flat_map sub !cur_ref
       | Op.Check_get i -> if get !cur i <> Ref_impl.get i !cur_ref then fail ()
       | Op.Check_is_empty ->
         if is_empty !cur <> Ref_impl.is_empty !cur_ref then fail ()
