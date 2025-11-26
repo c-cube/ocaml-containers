@@ -1,0 +1,28 @@
+name: format
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  format:
+    name: format
+    strategy:
+      matrix:
+        ocaml-compiler:
+            - '5.3'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@main
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
+          allow-prerelease-opam: true
+
+      - run: opam install ocamlformat.0.27.0
+      - run: opam exec -- make format-check
+
