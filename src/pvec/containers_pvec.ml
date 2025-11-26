@@ -352,6 +352,9 @@ let append a b =
   else
     fold_left push a b
 
+let flat_map f v : _ t =
+  fold_left (fun acc x -> append acc (f x)) empty v
+
 let rec equal_tree eq t1 t2 =
   match t1, t2 with
   | Empty, Empty -> true

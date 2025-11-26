@@ -82,7 +82,11 @@ val append : 'a t -> 'a t -> 'a t
 (** [append a b] adds all elements of [b] at the end of [a]. This is
   at least linear in the length of [b]. *)
 
+
 val map : ('a -> 'b) -> 'a t -> 'b t
+
+val flat_map : ('a -> 'b t) -> 'a t -> 'b t
+(** @since NEXT_RELEASE *)
 
 val choose : 'a t -> 'a option
 (** Return an element. It is unspecified which one is returned. *)
