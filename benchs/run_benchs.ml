@@ -97,6 +97,15 @@ module L = struct
     else
       Sek.Persistent.of_list 0 [ x; x + 1; x + 2; x + 3 ]
 
+
+  let f_pvec x =
+    if x mod 10 = 0 then
+      Pvec.empty
+    else if x mod 5 = 1 then
+      Pvec.of_list [ x; x + 1 ]
+    else
+      Pvec.of_list [ x; x + 1; x + 2; x + 3 ]
+
   let flat_map_kont f l =
     let rec aux f l kont =
       match l with
@@ -118,6 +127,7 @@ module L = struct
     let l = CCList.(1 -- n) in
     let ral = CCRAL.of_list l in
     let sek = Sek.Persistent.of_list 0 l in
+    let pvec = Pvec.of_list l in
     let flatten_map_ l () =
       ignore @@ Sys.opaque_identity @@ List.flatten (CCList.map f_ l)
     and flatmap_kont l () = ignore @@ Sys.opaque_identity @@ flat_map_kont f_ l
@@ -128,6 +138,8 @@ module L = struct
       ignore @@ Sys.opaque_identity @@ CCRAL.flat_map f_ral_ l
     and flatmap_sek s () =
       ignore @@ Sys.opaque_identity @@ Sek.Persistent.flatten_map 0 f_sek_ s
+    and flat_map_pvec v () =
+      ignore @@ Sys.opaque_identity @@ Pvec.flat_map f_pvec v
     in
     B.throughputN time ~repeat
       [
@@ -137,6 +149,7 @@ module L = struct
         "flatten o map", flatten_map_ l, ();
         "ral_flatmap", flatmap_ral_ ral, ();
         "sek_flatmap", flatmap_sek sek, ();
+        "pvec.flatmap", flat_map_pvec pvec, ()
       ]
 
   (* APPEND *)

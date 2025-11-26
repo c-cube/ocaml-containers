@@ -86,7 +86,9 @@ val append : 'a t -> 'a t -> 'a t
 val map : ('a -> 'b) -> 'a t -> 'b t
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
-(** @since NEXT_RELEASE *)
+(** A basic, fairly slow [flat_map] operation like {!CCList.flat_map}.
+    It exists for convenience but is not where this data structure shines.
+    @since NEXT_RELEASE *)
 
 val choose : 'a t -> 'a option
 (** Return an element. It is unspecified which one is returned. *)
