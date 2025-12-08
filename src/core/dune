@@ -6,7 +6,7 @@
   (action
    (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
  (flags :standard -nolabels -open CCMonomorphic)
- (libraries either containers.monomorphic))
+ (libraries either containers.monomorphic containers.domain))
 
 (ocamllex
  (modules CCSexp_lex))

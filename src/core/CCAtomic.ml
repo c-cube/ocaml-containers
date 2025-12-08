@@ -46,3 +46,24 @@ let[@inline never] decr r =
 (* atomic *)
 
 [@@@endif]
+
+(** Update loop with a compare-and-swap, and some basic backoff behavior.
+    [update_cas atomic f] is, in essence,
+    [let res, x = f !atomic in atomic := x; res]
+    done atomically. [f] might be called multiple times and must be as cheap
+    as possible.
+    @since NEXT_RELEASE *)
+let update_cas (type res) (self : 'a t) (f : 'a -> res * 'a) : res =
+  let exception Ret of res in
+  let backoff = ref 1 in
+  try
+    while true do
+      let old_val = get self in
+      let res, new_val = f old_val in
+      if compare_and_set self old_val new_val then raise_notrace (Ret res);
+
+      Containers_domain.relax_loop !backoff;
+      backoff := min 128 (2 * !backoff)
+    done;
+    assert false
+  with Ret r -> r

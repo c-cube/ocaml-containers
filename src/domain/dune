@@ -1,0 +1,14 @@
+(library
+ (name containers_domain)
+ (synopsis "Compatibility library for the Domain module")
+ (public_name containers.domain)
+ (modules containers_domain))
+
+(executable
+ (modules gen)
+ (name gen))
+
+(rule
+ (targets containers_domain.ml)
+ (action
+  (run ./gen.exe)))
