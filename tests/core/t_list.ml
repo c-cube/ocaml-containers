@@ -807,6 +807,13 @@ t @@ fun () -> take_while (fun x -> x <> 0) [ 0; 1; 2; 3 ] = [];;
 t @@ fun () -> take_while (fun _ -> true) [] = [];;
 t @@ fun () -> take_while (fun _ -> true) (1 -- 10) = 1 -- 10;;
 t @@ fun () -> take_while (fun _ -> true) (1 -- 300_000) = 1 -- 300_000;;
+t @@ fun () -> take_last [ 1 ] = ([], 1);;
+t @@ fun () -> take_last [ 1; 2; 3; 4; 5 ] = ([ 1; 2; 3; 4 ], 5);;
+t @@ fun () -> take_last (1 -- 10_000) = (1 -- 9_999, 10_000);;
+t @@ fun () -> take_last_opt [] = ([], None);;
+t @@ fun () -> take_last_opt [ 1 ] = ([], Some 1);;
+t @@ fun () -> take_last_opt [ 1; 2; 3; 4; 5 ] = ([ 1; 2; 3; 4 ], Some 5);;
+t @@ fun () -> take_last_opt (1 -- 10_000) = (1 -- 9_999, Some 10_000);;
 
 q
   Q.(pair (fun1 Observable.int bool) (list small_int))

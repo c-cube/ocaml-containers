@@ -823,6 +823,20 @@ let hd_tl = function
 
 let take_drop n l = take n l, drop n l
 
+let rec take_last = function
+  | [] -> failwith "take_last"
+  | [ x ] -> [], x
+  | hd :: tl ->
+    let tl, lt = take_last tl in
+    hd :: tl, lt
+
+let rec take_last_opt = function
+  | [] -> [], None
+  | [ x ] -> [], Some x
+  | hd :: tl ->
+    let tl, lt = take_last_opt tl in
+    hd :: tl, lt
+
 let sublists_of_len ?(last = fun _ -> None) ?offset n l =
   if n < 1 then invalid_arg "sublists_of_len: n must be > 0";
   let offset =

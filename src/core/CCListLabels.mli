@@ -447,6 +447,12 @@ val take_drop_while : f:('a -> bool) -> 'a t -> 'a t * 'a t
     @since 1.2, but only
     @since 2.2 with labels *)
 
+val take_last : 'a t -> 'a t * 'a
+(** [take_last l] = (tl l, last l). *)
+
+val take_last_opt : 'a t -> 'a t * 'a option
+(** [take_last l] = (tl l, last_opt l). *)
+
 val last : int -> 'a t -> 'a t
 (** [last n l] takes the last [n] elements of [l] (or less if
     [l] doesn't have that many elements). *)
