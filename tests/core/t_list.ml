@@ -721,6 +721,13 @@ q
     let i = abs i in
     let l1, l2 = take_drop i l in
     l1 @ l2 = l)
+;;
+
+q
+  (Q.pair (Q.list Q.small_int) Q.int)
+  (fun (l, i) ->
+    let i = abs i in
+    take_drop i l = (take i l, drop i l))
 
 let subs = sublists_of_len;;
 
