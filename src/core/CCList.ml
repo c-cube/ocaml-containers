@@ -821,14 +821,14 @@ let take_drop n l =
   (* fun idea from nojb in
      https://discuss.ocaml.org/t/efficient-implementation-of-list-split/17616/2 *)
   let[@tail_mod_cons] rec loop (res_drop : _ ref) n l =
-    match n, l with
-    | 0, _ ->
-      res_drop := l;
-      []
-    | _, [] ->
-      res_drop := [];
-      []
-    | _, x :: tl -> x :: loop res_drop (n - 1) tl
+    match l with
+    | [] -> []
+    | x :: tl ->
+      if n = 0 then (
+        res_drop := l;
+        []
+      ) else
+        x :: loop res_drop (n - 1) tl
   in
   let res_drop = ref [] in
   let res_take = loop res_drop n l in
