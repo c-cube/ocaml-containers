@@ -778,6 +778,12 @@ let sorted_diff_uniq ~cmp l1 l2 =
   in
   recurse ~cmp [] l1 l2
 
+let rec drop n l =
+  match l with
+  | [] -> []
+  | _ when n = 0 -> l
+  | _ :: l' -> drop (n - 1) l'
+
 [@@@iflt 4.14]
 
 let take n l =
@@ -798,6 +804,8 @@ let take n l =
   in
   direct direct_depth_default_ n l
 
+let take_drop n l = take n l, drop n l
+
 [@@@else_]
 
 let[@tail_mod_cons] rec take n l =
@@ -809,19 +817,28 @@ let[@tail_mod_cons] rec take n l =
     else
       []
 
-[@@@endif]
+let take_drop n l =
+  (* fun idea from nojb in
+     https://discuss.ocaml.org/t/efficient-implementation-of-list-split/17616/2 *)
+  let[@tail_mod_cons] rec loop (res_drop : _ ref) n l =
+    match n, l with
+    | 0, _ ->
+      res_drop := l;
+      []
+    | _, [] ->
+      res_drop := [];
+      []
+    | _, x :: tl -> x :: loop res_drop (n - 1) tl
+  in
+  let res_drop = ref [] in
+  let res_take = loop res_drop n l in
+  res_take, !res_drop
 
-let rec drop n l =
-  match l with
-  | [] -> []
-  | _ when n = 0 -> l
-  | _ :: l' -> drop (n - 1) l'
+[@@@endif]
 
 let hd_tl = function
   | [] -> failwith "hd_tl"
   | x :: l -> x, l
-
-let take_drop n l = take n l, drop n l
 
 let sublists_of_len ?(last = fun _ -> None) ?offset n l =
   if n < 1 then invalid_arg "sublists_of_len: n must be > 0";
