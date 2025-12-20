@@ -31,5 +31,5 @@ let uniformity_test ?(size_hint = 10) k rng st =
 
 let () =
   let st = Random.State.make_self_init () in
-  let ok = run ~st (uniformity_test 50_000 (split_list 10 ~len:3)) in
+  let ok = run ~st (uniformity_test 500_000 (split_list 10 ~len:3)) in
   if not ok then failwith "uniformity check failed"
