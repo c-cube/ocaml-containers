@@ -192,6 +192,33 @@ module L = struct
 
   (* FLATTEN *)
 
+  (*
+  let[@tail_mod_cons] rec append_to_flattened first_list tail =
+    match first_list, tail with
+    | _, [] -> first_list
+    | x1 :: x2 :: x3 :: x4 :: first_list', _ ->
+      x1 :: x2 :: x3 :: x4 :: append_to_flattened first_list' tail
+    | [ x1; x2; x3 ], _ -> x1 :: x2 :: x3 :: append_to_flattened [] tail
+    | [ x1; x2 ], _ -> x1 :: x2 :: append_to_flattened [] tail
+    | [ x ], first_list' :: tail' -> x :: append_to_flattened first_list' tail'
+    | [], first_list' :: tail' -> append_to_flattened first_list' tail'
+
+  let flatten_trmc l = append_to_flattened [] l
+  *)
+
+  let[@tail_mod_cons] rec flatten_trmc = function
+    | [] -> []
+    | l1 :: tl -> append_to_flattened l1 tl
+
+  and[@tail_mod_cons] append_to_flattened first_list tail =
+    match first_list with
+    | [] -> flatten_trmc tail
+    | x1 :: [] -> x1 :: flatten_trmc tail
+    | [ x1; x2 ] -> x1 :: x2 :: flatten_trmc tail
+    | [ x1; x2; x3 ] -> x1 :: x2 :: x3 :: flatten_trmc tail
+    | x1 :: x2 :: x3 :: x4 :: first_list' ->
+      x1 :: x2 :: x3 :: x4 :: append_to_flattened first_list' tail
+
   let bench_flatten ?(time = 2) n =
     let fold_right_append_ l () =
       opaque_ignore (List.fold_right List.append l [] : _ list)
@@ -207,7 +234,7 @@ module L = struct
       opaque_ignore (Pvec.fold_left Pvec.append Pvec.empty v : _ Pvec.t)
     in
     let l =
-      CCList.mapi (fun i x -> CCList.(x -- (x + min i 100))) CCList.(1 -- n)
+      CCList.mapi (fun i x -> CCList.(x -- (x + (i mod 100)))) CCList.(1 -- n)
     in
     let sek =
       Sek.Persistent.of_list (Sek.Persistent.create 0)
@@ -220,6 +247,8 @@ module L = struct
       [
         "CCList.flatten", (fun () -> ignore (CCList.flatten l)), ();
         "List.flatten", (fun () -> ignore (List.flatten l)), ();
+        "List.flatten_trmc", (fun () -> ignore (flatten_trmc l)), ();
+        "List.concat_map id", (fun () -> ignore (List.concat_map Fun.id l)), ();
         "fold_right append", fold_right_append_ l, ();
         "funvec.(fold append)", funvec_flatten v, ();
         "pvec.(fold append)", pvec_flatten pv, ();
@@ -459,7 +488,7 @@ module L = struct
                    [
                      app_int (bench_flatten ~time:2) 100;
                      app_int (bench_flatten ~time:2) 10_000;
-                     app_int (bench_flatten ~time:4) 100_000;
+                     app_int (bench_flatten ~time:2) 100_000;
                    ];
              "append"
              @>> B.Tree.concat
