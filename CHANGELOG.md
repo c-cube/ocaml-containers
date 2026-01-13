@@ -1,4 +1,15 @@
 
+
+## 3.17
+
+- feat: add `CCAtomic.update_cas`
+- feat: add `Pvec.flat_map`
+- faster `List.take_drop` thanks to a trick by nojb
+
+- move to ocamlformat 0.27, format code
+- test: enrich pvec test
+- Patch CBor roundtrip property to hold for nan's too (thanks @jmid)
+
 ## 3.16
 
 

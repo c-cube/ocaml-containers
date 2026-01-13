@@ -52,7 +52,7 @@ let[@inline never] decr r =
     [let res, x = f !atomic in atomic := x; res]
     done atomically. [f] might be called multiple times and must be as cheap
     as possible.
-    @since NEXT_RELEASE *)
+    @since 3.17 *)
 let update_cas (type res) (self : 'a t) (f : 'a -> res * 'a) : res =
   let exception Ret of res in
   let backoff = ref 1 in
