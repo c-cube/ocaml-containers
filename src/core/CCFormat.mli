@@ -100,13 +100,16 @@ val seq : ?sep:unit printer -> 'a printer -> 'a Seq.t printer
 val iter : ?sep:unit printer -> 'a printer -> 'a iter printer
 
 val option : ?none:unit printer -> 'a printer -> 'a option printer
-(** [opt ?none pp] prints options as follows:
+(** [option ?none pp] prints options as follows:
         - [Some x] will become [pp x]
         - [None] will become [none ()]
+    Alias of {!Format.pp_print_option}
     @since NEXT_RELEASE *)
 
-val opt : ?none:unit printer -> 'a printer -> 'a option printer
-(** Alias of {!option} *)
+val opt : 'a printer -> 'a option printer
+(** [opt pp] prints options as follows:
+    - [Some x] will become "some foo" if [pp x ---> "foo"].
+    - [None] will become "none". *)
 
 val result : ok:'a printer -> error:'e printer -> ('a, 'e) result printer
 

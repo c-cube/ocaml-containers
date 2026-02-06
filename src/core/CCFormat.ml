@@ -32,7 +32,6 @@ let newline = Format.pp_force_newline
 let substring out (s, i, len) : unit = string out (String.sub s i len)
 let text = Format.pp_print_text
 let option = Format.pp_print_option
-let opt = option
 let result = Format.pp_print_result
 
 let string_lines out (s : string) : unit =
@@ -90,6 +89,11 @@ let iter ?(sep = return ",@ ") pp fmt seq =
       else
         sep fmt ();
       pp fmt x)
+
+let opt pp fmt x =
+  match x with
+  | None -> Format.pp_print_string fmt "none"
+  | Some x -> Format.fprintf fmt "some %a" pp x
 
 let pair ?(sep = return ",@ ") ppa ppb fmt (a, b) =
   Format.fprintf fmt "%a%a%a" ppa a sep () ppb b
