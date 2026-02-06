@@ -5,6 +5,7 @@
 [@@@ifge 5.4]
 
 include module type of Pair
+(** @inline *)
 
 [@@@else_]
 

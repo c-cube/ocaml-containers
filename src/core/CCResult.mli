@@ -17,6 +17,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 (** {2 Basics} *)
 
 include module type of Result
+(** @inline *)
 
 val return : 'a -> ('a, 'err) t
 (** Successfully return a value. *)

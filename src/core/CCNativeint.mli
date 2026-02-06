@@ -18,6 +18,7 @@
 include module type of struct
   include Nativeint
 end
+(** @inline *)
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].

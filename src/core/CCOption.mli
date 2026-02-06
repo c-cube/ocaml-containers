@@ -6,6 +6,7 @@
    @since 3.6 *)
 
 include module type of Option
+(** @inline *)
 
 val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
 (** [map_or ~default f o] is [f x] if [o = Some x], [default] otherwise.

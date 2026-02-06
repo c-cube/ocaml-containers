@@ -16,6 +16,7 @@ module type OrderedType = Map.OrderedType
 
 module type S = sig
   include Map.S
+  (** @inline *)
 
   val get : key -> 'a t -> 'a option
   (** [get k m] returns [Some v] if the current binding of [k] in [m] is [v],
