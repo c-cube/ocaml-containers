@@ -17,13 +17,8 @@ val or_pred : ('a -> bool) -> ('a -> bool) -> 'a -> bool
     @since 3.13.1
 *)
 
-[@@@iflt 5.2]
-
-val compose : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
-(** [compose f g x] is [f (g x)]. Composition.
-    @since NEXT_RELEASE arguments are inversted *)
-
-[@@@endif]
+val compose : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
+(** [compose f g x] is [g (f x)]. Composition. *)
 
 val compose_binop : ('a -> 'b) -> ('b -> 'b -> 'c) -> 'a -> 'a -> 'c
 (** [compose_binop f g] is [fun x y -> g (f x) (f y)].
@@ -105,8 +100,7 @@ let find_array arr x =
 
 module Infix : sig
   val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
-  (** [(f %> g) x] or [(%>) f g x] is [g (f x)]. Infix version of [compose].
-      The order of the arguments of [%>] and {!compose} are inverted. *)
+  (** [(f %> g) x] or [(%>) f g x] is [g (f x)]. Alias to [compose]. *)
 
   val ( % ) : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
   (** [(f % g) x] or [(%) f g x] is [f (g x)]. Mathematical composition. *)
