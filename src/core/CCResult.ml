@@ -9,13 +9,7 @@ type 'a printer = Format.formatter -> 'a -> unit
 
 (** {2 Basics} *)
 
-type nonrec (+'good, +'bad) result = ('good, 'bad) result =
-  | Ok of 'good
-  | Error of 'bad
-
-type (+'good, +'bad) t = ('good, 'bad) result =
-  | Ok of 'good
-  | Error of 'bad
+include Result
 
 let return x = Ok x
 let fail s = Error s
@@ -65,30 +59,14 @@ let opt_map f e =
     | Ok x -> Ok (Some x)
     | Error e -> Error e)
 
-let map f e =
-  match e with
-  | Ok x -> Ok (f x)
-  | Error s -> Error s
-
-let map_err f e =
-  match e with
-  | Ok _ as res -> res
-  | Error y -> Error (f y)
+let map_err = map_error
 
 let map2 f g e =
   match e with
   | Ok x -> Ok (f x)
   | Error s -> Error (g s)
 
-let iter f e =
-  match e with
-  | Ok x -> f x
-  | Error _ -> ()
-
-let iter_err f e =
-  match e with
-  | Ok _ -> ()
-  | Error err -> f err
+let iter_err = iter_error
 
 exception Get_error
 
@@ -132,6 +110,13 @@ let flat_map f e =
   | Ok x -> f x
   | Error s -> Error s
 
+[@@@iflt 5.4]
+
+let retract = function
+  | Ok v | Error v -> v
+
+[@@@endif]
+
 let k_compose f g x = f x |> flat_map g
 let ( >=> ) = k_compose
 let ( <=< ) f g = g >=> f
@@ -149,23 +134,10 @@ let compare ~err cmp a b =
   | _, Ok _ -> -1
   | Error s, Error s' -> err s s'
 
-let fold ~ok ~error x =
-  match x with
-  | Ok x -> ok x
-  | Error s -> error s
-
 let fold_ok f acc r =
   match r with
   | Ok x -> f acc x
   | Error _ -> acc
-
-let is_ok = function
-  | Ok _ -> true
-  | Error _ -> false
-
-let is_error = function
-  | Ok _ -> false
-  | Error _ -> true
 
 (** {2 Wrappers} *)
 
@@ -185,17 +157,17 @@ let ( <*> ) f x =
   | Error s -> fail s
   | Ok f -> map f x
 
-let join t =
-  match t with
-  | Ok (Ok o) -> Ok o
-  | Ok (Error e) -> Error e
-  | Error _ as e -> e
+[@@@iflt 5.4]
 
-let both x y =
+let product x y =
   match x, y with
   | Ok o, Ok o' -> Ok (o, o')
   | Ok _, Error e -> Error e
   | Error e, _ -> Error e
+
+[@@@endif]
+
+let both = product
 
 (** {2 Collections} *)
 
@@ -331,18 +303,11 @@ end
 
 (** {2 Conversions} *)
 
-let to_opt = function
-  | Ok x -> Some x
-  | Error _ -> None
+let to_opt = to_option
 
 let of_opt = function
   | None -> Error "of_opt"
   | Some x -> Ok x
-
-let to_seq e () =
-  match e with
-  | Ok x -> Seq.Cons (x, Seq.empty)
-  | Error _ -> Seq.Nil
 
 let to_iter e k =
   match e with
