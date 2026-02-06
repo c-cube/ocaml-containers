@@ -2,11 +2,7 @@
 
 (** {1 Options} *)
 
-type 'a t = 'a option
-
-let[@inline] map f = function
-  | None -> None
-  | Some x -> Some (f x)
+include Option
 
 let map_or ~default f = function
   | None -> default
@@ -16,30 +12,7 @@ let map_lazy default_fn f = function
   | None -> default_fn ()
   | Some x -> f x
 
-let is_some = function
-  | None -> false
-  | Some _ -> true
-
-let is_none = function
-  | None -> true
-  | Some _ -> false
-
-let compare f o1 o2 =
-  match o1, o2 with
-  | None, None -> 0
-  | Some _, None -> 1
-  | None, Some _ -> -1
-  | Some x, Some y -> f x y
-
-let equal f o1 o2 =
-  match o1, o2 with
-  | None, None -> true
-  | Some _, None | None, Some _ -> false
-  | Some x, Some y -> f x y
-
 let return x = Some x
-let some = return
-let none = None
 
 let[@inline] flat_map f o =
   match o with
@@ -51,7 +24,6 @@ let[@inline] flat_map_l f o =
   | None -> []
   | Some x -> f x
 
-let[@inline] bind o f = flat_map f o
 let ( >>= ) = bind
 let pure x = Some x
 let k_compose f g x = f x |> flat_map g
@@ -99,11 +71,6 @@ let for_all p = function
   | None -> true
   | Some x -> p x
 
-let iter f o =
-  match o with
-  | None -> ()
-  | Some x -> f x
-
 let fold f acc o =
   match o with
   | None -> acc
@@ -120,11 +87,6 @@ let apply_or f x =
   | Some y -> y
 
 let ( |?> ) x f = apply_or f x
-
-let value x ~default =
-  match x with
-  | None -> default
-  | Some y -> y
 
 let get_exn = function
   | Some x -> x
@@ -163,11 +125,6 @@ let wrap2 ?(handler = fun _ -> true) f x y =
       None
     else
       raise e
-
-let to_list o =
-  match o with
-  | None -> []
-  | Some x -> [ x ]
 
 let of_list = function
   | x :: _ -> Some x
@@ -253,11 +210,6 @@ let to_iter o k =
   match o with
   | None -> ()
   | Some x -> k x
-
-let to_seq o () =
-  match o with
-  | None -> Seq.Nil
-  | Some x -> Seq.Cons (x, Seq.empty)
 
 let pp ppx out = function
   | None -> Format.pp_print_string out "None"

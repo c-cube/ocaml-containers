@@ -5,10 +5,7 @@
    This module replaces `CCOpt`.
    @since 3.6 *)
 
-type +'a t = 'a option
-
-val map : ('a -> 'b) -> 'a t -> 'b t
-(** [map f o] applies the function [f] to the element inside [o], if any. *)
+include module type of Option
 
 val map_or : default:'b -> ('a -> 'b) -> 'a t -> 'b
 (** [map_or ~default f o] is [f x] if [o = Some x], [default] otherwise.
@@ -18,32 +15,8 @@ val map_lazy : (unit -> 'b) -> ('a -> 'b) -> 'a t -> 'b
 (** [map_lazy default_fn f o] is [f x] if [o = Some x], [default_fn ()] otherwise.
     @since 1.2 *)
 
-val is_some : _ t -> bool
-(** [is_some (Some x)] returns [true] otherwise it returns [false]. *)
-
-val is_none : _ t -> bool
-(** [is_none None] returns [true] otherwise it returns [false].
-    @since 0.11 *)
-
-val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
-(** [compare comp o1 o2] compares two options [o1] and [o2],
-    using custom comparators [comp] for the value.
-    [None] is always assumed to be less than [Some _]. *)
-
-val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-(** [equal p o1 o2] tests for equality between option types [o1] and [o2],
-    using a custom equality predicate [p]. *)
-
 val return : 'a -> 'a t
 (** [return x] is a monadic return, that is [return x = Some x]. *)
-
-val some : 'a -> 'a t
-(** Alias to {!return}.
-    @since 3.5 *)
-
-val none : 'a t
-(** Alias to {!None}.
-    @since 3.5 *)
 
 val flat_map : ('a -> 'b t) -> 'a t -> 'b t
 (** [flat_map f o] is equivalent to {!map} followed by {!flatten}.
@@ -53,20 +26,12 @@ val flat_map_l : ('a -> 'b list) -> 'a t -> 'b list
 (** [flat_map_l f o] is [[]] if [o] is [None], or [f x] if [o] is [Some x].
     @since 3.12 *)
 
-val bind : 'a t -> ('a -> 'b t) -> 'b t
-(** [bind o f] is [f v] if [o] is [Some v], [None] otherwise.
-    Monadic bind.
-    @since 3.0 *)
-
 val k_compose : ('a -> 'b t) -> ('b -> 'c t) -> 'a -> 'c t
 (** Kleisli composition. Monadic equivalent of {!CCFun.compose}
       @since 3.13.1 *)
 
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 (** [map2 f o1 o2] maps ['a option] and ['b option] to a ['c option] using [f]. *)
-
-val iter : ('a -> unit) -> 'a t -> unit
-(** [iter f o] applies [f] to [o]. Iterate on 0 or 1 element. *)
 
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 (** [fold f init o] is [f init x] if [o] is [Some x], or [init] if [o] is [None].
@@ -101,10 +66,6 @@ val apply_or : ('a -> 'a t) -> 'a -> 'a
     Useful for piping preprocessing functions together (such as string processing),
     turning functions like "remove" into "remove_if_it_exists".
     @since 3.13.1 *)
-
-val value : 'a t -> default:'a -> 'a
-(** [value o ~default] is similar to the Stdlib's [Option.value] and to {!get_or}.
-    @since 2.8 *)
 
 val get_exn : 'a t -> 'a
 [@@ocaml.deprecated "use CCOption.get_exn_or instead"]
@@ -207,9 +168,6 @@ include module type of Infix
 
 (** {2 Conversion and IO} *)
 
-val to_list : 'a t -> 'a list
-(** [to_list o] returns [[x]] if [o] is [Some x] or the empty list [[]] if [o] is [None]. *)
-
 val of_list : 'a list -> 'a t
 (** [of_list l] returns [Some x] (x being the head of the list l), or [None] if [l] is the empty list. *)
 
@@ -245,13 +203,6 @@ val choice_seq : 'a t Seq.t -> 'a t
 val to_gen : 'a t -> 'a gen
 (** [to_gen o] is [o] as a [gen]. [Some x] is the singleton [gen] containing [x]
     and [None] is the empty [gen]. *)
-
-val to_seq : 'a t -> 'a Seq.t
-(** [to_seq o] is [o] as a sequence [Seq.t]. [Some x] is the singleton sequence containing [x]
-    and [None] is the empty sequence.
-    Same as {!Stdlib.Option.to_seq}
-    Renamed from [to_std_seq] since 3.0.
-    @since 3.0 *)
 
 val to_iter : 'a t -> 'a iter
 (** [to_iter o] returns an internal iterator, like in the library [Iter].
