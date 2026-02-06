@@ -49,11 +49,6 @@ val to_iter : t -> char iter
 (** [to_iter s] returns the [iter] of characters contained in the string [s].
     @since 2.8 *)
 
-val to_seq : t -> char Seq.t
-(** [to_seq s] returns the [Seq.t] of characters contained in the string [s].
-    Renamed from [to std_seq] since 3.0.
-    @since 3.0 *)
-
 val to_list : t -> char list
 (** [to_list s] returns the [list] of characters contained in the string [s]. *)
 
@@ -98,11 +93,6 @@ val of_iter : char iter -> string
 (** [of_iter iter] converts an [iter] of characters to a string.
     @since 2.8 *)
 
-val of_seq : char Seq.t -> string
-(** [of_seq seq] converts a [seq] of characters to a string.
-    Renamed from [of_std_seq] since 3.0.
-    @since 3.0 *)
-
 val of_list : char list -> string
 (** [of_list lc] converts a list of characters [lc] to a string. *)
 
@@ -113,7 +103,7 @@ val to_array : string -> char array
 (** [to_array s] returns the array of characters contained in the string [s]. *)
 
 val find : ?start:int -> sub:string -> string -> int
-(** [find ~start ~sub s] returns the starting index of the first occurrence of [sub] within [s] or [-1]. 
+(** [find ~start ~sub s] returns the starting index of the first occurrence of [sub] within [s] or [-1].
     @param start starting position in [s]. *)
 
 val find_all : ?start:int -> sub:string -> string -> int gen
@@ -471,10 +461,6 @@ module Split : sig
       @raise Not_found if [by] is not part of the string [s].
       @since 0.16 *)
 end
-
-val split_on_char : char -> string -> string list
-(** [split_on_char by s] splits the string [s] along the given char [by].
-    @since 1.2 *)
 
 val split : by:string -> string -> string list
 (** [split ~by s] splits the string [s] along the given string [by].
