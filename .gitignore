@@ -16,3 +16,8 @@ fuzz-*-input
 fuzz-*-output
 fuzz-logs/
 doc/papers
+
+# Coverage files
+_coverage/
+*.coverage
+bisect*.coverage

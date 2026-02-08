@@ -3,8 +3,10 @@
  (public_name containers)
  (wrapped false)
  (preprocess
-  (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+  (per_module
+   ((action (run %{project_root}/src/core/cpp/cpp.exe %{input-file}))
+    CCAtomic CCList CCVector)
+   ((pps bisect_ppx))))
  (flags :standard -nolabels -open CCMonomorphic)
  (libraries either containers.monomorphic containers.domain))
 

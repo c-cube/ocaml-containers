@@ -5,6 +5,7 @@ Containers_testlib.run_all ~descr:"containers"
     T_array.get ();
     T_bool.get ();
     T_byte_buffer.get ();
+    T_byte_slice.get ();
     T_canonical_sexp.get ();
     T_char.get ();
     T_either.get ();
@@ -23,8 +24,10 @@ Containers_testlib.run_all ~descr:"containers"
     T_nativeint.get ();
     T_option.get ();
     T_ord.get ();
+    T_pair.get ();
     T_parse.get ();
     T_random.get ();
+    T_ref.get ();
     T_result.get ();
     T_set.get ();
     T_seq.get ();

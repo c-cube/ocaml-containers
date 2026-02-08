@@ -1,7 +1,5 @@
 (library
  (name containers_cbor)
  (libraries containers)
- (preprocess
-  (action
-   (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
+ (instrumentation (backend bisect_ppx))
  (public_name containers.cbor))
