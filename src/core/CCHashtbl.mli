@@ -253,11 +253,6 @@ module type S = sig
       using [f] in an unspecified order.
       @since 3.3 *)
 
-  val add_seq : 'a t -> (key * 'a) Seq.t -> unit
-  (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
-      Renamed from [add_std_seq] since 3.0.
-      @since 3.0 *)
-
   val add_seq_with :
     f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) Seq.t -> unit
   (** Add the corresponding pairs to the table, using {!Hashtbl.add}.
@@ -274,11 +269,6 @@ module type S = sig
       If a key occurs multiple times in the input, the values are combined
       using [f] in an unspecified order.
       @since 3.3 *)
-
-  val of_seq : (key * 'a) Seq.t -> 'a t
-  (** From the given bindings, added in order.
-      Renamed from [of_std_seq] since 3.0.
-      @since 3.0 *)
 
   val of_seq_with : f:(key -> 'a -> 'a -> 'a) -> (key * 'a) Seq.t -> 'a t
   (** From the given bindings, added in order.

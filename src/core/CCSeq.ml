@@ -9,9 +9,18 @@ type 'a printer = Format.formatter -> 'a -> unit
 include Seq
 
 let nil () = Nil
+
+[@@@iflt 4.11]
+
 let cons a b () = Cons (a, b)
-let empty = nil
+
+[@@@endif]
+[@@@iflt 5.4]
+
 let singleton x () = Cons (x, nil)
+
+[@@@endif]
+[@@@iflt 4.11]
 
 let init n f =
   let rec aux i () =
@@ -21,6 +30,8 @@ let init n f =
       Cons (f i, aux (i + 1))
   in
   aux 0
+
+[@@@endif]
 
 let rec _forever x () = Cons (x, _forever x)
 
@@ -37,10 +48,14 @@ let repeat ?n x =
 
 let rec forever f () = Cons (f (), forever f)
 
+[@@@iflt 4.14]
+
 let is_empty l =
   match l () with
   | Nil -> true
   | Cons _ -> false
+
+[@@@endif]
 
 let head_exn l =
   match l () with
@@ -62,10 +77,14 @@ let tail l =
   | Nil -> None
   | Cons (_, l) -> Some l
 
+[@@@iflt 4.14]
+
 let uncons l =
   match l () with
   | Nil -> None
   | Cons (h, t) -> Some (h, t)
+
+[@@@endif]
 
 let rec equal eq l1 l2 =
   match l1 (), l2 () with
@@ -100,14 +119,9 @@ let foldi f acc res =
   in
   aux acc 0 res
 
-let fold_lefti = foldi
+[@@@iflt 4.14]
 
-let rec iter f l =
-  match l () with
-  | Nil -> ()
-  | Cons (x, l') ->
-    f x;
-    iter f l'
+let fold_lefti = foldi
 
 let iteri f l =
   let rec aux f l i =
@@ -151,11 +165,6 @@ let rec drop_while p l () =
   | Cons (x, l') when p x -> drop_while p l' ()
   | Cons _ as res -> res
 
-let rec map f l () =
-  match l () with
-  | Nil -> Nil
-  | Cons (x, l') -> Cons (f x, map f l')
-
 let mapi f l =
   let rec aux f l i () =
     match l () with
@@ -164,35 +173,54 @@ let mapi f l =
   in
   aux f l 0
 
-let rec fmap f (l : 'a t) () =
-  match l () with
-  | Nil -> Nil
-  | Cons (x, l') ->
-    (match f x with
-    | None -> fmap f l' ()
-    | Some y -> Cons (y, fmap f l'))
+[@@@endif]
+[@@@iflt 5.4]
 
-let rec filter p l () =
-  match l () with
-  | Nil -> Nil
-  | Cons (x, l') ->
-    if p x then
-      Cons (x, filter p l')
-    else
-      filter p l' ()
+let filteri f l =
+  let rec aux f l i () =
+    match l () with
+    | Nil -> Nil
+    | Cons (x, tl) ->
+      if f i x then
+        Cons (x, aux f tl (i + 1))
+      else
+        aux f tl (i + 1) ()
+  in
+  aux f l 0
+
+[@@@endif]
+
+let fmap = filter_map
+
+[@@@iflt 4.11]
 
 let rec append l1 l2 () =
   match l1 () with
   | Nil -> l2 ()
   | Cons (x, l1') -> Cons (x, append l1' l2)
 
-let rec cycle l () = append l (cycle l) ()
+[@@@endif]
+[@@@iflt 4.14]
+
+let rec cycle l =
+  if is_empty l then
+    l
+  else
+    fun () ->
+  append l (cycle l) ()
+
 let rec iterate f a () = Cons (a, iterate f (f a))
+
+[@@@endif]
+[@@@iflt 4.11]
 
 let rec unfold f acc () =
   match f acc with
   | None -> Nil
   | Some (x, acc') -> Cons (x, unfold f acc')
+
+[@@@endif]
+[@@@iflt 4.14]
 
 let rec for_all p l =
   match l () with
@@ -221,6 +249,35 @@ let rec find_map f l =
     | None -> find_map f tl
     | e -> e)
 
+[@@@endif]
+[@@@iflt 5.1]
+
+let find_index p l =
+  let rec aux i l =
+    match l () with
+    | Nil -> None
+    | Cons (x, tl) ->
+      if p x then
+        Some i
+      else
+        aux (i + 1) tl
+  in
+  aux 0 l
+
+let find_mapi f l =
+  let rec aux i l =
+    match l () with
+    | Nil -> None
+    | Cons (x, tl) ->
+      (match f i x with
+      | Some _ as res -> res
+      | None -> aux (i + 1) tl)
+  in
+  aux 0 l
+
+[@@@endif]
+[@@@iflt 5.1]
+
 let rec scan f acc res () =
   Cons
     ( acc,
@@ -229,17 +286,12 @@ let rec scan f acc res () =
         | Nil -> Nil
         | Cons (s, cont) -> scan f (f acc s) cont () )
 
-let rec flat_map f l () =
-  match l () with
-  | Nil -> Nil
-  | Cons (x, l') -> _flat_map_app f (f x) l' ()
-
-and _flat_map_app f l l' () =
-  match l () with
-  | Nil -> flat_map f l' ()
-  | Cons (x, tl) -> Cons (x, _flat_map_app f tl l')
+[@@@endif]
+[@@@iflt 4.13]
 
 let concat_map = flat_map
+
+[@@@endif]
 
 let product_with f l1 l2 =
   let rec _next_left h1 tl1 h2 tl2 () =
@@ -264,6 +316,8 @@ let product_with f l1 l2 =
   in
   _next_left [] l1 [] l2
 
+[@@@iflt 4.14]
+
 let map_product = product_with
 let product l1 l2 = product_with (fun x y -> x, y) l1 l2
 
@@ -272,6 +326,8 @@ let rec group eq l () =
   | Nil -> Nil
   | Cons (x, l') ->
     Cons (cons x (take_while (eq x) l'), group eq (drop_while (eq x) l'))
+
+[@@@endif]
 
 let rec _uniq eq prev l () =
   match prev, l () with
@@ -285,16 +341,13 @@ let rec _uniq eq prev l () =
 
 let uniq eq l = _uniq eq None l
 
-let rec filter_map f l () =
-  match l () with
-  | Nil -> Nil
-  | Cons (x, l') ->
-    (match f x with
-    | None -> filter_map f l' ()
-    | Some y -> Cons (y, filter_map f l'))
+[@@@iflt 4.13]
 
-let flatten l = flat_map (fun x -> x) l
-let concat = flatten
+let concat l = flat_map (fun x -> x) l
+
+[@@@endif]
+
+let flatten = concat
 
 let range i j =
   let rec aux i j () =
@@ -317,12 +370,18 @@ let ( --^ ) i j =
   else
     range i (j + 1)
 
-let rec fold2 f acc l1 l2 =
+[@@@iflt 4.14]
+
+let rec fold_left2 f acc l1 l2 =
   match l1 (), l2 () with
   | Nil, _ | _, Nil -> acc
-  | Cons (x1, l1'), Cons (x2, l2') -> fold2 f (f acc x1 x2) l1' l2'
+  | Cons (x1, l1'), Cons (x2, l2') -> fold_left2 f (f acc x1 x2) l1' l2'
 
-let fold_left2 = fold2
+[@@@endif]
+
+let fold2 = fold_left2
+
+[@@@iflt 4.14]
 
 let rec map2 f l1 l2 () =
   match l1 (), l2 () with
@@ -346,17 +405,21 @@ let rec exists2 f l1 l2 =
   | Nil, _ | _, Nil -> false
   | Cons (x1, l1'), Cons (x2, l2') -> f x1 x2 || exists2 f l1' l2'
 
-let rec merge cmp l1 l2 () =
+let rec sorted_merge cmp l1 l2 () =
   match l1 (), l2 () with
   | Nil, tl2 -> tl2
   | tl1, Nil -> tl1
   | Cons (x1, l1'), Cons (x2, l2') ->
     if cmp x1 x2 < 0 then
-      Cons (x1, merge cmp l1' l2)
+      Cons (x1, sorted_merge cmp l1' l2)
     else
-      Cons (x2, merge cmp l1 l2')
+      Cons (x2, sorted_merge cmp l1 l2')
 
-let sorted_merge = merge
+[@@@endif]
+
+let merge = sorted_merge
+
+[@@@iflt 4.14]
 
 let rec zip a b () =
   match a (), b () with
@@ -377,6 +440,8 @@ let unzip l =
 
 let split = unzip
 
+[@@@endif]
+
 let zip_i seq =
   let rec loop i seq () =
     match seq () with
@@ -387,7 +452,6 @@ let zip_i seq =
 
 (** {2 Implementations} *)
 
-let return x () = Cons (x, nil)
 let pure = return
 let ( >>= ) xs f = flat_map f xs
 let ( >|= ) xs f = map f xs
@@ -530,10 +594,14 @@ let rec memoize f =
 
 (** {2 Fair Combinations} *)
 
+[@@@iflt 4.14]
+
 let rec interleave a b () =
   match a () with
   | Nil -> b ()
   | Cons (x, tail) -> Cons (x, interleave b tail)
+
+[@@@endif]
 
 let rec fair_flat_map f a () =
   match a () with

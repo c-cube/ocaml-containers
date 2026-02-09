@@ -2,14 +2,14 @@
 
 (** Helpers for processor-native integers
 
-    This module provides operations on the type [nativeint] of signed 32-bit integers 
-    (on 32-bit platforms) or signed 64-bit integers (on 64-bit platforms). 
-    This integer type has exactly the same width as that of a pointer type in the C compiler. 
-    All arithmetic operations over nativeint are taken modulo 2{^32} or 2{^64} depending 
+    This module provides operations on the type [nativeint] of signed 32-bit integers
+    (on 32-bit platforms) or signed 64-bit integers (on 64-bit platforms).
+    This integer type has exactly the same width as that of a pointer type in the C compiler.
+    All arithmetic operations over nativeint are taken modulo 2{^32} or 2{^64} depending
     on the word size of the architecture.
 
-    Performance notice: values of type [nativeint] occupy more memory space than values of type [int], 
-    and arithmetic operations on [nativeint] are generally slower than those on [int]. 
+    Performance notice: values of type [nativeint] occupy more memory space than values of type [int],
+    and arithmetic operations on [nativeint] are generally slower than those on [int].
     Use [nativeint] only when the application requires the extra bit of precision over the [int] type.
 
     @since 2.1 *)
@@ -18,6 +18,7 @@
 include module type of struct
   include Nativeint
 end
+(** @inline *)
 
 val min : t -> t -> t
 (** [min x y] returns the minimum of the two integers [x] and [y].
@@ -117,7 +118,7 @@ val pp_binary : t printer
 
 module Infix : sig
   val ( + ) : t -> t -> t
-  (** [x + y] is the sum of [x] and [y]. 
+  (** [x + y] is the sum of [x] and [y].
       Addition. *)
 
   val ( - ) : t -> t -> t

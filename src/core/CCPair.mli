@@ -2,11 +2,27 @@
 
 (** Tuple Functions *)
 
+[@@@ifge 5.4]
+
+include module type of Pair
+(** @inline *)
+
+[@@@else_]
+
 type ('a, 'b) t = 'a * 'b
 
 val make : 'a -> 'b -> ('a, 'b) t
 (** Make a tuple from its components.
     @since 0.16 *)
+
+val fst : 'a * 'b -> 'a
+(** [fst (a, b)] returns [a] *)
+
+val snd : 'a * 'b -> 'b
+(** [snd (a, b)] returns [b] *)
+
+val swap : 'a * 'b -> 'b * 'a
+(** Swap the components of the tuple. *)
 
 val map_fst : ('a -> 'b) -> 'a * 'c -> 'b * 'c
 (** [map_fst f (x, y)] returns [(f x, y)].
@@ -18,6 +34,8 @@ val map_snd : ('a -> 'b) -> 'c * 'a -> 'c * 'b
 
 val map : ('a -> 'c) -> ('b -> 'd) -> 'a * 'b -> 'c * 'd
 (** Synonym to {!( *** )}. Map on both sides of a tuple. *)
+
+[@@@endif]
 
 val map_same : ('a -> 'b) -> 'a * 'a -> 'b * 'b
 (** Like {!map} but specialized for pairs with elements of the same type. *)
@@ -45,10 +63,11 @@ val snd_map : ('a -> 'b) -> _ * 'a -> 'b
     Rename from [map_snd] since 3.0.
     @since 0.3.3 *)
 
+[@@@iflt 5.4]
+
 val iter : ('a -> 'b -> unit) -> 'a * 'b -> unit
 
-val swap : 'a * 'b -> 'b * 'a
-(** Swap the components of the tuple. *)
+[@@@endif]
 
 val ( <<< ) : ('a -> 'b) -> 'a * 'c -> 'b * 'c
 (** Map on the left side of the tuple. *)
@@ -66,9 +85,13 @@ val ( &&& ) : ('a -> 'b) -> ('a -> 'c) -> 'a -> 'b * 'c
 val merge : ('a -> 'b -> 'c) -> 'a * 'b -> 'c
 (** Uncurrying (merges the two components of a tuple). *)
 
+[@@@iflt 5.4]
+
 val fold : ('a -> 'b -> 'c) -> 'a * 'b -> 'c
 (** Synonym to {!merge}.
     @since 0.3.3 *)
+
+[@@@endif]
 
 val dup : 'a -> 'a * 'a
 (** [dup x = (x,x)] (duplicate the value).
@@ -79,11 +102,15 @@ val dup_map : ('a -> 'b) -> 'a -> 'a * 'b
     to the second copy.
     @since 0.3.3 *)
 
+[@@@iflt 5.4]
+
 val equal :
   ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> 'a * 'b -> 'a * 'b -> bool
 
 val compare :
   ('a -> 'a -> int) -> ('b -> 'b -> int) -> 'a * 'b -> 'a * 'b -> int
+
+[@@@endif]
 
 val to_string :
   ?sep:string -> ('a -> string) -> ('b -> string) -> 'a * 'b -> string

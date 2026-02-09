@@ -10,42 +10,10 @@ module type OrderedType = Set.OrderedType
 module type S = sig
   include Set.S
 
-  val min_elt_opt : t -> elt option
-  (** Safe version of {!min_elt}.
-      @since 1.5 *)
-
-  val max_elt_opt : t -> elt option
-  (** Safe version of {!max_elt}.
-      @since 1.5 *)
-
-  val choose_opt : t -> elt option
-  (** Safe version of {!choose}.
-      @since 1.5 *)
-
-  val find_opt : elt -> t -> elt option
-  (** Safe version of {!find}.
-      @since 1.5 *)
-
-  val find_first : (elt -> bool) -> t -> elt
-  (** Find minimum element satisfying predicate.
-      @since 1.5 *)
-
-  val find_first_opt : (elt -> bool) -> t -> elt option
-  (** Safe version of {!find_first}.
-      @since 1.5 *)
-
   val find_first_map : (elt -> 'a option) -> t -> 'a option
   (** [find_first_map f s] find the minimum element [x] of [s] such that [f x = Some y]
       and return [Some y]. Otherwise returns [None].
       @since 3.12 *)
-
-  val find_last : (elt -> bool) -> t -> elt
-  (** Find maximum element satisfying predicate.
-      @since 1.5 *)
-
-  val find_last_opt : (elt -> bool) -> t -> elt option
-  (** Safe version of {!find_last}.
-      @since 1.5 *)
 
   val find_last_map : (elt -> 'a option) -> t -> 'a option
   (** [find_last_map f s] find the maximum element [x] of [s] such that [f x = Some y]
@@ -56,15 +24,8 @@ module type S = sig
   (** Build a set from the given [iter] of elements.
       @since 2.8 *)
 
-  val of_seq : elt Seq.t -> t
-  (** Build a set from the given [seq] of elements.
-      @since 3.0 *)
-
   val add_iter : t -> elt iter -> t
   (** @since 2.8 *)
-
-  val add_seq : elt Seq.t -> t -> t
-  (** @since 3.0 *)
 
   val to_iter : t -> elt iter
   (** [to_iter t] converts the set [t] to a [iter] of the elements.
@@ -103,30 +64,7 @@ module Make (O : Map.OrderedType) = struct
 
   [@@@ocaml.warning "-32"]
 
-  let find_opt x s = try Some (S.find x s) with Not_found -> None
-  let choose_opt s = try Some (S.choose s) with Not_found -> None
-  let min_elt_opt s = try Some (S.min_elt s) with Not_found -> None
-  let max_elt_opt s = try Some (S.max_elt s) with Not_found -> None
-
   exception Find_binding_exit
-
-  let find_first_opt f m =
-    let res = ref None in
-    try
-      S.iter
-        (fun x ->
-          if f x then (
-            res := Some x;
-            raise Find_binding_exit
-          ))
-        m;
-      None
-    with Find_binding_exit -> !res
-
-  let find_first f m =
-    match find_first_opt f m with
-    | None -> raise Not_found
-    | Some x -> x
 
   let find_first_map f m =
     let res = ref None in
@@ -142,22 +80,10 @@ module Make (O : Map.OrderedType) = struct
       None
     with Find_binding_exit -> !res
 
-  (* linear time, must traverse the whole set… *)
-  let find_last_opt f m =
-    let res = ref None in
-    S.iter (fun x -> if f x then res := Some x) m;
-    !res
-
-  let find_last f m =
-    match find_last_opt f m with
-    | None -> raise Not_found
-    | Some x -> x
-
   [@@@ocaml.warning "+32"]
 
   include S
 
-  (* Use find_last which is linear time on OCaml < 4.05 *)
   let find_last_map f m =
     let res = ref None in
     let _ =
@@ -171,13 +97,6 @@ module Make (O : Map.OrderedType) = struct
         m
     in
     !res
-
-  let add_seq seq set =
-    let set = ref set in
-    Seq.iter (fun x -> set := add x !set) seq;
-    !set
-
-  let of_seq s = add_seq s empty
 
   let add_iter set i =
     let set = ref set in

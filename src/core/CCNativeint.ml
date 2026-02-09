@@ -2,8 +2,13 @@
 
 include Nativeint
 
+[@@@iflt 4.13]
+
 let min : t -> t -> t = Stdlib.min
 let max : t -> t -> t = Stdlib.max
+
+[@@@endif]
+
 let hash x = Stdlib.abs (to_int x)
 let sign i = compare i zero
 
@@ -95,8 +100,7 @@ let random_range i j st = add i (random (sub j i) st)
 (** {2 Conversion} *)
 
 let of_string_exn = of_string
-let of_string x = try Some (of_string_exn x) with Failure _ -> None
-let of_string_opt = of_string
+let of_string = of_string_opt
 let most_significant_bit = logxor (neg 1n) (shift_right_logical (neg 1n) 1)
 
 type output = char -> unit

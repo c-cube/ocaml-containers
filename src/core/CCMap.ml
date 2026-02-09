@@ -20,47 +20,6 @@ module type S = sig
       and returns [default] otherwise (if [k] doesn't belong in [m]).
       @since 0.16 *)
 
-  val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
-  (** [update k f m] calls [f (Some v)] if [find k m = v],
-      otherwise it calls [f None]. In any case, if the result is [None]
-      [k] is removed from [m], and if the result is [Some v'] then
-      [add k v' m] is returned. *)
-
-  val choose_opt : 'a t -> (key * 'a) option
-  (** [choose_opt m] returns one binding of the given map [m], or [None] if [m] is empty.
-      Safe version of {!choose}.
-      @since 1.5 *)
-
-  val min_binding_opt : 'a t -> (key * 'a) option
-  (** [min_binding_opt m] returns the smallest binding of the given map [m],
-      or [None] if [m] is empty.
-      Safe version of {!min_binding}.
-      @since 1.5 *)
-
-  val max_binding_opt : 'a t -> (key * 'a) option
-  (** [max_binding_opt m] returns the largest binding of the given map [m],
-      or [None] if [m] is empty.
-      Safe version of {!max_binding}.
-      @since 1.5 *)
-
-  val find_opt : key -> 'a t -> 'a option
-  (** [find_opt k m] returns [Some v] if the current binding of [k] in [m] is [v],
-      or [None] if the key [k] is not present.
-      Safe version of {!find}.
-      @since 1.5 *)
-
-  val find_first : (key -> bool) -> 'a t -> key * 'a
-  (** [find_first f m] where [f] is a monotonically increasing function, returns the binding of [m]
-      with the lowest key [k] such that [f k], or raises [Not_found] if no such key exists.
-      See {!Map.S.find_first}.
-      @since 1.5 *)
-
-  val find_first_opt : (key -> bool) -> 'a t -> (key * 'a) option
-  (** [find_first_opt f m] where [f] is a monotonically increasing function, returns an option containing
-      the binding of [m] with the lowest key [k] such that [f k], or [None] if no such key exists.
-      Safe version of {!find_first}.
-      @since 1.5 *)
-
   val merge_safe :
     f:(key -> [ `Left of 'a | `Right of 'b | `Both of 'a * 'b ] -> 'c option) ->
     'a t ->
@@ -69,23 +28,11 @@ module type S = sig
   (** [merge_safe ~f a b] merges the maps [a] and [b] together.
       @since 0.17 *)
 
-  val add_seq : 'a t -> (key * 'a) Seq.t -> 'a t
-  (** [add_seq m seq] adds the given [Seq.t] of bindings to the map [m].
-      Like {!add_list}.
-      Renamed from [add_std_seq] since 3.0.
-      @since 3.0 *)
-
   val add_seq_with :
     f:(key -> 'a -> 'a -> 'a) -> 'a t -> (key * 'a) Seq.t -> 'a t
   (** [add_seq ~f m l] adds the given seq [l] of bindings to the map [m],
       using [f] to combine values that have the same key.
       @since 3.3 *)
-
-  val of_seq : (key * 'a) Seq.t -> 'a t
-  (** [of_seq seq] builds a map from the given [Seq.t] of bindings.
-      Like {!of_list}.
-      Renamed from [of_std_seq] since 3.0.
-      @since 3.0 *)
 
   val of_seq_with : f:(key -> 'a -> 'a -> 'a) -> (key * 'a) Seq.t -> 'a t
   (** [of_seq_with ~f l] builds a map from the given seq [l] of bindings [k_i -> v_i],
@@ -178,62 +125,6 @@ module Make (O : Map.OrderedType) = struct
   (* backport functions from recent stdlib.
      they will be shadowed by inclusion of [S] if present. *)
 
-  [@@@ocaml.warning "-32"]
-
-  let union f a b =
-    M.merge
-      (fun k v1 v2 ->
-        match v1, v2 with
-        | None, None -> assert false
-        | None, (Some _ as r) -> r
-        | (Some _ as r), None -> r
-        | Some v1, Some v2 -> f k v1 v2)
-      a b
-
-  let update k f m =
-    let x = try f (Some (M.find k m)) with Not_found -> f None in
-    match x with
-    | None -> M.remove k m
-    | Some v' -> M.add k v' m
-
-  let choose_opt m = try Some (M.choose m) with Not_found -> None
-  let find_opt k m = try Some (M.find k m) with Not_found -> None
-  let max_binding_opt m = try Some (M.max_binding m) with Not_found -> None
-  let min_binding_opt m = try Some (M.min_binding m) with Not_found -> None
-
-  exception Find_binding_exit
-
-  let find_first_opt f m =
-    let res = ref None in
-    try
-      M.iter
-        (fun k v ->
-          if f k then (
-            res := Some (k, v);
-            raise Find_binding_exit
-          ))
-        m;
-      None
-    with Find_binding_exit -> !res
-
-  let find_first f m =
-    match find_first_opt f m with
-    | None -> raise Not_found
-    | Some (k, v) -> k, v
-
-  (* linear time, must traverse the whole map… *)
-  let find_last_opt f m =
-    let res = ref None in
-    M.iter (fun k v -> if f k then res := Some (k, v)) m;
-    !res
-
-  let find_last f m =
-    match find_last_opt f m with
-    | None -> raise Not_found
-    | Some (k, v) -> k, v
-
-  [@@@ocaml.warning "+32"]
-
   (* === include M.
      This will shadow some values depending on OCaml's current version
      === *)
@@ -253,11 +144,6 @@ module Make (O : Map.OrderedType) = struct
         | Some v1, Some v2 -> f k (`Both (v1, v2)))
       a b
 
-  let add_seq m s =
-    let m = ref m in
-    Seq.iter (fun (k, v) -> m := add k v !m) s;
-    !m
-
   let add_seq_with ~f m s =
     let combine k v = function
       | None -> Some v
@@ -265,7 +151,6 @@ module Make (O : Map.OrderedType) = struct
     in
     Seq.fold_left (fun m (k, v) -> update k (combine k v) m) m s
 
-  let of_seq s = add_seq empty s
   let of_seq_with ~f s = add_seq_with ~f empty s
 
   let add_iter m s =
@@ -296,9 +181,19 @@ module Make (O : Map.OrderedType) = struct
     in
     List.fold_left (fun m (k, v) -> update k (combine k v) m) m l
 
+  [@@@iflt 5.1]
+
   let of_list l = add_list empty l
+
+  [@@@endif]
+
   let of_list_with ~f l = add_list_with ~f empty l
+
+  [@@@iflt 5.1]
+
   let to_list m = fold (fun k v acc -> (k, v) :: acc) m []
+
+  [@@@endif]
 
   let pp ?(pp_start = fun _ () -> ()) ?(pp_stop = fun _ () -> ())
       ?(pp_arrow = fun fmt () -> Format.fprintf fmt "@ -> ")

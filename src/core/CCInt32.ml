@@ -2,9 +2,18 @@
 
 include Int32
 
+[@@@iflt 4.13]
+
 let min : t -> t -> t = Stdlib.min
 let max : t -> t -> t = Stdlib.max
+
+[@@@endif]
+[@@@iflt 5.1]
+
 let hash x = Stdlib.abs (to_int x)
+
+[@@@endif]
+
 let sign i = compare i zero
 
 let pow a b =
@@ -110,7 +119,6 @@ let random_range i j st = add i (random (sub j i) st)
 
 let of_string_exn = of_string
 let of_string x = try Some (of_string_exn x) with Failure _ -> None
-let of_string_opt = of_string
 let most_significant_bit = logxor (neg 1l) (shift_right_logical (neg 1l) 1)
 
 type output = char -> unit

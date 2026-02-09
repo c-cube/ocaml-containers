@@ -692,22 +692,9 @@ let of_gen g =
 
 let to_iter s k = String.iter k s
 
-let rec _to_seq s i len () =
-  if len = 0 then
-    Seq.Nil
-  else
-    Seq.Cons (s.[i], _to_seq s (i + 1) (len - 1))
-
-let to_seq s = _to_seq s 0 (String.length s)
-
 let of_iter i =
   let b = Buffer.create 32 in
   i (Buffer.add_char b);
-  Buffer.contents b
-
-let of_seq seq =
-  let b = Buffer.create 32 in
-  Seq.iter (Buffer.add_char b) seq;
   Buffer.contents b
 
 let to_list s = _to_list s [] 0 (String.length s)

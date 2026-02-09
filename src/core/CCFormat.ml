@@ -31,6 +31,8 @@ let break fmt (m, n) = Format.pp_print_break fmt m n
 let newline = Format.pp_force_newline
 let substring out (s, i, len) : unit = string out (String.sub s i len)
 let text = Format.pp_print_text
+let option = Format.pp_print_option
+let result = Format.pp_print_result
 
 let string_lines out (s : string) : unit =
   fprintf out "@[<v>";

@@ -1,42 +1,14 @@
-(* backport new functions from stdlib here *)
-
-[@@@ocaml.warning "-32"]
-
-let rec compare_lengths l1 l2 =
-  match l1, l2 with
-  | [], [] -> 0
-  | [], _ :: _ -> -1
-  | _ :: _, [] -> 1
-  | _ :: tail1, _ :: tail2 -> compare_lengths tail1 tail2
-
-let rec compare_length_with l n =
-  match l, n with
-  | _ when n < 0 -> 1
-  | [], 0 -> 0
-  | [], _ -> -1
-  | _ :: tail, _ -> compare_length_with tail (n - 1)
-
-let rec assoc_opt x = function
-  | [] -> None
-  | (y, v) :: _ when Stdlib.( = ) x y -> Some v
-  | _ :: tail -> assoc_opt x tail
-
-let rec assq_opt x = function
-  | [] -> None
-  | (y, v) :: _ when Stdlib.( == ) x y -> Some v
-  | _ :: tail -> assq_opt x tail
-
-[@@@ocaml.warning "+32"]
-
-(* end of backport *)
-
 include List
 
 let empty = []
 
+[@@@iflt 5.1]
+
 let is_empty = function
   | [] -> true
   | _ :: _ -> false
+
+[@@@endif]
 
 let mguard c =
   if c then
@@ -391,25 +363,27 @@ let[@tail_mod_cons] rec unfold f seed =
   | Some (v, next) -> v :: unfold f next
 
 [@@@endif]
+[@@@iflt 4.12]
 
-let rec compare f l1 l2 =
+let rec compare cmp l1 l2 =
   match l1, l2 with
   | [], [] -> 0
   | _, [] -> 1
   | [], _ -> -1
   | x1 :: l1', x2 :: l2' ->
-    let c = f x1 x2 in
+    let c = cmp x1 x2 in
     if c <> 0 then
       c
     else
-      compare f l1' l2'
+      compare cmp l1' l2'
 
-let rec equal f l1 l2 =
+let rec equal eq l1 l2 =
   match l1, l2 with
   | [], [] -> true
   | [], _ | _, [] -> false
-  | x1 :: l1', x2 :: l2' -> f x1 x2 && equal f l1' l2'
+  | x1 :: l1', x2 :: l2' -> eq x1 x2 && equal eq l1' l2'
 
+[@@@endif]
 [@@@iflt 5.1]
 
 let rec flat_map_kont f l kont =
@@ -986,6 +960,8 @@ let find_pred_exn p l =
   | None -> raise Not_found
   | Some x -> x
 
+[@@@iflt 5.1]
+
 let find_mapi f l =
   let rec aux f i = function
     | [] -> None
@@ -996,7 +972,12 @@ let find_mapi f l =
   in
   aux f 0 l
 
+[@@@endif]
+[@@@iflt 4.10]
+
 let find_map f l = find_mapi (fun _ -> f) l
+
+[@@@endif]
 
 let find_idx p l =
   find_mapi
@@ -1016,6 +997,8 @@ let remove ~eq x l =
   in
   remove' eq x [] l
 
+[@@@iflt 5.1]
+
 let filter_map f l =
   let rec recurse acc l =
     match l with
@@ -1029,6 +1012,8 @@ let filter_map f l =
       recurse acc' l'
   in
   recurse [] l
+
+[@@@endif]
 
 let keep_some l = filter_map (fun x -> x) l
 
@@ -1232,6 +1217,9 @@ let inter ~eq l1 l2 =
   in
   inter eq [] l1 l2
 
+[@@@iflt 5.1]
+
+(* Because our map is tail rec between 4.13 and 5.1 *)
 let mapi f l =
   let r = ref 0 in
   map
@@ -1240,6 +1228,8 @@ let mapi f l =
       incr r;
       y)
     l
+
+[@@@endif]
 
 let iteri f l =
   let rec aux f i l =
@@ -1563,11 +1553,6 @@ let to_string ?(start = "") ?(stop = "") ?(sep = ", ") item_to_string l =
   start ^ String.concat sep l ^ stop
 
 let to_iter l k = List.iter k l
-
-let rec to_seq l () =
-  match l with
-  | [] -> Seq.Nil
-  | x :: tl -> Seq.Cons (x, to_seq tl)
 
 let of_iter i =
   let l = ref [] in
