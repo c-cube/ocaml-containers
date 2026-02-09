@@ -25,7 +25,7 @@ let g_rand_b =
     match n with
     | 0 -> oneof base
     | n ->
-      frequency
+      oneof_weighted
       @@ List.map (fun x -> 2, x) base
       @ [
           1, list_size (0 -- 10) (self (n - 1)) >|= B.list;

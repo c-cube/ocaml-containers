@@ -39,14 +39,14 @@ with Division_by_zero -> true
 ;;
 
 q
-  (Q.pair (Q.map of_int Q.small_signed_int) (Q.map of_int Q.small_nat))
+  (Q.pair (Q.map of_int Q.int_small) (Q.map of_int Q.nat_small))
   (fun (n, m) ->
     let m = m + 1n in
     floor_div n m = of_float @@ floor (to_float n /. to_float m))
 ;;
 
 q
-  (Q.pair (Q.map of_int Q.small_signed_int) (Q.map of_int Q.small_nat))
+  (Q.pair (Q.map of_int Q.int_small) (Q.map of_int Q.nat_small))
   (fun (n, m) ->
     let m = m + 1n in
     floor_div n (-m) = of_float @@ floor (to_float n /. to_float (-m)))
@@ -73,7 +73,7 @@ eq' [ 5n; 3n; 1n ] (range_by ~step:(neg 2n) 5n 0n |> Iter.to_list);;
 eq' [ 0n ] (range_by ~step:max_int 0n 2n |> Iter.to_list);;
 
 q
-  Q.(pair (map of_int small_int) (map of_int small_int))
+  Q.(pair (map of_int nat_small) (map of_int nat_small))
   (fun (i, j) ->
     let i = min i j and j = max i j in
     CCList.equal CCNativeint.equal

@@ -5,7 +5,7 @@ open CCFun_vec
 let spf = Printf.sprintf
 
 let _listuniq =
-  let g = Q.(small_list (pair small_int small_int)) in
+  let g = Q.(list_small (pair nat_small nat_small)) in
   Q.map_same_type
     (fun l ->
       CCList.sort_uniq ~cmp:(fun a b -> Stdlib.compare (fst a) (fst b)) l)
@@ -33,7 +33,7 @@ true
 ;;
 
 q
-  Q.(pair int (small_list int))
+  Q.(pair int (list_small int))
   (fun (x, l) ->
     let q0 = of_list l in
     let q = push x q0 in
@@ -45,18 +45,18 @@ q
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (small_list int))
+  Q.(pair (fun1 Observable.int bool) (list_small int))
   (fun (f, l) ->
     let f = Q.Fn.apply f in
     List.map f l = (of_list l |> map f |> to_list))
 ;;
 
 q
-  Q.(pair (small_list int) (small_list int))
+  Q.(pair (list_small int) (list_small int))
   (fun (l1, l2) -> l1 @ l2 = (append (of_list l1) (of_list l2) |> to_list))
 ;;
 
-q Q.(small_list int) (fun l -> l = to_list (of_list l));;
+q Q.(list_small int) (fun l -> l = to_list (of_list l));;
 
 q _listuniq (fun l ->
     List.sort Stdlib.compare l
@@ -162,7 +162,7 @@ module Op = struct
         return []
       else (
         let op =
-          frequency
+          oneof_weighted
           @@ List.flatten
                [
                  [
@@ -181,7 +181,7 @@ module Op = struct
                     []);
                  [
                    ( 1,
-                     small_list gen_x >|= fun l ->
+                     list_small gen_x >|= fun l ->
                      Add_list l, size + List.length l );
                  ];
                ]
@@ -199,7 +199,7 @@ let arb_ops_int : int Op.t list Q.arbitrary =
     ~print:(fun o ->
       spf "[%s]" @@ String.concat ";" @@ List.map (Op.show @@ spf "%d") o)
     ~shrink:(Op.shrink_l Q.Shrink.int)
-    Q.Gen.(0 -- 40 >>= fun len -> Op.gen small_int len)
+    Q.Gen.(0 -- 40 >>= fun len -> Op.gen nat_small len)
 
 let check_ops ~show_x (ops : 'a Op.t list) : unit =
   let fail () =

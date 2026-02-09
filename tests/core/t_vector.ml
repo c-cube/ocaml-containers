@@ -269,7 +269,7 @@ true
 ;;
 
 q
-  Q.(list_of_size (Gen.int_range 10 10) small_int)
+  Q.(list_size (Gen.int_range 10 10) nat_small)
   (fun l ->
     let v1 = of_list l and v2 = of_list l in
     remove_and_shift v1 9;
@@ -278,7 +278,7 @@ q
 ;;
 
 q
-  Q.(list_of_size (Gen.int_range 10 10) small_int)
+  Q.(list_size (Gen.int_range 10 10) nat_small)
   (fun l ->
     let l = List.sort CCInt.compare l in
     let v = of_list l in
@@ -287,7 +287,7 @@ q
 ;;
 
 q
-  Q.(list_of_size (Gen.int_range 10 10) small_int)
+  Q.(list_size (Gen.int_range 10 10) nat_small)
   (fun l ->
     let l = List.sort CCInt.compare l in
     let v1 = of_list l and v2 = of_list l in
@@ -407,13 +407,13 @@ t @@ fun () -> not (equal ( = ) (return 42) (create ()));;
 
 q
   Q.(
-    let g = list_of_size Gen.(0 -- 10) small_int in
+    let g = list_size Gen.(0 -- 10) nat_small in
     pair g g)
   (fun (l1, l2) -> equal ( = ) (of_list l1) (of_list l2) = (l1 = l2))
 ;;
 
 q
-  Q.(pair (small_list small_int) (small_list small_int))
+  Q.(pair (list_small nat_small) (list_small nat_small))
   (fun (l1, l2) ->
     let v1 = of_list l1 in
     let v2 = of_list l2 in
@@ -421,7 +421,7 @@ q
 ;;
 
 q
-  Q.(pair (small_list small_int) (small_list small_int))
+  Q.(pair (list_small nat_small) (list_small nat_small))
   (fun (l1, l2) ->
     let v1 = of_list l1 in
     let v2 = of_list l2 in
@@ -452,7 +452,7 @@ true
 ;;
 
 q
-  Q.(small_list small_int)
+  Q.(list_small nat_small)
   (fun l ->
     let v = of_list l in
     let v' = copy v in
@@ -466,7 +466,7 @@ assert_equal [ 1; 2; 3; 4; 5 ] (to_list v);
 true
 ;;
 
-q (gen Q.small_int) (fun v ->
+q (gen Q.nat_small) (fun v ->
     let n = size v / 2 in
     let l = to_list v in
     let h = Iter.(to_list (take n (of_list l))) in
@@ -475,13 +475,13 @@ q (gen Q.small_int) (fun v ->
     h = to_list v')
 ;;
 
-q (gen Q.small_int) (fun v ->
+q (gen Q.nat_small) (fun v ->
     let v' = copy v in
     shrink_to_fit v;
     to_list v = to_list v')
 ;;
 
-q (gen Q.small_int) (fun v ->
+q (gen Q.nat_small) (fun v ->
     let v' = copy v in
     sort' Stdlib.compare v';
     let l = to_list v' in
@@ -495,7 +495,7 @@ to_list v = [ 1; 2; 3; 4; 5 ]
 ;;
 
 q ~long_factor:10
-  Q.(small_list small_int)
+  Q.(list_small nat_small)
   (fun l ->
     let v = of_list l in
     uniq_sort Stdlib.compare v;
@@ -517,7 +517,7 @@ to_list (map string_of_int v) = [ "1"; "2"; "3" ]
 ;;
 
 q
-  Q.(pair (fun1 Observable.int small_int) (small_list small_int))
+  Q.(pair (fun1 Observable.int nat_small) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     to_list (map f v) = List.map f l)
@@ -533,14 +533,14 @@ to_list (mapi (fun i e -> Printf.sprintf "%i %i" i e) v)
 ;;
 
 q
-  Q.(pair (fun2 Observable.int Observable.int small_int) (small_list small_int))
+  Q.(pair (fun2 Observable.int Observable.int nat_small) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     to_list (mapi f v) = List.mapi f l)
 ;;
 
 q
-  Q.(pair (fun1 Observable.int small_int) (small_list small_int))
+  Q.(pair (fun1 Observable.int nat_small) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     map_in_place f v;
@@ -554,7 +554,7 @@ to_list v = [ 1; 2; 3 ]
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (small_list small_int))
+  Q.(pair (fun1 Observable.int bool) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     filter_in_place f v;
@@ -570,7 +570,7 @@ filter (fun x -> x mod 2 = 0) (1 -- 1_000_000) |> length = 500_000
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (small_list small_int))
+  Q.(pair (fun1 Observable.int bool) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     to_list (filter f v) = List.filter f l)
@@ -580,35 +580,35 @@ t @@ fun () -> fold ( + ) 0 (of_list [ 1; 2; 3; 4; 5 ]) = 15;;
 t @@ fun () -> fold ( + ) 0 (create ()) = 0;;
 
 q
-  Q.(pair (fun2 Observable.int Observable.int small_int) (small_list small_int))
+  Q.(pair (fun2 Observable.int Observable.int nat_small) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     fold f 0 v = List.fold_left f 0 l)
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (small_list small_int))
+  Q.(pair (fun1 Observable.int bool) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     exists f v = List.exists f l)
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (small_list small_int))
+  Q.(pair (fun1 Observable.int bool) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     for_all f v = List.for_all f l)
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (small_list small_int))
+  Q.(pair (fun1 Observable.int bool) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     find f v = CCList.find_pred f l)
 ;;
 
 q
-  Q.(list small_int)
+  Q.(list nat_small)
   (fun l ->
     let v = of_list l in
     let f x = x > 30 && x < 35 in
@@ -623,14 +623,14 @@ q
 ;;
 
 q
-  Q.(pair (fun1 Observable.int (option bool)) (small_list small_int))
+  Q.(pair (fun1 Observable.int (option bool)) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     to_list (filter_map f v) = CCList.filter_map f l)
 ;;
 
 q
-  Q.(pair (fun1 Observable.int (option small_int)) (small_list small_int))
+  Q.(pair (fun1 Observable.int (option nat_small)) (list_small nat_small))
   (fun (Q.Fun (_, f), l) ->
     let v = of_list l in
     filter_map_in_place f v;
@@ -668,7 +668,7 @@ eq ~cmp:( = )
 ;;
 
 q
-  Q.(small_list small_int)
+  Q.(list_small nat_small)
   (fun l ->
     let v = of_list l in
     rev_in_place v;
@@ -680,7 +680,7 @@ t @@ fun () -> rev (of_list [ 1; 2; 3; 4; 5 ]) |> to_list = [ 5; 4; 3; 2; 1 ];;
 t @@ fun () -> rev (create ()) |> to_list = [];;
 
 q
-  Q.(small_list small_int)
+  Q.(list_small nat_small)
   (fun l ->
     let v = of_list l in
     to_list (rev v) = List.rev l)
@@ -724,12 +724,12 @@ t @@ fun () -> 4 -- 1 |> to_list = [ 4; 3; 2; 1 ];;
 t @@ fun () -> 0 -- 0 |> to_list = [ 0 ];;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (a, b) -> a -- b |> to_list = CCList.(a -- b))
 ;;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (a, b) -> a --^ b |> to_list = CCList.(a --^ b))
 ;;
 

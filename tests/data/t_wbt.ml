@@ -48,14 +48,14 @@ q ~count:200
 ;;
 
 q
-  Q.(list (pair small_int bool))
+  Q.(list (pair nat_small bool))
   (fun l ->
     let m = M.of_list l in
     M.balanced m)
 ;;
 
 q
-  Q.(list (pair small_int small_int))
+  Q.(list (pair nat_small nat_small))
   (fun l ->
     let l = _list_uniq l in
     let m = M.of_list l in
@@ -63,7 +63,7 @@ q
 ;;
 
 q
-  Q.(list (pair small_int small_int))
+  Q.(list (pair nat_small nat_small))
   (fun l ->
     let l = _list_uniq l in
     let m = M.of_list l in
@@ -71,7 +71,7 @@ q
 ;;
 
 q
-  Q.(list_of_size Gen.(0 -- 30) (pair small_int small_int))
+  Q.(list_size Gen.(0 -- 30) (pair nat_small nat_small))
   (fun l ->
     let m = M.of_list l in
     List.for_all
@@ -84,7 +84,7 @@ q
 ;;
 
 q
-  Q.(list_of_size Gen.(0 -- 30) (pair small_int small_int))
+  Q.(list_size Gen.(0 -- 30) (pair nat_small nat_small))
   (fun l ->
     let m = M.of_list l in
     List.for_all
@@ -100,7 +100,7 @@ List.for_all (fun i -> M.nth_exn i m = (i, i)) CCList.(0 -- 1000)
 ;;
 
 q ~count:1_000
-  Q.(list_of_size Gen.(0 -- 30) (pair small_int small_int))
+  Q.(list_size Gen.(0 -- 30) (pair nat_small nat_small))
   (fun l ->
     let l = CCList.sort_uniq ~cmp:(CCFun.compose_binop fst compare) l in
     let m = M.of_list l in
@@ -113,7 +113,7 @@ q ~count:1_000
 ;;
 
 q ~count:20
-  Q.(list_of_size Gen.(1 -- 100) (pair small_int small_int))
+  Q.(list_size Gen.(1 -- 100) (pair nat_small nat_small))
   (fun lst ->
     let lst = _list_uniq lst in
     let m = M.of_list lst in
@@ -143,7 +143,7 @@ true
 
 q
   Q.(
-    let p = list (pair small_int small_int) in
+    let p = list (pair nat_small nat_small) in
     pair p p)
   (fun (l1, l2) ->
     let l1 = _list_uniq l1 and l2 = _list_uniq l2 in

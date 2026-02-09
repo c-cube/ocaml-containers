@@ -2,10 +2,10 @@ open CCRandom
 module T = (val Containers_testlib.make ~__FILE__ ())
 include T;;
 
-q Q.(list small_int) (fun l -> l = [] || List.mem (run (pick_list l)) l);;
+q Q.(list nat_small) (fun l -> l = [] || List.mem (run (pick_list l)) l);;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (i, j) ->
     let len, n = 2 + min i j, max i j in
     let l = QCheck.Gen.generate1 (split_list n ~len) in

@@ -26,16 +26,16 @@ let gen_c : Cbor.t Q.Gen.t =
         let+ f = float in
         `Float f );
       ( 2,
-        let* n = frequency [ 20, 0 -- 150; 1, 151 -- 100_000 ] in
+        let* n = oneof_weighted [ 20, 0 -- 150; 1, 151 -- 100_000 ] in
         let+ s = string_size ~gen:printable (return n) in
         `Text s );
       ( 2,
-        let* n = frequency [ 20, 0 -- 150; 1, 151 -- 100_000 ] in
+        let* n = oneof_weighted [ 20, 0 -- 150; 1, 151 -- 100_000 ] in
         let+ s = string_size ~gen:char (return n) in
         `Bytes s );
     ]
   in
-  let g_base = frequency base in
+  let g_base = oneof_weighted base in
   let rec_ =
     [
       ( 2,
@@ -59,7 +59,7 @@ let gen_c : Cbor.t Q.Gen.t =
         `Tag (i, sub) );
     ]
   in
-  frequency
+  oneof_weighted
     (if size > 0 then
        base @ rec_
      else

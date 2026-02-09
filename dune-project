@@ -30,7 +30,7 @@
   dune-configurator
   (qcheck-core
    (and
-    (>= 0.18)
+    (>= 0.91)
     :with-test))
   (yojson :with-test)
   (iter :with-test)
@@ -52,7 +52,7 @@
    (= :version))
   (qcheck-core
    (and
-    (>= 0.18)
+    (>= 0.91)
     :with-test))
   (iter :with-test)
   (gen :with-test)

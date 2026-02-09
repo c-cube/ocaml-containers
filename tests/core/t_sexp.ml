@@ -74,7 +74,7 @@ let sexp_gen =
              match n with
              | 0 -> atom st
              | _ ->
-               frequency
+               oneof_weighted
                  [
                    1, atom; 2, map mklist (list_size (0 -- 10) (self (n / 10)));
                  ]
@@ -154,7 +154,7 @@ let gen_csexp (str : string Q.Gen.t) : CS0.t Q.Gen.t =
   let open Csexp in
   ( fix @@ fun self depth ->
     let mklist n = list_size (0 -- n) (self (depth + 1)) >|= fun l -> List l in
-    frequency
+    oneof_weighted
     @@ List.flatten
          [
            [ (3, str >|= fun s -> Atom s) ];

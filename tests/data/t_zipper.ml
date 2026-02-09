@@ -5,13 +5,13 @@ open CCZipper;;
 t @@ fun () -> is_empty empty;;
 t @@ fun () -> not ([ 42 ] |> make |> right |> is_empty)
 
-let zip_gen = Q.(pair (small_list int) (small_list int));;
+let zip_gen = Q.(pair (list_small int) (list_small int));;
 
 q zip_gen (fun z -> to_list z = List.rev (to_rev_list z));;
 q zip_gen (fun g -> is_focused g = (focused g |> CCOption.is_some));;
 
 q
-  Q.(triple int (list small_int) (list small_int))
+  Q.(triple int (list nat_small) (list nat_small))
   (fun (x, l, r) -> insert x (l, r) |> remove = (l, r))
 ;;
 

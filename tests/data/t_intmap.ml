@@ -30,7 +30,7 @@ let _list_uniq l =
 ;;
 
 q
-  Q.(small_list (pair int int))
+  Q.(list_small (pair int int))
   (fun l ->
     let m = of_list l in
     is_empty m = (cardinal m = 0))
@@ -183,14 +183,14 @@ let inter_l l1 l2 =
 ;;
 
 q
-  Q.(pair (small_list (pair small_int unit)) (small_list (pair small_int unit)))
+  Q.(pair (list_small (pair nat_small unit)) (list_small (pair nat_small unit)))
   (fun (l1, l2) ->
     union_l l1 l2
     = _list_uniq @@ to_list (union (fun _ _ _ -> ()) (of_list l1) (of_list l2)))
 ;;
 
 q
-  Q.(pair (small_list (pair small_int unit)) (small_list (pair small_int unit)))
+  Q.(pair (list_small (pair nat_small unit)) (list_small (pair nat_small unit)))
   (fun (l1, l2) ->
     inter_l l1 l2
     = _list_uniq @@ to_list (inter (fun _ _ _ -> ()) (of_list l1) (of_list l2)))
@@ -225,7 +225,7 @@ q
 ;;
 
 q
-  Q.(pair (fun2 Observable.int Observable.int bool) (small_list (pair int int)))
+  Q.(pair (fun2 Observable.int Observable.int bool) (list_small (pair int int)))
   (fun (f, l) ->
     let (QCheck.Fun (_, f)) = f in
     _list_uniq (List.filter (fun (x, y) -> f x y) l)
@@ -236,7 +236,7 @@ q
   Q.(
     pair
       (fun2 Observable.int Observable.int @@ option bool)
-      (small_list (pair int int)))
+      (list_small (pair int int)))
   (fun (f, l) ->
     let (QCheck.Fun (_, f)) = f in
     _list_uniq
@@ -257,7 +257,7 @@ let merge_inter _x o =
 
 q
   Q.(
-    let p = small_list (pair small_int small_int) in
+    let p = list_small (pair nat_small nat_small) in
     pair p p)
   (fun (l1, l2) ->
     check_invariants (merge ~f:merge_union (of_list l1) (of_list l2)))
@@ -265,7 +265,7 @@ q
 
 q
   Q.(
-    let p = small_list (pair small_int small_int) in
+    let p = list_small (pair nat_small nat_small) in
     pair p p)
   (fun (l1, l2) ->
     check_invariants (merge ~f:merge_inter (of_list l1) (of_list l2)))
@@ -273,7 +273,7 @@ q
 
 q
   Q.(
-    let p = small_list (pair small_int unit) in
+    let p = list_small (pair nat_small unit) in
     pair p p)
   (fun (l1, l2) ->
     let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
@@ -284,7 +284,7 @@ q
 
 q
   Q.(
-    let p = small_list (pair small_int unit) in
+    let p = list_small (pair nat_small unit) in
     pair p p)
   (fun (l1, l2) ->
     let l1 = _list_uniq l1 and l2 = _list_uniq l2 in
@@ -312,7 +312,7 @@ q
 ;;
 
 q
-  Q.(list (pair small_int int))
+  Q.(list (pair nat_small int))
   (fun l ->
     of_list l |> cardinal
     = List.length (l |> List.map fst |> CCList.sort_uniq ~cmp:CCInt.compare))
@@ -419,7 +419,7 @@ let tree_gen int_gen : instr_tree Q.Gen.t =
                Gen.map2 (fun i j -> Singleton (i, j)) int_gen int_gen;
              ]
          | _ ->
-           frequency
+           oneof_weighted
              [
                1, return Empty;
                1, map2 (fun k v -> Singleton (k, v)) int_gen int_gen;
@@ -469,7 +469,7 @@ let rec tshrink t : instr_tree Q.Iter.t =
     <+> Iter.map (fun t1' -> Inter (t0, t1')) (tshrink t1)
 
 let arb_int =
-  frequency [ 5, small_signed_int; 3, int; 1, oneofl [ min_int; max_int ] ]
+  oneof_weighted [ 5, int_small; 3, int; 1, oneof_list [ min_int; max_int ] ]
 
 let arb_tree = make ~print:to_string ~shrink:tshrink (tree_gen arb_int.gen)
 let empty_m = []

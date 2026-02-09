@@ -3,9 +3,9 @@ include T
 open CCString
 open Stdlib;;
 
-q Q.printable_string (fun s -> s = rev (rev s));;
-q Q.printable_string (fun s -> length s = length (rev s));;
-q Q.printable_string (fun s -> rev s = (to_list s |> List.rev |> of_list));;
+q Q.string_printable (fun s -> s = rev (rev s));;
+q Q.string_printable (fun s -> length s = length (rev s));;
+q Q.string_printable (fun s -> rev s = (to_list s |> List.rev |> of_list));;
 eq "abc" (rev "cba");;
 eq "" (rev "");;
 eq " " (rev " ")
@@ -18,7 +18,7 @@ eq' 1 (find ~sub:"a" "_a_a_a_");;
 eq' 6 (find ~start:5 ~sub:"a" "a1a234a");;
 
 q ~count:10_000
-  Q.(pair printable_string printable_string)
+  Q.(pair string_printable string_printable)
   (fun (s1, s2) ->
     let i = find ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
@@ -45,7 +45,7 @@ eq' 4 (rfind ~sub:"bc" "abcdbcd");;
 eq' 6 (rfind ~sub:"a" "a1a234a");;
 
 q ~count:10_000
-  Q.(pair printable_string printable_string)
+  Q.(pair string_printable string_printable)
   (fun (s1, s2) ->
     let i = rfind ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
@@ -102,7 +102,7 @@ eq
 ;;
 
 q
-  Q.(printable_string)
+  Q.(string_printable)
   (fun s ->
     let s = split_on_char ' ' s |> String.concat " " in
     s = (split_on_char ' ' s |> String.concat " "))
@@ -116,7 +116,7 @@ t @@ fun () -> compare_versions "0.foo" "0.0" < 0;;
 t @@ fun () -> compare_versions "1.2.3.4" "01.2.4.3" < 0;;
 
 q
-  Q.(pair printable_string printable_string)
+  Q.(pair string_printable string_printable)
   (fun (a, b) ->
     CCOrd.equiv (compare_versions a b) (CCOrd.opp compare_versions b a))
 ;;
@@ -130,14 +130,14 @@ t @@ fun () -> compare_natural "foo1a1" "foo1a2" < 0;;
 t @@ fun () -> compare_natural "foo1a17" "foo1a2" > 0;;
 
 q
-  Q.(pair printable_string printable_string)
+  Q.(pair string_printable string_printable)
   (fun (a, b) -> CCOrd.opp compare_natural a b = compare_natural b a)
 ;;
 
-q Q.(printable_string) (fun a -> compare_natural a a = 0);;
+q Q.(string_printable) (fun a -> compare_natural a a = 0);;
 
 q
-  Q.(triple printable_string printable_string printable_string)
+  Q.(triple string_printable string_printable string_printable)
   (fun (a, b, c) ->
     if compare_natural a b < 0 && compare_natural b c < 0 then
       compare_natural a c < 0
@@ -145,18 +145,18 @@ q
       Q.assume_fail ())
 ;;
 
-q Q.(string_of_size Gen.(0 -- 30)) (fun s -> edit_distance s s = 0);;
+q Q.(string_size Gen.(0 -- 30)) (fun s -> edit_distance s s = 0);;
 
 q
   Q.(
-    let p = string_of_size Gen.(0 -- 20) in
+    let p = string_size Gen.(0 -- 20) in
     pair p p)
   (fun (s1, s2) -> edit_distance s1 s2 = edit_distance s2 s1)
 ;;
 
 q
   Q.(
-    let p = string_of_size Gen.(0 -- 20) in
+    let p = string_size Gen.(0 -- 20) in
     pair p p)
   (fun (s1, s2) ->
     let e = edit_distance s1 s2 in
@@ -232,7 +232,7 @@ eq ("abc", "") (take_drop 3 "abc");;
 eq ("abc", "") (take_drop 5 "abc");;
 
 q
-  Q.(printable_string)
+  Q.(string_printable)
   (fun s ->
     let predicate c = Char.code c mod 2 = 0 in
     let prefix = take_while predicate s in
@@ -243,7 +243,7 @@ q
 ;;
 
 q
-  Q.(printable_string)
+  Q.(string_printable)
   (fun s ->
     let predicate c = Char.code c mod 2 = 0 in
     let prefix = rdrop_while predicate s in
@@ -279,28 +279,28 @@ eq' [ "ab"; "c" ] (lines "ab\nc\n");;
 eq' [] (lines "");;
 eq' [ "" ] (lines "\n");;
 eq' [ ""; "a" ] (lines "\na");;
-q Q.(printable_string) (fun s -> lines s = (lines_gen s |> Gen.to_list));;
-q Q.(printable_string) (fun s -> lines s = (lines_iter s |> Iter.to_list));;
+q Q.(string_printable) (fun s -> lines s = (lines_gen s |> Gen.to_list));;
+q Q.(string_printable) (fun s -> lines s = (lines_iter s |> Iter.to_list));;
 
 q
-  Q.(small_list printable_string)
+  Q.(list_small string_printable)
   (fun l -> concat_iter ~sep:"\n" (Iter.of_list l) = concat "\n" l)
 ;;
 
 q
-  Q.(small_list printable_string)
+  Q.(list_small string_printable)
   (fun l -> concat_gen ~sep:"\n" (Gen.of_list l) = concat "\n" l)
 ;;
 
 q
-  Q.(small_list printable_string)
+  Q.(list_small string_printable)
   (fun l -> concat_seq ~sep:"\n" (CCSeq.of_list l) = concat "\n" l)
 ;;
 
 eq ~printer:CCFun.id "" (unlines []);;
 eq ~printer:CCFun.id "ab\nc\n" (unlines [ "ab"; "c" ]);;
-q Q.printable_string (fun s -> trim (unlines (lines s)) = trim s);;
-q Q.printable_string (fun s -> trim (unlines_gen (lines_gen s)) = trim s);;
+q Q.string_printable (fun s -> trim (unlines (lines s)) = trim s);;
+q Q.string_printable (fun s -> trim (unlines_gen (lines_gen s)) = trim s);;
 eq ~printer:CCFun.id "" (take_while (Char.equal 'c') "heloo_cc");;
 eq ~printer:CCFun.id "" (take_while (Char.equal 'c') "");;
 eq ~printer:CCFun.id "c" (take_while (Char.equal 'c') "c");;
@@ -320,7 +320,7 @@ eq ~printer:CCFun.id "ANTED"
 ;;
 
 q
-  Q.(small_list small_string)
+  Q.(list_small string_small)
   (fun l ->
     let l = unlines l |> lines in
     l = (unlines l |> lines))
@@ -352,16 +352,16 @@ eq ~printer:Q.Print.string "abde"
      "abcdec")
 ;;
 
-q Q.printable_string (fun s -> filter (fun _ -> true) s = s);;
+q Q.string_printable (fun s -> filter (fun _ -> true) s = s);;
 eq ~printer:Q.Print.string "abcde" (uniq Stdlib.( = ) "abbccdeeeee");;
 eq ~printer:CCFun.id "abc " (ltrim " abc ");;
 eq ~printer:CCFun.id " abc" (rtrim " abc ");;
-q Q.(printable_string) (fun s -> String.trim s = (s |> ltrim |> rtrim));;
-q Q.(printable_string) (fun s -> ltrim s = ltrim (ltrim s));;
-q Q.(printable_string) (fun s -> rtrim s = rtrim (rtrim s));;
+q Q.(string_printable) (fun s -> String.trim s = (s |> ltrim |> rtrim));;
+q Q.(string_printable) (fun s -> ltrim s = ltrim (ltrim s));;
+q Q.(string_printable) (fun s -> rtrim s = rtrim (rtrim s));;
 
 q
-  Q.(printable_string)
+  Q.(string_printable)
   (fun s ->
     let s' = ltrim s in
     if s' = "" then
@@ -371,7 +371,7 @@ q
 ;;
 
 q
-  Q.(printable_string)
+  Q.(string_printable)
   (fun s ->
     let s' = rtrim s in
     if s' = "" then
@@ -384,13 +384,13 @@ t @@ fun () -> equal_caseless "foo" "FoO";;
 t @@ fun () -> equal_caseless "helLo" "HEllO";;
 
 q
-  Q.(pair printable_string printable_string)
+  Q.(pair string_printable string_printable)
   (fun (s1, s2) ->
     equal_caseless s1 s2 = (lowercase_ascii s1 = lowercase_ascii s2))
 ;;
 
-q Q.(printable_string) (fun s -> equal_caseless s s);;
-q Q.(printable_string) (fun s -> equal_caseless (uppercase_ascii s) s)
+q Q.(string_printable) (fun s -> equal_caseless s s);;
+q Q.(string_printable) (fun s -> equal_caseless (uppercase_ascii s) s)
 
 let eq' = eq ~printer:(Printf.sprintf "%S");;
 

@@ -12,7 +12,7 @@ let _list_uniq =
 let _list_int_int =
   Q.(
     map_same_type _list_uniq
-      (list_of_size Gen.(0 -- 40) (pair small_int small_int)))
+      (list_size Gen.(0 -- 40) (pair nat_small nat_small)))
 ;;
 
 t @@ fun () ->

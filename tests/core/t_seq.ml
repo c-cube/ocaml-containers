@@ -11,7 +11,7 @@ of_list [ 1; 2; 3; 4 ] |> take_while (fun x -> x < 4) |> to_list = [ 1; 2; 3 ]
 ;;
 
 q
-  (Q.pair (Q.list Q.small_int) Q.small_int)
+  (Q.pair (Q.list Q.nat_small) Q.nat_small)
   (fun (l, n) ->
     let s = of_list l in
     let s1, s2 = take n s, drop n s in

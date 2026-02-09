@@ -161,7 +161,7 @@ eq
 ;;
 
 q
-  Q.(printable_string)
+  Q.(string_printable)
   (fun s ->
     let pred = function
       | 'a' .. 'z' | 'A' .. 'Z' | '{' | '}' -> true

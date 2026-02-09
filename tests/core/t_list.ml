@@ -4,7 +4,7 @@ include T
 
 let lsort l = CCList.sort Stdlib.compare l;;
 
-q Q.(pair small_nat (list int)) (fun (i, l) -> nth_opt l i = get_at_idx i l);;
+q Q.(pair nat_small (list int)) (fun (i, l) -> nth_opt l i = get_at_idx i l);;
 
 q
   Q.(pair (list int) (list int))
@@ -15,19 +15,19 @@ q
 ;;
 
 q
-  Q.(pair (list int) small_int)
+  Q.(pair (list int) nat_small)
   (fun (l, n) ->
     CCOrd.equiv (CCList.compare_length_with l n) (CCInt.compare (length l) n))
 ;;
 
-q (Q.list Q.small_int) (fun l ->
+q (Q.list Q.nat_small) (fun l ->
     let f x = x + 1 in
     List.rev (List.rev_map f l) = map f l)
 ;;
 
 t @@ fun () -> [ 1; 2; 3 ] @ [ 4; 5; 6 ] = [ 1; 2; 3; 4; 5; 6 ];;
 t @@ fun () -> (1 -- 10_000) @ (10_001 -- 20_000) = 1 -- 20_000;;
-q Q.(small_list int) (fun l -> List.rev l = List.fold_left cons' [] l);;
+q Q.(list_small int) (fun l -> List.rev l = List.fold_left cons' [] l);;
 t @@ fun () -> cons_maybe (Some 1) [ 2; 3 ] = [ 1; 2; 3 ];;
 t @@ fun () -> cons_maybe None [ 2; 3 ] = [ 2; 3 ];;
 
@@ -47,7 +47,7 @@ t @@ fun () ->
 fold_right ( + ) (1 -- 1_000_000) 0 = List.fold_left ( + ) 0 (1 -- 1_000_000)
 ;;
 
-q (Q.list Q.small_int) (fun l -> l = fold_right (fun x y -> x :: y) l []);;
+q (Q.list Q.nat_small) (fun l -> l = fold_right (fun x y -> x :: y) l []);;
 
 t @@ fun () ->
 fold_while
@@ -304,7 +304,7 @@ combine (1 -- 300_000) (map string_of_int @@ (1 -- 300_000))
 
 q
   Q.(
-    let p = small_list int in
+    let p = list_small int in
     pair p p)
   (fun (l1, l2) ->
     if List.length l1 = List.length l2 then
@@ -315,7 +315,7 @@ q
 
 q
   Q.(
-    let p = small_list int in
+    let p = list_small int in
     pair p p)
   (fun (l1, l2) ->
     let n = min (List.length l1) (List.length l2) in
@@ -351,14 +351,14 @@ combine_shortest (1 -- 100_001) (1 -- 100_000)
 ;;
 
 q
-  Q.(list_of_size Gen.(0 -- 10_000) (pair small_int small_string))
+  Q.(list_size Gen.(0 -- 10_000) (pair nat_small string_small))
   (fun l ->
     let l1, l2 = split l in
     List.length l1 = List.length l && List.length l2 = List.length l)
 ;;
 
 q
-  Q.(list_of_size Gen.(0 -- 10_000) (pair small_int small_int))
+  Q.(list_size Gen.(0 -- 10_000) (pair nat_small nat_small))
   (fun l -> split l = List.split l)
 
 let cmp_lii_unord l1 l2 : bool =
@@ -392,12 +392,12 @@ eq
 ;;
 
 q
-  Q.(list_of_size Gen.(1 -- 4) (list_of_size Gen.(0 -- 4) small_int))
+  Q.(list_size Gen.(1 -- 4) (list_size Gen.(0 -- 4) nat_small))
   (fun l -> cmp_lii_unord (cartesian_product l) (map_product_l CCFun.id l))
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     sorted_mem ~cmp:CCInt.compare x (List.sort CCInt.compare l)
     = mem ~eq:CCInt.equal x l)
@@ -433,14 +433,14 @@ equal CCInt.equal (sorted_diff ~cmp:CCInt.compare [ 2 ] [ 1; 2; 2; 2; 3 ]) []
 ;;
 
 q
-  Q.(pair (list small_int) (list small_int))
+  Q.(pair (list nat_small) (list nat_small))
   (fun (l1, l2) ->
     List.length (sorted_merge ~cmp:CCInt.compare l1 l2)
     = List.length l1 + List.length l2)
 ;;
 
 q
-  Q.(pair (list small_int) (list small_int))
+  Q.(pair (list nat_small) (list nat_small))
   (fun (l1, l2) ->
     let l =
       sorted_diff ~cmp:CCInt.compare
@@ -452,7 +452,7 @@ q
 ;;
 
 q
-  Q.(triple small_nat small_nat int)
+  Q.(triple nat_small nat_small int)
   (fun (n1, n2, x) ->
     let l =
       sorted_diff ~cmp:CCInt.compare
@@ -463,7 +463,7 @@ q
 ;;
 
 q
-  Q.(pair (list small_int) (list small_int))
+  Q.(pair (list nat_small) (list nat_small))
   (fun (l1, l2) ->
     let l1 = List.sort CCInt.compare l1 in
     let l2 = List.sort CCInt.compare l2 in
@@ -483,19 +483,19 @@ sort_uniq ~cmp:CCInt.compare [ 10; 10; 10; 10; 1; 10 ] = [ 1; 10 ]
 ;;
 
 q
-  Q.(list small_int)
+  Q.(list nat_small)
   (fun l -> is_sorted ~cmp:CCInt.compare (List.sort Stdlib.compare l))
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     is_sorted ~cmp:CCInt.compare (sorted_insert ~cmp:CCInt.compare x l))
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     is_sorted ~cmp:CCInt.compare
@@ -503,7 +503,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     is_sorted ~cmp:CCInt.compare
@@ -511,7 +511,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     let l' = sorted_insert ~cmp:CCInt.compare ~uniq:false x l in
@@ -519,21 +519,21 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     List.mem x (sorted_insert ~cmp:CCInt.compare x l))
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     is_sorted ~cmp:CCInt.compare (sorted_remove ~cmp:CCInt.compare x l))
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     is_sorted ~cmp:CCInt.compare
@@ -541,7 +541,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     is_sorted ~cmp:CCInt.compare
@@ -549,7 +549,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     let l' = sorted_remove ~cmp:CCInt.compare x l in
@@ -563,7 +563,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     let l' = sorted_remove ~cmp:CCInt.compare ~all:true x l in
@@ -571,7 +571,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     let l' = sorted_remove ~cmp:CCInt.compare ~all:false x l in
@@ -585,7 +585,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     let l' = sorted_remove ~cmp:CCInt.compare x l in
@@ -599,7 +599,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     let l' = sorted_remove ~cmp:CCInt.compare ~all:false x l in
@@ -613,7 +613,7 @@ q
 ;;
 
 q
-  Q.(pair small_int (list small_int))
+  Q.(pair nat_small (list nat_small))
   (fun (x, l) ->
     let l = List.sort Stdlib.compare l in
     not (List.mem x (sorted_remove ~cmp:CCInt.compare ~all:true x l)))
@@ -677,7 +677,7 @@ sorted_diff_uniq ~cmp:CCInt.compare
 ;;
 
 q
-  Q.(pair (list small_int) (list small_int))
+  Q.(pair (list nat_small) (list nat_small))
   (fun (l1, l2) ->
     let l1 = List.sort CCInt.compare l1 in
     let l2 = List.sort CCInt.compare l2 in
@@ -685,7 +685,7 @@ q
 ;;
 
 q
-  Q.(pair (list small_int) (list small_int))
+  Q.(pair (list nat_small) (list nat_small))
   (fun (l1, l2) ->
     let l1 = List.sort CCInt.compare l1 in
     let l2 = List.sort CCInt.compare l2 in
@@ -699,7 +699,7 @@ t @@ fun () -> take 10_000 (range 0 2_000) = range 0 2_000;;
 t @@ fun () -> take 300_000 (1 -- 400_000) = 1 -- 300_000;;
 
 q
-  (Q.pair (Q.list Q.small_int) Q.int)
+  (Q.pair (Q.list Q.nat_small) Q.int)
   (fun (l, i) ->
     let i = abs i in
     let l1 = take i l in
@@ -716,7 +716,7 @@ with Failure _ -> true
 t @@ fun () -> hd_tl [ 1; 2; 3 ] = (1, [ 2; 3 ]);;
 
 q
-  (Q.pair (Q.list Q.small_int) Q.int)
+  (Q.pair (Q.list Q.nat_small) Q.int)
   (fun (l, i) ->
     let i = abs i in
     let l1, l2 = take_drop i l in
@@ -724,7 +724,7 @@ q
 ;;
 
 q
-  (Q.pair (Q.list Q.small_int) Q.int)
+  (Q.pair (Q.list Q.nat_small) Q.int)
   (fun (l, i) ->
     let i = abs i in
     take_drop i l = (take i l, drop i l))
@@ -771,11 +771,11 @@ eq
   (subs 2 [ 1; 2; 3; 4; 5 ])
 ;;
 
-q Q.(small_list small_int) (fun l -> l = (chunks 3 l |> List.flatten));;
-q Q.(small_list small_int) (fun l -> l = (chunks 5 l |> List.flatten));;
+q Q.(list_small nat_small) (fun l -> l = (chunks 3 l |> List.flatten));;
+q Q.(list_small nat_small) (fun l -> l = (chunks 5 l |> List.flatten));;
 
 q
-  Q.(small_list small_int)
+  Q.(list_small nat_small)
   (fun l -> List.for_all (fun u -> List.length u <= 5) (chunks 5 l))
 ;;
 
@@ -803,12 +803,12 @@ eq [ 1; 2; 3; 4; 5 ] (interleave [ 1; 3 ] [ 2; 4; 5 ]);;
 eq [ 1; 2; 3 ] (interleave [ 1 ] [ 2; 3 ]);;
 
 q
-  Q.(pair (small_list int) (small_list int))
+  Q.(pair (list_small int) (list_small int))
   (fun (l1, l2) -> length (interleave l1 l2) = length l1 + length l2)
 ;;
 
-q Q.(small_list int) (fun l -> l = interleave [] l);;
-q Q.(small_list int) (fun l -> l = interleave l []);;
+q Q.(list_small int) (fun l -> l = interleave [] l);;
+q Q.(list_small int) (fun l -> l = interleave l []);;
 t @@ fun () -> take_while (fun x -> x < 10) (1 -- 20) = 1 -- 9;;
 t @@ fun () -> take_while (fun x -> x <> 0) [ 0; 1; 2; 3 ] = [];;
 t @@ fun () -> take_while (fun _ -> true) [] = [];;
@@ -816,19 +816,19 @@ t @@ fun () -> take_while (fun _ -> true) (1 -- 10) = 1 -- 10;;
 t @@ fun () -> take_while (fun _ -> true) (1 -- 300_000) = 1 -- 300_000;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (list small_int))
+  Q.(pair (fun1 Observable.int bool) (list nat_small))
   (fun (f, l) ->
     let l1 = take_while (Q.Fn.apply f) l in
     List.for_all (Q.Fn.apply f) l1)
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (list small_int))
+  Q.(pair (fun1 Observable.int bool) (list nat_small))
   (fun (f, l) -> take_while (Q.Fn.apply f) l @ drop_while (Q.Fn.apply f) l = l)
 ;;
 
 q
-  Q.(pair (fun1 Observable.int bool) (list small_int))
+  Q.(pair (fun1 Observable.int bool) (list nat_small))
   (fun (f, l) ->
     let l1, l2 = take_drop_while (Q.Fn.apply f) l in
     l1 = take_while (Q.Fn.apply f) l && l2 = drop_while (Q.Fn.apply f) l)
@@ -934,7 +934,7 @@ eq
 eq (Ok []) (all_ok []);;
 eq (Ok [ 1; 2; 3 ]) (all_ok [ Ok 1; Ok 2; Ok 3 ]);;
 eq (Error "e2") (all_ok [ Ok 1; Error "e2"; Error "e3"; Ok 4 ]);;
-q Q.(small_list small_int) (fun l -> mem 1 l = List.mem 1 l);;
+q Q.(list_small nat_small) (fun l -> mem 1 l = List.mem 1 l);;
 
 q
   Q.(pair int (list int))
@@ -966,7 +966,7 @@ uniq ~eq:CCInt.equal [ 1; 1; 2; 2; 3; 4; 4; 2; 4; 1; 5 ]
 ;;
 
 q
-  Q.(small_list small_int)
+  Q.(list_small nat_small)
   (fun l ->
     sort_uniq ~cmp:CCInt.compare l
     = (uniq ~eq:CCInt.equal l |> sort Stdlib.compare))
@@ -1014,7 +1014,7 @@ t @@ fun () -> range_by ~step:~-2 5 0 = [ 5; 3; 1 ];;
 t @@ fun () -> range_by ~step:max_int 0 2 = [ 0 ];;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (i, j) ->
     let i = min i j and j = max i j in
     range_by ~step:1 i j = range i j)
@@ -1030,7 +1030,7 @@ t @@ fun () -> append (range 0 100) (range 101 1000) = range 0 1000;;
 t @@ fun () -> append (range 1000 501) (range 500 0) = range 1000 0;;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (a, b) ->
     let l = a --^ b in
     not (List.mem b l))
@@ -1039,7 +1039,7 @@ q
 t @@ fun () -> repeat 2 [ 1; 2; 3 ] = [ 1; 2; 3; 1; 2; 3 ];;
 
 q
-  Q.(pair small_int (small_list int))
+  Q.(pair nat_small (list_small int))
   (fun (n, l) ->
     if n > 0 then
       repeat n l = flat_map (fun _ -> l) (1 -- n)

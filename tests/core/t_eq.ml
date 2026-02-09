@@ -4,6 +4,6 @@ include T;;
 
 q
   Q.(
-    let p = small_list (pair small_int bool) in
+    let p = list_small (pair nat_small bool) in
     pair p p)
   (fun (l1, l2) -> (list (pair int bool)) l1 l2 = (l1 = l2))
