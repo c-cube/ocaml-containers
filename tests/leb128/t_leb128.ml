@@ -52,7 +52,8 @@ true
 ;;
 
 q ~count:10_000 ~long_factor:20 Q.int @@ fun i ->
-let i = abs i in
+(* make sure [i] is non negative *)
+let i = max 0 (abs i) in
 if not (encode_decode_uint i) then
   Q.Test.fail_reportf "uint roundtrip failed for %d" i;
 true
@@ -132,6 +133,15 @@ true
 
 t @@ fun () ->
 let buf = Buf.create () in
+Leb128.Encode.i64 buf 0L;
+let slice = Buf.to_slice buf in
+let skip = Leb128.Decode.skip slice 0 in
+assert_equal ~printer:string_of_int 1 skip;
+true
+;;
+
+t @@ fun () ->
+let buf = Buf.create () in
 Leb128.Encode.i64 buf (-1L);
 let slice = Buf.to_slice buf in
 let v, n = Leb128.Decode.i64 slice 0 in
@@ -182,10 +192,18 @@ true
 
 t @@ fun () ->
 let buf = Buf.create () in
-Leb128.Encode.i64 buf 0L;
+Leb128.Encode.i64 buf Int64.min_int;
 let slice = Buf.to_slice buf in
-let skip = Leb128.Decode.skip slice 0 in
-assert_equal ~printer:string_of_int 1 skip;
+let v, _n = Leb128.Decode.i64 slice 0 in
+assert_equal ~printer:Int64.to_string Int64.min_int v;
+true
+;;
+
+let buf = Buf.create () in
+Leb128.Encode.i64 buf Int64.max_int;
+let slice = Buf.to_slice buf in
+let v, _n = Leb128.Decode.i64 slice 0 in
+assert_equal ~printer:Int64.to_string Int64.max_int v;
 true
 ;;
 
