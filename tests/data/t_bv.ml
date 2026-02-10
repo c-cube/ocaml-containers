@@ -8,7 +8,7 @@ let ppli = CCFormat.(Dump.list int)
 
 module Intset = CCSet.Make (CCInt);;
 
-q (Q.pair Q.small_int Q.bool) (fun (size, b) -> create ~size b |> length = size)
+q (Q.pair Q.nat_small Q.bool) (fun (size, b) -> create ~size b |> length = size)
 ;;
 
 t ~name:(spf "line %d" __LINE__) @@ fun () ->
@@ -31,14 +31,14 @@ t ~name:(spf "line %d" __LINE__) @@ fun () ->
 create ~size:29 true |> to_sorted_list = CCList.range 0 28
 ;;
 
-q (Q.list Q.small_int) (fun l ->
+q (Q.list Q.nat_small) (fun l ->
     let bv = of_list l in
     to_list bv = to_list (copy bv))
 ;;
 
-q Q.small_int (fun size -> create ~size true |> cardinal = size);;
+q Q.nat_small (fun size -> create ~size true |> cardinal = size);;
 
-q Q.small_int (fun size ->
+q Q.nat_small (fun size ->
     create ~size true |> to_sorted_list = CCList.init size CCFun.id)
 ;;
 
@@ -48,7 +48,7 @@ assert_equal ~printer:string_of_int 87 (CCBV.cardinal bv1);
 true
 ;;
 
-q Q.small_int (fun n -> CCBV.cardinal (CCBV.create ~size:n true) = n);;
+q Q.nat_small (fun n -> CCBV.cardinal (CCBV.create ~size:n true) = n);;
 
 t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv = CCBV.create ~size:99 false in
@@ -169,7 +169,7 @@ eq'
 ;;
 
 q
-  Q.(small_int)
+  Q.(nat_small)
   (fun n ->
     assert (n >= 0);
     let bv = create ~size:n true in
@@ -208,7 +208,7 @@ eq ~printer:(CCFormat.to_string ppli) [ 1; 2; 3; 4; 64; 130 ]
 ;;
 
 q
-  Q.(small_list small_nat)
+  Q.(list_small nat_small)
   (fun l ->
     let l = List.sort_uniq CCOrd.poly l in
     let l2 = of_list l |> to_sorted_list in
@@ -219,7 +219,7 @@ q
 ;;
 
 q
-  Q.(small_list small_nat)
+  Q.(list_small nat_small)
   (fun l ->
     let bv = of_list l in
     let l1 = bv |> to_sorted_list in
@@ -270,7 +270,7 @@ eq ~printer:(CCFormat.to_string ppli) [ 0; 3; 4; 6 ]
    to_sorted_list v)
 ;;
 
-q Q.small_int (fun size -> create ~size false |> negate |> cardinal = size);;
+q Q.nat_small (fun size -> create ~size false |> negate |> cardinal = size);;
 
 t ~name:(spf "line %d" __LINE__) @@ fun () ->
 let bv1 = CCBV.of_list [ 1; 2; 3; 4 ] in
@@ -282,7 +282,7 @@ true
 ;;
 
 q ~name:"union"
-  Q.(pair (small_list small_nat) (small_list small_nat))
+  Q.(pair (list_small nat_small) (list_small nat_small))
   (fun (l1, l2) ->
     let bv1 = of_list l1 in
     let bv2 = of_list l2 in
@@ -343,7 +343,7 @@ true
 ;;
 
 q ~name:"inter" ~count:10_000
-  Q.(pair (small_list small_nat) (small_list small_nat))
+  Q.(pair (list_small nat_small) (list_small nat_small))
   (fun (l1, l2) ->
     let bv1 = of_list l1 in
     let bv2 = of_list l2 in
@@ -374,7 +374,7 @@ diff (of_list [ 1; 2; 3 ]) (of_list [ 1; 2; 3 ]) |> to_list = []
 ;;
 
 q ~name:"diff" ~count:10_000
-  Q.(pair (small_list small_nat) (small_list small_nat))
+  Q.(pair (list_small nat_small) (list_small nat_small))
   (fun (l1, l2) ->
     let bv1 = of_list l1 in
     let bv2 = of_list l2 in
@@ -438,7 +438,7 @@ eq
 ;;
 
 q
-  Q.(small_int)
+  Q.(nat_small)
   (fun i ->
     let i = max 1 i in
     let bv = create ~size:i true in
@@ -526,7 +526,7 @@ t ~name:(spf "line %d" __LINE__) (fun () ->
 ;;
 
 q ~name:(spf "line %d" __LINE__)
-  Q.(small_list small_nat)
+  Q.(list_small nat_small)
   (fun l ->
     let l = CCList.sort_uniq ~cmp:CCInt.compare l in
     let max = 1 + List.fold_left max 0 l in
@@ -636,7 +636,7 @@ module Op = struct
       |> CCList.keep_some
     in
 
-    frequency
+    oneof_weighted
     @@ List.flatten
          [
            (if size > 0 then

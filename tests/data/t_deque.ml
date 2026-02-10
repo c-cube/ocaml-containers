@@ -274,7 +274,7 @@ true
 ;;
 
 q
-  Q.(list small_nat)
+  Q.(list nat_small)
   (fun l ->
     let f x = x mod 2 = 0 in
     let q = of_list l in
@@ -284,7 +284,7 @@ q
 ;;
 
 q
-  Q.(list small_nat)
+  Q.(list nat_small)
   (fun l ->
     let f x = x mod 2 = 0 in
     let q = filter f (of_list l) in

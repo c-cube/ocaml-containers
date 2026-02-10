@@ -16,13 +16,13 @@ eq'
 module M2 = Make (CCInt);;
 
 q
-  Q.(list (pair small_int small_int))
+  Q.(list (pair nat_small nat_small))
   M2.(
     fun l -> to_list (of_list l) = to_list (of_list_with ~f:(fun _ v _ -> v) l))
 ;;
 
 q
-  Q.(list (pair small_int small_int))
+  Q.(list (pair nat_small nat_small))
   M2.(
     fun l ->
       to_list (of_iter @@ Iter.of_list l)
@@ -30,7 +30,7 @@ q
 ;;
 
 q
-  Q.(list (pair small_int small_int))
+  Q.(list (pair nat_small nat_small))
   M2.(
     fun l ->
       to_list (of_seq @@ CCSeq.of_list l)

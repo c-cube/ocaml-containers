@@ -63,12 +63,12 @@ assert_equal ~cmp:equal ~printer s s';
 true
 ;;
 
-q Q.small_string (fun s ->
+q Q.string_small (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
     is_valid s)
 ;;
 
-q ~long_factor:10 Q.small_string (fun s ->
+q ~long_factor:10 Q.string_small (fun s ->
     Q.assume (CCString.for_all (fun c -> Char.code c < 128) s);
     s = (of_string_exn s |> to_iter |> of_iter |> to_string))
 ;;
@@ -79,21 +79,21 @@ q ~long_factor:10 Q.string (fun s ->
 ;;
 
 q ~long_factor:10 ~count:20_000
-  Q.(small_list arb_uchar)
+  Q.(list_small arb_uchar)
   (fun l ->
     let s = of_list l in
     l = to_list s)
 ;;
 
 q ~long_factor:10
-  Q.(small_list arb_uchar)
+  Q.(list_small arb_uchar)
   (fun l ->
     let s = of_list l in
     l = to_list @@ of_gen @@ to_gen s)
 ;;
 
 q ~long_factor:10
-  Q.(small_list arb_uchar)
+  Q.(list_small arb_uchar)
   (fun l ->
     let s = of_list l in
     l = to_list @@ of_iter @@ to_iter s)
@@ -127,7 +127,7 @@ q ~long_factor:40 Q.string (fun s ->
 
 (* compare with uutf *)
 
-q ~long_factor:40 ~count:50_000 Q.small_string (fun s ->
+q ~long_factor:40 ~count:50_000 Q.string_small (fun s ->
     let v1 = is_valid s in
     let v2 = uutf_is_valid s in
     if v1 = v2 then
@@ -137,7 +137,7 @@ q ~long_factor:40 ~count:50_000 Q.small_string (fun s ->
 ;;
 
 q ~long_factor:40 ~count:50_000
-  Q.(small_list arb_uchar)
+  Q.(list_small arb_uchar)
   (fun l ->
     let pp s = Q.Print.(list pp_uchar) s in
     let uutf = uutf_of_l l in
@@ -148,7 +148,7 @@ q ~long_factor:40 ~count:50_000
       Q.Test.fail_reportf "l: '%s', uutf: '%s', containers: '%s'" (pp l) uutf s)
 ;;
 
-q ~long_factor:40 ~count:50_000 Q.small_string (fun s ->
+q ~long_factor:40 ~count:50_000 Q.string_small (fun s ->
     Q.assume (is_valid s && uutf_is_valid s);
     let pp s = Q.Print.(list pp_uchar) s in
     let l_uutf = uutf_to_iter s |> Iter.to_list in
@@ -170,10 +170,10 @@ true
 ;;
 
 q
-  Q.(small_list arb_uchar)
+  Q.(list_small arb_uchar)
   (fun l -> of_list l = concat empty (List.map of_uchar l))
 ;;
 
 q
-  Q.(pair small_nat arb_uchar)
+  Q.(pair nat_small arb_uchar)
   (fun (i, c) -> make i c = concat empty (CCList.init i (fun _ -> of_uchar c)))

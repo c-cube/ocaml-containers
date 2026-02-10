@@ -15,7 +15,7 @@ true
 ;;
 
 q
-  Q.(list_of_size Gen.(0 -- 40) printable_string)
+  Q.(list_size Gen.(0 -- 40) string_printable)
   (fun l ->
     let l' = ref [] in
     File.with_temp ~prefix:"test_containers" ~suffix:"" (fun name ->
@@ -27,7 +27,7 @@ q
 ;;
 
 q
-  Q.(list_of_size Gen.(0 -- 40) printable_string)
+  Q.(list_size Gen.(0 -- 40) string_printable)
   (fun l ->
     let l' = ref [] in
     File.with_temp ~prefix:"test_containers" ~suffix:"" (fun name ->
@@ -39,7 +39,7 @@ q
 ;;
 
 q
-  Q.(list_of_size Gen.(0 -- 40) printable_string)
+  Q.(list_size Gen.(0 -- 40) string_printable)
   (fun l ->
     let s = ref "" in
     File.with_temp ~prefix:"test_containers1" ~suffix:"" (fun name1 ->

@@ -59,7 +59,7 @@ let gen_op size : (_ * _) Gen.t =
     else
       []
   in
-  frequency
+  oneof_weighted
     (base
     @ [
         1, return (Get_contents, size);

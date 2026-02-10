@@ -4,12 +4,7 @@ include T;;
 
 eq (Some 'a') (of_int (to_int 'a'));;
 eq None (of_int 257);;
-
-q
-  (Q.string_of_size (Q.Gen.return 1))
-  (fun s -> Stdlib.( = ) (to_string s.[0]) s)
-;;
-
+q (Q.string_size (Q.Gen.return 1)) (fun s -> Stdlib.( = ) (to_string s.[0]) s);;
 q (Q.int_range 65 90 |> Q.map Char.chr) CCChar.is_uppercase_ascii;;
 
 q

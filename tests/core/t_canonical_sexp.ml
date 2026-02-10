@@ -28,7 +28,7 @@ let sexp_gen =
              match n with
              | 0 -> atom st
              | _ ->
-               frequency
+               oneof_weighted
                  [
                    1, atom; 2, map mklist (list_size (0 -- 10) (self (n / 10)));
                  ]

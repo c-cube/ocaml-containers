@@ -108,7 +108,7 @@ eq ~cmp:( = )
 ;;
 
 q
-  Q.(array_of_size Gen.(0 -- 30) printable_string)
+  Q.(array_size Gen.(0 -- 30) string_printable)
   (fun a ->
     let b = sort_indices String.compare a in
     sorted String.compare a = Array.map (Array.get a) b)
@@ -127,18 +127,18 @@ eq ~cmp:( = )
 ;;
 
 q
-  Q.(array_of_size Gen.(0 -- 50) printable_string)
+  Q.(array_size Gen.(0 -- 50) string_printable)
   (fun a ->
     let b = sort_ranking String.compare a in
     let a_sorted = sorted String.compare a in
     a = Array.map (Array.get a_sorted) b)
 ;;
 
-q Q.(array small_int) (fun a -> rev (rev a) = a);;
+q Q.(array nat_small) (fun a -> rev (rev a) = a);;
 t @@ fun () -> rev [| 1; 2; 3 |] = [| 3; 2; 1 |];;
 t @@ fun () -> rev [| 1; 2 |] = [| 2; 1 |];;
 t @@ fun () -> rev [||] = [||];;
-q Q.(array small_int) (fun a -> mem 1 a = Array.mem 1 a);;
+q Q.(array nat_small) (fun a -> mem 1 a = Array.mem 1 a);;
 eq (Some 3) (max Stdlib.compare [| 1; 2; 3 |]);;
 eq (Some 4) (max Stdlib.compare [| 4; -1; 2; 3 |]);;
 eq None (max Stdlib.compare [||]);;
@@ -217,17 +217,17 @@ t @@ fun () -> 4 -- 1 |> Array.to_list = [ 4; 3; 2; 1 ];;
 t @@ fun () -> 0 -- 0 |> Array.to_list = [ 0 ];;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (a, b) -> a -- b |> Array.to_list = CCList.(a -- b))
 ;;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (a, b) -> a --^ b |> Array.to_list = CCList.(a --^ b))
 ;;
 
 q
-  Q.(pair (array small_int) (array small_int))
+  Q.(pair (array nat_small) (array nat_small))
   (fun (a, b) -> equal ( = ) a b = equal ( = ) b a)
 ;;
 
@@ -250,7 +250,7 @@ a = [| 3; 2; 1 |]
 ;;
 
 q
-  Q.(array_of_size Gen.(0 -- 100) small_int)
+  Q.(array_size Gen.(0 -- 100) nat_small)
   (fun a ->
     let b = Array.copy a in
     for i = 0 to Array.length a - 1 do
@@ -294,7 +294,7 @@ module IA = struct
   type t = int array
 end
 
-let gen_arr = Q.Gen.(array_size (1 -- 100) small_int)
+let gen_arr = Q.Gen.(array_size (1 -- 100) nat_small)
 
 let arr_arbitrary =
   Q.make

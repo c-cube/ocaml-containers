@@ -33,8 +33,8 @@ eq ~printer:CCFun.id "catogan" (String.longest_prefix "catogan" s1);;
 q
   Q.(
     pair
-      (list (pair (printable_string_of_size Gen.(0 -- 30)) int))
-      printable_string)
+      (list (pair (string_size_of Gen.(0 -- 30) Gen.char_printable) int))
+      string_printable)
   (fun (l, s) ->
     let m = String.of_list l in
     let s' = String.longest_prefix s m in
@@ -61,7 +61,7 @@ eq
 
 q ~count:30
   Q.(
-    let p = list_of_size Gen.(0 -- 100) (pair printable_string small_int) in
+    let p = list_size Gen.(0 -- 100) (pair string_printable nat_small) in
     pair p p)
   (fun (l1, l2) ->
     let t1 = S.of_list l1 and t2 = S.of_list l2 in
@@ -109,7 +109,7 @@ true
 ;;
 
 q ~count:30
-  Q.(list_of_size Gen.(0 -- 100) (pair printable_string small_int))
+  Q.(list_size Gen.(0 -- 100) (pair string_printable nat_small))
   (fun l ->
     let t = S.of_list l in
     S.check_invariants t)
@@ -123,10 +123,10 @@ let rec sorted ~rev = function
        x <= y)
     && sorted ~rev tl
 
-let gen_str = Q.small_printable_string;;
+let gen_str = Q.(string_size_of Gen.nat_small Gen.char_printable);;
 
 q ~count:200
-  Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int))
+  Q.(list_size Gen.(1 -- 20) (pair gen_str nat_small))
   (fun l ->
     let t = String.of_list l in
     List.for_all
@@ -135,7 +135,7 @@ q ~count:200
 ;;
 
 q ~count:200
-  Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int))
+  Q.(list_size Gen.(1 -- 20) (pair gen_str nat_small))
   (fun l ->
     let t = String.of_list l in
     List.for_all
@@ -144,7 +144,7 @@ q ~count:200
 ;;
 
 q ~count:200
-  Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int))
+  Q.(list_size Gen.(1 -- 20) (pair gen_str nat_small))
   (fun l ->
     let t = String.of_list l in
     List.for_all
@@ -153,7 +153,7 @@ q ~count:200
 ;;
 
 q ~count:200
-  Q.(list_of_size Gen.(1 -- 20) (pair gen_str small_int))
+  Q.(list_size Gen.(1 -- 20) (pair gen_str nat_small))
   (fun l ->
     let t = String.of_list l in
     List.for_all

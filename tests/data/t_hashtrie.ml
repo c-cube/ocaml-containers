@@ -4,7 +4,7 @@ open CCHashTrie
 module M = Make (CCInt)
 
 let _listuniq =
-  let g = Q.(list (pair small_int small_int)) in
+  let g = Q.(list (pair nat_small nat_small)) in
   Q.map_same_type
     (fun l ->
       CCList.sort_uniq ~cmp:(fun a b -> Stdlib.compare (fst a) (fst b)) l)

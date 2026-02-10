@@ -45,11 +45,11 @@ try
 with Division_by_zero -> true
 ;;
 
-q (Q.pair Q.small_signed_int Q.pos_int) (fun (n, m) ->
+q (Q.pair Q.int_small Q.int_pos) (fun (n, m) ->
     floor_div n m = int_of_float @@ floor (float n /. float m))
 ;;
 
-q (Q.pair Q.small_signed_int Q.pos_int) (fun (n, m) ->
+q (Q.pair Q.int_small Q.int_pos) (fun (n, m) ->
     floor_div n (-m) = int_of_float @@ floor (float n /. float (-m)))
 ;;
 
@@ -83,19 +83,19 @@ try
 with Division_by_zero -> true
 ;;
 
-q (Q.pair Q.int Q.pos_int) (fun (n, m) ->
+q (Q.pair Q.int Q.int_pos) (fun (n, m) ->
     let y = rem n m in
     y >= 0 && y < m)
 ;;
 
-q (Q.pair Q.int Q.pos_int) (fun (n, m) ->
+q (Q.pair Q.int Q.int_pos) (fun (n, m) ->
     let y = rem n (-m) in
     y > -m && y <= 0)
 ;;
 
-q (Q.pair Q.int Q.pos_int) (fun (n, m) -> n = (m * floor_div n m) + rem n m);;
+q (Q.pair Q.int Q.int_pos) (fun (n, m) -> n = (m * floor_div n m) + rem n m);;
 
-q (Q.pair Q.int Q.pos_int) (fun (n, m) ->
+q (Q.pair Q.int Q.int_pos) (fun (n, m) ->
     n = (-m * floor_div n (-m)) + rem n (-m))
 ;;
 
@@ -136,7 +136,7 @@ eq ~printer:Q.Print.(list int) [ 0 ] (range_by ~step:max_int 0 2 |> Iter.to_list
 ;;
 
 q
-  Q.(pair small_int small_int)
+  Q.(pair nat_small nat_small)
   (fun (i, j) ->
     let i = min i j and j = max i j in
     CCList.equal CCInt.equal

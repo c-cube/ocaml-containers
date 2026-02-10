@@ -158,7 +158,7 @@ q a_str (fun s ->
     with Exit -> false)
 ;;
 
-q (Q.pair Q.small_int a_str) (fun (i, s) ->
+q (Q.pair Q.nat_small a_str) (fun (i, s) ->
     let s = Bytes.of_string (s ^ " ") in
     let s_len = Bytes.length s in
     let b = Byte.create (max s_len 64) in
@@ -168,7 +168,7 @@ q (Q.pair Q.small_int a_str) (fun (i, s) ->
     front = Bytes.get s index)
 ;;
 
-q (Q.pair Q.small_int a_str) (fun (i, s) ->
+q (Q.pair Q.nat_small a_str) (fun (i, s) ->
     let s = Bytes.of_string (s ^ " ") in
     let s_len = Bytes.length s in
     let b = Byte.create (max s_len 64) in
@@ -370,7 +370,7 @@ let gen_op =
     assert (len >= 0 && len <= String.length s);
     0 -- (String.length s - len) >|= fun i -> blit s i len
   in
-  frequency
+  oneof_weighted
     [
       3, return Take_back;
       3, return Take_front;
@@ -385,7 +385,7 @@ let gen_op =
     ]
 
 let arb_op = Q.make ~shrink:shrink_op ~print:str_of_op gen_op
-let arb_ops = Q.list_of_size Q.Gen.(0 -- 20) arb_op
+let arb_ops = Q.list_size Q.Gen.(0 -- 20) arb_op
 
 module L_impl = struct
   type t = {
