@@ -14,7 +14,7 @@ module Decode = struct
     while !continue do
       if sl.len <= 0 then invalid_arg "out of bound";
       incr n_consumed;
-      let b = Char.code (Bytes.get sl.bs !off) in
+      let b = Char.code (Bytes.get sl.bs (sl.off + !off)) in
       let cur = b land 0x7f in
       if cur <> b then (
         (* at least one byte follows this one *)
@@ -39,7 +39,7 @@ module Decode = struct
     while !continue do
       if sl.len <= 0 then invalid_arg "out of bound";
       incr n_consumed;
-      let b = Char.code (Bytes.get sl.bs !off) in
+      let b = Char.code (Bytes.get sl.bs (sl.off + !off)) in
       let cur = b land 0x7f in
       if cur <> b then (
         (* at least one byte follows this one *)

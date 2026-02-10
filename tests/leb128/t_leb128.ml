@@ -226,5 +226,44 @@ assert_equal ~printer:Int64.to_string 500L v2;
 assert_equal ~printer:string_of_int 2 n1;
 assert_equal ~printer:string_of_int 2 n2;
 true
+;;
+
+t @@ fun () ->
+(* Test decoding from a slice with non-zero offset *)
+let bytes = Bytes.of_string "\x00\x00\x54\x00" in
+let slice = Slice.create ~off:2 ~len:1 bytes in
+assert_equal
+  ~printer:(fun c -> Printf.sprintf "0x%02x" (Char.code c))
+  '\x54' (Slice.get slice 0);
+let v, n = Leb128.Decode.int_truncate slice 0 in
+assert_equal ~printer:string_of_int 42 v;
+assert_equal ~printer:string_of_int 1 n;
+true
+;;
+
+t @@ fun () ->
+(* Test decoding u64 from a slice with non-zero offset *)
+let bytes = Bytes.of_string "\xFF\xFF\x2A\x00" in
+let slice = Slice.create ~off:2 ~len:1 bytes in
+assert_equal
+  ~printer:(fun c -> Printf.sprintf "0x%02x" (Char.code c))
+  '\x2A' (Slice.get slice 0);
+let v, n = Leb128.Decode.u64 slice 0 in
+assert_equal ~printer:Int64.to_string 42L v;
+assert_equal ~printer:string_of_int 1 n;
+true
+;;
+
+t @@ fun () ->
+(* Test decoding from a sub-slice *)
+let buf = Buf.create () in
+Buf.append_string buf "padding";
+Leb128.Encode.int buf 42;
+let slice = Buf.to_slice buf in
+let sub_slice = Slice.sub slice 7 (Slice.len slice - 7) in
+let v, n = Leb128.Decode.int_truncate sub_slice 0 in
+assert_equal ~printer:string_of_int 42 v;
+assert_equal ~printer:string_of_int 1 n;
+true
 
 let () = Containers_testlib.run_all ~descr:"test leb128" [ get () ]
