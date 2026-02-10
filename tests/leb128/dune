@@ -1,0 +1,11 @@
+(executable
+ (name t_leb128)
+ (modules t_leb128)
+ (libraries containers containers.leb128 containers_testlib))
+
+(rule
+ (alias runtest)
+ (deps t_leb128.exe)
+ (package containers)
+ (action
+  (run ./t_leb128.exe)))
