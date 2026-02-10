@@ -60,7 +60,7 @@ module Decode = struct
     Int64.to_int v, n_consumed
 
   let[@inline] decode_zigzag (v : int64) : int64 =
-    Int64.(logxor (shift_right v 1) (neg (logand v Int64.one)))
+    Int64.(logxor (shift_right_logical v 1) (sub 0L (logand v 1L)))
 
   let[@inline] i64 sl off : int64 * int =
     let v, n_consumed = u64 sl off in

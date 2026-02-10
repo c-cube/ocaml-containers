@@ -72,7 +72,7 @@ true
 
 t @@ fun () ->
 let buf = Buf.create () in
-Leb128.Encode.u64 buf 1L;
+Leb128.Encode.u64 buf 0L;
 let slice = Buf.to_slice buf in
 let v, n = Leb128.Decode.u64 slice 0 in
 assert_equal ~printer:Int64.to_string 0L v;
