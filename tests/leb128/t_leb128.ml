@@ -133,10 +133,17 @@ true
 
 t @@ fun () ->
 let buf = Buf.create () in
-Leb128.Encode.i64 buf 0L;
+Leb128.Encode.u64 buf 127L;
+Leb128.Encode.u64 buf 16384L;
+Leb128.Encode.u64 buf 300L;
 let slice = Buf.to_slice buf in
-let skip = Leb128.Decode.skip slice 0 in
-assert_equal ~printer:string_of_int 1 skip;
+let n1 = Leb128.Decode.skip slice 0 in
+let n2 = Leb128.Decode.skip slice n1 in
+let n3 = Leb128.Decode.skip slice (n1 + n2) in
+assert_equal ~printer:string_of_int 1 n1;
+assert_equal ~printer:string_of_int 3 n2;
+assert_equal ~printer:string_of_int 2 n3;
+assert_equal ~printer:string_of_int 6 (n1 + n2 + n3);
 true
 ;;
 
