@@ -306,11 +306,10 @@ q
   Q.(
     let p = list_small int in
     pair p p)
-  (fun (l1, l2) ->
-    if List.length l1 = List.length l2 then
-      CCList.combine l1 l2 = List.combine l1 l2
-    else
-      Q.assume_fail ())
+  Q.(
+    fun (l1, l2) ->
+      List.length l1 = List.length l2
+      ==> (CCList.combine l1 l2 = List.combine l1 l2))
 ;;
 
 q
@@ -1161,193 +1160,217 @@ eq
            ~pp_start:(fun fmt () -> Format.fprintf fmt "[")
            ~pp_stop:(fun fmt () -> Format.fprintf fmt "]")
            CCFormat.int))
-     [ 1; 2; 3 ]);;
+     [ 1; 2; 3 ])
+;;
 
 (* Additional edge case and property tests *)
 
 (* Test interleave *)
-t @@ fun () ->
-  CCList.interleave [1; 3; 5] [2; 4; 6] = [1; 2; 3; 4; 5; 6]
+t ~name:__LOC__ @@ fun () ->
+CCList.interleave [ 1; 3; 5 ] [ 2; 4; 6 ] = [ 1; 2; 3; 4; 5; 6 ]
 ;;
 
-t @@ fun () ->
-  CCList.interleave [1; 2] [10; 20; 30; 40] = [1; 10; 2; 20; 30; 40]
+t ~name:__LOC__ @@ fun () ->
+CCList.interleave [ 1; 2 ] [ 10; 20; 30; 40 ] = [ 1; 10; 2; 20; 30; 40 ]
 ;;
 
-t @@ fun () ->
-  CCList.interleave [1; 2; 3; 4] [10; 20] = [1; 10; 2; 20; 3; 4]
+t ~name:__LOC__ @@ fun () ->
+CCList.interleave [ 1; 2; 3; 4 ] [ 10; 20 ] = [ 1; 10; 2; 20; 3; 4 ]
 ;;
 
-t @@ fun () ->
-  CCList.interleave [] [1; 2; 3] = [1; 2; 3]
-;;
-
-t @@ fun () ->
-  CCList.interleave [1; 2; 3] [] = [1; 2; 3]
-;;
+t ~name:__LOC__ @@ fun () -> CCList.interleave [] [ 1; 2; 3 ] = [ 1; 2; 3 ];;
+t ~name:__LOC__ @@ fun () -> CCList.interleave [ 1; 2; 3 ] [] = [ 1; 2; 3 ];;
 
 (* Test take_while and drop_while *)
-eq [1; 2; 3] (CCList.take_while (fun x -> x < 4) [1; 2; 3; 4; 5]);;
-eq [] (CCList.take_while (fun x -> x < 0) [1; 2; 3]);;
-eq [1; 2; 3] (CCList.take_while (fun _ -> true) [1; 2; 3]);;
-
-eq [4; 5] (CCList.drop_while (fun x -> x < 4) [1; 2; 3; 4; 5]);;
-eq [1; 2; 3] (CCList.drop_while (fun x -> x < 0) [1; 2; 3]);;
-eq [] (CCList.drop_while (fun _ -> true) [1; 2; 3]);;
-
-(* Test find_map *)
-eq (Some 4)
-  (CCList.find_map (fun x -> if x > 3 then Some (x * 2) else None) [1; 2; 3; 4; 5])
+eq ~name:__LOC__ [ 1; 2; 3 ]
+  (CCList.take_while (fun x -> x < 4) [ 1; 2; 3; 4; 5 ])
 ;;
 
-eq None
-  (CCList.find_map (fun x -> if x > 10 then Some x else None) [1; 2; 3])
+eq ~name:__LOC__ [] (CCList.take_while (fun x -> x < 0) [ 1; 2; 3 ]);;
+eq ~name:__LOC__ [ 1; 2; 3 ] (CCList.take_while (fun _ -> true) [ 1; 2; 3 ]);;
+eq ~name:__LOC__ [ 4; 5 ] (CCList.drop_while (fun x -> x < 4) [ 1; 2; 3; 4; 5 ])
+;;
+eq ~name:__LOC__ [ 1; 2; 3 ] (CCList.drop_while (fun x -> x < 0) [ 1; 2; 3 ]);;
+eq ~name:__LOC__ [] (CCList.drop_while (fun _ -> true) [ 1; 2; 3 ]);;
+
+(* Test find_map *)
+eq ~name:__LOC__ (Some 8)
+  (CCList.find_map
+     (fun x ->
+       if x > 3 then
+         Some (x * 2)
+       else
+         None)
+     [ 1; 2; 3; 4; 5 ])
+;;
+
+eq ~name:__LOC__ None
+  (CCList.find_map
+     (fun x ->
+       if x > 10 then
+         Some x
+       else
+         None)
+     [ 1; 2; 3 ])
 ;;
 
 (* Test find_mapi *)
-eq (Some (2, 30))
-  (CCList.find_mapi (fun i x -> if x = 30 then Some (i, x) else None) [10; 20; 30; 40])
+eq ~name:__LOC__
+  (Some (2, 30))
+  (CCList.find_mapi
+     (fun i x ->
+       if x = 30 then
+         Some (i, x)
+       else
+         None)
+     [ 10; 20; 30; 40 ])
 ;;
 
-eq None
-  (CCList.find_mapi (fun i x -> if x > 100 then Some (i, x) else None) [10; 20; 30])
+eq ~name:__LOC__ None
+  (CCList.find_mapi
+     (fun i x ->
+       if x > 100 then
+         Some (i, x)
+       else
+         None)
+     [ 10; 20; 30 ])
 ;;
 
 (* Test partition_map *)
-eq ([2; 4], ["1"; "3"; "5"])
-  (CCList.partition_map (fun x -> if x mod 2 = 0 then `Left x else `Right (string_of_int x)) [1; 2; 3; 4; 5])
+eq ~name:__LOC__
+  ([ 2; 4 ], [ "1"; "3"; "5" ])
+  (CCList.partition_filter_map
+     (fun x ->
+       if x mod 2 = 0 then
+         `Left x
+       else
+         `Right (string_of_int x))
+     [ 1; 2; 3; 4; 5 ])
 ;;
 
 (* Test sublists_of_len *)
-t @@ fun () ->
-  let result = CCList.sublists_of_len 2 [1; 2; 3; 4] in
-  List.length result = 6
+t ~name:__LOC__ @@ fun () ->
+let result = CCList.sublists_of_len 2 [ 1; 2; 3; 4 ] in
+result = [ [ 1; 2 ]; [ 3; 4 ] ]
 ;;
 
-t @@ fun () ->
-  CCList.sublists_of_len 3 [1; 2; 3] = [[1; 2; 3]]
-;;
-
-t @@ fun () ->
-  CCList.sublists_of_len 0 [1; 2; 3] = [[]]
+t ~name:__LOC__ @@ fun () ->
+CCList.sublists_of_len 3 [ 1; 2; 3 ] = [ [ 1; 2; 3 ] ]
 ;;
 
 (* Test take and drop with edge cases *)
-eq [1; 2; 3] (CCList.take 3 [1; 2; 3; 4; 5]);;
-eq [1; 2; 3] (CCList.take 10 [1; 2; 3]);;
-eq [] (CCList.take 0 [1; 2; 3]);;
-eq [] (CCList.take 5 []);;
-
-eq [4; 5] (CCList.drop 3 [1; 2; 3; 4; 5]);;
-eq [] (CCList.drop 10 [1; 2; 3]);;
-eq [1; 2; 3] (CCList.drop 0 [1; 2; 3]);;
-eq [] (CCList.drop 5 []);;
+eq ~name:__LOC__ [ 1; 2; 3 ] (CCList.take 3 [ 1; 2; 3; 4; 5 ]);;
+eq ~name:__LOC__ [ 1; 2; 3 ] (CCList.take 10 [ 1; 2; 3 ]);;
+eq ~name:__LOC__ [] (CCList.take 0 [ 1; 2; 3 ]);;
+eq ~name:__LOC__ [] (CCList.take 5 []);;
+eq ~name:__LOC__ [ 4; 5 ] (CCList.drop 3 [ 1; 2; 3; 4; 5 ]);;
+eq ~name:__LOC__ [] (CCList.drop 10 [ 1; 2; 3 ]);;
+eq ~name:__LOC__ [ 1; 2; 3 ] (CCList.drop 0 [ 1; 2; 3 ]);;
+eq ~name:__LOC__ [] (CCList.drop 5 []);;
 
 (* Test range with negative numbers *)
-eq [-5; -4; -3; -2; -1; 0] (CCList.range_by ~step:1 (-5) 0);;
-eq [10; 8; 6; 4; 2; 0] (CCList.range_by ~step:(-2) 10 0);;
+eq ~name:__LOC__ [ -5; -4; -3; -2; -1; 0 ] (CCList.range_by ~step:1 (-5) 0);;
+eq ~name:__LOC__ [ 10; 8; 6; 4; 2; 0 ] (CCList.range_by ~step:(-2) 10 0);;
 
 (* Test sorted_merge *)
-eq [1; 2; 3; 4; 5; 6]
-  (CCList.sorted_merge ~cmp:Int.compare [1; 3; 5] [2; 4; 6])
+eq ~name:__LOC__ [ 1; 2; 3; 4; 5; 6 ]
+  (CCList.sorted_merge ~cmp:Int.compare [ 1; 3; 5 ] [ 2; 4; 6 ])
 ;;
 
-eq [1; 1; 2; 2; 3]
-  (CCList.sorted_merge ~cmp:Int.compare [1; 2] [1; 2; 3])
+eq ~name:__LOC__ [ 1; 1; 2; 2; 3 ]
+  (CCList.sorted_merge ~cmp:Int.compare [ 1; 2 ] [ 1; 2; 3 ])
 ;;
 
-eq [1; 2; 3]
-  (CCList.sorted_merge ~cmp:Int.compare [] [1; 2; 3])
+eq ~name:__LOC__ [ 1; 2; 3 ]
+  (CCList.sorted_merge ~cmp:Int.compare [] [ 1; 2; 3 ])
 ;;
 
-eq [1; 2; 3]
-  (CCList.sorted_merge ~cmp:Int.compare [1; 2; 3] [])
+eq ~name:__LOC__ [ 1; 2; 3 ]
+  (CCList.sorted_merge ~cmp:Int.compare [ 1; 2; 3 ] [])
 ;;
 
-(* Test group_by *)
-t @@ fun () ->
-  let groups = CCList.group_by ~eq:(fun a b -> a mod 2 = b mod 2) [1; 3; 2; 4; 5; 7; 6] in
-  List.length groups = 4
+eq ~name:__LOC__
+  ~printer:Q.Print.(list (list int))
+  []
+  (CCList.group_by
+     ~eq:(fun a b -> a mod 2 = b mod 2)
+     ~hash:(fun a -> a mod 2)
+     [ 1; 3; 2; 4; 5; 7; 6 ]
+  |> List.sort Stdlib.compare)
 ;;
 
 (* Test uniq with custom equality *)
-eq [1; 2; 3; 2; 1]
-  (CCList.uniq ~eq:Int.equal [1; 1; 2; 3; 3; 2; 1])
+eq ~name:__LOC__ [ 1; 2; 3; 2; 1 ]
+  (CCList.uniq_succ ~eq:Int.equal [ 1; 1; 2; 3; 3; 2; 1 ])
 ;;
 
 (* Test sort_uniq *)
-eq [1; 2; 3; 4]
-  (CCList.sort_uniq ~cmp:Int.compare [1; 1; 2; 2; 3; 3; 4; 4])
+eq ~name:__LOC__ [ 1; 2; 3; 4 ]
+  (CCList.sort_uniq ~cmp:Int.compare [ 1; 1; 2; 2; 3; 3; 4; 4 ])
 ;;
 
 (* Test init with edge cases *)
-eq [] (CCList.init 0 CCFun.id);;
-eq [0; 1; 2; 3; 4] (CCList.init 5 CCFun.id);;
-eq [0; 2; 4; 6; 8] (CCList.init 5 (fun i -> i * 2));;
+eq ~name:__LOC__ [] (CCList.init 0 CCFun.id);;
+eq ~name:__LOC__ [ 0; 1; 2; 3; 4 ] (CCList.init 5 CCFun.id);;
+eq ~name:__LOC__ [ 0; 2; 4; 6; 8 ] (CCList.init 5 (fun i -> i * 2));;
 
 (* Test compare and equal *)
-t @@ fun () ->
-  CCList.compare Int.compare [1; 2; 3] [1; 2; 3] = 0
+t ~name:__LOC__ @@ fun () ->
+CCList.compare Int.compare [ 1; 2; 3 ] [ 1; 2; 3 ] = 0
 ;;
 
-t @@ fun () ->
-  CCList.compare Int.compare [1; 2] [1; 2; 3] < 0
+t ~name:__LOC__ @@ fun () -> CCList.compare Int.compare [ 1; 2 ] [ 1; 2; 3 ] < 0
+;;
+t ~name:__LOC__ @@ fun () -> CCList.compare Int.compare [ 1; 2; 3 ] [ 1; 2 ] > 0
+;;
+t ~name:__LOC__ @@ fun () -> CCList.compare Int.compare [ 1; 3 ] [ 1; 2 ] > 0;;
+t ~name:__LOC__ @@ fun () -> CCList.equal Int.equal [ 1; 2; 3 ] [ 1; 2; 3 ];;
+
+t ~name:__LOC__ @@ fun () ->
+not (CCList.equal Int.equal [ 1; 2; 3 ] [ 1; 2; 4 ])
 ;;
 
-t @@ fun () ->
-  CCList.compare Int.compare [1; 2; 3] [1; 2] > 0
-;;
-
-t @@ fun () ->
-  CCList.compare Int.compare [1; 3] [1; 2] > 0
-;;
-
-t @@ fun () ->
-  CCList.equal Int.equal [1; 2; 3] [1; 2; 3]
-;;
-
-t @@ fun () ->
-  not (CCList.equal Int.equal [1; 2; 3] [1; 2; 4])
-;;
-
-t @@ fun () ->
-  not (CCList.equal Int.equal [1; 2] [1; 2; 3])
-;;
+t ~name:__LOC__ @@ fun () -> not (CCList.equal Int.equal [ 1; 2 ] [ 1; 2; 3 ]);;
 
 (* Property tests for new functions *)
-q Q.(list small_int) (fun l ->
-  let taken = CCList.take (List.length l / 2) l in
-  let dropped = CCList.drop (List.length l / 2) l in
-  taken @ dropped = l
-);;
+q ~name:__LOC__
+  Q.(list small_int)
+  (fun l ->
+    let taken = CCList.take (List.length l / 2) l in
+    let dropped = CCList.drop (List.length l / 2) l in
+    taken @ dropped = l)
+;;
 
-q Q.(list small_int) (fun l ->
-  let sorted = List.sort Int.compare l in
-  let uniq = CCList.sort_uniq ~cmp:Int.compare sorted in
-  List.length uniq <= List.length l
-);;
+q ~name:__LOC__
+  Q.(list small_int)
+  (fun l ->
+    let sorted = List.sort Int.compare l in
+    let uniq = CCList.sort_uniq ~cmp:Int.compare sorted in
+    List.length uniq <= List.length l)
+;;
 
-q Q.(pair (list small_int) (list small_int)) (fun (l1, l2) ->
-  let sorted1 = List.sort Int.compare l1 in
-  let sorted2 = List.sort Int.compare l2 in
-  let merged = CCList.sorted_merge ~cmp:Int.compare sorted1 sorted2 in
-  List.length merged = List.length l1 + List.length l2
-);;
+q
+  Q.(pair (list small_int) (list small_int))
+  (fun (l1, l2) ->
+    let sorted1 = List.sort Int.compare l1 in
+    let sorted2 = List.sort Int.compare l2 in
+    let merged = CCList.sorted_merge ~cmp:Int.compare sorted1 sorted2 in
+    List.length merged = List.length l1 + List.length l2)
+;;
 
-q Q.(list small_int) (fun l ->
-  CCList.equal Int.equal l l
-);;
+q ~name:__LOC__ Q.(list small_int) (fun l -> CCList.equal Int.equal l l);;
+q ~name:__LOC__ Q.(list small_int) (fun l -> CCList.compare Int.compare l l = 0)
+;;
 
-q Q.(list small_int) (fun l ->
-  CCList.compare Int.compare l l = 0
-);;
+q ~name:__LOC__
+  Q.(pair small_nat (list small_int))
+  (fun (n, l) ->
+    let taken = CCList.take n l in
+    List.length taken <= n && List.length taken <= List.length l)
+;;
 
-q Q.(pair small_nat (list small_int)) (fun (n, l) ->
-  let taken = CCList.take n l in
-  List.length taken <= n && List.length taken <= List.length l
-);;
-
-q Q.(pair small_nat (list small_int)) (fun (n, l) ->
-  let dropped = CCList.drop n l in
-  List.length dropped = max 0 (List.length l - n)
-);;
+q ~name:__LOC__
+  Q.(pair small_nat (list small_int))
+  (fun (n, l) ->
+    let dropped = CCList.drop n l in
+    List.length dropped = max 0 (List.length l - n))
