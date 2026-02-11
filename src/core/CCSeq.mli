@@ -49,7 +49,7 @@ val forever : (unit -> 'a) -> 'a t
 
 val cycle : 'a t -> 'a t
 (** Cycle through the sequence infinitely. The sequence should be persistent.
-  @since NEXT_RELEASE the sequence can be empty, in this case cycle return an empty sequence. *)
+  @since 3.18 the sequence can be empty, in this case cycle return an empty sequence. *)
 
 val iterate : ('a -> 'a) -> 'a -> 'a t
 (** [iterate f a] corresponds to the infinite sequence containing [a], [f a], [f (f a)],
