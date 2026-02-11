@@ -1,10 +1,16 @@
 
-## main
-- breaking: CCListLabel.compare and CCListLabel.equal takes the function on the elements as named arguments
-- breaking: CCListLabel.init now takes the length as a named arguments to follow the Stdlib
-- breaking: change the semantic of CCFloat.{min,max} with respect to NaN to follow the Stdlib
-- breaking: change the semantic of CCInt.rem with respect to negative number to follow the Stdlib
-- breaking: change the order of argument of CCMap.add_seq to align with the stdlib.
+## 3.18
+
+- fix leb128 slice bug
+- fix leb128 `Int64.min_int` bug
+- add tests for leb128 library (#486)
+- fix size explosion in `t_pvec.ml` found in CI
+- some breaking changes after the big bump to 4.08 as lower bound, thanks to @fardale for the cleanup
+  * breaking: CCListLabel.compare and CCListLabel.equal takes the function on the elements as named arguments
+  * breaking: CCListLabel.init now takes the length as a named arguments to follow the Stdlib
+  * breaking: change the semantic of CCFloat.{min,max} with respect to NaN to follow the Stdlib
+  * breaking: change the semantic of CCInt.rem with respect to negative number to follow the Stdlib
+  * breaking: change the order of argument of `CCMap.add_seq` to align with the stdlib.
 
 ## 3.17
 

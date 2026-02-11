@@ -4,7 +4,7 @@
 
 (generate_opam_files true)
 
-(version 3.17)
+(version 3.18)
 
 (authors c-cube)
 

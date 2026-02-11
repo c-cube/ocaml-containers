@@ -104,7 +104,7 @@ val option : ?none:unit printer -> 'a printer -> 'a option printer
         - [Some x] will become [pp x]
         - [None] will become [none ()]
     Alias of {!Format.pp_print_option}
-    @since NEXT_RELEASE *)
+    @since 3.18 *)
 
 val opt : 'a printer -> 'a option printer
 (** [opt pp] prints options as follows:
