@@ -20,7 +20,7 @@ let cons a b () = Cons (a, b)
 let singleton x () = Cons (x, nil)
 
 [@@@endif]
-[@@@iflt 4.11]
+[@@@iflt 4.14]
 
 let init n f =
   let rec aux i () =
