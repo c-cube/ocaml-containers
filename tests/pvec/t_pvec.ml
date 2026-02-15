@@ -266,13 +266,15 @@ module Op = struct
                      list_small gen_x >|= fun l ->
                      Append l, size + List.length l );
                  ];
-                 (if size < 10_000 then [
-                   (* flat map can explode, only do it if list isn't too big *)
-                   ( 1,
-                     list_size (0 -- 5) gen_x >|= fun l ->
-                     Flat_map l, size * (1 + List.length l) );
-                 ] else [])
-                 ;
+                 (if size < 10_000 then
+                    [
+                      (* flat map can explode, only do it if list isn't too big *)
+                      ( 1,
+                        list_size (0 -- 5) gen_x >|= fun l ->
+                        Flat_map l, size * (1 + List.length l) );
+                    ]
+                  else
+                    []);
                ]
         in
 
