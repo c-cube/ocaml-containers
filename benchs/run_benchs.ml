@@ -1535,7 +1535,7 @@ module Str = struct
   let rand_str_ ?(among = "abcdefgh") n =
     let module Q = QCheck in
     let st = Random.State.make [| n + 17 |] in
-    let gen_c = QCheck.Gen.oneofl (CCString.to_list among) in
+    let gen_c = QCheck.Gen.oneof_list (CCString.to_list among) in
     QCheck.Gen.string_size ~gen:gen_c (QCheck.Gen.return n) st
 
   let find ?(start = 0) ~sub s =
@@ -1822,6 +1822,34 @@ module Str = struct
                           [ 100; 1_000 ];
                   ];
            ])
+end
+
+module Hash = struct
+  let hash_ocaml (n : int) : int =
+    let offset_basis = 0xcbf29ce484222325L in
+    let prime = 0x100000001b3L in
+    let h = ref offset_basis in
+    for k = 0 to 7 do
+      (h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff))));
+      h := Int64.(mul !h prime)
+    done;
+    Int64.to_int !h land max_int
+
+  let bench_hash n =
+    let run_ocaml () =
+      for i = 0 to n - 1 do
+        opaque_ignore (hash_ocaml i)
+      done
+    and run_c_stub () =
+      for i = 0 to n - 1 do
+        opaque_ignore (CCInt.hash i)
+      done
+    in
+    B.throughputN 3 ~repeat
+      [ "ocaml_fnv", run_ocaml, (); "c_stub", run_c_stub, () ]
+
+  let () =
+    B.Tree.register ("hash" @>>> [ "int" @>> app_ints bench_hash [ 1_000 ] ])
 end
 
 let () = try B.Tree.run_global () with Arg.Help msg -> print_endline msg

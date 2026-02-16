@@ -6,6 +6,10 @@
   (action
    (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
  (flags :standard -nolabels -open CCMonomorphic)
+ (foreign_stubs
+  (language c)
+  (flags :standard -std=c99 -O2)
+  (names cc_stubs))
  (libraries either containers.monomorphic containers.domain))
 
 (ocamllex

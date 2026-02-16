@@ -101,3 +101,42 @@ eq' 63 (popcount max_int);;
 eq' 1 (popcount min_int);;
 eq' 10 (popcount 0b1110010110110001010L);;
 eq' 5 (popcount 0b1101110000000000L)
+
+(* hash tests *)
+let ( >= ) = Stdlib.( >= )
+let ( = ) = Stdlib.( = )
+let ( <> ) = Stdlib.( <> );;
+
+(* hash is non-negative *)
+t @@ fun () -> hash 0L >= 0;;
+t @@ fun () -> hash 1L >= 0;;
+t @@ fun () -> hash (-1L) >= 0;;
+t @@ fun () -> hash max_int >= 0;;
+t @@ fun () -> hash min_int >= 0;;
+
+(* hash_to_int64 is non-negative *)
+t @@ fun () -> CCInt64.compare (hash_to_int64 0L) 0L >= 0;;
+t @@ fun () -> CCInt64.compare (hash_to_int64 (-1L)) 0L >= 0;;
+t @@ fun () -> CCInt64.compare (hash_to_int64 min_int) 0L >= 0;;
+
+(* hash is consistent with hash_to_int64 *)
+t @@ fun () -> hash 42L = Stdlib.(Int64.to_int (hash_to_int64 42L) land max_int)
+;;
+
+t @@ fun () ->
+hash (-1L) = Stdlib.(Int64.to_int (hash_to_int64 (-1L)) land max_int)
+;;
+
+(* different inputs produce different hashes *)
+t @@ fun () -> hash 0L <> hash 1L;;
+t @@ fun () -> hash 1L <> hash 2L;;
+t @@ fun () -> hash 1L <> hash (-1L);;
+t @@ fun () -> hash_to_int64 0L <> hash_to_int64 1L;;
+
+(* deterministic *)
+t @@ fun () -> hash 123L = hash 123L;;
+t @@ fun () -> hash_to_int64 123L = hash_to_int64 123L;;
+
+(* quickcheck: hash is always non-negative *)
+q Q.(map Int64.of_int int) (fun n -> hash n >= 0);;
+q Q.(map Int64.of_int int) (fun n -> CCInt64.compare (hash_to_int64 n) 0L >= 0)

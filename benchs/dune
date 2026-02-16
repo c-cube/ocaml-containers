@@ -10,7 +10,6 @@
   qcheck
   oseq
   batteries
-  base
   sek)
  (flags :standard -warn-error -3-5 -w -60 -safe-string -color always)
  (optional)
