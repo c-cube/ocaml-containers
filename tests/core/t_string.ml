@@ -410,4 +410,7 @@ q
 ;;
 
 t @@ fun () -> "ab" < "abc";;
-t @@ fun () -> "123" < "14"
+t @@ fun () -> "123" < "14";;
+
+eq ~printer:Fun.id "a,b,c,d,e,f,g,"
+  (flat_map (CCFormat.sprintf "%c,") "abcdefg")
