@@ -398,7 +398,10 @@ let sprintf_ c format =
   Format.kfprintf
     (fun _fmt ->
       Format.pp_print_flush fmt ();
-      Buffer.contents buf)
+      let s = Buffer.contents buf in
+      Buffer.reset buf;
+      (* in case of reuse *)
+      s)
     fmt format
 
 let with_color_ksf ~f s fmt =
