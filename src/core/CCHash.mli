@@ -1,5 +1,3 @@
-(* This file is free software, part of containers. See file "license" for more details. *)
-
 (** Hash combinators
 
     The API of this module is stable as per semantic versioning, like the
@@ -7,7 +5,19 @@
     can change and should not be relied on (i.e. hashing a value always
     returns the same integer {b within a run of a program}, not
     across versions of OCaml and Containers).
+
+    {b Implementation}: xorshift+multiply combiner with fmix64 (Murmur3) finalizer,
+    via C stubs. Unboxed in native code, boxed in bytecode.
 *)
+
+(* TODO: for 4.xx:
+
+  {[type state = int64
+   val seed : state
+   type 'a t = state -> 'a -> state
+   val finalize : state -> int64
+   ]}
+   *)
 
 (** {2 Definitions} *)
 
@@ -34,8 +44,7 @@ val int64 : int64 t
 val nativeint : nativeint t
 
 val slice : string -> int -> int t
-(** [slice s i len state] hashes the slice [i, …, i+len-1] of [s]
-    into [state]. *)
+(** [slice s i len] hashes the slice [s[i .. i+len-1]]. *)
 
 val bytes : bytes t
 (** Hash a byte array.
@@ -79,17 +88,47 @@ val array_comm : 'a t -> 'a array t
     will have the same hash.
     @since 1.0 *)
 
-(** {2 Base hash combinators} *)
+(** {2 Full-strength int64 API} *)
+
+val seed : int64
+(** Initial hash state. *)
+
+val combine64 : int64 -> int64 -> int64
+(** [combine64 state chunk] mixes [chunk] into [state] using the
+    xorshift+multiply combiner. Suitable for building streaming hashers
+    with full 64-bit state. Finalize with {!finalize} or {!finalize_i64}. *)
+
+val finalize : int64 -> int
+(** [finalize state] applies fmix64 (Murmur3 finalizer) and returns a
+    non-negative [int] (strips sign bit). *)
+
+val finalize_i64 : int64 -> int64
+(** [finalize_i64 state] applies fmix64 and returns the full 64-bit result.
+    The result may be negative as a signed [int64]. *)
+
+(** {2 Deprecated int-state combinators}
+
+    These thread state as [int] (63 bits on 64-bit systems), which is lossy.
+    Prefer building a pipeline with {!seed}, {!combine64}, and {!finalize}. *)
 
 val combine : 'a t -> hash -> 'a -> hash
+[@@deprecated "lossy (63-bit state); use combine64 with int64 state"]
+
 val combine2 : hash -> hash -> hash
+[@@deprecated "lossy (63-bit state); use combine64 with int64 state"]
+
 val combine3 : hash -> hash -> hash -> hash
+[@@deprecated "lossy (63-bit state); use combine64 with int64 state"]
+
 val combine4 : hash -> hash -> hash -> hash -> hash
+[@@deprecated "lossy (63-bit state); use combine64 with int64 state"]
 
 val combine5 : hash -> hash -> hash -> hash -> hash -> hash
+[@@deprecated "lossy (63-bit state); use combine64 with int64 state"]
 (** @since 2.1 *)
 
 val combine6 : hash -> hash -> hash -> hash -> hash -> hash -> hash
+[@@deprecated "lossy (63-bit state); use combine64 with int64 state"]
 (** @since 2.1 *)
 
 (** {2 Iterators} *)
