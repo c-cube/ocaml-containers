@@ -1,141 +1,136 @@
 include (val Containers_testlib.make ~__FILE__ ())
 module H = Containers_xxhash
 
-(* Gold tests: hash_string with XXH64 (mix_string + finalize) *)
+(* Gold tests: hash_string with seed=0 *)
 ;;
 
 t @@ fun () ->
-assert_equal ~printer:Int64.to_string (-8037231448521241007L)
-  (H.hash_string ~seed:H.seed "");
-assert_equal ~printer:Int64.to_string 7619381941762342490L
-  (H.hash_string ~seed:H.seed "a");
-assert_equal ~printer:Int64.to_string 8482916093137399771L
-  (H.hash_string ~seed:H.seed "hello");
-assert_equal ~printer:Int64.to_string (-3052030864281505429L)
-  (H.hash_string ~seed:H.seed "hello, world!");
-assert_equal ~printer:Int64.to_string 2707297459162763210L
-  (H.hash_string ~seed:H.seed "the quick brown fox");
+assert_equal ~printer:Int64.to_string (-1205034819632174695L)
+  (H.hash_string "" 0L);
+assert_equal ~printer:Int64.to_string (-7444071767201028348L)
+  (H.hash_string "" 42L);
+assert_equal ~printer:Int64.to_string 2794345569481354659L
+  (H.hash_string "hello" 0L);
+assert_equal ~printer:Int64.to_string (-4367754540140381902L)
+  (H.hash_string "hello" 42L);
+assert_equal ~printer:Int64.to_string 1513236774081638803L
+  (H.hash_string "the quick brown fox" 0L);
+assert_equal ~printer:Int64.to_string 6882318601984224800L
+  (H.hash_string "the quick brown fox" 42L);
 true
 ;;
 
-(* Gold tests: hash_string with non-default seed (seed from mix_int) *)
+(* Gold tests: hash_int64 with seed=0 *)
 t @@ fun () ->
-(* seed after mixing 1 into seed=0: hash_string uses that as XXH64 seed *)
-let seed1 = H.mix_int H.seed 1 in
-(* these values computed from: finalize(mix_string(mix_int(0,1), s)) *)
-assert_equal ~printer:Int64.to_string
-  (H.hash_string ~seed:seed1 "")
-  (H.hash_string ~seed:seed1 "");
-(* just test determinism with custom seed *)
-assert_equal ~printer:Int64.to_string
-  (H.hash_string ~seed:seed1 "hello")
-  (H.hash_string ~seed:seed1 "hello");
-(* different seeds produce different hashes for same string *)
-assert (
-  not
-    (Int64.equal
-       (H.hash_string ~seed:H.seed "hello")
-       (H.hash_string ~seed:seed1 "hello")));
+assert_equal ~printer:Int64.to_string 3803688792395291579L (H.hash_int64 0L 0L);
+assert_equal ~printer:Int64.to_string (-6977822845260490347L)
+  (H.hash_int64 1L 0L);
+assert_equal ~printer:Int64.to_string (-8804195676797548855L)
+  (H.hash_int64 (-1L) 0L);
+assert_equal ~printer:Int64.to_string (-7296932117151183542L)
+  (H.hash_int64 1234567890123456789L 0L);
 true
 ;;
 
-(* Gold tests: hash_string default seed=0 *)
+(* Gold tests: hash_int32 with seed=0 *)
 t @@ fun () ->
-assert_equal ~printer:Int64.to_string (-8037231448521241007L) (H.hash_string "");
-assert_equal ~printer:Int64.to_string 7619381941762342490L (H.hash_string "a");
-assert_equal ~printer:Int64.to_string 8482916093137399771L
-  (H.hash_string "hello");
+assert_equal ~printer:Int64.to_string 4246796580750024372L (H.hash_int32 0l 0L);
+assert_equal ~printer:Int64.to_string (-851299076295404719L)
+  (H.hash_int32 1l 0L);
+assert_equal ~printer:Int64.to_string 9185342943168159635L
+  (H.hash_int32 (-1l) 0L);
+assert_equal ~printer:Int64.to_string (-2929917330072466447L)
+  (H.hash_int32 42l 0L);
 true
 ;;
 
-(* Gold tests: hash_int64 *)
+(* Gold tests: hash_int with seed=0 *)
 t @@ fun () ->
-assert_equal ~printer:Int64.to_string (-5605595894618674504L) (H.hash_int64 0L);
-assert_equal ~printer:Int64.to_string 7046788939542163588L (H.hash_int64 1L);
-assert_equal ~printer:Int64.to_string 2627184251037003377L (H.hash_int64 42L);
-assert_equal ~printer:Int64.to_string (-8629399683307595115L)
-  (H.hash_int64 (-1L));
-assert_equal ~printer:Int64.to_string 8147024165990365903L
-  (H.hash_int64 1234567890123456789L);
-true
-;;
-
-(* Gold tests: hash_int *)
-t @@ fun () ->
-assert_equal ~printer:Int64.to_string (-5605595894618674504L) (H.hash_int 0);
-assert_equal ~printer:Int64.to_string 7046788939542163588L (H.hash_int 1);
-assert_equal ~printer:Int64.to_string 2627184251037003377L (H.hash_int 42);
-assert_equal ~printer:Int64.to_string (-8629399683307595115L) (H.hash_int (-1));
-assert_equal ~printer:Int64.to_string (-3317520227865190253L)
-  (H.hash_int 1234567890);
-true
-;;
-
-(* Gold tests: hash_int32 *)
-t @@ fun () ->
-assert_equal ~printer:Int64.to_string (-5605595894618674504L) (H.hash_int32 0l);
-assert_equal ~printer:Int64.to_string 7046788939542163588L (H.hash_int32 1l);
-assert_equal ~printer:Int64.to_string 2627184251037003377L (H.hash_int32 42l);
-assert_equal ~printer:Int64.to_string (-8629399683307595115L)
-  (H.hash_int32 (-1l));
-assert_equal ~printer:Int64.to_string (-3317520227865190253L)
-  (H.hash_int32 1234567890l);
+assert_equal ~printer:Int64.to_string 3803688792395291579L (H.hash_int 0 0L);
+assert_equal ~printer:Int64.to_string (-6977822845260490347L) (H.hash_int 1 0L);
+assert_equal ~printer:Int64.to_string (-8804195676797548855L)
+  (H.hash_int (-1) 0L);
+assert_equal ~printer:Int64.to_string (-5379971487550586029L) (H.hash_int 42 0L);
 true
 ;;
 
 (* Gold tests: hash_bool *)
 t @@ fun () ->
-assert_equal ~printer:Int64.to_string (-5605595894618674504L)
-  (H.hash_bool false);
-assert_equal ~printer:Int64.to_string 7046788939542163588L (H.hash_bool true);
+assert_equal ~printer:Int64.to_string 3803688792395291579L
+  (H.hash_bool false 0L);
+assert_equal ~printer:Int64.to_string (-6977822845260490347L)
+  (H.hash_bool true 0L);
 true
 ;;
 
 (* Gold tests: hash_char *)
 t @@ fun () ->
-assert_equal ~printer:Int64.to_string (-1595464024050301112L) (H.hash_char 'a');
-assert_equal ~printer:Int64.to_string (-2980224328396984668L) (H.hash_char 'z');
-assert_equal ~printer:Int64.to_string 7387411195422956975L (H.hash_char '0');
-true
-;;
-
-(* Gold tests: finalize(seed) = finalize(0L) = XXH64(&0, 8, 0) *)
-t @@ fun () ->
-assert_equal ~printer:Int64.to_string 3803688792395291579L (H.finalize H.seed);
-(* finalize is deterministic *)
-assert_equal ~printer:Int64.to_string
-  (H.finalize (H.mix_int64 H.seed 42L))
-  (H.finalize (H.mix_int64 H.seed 42L));
+(* 'a' = 97 *)
+assert_equal ~printer:Int64.to_string (H.hash_int 97 0L) (H.hash_char 'a' 0L);
+(* '0' = 48 *)
+assert_equal ~printer:Int64.to_string (H.hash_int 48 0L) (H.hash_char '0' 0L);
 true
 ;;
 
 (* Property tests: determinism *)
 q ~count:10_000 Q.string @@ fun s ->
-Int64.equal (H.hash_string s) (H.hash_string s)
+Int64.equal (H.hash_string s 0L) (H.hash_string s 0L)
 ;;
 
 q ~count:10_000 Q.int64 @@ fun v ->
-Int64.equal (H.hash_int64 v) (H.hash_int64 v)
+Int64.equal (H.hash_int64 v 0L) (H.hash_int64 v 0L)
 ;;
 
-q ~count:10_000 Q.int @@ fun v -> Int64.equal (H.hash_int v) (H.hash_int v);;
-q ~count:10_000 Q.bool @@ fun b -> Int64.equal (H.hash_bool b) (H.hash_bool b);;
-q ~count:10_000 Q.char @@ fun c -> Int64.equal (H.hash_char c) (H.hash_char c);;
+q ~count:10_000 Q.int @@ fun v ->
+Int64.equal (H.hash_int v 0L) (H.hash_int v 0L)
+;;
 
-(* mix_int64 is not commutative for most pairs *)
+q ~count:10_000 Q.bool @@ fun b ->
+Int64.equal (H.hash_bool b 0L) (H.hash_bool b 0L)
+;;
+
+q ~count:10_000 Q.char @@ fun c ->
+Int64.equal (H.hash_char c 0L) (H.hash_char c 0L)
+;;
+
+(* Different seeds give different results for the same input (seed nonzero) *)
+q ~count:10_000 (Q.pair Q.string Q.int64) @@ fun (s, seed) ->
+Q.assume (not (Int64.equal seed 0L));
+not (Int64.equal (H.hash_string s 0L) (H.hash_string s seed))
+;;
+
+q ~count:10_000 (Q.pair Q.int64 Q.int64) @@ fun (v, seed) ->
+Q.assume (not (Int64.equal seed 0L));
+not (Int64.equal (H.hash_int64 v 0L) (H.hash_int64 v seed))
+;;
+
+q ~count:10_000 (Q.pair Q.int Q.int64) @@ fun (v, seed) ->
+Q.assume (not (Int64.equal seed 0L));
+not (Int64.equal (H.hash_int v 0L) (H.hash_int v seed))
+;;
+
+(* Different inputs give different results for the same seed *)
+q ~count:10_000 (Q.pair Q.string Q.string) @@ fun (s1, s2) ->
+Q.assume (not (String.equal s1 s2));
+not (Int64.equal (H.hash_string s1 0L) (H.hash_string s2 0L))
+;;
+
 q ~count:10_000 (Q.pair Q.int64 Q.int64) @@ fun (a, b) ->
 Q.assume (not (Int64.equal a b));
-let ab = H.finalize (H.mix_int64 (H.mix_int64 H.seed a) b) in
-let ba = H.finalize (H.mix_int64 (H.mix_int64 H.seed b) a) in
-not (Int64.equal ab ba)
+not (Int64.equal (H.hash_int64 a 0L) (H.hash_int64 b 0L))
 ;;
 
-(* Stress test: hash many strings, non-empty => non-zero *)
+q ~count:10_000 (Q.pair Q.int Q.int) @@ fun (a, b) ->
+Q.assume (a <> b);
+not (Int64.equal (H.hash_int a 0L) (H.hash_int b 0L))
+;;
+
+(* Stress test: hash 100k strings of varying lengths, non-empty => non-zero *)
 t @@ fun () ->
 for len = 0 to 99 do
   for _ = 1 to 1000 do
     let s = String.make len 'x' in
-    let h = H.mix_string H.seed s |> H.finalize in
+    let h = H.hash_string s 0L in
     if len > 0 then
       if Int64.equal h 0L then
         failwith
