@@ -13,14 +13,16 @@ let repeat = 3
 (* --- data setup ---------------------------------------------------------- *)
 
 let n_ints = 1_000
-let ints = Array.init n_ints (fun i -> i * 2654435761 (* knuth multiplicative *))
+
+let ints =
+  Array.init n_ints (fun i -> i * 2654435761 (* knuth multiplicative *))
 
 let short_str = String.make 16 'x'
 let medium_str = String.make 64 'x'
 let long_str = String.make 512 'x'
 
 (* Strings of various lengths with distinct content *)
-let strings_short  = Array.init n_ints (fun i -> Printf.sprintf "%016d" i)
+let strings_short = Array.init n_ints (fun i -> Printf.sprintf "%016d" i)
 let strings_medium = Array.init n_ints (fun i -> Printf.sprintf "%064d" i)
 
 (* --- benchmarks ---------------------------------------------------------- *)
@@ -29,9 +31,7 @@ let bench_int_hash ~time () =
   let r = ref 0 in
   B.throughputN time ~repeat
     [
-      ( "CCHash.int",
-        (fun () -> Array.iter (fun x -> r := CCHash.int x) ints),
-        () );
+      "CCHash.int", (fun () -> Array.iter (fun x -> r := CCHash.int x) ints), ();
       ( "Hashtbl.hash (poly)",
         (fun () -> Array.iter (fun x -> r := Hashtbl.hash x) ints),
         () );
@@ -52,15 +52,9 @@ let bench_string_hash ~time () =
       ( "CCHash.string/64",
         (fun () -> Array.iter (fun s -> r := CCHash.string s) strings_medium),
         () );
-      ( "CCHash.string literal/16",
-        (fun () -> r := CCHash.string short_str),
-        () );
-      ( "CCHash.string literal/64",
-        (fun () -> r := CCHash.string medium_str),
-        () );
-      ( "CCHash.string literal/512",
-        (fun () -> r := CCHash.string long_str),
-        () );
+      "CCHash.string literal/16", (fun () -> r := CCHash.string short_str), ();
+      "CCHash.string literal/64", (fun () -> r := CCHash.string medium_str), ();
+      "CCHash.string literal/512", (fun () -> r := CCHash.string long_str), ();
       ( "Hashtbl.hash/16",
         (fun () -> Array.iter (fun s -> r := Hashtbl.hash s) strings_short),
         () );
@@ -85,7 +79,7 @@ let bench_combine64 ~time () =
                              (Int64.of_int (x lxor 0xaaaa)))
                           (Int64.of_int (x + 1)))
                        (Int64.of_int (x * 3)))
-                    (Int64.of_int (x lxor x lsr 7))))
+                    (Int64.of_int (x lxor (x lsr 7)))))
             ints),
         () );
       ( "CCHash.list int [1..5]",
@@ -99,9 +93,12 @@ let bench_combine64 ~time () =
 let () =
   B.Tree.add_global "hash"
     B.Tree.(
-      "int" @>> (fun () -> bench_int_hash ~time:2 ())
-      @> "string" @>> (fun () -> bench_string_hash ~time:2 ())
-      @> "combine64" @>> (fun () -> bench_combine64 ~time:2 ())
+      "int"
+      @>> (fun () -> bench_int_hash ~time:2 ())
+      @> "string"
+      @>> (fun () -> bench_string_hash ~time:2 ())
+      @> "combine64"
+      @>> (fun () -> bench_combine64 ~time:2 ())
       @> nil)
 
 let () = try B.Tree.run_global () with Arg.Help msg -> print_endline msg

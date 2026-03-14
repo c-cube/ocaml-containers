@@ -18,17 +18,26 @@
 (** Initial hash state (golden-ratio constant). *)
 let seed : int64 = 0x9e3779b97f4a7c15L
 
-external combine_i64 : (int64[@unboxed]) -> (int64[@unboxed]) -> (int64[@unboxed])
+external combine_int :
+  (int64[@unboxed]) -> (int[@untagged]) -> (int64[@unboxed])
+  = "caml_cc_hash_combine_int_byte" "caml_cc_hash_combine_int"
+[@@noalloc]
+(** [combine_int state x] mixes OCaml int [x] into [state]. *)
+
+external combine_i64 :
+  (int64[@unboxed]) -> (int64[@unboxed]) -> (int64[@unboxed])
   = "caml_cc_hash_combine_i64_byte" "caml_cc_hash_combine_i64"
 [@@noalloc]
 (** [combine_i64 state chunk] mixes [chunk] into [state]. *)
 
-external combine_i32 : (int64[@unboxed]) -> (int32[@unboxed]) -> (int64[@unboxed])
+external combine_i32 :
+  (int64[@unboxed]) -> (int32[@unboxed]) -> (int64[@unboxed])
   = "caml_cc_hash_combine_i32_byte" "caml_cc_hash_combine_i32"
 [@@noalloc]
 (** [combine_i32 state chunk] mixes [chunk] into [state]. *)
 
-external combine_char : (int64[@unboxed]) -> (int[@untagged]) -> (int64[@unboxed])
+external combine_char :
+  (int64[@unboxed]) -> (int[@untagged]) -> (int64[@unboxed])
   = "caml_cc_hash_combine_char_byte" "caml_cc_hash_combine_char"
 [@@noalloc]
 (** [combine_char state c] mixes character code [c] into [state]. *)

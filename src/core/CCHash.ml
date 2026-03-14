@@ -7,56 +7,44 @@ type 'a t = 'a -> hash
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
-(** {2 Full-strength int64 API} *)
-
-let seed : int64 = Hash_impl_.seed
-
-let[@inline] combine64 (s : int64) (c : int64) : int64 = Hash_impl_.combine_i64 s c
-
-let[@inline] finalize (s : int64) : int = Hash_impl_.finalize s
-
-let[@inline] finalize_i64 (s : int64) : int64 = Hash_impl_.fmix64 s
-
-(** {2 Deprecated int-state combinators} *)
 
 let[@inline] combine2 a b =
-  Hash_impl_.(finalize (combine_i64 (Int64.of_int a) (Int64.of_int b)))
+  Hash_impl_.(finalize (combine_int (combine_int seed a) b))
 
 let[@inline] combine f s x =
-  Hash_impl_.(finalize (combine_i64 (Int64.of_int s) (Int64.of_int (f x))))
+  Hash_impl_.(finalize (combine_int (combine_int seed s) (f x)))
 
 let combine3 a b c =
   Hash_impl_.(
-    let s = combine_i64 (Int64.of_int a) (Int64.of_int b) in
-    finalize (combine_i64 s (Int64.of_int c)))
+    let s = combine_int (combine_int seed a) b in
+    finalize (combine_int s c))
 
 let combine4 a b c d =
   Hash_impl_.(
-    let s = combine_i64 (Int64.of_int a) (Int64.of_int b) in
-    let s = combine_i64 s (Int64.of_int c) in
-    finalize (combine_i64 s (Int64.of_int d)))
+    let s = combine_int (combine_int seed a) b in
+    let s = combine_int s c in
+    finalize (combine_int s d))
 
 let combine5 a b c d e =
   Hash_impl_.(
-    let s = combine_i64 (Int64.of_int a) (Int64.of_int b) in
-    let s = combine_i64 s (Int64.of_int c) in
-    let s = combine_i64 s (Int64.of_int d) in
-    finalize (combine_i64 s (Int64.of_int e)))
+    let s = combine_int (combine_int seed a) b in
+    let s = combine_int s c in
+    let s = combine_int s d in
+    finalize (combine_int s e))
 
 let combine6 a b c d e f =
   Hash_impl_.(
-    let s = combine_i64 (Int64.of_int a) (Int64.of_int b) in
-    let s = combine_i64 s (Int64.of_int c) in
-    let s = combine_i64 s (Int64.of_int d) in
-    let s = combine_i64 s (Int64.of_int e) in
-    finalize (combine_i64 s (Int64.of_int f)))
+    let s = combine_int (combine_int seed a) b in
+    let s = combine_int s c in
+    let s = combine_int s d in
+    let s = combine_int s e in
+    finalize (combine_int s f))
 
 (** {2 Primitive hashers} *)
 
 let const h _ = h
 let const0 _ = 0
-
-let int n = Hash_impl_.(finalize (combine_i64 seed (Int64.of_int n)))
+let int n = Hash_impl_.(finalize (combine_int seed n))
 
 let bool b =
   int
@@ -66,12 +54,9 @@ let bool b =
        2)
 
 let char x = Hash_impl_.(finalize (combine_char seed (Char.code x)))
-
 let int64 (n : int64) : int = Hash_impl_.(finalize (combine_i64 seed n))
-
 let int32 (x : int32) : int = Hash_impl_.(finalize (combine_i32 seed x))
-
-let nativeint (x : nativeint) = int64 (Int64.of_nativeint x)
+let nativeint (x : nativeint) = Hash_impl_.(finalize (combine_i64 seed (Int64.of_nativeint x)))
 
 let bytes (x : bytes) =
   Hash_impl_.(finalize (combine_string seed (Bytes.unsafe_to_string x)))
@@ -92,40 +77,35 @@ let slice x i len =
 let opt f = function
   | None -> 42
   | Some x ->
-    Hash_impl_.(finalize (combine_i64 (combine_i64 seed 43L) (Int64.of_int (f x))))
+    Hash_impl_.(finalize (combine_int (combine_int seed 43) (f x)))
 
 let list f l =
   let s =
-    List.fold_left
-      (fun s x -> Hash_impl_.combine_i64 s (Int64.of_int (f x)))
-      Hash_impl_.seed l
+    List.fold_left (fun s x -> Hash_impl_.combine_int s (f x)) Hash_impl_.seed l
   in
   Hash_impl_.finalize s
 
 let array f a =
   let s =
-    Array.fold_left
-      (fun s x -> Hash_impl_.combine_i64 s (Int64.of_int (f x)))
-      Hash_impl_.seed a
+    Array.fold_left (fun s x -> Hash_impl_.combine_int s (f x)) Hash_impl_.seed a
   in
   Hash_impl_.finalize s
 
 let pair f g (x, y) =
-  Hash_impl_.(
-    finalize (combine_i64 (combine_i64 seed (Int64.of_int (f x))) (Int64.of_int (g y))))
+  Hash_impl_.(finalize (combine_int (combine_int seed (f x)) (g y)))
 
 let triple f g h (x, y, z) =
   Hash_impl_.(
-    let s = combine_i64 seed (Int64.of_int (f x)) in
-    let s = combine_i64 s (Int64.of_int (g y)) in
-    finalize (combine_i64 s (Int64.of_int (h z))))
+    let s = combine_int seed (f x) in
+    let s = combine_int s (g y) in
+    finalize (combine_int s (h z)))
 
 let quad f g h i (x, y, z, w) =
   Hash_impl_.(
-    let s = combine_i64 seed (Int64.of_int (f x)) in
-    let s = combine_i64 s (Int64.of_int (g y)) in
-    let s = combine_i64 s (Int64.of_int (h z)) in
-    finalize (combine_i64 s (Int64.of_int (i w))))
+    let s = combine_int seed (f x) in
+    let s = combine_int s (g y) in
+    let s = combine_int s (h z) in
+    finalize (combine_int s (i w)))
 
 let map f h x = h (f x)
 
@@ -140,9 +120,7 @@ let poly x = Hashtbl.hash x
 let array_of_hashes_ arr =
   Array.sort CCInt.compare arr;
   let s =
-    Array.fold_left
-      (fun s h -> Hash_impl_.combine_i64 s (Int64.of_int h))
-      Hash_impl_.seed arr
+    Array.fold_left (fun s h -> Hash_impl_.combine_int s h) Hash_impl_.seed arr
   in
   Hash_impl_.finalize s
 
@@ -157,18 +135,18 @@ let list_comm f l =
 
 let iter f seq =
   let s = ref Hash_impl_.seed in
-  seq (fun x -> s := Hash_impl_.combine_i64 !s (Int64.of_int (f x)));
+  seq (fun x -> s := Hash_impl_.combine_int !s (f x));
   Hash_impl_.finalize !s
 
 let seq f sq =
   let s = ref Hash_impl_.seed in
-  Seq.iter (fun x -> s := Hash_impl_.combine_i64 !s (Int64.of_int (f x))) sq;
+  Seq.iter (fun x -> s := Hash_impl_.combine_int !s (f x)) sq;
   Hash_impl_.finalize !s
 
 let gen f g =
   let rec aux s =
     match g () with
     | None -> Hash_impl_.finalize s
-    | Some x -> aux (Hash_impl_.combine_i64 s (Int64.of_int (f x)))
+    | Some x -> aux (Hash_impl_.combine_int s (f x))
   in
   aux Hash_impl_.seed

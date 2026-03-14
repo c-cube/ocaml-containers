@@ -71,6 +71,22 @@ CAMLprim value caml_cc_hash_combine_i32_byte(value v_state, value v_chunk)
   CAMLreturn(caml_copy_int64((int64_t)r));
 }
 
+/* --- combine_int --------------------------------------------------------- */
+
+/* chunk is an OCaml int (intnat), passed untagged */
+CAMLprim int64_t caml_cc_hash_combine_int(int64_t state, intnat chunk)
+{
+  return (int64_t)hash_combine((uint64_t)state, (uint64_t)chunk);
+}
+
+CAMLprim value caml_cc_hash_combine_int_byte(value v_state, value v_chunk)
+{
+  CAMLparam2(v_state, v_chunk);
+  uint64_t r = hash_combine((uint64_t)Int64_val(v_state),
+                            (uint64_t)Long_val(v_chunk));
+  CAMLreturn(caml_copy_int64((int64_t)r));
+}
+
 /* --- combine_char -------------------------------------------------------- */
 
 /* c is passed as untagged int (Char.code) */

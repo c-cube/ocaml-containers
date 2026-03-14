@@ -10,9 +10,7 @@ let max : t -> t -> t = Stdlib.max
 [@@@endif]
 
 let sign i = compare i zero
-
 let hash_to_int64 (n : t) : t = Hash_impl_.(fmix64 (combine_i64 seed n))
-
 let[@inline] hash (n : t) : int = Hash_impl_.(finalize (combine_i64 seed n))
 
 (* see {!CCInt.popcount} for more details *)

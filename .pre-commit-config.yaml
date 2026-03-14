@@ -7,9 +7,11 @@ repos:
           pass_filenames: false
           language: system
           types: [text]
+          stages: [pre-push]
         - id: dune-build-opam
           name: dune build
-          entry: dune build @opam
+          entry: dune build @install
           pass_filenames: false
           language: system
           types: [text]
+          stages: [pre-push]

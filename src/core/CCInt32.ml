@@ -8,8 +8,8 @@ let min : t -> t -> t = Stdlib.min
 let max : t -> t -> t = Stdlib.max
 
 [@@@endif]
-let hash (x : t) : int = Hash_impl_.(finalize (combine_i32 seed x))
 
+let hash (x : t) : int = Hash_impl_.(finalize (combine_i32 seed x))
 let sign i = compare i zero
 
 let pow a b =
