@@ -20,7 +20,7 @@ CAMLprim value caml_cc_xxhash_mix_int64_byte(value v_state, value v_value) {
 
 /* mix_int: (int64_t state, intnat value) -> int64_t */
 CAMLprim int64_t caml_cc_xxhash_mix_int(int64_t state, intnat value) {
-  int64_t v = (int64_t)value;
+  int64_t v = (int64_t)(uintnat)value; /* zero-extend on 32-bit platforms */
   return (int64_t)XXH64(&v, sizeof(v), (XXH64_hash_t)state);
 }
 CAMLprim value caml_cc_xxhash_mix_int_byte(value v_state, value v_value) {
