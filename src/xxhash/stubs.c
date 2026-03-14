@@ -8,68 +8,55 @@
 #include <caml/mlvalues.h>
 #include <stdint.h>
 
-/* hash_string: native signature: (value, int64_t) -> int64_t
-   string is passed as OCaml value (can't be unboxed), seed is unboxed int64 */
-CAMLprim int64_t caml_cc_xxhash_string(value v_s, int64_t seed) {
-  const char *s = String_val(v_s);
-  size_t len = caml_string_length(v_s);
-  return (int64_t)XXH64(s, len, (XXH64_hash_t)seed);
+/* mix_int64: (int64_t state, int64_t value) -> int64_t */
+CAMLprim int64_t caml_cc_xxhash_mix_int64(int64_t state, int64_t value) {
+  return (int64_t)XXH64(&value, sizeof(value), (XXH64_hash_t)state);
 }
-
-CAMLprim value caml_cc_xxhash_string_byte(value v_s, value v_seed) {
-  CAMLparam2(v_s, v_seed);
-  int64_t seed = Int64_val(v_seed);
-  const char *s = String_val(v_s);
-  size_t len = caml_string_length(v_s);
-  int64_t result = (int64_t)XXH64(s, len, (XXH64_hash_t)seed);
+CAMLprim value caml_cc_xxhash_mix_int64_byte(value v_state, value v_value) {
+  CAMLparam2(v_state, v_value);
+  int64_t result = caml_cc_xxhash_mix_int64(Int64_val(v_state), Int64_val(v_value));
   CAMLreturn(caml_copy_int64(result));
 }
 
-/* hash_int64: unboxed (int64_t, int64_t) -> int64_t */
-CAMLprim int64_t caml_cc_xxhash_int64(int64_t v, int64_t seed) {
-  return (int64_t)XXH64(&v, sizeof(v), (XXH64_hash_t)seed);
+/* mix_int: (int64_t state, intnat value) -> int64_t */
+CAMLprim int64_t caml_cc_xxhash_mix_int(int64_t state, intnat value) {
+  int64_t v = (int64_t)value;
+  return (int64_t)XXH64(&v, sizeof(v), (XXH64_hash_t)state);
 }
-
-CAMLprim value caml_cc_xxhash_int64_byte(value v_v, value v_seed) {
-  CAMLparam2(v_v, v_seed);
-  int64_t v = Int64_val(v_v);
-  int64_t seed = Int64_val(v_seed);
-  int64_t result = caml_cc_xxhash_int64(v, seed);
+CAMLprim value caml_cc_xxhash_mix_int_byte(value v_state, value v_value) {
+  CAMLparam2(v_state, v_value);
+  int64_t result = caml_cc_xxhash_mix_int(Int64_val(v_state), Long_val(v_value));
   CAMLreturn(caml_copy_int64(result));
 }
 
-/* hash_int: untagged (intnat, intnat) -> intnat */
-CAMLprim intnat caml_cc_xxhash_int(intnat v, intnat seed) {
-  int64_t v64 = (int64_t)v;
-  int64_t seed64 = (int64_t)seed;
-  return (intnat)caml_cc_xxhash_int64(v64, seed64);
+/* mix_int32: (int64_t state, int32_t value) -> int64_t */
+CAMLprim int64_t caml_cc_xxhash_mix_int32(int64_t state, int32_t value) {
+  int64_t v = (int64_t)value;
+  return (int64_t)XXH64(&v, sizeof(v), (XXH64_hash_t)state);
+}
+CAMLprim value caml_cc_xxhash_mix_int32_byte(value v_state, value v_value) {
+  CAMLparam2(v_state, v_value);
+  int64_t result = caml_cc_xxhash_mix_int32(Int64_val(v_state), Int32_val(v_value));
+  CAMLreturn(caml_copy_int64(result));
 }
 
-CAMLprim value caml_cc_xxhash_int_byte(value v_v, value v_seed) {
-  intnat v = Long_val(v_v);
-  intnat seed = Long_val(v_seed);
-  return Val_long(caml_cc_xxhash_int(v, seed));
+/* mix_string: native signature: (int64_t state, value string) -> int64_t */
+CAMLprim int64_t caml_cc_xxhash_mix_string(int64_t state, value v_s) {
+  const char *s = String_val(v_s);
+  size_t len = caml_string_length(v_s);
+  return (int64_t)XXH64(s, len, (XXH64_hash_t)state);
+}
+CAMLprim value caml_cc_xxhash_mix_string_byte(value v_state, value v_s) {
+  CAMLparam2(v_state, v_s);
+  int64_t result = caml_cc_xxhash_mix_string(Int64_val(v_state), v_s);
+  CAMLreturn(caml_copy_int64(result));
 }
 
-/* mix64: unboxed (int64_t, int64_t) -> int64_t  [uses XXH64] */
-CAMLprim int64_t caml_cc_xxhash_mix64(int64_t a, int64_t b) {
-  return (int64_t)XXH64(&a, sizeof(a), (XXH64_hash_t)b);
+/* finalize: int64_t state -> int64_t */
+CAMLprim int64_t caml_cc_xxhash_finalize(int64_t state) {
+  return (int64_t)XXH64(&state, sizeof(state), 0);
 }
-
-CAMLprim value caml_cc_xxhash_mix64_byte(value v_a, value v_b) {
-  CAMLparam2(v_a, v_b);
-  int64_t a = Int64_val(v_a);
-  int64_t b = Int64_val(v_b);
-  CAMLreturn(caml_copy_int64(caml_cc_xxhash_mix64(a, b)));
-}
-
-/* finalize64: unboxed int64_t -> int64_t  [uses XXH64 with seed=0] */
-CAMLprim int64_t caml_cc_xxhash_finalize64(int64_t h) {
-  return (int64_t)XXH64(&h, sizeof(h), 0);
-}
-
-CAMLprim value caml_cc_xxhash_finalize64_byte(value v_h) {
-  CAMLparam1(v_h);
-  int64_t h = Int64_val(v_h);
-  CAMLreturn(caml_copy_int64(caml_cc_xxhash_finalize64(h)));
+CAMLprim value caml_cc_xxhash_finalize_byte(value v_state) {
+  CAMLparam1(v_state);
+  CAMLreturn(caml_copy_int64(caml_cc_xxhash_finalize(Int64_val(v_state))));
 }
