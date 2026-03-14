@@ -1535,7 +1535,7 @@ module Str = struct
   let rand_str_ ?(among = "abcdefgh") n =
     let module Q = QCheck in
     let st = Random.State.make [| n + 17 |] in
-    let gen_c = QCheck.Gen.oneofl (CCString.to_list among) in
+    let gen_c = QCheck.Gen.oneof_list (CCString.to_list among) in
     QCheck.Gen.string_size ~gen:gen_c (QCheck.Gen.return n) st
 
   let find ?(start = 0) ~sub s =
@@ -1821,6 +1821,62 @@ module Str = struct
                           (Pre.make ~max_len:1000 ~max_len_prefix:300)
                           [ 100; 1_000 ];
                   ];
+           ])
+end
+
+module Hash = struct
+  (* Old FNV-based string hash (from before the rrmxmx+fmix64 C implementation) *)
+  let fnv_offset_basis = 0xcbf29ce484222325L
+  let fnv_prime = 0x100000001b3L
+
+  let string_fnv (s : string) =
+    let h = ref fnv_offset_basis in
+    for i = 0 to String.length s - 1 do
+      let c = String.unsafe_get s i in
+      (h := Int64.(mul !h fnv_prime));
+      h := Int64.(logxor !h (of_int (Char.code c)))
+    done;
+    Int64.to_int !h land max_int
+
+  let rand = Random.State.make [| 42 |]
+
+  let mk_strings n len =
+    Array.init n (fun _ ->
+        String.init len (fun _ -> Char.chr (65 + Random.State.int rand 26)))
+
+  let bench_string_hash ?(time = 2) ~len n =
+    let strings = mk_strings n len in
+    let bench_new () =
+      Array.iter (fun s -> opaque_ignore (CCHash.string s)) strings
+    and bench_fnv () =
+      Array.iter (fun s -> opaque_ignore (string_fnv s)) strings
+    and bench_poly () =
+      Array.iter (fun s -> opaque_ignore (Hashtbl.hash s)) strings
+    and bench_xxhash () =
+      Array.iter
+        (fun s ->
+          opaque_ignore (Int64.to_int (Containers_xxhash.hash_string s)))
+        strings
+    in
+    B.throughputN time ~repeat
+      [
+        "CCHash.string (new)", bench_new, ();
+        "string_fnv (old)", bench_fnv, ();
+        "Hashtbl.hash (poly)", bench_poly, ();
+        "xxhash", bench_xxhash, ();
+      ]
+
+  let () =
+    B.Tree.register
+      ("hash"
+      @>>> [
+             "string"
+             @>> B.Tree.concat
+                   [
+                     app_int (bench_string_hash ~time:2 ~len:16) 1_000;
+                     app_int (bench_string_hash ~time:2 ~len:64) 1_000;
+                     app_int (bench_string_hash ~time:2 ~len:256) 1_000;
+                   ];
            ])
 end
 

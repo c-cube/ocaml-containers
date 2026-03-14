@@ -4,6 +4,7 @@
   containers
   containers_pvec
   containers-data
+  containers.xxhash
   benchmark
   gen
   iter
@@ -12,6 +13,20 @@
   batteries
   base
   sek)
+ (flags :standard -warn-error -3-5 -w -60 -safe-string -color always)
+ (optional)
+ (ocamlopt_flags
+  :standard
+  -O3
+  -color
+  always
+  -unbox-closures
+  -unbox-closures-factor
+  20))
+
+(executable
+ (name bench_hash)
+ (libraries containers benchmark)
  (flags :standard -warn-error -3-5 -w -60 -safe-string -color always)
  (optional)
  (ocamlopt_flags
