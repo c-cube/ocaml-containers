@@ -10,22 +10,8 @@ let max : t -> t -> t = Stdlib.max
 [@@@endif]
 
 let sign i = compare i zero
-
-(* use FNV:
-   https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function *)
-let hash_to_int64 (n : t) =
-  let offset_basis = 0xcbf29ce484222325L in
-  let prime = 0x100000001b3L in
-
-  let h = ref offset_basis in
-  for k = 0 to 7 do
-    h := mul !h prime;
-    (* h := h xor (k-th byte of n) *)
-    h := logxor !h (logand (shift_right n (k * 8)) 0xffL)
-  done;
-  logand !h max_int
-
-let[@inline] hash (n : t) : int = to_int (hash_to_int64 n) land Stdlib.max_int
+let hash_to_int64 (n : t) : t = Hash_impl_.(fmix64 (combine_i64 seed n))
+let[@inline] hash (n : t) : int = Hash_impl_.(finalize (combine_i64 seed n))
 
 (* see {!CCInt.popcount} for more details *)
 let[@inline] popcount (b : t) : int =

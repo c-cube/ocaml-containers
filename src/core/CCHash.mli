@@ -9,6 +9,15 @@
     across versions of OCaml and Containers).
 *)
 
+(* TODO: for 4.xx:
+
+  {[type state = int64
+   val seed : state
+   type 'a t = state -> 'a -> state
+   val finalize : state -> int64
+   ]}
+   *)
+
 (** {2 Definitions} *)
 
 type hash = int
