@@ -1,8 +1,8 @@
 (** Hash combinators with 64-bit state threading.
 
-    State is threaded explicitly as a private [int64] through combinators,
-    preserving full 64-bit quality throughout. Finalize with {!finalize} (returns
-    a positive [int]) or {!finalize64} (returns the raw [int64]).
+    State is threaded explicitly as a private [int64] through combinators.
+    Finalize with {!finalize} (returns a positive [int]) or {!finalize64}
+    (returns the raw [int64]).
 
     Typical use:
     {[
@@ -15,6 +15,8 @@
 
     {b Implementation}: xorshift+multiply combiner with fmix64 (Murmur3)
     finalizer, via C stubs. Unboxed in native code.
+
+    @since NEXT_RELEASE
 *)
 
 type state = private int64
