@@ -5,18 +5,27 @@
 type state = int64
 
 let seed : state = Hash_impl_.seed
-
 let[@inline] finalize64 (s : state) : int64 = Hash_impl_.fmix64 s
 let[@inline] finalize (s : state) : int = Hash_impl_.finalize s
 
 type 'a t = state -> 'a -> state
 
 let[@inline] int s x = Hash_impl_.combine_int s x
-let[@inline] bool s b = Hash_impl_.combine_int s (if b then 1 else 2)
+
+let[@inline] bool s b =
+  Hash_impl_.combine_int s
+    (if b then
+       1
+     else
+       2)
+
 let[@inline] char s c = Hash_impl_.combine_char s (Char.code c)
 let[@inline] int64 s (x : int64) = Hash_impl_.combine_i64 s x
 let[@inline] int32 s (x : int32) = Hash_impl_.combine_i32 s x
-let[@inline] nativeint s (x : nativeint) = Hash_impl_.combine_i64 s (Int64.of_nativeint x)
+
+let[@inline] nativeint s (x : nativeint) =
+  Hash_impl_.combine_i64 s (Int64.of_nativeint x)
+
 let[@inline] string s x = Hash_impl_.combine_string s x
 let[@inline] bytes s x = Hash_impl_.combine_string s (Bytes.unsafe_to_string x)
 
@@ -26,7 +35,8 @@ let slice str ofs s len =
     if k = j then
       st
     else
-      loop (k + 1) (Hash_impl_.combine_char st (Char.code (String.unsafe_get str k)))
+      loop (k + 1)
+        (Hash_impl_.combine_char st (Char.code (String.unsafe_get str k)))
   in
   loop ofs s
 
@@ -39,9 +49,14 @@ let array f s a = Array.fold_left f s a
 let pair f g s (x, y) = g (f s x) y
 let triple f g h s (x, y, z) = h (g (f s x) y) z
 let quad f g h k s (x, y, z, w) = k (h (g (f s x) y) z) w
-
 let map proj f s x = f s (proj x)
-let if_ b then_ else_ s x = if b then then_ s x else else_ s x
+
+let if_ b then_ else_ s x =
+  if b then
+    then_ s x
+  else
+    else_ s x
+
 let poly s x = Hash_impl_.combine_int s (Hashtbl.hash x)
 
 type 'a iter = ('a -> unit) -> unit

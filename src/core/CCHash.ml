@@ -7,7 +7,6 @@ type 'a t = 'a -> hash
 type 'a iter = ('a -> unit) -> unit
 type 'a gen = unit -> 'a option
 
-
 let[@inline] combine2 a b =
   Hash_impl_.(finalize (combine_int (combine_int seed a) b))
 
@@ -56,7 +55,9 @@ let bool b =
 let char x = Hash_impl_.(finalize (combine_char seed (Char.code x)))
 let int64 (n : int64) : int = Hash_impl_.(finalize (combine_i64 seed n))
 let int32 (x : int32) : int = Hash_impl_.(finalize (combine_i32 seed x))
-let nativeint (x : nativeint) = Hash_impl_.(finalize (combine_i64 seed (Int64.of_nativeint x)))
+
+let nativeint (x : nativeint) =
+  Hash_impl_.(finalize (combine_i64 seed (Int64.of_nativeint x)))
 
 let bytes (x : bytes) =
   Hash_impl_.(finalize (combine_string seed (Bytes.unsafe_to_string x)))
@@ -76,8 +77,7 @@ let slice x i len =
 
 let opt f = function
   | None -> 42
-  | Some x ->
-    Hash_impl_.(finalize (combine_int (combine_int seed 43) (f x)))
+  | Some x -> Hash_impl_.(finalize (combine_int (combine_int seed 43) (f x)))
 
 let list f l =
   let s =
@@ -87,7 +87,9 @@ let list f l =
 
 let array f a =
   let s =
-    Array.fold_left (fun s x -> Hash_impl_.combine_int s (f x)) Hash_impl_.seed a
+    Array.fold_left
+      (fun s x -> Hash_impl_.combine_int s (f x))
+      Hash_impl_.seed a
   in
   Hash_impl_.finalize s
 

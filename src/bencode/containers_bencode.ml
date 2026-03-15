@@ -23,8 +23,8 @@ let rec hash t =
   | List l -> H.combine2 20 (H.list hash l)
   | Map l ->
     H.combine2 30
-      (H.iter (H.pair H.string hash) @@ fun k ->
-       Str_map.iter (fun x y -> k (x, y)) l)
+      ( H.iter (H.pair H.string hash) @@ fun k ->
+        Str_map.iter (fun x y -> k (x, y)) l )
 
 let int64 i : t = Int i
 let int i : t = int64 (Int64.of_int i)
