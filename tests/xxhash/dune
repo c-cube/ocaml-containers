@@ -1,0 +1,11 @@
+(executable
+ (name t_xxhash)
+ (modules t_xxhash)
+ (libraries containers containers.xxhash containers_testlib qcheck-core))
+
+(rule
+ (alias runtest)
+ (deps t_xxhash.exe)
+ (package containers)
+ (action
+  (run ./t_xxhash.exe)))

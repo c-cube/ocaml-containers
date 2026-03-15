@@ -1,0 +1,10 @@
+(library
+ (name containers_xxhash)
+ (public_name containers.xxhash)
+ (synopsis "xxHash bindings for containers")
+ (libraries containers)
+ (foreign_stubs
+  (language c)
+  (flags :standard -O2)
+  (names stubs))
+ (ocamlopt_flags :standard -inline 100))
