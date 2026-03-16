@@ -1,6 +1,7 @@
 (* test hash functions a bit *)
 
 module H = CCHash
+module H64 = CCHash64
 
 module Hist = struct
   type t = {
@@ -50,5 +51,20 @@ let t_int n1 n2 =
 
 let () =
   t_int 0 2_000_000;
-  t_int (-4_000_000) (-3_500_000);
-  ()
+  t_int (-4_000_000) (-3_500_000)
+
+let () =
+  let n_samples = 200_000 in
+  let bits = Array.make 64 0 in
+  for i = 0 to n_samples - 1 do
+    let h = H64.finalize64 (H64.int H64.seed i) in
+    for b = 0 to 63 do
+      if Int64.(logand h (shift_left 1L b)) <> 0L then
+        bits.(b) <- bits.(b) + 1
+    done
+  done;
+  Format.printf "Bit probabilities after %d samples:@." n_samples;
+  for b = 0 to 63 do
+    let prob = float bits.(b) /. float n_samples in
+    Format.printf "bit %2d: %.4f@." b prob
+  done
