@@ -3,17 +3,26 @@
 module H64 = CCHash64
 module XXH = Containers_xxhash
 
-let n = ref 1_000_000
+let n = ref 100_000
 let verbose = ref false
 
 let check_bit_proba name hash_fn n_samples =
+  let rand = Random.State.make [| 42 |] in
   let bits = Array.make 64 0 in
-  for i = 1 to n_samples do
-    let h = hash_fn i in
-    for b = 0 to 63 do
-      if Int64.(logand h (shift_left 1L b)) <> 0L then bits.(b) <- bits.(b) + 1
+
+  let n_loops = 30 in
+  for _i = 1 to n_loops do
+    let base = Random.State.int64 rand Int64.(pred max_int) |> Int64.to_int in
+    for i = 1 to n_samples do
+      let h = hash_fn (base + i) in
+      for b = 0 to 63 do
+        if Int64.(logand h (shift_left 1L b)) <> 0L then
+          bits.(b) <- bits.(b) + 1
+      done
     done
   done;
+  let n_samples = n_loops * n_samples in
+
   if !verbose then (
     Format.printf "%s bit probabilities after %d samples:@." name n_samples;
     for b = 0 to 63 do
