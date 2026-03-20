@@ -24,6 +24,8 @@ format:
 format-check:
 	@dune build $(DUNE_OPTS) @fmt --display=quiet
 
+install-pre-commit-hook:
+	uvx pre-commit install --hook-type pre-push
 
 VERSION=$(shell awk '/^version:/ {print $$2}' containers.opam)
 
