@@ -19,7 +19,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#define HASH_MUL UINT64_C(0xd6e8feb86659fd93)
+// from murmur2: https://chromium.googlesource.com/external/smhasher/+/c8e8bf81bc6041d6d836365a501a0a96830d2d81/MurmurHash2.cpp
+#define HASH_MUL UINT64_C(0xc6a4a7935bd1e995)
+
+// from murmur3: https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp#L81
 #define FMIX_C1  UINT64_C(0xff51afd7ed558ccd)
 #define FMIX_C2  UINT64_C(0xc4ceb9fe1a85ec53)
 
@@ -31,6 +34,7 @@ static inline uint64_t hash_combine(uint64_t state, uint64_t chunk)
   return state;
 }
 
+// fmix64 from murmur3
 static inline uint64_t fmix64(uint64_t h)
 {
   h ^= h >> 33;
