@@ -37,6 +37,12 @@ type 'a t = state -> 'a -> state
 (** A hash combiner: takes the current state, mixes in a value, returns the
     updated state. *)
 
+val apply : 'a t -> 'a -> int64
+(** Hash the input *)
+
+val apply_int : 'a t -> 'a -> int
+(** Hash the input and truncate to [int] *)
+
 val int : int t
 val bool : bool t
 val char : char t
@@ -65,6 +71,10 @@ val map : ('a -> 'b) -> 'b t -> 'a t
 
 val if_ : bool -> 'a t -> 'a t -> 'a t
 (** [if_ b t e] uses hasher [t] when [b] is true, [e] otherwise. *)
+
+val combine2 : int64 -> int64 -> int64
+val combine3 : int64 -> int64 -> int64 -> int64
+val combine4 : int64 -> int64 -> int64 -> int64 -> int64
 
 val poly : 'a t
 (** Uses [Hashtbl.hash] internally. *)

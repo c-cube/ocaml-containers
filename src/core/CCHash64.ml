@@ -10,6 +10,8 @@ let[@inline] finalize (s : state) : int = Hash_impl_.finalize s
 
 type 'a t = state -> 'a -> state
 
+let[@inline] apply h x = finalize64 (h seed x)
+let apply_int h x = Int64.to_int (finalize64 (h seed x))
 let[@inline] int s x = Hash_impl_.combine_int s x
 
 let[@inline] bool s b =
@@ -76,6 +78,20 @@ let gen f s g =
     | Some x -> aux (f st x)
   in
   aux s
+
+let[@inline] combine2 a b =
+  Hash_impl_.(finalize64 (combine_i64 (combine_i64 seed a) b))
+
+let combine3 a b c =
+  Hash_impl_.(
+    let s = combine_i64 (combine_i64 seed a) b in
+    finalize64 (combine_i64 s c))
+
+let combine4 a b c d =
+  Hash_impl_.(
+    let s = combine_i64 (combine_i64 seed a) b in
+    let s = combine_i64 s c in
+    finalize64 (combine_i64 s d))
 
 let array_comm f s a =
   let hashes = Array.map (fun x -> finalize64 (f seed x)) a in
