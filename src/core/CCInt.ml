@@ -4,20 +4,8 @@ include Int
 
 type 'a iter = ('a -> unit) -> unit
 
-(* use FNV:
-   https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function *)
 let hash (n : int) : int =
-  let offset_basis = 0xcbf29ce484222325L in
-  let prime = 0x100000001b3L in
-
-  let h = ref offset_basis in
-  for k = 0 to 7 do
-    (h := Int64.(mul !h prime));
-    (* h := h xor (k-th byte of n) *)
-    h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff)))
-  done;
-  (* truncate back to int and remove sign *)
-  Int64.to_int !h land max_int
+  Hash_impl_.(finalize (combine_i64 seed (Int64.of_int n)))
 
 let range i j yield =
   let rec up i j yield =

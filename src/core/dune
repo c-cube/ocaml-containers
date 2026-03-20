@@ -6,7 +6,12 @@
   (action
    (run %{project_root}/src/core/cpp/cpp.exe %{input-file})))
  (flags :standard -nolabels -open CCMonomorphic)
- (libraries either containers.monomorphic containers.domain))
+ (libraries either containers.monomorphic containers.domain)
+ (private_modules Hash_impl_)
+ (foreign_stubs
+  (language c)
+  (flags :standard -O2)
+  (names hash_stubs)))
 
 (ocamllex
  (modules CCSexp_lex))

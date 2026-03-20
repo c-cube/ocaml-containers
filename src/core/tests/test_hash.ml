@@ -1,54 +1,59 @@
 (* test hash functions a bit *)
 
-module H = CCHash
+module H64 = CCHash64
+module XXH = Containers_xxhash
 
-module Hist = struct
-  type t = {
-    tbl: (int, int) Hashtbl.t;
-    mutable n_samples: int;
-  }
+let n = ref 100_000
+let verbose = ref false
 
-  let create () : t = { tbl = Hashtbl.create 32; n_samples = 0 }
+let check_bit_proba name hash_fn n_samples =
+  let rand = Random.State.make [| 42 |] in
+  let bits = Array.make 64 0 in
 
-  let add_n self x n =
-    Hashtbl.replace self.tbl x (n + try Hashtbl.find self.tbl x with _ -> 0);
-    self.n_samples <- n + self.n_samples
-
-  let pp out (self : t) : unit =
-    let max = Hashtbl.fold (fun k _ n -> max k n) self.tbl 0 in
-    let min = Hashtbl.fold (fun k _ n -> min k n) self.tbl max in
-    for i = min to max do
-      let n = try Hashtbl.find self.tbl i with _ -> 0 in
-      Format.fprintf out "[v=%-4d, n-inputs %-6d] %s@." i n
-        (String.make (int_of_float @@ ceil (log (float n))) '#')
+  let n_loops = 30 in
+  for _i = 1 to n_loops do
+    let base = Random.State.int64 rand Int64.(pred max_int) |> Int64.to_int in
+    for i = 1 to n_samples do
+      let h = hash_fn (base + i) in
+      for b = 0 to 63 do
+        if Int64.(logand h (shift_left 1L b)) <> 0L then
+          bits.(b) <- bits.(b) + 1
+      done
     done
-end
-
-let reset_line = "\x1b[2K\r"
-
-let t_int n1 n2 =
-  Printf.printf "test hash_int on %d--%d\n" n1 n2;
-  let count = Hashtbl.create 128 in
-  for i = n1 to n2 do
-    Printf.printf "%shash %d…%!" reset_line i;
-    let h = H.int i in
-    Hashtbl.replace count h (1 + CCHashtbl.get_or count h ~default:0);
-    if i mod 1024 * 1024 * 1024 = 0 then Gc.major ()
   done;
-  Printf.printf "%s%!" reset_line;
-  (* reverse table *)
-  let by_count =
-    CCHashtbl.to_iter count
-    |> Iter.map (fun (_h, n) -> n)
-    |> Iter.count ~hash:H.int
-  in
-  let hist = Hist.create () in
-  by_count (fun (n, i) -> Hist.add_n hist n i);
-  Format.printf "histogram:@.%a@." Hist.pp hist;
-  (*assert (Hist.check_uniform hist);*)
-  ()
+  let n_samples = n_loops * n_samples in
+
+  if !verbose then (
+    Format.printf "%s bit probabilities after %d samples:@." name n_samples;
+    for b = 0 to 63 do
+      let prob = float bits.(b) /. float n_samples in
+      Format.printf "bit %2d: %.4f@." b prob
+    done
+  );
+  let ok = ref true in
+  for b = 0 to 63 do
+    let prob = float bits.(b) /. float n_samples in
+    if prob < 0.48 || prob > 0.52 then (
+      Format.printf "FAIL: bit %d has proba %.4f (outside 0.48-0.52)@." b prob;
+      ok := false
+    )
+  done;
+  if !ok then
+    Format.printf "%s: OK@." name
+  else
+    ();
+  !ok
+
+let speclist =
+  [
+    "-v", Arg.Set verbose, " verbose mode";
+    "-n", Arg.Set_int n, " size of the range";
+  ]
 
 let () =
-  t_int 0 2_000_000;
-  t_int (-4_000_000) (-3_500_000);
-  ()
+  Arg.parse (Arg.align speclist) (fun _ -> ()) "test_hash.exe";
+  let ok1 =
+    check_bit_proba "CCHash64" (fun i -> H64.finalize64 (H64.int H64.seed i)) !n
+  in
+  let ok2 = check_bit_proba "XXH" (fun i -> XXH.hash_int i) !n in
+  if (not ok1) || not ok2 then exit 1

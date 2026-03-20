@@ -21,7 +21,8 @@ let rec eq t1 t2 =
 let rec hash_tree t =
   match t with
   | Empty -> CCHash.string "empty"
-  | Node (i, l) -> CCHash.(combine2 (int i) (list hash_tree l))
+  | Node (i, l) ->
+    CCHash.((combine2 [@alert "-deprecated"]) (int i) (list hash_tree l))
 
 module H = Hashtbl.Make (struct
   type t = tree

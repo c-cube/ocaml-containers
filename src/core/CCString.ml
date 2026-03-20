@@ -11,7 +11,7 @@ include String
 
 let compare_int (a : int) b = Stdlib.compare a b
 let compare = String.compare
-let hash s = Hashtbl.hash s
+let hash (s : string) : int = Hash_impl_.(finalize (combine_string seed s))
 let length = String.length
 let is_empty s = equal s ""
 
