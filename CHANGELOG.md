@@ -11,6 +11,7 @@
   * breaking: change the semantic of CCFloat.{min,max} with respect to NaN to follow the Stdlib
   * breaking: change the semantic of CCInt.rem with respect to negative number to follow the Stdlib
   * breaking: change the order of argument of `CCMap.add_seq` to align with the stdlib.
+  * breaking: `CCMap.to_list` is now in increasing, not decreasing, order for OCaml >= 5.1
 
 ## 3.17
 
