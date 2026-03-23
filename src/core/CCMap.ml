@@ -191,7 +191,7 @@ module Make (O : Map.OrderedType) = struct
 
   [@@@iflt 5.1]
 
-  let to_list m = fold (fun k v acc -> (k, v) :: acc) m []
+  let to_list = bindings
 
   [@@@endif]
 
