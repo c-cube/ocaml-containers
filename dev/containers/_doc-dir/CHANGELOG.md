@@ -1,4 +1,102 @@
-# Changelog
+
+## 3.18
+
+- fix leb128 slice bug
+- fix leb128 `Int64.min_int` bug
+- add tests for leb128 library (#486)
+- fix size explosion in `t_pvec.ml` found in CI
+- some breaking changes after the big bump to 4.08 as lower bound, thanks to @fardale for the cleanup
+  * breaking: CCListLabel.compare and CCListLabel.equal takes the function on the elements as named arguments
+  * breaking: CCListLabel.init now takes the length as a named arguments to follow the Stdlib
+  * breaking: change the semantic of CCFloat.{min,max} with respect to NaN to follow the Stdlib
+  * breaking: change the semantic of CCInt.rem with respect to negative number to follow the Stdlib
+  * breaking: change the order of argument of `CCMap.add_seq` to align with the stdlib.
+
+## 3.17
+
+- feat: add `CCAtomic.update_cas`
+- feat: add `Pvec.flat_map`
+- faster `List.take_drop` thanks to a trick by nojb
+
+- move to ocamlformat 0.27, format code
+- test: enrich pvec test
+- Patch CBor roundtrip property to hold for nan's too (thanks @jmid)
+
+## 3.16
+
+
+- breaking: Renamed predicate parameter of `take_while`, `rtake_while` from `p` to `f`, aligining it with pre-existing `drop_while`.
+
+- feat: add `containers.leb128` library
+- feat: add `CCFun.with_return`
+- Added functions to the `Char` module to check common character properties.
+- feat: add `CCVector.findi`
+
+
+- fix: compat with OCaml 5.4
+- fix: oob(!!) in CCHash.bytes
+
+## 3.15
+
+- Add `CCList.split_result` (#459)
+- pretty printer in MultiSet
+- `CCHeap`: building a heap from an almost-sorted sequence
+- perf: `CCHeap`: building a heap from n elements is now in time O(n)
+  instead of O(n log n)
+- perf: `CCHeap`: `filter` and `delete_all` are now in time O(n)
+  instead of O(n log n), and they ensure physical equality
+  (for `delete_all` this is a bugfix)
+
+## 3.14
+
+
+- predicate combinators: `and_pred` and `or_pred`
+- feat `pp`: add a bunch of extensions
+- Kleisli Composition Operator and Apply_or for option/result/fun (#455)
+- add `CCByte_buffer.to_slice`
+- add a byte slice type `CCByte_slice`
+- add `cons_when` to `CCListLabels`
+- add `(|||>)` and `||>` to `CCFun`
+- `CCVector`: Add function foldi
+- add `containers.pvec`, a persistent vector type.
+
+- perf: use a monomorphic impl for `CCMonomorphic.{min,max}`
+
+## 3.13.1
+
+- list: TRMC was in 4.14, we can use it earlier
+- fix insidious bug in CCList.flat_map linked to unspecified
+    evaluation order
+- perf: use `concat_map` for `CCList.flat_map` on >= 5.1
+    (this also re-fixes the same bug in `CCList.flat_map` anyway)
+
+## 3.13
+
+- breaking: bump minimum version of OCaml to 4.08
+- breaking: delete containers-thread (which was deprecated)
+- breaking: pp: modify `Ext.t` so it takes surrounding value
+- breaking: remove CCShims
+- CCMultiMap: Rename functions find_left and find_right in the bidirectional multimap
+    to find_left_iter and find_right_iter respectively to reflect their usage,
+    and add new functions to replace the old find_left and find_right
+    that return a list of values rather than an iterator,
+    to make the signatures of CCMultiMap.S and CCMultiMap.BIDIR cohere.
+    Additionally, change the return type of
+    `S.find_iter` from `t -> key -> (value -> unit) -> unit` to `t -> key -> value iter`.
+
+- CCList: add `unfold`
+- CCBool: Add functions if_then and if_then_else
+- CCList: remove some functions that are subsumed by the stdlib
+- CCList: use TRMC for many functions on 5.1
+- feat CCFunvec: add `fold_rev`
+- add `Containers_pp.newline_or_spaces`
+- cleanup: remove stubs for code always present on 4.08, rely on
+    newer functions in 5.1
+
+- perf: accelerate `List.append` and `List.flat_map` on 5.1
+
+- more warnings, more tests, cleanup dead code
+- change COC to ocaml-coc
 
 ## 3.12
 

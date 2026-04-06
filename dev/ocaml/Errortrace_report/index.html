@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Errortrace_report (ocaml.Errortrace_report)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../_odoc-theme/odoc.css"/><meta name="generator" content="odoc 3.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">Index</a> &#x00BB; <a href="../index.html">ocaml</a> &#x00BB; Errortrace_report</nav><header class="odoc-preamble"><h1>Module <code><span>Errortrace_report</span></code></h1><p>Functions for reporting core level type errors.</p></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-ambiguous_type"><a href="#val-ambiguous_type" class="anchor"></a><code><span><span class="keyword">val</span> ambiguous_type : 
+  <span><a href="../Format_doc/index.html#type-formatter">Format_doc.formatter</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>(<a href="../Path/index.html#type-t">Path.t</a> * <a href="../Path/index.html#type-t">Path.t</a>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>(<a href="../Path/index.html#type-t">Path.t</a> * <a href="../Path/index.html#type-t">Path.t</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-unification"><a href="#val-unification" class="anchor"></a><code><span><span class="keyword">val</span> unification : 
+  <span><a href="../Format_doc/index.html#type-formatter">Format_doc.formatter</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Errortrace/index.html#type-unification_error">Errortrace.unification_error</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?type_expected_explanation</span>:<a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-equality"><a href="#val-equality" class="anchor"></a><code><span><span class="keyword">val</span> equality : 
+  <span><a href="../Format_doc/index.html#type-formatter">Format_doc.formatter</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Out_type/index.html#type-type_or_scheme">Out_type.type_or_scheme</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Errortrace/index.html#type-equality_error">Errortrace.equality_error</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-moregen"><a href="#val-moregen" class="anchor"></a><code><span><span class="keyword">val</span> moregen : 
+  <span><a href="../Format_doc/index.html#type-formatter">Format_doc.formatter</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Out_type/index.html#type-type_or_scheme">Out_type.type_or_scheme</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Errortrace/index.html#type-moregen_error">Errortrace.moregen_error</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-comparison"><a href="#val-comparison" class="anchor"></a><code><span><span class="keyword">val</span> comparison : 
+  <span><a href="../Format_doc/index.html#type-formatter">Format_doc.formatter</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Out_type/index.html#type-type_or_scheme">Out_type.type_or_scheme</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Errortrace/index.html#type-comparison_error">Errortrace.comparison_error</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Format_doc/index.html#type-t">Format_doc.t</a> <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-subtype"><a href="#val-subtype" class="anchor"></a><code><span><span class="keyword">val</span> subtype : 
+  <span><a href="../Format_doc/index.html#type-formatter">Format_doc.formatter</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Errortrace/Subtype/index.html#type-error">Errortrace.Subtype.error</a> <span class="arrow">&#45;&gt;</span></span>
+  <span>string <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div></div></div></body></html>

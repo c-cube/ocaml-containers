@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Id (ocaml.Stdlib.Type.Id)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../../_odoc-theme/odoc.css"/><meta name="generator" content="odoc 3.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../../../index.html">Index</a> &#x00BB; <a href="../../../index.html">ocaml</a> &#x00BB; <a href="../../index.html">Stdlib</a> &#x00BB; <a href="../index.html">Type</a> &#x00BB; Id</nav><header class="odoc-preamble"><h1>Module <code><span>Type.Id</span></code></h1><p>Type identifiers.</p><p>A type identifier is a value that denotes a type. Given two type identifiers, they can be tested for <a href="#val-provably_equal" title="Id.provably_equal">equality</a> to prove they denote the same type. Note that:</p><ul><li>Unequal identifiers do not imply unequal types: a given type can be denoted by more than one identifier.</li><li>Type identifiers can be marshalled, but they get a new, distinct, identity on unmarshalling, so the equalities are lost.</li></ul><p>See an <a href="#example" title="example">example</a> of use.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#ids">Type identifiers</a></li><li><a href="#example">Example</a></li></ul></nav></div><div class="odoc-content"><h2 id="ids"><a href="#ids" class="anchor"></a>Type identifiers</h2><div class="odoc-spec"><div class="spec type anchored" id="type-t"><a href="#type-t" class="anchor"></a><code><span><span class="keyword">type</span> <span>!'a t</span></span></code></div><div class="spec-doc"><p>The type for identifiers for type <code>'a</code>.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-make"><a href="#val-make" class="anchor"></a><code><span><span class="keyword">val</span> make : <span>unit <span class="arrow">&#45;&gt;</span></span> <span><span class="type-var">'a</span> <a href="#type-t">t</a></span></span></code></div><div class="spec-doc"><p><code>make ()</code> is a new type identifier.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-uid"><a href="#val-uid" class="anchor"></a><code><span><span class="keyword">val</span> uid : <span><span><span class="type-var">'a</span> <a href="#type-t">t</a></span> <span class="arrow">&#45;&gt;</span></span> int</span></code></div><div class="spec-doc"><p><code>uid id</code> is a runtime unique identifier for <code>id</code>.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-provably_equal"><a href="#val-provably_equal" class="anchor"></a><code><span><span class="keyword">val</span> provably_equal : <span><span><span class="type-var">'a</span> <a href="#type-t">t</a></span> <span class="arrow">&#45;&gt;</span></span> <span><span><span class="type-var">'b</span> <a href="#type-t">t</a></span> <span class="arrow">&#45;&gt;</span></span> <span><span><span>(<span class="type-var">'a</span>, <span class="type-var">'b</span>)</span> <a href="../index.html#type-eq">eq</a></span> option</span></span></code></div><div class="spec-doc"><p><code>provably_equal i0 i1</code> is <code>Some Equal</code> if identifier <code>i0</code> is equal to <code>i1</code> and <code>None</code> otherwise.</p></div></div><h2 id="example"><a href="#example" class="anchor"></a>Example</h2><p>The following shows how type identifiers can be used to implement a simple heterogeneous key-value dictionary. In contrast to <a href="../../Map/index.html"><code>Stdlib.Map</code></a> values whose keys map to a single, homogeneous type of values, this dictionary can associate a different type of value to each key.</p><pre class="language-ocaml"><code>(** Heterogeneous dictionaries. *)
+module Dict : sig
+  type t
+  (** The type for dictionaries. *)
+
+  type 'a key
+  (** The type for keys binding values of type ['a]. *)
+
+  val key : unit -&gt; 'a key
+  (** [key ()] is a new dictionary key. *)
+
+  val empty : t
+  (** [empty] is the empty dictionary. *)
+
+  val add : 'a key -&gt; 'a -&gt; t -&gt; t
+  (** [add k v d] is [d] with [k] bound to [v]. *)
+
+  val remove : 'a key -&gt; t -&gt; t
+  (** [remove k d] is [d] with the last binding of [k] removed. *)
+
+  val find : 'a key -&gt; t -&gt; 'a option
+  (** [find k d] is the binding of [k] in [d], if any. *)
+end = struct
+  type 'a key = 'a Type.Id.t
+  type binding = B : 'a key * 'a -&gt; binding
+  type t = (int * binding) list
+
+  let key () = Type.Id.make ()
+  let empty = []
+  let add k v d = (Type.Id.uid k, B (k, v)) :: d
+  let remove k d = List.remove_assoc (Type.Id.uid k) d
+  let find : type a. a key -&gt; t -&gt; a option = fun k d -&gt;
+    match List.assoc_opt (Type.Id.uid k) d with
+    | None -&gt; None
+    | Some (B (k', v)) -&gt;
+        match Type.Id.provably_equal k k' with
+        | Some Type.Equal -&gt; Some v
+        | None -&gt; assert false
+end</code></pre></div></body></html>
