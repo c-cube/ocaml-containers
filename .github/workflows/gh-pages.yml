@@ -9,13 +9,13 @@ jobs:
   deploy:
     name: Deploy doc
     runs-on: ubuntu-latest
-    container: ghcr.io/c-cube/c-cube-commmon/ci-5.4:latest
+    container: ghcr.io/c-cube/c-cube-commmon/ci-doc-5.3:latest
 
     steps:
       - uses: actions/checkout@v6
 
       - name: Deps
-        run: opam install odig containers containers-data
+        run: opam install containers containers-data
 
       - name: Build
         run: opam exec -- odig odoc --cache-dir=_doc/ containers containers-data
@@ -25,5 +25,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./_doc/html/
-          destination_dir: dev
-          enable_jekyll: true
+          destination_dir: .
+          enable_jekyll: false
