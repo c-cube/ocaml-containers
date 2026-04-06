@@ -3,20 +3,16 @@ name: github pages
 on:
   push:
     branches:
-      - master  # Set a branch name to trigger deployment
+      - main
 
 jobs:
   deploy:
     name: Deploy doc
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@main
+    container: ghcr.io/c-cube/c-cube-commmon/ci-5.4:latest
 
-      - name: Use OCaml
-        uses: ocaml/setup-ocaml@v3
-        with:
-          ocaml-compiler: '5.2'
-          dune-cache: false
+    steps:
+      - uses: actions/checkout@v6
 
       - name: Deps
         run: opam install odig containers containers-data
