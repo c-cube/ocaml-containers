@@ -151,8 +151,7 @@ let prop_consistent ops =
   with Nope str -> Test.fail_reportf "consistent ops failed:\n%s" str
 ;;
 
-q arb (fun ops -> prop_consistent ops)
-;;
+q arb (fun ops -> prop_consistent ops);;
 
 (* --- iter/fold_left/iteri off-by-one --- *)
 

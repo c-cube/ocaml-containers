@@ -31,7 +31,7 @@ t @@ fun () ->
 (* after clear, get raises *)
 let sl = of_string "hello" in
 clear sl;
-(try
-   let _ = get sl 0 in
-   false
- with Invalid_argument _ -> true)
+try
+  let _ = get sl 0 in
+  false
+with Invalid_argument _ -> true
