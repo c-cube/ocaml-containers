@@ -10,7 +10,7 @@ jobs:
   format:
     name: format
     runs-on: ubuntu-latest
-    container: ghcr.io/c-cube/c-cube-commmon/ci-4.14:latest
+    container: ghcr.io/c-cube/c-cube-commmon/ci-doc-5.3:latest
 
     steps:
       - uses: actions/checkout@v6
