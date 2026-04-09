@@ -21,6 +21,12 @@ let create ?(off = 0) ?len bs =
 let[@inline] unsafe_of_string ?off ?len s =
   create ?off ?len (Bytes.unsafe_of_string s)
 
+let[@inline] of_string s = create (Bytes.of_string s)
+
+let[@inline] clear self =
+  self.off <- 0;
+  self.len <- 0
+
 let[@inline] len self = self.len
 let[@inline] contents self = Bytes.sub_string self.bs self.off self.len
 

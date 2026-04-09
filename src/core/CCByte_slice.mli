@@ -26,6 +26,12 @@ val unsafe_of_string : ?off:int -> ?len:int -> string -> t
     This is unsafe because mutating the bytes is forbidden
     (just like with {!Bytes.unsafe_of_string} *)
 
+val of_string : string -> t
+(** [of_string s] makes a slice from a copy of [s]. Safe to mutate. *)
+
+val clear : t -> unit
+(** [clear sl] resets [off] and [len] to 0. *)
+
 val len : t -> int
 (** Access the length *)
 
