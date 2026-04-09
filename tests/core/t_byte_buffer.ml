@@ -152,3 +152,71 @@ let prop_consistent ops =
 ;;
 
 q arb (fun ops -> prop_consistent ops)
+;;
+
+(* --- iter/fold_left/iteri off-by-one --- *)
+
+t @@ fun () ->
+(* empty buffer: iter should call f zero times *)
+let b = create () in
+let n = ref 0 in
+iter (fun _ -> incr n) b;
+!n = 0
+;;
+
+t @@ fun () ->
+(* non-empty buffer: iter visits exactly [length b] chars *)
+let b = create () in
+append_string b "abc";
+let chars = ref [] in
+iter (fun c -> chars := c :: !chars) b;
+List.rev !chars = [ 'a'; 'b'; 'c' ]
+;;
+
+t @@ fun () ->
+(* fold_left on empty buffer returns accumulator unchanged *)
+let b = create () in
+fold_left (fun acc _ -> acc + 1) 0 b = 0
+;;
+
+t @@ fun () ->
+(* fold_left counts exactly [length b] chars *)
+let b = create () in
+append_string b "hello";
+fold_left (fun acc _ -> acc + 1) 0 b = 5
+;;
+
+t @@ fun () ->
+(* iteri visits exactly [length b] indices *)
+let b = create () in
+append_string b "ab";
+let pairs = ref [] in
+iteri (fun i c -> pairs := (i, c) :: !pairs) b;
+List.rev !pairs = [ 0, 'a'; 1, 'b' ]
+;;
+
+(* --- copy --- *)
+
+t @@ fun () ->
+let b = create () in
+append_string b "hello";
+let b2 = copy b in
+contents b = contents b2
+;;
+
+t @@ fun () ->
+(* copy is independent: mutating original doesn't affect copy *)
+let b = create () in
+append_string b "hello";
+let b2 = copy b in
+add_char b '!';
+contents b2 = "hello"
+;;
+
+t @@ fun () ->
+(* copy is independent: mutating copy doesn't affect original *)
+let b = create () in
+append_string b "hello";
+let b2 = copy b in
+add_char b2 '?';
+contents b = "hello"

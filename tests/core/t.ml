@@ -5,6 +5,7 @@ Containers_testlib.run_all ~descr:"containers"
     T_array.get ();
     T_bool.get ();
     T_byte_buffer.get ();
+    T_byte_slice.get ();
     T_canonical_sexp.get ();
     T_char.get ();
     T_either.get ();
