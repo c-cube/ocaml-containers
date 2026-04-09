@@ -91,6 +91,9 @@ val to_slice : t -> CCByte_slice.t
     The slice shares the same byte array as [buf] (until [buf] is resized).
     @since 3.13.1 *)
 
+val copy : t -> t
+(** [copy buf] returns an independent copy of [buf]. *)
+
 val contents : t -> string
 (** Copy the internal data to a string. Allocates. *)
 

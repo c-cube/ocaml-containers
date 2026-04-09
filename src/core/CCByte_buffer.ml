@@ -96,7 +96,7 @@ let fold_left f acc self =
 
   (* capture current content *)
   let acc = ref acc in
-  for i = 0 to len do
+  for i = 0 to len - 1 do
     acc := f !acc (Bytes.unsafe_get bs i)
   done;
   !acc
@@ -104,15 +104,19 @@ let fold_left f acc self =
 let[@inline] iter f self =
   (* capture current content *)
   let { bs; len } = self in
-  for i = 0 to len do
+  for i = 0 to len - 1 do
     f (Bytes.unsafe_get bs i)
   done
 
 let[@inline] iteri f self =
   let { bs; len } = self in
-  for i = 0 to len do
+  for i = 0 to len - 1 do
     f i (Bytes.unsafe_get bs i)
   done
+
+let copy self =
+  let bs = Bytes.copy self.bs in
+  { bs; len = self.len }
 
 let of_seq seq =
   let self = create ~cap:32 () in
