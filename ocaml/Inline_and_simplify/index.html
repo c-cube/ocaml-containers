@@ -4,9 +4,9 @@
   <span><span class="label">backend</span>:<span>(<span class="keyword">module</span> <a href="../Backend_intf/module-type-S/index.html">Backend_intf.S</a>)</span> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="label">prefixname</span>:string <span class="arrow">&#45;&gt;</span></span>
   <span><span class="label">round</span>:int <span class="arrow">&#45;&gt;</span></span>
-  <span><span class="label">ppf_dump</span>:<a href="../Stdlib/Format/index.html#type-formatter">Stdlib.Format.formatter</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">ppf_dump</span>:<a href="../Stdlib/Format/index.html#type-formatter">Format.formatter</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../Flambda/index.html#type-program">Flambda.program</a> <span class="arrow">&#45;&gt;</span></span>
-  <a href="../Flambda/index.html#type-program">Flambda.program</a></span></code></div><div class="spec-doc"><p>Simplification of Flambda programs combined with function inlining: for the most part a beta-reduction pass.</p><p>Readers interested in the inlining strategy should read the <code>Inlining_decision</code> module first.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-duplicate_function"><a href="#val-duplicate_function" class="anchor"></a><code><span><span class="keyword">val</span> duplicate_function : 
+  <a href="../Flambda/index.html#type-program">Flambda.program</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-duplicate_function"><a href="#val-duplicate_function" class="anchor"></a><code><span><span class="keyword">val</span> duplicate_function : 
   <span><span class="label">env</span>:<a href="../Inline_and_simplify_aux/Env/index.html#type-t">Inline_and_simplify_aux.Env.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="label">set_of_closures</span>:<a href="../Flambda/index.html#type-set_of_closures">Flambda.set_of_closures</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="label">fun_var</span>:<a href="../Variable/index.html#type-t">Variable.t</a> <span class="arrow">&#45;&gt;</span></span>
