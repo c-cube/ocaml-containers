@@ -2,13 +2,11 @@
 
 (** Internal hash implementation.
 
-    Combiner: [state ^= chunk; state ^= state >> 32; state *= 0xd6e8feb86659fd93]
+    Combiner: [state ^= chunk; state ^= state >> 32; state *= 0xc6a4a7935bd1e995]
     Finalizer: fmix64 (Murmur3).
 
-    Multiplicative constant 0xd6e8feb86659fd93 (rrmxmx family, Pelle Evensen, 2018):
-    https://mostlymangling.blogspot.com/2018/07/on-mixing-functions-in-fast-hashing.html
-    Also evaluated in Chris Wellons' hash-prospector:
-    https://github.com/skeeto/hash-prospector
+    Multiplicative constant 0xc6a4a7935bd1e995 (MurmurHash2, Austin Appleby):
+    https://github.com/aappleby/smhasher/blob/master/src/MurmurHash2.cpp
 
     fmix64 constants (Murmur3, Austin Appleby):
     https://github.com/aappleby/smhasher
