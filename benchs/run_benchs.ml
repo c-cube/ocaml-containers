@@ -1152,6 +1152,244 @@ module Tbl = struct
     ()
 end
 
+module CCHashTrie = struct
+  (** Benchmarks for CCHashTrie *)
+
+  module Int_key = CCInt
+  module M = CCHashTrie.Make (Int_key)
+  module R = Ref_impl.HashTrie (Int_key)
+
+  let mk_ints n = Array.init n (fun i -> i * 2654435761)
+
+  let bench_int_add ~time n =
+    let ints = mk_ints n in
+
+    let add_imm () =
+      let m = ref M.empty in
+      for i = 0 to n - 1 do
+        m := M.add ints.(i) ints.(i) !m
+      done;
+      opaque_ignore !m
+    and add_mut () =
+      let id = CCHashTrie.Transient.create () in
+      let m = ref M.empty in
+      for i = 0 to n - 1 do
+        m := M.add_mut ~id ints.(i) ints.(i) !m
+      done;
+      opaque_ignore !m
+    and add_with () =
+      let m = ref M.empty in
+      CCHashTrie.Transient.with_ (fun id ->
+          for i = 0 to n - 1 do
+            m := M.add_mut ~id ints.(i) ints.(i) !m
+          done);
+      opaque_ignore !m
+    and add_list () =
+      let l = Array.to_list (Array.mapi (fun i x -> x, x) ints) in
+      opaque_ignore (M.of_list l)
+    and add_ref () =
+      let m = ref R.empty in
+      for i = 0 to n - 1 do
+        m := R.add ints.(i) ints.(i) !m
+      done;
+      opaque_ignore !m
+    in
+    B.throughputN time ~repeat
+      [
+        "cchashtrie_add_imm", add_imm, ();
+        "cchashtrie_add_mut", add_mut, ();
+        "cchashtrie_add_with_", add_with, ();
+        "cchashtrie_of_list", add_list, ();
+        "ref_hashtrie", add_ref, ();
+      ]
+
+  let bench_int_find ~time n =
+    let ints = mk_ints n in
+
+    let m = M.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints))
+    and r = R.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints)) in
+
+    let find_cc () =
+      for i = 0 to n - 1 do
+        ignore (M.get_exn ints.(i) m)
+      done
+    and find_ref () =
+      for i = 0 to n - 1 do
+        ignore (R.get_exn ints.(i) r)
+      done
+    in
+    B.throughputN time ~repeat
+      [ "cchashtrie_find", find_cc, (); "ref_hashtrie", find_ref, () ]
+
+  let bench_int_replace ~time n =
+    let ints = mk_ints n in
+
+    let m = M.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints))
+    and r = R.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints)) in
+
+    let replace_imm () =
+      let m' = ref m in
+      for i = 0 to n - 1 do
+        m' := M.add ints.(i) (-ints.(i)) !m'
+      done;
+      opaque_ignore !m'
+    and replace_mut () =
+      let id = CCHashTrie.Transient.create () in
+      let m' = ref m in
+      for i = 0 to n - 1 do
+        m' := M.add_mut ~id ints.(i) (-ints.(i)) !m'
+      done;
+      opaque_ignore !m'
+    and replace_ref () =
+      let r' = ref r in
+      for i = 0 to n - 1 do
+        r' := R.add ints.(i) (-ints.(i)) !r'
+      done;
+      opaque_ignore !r'
+    in
+    B.throughputN time ~repeat
+      [
+        "cchashtrie_replace_imm", replace_imm, ();
+        "cchashtrie_replace_mut", replace_mut, ();
+        "ref_hashtrie", replace_ref, ();
+      ]
+
+  let bench_int_remove ~time n =
+    let ints = mk_ints n in
+
+    let m = M.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints))
+    and r = R.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints)) in
+
+    let remove_imm () =
+      let m' = ref m in
+      for i = 0 to n - 1 do
+        m' := M.remove ints.(i) !m'
+      done;
+      opaque_ignore !m'
+    and remove_mut () =
+      let id = CCHashTrie.Transient.create () in
+      let m' = ref m in
+      for i = 0 to n - 1 do
+        m' := M.remove_mut ~id ints.(i) !m'
+      done;
+      opaque_ignore !m'
+    and remove_ref () =
+      let r' = ref r in
+      for i = 0 to n - 1 do
+        r' := R.remove ints.(i) !r'
+      done;
+      opaque_ignore !r'
+    in
+    B.throughputN time ~repeat
+      [
+        "cchashtrie_remove_imm", remove_imm, ();
+        "cchashtrie_remove_mut", remove_mut, ();
+        "ref_hashtrie", remove_ref, ();
+      ]
+
+  let bench_int_update ~time n =
+    let ints = mk_ints n in
+
+    let m = M.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints))
+    and r = R.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints)) in
+
+    let update_imm () =
+      let m' = ref m in
+      for i = 0 to n - 1 do
+        m' :=
+          M.update ints.(i)
+            ~f:(function
+              | Some v -> Some (-v)
+              | None -> None)
+            !m'
+      done;
+      opaque_ignore !m'
+    and update_mut () =
+      let id = CCHashTrie.Transient.create () in
+      let m' = ref m in
+      for i = 0 to n - 1 do
+        m' :=
+          M.update_mut ~id ints.(i)
+            ~f:(function
+              | Some v -> Some (-v)
+              | None -> None)
+            !m'
+      done;
+      opaque_ignore !m'
+    and update_ref () =
+      let r' = ref r in
+      for i = 0 to n - 1 do
+        r' :=
+          R.update ints.(i)
+            ~f:(function
+              | Some v -> Some (-v)
+              | None -> None)
+            !r'
+      done;
+      opaque_ignore !r'
+    in
+    B.throughputN time ~repeat
+      [
+        "cchashtrie_update_imm", update_imm, ();
+        "cchashtrie_update_mut", update_mut, ();
+        "ref_hashtrie", update_ref, ();
+      ]
+
+  let bench_int_iter ~time n =
+    let ints = mk_ints n in
+
+    let m = M.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints))
+    and r = R.of_list (Array.to_list (Array.mapi (fun i x -> x, x) ints)) in
+
+    let iter_cc () =
+      let count = ref 0 in
+      M.iter ~f:(fun _ _ -> incr count) m;
+      opaque_ignore !count
+    and iter_ref () =
+      let count = ref 0 in
+      R.iter ~f:(fun _ _ -> incr count) r;
+      opaque_ignore !count
+    and fold_cc () =
+      let count = M.fold ~f:(fun acc _ _ -> acc + 1) ~x:0 m in
+      opaque_ignore count
+    and fold_ref () =
+      let count = R.fold ~f:(fun acc _ _ -> acc + 1) ~x:0 r in
+      opaque_ignore count
+    in
+    B.throughputN time ~repeat
+      [
+        "cchashtrie_iter", iter_cc, ();
+        "ref_hashtrie", iter_ref, ();
+        "cchashtrie_fold", fold_cc, ();
+        "ref_hashtrie_fold", fold_ref, ();
+      ]
+
+  let () =
+    B.Tree.register
+      ("cchashtrie"
+      @>>> [
+             "int_add"
+             @>> app_ints (bench_int_add ~time:2)
+                   [ 10; 100; 1_000; 10_000; 100_000 ];
+             "int_find"
+             @>> app_ints (bench_int_find ~time:2)
+                   [ 10; 100; 1_000; 10_000; 100_000 ];
+             "int_replace"
+             @>> app_ints
+                   (bench_int_replace ~time:2)
+                   [ 10; 100; 1_000; 10_000; 100_000 ];
+             "int_remove"
+             @>> app_ints (bench_int_remove ~time:2)
+                   [ 10; 100; 1_000; 10_000; 100_000 ];
+             "int_update"
+             @>> app_ints (bench_int_update ~time:2)
+                   [ 10; 100; 1_000; 10_000; 100_000 ];
+             "int_iter"
+             @>> app_ints (bench_int_iter ~time:2)
+                   [ 10; 100; 1_000; 10_000; 100_000 ];
+           ])
+end
+
 module Iter_ = struct
   (** {2 Iter/Gen} *)
 

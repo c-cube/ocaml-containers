@@ -335,3 +335,131 @@ module PersistentHashtbl (H : Hashtbl.HashedType) = struct
         Format.fprintf fmt "%a -> %a" pp_k k pp_v v);
     Format.pp_print_string fmt "}"
 end
+
+module HashTrie (Key : sig
+  type t
+
+  val equal : t -> t -> bool
+  val hash : t -> int
+end) =
+struct
+  (** Simple reference implementation using association lists, used for benchmarking
+      as a baseline *)
+
+  type key = Key.t
+  type 'a t = (key * 'a) list
+
+  let empty = []
+
+  let is_empty = function
+    | [] -> true
+    | _ -> false
+
+  let singleton k v = [ k, v ]
+
+  let rec find_key k = function
+    | [] -> None
+    | (k', v) :: tl ->
+      if Key.equal k k' then
+        Some v
+      else
+        find_key k tl
+
+  let add k v m =
+    match find_key k m with
+    | Some _ ->
+      (* replace *)
+      let rec replace = function
+        | [] -> []
+        | (k', v') :: tl ->
+          if Key.equal k k' then
+            (k, v) :: tl
+          else
+            (k', v') :: replace tl
+      in
+      replace m
+    | None -> (k, v) :: m
+
+  let get k m = find_key k m
+
+  let get_exn k m =
+    match find_key k m with
+    | Some v -> v
+    | None -> raise Not_found
+
+  let mem k m = Option.is_some (find_key k m)
+
+  let remove k m =
+    let rec remove_acc acc = function
+      | [] -> List.rev acc
+      | (k', v) :: tl ->
+        if Key.equal k k' then
+          List.rev acc @ tl
+        else
+          remove_acc ((k', v) :: acc) tl
+    in
+    remove_acc [] m
+
+  let update k ~f m =
+    match find_key k m, f (find_key k m) with
+    | None, None -> m
+    | Some _, None -> remove k m
+    | _, Some v -> add k v m
+
+  let cardinal = List.length
+  let iter ~f m = List.iter (fun (k, v) -> f k v) m
+  let fold ~f ~x:acc m = List.fold_left (fun acc (k, v) -> f acc k v) acc m
+  let to_list = Fun.id
+  let add_list m l = List.fold_left (fun acc (k, v) -> add k v acc) m l
+  let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
+
+  let add_iter m seq =
+    let acc = ref m in
+    seq (fun (k, v) -> acc := add k v !acc);
+    !acc
+
+  let of_iter seq = add_iter empty seq
+  let to_iter m yield = List.iter (fun kv -> yield kv) m
+
+  let add_gen m g =
+    let rec aux acc =
+      match g () with
+      | None -> acc
+      | Some (k, v) -> aux (add k v acc)
+    in
+    aux m
+
+  let of_gen g = add_gen empty g
+
+  let to_gen m =
+    let state = ref m in
+    let rec gen () =
+      match !state with
+      | [] -> None
+      | (k, v) :: tl ->
+        state := tl;
+        Some (k, v)
+    in
+    gen
+
+  let choose = function
+    | [] -> None
+    | (k, v) :: _ -> Some (k, v)
+
+  let choose_exn = function
+    | [] -> raise Not_found
+    | (k, v) :: _ -> k, v
+
+  let pp ppk ppv out m =
+    let first = ref true in
+    List.iter
+      (fun (k, v) ->
+        if !first then
+          first := false
+        else
+          Format.fprintf out ";@ ";
+        ppk out k;
+        Format.pp_print_string out " -> ";
+        ppv out v)
+      m
+end
