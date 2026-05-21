@@ -1,0 +1,9 @@
+(library
+ (name containers_pmap)
+ (public_name containers.pmap)
+ (synopsis "Persistent hash trie with functional semantics")
+ (foreign_stubs
+  (language c)
+  (flags :standard -O2)
+  (names pmap_stub))
+ (ocamlopt_flags :standard -inline 100))
