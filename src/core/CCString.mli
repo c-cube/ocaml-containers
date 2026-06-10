@@ -104,27 +104,32 @@ val to_array : string -> char array
 
 val find : ?start:int -> sub:string -> string -> int
 (** [find ~start ~sub s] returns the starting index of the first occurrence of [sub] within [s] or [-1].
-    @param start starting position in [s]. *)
+    @param start starting position in [s].
+    @raise Invalid_argument if [sub = ""]. *)
 
 val find_all : ?start:int -> sub:string -> string -> int gen
 (** [find_all ~start ~sub s] finds all occurrences of [sub] in [s], even overlapping instances
     and returns them in a generator [gen].
     @param start starting position in [s].
+    @raise Invalid_argument if [sub = ""].
     @since 0.17 *)
 
 val find_all_l : ?start:int -> sub:string -> string -> int list
 (** [find_all_l ~sub s] finds all occurrences of [sub] in [s] and returns
     them in a list.
     @param start starting position in [s].
+    @raise Invalid_argument if [sub = ""].
     @since 0.17 *)
 
 val mem : ?start:int -> sub:string -> string -> bool
 (** [mem ~start ~sub s] is [true] iff [sub] is a substring of [s].
+    @raise Invalid_argument if [sub = ""].
     @since 0.12 *)
 
 val rfind : sub:string -> string -> int
 (** [rfind ~sub s] finds [sub] in string [s] from the right, returns its first index or [-1].
     Should only be used with very small [sub].
+    @raise Invalid_argument if [sub = ""].
     @since 0.12 *)
 
 val replace :
@@ -353,7 +358,12 @@ module Find : sig
   type _ pattern
 
   val compile : string -> [ `Direct ] pattern
+  (** [compile sub] compiles [sub] into a pattern usable with {!find}.
+      @raise Invalid_argument if [sub = ""]. *)
+
   val rcompile : string -> [ `Reverse ] pattern
+  (** [rcompile sub] compiles [sub] into a pattern usable with {!rfind}.
+      @raise Invalid_argument if [sub = ""]. *)
 
   val find : ?start:int -> pattern:[ `Direct ] pattern -> string -> int
   (** [find ~start ~pattern s] searches for [pattern] in the string [s], left-to-right.
@@ -465,6 +475,7 @@ end
 val split : by:string -> string -> string list
 (** [split ~by s] splits the string [s] along the given string [by].
     Alias to {!Split.list_cpy}.
+    @raise Invalid_argument if [by = ""].
     @since 1.2 *)
 
 (** {2 Utils} *)

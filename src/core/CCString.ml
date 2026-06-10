@@ -181,12 +181,14 @@ module Find = struct
     | P_KMP p -> kmp_pattern_length p
 
   let compile sub : [ `Direct ] pattern =
+    if length sub = 0 then invalid_arg "CCString.Find.compile: empty pattern";
     if length sub = 1 then
       P_char sub.[0]
     else
       P_KMP (kmp_compile sub)
 
   let rcompile sub : [ `Reverse ] pattern =
+    if length sub = 0 then invalid_arg "CCString.Find.rcompile: empty pattern";
     if length sub = 1 then
       P_char sub.[0]
     else

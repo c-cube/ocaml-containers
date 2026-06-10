@@ -20,6 +20,8 @@ eq' 6 (find ~start:5 ~sub:"a" "a1a234a");;
 q ~count:10_000
   Q.(pair string_printable string_printable)
   (fun (s1, s2) ->
+    s2 = ""
+    ||
     let i = find ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
 
@@ -47,6 +49,8 @@ eq' 6 (rfind ~sub:"a" "a1a234a");;
 q ~count:10_000
   Q.(pair string_printable string_printable)
   (fun (s1, s2) ->
+    s2 = ""
+    ||
     let i = rfind ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
 ;;
