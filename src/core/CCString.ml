@@ -45,11 +45,12 @@ type _ direction =
 (* we follow https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm *)
 module Find = struct
   type 'a kmp_pattern = {
-    failure: int array;
+    mutable failure: int array; (* empty=not computed yet *)
     str: string;
+    dir: 'a direction;
   }
-  (* invariant: [length failure = length str].
-     We use a phantom type to avoid mixing the directions. *)
+  (* invariant: [failure=[||] || length failure = length str].
+     The failure table is built lazily, we bypass it if len(haystack)<len(needle) *)
 
   let kmp_pattern_length p = String.length p.str
 
@@ -60,14 +61,16 @@ module Find = struct
     | Direct -> String.get
     | Reverse -> fun s i -> s.[String.length s - i - 1]
 
-  let kmp_compile_ : type a. dir:a direction -> string -> a kmp_pattern =
+  (* build the KMP failure table for [str], whose elements are read
+     according to [dir] *)
+  let kmp_failure_ : type a. dir:a direction -> string -> int array =
    fun ~dir str ->
     let len = length str in
     let get = get_ ~dir in
     (* how to read elements of the string *)
     match len with
-    | 0 -> { failure = [||]; str }
-    | 1 -> { failure = [| -1 |]; str }
+    | 0 -> [||]
+    | 1 -> [| -1 |]
     | _ ->
       (* at least 2 elements, the algorithm can work *)
       let failure = Array.make len 0 in
@@ -93,7 +96,26 @@ module Find = struct
           j := failure.(!j)
       done;
       (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
-      { failure; str }
+
+      (* strengthen the failure function: if falling back to a border would
+         re-compare a character equal to the one that just mismatched, skip
+         straight to that border's (already-strengthened) target instead.
+         Uses the direction-aware [get] so it works for both directions. *)
+      for k = 1 to len - 1 do
+        let b = failure.(k) in
+        if b >= 0 && CCChar.equal (get str k) (get str b) then
+          failure.(k) <- failure.(b)
+      done;
+      failure
+
+  let kmp_compile_ : type a. dir:a direction -> string -> a kmp_pattern =
+    fun ~dir str -> { str; failure = [||]; dir }
+
+  let[@inline] kmp_get_ (type a) (f: a kmp_pattern) : int array =
+    if Array.length f.failure = 0 then (
+      f.failure <- kmp_failure_ ~dir:f.dir f.str;
+    );
+    f.failure
 
   let kmp_compile s = kmp_compile_ ~dir:Direct s
   let kmp_rcompile s = kmp_compile_ ~dir:Reverse s
@@ -107,6 +129,7 @@ module Find = struct
     let i = ref idx in
     let j = ref 0 in
     let pat_len = kmp_pattern_length pattern in
+    let failure = kmp_get_ pattern in
     while !j < pat_len && !i + !j < len do
       let c = String.get s (!i + !j) in
       let expected = String.get pattern.str !j in
@@ -114,16 +137,16 @@ module Find = struct
         (* char matches *)
         incr j
       else (
-        let fail_offset = pattern.failure.(!j) in
+        let fail_offset = failure.(!j) in
         if fail_offset >= 0 then (
           assert (fail_offset < !j);
           (* follow the failure link *)
           i := !i + !j - fail_offset;
           j := fail_offset
         ) else (
-          (* beginning of pattern *)
-          j := 0;
-          incr i
+          (* no usable border: advance past the mismatch *)
+          i := !i + !j + 1;
+          j := 0
         )
       )
     done;
@@ -141,6 +164,7 @@ module Find = struct
     let i = ref (len - idx - 1) in
     let j = ref 0 in
     let pat_len = kmp_pattern_length pattern in
+    let failure = kmp_get_ pattern in
     while !j < pat_len && !i + !j < len do
       let c = String.get s (len - !i - !j - 1) in
       let expected =
@@ -150,16 +174,16 @@ module Find = struct
         (* char matches *)
         incr j
       else (
-        let fail_offset = pattern.failure.(!j) in
+        let fail_offset = failure.(!j) in
         if fail_offset >= 0 then (
           assert (fail_offset < !j);
           (* follow the failure link *)
           i := !i + !j - fail_offset;
           j := fail_offset
         ) else (
-          (* beginning of pattern *)
-          j := 0;
-          incr i
+          (* no usable border: advance past the mismatch *)
+          i := !i + !j + 1;
+          j := 0
         )
       )
     done;
@@ -197,7 +221,12 @@ module Find = struct
   let find ?(start = 0) ~(pattern : [ `Direct ] pattern) s =
     match pattern with
     | P_char c -> (try String.index_from s start c with Not_found -> -1)
-    | P_KMP pattern -> kmp_find ~pattern s start
+    | P_KMP pattern ->
+      (* haystack too short, bail out without forcing kmp state *)
+      if String.length s - start < kmp_pattern_length pattern then
+        -1
+      else
+        kmp_find ~pattern s start
 
   let rfind ?start ~(pattern : [ `Reverse ] pattern) s =
     let start =
@@ -207,7 +236,12 @@ module Find = struct
     in
     match pattern with
     | P_char c -> (try String.rindex_from s start c with Not_found -> -1)
-    | P_KMP pattern -> kmp_rfind ~pattern s start
+    | P_KMP pattern ->
+      (* haystack too short, bail out without forcing kmp state *)
+      if start + 1 < kmp_pattern_length pattern then
+        -1
+      else
+        kmp_rfind ~pattern s start
 end
 
 let find ?(start = 0) ~sub =
