@@ -53,6 +53,74 @@ q ~count:10_000
     ||
     let i = rfind ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
+
+(* Compare the KMP-based search against a naive reference, over a 2-char
+   alphabet so that needles actually occur in the haystack. This is a
+   two-sided check: it catches false negatives, wrong (non-leftmost/rightmost)
+   positions, and missed overlapping matches — none of which the properties
+   above (one-sided, large alphabet) can see. Needles can be longer than the
+   haystack (exercising the short-circuit) and repetitive (exercising the
+   failure table). *)
+let gen_ab ~maxlen =
+  Q.Gen.(
+    string_size (int_range 0 maxlen)
+      ~gen:(fun st -> if Random.State.bool st then 'a' else 'b'))
+
+let arb_haystack = Q.make ~print:Q.Print.string (gen_ab ~maxlen:20)
+let arb_needle = Q.make ~print:Q.Print.string (gen_ab ~maxlen:6)
+
+module Find_ = struct
+  let naive_find ~sub s =
+    let n = String.length sub and ls = String.length s in
+    let rec loop i =
+      if i + n > ls then
+        -1
+      else if String.equal (String.sub s i n) sub then
+        i
+      else
+        loop (i + 1)
+    in
+    loop 0
+
+  let naive_rfind ~sub s =
+    let n = String.length sub and ls = String.length s in
+    let rec loop i =
+      if i < 0 then
+        -1
+      else if String.equal (String.sub s i n) sub then
+        i
+      else
+        loop (i - 1)
+    in
+    loop (ls - n)
+
+  let naive_find_all ~sub s =
+    let n = String.length sub and ls = String.length s in
+    let rec loop i acc =
+      if i + n > ls then
+        List.rev acc
+      else if String.equal (String.sub s i n) sub then
+        loop (i + 1) (i :: acc)
+      else
+        loop (i + 1) acc
+    in
+    loop 0 []
+end
+;;
+
+q ~count:10_000 ~name:"naive1"
+  Q.(pair arb_haystack arb_needle)
+  (fun (s, sub) -> Q.assume (sub <> ""); find ~sub s = Find_.naive_find ~sub s)
+;;
+
+q ~count:10_000 ~name:"naive2"
+  Q.(pair arb_haystack arb_needle)
+  (fun (s, sub) -> Q.assume (sub <> ""); rfind ~sub s = Find_.naive_rfind ~sub s)
+;;
+
+q ~count:10_000 ~name:"naive3"
+  Q.(pair arb_haystack arb_needle)
+  (fun (s, sub) -> Q.assume (sub <> ""); find_all_l ~sub s = Find_.naive_find_all ~sub s)
 ;;
 
 eq ~printer:CCFun.id
