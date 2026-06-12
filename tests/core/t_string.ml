@@ -63,8 +63,11 @@ q ~count:10_000
    failure table). *)
 let gen_ab ~maxlen =
   Q.Gen.(
-    string_size (int_range 0 maxlen)
-      ~gen:(fun st -> if Random.State.bool st then 'a' else 'b'))
+    string_size (int_range 0 maxlen) ~gen:(fun st ->
+        if Random.State.bool st then
+          'a'
+        else
+          'b'))
 
 let arb_haystack = Q.make ~print:Q.Print.string (gen_ab ~maxlen:20)
 let arb_needle = Q.make ~print:Q.Print.string (gen_ab ~maxlen:6)
@@ -110,17 +113,23 @@ end
 
 q ~count:10_000 ~name:"naive1"
   Q.(pair arb_haystack arb_needle)
-  (fun (s, sub) -> Q.assume (sub <> ""); find ~sub s = Find_.naive_find ~sub s)
+  (fun (s, sub) ->
+    Q.assume (sub <> "");
+    find ~sub s = Find_.naive_find ~sub s)
 ;;
 
 q ~count:10_000 ~name:"naive2"
   Q.(pair arb_haystack arb_needle)
-  (fun (s, sub) -> Q.assume (sub <> ""); rfind ~sub s = Find_.naive_rfind ~sub s)
+  (fun (s, sub) ->
+    Q.assume (sub <> "");
+    rfind ~sub s = Find_.naive_rfind ~sub s)
 ;;
 
 q ~count:10_000 ~name:"naive3"
   Q.(pair arb_haystack arb_needle)
-  (fun (s, sub) -> Q.assume (sub <> ""); find_all_l ~sub s = Find_.naive_find_all ~sub s)
+  (fun (s, sub) ->
+    Q.assume (sub <> "");
+    find_all_l ~sub s = Find_.naive_find_all ~sub s)
 ;;
 
 eq ~printer:CCFun.id

@@ -95,6 +95,7 @@ module Find = struct
           assert (!j > 0);
           j := failure.(!j)
       done;
+
       (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
 
       (* strengthen the failure function: if falling back to a border would
@@ -109,12 +110,11 @@ module Find = struct
       failure
 
   let kmp_compile_ : type a. dir:a direction -> string -> a kmp_pattern =
-    fun ~dir str -> { str; failure = [||]; dir }
+   fun ~dir str -> { str; failure = [||]; dir }
 
-  let[@inline] kmp_get_ (type a) (f: a kmp_pattern) : int array =
-    if Array.length f.failure = 0 then (
+  let[@inline] kmp_get_ (type a) (f : a kmp_pattern) : int array =
+    if Array.length f.failure = 0 then
       f.failure <- kmp_failure_ ~dir:f.dir f.str;
-    );
     f.failure
 
   let kmp_compile s = kmp_compile_ ~dir:Direct s

@@ -1912,16 +1912,17 @@ module Str = struct
                     @>> app_ints (bench_find ~size:500) [ 100_000; 500_000 ];
                     (* short haystack, long needle: needle (500) longer than
                        haystack, so the lazy failure table is never built *)
-                    "500_short"
-                    @>> app_ints (bench_find ~size:500) [ 50; 100 ];
+                    "500_short" @>> app_ints (bench_find ~size:500) [ 50; 100 ];
                   ];
              "find_special"
              @>>> [
                     "100"
-                    @>> app_ints (bench_find_special ~size:100)
+                    @>> app_ints
+                          (bench_find_special ~size:100)
                           [ 200_000; 1_000_000 ];
                     "1000"
-                    @>> app_ints (bench_find_special ~size:1000)
+                    @>> app_ints
+                          (bench_find_special ~size:1000)
                           [ 200_000; 1_000_000 ];
                   ];
              "find_all"
