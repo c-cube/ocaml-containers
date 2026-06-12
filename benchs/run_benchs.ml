@@ -1636,6 +1636,159 @@ module Str = struct
     assert (CCList.equal CCInt.equal (mk_naive ()) (mk_current ()));
     B.throughputN 3 ~repeat [ "naive", mk_naive, (); "current", mk_current, () ]
 
+  (* Inlined reference implementations to have a fixpoint to compae
+      CCString with.
+
+     - [Classic_kmp] is a copy of CCString's old KMP: the
+       basic ("weak") failure table and the window-shift search loop.
+     - [New_kmp] is a bit optimized. *)
+  module Classic_kmp = struct
+    type t = {
+      failure: int array;
+      pat: string;
+    }
+
+    let compile pat =
+      let len = String.length pat in
+      match len with
+      | 0 -> { failure = [||]; pat }
+      | 1 -> { failure = [| -1 |]; pat }
+      | _ ->
+        let failure = Array.make len 0 in
+        failure.(0) <- -1;
+        let i = ref 2 and j = ref 0 in
+        while !i < len do
+          if CCChar.equal pat.[!i - 1] pat.[!j] then (
+            incr j;
+            failure.(!i) <- !j;
+            incr i
+          ) else if !j = 0 then (
+            failure.(!i) <- 0;
+            incr i
+          ) else
+            j := failure.(!j)
+        done;
+        { failure; pat }
+
+    let find { failure; pat } s =
+      let len = String.length s in
+      let i = ref 0 and j = ref 0 in
+      let pat_len = String.length pat in
+      while !j < pat_len && !i + !j < len do
+        if CCChar.equal s.[!i + !j] pat.[!j] then
+          incr j
+        else (
+          let fail_offset = failure.(!j) in
+          if fail_offset >= 0 then (
+            assert (fail_offset < !j);
+            i := !i + !j - fail_offset;
+            j := fail_offset
+          ) else (
+            j := 0;
+            incr i
+          )
+        )
+      done;
+      if !j = pat_len then
+        !i
+      else
+        -1
+  end
+
+  module New_kmp = struct
+    type t = {
+      failure: int array;
+      pat: string;
+    }
+
+    let compile pat =
+      let len = String.length pat in
+      match len with
+      | 0 -> { failure = [||]; pat }
+      | 1 -> { failure = [| -1 |]; pat }
+      | _ ->
+        let failure = Array.make len 0 in
+        failure.(0) <- -1;
+        let i = ref 2 and j = ref 0 in
+        while !i < len do
+          if CCChar.equal pat.[!i - 1] pat.[!j] then (
+            incr j;
+            failure.(!i) <- !j;
+            incr i
+          ) else if !j = 0 then (
+            failure.(!i) <- 0;
+            incr i
+          ) else
+            j := failure.(!j)
+        done;
+        (* strengthen: if the char after the border equals the one we'd be
+           retrying, skip straight to that border's (already-strengthened)
+           target instead of re-comparing it and failing again *)
+        for k = 1 to len - 1 do
+          let b = failure.(k) in
+          if b >= 0 && CCChar.equal pat.[k] pat.[b] then
+            failure.(k) <- failure.(b)
+        done;
+        { failure; pat }
+
+    let find { failure; pat } s =
+      let len = String.length s in
+      let i = ref 0 and j = ref 0 in
+      let pat_len = String.length pat in
+      while !j < pat_len && !i + !j < len do
+        if CCChar.equal s.[!i + !j] pat.[!j] then
+          incr j
+        else (
+          let fail_offset = failure.(!j) in
+          if fail_offset >= 0 then (
+            assert (fail_offset < !j);
+            i := !i + !j - fail_offset;
+            j := fail_offset
+          ) else (
+            (* no usable border: advance past the mismatch (NOT [incr i]) *)
+            i := !i + !j + 1;
+            j := 0
+          )
+        )
+      done;
+      if !j = pat_len then
+        !i
+      else
+        -1
+  end
+
+  (* a worst case test to show the difference between classic and new KMP,
+     with a needle [a^size] searched in a haystack made of [a^(size-1)b]
+     blocks. *)
+  let bench_find_special ~size n =
+    let needle = String.make size 'a' in
+    let block = String.make (size - 1) 'a' ^ "b" in
+    let haystack = CCString.repeat block (n / size) in
+    pp_pb needle haystack;
+    let classic = Classic_kmp.compile needle in
+    let strong = New_kmp.compile needle in
+    let cur = CCString.find ~start:0 ~sub:needle in
+    let mk_naive () = find ~sub:needle haystack
+    and mk_classic () = Classic_kmp.find classic haystack
+    and mk_new () = New_kmp.find strong haystack
+    and mk_cur () = cur haystack in
+    assert (mk_naive () = -1);
+    assert (mk_classic () = -1);
+    assert (mk_new () = -1);
+    assert (mk_cur () = -1);
+    (* positive control: a haystack that does contain the needle *)
+    let with_match = haystack ^ needle in
+    let expected = CCString.find ~sub:needle with_match in
+    assert (Classic_kmp.find classic with_match = expected);
+    assert (New_kmp.find strong with_match = expected);
+    B.throughputN 2 ~repeat
+      [
+        "naive", mk_naive, ();
+        "classic", mk_classic, ();
+        "new", mk_new, ();
+        "cur", mk_cur, ();
+      ]
+
   let bench_find = bench_find_ ~dir:`Direct
   let bench_rfind = bench_find_ ~dir:`Reverse
 
@@ -1757,6 +1910,19 @@ module Str = struct
                     @>> app_ints (bench_find ~size:50) [ 100; 100_000; 500_000 ];
                     "500"
                     @>> app_ints (bench_find ~size:500) [ 100_000; 500_000 ];
+                    (* short haystack, long needle: needle (500) longer than
+                       haystack, so the lazy failure table is never built *)
+                    "500_short"
+                    @>> app_ints (bench_find ~size:500) [ 50; 100 ];
+                  ];
+             "find_special"
+             @>>> [
+                    "100"
+                    @>> app_ints (bench_find_special ~size:100)
+                          [ 200_000; 1_000_000 ];
+                    "1000"
+                    @>> app_ints (bench_find_special ~size:1000)
+                          [ 200_000; 1_000_000 ];
                   ];
              "find_all"
              @>>> [
