@@ -102,7 +102,7 @@ let take_front q = try Some (take_front_exn q) with Empty -> None
 
 let take_front_l n q =
   if n < 0 then
-    invalid_arg "take_back_l: cannot take negative number of arguments";
+    invalid_arg "take_front_l: cannot take negative number of arguments";
   let rec aux acc q n =
     if n = 0 || is_empty q then
       List.rev acc, q
