@@ -54,13 +54,7 @@ q ~count:10_000
     let i = rfind ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
 
-(* Compare the KMP-based search against a naive reference, over a 2-char
-   alphabet so that needles actually occur in the haystack. This is a
-   two-sided check: it catches false negatives, wrong (non-leftmost/rightmost)
-   positions, and missed overlapping matches — none of which the properties
-   above (one-sided, large alphabet) can see. Needles can be longer than the
-   haystack (exercising the short-circuit) and repetitive (exercising the
-   failure table). *)
+(* compare to a naive reference. *)
 let gen_ab ~maxlen =
   Q.Gen.(
     string_size (int_range 0 maxlen) ~gen:(fun st ->
@@ -69,7 +63,7 @@ let gen_ab ~maxlen =
         else
           'b'))
 
-let arb_haystack = Q.make ~print:Q.Print.string (gen_ab ~maxlen:20)
+let arb_haystack = Q.make ~print:Q.Print.string (gen_ab ~maxlen:30)
 let arb_needle = Q.make ~print:Q.Print.string (gen_ab ~maxlen:6)
 
 module Find_ = struct
@@ -114,23 +108,31 @@ end
 q ~count:10_000 ~name:"naive1"
   Q.(pair arb_haystack arb_needle)
   (fun (s, sub) ->
-    Q.assume (sub <> "");
-    find ~sub s = Find_.naive_find ~sub s)
+    let res_find = find ~sub s in
+    let res_naive = Find_.naive_find ~sub s in
+    (* Printf.printf "same: %B: %S in %S: find: %d, naive find: %d\n%!"
+      (res_naive = res_find) sub s res_find res_naive; *)
+    res_find = res_naive)
 ;;
 
 q ~count:10_000 ~name:"naive2"
   Q.(pair arb_haystack arb_needle)
   (fun (s, sub) ->
-    Q.assume (sub <> "");
-    rfind ~sub s = Find_.naive_rfind ~sub s)
+    let res_find = rfind ~sub s in
+    let res_naive = Find_.naive_rfind ~sub s in
+    (* Printf.printf "same: %B: %S in %S: rfind: %d, naive rfind: %d\n%!"
+      (res_naive = res_find) sub s res_find res_naive; *)
+    res_find = res_naive)
 ;;
 
 q ~count:10_000 ~name:"naive3"
   Q.(pair arb_haystack arb_needle)
-  (fun (s, sub) ->
-    Q.assume (sub <> "");
-    find_all_l ~sub s = Find_.naive_find_all ~sub s)
+  (fun (s, sub) -> find_all_l ~sub s = Find_.naive_find_all ~sub s)
 ;;
+
+eq ~printer:string_of_int 0 (find ~sub:"" "");;
+eq ~printer:string_of_int 2 (rfind ~sub:"" "ab");;
+eq ~printer:Q.Print.(list int) [ 0; 1; 2 ] (find_all_l ~sub:"" "ab");;
 
 eq ~printer:CCFun.id
   (replace ~which:`All ~sub:"a" ~by:"b" "abcdabcd")
@@ -166,6 +168,38 @@ t @@ fun () ->
 Split.list_cpy ~by:" " "hello  world aie" = [ "hello"; ""; "world"; "aie" ]
 ;;
 
+eq ~name:__LOC__ ~printer:Q.Print.(list string) [ ""; "" ] (split ~by:"" "");;
+
+eq ~name:__LOC__
+  ~printer:Q.Print.(list string)
+  [ "" ]
+  (Split.list_cpy ~drop:{ Split.no_drop with first = true } ~by:"" "")
+;;
+
+eq ~name:__LOC__
+  ~printer:Q.Print.(list string)
+  [ "" ]
+  (Split.list_cpy ~drop:{ Split.no_drop with last = true } ~by:"" "")
+;;
+
+eq ~name:__LOC__
+  ~printer:Q.Print.(list string)
+  [ ""; "a"; "b"; "" ] (split ~by:"" "ab")
+;;
+
+t ~name:__LOC__ @@ fun () ->
+let g = Split.gen_cpy ~by:"" "ab" in
+let assert_next = assert_equal ~printer:Q.Print.(option string) in
+assert_next (Some "") (g ());
+assert_next (Some "a") (g ());
+assert_next (Some "b") (g ());
+assert_next (Some "") (g ());
+assert_next None (g ());
+true
+;;
+
+t ~name:__LOC__ @@ fun () -> Split.left ~by:"" "ab" = Some ("", "ab");;
+t ~name:__LOC__ @@ fun () -> Split.right ~by:"" "ab" = Some ("ab", "");;
 t @@ fun () -> Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ");;
 t @@ fun () -> Split.left ~by:"__" "a__c__e_f" = Some ("a", "c__e_f");;
 t @@ fun () -> Split.left ~by:"_" "abcde" = None;;
