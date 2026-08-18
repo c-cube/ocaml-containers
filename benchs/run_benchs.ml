@@ -1636,6 +1636,91 @@ module Str = struct
     assert (CCList.equal CCInt.equal (mk_naive ()) (mk_current ()));
     B.throughputN 3 ~repeat [ "naive", mk_naive, (); "current", mk_current, () ]
 
+  module Previous_split = struct
+    type state =
+      | Stop
+      | At of {
+          search_start: int;
+          token_start: int;
+        }
+
+    type next =
+      | None_
+      | Some_ of {
+          state: state;
+          off: int;
+          len: int;
+        }
+
+    let split ~pattern ~by_len s = function
+      | Stop -> None_
+      | At { search_start; token_start } ->
+        let j = CCString.Find.find ~start:search_start ~pattern s in
+        if j < 0 then
+          Some_
+            {
+              state = Stop;
+              off = token_start;
+              len = String.length s - token_start;
+            }
+        else
+          Some_
+            {
+              state = At { search_start = j + by_len; token_start = j + by_len };
+              off = token_start;
+              len = j - token_start;
+            }
+
+    let iter ~by s yield =
+      let pattern = CCString.Find.compile by in
+      let by_len = String.length by in
+      let rec loop state =
+        match split ~pattern ~by_len s state with
+        | None_ -> ()
+        | Some_ { state; off; len } ->
+          yield (s, off, len);
+          loop state
+      in
+      loop (At { search_start = 0; token_start = 0 })
+  end
+
+  let naive_split_iter ~by s yield =
+    let by_len = String.length by in
+    let rec loop token_start =
+      let j = find ~start:token_start ~sub:by s in
+      if j < 0 then
+        yield (s, token_start, String.length s - token_start)
+      else (
+        yield (s, token_start, j - token_start);
+        loop (j + by_len)
+      )
+    in
+    loop 0
+
+  let bench_split_iter n =
+    let sep = "abcdefg" in
+    let block = String.make 24 'x' ^ sep in
+    let haystack = CCString.repeat block (n / String.length block) in
+    let consume iter () =
+      let count = ref 0 and checksum = ref 0 in
+      iter (fun (_, off, len) ->
+          incr count;
+          checksum := !checksum * 65599 lxor off lxor len);
+      !count, !checksum
+    in
+    let mk_naive = consume (naive_split_iter ~by:sep haystack)
+    and mk_previous = consume (Previous_split.iter ~by:sep haystack)
+    and mk_current = consume (CCString.Split.iter ~by:sep haystack) in
+    let expected = mk_naive () in
+    assert (mk_previous () = expected);
+    assert (mk_current () = expected);
+    B.throughputN 3 ~repeat
+      [
+        "naive", mk_naive, ();
+        "previous", mk_previous, ();
+        "current", mk_current, ();
+      ]
+
   (* Inlined reference implementations to have a fixpoint to compare
       CCString with.
 
@@ -1957,6 +2042,8 @@ module Str = struct
                                  [ 100_000; 500_000 ];
                          ];
                   ];
+             "split_iter"
+             @>> app_ints bench_split_iter [ 100_000; 500_000; 1_000_000 ];
              "rfind"
              @>>> [
                     "3"
