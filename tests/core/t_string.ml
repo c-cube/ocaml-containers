@@ -198,6 +198,18 @@ assert_next None (g ());
 true
 ;;
 
+t ~name:__LOC__ @@ fun () ->
+let seq = Split.seq_cpy ~by:"" "ab" in
+let head () =
+  match seq () with
+  | Seq.Nil -> None
+  | Seq.Cons (x, _) -> Some x
+in
+assert_equal ~printer:Q.Print.(option string) (Some "") (head ());
+assert_equal ~printer:Q.Print.(option string) (Some "") (head ());
+true
+;;
+
 t ~name:__LOC__ @@ fun () -> Split.left ~by:"" "ab" = Some ("", "ab");;
 t ~name:__LOC__ @@ fun () -> Split.right ~by:"" "ab" = Some ("ab", "");;
 t @@ fun () -> Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ");;
