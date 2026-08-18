@@ -1636,7 +1636,7 @@ module Str = struct
     assert (CCList.equal CCInt.equal (mk_naive ()) (mk_current ()));
     B.throughputN 3 ~repeat [ "naive", mk_naive, (); "current", mk_current, () ]
 
-  (* Inlined reference implementations to have a fixpoint to compae
+  (* Inlined reference implementations to have a fixpoint to compare
       CCString with.
 
      - [Classic_kmp] is a copy of CCString's old KMP: the
@@ -1721,9 +1721,6 @@ module Str = struct
           ) else
             j := failure.(!j)
         done;
-        (* strengthen: if the char after the border equals the one we'd be
-           retrying, skip straight to that border's (already-strengthened)
-           target instead of re-comparing it and failing again *)
         for k = 1 to len - 1 do
           let b = failure.(k) in
           if b >= 0 && CCChar.equal pat.[k] pat.[b] then
@@ -1745,7 +1742,7 @@ module Str = struct
             i := !i + !j - fail_offset;
             j := fail_offset
           ) else (
-            (* no usable border: advance past the mismatch (NOT [incr i]) *)
+            (* no usable border: advance past the mismatch *)
             i := !i + !j + 1;
             j := 0
           )
