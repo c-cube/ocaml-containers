@@ -197,29 +197,36 @@ module Find = struct
       -1
 
   type 'a pattern =
+    | P_empty
     | P_char of char
     | P_KMP of 'a kmp_pattern
 
   let pattern_length = function
+    | P_empty -> 0
     | P_char _ -> 1
     | P_KMP p -> kmp_pattern_length p
 
   let compile sub : [ `Direct ] pattern =
-    if length sub = 0 then invalid_arg "CCString.Find.compile: empty pattern";
-    if length sub = 1 then
-      P_char sub.[0]
-    else
-      P_KMP (kmp_compile sub)
+    match length sub with
+    | 0 -> P_empty
+    | 1 -> P_char sub.[0]
+    | _ -> P_KMP (kmp_compile sub)
 
   let rcompile sub : [ `Reverse ] pattern =
-    if length sub = 0 then invalid_arg "CCString.Find.rcompile: empty pattern";
-    if length sub = 1 then
-      P_char sub.[0]
-    else
-      P_KMP (kmp_rcompile sub)
+    match length sub with
+    | 0 -> P_empty
+    | 1 -> P_char sub.[0]
+    | _ -> P_KMP (kmp_rcompile sub)
 
   let find ?(start = 0) ~(pattern : [ `Direct ] pattern) s =
     match pattern with
+    | P_empty ->
+      if start < 0 then
+        invalid_arg "CCString.Find.find: invalid offset"
+      else if start > length s then
+        -1
+      else
+        start
     | P_char c -> (try String.index_from s start c with Not_found -> -1)
     | P_KMP pattern ->
       (* haystack too short, bail out without forcing kmp state *)
@@ -230,11 +237,19 @@ module Find = struct
 
   let rfind ?start ~(pattern : [ `Reverse ] pattern) s =
     let start =
-      match start with
-      | Some n -> n
-      | None -> String.length s - 1
+      match pattern, start with
+      | _, Some n -> n
+      | P_empty, None -> String.length s
+      | _, None -> String.length s - 1
     in
     match pattern with
+    | P_empty ->
+      if start > String.length s then
+        invalid_arg "CCString.Find.rfind: invalid offset"
+      else if start < 0 then
+        -1
+      else
+        start
     | P_char c -> (try String.rindex_from s start c with Not_found -> -1)
     | P_KMP pattern ->
       (* haystack too short, bail out without forcing kmp state *)
@@ -274,7 +289,7 @@ let mem ?start ~sub s = find ?start ~sub s >= 0
 
 let rfind ~sub =
   let pattern = Find.rcompile sub in
-  fun s -> Find.rfind ~start:(String.length s - 1) ~pattern s
+  fun s -> Find.rfind ~pattern s
 
 (* Replace substring [s.[pos] … s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
@@ -304,13 +319,16 @@ let replace ?(which = `All) ~sub ~by s =
     let pattern = Find.compile sub in
     let b = Buffer.create (String.length s) in
     let start = ref 0 in
+
+    let incr_by = max 1 (String.length sub) in
+
     while !start < String.length s do
       let i = Find.find ~start:!start ~pattern s in
       if i >= 0 then (
         (* between last and cur occurrences *)
         Buffer.add_substring b s !start (i - !start);
         Buffer.add_string b by;
-        start := i + String.length sub
+        start := i + incr_by
       ) else (
         (* add remainder *)
         Buffer.add_substring b s !start (String.length s - !start);
@@ -330,33 +348,63 @@ module Split = struct
 
   type split_state =
     | SplitStop
-    | SplitAt of int (* previous *)
+    | SplitAt of {
+        search_start: int;
+        token_start: int;
+      }
 
-  let rec _split ~by s state =
+  type split_next =
+    | SplitNone
+    | SplitSome of {
+        st: split_state;
+        off: int;
+        len: int;
+      }
+
+  let rec _split ~by s state : split_next =
     match state with
-    | SplitStop -> None
-    | SplitAt prev -> _split_search ~by s prev
+    | SplitStop -> SplitNone
+    | SplitAt { search_start; token_start } ->
+      _split_search ~by s ~token_start ~search_start
 
-  and _split_search ~by s prev =
-    let j = Find.find ~start:prev ~pattern:by s in
+  and _split_search ~by s ~token_start ~search_start : split_next =
+    let j = Find.find ~start:search_start ~pattern:by s in
     if j < 0 then
-      Some (SplitStop, prev, String.length s - prev)
-    else
-      Some (SplitAt (j + Find.pattern_length by), prev, j - prev)
+      SplitSome
+        {
+          st = SplitStop;
+          off = token_start;
+          len = String.length s - token_start;
+        }
+    else (
+      let pat_len = Find.pattern_length by in
+      SplitSome
+        {
+          st =
+            SplitAt
+              {
+                token_start = j + pat_len;
+                (* empty pattern: must still move +1 *)
+                search_start = j + max 1 pat_len;
+              };
+          off = token_start;
+          len = j - token_start;
+        }
+    )
 
-  let _tuple3 x y z = x, y, z
+  let[@inline] _tuple3 x y z = x, y, z
 
-  let _mkgen ~drop ~by s k =
-    let state = ref (SplitAt 0) in
+  let _mkgen ~drop ~by s k : _ gen =
+    let state = ref (SplitAt { search_start = 0; token_start = 0 }) in
     let by = Find.compile by in
     let rec next () =
       match _split ~by s !state with
-      | None -> None
-      | Some (state', 0, 0) when drop.first ->
+      | SplitNone -> None
+      | SplitSome { st = state'; off = 0; len = 0 } when drop.first ->
         state := state';
         next ()
-      | Some (_, i, 0) when drop.last && i = length s -> None
-      | Some (state', i, len) ->
+      | SplitSome { off = i; len = 0; _ } when drop.last && i = length s -> None
+      | SplitSome { st = state'; off = i; len } ->
         state := state';
         Some (k s i len)
     in
@@ -365,30 +413,36 @@ module Split = struct
   let gen ?(drop = default_drop) ~by s = _mkgen ~drop ~by s _tuple3
   let gen_cpy ?(drop = default_drop) ~by s = _mkgen ~drop ~by s String.sub
 
-  let _mklist ~drop ~by s k =
+  let _mklist ~drop ~by s k : _ list =
     let by = Find.compile by in
     let rec build acc state =
       match _split ~by s state with
-      | None -> List.rev acc
-      | Some (state', 0, 0) when drop.first -> build acc state'
-      | Some (_, i, 0) when drop.last && i = length s -> List.rev acc
-      | Some (state', i, len) -> build (k s i len :: acc) state'
+      | SplitNone -> List.rev acc
+      | SplitSome { st = state'; off = 0; len = 0 } when drop.first ->
+        build acc state'
+      | SplitSome { off = i; len = 0; _ } when drop.last && i = length s ->
+        List.rev acc
+      | SplitSome { st = state'; off = i; len } ->
+        build (k s i len :: acc) state'
     in
-    build [] (SplitAt 0)
+    build [] (SplitAt { search_start = 0; token_start = 0 })
 
   let list_ ?(drop = default_drop) ~by s = _mklist ~drop ~by s _tuple3
   let list_cpy ?(drop = default_drop) ~by s = _mklist ~drop ~by s String.sub
 
-  let _mkseq ~drop ~by s k =
+  let _mkseq ~drop ~by s k : _ Seq.t =
     let by = Find.compile by in
     let rec make state () =
       match _split ~by s state with
-      | None -> Seq.Nil
-      | Some (state', 0, 0) when drop.first -> make state' ()
-      | Some (_, i, 0) when drop.last && i = length s -> Seq.Nil
-      | Some (state', i, len) -> Seq.Cons (k s i len, make state')
+      | SplitNone -> Seq.Nil
+      | SplitSome { st = state'; off = 0; len = 0 } when drop.first ->
+        make state' ()
+      | SplitSome { off = i; len = 0; _ } when drop.last && i = length s ->
+        Seq.Nil
+      | SplitSome { st = state'; off = i; len } ->
+        Seq.Cons (k s i len, make state')
     in
-    make (SplitAt 0)
+    make (SplitAt { search_start = 0; token_start = 0 })
 
   let seq ?(drop = default_drop) ~by s = _mkseq ~drop ~by s _tuple3
   let seq_cpy ?(drop = default_drop) ~by s = _mkseq ~drop ~by s String.sub
@@ -397,14 +451,15 @@ module Split = struct
     let by = Find.compile by in
     let rec aux state =
       match _split ~by s state with
-      | None -> ()
-      | Some (state', 0, 0) when drop.first -> aux state'
-      | Some (_, i, 0) when drop.last && i = length s -> ()
-      | Some (state', i, len) ->
+      | SplitNone -> ()
+      | SplitSome { st = state'; off = 0; len = 0 } when drop.first ->
+        aux state'
+      | SplitSome { off = i; len = 0; _ } when drop.last && i = length s -> ()
+      | SplitSome { st = state'; off = i; len } ->
         k (f s i len);
         aux state'
     in
-    aux (SplitAt 0)
+    aux (SplitAt { search_start = 0; token_start = 0 })
 
   let iter ?(drop = default_drop) ~by s = _mk_iter ~drop ~by s _tuple3
   let iter_cpy ?(drop = default_drop) ~by s = _mk_iter ~drop ~by s String.sub

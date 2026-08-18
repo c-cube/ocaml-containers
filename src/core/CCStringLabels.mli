@@ -109,12 +109,13 @@ val to_array : string -> char array
 
 val find : ?start:int -> sub:(string[@keep_label]) -> string -> int
 (** [find ?start ~sub s] returns the starting index of the first occurrence of [sub] within [s] or [-1].
-    @param start starting position in [s]. *)
+    Returns [start] if [sub=""]. *)
 
 val find_all : ?start:int -> sub:(string[@keep_label]) -> string -> int gen
 (** [find_all ?start ~sub s] finds all occurrences of [sub] in [s], even overlapping instances
     and returns them in a generator [gen].
     @param start starting position in [s].
+    Returns all positions between start and the end of [s] if [sub=""]
     @since 0.17 *)
 
 val find_all_l : ?start:int -> sub:(string[@keep_label]) -> string -> int list
@@ -388,7 +389,10 @@ module Find : sig
   type _ pattern
 
   val compile : string -> [ `Direct ] pattern
+  (** [compile sub] compiles [sub] into a pattern usable with {!find}. *)
+
   val rcompile : string -> [ `Reverse ] pattern
+  (** [rcompile sub] compiles [sub] into a pattern usable with {!rfind}. *)
 
   val find :
     ?start:int -> pattern:([ `Direct ] pattern[@keep_label]) -> string -> int
@@ -434,8 +438,7 @@ module Split : sig
       Should only be used with very small separators.
       @return a [list] of slices [(s,index,length)] that are
       separated by [by]. {!String.sub} can then be used to actually extract
-      a string from the slice.
-      @raise Failure if [by = ""]. *)
+      a string from the slice. *)
 
   val gen :
     ?drop:drop_if_empty -> by:string -> string -> (string * int * int) gen
