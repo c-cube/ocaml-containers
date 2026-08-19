@@ -1808,8 +1808,8 @@ module Str = struct
         done;
         for k = 1 to len - 1 do
           let b = failure.(k) in
-          if b >= 0 && CCChar.equal pat.[k] pat.[b] then
-            failure.(k) <- failure.(b)
+          assert (b >= 0);
+          if CCChar.equal pat.[k] pat.[b] then failure.(k) <- failure.(b)
         done;
         { failure; pat }
 

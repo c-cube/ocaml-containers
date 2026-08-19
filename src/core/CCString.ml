@@ -104,8 +104,8 @@ module Find = struct
          Uses the direction-aware [get] so it works for both directions. *)
       for k = 1 to len - 1 do
         let b = failure.(k) in
-        if b >= 0 && CCChar.equal (get str k) (get str b) then
-          failure.(k) <- failure.(b)
+        assert (b >= 0);
+        if CCChar.equal (get str k) (get str b) then failure.(k) <- failure.(b)
       done;
       failure
 
