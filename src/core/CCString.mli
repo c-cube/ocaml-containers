@@ -104,12 +104,16 @@ val to_array : string -> char array
 
 val find : ?start:int -> sub:string -> string -> int
 (** [find ~start ~sub s] returns the starting index of the first occurrence of [sub] within [s] or [-1].
-    @param start starting position in [s]. *)
+    Returns [start] if [sub=""]. *)
 
 val find_all : ?start:int -> sub:string -> string -> int gen
 (** [find_all ~start ~sub s] finds all occurrences of [sub] in [s], even overlapping instances
     and returns them in a generator [gen].
+
+    {b NOTE}: the generator is NOT multicore safe. Do not share between threads/domains.
+
     @param start starting position in [s].
+    Returns all positions between start and the end of [s] if [sub=""]
     @since 0.17 *)
 
 val find_all_l : ?start:int -> sub:string -> string -> int list
@@ -353,7 +357,10 @@ module Find : sig
   type _ pattern
 
   val compile : string -> [ `Direct ] pattern
+  (** [compile sub] compiles [sub] into a pattern usable with {!find}. *)
+
   val rcompile : string -> [ `Reverse ] pattern
+  (** [rcompile sub] compiles [sub] into a pattern usable with {!rfind}. *)
 
   val find : ?start:int -> pattern:[ `Direct ] pattern -> string -> int
   (** [find ~start ~pattern s] searches for [pattern] in the string [s], left-to-right.
@@ -394,13 +401,13 @@ module Split : sig
       Should only be used with very small separators.
       @return a [list] of slices [(s,index,length)] that are
       separated by [by]. {!String.sub} can then be used to actually extract
-      a string from the slice.
-      @raise Failure if [by = ""]. *)
+      a string from the slice. *)
 
   val gen :
     ?drop:drop_if_empty -> by:string -> string -> (string * int * int) gen
   (** [gen ~drop ~by s] splits the given string [s] along the given separator [by].
-      Returns a [gen] of slices. *)
+      Returns a [gen] of slices.
+      {b NOTE}: the generator isn't thread safe. *)
 
   val iter :
     ?drop:drop_if_empty -> by:string -> string -> (string * int * int) iter
@@ -411,7 +418,8 @@ module Split : sig
   val seq :
     ?drop:drop_if_empty -> by:string -> string -> (string * int * int) Seq.t
   (** [seq ~drop ~by s] splits the given string [s] along the given separator [by].
-      Returns a [Seq.t] of slices.
+      Returns a [Seq.t] of slices. The sequence is thread-safe and can be shared
+      between threads or domains.
       Renamed from [std_seq] since 3.0.
       @since 3.0 *)
 
@@ -426,7 +434,8 @@ module Split : sig
 
   val gen_cpy : ?drop:drop_if_empty -> by:string -> string -> string gen
   (** [gen_cpy ~drop ~by s] splits the given string [s] along the given separator [by].
-      Returns a [gen] of strings. *)
+      Returns a [gen] of strings.
+      {b NOTE}: the generator isn't thread safe. *)
 
   val iter_cpy : ?drop:drop_if_empty -> by:string -> string -> string iter
   (** [iter_cpy ~drop ~by s] splits the given string [s] along the given separator [by].
@@ -435,7 +444,8 @@ module Split : sig
 
   val seq_cpy : ?drop:drop_if_empty -> by:string -> string -> string Seq.t
   (** [seq_cpy ~drop ~by s] splits the given string [s] along the given separator [by].
-      Returns a [Seq.t] of strings.
+      Returns a [Seq.t] of strings. The sequence is thread-safe and can be shared
+      between threads or domains.
       Renamed from [std_seq_cpy] since 3.0.
       @since 3.0 *)
 

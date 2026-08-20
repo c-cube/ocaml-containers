@@ -1636,6 +1636,241 @@ module Str = struct
     assert (CCList.equal CCInt.equal (mk_naive ()) (mk_current ()));
     B.throughputN 3 ~repeat [ "naive", mk_naive, (); "current", mk_current, () ]
 
+  module Previous_split = struct
+    type state =
+      | Stop
+      | At of {
+          search_start: int;
+          token_start: int;
+        }
+
+    type next =
+      | None_
+      | Some_ of {
+          state: state;
+          off: int;
+          len: int;
+        }
+
+    let split ~pattern ~by_len s = function
+      | Stop -> None_
+      | At { search_start; token_start } ->
+        let j = CCString.Find.find ~start:search_start ~pattern s in
+        if j < 0 then
+          Some_
+            {
+              state = Stop;
+              off = token_start;
+              len = String.length s - token_start;
+            }
+        else
+          Some_
+            {
+              state = At { search_start = j + by_len; token_start = j + by_len };
+              off = token_start;
+              len = j - token_start;
+            }
+
+    let iter ~by s yield =
+      let pattern = CCString.Find.compile by in
+      let by_len = String.length by in
+      let rec loop state =
+        match split ~pattern ~by_len s state with
+        | None_ -> ()
+        | Some_ { state; off; len } ->
+          yield (s, off, len);
+          loop state
+      in
+      loop (At { search_start = 0; token_start = 0 })
+  end
+
+  let naive_split_iter ~by s yield =
+    let by_len = String.length by in
+    let rec loop token_start =
+      let j = find ~start:token_start ~sub:by s in
+      if j < 0 then
+        yield (s, token_start, String.length s - token_start)
+      else (
+        yield (s, token_start, j - token_start);
+        loop (j + by_len)
+      )
+    in
+    loop 0
+
+  let bench_split_iter n =
+    let sep = "abcdefg" in
+    let block = String.make 24 'x' ^ sep in
+    let haystack = CCString.repeat block (n / String.length block) in
+    let consume iter () =
+      let count = ref 0 and checksum = ref 0 in
+      iter (fun (_, off, len) ->
+          incr count;
+          checksum := !checksum * 65599 lxor off lxor len);
+      !count, !checksum
+    in
+    let mk_naive = consume (naive_split_iter ~by:sep haystack)
+    and mk_previous = consume (Previous_split.iter ~by:sep haystack)
+    and mk_current = consume (CCString.Split.iter ~by:sep haystack) in
+    let expected = mk_naive () in
+    assert (mk_previous () = expected);
+    assert (mk_current () = expected);
+    B.throughputN 3 ~repeat
+      [
+        "naive", mk_naive, ();
+        "previous", mk_previous, ();
+        "current", mk_current, ();
+      ]
+
+  (* Inlined reference implementations to have a fixpoint to compare
+      CCString with.
+
+     - [Classic_kmp] is a copy of CCString's old KMP: the
+       basic ("weak") failure table and the window-shift search loop.
+     - [New_kmp] is a bit optimized. *)
+  module Classic_kmp = struct
+    type t = {
+      failure: int array;
+      pat: string;
+    }
+
+    let compile pat =
+      let len = String.length pat in
+      match len with
+      | 0 -> { failure = [||]; pat }
+      | 1 -> { failure = [| -1 |]; pat }
+      | _ ->
+        let failure = Array.make len 0 in
+        failure.(0) <- -1;
+        let i = ref 2 and j = ref 0 in
+        while !i < len do
+          if CCChar.equal pat.[!i - 1] pat.[!j] then (
+            incr j;
+            failure.(!i) <- !j;
+            incr i
+          ) else if !j = 0 then (
+            failure.(!i) <- 0;
+            incr i
+          ) else
+            j := failure.(!j)
+        done;
+        { failure; pat }
+
+    let find { failure; pat } s =
+      let len = String.length s in
+      let i = ref 0 and j = ref 0 in
+      let pat_len = String.length pat in
+      while !j < pat_len && !i + !j < len do
+        if CCChar.equal s.[!i + !j] pat.[!j] then
+          incr j
+        else (
+          let fail_offset = failure.(!j) in
+          if fail_offset >= 0 then (
+            assert (fail_offset < !j);
+            i := !i + !j - fail_offset;
+            j := fail_offset
+          ) else (
+            j := 0;
+            incr i
+          )
+        )
+      done;
+      if !j = pat_len then
+        !i
+      else
+        -1
+  end
+
+  module New_kmp = struct
+    type t = {
+      failure: int array;
+      pat: string;
+    }
+
+    let compile pat =
+      let len = String.length pat in
+      match len with
+      | 0 -> { failure = [||]; pat }
+      | 1 -> { failure = [| -1 |]; pat }
+      | _ ->
+        let failure = Array.make len 0 in
+        failure.(0) <- -1;
+        let i = ref 2 and j = ref 0 in
+        while !i < len do
+          if CCChar.equal pat.[!i - 1] pat.[!j] then (
+            incr j;
+            failure.(!i) <- !j;
+            incr i
+          ) else if !j = 0 then (
+            failure.(!i) <- 0;
+            incr i
+          ) else
+            j := failure.(!j)
+        done;
+        for k = 1 to len - 1 do
+          let b = failure.(k) in
+          assert (b >= 0);
+          if CCChar.equal pat.[k] pat.[b] then failure.(k) <- failure.(b)
+        done;
+        { failure; pat }
+
+    let find { failure; pat } s =
+      let len = String.length s in
+      let i = ref 0 and j = ref 0 in
+      let pat_len = String.length pat in
+      while !j < pat_len && !i + !j < len do
+        if CCChar.equal s.[!i + !j] pat.[!j] then
+          incr j
+        else (
+          let fail_offset = failure.(!j) in
+          if fail_offset >= 0 then (
+            assert (fail_offset < !j);
+            i := !i + !j - fail_offset;
+            j := fail_offset
+          ) else (
+            (* no usable border: advance past the mismatch *)
+            i := !i + !j + 1;
+            j := 0
+          )
+        )
+      done;
+      if !j = pat_len then
+        !i
+      else
+        -1
+  end
+
+  (* a worst case test to show the difference between classic and new KMP,
+     with a needle [a^size] searched in a haystack made of [a^(size-1)b]
+     blocks. *)
+  let bench_find_special ~size n =
+    let needle = String.make size 'a' in
+    let block = String.make (size - 1) 'a' ^ "b" in
+    let haystack = CCString.repeat block (n / size) in
+    pp_pb needle haystack;
+    let classic = Classic_kmp.compile needle in
+    let strong = New_kmp.compile needle in
+    let cur = CCString.find ~start:0 ~sub:needle in
+    let mk_naive () = find ~sub:needle haystack
+    and mk_classic () = Classic_kmp.find classic haystack
+    and mk_new () = New_kmp.find strong haystack
+    and mk_cur () = cur haystack in
+    assert (mk_naive () = -1);
+    assert (mk_classic () = -1);
+    assert (mk_new () = -1);
+    assert (mk_cur () = -1);
+    (* positive control: a haystack that does contain the needle *)
+    let with_match = haystack ^ needle in
+    let expected = CCString.find ~sub:needle with_match in
+    assert (Classic_kmp.find classic with_match = expected);
+    assert (New_kmp.find strong with_match = expected);
+    B.throughputN 2 ~repeat
+      [
+        "naive", mk_naive, ();
+        "classic", mk_classic, ();
+        "new", mk_new, ();
+        "cur", mk_cur, ();
+      ]
+
   let bench_find = bench_find_ ~dir:`Direct
   let bench_rfind = bench_find_ ~dir:`Reverse
 
@@ -1757,6 +1992,20 @@ module Str = struct
                     @>> app_ints (bench_find ~size:50) [ 100; 100_000; 500_000 ];
                     "500"
                     @>> app_ints (bench_find ~size:500) [ 100_000; 500_000 ];
+                    (* short haystack, long needle: needle (500) longer than
+                       haystack, so the lazy failure table is never built *)
+                    "500_short" @>> app_ints (bench_find ~size:500) [ 50; 100 ];
+                  ];
+             "find_special"
+             @>>> [
+                    "100"
+                    @>> app_ints
+                          (bench_find_special ~size:100)
+                          [ 200_000; 1_000_000 ];
+                    "1000"
+                    @>> app_ints
+                          (bench_find_special ~size:1000)
+                          [ 200_000; 1_000_000 ];
                   ];
              "find_all"
              @>>> [
@@ -1793,6 +2042,8 @@ module Str = struct
                                  [ 100_000; 500_000 ];
                          ];
                   ];
+             "split_iter"
+             @>> app_ints bench_split_iter [ 100_000; 500_000; 1_000_000 ];
              "rfind"
              @>>> [
                     "3"

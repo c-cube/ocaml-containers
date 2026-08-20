@@ -20,6 +20,8 @@ eq' 6 (find ~start:5 ~sub:"a" "a1a234a");;
 q ~count:10_000
   Q.(pair string_printable string_printable)
   (fun (s1, s2) ->
+    s2 = ""
+    ||
     let i = find ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
 
@@ -47,9 +49,90 @@ eq' 6 (rfind ~sub:"a" "a1a234a");;
 q ~count:10_000
   Q.(pair string_printable string_printable)
   (fun (s1, s2) ->
+    s2 = ""
+    ||
     let i = rfind ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
+
+(* compare to a naive reference. *)
+let gen_ab ~maxlen =
+  Q.Gen.(
+    string_size (int_range 0 maxlen) ~gen:(fun st ->
+        if Random.State.bool st then
+          'a'
+        else
+          'b'))
+
+let arb_haystack = Q.make ~print:Q.Print.string (gen_ab ~maxlen:30)
+let arb_needle = Q.make ~print:Q.Print.string (gen_ab ~maxlen:6)
+
+module Find_ = struct
+  let naive_find ~sub s =
+    let n = String.length sub and ls = String.length s in
+    let rec loop i =
+      if i + n > ls then
+        -1
+      else if String.equal (String.sub s i n) sub then
+        i
+      else
+        loop (i + 1)
+    in
+    loop 0
+
+  let naive_rfind ~sub s =
+    let n = String.length sub and ls = String.length s in
+    let rec loop i =
+      if i < 0 then
+        -1
+      else if String.equal (String.sub s i n) sub then
+        i
+      else
+        loop (i - 1)
+    in
+    loop (ls - n)
+
+  let naive_find_all ~sub s =
+    let n = String.length sub and ls = String.length s in
+    let rec loop i acc =
+      if i + n > ls then
+        List.rev acc
+      else if String.equal (String.sub s i n) sub then
+        loop (i + 1) (i :: acc)
+      else
+        loop (i + 1) acc
+    in
+    loop 0 []
+end
 ;;
+
+q ~count:10_000 ~name:"naive1"
+  Q.(pair arb_haystack arb_needle)
+  (fun (s, sub) ->
+    let res_find = find ~sub s in
+    let res_naive = Find_.naive_find ~sub s in
+    (* Printf.printf "same: %B: %S in %S: find: %d, naive find: %d\n%!"
+      (res_naive = res_find) sub s res_find res_naive; *)
+    res_find = res_naive)
+;;
+
+q ~count:10_000 ~name:"naive2"
+  Q.(pair arb_haystack arb_needle)
+  (fun (s, sub) ->
+    let res_find = rfind ~sub s in
+    let res_naive = Find_.naive_rfind ~sub s in
+    (* Printf.printf "same: %B: %S in %S: rfind: %d, naive rfind: %d\n%!"
+      (res_naive = res_find) sub s res_find res_naive; *)
+    res_find = res_naive)
+;;
+
+q ~count:10_000 ~name:"naive3"
+  Q.(pair arb_haystack arb_needle)
+  (fun (s, sub) -> find_all_l ~sub s = Find_.naive_find_all ~sub s)
+;;
+
+eq ~printer:string_of_int 0 (find ~sub:"" "");;
+eq ~printer:string_of_int 2 (rfind ~sub:"" "ab");;
+eq ~printer:Q.Print.(list int) [ 0; 1; 2 ] (find_all_l ~sub:"" "ab");;
 
 eq ~printer:CCFun.id
   (replace ~which:`All ~sub:"a" ~by:"b" "abcdabcd")
@@ -85,6 +168,50 @@ t @@ fun () ->
 Split.list_cpy ~by:" " "hello  world aie" = [ "hello"; ""; "world"; "aie" ]
 ;;
 
+eq ~name:__LOC__ ~printer:Q.Print.(list string) [ ""; "" ] (split ~by:"" "");;
+
+eq ~name:__LOC__
+  ~printer:Q.Print.(list string)
+  [ "" ]
+  (Split.list_cpy ~drop:{ Split.no_drop with first = true } ~by:"" "")
+;;
+
+eq ~name:__LOC__
+  ~printer:Q.Print.(list string)
+  [ "" ]
+  (Split.list_cpy ~drop:{ Split.no_drop with last = true } ~by:"" "")
+;;
+
+eq ~name:__LOC__
+  ~printer:Q.Print.(list string)
+  [ ""; "a"; "b"; "" ] (split ~by:"" "ab")
+;;
+
+t ~name:__LOC__ @@ fun () ->
+let g = Split.gen_cpy ~by:"" "ab" in
+let assert_next = assert_equal ~printer:Q.Print.(option string) in
+assert_next (Some "") (g ());
+assert_next (Some "a") (g ());
+assert_next (Some "b") (g ());
+assert_next (Some "") (g ());
+assert_next None (g ());
+true
+;;
+
+t ~name:__LOC__ @@ fun () ->
+let seq = Split.seq_cpy ~by:"" "ab" in
+let head () =
+  match seq () with
+  | Seq.Nil -> None
+  | Seq.Cons (x, _) -> Some x
+in
+assert_equal ~printer:Q.Print.(option string) (Some "") (head ());
+assert_equal ~printer:Q.Print.(option string) (Some "") (head ());
+true
+;;
+
+t ~name:__LOC__ @@ fun () -> Split.left ~by:"" "ab" = Some ("", "ab");;
+t ~name:__LOC__ @@ fun () -> Split.right ~by:"" "ab" = Some ("ab", "");;
 t @@ fun () -> Split.left ~by:" " "ab cde f g " = Some ("ab", "cde f g ");;
 t @@ fun () -> Split.left ~by:"__" "a__c__e_f" = Some ("a", "c__e_f");;
 t @@ fun () -> Split.left ~by:"_" "abcde" = None;;

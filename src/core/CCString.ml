@@ -45,11 +45,12 @@ type _ direction =
 (* we follow https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm *)
 module Find = struct
   type 'a kmp_pattern = {
-    failure: int array;
+    mutable failure: int array; (* empty=not computed yet *)
     str: string;
+    dir: 'a direction;
   }
-  (* invariant: [length failure = length str].
-     We use a phantom type to avoid mixing the directions. *)
+  (* invariant: [failure=[||] || length failure = length str].
+     The failure table is built lazily, we bypass it if len(haystack)<len(needle) *)
 
   let kmp_pattern_length p = String.length p.str
 
@@ -60,14 +61,17 @@ module Find = struct
     | Direct -> String.get
     | Reverse -> fun s i -> s.[String.length s - i - 1]
 
-  let kmp_compile_ : type a. dir:a direction -> string -> a kmp_pattern =
+  (* build the KMP failure table for [str], whose elements are read
+     according to [dir] *)
+  let[@inline never] kmp_failure_ : type a.
+      dir:a direction -> string -> int array =
    fun ~dir str ->
     let len = length str in
     let get = get_ ~dir in
     (* how to read elements of the string *)
     match len with
-    | 0 -> { failure = [||]; str }
-    | 1 -> { failure = [| -1 |]; str }
+    | 0 -> [||]
+    | 1 -> [| -1 |]
     | _ ->
       (* at least 2 elements, the algorithm can work *)
       let failure = Array.make len 0 in
@@ -92,11 +96,32 @@ module Find = struct
           assert (!j > 0);
           j := failure.(!j)
       done;
-      (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
-      { failure; str }
 
-  let kmp_compile s = kmp_compile_ ~dir:Direct s
-  let kmp_rcompile s = kmp_compile_ ~dir:Reverse s
+      (* Format.printf "{@[failure:%a, str:%s@]}@." CCFormat.(array int) failure str; *)
+
+      (* strengthen the failure function: if falling back to a border would
+         re-compare a character equal to the one that just mismatched, skip
+         straight to that border's (already-strengthened) target instead.
+         Uses the direction-aware [get] so it works for both directions. *)
+      for k = 1 to len - 1 do
+        let b = failure.(k) in
+        assert (b >= 0);
+        if CCChar.equal (get str k) (get str b) then failure.(k) <- failure.(b)
+      done;
+      failure
+
+  let[@inline] kmp_pattern_ : type a. dir:a direction -> string -> a kmp_pattern
+      =
+   fun ~dir str -> { str; failure = [||]; dir }
+
+  let[@inline] kmp_get_ (type a) (f : a kmp_pattern) : int array =
+    if Array.length f.failure = 0 then
+      f.failure <- kmp_failure_ ~dir:f.dir f.str;
+    f.failure
+
+  let[@inline] kmp_force_ s = ignore (kmp_get_ s : int array)
+  let[@inline] kmp_compile_ s = kmp_pattern_ ~dir:Direct s
+  let[@inline] kmp_rcompile_ s = kmp_pattern_ ~dir:Reverse s
 
   (* proper search function.
      [i] index in [s]
@@ -107,6 +132,7 @@ module Find = struct
     let i = ref idx in
     let j = ref 0 in
     let pat_len = kmp_pattern_length pattern in
+    let failure = kmp_get_ pattern in
     while !j < pat_len && !i + !j < len do
       let c = String.get s (!i + !j) in
       let expected = String.get pattern.str !j in
@@ -114,16 +140,16 @@ module Find = struct
         (* char matches *)
         incr j
       else (
-        let fail_offset = pattern.failure.(!j) in
+        let fail_offset = failure.(!j) in
         if fail_offset >= 0 then (
           assert (fail_offset < !j);
           (* follow the failure link *)
           i := !i + !j - fail_offset;
           j := fail_offset
         ) else (
-          (* beginning of pattern *)
-          j := 0;
-          incr i
+          (* no usable border: advance past the mismatch *)
+          i := !i + !j + 1;
+          j := 0
         )
       )
     done;
@@ -141,6 +167,7 @@ module Find = struct
     let i = ref (len - idx - 1) in
     let j = ref 0 in
     let pat_len = kmp_pattern_length pattern in
+    let failure = kmp_get_ pattern in
     while !j < pat_len && !i + !j < len do
       let c = String.get s (len - !i - !j - 1) in
       let expected =
@@ -150,16 +177,16 @@ module Find = struct
         (* char matches *)
         incr j
       else (
-        let fail_offset = pattern.failure.(!j) in
+        let fail_offset = failure.(!j) in
         if fail_offset >= 0 then (
           assert (fail_offset < !j);
           (* follow the failure link *)
           i := !i + !j - fail_offset;
           j := fail_offset
         ) else (
-          (* beginning of pattern *)
-          j := 0;
-          incr i
+          (* no usable border: advance past the mismatch *)
+          i := !i + !j + 1;
+          j := 0
         )
       )
     done;
@@ -173,58 +200,95 @@ module Find = struct
       -1
 
   type 'a pattern =
+    | P_empty
     | P_char of char
     | P_KMP of 'a kmp_pattern
 
   let pattern_length = function
+    | P_empty -> 0
     | P_char _ -> 1
     | P_KMP p -> kmp_pattern_length p
 
-  let compile sub : [ `Direct ] pattern =
-    if length sub = 1 then
-      P_char sub.[0]
-    else
-      P_KMP (kmp_compile sub)
+  let compile_ ~force sub : [ `Direct ] pattern =
+    match length sub with
+    | 0 -> P_empty
+    | 1 -> P_char sub.[0]
+    | _ ->
+      let p = kmp_compile_ sub in
+      if force then kmp_force_ p;
+      P_KMP p
+
+  (** Careful to not use in multicore contexts, only local blocking uses *)
+  let compile_lazy sub = compile_ ~force:false sub
+
+  let compile sub = compile_ ~force:true sub
 
   let rcompile sub : [ `Reverse ] pattern =
-    if length sub = 1 then
-      P_char sub.[0]
-    else
-      P_KMP (kmp_rcompile sub)
+    match length sub with
+    | 0 -> P_empty
+    | 1 -> P_char sub.[0]
+    | _ ->
+      let p = kmp_rcompile_ sub in
+      kmp_force_ p;
+      P_KMP p
 
   let find ?(start = 0) ~(pattern : [ `Direct ] pattern) s =
     match pattern with
+    | P_empty ->
+      if start < 0 then
+        invalid_arg "CCString.Find.find: invalid offset"
+      else if start > length s then
+        -1
+      else
+        start
     | P_char c -> (try String.index_from s start c with Not_found -> -1)
-    | P_KMP pattern -> kmp_find ~pattern s start
+    | P_KMP pattern ->
+      (* haystack too short, bail out without forcing kmp state *)
+      if String.length s - start < kmp_pattern_length pattern then
+        -1
+      else
+        kmp_find ~pattern s start
 
   let rfind ?start ~(pattern : [ `Reverse ] pattern) s =
     let start =
-      match start with
-      | Some n -> n
-      | None -> String.length s - 1
+      match pattern, start with
+      | _, Some n -> n
+      | P_empty, None -> String.length s
+      | _, None -> String.length s - 1
     in
     match pattern with
+    | P_empty ->
+      if start > String.length s then
+        invalid_arg "CCString.Find.rfind: invalid offset"
+      else if start < 0 then
+        -1
+      else
+        start
     | P_char c -> (try String.rindex_from s start c with Not_found -> -1)
-    | P_KMP pattern -> kmp_rfind ~pattern s start
+    | P_KMP pattern ->
+      (* haystack too short, bail out without forcing kmp state *)
+      if start + 1 < kmp_pattern_length pattern then
+        -1
+      else
+        kmp_rfind ~pattern s start
 end
 
-let find ?(start = 0) ~sub =
-  let pattern = Find.compile sub in
-  fun s -> Find.find ~start ~pattern s
+let find ?(start = 0) ~sub s =
+  let pattern = Find.compile_lazy sub in
+  Find.find ~start ~pattern s
 
-let find_all ?(start = 0) ~sub =
-  let pattern = Find.compile sub in
-  fun s ->
-    let i = ref start in
-    fun () ->
-      let res = Find.find ~start:!i ~pattern s in
-      if res = ~-1 then
-        None
-      else (
-        i := res + 1;
-        (* possible overlap *)
-        Some res
-      )
+let find_all ?(start = 0) ~sub s =
+  let pattern = Find.compile_lazy sub in
+  let i = ref start in
+  fun () ->
+    let res = Find.find ~start:!i ~pattern s in
+    if res = ~-1 then
+      None
+    else (
+      i := res + 1;
+      (* possible overlap *)
+      Some res
+    )
 
 let find_all_l ?start ~sub s =
   let rec aux acc g =
@@ -238,9 +302,9 @@ let mem ?start ~sub s = find ?start ~sub s >= 0
 
 let rfind ~sub =
   let pattern = Find.rcompile sub in
-  fun s -> Find.rfind ~start:(String.length s - 1) ~pattern s
+  fun s -> Find.rfind ~pattern s
 
-(* Replace substring [s.[pos] … s.[pos+len-1]] by [by] in [s] *)
+(** Replace substring [s.[pos] … s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
   let b = Buffer.create (length s + length by - len) in
   Buffer.add_substring b s 0 pos;
@@ -265,16 +329,19 @@ let replace ?(which = `All) ~sub ~by s =
       s
   | `All ->
     (* compile search pattern only once *)
-    let pattern = Find.compile sub in
+    let pattern = Find.compile_lazy sub in
     let b = Buffer.create (String.length s) in
     let start = ref 0 in
+
+    let incr_by = max 1 (String.length sub) in
+
     while !start < String.length s do
       let i = Find.find ~start:!start ~pattern s in
       if i >= 0 then (
         (* between last and cur occurrences *)
         Buffer.add_substring b s !start (i - !start);
         Buffer.add_string b by;
-        start := i + String.length sub
+        start := i + incr_by
       ) else (
         (* add remainder *)
         Buffer.add_substring b s !start (String.length s - !start);
@@ -292,83 +359,118 @@ module Split = struct
   let no_drop = { first = false; last = false }
   let default_drop = no_drop
 
-  type split_state =
-    | SplitStop
-    | SplitAt of int (* previous *)
+  type split_state = {
+    s: string;  (** The string to split *)
+    by: [ `Direct ] Find.pattern;
+    mutable stopped: bool;
+    mutable is_first: bool;
+    mutable is_last: bool;
+    mutable search_start: int;
+    mutable token_start: int;
+    mutable off: int;  (** Offset of the current result in [s] *)
+    mutable len: int;  (** Length of the current result in [s] *)
+  }
 
-  let rec _split ~by s state =
-    match state with
-    | SplitStop -> None
-    | SplitAt prev -> _split_search ~by s prev
+  let _make_state ~force ~by s : split_state =
+    {
+      s;
+      by = Find.compile_ ~force by;
+      stopped = false;
+      is_first = true;
+      is_last = false;
+      search_start = 0;
+      token_start = 0;
+      off = 0;
+      len = 0;
+    }
 
-  and _split_search ~by s prev =
-    let j = Find.find ~start:prev ~pattern:by s in
-    if j < 0 then
-      Some (SplitStop, prev, String.length s - prev)
-    else
-      Some (SplitAt (j + Find.pattern_length by), prev, j - prev)
+  (* Advance [self] and return whether [off] and [len] contain a result. *)
+  let _split (self : split_state) : bool =
+    if self.stopped then
+      false
+    else (
+      let j = Find.find ~start:self.search_start ~pattern:self.by self.s in
+      if j < 0 then (
+        self.stopped <- true;
+        self.is_last <- true;
+        self.off <- self.token_start;
+        self.len <- String.length self.s - self.token_start
+      ) else (
+        let pat_len = Find.pattern_length self.by in
+        self.is_last <- false;
+        (* empty pattern: must still move +1 *)
+        self.search_start <- j + max 1 pat_len;
+        self.off <- self.token_start;
+        self.len <- j - self.token_start;
+        self.token_start <- j + pat_len
+      );
+      true
+    )
 
-  let _tuple3 x y z = x, y, z
+  let _should_drop ~(drop : drop_if_empty) (st : split_state) : bool =
+    let should_drop =
+      st.len = 0 && ((st.is_first && drop.first) || (st.is_last && drop.last))
+    in
+    st.is_first <- false;
+    should_drop
 
-  let _mkgen ~drop ~by s k =
-    let state = ref (SplitAt 0) in
-    let by = Find.compile by in
+  let[@inline] _tuple3 x y z = x, y, z
+
+  let _mkgen ~drop ~by s k : _ gen =
+    let st = _make_state ~force:false ~by s in
     let rec next () =
-      match _split ~by s !state with
-      | None -> None
-      | Some (state', 0, 0) when drop.first ->
-        state := state';
+      if not (_split st) then
+        None
+      else if _should_drop ~drop st then
         next ()
-      | Some (_, i, 0) when drop.last && i = length s -> None
-      | Some (state', i, len) ->
-        state := state';
-        Some (k s i len)
+      else
+        Some (k s st.off st.len)
     in
     next
 
   let gen ?(drop = default_drop) ~by s = _mkgen ~drop ~by s _tuple3
   let gen_cpy ?(drop = default_drop) ~by s = _mkgen ~drop ~by s String.sub
 
-  let _mklist ~drop ~by s k =
-    let by = Find.compile by in
-    let rec build acc state =
-      match _split ~by s state with
-      | None -> List.rev acc
-      | Some (state', 0, 0) when drop.first -> build acc state'
-      | Some (_, i, 0) when drop.last && i = length s -> List.rev acc
-      | Some (state', i, len) -> build (k s i len :: acc) state'
+  let _mklist ~drop ~by s k : _ list =
+    let st = _make_state ~force:false ~by s in
+    let rec build acc =
+      if not (_split st) then
+        List.rev acc
+      else if _should_drop ~drop st then
+        build acc
+      else
+        build (k s st.off st.len :: acc)
     in
-    build [] (SplitAt 0)
+    build []
 
   let list_ ?(drop = default_drop) ~by s = _mklist ~drop ~by s _tuple3
   let list_cpy ?(drop = default_drop) ~by s = _mklist ~drop ~by s String.sub
 
-  let _mkseq ~drop ~by s k =
-    let by = Find.compile by in
-    let rec make state () =
-      match _split ~by s state with
-      | None -> Seq.Nil
-      | Some (state', 0, 0) when drop.first -> make state' ()
-      | Some (_, i, 0) when drop.last && i = length s -> Seq.Nil
-      | Some (state', i, len) -> Seq.Cons (k s i len, make state')
+  let _mkseq ~drop ~by s k : _ Seq.t =
+    let rec make st =
+      if not (_split st) then
+        Seq.Nil
+      else if _should_drop ~drop st then
+        make st
+      else
+        Seq.Cons (k s st.off st.len, delay st)
+    and delay st () =
+      (* need to copy [st] because it's mutable *)
+      let st = { st with stopped = st.stopped } in
+      make st
     in
-    make (SplitAt 0)
+
+    (* make sure to force the KMP pattern now, so the Seq is thread-safe *)
+    delay (_make_state ~force:true ~by s)
 
   let seq ?(drop = default_drop) ~by s = _mkseq ~drop ~by s _tuple3
   let seq_cpy ?(drop = default_drop) ~by s = _mkseq ~drop ~by s String.sub
 
   let _mk_iter ~drop ~by s f k =
-    let by = Find.compile by in
-    let rec aux state =
-      match _split ~by s state with
-      | None -> ()
-      | Some (state', 0, 0) when drop.first -> aux state'
-      | Some (_, i, 0) when drop.last && i = length s -> ()
-      | Some (state', i, len) ->
-        k (f s i len);
-        aux state'
-    in
-    aux (SplitAt 0)
+    let st = _make_state ~force:false ~by s in
+    while _split st do
+      if not (_should_drop ~drop st) then k (f s st.off st.len)
+    done
 
   let iter ?(drop = default_drop) ~by s = _mk_iter ~drop ~by s _tuple3
   let iter_cpy ?(drop = default_drop) ~by s = _mk_iter ~drop ~by s String.sub
