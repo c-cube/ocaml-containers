@@ -63,7 +63,8 @@ module Find = struct
 
   (* build the KMP failure table for [str], whose elements are read
      according to [dir] *)
-  let kmp_failure_ : type a. dir:a direction -> string -> int array =
+  let[@inline never] kmp_failure_ : type a.
+      dir:a direction -> string -> int array =
    fun ~dir str ->
     let len = length str in
     let get = get_ ~dir in
@@ -109,7 +110,8 @@ module Find = struct
       done;
       failure
 
-  let kmp_compile_ : type a. dir:a direction -> string -> a kmp_pattern =
+  let[@inline] kmp_pattern_ : type a. dir:a direction -> string -> a kmp_pattern
+      =
    fun ~dir str -> { str; failure = [||]; dir }
 
   let[@inline] kmp_get_ (type a) (f : a kmp_pattern) : int array =
@@ -117,8 +119,9 @@ module Find = struct
       f.failure <- kmp_failure_ ~dir:f.dir f.str;
     f.failure
 
-  let kmp_compile s = kmp_compile_ ~dir:Direct s
-  let kmp_rcompile s = kmp_compile_ ~dir:Reverse s
+  let[@inline] kmp_force_ s = ignore (kmp_get_ s : int array)
+  let[@inline] kmp_compile_ s = kmp_pattern_ ~dir:Direct s
+  let[@inline] kmp_rcompile_ s = kmp_pattern_ ~dir:Reverse s
 
   (* proper search function.
      [i] index in [s]
@@ -206,17 +209,28 @@ module Find = struct
     | P_char _ -> 1
     | P_KMP p -> kmp_pattern_length p
 
-  let compile sub : [ `Direct ] pattern =
+  let compile_ ~force sub : [ `Direct ] pattern =
     match length sub with
     | 0 -> P_empty
     | 1 -> P_char sub.[0]
-    | _ -> P_KMP (kmp_compile sub)
+    | _ ->
+      let p = kmp_compile_ sub in
+      if force then kmp_force_ p;
+      P_KMP p
+
+  (** Careful to not use in multicore contexts, only local blocking uses *)
+  let compile_lazy sub = compile_ ~force:false sub
+
+  let compile sub = compile_ ~force:true sub
 
   let rcompile sub : [ `Reverse ] pattern =
     match length sub with
     | 0 -> P_empty
     | 1 -> P_char sub.[0]
-    | _ -> P_KMP (kmp_rcompile sub)
+    | _ ->
+      let p = kmp_rcompile_ sub in
+      kmp_force_ p;
+      P_KMP p
 
   let find ?(start = 0) ~(pattern : [ `Direct ] pattern) s =
     match pattern with
@@ -259,23 +273,22 @@ module Find = struct
         kmp_rfind ~pattern s start
 end
 
-let find ?(start = 0) ~sub =
-  let pattern = Find.compile sub in
-  fun s -> Find.find ~start ~pattern s
+let find ?(start = 0) ~sub s =
+  let pattern = Find.compile_lazy sub in
+  Find.find ~start ~pattern s
 
-let find_all ?(start = 0) ~sub =
-  let pattern = Find.compile sub in
-  fun s ->
-    let i = ref start in
-    fun () ->
-      let res = Find.find ~start:!i ~pattern s in
-      if res = ~-1 then
-        None
-      else (
-        i := res + 1;
-        (* possible overlap *)
-        Some res
-      )
+let find_all ?(start = 0) ~sub s =
+  let pattern = Find.compile_lazy sub in
+  let i = ref start in
+  fun () ->
+    let res = Find.find ~start:!i ~pattern s in
+    if res = ~-1 then
+      None
+    else (
+      i := res + 1;
+      (* possible overlap *)
+      Some res
+    )
 
 let find_all_l ?start ~sub s =
   let rec aux acc g =
@@ -291,7 +304,7 @@ let rfind ~sub =
   let pattern = Find.rcompile sub in
   fun s -> Find.rfind ~pattern s
 
-(* Replace substring [s.[pos] … s.[pos+len-1]] by [by] in [s] *)
+(** Replace substring [s.[pos] … s.[pos+len-1]] by [by] in [s] *)
 let replace_at_ ~pos ~len ~by s =
   let b = Buffer.create (length s + length by - len) in
   Buffer.add_substring b s 0 pos;
@@ -316,7 +329,7 @@ let replace ?(which = `All) ~sub ~by s =
       s
   | `All ->
     (* compile search pattern only once *)
-    let pattern = Find.compile sub in
+    let pattern = Find.compile_lazy sub in
     let b = Buffer.create (String.length s) in
     let start = ref 0 in
 
@@ -358,10 +371,10 @@ module Split = struct
     mutable len: int;  (** Length of the current result in [s] *)
   }
 
-  let _make_state ~by s : split_state =
+  let _make_state ~force ~by s : split_state =
     {
       s;
-      by = Find.compile by;
+      by = Find.compile_ ~force by;
       stopped = false;
       is_first = true;
       is_last = false;
@@ -404,7 +417,7 @@ module Split = struct
   let[@inline] _tuple3 x y z = x, y, z
 
   let _mkgen ~drop ~by s k : _ gen =
-    let st = _make_state ~by s in
+    let st = _make_state ~force:false ~by s in
     let rec next () =
       if not (_split st) then
         None
@@ -419,7 +432,7 @@ module Split = struct
   let gen_cpy ?(drop = default_drop) ~by s = _mkgen ~drop ~by s String.sub
 
   let _mklist ~drop ~by s k : _ list =
-    let st = _make_state ~by s in
+    let st = _make_state ~force:false ~by s in
     let rec build acc =
       if not (_split st) then
         List.rev acc
@@ -446,13 +459,15 @@ module Split = struct
       let st = { st with stopped = st.stopped } in
       make st
     in
-    delay (_make_state ~by s)
+
+    (* make sure to force the KMP pattern now, so the Seq is thread-safe *)
+    delay (_make_state ~force:true ~by s)
 
   let seq ?(drop = default_drop) ~by s = _mkseq ~drop ~by s _tuple3
   let seq_cpy ?(drop = default_drop) ~by s = _mkseq ~drop ~by s String.sub
 
   let _mk_iter ~drop ~by s f k =
-    let st = _make_state ~by s in
+    let st = _make_state ~force:false ~by s in
     while _split st do
       if not (_should_drop ~drop st) then k (f s st.off st.len)
     done
