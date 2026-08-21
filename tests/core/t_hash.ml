@@ -13,6 +13,31 @@ t @@ fun () -> list_comm int [ 1; 2 ] = list_comm int [ 2; 1 ];;
 t @@ fun () -> list_comm int [ 1; 2 ] <> list_comm int [ 2; 3 ];;
 t @@ fun () -> string "abcd" >= 0;;
 t @@ fun () -> string "abc" <> string "abcd";;
+t @@ fun () -> string "a" <> string "a\000";;
+t @@ fun () -> slice "a\000" 0 1 <> slice "a\000" 0 2;;
+
+t @@ fun () ->
+CCHash64.(
+  finalize64 (slice "a\000" 0 seed 1) <> finalize64 (slice "a\000" 0 seed 2))
+;;
+
+t ~name:"slice bounds checks" @@ fun () ->
+let raises_invalid f =
+  try
+    f ();
+    false
+  with Invalid_argument _ -> true
+in
+List.for_all raises_invalid
+  [
+    (fun () -> ignore (slice "abc" (-1) 1));
+    (fun () -> ignore (slice "abc" 0 (-1)));
+    (fun () -> ignore (slice "abc" 3 1));
+    (fun () -> ignore (CCHash64.slice "abc" (-1) CCHash64.seed 1));
+    (fun () -> ignore (CCHash64.slice "abc" 0 CCHash64.seed (-1)));
+    (fun () -> ignore (CCHash64.slice "abc" 3 CCHash64.seed 1));
+  ]
+;;
 
 q Q.int (fun i ->
     Q.assume (i >= 0);
