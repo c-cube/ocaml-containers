@@ -166,6 +166,9 @@ module L = struct
     let s1 = Sek.Persistent.of_array 0 (Array.of_list l1) in
     let s2 = Sek.Persistent.of_array 0 (Array.of_list l2) in
     let s3 = Sek.Persistent.of_array 0 (Array.of_list l3) in
+    let q1 = CCFQueue.of_list l1 in
+    let q2 = CCFQueue.of_list l2 in
+    let q3 = CCFQueue.of_list l3 in
     let bench_list l1 l2 l3 () =
       opaque_ignore List.(append (append l1 l2) l3)
     in
@@ -181,6 +184,12 @@ module L = struct
     let bench_sek l1 l2 l3 () =
       opaque_ignore Sek.Persistent.(concat (concat l1 l2) l3)
     in
+    let bench_ccfqueue l1 l2 l3 () =
+      opaque_ignore CCFQueue.(append (append l1 l2) l3)
+    in
+    let bench_ccfqueue_r l1 l2 l3 () =
+      opaque_ignore CCFQueue.(append l1 (append l2 l3))
+    in
     B.throughputN time ~repeat
       [
         "CCList.append", bench_list l1 l2 l3, ();
@@ -188,6 +197,8 @@ module L = struct
         "CCFun_vec.append", bench_funvec v1 v2 v3, ();
         "Pvec.append", bench_pvec pv1 pv2 pv3, ();
         "Sek.concat", bench_sek s1 s2 s3, ();
+        "CCFQueue.append", bench_ccfqueue q1 q2 q3, ();
+        "CCFQueue.append (r-assoc)", bench_ccfqueue_r q1 q2 q3, ();
       ]
 
   (* FLATTEN *)

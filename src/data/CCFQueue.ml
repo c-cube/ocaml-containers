@@ -240,6 +240,11 @@ let add_iter_front seq q =
   seq (fun x -> l := x :: !l);
   List.fold_left (fun q x -> cons x q) q !l
 
+let add_iter_front_rev q seq =
+  let q = ref q in
+  seq (fun x -> q := cons x !q);
+  !q
+
 let add_iter_back q seq =
   let q = ref q in
   seq (fun x -> q := snoc !q x);
@@ -269,11 +274,39 @@ let rec to_iter : 'a. 'a t -> 'a iter =
         k y);
     _digit_to_iter tail k
 
+let _digit_to_iter_rev : type l. ('a, l) digit -> 'a iter =
+ fun d k ->
+  match d with
+  | Zero -> ()
+  | One x -> k x
+  | Two (x, y) ->
+    k y;
+    k x
+  | Three (x, y, z) ->
+    k z;
+    k y;
+    k x
+
+let rec to_iter_rev : 'a. 'a t -> 'a iter =
+ fun q k ->
+  match q with
+  | Shallow d -> _digit_to_iter_rev d k
+  | Deep (_, hd, (lazy q'), tail) ->
+    _digit_to_iter_rev tail k;
+    to_iter_rev q' (fun (x, y) ->
+        k y;
+        k x);
+    _digit_to_iter_rev hd k
+
 let append q1 q2 =
   match q1, q2 with
   | Shallow Zero, _ -> q2
   | _, Shallow Zero -> q1
-  | _ -> add_iter_back q1 (to_iter q2)
+  | _ ->
+    if size q1 < size q2 then
+      add_iter_front_rev q2 (to_iter_rev q1)
+    else
+      add_iter_back q1 (to_iter q2)
 
 let add_seq_front seq q =
   (* reversed seq *)
