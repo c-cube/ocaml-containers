@@ -65,6 +65,8 @@ let bytes (x : bytes) =
 let string (x : string) = Hash_impl_.(finalize (combine_string seed x))
 
 let slice x i len =
+  if i < 0 || len < 0 || i > String.length x - len then
+    invalid_arg "CCHash.slice";
   let j = i + len in
   let rec aux k s =
     if k = j then

@@ -32,6 +32,8 @@ let[@inline] string s x = Hash_impl_.combine_string s x
 let[@inline] bytes s x = Hash_impl_.combine_string s (Bytes.unsafe_to_string x)
 
 let slice str ofs s len =
+  if ofs < 0 || len < 0 || ofs > String.length str - len then
+    invalid_arg "CCHash64.slice";
   let j = ofs + len in
   let rec loop k st =
     if k = j then
