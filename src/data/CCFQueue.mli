@@ -86,7 +86,7 @@ val init : 'a t -> 'a t
 val append : 'a t -> 'a t -> 'a t
 (** Append two queues. Elements from the second one come
     after elements of the first one.
-    Linear in the size of the second queue. *)
+    Linear in the size of the shorter queue. *)
 
 val rev : 'a t -> 'a t
 (** Reverse the queue, [O(n)] complexity.
