@@ -42,7 +42,8 @@ let slice str ofs s len =
       loop (k + 1)
         (Hash_impl_.combine_char st (Char.code (String.unsafe_get str k)))
   in
-  loop ofs s
+  let state = Hash_impl_.combine_int s len in
+  loop ofs state
 
 let opt f s = function
   | None -> Hash_impl_.combine_int s 0

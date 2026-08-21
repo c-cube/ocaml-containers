@@ -55,7 +55,9 @@ val bytes : bytes t
 (** @since 3.5 *)
 
 val slice : string -> int -> int t
-(** [slice str ofs s len] mixes the byte slice [str[ofs .. ofs+len-1]] into [s]. *)
+(** [slice str ofs s len] mixes [len] and the byte slice
+    [str[ofs .. ofs+len-1]] into [s].
+    @raise Invalid_argument if the slice is out of bounds. *)
 
 val opt : 'a t -> 'a option t
 val list : 'a t -> 'a list t

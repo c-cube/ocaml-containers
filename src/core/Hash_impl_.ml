@@ -43,7 +43,8 @@ external combine_char :
 external combine_string : (int64[@unboxed]) -> string -> (int64[@unboxed])
   = "caml_cc_hash_combine_string_byte" "caml_cc_hash_combine_string"
 [@@noalloc]
-(** [combine_string state s] mixes all bytes of [s] into [state] in 8-byte chunks. *)
+(** [combine_string state s] mixes the length and all bytes of [s] into [state]
+    in 8-byte chunks. *)
 
 external fmix64 : (int64[@unboxed]) -> (int64[@unboxed])
   = "caml_cc_hash_fmix64_byte" "caml_cc_hash_fmix64"

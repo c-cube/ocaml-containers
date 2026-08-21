@@ -43,8 +43,8 @@ val int64 : int64 t
 val nativeint : nativeint t
 
 val slice : string -> int -> int t
-(** [slice s i len state] hashes the slice [i, …, i+len-1] of [s]
-    into [state]. *)
+(** [slice s i len] hashes [len] and the slice [i, …, i+len-1] of [s].
+    @raise Invalid_argument if the slice is out of bounds. *)
 
 val bytes : bytes t
 (** Hash a byte array.

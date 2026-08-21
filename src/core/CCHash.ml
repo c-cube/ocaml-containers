@@ -75,7 +75,8 @@ let slice x i len =
       aux (k + 1)
         (Hash_impl_.combine_char s (Char.code (String.unsafe_get x k)))
   in
-  aux i Hash_impl_.seed
+  let state = Hash_impl_.combine_int Hash_impl_.seed len in
+  aux i state
 
 let opt f = function
   | None -> 42
