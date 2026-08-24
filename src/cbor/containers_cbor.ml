@@ -239,7 +239,8 @@ let decode_exn (s : string) : t =
   in
   read_value ()
 
-let decode s = try Ok (decode_exn s) with Failure s -> Error s
+let decode s =
+  try Ok (decode_exn s) with Failure s | Invalid_argument s -> Error s
 
 let encode ?(buf = Buffer.create 32) (self : t) : string =
   Buffer.clear buf;
@@ -279,13 +280,14 @@ let encode ?(buf = Buffer.create 32) (self : t) : string =
     | `Null -> add_byte 7 22
     | `Undefined -> add_byte 7 23
     | `Simple i ->
-      if i < 24 then
+      if i < 0 || i > 0xff then
+        invalid_arg "cbor: simple value must be between 0 and 255"
+      else if i < 24 then
         add_byte 7 i
-      else if i <= 0xff then (
+      else (
         add_byte 7 24;
         Buffer.add_char buf (Char.unsafe_chr i)
-      ) else
-        failwith "cbor: simple value too high (above 255)"
+      )
     | `Float f ->
       add_byte 7 27;
       (* float 64 *)

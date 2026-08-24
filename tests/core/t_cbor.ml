@@ -117,6 +117,39 @@ let rec eq_c c c' =
   | _ -> false
 ;;
 
+t ~name:"decode truncated input" @@ fun () ->
+List.for_all
+  (fun s ->
+    match Cbor.decode s with
+    | Error _ -> true
+    | Ok _ -> false)
+  [ ""; "\x18"; "\x19\x00"; "\x9f"; "\x7f" ]
+;;
+
+t ~name:"decode ignores trailing bytes" @@ fun () ->
+match Cbor.decode "\x01\x02" with
+| Ok (`Int 1L) -> true
+| Ok _ | Error _ -> false
+;;
+
+t ~name:"simple values" @@ fun () ->
+List.for_all
+  (fun i ->
+    let value = `Simple i in
+    eq_c value (Cbor.decode_exn (Cbor.encode value)))
+  [ 0; 1; 19; 32; 127; 255 ]
+;;
+
+t ~name:"simple value bounds" @@ fun () ->
+let raises_invalid_argument i =
+  try
+    ignore (Cbor.encode (`Simple i));
+    false
+  with Invalid_argument _ -> true
+in
+List.for_all raises_invalid_argument [ -1; 256; max_int ]
+;;
+
 q ~count:1_000 ~long_factor:10 arb @@ fun c ->
 let s = Cbor.encode c in
 let c' = Cbor.decode_exn s in

@@ -24,8 +24,13 @@ type t =
 
 val pp_diagnostic : t CCFormat.printer
 val to_string_diagnostic : t -> string
+
 val encode : ?buf:Buffer.t -> t -> string
+(** @raise Invalid_argument if a simple value is outside the range 0 to 255. *)
+
 val decode : string -> (t, string) result
+(** Decode the value at the beginning of the string.
+    This ignores trailing bytes if the value is only a prefix of the string. *)
 
 val decode_exn : string -> t
 (** Like {!decode}.
