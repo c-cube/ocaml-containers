@@ -222,13 +222,20 @@ let filter_map f a =
   aux [] 0
 
 let filter p a =
-  filter_map
-    (fun x ->
+  let rec aux acc i =
+    if i = Array.length a then (
+      let a' = Array.of_list acc in
+      reverse_in_place a';
+      a'
+    ) else (
+      let x = unsafe_get a i in
       if p x then
-        Some x
+        aux (x :: acc) (i + 1)
       else
-        None)
-    a
+        aux acc (i + 1)
+    )
+  in
+  aux [] 0
 
 (* append [rev a] in front of [acc] *)
 let rec __rev_append_list a acc i =
