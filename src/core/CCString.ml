@@ -642,8 +642,15 @@ let edit_distance ?(cutoff = max_int) s1 s2 =
 let repeat s n =
   assert (n >= 0);
   let len = String.length s in
-  assert (len > 0);
-  init (len * n) (fun i -> s.[i mod len])
+  if len = 0 then
+    ""
+  else (
+    let res = Bytes.create (len * n) in
+    for i = 0 to n - 1 do
+      Bytes.blit_string s 0 res (i * len) len
+    done;
+    Bytes.unsafe_to_string res
+  )
 
 let prefix ~pre s =
   let len = String.length pre in
@@ -752,19 +759,15 @@ let pad ?(side = `Left) ?(c = ' ') n s =
     s
   else (
     let pad_len = n - len_s in
-    match side with
+    let res = Bytes.create n in
+    (match side with
     | `Left ->
-      init n (fun i ->
-          if i < pad_len then
-            c
-          else
-            s.[i - pad_len])
+      Bytes.fill res 0 pad_len c;
+      Bytes.blit_string s 0 res pad_len len_s
     | `Right ->
-      init n (fun i ->
-          if i < len_s then
-            s.[i]
-          else
-            c)
+      Bytes.blit_string s 0 res 0 len_s;
+      Bytes.fill res len_s pad_len c);
+    Bytes.unsafe_to_string res
   )
 
 let _to_gen s i0 len =
