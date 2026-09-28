@@ -755,7 +755,7 @@ let sorted_diff_uniq ~cmp l1 l2 =
 let rec drop n l =
   match l with
   | [] -> []
-  | _ when n = 0 -> l
+  | _ when n <= 0 -> l
   | _ :: l' -> drop (n - 1) l'
 
 [@@@iflt 4.14]
@@ -764,7 +764,7 @@ let take n l =
   let rec direct i n l =
     match l with
     | [] -> []
-    | _ when i = 0 -> safe n [] l
+    | _ when i <= 0 -> safe n [] l
     | x :: l' ->
       if n > 0 then
         x :: direct (i - 1) (n - 1) l'
@@ -773,7 +773,7 @@ let take n l =
   and safe n acc l =
     match l with
     | [] -> List.rev acc
-    | _ when n = 0 -> List.rev acc
+    | _ when n <= 0 -> List.rev acc
     | x :: l' -> safe (n - 1) (x :: acc) l'
   in
   direct direct_depth_default_ n l
@@ -798,7 +798,7 @@ let take_drop n l =
     match l with
     | [] -> []
     | x :: tl ->
-      if n = 0 then (
+      if n <= 0 then (
         res_drop := l;
         []
       ) else

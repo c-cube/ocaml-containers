@@ -714,6 +714,7 @@ with Failure _ -> true
 ;;
 
 t @@ fun () -> hd_tl [ 1; 2; 3 ] = (1, [ 2; 3 ]);;
+t @@ fun () -> take_drop (-1) [ 1; 2 ] = ([], [ 1; 2 ]);;
 
 q
   (Q.pair (Q.list Q.nat_small) Q.int)
