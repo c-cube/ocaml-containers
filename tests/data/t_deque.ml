@@ -215,6 +215,22 @@ assert_equal [ 1; 2; 3; 4; 5; 6 ] (to_list q);
 true
 ;;
 
+t @@ fun () ->
+let q = of_list [ 1; 2 ] in
+try
+  append_front ~into:q q;
+  false
+with Invalid_argument _ -> true
+;;
+
+t @@ fun () ->
+let q = of_list [ 1; 2 ] in
+try
+  append_back ~into:q q;
+  false
+with Invalid_argument _ -> true
+;;
+
 t @@ fun () -> fold ( + ) 0 (of_list [ 1; 2; 3 ]) = 6;;
 
 t @@ fun () ->

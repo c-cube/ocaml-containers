@@ -3,7 +3,10 @@
 (** Imperative deque
 
     This structure provides fast access to its front and back elements,
-    with O(1) operations. *)
+    with O(1) operations.
+
+    {b Warning}: modifying a deque while iterating on it (via {!iter},
+    {!fold}, {!to_gen}, …) can corrupt the deque or loop forever. *)
 
 type 'a t
 (** Contains 'a elements, queue in both ways *)
@@ -96,11 +99,13 @@ val append_front : into:'a t -> 'a t -> unit
 (** [append_front ~into q] adds all elements of [q] at the front
     of [into].
     [O(length q)] in time.
+    @raise Invalid_argument if [q] and [into] are the same deque
     @since 0.13 *)
 
 val append_back : into:'a t -> 'a t -> unit
 (** [append_back ~into q] adds all elements of [q] at the back of [into].
     [O(length q)] in time.
+    @raise Invalid_argument if [q] and [into] are the same deque
     @since 0.13 *)
 
 val iter : ('a -> unit) -> 'a t -> unit
@@ -134,12 +139,14 @@ val to_gen : 'a t -> 'a gen
 val add_iter_front : 'a t -> 'a iter -> unit
 (** [add_iter_front q seq] adds elements of [seq] into the front of [q],
     in reverse order.
+    The iterator must not belong to [q] itself.
     [O(n)] in time, where [n] is the number of elements to add.
     @since 0.13 *)
 
 val add_iter_back : 'a t -> 'a iter -> unit
 (** [add_iter_back q seq] adds elements of [seq] into the back of [q],
     in order.
+    The iterator must not belong to [q] itself.
     [O(n)] in time, where [n] is the number of elements to add.
     @since 0.13 *)
 

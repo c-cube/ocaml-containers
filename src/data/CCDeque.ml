@@ -250,8 +250,13 @@ let iter f d =
   | Empty -> ()
   | Node cur -> iter f ~first:cur cur
 
-let append_front ~into q = iter (push_front into) q
-let append_back ~into q = iter (push_back into) q
+let append_front ~into q =
+  if q == into then invalid_arg "CCDeque: aliasing";
+  iter (push_front into) q
+
+let append_back ~into q =
+  if q == into then invalid_arg "CCDeque: aliasing";
+  iter (push_back into) q
 
 let fold f acc d =
   let rec aux ~first f acc n =
