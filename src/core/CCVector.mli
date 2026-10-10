@@ -85,8 +85,8 @@ val push : ('a, rw) t -> 'a -> unit
 val resize_with : ('a, rw) t -> (int -> 'a) -> int -> unit
 (** [resize_with vec f size] resizes vector [vec] up to [size], fills vector
     with calls to [f] on indexes [[vec.size-1.. size - 1]].
-    The contents and size of vec are untouched if [size] is inferior or equal
-    to [length vec].
+    If [size] is strictly smaller than [length vec], the vector is truncated
+    to its first [size] elements.
     @raise Invalid_argument if the size is too big
 
     @since 3.7 *)
@@ -94,8 +94,8 @@ val resize_with : ('a, rw) t -> (int -> 'a) -> int -> unit
 val resize_with_init : ('a, rw) t -> init:'a -> int -> unit
 (** [resize_with_init vec init size] resizes vector [vec] up to [size],
     fills vector with calls to [init] on indexes [[length vec -1.. size - 1]].
-    The contents and size of vec are untouched if [size] is inferior or equal
-    to [length vec].
+    If [size] is strictly smaller than [length vec], the vector is truncated
+    to its first [size] elements.
     @raise Invalid_argument if the size is too big
 
     @since 3.7 *)

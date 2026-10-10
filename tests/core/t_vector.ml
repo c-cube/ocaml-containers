@@ -219,6 +219,24 @@ resize_with_init v ~init:1 5;
 List.length (to_list v) = 5
 ;;
 
+t @@ fun () ->
+let v = of_list [ 1; 2; 3 ] in
+resize_with v (fun i -> i) 1;
+to_list v = [ 1 ]
+;;
+
+t @@ fun () ->
+let v = of_list [ 1; 2; 3 ] in
+resize_with v (fun i -> i) 0;
+to_list v = []
+;;
+
+t @@ fun () ->
+let v = of_list [ 1; 2; 3 ] in
+resize_with_init v ~init:9 1;
+to_list v = [ 1 ]
+;;
+
 (* test for asymptotic behavior *)
 t @@ fun () ->
 let v = make 1 0 in
