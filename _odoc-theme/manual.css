@@ -3,8 +3,8 @@
 @import url("theme.css");
 
 /* Copyright (c) 2019 The odig programmers. All rights reserved.
-   Distributed under the ISC license, see terms at the end of the file.
-   odig v0.0.9 */
+   SPDX-License-Identifier: ISC
+   odig v0.1.0 */
 
 :root { --font-headings: "PT-Sans-Caption";
         --font-body: "PT-Sans";

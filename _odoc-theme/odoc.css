@@ -3,7 +3,7 @@
 @import url("theme.css");
 
 /* Copyright (c) 2019 The odig programmers. All rights reserved.
-   Distributed under the ISC license, see terms at the end of the file. */
+   SPDX-License-Identifier: ISC */
 
 /* Reset a few things. */
 
@@ -62,7 +62,7 @@ table { border-collapse: collapse; border-spacing: 0; }
 .odoc-nav { grid-area: nav; }
 .odoc-preamble { grid-area: header; }
 .odoc-content { grid-area: content; margin: 0 }
-.odoc-toc
+.odoc-tocs
 { grid-area: toc;
   margin-top: var(--size-line);
   border-top: solid thin var(--color-rule); }
