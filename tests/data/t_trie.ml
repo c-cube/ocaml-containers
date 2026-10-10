@@ -72,7 +72,7 @@ q ~count:30
     && S.to_iter t2 |> Iter.for_all (fun (k, _) -> S.find k t <> None))
 ;;
 
-t @@ fun () -> T.size t1 = List.length l1
+t @@ fun () -> T.size t1 = List.length l1;;
 
 let eq' = eq ~printer:CCFormat.(to_string (list (pair (list int) string)));;
 
@@ -113,6 +113,7 @@ q ~count:30
   (fun l ->
     let t = S.of_list l in
     S.check_invariants t)
+;;
 
 let rec sorted ~rev = function
   | [] | [ _ ] -> true

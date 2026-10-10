@@ -8,7 +8,7 @@ q Q.string_printable (fun s -> length s = length (rev s));;
 q Q.string_printable (fun s -> rev s = (to_list s |> List.rev |> of_list));;
 eq "abc" (rev "cba");;
 eq "" (rev "");;
-eq " " (rev " ")
+eq " " (rev " ");;
 
 let eq' = eq ~printer:string_of_int;;
 
@@ -24,6 +24,7 @@ q ~count:10_000
     ||
     let i = find ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
+;;
 
 let eq' = eq ~printer:Q.Print.(list int);;
 
@@ -36,7 +37,7 @@ eq' [ 76 ]
 ;;
 
 t @@ fun () -> mem ~sub:"bc" "abcd";;
-t @@ fun () -> not (mem ~sub:"a b" "abcd")
+t @@ fun () -> not (mem ~sub:"a b" "abcd");;
 
 let eq' = eq ~printer:string_of_int;;
 
@@ -53,6 +54,7 @@ q ~count:10_000
     ||
     let i = rfind ~sub:s2 s1 in
     i < 0 || String.sub s1 i (length s2) = s2)
+;;
 
 (* compare to a naive reference. *)
 let gen_ab ~maxlen =
@@ -378,6 +380,7 @@ q
     if prefix ^ suffix <> s then
       Q.Test.fail_reportf "s=%S, pre=%S, post=%S" s prefix suffix;
     true)
+;;
 
 let eq' = eq ~printer:Q.Print.(option string);;
 
@@ -386,7 +389,7 @@ eq' None (chop_suffix ~suf:"cd" "abcde");;
 eq' None (chop_suffix ~suf:"abcd" "cd");;
 eq' (Some "cd") (chop_prefix ~pre:"aab" "aabcd");;
 eq' None (chop_prefix ~pre:"ab" "aabcd");;
-eq' None (chop_prefix ~pre:"abcd" "abc")
+eq' None (chop_prefix ~pre:"abcd" "abc");;
 
 let eq' = eq ~printer:Q.Print.string;;
 
@@ -397,7 +400,7 @@ eq' "hello" (pad 4 "hello");;
 eq' "aaa" (pad ~c:'a' 3 "");;
 eq' "aaa" (pad ~side:`Right ~c:'a' 3 "");;
 t @@ fun () -> of_list [ 'a'; 'b'; 'c' ] = "abc";;
-t @@ fun () -> of_list [] = ""
+t @@ fun () -> of_list [] = "";;
 
 let eq' = eq ~printer:Q.Print.(list @@ Printf.sprintf "%S");;
 
@@ -517,7 +520,7 @@ q
 ;;
 
 q Q.(string_printable) (fun s -> equal_caseless s s);;
-q Q.(string_printable) (fun s -> equal_caseless (uppercase_ascii s) s)
+q Q.(string_printable) (fun s -> equal_caseless (uppercase_ascii s) s);;
 
 let eq' = eq ~printer:(Printf.sprintf "%S");;
 

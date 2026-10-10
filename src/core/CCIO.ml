@@ -377,8 +377,8 @@ module File = struct
 
   let show_walk_item ((i, f) : walk_item) =
     (match i with
-    | `File -> "file:"
-    | `Dir -> "dir:")
+      | `File -> "file:"
+      | `Dir -> "dir:")
     ^ f
 
   let with_temp ?temp_dir ~prefix ~suffix f =

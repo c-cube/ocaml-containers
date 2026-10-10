@@ -78,7 +78,7 @@ q
   (fun (l1, l2) -> equal CCInt.equal (of_list l1) (of_list l2) = (l1 = l2))
 ;;
 
-q Q.(list_small int) (fun l1 -> equal CCInt.equal (of_list l1) (of_list l1))
+q Q.(list_small int) (fun l1 -> equal CCInt.equal (of_list l1) (of_list l1));;
 
 let arb_list_with_idx =
   let open Q in
@@ -108,6 +108,7 @@ q arb_list_with_idx (fun (l1, i) ->
       not (equal CCInt.equal (of_list l1) (of_list l2))
     ) else
       true)
+;;
 
 module Ref_impl = struct
   type +'a t = 'a list

@@ -7,6 +7,7 @@ eq ~printer:to_string_debug (map_of_list []) (Decode.of_string_exn "de");;
 eq ~printer:to_string_debug
   (list [ int 1; int 2; string "foo" ])
   (Decode.of_string_exn "li1ei2e3:fooe")
+;;
 
 module B = Containers_bencode
 

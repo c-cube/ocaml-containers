@@ -50,12 +50,13 @@ q
   (fun (n, m) ->
     let m = m + 1l in
     floor_div n (-m) = of_float @@ floor (to_float n /. to_float (-m)))
+;;
 
 let eq' = eq ~printer:Q.Print.(list to_string);;
 
 eq' [ 0l; 1l; 2l; 3l; 4l; 5l ] (range 0l 5l |> Iter.to_list);;
 eq' [ 0l ] (range 0l 0l |> Iter.to_list);;
-eq' [ 5l; 4l; 3l; 2l ] (range 5l 2l |> Iter.to_list)
+eq' [ 5l; 4l; 3l; 2l ] (range 5l 2l |> Iter.to_list);;
 
 (* note: the last test checks that no error occurs due to overflows. *)
 let eq' = eq ~printer:Q.Print.(list to_string);;
@@ -91,6 +92,7 @@ q
     let n1 = CCInt.popcount i in
     let n2 = CCInt32.popcount (Int32.of_int i) in
     CCInt.(n1 = n2))
+;;
 
 let eq' = eq ~printer:CCInt.to_string;;
 

@@ -23,12 +23,12 @@ module A = struct
   let equal eq a b =
     length a = length b
     &&
-    try
-      for i = 0 to length a - 1 do
-        if not (eq (unsafe_get a i) (unsafe_get b i)) then raise_notrace Exit
-      done;
-      true
-    with Exit -> false
+      try
+        for i = 0 to length a - 1 do
+          if not (eq (unsafe_get a i) (unsafe_get b i)) then raise_notrace Exit
+        done;
+        true
+      with Exit -> false
 
   let[@inline] push (self : _ t) x =
     let n = length self in

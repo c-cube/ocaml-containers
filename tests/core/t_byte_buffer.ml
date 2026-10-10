@@ -20,6 +20,7 @@ length b = 0
 t @@ fun () ->
 let b = create ~cap:32 () in
 length b = 0
+;;
 
 let test_count = 2_500
 

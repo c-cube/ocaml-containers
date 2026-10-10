@@ -84,11 +84,11 @@ let () =
   Printf.printf "\n";
   types
   |> List.iter (fun (name, create) ->
-         Printf.printf "%-20s: " name;
-         sizes
-         |> List.iter (fun n ->
-                let obj = create n in
-                let size = Objsize.size_w obj in
-                (* let size = Obj.reachable_words (Obj.repr obj) in *)
-                Printf.printf "%6d " size);
-         Printf.printf "\n")
+      Printf.printf "%-20s: " name;
+      sizes
+      |> List.iter (fun n ->
+          let obj = create n in
+          let size = Objsize.size_w obj in
+          (* let size = Obj.reachable_words (Obj.repr obj) in *)
+          Printf.printf "%6d " size);
+      Printf.printf "\n")

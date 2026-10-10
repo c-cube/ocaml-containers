@@ -181,6 +181,7 @@ t @@ fun () -> range 17 17 |> to_list = [ 17 ];;
 q
   Q.(pair nat_small nat_small)
   (fun (i, j) -> range i j |> to_list = CCList.(i -- j))
+;;
 
 let eq' = eq ~printer:CCFormat.(to_string (hbox (list int)));;
 

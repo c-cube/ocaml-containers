@@ -153,6 +153,7 @@ List.iter
     assert_bool "exactly size" (!n = size))
   [ 30; 100; 255; 256; 10_000 ];
 true
+;;
 
 let iter_zip s k = s (fun x y -> k (x, y))
 let eq' = eq ~printer:Q.Print.(list (pair int bool));;
@@ -180,6 +181,7 @@ q
 t ~name:(spf "line %d" __LINE__) @@ fun () ->
 of_list [ 1; 5; 7 ]
 |> iter_true |> Iter.to_list |> List.sort CCOrd.poly = [ 1; 5; 7 ]
+;;
 
 let _gen = Q.Gen.(map of_list (list nat))
 let _pp bv = Q.Print.(list string) (List.map string_of_int (to_list bv))
@@ -227,8 +229,8 @@ q
       CCList.init (length bv) (get bv)
       |> CCList.mapi (fun i b -> i, b)
       |> CCList.filter_map (function
-           | i, true -> Some i
-           | _ -> None)
+        | i, true -> Some i
+        | _ -> None)
     in
     if l1 = l2 then
       true
@@ -450,7 +452,7 @@ CCList.range 0 10 |> CCList.to_iter |> of_iter |> to_iter |> CCList.of_iter
 |> List.sort CCOrd.poly = CCList.range 0 10
 ;;
 
-eq ~printer:CCFun.id "bv {00001}" (CCFormat.to_string pp (of_list [ 4 ]))
+eq ~printer:CCFun.id "bv {00001}" (CCFormat.to_string pp (of_list [ 4 ]));;
 
 let eq' = eq ~printer:CCInt.to_string;;
 
@@ -462,7 +464,7 @@ eq' 0b1111 (__lsb_mask 4);;
 eq' 0b1_1111 (__lsb_mask 5);;
 eq' 0b11_1111 (__lsb_mask 6);;
 eq' 0b111_1111 (__lsb_mask 7);;
-eq' 0b1111_1111 (__lsb_mask 8)
+eq' 0b1111_1111 (__lsb_mask 8);;
 
 let popcount8_ref n =
   let rec loop n =
@@ -560,6 +562,7 @@ t ~name:(spf "line %d" __LINE__) (fun () ->
     resize_minimize_memory v 9;
     Internal_.__check_invariant v;
     is_empty v)
+;;
 
 module Op = struct
   type t =

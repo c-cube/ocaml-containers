@@ -10,7 +10,7 @@ t @@ fun () ->
 CCResult.to_opt (parse_string "(abc ( d e ffff   ) \"hello/world\")") <> None
 ;;
 
-t @@ fun () -> CCResult.to_opt (parse_string "\"\123\bcoucou\"") <> None
+t @@ fun () -> CCResult.to_opt (parse_string "\"\123\bcoucou\"") <> None;;
 
 let eq' =
   eq ~printer:(function
@@ -27,7 +27,7 @@ eq'
 ;;
 
 eq' (parse_string "#; (a b) (c d)") (Ok (`List [ `Atom "c"; `Atom "d" ]));;
-eq' (parse_string "#; (a b) 1") (Ok (`Atom "1"))
+eq' (parse_string "#; (a b) 1") (Ok (`Atom "1"));;
 
 let eq' =
   eq ~printer:(function
@@ -52,7 +52,7 @@ eq'
   (Ok [ `List [ `Atom "c"; `Atom "d" ]; `Atom "e" ])
 ;;
 
-eq' (parse_string_list "#; (a b) 1") (Ok [ `Atom "1" ])
+eq' (parse_string_list "#; (a b) 1") (Ok [ `Atom "1" ]);;
 
 let sexp_bijective s = to_string s |> parse_string = Ok s;;
 
@@ -62,7 +62,7 @@ eq
   (parse_string "(\"\")")
 ;;
 
-t @@ fun () -> sexp_bijective (`List [ `Atom "" ])
+t @@ fun () -> sexp_bijective (`List [ `Atom "" ]);;
 
 let sexp_gen =
   let mkatom a = `Atom a and mklist l = `List l in
@@ -117,12 +117,13 @@ let cases =
 in
 cases
 |> List.iter (fun s ->
-       try ignore (parse_string s)
-       with e ->
-         let st = Printexc.get_backtrace () in
-         print_endline @@ Printexc.to_string e ^ "\n" ^ st;
-         assert false);
+    try ignore (parse_string s)
+    with e ->
+      let st = Printexc.get_backtrace () in
+      print_endline @@ Printexc.to_string e ^ "\n" ^ st;
+      assert false);
 true
+;;
 
 module CS = CCCanonical_sexp
 
@@ -203,6 +204,7 @@ struct
   match CS0.parse_string s with
   | Ok sexp' -> sexp = sexp'
   | Error msg -> Q.Test.fail_report msg
+  ;;
 
   let init () = ()
 end

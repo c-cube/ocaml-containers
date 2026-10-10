@@ -185,12 +185,12 @@ let resize_minimize_memory bv size =
 let is_empty bv =
   bv.size = 0
   ||
-  try
-    for i = 0 to bytes_length_of_size bv.size - 1 do
-      if unsafe_get_ bv.b i <> 0 then raise_notrace Exit
-    done;
-    true
-  with Exit -> false
+    try
+      for i = 0 to bytes_length_of_size bv.size - 1 do
+        if unsafe_get_ bv.b i <> 0 then raise_notrace Exit
+      done;
+      true
+    with Exit -> false
 
 let[@inline] get bv i =
   if i < 0 then invalid_arg "get: negative index";

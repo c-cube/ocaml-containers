@@ -3,7 +3,7 @@ open Test
 open CCZipper;;
 
 t @@ fun () -> is_empty empty;;
-t @@ fun () -> not ([ 42 ] |> make |> right |> is_empty)
+t @@ fun () -> not ([ 42 ] |> make |> right |> is_empty);;
 
 let zip_gen = Q.(pair (list_small int) (list_small int));;
 

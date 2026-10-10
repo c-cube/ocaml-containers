@@ -223,6 +223,7 @@ q a_str (fun s ->
     let b = Byte.of_array s in
     let s' = Byte.to_array b in
     s = s')
+;;
 
 module BI = CCRingBuffer.Make (struct
   type t = int
@@ -245,6 +246,7 @@ for _i = 1 to 100_000 do
   )
 done;
 true
+;;
 
 (* Test against reference implementation (lists) on a succession of
    operations.
@@ -489,6 +491,7 @@ q ~count:3_000 arb_ops (fun ops ->
     let l1 = CCList.filter_map (apply_op b) ops in
     let l2 = CCList.filter_map (L_impl.apply_op l) ops in
     l1 = l2 && BS.to_list b = L_impl.to_list l)
+;;
 
 (* check that deleted elements can be GCed *)
 module BO = CCRingBuffer.Make (struct

@@ -71,7 +71,7 @@ q _listuniq (fun l ->
 ;;
 
 t @@ fun () -> choose empty = None;;
-t @@ fun () -> choose (of_list [ 1, 1; 2, 2 ]) <> None
+t @@ fun () -> choose (of_list [ 1, 1; 2, 2 ]) <> None;;
 
 module Ref_impl = struct
   type +'a t = 'a list

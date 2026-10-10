@@ -12,6 +12,7 @@ eq'
   |> M.update "c" (fun _ -> None)
   |> M.update "b" (CCOption.map (fun x -> x * 10))
   |> M.to_list |> List.sort CCOrd.poly)
+;;
 
 module M2 = Make (CCInt);;
 

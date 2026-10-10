@@ -122,6 +122,7 @@ eq
   (6, [ "1"; "a1"; "2"; "a2"; "3"; "a3" ])
   (let pf = Printf.sprintf in
    fold_flat_map (fun acc x -> acc + x, [ pf "%d" x; pf "a%d" x ]) 0 [ 1; 2; 3 ])
+;;
 
 [@@@ifge 4.12]
 
@@ -360,6 +361,7 @@ q
 q
   Q.(list_size Gen.(0 -- 10_000) (pair nat_small nat_small))
   (fun l -> split l = List.split l)
+;;
 
 let cmp_lii_unord l1 l2 : bool =
   List.sort CCOrd.poly l1 = List.sort CCOrd.poly l2
@@ -729,6 +731,7 @@ q
   (fun (l, i) ->
     let i = abs i in
     take_drop i l = (take i l, drop i l))
+;;
 
 let subs = sublists_of_len;;
 

@@ -10,6 +10,7 @@ eq ~printer:(print_array Q.Print.int) (of_list [ 0 ]) (set (of_list [ 5 ]) 0 0)
 eq ~printer:(print_array Q.Print.int)
   (of_list [ 1; 3; 4; 5 ])
   (set (of_list [ 1; 2; 4; 5 ]) 1 3)
+;;
 
 let eq' = eq ~printer:(print_array Q.Print.int);;
 
@@ -26,6 +27,7 @@ eq
   ~printer:Q.Print.(list (pair int string))
   [ 2, "baz"; 1, "bar"; 0, "foo" ]
   (foldi (fun l i a -> (i, a) :: l) [] (of_list [ "foo"; "bar"; "baz" ]))
+;;
 
 let eq' = eq ~printer:Q.Print.bool;;
 

@@ -50,12 +50,13 @@ q
   (fun (n, m) ->
     let m = m + 1n in
     floor_div n (-m) = of_float @@ floor (to_float n /. to_float (-m)))
+;;
 
 let eq' = eq ~printer:Q.Print.(list to_string);;
 
 eq' [ 0n; 1n; 2n; 3n; 4n; 5n ] (range 0n 5n |> Iter.to_list);;
 eq' [ 0n ] (range 0n 0n |> Iter.to_list);;
-eq' [ 5n; 4n; 3n; 2n ] (range 5n 2n |> Iter.to_list)
+eq' [ 5n; 4n; 3n; 2n ] (range 5n 2n |> Iter.to_list);;
 
 (* note: the last test checks that no error occurs due to overflows. *)
 let eq' = eq ~printer:Q.Print.(list to_string);;

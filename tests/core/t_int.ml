@@ -149,7 +149,7 @@ eq 1 (popcount 1);;
 eq (Sys.word_size - 2) (popcount max_int);;
 eq 1 (popcount min_int);;
 eq 10 (popcount 0b1110010110110001010);;
-eq 5 (popcount 0b1101110000000000)
+eq 5 (popcount 0b1101110000000000);;
 
 let simple_popcnt i =
   let rec loop n i =

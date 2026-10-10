@@ -64,6 +64,7 @@ eq
   ~printer:Q.Print.(list to_string)
   [ 5L; 4L; 3L; 2L ]
   (range 5L 2L |> Iter.to_list)
+;;
 
 (* note: the last test checks that no error occurs due to overflows. *)
 let eq' = eq ~printer:Q.Print.(list to_string);;
@@ -91,7 +92,7 @@ q
 
 eq ~printer:CCFun.id "0b111" (to_string_binary 7L);;
 eq ~printer:CCFun.id "-0b111" (to_string_binary (-7L));;
-eq ~printer:CCFun.id "0b0" (to_string_binary 0L)
+eq ~printer:CCFun.id "0b0" (to_string_binary 0L);;
 
 let eq' = eq ~printer:CCInt.to_string;;
 

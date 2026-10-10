@@ -46,6 +46,7 @@ assert_equal (Some "2") (get tbl 2);
 assert_equal "2" (get_or_add tbl ~f:(fun _ -> assert false) ~k:2);
 assert_equal 2 (Hashtbl.length tbl);
 true
+;;
 
 module TI = Make (CCInt);;
 

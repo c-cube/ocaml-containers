@@ -1913,13 +1913,13 @@ module Str = struct
     let prefix_for_exn ~pre s =
       String.length pre <= String.length s
       &&
-      try
-        for i = 0 to String.length pre - 1 do
-          if String.unsafe_get s i != String.unsafe_get pre i then
-            raise Exit_false
-        done;
-        true
-      with Exit_false -> false
+        try
+          for i = 0 to String.length pre - 1 do
+            if String.unsafe_get s i != String.unsafe_get pre i then
+              raise Exit_false
+          done;
+          true
+        with Exit_false -> false
 
     let prefix_sub ~pre:prfx s =
       let len_s = String.length s in

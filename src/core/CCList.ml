@@ -1053,9 +1053,9 @@ let all_ok l =
 let split_result results =
   results
   |> partition_filter_map (fun x ->
-         match x with
-         | Ok o -> `Left o
-         | Error e -> `Right e)
+      match x with
+      | Ok o -> `Left o
+      | Error e -> `Right e)
 
 let group_by (type k) ?(hash = Hashtbl.hash) ?(eq = Stdlib.( = )) l =
   let module Tbl = Hashtbl.Make (struct

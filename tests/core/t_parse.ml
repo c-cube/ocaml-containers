@@ -123,12 +123,13 @@ in
 assert_equal (Ok 6) (P.parse_string expr "4*1+2");
 assert_equal (Ok 12) (P.parse_string expr "4*(1+2)");
 true
+;;
 
 let eq' = eq ~printer:(errpp Q.Print.bool) ~cmp:(erreq ( = ));;
 
 eq' (Ok true) (parse_string (U.bool <* eoi) "true");;
 eq' (Error "") (parse_string (U.bool <* eoi) "true ");;
-eq' (Ok true) (parse_string (U.bool <* skip_white <* eoi) "true")
+eq' (Ok true) (parse_string (U.bool <* skip_white <* eoi) "true");;
 
 let eq' = eq ~printer:Q.Print.(pair int int);;
 
@@ -146,6 +147,7 @@ eq
    match parse_string p "  a\n  b\nc\n\n\n a" with
    | Ok ps -> List.map Position.line_and_column ps
    | Error _ -> assert false)
+;;
 
 let eq' = eq ~printer:(errpp Q.Print.string) ~cmp:(erreq ( = ));;
 
@@ -205,6 +207,7 @@ let printer = CCFormat.(to_string @@ Dump.result @@ Dump.list int) in
 assert_equal ~printer (Ok [ 1; 2; 3 ]) (parse_string p "(1 2 3)");
 assert_equal ~printer (Ok [ 1; 2; -30; 4 ]) (parse_string p "( 1 2    -30 4 )");
 true
+;;
 
 let aword =
   chars1_if (function
@@ -264,13 +267,14 @@ eq
   ~printer:(errpp Q.Print.(list @@ list int))
   (Ok [ [ 1; 1 ]; [ 2; 2 ]; [ 3; 3 ]; [] ])
   (parse_string (each_line (sep ~by:skip_space U.int)) "1 1\n2 2\n3   3\n")
+;;
 
 let eq' = eq ~printer:(errpp Q.Print.int) ~cmp:(erreq ( = ));;
 
 eq' (Ok 42) (parse_string U.int " 42");;
 eq' (Ok 2) (parse_string U.int "2");;
 eq' (Error "") (parse_string U.int "abc");;
-eq' (Error "") (parse_string U.int "")
+eq' (Error "") (parse_string U.int "");;
 
 let eq' = eq ~printer:(errpp Q.Print.int) ~cmp:(erreq ( = ));;
 
@@ -280,7 +284,7 @@ eq' (Error "") (parse_string (U.in_paren U.int) "2");;
 eq' (Error "") (parse_string (U.in_paren U.int) "");;
 eq' (Ok 2) (parse_string (U.in_parens_opt U.int) "((((2))))");;
 eq' (Ok 2) (parse_string (U.in_parens_opt U.int) "2");;
-eq' (Ok 200) (parse_string (U.in_parens_opt U.int) "( (  200 ) )")
+eq' (Ok 200) (parse_string (U.in_parens_opt U.int) "( (  200 ) )");;
 
 let eq' = eq ~printer:(errpp Q.Print.(option int)) ~cmp:(erreq ( = ));;
 
@@ -288,6 +292,7 @@ eq' (Ok (Some 12)) (parse_string U.(option int) " Some 12");;
 eq' (Ok None) (parse_string U.(option int) "  None");;
 eq' (Ok (Some 0)) (parse_string U.(option int) "Some 0");;
 eq' (Ok (Some 0)) (parse_string U.(in_parens_opt @@ option int) "(( Some 0) )")
+;;
 
 let eq' = eq ~printer:(errpp Q.Print.int) ~cmp:(erreq ( = ));;
 

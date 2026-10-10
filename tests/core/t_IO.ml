@@ -57,5 +57,5 @@ q
 t @@ fun () ->
 File.walk "."
 |> Gen.for_all (function
-     | `File, f -> not (Sys.is_directory f)
-     | `Dir, f -> Sys.is_directory f)
+  | `File, f -> not (Sys.is_directory f)
+  | `Dir, f -> Sys.is_directory f)

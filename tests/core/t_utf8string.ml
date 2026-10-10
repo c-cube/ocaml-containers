@@ -18,6 +18,7 @@ testeq seq;
 testeq seq;
 testeq seq;
 true
+;;
 
 let printer s = String.escaped (to_string s)
 let pp_uchar (c : Uchar.t) = Printf.sprintf "0x%x" (Uchar.to_int c)

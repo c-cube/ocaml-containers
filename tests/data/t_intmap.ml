@@ -24,6 +24,7 @@ q ~count:1_000 Q.int (fun x ->
       QCheck.Test.fail_reportf "x=%d, highest=%d, highest2=%d@." x
         (Bit.highest x :> int)
         (highest2 x))
+;;
 
 let _list_uniq l =
   CCList.sort_uniq ~cmp:(fun a b -> Stdlib.compare (fst a) (fst b)) l
@@ -92,8 +93,8 @@ eq
   [ 1, 1; 2, 22; 3, 3 ]
   (of_list [ 1, 1; 2, 2; 3, 3 ]
   |> update 2 (function
-       | None -> assert false
-       | Some _ -> Some 22)
+    | None -> assert false
+    | Some _ -> Some 22)
   |> to_list |> List.sort Stdlib.compare)
 ;;
 
@@ -172,6 +173,7 @@ q
   Q.(list (pair int bool))
   (fun l ->
     equal ~eq:( = ) (of_list l) (union (fun _ a _ -> a) (of_list l) (of_list l)))
+;;
 
 let union_l l1 l2 =
   let l2' = List.filter (fun (x, _) -> not @@ List.mem_assoc x l1) l2 in
@@ -244,6 +246,7 @@ q
          (fun (x, y) -> CCOption.map (CCPair.make x) @@ f x y)
          l)
     = _list_uniq @@ to_list @@ filter_map f @@ of_list l)
+;;
 
 let merge_union _x o =
   match o with
@@ -367,6 +370,7 @@ q
   (fun l ->
     let m = of_list l in
     equal ~eq:( = ) m (m |> to_seq |> of_seq))
+;;
 
 let test_count = 2_500
 

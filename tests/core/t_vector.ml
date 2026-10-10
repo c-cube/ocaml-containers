@@ -400,6 +400,7 @@ q
     let v = of_list l1 in
     append_gen v (Gen.of_list l2);
     length v = List.length l1 + List.length l2)
+;;
 
 let gen x =
   let small = length in

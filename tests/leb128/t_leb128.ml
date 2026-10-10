@@ -265,5 +265,6 @@ let v, n = Leb128.Decode.int_truncate sub_slice 0 in
 assert_equal ~printer:string_of_int 42 v;
 assert_equal ~printer:string_of_int 1 n;
 true
+;;
 
 let () = Containers_testlib.run_all ~descr:"test leb128" [ get () ]

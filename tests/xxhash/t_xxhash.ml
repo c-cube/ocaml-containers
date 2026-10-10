@@ -121,5 +121,6 @@ for len = 0 to 99 do
   done
 done;
 true
+;;
 
 let () = Containers_testlib.run_all ~descr:"test xxhash" [ get () ]

@@ -16,7 +16,7 @@ eq
   (parse_string {|(1:a2:b )|})
 ;;
 
-t @@ fun () -> csexp_bijective (`List [ `Atom "" ])
+t @@ fun () -> csexp_bijective (`List [ `Atom "" ]);;
 
 let sexp_gen =
   let mkatom a = `Atom a and mklist l = `List l in

@@ -283,7 +283,7 @@ eq
 eq ~printer:(fun s -> s) (to_string string_of_int [| 1 |]) "1";;
 eq [] (to_seq [||] |> CCList.of_seq);;
 eq [ 1; 2; 3 ] (to_seq [| 1; 2; 3 |] |> CCList.of_seq);;
-eq CCList.(1 -- 1000) (to_seq (1 -- 1000) |> CCList.of_seq)
+eq CCList.(1 -- 1000) (to_seq (1 -- 1000) |> CCList.of_seq);;
 
 module IA = struct
   let get = Array.get

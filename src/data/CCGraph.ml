@@ -310,8 +310,8 @@ end
 let is_dag ~tbl ~eq ~graph vs =
   Traverse.Event.dfs ~tbl ~eq ~graph vs
   |> Iter.exists_ (function
-       | `Edge (_, _, _, `Back) -> true
-       | _ -> false)
+    | `Edge (_, _, _, `Back) -> true
+    | _ -> false)
 
 (** {2 Topological Sort} *)
 
@@ -322,9 +322,9 @@ let topo_sort_tag ~eq ?(rev = false) ~tags ~graph iter =
   let l =
     Traverse.Event.dfs_tag ~eq ~tags ~graph iter
     |> Iter.filter_map (function
-         | `Exit v -> Some v
-         | `Edge (_, _, _, `Back) -> raise Has_cycle
-         | `Enter _ | `Edge _ -> None)
+      | `Exit v -> Some v
+      | `Edge (_, _, _, `Back) -> raise Has_cycle
+      | `Enter _ | `Edge _ -> None)
     |> Iter.fold (fun acc x -> x :: acc) []
   in
   if rev then
