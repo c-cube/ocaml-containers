@@ -194,6 +194,7 @@ let update_front d f =
     | One x ->
       (match f x with
       | None ->
+        decr_size_ d;
         if Stdlib.( != ) cur.prev cur then (
           cur.prev.next <- cur.next;
           cur.next.prev <- cur.prev;
@@ -203,11 +204,15 @@ let update_front d f =
       | Some x -> cur.cell <- One x)
     | Two (x, y) ->
       (match f x with
-      | None -> cur.cell <- One y
+      | None ->
+        decr_size_ d;
+        cur.cell <- One y
       | Some x -> cur.cell <- Two (x, y))
     | Three (x, y, z) ->
       (match f x with
-      | None -> cur.cell <- Two (y, z)
+      | None ->
+        decr_size_ d;
+        cur.cell <- Two (y, z)
       | Some x -> cur.cell <- Three (x, y, z)))
 
 let update_back d f =
@@ -219,6 +224,7 @@ let update_back d f =
     | One x ->
       (match f x with
       | None ->
+        decr_size_ d;
         if Stdlib.( != ) cur.prev cur then
           remove_node_ n
         else
@@ -226,11 +232,15 @@ let update_back d f =
       | Some x -> n.cell <- One x)
     | Two (x, y) ->
       (match f y with
-      | None -> n.cell <- One x
+      | None ->
+        decr_size_ d;
+        n.cell <- One x
       | Some y -> n.cell <- Two (x, y))
     | Three (x, y, z) ->
       (match f z with
-      | None -> n.cell <- Two (x, y)
+      | None ->
+        decr_size_ d;
+        n.cell <- Two (x, y)
       | Some z -> n.cell <- Three (x, y, z)))
 
 let iter f d =

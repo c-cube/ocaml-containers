@@ -135,7 +135,7 @@ q
       else
         List.tl l
     in
-    to_list q = output_list)
+    to_list q = output_list && length q = List.length output_list)
 ;;
 
 q
@@ -159,6 +159,24 @@ to_list q = [ 1; 2; 3; 4; 5; 6 ]
 ;;
 
 t @@ fun () ->
+let q = of_list [ 1; 2 ] in
+update_front q (fun _ -> None);
+assert_equal 1 (length q);
+update_back q (fun _ -> None);
+assert_bool "not empty" (is_empty q);
+true
+;;
+
+t @@ fun () ->
+let q = of_list [ 1; 2 ] in
+update_back q (fun _ -> None);
+assert_equal 1 (length q);
+update_front q (fun _ -> None);
+assert_bool "not empty" (is_empty q);
+true
+;;
+
+t @@ fun () ->
 let q = of_list [ 1; 2; 3; 4; 5; 6; 7 ] in
 update_back q (fun _ -> Some 9);
 to_list q = [ 1; 2; 3; 4; 5; 6; 9 ]
@@ -175,7 +193,7 @@ q
       else
         List.(rev l |> tl)
     in
-    to_list q |> List.rev = output_list)
+    to_list q |> List.rev = output_list && length q = List.length output_list)
 ;;
 
 q
