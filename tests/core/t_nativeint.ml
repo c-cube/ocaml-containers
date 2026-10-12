@@ -70,7 +70,27 @@ eq' [ 0n ] (range_by ~step:(neg 1n) 0n 0n |> Iter.to_list);;
 eq' [] (range_by ~step:(neg 1n) 0n 5n |> Iter.to_list);;
 eq' [] (range_by ~step:(neg 2n) 0n 1n |> Iter.to_list);;
 eq' [ 5n; 3n; 1n ] (range_by ~step:(neg 2n) 5n 1n |> Iter.to_list);;
-eq' [ 5n; 3n; 1n ] (range_by ~step:(neg 2n) 5n 0n |> Iter.to_list);;
+
+eq' [ 5n; 3n; 1n ] (range_by ~step:(neg 2n) 5n 0n |> Iter.to_list);
+
+(* regression tests for #500: end computed as ((j-i)/step*step)+i overflows *)
+let s = min_int / 4n in
+eq'
+  [ 1n; add 1n s; add 1n (mul 2n s); add 1n (mul 3n s); add 1n (mul 4n s) ]
+  (range_by ~step:s 1n min_int |> Iter.to_list);
+
+let s = max_int / 2n in
+eq'
+  [
+    min_int;
+    add min_int s;
+    add (add min_int s) s;
+    add (add (add min_int s) s) s;
+    add (add (add (add min_int s) s) s) s;
+  ]
+  (range_by ~step:s min_int max_int |> Iter.to_list)
+;;
+
 eq' [ 0n ] (range_by ~step:max_int 0n 2n |> Iter.to_list);;
 
 q

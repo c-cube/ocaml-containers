@@ -1336,40 +1336,28 @@ let remove_at_idx i l0 =
   aux l0 [] i
 
 let range_by ~step i j =
-  let rec range i j acc =
-    if i = j then
-      i :: acc
+  if step = 0 then raise (Invalid_argument "CCList.range_by");
+  let rec loop acc i =
+    let acc = i :: acc in
+    let i' = i + step in
+    if (step > 0 && i' > i && i' <= j) || (step < 0 && i' < i && i' >= j) then
+      loop acc i'
     else
-      range i (j - step) (j :: acc)
+      acc
   in
-  if step = 0 then
-    raise (Invalid_argument "CCList.range_by")
-  else if
-    if step > 0 then
-      i > j
-    else
-      i < j
-  then
+  if (step > 0 && i > j) || (step < 0 && i < j) then
     []
   else
-    range i (((j - i) / step * step) + i) []
+    List.rev (loop [] i)
 
 let range i j =
-  let rec up i j acc =
-    if i = j then
-      i :: acc
-    else
-      up i (j - 1) (j :: acc)
-  and down i j acc =
-    if i = j then
-      i :: acc
-    else
-      down i (j + 1) (j :: acc)
-  in
-  if i <= j then
-    up i j []
-  else
-    down i j []
+  range_by
+    ~step:
+      (if i <= j then
+         1
+       else
+         -1)
+    i j
 
 let range' i j =
   if i < j then

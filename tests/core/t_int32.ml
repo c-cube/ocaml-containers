@@ -71,7 +71,26 @@ eq' [] (range_by ~step:(neg 1l) 0l 5l |> Iter.to_list);;
 eq' [] (range_by ~step:(neg 2l) 0l 1l |> Iter.to_list);;
 eq' [ 5l; 3l; 1l ] (range_by ~step:(neg 2l) 5l 1l |> Iter.to_list);;
 eq' [ 5l; 3l; 1l ] (range_by ~step:(neg 2l) 5l 0l |> Iter.to_list);;
-eq' [ 0l ] (range_by ~step:max_int 0l 2l |> Iter.to_list);;
+
+eq' [ 0l ] (range_by ~step:max_int 0l 2l |> Iter.to_list);
+
+(* regression tests for #500: end computed as ((j-i)/step*step)+i overflows *)
+let s = min_int / 4l in
+eq'
+  [ 1l; add 1l s; add 1l (mul 2l s); add 1l (mul 3l s); add 1l (mul 4l s) ]
+  (range_by ~step:s 1l min_int |> Iter.to_list);
+
+let s = max_int / 2l in
+eq'
+  [
+    min_int;
+    add min_int s;
+    add (add min_int s) s;
+    add (add (add min_int s) s) s;
+    add (add (add (add min_int s) s) s) s;
+  ]
+  (range_by ~step:s min_int max_int |> Iter.to_list)
+;;
 
 q
   Q.(pair (map of_int nat_small) (map of_int nat_small))

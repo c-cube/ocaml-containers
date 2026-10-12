@@ -87,25 +87,23 @@ let range' i j yield =
     range i (add j 1l) yield
 
 let range_by ~step i j yield =
-  let rec range i j yield =
-    if equal i j then
-      yield i
-    else (
-      yield i;
-      range (add i step) j yield
-    )
+  if equal step 0l then raise (Invalid_argument "CCInt32.range_by");
+  let rec loop i =
+    yield i;
+    let i' = add i step in
+    if
+      (compare step 0l > 0 && compare i' i > 0 && compare i' j <= 0)
+      || (compare step 0l < 0 && compare i' i < 0 && compare i' j >= 0)
+    then
+      loop i'
   in
-  if equal step 0l then
-    raise (Invalid_argument "CCInt32.range_by")
-  else if
-    if compare step 0l > 0 then
-      compare i j > 0
-    else
-      compare i j < 0
+  if
+    (compare step 0l > 0 && compare i j > 0)
+    || (compare step 0l < 0 && compare i j < 0)
   then
     ()
   else
-    range i (add (mul (div (sub j i) step) step) i) yield
+    loop i
 
 let random n st = Random.State.int32 st n
 let random_small = random 100l

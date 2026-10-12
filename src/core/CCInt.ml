@@ -162,25 +162,17 @@ let to_string_binary n =
   Buffer.contents buf
 
 let range_by ~step i j yield =
-  let rec range i j yield =
-    if i = j then
-      yield i
-    else (
-      yield i;
-      range (i + step) j yield
-    )
+  if step = 0 then raise (Invalid_argument "CCInt.range_by");
+  let rec loop i =
+    yield i;
+    let i' = i + step in
+    if (step > 0 && i' > i && i' <= j) || (step < 0 && i' < i && i' >= j) then
+      loop i'
   in
-  if step = 0 then
-    raise (Invalid_argument "CCInt.range_by")
-  else if
-    if step > 0 then
-      i > j
-    else
-      i < j
-  then
+  if (step > 0 && i > j) || (step < 0 && i < j) then
     ()
   else
-    range i (((j - i) / step * step) + i) yield
+    loop i
 
 (*
   from https://en.wikipedia.org/wiki/Hamming_weight

@@ -1005,17 +1005,60 @@ t @@ fun () -> remove_at_idx (-3) [ 1; 2; 3; 4 ] = [ 1; 3; 4 ];;
 t @@ fun () -> remove_at_idx (-4) [ 1; 2; 3; 4 ] = [ 2; 3; 4 ];;
 
 (* note: the last test checks that no error occurs due to overflows. *)
-t @@ fun () -> range_by ~step:1 0 0 = [ 0 ];;
-t @@ fun () -> range_by ~step:1 5 0 = [];;
-t @@ fun () -> range_by ~step:2 1 0 = [];;
-t @@ fun () -> range_by ~step:2 0 4 = [ 0; 2; 4 ];;
-t @@ fun () -> range_by ~step:2 0 5 = [ 0; 2; 4 ];;
-t @@ fun () -> range_by ~step:~-1 0 0 = [ 0 ];;
-t @@ fun () -> range_by ~step:~-1 0 5 = [];;
-t @@ fun () -> range_by ~step:~-2 0 1 = [];;
-t @@ fun () -> range_by ~step:~-2 5 1 = [ 5; 3; 1 ];;
-t @@ fun () -> range_by ~step:~-2 5 0 = [ 5; 3; 1 ];;
-t @@ fun () -> range_by ~step:max_int 0 2 = [ 0 ];;
+eq ~name:__LOC__ ~printer:Q.(Print.(list int)) (range_by ~step:1 0 0) [ 0 ];;
+eq ~name:__LOC__ ~printer:Q.(Print.(list int)) (range_by ~step:1 5 0) [];;
+eq ~name:__LOC__ ~printer:Q.(Print.(list int)) (range_by ~step:2 1 0) [];;
+
+eq ~name:__LOC__
+  ~printer:Q.(Print.(list int))
+  (range_by ~step:2 0 4) [ 0; 2; 4 ]
+;;
+
+eq ~name:__LOC__
+  ~printer:Q.(Print.(list int))
+  (range_by ~step:2 0 5) [ 0; 2; 4 ]
+;;
+
+eq ~name:__LOC__ ~printer:Q.(Print.(list int)) (range_by ~step:~-1 0 0) [ 0 ];;
+eq ~name:__LOC__ ~printer:Q.(Print.(list int)) (range_by ~step:~-1 0 5) [];;
+eq ~name:__LOC__ ~printer:Q.(Print.(list int)) (range_by ~step:~-2 0 1) [];;
+
+eq ~name:__LOC__
+  ~printer:Q.(Print.(list int))
+  (range_by ~step:~-2 5 1) [ 5; 3; 1 ]
+;;
+
+eq ~name:__LOC__
+  ~printer:Q.(Print.(list int))
+  (range_by ~step:~-2 5 0) [ 5; 3; 1 ]
+;;
+
+eq ~name:__LOC__
+  ~printer:Q.(Print.(list int))
+  (range_by ~step:max_int 0 2)
+  [ 0 ]
+;;
+
+(* regression tests for #500: end computed as ((j-i)/step*step)+i overflows *)
+let s = min_int / 4 in
+eq ~name:__LOC__
+  ~printer:Q.(Print.(list int))
+  (range_by ~step:s 1 min_int)
+  [ 1; 1 + s; 1 + (2 * s); 1 + (3 * s); 1 + (4 * s) ]
+;;
+
+let s = max_int / 2 in
+eq ~name:__LOC__
+  ~printer:Q.(Print.(list int))
+  (range_by ~step:s min_int max_int)
+  [
+    min_int;
+    min_int + s;
+    min_int + s + s;
+    min_int + s + s + s;
+    min_int + s + s + s + s;
+  ]
+;;
 
 q
   Q.(pair nat_small nat_small)

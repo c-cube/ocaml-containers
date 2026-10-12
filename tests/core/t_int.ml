@@ -135,6 +135,27 @@ eq
 eq ~printer:Q.Print.(list int) [ 0 ] (range_by ~step:max_int 0 2 |> Iter.to_list)
 ;;
 
+(* regression tests for #500: end computed as ((j-i)/step*step)+i overflows *)
+let s = min_int / 4 in
+eq
+  ~printer:Q.Print.(list int)
+  [ 1; 1 + s; 1 + (2 * s); 1 + (3 * s); 1 + (4 * s) ]
+  (range_by ~step:s 1 min_int |> Iter.to_list)
+;;
+
+let s = max_int / 2 in
+eq
+  ~printer:Q.Print.(list int)
+  [
+    min_int;
+    min_int + s;
+    min_int + s + s;
+    min_int + s + s + s;
+    min_int + s + s + s + s;
+  ]
+  (range_by ~step:s min_int max_int |> Iter.to_list)
+;;
+
 q
   Q.(pair nat_small nat_small)
   (fun (i, j) ->
