@@ -174,6 +174,28 @@ module Pretty : sig
   (** Render to a buffer. *)
 
   val to_format : width:int -> Format.formatter -> t -> unit
+
+  val to_out_with : disabled_ext:string list -> width:int -> Out.t -> t -> unit
+  (** Like {!to_out}, but ignore extensions whose names occur in [disabled_ext].
+      Only the inner document is printed, without the extension's callbacks or
+      declared width. Matching is case-sensitive; unknown names are harmless.
+      The document is not modified and can still be rendered with extensions.
+      An empty list preserves the behavior of {!to_out}.
+      @since NEXT_RELEASE *)
+
+  val to_string_with : disabled_ext:string list -> width:int -> t -> string
+  (** Like {!to_string}, with the same extension control as {!to_out_with}.
+      @since NEXT_RELEASE *)
+
+  val to_buffer_with :
+    disabled_ext:string list -> width:int -> Buffer.t -> t -> unit
+  (** Like {!to_buffer}, with the same extension control as {!to_out_with}.
+      @since NEXT_RELEASE *)
+
+  val to_format_with :
+    disabled_ext:string list -> width:int -> Format.formatter -> t -> unit
+  (** Like {!to_format}, with the same extension control as {!to_out_with}.
+      @since NEXT_RELEASE *)
 end
 
 (** Trivial printing, on a single line.
@@ -188,6 +210,13 @@ end
 
 val pp : Format.formatter -> t -> unit
 (** Pretty-print, using {!Pretty} and an unspecified margin. *)
+
+val pp_with : disabled_ext:string list -> Format.formatter -> t -> unit
+(** Like {!pp}, with the same extension control as {!Pretty.to_out_with}.
+    For a plain printer suitable for [Format.asprintf] or [#install_printer]:
+    {[ let pp_plain = Containers_pp.pp_with ~disabled_ext:["termcolor"] ]}
+    Existing printers and {!Flatten} retain their behavior.
+    @since NEXT_RELEASE *)
 
 val debug : Format.formatter -> t -> unit
 (** Debug printer. This prints the structure of the document,
