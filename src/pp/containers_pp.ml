@@ -385,9 +385,96 @@ module Pretty = struct
   let to_format ~width out self : unit =
     (* TODO: more efficient implementation based on out *)
     CCFormat.string_lines out (to_string ~width self)
+
+  (* Remove disabled wrappers before choosing a layout. In particular, parent
+     widths must no longer include a removed extension's declared width. *)
+  let without_ext_ disabled_ext self =
+    (* Like the printer, traversal and reconstruction both use tail calls. The
+       continuations keep deep Append trees and long Fill lists off the stack. *)
+    let rec loop (d : t) kont =
+      match d.view with
+      | Nil | Newline _ | Char _ | Text _ | Text_sub _ | Text_zero_width _ ->
+        kont d
+      | Nest (i, x) ->
+        loop x (fun x' ->
+            kont
+              (if x == x' then
+                 d
+               else
+                 nest i x'))
+      | Append (x, y) ->
+        loop x (fun x' ->
+            loop y (fun y' ->
+                kont
+                  (if x == x' && y == y' then
+                     d
+                   else
+                     append x' y')))
+      | Group x ->
+        loop x (fun x' ->
+            kont
+              (if x == x' then
+                 d
+               else
+                 group x'))
+      | Fill { sep; l } ->
+        loop sep (fun sep' ->
+            loop_list l (fun l' ->
+                if sep == sep' && l == l' then
+                  kont d
+                else (
+                  let wfl =
+                    List.fold_left (fun w x -> w + x.wfl) 0 l'
+                    + ((List.length l' - 1) * sep'.wfl)
+                  in
+                  kont { view = Fill { sep = sep'; l = l' }; wfl }
+                )))
+      | Wrap (e, v, x) ->
+        loop x (fun x' ->
+            if List.mem e.name disabled_ext then
+              kont x'
+            else if x == x' then
+              kont d
+            else (
+              (* Keep the cached contribution: never repeat [e.width]. *)
+              let wfl = x'.wfl + (d.wfl - x.wfl) in
+              kont { view = Wrap (e, v, x'); wfl }
+            ))
+    and loop_list l kont =
+      match l with
+      | [] -> kont l
+      | x :: tail ->
+        loop x (fun x' ->
+            loop_list tail (fun tail' ->
+                (* Reuse unchanged suffixes as well as unchanged documents. *)
+                kont
+                  (if x == x' && tail == tail' then
+                     l
+                   else
+                     x' :: tail')))
+    in
+    if disabled_ext = [] then
+      self
+    else
+      loop self (fun d -> d)
+
+  let to_out_with ~disabled_ext ~width out self : unit =
+    to_out ~width out (without_ext_ disabled_ext self)
+
+  let to_buffer_with ~disabled_ext ~width buf self : unit =
+    to_out_with ~disabled_ext ~width (Out.of_buffer buf) self
+
+  let to_string_with ~disabled_ext ~width self : string =
+    let buf = Buffer.create 32 in
+    to_buffer_with ~disabled_ext ~width buf self;
+    Buffer.contents buf
+
+  let to_format_with ~disabled_ext ~width out self : unit =
+    CCFormat.string_lines out (to_string_with ~disabled_ext ~width self)
 end
 
 let pp = Pretty.to_format ~width:80
+let pp_with ~disabled_ext = Pretty.to_format_with ~disabled_ext ~width:80
 
 (* helpers *)
 
