@@ -286,7 +286,7 @@ module Pretty = struct
       let inside = Ext.get ext.k st.ext_map in
       ext.pre st.out ~inside v;
       let st' = { st with ext_map = Ext.add ext.k v st.ext_map } in
-      let n = pp_flatten st' d in
+      let n = pp_flatten st' d + (self.wfl - d.wfl) in
       ext.post st.out ~inside v;
       n
 

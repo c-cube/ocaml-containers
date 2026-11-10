@@ -370,3 +370,15 @@ let () =
       assert_equal 0 !callbacks;
       assert_equal 2 !width_calls;
       true)
+
+let () =
+  let w =
+    Ext.make ~name:"weighted"
+      ~width:(fun () -> 2)
+      ~pre:(fun out ~inside:_ () -> out.string "[")
+      ~post:(fun out ~inside:_ () -> out.string "]")
+      ()
+  in
+  eq ~name:"flatten group with nonzero ext width" ~printer:(spf "%S") "[aaa] bb"
+    (let d = group (ext w () (text "aaa") ^ nl ^ text "bb") in
+     Pretty.to_string ~width:8 d)
