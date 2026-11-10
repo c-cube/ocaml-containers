@@ -382,3 +382,32 @@ let () =
   eq ~name:"flatten group with nonzero ext width" ~printer:(spf "%S") "[aaa] bb"
     (let d = group (ext w () (text "aaa") ^ nl ^ text "bb") in
      Pretty.to_string ~width:8 d)
+
+let () =
+  let n = ref 0 in
+  let flaky =
+    Ext.make ~name:"flaky"
+      ~width:(fun () ->
+        incr n;
+        if !n = 1 then
+          4
+        else
+          0)
+      ~pre:(fun out ~inside:_ () -> out.string "<f>")
+      ~post:(fun out ~inside:_ () -> out.string "</f>")
+      ()
+  in
+  let inner =
+    Ext.make ~name:"inner"
+      ~width:(fun () -> 1)
+      ~pre:(fun out ~inside:_ () -> out.string "<i>")
+      ~post:(fun out ~inside:_ () -> out.string "</i>")
+      ()
+  in
+  let d = group (ext flaky () (ext inner () (text "aa")) ^ nl ^ text "bbb") in
+  (* the strip-render rebuilds the enabled wrap and re-evaluates its width,
+     which drops from 4 to 0 *)
+  eq ~name:"re-evaluated ext width is picked up" ~printer:(spf "%S")
+    "<f>aa</f> bbb"
+    (Pretty.to_string_with ~disabled_ext:[ "inner" ] ~width:80 d);
+  assert_equal 2 !n
