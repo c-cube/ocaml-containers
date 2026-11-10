@@ -178,8 +178,8 @@ module Pretty : sig
   val to_out_with : disabled_ext:string list -> width:int -> Out.t -> t -> unit
   (** Like {!to_out}, but ignore extensions whose names occur in [disabled_ext].
       Only the inner document is printed, without the extension's callbacks or
-      declared width. Matching is case-sensitive; unknown names are harmless.
-      The document is not modified and can still be rendered with extensions.
+      declared width. Name matching is case sensitive. Other extensions still
+      work the same.
       An empty list preserves the behavior of {!to_out}.
       @since NEXT_RELEASE *)
 

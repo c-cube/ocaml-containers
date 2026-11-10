@@ -181,6 +181,17 @@ let text (str : string) : t =
 let textpf fmt = Printf.ksprintf text fmt
 let textf fmt = Format.kasprintf text fmt
 
+let fill sep = function
+  | [] -> nil
+  | [ x ] -> x
+  | l ->
+    (* flattened: just like concat *)
+    let wfl =
+      List.fold_left (fun wfl x -> wfl + x.wfl) 0 l
+      + ((List.length l - 1) * sep.wfl)
+    in
+    { view = Fill { sep; l }; wfl }
+
 module Flatten = struct
   let to_out (out : Out.t) (self : t) : unit =
     let rec loop (ext_map : Ext.map) (d : t) =
@@ -396,62 +407,55 @@ module Pretty = struct
       | Nil | Newline _ | Char _ | Text _ | Text_sub _ | Text_zero_width _ ->
         kont d
       | Nest (i, x) ->
-        loop x (fun x' ->
-            kont
-              (if x == x' then
-                 d
-               else
-                 nest i x'))
+        loop x @@ fun x' ->
+        kont
+          (if x == x' then
+             d
+           else
+             nest i x')
       | Append (x, y) ->
-        loop x (fun x' ->
-            loop y (fun y' ->
-                kont
-                  (if x == x' && y == y' then
-                     d
-                   else
-                     append x' y')))
+        loop x @@ fun x' ->
+        loop y @@ fun y' ->
+        kont
+          (if x == x' && y == y' then
+             d
+           else
+             append x' y')
       | Group x ->
-        loop x (fun x' ->
-            kont
-              (if x == x' then
-                 d
-               else
-                 group x'))
+        loop x @@ fun x' ->
+        kont
+          (if x == x' then
+             d
+           else
+             group x')
       | Fill { sep; l } ->
-        loop sep (fun sep' ->
-            loop_list l (fun l' ->
-                if sep == sep' && l == l' then
-                  kont d
-                else (
-                  let wfl =
-                    List.fold_left (fun w x -> w + x.wfl) 0 l'
-                    + ((List.length l' - 1) * sep'.wfl)
-                  in
-                  kont { view = Fill { sep = sep'; l = l' }; wfl }
-                )))
+        loop sep @@ fun sep' ->
+        loop_list l @@ fun l' ->
+        if sep == sep' && l == l' then
+          kont d
+        else
+          kont (fill sep' l')
       | Wrap (e, v, x) ->
-        loop x (fun x' ->
-            if List.mem e.name disabled_ext then
-              kont x'
-            else if x == x' then
-              kont d
-            else (
-              (* Keep the cached contribution: never repeat [e.width]. *)
-              let wfl = x'.wfl + (d.wfl - x.wfl) in
-              kont { view = Wrap (e, v, x'); wfl }
-            ))
+        loop x @@ fun x' ->
+        if List.mem e.name disabled_ext then
+          kont x'
+        else if x == x' then
+          kont d
+        else (
+          let d = ext e v x' in
+          kont d
+        )
     and loop_list l kont =
       match l with
       | [] -> kont l
       | x :: tail ->
-        loop x (fun x' ->
-            loop_list tail (fun tail' ->
-                (* Reuse unchanged suffixes as well as unchanged documents. *)
-                kont
-                  (if x == x' && tail == tail' then
-                     l
-                   else
-                     x' :: tail')))
+        loop x @@ fun x' ->
+        loop_list tail @@ fun tail' ->
+        kont
+          (if x == x' && tail == tail' then
+             l
+           else
+             x' :: tail')
     in
     if disabled_ext = [] then
       self
@@ -513,18 +517,6 @@ let append_l ?(sep = nil) l =
 
 let append_sp l = append_l ~sep:sp l
 let append_nl l = append_l ~sep:nl l
-
-let fill sep = function
-  | [] -> nil
-  | [ x ] -> x
-  | l ->
-    (* flattened: just like concat *)
-    let wfl =
-      List.fold_left (fun wfl x -> wfl + x.wfl) 0 l
-      + ((List.length l - 1) * sep.wfl)
-    in
-    { view = Fill { sep; l }; wfl }
-
 let fill_map sep f l = fill sep (List.map f l)
 
 let of_list ?(sep = nil) f l =
