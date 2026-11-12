@@ -333,8 +333,11 @@ let take_while ~f l =
   in
   aux f (St_list (l, St_nil))
 
-(* drop [n < size] elements from [t] *)
+(* drop [n] elements from [t],
+   with [0 < n < size],
+   where [size] is the size of the tree [t] *)
 let rec drop_tree_ ~size n t tail =
+  assert (0 < n && n < size);
   match t with
   | _ when n = 0 -> tail
   | Leaf _ ->
