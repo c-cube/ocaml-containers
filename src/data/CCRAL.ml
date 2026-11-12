@@ -262,8 +262,17 @@ and fold_tree_rev t acc f =
 
 let rev_map ~f l = fold ~f:(fun acc x -> cons (f x) acc) ~x:empty l
 let rev l = fold ~f:cons' ~x:empty l
-let append l1 l2 = fold_rev ~f:(fun l2 x -> cons x l2) ~x:l2 l1
-let append_tree_ t l = fold_tree_rev t l cons'
+
+let append_tree_ size t l =
+  if debug then check_tree size t;
+  fold_tree_rev t l cons'
+
+let rec append l1 l2 =
+  match l1 with
+  | Nil ->
+      l2
+  | Cons (size, t1, l1) ->
+      append_tree_ size t1 (append l1 l2)
 
 let filter ~f l =
   fold_rev
@@ -294,19 +303,19 @@ let app funs l =
 type 'a stack =
   | St_nil
   | St_list of 'a t * 'a stack
-  | St_tree of 'a tree * 'a stack
+  | St_tree of int * 'a tree * 'a stack
 
 let rec stack_to_list = function
   | St_nil -> Nil
   | St_list (l, st') -> append l (stack_to_list st')
-  | St_tree (t, st') -> append_tree_ t (stack_to_list st')
+  | St_tree (size, t, st') -> append_tree_ size t (stack_to_list st')
 
 let rec take n l =
   match l with
   | Nil -> Nil
   | Cons (size, t, tl) ->
     if size <= n then
-      append_tree_ t (take (n - size) tl)
+      append_tree_ size t (take (n - size) tl)
     else
       take_tree_ ~size n t
 
@@ -317,7 +326,7 @@ and take_tree_ ~size n t =
   | Node (x, l, r) ->
     let size' = size / 2 in
     if size' <= n - 1 then
-      cons x (append_tree_ l (take_tree_ ~size:size' (n - size' - 1) r))
+      cons x (append_tree_ size' l (take_tree_ ~size:size' (n - size' - 1) r))
     else
       cons x (take_tree_ ~size:size' (n - 1) l)
 
@@ -327,15 +336,17 @@ let take_while ~f l =
     match st with
     | St_nil -> Nil
     | St_list (Nil, st') -> aux p st'
-    | St_list (Cons (_, t, tl), st') -> aux p (St_tree (t, St_list (tl, st')))
-    | St_tree (Leaf x, st') ->
+    | St_list (Cons (size, t, tl), st') ->
+        aux p (St_tree (size, t, St_list (tl, st')))
+    | St_tree (_, Leaf x, st') ->
       if p x then
         cons x (aux p st')
       else
         Nil
-    | St_tree (Node (x, l, r), st') ->
+    | St_tree (size, Node (x, l, r), st') ->
       if p x then
-        cons x (aux p (St_tree (l, St_tree (r, st'))))
+        let size = size / 2 in
+        cons x (aux p (St_tree (size, l, St_tree (size, r, st'))))
       else
         Nil
   in
@@ -389,18 +400,19 @@ let drop_while ~f l =
     match st with
     | St_nil -> Nil
     | St_list (Nil, st') -> aux p st'
-    | St_list (Cons (_, t, tail), st') ->
-      aux p (St_tree (t, St_list (tail, st')))
-    | St_tree (Leaf x, st') ->
+    | St_list (Cons (size, t, tail), st') ->
+      aux p (St_tree (size, t, St_list (tail, st')))
+    | St_tree (_, Leaf x, st') ->
       if p x then
         aux p st'
       else
         cons x (stack_to_list st')
-    | St_tree ((Node (x, l, r) as tree), st') ->
+    | St_tree (size, (Node (x, l, r) as tree), st') ->
       if p x then
-        aux p (St_tree (l, St_tree (r, st')))
+        let size = size / 2 in
+        aux p (St_tree (size, l, St_tree (size, r, st')))
       else
-        append_tree_ tree (stack_to_list st')
+        append_tree_ size tree (stack_to_list st')
   in
   aux f (St_list (l, St_nil))
 
