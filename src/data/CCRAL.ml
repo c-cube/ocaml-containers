@@ -345,16 +345,7 @@ let rec stack_to_list = function
   | St_list (l, st') -> append l (stack_to_list st')
   | St_tree (size, t, st') -> append_tree_ size t (stack_to_list st')
 
-let rec take n l =
-  match l with
-  | Nil -> Nil
-  | Cons (size, t, tl) ->
-    if size <= n then
-      append_tree_ size t (take (n - size) tl)
-    else
-      take_tree_ ~size n t
-
-and take_tree_ ~size n t =
+let rec take_tree_ ~size n t =
   match t with
   | _ when n = 0 -> Nil
   | Leaf x -> cons x Nil
@@ -364,6 +355,15 @@ and take_tree_ ~size n t =
       cons x (append_tree_ size' l (take_tree_ ~size:size' (n - size' - 1) r))
     else
       cons x (take_tree_ ~size:size' (n - 1) l)
+
+let rec take n l =
+  match l with
+  | Nil -> Nil
+  | Cons (size, t, tl) ->
+    if size <= n then
+      append_tree_ size t (take (n - size) tl)
+    else
+      take_tree_ ~size n t
 
 let take_while ~f l =
   (* st: stack of subtrees *)
