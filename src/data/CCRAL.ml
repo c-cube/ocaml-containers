@@ -263,9 +263,44 @@ and fold_tree_rev t acc f =
 let rev_map ~f l = fold ~f:(fun acc x -> cons (f x) acc) ~x:empty l
 let rev l = fold ~f:cons' ~x:empty l
 
-let append_tree_ size t l =
+(* One could implement [append_tree_ size t l] simply
+   as [fold_tree_rev t l cons'], ignoring [size]. *)
+
+(* A more attractive approach is to use [Cons] to insert the tree [t]
+   at once in front of the list [tail]. When this is permitted, this
+   takes constant time. When this is not permitted, the tree [t] is
+   split, and one tries again. In the worst case, the the tree [t] is
+   split down to its constituent elements, in which case this approach
+   needs linear time, like the simple approach. In summary, the smart
+   approach saves a constant factor in time. It also saves memory and
+   improves sharing; a subtree can be re-used instead of copied. *)
+
+let[@inline] test_prepend (size : int) (l : 'a t) : bool =
+  match l with
+  | Nil ->
+      true
+  | Cons (size1, _, Nil) ->
+      size <= size1
+  | Cons (size1, _, Cons (size2, _, _)) ->
+      if size1 = size2 then
+        (* Bad situation: prepending is not permitted. *)
+        false
+      else
+        size <= size1
+
+let rec append_tree_ size t l =
   if debug then check_tree size t;
-  fold_tree_rev t l cons'
+  if test_prepend size l then
+    (* The tree [t] can be pushed into [l] in constant time. *)
+    Cons (size, t, l)
+  else
+    (* Otherwise, decompose [t] and try again. *)
+    match t with
+    | Leaf x ->
+        cons x l
+    | Node (x, t1, t2) ->
+        let size = size / 2 in
+        cons x (append_tree_ size t1 (append_tree_ size t2 l))
 
 let rec append l1 l2 =
   match l1 with
