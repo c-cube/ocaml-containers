@@ -336,8 +336,14 @@ let take_while ~f l =
 (* drop [n] elements from [t],
    with [0 < n < size],
    where [size] is the size of the tree [t] *)
+
+(* In [drop_tree_], there is no need to use [append_tree_]:
+   indeed, the precondition [can_prepend true size tail] holds,
+   which means that [Cons] can be used. *)
+
 let rec drop_tree_ ~size n t tail =
   assert (0 < n && n < size);
+  assert (can_prepend true size tail);
   match t with
   | Leaf _ ->
     assert (n = 1);
@@ -347,15 +353,15 @@ let rec drop_tree_ ~size n t tail =
     assert (size mod 2 = 1);
     let size = size / 2 in
     if n = 1 then
-      append_tree_ left (append_tree_ right tail)
+      Cons (size, left, Cons (size, right, tail))
     else
       let n = n - 1 in
       if n = size then
-        append_tree_ right tail
+        Cons (size, right, tail)
       (* drop element and left tree *)
       else if n < size then
         (* drop element and part of left tree *)
-        drop_tree_ ~size n left (append_tree_ right tail)
+        drop_tree_ ~size n left (Cons (size, right, tail))
       else
         (* drop element, left tree, and part of right tree *)
         drop_tree_ ~size (n - size) right tail
