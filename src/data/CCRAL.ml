@@ -11,6 +11,44 @@ and +'a t =
   | Nil
   | Cons of int * 'a tree * 'a t  (** Functional array of complete trees *)
 
+(* The following functions are used only during debugging/testing. *)
+
+let rec check_tree (size : int) (t : 'a tree) =
+  match t with
+  | Leaf _ ->
+      assert (size = 1)
+  | Node (_, t1, t2) ->
+      assert (size mod 2 = 1);
+      let size = size / 2 in
+      check_tree size t1;
+      check_tree size t2
+
+let can_prepend front size m =
+  match m with
+  | Nil ->
+      true
+  | Cons (size', _, _) ->
+      size <= size' &&
+      if front then true else size < size'
+
+let rec check (front : bool) (m : 'a t) =
+  match m with
+  | Nil ->
+      ()
+  | Cons (size, t, m) ->
+      (* [size] must be the size of the tree [t],
+         and this tree must be perfect. *)
+      assert (0 < size);
+      check_tree size t;
+      (* The next tree, if it exists, has greater weight as [t].
+         As an exception to this rule, if [t] is the front tree
+         then the next tree may have the same weight as [t]. *)
+      assert (can_prepend front size m);
+      check false m
+
+let check m =
+  check true m
+
 (** {2 Functions on trees} *)
 
 (** {2 Functions on lists of trees} *)

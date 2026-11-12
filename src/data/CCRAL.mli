@@ -177,3 +177,8 @@ include module type of Infix
 type 'a printer = Format.formatter -> 'a -> unit
 
 val pp : ?pp_sep:unit printer -> 'a printer -> 'a t printer
+
+(**/**)
+
+(**[check xs] checks that the list [xs] is internally well-formed. *)
+val check : 'a t -> unit
