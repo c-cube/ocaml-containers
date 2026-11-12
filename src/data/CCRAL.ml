@@ -49,6 +49,14 @@ let rec check (front : bool) (m : 'a t) =
 let check m =
   check true m
 
+(* In the code that follows, we write [if debug then assert (...)]
+   instead of just [assert (...)]. Indeed, it seems that assertions
+   are not disabled when the library is shipped, and we do not want
+   our clients to pay for our runtime assertions. *)
+
+let debug =
+  false
+
 (** {2 Functions on trees} *)
 
 (** {2 Functions on lists of trees} *)
@@ -342,15 +350,14 @@ let take_while ~f l =
    which means that [Cons] can be used. *)
 
 let rec drop_tree_ ~size n t tail =
-  assert (0 < n && n < size);
-  assert (can_prepend true size tail);
+  if debug then assert (0 < n && n < size);
+  if debug then check_tree size t;
+  if debug then assert (can_prepend true size tail);
   match t with
   | Leaf _ ->
-    assert (n = 1);
     tail
   | Node (_, left, right) ->
     (* compute the size of the subtrees *)
-    assert (size mod 2 = 1);
     let size = size / 2 in
     if n = 1 then
       (* drop element *)
