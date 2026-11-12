@@ -346,15 +346,19 @@ let rec stack_to_list = function
   | St_tree (size, t, st') -> append_tree_ size t (stack_to_list st')
 
 let rec take_tree_ ~size n t =
+  if debug then assert (0 < n);
   match t with
-  | _ when n = 0 -> Nil
   | Leaf x -> cons x Nil
   | Node (x, l, r) ->
-    let size' = size / 2 in
-    if size' <= n - 1 then
-      cons x (append_tree_ size' l (take_tree_ ~size:size' (n - size' - 1) r))
+    if n = 1 then return x else
+    let size = size / 2 in
+    let n = n - 1 in
+    if size < n then
+      cons x (append_tree_ size l (take_tree_ ~size (n - size) r))
+    else if size = n then
+      cons x (Cons (size, l, Nil))
     else
-      cons x (take_tree_ ~size:size' (n - 1) l)
+      cons x (take_tree_ ~size n l)
 
 let rec take_nz n l =
   if debug then assert (0 < n);
