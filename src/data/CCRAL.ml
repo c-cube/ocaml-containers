@@ -353,6 +353,7 @@ let rec drop_tree_ ~size n t tail =
     assert (size mod 2 = 1);
     let size = size / 2 in
     if n = 1 then
+      (* drop element *)
       Cons (size, left, Cons (size, right, tail))
     else
       let n = n - 1 in
