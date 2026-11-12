@@ -357,8 +357,8 @@ let rec drop_tree_ ~size n t tail =
     else
       let n = n - 1 in
       if n = size then
+        (* drop element and left tree *)
         Cons (size, right, tail)
-      (* drop element and left tree *)
       else if n < size then
         (* drop element and part of left tree *)
         drop_tree_ ~size n left (Cons (size, right, tail))
