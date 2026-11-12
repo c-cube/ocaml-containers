@@ -11,12 +11,58 @@ and +'a t =
   | Nil
   | Cons of int * 'a tree * 'a t  (** Functional array of complete trees *)
 
+(* The following functions are used only during debugging/testing. *)
+
+let rec check_tree (size : int) (t : 'a tree) =
+  match t with
+  | Leaf _ ->
+      assert (size = 1)
+  | Node (_, t1, t2) ->
+      assert (size mod 2 = 1);
+      let size = size / 2 in
+      check_tree size t1;
+      check_tree size t2
+
+let can_prepend front size m =
+  match m with
+  | Nil ->
+      true
+  | Cons (size', _, _) ->
+      size <= size' &&
+      if front then true else size < size'
+
+let rec check (front : bool) (m : 'a t) =
+  match m with
+  | Nil ->
+      ()
+  | Cons (size, t, m) ->
+      (* [size] must be the size of the tree [t],
+         and this tree must be perfect. *)
+      assert (0 < size);
+      check_tree size t;
+      (* The next tree, if it exists, has greater weight as [t].
+         As an exception to this rule, if [t] is the front tree
+         then the next tree may have the same weight as [t]. *)
+      assert (can_prepend front size m);
+      check false m
+
+let check m =
+  check true m
+
+(* In the code that follows, we write [if debug then assert (...)]
+   instead of just [assert (...)]. Indeed, it seems that assertions
+   are not disabled when the library is shipped, and we do not want
+   our clients to pay for our runtime assertions. *)
+
+let debug =
+  false
+
 (** {2 Functions on trees} *)
 
 (** {2 Functions on lists of trees} *)
 
 let empty = Nil
-let return x = Cons (1, Leaf x, Nil)
+let[@inline] return x = Cons (1, Leaf x, Nil)
 
 let is_empty = function
   | Nil -> true
@@ -216,8 +262,52 @@ and fold_tree_rev t acc f =
 
 let rev_map ~f l = fold ~f:(fun acc x -> cons (f x) acc) ~x:empty l
 let rev l = fold ~f:cons' ~x:empty l
-let append l1 l2 = fold_rev ~f:(fun l2 x -> cons x l2) ~x:l2 l1
-let append_tree_ t l = fold_tree_rev t l cons'
+
+(* One could implement [append_tree_ size t l] simply
+   as [fold_tree_rev t l cons'], ignoring [size]. *)
+
+(* A more attractive approach is to use [Cons] to insert the tree [t]
+   at once in front of the list [tail]. When this is permitted, this
+   takes constant time. When this is not permitted, the tree [t] is
+   split, and one tries again. In the worst case, the the tree [t] is
+   split down to its constituent elements, in which case this approach
+   needs linear time, like the simple approach. In summary, the smart
+   approach saves a constant factor in time. It also saves memory and
+   improves sharing; a subtree can be re-used instead of copied. *)
+
+let[@inline] test_prepend (size : int) (l : 'a t) : bool =
+  match l with
+  | Nil ->
+      true
+  | Cons (size1, _, Nil) ->
+      size <= size1
+  | Cons (size1, _, Cons (size2, _, _)) ->
+      if size1 = size2 then
+        (* Bad situation: prepending is not permitted. *)
+        false
+      else
+        size <= size1
+
+let rec append_tree_ size t l =
+  if debug then check_tree size t;
+  if test_prepend size l then
+    (* The tree [t] can be pushed into [l] in constant time. *)
+    Cons (size, t, l)
+  else
+    (* Otherwise, decompose [t] and try again. *)
+    match t with
+    | Leaf x ->
+        cons x l
+    | Node (x, t1, t2) ->
+        let size = size / 2 in
+        cons x (append_tree_ size t1 (append_tree_ size t2 l))
+
+let rec append l1 l2 =
+  match l1 with
+  | Nil ->
+      l2
+  | Cons (size, t1, l1) ->
+      append_tree_ size t1 (append l1 l2)
 
 let filter ~f l =
   fold_rev
@@ -248,32 +338,42 @@ let app funs l =
 type 'a stack =
   | St_nil
   | St_list of 'a t * 'a stack
-  | St_tree of 'a tree * 'a stack
+  | St_tree of int * 'a tree * 'a stack
 
 let rec stack_to_list = function
   | St_nil -> Nil
   | St_list (l, st') -> append l (stack_to_list st')
-  | St_tree (t, st') -> append_tree_ t (stack_to_list st')
+  | St_tree (size, t, st') -> append_tree_ size t (stack_to_list st')
 
-let rec take n l =
+let rec take_tree_ ~size n t =
+  if debug then assert (0 < n);
+  match t with
+  | Leaf x -> cons x Nil
+  | Node (x, l, r) ->
+    if n = 1 then return x else
+    let size = size / 2 in
+    let n = n - 1 in
+    if size < n then
+      cons x (append_tree_ size l (take_tree_ ~size (n - size) r))
+    else if size = n then
+      cons x (Cons (size, l, Nil))
+    else
+      cons x (take_tree_ ~size n l)
+
+let rec take_nz n l =
+  if debug then assert (0 < n);
   match l with
   | Nil -> Nil
   | Cons (size, t, tl) ->
-    if size <= n then
-      append_tree_ t (take (n - size) tl)
+    if size < n then
+      append_tree_ size t (take_nz (n - size) tl)
+    else if size = n then
+      Cons (size, t, Nil)
     else
       take_tree_ ~size n t
 
-and take_tree_ ~size n t =
-  match t with
-  | _ when n = 0 -> Nil
-  | Leaf x -> cons x Nil
-  | Node (x, l, r) ->
-    let size' = size / 2 in
-    if size' <= n - 1 then
-      cons x (append_tree_ l (take_tree_ ~size:size' (n - size' - 1) r))
-    else
-      cons x (take_tree_ ~size:size' (n - 1) l)
+let[@inline] take n l =
+  if n = 0 then Nil else take_nz n l
 
 let take_while ~f l =
   (* st: stack of subtrees *)
@@ -281,45 +381,54 @@ let take_while ~f l =
     match st with
     | St_nil -> Nil
     | St_list (Nil, st') -> aux p st'
-    | St_list (Cons (_, t, tl), st') -> aux p (St_tree (t, St_list (tl, st')))
-    | St_tree (Leaf x, st') ->
+    | St_list (Cons (size, t, tl), st') ->
+        aux p (St_tree (size, t, St_list (tl, st')))
+    | St_tree (_, Leaf x, st') ->
       if p x then
         cons x (aux p st')
       else
         Nil
-    | St_tree (Node (x, l, r), st') ->
+    | St_tree (size, Node (x, l, r), st') ->
       if p x then
-        cons x (aux p (St_tree (l, St_tree (r, st'))))
+        let size = size / 2 in
+        cons x (aux p (St_tree (size, l, St_tree (size, r, st'))))
       else
         Nil
   in
   aux f (St_list (l, St_nil))
 
-(* drop [n < size] elements from [t] *)
+(* drop [n] elements from [t],
+   with [0 < n < size],
+   where [size] is the size of the tree [t] *)
+
+(* In [drop_tree_], there is no need to use [append_tree_]:
+   indeed, the precondition [can_prepend true size tail] holds,
+   which means that [Cons] can be used. *)
+
 let rec drop_tree_ ~size n t tail =
+  if debug then assert (0 < n && n < size);
+  if debug then check_tree size t;
+  if debug then assert (can_prepend true size tail);
   match t with
-  | _ when n = 0 -> tail
   | Leaf _ ->
-    assert (n = 1);
     tail
   | Node (_, left, right) ->
+    (* compute the size of the subtrees *)
+    let size = size / 2 in
     if n = 1 then
-      append_tree_ left (append_tree_ right tail)
-    else (
-      assert (size mod 2 = 1);
-      let size_sub = size / 2 in
-      (* size of subtrees *)
+      (* drop element *)
+      Cons (size, left, Cons (size, right, tail))
+    else
       let n = n - 1 in
-      if n = size_sub then
-        append_tree_ right tail
-      (* drop element and left tree *)
-      else if n < size_sub then
+      if n = size then
+        (* drop element and left tree *)
+        Cons (size, right, tail)
+      else if n < size then
         (* drop element and part of left tree *)
-        drop_tree_ ~size:size_sub n left (append_tree_ right tail)
+        drop_tree_ ~size n left (Cons (size, right, tail))
       else
         (* drop element, left tree, and part of right tree *)
-        drop_tree_ ~size:size_sub (n - size_sub) right tail
-    )
+        drop_tree_ ~size (n - size) right tail
 
 let rec drop n l =
   match l with
@@ -336,18 +445,19 @@ let drop_while ~f l =
     match st with
     | St_nil -> Nil
     | St_list (Nil, st') -> aux p st'
-    | St_list (Cons (_, t, tail), st') ->
-      aux p (St_tree (t, St_list (tail, st')))
-    | St_tree (Leaf x, st') ->
+    | St_list (Cons (size, t, tail), st') ->
+      aux p (St_tree (size, t, St_list (tail, st')))
+    | St_tree (_, Leaf x, st') ->
       if p x then
         aux p st'
       else
         cons x (stack_to_list st')
-    | St_tree ((Node (x, l, r) as tree), st') ->
+    | St_tree (size, (Node (x, l, r) as tree), st') ->
       if p x then
-        aux p (St_tree (l, St_tree (r, st')))
+        let size = size / 2 in
+        aux p (St_tree (size, l, St_tree (size, r, st')))
       else
-        append_tree_ tree (stack_to_list st')
+        append_tree_ size tree (stack_to_list st')
   in
   aux f (St_list (l, St_nil))
 
