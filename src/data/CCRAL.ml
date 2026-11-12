@@ -356,14 +356,20 @@ let rec take_tree_ ~size n t =
     else
       cons x (take_tree_ ~size:size' (n - 1) l)
 
-let rec take n l =
+let rec take_nz n l =
+  if debug then assert (0 < n);
   match l with
   | Nil -> Nil
   | Cons (size, t, tl) ->
-    if size <= n then
-      append_tree_ size t (take (n - size) tl)
+    if size < n then
+      append_tree_ size t (take_nz (n - size) tl)
+    else if size = n then
+      Cons (size, t, Nil)
     else
       take_tree_ ~size n t
+
+let[@inline] take n l =
+  if n = 0 then Nil else take_nz n l
 
 let take_while ~f l =
   (* st: stack of subtrees *)
