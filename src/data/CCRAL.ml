@@ -62,7 +62,7 @@ let debug =
 (** {2 Functions on lists of trees} *)
 
 let empty = Nil
-let return x = Cons (1, Leaf x, Nil)
+let[@inline] return x = Cons (1, Leaf x, Nil)
 
 let is_empty = function
   | Nil -> true
