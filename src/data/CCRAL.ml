@@ -339,7 +339,6 @@ let take_while ~f l =
 let rec drop_tree_ ~size n t tail =
   assert (0 < n && n < size);
   match t with
-  | _ when n = 0 -> tail
   | Leaf _ ->
     assert (n = 1);
     tail
