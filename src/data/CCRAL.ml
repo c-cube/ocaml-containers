@@ -343,12 +343,12 @@ let rec drop_tree_ ~size n t tail =
     assert (n = 1);
     tail
   | Node (_, left, right) ->
+    (* compute the size of the subtrees *)
+    assert (size mod 2 = 1);
+    let size = size / 2 in
     if n = 1 then
       append_tree_ left (append_tree_ right tail)
-    else (
-      assert (size mod 2 = 1);
-      let size = size / 2 in
-      (* size of subtrees *)
+    else
       let n = n - 1 in
       if n = size then
         append_tree_ right tail
@@ -359,7 +359,6 @@ let rec drop_tree_ ~size n t tail =
       else
         (* drop element, left tree, and part of right tree *)
         drop_tree_ ~size (n - size) right tail
-    )
 
 let rec drop n l =
   match l with
